@@ -372,7 +372,7 @@ void Directory::stealContent(Directory* dir)
    QMutexLocker locker(&this->mutex);
    if (dir == this)
    {
-      L_ERRO("Directory::stealSubDirs(..) : dir == this");
+      L_ERRO("Directory::stealSubDirs(..): dir == this");
       return;
    }
 

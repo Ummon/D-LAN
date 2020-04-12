@@ -49,7 +49,6 @@ SOURCES += priv/Builder.cpp \
     priv/Cache/DataReader.cpp \
     priv/Cache/DataWriter.cpp \
     priv/Cache/Cache.cpp \
-    ../../Protos/files_cache.pb.cc \
     priv/FileUpdater/WaitCondition.cpp \
     priv/GetHashesResult.cpp \
     priv/Log.cpp \

@@ -106,7 +106,7 @@ try
    {
       QFile file(TEMP_FILEPATH);
       if (!file.open(QIODevice::WriteOnly))
-         throw PersistentDataIOException(QString("Unable to open the file in write mode : %1, error : %2").arg(TEMP_FILEPATH).arg(file.errorString()));
+         throw PersistentDataIOException(QString("Unable to open the file in write mode: %1, error: %2").arg(TEMP_FILEPATH).arg(file.errorString()));
 
 #if !DEBUG
       if (humanReadable)

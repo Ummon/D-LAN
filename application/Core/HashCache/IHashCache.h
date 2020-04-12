@@ -19,11 +19,13 @@
 #pragma once
 
 #include <QSharedPointer>
+#include <QList>
 #include <QString>
 
 #include <Protos/common.pb.h>
 
 #include <Common/Path.h>
+#include <Common/Hashes.h>
 
 namespace HC
 {
@@ -32,6 +34,9 @@ namespace HC
    public:
       virtual ~IHashCache() {}
 
-      getHashes(const QString& )
+      virtual QList<Common::Hashes> getHashes(const QList<QString>& filePaths);
+
+      virtual void setHashes(const QList<QString>& filePaths, const QList<Common::Hashes>& hashes);
+      virtual void rmtHashes(const QList<QString>& filePaths);
    };
 }

@@ -90,7 +90,7 @@ void Cache::forall(std::function<void(Entry*)> fun) const
 /**
   * Gets the roots shared entries (it can be a mix of files and directories).
   */
-Protos::Common::Entries Cache::getSharedEntries() const
+Protos::Common::Entries Cache::getProtoSharedEntries() const
 {
    QMutexLocker locker(&this->mutex);
 
@@ -105,7 +105,7 @@ Protos::Common::Entries Cache::getSharedEntries() const
    return result;
 }
 
-Protos::Common::Entries Cache::getEntries(const Protos::Common::Entry& dir, int maxNbHashesPerEntry) const
+Protos::Common::Entries Cache::getProtoEntries(const Protos::Common::Entry& dir, int maxNbHashesPerEntry) const
 {
    Protos::Common::Entries result;
 
@@ -251,13 +251,13 @@ File* Cache::getFile(const Protos::Common::Entry& fileEntry) const
 {
    if (fileEntry.type() == Protos::Common::Entry_Type_DIR)
    {
-      L_WARN(QString("Cache::getFile : 'fileEntry' must be a file (and not a directory)"));
+      L_WARN(QString("Cache::getFile: 'fileEntry' must be a file (and not a directory)"));
       return nullptr;
    }
 
    if (!fileEntry.has_shared_entry())
    {
-      L_WARN(QString("Cache::getFile : 'fileEntry' doesn't have the field 'shared_dir' set!"));
+      L_WARN(QString("Cache::getFile: 'fileEntry' doesn't have the field 'shared_dir' set!"));
       return nullptr;
    }
 
@@ -271,7 +271,7 @@ File* Cache::getFile(const Protos::Common::Entry& fileEntry) const
 
    if (!fileEntry.has_shared_entry())
    {
-      L_WARN(QString("Cache::getFile : 'fileEntry' doesn't have the field 'shared_dir' set!"));
+      L_WARN(QString("Cache::getFile: 'fileEntry' doesn't have the field 'shared_dir' set!"));
       return nullptr;
    }
 

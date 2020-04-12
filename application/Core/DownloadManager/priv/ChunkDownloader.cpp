@@ -50,7 +50,7 @@ ChunkDownloader::ChunkDownloader(LinkedPeers& linkedPeers, OccupiedPeers& occupi
    mutex(QMutex::Recursive)
 {
    Q_ASSERT(!chunkHash.isNull());
-   L_DEBU(QString("New ChunkDownloader : %1").arg(this->chunkHash.toStr()));
+   L_DEBU(QString("New ChunkDownloader: %1").arg(this->chunkHash.toStr()));
 }
 
 ChunkDownloader::~ChunkDownloader()
@@ -60,7 +60,7 @@ ChunkDownloader::~ChunkDownloader()
    for (QListIterator<PM::IPeer*> i(this->peers); i.hasNext();)
       this->linkedPeers.rmLink(i.next());
 
-   L_DEBU(QString("ChunkDownloader deleted : %1").arg(this->chunkHash.toStr()));
+   L_DEBU(QString("ChunkDownloader deleted: %1").arg(this->chunkHash.toStr()));
 }
 
 /**
@@ -151,7 +151,7 @@ void ChunkDownloader::run()
          this->mutex.lock();
          if (!this->downloading)
          {
-            L_DEBU(QString("Downloading aborted, chunk : %1%2").arg(this->chunk->toStringLog()).arg(this->chunk->isComplete() ? "" : " Not complete!"));
+            L_DEBU(QString("Downloading aborted, chunk: %1%2").arg(this->chunk->toStringLog()).arg(this->chunk->isComplete() ? "" : " Not complete!"));
             this->closeTheSocket = true; // Because some garbage from the remote uploader will continue to come in this socket.
             this->mutex.unlock();
             break;
@@ -174,7 +174,7 @@ void ChunkDownloader::run()
          }
          else if (bytesRead == -1)
          {
-            L_WARN(QString("Socket : cannot receive data : %1").arg(this->chunk->toStringLog()));
+            L_WARN(QString("Socket : cannot receive data: %1").arg(this->chunk->toStringLog()));
             this->closeTheSocket = true;
             this->lastTransferStatus = TRANSFER_ERROR;
             break;
@@ -409,7 +409,7 @@ PM::IPeer* ChunkDownloader::startDownloading()
 {
    if (this->chunk.isNull())
    {
-      L_WARN(QString("Unable to download without the chunk. Hash : %1").arg(this->chunkHash.toStr()));
+      L_WARN(QString("Unable to download without the chunk. Hash: %1").arg(this->chunkHash.toStr()));
       return nullptr;
    }
 
@@ -424,7 +424,7 @@ PM::IPeer* ChunkDownloader::startDownloading()
    if (this->getChunkResult.isNull())
       return nullptr;
 
-   L_DEBU(QString("Starting downloading a chunk : %1 from %2").arg(this->chunk->toStringLog()).arg(this->currentDownloadingPeer->getID().toStr()));
+   L_DEBU(QString("Starting downloading a chunk: %1 from %2").arg(this->chunk->toStringLog()).arg(this->currentDownloadingPeer->getID().toStr()));
 
    this->downloading = true;
    emit downloadStarted();
@@ -454,7 +454,7 @@ void ChunkDownloader::result(const Protos::Core::GetChunkResult& result)
 {
    if (result.status() != Protos::Core::GetChunkResult::OK)
    {
-      L_WARN(QString("Status error from GetChunkResult : %1. Download aborted.").arg(result.status()));
+      L_WARN(QString("Status error from GetChunkResult: %1. Download aborted.").arg(result.status()));
       if (this->peers.removeOne(this->currentDownloadingPeer))
       {
          this->linkedPeers.rmLink(this->currentDownloadingPeer);
@@ -493,7 +493,7 @@ void ChunkDownloader::getChunkTimeout()
 
 void ChunkDownloader::downloadingEnded()
 {
-   L_DEBU(QString("Downloading ended, chunk : %1%2").arg(this->chunk->toStringLog()).arg(this->chunk->isComplete() ? "" : " Not complete!"));
+   L_DEBU(QString("Downloading ended, chunk: %1%2").arg(this->chunk->toStringLog()).arg(this->chunk->isComplete() ? "" : " Not complete!"));
 
    if (!this->socket.isNull())
       this->socket.clear();

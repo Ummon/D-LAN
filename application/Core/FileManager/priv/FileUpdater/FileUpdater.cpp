@@ -148,7 +148,7 @@ void FileUpdater::rmRoot(SharedEntry* sharedEntry, Directory* dir2)
 void FileUpdater::prioritizeAFileToHash(File* file)
 {
    QMutexLocker locker(&this->mutex);
-   L_DEBU(QString("FileUpdater::prioritizeAFileToHash : %1").arg(file->getFullPath()));
+   L_DEBU(QString("FileUpdater::prioritizeAFileToHash: %1").arg(file->getFullPath()));
 
    // If a file is incomplete (unfinished) we can't compute its hashes because we don't have all data.
    if (!file->hasAllHashes() && file->isComplete())
@@ -174,7 +174,7 @@ void FileUpdater::prioritizeAFileToHash(File* file)
       this->toStopHashing = true;
    }
    else
-      L_DEBU(QString("FileUpdater::prioritizeAFileToHash, unable to prioritize : %1").arg(file->getFullPath()));
+      L_DEBU(QString("FileUpdater::prioritizeAFileToHash, unable to prioritize: %1").arg(file->getFullPath()));
 
 }
 
@@ -532,7 +532,7 @@ void FileUpdater::scan(Entry* entry, bool addUnfinished)
       this->timerScanUnwatchable.start();
    this->mutex.unlock();
 
-   L_DEBU("Scanning terminated : " + dir->getFullPath());
+   L_DEBU("Scanning terminated: " + dir->getFullPath());
 }
 
 /**
@@ -684,7 +684,7 @@ bool FileUpdater::processEvents(const QList<WatcherEvent>& events)
       if (Global::isFileUnfinished(event.path1))
          continue;
 
-      L_DEBU(QString("A file structure event occurs :\n%1").arg(event.toStr()));
+      L_DEBU(QString("A file structure event occurs:\n%1").arg(event.toStr()));
 
       switch (event.type)
       {

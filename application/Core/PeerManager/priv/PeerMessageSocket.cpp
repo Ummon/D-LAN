@@ -341,7 +341,7 @@ void PeerMessageSocket::onNewMessage(const Common::Message& message)
             this->send(Common::MessageHeader::CORE_GET_CHUNK_RESULT, result);
             this->finished();
 
-            L_WARN(QString("GET_CHUNK: Chunk unknown : %1").arg(hash.toStr()));
+            L_WARN(QString("GET_CHUNK: Chunk unknown: %1").arg(hash.toStr()));
          }
          else
          {

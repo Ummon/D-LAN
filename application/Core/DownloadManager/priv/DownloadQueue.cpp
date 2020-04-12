@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <priv/DownloadQueue.h>
 using namespace DM;
 
@@ -330,11 +330,11 @@ Protos::Queue::Queue DownloadQueue::loadFromFile()
    }
    catch (Common::UnknownValueException& e)
    {
-      L_WARN(QString("The download queue file cache cannot be retrived (the file doesn't exist) : %1").arg(Common::Constants::FILE_QUEUE));
+      L_WARN(QString("The download queue file cache cannot be retrived (the file doesn't exist): %1").arg(Common::Constants::FILE_QUEUE));
    }
    catch (...)
    {
-      L_WARN(QString("The download queue file cache cannot be retrived (Unkown exception) : %1").arg(Common::Constants::FILE_QUEUE));
+      L_WARN(QString("The download queue file cache cannot be retrived (Unkown exception): %1").arg(Common::Constants::FILE_QUEUE));
    }
 
    return savedQueue;

@@ -125,7 +125,7 @@ INetworkListener::SendStatus UDPListener::send(Common::MessageHeader::MessageTyp
       return INetworkListener::SendStatus::MESSAGE_TOO_LARGE;
 
 #if DEBUG
-   QString logMess = QString("Send multicast UDP : header.getType() = %1, message size = %2 \n%3").
+   QString logMess = QString("Send multicast UDP: header.getType() = %1, message size = %2 \n%3").
       arg(Common::MessageHeader::messToStr(type)).
       arg(messageSize).
       arg(Common::ProtoHelper::getDebugStr(message));
@@ -345,13 +345,13 @@ void UDPListener::processPendingUnicastDatagrams()
 
                if (chunksOwnedMessage.tag() != this->currentIMAliveTag)
                {
-                  L_WARN(QString("ChunksOwned : tag (%1) doesn't match current tag (%2)").arg(chunksOwnedMessage.tag()).arg(currentIMAliveTag));
+                  L_WARN(QString("ChunksOwned: tag (%1) doesn't match current tag (%2)").arg(chunksOwnedMessage.tag()).arg(currentIMAliveTag));
                   continue;
                }
 
                if (chunksOwnedMessage.chunk_state_size() != this->currentChunkDownloaders.size())
                {
-                  L_WARN(QString("ChunksOwned : The size (%1) doesn't match the expected one (%2)").arg(chunksOwnedMessage.chunk_state_size()).arg(this->currentChunkDownloaders.size()));
+                  L_WARN(QString("ChunksOwned: The size (%1) doesn't match the expected one (%2)").arg(chunksOwnedMessage.chunk_state_size()).arg(this->currentChunkDownloaders.size()));
                   continue;
                }
 

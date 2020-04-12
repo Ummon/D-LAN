@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <priv/Cache/FileHasher.h>
 using namespace FM;
 
@@ -88,7 +88,7 @@ bool FileHasher::start(FileForHasher* fileCache, int n, int* amountHashed)
       this->toStopHashing = false;
       this->hashing = false;
       this->currentFileCache = 0;
-      L_WARN(QString("Unable to open this file : %1").arg(filePath));
+      L_WARN(QString("Unable to open this file: %1").arg(filePath));
       throw IOErrorException();
    }
 
@@ -148,7 +148,7 @@ bool FileHasher::start(FileForHasher* fileCache, int n, int* amountHashed)
                this->toStopHashing = false;
                this->hashing = false;
                this->currentFileCache = 0;
-               L_WARN(QString("Unable to acquire the lock for this file : %1").arg(filePath));
+               L_WARN(QString("Unable to acquire the lock for this file: %1").arg(filePath));
                throw IOErrorException();
             }
 
@@ -214,11 +214,11 @@ bool FileHasher::start(FileForHasher* fileCache, int n, int* amountHashed)
 #ifdef DEBUG
    const int delta = timer.elapsed();
    if (delta < 50)
-      L_DEBU("Hashing speed : ?? MB/s (delta too small)");
+      L_DEBU("Hashing speed: ?? MB/s (delta too small)");
    else
    {
       const int speed = 1000LL * bytesReadTotal / delta;
-      L_DEBU(QString("Hashing speed : %1/s").arg(Common::Global::formatByteSize(speed)));
+      L_DEBU(QString("Hashing speed: %1/s").arg(Common::Global::formatByteSize(speed)));
    }
 #endif
 

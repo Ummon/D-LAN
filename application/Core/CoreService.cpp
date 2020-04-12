@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <CoreService.h>
 using namespace CoreSpace;
 
@@ -108,7 +108,7 @@ void CoreService::processUserInput(QString input)
    else
    {
       QTextStream out(stdout);
-      out << "Command unknown : '" << input << "', type 'help' to list commands" << endl;
+      out << "Command unknown: '" << input << "', type 'help' to list commands" << endl;
    }
 }
 

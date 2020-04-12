@@ -682,10 +682,10 @@ void Settings::printError(const QString& name)
 
 void Settings::printErrorNameNotFound(const QString& name)
 {
-   QTextStream(stderr) << QString("Settings : name \"%1\" doesn't exist").arg(name) << endl;
+   QTextStream(stderr) << QString("Settings: name \"%1\" doesn't exist").arg(name) << endl;
 }
 
 void Settings::printErrorBadType(const google::protobuf::FieldDescriptor* field, const QString& excepted)
 {
-   QTextStream(stderr) << QString("Settings : bad type, field name = \"%1\", expected type : \"%2\"").arg(ProtoHelper::getStr(*field, &google::protobuf::FieldDescriptor::name)).arg(excepted) << endl;
+   QTextStream(stderr) << QString("Settings: bad type, field name = \"%1\", expected type: \"%2\"").arg(ProtoHelper::getStr(*field, &google::protobuf::FieldDescriptor::name)).arg(excepted) << endl;
 }

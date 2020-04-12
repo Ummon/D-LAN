@@ -53,10 +53,7 @@ LOG_INIT_CPP(FileManager)
 
 FileManager::FileManager(QSharedPointer<HC::IHashCache> hashCache) :
    fileUpdater(this),
-   cache(hashCache),
-   mutexPersistCache(QMutex::Recursive),
-   cacheLoading(true),
-   cacheChanged(false)
+   cache(hashCache)
 {
    Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
 
@@ -69,25 +66,15 @@ FileManager::FileManager(QSharedPointer<HC::IHashCache> hashCache) :
    connect(&this->cache, &Cache::newSharedEntry, this, &FileManager::newSharedEntry, Qt::DirectConnection);
    connect(&this->cache, &Cache::sharedEntryRemoved, this, &FileManager::sharedEntryRemoved, Qt::DirectConnection);
 
-   connect(&this->fileUpdater, &FileUpdater::fileCacheLoaded, this, &FileManager::fileCacheLoadingComplete, Qt::QueuedConnection);
    connect(&this->fileUpdater, &FileUpdater::deleteSharedEntry, this, &FileManager::deleteSharedEntry, Qt::QueuedConnection); // If the 'FileUpdater' wants to delete a shared directory.
-
-   this->timerPersistCache.setInterval(SETTINGS.get<quint32>("save_cache_period"));
-   this->timerPersistCache.setSingleShot(true); // We use a single shot because if the time to save exceeds the property 'save_cache_period' it will cause some trouble (very rare case).
-   connect(&this->timerPersistCache, &QTimer::timeout, this, &FileManager::persistCacheToFile);
-
-   this->loadCacheFromFile();
 
    this->fileUpdater.start();
 }
 
 FileManager::~FileManager()
 {
-   L_DEBU("~FileManager : Stopping the file updater . . .");
+   L_DEBU("~FileManager: Stopping the file updater . . .");
    this->fileUpdater.stop();
-   this->cacheChanged = true;
-   this->forcePersistCacheToFile();
-   this->timerPersistCache.stop();
    this->cache.disconnect(this);
    L_DEBU("FileManager deleted");
 }
@@ -316,9 +303,6 @@ quint64 FileManager::getAmount()
 
 FileManager::CacheStatus FileManager::getCacheStatus() const
 {
-   if (this->cacheLoading)
-      return LOADING_CACHE_IN_PROGRSS;
-
    if (this->fileUpdater.isScanning())
       return SCANNING_IN_PROGRESS;
 
@@ -346,7 +330,7 @@ void FileManager::printSimilarFiles() const
    QString result("Similar files:\n");
 
    QSet<Common::Hash> knownHashes;
-   foreach (Common::SharedEntry sharedEntry, this->cache.getSharedDirs())
+   foreach (Common::SharedEntry sharedEntry, this->cache.getSharedEntries())
    {
       Directory* dir = this->cache.getSharedDirectory(sharedDir.ID);
       DirIterator i(dir, true);
@@ -404,7 +388,7 @@ void FileManager::newSharedEntry(SharedEntry* sharedEntry)
 void FileManager::sharedEntryRemoved(SharedEntry* sharedEntry, Directory* dir)
 {
    this->fileUpdater.rmRoot(sharedEntry, dir);
-   this->forcePersistCacheToFile();
+   //this->forcePersistCacheToFile();
 }
 
 void FileManager::deleteSharedEntry(SharedEntry* sharedEntry)
@@ -558,6 +542,7 @@ void FileManager::persistCacheToFile()
 }
 */
 
+/*
 void FileManager::forcePersistCacheToFile()
 {
    this->mutexCacheChanged.lock();
@@ -567,16 +552,20 @@ void FileManager::forcePersistCacheToFile()
    QMutexLocker locker(&this->mutexPersistCache);
    this->persistCacheToFile();
 }
+*/
 
 /**
   * @warning Can be called from differents thread like a 'Downloader' or the 'FileUpdater'.
   */
+/*
 void FileManager::setCacheChanged()
 {
    QMutexLocker locker(&this->mutexCacheChanged);
    this->cacheChanged = true;
 }
+*/
 
+/*
 void FileManager::fileCacheLoadingComplete()
 {
    this->timerPersistCache.start();
@@ -591,3 +580,4 @@ void FileManager::fileCacheLoadingComplete()
 
    emit fileCacheLoaded();
 }
+*/

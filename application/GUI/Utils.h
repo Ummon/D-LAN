@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #pragma once
 
 #include <QSharedPointer>
@@ -28,7 +28,7 @@ namespace GUI
    class Utils
    {
    public:
-      static QStringList askForDirectories(QSharedPointer<RCC::ICoreConnection> coreConnection, const QString& message = QString());
+      static QStringList askForDirectoriesOrFiles(QSharedPointer<RCC::ICoreConnection> coreConnection);
       static QStringList askForDirectoriesToDownloadTo(QSharedPointer<RCC::ICoreConnection> coreConnection);
 
       static QString emoticonsDirectoryPath();

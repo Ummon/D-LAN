@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <priv/Cache/Chunk.h>
 using namespace FM;
 
@@ -43,18 +43,18 @@ int Chunk::CHUNK_SIZE(0);
 Chunk::Chunk(File* file, int num, quint32 knownBytes) :
    file(file), num(num), knownBytes(knownBytes)
 {
-   L_DEBU(QString("New chunk[%1] : %2. File : %3").arg(num).arg(hash.toStr()).arg(this->file ? this->file->getFullPath() : "<no file defined>"));
+   L_DEBU(QString("New chunk[%1]: %2. File: %3").arg(num).arg(hash.toStr()).arg(this->file ? this->file->getFullPath() : "<no file defined>"));
 }
 
 Chunk::Chunk(File* file, int num, quint32 knownBytes, const Common::Hash& hash) :
    file(file), num(num), knownBytes(knownBytes), hash(hash)
 {
-   L_DEBU(QString("New chunk[%1] : %2. File : %3").arg(num).arg(hash.toStr()).arg(this->file ? this->file->getFullPath() : "<no file defined>"));
+   L_DEBU(QString("New chunk[%1]: %2. File: %3").arg(num).arg(hash.toStr()).arg(this->file ? this->file->getFullPath() : "<no file defined>"));
 }
 
 Chunk::~Chunk()
 {
-   L_DEBU(QString("Chunk Deleted[%1] : %2. File : %3").arg(num).
+   L_DEBU(QString("Chunk Deleted[%1]: %2. File: %3").arg(num).
       arg(this->hash.toStr()).
       arg(this->file ? this->file->getFullPath() : "<file deleted>")
    );
@@ -63,22 +63,6 @@ Chunk::~Chunk()
 QString Chunk::toStringLog() const
 {
    return QString("num = [%1], hash = %2, knownBytes = %3, size = %4").arg(this->num).arg(this->getHash().toStr()).arg(this->getKnownBytes()).arg(this->getChunkSize());
-}
-
-Chunk* Chunk::restoreFromFileCache(const Protos::FileCache::Hashes_Chunk& chunk)
-{
-   this->knownBytes = chunk.known_bytes();
-
-   if (chunk.has_hash())
-      this->hash = chunk.hash().hash();
-   return this;
-}
-
-void Chunk::populateHashesChunk(Protos::FileCache::Hashes_Chunk& chunk) const
-{
-   chunk.set_known_bytes(this->knownBytes);
-   if (!this->hash.isNull())
-      chunk.mutable_hash()->set_hash(this->hash.getData(), Common::Hash::HASH_SIZE);
 }
 
 void Chunk::removeItsIncompleteFile()
@@ -180,9 +164,9 @@ Common::Hash Chunk::getHash() const
 void Chunk::setHash(const Common::Hash& hash)
 {
    #ifdef DEBUG
-      L_DEBU(QString("Chunk[%1] setHash(..) : %2").arg(this->num).arg(hash.toStr()));
+      L_DEBU(QString("Chunk[%1] setHash(..): %2").arg(this->num).arg(hash.toStr()));
       if (!this->hash.isNull() && this->hash != hash)
-         L_WARN(QString("Chunk::setHash : Hash chunk changed from %1 to %2 for the file %3").arg(this->hash.toStr()).arg(hash.toStr()).arg(this->file->getFullPath()));
+         L_WARN(QString("Chunk::setHash: Hash chunk changed from %1 to %2 for the file %3").arg(this->hash.toStr()).arg(hash.toStr()).arg(this->file->getFullPath()));
    #endif
 
    this->hash = hash;

@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <priv/Cache/File.h>
 using namespace FM;
 
@@ -259,7 +259,7 @@ bool File::correspondTo(const QFileInfo& fileInfo, bool checkTheDateToo)
 }
 
 Common::Path File::getPath() const
-{   
+{
    if (this->dir)
       this->dir->getPath().appendDir(this->dir->getName()).setFilename(this->name);
    else
@@ -442,7 +442,7 @@ bool File::hasAllHashes()
 
    for (QVectorIterator<QSharedPointer<Chunk>> i(this->chunks); i.hasNext();)
       if (!i.next()->hasHash())
-         return false;   
+         return false;
 
    return true;
 }
@@ -521,7 +521,7 @@ void File::removeUnfinishedFiles()
       this->fileInWriteMode = nullptr;
 
       if (!QFile::remove(this->getFullPath()))
-         L_WARN(QString("File::removeUnfinishedFiles() : unable to delete an unfinished file : %1").arg(this->getFullPath()));
+         L_WARN(QString("File::removeUnfinishedFiles(): unable to delete an unfinished file: %1").arg(this->getFullPath()));
    }
 }
 
@@ -570,7 +570,7 @@ bool File::hasAParentDir(Directory* dir)
   */
 void File::setAsComplete()
 {
-   L_DEBU(QString("File set as complete : %1").arg(this->getFullPath()));
+   L_DEBU(QString("File set as complete: %1").arg(this->getFullPath()));
 
    if (Global::isFileUnfinished(this->name))
    {
@@ -619,7 +619,7 @@ void File::deleteAllChunks()
 void File::createPhysicalFile()
 {
    if (this->getSize() > 0 && !Global::isFileUnfinished(this->name))
-      L_ERRO(QString("File::createPhysicalFile(..) : Cannot create a file (%1) without the 'unfinished' suffix").arg(this->getPath()));
+      L_ERRO(QString("File::createPhysicalFile(..): Cannot create a file (%1) without the 'unfinished' suffix").arg(this->getPath()));
    else
    {
       QFile file(this->getFullPath());

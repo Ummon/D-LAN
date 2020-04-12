@@ -54,17 +54,17 @@ namespace FM
 
       void forall(std::function<void(Entry*)> fun) const;
 
-      Protos::Common::Entries getSharedEntries() const;
-      Protos::Common::Entries getEntries(const Protos::Common::Entry& dir, int maxNbHashesPerEntry = std::numeric_limits<int>::max()) const;
-      Directory* getDirectory(const Protos::Common::Entry& dir) const;
+      Protos::Common::Entries getProtoSharedEntries() const;
+      Protos::Common::Entries getProtoEntries(const Protos::Common::Entry& dir, int maxNbHashesPerEntry = std::numeric_limits<int>::max()) const;
 
+      Directory* getDirectory(const Protos::Common::Entry& dir) const;
       Entry* getEntry(const Common::Path& path) const;
       SharedEntry* getSharedEntry(const Common::Path& path) const;
       File* getFile(const Protos::Common::Entry& fileEntry) const;
       QList<QSharedPointer<IChunk>> newFile(Protos::Common::Entry& fileEntry);
       void newDirectory(Protos::Common::Entry& dirEntry);
 
-      QList<Common::SharedEntry> getSharedEntrys() const;
+      QList<Common::SharedEntry> getSharedEntries() const;
       SharedEntry* getSharedEntry(const Common::Hash& ID) const;
       void setSharedPaths(const QList<Common::Path>& paths);
       QPair<Common::SharedEntry, QString> addASharedPath(const Common::Path& absolutePath);

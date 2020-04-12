@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <priv/Logger.h>
 using namespace LM;
 
@@ -148,7 +148,7 @@ bool Logger::createFileLog()
 
          if (!appDir.exists(logDirName) && !appDir.mkdir(logDirName))
          {
-            outErr << "Error, cannot create log directory : " << appDir.absoluteFilePath(logDirName) << endl;
+            outErr << "Error, cannot create log directory: " << appDir.absoluteFilePath(logDirName) << endl;
             return false;
          }
          else
@@ -160,7 +160,7 @@ bool Logger::createFileLog()
             Logger::file.setFileName(logDir.absoluteFilePath(filename));
             if (!Logger::file.open(QIODevice::WriteOnly))
             {
-               outErr << "Error, cannot create log file : " << logDir.absoluteFilePath(filename) << endl;
+               outErr << "Error, cannot create log file: " << logDir.absoluteFilePath(filename) << endl;
                return false;
             }
             else

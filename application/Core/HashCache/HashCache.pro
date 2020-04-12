@@ -12,7 +12,6 @@ INCLUDEPATH += . ../..
 DEFINES += HASHCACHE_LIBRARY
 
 SOURCES += ../../Protos/common.pb.cc \
-    ../../Protos/hash_cache.pb.cc \
     priv/Log.cpp \
     priv/Builder.cpp \
     priv/HashCache.cpp
@@ -20,6 +19,5 @@ HEADERS += IHashCache.h \
     Builder.h \
     priv/Log.h \
     ../../Protos/common.pb.h \
-    ../../Protos/hash_cache.pb.h \
     priv/HashCache.h
 OTHER_FILES +=

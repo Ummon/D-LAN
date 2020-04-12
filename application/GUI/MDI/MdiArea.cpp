@@ -349,7 +349,7 @@ void MdiArea::addDownloadsWindow()
    if (this->downloadsWidget)
       return;
 
-   this->downloadsWidget = new DownloadsWidget(this->coreConnection, this->peerListModel, this->sharedDirsModel);
+   this->downloadsWidget = new DownloadsWidget(this->coreConnection, this->peerListModel, this->sharedEntryListModel);
    this->addSubWindow(this->downloadsWidget, Qt::CustomizeWindowHint);
    this->mdiAreaTabBar->setTabData(this->mdiAreaTabBar->count() - 1, Protos::GUI::Settings_Window_WIN_DOWNLOAD);
    this->downloadsWidget->setWindowState(Qt::WindowMaximized);
@@ -406,7 +406,7 @@ BrowseWidget* MdiArea::addBrowseWindow(const Common::Hash& peerID)
       }
    }
 
-   BrowseWidget* browseWindow = new BrowseWidget(this->coreConnection, this->peerListModel, this->sharedDirsModel, peerID);
+   BrowseWidget* browseWindow = new BrowseWidget(this->coreConnection, this->peerListModel, this->sharedEntryListModel, peerID);
    this->addSubWindow(browseWindow, Qt::CustomizeWindowHint);
    browseWindow->setWindowState(Qt::WindowMaximized);
    this->browseWidgets << browseWindow;
@@ -439,7 +439,7 @@ BrowseWidget* MdiArea::addBrowseWindow(const Common::Hash& peerID, const Protos:
 
 SearchWidget* MdiArea::addSearchWindow(const Protos::Common::FindPattern& findPattern, bool local)
 {
-   SearchWidget* searchWindow = new SearchWidget(this->coreConnection, this->peerListModel, this->sharedDirsModel, findPattern, local);
+   SearchWidget* searchWindow = new SearchWidget(this->coreConnection, this->peerListModel, this->sharedEntryListModel, findPattern, local);
    this->addSubWindow(searchWindow, Qt::CustomizeWindowHint);
    searchWindow->setWindowState(Qt::WindowMaximized);
    this->searchWidgets << searchWindow;

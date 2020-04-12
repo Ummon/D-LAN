@@ -188,13 +188,13 @@ QVariant SharedEntryListModel::data(const QModelIndex& index, int role) const
    case Qt::DisplayRole:
       switch (index.column())
       {
-      // Path of the entry.
-      case 0:
-         return this->sharedEntries[index.row()].path.getPath();
-
       // Name of the entry.
-      case 1:
+      case 0:
          return this->sharedEntries[index.row()].getName();
+
+      // Path of the entry.
+      case 1:
+         return this->sharedEntries[index.row()].path.getPath();
 
       case 2:
          return Common::Global::formatByteSize(this->sharedEntries[index.row()].size);
@@ -230,15 +230,15 @@ QVariant SharedEntryListModel::headerData(int section, Qt::Orientation orientati
    case Qt::DisplayRole:
       switch (section)
       {
-      case 0: return tr("Folder");
-      case 1: return tr("Name");
+      case 0: return tr("Name");
+      case 1: return tr("Path");
       case 2: return tr("Size");
       case 3: return tr("Free space");
       default: return QAbstractTableModel::headerData(section, orientation, role);
       }
 
    case Qt::TextAlignmentRole:
-      return section == 0 ? Qt::AlignLeft : Qt::AlignRight;
+      return section == 0 || section == 1 ? Qt::AlignLeft : Qt::AlignRight;
    }
 
    return QAbstractTableModel::headerData(section, orientation, role);

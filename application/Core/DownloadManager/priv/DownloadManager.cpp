@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <priv/DownloadManager.h>
 using namespace DM;
 
@@ -272,7 +272,7 @@ int DownloadManager::getDownloadRate()
 }
 
 void DownloadManager::peerBecomesAvailable(PM::IPeer* peer)
-{     
+{
    this->downloadQueue.peerBecomesAvailable(peer);
 
    // To handle the case where the peers source of some downloads without all the hashes become alive after being dead for a while. The hashes must be reasked.
@@ -347,7 +347,7 @@ void DownloadManager::peerNoLongerAskingForEntries(PM::IPeer* peer)
 
 void DownloadManager::peerNoLongerDownloadingChunk(PM::IPeer* peer)
 {
-   L_DEBU(QString("A peer is free from downloading: %1, number of downloading thread : %2").arg(peer->toStringLog()).arg(this->numberOfDownloadThreadRunning));
+   L_DEBU(QString("A peer is free from downloading: %1, number of downloading thread: %2").arg(peer->toStringLog()).arg(this->numberOfDownloadThreadRunning));
    this->scanTheQueue();
 }
 

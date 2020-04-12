@@ -57,7 +57,7 @@ FileDownload::FileDownload(
    nbHashesKnown(0),
    transferRateCalculator(transferRateCalculator)
 {
-   L_DEBU(QString("New FileDownload : peer source = %1, remoteEntry : \n%2\nlocalEntry : \n%3").
+   L_DEBU(QString("New FileDownload: peer source = %1, remoteEntry: \n%2\nlocalEntry: \n%3").
       arg(this->peerSource->toStringLog()).
       arg(Common::ProtoHelper::getDebugStr(this->remoteEntry)).
       arg(Common::ProtoHelper::getDebugStr(this->localEntry))
@@ -604,25 +604,25 @@ bool FileDownload::createFile()
    }
    catch (FM::NoWriteableDirectoryException&)
    {
-      L_DEBU(QString("There is no shared directory with writting rights for this download : %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
+      L_DEBU(QString("There is no shared directory with writting rights for this download: %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
       this->setStatus(NO_SHARED_DIRECTORY_TO_WRITE);
       return false;
    }
    catch (FM::InsufficientStorageSpaceException&)
    {
-      L_DEBU(QString("There is no enough space storage available for this download : %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
+      L_DEBU(QString("There is no enough space storage available for this download: %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
       this->setStatus(NO_ENOUGH_FREE_SPACE);
       return false;
    }
    catch (FM::UnableToCreateNewFileException&)
    {
-      L_DEBU(QString("Unable to create the file, download : %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
+      L_DEBU(QString("Unable to create the file, download: %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
       this->setStatus(UNABLE_TO_CREATE_THE_FILE);
       return false;
    }
    catch (FM::UnableToCreateNewDirException&)
    {
-      L_DEBU(QString("Unable to create the path, download : %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
+      L_DEBU(QString("Unable to create the path, download: %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
       this->setStatus(UNABLE_TO_CREATE_THE_DIRECTORY);
       return false;
    }

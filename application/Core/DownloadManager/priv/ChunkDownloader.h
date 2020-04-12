@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #pragma once
 
 #include <QSharedPointer>
@@ -95,7 +95,7 @@ namespace DM
       void numberOfPeersChanged();
 
    private slots:
-      void result(const Protos::Core::GetChunkResult& result);
+      void result(const Protos::Core::GetChunksResult& result);
       void stream(const QSharedPointer<PM::ISocket>& socket);
       void getChunkTimeout();
 

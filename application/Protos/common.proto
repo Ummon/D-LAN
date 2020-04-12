@@ -46,6 +46,7 @@ message SharedEntry {
    // A name to identify the shared entry by human.
    // It may correspond to the name of the shared entry itself (directory or file name).
    // It may be used when creating the directories of a new downloading file.
+   // It may be empty. In this case the directory name or file name is used instead.
    string shared_name = 2;
 
    string path = 3; // A dir must end with a "/" otherwise it's a file.

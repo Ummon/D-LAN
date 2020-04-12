@@ -135,11 +135,11 @@ void ChatMessages::loadFromFile(const QString& filename)
    }
    catch (Common::UnknownValueException&)
    {
-      L_WARN(QString("The saved chat messages cannot be retrived (the file doesn't exist) : %1").arg(filename));
+      L_WARN(QString("The saved chat messages cannot be retrived (the file doesn't exist): %1").arg(filename));
    }
    catch (...)
    {
-      L_WARN(QString("The saved chat messages cannot be retrived (Unkown exception) : %1").arg(filename));
+      L_WARN(QString("The saved chat messages cannot be retrived (Unkown exception): %1").arg(filename));
    }
 }
 

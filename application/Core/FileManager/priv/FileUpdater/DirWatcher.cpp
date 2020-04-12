@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <priv/FileUpdater/DirWatcher.h>
 using namespace FM;
 
@@ -77,7 +77,7 @@ QString WatcherEvent::toStr() const
    case TIMEOUT: str += "TIMEOUT"; break;
    case UNKNOWN: default : str += "UNKNOWN"; break;
    }
-   str += " :\n";
+   str += ":\n";
    if (!this->path1.isEmpty())
       str.append("  ").append(this->path1);
    if (!this->path1.isEmpty() && !this->path2.isEmpty())

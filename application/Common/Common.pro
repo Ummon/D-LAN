@@ -78,8 +78,3 @@ HEADERS += Hashes.h \
     Hash_share.h \
     Path.h \
     SharedEntry.h
-
-OTHER_FILES += \
-    ../Protos/hash_cache.proto
-
-

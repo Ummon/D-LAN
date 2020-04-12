@@ -250,7 +250,7 @@ void Core::checkSettingsIntegrity()
    static const QRegExp unfinishedSuffixExp("^\\.\\S+$");
    if (!unfinishedSuffixExp.exactMatch(SETTINGS.get<QString>("unfinished_suffix_term")))
    {
-      L_ERRO("Settings : 'unfinished_suffix_term' must begin with a dot and not contain any space character");
+      L_ERRO("Settings: 'unfinished_suffix_term' must begin with a dot and not contain any space character");
       SETTINGS.rm("unfinished_suffix_term");
    }
    this->checkSetting("minimum_free_space", 0u, 4294967295u);

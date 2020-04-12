@@ -337,7 +337,7 @@ void SettingsWidget::newState(const Protos::GUI::State& state)
    if (!this->ui->chkEnableIntegrityCheck->hasFocus())
       this->ui->chkEnableIntegrityCheck->setChecked(state.integrity_check_enabled());
 
-   if (this->corePasswordDefined = state.password_defined())
+   if ((this->corePasswordDefined = state.password_defined()))
    {
       this->ui->txtPassword->setPlaceholderText("");
       this->ui->butResetPassword->setEnabled(true);
@@ -350,16 +350,17 @@ void SettingsWidget::newState(const Protos::GUI::State& state)
       this->ui->butChangePassword->setText(tr("Define a password"));
    }
 
-   QList<Common::SharedDir> sharedDirs;
-   for (int i = 0; i < state.shared_directory_size(); i++)
-      sharedDirs <<
-         Common::SharedDir {
-            state.shared_directory(i).id().hash(),
-            Common::ProtoHelper::getStr(state.shared_directory(i), &Protos::GUI::State_SharedDir::path),
-            (qint64)state.shared_directory(i).size(),
-            (qint64)state.shared_directory(i).free_space()
+   QList<Common::SharedEntry> sharedEntries;
+   for (int i = 0; i < state.shared_entry_size(); i++)
+      sharedEntries <<
+         Common::SharedEntry {
+            state.shared_entry(i).entry().id().hash(),
+            Common::ProtoHelper::getStr(state.shared_entry(i).entry(), &Protos::Common::SharedEntry::path),
+            Common::ProtoHelper::getStr(state.shared_entry(i).entry(), &Protos::Common::SharedEntry::shared_name),
+            (qint64)state.shared_entry(i).size(),
+            (qint64)state.shared_entry(i).free_space()
          };
-   this->sharedDirsModel.setDirs(sharedDirs);
+   this->sharedEntryListModel.setEntries(sharedEntries);
 
    this->updateNetworkInterfaces(state);
 
@@ -458,8 +459,8 @@ void SettingsWidget::saveCoreSettings()
    Common::ProtoHelper::setStr(settings, &Protos::GUI::CoreSettings::set_nick, this->ui->txtNick->text());
    settings.set_enable_integrity_check(this->ui->chkEnableIntegrityCheck->isChecked() ? Protos::Common::TS_TRUE : Protos::Common::TS_FALSE);
 
-   for (QListIterator<Common::SharedDir> i(this->sharedDirsModel.getDirs()); i.hasNext();)
-      Common::ProtoHelper::addRepeatedStr(*settings.mutable_shared_directories(), &Protos::GUI::CoreSettings::SharedDirectories::add_dir, i.next().path);
+   for (QListIterator<Common::SharedEntry> i(this->sharedEntryListModel.getSharedEntries()); i.hasNext();)
+      Common::ProtoHelper::addRepeatedStr(*settings.mutable_shared_paths(), &Protos::GUI::CoreSettings::SharedPaths::add_path, i.next().path.getPath());
 
    if (this->ui->radIPv6->isChecked())
       settings.set_listen_any(Protos::Common::Interface::Address::IPv6);
@@ -519,10 +520,10 @@ void SettingsWidget::resetPassword()
 
 void SettingsWidget::addShared()
 {
-   QStringList dirs = Utils::askForDirectories(this->coreConnection);
-   if (!dirs.isEmpty())
+   QStringList entries = Utils::askForDirectoriesOrFiles(this->coreConnection);
+   if (!entries.isEmpty())
    {
-      this->sharedDirsModel.addDirs(dirs);
+      this->sharedEntryListModel.addEntries(entries);
       this->saveCoreSettings();
    }
 }
@@ -540,7 +541,7 @@ void SettingsWidget::removeShared()
       msgBox.setDefaultButton(QMessageBox::Ok);
       if (msgBox.exec() == QMessageBox::Ok)
       {
-         this->sharedDirsModel.rmDir(index.row());
+         this->sharedEntryListModel.rmEntry(index.row());
          this->saveCoreSettings();
       }
    }
@@ -551,7 +552,7 @@ void SettingsWidget::moveUpShared()
    QModelIndex index = this->ui->tblShareDirs->selectionModel()->currentIndex();
    if (index.isValid())
    {
-      this->sharedDirsModel.mvUpDir(index.row());
+      this->sharedEntryListModel.mvUpEntry(index.row());
       this->saveCoreSettings();
    }
 }
@@ -561,7 +562,7 @@ void SettingsWidget::moveDownShared()
    QModelIndex index = this->ui->tblShareDirs->selectionModel()->currentIndex();
    if (index.isValid())
    {
-      this->sharedDirsModel.mvDownDir(index.row());
+      this->sharedEntryListModel.mvDownEntry(index.row());
       this->saveCoreSettings();
    }
 }
@@ -576,16 +577,16 @@ void SettingsWidget::displayContextMenuSharedDirs(const QPoint& point)
    QAction* actionUp = menu.addAction(QIcon(":/icons/ressources/arrow_up.png"), tr("Move up"), this, SLOT(moveUpShared()));
    QAction* actionDown = menu.addAction(QIcon(":/icons/ressources/arrow_down.png"), tr("Move down"), this, SLOT(moveDownShared()));
 
-   if (this->coreConnection->isLocal() && this->sharedDirsModel.rowCount() > 0)
+   if (this->coreConnection->isLocal() && this->sharedEntryListModel.rowCount() > 0)
       menu.addAction(QIcon(":/icons/ressources/explore_folder.png"), tr("Open location"), this, SLOT(openLocation()));
 
-   if (this->sharedDirsModel.rowCount() == 0)
+   if (this->sharedEntryListModel.rowCount() == 0)
       actionDelete->setDisabled(true);
 
-   if (this->ui->tblShareDirs->currentIndex().row() == 0 || this->sharedDirsModel.rowCount() == 0)
+   if (this->ui->tblShareDirs->currentIndex().row() == 0 || this->sharedEntryListModel.rowCount() == 0)
       actionUp->setDisabled(true);
 
-   if (this->ui->tblShareDirs->currentIndex().row() >= this->sharedDirsModel.rowCount() - 1  || this->sharedDirsModel.rowCount() == 0)
+   if (this->ui->tblShareDirs->currentIndex().row() >= this->sharedEntryListModel.rowCount() - 1  || this->sharedEntryListModel.rowCount() == 0)
       actionDown->setDisabled(true);
 
    menu.exec(globalPosition);
@@ -603,7 +604,7 @@ void SettingsWidget::refreshButtonsAvailability(const QItemSelection& selected)
    else
    {
       this->ui->butMoveUpShared->setDisabled(selected.indexes().first().row() == 0);
-      this->ui->butMoveDownShared->setDisabled(selected.indexes().first().row() == this->sharedDirsModel.rowCount() - 1);
+      this->ui->butMoveDownShared->setDisabled(selected.indexes().first().row() == this->sharedEntryListModel.rowCount() - 1);
       this->ui->butRemoveShared->setDisabled(false);
       this->ui->butOpenFolder->setDisabled(!this->coreConnection->isLocal());
    }
@@ -618,7 +619,7 @@ void SettingsWidget::openLocation()
 {
    QModelIndexList selectedRows = this->ui->tblShareDirs->selectionModel()->selectedRows();
    foreach (QModelIndex index, selectedRows)
-      QDesktopServices::openUrl(QUrl("file:///" + this->sharedDirsModel.getLocationPath(index), QUrl::TolerantMode));
+      QDesktopServices::openUrl(QUrl("file:///" + this->sharedEntryListModel.getLocationPath(index), QUrl::TolerantMode));
 }
 
 void SettingsWidget::buttonAddressToggled(bool checked)

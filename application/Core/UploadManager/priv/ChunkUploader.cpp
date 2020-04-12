@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <priv/ChunkUploader.h>
 using namespace UM;
 
@@ -106,7 +106,7 @@ void ChunkUploader::run()
 
          if (bytesSent == -1)
          {
-            L_WARN(QString("Socket: cannot send data : %1").arg(this->chunk->toStringLog()));
+            L_WARN(QString("Socket: cannot send data: %1").arg(this->chunk->toStringLog()));
             this->closeTheSocket = true;
             goto end;
          }

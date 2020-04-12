@@ -183,7 +183,7 @@ SearchWidget::SearchWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, 
    ui(new Ui::SearchWidget),
    downloadMenu(sharedEntryListModel),
    coreConnection(coreConnection),
-   searchModel(coreConnection, peerListModel, sharedDirsModel)
+   searchModel(coreConnection, peerListModel, sharedEntryListModel)
 {
    this->ui->setupUi(this);
 

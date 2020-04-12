@@ -15,14 +15,12 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #pragma once
 
 #include <exception>
 
 #include <QByteArray>
-
-#include <Protos/files_cache.pb.h>
 
 #include <Common/Settings.h>
 #include <Common/Hash.h>
@@ -42,7 +40,7 @@ namespace FM
 
    class Chunk : public IChunk, Common::Uncopyable
    {
-   public:      
+   public:
       static int CHUNK_SIZE;
 
       /**
@@ -54,10 +52,6 @@ namespace FM
       ~Chunk();
 
       QString toStringLog() const;
-
-      Chunk* restoreFromFileCache(const Protos::FileCache::Hashes_Chunk& chunk);
-
-      void populateHashesChunk(Protos::FileCache::Hashes_Chunk& chunk) const;
 
       void removeItsIncompleteFile();
       bool populateEntry(Protos::Common::Entry* entry) const;
@@ -154,7 +148,7 @@ inline bool FM::Chunk::write(const char* buffer, int nbBytes)
 
    if (this->knownBytes > CURRENT_CHUNK_SIZE) // Should never be true.
    {
-      L_ERRO("Chunk::write(..) : this->knownBytes > getChunkSize");
+      L_ERRO("Chunk::write(..): this->knownBytes > getChunkSize");
       this->knownBytes = CURRENT_CHUNK_SIZE;
    }
 

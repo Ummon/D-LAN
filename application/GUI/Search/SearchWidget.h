@@ -60,7 +60,7 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      SearchMenu(const SharedEntryListModel& sharedEntryListModel) : DownloadMenu(sharedDirsModel) {}
+      SearchMenu(const SharedEntryListModel& sharedEntryListModel) : DownloadMenu(sharedEntryListModel) {}
    signals:
       void browse();
    private:

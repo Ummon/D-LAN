@@ -100,14 +100,14 @@ namespace FM
       void chunkHashKnown(const QSharedPointer<Chunk>& chunk);
       void chunkRemoved(const QSharedPointer<Chunk>& chunk);
 
-   private:
-      void loadCacheFromFile();
+   /*private:
+      void loadCacheFromFile();*/
 
    private slots:
-      void persistCacheToFile();
-      void forcePersistCacheToFile();
-      void setCacheChanged();
-      void fileCacheLoadingComplete();
+      //void persistCacheToFile();
+      //void forcePersistCacheToFile();
+      //void setCacheChanged();
+      //void fileCacheLoadingComplete();
 
    private:
       LOG_INIT_H("FileManager")
@@ -120,10 +120,10 @@ namespace FM
       ExtensionIndex<Entry*> extensionIndex;
       SizeIndexEntries sizeIndex;
 
-      QTimer timerPersistCache;
-      QMutex mutexPersistCache;
-      QMutex mutexCacheChanged; ///< We use a second mutex (instead of using 'mutexPersistCache') to avoid deadlock created by "File -> chunkHashKnown()" and "persistCacheToFile() -> File".
-      bool cacheLoading; ///< Set to 'true' during cache loading. It avoids to persist the cache during loading.
-      bool cacheChanged;
+      //QTimer timerPersistCache;
+      //QMutex mutexPersistCache;
+      //QMutex mutexCacheChanged;
+      //bool cacheLoading; ///< Set to 'true' during cache loading. It avoids to persist the cache during loading.
+      //bool cacheChanged;
    };
 }

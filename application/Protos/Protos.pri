@@ -33,7 +33,7 @@ proto_common.depends = $$PWD/common.proto
 proto_common.commands = cd $$PWD && protoc --cpp_out . common.proto
 
 QMAKE_EXTRA_TARGETS += proto_queue proto_gui_settings proto_gui_protocol proto_files_cache proto_core_settings proto_core_protocol proto_common
-PRE_TARGETDEPS += $$PWD/queue.pb.cc $$PWD/gui_settings.pb.cc $$PWD/gui_protocol.pb.cc $$PWD/files_cache.pb.cc $$PWD/core_settings.pb.cc $$PWD/core_protocol.pb.cc $$PWD/common.pb.cc
+PRE_TARGETDEPS += $$PWD/queue.pb.cc $$PWD/gui_settings.pb.cc $$PWD/gui_protocol.pb.cc $$PWD/core_settings.pb.cc $$PWD/core_protocol.pb.cc $$PWD/common.pb.cc
 
 OTHER_FILES += \
    $$PWD/queue.proto \

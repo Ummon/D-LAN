@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <priv/DirDownload.h>
 using namespace DM;
 
@@ -44,7 +44,7 @@ DirDownload::DirDownload(
    Download(fileManager, peerSource, remoteEntry, localEntry),
    occupiedPeersAskingForEntries(occupiedPeersAskingForEntries)
 {
-   L_DEBU(QString("New DirDownload : source = %1, remoteEntry : \n%2\nlocalEntry : \n%3").
+   L_DEBU(QString("New DirDownload: source = %1, remoteEntry : \n%2\nlocalEntry : \n%3").
       arg(this->peerSource->toStringLog()).
       arg(Common::ProtoHelper::getDebugStr(this->remoteEntry)).
       arg(Common::ProtoHelper::getDebugStr(this->localEntry))
@@ -156,7 +156,7 @@ void DirDownload::result(const Protos::Core::GetEntriesResult& entries)
 
 void DirDownload::resultTimeout()
 {
-   L_DEBU("Unable to retrieve the entries : timeout");
+   L_DEBU("Unable to retrieve the entries: timeout");
    this->setStatus(UNABLE_TO_GET_ENTRIES);
 
    this->getEntriesResult.clear();
@@ -175,12 +175,12 @@ void DirDownload::createDirectory()
       }
       catch (FM::NoWriteableDirectoryException&)
       {
-         L_DEBU(QString("There is no shared directory with writting rights for this download : %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
+         L_DEBU(QString("There is no shared directory with writting rights for this download: %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
          this->setStatus(NO_SHARED_DIRECTORY_TO_WRITE);
       }
       catch (FM::UnableToCreateNewDirException&)
       {
-         L_DEBU(QString("Unable to create the directory, download : %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
+         L_DEBU(QString("Unable to create the directory, download: %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
          this->setStatus(UNABLE_TO_CREATE_THE_DIRECTORY);
       }
    }

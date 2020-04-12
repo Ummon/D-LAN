@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #pragma once
 
 #include <exception>
@@ -30,8 +30,6 @@
 #include <QDateTime>
 
 #include <Protos/common.pb.h>
-#include <Protos/files_cache.pb.h>
-
 #include <Common/Hashes.h>
 
 #include <priv/Cache/Entry.h>

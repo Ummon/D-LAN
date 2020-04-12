@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <MainWindow.h>
 #include <ui_MainWindow.h>
 using namespace GUI;
@@ -405,7 +405,7 @@ void MainWindow::resizeEvent(QResizeEvent* event)
 
 void MainWindow::saveWindowsSettings()
 {
-   L_DEBU(QString("Save state : %1").arg(QString::fromLatin1(this->saveState().toHex().data())));
+   L_DEBU(QString("Save state: %1").arg(QString::fromLatin1(this->saveState().toHex().data())));
 
    SETTINGS.set("windows_state", this->saveState());
 

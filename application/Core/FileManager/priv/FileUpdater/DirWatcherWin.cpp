@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <priv/FileUpdater/DirWatcherWin.h>
 using namespace FM;
 
@@ -124,7 +124,7 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
 
    if (ws.size() > MAX_WAIT_CONDITION)
    {
-      L_ERRO(QString("DirWatcherWin::waitEvent : No more than %1 condition(s), some directory will not be watched any more.").arg(MAX_WAIT_CONDITION));
+      L_ERRO(QString("DirWatcherWin::waitEvent: No more than %1 condition(s), some directory will not be watched any more.").arg(MAX_WAIT_CONDITION));
       int n = this->dirs.size() + ws.size() - MAXIMUM_WAIT_OBJECTS;
       while (n --> 0) // The best C++ operator!
          this->dirsToDelete << this->dirs.takeLast();
@@ -214,7 +214,7 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
             events << WatcherEvent(WatcherEvent::MOVE, previousPath, path);
             break;
          default:
-            L_WARN(QString("File event action unkown : %1").arg(notifyInformation->Action));
+            L_WARN(QString("File event action unkown: %1").arg(notifyInformation->Action));
          }
 
          if (!notifyInformation->NextEntryOffset)
@@ -241,11 +241,11 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
    }
    else if (waitStatus == WAIT_FAILED)
    {
-      L_ERRO(QString("WaitForMultipleObjects(..) failed, error code : %1").arg(GetLastError()));
+      L_ERRO(QString("WaitForMultipleObjects(..) failed, error code: %1").arg(GetLastError()));
    }
    else
    {
-      L_ERRO(QString("WaitForMultipleObjects(..), status : %1").arg(waitStatus));
+      L_ERRO(QString("WaitForMultipleObjects(..), status: %1").arg(waitStatus));
    }
 
    QList<WatcherEvent> events;
@@ -265,8 +265,8 @@ DirWatcherWin::Dir::~Dir()
    // Should we wait with GetOverlappedResult or do a test with HasOverlappedIoCompleted ?
    CancelIo(this->file);
 
-   if (!CloseHandle(this->file)) L_ERRO(QString("CloseHandle(dir.file) return an error : %1").arg(GetLastError()));
-   if (!CloseHandle(this->overlapped.hEvent)) L_ERRO(QString("CloseHandle(dir.overlapped.hEvent) return an error : %1").arg(GetLastError()));
+   if (!CloseHandle(this->file)) L_ERRO(QString("CloseHandle(dir.file) return an error: %1").arg(GetLastError()));
+   if (!CloseHandle(this->overlapped.hEvent)) L_ERRO(QString("CloseHandle(dir.overlapped.hEvent) return an error: %1").arg(GetLastError()));
 }
 
 bool DirWatcherWin::watch(Dir* dir)

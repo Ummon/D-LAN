@@ -100,10 +100,9 @@ message State {
       PeerStatus status = 8;
    }
    message SharedEntry {
-      Common.Hash id = 1;
-      string path = 2; // A directory is terminated by a '/' otherwise it's a file.
-      uint64 size = 3;
-      uint64 free_space = 4;
+      Common.SharedEntry entry = 1;
+      uint64 size = 2;
+      uint64 free_space = 3;
    }
    message Room {
       string name = 1;

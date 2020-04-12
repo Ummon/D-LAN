@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #pragma once
 
 #include <QString>
@@ -25,7 +25,6 @@
 #include <QMap>
 
 #include <Protos/common.pb.h>
-#include <Protos/files_cache.pb.h>
 
 #include <Common/Containers/SortedList.h>
 
@@ -47,9 +46,6 @@ namespace FM
    public:
       virtual ~Directory();
       void del(bool invokeDelete = true);
-
-      QList<File*> restoreFromFileCache(const Protos::FileCache::Hashes::Dir& dir);
-      void populateHashesDir(Protos::FileCache::Hashes::Dir& dirToFill) const;
 
       void populateEntry(Protos::Common::Entry* dir, bool setSharedDir = false) const;
 
@@ -78,7 +74,7 @@ namespace FM
       Directory* createSubDir(const QString& name, bool physically = false);
       Directory* createSubDirs(const QStringList& names, bool physically = false);
 
-      File* getFile(const QString& name) const;      
+      File* getFile(const QString& name) const;
       void add(File* file);
       void fileSizeChanged(qint64 oldSize, qint64 newSize);
 

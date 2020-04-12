@@ -46,7 +46,7 @@ BrowseWidget::BrowseWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, 
    downloadMenu(sharedEntryListModel),
    coreConnection(coreConnection),
    peerID(peerID),
-   browseModel(coreConnection, sharedDirsModel, peerID),
+   browseModel(coreConnection, sharedEntryListModel, peerID),
    tryingToReachEntryToBrowse(false)
 {
    this->ui->setupUi(this);
@@ -201,7 +201,7 @@ void BrowseWidget::tryToReachEntryToBrowse()
    {
       QModelIndex currentIndex = this->browseModel.index(r, 0);
       Protos::Common::Entry root = this->browseModel.getEntry(currentIndex);
-      if (root.has_shared_dir() && this->remoteEntryToBrowse.has_shared_dir() && root.shared_dir().id().hash() == this->remoteEntryToBrowse.shared_dir().id().hash())
+      if (root.has_shared_entry() && this->remoteEntryToBrowse.has_shared_entry() && root.shared_entry().id().hash() == this->remoteEntryToBrowse.shared_entry().id().hash())
       {
          // Then we try to match each folder name. If a folder cannot be reached then we ask to expand the last folder.
          // After the folder entries are loaded, 'tryToReachEntryToBrowse()' will be recalled via the signal 'BrowseModel::loadingResultFinished()'.

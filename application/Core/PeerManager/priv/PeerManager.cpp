@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <priv/PeerManager.h>
 using namespace PM;
 
@@ -202,7 +202,7 @@ void PeerManager::onGetChunk(QSharedPointer<FM::IChunk> chunk, int offset, QShar
       mess.set_status(Protos::Core::GetChunkResult::ERROR_UNKNOWN);
       socket->send(Common::MessageHeader::CORE_GET_CHUNK_RESULT, mess);
       socket->finished();
-      L_ERRO("PeerManager::onGetChunk(..) : no slot connected to the signal 'getChunk(..)'");
+      L_ERRO("PeerManager::onGetChunk(..): no slot connected to the signal 'getChunk(..)'");
       return;
    }
 

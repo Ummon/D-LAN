@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <Common/Network/MessageHeader.h>
 using namespace Common;
 
@@ -70,9 +70,9 @@ void MessageHeader::setNull()
 QString MessageHeader::toStr() const
 {
    if (this->isNull())
-      return QString("MessageHeader : <null>");
+      return QString("MessageHeader: <null>");
    else
-      return QString("MessageHeader : type = %1, size = %2, senderID = %3").arg(messToStr(this->type)).arg(this->size).arg(this->senderID.toStr());
+      return QString("MessageHeader: type = %1, size = %2, senderID = %3").arg(messToStr(this->type)).arg(this->size).arg(this->senderID.toStr());
 }
 
 QString MessageHeader::messToStr(MessageType type)
