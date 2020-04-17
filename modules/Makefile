@@ -34,4 +34,4 @@ $(rep_ebin)/d_lan_lang.beam: $(rep_erl)/d_lan_lang.erl
 	erlc $(erlc_params)
 
 clean:
-	rm ebin/*.beam
+	rm -f ebin/*.beam

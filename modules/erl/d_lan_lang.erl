@@ -1,13 +1,9 @@
 -module(d_lan_lang).
 -export([langs/0, plain_lang/1, current_lang/1, tr/3, tr/4]).
 
-<<<<<<< HEAD
--include("/usr/lib/yaws/include/yaws_api.hrl").
-=======
 -import(d_lan_common, [t/1]).
 
 -include("/usr/lib/yaws/include/yaws_api.hrl").
->>>>>>> 273936a5f400f1386b870aaa2eef655816236aa0
 -include("../include/d_lan_defines.hrl").
 
 -spec langs() -> atom().
@@ -461,10 +457,4 @@ tr(Page, Section, A) ->
    tr(Page, Section, A, []).
 
 tr(Page, Section, A, Params) ->
-<<<<<<< HEAD
-   % unicode:characters_to_binary(..)
-   io_lib:format(translate(current_lang(A), Page, Section), Params).
-
-=======
    t(io_lib:format(translate(current_lang(A), Page, Section), Params)).
->>>>>>> 273936a5f400f1386b870aaa2eef655816236aa0
