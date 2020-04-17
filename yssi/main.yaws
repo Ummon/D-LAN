@@ -1,4 +1,8 @@
 <!DOCTYPE html>
+<erl>
+   out(A) ->
+      {bindings, [{"current_page", atom_to_list(d_lan_common:current_page(A))}]}.
+</erl>
 <html>
    <head>
       <meta charset="utf-8" />
@@ -12,19 +16,8 @@
       <script src="colorbox/jquery.colorbox-min.js"></script>
       <script src="js/snow.js"></script>
       <script src="js/d_lan.js"></script>
-      <script>
-        var _gaq = _gaq || [];
-        _gaq.push(['_setAccount', 'UA-19841069-4']);
-        _gaq.push(['_trackPageview']);
-        (function() {
-          var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-          var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-        })();
-      </script>
    </head>
-   <!--[if IE ]><body class="ie"><![endif]-->
-   <!--[if !IE]>--><body><!--<![endif]-->
+   <body>
 
       <canvas id="canvas-menu"></canvas>
 
@@ -40,7 +33,7 @@
          <ul id="langs">
             <erl>
                out(A) ->
-                  P = atom_to_list(d_lan_common:current_page(A)),
+                  P = yaws_api:binding("current_page"),
                   Current_lang = d_lan_lang:current_lang(A),
                   {ehtml,
                      lists:map(fun(L) -> {li, [], [
@@ -66,10 +59,6 @@
       </div>
 
       <div id="content-bg">
-         <erl>
-            out(A) ->
-               {bindings, [{"current_page", atom_to_list(d_lan_common:current_page(A))}]}.
-         </erl>
 
          <div id="content" class="%%current_page%%">
             <erl>

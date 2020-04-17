@@ -12,21 +12,7 @@ $color-bg-body: mix($blue-dark, $blue-light);
 $color-bg-content: desaturate(lighten(mix($blue-dark, $blue-light), 20%), 15%);
 $color-bg-box: desaturate(lighten(mix($blue-dark, $blue-light), 50%), 15%); // For download and gallery
 
-@mixin border-radius-all($r) {
-   -webkit-border-top-left-radius: $r;
-   -moz-border-radius: $r;
-   border-radius: $r;
-}
-
 @mixin border-radius($r_top_left, $r_top_right, $r_bot_right, $r_bot_left) {
-   -webkit-border-top-left-radius: $r_top_left;
-   -webkit-border-top-right-radius: $r_top_right;
-   -webkit-border-bottom-right-radius: $r_bot_right;
-   -webkit-border-bottom-left-radius: $r_bot_left;
-   -moz-border-radius-topleft: $r_top_left;
-   -moz-border-radius-topright: $r_top_right;
-   -moz-border-radius-bottomright: $r_bot_right;
-   -moz-border-radius-bottomleft: $r_bot_left;
    border-top-left-radius: $r_top_left;
    border-top-right-radius: $r_top_right;
    border-bottom-right-radius: $r_bot_right;
@@ -132,7 +118,7 @@ p {
    margin: 10px;
    padding: 12px;
    background-color: rgba(255, 255, 255, $opacity2);
-   @include border-radius-all(16px);
+   border-radius: 16px;
 }
 .ie .box {
    background-color: $color-bg-box;
@@ -150,7 +136,7 @@ p {
 @mixin highlight-link-header {
    color: white;
    background-color: $red-light;
-   @include border-radius-all(10px);
+   border-radius: 10px;
 }
 
 #canvas-menu {
@@ -168,9 +154,9 @@ p {
    font-size: 13px;
    line-height: normal;
    background-image: url("img/bg.png");
-   background-attachment:fixed;
-   background-color:rgba(255, 255, 255, $opacity1);
-   padding-top: 2px;
+   background-attachment: fixed;
+   background-color: rgba(255, 255, 255, $opacity1);
+   padding-top: 1px;
    ul {
       a {
          vertical-align: top;
@@ -241,7 +227,7 @@ p {
          &:hover {
             border-color: $red-light;
          }
-         @include border-radius-all(40px);
+         border-radius: 40px;
          width: 300px;
          background-color: rgba(255, 255, 255, $opacity2);
          margin: 15px 15px 0px 15px;

@@ -17,9 +17,10 @@
 langs() ->
    [en, fr]. % es
 
-plain_lang(en) -> "English";
-plain_lang(fr) -> "Français";
-plain_lang(es) -> "Español".
+plain_lang(en) -> t("English");
+plain_lang(fr) -> t("Français");
+plain_lang(es) -> t("Español").
+
 %%%%%%%%%%
 
 translate(en, global, title) -> "D-LAN - A LAN file sharing software";
