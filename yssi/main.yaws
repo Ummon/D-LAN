@@ -22,13 +22,13 @@
           var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
         })();
       </script>
-   </head>   
+   </head>
    <!--[if IE ]><body class="ie"><![endif]-->
    <!--[if !IE]>--><body><!--<![endif]-->
-   
+
       <canvas id="canvas-menu"></canvas>
-   
-      <div id="header">      
+
+      <div id="header">
          <ul id="external-links">
             <li><a href="http://dev.d-lan.net/projects/pmp/wiki" target="_blank">wiki</a></li>
             <li><a href="http://dev.d-lan.net/projects/pmp/boards" target="_blank">forums</a></li>
@@ -44,18 +44,18 @@
                   Current_lang = d_lan_lang:current_lang(A),
                   {ehtml,
                      lists:map(fun(L) -> {li, [], [
-                        {a, 
+                        {a,
                            [
                               {href, P ++ ".html&amp;lang=" ++ atom_to_list(L)}
                            ] ++ if L =:= Current_lang -> [{class, "current-lang"}]; true -> [] end, d_lan_lang:plain_lang(L)
                         }
                      ]} end, d_lan_lang:langs())
                   }.
-            </erl>         
+            </erl>
          </ul>
          <div class="spacer"></div>
       </div>
-      
+
       <div id="menu">
          <ul>
             <erl>
@@ -64,7 +64,7 @@
          </ul>
          <a id="logo" href="/"><img src="img/logo.png" alt="logo" /></a>
       </div>
-      
+
       <div id="content-bg">
          <div id="content" class="<erl>
             out(A) ->
@@ -72,19 +72,19 @@
          </erl>">
             <erl>
                out(A) ->
-                  {yssi, atom_to_list(d_lan_common:current_page(A)) ++ ".yaws"}.       
+                  {yssi, atom_to_list(d_lan_common:current_page(A)) ++ ".yaws"}.
             </erl>
          </div>
       </div>
-      
+
       <div id="footer">
          <span class="copyright">
          <erl>
-            out(A) -> 
+            out(A) ->
                {Year, _, _} = date(),
                {html, "copyright 2010-" ++ integer_to_list(Year)}.
          </erl>
          <a href="http://www.gburri.org">Greg Burri</a></span>
-      </div>      
+      </div>
    </body>
 </html>

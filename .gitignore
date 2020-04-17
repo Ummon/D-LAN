@@ -1,8 +1,13 @@
 auth.log
 report.log
 trace.http
+style.css
+style.css.map
+.sass-cache
 *.access
+*.auth
 *.exe
 *.beam
 *~
 *.dump
+/db/*

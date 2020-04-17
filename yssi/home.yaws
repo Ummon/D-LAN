@@ -1,7 +1,7 @@
 <erl>
    -import(d_lan_lang, [tr/3, tr/4]).
-   
-   image_of_the_day(A) ->      
+
+   image_of_the_day(A) ->
       case calendar:day_of_the_week(date()) of
          1 -> % Monday.
             d_lan_common:image("browse", tr(gallery, browse, A), tr(gallery, browse_comment, A));
@@ -14,11 +14,11 @@
          5 -> % Friday.
             d_lan_common:image("upload", tr(gallery, upload, A));
          _ -> % Week-end.
-            d_lan_common:image("download_files", tr(gallery, download_files, A), tr(gallery, download_files_comment, A))            
+            d_lan_common:image("download_files", tr(gallery, download_files, A), tr(gallery, download_files_comment, A))
             %d_lan_common:image("skin", tr(gallery, skin, A)) % The skin screenshot is terrible...
       end.
-   
-   out(A) -> 
+
+   out(A) ->
       {ehtml,
          [
             image_of_the_day(A),
@@ -27,12 +27,12 @@
             },
             {p, [], tr(home, description, A, ["features.html"])},
             {p, [], tr(home, warning_beta, A, ["http://dev.d-lan.net/projects/pmp/issues"])},
-            d_lan_common:download_button(A, "windows"),
-            %d_lan_common:download_button(A, "Mac OS X"),
-            d_lan_common:download_button(A, "Linux 64-bits"),
-            d_lan_common:download_button(A, "Linux 32-bits"),
-            d_lan_common:download_button(A, "Raspberry Pi"),
+            % d_lan_common:download_button(A, "windows"),
+            % d_lan_common:download_button(A, "Mac OS X"),
+            % d_lan_common:download_button(A, "Linux 64-bits"),
+            % d_lan_common:download_button(A, "Linux 32-bits"),
+            % d_lan_common:download_button(A, "Raspberry Pi"),
             {'div', [{class, "spacer"}]}
          ]
-      }. 
+      }.
 </erl>

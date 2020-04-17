@@ -3,8 +3,8 @@
 
 -import(d_lan_lang, [tr/3, tr/4]).
 -import(lists, [member/2, map/2, last/1, sort/1]).
- 
--include("/usr/lib/yaws/include/yaws_api.hrl"). 
+
+-include("/usr/lib/yaws/include/yaws_api.hrl").
 -include("../include/d_lan_defines.hrl").
 
 -define(MAIN_PAGE, "yssi/main.yaws").
@@ -22,7 +22,7 @@ pages() ->
 
 hidden_pages() ->
    [stats, donate].
-   
+
 get_data(A) ->
    % We ignore the page.
    case yaws_api:parse_query(A) of
@@ -35,16 +35,16 @@ get_data(A) ->
             yaws_api:setcookie("lang", Lang, "/"),
             {yssi, ?MAIN_PAGE}
          ];
-      _ ->      
-         {yssi, ?MAIN_PAGE}     
+      _ ->
+         {yssi, ?MAIN_PAGE}
    end.
-   
+
 % Return the current page depending the page parameters.
 current_page(A) ->
    case yaws_api:queryvar(A, "p") of
       {ok, PageStr} ->
          try list_to_existing_atom(PageStr) of
-            Page -> 
+            Page ->
                case member(Page, pages() ++ hidden_pages()) of
                   true -> Page;
                   _ -> unknown
@@ -54,7 +54,7 @@ current_page(A) ->
          end;
       _ -> home
    end.
-   
+
 page_name(A, P) -> tr(menu, P, A).
 
 menu(A) ->
@@ -80,18 +80,18 @@ image(Filename, Caption, Comment) ->
          {p, [], Caption}
       ]
    }.
-   
+
 images(Filename_caption_list) ->
    map(
       fun
-         ({Filename, Caption}) -> 
+         ({Filename, Caption}) ->
             image(Filename, Caption);
          ({Filename, Caption, Comment}) ->
             image(Filename, Caption, Comment)
       end,
       Filename_caption_list
    ).
-   
+
 % 'Platform' is a folder where the releases are put.
 % For example: "windows".
 download_button(A, Platform) ->
@@ -104,7 +104,7 @@ download_button(A, Platform) ->
    {match, [Version, Version_tag, Year, Month, Day, Archi]} =
       case Extension of
          "deb" ->
-            re:run(Filename, "D-LAN-((?:\\d|\\.)+)([^-]*)-(\\d+)-(\\d+)-(\\d+)_.*-(\\w+)\\..*", [{capture, all_but_first, list}]);      
+            re:run(Filename, "D-LAN-((?:\\d|\\.)+)([^-]*)-(\\d+)-(\\d+)-(\\d+)_.*-(\\w+)\\..*", [{capture, all_but_first, list}]);
          _ ->
             {match, Values} = re:run(Filename, "D-LAN-((?:\\d|\\.)+)([^-]*)-(\\d+)-(\\d+)-(\\d+).*\\..*", [{capture, all_but_first, list}]),
             {match, Values ++ ["win32"]}
@@ -112,7 +112,7 @@ download_button(A, Platform) ->
    File_size = filelib:file_size(Relase_platform_folder ++ "/" ++ Filename),
    File_size_mb = float(File_size) / 1048576,
    {'div', [{class, "download" ++ " " ++ Extension ++ " " ++ Archi}],
-      [{a, [{class, "installer"}, {href, file_to_url(A, Filename, Platform)}], 
+      [{a, [{class, "installer"}, {href, file_to_url(A, Filename, Platform)}],
          [
             {em, [], [tr(download_button, download, A) ++ " (" ++ io_lib:format("~.2f", [File_size_mb]) ++ " MiB)"]}, {br},
             tr(download_button, version, A,
@@ -121,7 +121,7 @@ download_button(A, Platform) ->
             tr(download_button, released, A, [httpd_util:month(list_to_integer(Month)) ++ " " ++ Day ++ " " ++ Year])
             %"Number of download : " ++ integer_to_list(d_lan_download_db(Filename))
          ]
-      }] 
+      }]
       ++ % Add a link to the torrent file if it exists.
       case lists:reverse(sort([F || F <- Filenames, string:right(F, 8) =:= ".torrent"])) of
          [Torrent_file | _] ->
