@@ -12,7 +12,7 @@
       <link rel="shortcut icon" href="favicon.ico" />
       <link rel="stylesheet" href="style.css" />
       <link rel="stylesheet" href="colorbox/colorbox.css" />
-      <script src="js/jquery-1.7.2.min.js"></script>
+      <script src="js/jquery-3.5.0.min.js"></script>
       <script src="colorbox/jquery.colorbox-min.js"></script>
       <script src="js/snow.js"></script>
       <script src="js/d_lan.js"></script>
