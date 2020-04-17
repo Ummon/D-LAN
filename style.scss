@@ -3,13 +3,13 @@ $blue-light: #6596c9;
 
 $red-dark: #6e0404;
 $red-light: #fd2435;
-
+f
 $opacity1: 0.48;
 $opacity2: 0.62;
 
 // Flat colors. Used for browser which do not support gradient and/or opacity.
 $color-bg-body: mix($blue-dark, $blue-light);
-$color-bg-content: desaturate(lighten(mix($blue-dark, $blue-light), 20%), 15%); 
+$color-bg-content: desaturate(lighten(mix($blue-dark, $blue-light), 20%), 15%);
 $color-bg-box: desaturate(lighten(mix($blue-dark, $blue-light), 50%), 15%); // For download and gallery
 
 @mixin border-radius-all($r) {
@@ -33,12 +33,12 @@ $color-bg-box: desaturate(lighten(mix($blue-dark, $blue-light), 50%), 15%); // F
    border-bottom-left-radius: $r_bot_left;
 }
 
-@mixin vertical-list {   
-   list-style-type:none; 
+@mixin vertical-list {
+   list-style-type:none;
    li {
       display: inline;
-   }   
-} 
+   }
+}
 
 @mixin central-part {
    width: 600px;
@@ -55,29 +55,29 @@ html {
    height: 100%;
 }
 
-body {   
+body {
    font-family: verdana, sans-serif;
    font-size: 14px;
    line-height: 18px;
    color: black;
    margin: 0px;
-      
+
    background: -webkit-linear-gradient(
       left top,
       $blue-dark 0%,
       $blue-light 100%
-   ) fixed; 
-   background: -moz-linear-gradient( 
+   ) fixed;
+   background: -moz-linear-gradient(
       left top,
       $blue-dark 0%,
       $blue-light 100%
    ) fixed;
-   background: -ms-linear-gradient( 
+   background: -ms-linear-gradient(
       left top,
       $blue-dark 0%,
       $blue-light 100%
    ) fixed;
-   background: -o-linear-gradient( 
+   background: -o-linear-gradient(
       left top,
       $blue-dark 0%,
       $blue-light 100%
@@ -91,12 +91,12 @@ img {
 
 em {
    font-weight: bold;
-} 
- 
+}
+
 a {
    color: desaturate(lighten($blue-dark, 20%), 20%);
    text-decoration: none;
-   &:hover { color: lighten($blue-dark, 30%); } 
+   &:hover { color: lighten($blue-dark, 30%); }
 }
 
 h1 {
@@ -120,7 +120,7 @@ h3 {
    margin-bottom: 8px;
 }
 
-p {   
+p {
    margin-bottom: 10px;
 }
 
@@ -131,14 +131,14 @@ p {
 .box {
    margin: 10px;
    padding: 12px;
-   background-color: rgba(255, 255, 255, $opacity2);   
+   background-color: rgba(255, 255, 255, $opacity2);
    @include border-radius-all(16px);
 }
 .ie .box {
    background-color: $color-bg-box;
 }
 
-.gallery {   
+.gallery {
    p {
       font-style: italic;
       font-size: 11px;
@@ -157,7 +157,7 @@ p {
    /*display: block;*/
    left: 0px;
    top: 18px;
-   position: absolute; 
+   position: absolute;
    margin: 0px;
    padding: 0px;
    z-index: -1;
@@ -170,6 +170,7 @@ p {
    background-image: url("img/bg.png");
    background-attachment:fixed;
    background-color:rgba(255, 255, 255, $opacity1);
+   padding-top: 2px;
    ul {
       a {
          vertical-align: top;
@@ -196,7 +197,7 @@ p {
          @include vertical-list;
       }
    }
-} 
+}
 .ie #header {
    background-color: $color-bg-content;
 }
@@ -209,7 +210,7 @@ p {
    }
    ul {
       @include vertical-list;
-      float: right; 
+      float: right;
       margin-top: 75px;
       a {
          color: white;
@@ -247,16 +248,16 @@ p {
          &.win32 {
             background-image: url("img/download_for_windows.png");
          }
-         &.dmg { 
+         &.dmg {
             background-image: url("img/download_for_mac.png");
          }
-         &.amd64 { 
+         &.amd64 {
             background-image: url("img/download_for_linux.png");
          }
-         &.i386 { 
+         &.i386 {
             background-image: url("img/download_for_linux.png");
-         } 
-         &.armhf { 
+         }
+         &.armhf {
             background-image: url("img/download_for_raspberry.png");
          }
          background-repeat: no-repeat;
@@ -265,36 +266,36 @@ p {
             color: $red-dark;
             display: block;
             font-weight: normal;
-            font-size: 11px; 
+            font-size: 11px;
             &:hover { color: lighten($red-dark, 20%); }
          }
          a.installer {
-            height: 56px; 
-            padding: 3px 10px 3px 60px; 
+            height: 56px;
+            padding: 3px 10px 3px 60px;
             em {
                font-size: 13px;
                font-weight: bold;
-            } 
+            }
          }
          a.torrent {
             @include border-radius(10px, 10px, 0px, 0px);
             width: 200px;
             margin: 0px 10px 0px 50px;
             padding: 1px 0px 1px 10px;
-            background-color: rgba(255, 255, 255, $opacity2);            
+            background-color: rgba(255, 255, 255, $opacity2);
             &:hover { color: white; background-color: $red-light; }
          }
       }
       .ie .download {
          background-color: $color-bg-box;
-      }      
+      }
       &.home .gallery {
          float: right;
          margin-right: 0px;
       }
       &.features .gallery {
          display: inline-block;
-      }   
+      }
       &.faq {
          div.qa {
             margin-bottom: 25px;
@@ -317,7 +318,7 @@ p {
          }
          input {
             font-family: Monaco, "Courier New", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", monospace;
-            text-align: center; 
+            text-align: center;
          }
       }
       &.about {
@@ -336,20 +337,20 @@ p {
             text-align: right;
          }
       }
-      ul {      
+      ul {
          margin-bottom: 10px;
          margin-left: 40px;
-      } 
+      }
    }
 }
-.ie #content-bg {   
+.ie #content-bg {
    background-color: $color-bg-content;
 }
 
 #footer {
    @include central-part;
    text-align: right;
-   
+
    .copyright {
       margin-right: 20px;
       color: white;
@@ -358,6 +359,6 @@ p {
 
    a {
       color: desaturate(lighten($blue-dark, 60%), 20%);
-      &:hover { color: lighten($blue-dark, 80%); }      
+      &:hover { color: lighten($blue-dark, 80%); }
    }
 }
