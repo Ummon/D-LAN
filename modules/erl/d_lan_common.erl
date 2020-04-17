@@ -1,5 +1,5 @@
 -module(d_lan_common).
--export([get_data/1, current_page/1, page_name/2, menu/1, image/2, image/3, images/1, download_button/2, send_release/3]).
+-export([t/1, get_data/1, current_page/1, page_name/2, menu/1, image/2, image/3, images/1, download_button/2, send_release/3]).
 
 -import(d_lan_lang, [tr/3, tr/4]).
 -import(lists, [member/2, map/2, last/1, sort/1]).
@@ -22,6 +22,9 @@ pages() ->
 
 hidden_pages() ->
    [stats, donate].
+
+t(Text) ->
+   unicode:characters_to_binary(Text).
 
 get_data(A) ->
    % We ignore the page.
@@ -75,7 +78,7 @@ image(Filename, Caption, Comment) ->
    {'div', [{class, "box gallery"}],
       [
          {a, [{href, "img/gallery/" ++ Filename ++ ".png"}, {rel, "group"}, {title, Comment}],
-               "<img src = \"img/gallery/" ++ Filename ++ "_thumb.png\" alt=\"" ++ Caption ++ "\" />"
+               ["<img src = \"img/gallery/", Filename, "_thumb.png\" alt=\"", Caption, "\" />"]
          },
          {p, [], Caption}
       ]
@@ -114,7 +117,7 @@ download_button(A, Platform) ->
    {'div', [{class, "download" ++ " " ++ Extension ++ " " ++ Archi}],
       [{a, [{class, "installer"}, {href, file_to_url(A, Filename, Platform)}],
          [
-            {em, [], [tr(download_button, download, A) ++ " (" ++ io_lib:format("~.2f", [File_size_mb]) ++ " MiB)"]}, {br},
+            {em, [], [tr(download_button, download, A), " (", io_lib:format("~.2f", [File_size_mb]), " MiB)"]}, {br},
             tr(download_button, version, A,
                [Version ++ if Version_tag =/= [] -> " " ++ Version_tag; true -> [] end, Platform_formatted]
             ), {br},

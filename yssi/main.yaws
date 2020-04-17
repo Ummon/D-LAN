@@ -66,13 +66,15 @@
       </div>
 
       <div id="content-bg">
-         <div id="content" class="<erl>
+         <erl>
             out(A) ->
-               {html, atom_to_list(d_lan_common:current_page(A))}.
-         </erl>">
+               {bindings, [{"current_page", atom_to_list(d_lan_common:current_page(A))}]}.
+         </erl>
+
+         <div id="content" class="%%current_page%%">
             <erl>
                out(A) ->
-                  {yssi, atom_to_list(d_lan_common:current_page(A)) ++ ".yaws"}.
+                  {yssi, yaws_api:binding("current_page") ++ ".yaws"}.
             </erl>
          </div>
       </div>
