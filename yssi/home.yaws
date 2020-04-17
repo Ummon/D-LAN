@@ -26,7 +26,6 @@
                {em, [], tr(home, title, A)}
             },
             {p, [], tr(home, description, A, ["features.html"])},
-            {p, [], tr(home, warning_beta, A, ["http://dev.d-lan.net/projects/pmp/issues"])},
             % d_lan_common:download_button(A, "windows"),
             % d_lan_common:download_button(A, "Mac OS X"),
             % d_lan_common:download_button(A, "Linux 64-bits"),

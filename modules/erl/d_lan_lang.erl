@@ -61,10 +61,6 @@ translate(en, home, description) -> "The goal is to easily exchange a large amou
 translate(fr, home, description) -> "Le but est de permettre l'échange massif et facile de fichiers sur un réseau local, par exemple lors d'une LAN-Party. Après avoir lancé D-LAN, les autres personnes présentes sur le réseau sont visibles automatiquement sans aucune configuration particulière. Voir la <a href=\"~s\">page des fonctionnalités</a> pour plus d'informations.";
 translate(es, home, description) -> "";
 
-translate(en, home, warning_beta) -> "<em>Warning:</em> The current version of D-LAN is a beta, it's only for test purpose. You can report any defect <a href=\"~s\">here</a>.";
-translate(fr, home, warning_beta) -> "<em>Attention :</em> La version actuelle de D-LAN est une bêta, elle ne doit être utilisée qu'à des fins de tests. Il est possible de rapporter les anomalies rencontrées <a href=\"~s\">ici</a>.";
-translate(es, home, warning_beta) -> "";
-
 %%%%%%%%%%
 
 translate(en, features, disclaimer) -> "<em>Here is the main features of the actual release.</em> D-LAN is constantly under development, you can see <a href=\"~s\">here</a> the planned features.";
