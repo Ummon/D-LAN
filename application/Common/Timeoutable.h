@@ -23,7 +23,7 @@
 
 namespace Common
 {
-   // An inteface 'ITimeoutable' should be great but the QObject system doesn't support diamond inheritance.
+   // An interface 'ITimeoutable' should be great but the QObject system doesn't support diamond inheritance.
    class Timeoutable : public QObject
    {
       Q_OBJECT

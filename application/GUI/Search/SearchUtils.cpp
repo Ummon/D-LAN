@@ -69,11 +69,11 @@ QString SearchUtils::getExtensionText(Common::ExtensionCategory extension, bool 
    {
       result.append(": [");
 
-      bool begining = true;
+      bool beginning = true;
       foreach (QString e, Common::KnownExtensions::getExtensions(extension))
       {
-         if (begining)
-            begining = false;
+         if (beginning)
+            beginning = false;
          else
             result.append(", ");
 

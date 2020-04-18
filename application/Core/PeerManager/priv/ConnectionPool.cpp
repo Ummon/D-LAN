@@ -169,7 +169,7 @@ QSharedPointer<PeerMessageSocket> ConnectionPool::addNewSocket(QSharedPointer<Pe
    }
 
    connect(socket.data(), &PeerMessageSocket::becomeIdle, this, &ConnectionPool::socketBecomeIdle);
-   // Close may be called from 'PeerMessageSocket::onNewMessage(..)' we don't want to delete this object immediatly
+   // Close may be called from 'PeerMessageSocket::onNewMessage(..)' we don't want to delete this object immediately
    // because it is used by 'MessageSocket', see 'MessageSocket::readMessage()'.
    connect(socket.data(), &PeerMessageSocket::closed, this, &ConnectionPool::socketClosed, Qt::QueuedConnection);
    socket->startListening();

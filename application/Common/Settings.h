@@ -48,8 +48,8 @@ namespace Common
       bool load();
       void remove();
 
-      bool saveToACutomDirectory(const QString& directory) const;
-      bool loadFromACutomDirectory(const QString& directory);
+      bool saveToACustomDirectory(const QString& directory) const;
+      bool loadFromACustomDirectory(const QString& directory);
 
       void free();
 

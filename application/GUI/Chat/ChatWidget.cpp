@@ -319,7 +319,7 @@ void ChatWidget::currentCharFormatChanged(const QTextCharFormat& charFormat)
 
       this->connectFormatWidgets();
    }
-   else // Special case to avoid to reset the formatting when the cursor is put at the begining.
+   else // Special case to avoid to reset the formatting when the cursor is put at the beginning.
    {
       this->ui->txtMessage->disconnect(this, SIGNAL(currentCharFormatChanged(QTextCharFormat)));
       this->applyCurrentFormat();
@@ -719,7 +719,7 @@ void ChatWidget::init()
    connect(this->ui->butEmoticons, SIGNAL(toggled(bool)), this, SLOT(emoticonsButtonToggled(bool)));
    connect(this->ui->txtMessage, SIGNAL(wordTyped(int, QString)), this, SLOT(messageWordTyped(int, QString)));
    connect(this->emoticonsWidget, SIGNAL(hidden()), this, SLOT(emoticonsWindowHidden()));
-   connect(this->emoticonsWidget, SIGNAL(emoticonChoosen(QString, QString)), this, SLOT(insertEmoticon(QString, QString)));
+   connect(this->emoticonsWidget, SIGNAL(emoticonChosen(QString, QString)), this, SLOT(insertEmoticon(QString, QString)));
    connect(this->emoticonsWidget, SIGNAL(defaultThemeChanged(QString)), this, SLOT(defaultEmoticonThemeChanged(QString)));
 
    connect(this->autoComplete, &AutoComplete::stringAdded, this, &ChatWidget::autoCompleteStringAdded);
@@ -821,7 +821,7 @@ void ChatWidget::activatePeerNameInsertionMode()
 
    this->autoComplete->show();
    this->autoComplete->move(pos.x(), pos.y());
-   this->autoComplete->setValues(this->chatModel.getSortedOtherPeersByRevelance());
+   this->autoComplete->setValues(this->chatModel.getSortedOtherPeersByRelevance());
 
    this->peerNameInsertionMode = true;
 }

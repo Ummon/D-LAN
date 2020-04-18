@@ -112,7 +112,7 @@ namespace RCC
       void searchResult(const Protos::Common::FindResult& findResult);
 
    private slots:
-      void adressResolved(QHostInfo hostInfo);
+      void addressResolved(QHostInfo hostInfo);
       void tryToConnectToTheNextAddress();
       void stateChanged(QAbstractSocket::SocketState socketState);
 
@@ -135,7 +135,7 @@ namespace RCC
 
       int currentHostLookupID;
 
-      QList<QHostAddress> addressesToTry; // When a name is resolved many addresses can be returned, we will try all of them until a connection is successfuly established.
+      QList<QHostAddress> addressesToTry; // When a name is resolved many addresses can be returned, we will try all of them until a connection is successfully established.
       QList<QHostAddress> addressesToRetry;
       int nbRetries;
 

@@ -32,7 +32,7 @@ namespace Common
         * Returns '-1' if there is no extension.
         * For example: "abc.zip" may return 4.
         */
-      static int getBeginingExtension(const QString& filename);
+      static int getBeginningExtension(const QString& filename);
       static QString removeExtension(const QString& filename);
       static QString getExtension(const QString& filename);
 

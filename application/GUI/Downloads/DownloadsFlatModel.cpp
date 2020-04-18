@@ -176,7 +176,7 @@ bool DownloadsFlatModel::dropMimeData(const QMimeData* data, Qt::DropAction acti
          downloadIDs << this->downloads[currentRow].id();
    }
 
-   // We remove the moved download from the list (not necessery but nicer for the user experience).
+   // We remove the moved download from the list (not necessary but nicer for the user experience).
    if (!rows.isEmpty())
    {
       std::sort(rows.begin(), rows.end());

@@ -54,8 +54,8 @@ SearchDock::SearchDock(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
 
    for (int i = 0; i < 5; i++)
    {
-      this->ui->cmbMinSize->addItem(Common::Constants::BINARY_PREFIXS[i]);
-      this->ui->cmbMaxSize->addItem(Common::Constants::BINARY_PREFIXS[i]);
+      this->ui->cmbMinSize->addItem(Common::Constants::BINARY_PREFIXES[i]);
+      this->ui->cmbMaxSize->addItem(Common::Constants::BINARY_PREFIXES[i]);
    }
 
    this->updateComboTypes();

@@ -90,11 +90,11 @@ QHostAddress Utils::getCurrentAddressToListenTo()
 QHostAddress Utils::getMulticastGroup()
 {
    const quint32 group = SETTINGS.get<quint32>("multicast_group");
-   QHostAddress currentAddressToListentTo = Utils::getCurrentAddressToListenTo();
+   QHostAddress currentAddressToListenTo = Utils::getCurrentAddressToListenTo();
 
    QByteArray channelHash = Common::Hasher::hash(SETTINGS.get<QString>("channel")).getByteArray();
 
-   if (currentAddressToListentTo.protocol() == QAbstractSocket::IPv4Protocol)
+   if (currentAddressToListenTo.protocol() == QAbstractSocket::IPv4Protocol)
       return QHostAddress(group);
    else // IPv6.
    {

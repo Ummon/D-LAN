@@ -79,7 +79,7 @@ void MdiArea::focusNthWindow(int num)
 }
 
 /**
-  * Called when the user explicitely wants to close the current window.
+  * Called when the user explicitly wants to close the current window.
   */
 void MdiArea::closeCurrentWindow()
 {

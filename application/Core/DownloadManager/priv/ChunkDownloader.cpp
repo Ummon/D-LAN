@@ -256,14 +256,14 @@ void ChunkDownloader::run()
       this->closeTheSocket = true;
       this->lastTransferStatus = GOT_TOO_MUCH_DATA;
    }
-   catch (FM::hashMissmatchException)
+   catch (FM::hashMismatchException)
    {
       static const quint32 BLOCK_DURATION = SETTINGS.get<quint32>("block_duration_corrupted_data");
       L_USER(QString(tr("Corrupted data received for the file \"%1\" from peer %2. Peer blocked for %3 ms")).arg(this->chunk->getFilePath()).arg(this->currentDownloadingPeer->getNick()).arg(BLOCK_DURATION));
       /*: A reason why the user has been blocked */
       this->currentDownloadingPeer->block(BLOCK_DURATION, tr("Has sent corrupted data"));
       this->closeTheSocket = true;
-      this->lastTransferStatus = HASH_MISSMATCH;
+      this->lastTransferStatus = HASH_MISMATCH;
    }
 
    if (timer.elapsed() > MINIMUM_DELTA_TIME_TO_COMPUTE_SPEED)
@@ -348,7 +348,7 @@ bool ChunkDownloader::hasAtLeastAPeer()
   * FILE_IO_ERROR
   * FILE_NON_EXISTENT
   * GOT_TOO_MUCH_DATA
-  * HASH_MISSMATCH
+  * HASH_MISMATCH
   */
 Status ChunkDownloader::getLastTransferStatus() const
 {
@@ -378,7 +378,7 @@ QList<PM::IPeer*> ChunkDownloader::getPeers()
    QList<PM::IPeer*> peers;
    peers.reserve(this->peers.size());
 
-   bool isTheNmberOfPeersHasChanged = false;
+   bool isTheNumberOfPeersHasChanged = false;
    for (QMutableListIterator<PM::IPeer*> i(this->peers); i.hasNext();)
    {
       PM::IPeer* peer = i.next();
@@ -388,17 +388,17 @@ QList<PM::IPeer*> ChunkDownloader::getPeers()
       {
          i.remove();
          this->linkedPeers.rmLink(peer);
-         isTheNmberOfPeersHasChanged = true;
+         isTheNumberOfPeersHasChanged = true;
       }
    }
-   if (isTheNmberOfPeersHasChanged)
+   if (isTheNumberOfPeersHasChanged)
       emit numberOfPeersChanged();
    return peers;
 }
 
 /**
   * Tell the ChunkDownloader to download the chunk from one of its peer.
-  * @return the choosen peer if the downloading has been started else return 0.
+  * @return the chosen peer if the downloading has been started else return 0.
   */
 PM::IPeer* ChunkDownloader::startDownloading()
 {
@@ -519,7 +519,7 @@ PM::IPeer* ChunkDownloader::getTheFastestFreePeer()
    QMutexLocker locker(&this->mutex);
 
    PM::IPeer* current = nullptr;
-   bool isTheNmberOfPeersHasChanged = false;
+   bool isTheNumberOfPeersHasChanged = false;
    for (QMutableListIterator<PM::IPeer*> i(this->peers); i.hasNext();)
    {
       PM::IPeer* peer = i.next();
@@ -527,13 +527,13 @@ PM::IPeer* ChunkDownloader::getTheFastestFreePeer()
       {
          i.remove();
          this->linkedPeers.rmLink(peer);
-         isTheNmberOfPeersHasChanged = true;
+         isTheNumberOfPeersHasChanged = true;
       }
       else if (this->occupiedPeersDownloadingChunk.isPeerFree(peer) && (!current || peer->getSpeed() > current->getSpeed()))
          current = peer;
    }
 
-   if (isTheNmberOfPeersHasChanged)
+   if (isTheNumberOfPeersHasChanged)
       emit numberOfPeersChanged();
 
    return current;
@@ -544,7 +544,7 @@ int ChunkDownloader::getNumberOfFreePeer()
    QMutexLocker locker(&this->mutex);
 
    int n = 0;
-   bool isTheNmberOfPeersHasChanged = false;
+   bool isTheNumberOfPeersHasChanged = false;
    for (QMutableListIterator<PM::IPeer*> i(this->peers); i.hasNext();)
    {
       PM::IPeer* peer = i.next();
@@ -552,13 +552,13 @@ int ChunkDownloader::getNumberOfFreePeer()
       {
          i.remove();
          this->linkedPeers.rmLink(peer);
-         isTheNmberOfPeersHasChanged = true;
+         isTheNumberOfPeersHasChanged = true;
       }
       else if (this->occupiedPeersDownloadingChunk.isPeerFree(peer))
          n++;
    }
 
-   if (isTheNmberOfPeersHasChanged)
+   if (isTheNumberOfPeersHasChanged)
       emit numberOfPeersChanged();
 
    return n;

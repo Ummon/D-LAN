@@ -331,7 +331,7 @@ void FileDownload::remove()
   */
 bool FileDownload::retrieveHashes()
 {
-   // If we've already got all the chunk hashes it's unecessary to re-ask them.
+   // If we've already got all the chunk hashes it's unnecessary to re-ask them.
    if (
       this->nbHashesKnown == this->NB_CHUNK ||
       this->status == COMPLETE ||
@@ -588,7 +588,7 @@ void FileDownload::connectChunkDownloaderSignals(const QSharedPointer<ChunkDownl
 /**
   * Try to create the file.
   * May change the status of the download if an error occurs.
-  * @return 'true' if everything fine else 'false' if an error has occured.
+  * @return 'true' if everything fine else 'false' if an error has occurred.
   */
 bool FileDownload::createFile()
 {
@@ -604,7 +604,7 @@ bool FileDownload::createFile()
    }
    catch (FM::NoWriteableDirectoryException&)
    {
-      L_DEBU(QString("There is no shared directory with writting rights for this download : %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
+      L_DEBU(QString("There is no shared directory with writing rights for this download : %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
       this->setStatus(NO_SHARED_DIRECTORY_TO_WRITE);
       return false;
    }

@@ -66,7 +66,7 @@ message Settings {
    uint32 udp_buffer_size = 66; // [default = 163840] (10 * 16KiB).
    uint32 max_number_of_search_result_to_send = 68; // [default = 300]
    uint32 max_number_of_result_shown = 69; // [default = 5000] For one search we accept a maximum of 5000 results.
-   string listen_address = 86; // [default = ""] If address is empty then listen to any adresses, in this case the protocol is given by 'listenAny'.
+   string listen_address = 86; // [default = ""] If address is empty then listen to any addresses, in this case the protocol is given by 'listenAny'.
    Common.Interface.Address.Protocol listen_any = 87; // [default = IPv6].
 
    ///// ChatSystem /////

@@ -419,9 +419,9 @@ void Tests::getAnExistingChunk()
       qDebug() << "Chunk found: " << chunk->getHash().toStr();
 }
 
-void Tests::getAnUnexistingChunk()
+void Tests::getANonExistingChunk()
 {
-   qDebug() << "===== getAnUnexistingChunk() =====";
+   qDebug() << "===== getANonExistingChunk() =====";
 
    QSharedPointer<IChunk> chunk = this->fileManager->getChunk(Common::Hash::fromStr("928e1bd85c0957c4af0cf69cf76f6ed6898cfd2d"));
    if (chunk.isNull())
@@ -492,9 +492,9 @@ void Tests::getHashesFromAFileEntry2()
    QTest::qWait(4000);
 }
 
-void Tests::browseSomedirectories()
+void Tests::browseSomeDirectories()
 {
-   qDebug() << "===== browseSomedirectories() =====";
+   qDebug() << "===== browseSomeDirectories() =====";
 
    // TODO: active the regexp comparison.
 
@@ -535,9 +535,9 @@ void Tests::findExistingFilesWithOneWord()
    this->compareExpectedResult(results.first(), expectedResult);
 }
 
-void Tests::findUnexistingFilesWithOneWord()
+void Tests::findNonExistingFilesWithOneWord()
 {
-   qDebug() << "===== findUnexistingFilesWithOneWord() =====";
+   qDebug() << "===== findNonExistingFilesWithOneWord() =====";
 
    QString terms("mmmm");
    QList<Protos::Common::FindResult> results = this->fileManager->find(terms, 10000, 65536);

@@ -123,7 +123,7 @@ QVariant DownloadsModel::getData(const Protos::GUI::State::Download& download, c
             case Protos::GUI::State::Download::GOT_TOO_MUCH_DATA:
                toolTip += tr("Too much data received");
                break;
-            case Protos::GUI::State::Download::HASH_MISSMATCH:
+            case Protos::GUI::State::Download::HASH_MISMATCH:
                toolTip += tr("Data received do not match the hash");
                break;
 
@@ -222,7 +222,7 @@ QList<int> DownloadsModel::getNonFilteredDownloadIndices(const Protos::GUI::Stat
       case Protos::GUI::State::Download::FILE_IO_ERROR:
       case Protos::GUI::State::Download::FILE_NON_EXISTENT:
       case Protos::GUI::State::Download::GOT_TOO_MUCH_DATA:
-      case Protos::GUI::State::Download::HASH_MISSMATCH:
+      case Protos::GUI::State::Download::HASH_MISMATCH:
       case Protos::GUI::State::Download::DIRECTORY_SCANNING_IN_PROGRESS:
       case Protos::GUI::State::Download::UNABLE_TO_GET_ENTRIES:
          if (!(statusToFilter & STATUS_INACTIVE))

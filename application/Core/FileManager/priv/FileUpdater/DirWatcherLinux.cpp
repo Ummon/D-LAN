@@ -44,7 +44,7 @@ const uint32_t DirWatcherLinux::ROOT_EVENTS_OBS = EVENTS_OBS|IN_MOVE_SELF|IN_DEL
 
 class UnableToWatchException {};
 
-/**ath=/home/gburri/Downloads//Leonard - 35 albums/07 - Y a-t-il un gÃ©nie dans la salle
+/**ath=/home/gburri/Downloads//Leonard - 35 albums/07 - Y a-t-il un génie dans la salle
   * Constructor.
   */
 DirWatcherLinux::DirWatcherLinux() :
@@ -270,7 +270,7 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
 
                   // Retrieve moved directory by child map of from directory,
                   // because actually the name hasn't changed.
-                  Dir* movedDir = this->dirs.value(fromEvent->wd)->childs.value(fromEvent->name);
+                  Dir* movedDir = this->dirs.value(fromEvent->wd)->children.value(fromEvent->name);
 
                   // If the name of moved directory has changed, rename it.
                   if (movedDir && fromEvent->name != event->name)
@@ -307,7 +307,7 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
          L_DEBU(QString("inotify event: IN_DELETE (path=%1)").arg(this->getEventPath(event)));
          events << WatcherEvent(WatcherEvent::DELETED, this->getEventPath(event));
          if (event->mask & IN_ISDIR)
-            delete this->dirs.value(event->wd)->childs.value(event->name);
+            delete this->dirs.value(event->wd)->children.value(event->name);
       }
 
       if (event->mask & IN_CREATE)
@@ -355,7 +355,7 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
   */
 
 /**
-  * Contructor.
+  * Constructor.
   * @param dwl     the DirWatcherLinux who use the directory tree index
   * @param parent  the parent Dir
   * @param name    the name of the Dir
@@ -408,7 +408,7 @@ DirWatcherLinux::Dir::Dir(DirWatcherLinux* dwl, Dir* parent, const QString& name
       }
       catch (UnableToWatchException&)
       {
-         for (QMapIterator<QString, Dir*> j(this->childs); j.hasNext();)
+         for (QMapIterator<QString, Dir*> j(this->children); j.hasNext();)
          {
             auto child = j.next();
             child.value()->parent = nullptr;
@@ -419,7 +419,7 @@ DirWatcherLinux::Dir::Dir(DirWatcherLinux* dwl, Dir* parent, const QString& name
 
 
    if (this->parent)
-      this->parent->childs.insert(this->name, this);
+      this->parent->children.insert(this->name, this);
 
    dwl->dirs.insert(this->wd, this);
 }
@@ -436,9 +436,9 @@ DirWatcherLinux::Dir::~Dir()
          L_WARN(QString("Dir::~Dir: Unable to remove an inotify watcher."));
    
       if (this->parent)
-         this->parent->childs.remove(this->name);
+         this->parent->children.remove(this->name);
 
-      for (QMapIterator<QString, Dir*> i(this->childs); i.hasNext();)
+      for (QMapIterator<QString, Dir*> i(this->children); i.hasNext();)
       {
          auto child = i.next();
          child.value()->parent = nullptr;
@@ -467,9 +467,9 @@ QString DirWatcherLinux::Dir::getFullPath()
   */
 void DirWatcherLinux::Dir::rename(const QString& newName)
 {
-   this->parent->childs.remove(this->name);
+   this->parent->children.remove(this->name);
    this->name = newName;
-   this->parent->childs.insert(this->name, this);
+   this->parent->children.insert(this->name, this);
 }
 
 /**
@@ -478,7 +478,7 @@ void DirWatcherLinux::Dir::rename(const QString& newName)
   */
 void DirWatcherLinux::Dir::move(Dir* to)
 {
-   this->parent->childs.remove(this->name);
+   this->parent->children.remove(this->name);
    this->parent = to;
-   to->childs.insert(this->name, this);
+   to->children.insert(this->name, this);
 }

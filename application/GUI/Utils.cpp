@@ -77,7 +77,7 @@ QStringList Utils::askForDirectories(QSharedPointer<RCC::ICoreConnection> coreCo
 
 QStringList Utils::askForDirectoriesToDownloadTo(QSharedPointer<RCC::ICoreConnection> coreConnection)
 {
-   return Utils::askForDirectories(coreConnection, "<img src=\":/icons/ressources/information.png\" /> <strong>" + QObject::tr("The choosen directory will be shared") + "</strong>");
+   return Utils::askForDirectories(coreConnection, "<img src=\":/icons/ressources/information.png\" /> <strong>" + QObject::tr("The chosen directory will be shared") + "</strong>");
 }
 
 QString Utils::emoticonsDirectoryPath()

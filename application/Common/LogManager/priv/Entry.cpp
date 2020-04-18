@@ -26,7 +26,7 @@ using namespace LM;
 
 const QString Entry::DATE_TIME_FORMAT("yyyy-MM-dd HH:mm:ss");
 const QString Entry::DATE_TIME_FORMAT_WITH_MS("yyyy-MM-dd HH:mm:ss.zzz");
-const QString Entry::SEVERITIES_STR[] = {"Fatal", "Error", "Warning", "Debug", "User", "Unkown"};
+const QString Entry::SEVERITIES_STR[] = {"Fatal", "Error", "Warning", "Debug", "User", "Unknown"};
 QRegExp Entry::lineRegExp("(\\S{10} \\S{8})\\.(\\d{3}) \\[(.+)\\] \\{(.+)\\} \\((\\w+)\\) (?:<(\\S+:\\d+)> )?: (.*)");
 
 Entry::Entry(const QString& line) :
@@ -64,11 +64,11 @@ Entry::Entry(const QDateTime& dateTime, Severity severity, const QString& name, 
 }
 
 /**
-  * Message endlines ('\n') are replaced by "<lf>" to guaranted one line per entry.
+  * Message endlines ('\n') are replaced by "<lf>" to guaranteed one line per entry.
   */
 QString Entry::toStrLine() const
 {
-   QString formatedMessage =
+   QString formattedMessage =
       QString(!this->source.isNull() ? "%1 [%2] {%3} (%4) <%5> : %6" : "%1 [%2] {%3} (%4) : %5").arg
       (
          this->getDateStr(),
@@ -78,9 +78,9 @@ QString Entry::toStrLine() const
       );
 
    if (!this->source.isNull())
-      formatedMessage = formatedMessage.arg(this->source);
+      formattedMessage = formattedMessage.arg(this->source);
 
-   return formatedMessage.arg(this->message);
+   return formattedMessage.arg(this->message);
 }
 
 QDateTime Entry::getDate() const

@@ -22,7 +22,7 @@ using namespace GUI;
 
 /**
   * @class GUI::SingleEmoticonWidget
-  * A widget which shows an emoticon image and its textual representions like ":)", ":-)", etc . . .
+  * A widget which shows an emoticon image and its textual representations like ":)", ":-)", etc . . .
   */
 
 SingleEmoticonWidget::SingleEmoticonWidget(QWidget *parent) :

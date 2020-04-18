@@ -44,7 +44,7 @@ namespace FM
       virtual ~DirsNotFoundException() throw () {}
    };
 
-   class hashMissmatchException {};
+   class hashMismatchException {};
 
    class NoWriteableDirectoryException{};
 

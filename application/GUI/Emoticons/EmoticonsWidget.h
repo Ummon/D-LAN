@@ -33,7 +33,7 @@ namespace GUI
 
    signals:
       void hidden();
-      void emoticonChoosen(const QString& theme, const QString& emoticonName);
+      void emoticonChosen(const QString& theme, const QString& emoticonName);
       void defaultThemeChanged(const QString& theme);
 
    protected:

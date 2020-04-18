@@ -28,7 +28,7 @@ using namespace GUI;
   *
   * Show the list of shared directory as a menu.
   * - The menu can be shown by calling 'show(..)'.
-  * - When the user select an action, the signal 'downloadTo(..)' is emmited.
+  * - When the user select an action, the signal 'downloadTo(..)' is emitted.
   * - Can be sub-classed to add some entries. In this case 'onShowMenu(..)' must be overridden.
   */
 

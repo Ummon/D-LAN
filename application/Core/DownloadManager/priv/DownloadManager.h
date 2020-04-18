@@ -124,7 +124,7 @@ namespace DM
 
       QTimer startErroneousDownloadTimer; // When one or more downloads are in error state, we try to relaunch them periodically.
 
-      QTimer saveTimer; // To know when to save the queue, for exemple each 5min.
+      QTimer saveTimer; // To know when to save the queue, for example each 5min.
       bool queueChanged;
       bool queueLoaded;
    };

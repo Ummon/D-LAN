@@ -36,7 +36,7 @@ namespace Old
    template<typename T>
    class WordIndex : Common::Uncopyable
    {
-      static const int MIN_WORD_SIZE_PARTIAL_MATCH; ///< During a search, the words which have a size below this value must match entirely, for exemple 'of' match "conspiracy of one" and not "offspring".
+      static const int MIN_WORD_SIZE_PARTIAL_MATCH; ///< During a search, the words which have a size below this value must match entirely, for example 'of' match "conspiracy of one" and not "offspring".
    public:
       WordIndex();
 

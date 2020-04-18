@@ -169,7 +169,7 @@ void FM::Node<T>::addItem(const QStringRef& word, const T& item)
                {
                   child->items << item;
                }
-               else // The word is the begining of the the sub-part.
+               else // The word is the beginning of the the sub-part.
                {
                   Node<T>* newNode = new Node<T>(word.toString(), item);
                   child->part.remove(0, p);
@@ -177,13 +177,13 @@ void FM::Node<T>::addItem(const QStringRef& word, const T& item)
                   newNode->children << child;
                }
             }
-            else if (p == child->part.size()) // The sub part is the begining of the word.
+            else if (p == child->part.size()) // The sub part is the beginning of the word.
             {
                child->addItem(word.string()->midRef(word.position() + p, word.size() - p), item);
             }
             else
             {
-               // The word and the sub part share at least one character from the begining.
+               // The word and the sub part share at least one character from the beginning.
                Node<T>* newNodeSplit = new Node<T>(word.string()->mid(word.position(), p));
                child->part.remove(0, p);
                this->children.replace(i, newNodeSplit);

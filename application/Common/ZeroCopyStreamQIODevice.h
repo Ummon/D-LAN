@@ -60,7 +60,7 @@ namespace Common
 
       int nbLastRead;
       char* buffer;
-      char* pos; ///< Point on the remaining data, remaing data size is "buffer + nbLastRead - pos".
+      char* pos; ///< Point on the remaining data, remaining data size is "buffer + nbLastRead - pos".
 
       google::protobuf::int64 bytesRead;
    };

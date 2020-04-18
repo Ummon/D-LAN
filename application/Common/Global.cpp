@@ -196,11 +196,11 @@ int Global::nCombinations(int n, int k)
    else
       bytes = 0;
 
-   return QString::number(bytes).append(IS_BELOW_1024 ? "" : QString(".").append(QString::number(rest))).append(" ").append(Constants::BINARY_PREFIXS[current]);
+   return QString::number(bytes).append(IS_BELOW_1024 ? "" : QString(".").append(QString::number(rest))).append(" ").append(Constants::BINARY_PREFIXES[current]);
 }*/
 
 /**
-  * Will return a formated size with the unit prefix and one digit folowing the point.
+  * Will return a formatted size with the unit prefix and one digit following the point.
   * For example:
   * - 1 -> "1 B"
   * - 1024 -> "1.0 KiB"
@@ -208,7 +208,7 @@ int Global::nCombinations(int n, int k)
   * - 1024^3 -> "1.0 GiB"
   * - 1024^4 -> "1.0 TiB"
   * - etc . . . to ZiB
-  * The speed of this implementation is equal to the old above : ~1 µs per call (mesured with 1 millions calls in release (-O2)).
+  * The speed of this implementation is equal to the old above : ~1 µs per call (measured with 1 millions calls in release (-O2)).
   */
 QString Global::formatByteSize(qint64 bytes, int precision)
 {
@@ -222,8 +222,8 @@ QString Global::formatByteSize(qint64 bytes, int precision)
 
       if (bytes < 1024 * size)
          return bytes < 1024 ?
-            QString::number(bytes <= 0 ? 0 : bytes).append(" ").append(Constants::BINARY_PREFIXS[i]) :
-            QString::number((double)bytes / size, 'f', precision).append(" ").append(Constants::BINARY_PREFIXS[i]);
+            QString::number(bytes <= 0 ? 0 : bytes).append(" ").append(Constants::BINARY_PREFIXES[i]) :
+            QString::number((double)bytes / size, 'f', precision).append(" ").append(Constants::BINARY_PREFIXES[i]);
    }
    return QString();
 }
@@ -270,13 +270,13 @@ QString Global::formatTime(quint64 seconds)
 
 QString Global::formatIP(const QHostAddress& address, quint16 port)
 {
-   QString formatedIP;
+   QString formattedIP;
    if (address.protocol() == QAbstractSocket::IPv4Protocol)
-      formatedIP.append(address.toString());
+      formattedIP.append(address.toString());
    else
-      formatedIP.append("[").append(address.toString()).append("]");
-   formatedIP.append(":").append(QString::number(port));
-   return formatedIP;
+      formattedIP.append("[").append(address.toString()).append("]");
+   formattedIP.append(":").append(QString::number(port));
+   return formattedIP;
 }
 
 /**
@@ -509,7 +509,7 @@ QString Global::getDataSystemFolder(DataFolderType type)
 #endif
 }
 
-QString Global::getCurrenUserName()
+QString Global::getCurrentUserName()
 {
 #if defined(Q_OS_WIN32)
    TCHAR userName[UNLEN + 1]; // UNLEN is from Lmcons.h
@@ -527,7 +527,7 @@ QString Global::getCurrenUserName()
 #endif
 }
 
-QString Global::getCurrenMachineName()
+QString Global::getCurrentMachineName()
 {
 #if defined(Q_OS_WIN32)
    TCHAR machineName[MAX_COMPUTERNAME_LENGTH + 1];
@@ -547,7 +547,7 @@ QString Global::getCurrenMachineName()
 /**
   * Create a file containing its name. Parents directories are created if needed.
   * For testing purpose.
-  * @return true if the file has been created successfuly or false if an error has occured.
+  * @return true if the file has been created successfully or false if an error has occurred.
   */
 bool Global::createFile(const QString& path)
 {

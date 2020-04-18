@@ -90,7 +90,7 @@ void InternalCoreConnection::connectToCore(const QString& address, quint16 port,
    if (this->currentHostLookupID != -1)
       QHostInfo::abortHostLookup(this->currentHostLookupID);
 
-   this->currentHostLookupID = QHostInfo::lookupHost(this->connectionInfo.address, this, SLOT(adressResolved(QHostInfo)));
+   this->currentHostLookupID = QHostInfo::lookupHost(this->connectionInfo.address, this, SLOT(addressResolved(QHostInfo)));
 }
 
 void InternalCoreConnection::connectToCore(const QString& address, quint16 port, const QString& password)
@@ -300,7 +300,7 @@ ICoreConnection::ConnectionInfo InternalCoreConnection::getConnectionInfo() cons
    return this->connectionInfo;
 }
 
-void InternalCoreConnection::adressResolved(QHostInfo hostInfo)
+void InternalCoreConnection::addressResolved(QHostInfo hostInfo)
 {
    this->currentHostLookupID = -1;
 

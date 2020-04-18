@@ -32,7 +32,7 @@ using namespace Common;
   * @class Common::MessageSocket
   *
   * An abstract class which is able to send and receive protocol buffer messages over a QAbstractSocket.
-  * It is designed to be sublcassed,
+  * It is designed to be subclassed,
   */
 
 /**
