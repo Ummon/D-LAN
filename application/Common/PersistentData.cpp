@@ -154,7 +154,6 @@ try
       std::string json = stream.readAll().toStdString();
 
       google::protobuf::util::JsonParseOptions jsonOptions;
-      jsonOptions.case_insensitive_enum_parsing = true;
       jsonOptions.ignore_unknown_fields = true;
 
       google::protobuf::util::JsonStringToMessage(json, &data, jsonOptions);

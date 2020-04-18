@@ -14,7 +14,7 @@
    height="26.877548cm"
    id="svg6780"
    version="1.1"
-   inkscape:version="0.91 r13725"
+   inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
    sodipodi:docname="D-LAN logo.svg">
   <defs
      id="defs6782">
@@ -181,15 +181,15 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.0000001"
-     inkscape:cx="295.0613"
-     inkscape:cy="353.43463"
+     inkscape:cx="167.33176"
+     inkscape:cy="535.65813"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
      inkscape:window-width="1920"
-     inkscape:window-height="1017"
-     inkscape:window-x="-8"
-     inkscape:window-y="-8"
+     inkscape:window-height="1064"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
      inkscape:window-maximized="1"
      fit-margin-top="2"
      fit-margin-left="2"
@@ -204,7 +204,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -291,13 +291,12 @@
        inkscape:export-xdpi="93.722008"
        inkscape:export-filename="C:\projects\D-LAN_master\application\GUI\ressources\logo.png"
        transform="scale(0.99510289,1.0049212)"
-       sodipodi:linespacing="125%"
        id="text6772"
        y="168.26855"
        x="189.52715"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.21148014px;line-height:125%;font-family:Arial;-inkscape-font-specification:Arial;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0%;font-family:Arial;-inkscape-font-specification:Arial;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none"
        xml:space="preserve"><tspan
-         style="font-style:oblique;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:'Arial Oblique';fill:#ffffff;fill-opacity:1"
+         style="font-style:oblique;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.21148014px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Oblique';fill:#ffffff;fill-opacity:1"
          y="168.26855"
          x="189.52715"
          id="tspan6774"
@@ -512,16 +511,16 @@
        inkscape:export-ydpi="93.722008"
        inkscape:export-xdpi="93.722008"
        inkscape:export-filename="C:\projects\D-LAN_master\application\GUI\ressources\logo.png"
-       sodipodi:linespacing="125%"
        id="text6760-9"
        y="393.83603"
        x="410.64044"
-       style="font-style:oblique;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:83.74663544px;line-height:125%;font-family:Arial;-inkscape-font-specification:'Arial Bold Oblique';letter-spacing:-11.35999966px;word-spacing:1.75000012px;fill:#ffffff;fill-opacity:1;stroke:#ffffff;stroke-width:7.4000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       style="font-style:oblique;font-variant:normal;font-weight:bold;font-stretch:normal;line-height:0%;font-family:Arial;-inkscape-font-specification:'Arial Bold Oblique';letter-spacing:-11.35999966px;word-spacing:1.75000012px;fill:#ffffff;fill-opacity:1;stroke:#ffffff;stroke-width:7.4000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        xml:space="preserve"><tspan
          y="393.83603"
          x="410.64044"
          id="tspan6762-3"
-         sodipodi:role="line">LAN</tspan></text>
+         sodipodi:role="line"
+         style="font-size:83.74663544px;line-height:1.25">LAN</tspan></text>
     <g
        id="g4399"
        transform="translate(-197.50178,19.054198)">
@@ -628,48 +627,44 @@
     </g>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:17.5px;line-height:125%;font-family:Garamond;-inkscape-font-specification:'Garamond, Normal';text-align:end;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:end;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0%;font-family:Garamond;-inkscape-font-specification:'Garamond, Normal';text-align:end;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:end;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        x="184.55183"
        y="464.92035"
-       id="text4413"
-       sodipodi:linespacing="125%"><tspan
+       id="text4413"><tspan
          sodipodi:role="line"
          id="tspan4415"
          x="184.55183"
          y="464.92035"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:25px;font-family:Arial;-inkscape-font-specification:Arial;text-align:end;text-anchor:end">Base</tspan></text>
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:25px;line-height:1.25;font-family:Arial;-inkscape-font-specification:Arial;text-align:end;text-anchor:end">Base</tspan></text>
     <text
-       sodipodi:linespacing="125%"
        id="text4421"
        y="576.36615"
        x="184.55183"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:17.5px;line-height:125%;font-family:Garamond;-inkscape-font-specification:'Garamond, Normal';text-align:end;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:end;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0%;font-family:Garamond;-inkscape-font-specification:'Garamond, Normal';text-align:end;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:end;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        xml:space="preserve"><tspan
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:25px;font-family:Arial;-inkscape-font-specification:Arial;text-align:end;text-anchor:end"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:25px;line-height:1.25;font-family:Arial;-inkscape-font-specification:Arial;text-align:end;text-anchor:end"
          y="576.36615"
          x="184.55183"
          id="tspan4423"
          sodipodi:role="line">Icon</tspan></text>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:17.5px;line-height:125%;font-family:Garamond;-inkscape-font-specification:'Garamond, Normal';text-align:end;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:end;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0%;font-family:Garamond;-inkscape-font-specification:'Garamond, Normal';text-align:end;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:end;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        x="184.55183"
        y="687.81195"
-       id="text4425"
-       sodipodi:linespacing="125%"><tspan
+       id="text4425"><tspan
          sodipodi:role="line"
          id="tspan4427"
          x="184.55183"
          y="687.81195"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:25px;font-family:Arial;-inkscape-font-specification:Arial;text-align:end;text-anchor:end">Flat</tspan></text>
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:25px;line-height:1.25;font-family:Arial;-inkscape-font-specification:Arial;text-align:end;text-anchor:end">Flat</tspan></text>
     <text
-       sodipodi:linespacing="125%"
        id="text4429"
        y="799.56293"
        x="184.55183"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:17.5px;line-height:125%;font-family:Garamond;-inkscape-font-specification:'Garamond, Normal';text-align:end;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:end;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0%;font-family:Garamond;-inkscape-font-specification:'Garamond, Normal';text-align:end;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:end;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        xml:space="preserve"><tspan
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:25px;font-family:Arial;-inkscape-font-specification:Arial;text-align:end;text-anchor:end"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:25px;line-height:1.25;font-family:Arial;-inkscape-font-specification:Arial;text-align:end;text-anchor:end"
          y="799.56293"
          x="184.55183"
          id="tspan4431"
