@@ -77,8 +77,8 @@ namespace Common
       static QString getDataServiceFolder(DataFolderType type);
       static QString getDataSystemFolder(DataFolderType type);
 
-      static QString getCurrenUserName();
-      static QString getCurrenMachineName();
+      static QString getCurrentUserName();
+      static QString getCurrentMachineName();
 
       static bool createFile(const QString& path);
       static bool recursiveDeleteDirectoryContent(const QString& dir);

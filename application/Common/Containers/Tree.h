@@ -41,13 +41,13 @@ namespace Common
    /**
      * @class Tree
      * A tree data structure, can store data called 'item' of type 'ItemType'.
-     * To use this classe you have to inherit it and give your child class type as the second template parameter.
+     * To use this class you have to inherit it and give your child class type as the second template parameter.
      * For example:
      * MyTree : public Tree<int, MyTree> { .. };
      *
      * Some remarks:
      *  - To remove an element just delete it.
-     *  - You can reimplement 'newTree(..)' to dynamically create new type of children.
+     *  - You can re-implement 'newTree(..)' to dynamically create new type of children.
      *  - This class comes with a breadth-first and a depth-first iterators.
      *
      * If you don't want to inherit from Tree you can use the 'SimpleTree' class.

@@ -31,7 +31,7 @@ namespace DM
       virtual ~DownloadPredicate() {}
    };
 
-   struct IsDownloable : public DownloadPredicate
+   struct IsDownloadable : public DownloadPredicate
    {
       bool operator() (const Download* download) const;
    };

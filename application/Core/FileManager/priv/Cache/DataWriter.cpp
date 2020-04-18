@@ -51,7 +51,7 @@ bool DataWriter::write(const char* buffer, int nbBytes)
       if (this->chunk.getKnownBytes() + nbBytes == this->chunk.getChunkSize() && this->hasher.getResult() != this->chunk.getHash())
       {
          this->chunk.setKnownBytes(0);
-         throw hashMissmatchException();
+         throw hashMismatchException();
       }
    }
 

@@ -497,16 +497,16 @@ void FileManager::chunkRemoved(const QSharedPointer<Chunk>& chunk)
 //      catch (ItemsNotFoundException& e)
 //      {
 //         foreach (QString path, e.paths)
-//            L_WARN(QString("During the file cache loading, this directory hasn't been found : %1").arg(path));
+//            L_WARN(QString("During the file cache loading, this directory hasn't been found: %1").arg(path));
 //      }
 //   }
 //   catch (Common::UnknownValueException& e)
 //   {
-//      L_WARN(QString("The persisted file cache cannot be retrived (the file doesn't exist) : %1").arg(Common::Constants::FILE_CACHE));
+//      L_WARN(QString("The persisted file cache cannot be retrieved (the file doesn't exist): %1").arg(Common::Constants::FILE_CACHE));
 //   }
 //   catch (...)
 //   {
-//      L_WARN(QString("The persisted file cache cannot be retrived (Unkown exception) : %1").arg(Common::Constants::FILE_CACHE));
+//      L_WARN(QString("The persisted file cache cannot be retrieved (Unknown exception): %1").arg(Common::Constants::FILE_CACHE));
 //   }
 
 //   this->fileUpdater.setFileCache(savedCache);
@@ -564,7 +564,7 @@ void FileManager::forcePersistCacheToFile()
 */
 
 /**
-  * @warning Can be called from differents thread like a 'Downloader' or the 'FileUpdater'.
+  * @warning Can be called from different threads like a 'Downloader' or the 'FileUpdater'.
   */
 void FileManager::setCacheChanged()
 {

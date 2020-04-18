@@ -40,8 +40,8 @@ Hash::Hash() noexcept :
 /**
   * Build a new hash from a char*, 'h' is not a readable string, @see fromStr.
   * 'h' must have a length equal or bigger to HASH_SIZE!
-  * The data are copied, no pointer is keept to 'h'.
-  * 'h' can be a null pointer, in this case a null hashe will be built.
+  * The data are copied, no pointer is kept to 'h'.
+  * 'h' can be a null pointer, in this case a null hash will be built.
   */
 Hash::Hash(const char* h)
 {
@@ -68,7 +68,7 @@ Hash::Hash(const std::string& str)
 /**
   * Build a new hash from a QByteArray.
   * 'a' must have a length equal or bigger to HASH_SIZE!
-  * The data are copied, no pointer is keept to 'a'.
+  * The data are copied, no pointer is kept to 'a'.
   */
 Hash::Hash(const QByteArray& a)
 {

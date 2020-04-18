@@ -28,7 +28,7 @@ ExtensionCategory KnownExtensions::getCategoryFrom(const QString& extension)
       return *i;
 }
 
-int KnownExtensions::getBeginingExtension(const QString& filename)
+int KnownExtensions::getBeginningExtension(const QString& filename)
 {
    int i = 0;
    while ((i = filename.indexOf('.', i + 1)) != -1)
@@ -45,7 +45,7 @@ int KnownExtensions::getBeginingExtension(const QString& filename)
 
 QString KnownExtensions::removeExtension(const QString& filename)
 {
-   int i = getBeginingExtension(filename);
+   int i = getBeginningExtension(filename);
    if (i != -1)
       return filename.left(i - 1);
    else
@@ -54,7 +54,7 @@ QString KnownExtensions::removeExtension(const QString& filename)
 
 QString KnownExtensions::getExtension(const QString& filename)
 {
-   int i = getBeginingExtension(filename);
+   int i = getBeginningExtension(filename);
    if (i != -1)
       return filename.right(filename.length() - i);
    else

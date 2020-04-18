@@ -154,7 +154,7 @@ int main(int argc, char *argv[])
 {
    if (argc >= 2)
    {
-      // WordIndex<QString> index; // If a word index of string is used the item corrsponds to fullpath + filename.
+      // WordIndex<QString> index; // If a word index of string is used the item corresponds to fullpath + filename.
       WordIndex<int> index;
 
       for (int i = 1; i < argc; i++)

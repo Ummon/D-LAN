@@ -24,7 +24,7 @@ using namespace DM;
 #include <priv/FileDownload.h>
 #include <priv/DirDownload.h>
 
-bool IsDownloable::operator() (const Download* download) const
+bool IsDownloadable::operator() (const Download* download) const
 {
    const FileDownload* fileDownload = dynamic_cast<const FileDownload*>(download);
    return fileDownload && fileDownload->getStatus() != COMPLETE && fileDownload->getStatus() != DELETED;

@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #pragma once
 
 #include <QHash>
@@ -43,9 +43,9 @@ namespace FM
    private:
       static const int EVENT_SIZE; // Size of the event structure, not counting name.
       static const size_t BUF_LEN; // Reasonable guess as to size of 1024 events.
-      static const uint32_t EVENTS_OBS; // Inotify events catched for subdirectories.
-      static const uint32_t ROOT_EVENTS_OBS; // Inotify events catched for root directories.
-      static const uint32_t EVENTS_FILE; // Inotify events catched for files.
+      static const uint32_t EVENTS_OBS; // Inotify events caught for subdirectories.
+      static const uint32_t ROOT_EVENTS_OBS; // Inotify events caught for root directories.
+      static const uint32_t EVENTS_FILE; // Inotify events caught for files.
 
       static int addWatch(int fileDescriptor, const QString& path, uint32_t mask);
 
@@ -59,7 +59,7 @@ namespace FM
 
          DirWatcherLinux* dwl;
          Dir* parent;
-         QHash<QString, Dir*> childs;
+         QHash<QString, Dir*> children;
          QString name;
          int wd; // Watch descriptor.
       };

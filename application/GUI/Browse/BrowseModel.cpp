@@ -347,7 +347,7 @@ void BrowseModel::synchronizeRoot(const Protos::Common::Entries& entries)
    int j = 0; // Root's children.
    for (int i = 0 ; i < entries.entry_size(); i++)
    {
-      // We've searching if the entry alredy exists.
+      // We've searching if the entry already exists.
       for (int j2 = j; j2 < this->root->getNbChildren(); j2++)
       {
          if (entries.entry(i).shared_entry().id().hash() == this->root->getChild(j2)->getItem().shared_entry().id().hash()) // ID's are equal -> same entry.

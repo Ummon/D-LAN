@@ -62,7 +62,7 @@ namespace FM
 
    /**
      * Little helper class to autorelease a file opened with a 'FilePool' when going out of scope.
-     * Don't forget to test if the file has been correctely created before using it. For example:
+     * Don't forget to test if the file has been correctly created before using it. For example:
      * AutoReleasedFile f(fp, path, mode);
      * if (!f)
      *    [..]

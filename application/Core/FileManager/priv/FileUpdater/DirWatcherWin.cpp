@@ -214,7 +214,7 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
             events << WatcherEvent(WatcherEvent::MOVE, previousPath, path);
             break;
          default:
-            L_WARN(QString("File event action unkown: %1").arg(notifyInformation->Action));
+            L_WARN(QString("File event action unknown: %1").arg(notifyInformation->Action));
          }
 
          if (!notifyInformation->NextEntryOffset)

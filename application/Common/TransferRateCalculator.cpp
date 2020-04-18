@@ -29,7 +29,7 @@ using namespace Common;
   * Compute an average value for a transfer rate in byte/s.
   * The period value is set in the header: PERIOD.
   * When some data are received or sent the method 'addData(..)' is called with the amount of data in bytes.
-  * The current transfer rate can be retreived with the method 'getTransferRate()'.
+  * The current transfer rate can be retrieved with the method 'getTransferRate()'.
   * An instance of 'TransferRateCalculator' can be shared among several threads.
   */
 

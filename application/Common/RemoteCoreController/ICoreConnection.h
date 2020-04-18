@@ -38,7 +38,7 @@ namespace RCC
 
    /**
      * The main interface to control a remote core.
-     * The signal 'newState' is periodically emitted, for exemple each second. It can be emitted right after certain action, like 'setCoreSettings(..)'.
+     * The signal 'newState' is periodically emitted, for example each second. It can be emitted right after certain action, like 'setCoreSettings(..)'.
      * See the prototype file "application/Protos/gui_protocol.proto" for more information.
      *
      * Connection process:
@@ -92,7 +92,7 @@ namespace RCC
       /**
         * Connect to a remote core. Password is mendatory and should be hashed and salted, see the class 'Common::Hasher'.
         * If the given address is a local one it may try to launch a local core.
-        * @param address the IP adress, it can be an IPv4 or IPv6 address.
+        * @param address the IP address, it can be an IPv4 or IPv6 address.
         */
       virtual void connectToCore(const QString& address, quint16 port, Common::Hash password) = 0;
 
@@ -168,7 +168,7 @@ namespace RCC
       /**
         * Get files and folders from some folders. Plus the root folders if asked.
         * @param peerID Can be yourself.
-        * @param entries One or more folders frome the remote peer.
+        * @param entries One or more folders from the remote peer.
         * @param withRoots
         */
       virtual QSharedPointer<IBrowseResult> browse(const Common::Hash& peerID, const Protos::Common::Entries& entries, bool withRoots = true) = 0;

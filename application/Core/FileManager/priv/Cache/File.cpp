@@ -57,7 +57,7 @@ using namespace FM;
 
 /**
   * Create a new file into a given directory.
-  * The file may or may not have a correponding local file.
+  * The file may or may not have a corresponding local file.
   * If 'createPhysically' is true then the file is created as unfinished with no byte known.
   *
   * @param dir The directory that owns the file.
@@ -142,7 +142,7 @@ FileForHasher* File::asFileForHasher()
 
 /**
   * Set the file as unfinished, this is use when an existing file is re-downloaded.
-  * The file is removed from the index and a new physcally file named "<name>.unfinished" is created.
+  * The file is removed from the index and a new physically file named "<name>.unfinished" is created.
   * The old physical file is not removed and will be replaced only when this one is finished.
   * @exception UnableToCreateNewFileException
   */
@@ -380,7 +380,7 @@ void File::dataReaderDeleted()
 
 /**
   * Write some bytes to the file at the given offset.
-  * If the buffer exceed the file size then only the begining of the buffer is
+  * If the buffer exceed the file size then only the beginning of the buffer is
   * used, the file is not resizing.
   * @exception IOErrorException
   * @param buffer The buffer containing the data to write.
@@ -405,7 +405,7 @@ qint64 File::write(const char* buffer, int nbBytes, qint64 offset)
 
 /**
   * Fill the buffer with the read bytes from the given offset.
-  * If the end of file is reached the buffer will be partialy filled.
+  * If the end of file is reached the buffer will be partially filled.
   * @param buffer The buffer where my data will be put after the reading.
   * @param offset An offset into the file where the data will be read.
   * @param maxBytesToRead The number of bytes to read, the buffer size must be at least this value.
@@ -579,8 +579,8 @@ void File::setAsComplete()
          QMutexLocker lockerWrite(&this->writeLock);
          QMutexLocker lockerRead(&this->readLock);
          // On Windows with some kinds of device like external hard drive this call can suspend the execution
-         // for a long time like 10 seconds ('ClosHandle(..)' will flush all data and wait). Some actions will be also blocks by the mutex
-         // like browsing the parent directory. The workaround is to temporaty unlock the mutex during this operation.
+         // for a long time like 10 seconds ('CloseHandle(..)' will flush all data and wait). Some actions will be also blocks by the mutex
+         // like browsing the parent directory. The workaround is to temporary unlock the mutex during this operation.
          this->mutex.unlock();
          this->cache->getFilePool().forceReleaseAll(this->getFullPath());
          this->mutex.lock();

@@ -73,7 +73,7 @@ QList<QSharedPointer<ChatMessage>> ChatMessages::getMessages() const
 }
 
 /**
-  * Returns the last unkown messages, the known message IDs are defined into 'getLastChatMessage'.
+  * Returns the last unknown messages, the known message IDs are defined into 'getLastChatMessage'.
   * The returned messages are sorted from oldest to youngest.
   */
 QList<QSharedPointer<ChatMessage>> ChatMessages::getUnknownMessages(const Protos::Core::GetLastChatMessages& getLastChatMessage) const
@@ -135,11 +135,11 @@ void ChatMessages::loadFromFile(const QString& filename)
    }
    catch (Common::UnknownValueException&)
    {
-      L_WARN(QString("The saved chat messages cannot be retrived (the file doesn't exist): %1").arg(filename));
+      L_WARN(QString("The saved chat messages cannot be retrieved (the file doesn't exist): %1").arg(filename));
    }
    catch (...)
    {
-      L_WARN(QString("The saved chat messages cannot be retrived (Unkown exception): %1").arg(filename));
+      L_WARN(QString("The saved chat messages cannot be retrieved (Unknown exception): %1").arg(filename));
    }
 }
 

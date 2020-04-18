@@ -26,7 +26,7 @@ using namespace GUI;
   * @class GUI::BusyIndicator
   *
   * A widget to show there is a task currently running.
-  * It uses the 'QPalette::Hightlight' color to draw the widget.
+  * It uses the 'QPalette::Highlight' color to draw the widget.
   */
 
 /**

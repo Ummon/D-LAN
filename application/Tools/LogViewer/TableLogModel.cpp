@@ -26,7 +26,7 @@
 /**
   * @class TableLogModel
   *
-  * Acess to the file data log, read it and organize it for the views.
+  * Access to the file data log, read it and organize it for the views.
   */
 
 TableLogModel::TableLogModel() :

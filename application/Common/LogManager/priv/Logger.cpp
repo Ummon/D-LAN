@@ -78,7 +78,7 @@ void Logger::addALoggerHook(QSharedPointer<LoggerHook> loggerHook)
 }
 
 /**
-  * We can't use 'Logger::mutex' in constructor and destructor because we don't know if the object already exist (contructor) or
+  * We can't use 'Logger::mutex' in constructor and destructor because we don't know if the object already exist (constructor) or
   * if it has been already deleted (destructor).
   */
 Logger::Logger(const QString& name) :

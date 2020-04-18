@@ -235,9 +235,9 @@ void RemoteConnection::refresh()
    stats->set_upload_rate(uploadRate);
 
    // Network interfaces.
-   const QString& adressToListenStr = SETTINGS.get<QString>("listen_address");
-   const QHostAddress adressToListen(adressToListenStr);
-   if (adressToListenStr.isEmpty())
+   const QString& addressToListenStr = SETTINGS.get<QString>("listen_address");
+   const QHostAddress addressToListen(addressToListenStr);
+   if (addressToListenStr.isEmpty())
       state.set_listenany(static_cast<Protos::Common::Interface::Address::Protocol>(SETTINGS.get<quint32>("listen_any")));
    for (QListIterator<QNetworkInterface> i(this->interfaces); i.hasNext();)
    {
@@ -261,7 +261,7 @@ void RemoteConnection::refresh()
                Protos::Common::Interface::Address* addressMess = interfaceMess->add_address();
                Common::ProtoHelper::setStr(*addressMess, &Protos::Common::Interface::Address::set_address, address.toString());
                addressMess->set_protocol(address.protocol() == QAbstractSocket::IPv6Protocol ? Protos::Common::Interface::Address::IPv6 : Protos::Common::Interface::Address::IPv4);
-               addressMess->set_listened(address == adressToListen);
+               addressMess->set_listened(address == addressToListen);
             }
          }
       }

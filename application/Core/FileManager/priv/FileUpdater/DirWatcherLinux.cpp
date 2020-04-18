@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <priv/FileUpdater/DirWatcherLinux.h>
 using namespace FM;
 
@@ -45,7 +45,7 @@ const uint32_t DirWatcherLinux::EVENTS_FILE = IN_MODIFY | IN_MOVE_SELF | IN_DELE
 
 class UnableToWatchException {};
 
-/**ath=/home/gburri/Downloads//Leonard - 35 albums/07 - Y a-t-il un gÃ©nie dans la salle
+/**
   * Constructor.
   */
 DirWatcherLinux::DirWatcherLinux() :
@@ -326,7 +326,7 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
                   {
                      // Retrieve moved directory by child map of from directory,
                      // because actually the name hasn't changed.
-                     Dir* movedDir = this->getDir(fromEvent->wd)->childs.value(fromEvent->name); // TODO: check if the dir exists!?
+                     Dir* movedDir = this->getDir(fromEvent->wd)->children.value(fromEvent->name); // TODO: check if the dir exists!?
 
                      // If the name of moved directory has changed, rename it.
                      if (movedDir && fromEvent->name != event->name)
@@ -363,7 +363,7 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
             L_DEBU(QString("inotify event (dir): IN_DELETE (path=%1)").arg(this->getEventPath(event)));
             events << WatcherEvent(WatcherEvent::DELETED, this->getEventPath(event));
             if (event->mask & IN_ISDIR)
-               delete dir->childs.value(event->name);
+               delete dir->children.value(event->name);
          }
 
          if (event->mask & IN_CREATE)
@@ -428,9 +428,6 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
    return events;
 }
 
-/**
-  * @exception UnableToWatchException
-  */
 int DirWatcherLinux::addWatch(int fileDescriptor, const QString& path, uint32_t mask)
 {
    const QByteArray& pathArray = path.toUtf8();
@@ -494,7 +491,7 @@ DirWatcherLinux::Dir::Dir(DirWatcherLinux* dwl, Dir* parent, const QString& name
       }
       catch (UnableToWatchException&)
       {
-         for (QHashIterator<QString, Dir*> j(this->childs); j.hasNext();)
+         for (QHashIterator<QString, Dir*> j(this->children); j.hasNext();)
          {
             auto child = j.next();
             child.value()->parent = nullptr;
@@ -505,7 +502,7 @@ DirWatcherLinux::Dir::Dir(DirWatcherLinux* dwl, Dir* parent, const QString& name
 
 
    if (this->parent)
-      this->parent->childs.insert(this->name, this);
+      this->parent->children.insert(this->name, this);
 }
 
 /**
@@ -517,11 +514,11 @@ DirWatcherLinux::Dir::~Dir()
    {
       if (inotify_rm_watch(this->dwl->fileDescriptor, this->wd))
          L_WARN(QString("Dir::~Dir: Unable to remove an inotify watcher."));
-   
-      if (this->parent)
-         this->parent->childs.remove(this->name);
 
-      for (QHashIterator<QString, Dir*> i(this->childs); i.hasNext();)
+      if (this->parent)
+         this->parent->children.remove(this->name);
+
+      for (QHashIterator<QString, Dir*> i(this->children); i.hasNext();)
       {
          auto child = i.next();
          child.value()->parent = nullptr;
@@ -550,9 +547,9 @@ QString DirWatcherLinux::Dir::getFullPath()
   */
 void DirWatcherLinux::Dir::rename(const QString& newName)
 {
-   this->parent->childs.remove(this->name);
+   this->parent->children.remove(this->name);
    this->name = newName;
-   this->parent->childs.insert(this->name, this);
+   this->parent->children.insert(this->name, this);
 }
 
 /**
@@ -561,9 +558,9 @@ void DirWatcherLinux::Dir::rename(const QString& newName)
   */
 void DirWatcherLinux::Dir::move(Dir* to)
 {
-   this->parent->childs.remove(this->name);
+   this->parent->children.remove(this->name);
    this->parent = to;
-   to->childs.insert(this->name, this);
+   to->children.insert(this->name, this);
 }
 
 /**

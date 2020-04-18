@@ -28,7 +28,7 @@
   * @class TableLogItemDelegate
   *
   * Override the paint method for table log items and
-  * draw them in fonction of their severity.
+  * draw them in function of their severity.
   */
 
 TableLogItemDelegate::TableLogItemDelegate(QObject *parent) :

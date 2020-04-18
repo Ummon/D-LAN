@@ -238,7 +238,7 @@ Protos::Core::Settings* Core::createDefaultValuesSettings()
 void Core::checkSettingsIntegrity()
 {
    if (SETTINGS.get<QString>("nick").isEmpty())
-      SETTINGS.set("nick", Common::Global::getCurrenMachineName());
+      SETTINGS.set("nick", Common::Global::getCurrentMachineName());
 
    this->checkSetting("buffer_size_reading", 1024u, 32u * 1024u * 1024u);
    this->checkSetting("buffer_size_writing", 1024u, 32u * 1024u * 1024u);

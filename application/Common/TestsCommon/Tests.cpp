@@ -53,7 +53,7 @@ Tests::Tests()
 
 void Tests::initTestCase()
 {
-   QTest::qSleep(100); // If there is no delay when debugging, the debugger is not attached fast enough and some breackpoints are not triggered... very strange.
+   QTest::qSleep(100); // If there is no delay when debugging, the debugger is not attached fast enough and some breakpoints are not triggered... very strange.
    qDebug() << "Application directory path (where the settings and persistent data are put) : " << Global::getDataFolder(Common::Global::DataFolderType::ROAMING, false);
 }
 
@@ -373,7 +373,7 @@ void Tests::sortedArray()
    }
 
    {
-      // Test other comparaison functions.
+      // Test other comparison functions.
       QList<QString> values { "albinos", "Andrew", "double", "David" };
       QList<QString> res1 { "Andrew", "David", "albinos", "double" };
       QList<QString> res2 { "albinos", "Andrew", "David", "double" };
@@ -501,7 +501,7 @@ void Tests::transferRateCalculator()
       QTest::qSleep(i);
       if (i < 600)
          t.addData(i);
-      qDebug() << "Transfert rate: " << t.getTransferRate();
+      qDebug() << "Transfer rate: " << t.getTransferRate();
 
       QVERIFY(t.getTransferRate() <= 1000);
    }
@@ -532,11 +532,11 @@ void Tests::readPersistentData()
    }
    catch (UnknownValueException)
    {
-      qDebug() << "Ok, exception UnknownValueException catched for the value 'john'";
+      qDebug() << "Ok, exception UnknownValueException caught for the value 'john'";
    }
    catch (...)
    {
-      QFAIL("Unknown exception occured");
+      QFAIL("Unknown exception occurred");
    }
 }
 
@@ -641,7 +641,7 @@ void Tests::compareTwoHash()
    QVERIFY(h2 == h4);
 }
 
-void Tests::hashMoveConstuctorAndAssignment()
+void Tests::hashMoveConstructorAndAssignment()
 {
    QString str("2d73736f34a73837d422f7aba2740d8409ac60df");
 

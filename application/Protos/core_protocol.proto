@@ -153,7 +153,7 @@ message GetHashesResult {
       ERROR_UNKNOWN = 255;
    }
    Status status = 1; // If status != OK nb_hash is not set.
-   uint32 nb_hash = 2; // The number of hashe that will be sent. Only the unknown hashes are sent, not the total. Depend of 'GetHashes.file.chunk'.
+   uint32 nb_hash = 2; // The number of hashes that will be sent. Only the unknown hashes are sent, not the total. Depend of 'GetHashes.file.chunk'.
 }
 
 // For each hash, this message is sent. Only if GetHashesResult.status == OK.

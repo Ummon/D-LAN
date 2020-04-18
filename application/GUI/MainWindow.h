@@ -103,7 +103,7 @@ namespace GUI
 
       MdiArea* mdiArea;
 
-      QPoint dragPosition; // Used by custome styles.
+      QPoint dragPosition; // Used by custom styles.
       bool customStyleLoaded;
       Qt::WindowFlags initialWindowFlags;
 

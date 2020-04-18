@@ -51,7 +51,7 @@ D_LAN_GUI::D_LAN_GUI(int& argc, char* argv[]) :
    this->loadLanguage(langs.getBestMatchLanguage(Common::Languages::ExeType::GUI, current).filename);
 
    // If multiple instance isn't allowed we will test if a particular
-   // shared memory segment alreydy exists. There is actually no
+   // shared memory segment already exists. There is actually no
    // easy way to bring the already existing GUI windows to the front without
    // dirty polling.
    // Under linux the flag may persist after process crash.

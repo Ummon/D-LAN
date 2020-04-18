@@ -56,9 +56,9 @@ QString ChatModel::getRoomName() const
 }
 
 /**
-  * Returns the most revelant peers from the last messages. The peers which have replied to us are put first.
+  * Returns the most relevant peers from the last messages. The peers which have replied to us are put first.
   */
-QList<QPair<Common::Hash, QString>> ChatModel::getSortedOtherPeersByRevelance() const
+QList<QPair<Common::Hash, QString>> ChatModel::getSortedOtherPeersByRelevance() const
 {
    QList<QPair<Common::Hash, QString>> result;
    QSet<Common::Hash> processedPeers;

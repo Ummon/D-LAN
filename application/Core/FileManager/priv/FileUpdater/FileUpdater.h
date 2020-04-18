@@ -99,7 +99,7 @@ namespace FM
       private:
          void computeFileCacheNbFiles(const Protos::FileCache::Hashes::Dir& dir);
 
-         const Protos::FileCache::Hashes* fileCache; ///< The hashes from the saved file cache. Used only temporally at the begining of 'run()'.
+         const Protos::FileCache::Hashes* fileCache; ///< The hashes from the saved file cache. Used only temporally at the beginning of 'run()'.
          int fileCacheNbFiles;
          int fileCacheNbFilesLoaded;
       };

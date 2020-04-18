@@ -487,7 +487,7 @@ void StressTest::haveChunk()
    time.start();
    QBitArray result = this->fileManager->haveChunks(hashes);
 
-   qDebug() << "Ask for" << hashes.size() << "hashe(s). Request time :" << time.elapsed() << "ms";
+   qDebug() << "Ask for" << hashes.size() << "hash(es). Request time :" << time.elapsed() << "ms";
    if (result.isNull())
    {
       qDebug() << " -> " << "Don't have any hashes";

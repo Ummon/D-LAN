@@ -21,7 +21,7 @@
 namespace FM
 {
    /**
-     * A wait condition used instead of the Qt implementation (QWaitCondidition) for
+     * A wait condition used instead of the Qt implementation (QWaitCondition) for
      * only one reason : to be able to use it natively with DirWatcher to wait.
      */
    class WaitCondition
@@ -37,7 +37,7 @@ namespace FM
       /**
         * Set the 'WaitCondition' in released state. 
         *  - The next call to wait will not block
-        *  - If there is already a wait thread then it will be imediately released.
+        *  - If there is already a wait thread then it will be immediately released.
         * Non-blocking call.
         */
       virtual void release() = 0;

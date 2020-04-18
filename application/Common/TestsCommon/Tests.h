@@ -70,7 +70,7 @@ private slots:
    void generateAHash();
    void buildAnHashFromAString();
    void compareTwoHash();
-   void hashMoveConstuctorAndAssignment();
+   void hashMoveConstructorAndAssignment();
    void hasher();
 
    // BloomFilter class.

@@ -64,7 +64,7 @@ namespace CoreSpace
       template <typename T>
       void checkSetting(const QString& name, T min, T max);
 
-      // This objet will be the last destroyed.
+      // This object will be the last destroyed.
       struct Cleaner { ~Cleaner() {
          SETTINGS.free();
          google::protobuf::ShutdownProtobufLibrary();

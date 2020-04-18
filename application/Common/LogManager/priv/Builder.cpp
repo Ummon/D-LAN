@@ -44,7 +44,7 @@ QSharedPointer<ILogger> Builder::newLogger(const QString& name)
 }
 
 /**
-  * Return an hook to grap all log message for the given severities.
+  * Return an hook to grep all log message for the given severities.
   */
 QSharedPointer<ILoggerHook> Builder::newLoggerHook(Severity severities)
 {

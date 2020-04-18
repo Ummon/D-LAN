@@ -251,7 +251,7 @@ QList<QSharedPointer<IChunkDownloader>> DownloadManager::getTheFirstUnfinishedCh
 {
    QList<QSharedPointer<IChunkDownloader>> unfinishedChunks;
 
-   DownloadQueue::ScanningIterator<IsDownloable> i(this->downloadQueue);
+   DownloadQueue::ScanningIterator<IsDownloadable> i(this->downloadQueue);
    FileDownload* fileDownload;
    while (unfinishedChunks.size() < n && (fileDownload = static_cast<FileDownload*>(i.next())))
    {
@@ -275,7 +275,7 @@ void DownloadManager::peerBecomesAvailable(PM::IPeer* peer)
 {
    this->downloadQueue.peerBecomesAvailable(peer);
 
-   // To handle the case where the peers source of some downloads without all the hashes become alive after being dead for a while. The hashes must be reasked.
+   // To handle the case where the peers source of some downloads without all the hashes become alive after being dead for a while. The hashes must be re-asked.
    this->occupiedPeersAskingForEntries.newPeer(peer);
    this->occupiedPeersAskingForHashes.newPeer(peer);
    this->occupiedPeersDownloadingChunk.newPeer(peer);
@@ -332,7 +332,7 @@ void DownloadManager::peerNoLongerAskingForHashes(PM::IPeer* peer)
       return;
 
    // We can't use 'downloadsIndexedBySourcePeerID' because the order matters.
-   DownloadQueue::ScanningIterator<IsDownloable> i(this->downloadQueue);
+   DownloadQueue::ScanningIterator<IsDownloadable> i(this->downloadQueue);
    while (FileDownload* fileDownload = static_cast<FileDownload*>(i.next()))
       if (!fileDownload->isStatusErroneous() && fileDownload->retrieveHashes())
          break;
@@ -377,7 +377,7 @@ void DownloadManager::scanTheQueue()
    QSet<PM::IPeer*> linkedPeersNotOccupied(peers.begin(), peers.end());
    linkedPeersNotOccupied -= this->occupiedPeersDownloadingChunk.getOccupiedPeers();
 
-   DownloadQueue::ScanningIterator<IsDownloable> i(this->downloadQueue);
+   DownloadQueue::ScanningIterator<IsDownloadable> i(this->downloadQueue);
 
    while (numberOfDownloadThreadRunningCopy < NUMBER_OF_DOWNLOADER && !linkedPeersNotOccupied.isEmpty())
    {
@@ -445,7 +445,7 @@ void DownloadManager::downloadStatusBecomeErroneous(Download* download)
 }
 
 /**
-  * Load the queue, called once at the begining of the program.
+  * Load the queue, called once at the beginning of the program.
   * Will start the timer to save periodically the queue.
   */
 void DownloadManager::loadQueueFromFile()

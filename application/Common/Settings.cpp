@@ -138,7 +138,7 @@ void Settings::remove()
    PersistentData::rmValue(this->filename, Common::Global::DataFolderType::ROAMING);
 }
 
-bool Settings::saveToACutomDirectory(const QString& directory) const
+bool Settings::saveToACustomDirectory(const QString& directory) const
 {
    QMutexLocker locker(&this->mutex);
    Q_ASSERT(this->settings);
@@ -156,7 +156,7 @@ bool Settings::saveToACutomDirectory(const QString& directory) const
    }
 }
 
-bool Settings::loadFromACutomDirectory(const QString& directory)
+bool Settings::loadFromACustomDirectory(const QString& directory)
 {
    QMutexLocker locker(&this->mutex);
 

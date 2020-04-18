@@ -201,7 +201,7 @@ void PeersDock::sortPeersByNick()
 }
 
 /**
-  * Must be called only by a 'QAction' object whith a 'QColor' object as data.
+  * Must be called only by a 'QAction' object with a 'QColor' object as data.
   */
 void PeersDock::colorizeSelectedPeer()
 {

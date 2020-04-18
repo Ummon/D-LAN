@@ -252,7 +252,7 @@ void SettingsWidget::updateNetworkInterfaces(const Protos::GUI::State& state)
       nextInterface:;
    }
 
-   // Remove the non-existant interfaces.
+   // Remove the non-existent interfaces.
    for (QListIterator<QObject*> i(this->ui->scoInterfacesContent->children()); i.hasNext();)
    {
       QLabel* current = dynamic_cast<QLabel*>(i.next());
@@ -290,12 +290,12 @@ void SettingsWidget::updateAddresses(const Protos::Common::Interface& interfaceM
 
    for (int i = 0; i < interfaceMess.address_size(); i++)
    {
-      const QString& addresseName = Common::ProtoHelper::getStr(interfaceMess.address(i), &Protos::Common::Interface::Address::address);
+      const QString& addressName = Common::ProtoHelper::getStr(interfaceMess.address(i), &Protos::Common::Interface::Address::address);
 
       for (QListIterator<QRadioButton*> j(container->findChildren<QRadioButton*>()); j.hasNext();)
       {
          QRadioButton* addressButton = j.next();
-         if (addressButton->text() == addresseName)
+         if (addressButton->text() == addressName)
          {
             addressesNotUpdated.removeOne(addressButton);
             if (interfaceMess.address(i).listened())
@@ -306,7 +306,7 @@ void SettingsWidget::updateAddresses(const Protos::Common::Interface& interfaceM
 
       {
          // Address not found -> add a new one.
-         QRadioButton* newAddressButton = new QRadioButton(addresseName, container);
+         QRadioButton* newAddressButton = new QRadioButton(addressName, container);
          this->ui->grpAddressesToListenTo->addButton(newAddressButton);
          if (interfaceMess.address(i).listened())
             newAddressButton->setChecked(true);
@@ -316,7 +316,7 @@ void SettingsWidget::updateAddresses(const Protos::Common::Interface& interfaceM
       nextAddress:;
    }
 
-   // Remove the non-existant addresses.
+   // Remove the non-existent addresses.
    for (QListIterator<QRadioButton*> i(container->findChildren<QRadioButton*>()); i.hasNext();)
    {
       QRadioButton* current = i.next();

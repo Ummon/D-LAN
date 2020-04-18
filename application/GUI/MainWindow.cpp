@@ -152,7 +152,7 @@ void MainWindow::coreConnectionError(RCC::ICoreConnection::ConnectionErrorCode e
       error = tr("There is already a connection process in progress");
       break;
    case RCC::ICoreConnection::RCC_ERROR_HOST_UNKOWN:
-      error = tr("The host is unknow");
+      error = tr("The host is unknown");
       break;
    case RCC::ICoreConnection::RCC_ERROR_HOST_TIMEOUT:
       error = tr("Host has timed out");

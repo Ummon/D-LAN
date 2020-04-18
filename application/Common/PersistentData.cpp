@@ -63,7 +63,7 @@ void PersistentData::setValue(const QString& directory, const QString& name, con
 /**
   * Retrieve the data associated to a given name.
   * @exception PersistentDataIOException
-  * @exception UnknownValueException Throwed if the value doesn't exist
+  * @exception UnknownValueException Thrown if the value doesn't exist
   */
 void PersistentData::getValue(const QString& name, google::protobuf::Message& data, Global::DataFolderType dataFolderType, bool humanReadable)
 {

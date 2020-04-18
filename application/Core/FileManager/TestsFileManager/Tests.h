@@ -71,7 +71,7 @@ private slots:
 
    /***** Ask for chunks by hash *****/
    void getAnExistingChunk();
-   void getAnUnexistingChunk();
+   void getANonExistingChunk();
 
    /***** Get Hashes from a FileEntry which the hash is already computed *****/
    void getHashesFromAFileEntry1();
@@ -80,11 +80,11 @@ private slots:
    void getHashesFromAFileEntry2();
 
    /***** Browse the shared directories *****/
-   void browseSomedirectories();
+   void browseSomeDirectories();
 
    /***** Find files and directories by keywords *****/
    void findExistingFilesWithOneWord();
-   void findUnexistingFilesWithOneWord();
+   void findNonExistingFilesWithOneWord();
    void findFilesWithSomeWords1();
    void findFilesWithSomeWords2();
    void findFilesWithResultFragmentation();
@@ -108,7 +108,7 @@ private slots:
    /***** Speed test of the class 'Chunks' *****/
    void chunksPerformance();
 
-   /***** The exenstion index class *****/
+   /***** The extension index class *****/
    void extensionIndexAddItem();
    void extensionIndexRmItem();
    void extensionIndexChangeItem();

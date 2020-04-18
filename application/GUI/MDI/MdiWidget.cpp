@@ -22,7 +22,7 @@ using namespace GUI;
 /**
   * @class MDIWidget
   * The widget put into a MDI sub window in the MDI area may inherit from this class
-  * to have access to additionnal features.
+  * to have access to additional features.
   */
 
 MdiWidget::MdiWidget(QWidget* parent) :

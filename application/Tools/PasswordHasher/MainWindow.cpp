@@ -114,7 +114,7 @@ void MainWindow::savePassword(const QString& directory)
       SETTINGS.set("remote_password", Common::Hasher::hashWithSalt(this->ui->txtPass1->text(), this->salt));
       SETTINGS.set("salt", this->salt);
 
-      if (!SETTINGS.saveToACutomDirectory(directory))
+      if (!SETTINGS.saveToACustomDirectory(directory))
          QMessageBox::warning(this, "Error", "Error during saving");
       else
          QMessageBox::information(this, "Password saved", "Password has been saved.");
