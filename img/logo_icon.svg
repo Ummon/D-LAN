@@ -1,6 +1,4 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- Created with Inkscape (http://www.inkscape.org/) -->
-
 <svg
    xmlns:dc="http://purl.org/dc/elements/1.1/"
    xmlns:cc="http://creativecommons.org/ns#"
@@ -8,106 +6,75 @@
    xmlns:svg="http://www.w3.org/2000/svg"
    xmlns="http://www.w3.org/2000/svg"
    xmlns:xlink="http://www.w3.org/1999/xlink"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="106"
-   height="106"
-   viewBox="0 0 28.045833 28.045834"
-   version="1.1"
    id="svg619"
-   inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
-   sodipodi:docname="logo_icon.svg">
+   version="1.1"
+   viewBox="0 0 28.045833 28.045834"
+   height="106"
+   width="106">
   <defs
      id="defs613">
     <linearGradient
-       inkscape:collect="always"
-       xlink:href="#linearGradient3874"
-       id="linearGradient3882"
-       x1="432.4939"
-       y1="609.04083"
-       x2="432.4939"
-       y2="598.3952"
+       gradientTransform="translate(18.646444,99.662199)"
        gradientUnits="userSpaceOnUse"
-       gradientTransform="translate(18.646444,99.662199)" />
+       y2="598.3952"
+       x2="432.4939"
+       y1="609.04083"
+       x1="432.4939"
+       id="linearGradient3882"
+       xlink:href="#linearGradient3874" />
     <linearGradient
        id="linearGradient3874">
       <stop
-         id="stop3876"
+         style="stop-color:#000000;stop-opacity:0.5945946;"
          offset="0"
-         style="stop-color:#000000;stop-opacity:0.5945946;" />
+         id="stop3876" />
       <stop
-         id="stop3878"
+         style="stop-color:#000000;stop-opacity:0;"
          offset="1"
-         style="stop-color:#000000;stop-opacity:0;" />
+         id="stop3878" />
     </linearGradient>
     <radialGradient
-       inkscape:collect="always"
-       xlink:href="#linearGradient3795"
-       id="radialGradient3049"
-       gradientUnits="userSpaceOnUse"
-       gradientTransform="matrix(0.68544136,0.65056653,-0.24050034,0.41228951,454.17283,414.57803)"
-       cx="56.043365"
-       cy="385.81635"
-       fx="56.043365"
+       r="340"
        fy="385.81635"
-       r="340" />
+       fx="56.043365"
+       cy="385.81635"
+       cx="56.043365"
+       gradientTransform="matrix(0.68544136,0.65056653,-0.24050034,0.41228951,454.17283,414.57803)"
+       gradientUnits="userSpaceOnUse"
+       id="radialGradient3049"
+       xlink:href="#linearGradient3795" />
     <linearGradient
        id="linearGradient3795">
       <stop
-         style="stop-color:#070b0f;stop-opacity:1;"
+         id="stop3797"
          offset="0"
-         id="stop3797" />
+         style="stop-color:#070b0f;stop-opacity:1;" />
       <stop
-         style="stop-color:#4079b4;stop-opacity:1;"
+         id="stop3799"
          offset="1"
-         id="stop3799" />
+         style="stop-color:#4079b4;stop-opacity:1;" />
     </linearGradient>
     <linearGradient
-       inkscape:collect="always"
-       xlink:href="#linearGradient3826"
-       id="linearGradient3843"
-       x1="436"
-       y1="512.62091"
-       x2="437"
-       y2="567.12091"
+       gradientTransform="matrix(1,0,0,0.88785047,18.646444,157.12481)"
        gradientUnits="userSpaceOnUse"
-       gradientTransform="matrix(1,0,0,0.88785047,18.646444,157.12481)" />
+       y2="567.12091"
+       x2="437"
+       y1="512.62091"
+       x1="436"
+       id="linearGradient3843"
+       xlink:href="#linearGradient3826" />
     <linearGradient
        id="linearGradient3826">
       <stop
-         id="stop3828"
+         style="stop-color:#ffffff;stop-opacity:0.31531531;"
          offset="0"
-         style="stop-color:#ffffff;stop-opacity:0.31531531;" />
+         id="stop3828" />
       <stop
-         id="stop3830"
+         style="stop-color:#ffffff;stop-opacity:1;"
          offset="1"
-         style="stop-color:#ffffff;stop-opacity:1;" />
+         id="stop3830" />
     </linearGradient>
   </defs>
-  <sodipodi:namedview
-     id="base"
-     pagecolor="#ffffff"
-     bordercolor="#666666"
-     borderopacity="1.0"
-     inkscape:pageopacity="0.0"
-     inkscape:pageshadow="2"
-     inkscape:zoom="3.959798"
-     inkscape:cx="111.62591"
-     inkscape:cy="57.886511"
-     inkscape:document-units="mm"
-     inkscape:current-layer="layer1"
-     showgrid="false"
-     units="px"
-     inkscape:pagecheckerboard="true"
-     fit-margin-top="2"
-     fit-margin-left="2"
-     fit-margin-bottom="2"
-     fit-margin-right="2"
-     inkscape:window-width="1920"
-     inkscape:window-height="1064"
-     inkscape:window-x="0"
-     inkscape:window-y="0"
-     inkscape:window-maximized="1" />
   <metadata
      id="metadata616">
     <rdf:RDF>
@@ -121,89 +88,59 @@
     </rdf:RDF>
   </metadata>
   <g
-     inkscape:label="Layer 1"
-     inkscape:groupmode="layer"
-     id="layer1"
-     transform="translate(345.13006,113.14196)">
+     transform="translate(345.13006,113.14196)"
+     id="layer1">
     <g
-       id="g4389"
-       transform="matrix(0.26458333,0,0,0.26458333,-452.4752,-255.3837)">
+       transform="matrix(0.26458333,0,0,0.26458333,-452.4752,-255.3837)"
+       id="g4389">
       <rect
-         rx="21.5"
-         style="opacity:0.23999999;fill:url(#linearGradient3882);fill-opacity:1;stroke:none"
-         id="rect3872"
-         width="100"
-         height="100"
-         x="408.71393"
-         y="540.60657"
-         inkscape:export-filename="C:\projects\D-LAN_master\application\GUI\ressources\icon_big.png"
-         inkscape:export-xdpi="903.53003"
-         inkscape:export-ydpi="903.53003"
-         ry="21.5" />
-      <rect
-         rx="21.5"
          ry="21.5"
-         inkscape:export-ydpi="903.53003"
-         inkscape:export-xdpi="903.53003"
-         inkscape:export-filename="C:\projects\D-LAN_master\application\GUI\ressources\icon_big.png"
          y="540.60657"
          x="408.71393"
          height="100"
          width="100"
+         id="rect3872"
+         style="opacity:0.23999999;fill:url(#linearGradient3882);fill-opacity:1;stroke:none"
+         rx="21.5" />
+      <rect
+         style="fill:url(#radialGradient3049);fill-opacity:1;stroke:none"
          id="rect3037"
-         style="fill:url(#radialGradient3049);fill-opacity:1;stroke:none" />
+         width="100"
+         height="100"
+         x="408.71393"
+         y="540.60657"
+         ry="21.5"
+         rx="21.5" />
       <g
-         style="font-style:oblique;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:83.74663544px;line-height:125%;font-family:Arial;-inkscape-font-specification:'Arial Bold Oblique';letter-spacing:-11.35999966px;word-spacing:1.75000012px;fill:#fd2435;fill-opacity:1;stroke:#000000;stroke-width:7.4000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-         id="g4841"
          transform="translate(160.77684,231.01189)"
-         inkscape:export-filename="C:\projects\D-LAN_master\application\GUI\ressources\icon_big.png"
-         inkscape:export-xdpi="903.53003"
-         inkscape:export-ydpi="903.53003">
+         id="g4841"
+         style="font-style:oblique;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:83.74663544px;line-height:125%;font-family:Arial;-inkscape-font-specification:'Arial Bold Oblique';letter-spacing:-11.35999966px;word-spacing:1.75000012px;fill:#fd2435;fill-opacity:1;stroke:#000000;stroke-width:7.4000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1">
         <path
-           style="fill:#fd2435;fill-opacity:1;stroke:#000000;stroke-width:7.4000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-           d="m 270.6875,329.4375 -2.125,10.03125 12.34375,-0.15625 h 7.15625 c 3.62572,5e-5 6.14487,0.25935 7.5625,0.75 2.01729,0.70884 3.71701,2.14128 5.09375,4.28125 1.37665,2.14005 2.06245,5.30978 2.0625,9.5625 -5e-5,4.98884 -0.83711,9.31975 -2.5,13 -1.66299,3.68029 -3.69879,6.6356 -6.125,8.84375 -1.69024,1.52664 -3.56282,2.56616 -5.59375,3.125 -2.03099,0.55887 -5.28716,0.84376 -9.8125,0.84375 h -6.25 l 5.01739,-21.75 -12.84375,0.125 L 258,389.375 h 21.28125 c 5.31592,0 9.2499,-0.30651 11.8125,-0.90625 4.52533,-1.09045 8.23127,-2.77255 11.09375,-5.0625 3.73475,-2.94421 6.81405,-6.93505 9.28125,-11.9375 2.46709,-5.00243 3.71869,-10.72655 3.71875,-17.1875 -6e-5,-2.99871 -0.31055,-5.75954 -0.9375,-8.28125 -0.62707,-2.52162 -1.52896,-4.7519 -2.6875,-6.6875 -1.15866,-1.9355 -2.53027,-3.592 -4.125,-4.96875 -1.59483,-1.37664 -3.36337,-2.42412 -5.3125,-3.1875 -1.94923,-0.76325 -4.17552,-1.28583 -6.65625,-1.53125 -1.25406,-0.13626 -4.12693,-0.18744 -8.625,-0.1875 z"
            id="path4843"
-           inkscape:connector-curvature="0"
-           sodipodi:nodetypes="cccccccccssccccsccccccccccc" />
+           d="m 270.6875,329.4375 -2.125,10.03125 12.34375,-0.15625 h 7.15625 c 3.62572,5e-5 6.14487,0.25935 7.5625,0.75 2.01729,0.70884 3.71701,2.14128 5.09375,4.28125 1.37665,2.14005 2.06245,5.30978 2.0625,9.5625 -5e-5,4.98884 -0.83711,9.31975 -2.5,13 -1.66299,3.68029 -3.69879,6.6356 -6.125,8.84375 -1.69024,1.52664 -3.56282,2.56616 -5.59375,3.125 -2.03099,0.55887 -5.28716,0.84376 -9.8125,0.84375 h -6.25 l 5.01739,-21.75 -12.84375,0.125 L 258,389.375 h 21.28125 c 5.31592,0 9.2499,-0.30651 11.8125,-0.90625 4.52533,-1.09045 8.23127,-2.77255 11.09375,-5.0625 3.73475,-2.94421 6.81405,-6.93505 9.28125,-11.9375 2.46709,-5.00243 3.71869,-10.72655 3.71875,-17.1875 -6e-5,-2.99871 -0.31055,-5.75954 -0.9375,-8.28125 -0.62707,-2.52162 -1.52896,-4.7519 -2.6875,-6.6875 -1.15866,-1.9355 -2.53027,-3.592 -4.125,-4.96875 -1.59483,-1.37664 -3.36337,-2.42412 -5.3125,-3.1875 -1.94923,-0.76325 -4.17552,-1.28583 -6.65625,-1.53125 -1.25406,-0.13626 -4.12693,-0.18744 -8.625,-0.1875 z"
+           style="fill:#fd2435;fill-opacity:1;stroke:#000000;stroke-width:7.4000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
       </g>
       <path
-         style="fill:#ffffff;fill-opacity:1;stroke:none"
-         d="m 475.28361,555.65993 -0.625,2.9375 -12.5625,59.9375 -0.9375,4.4688 h 4.5625 42.625 c 0.23119,-1.2678 0.375,-2.5698 0.375,-3.9063 v -13.5312 h -24 l 9.5,-45.4688 0.90625,-4.4375 h -4.53125 -12.3125 z"
          id="path3043"
-         inkscape:export-filename="C:\projects\D-LAN_master\application\GUI\ressources\icon_big.png"
-         inkscape:export-xdpi="903.53003"
-         inkscape:export-ydpi="903.53003"
-         inkscape:connector-curvature="0" />
+         d="m 475.28361,555.65993 -0.625,2.9375 -12.5625,59.9375 -0.9375,4.4688 h 4.5625 42.625 c 0.23119,-1.2678 0.375,-2.5698 0.375,-3.9063 v -13.5312 h -24 l 9.5,-45.4688 0.90625,-4.4375 h -4.53125 -12.3125 z"
+         style="fill:#ffffff;fill-opacity:1;stroke:none" />
       <path
-         inkscape:export-ydpi="903.53003"
-         inkscape:export-xdpi="903.53003"
-         inkscape:export-filename="C:\projects\D-LAN_master\application\GUI\ressources\icon_big.png"
-         style="font-style:oblique;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:medium;line-height:125%;font-family:Arial;-inkscape-font-specification:'Arial Bold Oblique';letter-spacing:-11.35999966px;word-spacing:1.75000012px;fill:#fd2435;fill-opacity:1;stroke:#fd2435;stroke-width:7.4000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-         d="m 429.934,558.27262 -2.125,10.03125 12.34375,-0.15625 h 7.15625 c 3.62572,5e-5 6.14487,0.25935 7.5625,0.75 2.01729,0.70884 3.71701,2.14128 5.09375,4.28125 1.37665,2.14005 2.06245,5.30978 2.0625,9.5625 -5e-5,4.98884 -0.83711,9.31975 -2.5,13 -1.66299,3.68029 -3.69879,6.6356 -6.125,8.84375 -1.69024,1.52664 -3.56282,2.56616 -5.59375,3.125 -2.03099,0.55887 -5.28716,0.84376 -9.8125,0.84375 h -6.25 l 5.01739,-21.75 -12.84375,0.125 -6.67364,31.28125 h 21.28125 c 5.31592,0 9.2499,-0.30651 11.8125,-0.90625 4.52533,-1.09045 8.23127,-2.77255 11.09375,-5.0625 3.73475,-2.94421 6.81405,-6.93505 9.28125,-11.9375 2.46709,-5.00243 3.71869,-10.72655 3.71875,-17.1875 -6e-5,-2.99871 -0.31055,-5.75954 -0.9375,-8.28125 -0.62707,-2.52162 -1.52896,-4.7519 -2.6875,-6.6875 -1.15866,-1.9355 -2.53027,-3.592 -4.125,-4.96875 -1.59483,-1.37664 -3.36337,-2.42412 -5.3125,-3.1875 -1.94923,-0.76325 -4.17552,-1.28583 -6.65625,-1.53125 -1.25406,-0.13626 -4.12693,-0.18744 -8.625,-0.1875 z"
          id="path4847"
-         inkscape:connector-curvature="0"
-         sodipodi:nodetypes="cccccccccssccccsccccccccccc" />
+         d="m 429.934,558.27262 -2.125,10.03125 12.34375,-0.15625 h 7.15625 c 3.62572,5e-5 6.14487,0.25935 7.5625,0.75 2.01729,0.70884 3.71701,2.14128 5.09375,4.28125 1.37665,2.14005 2.06245,5.30978 2.0625,9.5625 -5e-5,4.98884 -0.83711,9.31975 -2.5,13 -1.66299,3.68029 -3.69879,6.6356 -6.125,8.84375 -1.69024,1.52664 -3.56282,2.56616 -5.59375,3.125 -2.03099,0.55887 -5.28716,0.84376 -9.8125,0.84375 h -6.25 l 5.01739,-21.75 -12.84375,0.125 -6.67364,31.28125 h 21.28125 c 5.31592,0 9.2499,-0.30651 11.8125,-0.90625 4.52533,-1.09045 8.23127,-2.77255 11.09375,-5.0625 3.73475,-2.94421 6.81405,-6.93505 9.28125,-11.9375 2.46709,-5.00243 3.71869,-10.72655 3.71875,-17.1875 -6e-5,-2.99871 -0.31055,-5.75954 -0.9375,-8.28125 -0.62707,-2.52162 -1.52896,-4.7519 -2.6875,-6.6875 -1.15866,-1.9355 -2.53027,-3.592 -4.125,-4.96875 -1.59483,-1.37664 -3.36337,-2.42412 -5.3125,-3.1875 -1.94923,-0.76325 -4.17552,-1.28583 -6.65625,-1.53125 -1.25406,-0.13626 -4.12693,-0.18744 -8.625,-0.1875 z"
+         style="font-style:oblique;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:medium;line-height:125%;font-family:Arial;-inkscape-font-specification:'Arial Bold Oblique';letter-spacing:-11.35999966px;word-spacing:1.75000012px;fill:#fd2435;fill-opacity:1;stroke:#fd2435;stroke-width:7.4000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
       <path
-         inkscape:export-ydpi="903.53003"
-         inkscape:export-xdpi="903.53003"
-         inkscape:export-filename="C:\projects\D-LAN_master\application\GUI\ressources\icon_big.png"
-         sodipodi:nodetypes="cscscsssc"
-         inkscape:connector-curvature="0"
-         id="rect3834"
+         style="opacity:0.1946903;fill:url(#linearGradient3843);fill-opacity:1;stroke:none"
          d="m 429.09252,540.61942 c -11.39132,0.50937 -20.375,8.84407 -20.375,19.08879 v 28.41121 c 1.25901,-7.06186 6.61194,-5.20598 49.93474,-5.20801 42.61566,-0.002 49.13172,-1.33273 50.06526,5.20801 v -28.41121 c 0,-10.57519 -9.589,-19.08879 -21.5,-19.08879 h -57 c -0.37222,0 -0.75754,-0.0164 -1.125,0 z"
-         style="opacity:0.1946903;fill:url(#linearGradient3843);fill-opacity:1;stroke:none" />
+         id="rect3834" />
       <rect
-         rx="21.5"
-         ry="21.5"
-         inkscape:export-ydpi="903.53003"
-         inkscape:export-xdpi="903.53003"
-         inkscape:export-filename="C:\projects\D-LAN_master\application\GUI\ressources\icon_big.png"
-         y="540.60657"
-         x="408.71393"
-         height="100"
-         width="100"
+         style="opacity:1;fill:none;fill-opacity:1;stroke:#12335b;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
          id="rect3884"
-         style="opacity:1;fill:none;fill-opacity:1;stroke:#12335b;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+         width="100"
+         height="100"
+         x="408.71393"
+         y="540.60657"
+         ry="21.5"
+         rx="21.5" />
     </g>
   </g>
 </svg>
