@@ -58,7 +58,7 @@ void Old::NodeResult<T>::intersect(QSet<Old::NodeResult<T>>& s1, const QSet<Old:
 }
 
 /**
-  * To sort from the best level (the lowest value) to the worse (the hightest value).
+  * To sort from the best level (the lowest value) to the worse (the highest value).
   */
 template <typename T>
 inline bool operator<(const Old::NodeResult<T>& nr1, const Old::NodeResult<T>& nr2)
@@ -112,7 +112,7 @@ namespace Old
 
    /**
      * Remove the item from the node.
-     * If the item doesn'exist nothing happen.
+     * If the item doesn't exist nothing happen.
      */
    void rmItem(T item);
 

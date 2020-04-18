@@ -26,7 +26,7 @@ using namespace GUI;
 
 /**
   * @class ColorBox
-  * A class to display a choosen color into a button.
+  * A class to display a chosen color into a button.
   */
 
 ColorBox::ColorBox(QWidget* parent) :

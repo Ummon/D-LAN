@@ -23,7 +23,7 @@ private:
     
     static const char TTL; ///< Time to live, see the UDP multicast documentation.
     static const int port;
-    static QHostAddress multicastIP; ///< A choosen multicast address channel used to send and received messages.
+    static QHostAddress multicastIP; ///< A chosen multicast address channel used to send and received messages.
 };
 
 #endif

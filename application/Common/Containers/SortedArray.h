@@ -262,7 +262,7 @@ int Common::SortedArray<T, M>::size() const
 }
 
 /**
-  * Insert or update the given value. The update is done with assignement operator of T.
+  * Insert or update the given value. The update is done with assignment operator of T.
   * @param exists Optional, set to 'true' if the value already exists.
   * @return The position 'value'.
   */

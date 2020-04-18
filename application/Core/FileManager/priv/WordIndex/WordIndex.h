@@ -46,7 +46,7 @@ namespace FM
    class WordIndex : public LM::ILoggable, Common::Uncopyable
    {
    public:
-      static const int MIN_WORD_SIZE_PARTIAL_MATCH; ///< During a search, the words which have a size below this value must match entirely, for exemple 'of' match "conspiracy of one" and not "offspring".
+      static const int MIN_WORD_SIZE_PARTIAL_MATCH; ///< During a search, the words which have a size below this value must match entirely, for example 'of' match "conspiracy of one" and not "offspring".
       static const int MIN_WORD_SIZE_PARTIAL_MATCH_KOREAN;
 
       WordIndex();
@@ -136,7 +136,7 @@ void FM::WordIndex<T>::renameItem(const QStringList& oldWords, const QStringList
 }
 
 /**
-  * Return a an unordered list of 'NodeResult' matching the given word. If 'NodeResult::level' is 0 then the item matches entirely the given word otherwise (level is 1) the word match the begining of the indexed string.
+  * Return a an unordered list of 'NodeResult' matching the given word. If 'NodeResult::level' is 0 then the item matches entirely the given word otherwise (level is 1) the word match the beginning of the indexed string.
   * There is a particular case when the word length is below 'MIN_WORD_SIZE_PARTIAL_MATCH', see the comment associated to this constant for more information.
   */
 template<typename T>

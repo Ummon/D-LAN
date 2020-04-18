@@ -38,12 +38,12 @@ namespace FM
    class IGetEntriesResult;
 
    /**
-     * The file manager controls all shared directories and files. It offers these fonctions:
+     * The file manager controls all shared directories and files. It offers these functions:
      * - Add or remove one ore more shared directory.
-     * - Watch the shared directories recursively to update the model if a file/directory is addes, changed, renamed or removed.
+     * - Watch the shared directories recursively to update the model if a file/directory is added, changed, renamed or removed.
      * - Browse the cache.
      * - Offer a quick indexed multi-term search based on the names of files and directories.
-     * - Offer a way to indentify each chunk of a file by a hash.
+     * - Offer a way to identify each chunk of a file by a hash.
      * - Read or write a file chunk.
      * - Persist data to avoid re-hashing.
      */
@@ -111,7 +111,7 @@ namespace FM
 
       /**
         * Return the hashes from a FileEntry. If the hashes don't exist they will be computed on the fly. However this
-        * Method is non-blocking, when the hashes are ready a signal will be emited by the IGetHashesResult object.
+        * Method is non-blocking, when the hashes are ready a signal will be emitted by the IGetHashesResult object.
         */
       virtual QSharedPointer<IGetHashesResult> getHashes(const Protos::Common::Entry& file) = 0;
 
@@ -184,7 +184,7 @@ namespace FM
 
    signals:
       /**
-        * Emitted when the file cache has been loaded. Guaranteed to be emmited once.
+        * Emitted when the file cache has been loaded. Guaranteed to be emitted once.
         */
       void fileCacheLoaded();
    };

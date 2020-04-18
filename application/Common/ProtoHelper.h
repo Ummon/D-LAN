@@ -65,7 +65,7 @@ namespace Common
       static QHostAddress getIP(const Protos::Common::IP& ipMess);
 
       /**
-        * Return the relative path of an entry, for exemple:
+        * Return the relative path of an entry, for example:
         *  - entry is a root: "/" (with 'prependSharedDir == false')
         *  - entry is a root: "/root_dir/" ('prependSharedDir == true')
         *  - entry is a directory: "/abc/xyz/" (with 'entriesToAppend == DIR' and 'prependSharedDir == false').

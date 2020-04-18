@@ -23,7 +23,7 @@ using namespace PM;
 #include <priv/PeerManager.h>
 
 /**
- * Return a new instante of a PeerManager
+ * Return a new instance of a PeerManager
  */
 QSharedPointer<IPeerManager> Builder::newPeerManager(QSharedPointer<FM::IFileManager> fileManager)
 {

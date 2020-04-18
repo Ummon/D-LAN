@@ -92,7 +92,7 @@ void MainWindow::changeEvent(QEvent *e)
 }
 
 /**
-  * Ask the user to choose a directory. Trigged by the menu.
+  * Ask the user to choose a directory. Triggered by the menu.
   */
 void MainWindow::openDir()
 {
@@ -257,7 +257,7 @@ void MainWindow::closeCurrentFile()
 }
 
 /**
-  * Ask the log model wich are the known severities, modules and thread. Then refresh the
+  * Ask the log model which are the known severities, modules and thread. Then refresh the
   * widgets 'TooglableList'.
   */
 void MainWindow::refreshFilters()

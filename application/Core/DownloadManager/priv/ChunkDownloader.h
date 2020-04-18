@@ -89,7 +89,7 @@ namespace DM
    signals:
       void downloadStarted();
       /**
-        * Emitted when a downlad is terminated (or aborted).
+        * Emitted when a download is terminated (or aborted).
         */
       void downloadFinished();
       void numberOfPeersChanged();

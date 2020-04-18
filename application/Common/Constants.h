@@ -53,7 +53,7 @@ namespace Common
 
       static const int PROTOBUF_STREAMING_BUFFER_SIZE;
 
-      static const QString BINARY_PREFIXS[];
+      static const QString BINARY_PREFIXES[];
 
       static const int MAX_NB_HASHES_PER_ENTRY_GUI_BROWSE;
       static const int CHUNK_SIZE;

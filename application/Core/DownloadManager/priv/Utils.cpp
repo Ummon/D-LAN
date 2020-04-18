@@ -43,7 +43,7 @@ using namespace DM;
       case FILE_IO_ERROR: return "FILE_IO_ERROR";
       case FILE_NON_EXISTENT: return "FILE_NON_EXISTENT";
       case GOT_TOO_MUCH_DATA: return "GOT_TOO_MUCH_DATA";
-      case HASH_MISSMATCH: return "HASH_MISSMATCH";
+      case HASH_MISMATCH: return "HASH_MISMATCH";
       case DIRECTORY_SCANNING_IN_PROGRESS: return "DIRECTORY_SCANNING_IN_PROGRESS";
       case UNABLE_TO_GET_ENTRIES: return "UNABLE_TO_GET_ENTRIES";
       }

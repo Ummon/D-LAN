@@ -143,8 +143,8 @@ void FileUpdater::rmRoot(SharedDirectory* dir, Directory* dir2)
 }
 
 /**
-  * Set the file cache to retrieve the hashes frome it.
-  * Muste be called before starting the fileUpdater.
+  * Set the file cache to retrieve the hashes from it.
+  * Must be called before starting the fileUpdater.
   * The shared dirs in fileCache must be previously added by 'addRoot(..)'.
   * This object must unallocated the hashes.
   */
@@ -174,8 +174,8 @@ void FileUpdater::prioritizeAFileToHash(File* file)
          this->remainingSizeToHash += file->getSize();
       }
 
-      // Commmented to avoid this behavior:
-      // When a lot of unhashed tiny file are asked the hashing process will constently abort the current hashing file
+      // Commented to avoid this behavior:
+      // When a lot of unhashed tiny file are asked the hashing process will constantly abort the current hashing file
       // and will never finish it thus slow down the global hashing rate.
       // this->fileHasher.stop();
 
@@ -315,7 +315,7 @@ void FileUpdater::run()
 
 /**
   * It will take some files from 'filesWithoutHashesPrioritized' or 'fileWithoutHashes' and compute theirs hashes.
-  * The minimum duration of the compuation is equal to the setting 'minimum_duration_when_hashing'.
+  * The minimum duration of the computation is equal to the setting 'minimum_duration_when_hashing'.
   */
 void FileUpdater::computeSomeHashes()
 {
@@ -351,7 +351,7 @@ void FileUpdater::computeSomeHashes()
             try
             {
                int hashedAmount = 0;
-               gotAllHashes = this->fileHasher.start(nextFileToHash->asFileForHasher(), 1, &hashedAmount); // Be carreful of methods 'prioritizeAFileToHash(..)' and 'rmRoot(..)' called concurrently here.
+               gotAllHashes = this->fileHasher.start(nextFileToHash->asFileForHasher(), 1, &hashedAmount); // Be careful of methods 'prioritizeAFileToHash(..)' and 'rmRoot(..)' called concurrently here.
                this->remainingSizeToHash -= hashedAmount;
                this->updateHashingProgress();
             }
@@ -406,7 +406,7 @@ void FileUpdater::updateHashingProgress()
 
 /**
   * Stop the current hashing process or the next hashing process.
-  * The file is requeued.
+  * The file is re-queued.
   */
 void FileUpdater::stopHashing()
 {
@@ -498,7 +498,7 @@ void FileUpdater::scan(Directory* dir, bool addUnfinished)
             if (!file)
             {
                // Very special case : there is a file 'a' without File* in cache and a file 'a.unfinished'.
-               // This case occure when a file is redownloaded, the File* 'a' is renamed as 'a.unfinished' but the physical file 'a'
+               // This case occurs when a file is redownloaded, the File* 'a' is renamed as 'a.unfinished' but the physical file 'a'
                // is not deleted.
                File* unfinishedFile = currentDir->getFile(entry.fileName().append(Global::getUnfinishedSuffix()));
                if (!unfinishedFile)
@@ -565,7 +565,7 @@ void FileUpdater::stopScanning(Directory* dir)
 }
 
 /**
-  * Delete an entry and if it's a directory remove it and its sub childs from 'this->dirsToScan'.
+  * Delete an entry and if it's a directory remove it and its sub children from 'this->dirsToScan'.
   * It can't be used to remove a 'SharedDirectory', only the 'Cache' is able to do that.
   */
 void FileUpdater::deleteEntry(Entry* entry)

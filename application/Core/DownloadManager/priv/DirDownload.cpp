@@ -29,9 +29,9 @@ using namespace DM;
 /**
   * @class DM::DirDownload
   *
-  * A DirDownload will try, when the method 'retrieveEntries' is called, to retreive all the sub entries of a remote directory.
+  * A DirDownload will try, when the method 'retrieveEntries' is called, to retrieve all the sub entries of a remote directory.
   * The sub entries can be a mix of files and directories.
-  * Once the content is know, the signal 'newEntries' is emmited.
+  * Once the content is know, the signal 'newEntries' is emitted.
   */
 
 DirDownload::DirDownload(
@@ -175,7 +175,7 @@ void DirDownload::createDirectory()
       }
       catch (FM::NoWriteableDirectoryException&)
       {
-         L_DEBU(QString("There is no shared directory with writting rights for this download : %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
+         L_DEBU(QString("There is no shared directory with writing rights for this download : %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
          this->setStatus(NO_SHARED_DIRECTORY_TO_WRITE);
       }
       catch (FM::UnableToCreateNewDirException&)

@@ -778,7 +778,7 @@ void Cache::createSharedDirs(const QStringList& dirs, const QList<Common::Hash>&
   *
   * @param path A relative path to a directory. Must be a cleaned path (QDir::cleanPath).
   * @param spaceNeeded The number of storage space needed, if no directory can be found the exception 'InsufficientStorageSpaceException' is thrown.
-  * @return The directory, 0 if unkown error.
+  * @return The directory, 0 if unknown error.
   * @exception InsufficientStorageSpaceException (only if 'spaceNeeded' > 0)
   * @exception NoWriteableDirectoryException
   * @exception UnableToCreateNewDirException

@@ -49,7 +49,7 @@ namespace GUI
       bool isMainChat() const;
       QString getRoomName() const;
 
-      QList<QPair<Common::Hash, QString>> getSortedOtherPeersByRevelance() const;
+      QList<QPair<Common::Hash, QString>> getSortedOtherPeersByRelevance() const;
 
       QString getLineStr(int row, bool withHTML = true) const;
       Common::Hash getPeerID(int row) const;

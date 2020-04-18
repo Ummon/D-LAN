@@ -54,7 +54,7 @@ const QString Constants::SERVICE_NAME("D-LAN Core");
 
 const int Constants::PROTOBUF_STREAMING_BUFFER_SIZE(4 * 1024); ///< 4kB.
 
-const QString Constants::BINARY_PREFIXS[] = {"B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB"};
+const QString Constants::BINARY_PREFIXES[] = {"B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB"};
 
 const int Constants::MAX_NB_HASHES_PER_ENTRY_GUI_BROWSE = 8;
 

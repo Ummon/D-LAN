@@ -45,7 +45,7 @@ message State {
          FILE_IO_ERROR = 0x26;
          FILE_NON_EXISTENT = 0x27;
          GOT_TOO_MUCH_DATA = 0x28;
-         HASH_MISSMATCH = 0x29;
+         HASH_MISMATCH = 0x29;
 
          DIRECTORY_SCANNING_IN_PROGRESS = 0x31; // When a remote directory is being scanned it's not possible to browse it.
          UNABLE_TO_GET_ENTRIES = 0x32;
@@ -233,7 +233,7 @@ message CoreSettings {
    SharedDirectories shared_directories = 2;
    Common.TriState enable_integrity_check = 3;
 
-   string listen_address = 4; // [default = ""] If address is empty then listen to any adresses, in this case the protocol is given by 'listenAny'.
+   string listen_address = 4; // [default = ""] If address is empty then listen to any addresses, in this case the protocol is given by 'listenAny'.
    Common.Interface.Address.Protocol listen_any = 5; // [default = IPv6]
 }
 

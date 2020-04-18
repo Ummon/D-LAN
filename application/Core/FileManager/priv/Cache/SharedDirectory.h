@@ -53,7 +53,7 @@ namespace FM
       /**
         * Return the full path to the shared directory.
         * There is always a slash at the end.
-        * For exemple :
+        * For example :
         *  - '/home/paul/movies/'
         *  - '/'.
         *  - 'C:/Users/Paul/My Movies/'

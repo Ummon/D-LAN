@@ -84,7 +84,7 @@ void EmoticonsWidget::setDefaultTheme(const QString& theme)
 void EmoticonsWidget::emoticonClicked()
 {
    SingleEmoticonWidget* emoticonWidget = dynamic_cast<SingleEmoticonWidget*>(this->sender());
-   emit emoticonChoosen(emoticonWidget->getTheme(), emoticonWidget->getEmoticonName());
+   emit emoticonChosen(emoticonWidget->getTheme(), emoticonWidget->getEmoticonName());
 }
 
 void EmoticonsWidget::themeButtonToggled(bool checked)

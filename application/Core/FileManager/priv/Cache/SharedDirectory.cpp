@@ -55,7 +55,7 @@ SharedDirectory::SharedDirectory(Cache* cache, const QString& path, const Common
 
 /**
   * Try to merge other shared directory with this one.
-  * For exemple /sharing/folder1 can be merged with /sharing.
+  * For example /sharing/folder1 can be merged with /sharing.
   * Should be called after each new SharedDirectory created.
   */
 void SharedDirectory::mergeSubSharedDirectories()

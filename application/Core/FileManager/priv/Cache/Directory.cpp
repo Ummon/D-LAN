@@ -90,7 +90,7 @@ void Directory::del(bool invokeDelete)
 }
 
 /**
-  * Retore the hashes from the cache.
+  * Restore the hashes from the cache.
   * All file which are not complete and not in the cache are physically removed.
   * Only files ending with the setting "unfinished_suffix_term" will be removed.
   * @return The files which have all theirs hashes (complete).

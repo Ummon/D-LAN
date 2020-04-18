@@ -488,11 +488,11 @@ void FileManager::loadCacheFromFile()
    }
    catch (Common::UnknownValueException& e)
    {
-      L_WARN(QString("The persisted file cache cannot be retrived (the file doesn't exist) : %1").arg(Common::Constants::FILE_CACHE));
+      L_WARN(QString("The persisted file cache cannot be retrieved (the file doesn't exist) : %1").arg(Common::Constants::FILE_CACHE));
    }
    catch (...)
    {
-      L_WARN(QString("The persisted file cache cannot be retrived (Unkown exception) : %1").arg(Common::Constants::FILE_CACHE));
+      L_WARN(QString("The persisted file cache cannot be retrieved (Unknown exception) : %1").arg(Common::Constants::FILE_CACHE));
    }
 
    this->fileUpdater.setFileCache(savedCache);
@@ -546,7 +546,7 @@ void FileManager::forcePersistCacheToFile()
 }
 
 /**
-  * @warning Can be called from differents thread like a 'Downloader' or the 'FileUpdater'.
+  * @warning Can be called from different threads like a 'Downloader' or the 'FileUpdater'.
   */
 void FileManager::setCacheChanged()
 {

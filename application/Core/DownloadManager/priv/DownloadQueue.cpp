@@ -36,7 +36,7 @@ using namespace DM;
   * Goals:
   *  - Manage a queue of downloads.
   *  - Index queue by download peers to improve performance.
-  *  - Save some positions (markers) to improve itarating performance (see the 'ScanningIterator' class).
+  *  - Save some positions (markers) to improve iterating performance (see the 'ScanningIterator' class).
   *  - Persist/load the queue to/from a file.
   */
 
@@ -238,7 +238,7 @@ bool DownloadQueue::removeDownloads(const DownloadPredicate& predicate)
 }
 
 /**
-  * Return true if one or more download have been paused or unpaused.
+  * Return true if one or more download have been paused or un-paused.
   */
 bool DownloadQueue::pauseDownloads(QList<quint64> IDs, bool pause)
 {
@@ -330,11 +330,11 @@ Protos::Queue::Queue DownloadQueue::loadFromFile()
    }
    catch (Common::UnknownValueException& e)
    {
-      L_WARN(QString("The download queue file cache cannot be retrived (the file doesn't exist) : %1").arg(Common::Constants::FILE_QUEUE));
+      L_WARN(QString("The download queue file cache cannot be retrieved (the file doesn't exist) : %1").arg(Common::Constants::FILE_QUEUE));
    }
    catch (...)
    {
-      L_WARN(QString("The download queue file cache cannot be retrived (Unkown exception) : %1").arg(Common::Constants::FILE_QUEUE));
+      L_WARN(QString("The download queue file cache cannot be retrieved (Unknown exception) : %1").arg(Common::Constants::FILE_QUEUE));
    }
 
    return savedQueue;

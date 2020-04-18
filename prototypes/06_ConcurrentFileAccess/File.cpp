@@ -49,7 +49,7 @@ File::~File()
 
 /**
   * Write some bytes to the file at the given offset.
-  * If the buffer exceed the file size then only the begining of the buffer is
+  * If the buffer exceed the file size then only the beginning of the buffer is
   * used, the file is not resizing.
   */
 bool File::write(const QByteArray& buffer, qint64 offset)

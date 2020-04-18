@@ -26,10 +26,10 @@ using namespace LM;
 /**
   * @class LM::QtLogger
   *
-  * A special objet is create to handle all Qt message. For example
+  * A special object is create to handle all Qt message. For example
   * when a signal is connected to an unknown slot, the warning will be
-  * catched and logged here.
-  * Warning, the Qt messages are not catched during unit tesing because 'QTest::qExec(..)'
+  * caught and logged here.
+  * Warning, the Qt messages are not caught during unit testing because 'QTest::qExec(..)'
   * will create its own handle and discard the current one.
   */
 

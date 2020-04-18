@@ -33,7 +33,7 @@ using namespace GUI;
   * @class PeerListModel
   *
   * The list of all peers. The list is built from the core state message, see the method 'newState(..)'.
-  * The list can be order by the amout of sharing or in an alphabetic way, see the method 'setSortType(..)'.
+  * The list can be order by the amount of sharing or in an alphabetic way, see the method 'setSortType(..)'.
   */
 
 struct PeerListModel::Peer
@@ -239,9 +239,9 @@ QVariant PeerListModel::data(const QModelIndex& index, int role) const
          toolTip.append('\n');
 
          if (peer->status == Protos::GUI::State::Peer::MORE_RECENT_VERSION)
-            toolTip.append(tr("They protocol version is more recent and incompatible with ours. Upgrade you version!")).append('\n');
+            toolTip.append(tr("Their protocol version is more recent and incompatible with ours. Upgrade you version!")).append('\n');
          else if (peer->status == Protos::GUI::State::Peer::VERSION_OUTDATED)
-            toolTip.append(tr("They protocol version is outaded and incompatible with ours. They should upgrade their version!")).append('\n');
+            toolTip.append(tr("Their protocol version is outdated and incompatible with ours. They should upgrade their version!")).append('\n');
 
          if (!coreVersion.isEmpty())
             toolTip += tr("Version %1\n").arg(coreVersion);

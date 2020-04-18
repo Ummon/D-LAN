@@ -102,7 +102,7 @@ void D_LAN_Client::newCommandLine(QString line)
    }
    else
    {
-      this->out << "Unkown command, type help for more information" << endl;
+      this->out << "Unknown command, type help for more information" << endl;
    }
 }
 
