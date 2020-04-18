@@ -30,7 +30,7 @@ using namespace PM;
 #include <priv/Log.h>
 #include <priv/GetEntriesResult.h>
 #include <priv/GetHashesResult.h>
-#include <priv/GetChunkResult.h>
+#include <priv/GetChunksResult.h>
 
 const quint32 Peer::MAX_SPEED = std::numeric_limits<quint32>::max();
 
@@ -215,7 +215,7 @@ QSharedPointer<IGetChunkResult> Peer::getChunk(const Protos::Core::GetChunk& chu
       return QSharedPointer<IGetChunkResult>();
 
    return QSharedPointer<IGetChunkResult>(
-      new GetChunkResult(chunk, this->connectionPool.getASocket()),
+      new GetChunksResult(chunk, this->connectionPool.getASocket()),
       &IGetChunkResult::doDeleteLater
    );
 }

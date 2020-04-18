@@ -417,11 +417,12 @@ PM::IPeer* ChunkDownloader::startDownloading()
    if (!this->currentDownloadingPeer)
       return nullptr;
 
-   Protos::Core::GetChunk getChunkMess;
-   getChunkMess.mutable_chunk()->set_hash(this->chunkHash.getData(), Common::Hash::HASH_SIZE);
-   getChunkMess.set_offset(this->chunk->getKnownBytes());
-   this->getChunkResult = this->currentDownloadingPeer->getChunk(getChunkMess);
-   if (this->getChunkResult.isNull())
+   Protos::Core::GetChunks getChunksMess;
+   Protos::Core::GetChunks::Chunk* chunk = getChunksMess.add_chunks();
+   chunk->mutable_hash()->set_hash(this->chunkHash.getData(), Common::Hash::HASH_SIZE);
+   chunk->set_offset(this->chunk->getKnownBytes());
+   this->getChunksResult = this->currentDownloadingPeer->getChunks(getChunksMess);
+   if (this->getChunksResult.isNull())
       return nullptr;
 
    L_DEBU(QString("Starting downloading a chunk: %1 from %2").arg(this->chunk->toStringLog()).arg(this->currentDownloadingPeer->getID().toStr()));
@@ -431,11 +432,11 @@ PM::IPeer* ChunkDownloader::startDownloading()
 
    this->occupiedPeersDownloadingChunk.setPeerAsOccupied(this->currentDownloadingPeer);
 
-   connect(this->getChunkResult.data(), &PM::IGetChunkResult::result, this, &ChunkDownloader::result, Qt::DirectConnection);
-   connect(this->getChunkResult.data(), &PM::IGetChunkResult::stream, this, &ChunkDownloader::stream, Qt::DirectConnection);
-   connect(this->getChunkResult.data(), &PM::IGetChunkResult::timeout, this, &ChunkDownloader::getChunkTimeout, Qt::DirectConnection);
+   connect(this->getChunksResult.data(), &PM::IGetChunksResult::result, this, &ChunkDownloader::result, Qt::DirectConnection);
+   connect(this->getChunksResult.data(), &PM::IGetChunksResult::stream, this, &ChunkDownloader::stream, Qt::DirectConnection);
+   connect(this->getChunksResult.data(), &PM::IGetChunksResult::timeout, this, &ChunkDownloader::getChunkTimeout, Qt::DirectConnection);
 
-   this->getChunkResult->start();
+   this->getChunksResult->start();
    return this->currentDownloadingPeer;
 }
 
@@ -450,9 +451,9 @@ void ChunkDownloader::reset()
    this->chunk.clear();
 }
 
-void ChunkDownloader::result(const Protos::Core::GetChunkResult& result)
+void ChunkDownloader::result(const Protos::Core::GetChunksResult& result)
 {
-   if (result.status() != Protos::Core::GetChunkResult::OK)
+   if (result.status() != Protos::Core::GetChunksResult::OK)
    {
       L_WARN(QString("Status error from GetChunkResult: %1. Download aborted.").arg(result.status()));
       if (this->peers.removeOne(this->currentDownloadingPeer))
@@ -464,7 +465,7 @@ void ChunkDownloader::result(const Protos::Core::GetChunkResult& result)
    }
    else
    {
-      if (result.chunk_size() == 0)
+      if (result.results_size() == 0 || result.results(0).chunk_size() == 0)
       {
          L_ERRO(QString("Message 'GetChunkResult' doesn't contain the size of the chunk: %1. Download aborted.").arg(this->chunk->getHash().toStr()));
          this->closeTheSocket = true;
@@ -472,7 +473,7 @@ void ChunkDownloader::result(const Protos::Core::GetChunkResult& result)
       }
       else
       {
-         this->chunkSize = result.chunk_size();
+         this->chunkSize = result.results(0).chunk_size();
       }
    }
 }
@@ -498,9 +499,9 @@ void ChunkDownloader::downloadingEnded()
    if (!this->socket.isNull())
       this->socket.clear();
 
-   this->getChunkResult->setStatus(this->closeTheSocket);
+   this->getChunksResult->setStatus(this->closeTheSocket);
    this->closeTheSocket = false;
-   this->getChunkResult.clear();
+   this->getChunksResult.clear();
 
    this->downloading = false;
    emit downloadFinished();

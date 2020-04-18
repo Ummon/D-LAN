@@ -52,7 +52,7 @@ namespace DM
 
       /**
         * The entry is put in the given absolute path.
-        * If the last directory isn't shared it is added as a shared directory. TODO: This behavior will be changed in the 1.2 version as we can share a single file without sharing its directory.
+        * @param absolutePath Path to a local directory where to put the entry (file or directory). It can be a shared or not shared.
         */
       virtual void addDownload(const Protos::Common::Entry& remoteEntry, PM::IPeer* peerSource, const QString& absolutePath) = 0;
 

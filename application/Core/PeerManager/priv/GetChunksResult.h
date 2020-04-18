@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #pragma once
 
 #include <QObject>
@@ -30,16 +30,16 @@
 #include <Common/Network/MessageSocket.h>
 #include <Common/Uncopyable.h>
 
-#include <IGetChunkResult.h>
+#include <IGetChunksResult.h>
 #include <priv/PeerMessageSocket.h>
 
 namespace PM
 {
-   class GetChunkResult : public IGetChunkResult, Common::Uncopyable
+   class GetChunksResult : public IGetChunksResult, Common::Uncopyable
    {
       Q_OBJECT
    public:
-      GetChunkResult(const Protos::Core::GetChunk& chunk, QSharedPointer<PeerMessageSocket> socket);
+      GetChunksResult(const Protos::Core::GetChunks& chunks, QSharedPointer<PeerMessageSocket> socket);
       void start();
       void setStatus(bool closeTheSocket);
       void doDeleteLater();
@@ -48,7 +48,7 @@ namespace PM
       void newMessage(const Common::Message& message);
 
    private:
-      const Protos::Core::GetChunk chunk;
+      const Protos::Core::GetChunks chunks;
       QSharedPointer<PeerMessageSocket> socket;
       bool closeTheSocket;
    };

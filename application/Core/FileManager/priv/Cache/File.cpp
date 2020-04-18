@@ -701,3 +701,42 @@ QSharedPointer<Chunk> FileForHasher::removeLastChunk()
    this->chunks.remove(this->chunks.size() - 1);
    return chunk;
 }
+
+/////
+
+/**
+  * @class FM::FileIterator
+  *
+  * Iterate recursively over all files in the tree structure.
+  */
+
+FileIterator::FileIterator(Entry* entry)
+{
+   if (File* file = dynamic_cast<File*>(entry))
+      this->nextFiles << file;
+   else if (Directory* dir = dynamic_cast<Directory*>(entry))
+      this->dirsToVisit << dir;
+}
+
+/**
+  * Return the next file, 0 if there is no more directory.
+  */
+File* FileIterator::next()
+{
+   if (!this->nextFiles.isEmpty())
+   {
+      File* file = this->nextFiles.front();
+      this->nextFiles.removeFirst();
+      return file;
+   }
+
+   if (this->dirsToVisit.isEmpty())
+      return nullptr;
+
+   Directory* dir = this->dirsToVisit.front();
+   this->dirsToVisit.removeFirst();
+   this->dirsToVisit << dir->getSubDirs();
+   this->nextFiles << dir->getFiles();
+
+   return this->next();
+}

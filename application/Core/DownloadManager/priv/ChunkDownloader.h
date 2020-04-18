@@ -34,7 +34,7 @@
 #include <Core/FileManager/IChunk.h>
 #include <Core/FileManager/IDataWriter.h>
 #include <Core/PeerManager/IPeer.h>
-#include <Core/PeerManager/IGetChunkResult.h>
+#include <Core/PeerManager/IGetChunksResult.h>
 
 #include <IChunkDownloader.h>
 #include <IDownload.h>
@@ -119,7 +119,7 @@ namespace DM
       QSharedPointer<PM::ISocket> socket;
 
       int chunkSize;
-      QSharedPointer<PM::IGetChunkResult> getChunkResult;
+      QSharedPointer<PM::IGetChunksResult> getChunksResult;
 
       bool downloading;
       bool closeTheSocket;

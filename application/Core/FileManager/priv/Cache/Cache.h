@@ -67,17 +67,17 @@ namespace FM
       QList<Common::SharedEntry> getSharedEntries() const;
       SharedEntry* getSharedEntry(const Common::Hash& ID) const;
       void setSharedPaths(const QList<Common::Path>& paths);
-      QPair<Common::SharedEntry, QString> addASharedPath(const Common::Path& absolutePath);
+      QPair<Common::SharedEntry, QString> addASharedEntry(const QString& path);
       void removeSharedEntry(SharedEntry* item, Directory* dir2 = nullptr);
 
       SharedEntry* getSuperSharedEntry(const Common::Path& path) const;
-      QList<SharedDirectory*> getSubSharedEntrys(const Common::Path& path) const;
+      QList<SharedDirectory*> getSubSharedEntries(const Common::Path& path) const;
       bool isShared(const Common::Path& path) const;
 
       Directory* getFittestDirectory(const Common::Path& path) const;
 
-      void createSharedEntrys(const Protos::FileCache::Hashes& hashes);
-      void populateHashes(Protos::FileCache::Hashes& hashes) const;
+      void scanSharedEntries();
+      //void populateHashes(Protos::FileCache::Hashes& hashes) const;
 
       quint64 getAmount() const;
 

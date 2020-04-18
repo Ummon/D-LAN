@@ -15,51 +15,51 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
-#include <priv/GetChunkResult.h>
+
+#include <priv/GetChunksResult.h>
 using namespace PM;
 
 #include <Common/Settings.h>
 
 #include <priv/Log.h>
 
-GetChunkResult::GetChunkResult(const Protos::Core::GetChunk& chunk, QSharedPointer<PeerMessageSocket> socket) :
-   IGetChunkResult(SETTINGS.get<quint32>("socket_timeout")), chunk(chunk), socket(socket), closeTheSocket(false)
+GetChunksResult::GetChunksResult(const Protos::Core::GetChunks& chunks, QSharedPointer<PeerMessageSocket> socket) :
+   IGetChunksResult(SETTINGS.get<quint32>("socket_timeout")), chunks(chunks), socket(socket), closeTheSocket(false)
 {
 }
 
-void GetChunkResult::start()
+void GetChunksResult::start()
 {
-   connect(this->socket.data(), &PeerMessageSocket::newMessage, this, &GetChunkResult::newMessage, Qt::DirectConnection);
-   socket->send(Common::MessageHeader::CORE_GET_CHUNK, this->chunk);
+   connect(this->socket.data(), &PeerMessageSocket::newMessage, this, &GetChunksResult::newMessage, Qt::DirectConnection);
+   socket->send(Common::MessageHeader::CORE_GET_CHUNKS, this->chunks);
    this->startTimer();
 }
 
-void GetChunkResult::setStatus(bool closeTheSocket)
+void GetChunksResult::setStatus(bool closeTheSocket)
 {
    this->closeTheSocket = closeTheSocket;
 }
 
-void GetChunkResult::doDeleteLater()
+void GetChunksResult::doDeleteLater()
 {
    // We must disconnect because 'this->socket->finished' can read some data and emit 'newMessage'.
-   disconnect(this->socket.data(), &PeerMessageSocket::newMessage, this, &GetChunkResult::newMessage);
+   disconnect(this->socket.data(), &PeerMessageSocket::newMessage, this, &GetChunksResult::newMessage);
    this->socket->finished(this->isTimedout() ? true : this->closeTheSocket);
    this->socket.clear();
    this->deleteLater();
 }
 
-void GetChunkResult::newMessage(const Common::Message& message)
+void GetChunksResult::newMessage(const Common::Message& message)
 {
-   if (message.getHeader().getType() != Common::MessageHeader::CORE_GET_CHUNK_RESULT)
+   if (message.getHeader().getType() != Common::MessageHeader::CORE_GET_CHUNKS_RESULT)
       return;
 
    this->stopTimer();
 
-   const Protos::Core::GetChunkResult& chunkResult = message.getMessage<Protos::Core::GetChunkResult>();
-   emit result(chunkResult);
+   const Protos::Core::GetChunksResult& chunksResult = message.getMessage<Protos::Core::GetChunksResult>();
+   emit result(chunksResult);
 
-   if (chunkResult.status() == Protos::Core::GetChunkResult::OK)
+   if (chunksResult.status() == Protos::Core::GetChunksResult::OK)
    {
       socket->stopListening();
       emit stream(this->socket);

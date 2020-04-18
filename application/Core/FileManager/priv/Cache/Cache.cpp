@@ -506,7 +506,7 @@ void Cache::setSharedPaths(const QList<Common::Path>& path)
 /**
   * @exception ItemsNotFoundException
   */
-QPair<Common::SharedEntry, QString> Cache::addASharedPath(const Common::Path& absoluteDir)
+QPair<Common::SharedEntry, QString> Cache::addASharedEntry(const Protos::Common::SharedEntry& sharedEntry)
 {
    QMutexLocker locker(&this->mutex);
 

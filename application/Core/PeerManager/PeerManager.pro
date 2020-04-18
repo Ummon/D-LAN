@@ -14,17 +14,19 @@ INCLUDEPATH += . ../..
 
 DEFINES += PEERMANAGER_LIBRARY
 SOURCES += priv/PeerManager.cpp \
+    priv/GetChunksResult.cpp \
     priv/Peer.cpp \
     priv/Builder.cpp \
     priv/ConnectionPool.cpp \
     priv/GetEntriesResult.cpp \
     priv/GetHashesResult.cpp \
-    priv/GetChunkResult.cpp \
     priv/Log.cpp \
     priv/PeerSelf.cpp \
     priv/PeerMessageSocket.cpp
 HEADERS += IPeerManager.h \
+    IGetChunksResult.h \
     IPeer.h \
+    priv/GetChunksResult.h \
     priv/PeerManager.h \
     priv/Peer.h \
     Builder.h \
@@ -34,9 +36,7 @@ HEADERS += IPeerManager.h \
     priv/PeerMessageSocket.h \
     IGetEntriesResult.h \
     IGetHashesResult.h \
-    IGetChunkResult.h \
     ISocket.h \
     priv/GetEntriesResult.h \
     priv/GetHashesResult.h \
-    priv/GetChunkResult.h \
     priv/PeerSelf.h

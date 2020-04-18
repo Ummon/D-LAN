@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #pragma once
 
 #include <QObject>
@@ -29,7 +29,7 @@
 #include <Common/LogManager/ILoggable.h>
 #include <Core/PeerManager/IGetEntriesResult.h>
 #include <Core/PeerManager/IGetHashesResult.h>
-#include <Core/PeerManager/IGetChunkResult.h>
+#include <Core/PeerManager/IGetChunksResult.h>
 
 namespace PM
 {
@@ -116,6 +116,6 @@ namespace PM
         * Ask to download a chunk.
         * Return a null pointer if the peer is not available.
         */
-      virtual QSharedPointer<IGetChunkResult> getChunk(const Protos::Core::GetChunk& chunk) = 0;
+      virtual QSharedPointer<IGetChunkResult> getChunks(const Protos::Core::GetChunks& chunks) = 0;
    };
 }

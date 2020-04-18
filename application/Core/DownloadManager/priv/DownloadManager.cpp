@@ -89,7 +89,7 @@ void DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry, PM::
 {
    try
    {
-      QPair<Common::SharedDir, QString> result = this->fileManager->addASharedDir(absolutePath);
+      QPair<Common::SharedEntry, QString> result = this->fileManager->addASharedPath(absolutePath);
       this->addDownload(remoteEntry, peerSource, result.first.ID, result.second, Protos::Queue::Queue::Entry::QUEUED, this->downloadQueue.size());
    }
    catch (FM::ItemsNotFoundException& e)
@@ -114,12 +114,12 @@ Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry,
 {
    Protos::Common::Entry localEntry(remoteEntry);
 
-   localEntry.clear_shared_dir();
+   localEntry.clear_shared_entry();
    localEntry.set_exists(false);
 
    Common::ProtoHelper::setStr(localEntry, &Protos::Common::Entry::set_path, localRelativePath);
    if (!destinationDirectoryID.isNull())
-      localEntry.mutable_shared_dir()->mutable_id()->set_hash(destinationDirectoryID.getData(), Common::Hash::HASH_SIZE);
+      localEntry.mutable_shared_entry()->mutable_id()->set_hash(destinationDirectoryID.getData(), Common::Hash::HASH_SIZE);
 
    return this->addDownload(remoteEntry, localEntry, peerSource, status, position);
 }
@@ -136,7 +136,7 @@ Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry,
    // We do not create a new download if a similar one is already in queue. This test can be CPU expensive.
    if (this->downloadQueue.isEntryAlreadyQueued(localEntry))
    {
-      QString sharedDir = this->fileManager->getSharedEntry(localEntry.shared_dir().id().hash());
+      QString sharedDir = this->fileManager->getSharedEntry(localEntry.shared_entry().id().hash());
       if (!sharedDir.isEmpty())
          sharedDir.remove(sharedDir.size() - 1, 1); // Remove the ending '/'.
 
@@ -306,7 +306,16 @@ void DownloadManager::newEntries(const Protos::Common::Entries& remoteEntries)
    {
       for (int n = 0; n < remoteEntries.entry_size(); n++)
          if (remoteEntries.entry(n).type() == type)
-            this->addDownload(remoteEntries.entry(n), dirDownload->getPeerSource(), localEntry.has_shared_dir() ? localEntry.shared_dir().id().hash() : Common::Hash(), relativePath, Protos::Queue::Queue::Entry::QUEUED, position++);
+         {
+            this->addDownload(
+               remoteEntries.entry(n),
+               dirDownload->getPeerSource(),
+               localEntry.has_shared_entry() ? localEntry.shared_entry().id().hash() : Common::Hash(),
+               relativePath,
+               Protos::Queue::Queue::Entry::QUEUED,
+               position++
+            );
+         }
    }
 
    delete dirDownload;

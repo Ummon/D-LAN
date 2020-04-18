@@ -62,7 +62,7 @@ namespace FM
       void setSharedPaths(const QStringList& paths);
       QPair<Common::SharedEntry, QString> addASharedPath(const QString& absolutePath);
       QList<Common::SharedEntry> getSharedEntries() const;
-      SharedEntry* getSharedEntry(const Common::Hash& ID) const;
+      QString getSharedEntry(const Common::Hash& ID) const;
 
       QSharedPointer<IChunk> getChunk(const Common::Hash& hash) const;
       QList<QSharedPointer<IChunk>> getAllChunks(const Protos::Common::Entry& localEntry, const Common::Hashes& hashes) const;
@@ -100,14 +100,9 @@ namespace FM
       void chunkHashKnown(const QSharedPointer<Chunk>& chunk);
       void chunkRemoved(const QSharedPointer<Chunk>& chunk);
 
-   /*private:
-      void loadCacheFromFile();*/
-
    private slots:
-      //void persistCacheToFile();
-      //void forcePersistCacheToFile();
-      //void setCacheChanged();
-      //void fileCacheLoadingComplete();
+      void setCacheChanged();
+      void fileCacheLoadingComplete();
 
    private:
       LOG_INIT_H("FileManager")
@@ -120,10 +115,8 @@ namespace FM
       ExtensionIndex<Entry*> extensionIndex;
       SizeIndexEntries sizeIndex;
 
-      //QTimer timerPersistCache;
-      //QMutex mutexPersistCache;
-      //QMutex mutexCacheChanged;
-      //bool cacheLoading; ///< Set to 'true' during cache loading. It avoids to persist the cache during loading.
-      //bool cacheChanged;
+      QMutex mutexCacheChanged;
+      bool cacheLoading;
+      bool cacheChanged;
    };
 }

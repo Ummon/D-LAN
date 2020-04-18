@@ -38,6 +38,9 @@ using namespace FM;
 #include <Common/Global.h>
 #include <Common/SharedEntry.h>
 #include <Common/StringUtils.h>
+
+#include <Protos/gui_settings.pb.h>
+
 #include <Exceptions.h>
 #include <priv/Global.h>
 #include <priv/Constants.h>
@@ -53,7 +56,8 @@ LOG_INIT_CPP(FileManager)
 
 FileManager::FileManager(QSharedPointer<HC::IHashCache> hashCache) :
    fileUpdater(this),
-   cache(hashCache)
+   cache(hashCache),
+   cacheLoading(true)
 {
    Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
 
@@ -66,8 +70,15 @@ FileManager::FileManager(QSharedPointer<HC::IHashCache> hashCache) :
    connect(&this->cache, &Cache::newSharedEntry, this, &FileManager::newSharedEntry, Qt::DirectConnection);
    connect(&this->cache, &Cache::sharedEntryRemoved, this, &FileManager::sharedEntryRemoved, Qt::DirectConnection);
 
+   connect(&this->fileUpdater, &FileUpdater::fileCacheLoaded, this, &FileManager::fileCacheLoadingComplete, Qt::QueuedConnection);
    connect(&this->fileUpdater, &FileUpdater::deleteSharedEntry, this, &FileManager::deleteSharedEntry, Qt::QueuedConnection); // If the 'FileUpdater' wants to delete a shared directory.
 
+   // Give stored shared entries to the cache:
+   SETTINGS.get<Protos::Common::SharedEntry>("shared_entry");
+
+   this->fileUpdater.addRoot();
+
+   // TODO: call addRoot for each shared entry in settings.
    this->fileUpdater.start();
 }
 
@@ -90,21 +101,21 @@ void FileManager::setSharedPaths(const QStringList& paths)
 /**
   * @exception ItemsNotFoundException
   */
-QPair<Common::SharedItem, QString> FileManager::addASharedPath(const QString& absolutePath)
+QPair<Common::SharedEntry, QString> FileManager::addASharedPath(const QString& absolutePath)
 {
    return this->cache.addASharedPath(absolutePath);
 }
 
-QList<Common::SharedItem> FileManager::getSharedEntries() const
+QList<Common::SharedEntry> FileManager::getSharedEntries() const
 {
    return this->cache.getSharedEntries();
 }
 
 QString FileManager::getSharedEntry(const Common::Hash& ID) const
 {
-   SharedDirectory* dir = this->cache.getSharedDirectory(ID);
-   if (dir)
-      return dir->getFullPath();
+   SharedEntry* entry = this->cache.getSharedEntry(ID);
+   if (entry)
+      return entry->getPath().getPath();
    else
       return QString();
 }
@@ -168,12 +179,12 @@ QSharedPointer<IGetEntriesResult> FileManager::getScannedEntries(const Protos::C
 
 Protos::Common::Entries FileManager::getEntries(const Protos::Common::Entry& dir, int maxNbHashesPerEntry)
 {
-   return this->cache.getEntries(dir, maxNbHashesPerEntry);
+   return this->cache.getProtoEntries(dir, maxNbHashesPerEntry);
 }
 
 Protos::Common::Entries FileManager::getEntries()
 {
-   return this->cache.getSharedEntries();
+   return this->cache.getProtoSharedEntries();
 }
 
 QList<Protos::Common::FindResult> FileManager::find(const QString& words, const QList<QString>& extensions, qint64 minFileSize, qint64 maxFileSize, Protos::Common::FindPattern_Category category, int maxNbResult, int maxSize)
@@ -332,26 +343,25 @@ void FileManager::printSimilarFiles() const
    QSet<Common::Hash> knownHashes;
    foreach (Common::SharedEntry sharedEntry, this->cache.getSharedEntries())
    {
-      Directory* dir = this->cache.getSharedDirectory(sharedDir.ID);
-      DirIterator i(dir, true);
-      while (dir = i.next())
+      Entry* entry = this->cache.getSharedEntry(sharedEntry.ID)->getRootEntry();
+
+      FileIterator i(entry);
+
+      while (File* file = i.next())
       {
-         foreach (File* file, dir->getFiles())
+         const QVector<QSharedPointer<Chunk>>& chunks = file->getChunks();
+         if (!chunks.isEmpty())
          {
-            const QVector<QSharedPointer<Chunk>>& chunks = file->getChunks();
-            if (!chunks.isEmpty())
+            const Common::Hash& hash = chunks[0]->getHash();
+            if (!hash.isNull() && !knownHashes.contains(hash))
             {
-               const Common::Hash& hash = chunks[0]->getHash();
-               if (!hash.isNull() && !knownHashes.contains(hash))
+               knownHashes.insert(hash);
+               const QList<QSharedPointer<Chunk>>& similarChunks = this->chunks.values(hash);
+               if (similarChunks.size() > 1)
                {
-                  knownHashes.insert(hash);
-                  const QList<QSharedPointer<Chunk>>& similarChunks = this->chunks.values(hash);
-                  if (similarChunks.size() > 1)
-                  {
-                     foreach (QSharedPointer<Chunk> similarChunk, similarChunks)
-                        result.append(similarChunk->getFilePath()).append("\n");
-                     result.append("------\n");
-                  }
+                  foreach (QSharedPointer<Chunk> similarChunk, similarChunks)
+                     result.append(similarChunk->getFilePath()).append("\n");
+                  result.append("------\n");
                }
             }
          }
@@ -374,15 +384,14 @@ Entry* FileManager::getEntry(const QString& path) const
    return this->cache.getEntry(path);
 }
 
-QString FileManager::getSharedEntry(const QString& path) const
+SharedEntry* FileManager::getSharedEntry(const QString& path) const
 {
-   return this->cache.getSharedEntry(path)->getFullPath().getPath(false);
+   return this->cache.getSharedEntry(path);
 }
 
 void FileManager::newSharedEntry(SharedEntry* sharedEntry)
 {
    this->fileUpdater.addRoot(sharedEntry);
-   this->forcePersistCacheToFile();
 }
 
 void FileManager::sharedEntryRemoved(SharedEntry* sharedEntry, Directory* dir)
@@ -462,8 +471,8 @@ void FileManager::chunkRemoved(const QSharedPointer<Chunk>& chunk)
   * to load the cache.
   * It will also start the timer to persist the cache.
   */
-void FileManager::loadCacheFromFile()
-{
+//void FileManager::loadCacheFromFile()
+//{
    // TODO : move old shared dir from cache file to settings.
 
    // This hashes will be unallocated by the fileUpdater.
@@ -501,7 +510,7 @@ void FileManager::loadCacheFromFile()
 //   }
 
 //   this->fileUpdater.setFileCache(savedCache);
-}
+//}
 
 /**
   * Save the cache to a file.
@@ -557,27 +566,25 @@ void FileManager::forcePersistCacheToFile()
 /**
   * @warning Can be called from differents thread like a 'Downloader' or the 'FileUpdater'.
   */
-/*
 void FileManager::setCacheChanged()
 {
    QMutexLocker locker(&this->mutexCacheChanged);
    this->cacheChanged = true;
 }
-*/
 
-/*
 void FileManager::fileCacheLoadingComplete()
 {
-   this->timerPersistCache.start();
-   this->cacheLoading = false;
-
    connect(&this->cache, &Cache::entryResizing, this, &FileManager::entryResizing, Qt::DirectConnection);
    connect(&this->cache, &Cache::entryResized, this, &FileManager::entryResized, Qt::DirectConnection);
 
-   this->cache.forall([&](Entry* entry) {
-      this->sizeIndex.addItem(entry);
-   });
+   this->cache.forall(
+      [&](Entry* entry)
+      {
+         this->sizeIndex.addItem(entry);
+      }
+   );
+
+   this->cacheLoading = false;
 
    emit fileCacheLoaded();
 }
-*/

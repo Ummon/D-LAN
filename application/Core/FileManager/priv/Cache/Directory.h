@@ -20,6 +20,7 @@
 
 #include <QString>
 #include <QList>
+#include <QLinkedList>
 #include <QFileInfo>
 #include <QMutex>
 #include <QMap>

@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #pragma once
 
 #include <QObject>
@@ -30,14 +30,14 @@
 
 namespace PM
 {
-   class IGetChunkResult : public Common::Timeoutable
+   class IGetChunksResult : public Common::Timeoutable
    {
       Q_OBJECT
    protected:
-      IGetChunkResult(int time) : Common::Timeoutable(time) {}
+      IGetChunksResult(int time) : Common::Timeoutable(time) {}
 
    public:
-      virtual ~IGetChunkResult() {}
+      virtual ~IGetChunksResult() {}
       virtual void start() = 0;
 
       /**
@@ -51,7 +51,7 @@ namespace PM
       virtual void setStatus(bool closeTheSocket) = 0;
 
    signals:
-      void result(const Protos::Core::GetChunkResult& result);
+      void result(const Protos::Core::GetChunksResult& result);
       void stream(const QSharedPointer<PM::ISocket>& socket);
    };
 }

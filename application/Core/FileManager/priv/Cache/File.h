@@ -21,6 +21,7 @@
 #include <exception>
 
 #include <QString>
+#include <QLinkedList>
 #include <QMutex>
 #include <QWaitCondition>
 #include <QFile>
@@ -137,5 +138,17 @@ namespace FM
       void updateDateLastModified(const QDateTime& date);
       void addChunk(const QSharedPointer<Chunk>& chunk);
       QSharedPointer<Chunk> removeLastChunk();
+   };
+
+   class FileIterator
+   {
+   public:
+      FileIterator(Entry* entry);
+      virtual ~FileIterator() {}
+      File* next();
+
+   private:
+      QLinkedList<File*> nextFiles;
+      QLinkedList<Directory*> dirsToVisit;
    };
 }

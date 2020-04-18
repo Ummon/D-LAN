@@ -468,6 +468,8 @@ Directory& Directory::operator-=(qint64 size)
    return *this;
 }
 
+/////
+
 /**
   * @class FM::DirIterator
   *

@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <Utils.h>
 using namespace DM;
 
@@ -30,20 +30,24 @@ using namespace DM;
       case COMPLETE: return "COMPLETE";
       case PAUSED: return "PAUSED";
       case DELETED: return "DELETED";
+
       case UNKNOWN_PEER_SOURCE: return "UNKNOWN_PEER_SOURCE";
       case ENTRY_NOT_FOUND: return "ENTRY_NOT_FOUND";
       case NO_SOURCE: return "NO_SOURCE";
+
       case NO_SHARED_DIRECTORY_TO_WRITE: return "NO_SHARED_DIRECTORY_TO_WRITE";
       case NO_ENOUGH_FREE_SPACE: return "NO_ENOUGH_FREE_SPACE";
       case UNABLE_TO_CREATE_THE_FILE: return "UNABLE_TO_CREATE_THE_FILE";
       case UNABLE_TO_CREATE_THE_DIRECTORY: return "UNABLE_TO_CREATE_THE_DIRECTORY";
       case UNABLE_TO_RETRIEVE_THE_HASHES: return "UNABLE_TO_RETRIEVE_THE_HASHES";
+
       case TRANSFER_ERROR: return "TRANSFER_ERROR";
       case UNABLE_TO_OPEN_THE_FILE: return "UNABLE_TO_OPEN_THE_FILE";
       case FILE_IO_ERROR: return "FILE_IO_ERROR";
       case FILE_NON_EXISTENT: return "FILE_NON_EXISTENT";
       case GOT_TOO_MUCH_DATA: return "GOT_TOO_MUCH_DATA";
       case HASH_MISSMATCH: return "HASH_MISSMATCH";
+
       case REMOTE_SCANNING_IN_PROGRESS: return "REMOTE_SCANNING_IN_PROGRESS";
       case LOCAL_SCANNING_IN_PROGRESS: return "LOCAL_SCANNING_IN_PROGRESS";
       case UNABLE_TO_GET_ENTRIES: return "UNABLE_TO_GET_ENTRIES";

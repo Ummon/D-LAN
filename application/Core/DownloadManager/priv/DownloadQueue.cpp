@@ -270,7 +270,7 @@ bool DownloadQueue::isEntryAlreadyQueued(const Protos::Common::Entry& localEntry
    {
       if (
          i.value()->getLocalEntry().path() == localEntry.path() &&
-         (!localEntry.has_shared_dir() || i.value()->getLocalEntry().shared_dir().id().hash() == localEntry.shared_dir().id().hash())
+         (!localEntry.has_shared_entry() || i.value()->getLocalEntry().shared_entry().id().hash() == localEntry.shared_entry().id().hash())
       )
          return true;
 

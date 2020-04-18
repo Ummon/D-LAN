@@ -183,10 +183,10 @@ namespace FM
         */
       virtual void printSimilarFiles() const = 0;
 
-   //signals:
+   signals:
       /**
-        * Emitted when the file cache has been loaded. Guaranteed to be emmited once.
+        * Emitted when the file cache has been loaded: all files and directories from shared entries has been scanned and added to the cache. Guaranteed to be emmited once.
         */
-      //void fileCacheLoaded();
+      void fileCacheLoaded();
    };
 }

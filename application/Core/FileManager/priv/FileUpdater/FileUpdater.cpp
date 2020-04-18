@@ -106,7 +106,7 @@ void FileUpdater::addRoot(SharedEntry* sharedEntry)
    if (!watchable)
    {
       L_WARN(QString("This entry is not watchable: %1").arg(entryPath.getPath()));
-      this->unwatchableEntries << sharedEntry;
+      this->unwatchableEntries << sharedEntry->getRootEntry();
    }
 
    this->dirEvent->release();
@@ -208,19 +208,20 @@ void FileUpdater::run()
 
    // First: retrieve the directories and file from the file cache and
    // synchronize it with the file system.
-   if (this->fileCacheInformation)
+   //if (this->fileCacheInformation)
+   //{
+   while (!this->entriesToScan.isEmpty())
    {
-      while (!this->entriesToScan.isEmpty())
-      {
-         Entry* entry = this->entriesToScan.takeFirst();
-         this->scan(entry, true);
-         // TODO:
-         //this->restoreFromFileCache(static_cast<SharedDirectory*>(dir));
-      }
+      Entry* entry = this->entriesToScan.takeFirst();
+      this->scan(entry, true);
+      //this->restoreFromFileCache(static_cast<SharedDirectory*>(dir));
+   }
 
+   /*
       delete this->fileCacheInformation;
       this->fileCacheInformation = nullptr;
    }
+   */
 
    emit fileCacheLoaded();
 

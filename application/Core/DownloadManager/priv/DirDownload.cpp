@@ -124,7 +124,7 @@ void DirDownload::result(const Protos::Core::GetEntriesResult& entries)
          entriesCopy.CopyFrom(entries.result(0).entries());
          // We need to specify the shared directory for each entry.
          for (int i = 0; i < entriesCopy.entry_size(); i++)
-            entriesCopy.mutable_entry(i)->mutable_shared_dir()->CopyFrom(this->remoteEntry.shared_dir());
+            entriesCopy.mutable_entry(i)->mutable_shared_entry()->CopyFrom(this->remoteEntry.shared_entry());
       }
 
       this->getEntriesResult.clear();
