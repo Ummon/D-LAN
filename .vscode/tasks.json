@@ -26,7 +26,8 @@
                 "cwd": "${workspaceFolder}/application"
             },
             "presentation": {
-                "panel": "new"
+                "panel": "new",
+                "focus": true
             },
             "problemMatcher": []
         },

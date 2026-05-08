@@ -53,6 +53,9 @@ cp $WORK_DIR/temp/icon-6.png $ICON_256_DIR/d-lan.png
 cp d-lan.desktop $DESKTOP_DIR/
 
 cp -R ./DEBIAN $DEB_DIR/
+chmod 644 $DEB_DIR/DEBIAN/control
+chmod 755 $DEB_DIR/DEBIAN/postinst $DEB_DIR/DEBIAN/prerm
+
 echo "For which architecture ?"
 select arch in "i386" "amd64" "armhf"; do
     CONTROL="$DEB_DIR/DEBIAN/control"
