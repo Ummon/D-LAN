@@ -1,0 +1,40 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build (log)",
+            "type": "shell",
+            "command": "./0.regen_all.sh > .build.log 2>&1; echo BUILD_EXIT:$?",
+            "options": {
+                "cwd": "${workspaceFolder}/application"
+            },
+            "presentation": {
+                "panel": "new"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Build installation package",
+            "type": "shell",
+            "command": "./5.build_installation_package.sh",
+            "options": {
+                "cwd": "${workspaceFolder}/application"
+            },
+            "presentation": {
+                "panel": "new"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Install dependencies",
+            "type": "shell",
+            "command": "sudo apt install g++ git qtcreator libprotobuf-dev qt5-qmake qttools5-dev-tools protobuf-compiler qtbase5-dev",
+            "problemMatcher": []
+        }
+    ]
+}
