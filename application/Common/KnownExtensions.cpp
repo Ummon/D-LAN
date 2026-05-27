@@ -134,6 +134,9 @@ KnownExtensions::Init::Init()
 
    KnownExtensions::add(ExtensionCategory::PICTURE, "jpg");
    KnownExtensions::add(ExtensionCategory::PICTURE, "jpeg");
+   KnownExtensions::add(ExtensionCategory::PICTURE, "jxl");
+   KnownExtensions::add(ExtensionCategory::PICTURE, "webp");
+   KnownExtensions::add(ExtensionCategory::PICTURE, "avif");
    KnownExtensions::add(ExtensionCategory::PICTURE, "gif");
    KnownExtensions::add(ExtensionCategory::PICTURE, "png");
    KnownExtensions::add(ExtensionCategory::PICTURE, "eps");

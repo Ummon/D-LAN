@@ -17,7 +17,7 @@ package Protos.Core;
 // If a peer owns one or more chunk corresponding to the given hashes then it
 // will reply with a 'ChunksOwned' message.
 // These hashes can come from different files.
-// Remember that the peer ID of the sender is in the message header.
+// Remember that the peer ID of the sender is in the message header, see 'Common::Network::MessageHeader' for more information.
 // a -> all
 // id : 0x01
 message IMAlive {

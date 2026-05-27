@@ -145,7 +145,7 @@ MessageHeader MessageHeader::readHeader(QIODevice& device, bool skipReadData)
 }
 
 /**
-  * @remarks The buffer size must be at least the header size (28 bytes).
+  * @remarks The buffer size must be at least the header size (32 bytes).
   */
 MessageHeader MessageHeader::readHeader(const char* data)
 {

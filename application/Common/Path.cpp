@@ -11,6 +11,8 @@ using namespace Common;
 
 /**
   * @param path Considered as directory if ended with a slash '/' otherwise it's a file.
+  * If 'path' begins with "/", "_:\" or "_:/" it's considered as an absolute path otherwise it's a relative path
+  * ('_') can by any letter.
   */
 Path::Path(const QString& path)
 {
@@ -34,7 +36,7 @@ Path::Path(const QString& path)
 
    const bool isDir = path.endsWith('/');
 
-   const QStringList names = cleanedPath.split('/', QString::SkipEmptyParts);
+   const QStringList names = cleanedPath.split('/', Qt::SkipEmptyParts);
    for (int i = 0; i < names.size(); i++)
    {
       if (!isDir && i == names.size() - 1)
@@ -54,9 +56,12 @@ Path::Path(const QString&& root, const QStringList&& dirs, const QString&& filen
 {
 }
 
-QString Path::getPath(bool withFilename) const
+QString Path::toString(bool withFilename) const
 {
-   return this->root + this->dirs.join('/') + (this->isAbsolute() && !this->dirs.isEmpty() || !this->dirs.isEmpty() ? "/" : "") + (withFilename ? this->filename : QString());
+   return this->root +
+      this->dirs.join('/') +
+      (this->isAbsolute() && !this->dirs.isEmpty() || !this->dirs.isEmpty() ? "/" : "") +
+      (withFilename ? this->filename : QString());
 }
 
 bool Path::isFile() const
@@ -82,6 +87,22 @@ QString Path::getRoot() const
 QStringList Path::getDirs() const
 {
    return this->dirs;
+}
+
+QString Path::getLastDir() const
+{
+   if (this->dirs.isEmpty())
+      return QString();
+   else
+      return this->dirs.constLast();
+}
+
+QString Path::getLastElement() const
+{
+   if (this->isFile())
+      return this->filename;
+
+   return this->getLastDir();
 }
 
 QString Path::getFilename() const
@@ -119,8 +140,13 @@ bool Path::isSubOf(const Path& other) const
    const auto& thisDirs = this->getDirs();
    const auto& otherDirs = other.getDirs();
 
-   if (thisDirs.size() <= otherDirs.size())
+   if (
+      this->isFile() && thisDirs.size() < otherDirs.size() ||
+      !this->isFile() && thisDirs.size() <= otherDirs.size()
+   )
+   {
       return false;
+   }
 
    for (int i = 0; i < otherDirs.size(); i++)
       if (thisDirs[i] != otherDirs[i])
@@ -181,6 +207,22 @@ Path Path::removeLastDir() &&
    if (!this->dirs.isEmpty())
       this->dirs.removeLast();
    return Path(std::move(this->root), std::move(this->dirs), std::move(this->filename));
+}
+
+Path Path::removeLastElement() const&
+{
+   if (this->isFile())
+      return this->removeFilename();
+   else
+      return this->removeLastDir();
+}
+
+Path Path::removeLastElement() &&
+{
+   if (this->isFile())
+      return this->removeFilename();
+   else
+      return this->removeLastDir();
 }
 
 Path Path::setFilename(const QString& filename) const &
@@ -246,6 +288,21 @@ Path Path::prependDir(const QString& dir) &&
    return Path(std::move(this->root), std::move(this->dirs), std::move(this->filename));
 }
 
+// QString Path::toString() const
+// {
+//    return this->toString();
+// }
+
+Path::operator QAnyStringView() const
+{
+   return this->toString();
+}
+
+Path::operator QString() const
+{
+   return this->toString();
+}
+
 const QList<QChar> Path::FORBIDDEN_CHARS_IN_PATH { '?', '/', '\\','*', ':', '"', '<', '>', '|' };
 
 /**
@@ -280,16 +337,16 @@ QString Path::unSanitizePath(QString path)
   * See QDir::cleanPath(..) documentation.
   * Add a slash at the end.
   */
-QString Path::cleanDirPath(const QString& path)
-{
-   Q_ASSERT(!path.isEmpty());
+// QString Path::cleanDirPath(const QString& path)
+// {
+//    Q_ASSERT(!path.isEmpty());
 
-   QString cleanedPath = QDir::cleanPath(path);
-   if (!cleanedPath.isEmpty() && cleanedPath[cleanedPath.size()-1] != '/')
-      cleanedPath.append('/');
+//    QString cleanedPath = QDir::cleanPath(path);
+//    if (!cleanedPath.isEmpty() && cleanedPath[cleanedPath.size()-1] != '/')
+//       cleanedPath.append('/');
 
-   return cleanedPath;
-}
+//    return cleanedPath;
+// }
 
 /**
   * @return 'true' if path begins with  "<Drive letter>:/" or "<Drive letter>:\", for example: "C:/Users/"

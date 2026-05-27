@@ -46,8 +46,8 @@ int Message::writeMessageToBuffer(char* buffer, quint32 bufferSize, const Messag
 
    MessageHeader::writeHeader(buffer, header);
 
-   if (message)
-      message->SerializeToArray(buffer + MessageHeader::HEADER_SIZE, bufferSize - MessageHeader::HEADER_SIZE);
+   if (message && !message->SerializeToArray(buffer + MessageHeader::HEADER_SIZE, bufferSize - MessageHeader::HEADER_SIZE))
+       return 0;
 
    return MessageHeader::HEADER_SIZE + header.getSize();
 }

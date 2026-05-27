@@ -21,11 +21,11 @@ message Error {
 }
 
 message Language {
-   string lang = 1; // ISO-639 (two letters)
-   string country = 2; // ISO-3166
+   string lang = 1; // ISO-639 (two letters).
+   string country = 2; // ISO-3166.
 }
 
-// For identify a chunk or a user.
+// To identify a chunk or a user.
 message Hash {
    bytes hash = 1; // 28 bytes. If it doesn't exist the hash is null.
 }
@@ -36,7 +36,7 @@ message IP {
       IPv6 = 1;
    }
    Type type = 1;
-   bytes ip = 2; // type == IPv4: 4 bytes. type == IPv6: 16 bytes. Big endian.
+   bytes ip = 2; // if type == IPv4 -> 4 bytes. If type == IPv6 -> 16 bytes. Big endian.
 }
 
 // A shared entry matches an existing handle, thus it's optional to have the complete path to it.
@@ -44,9 +44,9 @@ message SharedEntry {
    Hash id = 1; // Identify a shared entry.
 
    // A name to identify the shared entry by human.
-   // It may correspond to the name of the shared entry itself (directory or file name).
+   // It may correspond to the name of the shared entry itself (directory or filename).
    // It may be used when creating the directories of a new downloading file.
-   // It may be empty. In this case the directory name or file name is used instead.
+   // It may be empty. In this case the directory name or filename is used instead (from 'SharedEntry::path').
    string shared_name = 2;
 
    string path = 3; // A dir must end with a "/" otherwise it's a file.
@@ -63,12 +63,14 @@ message Entry {
    // Relative path from the sharing entry. For example : "/Videos/My cat/".
    // A root directory or file has a one slash : "/".
    // A shared directory or a shared file has an empty path.
+   // It doesn't contain the entry name. See 'name'.
    string path = 2;
 
-   string name = 3; // Directory name or file name. For example: "MyLOLCat.avi".
+   string name = 3; // Directory name or filename. For example: "MyLOLCat.avi".
    uint64 size = 4; // [bytes]. For the directory it's the sum of all sub-items.
 
-   SharedEntry shared_entry = 5; // The shared entry of the entry. If the entry is a file the shared_entry must be the same file.
+   // The shared entry of the entry. If the entry is a file the shared_entry must be the same file.
+   SharedEntry shared_entry = 5;
 
    bool exists = 6; // [default = true] An entry may not yet be created.
 
@@ -77,7 +79,9 @@ message Entry {
 
    // Only for FILE type:
    // optional string mime_type = 9; // The mime type of the file. TODO: uncomment when #243 is implemented.
-   repeated Hash chunk = 8; // The number of chunk must always correspond to the size of the file. Unknown chunks are empty.
+
+   // The number of chunk must always correspond to the size of the file. Unknown chunks are empty.
+   repeated Hash chunk = 8;
 }
 
 message Entries

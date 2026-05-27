@@ -133,7 +133,7 @@ void InternalCoreConnection::joinRoom(const QString& room)
    if (!room.isEmpty())
    {
       Protos::GUI::JoinRoom joinRoomMessage;
-      Common::ProtoHelper::setStr(joinRoomMessage, &Protos::GUI::JoinRoom::set_name, room);
+      joinRoomMessage.set_name(room.toStdString());
       this->send(Common::MessageHeader::GUI_JOIN_ROOM, joinRoomMessage);
    }
 }
@@ -143,7 +143,7 @@ void InternalCoreConnection::leaveRoom(const QString& room)
    if (!room.isEmpty())
    {
       Protos::GUI::LeaveRoom leaveRoomMessage;
-      Common::ProtoHelper::setStr(leaveRoomMessage, &Protos::GUI::LeaveRoom::set_name, room);
+      leaveRoomMessage.set_name(room.toStdString());
       this->send(Common::MessageHeader::GUI_LEAVE_ROOM, leaveRoomMessage);
    }
 }
@@ -244,7 +244,7 @@ void InternalCoreConnection::download(const Common::Hash& peerID, const Protos::
    downloadMessage.mutable_entry()->CopyFrom(entry);
    if (!sharedFolderID.isNull())
       downloadMessage.mutable_destination_directory_id()->set_hash(sharedFolderID.getData(), Common::Hash::HASH_SIZE);
-   Common::ProtoHelper::setStr(downloadMessage, &Protos::GUI::Download::set_destination_path, path);
+   downloadMessage.set_destination_path(path.toStdString());
    this->send(Common::MessageHeader::GUI_DOWNLOAD, downloadMessage);
 }
 

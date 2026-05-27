@@ -19,7 +19,6 @@
 #include <ProtoHelper.h>
 using namespace Common;
 
-#include <QRegExp>
 #include <QStringList>
 
 #include <Hash.h>
@@ -31,21 +30,23 @@ void ProtoHelper::setLang(Protos::Common::Language& langMess, const QLocale& loc
    const QStringList& langCountry = locale.name().split('_');
    if (langCountry.length() == 2)
    {
-      ProtoHelper::setStr(langMess, &Protos::Common::Language::set_lang, langCountry[0]);
-      ProtoHelper::setStr(langMess, &Protos::Common::Language::set_country, langCountry[1]);
+      langMess.set_lang(langCountry[0].toStdString());
+      langMess.set_country(langCountry[1].toStdString());
    }
    else
    {
-      ProtoHelper::setStr(langMess, &Protos::Common::Language::set_lang, "en");
-      ProtoHelper::setStr(langMess, &Protos::Common::Language::set_country, "US");
+      langMess.set_lang("en");
+      langMess.set_country("US");
    }
 }
 
 QLocale ProtoHelper::getLang(const Protos::Common::Language& langMess)
 {
-   QString langStr = ProtoHelper::getStr(langMess, &Protos::Common::Language::lang);
-   if (ProtoHelper::getStr(langMess, &Protos::Common::Language::country).isEmpty())
-      langStr.append("_").append(ProtoHelper::getStr(langMess, &Protos::Common::Language::country));
+   QString langStr = QString::fromStdString(langMess.lang());
+   const QString countryStr = QString::fromStdString(langMess.country());
+
+   if (!countryStr.isEmpty())
+      langStr.append("_").append(countryStr);
 
    return QLocale(langStr);
 }
@@ -118,8 +119,8 @@ QHostAddress ProtoHelper::getIP(const Protos::Common::IP& ipMess)
   */
 QString ProtoHelper::getPath(const Protos::Common::Entry& entry, EntriesToAppend entriesToAppend, bool prependSharedPath)
 {
-   const QString& relativePath = Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::path);
-   const QString& sharedPath = Common::ProtoHelper::getStr(entry.shared_entry(), &Protos::Common::SharedEntry::path);
+   const QString& relativePath = QString::fromStdString(entry.path()); // Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::path);
+   const QString& sharedPath = QString::fromStdString(entry.shared_entry().path());
 
    // Empty relative path means the directory/file is a shared item, see "application/Protos/common.proto" for more information.
    if (relativePath.isEmpty())
@@ -140,7 +141,7 @@ QString ProtoHelper::getPath(const Protos::Common::Entry& entry, EntriesToAppend
 
       if (contains(entriesToAppend, EntriesToAppend::FILE) && entry.type() == Protos::Common::Entry_Type_FILE || contains(entriesToAppend, EntriesToAppend::DIR) && entry.type() == Protos::Common::Entry_Type_DIR)
       {
-         path.append(Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::name));
+         path.append(QString::fromStdString(entry.name()));
          if (entry.type() == Protos::Common::Entry_Type_DIR)
             path.append("/");
       }

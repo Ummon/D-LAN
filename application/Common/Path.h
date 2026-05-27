@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QAnyStringView>
 #include <QChar>
 #include <QString>
 #include <QStringList>
@@ -28,13 +29,15 @@ namespace Common
       Path& operator=(const Path&) = default;
       Path& operator=(Path&&) = default;
 
-      QString getPath(bool withFilename = true) const;
+      QString toString(bool withFilename = true) const;
       bool isFile() const;
       bool isAbsolute() const;
       bool isNull() const;
 
       QString getRoot() const;
       QStringList getDirs() const;
+      QString getLastDir() const;
+      QString getLastElement() const;
       QString getFilename() const;
       QString getExtension() const;
 
@@ -48,6 +51,9 @@ namespace Common
 
       Path removeLastDir() const &;
       Path removeLastDir() &&;
+
+      Path removeLastElement() const&;
+      Path removeLastElement() &&;
 
       Path setFilename(const QString& filename) const &;
       Path setFilename(QString&& filename) &&;
@@ -64,19 +70,22 @@ namespace Common
       Path prependDir(const QString& dir) const &;
       Path prependDir(const QString& dir) &&;
 
+      operator QAnyStringView() const;
+      operator QString() const;
+
       // Helpers.
 
       static const QList<QChar> FORBIDDEN_CHARS_IN_PATH;
       static QString sanitizePath(QString filename);
       static QString unSanitizePath(QString filename);
 
-      static QString cleanDirPath(const QString& path);
+      // static QString cleanDirPath(const QString& path);
       static bool isWindowsPath(const QString& path);
       static bool isWindowsRootPath(const QString& path);
 
    private:
       QString root; // For example: Windows: "C:/", Linux: "/".
       QStringList dirs; // Can be empty.
-      QString filename; // Empty if file.
+      QString filename; // Empty if directory.
    };
 }

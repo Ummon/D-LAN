@@ -15,12 +15,12 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <Common/Languages.h>
 using namespace Common;
 
 #include <QDir>
-#include <QRegExp>
+#include <QRegularExpression>
 
 /**
   * @class Common::Languages
@@ -40,10 +40,12 @@ QList<Language> Languages::getAvailableLanguages(ExeType exeType)
    for (QStringListIterator i(dir.entryList(QStringList() << "*.qm", QDir::Files, QDir::Name)); i.hasNext();)
    {
       QString filename(i.next());
-      QRegExp reg(QString("d_lan_").append(exeType == ExeType::GUI ? "gui" : "core").append("\\.(\\w+)\\.qm"));
-      if (reg.exactMatch(filename))
+      QRegularExpression reg(QString("d_lan_").append(exeType == ExeType::GUI ? "gui" : "core").append("\\.(\\w+)\\.qm"));
+      QRegularExpressionMatch regMatch = reg.match(filename);
+
+      if (regMatch.hasMatch())
       {
-         QLocale locale(reg.capturedTexts()[1]);
+         QLocale locale(regMatch.captured(1));
          if (locale.language() != QLocale::C)
             languages << Language { filename, locale };
       }

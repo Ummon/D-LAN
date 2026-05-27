@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <TransferRateCalculator.h>
 using namespace Common;
 
@@ -33,8 +33,7 @@ using namespace Common;
   * An instance of 'TransferRateCalculator' can be shared among several threads.
   */
 
-TransferRateCalculator::TransferRateCalculator() :
-   mutex(QMutex::Recursive)
+TransferRateCalculator::TransferRateCalculator()
 {
    this->reset();
 }

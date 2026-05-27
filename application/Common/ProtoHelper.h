@@ -46,6 +46,9 @@ namespace Common
    class ProtoHelper
    {
    public:
+
+      /*
+      Obsolete, see the commented implementation below.
       template <typename T>
       static void setStr(T& mess, void (T::*setter)(const char*), const QString& str);
 
@@ -57,6 +60,7 @@ namespace Common
 
       template <typename T>
       static QString getRepeatedStr(const T& mess, const std::string& (T::*getter)(int) const, int i);
+      */
 
       static void setLang(Protos::Common::Language& langMess, const QLocale& locale);
       static QLocale getLang(const Protos::Common::Language& langMess);
@@ -90,6 +94,8 @@ namespace Common
    };
 }
 
+
+/* Obsolete, we just use 'QString::toStdString' and 'QString::fromStd
 template <typename T>
 void Common::ProtoHelper::setStr(T& mess, void (T::*setter)(const char*), const QString& str)
 {
@@ -117,6 +123,7 @@ QString Common::ProtoHelper::getRepeatedStr(const T& mess, const std::string& (T
    const std::string& str = (mess.*getter)(i);
    return QString::fromUtf8(str.data(), str.length());
 }
+*/
 
 template<typename T>
 T Common::ProtoHelper::readUInt(const quint8*& p)

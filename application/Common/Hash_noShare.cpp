@@ -30,7 +30,7 @@ using namespace Common;
 const char Hash::NULL_HASH[HASH_SIZE] {};
 
 /**
-  * Build a new empty hash, its value is set to 0.
+  * Build a null hash, its value is set to 0.
   */
 Hash::Hash() noexcept :
    data{}
@@ -90,8 +90,8 @@ QString Hash::toStr() const
    {
       char p1 = (this->data[i] & 0xF0) >> 4;
       char p2 = this->data[i] & 0x0F;
-      ret[i*2] = p1 <= 9 ? '0' + p1 : 'a' + (p1-10);
-      ret[i*2 + 1] = p2 <= 9 ? '0' + p2 : 'a' + (p2-10);
+      ret[i*2] = p1 <= 9 ? char('0' + p1) : char('a' + (p1-10));
+      ret[i*2 + 1] = p2 <= 9 ? char('0' + p2) : char('a' + (p2-10));
    }
    return ret;
 }
@@ -223,7 +223,7 @@ void Hasher::addData(const char* data, int size)
    Q_ASSERT(data);
    Q_ASSERT(size >= 0);
 
-   this->cryptographicHash.addData(data, size);
+   this->cryptographicHash.addData(QByteArrayView(data, size));
 }
 
 Hash Hasher::getResult()

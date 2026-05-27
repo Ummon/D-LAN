@@ -47,7 +47,7 @@ namespace Common
             if (this->path.getDirs().isEmpty())
                return this->path.getRoot();
 
-            return this->path.getDirs().last();
+            return this->path.getDirs().constLast();
          }
 
          return this->name;

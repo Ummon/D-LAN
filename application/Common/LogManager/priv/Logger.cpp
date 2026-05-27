@@ -61,7 +61,7 @@ void LoggerHooks::removeDeletedHooks()
 
 QTextStream Logger::out;
 QFile Logger::file;
-QMutex Logger::mutex(QMutex::Recursive);
+QRecursiveMutex Logger::mutex;
 QString Logger::logDirName;
 
 LoggerHooks Logger::loggerHooks;
@@ -110,7 +110,7 @@ bool Logger::log(const QString& message, Severity severity, const char* filename
    if (!Logger::createFileLog())
       return false;
 
-   Logger::out << entry->toStrLine() << endl;
+   Logger::out << entry->toStrLine() << Qt::endl;
 
    return true;
 }
@@ -148,7 +148,7 @@ bool Logger::createFileLog()
 
          if (!appDir.exists(logDirName) && !appDir.mkdir(logDirName))
          {
-            outErr << "Error, cannot create log directory: " << appDir.absoluteFilePath(logDirName) << endl;
+            outErr << "Error, cannot create log directory: " << appDir.absoluteFilePath(logDirName) << Qt::endl;
             return false;
          }
          else
@@ -160,20 +160,20 @@ bool Logger::createFileLog()
             Logger::file.setFileName(logDir.absoluteFilePath(filename));
             if (!Logger::file.open(QIODevice::WriteOnly))
             {
-               outErr << "Error, cannot create log file: " << logDir.absoluteFilePath(filename) << endl;
+               outErr << "Error, cannot create log file: " << logDir.absoluteFilePath(filename) << Qt::endl;
                return false;
             }
             else
             {
                Logger::deleteOldestLog(logDir);
                Logger::out.setDevice(&Logger::file);
-               Logger::out.setCodec("UTF-8");
+               Logger::out.setEncoding(QStringConverter::Utf8);
             }
          }
       }
       catch (Common::Global::UnableToGetFolder& e)
       {
-         outErr << "Error, cannot create the application data directory: " << e.errorMessage << endl;
+         outErr << "Error, cannot create the application data directory: " << e.errorMessage << Qt::endl;
          return false;
       }
    }

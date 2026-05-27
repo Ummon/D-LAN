@@ -89,4 +89,7 @@ OTHER_FILES += \
 
 RESOURCES +=
 
+DISTFILES += \
+   core_model.qmodel
+
 

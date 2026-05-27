@@ -27,7 +27,7 @@ void BenchmarkTests::sortedArray()
    {
       QString word(wordSize, 'a');
       for (int j = 0; j < word.size(); j++)
-         word[j] = 'A' + static_cast<char>(rng.bounded(26));
+         word[j] = QChar::fromLatin1('A' + static_cast<char>(rng.bounded(26)));
       names << word;
    }
 
@@ -37,7 +37,7 @@ void BenchmarkTests::sortedArray()
    {
       QString word(wordSize, 'a');
       for (int j = 0; j < word.size(); j++)
-         word[j] = 'A' + static_cast<char>(rng.bounded(26));
+         word[j] = QChar::fromLatin1('A' + static_cast<char>(rng.bounded(26)));
       namesNotInserted << word;
    }
 

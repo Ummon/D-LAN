@@ -27,16 +27,17 @@ using namespace LM;
 const QString Entry::DATE_TIME_FORMAT("yyyy-MM-dd HH:mm:ss");
 const QString Entry::DATE_TIME_FORMAT_WITH_MS("yyyy-MM-dd HH:mm:ss.zzz");
 const QString Entry::SEVERITIES_STR[] = {"Fatal", "Error", "Warning", "Debug", "User", "Unknown"};
-QRegExp Entry::lineRegExp("(\\S{10} \\S{8})\\.(\\d{3}) \\[(.+)\\] \\{(.+)\\} \\((\\w+)\\) (?:<(\\S+:\\d+)> )?: (.*)");
+QRegularExpression Entry::lineRegExp("(\\S{10} \\S{8})\\.(\\d{3}) \\[(.+?)\\] \\{(.+?)\\} \\((.+?)\\) (?:<(\\S+:\\d+)> )?: (.*)");
 
 Entry::Entry(const QString& line) :
    severity(SV_UNKNOWN)
 {
-   //lineRegExp.setMinimal(true); // Non-greedy.
-   if (!Entry::lineRegExp.exactMatch(line))
+   auto matchLine = Entry::lineRegExp.match(line);
+
+   if (!matchLine.hasMatch())
       throw MalformedEntryLog(line);
 
-   QStringList capturedTexts = Entry::lineRegExp.capturedTexts();
+   QStringList capturedTexts = matchLine.capturedTexts();
 
    if (capturedTexts.count() < 7)
       return;

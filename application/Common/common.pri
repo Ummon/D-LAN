@@ -18,6 +18,8 @@ CONFIG(debug, debug|release) {
    }
 }
 
+CONFIG += c++20
+
 CONFIG += exceptions rtti
 DEFINES *= QT_USE_QSTRINGBUILDER
 
@@ -27,5 +29,7 @@ OBJECTS_DIR = .tmp/$$FOLDER
 RCC_DIR = .tmp/$$FOLDER
 UI_DIR = .tmp/$$FOLDER
 
-QMAKE_CXXFLAGS += -std=c++17
+QMAKE_CXXFLAGS += -stdlib=libc++ -Wno-ignored-attributes
 QMAKE_CXXFLAGS_WARN_ON = -Wall -Wno-parentheses
+
+QMAKE_LFLAGS += -stdlib=libc++

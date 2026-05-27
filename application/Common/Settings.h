@@ -19,12 +19,13 @@
 #pragma once
 
 #include <QString>
-#include <QMutex>
+#include <QRecursiveMutex>
 #include <QLocale>
 
 #include <google/protobuf/message.h>
 #include <google/protobuf/descriptor.h>
 
+#include <Protos/common.pb.h>
 #include <Common/Hash.h>
 
 #define SETTINGS Common::Settings::getInstance() // Don't do this at home, kids!
@@ -91,6 +92,7 @@ namespace Common
 
       void getRepeated(const google::protobuf::FieldDescriptor* fieldDescriptor, QList<quint32>& values) const;
       void getRepeated(const google::protobuf::FieldDescriptor* fieldDescriptor, QList<QString>& values) const;
+      void getRepeated(const google::protobuf::FieldDescriptor* fieldDescriptor, QList<Protos::Common::SharedEntry>& values) const;
 
       static void printError(const QString& error);
       static void printErrorNameNotFound(const QString& name);
@@ -98,7 +100,7 @@ namespace Common
 
       QString filename; ///< The name of the file cache saved in the home directory.
       google::protobuf::Message* settings;
-      mutable QMutex mutex;
+      mutable QRecursiveMutex mutex;
 
       const google::protobuf::Descriptor* descriptor;
    };

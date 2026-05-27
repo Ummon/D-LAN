@@ -26,6 +26,7 @@ using namespace Common;
 
 #include <Common/PersistentData.h>
 #include <ProtoHelper.h>
+#include <SharedEntry.h>
 
 /**
   * @class Common::Settings
@@ -34,7 +35,7 @@ using namespace Common;
   * Singleton.
   */
 
-Settings* Settings::instance(0);
+Settings* Settings::instance(nullptr);
 
 Settings& Settings::getInstance()
 {
@@ -45,8 +46,7 @@ Settings& Settings::getInstance()
 
 Settings::Settings() :
    filename("settings.json"), // The default name.
-   settings(0),
-   mutex(QMutex::Recursive)
+   settings(nullptr)
 {
 }
 
@@ -408,8 +408,11 @@ void Settings::set(const QString& name, const QLocale& lang)
       printErrorNameNotFound(name);
       return;
    }
-   if (fieldDescriptor->type() != google::protobuf::FieldDescriptor::TYPE_MESSAGE ||
-       fieldDescriptor->type() == google::protobuf::FieldDescriptor::TYPE_MESSAGE && fieldDescriptor->message_type()->name() != "Language")
+   if (
+      fieldDescriptor->type() != google::protobuf::FieldDescriptor::TYPE_MESSAGE ||
+      fieldDescriptor->type() == google::protobuf::FieldDescriptor::TYPE_MESSAGE &&
+      fieldDescriptor->message_type()->name() != "Language"
+   )
    {
       printErrorBadType(fieldDescriptor, "Language");
       return;
@@ -436,10 +439,13 @@ void Settings::set(const QString& name, const google::protobuf::Message& message
       printErrorNameNotFound(name);
       return;
    }
-   if (fieldDescriptor->type() != google::protobuf::FieldDescriptor::TYPE_MESSAGE ||
-       fieldDescriptor->type() == google::protobuf::FieldDescriptor::TYPE_MESSAGE && fieldDescriptor->message_type()->full_name() != message.GetTypeName())
+   if (
+      fieldDescriptor->type() != google::protobuf::FieldDescriptor::TYPE_MESSAGE ||
+      fieldDescriptor->type() == google::protobuf::FieldDescriptor::TYPE_MESSAGE &&
+      fieldDescriptor->message_type()->full_name() != message.GetTypeName()
+   )
    {
-      printErrorBadType(fieldDescriptor, QString::fromStdString(message.GetTypeName()));
+      printErrorBadType(fieldDescriptor, QString::fromUtf8(message.GetTypeName().data()));
       return;
    }
 
@@ -656,6 +662,14 @@ void Settings::getRepeated(const google::protobuf::FieldDescriptor* fieldDescrip
       values << QString::fromUtf8(this->settings->GetReflection()->GetRepeatedString(*this->settings, fieldDescriptor, i).data());
 }
 
+void Settings::getRepeated(const google::protobuf::FieldDescriptor* fieldDescriptor, QList<Protos::Common::SharedEntry>& values) const
+{
+   Q_ASSERT(fieldDescriptor);
+
+   for (auto& entry : this->settings->GetReflection()->GetRepeatedFieldRef<Protos::Common::SharedEntry>(*this->settings, fieldDescriptor))
+      values << entry;
+}
+
 void Settings::rm(const QString& name)
 {
    QMutexLocker locker(&this->mutex);
@@ -677,15 +691,16 @@ void Settings::rm(const QString& name)
 
 void Settings::printError(const QString& name)
 {
-   QTextStream(stderr) << name << endl;
+   QTextStream(stderr) << name << Qt::endl;
 }
 
 void Settings::printErrorNameNotFound(const QString& name)
 {
-   QTextStream(stderr) << QString("Settings: name \"%1\" doesn't exist").arg(name) << endl;
+   QTextStream(stderr) << QString("Settings: name \"%1\" doesn't exist").arg(name) << Qt::endl;
 }
 
 void Settings::printErrorBadType(const google::protobuf::FieldDescriptor* field, const QString& excepted)
 {
-   QTextStream(stderr) << QString("Settings: bad type, field name = \"%1\", expected type: \"%2\"").arg(ProtoHelper::getStr(*field, &google::protobuf::FieldDescriptor::name)).arg(excepted) << endl;
+   // ProtoHelper::getStr(*field, &google::protobuf::FieldDescriptor::name)
+   QTextStream(stderr) << QString("Settings: bad type, field name = \"%1\", expected type: \"%2\"").arg(field->name()).arg(excepted) << Qt::endl;
 }

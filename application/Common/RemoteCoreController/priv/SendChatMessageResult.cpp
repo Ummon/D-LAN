@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <priv/SendChatMessageResult.h>
 using namespace RCC;
 
@@ -33,10 +33,11 @@ SendChatMessageResult::SendChatMessageResult(InternalCoreConnection* coreConnect
 void SendChatMessageResult::start()
 {
    Protos::GUI::ChatMessage chatMessage;
-   Common::ProtoHelper::setStr(chatMessage, &Protos::GUI::ChatMessage::set_message, this->message);
+
+   chatMessage.set_message(this->message.toStdString());
 
    if (!this->roomName.isEmpty())
-      Common::ProtoHelper::setStr(chatMessage, &Protos::GUI::ChatMessage::set_room, this->roomName);
+      chatMessage.set_room(this->roomName.toStdString());
 
    for (QListIterator<Common::Hash> i(this->peerIDsAnswered); i.hasNext();)
       chatMessage.add_peer_ids_answer()->set_hash(i.next().getData(), Common::Hash::HASH_SIZE);

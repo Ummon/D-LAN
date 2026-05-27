@@ -4,11 +4,12 @@
 QT += network testlib
 QT -= gui
 TARGET = TestsCommon
-
 CONFIG += link_prl
 
 include(../common.pri)
 include(../../Libs/protobuf.pri)
+
+QMAKE_CXXFLAGS_WARN_ON += -Wno-pessimizing-move -Wno-unused-result
 
 LIBS += -L"../output/$$FOLDER" -lCommon
 POST_TARGETDEPS += ../output/$$FOLDER/libCommon.a

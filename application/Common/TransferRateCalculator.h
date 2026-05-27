@@ -15,10 +15,10 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #pragma once
 
-#include <QMutex>
+#include <QRecursiveMutex>
 #include <QElapsedTimer>
 
 #include <Common/Uncopyable.h>
@@ -42,7 +42,7 @@ namespace Common
       void reset();
       void update(int value);
 
-      mutable QMutex mutex;
+      mutable QRecursiveMutex mutex;
       QElapsedTimer timer;
       qint64 t1;
 

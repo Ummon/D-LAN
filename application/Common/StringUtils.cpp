@@ -15,11 +15,11 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <Common/StringUtils.h>
 using namespace Common;
 
-#include <QRegExp>
+#include <QRegularExpression>
 
 QString StringUtils::toLowerAndRemoveAccents(const QString& str)
 {
@@ -116,8 +116,8 @@ QString StringUtils::toLowerAndRemoveAccents(const QString& str)
   */
 QStringList StringUtils::splitInWords(const QString& words)
 {
-   static const QRegExp regExp("(\\W+|_)");
-   return StringUtils::toLowerAndRemoveAccents(words).split(regExp, QString::SkipEmptyParts);
+   static const QRegularExpression regExp("(\\W+|_)");
+   return StringUtils::toLowerAndRemoveAccents(words).split(regExp, Qt::SkipEmptyParts);
 }
 
 /**

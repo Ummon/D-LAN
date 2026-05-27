@@ -18,7 +18,12 @@ Installations/
 .tmp/
 /doc/doxygen/html
 qrc_*.cpp
-TODO
+TODO.md
 *.session
 *.DS_STORE
 Thumbs.db
+build-*
+*.code-workspace
+
+.qtc_clangd
+application/.qmake.stash

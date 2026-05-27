@@ -116,11 +116,14 @@ try
 
          google::protobuf::util::JsonPrintOptions jsonOptions;
          jsonOptions.add_whitespace = true;
-         jsonOptions.always_print_primitive_fields = true;
          jsonOptions.always_print_enums_as_ints = false;
          jsonOptions.preserve_proto_field_names = true;
 
-         google::protobuf::util::MessageToJsonString(data, &json, jsonOptions);
+         auto status = google::protobuf::util::MessageToJsonString(data, &json, jsonOptions);
+
+         if (status.code() != absl::StatusCode::kOk)
+            throw PersistentDataIOException(QString("Unable to transform the message into JSON: %1").arg(status.ToString()));
+
          QTextStream stream(&file);
          stream << QString::fromStdString(json);
 #if !DEBUG
