@@ -46,7 +46,10 @@ namespace FM
       bool contains(const Common::Hash& hash) const;
 
    private:
-      mutable QMutex mutex; // From the documentation : "they (containers) are thread-safe in situations where they are used as read-only containers by all threads used to access them.".
+      // From the documentation:
+      //    "they (containers) are thread-safe in situations where they are used as read-only containers
+      //     by all threads used to access them.".
+      mutable QMutex mutex;
 
 #ifdef BLOOM_FILTER_ON
       BloomFilter bloomFilter;

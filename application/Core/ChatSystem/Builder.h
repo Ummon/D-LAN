@@ -30,6 +30,9 @@ namespace CS
    class Builder
    {
    public:
-      static QSharedPointer<IChatSystem> newChatSystem(QSharedPointer<PM::IPeerManager> peerManager, QSharedPointer<NL::INetworkListener> networkListener);
+      static QSharedPointer<IChatSystem> newChatSystem(
+         QSharedPointer<PM::IPeerManager> peerManager,
+         QSharedPointer<NL::INetworkListener> networkListener
+      );
    };
 }

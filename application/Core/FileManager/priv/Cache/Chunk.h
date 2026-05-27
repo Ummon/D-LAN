@@ -1,4 +1,4 @@
-/**
+      /**
   * D-LAN - A decentralized LAN file sharing software.
   * Copyright (C) 2010-2012 Greg Burri <greg.burri@gmail.com>
   *
@@ -17,8 +17,6 @@
   */
 
 #pragma once
-
-#include <exception>
 
 #include <QByteArray>
 
@@ -56,7 +54,7 @@ namespace FM
       void removeItsIncompleteFile();
       bool populateEntry(Protos::Common::Entry* entry) const;
 
-      QString getFilePath() const;
+      Common::Path getFilePath() const;
 
       QSharedPointer<IDataReader> getDataReader();
       QSharedPointer<IDataWriter> getDataWriter();

@@ -34,9 +34,20 @@ namespace HC
    public:
       virtual ~IHashCache() {}
 
-      virtual QList<Common::Hashes> getHashes(const QList<QString>& filePaths);
+      /**
+        * Try to retrieve hashes from a file path.
+        * Some hashes may be null if unknown.
+        * If the file path is unknown a empty list is returned.
+        */
+      virtual Common::Hashes getHashes(const QString& filePath) = 0;
 
-      virtual void setHashes(const QList<QString>& filePaths, const QList<Common::Hashes>& hashes);
-      virtual void rmtHashes(const QList<QString>& filePaths);
+      virtual void setHashes(QString& filePath, const QList<QString>& filePaths) = 0;
+      virtual void setSizeAndDateTime(QString& filePath, qint64 size, QDateTime dateTime) = 0;
+
+      virtual void rmHashes(QString& filePath) = 0;
+
+      // virtual QList<Common::Hashes> getHashes(const QList<QString>& filePaths);
+      // virtual void setHashes(const QList<QString>& filePaths, const QList<Common::Hashes>& hashes);
+      // virtual void rmHashes(const QList<QString>& filePaths);
    };
 }

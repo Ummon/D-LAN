@@ -28,6 +28,7 @@
 #include <Common/Settings.h>
 #include <Common/Uncopyable.h>
 
+#include <HashCache/IHashCache.h>
 #include <FileManager/IFileManager.h>
 #include <PeerManager/IPeerManager.h>
 #include <UploadManager/IUploadManager.h>
@@ -77,6 +78,7 @@ namespace CoreSpace
       struct TheLastWords { ~TheLastWords() { L_USER(QObject::tr("Shutdown")); } } theLastWords;
 
    protected:
+      QSharedPointer<HC::IHashCache> hashCache;
       QSharedPointer<FM::IFileManager> fileManager;
       QSharedPointer<PM::IPeerManager> peerManager;
       QSharedPointer<UM::IUploadManager> uploadManager;

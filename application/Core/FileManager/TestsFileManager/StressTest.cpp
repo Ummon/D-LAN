@@ -22,7 +22,8 @@ using namespace FM;
 #include <QTest>
 #include <QtDebug>
 #include <QtGlobal>
-#include <QTime>
+#include <QElapsedTimer>
+#include <QByteArray>
 #include <QDirIterator>
 #include <QMutex>
 #include <QMutexLocker>
@@ -36,6 +37,7 @@ using namespace FM;
 #include <priv/Constants.h>
 #include <Exceptions.h>
 #include <Builder.h>
+#include <MockHashCache.h>
 
 // Beautiful macros . . .
 #define PROB_100(A) if (this->randGen.percentRand() <= 100 - A) return;
@@ -45,17 +47,17 @@ const QDir ROOT_DIR("stress");
 
 int RandGenerator::percentRand()
 {
-   QRandomGenerator64::global()->bounded(101);
+   return QRandomGenerator64::global()->bounded(101);
 }
 
 int RandGenerator::permilRand()
 {
-   QRandomGenerator64::global()->bounded(1001);
+   return QRandomGenerator64::global()->bounded(1001);
 }
 
 int RandGenerator::rand(int n)
 {
-   QRandomGenerator64::global()->bounded(n + 1);
+   return QRandomGenerator64::global()->bounded(n + 1);
 }
 
 QString RandGenerator::generateAName()
@@ -68,7 +70,7 @@ QString RandGenerator::generateAName()
          str.append(' ');
 
       for (int i = 0; i < this->rand(1) + 3; i++)
-         str.append('A' + static_cast<char>(rand(25)));
+         str.append(QChar('A' + static_cast<char>(rand(25))));
    }
    return str;
 }
@@ -235,7 +237,8 @@ const int StressTest::NB_FILES_AND_DIR_THREAD = 3;
 
 StressTest::StressTest()
 {
-   this->fileManager = Builder::newFileManager();
+   this->hashCache = QSharedPointer<HC::IHashCache>(new MockHashCache());
+   this->fileManager = Builder::newFileManager(this->hashCache);
 
    if (!QDir().mkdir(ROOT_DIR.dirName()))
       qDebug() << "Unable to create the main directory:" << ROOT_DIR.absolutePath();
@@ -303,9 +306,9 @@ void StressTest::createASharedDir()
    try
    {
       this->sharedDirs << ROOT_DIR.dirName().append("/").append(name);
-      this->fileManager->setSharedDirs(this->sharedDirs);
+      this->fileManager->setSharedPaths(this->sharedDirs);
    }
-   catch (ItemsNotFoundException& e)
+   catch (EntriesNotFoundException& e)
    {
       qDebug() << "createASharedDir(): These items wasn't found: " << e.paths;
    }
@@ -323,9 +326,9 @@ void StressTest::removeASharedDir()
       int i = this->randGen.rand(this->sharedDirs.size()-1);
       this->dirsToDelete << this->sharedDirs[i];
       this->sharedDirs.removeAt(i);
-      this->fileManager->setSharedDirs(this->sharedDirs);
+      this->fileManager->setSharedPaths(this->sharedDirs);
    }
-   catch (ItemsNotFoundException& e)
+   catch (EntriesNotFoundException& e)
    {
       qDebug() << "removeASharedDir(): These items wasn't found: " << e.paths;
    }
@@ -339,8 +342,8 @@ void StressTest::doASearch()
 
    const int N = 1000;
    bool found = false;
-   QTime time;
-   time.start();
+   QElapsedTimer timer;
+   timer.start();
    for (int n = 0; n < N; n ++)
    {
       QString terms = this->randGen.generateAName() + " " + this->randGen.generateAName();
@@ -352,10 +355,10 @@ void StressTest::doASearch()
          found = true;
          qDebug() << "Found, terms : " << terms;
          for (int i = 0; i < results.first().entry_size(); i++)
-            qDebug() << "[" << results.first().entry(i).level() << "] " << Common::ProtoHelper::getStr(results.first().entry(i).entry(), &Protos::Common::Entry::name);
+            qDebug() << "[" << results.first().entry(i).level() << "] " << results.first().entry(i).entry().name();
       }
    }
-   int delta = time.elapsed();
+   qint64 delta = timer.elapsed();
    qDebug() << "Time elapsed for " << N << " searchs : " << delta << " ms";
 
    if (!found)
@@ -368,7 +371,10 @@ void StressTest::printAmount()
 
    qDebug() << "===== StressTest::printAmount() =====";
 
-   qDebug() << "Amount of shared data : " << Common::Global::formatByteSize(this->fileManager->getAmount()) << " (" << this->fileManager->getAmount() << ")";
+   qDebug() <<
+      "Amount of shared data : " <<
+      Common::Global::formatByteSize(this->fileManager->getAmount()) <<
+      " (" << this->fileManager->getAmount() << ")";
 }
 
 void StressTest::getChunk()
@@ -381,8 +387,8 @@ void StressTest::getChunk()
    qDebug() << "===== StressTest::getChunk() =====";
 
    const int N = 10000;
-   QTime time;
-   time.start();
+   QElapsedTimer timer;
+   timer.start();
 
    int nbFound = 0;
    int nbNotFound = 0;
@@ -409,7 +415,7 @@ void StressTest::getChunk()
          }
       }
    }
-   qDebug() << "Time elapsed for " << i << " getChunk : " << time.elapsed() << " ms";
+   qDebug() << "Time elapsed for " << i << " getChunk : " << timer.elapsed() << " ms";
    qDebug() << "Number of chunk found : " << nbFound << ", not found : " << nbNotFound;
 }
 
@@ -431,8 +437,8 @@ void StressTest::newFile()
 
    Protos::Common::Entry entry;
    entry.set_type(Protos::Common::Entry_Type_DIR);
-   Common::ProtoHelper::setStr(entry, &Protos::Common::Entry::set_path, path);
-   Common::ProtoHelper::setStr(entry, &Protos::Common::Entry::set_name, this->randGen.generateAName());
+   entry.set_path(path.toStdString());
+   entry.set_name(this->randGen.generateAName().toStdString());
    entry.set_size(bytes);
    for (int i = 0; i < this->randGen.rand(nbChunk); i++) // Do not give all hashes.
    {
@@ -447,7 +453,7 @@ void StressTest::newFile()
       {
          Downloader* downloader = new Downloader(
             i.next(),
-            QString(Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::path)) + QString(Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::name))
+            QString::fromStdString(entry.path()) + QString::fromStdString(entry.name())
          );
          downloader->start();
       }
@@ -483,11 +489,11 @@ void StressTest::haveChunk()
          hashes << Common::Hash::rand();
    }
 
-   QTime time;
-   time.start();
+   QElapsedTimer timer;
+   timer.start();
    QBitArray result = this->fileManager->haveChunks(hashes);
 
-   qDebug() << "Ask for" << hashes.size() << "hash(es). Request time :" << time.elapsed() << "ms";
+   qDebug() << "Ask for" << hashes.size() << "hash(es). Request time :" << timer.elapsed() << "ms";
    if (result.isNull())
    {
       qDebug() << " -> " << "Don't have any hashes";
@@ -522,15 +528,19 @@ void StressTest::getEntries()
 
    const int N = 30;
    int n;
-   QTime time;
-   time.start();
+   QElapsedTimer timer;
+   timer.start();
    for (n = 0; n < N && n < this->knownDirEntries.size(); n++)
    {
       int n = this->randGen.rand(this->knownDirEntries.size()-1);
       Protos::Common::Entry entry = this->knownDirEntries[n];
-      if (!entry.has_shared_dir())
+      if (!entry.has_shared_entry())
       {
-         qDebug() << "!!! The entry " << Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::path) << Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::name) << " doesn't have a shared directory defined !!!";
+         qDebug() <<
+            "!!! The entry " <<
+            entry.path() <<
+            entry.name() <<
+            " doesn't have a shared directory defined !!!";
          this->knownDirEntries.removeAt(n);
          return;
       }
@@ -547,11 +557,11 @@ void StressTest::getEntries()
       }
 
       for (int i = 0; i < entries.entry_size(); i++)
-         entries.mutable_entry(i)->mutable_shared_dir()->CopyFrom(entry.shared_dir());
+         entries.mutable_entry(i)->mutable_shared_entry()->CopyFrom(entry.shared_entry());
 
       this->addEntries(entries);
    }
-   qDebug() << "Time for " << n << " searches : " << time.elapsed() << " ms";
+   qDebug() << "Time for " << n << " searches : " << timer.elapsed() << " ms";
 }
 
 void StressTest::getHashes()
@@ -606,7 +616,7 @@ void StressTest::addEntries(const Protos::Common::Entries& entries)
       for (int j = 0; j < this->knownDirEntries.size(); j++)
          if (this->knownDirEntries[j].path() == entries.entry(i).path() &&
              this->knownDirEntries[j].name() == entries.entry(i).name() &&
-             this->knownDirEntries[j].shared_dir().id().hash() == entries.entry(i).shared_dir().id().hash())
+             this->knownDirEntries[j].shared_entry().id().hash() == entries.entry(i).shared_entry().id().hash())
             goto nextEntryResult;
 
       qDebug() << entryToStr(entries.entry(i));
@@ -628,9 +638,9 @@ QString StressTest::entryToStr(const Protos::Common::Entry& entry)
 {
    QString str = QString("Entry (%1), path = %2, name = %3, sharedDir = %4").
       arg(entry.type() == Protos::Common::Entry_Type_DIR ? "DIR" : "FILE").
-      arg(Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::path)).
-      arg(Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::name)).
-      arg(Common::Hash(entry.shared_dir().id().hash()).toStr());
+      arg(entry.path()).
+      arg(entry.name()).
+      arg(Common::Hash(entry.shared_entry().id().hash()).toStr());
 
    if (entry.type() == Protos::Common::Entry_Type_FILE)
    {
@@ -655,7 +665,7 @@ void Downloader::run()
       QSharedPointer<IDataWriter> writer = chunk->getDataWriter();
 
       const int BUFFER_SIZE = SETTINGS.get<quint32>("buffer_size_writing");
-      char buffer[BUFFER_SIZE];
+      QByteArray buffer(BUFFER_SIZE, Qt::Uninitialized);
       for (int i = 0; i < BUFFER_SIZE; i++)
          buffer[i] = this->chunk->getNum() + 1;
 
@@ -694,12 +704,12 @@ void Uploader::run()
    {
       QSharedPointer<FM::IDataReader> reader = this->chunk->getDataReader();
 
-      char buffer[SETTINGS.get<quint32>("buffer_size_reading")];
+      QByteArray buffer(SETTINGS.get<quint32>("buffer_size_reading"), Qt::Uninitialized);
 
       qint64 bytesReadTotal = 0;
       qint64 bytesRead = 0;
 
-      while (bytesRead = reader->read(buffer, bytesReadTotal))
+      while (bytesRead = reader->read(buffer.data(), bytesReadTotal))
          bytesReadTotal += bytesRead;
       qDebug() << "Uploader::run() : bytesRead = " << bytesReadTotal << " for the chunk " << this->chunk->getHash().toStr() << " num : " << this->chunk->getNum();
    }

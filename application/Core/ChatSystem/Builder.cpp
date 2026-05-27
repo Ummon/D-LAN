@@ -27,7 +27,10 @@ using namespace CS;
 /**
   * Create and return a new ChatSystem.
   */
-QSharedPointer<IChatSystem> Builder::newChatSystem(QSharedPointer<PM::IPeerManager> peerManager, QSharedPointer<NL::INetworkListener> networkListener)
+QSharedPointer<IChatSystem> Builder::newChatSystem(
+   QSharedPointer<PM::IPeerManager> peerManager,
+   QSharedPointer<NL::INetworkListener> networkListener
+)
 {
    return QSharedPointer<IChatSystem>(new ChatSystem(peerManager, networkListener));
 }

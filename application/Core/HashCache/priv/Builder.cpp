@@ -20,9 +20,9 @@
 using namespace HC;
 
 #include <IHashCache.h>
-//#include <priv/HashCache.h>
+#include <priv/HashCache.h>
 
-QSharedPointer<IHashCache> Builder::newHashCache()
+QSharedPointer<IHashCache> Builder::newHashCache(const QString& databaseFolder)
 {
-   return QSharedPointer<IHashCache>(nullptr/*new HashCache()*/);
+   return QSharedPointer<IHashCache>(new HashCache(databaseFolder));
 }

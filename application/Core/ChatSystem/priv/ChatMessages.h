@@ -45,16 +45,31 @@ namespace CS
       ChatMessages();
       ChatMessages(const ChatMessages& other);
 
-      QSharedPointer<ChatMessage> add(const QString& message, const Common::Hash& ownerID, const QString& ownerNick, const QString& roomName = QString(), const QList<Common::Hash>& peerIDsAnswer = QList<Common::Hash>());
+      QSharedPointer<ChatMessage> add(
+         const QString& message,
+         const Common::Hash& ownerID,
+         const QString& ownerNick,
+         const QString& roomName = QString(),
+         const QList<Common::Hash>& peerIDsAnswer = QList<Common::Hash>()
+      );
       QList<QSharedPointer<ChatMessage>> add(const Protos::Common::ChatMessages& chatMessages);
 
       QList<quint64> getLastMessageIDs(int nMax) const;
 
       QList<QSharedPointer<ChatMessage>> getMessages() const;
-      QList<QSharedPointer<ChatMessage>> getUnknownMessages(const Protos::Core::GetLastChatMessages& getLastChatMessage) const;
+      QList<QSharedPointer<ChatMessage>> getUnknownMessages(
+         const Protos::Core::GetLastChatMessages& getLastChatMessage
+      ) const;
 
-      void fillProtoChatMessages(Protos::Common::ChatMessages& chatMessages, int number = std::numeric_limits<int>::max()) const;
-      static QList<QSharedPointer<ChatMessage>> fillProtoChatMessages(Protos::Common::ChatMessages& chatMessages, const QList<QSharedPointer<ChatMessage>>& messages, int maxByteSize = std::numeric_limits<int>::max());
+      void fillProtoChatMessages(
+         Protos::Common::ChatMessages& chatMessages,
+         int number = std::numeric_limits<int>::max()
+      ) const;
+      static QList<QSharedPointer<ChatMessage>> fillProtoChatMessages(
+         Protos::Common::ChatMessages& chatMessages,
+         const QList<QSharedPointer<ChatMessage>>& messages,
+         int maxByteSize = std::numeric_limits<int>::max()
+      );
 
       void loadFromFile(const QString& filename);
       void saveToFile(const QString& filename) const;

@@ -24,7 +24,7 @@
 #include <QList>
 #include <QString>
 #include <QChar>
-#include <QMutex>
+#include <QRecursiveMutex>
 
 #include <Common/Uncopyable.h>
 #include <Common/Global.h>
@@ -58,8 +58,17 @@ namespace FM
       void renameItem(const QString& oldWord, const QString& newWord, const T& item);
       void renameItem(const QStringList& oldWords, const QStringList& newWords, const T& item);
 
-      QList<NodeResult<T>> search(const QString& word, int maxNbResult = -1, std::function<bool(const T&)> predicat = nullptr) const;
-      QList<NodeResult<T>> search(const QStringList& words, int maxNbResult = -1, std::function<bool(const T&)> predicat = nullptr) const;
+      QList<NodeResult<T>> search(
+         const QString& word,
+         int maxNbResult = -1,
+         std::function<bool(const T&)> predicat = nullptr
+      ) const;
+
+      QList<NodeResult<T>> search(
+         const QStringList& words,
+         int maxNbResult = -1,
+         std::function<bool(const T&)> predicat = nullptr
+      ) const;
 
       QString toStringLog() const;
 
@@ -67,7 +76,7 @@ namespace FM
 
    private:
       Node<T> root;
-      mutable QMutex mutex;
+      mutable QRecursiveMutex mutex;
    };
 }
 
@@ -78,15 +87,14 @@ template<typename T>
 const int FM::WordIndex<T>::MIN_WORD_SIZE_PARTIAL_MATCH_KOREAN(1);
 
 template<typename T>
-   FM::WordIndex<T>::WordIndex() :
-      mutex(QMutex::Recursive)
+   FM::WordIndex<T>::WordIndex()
 {}
 
 template<typename T>
 void FM::WordIndex<T>::addItem(const QString& word, const T& item)
 {
    QMutexLocker locker(&this->mutex);
-   this->root.addItem(&word, item);
+   this->root.addItem(QStringView(word), item);
 }
 
 template<typename T>
@@ -94,7 +102,7 @@ void FM::WordIndex<T>::addItem(const QStringList& words, const T& item)
 {
    QMutexLocker locker(&this->mutex);
    for (QStringListIterator i(words); i.hasNext();)
-      this->root.addItem(&i.next(), item);
+      this->root.addItem(QStringView(i.next()), item);
 }
 
 template<typename T>
@@ -132,7 +140,7 @@ void FM::WordIndex<T>::renameItem(const QStringList& oldWords, const QStringList
    for (QStringListIterator i(oldWords); i.hasNext();)
       this->root.rmItem(i.next(), item);
    for (QStringListIterator i(newWords); i.hasNext();)
-      this->root.addItem(&i.next(), item);
+      this->root.addItem(QStringView(i.next()), item);
 }
 
 /**
@@ -140,7 +148,11 @@ void FM::WordIndex<T>::renameItem(const QStringList& oldWords, const QStringList
   * There is a particular case when the word length is below 'MIN_WORD_SIZE_PARTIAL_MATCH', see the comment associated to this constant for more information.
   */
 template<typename T>
-QList<FM::NodeResult<T>> FM::WordIndex<T>::search(const QString& word, int maxNbResult, std::function<bool(const T&)> predicat) const
+QList<FM::NodeResult<T>> FM::WordIndex<T>::search(
+   const QString& word,
+   int maxNbResult,
+   std::function<bool(const T&)> predicat
+) const
 {
    QMutexLocker locker(&this->mutex);
    return this->root.search(word, word.size() >= (Common::StringUtils::isKorean(word) ? MIN_WORD_SIZE_PARTIAL_MATCH_KOREAN : MIN_WORD_SIZE_PARTIAL_MATCH), maxNbResult, predicat);
@@ -150,7 +162,11 @@ QList<FM::NodeResult<T>> FM::WordIndex<T>::search(const QString& word, int maxNb
   * @see http://dev.euphorik.ch/wiki/pmp/Algorithms#Word-indexing for more information.
   */
 template<typename T>
-QList<FM::NodeResult<T>> FM::WordIndex<T>::search(const QStringList& words, int maxNbResult, std::function<bool(const T&)> predicat) const
+QList<FM::NodeResult<T>> FM::WordIndex<T>::search(
+   const QStringList& words,
+   int maxNbResult,
+   std::function<bool(const T&)> predicat
+) const
 {
    QMutexLocker locker(&this->mutex);
 
@@ -179,7 +195,7 @@ QList<FM::NodeResult<T>> FM::WordIndex<T>::search(const QStringList& words, int 
    for (int i = 0; i < N && finalResult.size() < maxNbResult; i++)
    {
       const int NB_INTERSECTS = N - i; // Number of set intersected.
-      int intersect[NB_INTERSECTS]; // A array of the results wich will be intersected.
+      QList<int> intersect(NB_INTERSECTS); // A array of the results wich will be intersected.
       for (int j = 0; j < NB_INTERSECTS; j++)
          intersect[j] = j;
 

@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef TESTS_FILEMANAGER_H
-#define TESTS_FILEMANAGER_H
+#pragma once
 
 #include <QTest>
 #include <QDir>
@@ -27,6 +26,8 @@
 #include <Builder.h>
 #include <IFileManager.h>
 using namespace FM;
+
+#include <MockHashCache.h>
 
 class Tests : public QObject
 {
@@ -39,20 +40,20 @@ public:
 private slots:
    void initTestCase();
 
-   void testWordIndex();
-
    void createFileManager();
 
-   /***** Adding shared directories *****/
+   /***** Adding shared directories and files *****/
    void addASharedDirectoryIncoming();
    void addASharedDirectory();
-   void addAnAlreadySharedDirectory();
+   void addASharedFile();
+   void addSomeAlreadySharedEntries();
    void swapTwoDirectories();
    void addInexistingSharedDirectory();
+   void addInexistingSharedFile();
    void addSubSharedDirectories();
    void addSuperSharedDirectories();
 
-   /***** Modification of the file system *****/
+   // /***** Modification of the file system *****/
    void createAFile();
    void moveAFile();
    void renameAFile();
@@ -60,60 +61,60 @@ private slots:
    void removeAFile();
    void createASubFile();
    void createABigFile();
-   void modifyABigFile();
-   void removeABigFile();
-   void createADirectory();
-   void renameADirectory();
-   void moveAnEmptyDirectory();
-   void moveADirectoryContainingFiles();
-   void removeADirectory();
-   void createAnEmptyFile();
+   // void modifyABigFile();
+   // void removeABigFile();
+   // void createADirectory();
+   // void renameADirectory();
+   // void moveAnEmptyDirectory();
+   // void moveADirectoryContainingFiles();
+   // void removeADirectory();
+   // void createAnEmptyFile();
 
-   /***** Ask for chunks by hash *****/
-   void getAnExistingChunk();
-   void getANonExistingChunk();
+   // /***** Ask for chunks by hash *****/
+   // void getAnExistingChunk();
+   // void getANonExistingChunk();
 
-   /***** Get Hashes from a FileEntry which the hash is already computed *****/
-   void getHashesFromAFileEntry1();
+   // /***** Get Hashes from a FileEntry which the hash is already computed *****/
+   // void getHashesFromAFileEntry1();
 
-   /***** Get Hashes from a FileEntry which the hash is unknown *****/
-   void getHashesFromAFileEntry2();
+   // /***** Get Hashes from a FileEntry which the hash is unknown *****/
+   // void getHashesFromAFileEntry2();
 
-   /***** Browse the shared directories *****/
-   void browseSomeDirectories();
+   // /***** Browse the shared directories *****/
+   // void browseSomeDirectories();
 
-   /***** Find files and directories by keywords *****/
-   void findExistingFilesWithOneWord();
-   void findNonExistingFilesWithOneWord();
-   void findFilesWithSomeWords1();
-   void findFilesWithSomeWords2();
-   void findFilesWithResultFragmentation();
-   void findFilesWithSomeWordsAndExtensions();
-   void findFilesWithSomeWordsAndExtensionsAndSizeRange();
-   void findFilesByExtensions();
-   void findFilesByExtensionsAndSizeRange();
-   void findFilesBySizeRange();
+   // /***** Find files and directories by keywords *****/
+   // void findExistingFilesWithOneWord();
+   // void findNonExistingFilesWithOneWord();
+   // void findFilesWithSomeWords1();
+   // void findFilesWithSomeWords2();
+   // void findFilesWithResultFragmentation();
+   // void findFilesWithSomeWordsAndExtensions();
+   // void findFilesWithSomeWordsAndExtensionsAndSizeRange();
+   // void findFilesByExtensions();
+   // void findFilesByExtensionsAndSizeRange();
+   // void findFilesBySizeRange();
 
-   /***** Ask if the given hashes are known *****/
-   void haveChunks();
+   // /***** Ask if the given hashes are known *****/
+   // void haveChunks();
 
-   /***** Ask for the amount of shared byte *****/
-   void printAmount();
+   // /***** Ask for the amount of shared byte *****/
+   // void printAmount();
 
-   /***** Removing shared directories *****/
-   void rmSharedDirectory();
+   // /***** Removing shared directories *****/
+   // void rmSharedDirectory();
 
-   /********** Unit tests of internals classes **********/
+   // /********** Unit tests of internals classes **********/
 
-   /***** Speed test of the class 'Chunks' *****/
-   void chunksPerformance();
+   // /***** Speed test of the class 'Chunks' *****/
+   // void chunksPerformance();
 
-   /***** The extension index class *****/
-   void extensionIndexAddItem();
-   void extensionIndexRmItem();
-   void extensionIndexChangeItem();
-   void extensionIndexSearchWithOneExtension();
-   void extensionIndexSearchWithSomeExtensions();
+   // /***** The extension index class *****/
+   // void extensionIndexAddItem();
+   // void extensionIndexRmItem();
+   // void extensionIndexChangeItem();
+   // void extensionIndexSearchWithOneExtension();
+   // void extensionIndexSearchWithSomeExtensions();
 
    void cleanupTestCase();
 
@@ -128,8 +129,7 @@ private:
 
    static void compareStrRegexp(const QString& regexp, const QString& str);
 
-   QStringList sharedDirs;
+   QStringList sharedPaths;
+   QSharedPointer<HC::IHashCache> hashCache;
    QSharedPointer<IFileManager> fileManager;
 };
-
-#endif

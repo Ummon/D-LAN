@@ -20,7 +20,6 @@
 
 #include <QString>
 #include <QList>
-#include <QLinkedList>
 #include <QFileInfo>
 #include <QMutex>
 #include <QMap>
@@ -41,18 +40,22 @@ namespace FM
    {
       friend class DirIterator;
 
-   protected:
-      Directory(SharedEntry* root, const QString& name, Directory* parent = nullptr, bool createPhysically = false);
-
    public:
-      virtual ~Directory();
-      void del(bool invokeDelete = true);
+      Directory(
+         SharedEntry* root,
+         const QString& name,
+         Directory* parentDirectory = nullptr,
+         bool createPhysically = false
+      );
 
-      void populateEntry(Protos::Common::Entry* dir, bool setSharedDir = false) const;
+      ~Directory() override;
+      void del(bool invokeDelete = true) override;
 
-      void removeUnfinishedFiles();
+      void populateEntry(Protos::Common::Entry* dir, bool setSharedDir = false) const override;
 
-      void moveInto(Directory* directory);
+      void removeUnfinishedFiles() override;
+
+      void moveInto(Directory* directory) override;
 
       void fileDeleted(File* file);
 
@@ -60,16 +63,19 @@ namespace FM
       void subDirDeleted(Directory* dir);
 
    public:
-      Common::Path getPath() const;
-      Common::Path getFullPath() const;
+      /**
+        * The top directory will return '/' because it carries the shared directory name.
+        */
+      Common::Path getRelativePath() const override;
+      Common::Path getAbsolutePath() const override;
 
-      void rename(const QString& newName);
+      void rename(const QString& newName) override;
       bool isAChildOf(const Directory* dir) const;
 
       Directory* getSubDir(const QString& name) const;
-      QLinkedList<Directory*> getSubDirs() const;
+      QList<Directory*> getSubDirs() const;
 
-      QLinkedList<File*> getFiles() const;
+      QList<File*> getFiles() const;
       QList<File*> getCompleteFiles() const;
 
       Directory* createSubDir(const QString& name, bool physically = false);
@@ -98,8 +104,6 @@ namespace FM
 
       static inline bool entrySortingFun(const Entry* const& e1, const Entry* const& e2) { return (*e1) < (*e2); }
 
-      Directory* parent;
-
       Common::SortedList<Directory*> subDirs; ///< Sorted by name.
       Common::SortedList<File*> files; ///< Sorted by name.
 
@@ -114,6 +118,6 @@ namespace FM
       Directory* next();
 
    private:
-      QLinkedList<Directory*> dirsToVisit;
+      QList<Directory*> dirsToVisit;
    };
 }

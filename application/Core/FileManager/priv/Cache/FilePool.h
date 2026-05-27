@@ -70,7 +70,13 @@ namespace FM
    class AutoReleasedFile
    {
    public:
-      AutoReleasedFile(FilePool& filePool, const QString& path, QIODevice::OpenMode mode, bool forceToClose = false, bool* fileCreated = nullptr) :
+      AutoReleasedFile(
+         FilePool& filePool,
+         const QString& path,
+         QIODevice::OpenMode mode,
+         bool forceToClose = false,
+         bool* fileCreated = nullptr
+      ) :
          filePool(filePool), file(this->filePool.open(path, mode, fileCreated)), forceToClose(forceToClose) {}
 
       ~AutoReleasedFile()

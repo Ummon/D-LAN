@@ -491,7 +491,7 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
                sharedPaths << Common::ProtoHelper::getRepeatedStr(coreSettingsMessage.shared_paths(), &Protos::GUI::CoreSettings::SharedPaths::path, i);
             this->fileManager->setSharedPaths(sharedPaths);
          }
-         catch (FM::ItemsNotFoundException& e)
+         catch (FM::EntriesNotFoundException& e)
          {
             foreach (QString path, e.paths)
                L_WARN(QString("Path not found: %1").arg(path));

@@ -3,14 +3,16 @@ using namespace FM;
 
 #include <QMutexLocker>
 
+#include <priv/Cache/SharedEntry.h>
+
 class FakeEntry : public Entry
 {
 public:
-   FakeEntry(qint64 size) : Entry(nullptr, QString(), size) {}
+   FakeEntry(qint64 size) : Entry(nullptr, QString(), nullptr, size) {}
    ~FakeEntry() {}
 
-   QString getFullPath() const { return QString(); }
-   QString getPath() const { return QString(); }
+   Common::Path getRelativePath() const { return QString(); }
+   Common::Path getAbsolutePath() const { return QString(); }
    SharedDirectory* getRoot() const { return nullptr; }
    void removeUnfinishedFiles() {}
    void moveInto(Directory* directory) {}
@@ -40,7 +42,12 @@ void SizeIndexEntries::rmItem(Entry* item)
    this->index.remove(item);
 }
 
-QList<Entry*> SizeIndexEntries::search(qint64 sizeMin, qint64 sizeMax, int limit, std::function<bool(const Entry*)> predicat) const
+QList<Entry*> SizeIndexEntries::search(
+   qint64 sizeMin,
+   qint64 sizeMax,
+   int limit,
+   std::function<bool(const Entry*)> predicat
+) const
 {
    QMutexLocker locker(&this->mutex);
    QList<Entry*> result;

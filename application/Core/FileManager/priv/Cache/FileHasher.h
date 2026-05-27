@@ -41,7 +41,7 @@ namespace FM
       void stop();
 
    private slots:
-      void entryRemoved(Entry* entry);
+      void entryRemoved(FM::Entry* entry);
 
    private:
       void internalStop();

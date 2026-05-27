@@ -24,16 +24,18 @@ using namespace FM;
 #include <IDataReader.h>
 #include <IDataWriter.h>
 #include <priv/Global.h>
-#include <priv/Cache/SharedDirectory.h>
+#include <priv/Cache/SharedEntry.h>
 #include <priv/Cache/DataReader.h>
 #include <priv/Cache/DataWriter.h>
 
 /**
   * @class FM::Chunk
   *
-  * A chunk is a part of a file. It's identified by a hash which can be unknown when a chunk is created and be set later by 'setHash(..)'.
+  * A chunk is a part of a file.
+  * It's identified by a hash which can be unknown when a chunk is created and be set later by 'setHash(..)'.
   * A chunk can be read or write, when a chunk is written the 'knownBytes' member is increased.
-  * Each chunk of a file has a unique number which begins at 0 and define the order of data, chunk#1 represents the data right after chunk#0 and so on.
+  * Each chunk of a file has a unique number which begins at 0 and defines the order of data,
+  * chunk#1 represents the data right after chunk#0 and so on.
   *
   * Concurrent accesses are protected by the 'QSharedPointer', see the 'File' class.
   */
@@ -43,26 +45,49 @@ int Chunk::CHUNK_SIZE(0);
 Chunk::Chunk(File* file, int num, quint32 knownBytes) :
    file(file), num(num), knownBytes(knownBytes)
 {
-   L_DEBU(QString("New chunk[%1]: %2. File: %3").arg(num).arg(hash.toStr()).arg(this->file ? this->file->getFullPath() : "<no file defined>"));
+   L_DEBU(
+      QString("New chunk[%1]: %2. File: %3")
+         .arg(num)
+         .arg(
+            hash.toStr(),
+            this->file ? this->file->getRelativePath().toString() : "<no file defined>"
+         )
+   );
 }
 
 Chunk::Chunk(File* file, int num, quint32 knownBytes, const Common::Hash& hash) :
    file(file), num(num), knownBytes(knownBytes), hash(hash)
 {
-   L_DEBU(QString("New chunk[%1]: %2. File: %3").arg(num).arg(hash.toStr()).arg(this->file ? this->file->getFullPath() : "<no file defined>"));
+   L_DEBU(
+      QString("New chunk[%1]: %2. File: %3")
+         .arg(num)
+         .arg(
+            hash.toStr(),
+            this->file ? this->file->getAbsolutePath().toString() : "<no file defined>"
+         )
+   );
 }
 
 Chunk::~Chunk()
 {
-   L_DEBU(QString("Chunk Deleted[%1]: %2. File: %3").arg(num).
-      arg(this->hash.toStr()).
-      arg(this->file ? this->file->getFullPath() : "<file deleted>")
+   L_DEBU(
+      QString("Chunk Deleted[%1]: %2. File: %3")
+         .arg(num)
+         .arg(
+            this->hash.toStr(),
+            this->file ? this->file->getAbsolutePath().toString() : "<file deleted>"
+         )
    );
 }
 
 QString Chunk::toStringLog() const
 {
-   return QString("num = [%1], hash = %2, knownBytes = %3, size = %4").arg(this->num).arg(this->getHash().toStr()).arg(this->getKnownBytes()).arg(this->getChunkSize());
+   return
+      QString("num = [%1], hash = %2, knownBytes = %3, size = %4")
+         .arg(this->num)
+         .arg(this->getHash().toStr())
+         .arg(this->getKnownBytes())
+         .arg(this->getChunkSize());
 }
 
 void Chunk::removeItsIncompleteFile()
@@ -81,10 +106,10 @@ bool Chunk::populateEntry(Protos::Common::Entry* entry) const
    return false;
 }
 
-QString Chunk::getFilePath() const
+Common::Path Chunk::getFilePath() const
 {
    if (this->file)
-      return this->file->getFullPath();
+      return this->file->getAbsolutePath();
    return QString();
 }
 
@@ -166,7 +191,14 @@ void Chunk::setHash(const Common::Hash& hash)
    #ifdef DEBUG
       L_DEBU(QString("Chunk[%1] setHash(..): %2").arg(this->num).arg(hash.toStr()));
       if (!this->hash.isNull() && this->hash != hash)
-         L_WARN(QString("Chunk::setHash: Hash chunk changed from %1 to %2 for the file %3").arg(this->hash.toStr()).arg(hash.toStr()).arg(this->file->getFullPath()));
+         L_WARN(
+            QString("Chunk::setHash: Hash chunk changed from %1 to %2 for the file %3")
+               .arg(
+                  this->hash.toStr(),
+                  hash.toStr(),
+                  this->file->getAbsolutePath()
+               )
+         );
    #endif
 
    this->hash = hash;

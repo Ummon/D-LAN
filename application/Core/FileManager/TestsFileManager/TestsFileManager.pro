@@ -10,6 +10,8 @@ CONFIG -= app_bundle
 include(../../../Libs/protobuf.pri)
 include(../../../Common/common.pri)
 
+QMAKE_CXXFLAGS_WARN_ON += -Wno-pessimizing-move -Wno-unused-result
+
 LIBS += -L../output/$$FOLDER -lFileManager
 POST_TARGETDEPS += ../output/$$FOLDER/libFileManager.a
 
@@ -26,16 +28,22 @@ TEMPLATE = app
 
 SOURCES += main.cpp \
     CacheTest.cpp \
+    MockHashCache.cpp \
     Tests.cpp \
     ../../../Protos/common.pb.cc \
     HashesReceiver.cpp \
     StressTest.cpp \
     ../../../Protos/core_settings.pb.cc \
-    StressTests.cpp
+    StressTests.cpp \
+    Utils.cpp \
+    WordIndexTests.cpp
 HEADERS += Tests.h \
     ../../../Protos/common.pb.h \
     CacheTest.h \
     HashesReceiver.h \
+    MockHashCache.h \
     StressTest.h \
     ../../../Protos/core_settings.pb.h \
-    StressTests.h
+    StressTests.h \
+    Utils.h \
+    WordIndexTests.h

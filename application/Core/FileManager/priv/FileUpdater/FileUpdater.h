@@ -21,9 +21,11 @@
 #include <QThread>
 #include <QWaitCondition>
 #include <QMutex>
+#include <QRecursiveMutex>
 #include <QString>
 #include <QList>
 #include <QElapsedTimer>
+#include <QFileInfo>
 
 #include <priv/FileUpdater/DirWatcher.h>
 #include <priv/Cache/FileHasher.h>
@@ -53,11 +55,11 @@ namespace FM
       int getProgress() const;
 
       void addRoot(SharedEntry* sharedEntry);
-      void rmRoot(SharedEntry* sharedEntry, Directory* dir2 = nullptr);
+      void rmRoot(SharedEntry* sharedEntry, Directory* dir = nullptr);
 
    signals:
-      void fileCacheLoaded();
-      void deleteSharedEntry(SharedEntry*);
+      // void fileCacheLoaded();
+      void deleteSharedEntry(FM::SharedEntry* sharedEntry);
 
    protected:
       void run();
@@ -69,7 +71,8 @@ namespace FM
       void stopHashing();
 
       void scan(Entry* entry, bool addUnfinished = false);
-      // void addScannedFile(const FileInfo& fileInfo, File* fileCache = nullptr); TODO: To remove
+
+      File* addScannedFile(const QFileInfo& fileInfo, File* file, Directory* parentDirectory = nullptr);
 
       void stopScanning(Entry* entry = nullptr);
 
@@ -110,7 +113,7 @@ namespace FM
       int progress;
 
       WaitCondition* dirEvent; ///< Using to wait when a sharing directory is added or deleted.
-      mutable QMutex mutex; ///< Prevent the access from many thread to the internal data like 'filesWithoutHashes' for example.
+      mutable QRecursiveMutex mutex; ///< Prevent the access from many thread to the internal data like 'filesWithoutHashes' for example.
 
       QList<Entry*> unwatchableEntries;
       QElapsedTimer timerScanUnwatchable;
@@ -123,7 +126,7 @@ namespace FM
       bool toStopHashing;
       FileHasher fileHasher;
 
-      QList<Entry*> entriesToRemove;
+      QList<Entry*> rootEntriesToRemove;
 
       QList<File*> filesWithoutHashes;
       QList<File*> filesWithoutHashesPrioritized;

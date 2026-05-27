@@ -1,4 +1,5 @@
 QT -= gui
+QT += sql
 TARGET = HashCache
 TEMPLATE = lib
 
@@ -17,6 +18,7 @@ SOURCES += ../../Protos/common.pb.cc \
     priv/HashCache.cpp
 HEADERS += IHashCache.h \
     Builder.h \
+    priv/Constants.h \
     priv/Log.h \
     ../../Protos/common.pb.h \
     priv/HashCache.h

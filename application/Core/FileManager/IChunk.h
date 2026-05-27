@@ -23,6 +23,7 @@
 #include <Protos/common.pb.h>
 
 #include <Common/Hash.h>
+#include <Common/Path.h>
 #include <Common/LogManager/ILoggable.h>
 
 namespace FM
@@ -56,7 +57,7 @@ namespace FM
         * SharedDir::path + entry.path + entry.name
         * See 'populateEntry(..)'.
         */
-      virtual QString getFilePath() const = 0;
+      virtual Common::Path getFilePath() const = 0;
 
       /**
         * The caller must not delete the IChunk as long as data is read with the IDataReader.

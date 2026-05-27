@@ -25,6 +25,7 @@ using namespace CoreSpace;
 #include <Common/Constants.h>
 #include <Common/Hash.h>
 #include <Common/Languages.h>
+#include <HashCache/Builder.h>
 #include <FileManager/Builder.h>
 #include <PeerManager/Builder.h>
 #include <UploadManager/Builder.h>
@@ -102,7 +103,8 @@ void Core::start()
 
    L_USER(QObject::tr("D-LAN Core version %1 is starting . . .").arg(Common::Global::getVersionFull()));
 
-   this->fileManager = FM::Builder::newFileManager();
+   this->hashCache = HC::Builder::newHashCache(Common::Constants::HASH_CACHE_INDEX_FILENAME);
+   this->fileManager = FM::Builder::newFileManager(this->hashCache);
    this->peerManager = PM::Builder::newPeerManager(this->fileManager);
    this->uploadManager = UM::Builder::newUploadManager(this->peerManager);
    this->downloadManager = DM::Builder::newDownloadManager(this->fileManager, this->peerManager);
@@ -110,7 +112,7 @@ void Core::start()
    this->chatSystem = CS::Builder::newChatSystem(this->peerManager, this->networkListener);
    this->remoteControlManager = RCM::Builder::newRemoteControlManager(this->fileManager, this->peerManager, this->uploadManager, this->downloadManager, this->networkListener, this->chatSystem);
 
-   connect(this->remoteControlManager.data(), SIGNAL(languageDefined(QLocale)), this, SLOT(setLanguage(QLocale)));
+   connect(this->remoteControlManager.data(), &RCM::IRemoteControlManager::languageDefined, this, &Core::setLanguage);
 
    L_USER(QObject::tr("Ready to serve"));
 }

@@ -69,7 +69,7 @@ QFile* FilePool::open(const QString& path, QIODevice::OpenMode mode, bool* fileC
 
       if (file.file->fileName() == path && file.mode == mode && file.releasedTime.isValid())
       {
-         L_DEBU(QString("FilePool::open(%1, %2): file already in cache").arg(path).arg(mode));
+         L_DEBU(QString("FilePool::open(%1, %2): file already in cache").arg(path).arg(mode.toInt()));
          file.releasedTime.invalidate();
          return file.file;
       }
@@ -88,7 +88,7 @@ QFile* FilePool::open(const QString& path, QIODevice::OpenMode mode, bool* fileC
       return nullptr;
    }
 
-   L_DEBU(QString("FilePool::open(%1, %2): file added to the cache").arg(path).arg(mode));
+   L_DEBU(QString("FilePool::open(%1, %2): file added to the cache").arg(path).arg(mode.toInt()));
    this->files << OpenedFile { file, mode, QElapsedTimer() };
    return file;
 }
@@ -110,13 +110,24 @@ void FilePool::release(QFile* file, bool forceToClose)
             L_DEBU(QString("FilePool::release(%1, %2): file forced to close").arg(file->fileName()).arg(forceToClose));
             QFile* fileToDelete = openedFile.file;
             i.remove();
-            locker.unlock(); // The 'delete' below can take a while (because of flushing data), we avoid to block the access to the 'FilePool' by unlocking the mutex.
+
+            // The 'delete' below can take a while (because of flushing data),
+            // we avoid to block the access to the 'FilePool' by unlocking the mutex.
+            locker.unlock();
+
             delete fileToDelete;
          }
          else
          {
             openedFile.releasedTime.start();
-            L_DEBU(QString("FilePool::release(%1, %2): file set as released. Timer already started? : %3").arg(file->fileName()).arg(forceToClose).arg(this->timer.isActive()));
+
+            L_DEBU(
+               QString("FilePool::release(%1, %2): file set as released. Timer already started? : %3")
+                  .arg(file->fileName())
+                  .arg(forceToClose)
+                  .arg(this->timer.isActive())
+            );
+
             if (!this->timer.isActive())
                QMetaObject::invokeMethod(&this->timer, "start");
          }
@@ -144,7 +155,9 @@ void FilePool::forceReleaseAll(const QString& path)
 
    if (!filesToDelete.isEmpty())
    {
-      locker.unlock(); // The 'delete' below can take a while (because of flushing data), we avoid to block the access to the 'FilePool' by unlocking the mutex.
+      locker.unlock();
+      // The 'delete' below can take a while (because of flushing data),
+      // we avoid to block the access to the 'FilePool' by unlocking the mutex.
       for (QListIterator<QFile*> i(filesToDelete); i.hasNext();)
          delete i.next();
    }

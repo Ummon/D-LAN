@@ -37,11 +37,19 @@ namespace FM
       virtual ~FileNotFoundException() throw () {}
    };
 
+   // TODO: check if still used.
    class DirNotFoundException : public FileSystemEntryNotFoundException
    {
    public :
       DirNotFoundException(const QString& path) : FileSystemEntryNotFoundException(path) {}
       virtual ~DirNotFoundException() throw () {}
+   };
+
+   class PathNotFoundException : public FileSystemEntryNotFoundException
+   {
+   public :
+      PathNotFoundException(const QString& path) : FileSystemEntryNotFoundException(path) {}
+      virtual ~PathNotFoundException() throw () {}
    };
 
    /**
@@ -50,9 +58,9 @@ namespace FM
    class SuperDirectoryExistsException
    {
    public:
-      SuperDirectoryExistsException(const QString& super, const QString& sub) : superDirectory(super), subDirectory(sub) {}
+      SuperDirectoryExistsException(const QString& super, const QString& sub) : superDirectory(super), subPath(sub) {}
       virtual ~SuperDirectoryExistsException() throw() {}
       const QString superDirectory;
-      const QString subDirectory;
+      const QString subPath;
    };
 }

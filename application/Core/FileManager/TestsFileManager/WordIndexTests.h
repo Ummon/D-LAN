@@ -15,14 +15,25 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
-#include <QApplication>
-#include <MainWindow.h>
 
-int main(int argc, char *argv[])
+#pragma once
+
+#include <QTest>
+
+#include <Builder.h>
+#include <IFileManager.h>
+using namespace FM;
+
+class WordIndexTests : public QObject
 {
-   QApplication a(argc, argv);
-   MainWindow w;
-   w.show();
-   return a.exec();
-}
+   Q_OBJECT
+public:
+   WordIndexTests();
+
+private slots:
+   void initTestCase();
+
+   void testWordIndex();
+
+   void cleanupTestCase();
+};

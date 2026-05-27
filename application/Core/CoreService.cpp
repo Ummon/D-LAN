@@ -39,7 +39,7 @@ CoreService::CoreService(bool resetSettings, QLocale locale, int argc, char** ar
       if (currentArg == "-e" || currentArg == "--exec")
       {
          QTextStream out(stdout);
-         out << "D-LAN Core started with console support" << endl;
+         out << "D-LAN Core started with console support" << Qt::endl;
          this->consoleSupport = true;
          CoreService::printCommands();
          break;
@@ -108,16 +108,16 @@ void CoreService::processUserInput(QString input)
    else
    {
       QTextStream out(stdout);
-      out << "Command unknown: '" << input << "', type 'help' to list commands" << endl;
+      out << "Command unknown: '" << input << "', type 'help' to list commands" << Qt::endl;
    }
 }
 
 void CoreService::printCommands()
 {
    QTextStream out(stdout);
-   out << "Commands:" << endl
-       << " - help: show this message" << endl
-       << " - quit: stop the core" << endl
-       << " - dumpwi: dump the word index in the log as a warning" << endl
-       << " - printsf: print the similar files in the log as a warning" << endl;
+   out << "Commands:" << Qt::endl
+       << " - help: show this message" << Qt::endl
+       << " - quit: stop the core" << Qt::endl
+       << " - dumpwi: dump the word index in the log as a warning" << Qt::endl
+       << " - printsf: print the similar files in the log as a warning" << Qt::endl;
 }

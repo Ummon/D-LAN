@@ -102,7 +102,7 @@ namespace FM
         * Add an item to the node.
         * If the item already exists (using operator==) nothing is added.
         */
-      void addItem(const QStringRef& word, const T& item);
+      void addItem(const QStringView& word, const T& item);
 
       /**
         * Remove the item from the node.
@@ -110,7 +110,12 @@ namespace FM
         */
       bool rmItem(const QString& word, const T& item);
 
-      QList<NodeResult<T>> search(const QString& word, bool alsoFromSubNodes = false, int maxNbResult = -1, std::function<bool(const T&)> predicat = nullptr) const;
+      QList<NodeResult<T>> search(
+         const QString& word,
+         bool alsoFromSubNodes = false,
+         int maxNbResult = -1,
+         std::function<bool(const T&)> predicat = nullptr
+      ) const;
 
       QString toStringDebug() const;
 
@@ -124,7 +129,11 @@ namespace FM
         * Return all items from the current node and its sub nodes (recursively) if 'alsoFromSubNodes' is true.
         * For all direct sub nodes NodeResult::level is set to 0, for other sub nodes level is set to 1.
         */
-      QList<NodeResult<T>> getItems(bool alsoFromSubNodes = false, int maxNbResult = -1, std::function<bool(const T&)> predicat = nullptr) const;
+      QList<NodeResult<T>> getItems(
+         bool alsoFromSubNodes = false,
+         int maxNbResult = -1,
+         std::function<bool(const T&)> predicat = nullptr
+      ) const;
 
       void remove(int i);
 
@@ -148,7 +157,7 @@ FM::Node<T>::~Node()
 }
 
 template <typename T>
-void FM::Node<T>::addItem(const QStringRef& word, const T& item)
+void FM::Node<T>::addItem(const QStringView& word, const T& item)
 {
    if (this->children.isEmpty())
    {
@@ -159,7 +168,7 @@ void FM::Node<T>::addItem(const QStringRef& word, const T& item)
       for (int i = 0; i < this->children.size(); ++i)
       {
          Node<T>* child = this->children[i];
-         const int p = Common::StringUtils::commonPrefix(word, &child->part);
+         const int p = Common::StringUtils::commonPrefix(word, QStringView(child->part));
          if (p != 0)
          {
             if (p == word.size())
@@ -179,17 +188,18 @@ void FM::Node<T>::addItem(const QStringRef& word, const T& item)
             }
             else if (p == child->part.size()) // The sub part is the beginning of the word.
             {
-               child->addItem(word.string()->midRef(word.position() + p, word.size() - p), item);
+               // TODO: Test this case and remove the commented code.
+               child->addItem(word.sliced(p), item);  // .string()->midRef(word.position() + p, word.size() - p), item);
             }
             else
             {
                // The word and the sub part share at least one character from the beginning.
-               Node<T>* newNodeSplit = new Node<T>(word.string()->mid(word.position(), p));
+               Node<T>* newNodeSplit = new Node<T>(word.sliced(0, p).toString()); //.string()->mid(word.position(), p));
                child->part.remove(0, p);
                this->children.replace(i, newNodeSplit);
                newNodeSplit->children << child;
 
-               Node<T>* newNode = new Node<T>(word.string()->mid(word.position() + p, word.size() - p), item);
+               Node<T>* newNode = new Node<T>(word.sliced(p).toString(), item); // .string()->mid(word.position() + p, word.size() - p), item);
                newNodeSplit->children << newNode;
             }
             return;
@@ -221,7 +231,12 @@ bool FM::Node<T>::rmItem(const QString& word, const T& item)
 }
 
 template <typename T>
-QList<FM::NodeResult<T>> FM::Node<T>::search(const QString& word, bool alsoFromSubNodes, int maxNbResult, std::function<bool(const T&)> predicat) const
+QList<FM::NodeResult<T>> FM::Node<T>::search(
+   const QString& word,
+   bool alsoFromSubNodes,
+   int maxNbResult,
+   std::function<bool(const T&)> predicat
+) const
 {
    QPair<Node<T>*, int> nodes = this->getNode(word, !alsoFromSubNodes);
    if (!nodes.first)
@@ -282,7 +297,7 @@ QPair<FM::Node<T>*, int> FM::Node<T>::getNode(const QString& word, bool exactMat
    for (int i = 0; i < currentParent->children.size(); ++i)
    {
       Node<T>* child = currentParent->children[i];
-      int p = Common::StringUtils::commonPrefix(&part, &child->part);
+      int p = Common::StringUtils::commonPrefix(part, child->part);
 
       if (p != 0)
       {
@@ -310,7 +325,11 @@ QPair<FM::Node<T>*, int> FM::Node<T>::getNode(const QString& word, bool exactMat
 }
 
 template <typename T>
-QList<FM::NodeResult<T>> FM::Node<T>::getItems(bool alsoFromSubNodes, int maxNbResult, std::function<bool(const T&)> predicat) const
+QList<FM::NodeResult<T>> FM::Node<T>::getItems(
+   bool alsoFromSubNodes,
+   int maxNbResult,
+   std::function<bool(const T&)> predicat
+) const
 {
    QList<NodeResult<T>> result;
    QList<Node<T>*> nodesToVisit;

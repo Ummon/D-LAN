@@ -19,6 +19,8 @@
 #include <priv/Cache/DataWriter.h>
 using namespace FM;
 
+#include <QByteArray>
+
 #include <Common/Settings.h>
 
 #include <Exceptions.h>
@@ -68,15 +70,15 @@ void DataWriter::computeChunkHash()
       try
       {
          static const quint32 BUFFER_SIZE = SETTINGS.get<quint32>("buffer_size_reading");
-         char buffer[BUFFER_SIZE];
+         QByteArray buffer(BUFFER_SIZE, Qt::Uninitialized);
 
          DataReader reader(this->chunk);
          int offset = 0;
          int bytesRead = 0;
 
-         while (bytesRead = reader.read(buffer, offset))
+         while (bytesRead = reader.read(buffer.data(), offset))
          {
-            this->hasher.addData(buffer, bytesRead);
+            this->hasher.addData(buffer.constData(), bytesRead);
             offset += bytesRead;
          }
       }

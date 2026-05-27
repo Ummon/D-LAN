@@ -46,23 +46,26 @@ WatcherEvent::WatcherEvent() :
 {}
 
  WatcherEvent::WatcherEvent(const WatcherEvent& e) :
-    type(e.type), path1(e.path1), path2(e.path2)
+    type(e.type), path1(e.path1), path2(e.path2), isWatchedFile(e.isWatchedFile)
  {}
 
  WatcherEvent::WatcherEvent(WatcherEvent&& e) :
-    type(std::move(e.type)), path1(std::move(e.path1)), path2(std::move(e.path2))
+    type(std::move(e.type)),
+    path1(std::move(e.path1)),
+    path2(std::move(e.path2)),
+    isWatchedFile(std::move(e.isWatchedFile))
  {}
 
-WatcherEvent::WatcherEvent(Type type) :
-   type(type)
+WatcherEvent::WatcherEvent(Type type, bool isWatchedFile) :
+   type(type), isWatchedFile(isWatchedFile)
 {}
 
-WatcherEvent::WatcherEvent(WatcherEvent::Type type, const QString& path1) :
-   type(type), path1(QDir::cleanPath(path1))
+WatcherEvent::WatcherEvent(WatcherEvent::Type type, const QString& path1, bool isWatchedFile) :
+   type(type), path1(QDir::cleanPath(path1)), isWatchedFile(isWatchedFile)
 {}
 
-WatcherEvent::WatcherEvent(WatcherEvent::Type type, const QString& path1, const QString& path2) :
-   type(type), path1(QDir::cleanPath(path1)), path2(QDir::cleanPath(path2))
+WatcherEvent::WatcherEvent(WatcherEvent::Type type, const QString& path1, const QString& path2, bool isWatchedFile) :
+   type(type), path1(QDir::cleanPath(path1)), path2(QDir::cleanPath(path2)), isWatchedFile(isWatchedFile)
 {}
 
 QString WatcherEvent::toStr() const
@@ -84,5 +87,7 @@ QString WatcherEvent::toStr() const
       str.append("\n");
    if (!this->path2.isEmpty())
       str.append("  ").append(this->path2);
+   str += ":\n";
+      str.append(QString("  Is a watched file: %1").arg(this->isWatchedFile));
    return str;
 }

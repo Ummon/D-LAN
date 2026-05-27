@@ -4,7 +4,7 @@
 TARGET = LogViewer
 TEMPLATE = app
 CONFIG += link_prl
-QT += network
+QT += network widgets
 
 include(../../Common/common.pri)
 
@@ -17,12 +17,14 @@ LIBS += -L../../Common/output/$$FOLDER \
     -lCommon
 POST_TARGETDEPS += ../../Common/output/$$FOLDER/libCommon.a
 SOURCES += main.cpp \
+    Log.cpp \
     MainWindow.cpp \
     TableLogModel.cpp \
     TableLogItemDelegate.cpp \
     TooglableList/TooglableList.cpp \
     TooglableList/TooglableListButton.cpp
 HEADERS += MainWindow.h \
+    Log.h \
     TableLogModel.h \
     TableLogItemDelegate.h \
     TooglableList/TooglableList.h \

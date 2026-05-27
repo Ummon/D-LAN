@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include <QObject>
 #include <QList>
 #include <QStringList>
 #include <QBitArray>
@@ -55,18 +56,18 @@ namespace FM
 
       /**
         * Define the shared paths. A path can be a file or a directory.
-        * @exception ItemsNotFoundException
+        * @exception EntriesNotFoundException
         */
       virtual void setSharedPaths(const QStringList& paths) = 0;
 
       /**
-        * Add a shared item and return a 'Common::SharedEntry' object and the relative path into the shared directory (not for file item).
+        * Add a shared entry and return a 'Common::SharedEntry' object and the relative path.
         * If the given absolute directory or file is a child of an existing shared directory, no new shared directory is created and
         * the existing one is returned.
         * If the given absolute directory is a parent of one or more existing directory, all the existing directories are merged into
         * a new shared directory and this new one is returned. In this case, the relative path is '/'.
-        * @exception ItemsNotFoundException
-        * @exception UnableToCreateSharedDirectory
+        * @exception EntriesNotFoundException
+        * @exception UnableToCreateSharedEntry
         */
       virtual QPair<Common::SharedEntry, QString> addASharedPath(const QString& absolutePath) = 0;
 
@@ -124,11 +125,13 @@ namespace FM
 
       /**
         * Returns the directories and files contained in the given directory.
+        * The shared directories fields (Entry::shared_entry) are not set.
         */
       virtual Protos::Common::Entries getEntries(const Protos::Common::Entry& dir, int maxNbHashesPerEntry = std::numeric_limits<int>::max()) = 0;
 
       /**
         * Returns the shared directories (roots).
+        * The absolute shared directory paths are set to "" to avoid sharing local paths.
         */
       virtual Protos::Common::Entries getEntries() = 0;
 
@@ -183,10 +186,10 @@ namespace FM
         */
       virtual void printSimilarFiles() const = 0;
 
-   signals:
+   // signals:
       /**
         * Emitted when the file cache has been loaded: all files and directories from shared entries has been scanned and added to the cache. Guaranteed to be emitted once.
         */
-      void fileCacheLoaded();
+      // void fileCacheLoaded();
    };
 }

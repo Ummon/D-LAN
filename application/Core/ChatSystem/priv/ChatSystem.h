@@ -21,7 +21,7 @@
 #include <limits>
 
 #include <QSharedPointer>
-#include <QLinkedList>
+#include <QList>
 #include <QTimer>
 #include <QList>
 #include <QSet>
@@ -46,8 +46,16 @@ namespace CS
       ChatSystem(QSharedPointer<PM::IPeerManager> peerManager, QSharedPointer<NL::INetworkListener> networkListener);
       ~ChatSystem();
 
-      SendStatus send(const QString& message, const QString& roomName = QString(), const QList<Common::Hash>& peerIDsAnswer = QList<Common::Hash>());
-      void getLastChatMessages(Protos::Common::ChatMessages& chatMessages, int number = std::numeric_limits<int>::max(), const QString& roomName = QString()) const;
+      SendStatus send(
+         const QString& message,
+         const QString& roomName = QString(),
+         const QList<Common::Hash>& peerIDsAnswer = QList<Common::Hash>()
+      );
+      void getLastChatMessages(
+         Protos::Common::ChatMessages& chatMessages,
+         int number = std::numeric_limits<int>::max(),
+         const QString& roomName = QString()
+      ) const;
       QList<ChatRoom> getRooms() const;
       void joinRoom(const QString& roomName);
       void leaveRoom(const QString& roomName);

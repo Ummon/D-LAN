@@ -44,7 +44,10 @@ using namespace CS;
 
 LOG_INIT_CPP(ChatSystem)
 
-ChatSystem::ChatSystem(QSharedPointer<PM::IPeerManager> peerManager, QSharedPointer<NL::INetworkListener> networkListener) :
+ChatSystem::ChatSystem(
+   QSharedPointer<PM::IPeerManager> peerManager,
+   QSharedPointer<NL::INetworkListener> networkListener
+) :
    peerManager(peerManager),
    networkListener(networkListener)
 {
@@ -76,7 +79,11 @@ ChatSystem::~ChatSystem()
 /**
   * Send a message to all other peers and save it into our list of messages.
   */
-ChatSystem::SendStatus ChatSystem::send(const QString& message, const QString& roomName, const QList<Common::Hash>& peerIDsAnswer)
+ChatSystem::SendStatus ChatSystem::send(
+   const QString& message,
+   const QString& roomName,
+   const QList<Common::Hash>& peerIDsAnswer
+)
 {
    QSharedPointer<ChatMessage> chatMessage = roomName.isEmpty() ?
          this->messages.add(message, this->peerManager->getSelf()->getID(), this->peerManager->getSelf()->getNick(), QString(), peerIDsAnswer)
@@ -107,7 +114,11 @@ ChatSystem::SendStatus ChatSystem::send(const QString& message, const QString& r
    }
 }
 
-void ChatSystem::getLastChatMessages(Protos::Common::ChatMessages& chatMessages, int number, const QString& roomName) const
+void ChatSystem::getLastChatMessages(
+   Protos::Common::ChatMessages& chatMessages,
+   int number,
+   const QString& roomName
+) const
 {
    if (roomName.isNull())
       this->messages.fillProtoChatMessages(chatMessages, number);
@@ -177,7 +188,8 @@ void ChatSystem::received(const Common::Message& message)
             QSet<QString> roomsWithPeer;
             for (int i = 0; i < IMAliveMessage.chat_rooms_size(); i++)
             {
-               const QString& roomName = Common::ProtoHelper::getRepeatedStr(IMAliveMessage, &Protos::Core::IMAlive::chat_rooms, i);
+               const QString& roomName =
+                  Common::ProtoHelper::getRepeatedStr(IMAliveMessage, &Protos::Core::IMAlive::chat_rooms, i);
                roomsWithPeer.insert(roomName);
                Room& room = this->rooms[roomName];
                room.peers.insert(peer);
@@ -215,11 +227,17 @@ void ChatSystem::received(const Common::Message& message)
             }
 
             if (!chatMessages.message(i).has_peer_id())
-               chatMessages.mutable_message(i)->mutable_peer_id()->set_hash(message.getHeader().getSenderID().getData(), Common::Hash::HASH_SIZE);
+               chatMessages.mutable_message(i)->mutable_peer_id()->set_hash(
+                  message.getHeader().getSenderID().getData(),
+                  Common::Hash::HASH_SIZE
+               );
          }
 
          bool hasChatRoom = chatMessages.message(0).chat_room().size() > 0;
-         QString chatRoomName = hasChatRoom ? Common::ProtoHelper::getStr(chatMessages.message(0), &Protos::Common::ChatMessage::chat_room) : QString();
+         QString chatRoomName =
+            hasChatRoom ?
+                 Common::ProtoHelper::getStr(chatMessages.message(0), &Protos::Common::ChatMessage::chat_room)
+               : QString();
 
          if (hasChatRoom && !this->rooms[chatRoomName].joined)
             break;
@@ -250,8 +268,10 @@ void ChatSystem::received(const Common::Message& message)
          if (!roomName.isEmpty() && i == this->rooms.end()) // We don't have any messages from the provided room.
             break;
 
-         QList<QSharedPointer<ChatMessage>> messages = i != this->rooms.end() ? i.value().messages.getUnknownMessages(getLastChatMessages) :
-                                                                                this->messages.getUnknownMessages(getLastChatMessages);
+         QList<QSharedPointer<ChatMessage>> messages =
+            i != this->rooms.end() ?
+                 i.value().messages.getUnknownMessages(getLastChatMessages)
+               : this->messages.getUnknownMessages(getLastChatMessages);
          if (messages.isEmpty())
             break;
 
@@ -354,7 +374,11 @@ void ChatSystem::loadChatMessagesFromAllFiles()
 
    QRegExp filenameRegExp(Common::Constants::FILE_CHAT_ROOM_MESSAGES.arg("(.*)"));
 
-   QDir dir(Common::Global::getDataFolder(ChatMessages::FOLDER_TYPE_MESSAGES_SAVED).append('/').append(Common::Constants::DIR_CHAT_MESSAGES));
+   QDir dir(
+      Common::Global::getDataFolder(ChatMessages::FOLDER_TYPE_MESSAGES_SAVED)
+         .append('/').append(Common::Constants::DIR_CHAT_MESSAGES)
+   );
+
    foreach (QString filename, dir.entryList(QDir::Files))
    {
       if (filenameRegExp.exactMatch(filename) && filenameRegExp.capturedTexts().length() >= 2)
@@ -417,7 +441,11 @@ void ChatSystem::retrieveLastChatMessagesFromPeers(const QList<PM::IPeer*>& peer
    for (QListIterator<quint64> i(messageIDs); i.hasNext();)
       getLastChatMessages.add_message_id(i.next());
    if (!roomName.isEmpty())
-      Common::ProtoHelper::setStr(getLastChatMessages, &Protos::Core::GetLastChatMessages::set_chat_room, roomName);
+      getLastChatMessages.set_chat_room(roomName.toStdString());
 
-   this->networkListener->send(Common::MessageHeader::CORE_GET_LAST_CHAT_MESSAGES, getLastChatMessages, peers[QRandomGenerator64::global()->bounded(peers.size())]->getID());
+   this->networkListener->send(
+      Common::MessageHeader::CORE_GET_LAST_CHAT_MESSAGES,
+      getLastChatMessages,
+      peers[QRandomGenerator64::global()->bounded(peers.size())]->getID()
+   );
 }

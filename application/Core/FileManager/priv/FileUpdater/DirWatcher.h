@@ -66,18 +66,19 @@ namespace FM
         * Add a path (directory or file) to watch.
         * Each new added directory is immediately watched. If some modification
         * occurs in the file system bewteen a call of 'addDir' and a call of 'waitEvent' they
-        * will be recorded and the next call to 'waitEvent' will be no blocking.
+        * will be recorded and the next call to 'waitEvent' will be non-blocking.
         *
-        * @param path An absolute path.
+        * @param path An absolute path to a directory.
+        * @param filename If we only want to watch a specific file in the given directory.
         * @return 'true' if the dir is watchable else 'false'.
         * @exception DirNotFoundException
         */
-      virtual bool addPath(const QString& path) = 0;
+      virtual bool addPath(const QString& path, const QString& filename = QString("")) = 0;
 
       /**
         * Remove a watched path.
         */
-      virtual void rmPath(const QString& path) = 0;
+      virtual void rmPath(const QString& path, const QString& filename = QString("")) = 0;
 
       /**
         * Return the number of watched path.
@@ -129,9 +130,9 @@ namespace FM
       WatcherEvent();
       WatcherEvent(const WatcherEvent& e);
       WatcherEvent(WatcherEvent&& e);
-      WatcherEvent(Type type);
-      WatcherEvent(Type type, const QString& path1);
-      WatcherEvent(Type type, const QString& path1, const QString& path2);
+      WatcherEvent(Type type, bool isWatchedFile);
+      WatcherEvent(Type type, const QString& path1, bool isWatchedFile);
+      WatcherEvent(Type type, const QString& path1, const QString& path2, bool isWatchedFile);
 
       WatcherEvent& operator=(const WatcherEvent& event) = default;
       WatcherEvent& operator=(WatcherEvent&& event) = default;
@@ -141,5 +142,6 @@ namespace FM
       Type type;
       QString path1;
       QString path2; // Only used when type is 'MOVE'.
+      bool isWatchedFile;
    };
 }

@@ -116,6 +116,6 @@ namespace PM
         * Ask to download a chunk.
         * Return a null pointer if the peer is not available.
         */
-      virtual QSharedPointer<IGetChunkResult> getChunks(const Protos::Core::GetChunks& chunks) = 0;
+      virtual QSharedPointer<IGetChunksResult> getChunks(const Protos::Core::GetChunks& chunks) = 0;
    };
 }

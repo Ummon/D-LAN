@@ -20,6 +20,7 @@
 
 #include <QTextStream>
 
+#include <Common/LogManager/LogMacros.h>
 #include <Common/LogManager/Builder.h>
 #include <Common/LogManager/Exceptions.h>
 
@@ -33,7 +34,7 @@ TableLogModel::TableLogModel() :
    source(0)
 {
    this->timer.setInterval(500);
-   connect(&this->timer, SIGNAL(timeout()), this, SLOT(fileChanged()));
+   connect(&this->timer, &QTimer::timeout, this, &TableLogModel::fileChanged);
 }
 
 int TableLogModel::rowCount(const QModelIndex& parent) const
@@ -163,7 +164,7 @@ void TableLogModel::readLines()
       return;
 
    QTextStream stream(this->source);
-   stream.setCodec("UTF-8");
+   stream.setEncoding(QStringConverter::Utf8);
 
    int count = this->entries.count();
 
@@ -199,7 +200,7 @@ void TableLogModel::readLines()
       }
       catch (LM::MalformedEntryLog&)
       {
-         // Malformed line are silently ignored.
+         L_WARN(QString("Malformed line ignored: %1").arg(line));
       }
    }
 

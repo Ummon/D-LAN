@@ -38,7 +38,7 @@ D_LAN_Client::D_LAN_Client(int argc, char* argv[]) :
    QCoreApplication(argc, argv),
    out(stdout)
 {
-   this->out << "D-LAN Client" << endl;
+   this->out << "D-LAN Client" << Qt::endl;
 
    QScriptValue objectValue = this->engine.newQObject(this);
    this->engine.globalObject().setProperty("dlan", objectValue);

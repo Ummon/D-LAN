@@ -34,7 +34,6 @@ using namespace FM;
   */
 
 DirWatcherWin::DirWatcherWin()
-   : mutex(QMutex::Recursive)
 {
 }
 
@@ -49,25 +48,27 @@ DirWatcherWin::~DirWatcherWin()
 /**
   * @exception DirNotFoundException
   */
-bool DirWatcherWin::addPath(const QString& path)
+bool DirWatcherWin::addPath(const QString& path, const QString& filename)
 {
    QMutexLocker locker(&this->mutex);
 
    if (this->dirs.size() > MAXIMUM_WAIT_OBJECTS - MAX_WAIT_CONDITION)
       return false;
 
-   TCHAR pathTCHAR[path.size() + 1];
-   path.toWCharArray(pathTCHAR);
+   QList<TCHAR> pathTCHAR(path.size() + 1);
+   path.toWCharArray(pathTCHAR.data());
    pathTCHAR[path.size()] = 0;
 
-   HANDLE fileHandle = CreateFile(pathTCHAR, // Pointer to the file name.
-      FILE_LIST_DIRECTORY, // Access (read/write) mode.
-      FILE_SHARE_READ | FILE_SHARE_WRITE, // Share mode.
-      NULL, // security descriptor
-      OPEN_EXISTING, // how to create
-      FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED, // file attributes
-      NULL // file with attributes to copy
-   );
+   HANDLE fileHandle =
+      CreateFile(
+         pathTCHAR.data(), // Pointer to the directory.
+         FILE_LIST_DIRECTORY, // Access (read/write) mode.
+         FILE_SHARE_READ | FILE_SHARE_WRITE, // Share mode.
+         NULL, // security descriptor
+         OPEN_EXISTING, // how to create
+         FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED, // file attributes
+         NULL // file with attributes to copy
+      );
 
    if (fileHandle == INVALID_HANDLE_VALUE)
       throw DirNotFoundException(path);
@@ -76,7 +77,7 @@ bool DirWatcherWin::addPath(const QString& path)
    if (eventHandle == NULL)
       throw DirNotFoundException(path);
 
-   Dir* dir = new Dir(fileHandle, eventHandle, path);
+   Dir* dir = new Dir(fileHandle, eventHandle, path, filename);
 
    if (!this->watch(dir))
    {
@@ -88,14 +89,14 @@ bool DirWatcherWin::addPath(const QString& path)
    return true;
 }
 
-void DirWatcherWin::rmPath(const QString& path)
+void DirWatcherWin::rmPath(const QString& path, const QString& filename)
 {
    QMutexLocker locker(&this->mutex);
 
    for (QListIterator<Dir*> i(this->dirs); i.hasNext();)
    {
       Dir* dir = i.next();
-      if (dir->fullPath == path)
+      if (dir->fullPath == path && dir->filename == filename)
       {
          this->dirsToDelete << dir;
          break;
@@ -115,7 +116,8 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(QList<WaitCondition*> ws)
 }
 
 /**
-  * Warning: If there is too much time between two calls of 'waitEvent(..)' and there is some disk activities (new files/folders) the buffer 'NOTIFY_BUFFER_SIZE'
+  * Warning: If there is too much time between two calls of 'waitEvent(..)' and
+  * there is some disk activities (new files/folders) the buffer 'NOTIFY_BUFFER_SIZE'
   * may become full and some event may be dropped.
   */
 const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondition*> ws)
@@ -124,7 +126,10 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
 
    if (ws.size() > MAX_WAIT_CONDITION)
    {
-      L_ERRO(QString("DirWatcherWin::waitEvent: No more than %1 condition(s), some directory will not be watched any more.").arg(MAX_WAIT_CONDITION));
+      L_ERRO(
+         QString("DirWatcherWin::waitEvent: No more than %1 condition(s), some directory will not be watched any more.")
+            .arg(MAX_WAIT_CONDITION)
+      );
       int n = this->dirs.size() + ws.size() - MAXIMUM_WAIT_OBJECTS;
       while (n --> 0) // The best C++ operator!
          this->dirsToDelete << this->dirs.takeLast();
@@ -147,11 +152,12 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
    QList<Dir*> dirsCopy(this->dirs);
 
    // Builds an array of HANDLEs which will be given to the 'WaitForMultipleObjects' function.
-
    int numberOfDirs = dirsCopy.size();
-   int numberOfHandles = numberOfDirs + ws.size(); // The total number of HANDLEs (watched directories + given wait conditions (ws)).
 
-   HANDLE eventsArray[numberOfHandles];
+   // The total number of HANDLEs (watched directories + given wait conditions (ws)).
+   int numberOfHandles = numberOfDirs + ws.size();
+
+   QList<HANDLE> eventsArray(numberOfHandles);
    for(int i = 0; i < numberOfDirs; i++)
       eventsArray[i] = dirsCopy[i]->overlapped.hEvent;
 
@@ -163,7 +169,13 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
 
    locker.unlock();
 
-   DWORD waitStatus = WaitForMultipleObjects(numberOfHandles, eventsArray, FALSE, timeout == -1 ? INFINITE : timeout);
+   DWORD waitStatus =
+      WaitForMultipleObjects(
+         numberOfHandles,
+         eventsArray.data(),
+         FALSE,
+         timeout == -1 ? INFINITE : timeout
+      );
 
    locker.relock();
 
@@ -174,54 +186,63 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
 
       QList<WatcherEvent> events;
 
-      FILE_NOTIFY_INFORMATION* notifyInformation = (FILE_NOTIFY_INFORMATION*)this->notifyBuffer;
+      QString previousPath; // Used for FILE_ACTION_RENAMED_OLD_NAME.
 
-      QString previousPath; // Used for FILE_ACTION_RENAMED_OLD_NAME
+      const BYTE* pToBuffer = dir->buffer;
 
       forever
       {
+         auto notifyInformation = reinterpret_cast<const FILE_NOTIFY_INFORMATION*>(pToBuffer);
+
          // We need to add a null character termination because 'QString::fromStdWString' need one.
+         // 'filename' can be a directory or a file.
          int nbChar = notifyInformation->FileNameLength / sizeof(TCHAR);
-         TCHAR filenameTCHAR[nbChar + 1];
-         wcsncpy(filenameTCHAR, notifyInformation->FileName, nbChar);
+         QList<TCHAR> filenameTCHAR(nbChar + 1);
+         wcsncpy(filenameTCHAR.data(), notifyInformation->FileName, nbChar);
          filenameTCHAR[nbChar] = 0;
-         QString filename = QString::fromStdWString(filenameTCHAR);
+         QString filename = QString::fromStdWString(filenameTCHAR.constData());
 
-         QString path = dir->fullPath;
-         path.append('/').append(filename);
+         const bool isWatchedFile = !dir->filename.isEmpty();
 
-//         L_DEBU("---------");
-//         L_DEBU(QString("Action = %1").arg(notifyInformation->Action));
-//         L_DEBU(QString("path = %1").arg(path));
-//         L_DEBU(QString("offset = %1").arg(notifyInformation->NextEntryOffset));
-//         L_DEBU("---------");
-
-         switch (notifyInformation->Action)
+         // If 'filename' is set we only care about this specific file.
+         if (!isWatchedFile || filename == dir->filename)
          {
-         case FILE_ACTION_ADDED:
-            events << WatcherEvent(WatcherEvent::NEW, path);
-            break;
-         case FILE_ACTION_REMOVED:
-            events << WatcherEvent(WatcherEvent::DELETED, path);
-            break;
-         case FILE_ACTION_MODIFIED:
-            events << WatcherEvent(WatcherEvent::CONTENT_CHANGED, path);
-            break;
-         case FILE_ACTION_RENAMED_OLD_NAME:
-            previousPath = path;
-            break;
-         case FILE_ACTION_RENAMED_NEW_NAME:
-            events << WatcherEvent(WatcherEvent::MOVE, previousPath, path);
-            break;
-         default:
-            L_WARN(QString("File event action unknown: %1").arg(notifyInformation->Action));
+            QString path = dir->fullPath;
+            path.append(filename);
+
+            L_DEBU("---------");
+            L_DEBU(QString("action = %1").arg(notifyActionToString(notifyInformation->Action)));
+            L_DEBU(QString("path = %1").arg(path));
+            L_DEBU(QString("offset = %1").arg(notifyInformation->NextEntryOffset));
+            L_DEBU("---------");
+
+            switch (notifyInformation->Action)
+            {
+            case FILE_ACTION_ADDED: // 1.
+               events << WatcherEvent(WatcherEvent::NEW, path, isWatchedFile);
+               break;
+            case FILE_ACTION_REMOVED: // 2.
+               events << WatcherEvent(WatcherEvent::DELETED, path, isWatchedFile);
+               break;
+            case FILE_ACTION_MODIFIED: // 3.
+               events << WatcherEvent(WatcherEvent::CONTENT_CHANGED, path, isWatchedFile);
+               break;
+            case FILE_ACTION_RENAMED_OLD_NAME: // 4.
+               previousPath = path;
+               break;
+            case FILE_ACTION_RENAMED_NEW_NAME: // 5.
+               events << WatcherEvent(WatcherEvent::MOVE, previousPath, path, isWatchedFile);
+               break;
+            default:
+               L_WARN(QString("File event action unknown: %1").arg(notifyInformation->Action));
+            }
          }
 
          if (!notifyInformation->NextEntryOffset)
             break;
 
          // The next notify information data is given in the current notify information . . .
-         notifyInformation = (FILE_NOTIFY_INFORMATION*)((LPBYTE)notifyInformation + notifyInformation->NextEntryOffset);
+         pToBuffer += notifyInformation->NextEntryOffset;
       }
 
       this->watch(dir);
@@ -229,14 +250,18 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
       return events;
    }
    // The cause of the wake up comes from a given wait condition.
-   else if (!ws.isEmpty() && waitStatus >= WAIT_OBJECT_0 + (DWORD)numberOfDirs && waitStatus <= WAIT_OBJECT_0 + (DWORD)numberOfHandles - 1)
+   else if (
+      !ws.isEmpty() &&
+      waitStatus >= WAIT_OBJECT_0 + (DWORD)numberOfDirs &&
+      waitStatus <= WAIT_OBJECT_0 + (DWORD)numberOfHandles - 1
+   )
    {
       return QList<WatcherEvent>();
    }
    else if (waitStatus == WAIT_TIMEOUT)
    {
       QList<WatcherEvent> events;
-      events.append(WatcherEvent(WatcherEvent::TIMEOUT));
+      events.append(WatcherEvent(WatcherEvent::TIMEOUT, false));
       return events;
    }
    else if (waitStatus == WAIT_FAILED)
@@ -249,12 +274,12 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
    }
 
    QList<WatcherEvent> events;
-   events << WatcherEvent(WatcherEvent::UNKNOWN);
+   events << WatcherEvent(WatcherEvent::UNKNOWN, false);
    return QList<WatcherEvent>();
 }
 
-DirWatcherWin::Dir::Dir(const HANDLE file, const HANDLE event, const QString& fullPath)
-   : file(file), fullPath(fullPath)
+DirWatcherWin::Dir::Dir(const HANDLE handle, const HANDLE event, const QString& fullPath, const QString& filename)
+   : handle(handle), fullPath(fullPath), filename(filename)
 {
    memset(&this->overlapped, 0, sizeof(OVERLAPPED));
    overlapped.hEvent = event;
@@ -263,22 +288,63 @@ DirWatcherWin::Dir::Dir(const HANDLE file, const HANDLE event, const QString& fu
 DirWatcherWin::Dir::~Dir()
 {
    // Should we wait with GetOverlappedResult or do a test with HasOverlappedIoCompleted ?
-   CancelIo(this->file);
+   CancelIo(this->handle);
 
-   if (!CloseHandle(this->file)) L_ERRO(QString("CloseHandle(dir.file) return an error: %1").arg(GetLastError()));
-   if (!CloseHandle(this->overlapped.hEvent)) L_ERRO(QString("CloseHandle(dir.overlapped.hEvent) return an error: %1").arg(GetLastError()));
+   if (!CloseHandle(this->handle))
+      L_ERRO(QString("CloseHandle(dir.file) return an error: %1").arg(GetLastError()));
+
+   if (!CloseHandle(this->overlapped.hEvent))
+      L_ERRO(QString("CloseHandle(dir.overlapped.hEvent) return an error: %1").arg(GetLastError()));
 }
 
 bool DirWatcherWin::watch(Dir* dir)
 {
-   return ReadDirectoryChangesW(
-      dir->file, // The file handle;
-      &this->notifyBuffer, // The buffer where the information is put when an event occur.
-      NOTIFY_BUFFER_SIZE, // Size of the previous buffer.
-      TRUE, // Watch subtree.
-      FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_DIR_NAME | FILE_NOTIFY_CHANGE_SIZE | FILE_NOTIFY_CHANGE_LAST_WRITE | FILE_NOTIFY_CHANGE_CREATION,
-      &this->nbBytesNotifyBuffer, // Not used in asynchronous mode.
-      &dir->overlapped,
-      NULL
-   );
+   // A directory: watch recursively.
+   if (dir->filename.isEmpty())
+   {
+      return ReadDirectoryChangesW(
+         dir->handle, // The file handle;
+         dir->buffer, // The buffer where the information is put when an event occur.
+         NOTIFY_BUFFER_SIZE, // Size of the previous buffer.
+         TRUE, // Watch subtree.
+         FILE_NOTIFY_CHANGE_FILE_NAME |
+            FILE_NOTIFY_CHANGE_DIR_NAME |
+            FILE_NOTIFY_CHANGE_SIZE |
+            FILE_NOTIFY_CHANGE_LAST_WRITE |
+            FILE_NOTIFY_CHANGE_CREATION,
+         // &this->nbBytesNotifyBuffer,
+         nullptr,
+         &dir->overlapped,
+         nullptr
+      ) != 0;
+   }
+   else // A File: watch non-recursively.
+   {
+      return ReadDirectoryChangesW(
+         dir->handle, // The file handle;
+         dir->buffer, // The buffer where the information is put when an event occur.
+         NOTIFY_BUFFER_SIZE, // Size of the previous buffer.
+         FALSE, // Watch subtree.
+         FILE_NOTIFY_CHANGE_FILE_NAME |
+            FILE_NOTIFY_CHANGE_SIZE |
+            FILE_NOTIFY_CHANGE_LAST_WRITE,
+         // &this->nbBytesNotifyBuffer,
+         nullptr,
+         &dir->overlapped,
+         nullptr
+      ) != 0;
+   }
+}
+
+QString DirWatcherWin::notifyActionToString(DWORD action)
+{
+   switch (action)
+   {
+   case FILE_ACTION_ADDED: return QString("ADDED");
+   case FILE_ACTION_REMOVED: return QString("REMOVED");
+   case FILE_ACTION_MODIFIED: return QString("MODIFIED");
+   case FILE_ACTION_RENAMED_OLD_NAME: return QString("RENAMED_OLD_NAME");
+   case FILE_ACTION_RENAMED_NEW_NAME: return QString("RENAMED_NEW_NAME");
+   default: return QString("<unknown action: %1>").arg(action);
+   }
 }

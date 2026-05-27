@@ -86,7 +86,6 @@ HEADERS += IGetHashesResult.h \
     priv/Constants.h \
     priv/GetHashesResult.h \
     priv/Global.h \
-    priv/FileUpdater/DirWatcherLinux.h \
     priv/Cache/FilePool.h \
     priv/Cache/FileHasher.h \
     IGetEntriesResult.h \
@@ -95,3 +94,6 @@ HEADERS += IGetHashesResult.h \
     priv/SizeIndexEntries.h \
     priv/Cache/SharedEntry.h
 OTHER_FILES +=
+
+DISTFILES += \
+   filemanager_model.qmodel

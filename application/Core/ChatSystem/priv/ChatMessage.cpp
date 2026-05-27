@@ -23,7 +23,13 @@ using namespace CS;
 
 #include <Common/ProtoHelper.h>
 
-ChatMessage::ChatMessage(const QString& message, const Common::Hash& ownerID, const QString& ownerNick, const QString& roomName, const QList<Common::Hash>& peerIDsAnswer) :
+ChatMessage::ChatMessage(
+   const QString& message,
+   const Common::Hash& ownerID,
+   const QString& ownerNick,
+   const QString& roomName,
+   const QList<Common::Hash>& peerIDsAnswer
+) :
    ID(QRandomGenerator64::global()->generate64()),
    message(message),
    ownerID(ownerID),
@@ -57,12 +63,12 @@ QDateTime ChatMessage::getTime() const
 void ChatMessage::fillProtoChatMessage(Protos::Common::ChatMessage& protoChatMessage) const
 {
    protoChatMessage.set_id(this->ID);
-   Common::ProtoHelper::setStr(protoChatMessage, &Protos::Common::ChatMessage::set_message, this->message);
+   protoChatMessage.set_message(this->message.toStdString());
    protoChatMessage.set_time(this->time.toMSecsSinceEpoch());
    protoChatMessage.mutable_peer_id()->set_hash(this->ownerID.getData(), Common::Hash::HASH_SIZE);
-   Common::ProtoHelper::setStr(protoChatMessage, &Protos::Common::ChatMessage::set_peer_nick, this->ownerNick);
+   protoChatMessage.set_peer_nick(this->ownerNick.toStdString());
    if (!this->room.isEmpty())
-      Common::ProtoHelper::setStr(protoChatMessage, &Protos::Common::ChatMessage::set_chat_room, this->room);
+      protoChatMessage.set_chat_room(this->room.toStdString());
    for (QListIterator<Common::Hash> i(this->peerIDsAnswer); i.hasNext();)
       protoChatMessage.add_peer_ids_answer()->set_hash(i.next().getData(), Common::Hash::HASH_SIZE);
 }

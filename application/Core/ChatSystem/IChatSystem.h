@@ -49,12 +49,20 @@ namespace CS
         * This will emit a 'newMessages' signal.
         * @param roomName The
         */
-      virtual SendStatus send(const QString& message, const QString& roomName = QString(), const QList<Common::Hash>& peerIDsAnswer = QList<Common::Hash>()) = 0;
+      virtual SendStatus send(
+         const QString& message,
+         const QString& roomName = QString(),
+         const QList<Common::Hash>& peerIDsAnswer = QList<Common::Hash>()
+      ) = 0;
 
       /**
         * Retrieve the last 'number' known message.
         */
-      virtual void getLastChatMessages(Protos::Common::ChatMessages& chatMessages, int number = std::numeric_limits<int>::max(), const QString& room = QString()) const = 0;
+      virtual void getLastChatMessages(
+         Protos::Common::ChatMessages& chatMessages,
+         int number = std::numeric_limits<int>::max(),
+         const QString& room = QString()
+      ) const = 0;
 
       struct ChatRoom
       {

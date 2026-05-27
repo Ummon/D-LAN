@@ -28,7 +28,7 @@ TooglableList::TooglableList(QWidget *parent) :
     ui(new Ui::TooglableList)
 {
    this->ui->setupUi(this);
-   connect(this->ui->butAll, SIGNAL(clicked()), this, SLOT(checkAll()));
+   connect(this->ui->butAll, &QPushButton::clicked, this, &TooglableList::checkAll);
 }
 
 TooglableList::~TooglableList()
@@ -66,8 +66,8 @@ void TooglableList::addItem(const QString& item)
    but->setText(item);
    but->setCheckable(true);
    but->setChecked(true);
-   connect(but, SIGNAL(toggled(bool)), this, SLOT(butToogled(bool)));
-   connect(but, SIGNAL(rightClicked()), this, SLOT(butRightClicked()));
+   connect(but, &TooglableListButton::toggled, this, &TooglableList::butToogled);
+   connect(but, &TooglableListButton::rightClicked, this, &TooglableList::butRightClicked);
 
    lay->addWidget(but);
 }

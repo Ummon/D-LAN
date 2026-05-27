@@ -35,9 +35,16 @@ ChatMessages::ChatMessages(const ChatMessages& other)
 {
 }
 
-QSharedPointer<ChatMessage> ChatMessages::add(const QString& message, const Common::Hash& ownerID, const QString& ownerNick, const QString& roomName, const QList<Common::Hash>& peerIDsAnswer)
+QSharedPointer<ChatMessage> ChatMessages::add(
+   const QString& message,
+   const Common::Hash& ownerID,
+   const QString& ownerNick,
+   const QString& roomName,
+   const QList<Common::Hash>& peerIDsAnswer
+)
 {
-   QSharedPointer<ChatMessage> mess = QSharedPointer<ChatMessage>(new ChatMessage(message, ownerID, ownerNick, roomName, peerIDsAnswer));
+   QSharedPointer<ChatMessage> mess =
+      QSharedPointer<ChatMessage>(new ChatMessage(message, ownerID, ownerNick, roomName, peerIDsAnswer));
 
    this->insert(QList<QSharedPointer<ChatMessage>> { mess });
 
@@ -76,7 +83,9 @@ QList<QSharedPointer<ChatMessage>> ChatMessages::getMessages() const
   * Returns the last unknown messages, the known message IDs are defined into 'getLastChatMessage'.
   * The returned messages are sorted from oldest to youngest.
   */
-QList<QSharedPointer<ChatMessage>> ChatMessages::getUnknownMessages(const Protos::Core::GetLastChatMessages& getLastChatMessage) const
+QList<QSharedPointer<ChatMessage>> ChatMessages::getUnknownMessages(
+   const Protos::Core::GetLastChatMessages& getLastChatMessage
+) const
 {
    QSet<quint64> knownIDs;
    knownIDs.reserve(getLastChatMessage.message_id_size());
@@ -104,7 +113,11 @@ void ChatMessages::fillProtoChatMessages(Protos::Common::ChatMessages& chatMessa
   * Fill 'chatMessages' with the given messages. 'chatMessages' must not exceed 'maxByteSize'.
   * @return The messages which aren't put in 'chatMessages'.
   */
-QList<QSharedPointer<ChatMessage>> ChatMessages::fillProtoChatMessages(Protos::Common::ChatMessages& chatMessages, const QList<QSharedPointer<ChatMessage>>& messages, int maxByteSize)
+QList<QSharedPointer<ChatMessage>> ChatMessages::fillProtoChatMessages(
+   Protos::Common::ChatMessages& chatMessages,
+   const QList<QSharedPointer<ChatMessage>>& messages,
+   int maxByteSize
+)
 {
    QList<QSharedPointer<ChatMessage>> result(messages);
    for (QMutableListIterator<QSharedPointer<ChatMessage>> i(result); i.hasNext();)

@@ -39,15 +39,15 @@ TableLogItemDelegate::TableLogItemDelegate(QObject *parent) :
 void TableLogItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
    const TableLogModel* model = static_cast<const TableLogModel*>(index.model());
-   QStyleOptionViewItemV4 newOption(option);
+   QStyleOptionViewItem newOption(option);
 
    switch (model->getSeverity(index.row()))
    {
    case LM::SV_END_USER :
-      painter->fillRect(option.rect, QColor(222, 213, 235));
+      painter->fillRect(option.rect, QColor(41, 33, 53));
       break;
    case LM::SV_WARNING :
-      painter->fillRect(option.rect, QColor(235, 199, 199));
+      painter->fillRect(option.rect, QColor(0, 47, 28));
       break;
    case LM::SV_ERROR :
       painter->fillRect(option.rect, QColor(200, 0, 0));

@@ -23,6 +23,8 @@
 #include <QDir>
 #include <QThread>
 
+#include <Core/HashCache/IHashCache.h>
+
 #include <IFileManager.h>
 #include <IGetHashesResult.h>
 #include <IDataWriter.h>
@@ -99,6 +101,7 @@ private:
 
    static QString entryToStr(const Protos::Common::Entry& entry);
 
+   QSharedPointer<HC::IHashCache> hashCache;
    QSharedPointer<IFileManager> fileManager;
    QList<FilesAndDirs*> filesAndDirs;
    QStringList sharedDirs;

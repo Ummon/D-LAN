@@ -18,7 +18,7 @@
   
 #pragma once
 
-#include <QMutex>
+#include <QRecursiveMutex>
 
 #include <priv/FileUpdater/DirWatcher.h>
 #include <priv/Log.h>
@@ -27,7 +27,7 @@
 
 namespace FM
 {
-   static const int NOTIFY_BUFFER_SIZE = 32768;
+   static const int NOTIFY_BUFFER_SIZE = 32 * 1024; // 32 kB.
    static const int MAX_WAIT_CONDITION = 4;
 
    class DirWatcherWin : public DirWatcher
@@ -37,8 +37,8 @@ namespace FM
       ~DirWatcherWin();
 
       bool isReliable() const;
-      bool addPath(const QString& path);
-      void rmPath(const QString& path);
+      bool addPath(const QString& path, const QString& filename = QString(""));
+      void rmPath(const QString& path, const QString& filename = QString(""));
       int nbWatchedPath();
       const QList<WatcherEvent> waitEvent(QList<WaitCondition*> ws = QList<WaitCondition*>());
       const QList<WatcherEvent> waitEvent(int timeout, QList<WaitCondition*> ws = QList<WaitCondition*>());
@@ -46,22 +46,26 @@ namespace FM
    private:
       struct Dir
       {
-         Dir(const HANDLE file, const HANDLE event, const QString& fullPath);
+         Dir(const HANDLE handle, const HANDLE event, const QString& fullPath, const QString& filename);
          ~Dir();
 
-         const HANDLE file;
+         const HANDLE handle;
          OVERLAPPED overlapped;
          const QString fullPath;
+         const QString filename;
+         alignas(sizeof(DWORD)) BYTE buffer[NOTIFY_BUFFER_SIZE];
       };
 
       bool watch(Dir* dir);
 
+      static QString notifyActionToString(DWORD action);
+
       QList<Dir*> dirs; ///< The watched dirs.
       QList<Dir*> dirsToDelete; ///< Dirs to delete.
 
-      char notifyBuffer[NOTIFY_BUFFER_SIZE]; ///< Is this data can be shares among some 'ReadDirectoryChangesW'?
-      DWORD nbBytesNotifyBuffer;
+      // BYTE notifyBuffer[NOTIFY_BUFFER_SIZE]; ///< Is this data can be shares among some 'ReadDirectoryChangesW'?
+      // DWORD nbBytesNotifyBuffer;
 
-      QMutex mutex;
+      QRecursiveMutex mutex;
    };
 }

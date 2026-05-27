@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <priv/Download.h>
 using namespace DM;
 
@@ -58,7 +58,7 @@ void Download::populateQueueEntry(Protos::Queue::Queue::Entry* entry) const
       entry->set_status(static_cast<Protos::Queue::Queue::Entry::Status>(this->status));
 
    entry->mutable_peer_source_id()->set_hash(this->peerSource->getID().getData(), Common::Hash::HASH_SIZE);
-   Common::ProtoHelper::setStr(*entry, &Protos::Queue::Queue::Entry::set_peer_source_nick, this->peerSource->getNick());
+   entry->set_peer_source_nick(this->peerSource->getNick().toStdString());
 }
 
 quint64 Download::getID() const

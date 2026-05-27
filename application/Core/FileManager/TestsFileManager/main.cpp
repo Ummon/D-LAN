@@ -19,21 +19,60 @@
 #include <QCoreApplication>
 #include <QTest>
 
+#include <Protos/core_settings.pb.h>
+
+#include <Common/Settings.h>
+#include <Common/LogManager/Builder.h>
+
 #include <Tests.h>
+#include <WordIndexTests.h>
 #include <StressTests.h>
+
+Protos::Core::Settings* createDefaultValuesSettings();
 
 int main(int argc, char *argv[])
 {
    QCoreApplication a(argc, argv);
 
+   SETTINGS.setFilename("core_settings_file_manager_tests.txt");
+   SETTINGS.setSettingsMessage(createDefaultValuesSettings());
+
+   int ret = 0;
+
    if (a.arguments().contains("-stress"))
    {
       StressTests tests;
-      return QTest::qExec(&tests);
+      ret = QTest::qExec(&tests);
    }
    else
    {
       Tests tests;
-      return QTest::qExec(&tests, argc, argv);
+      WordIndexTests wordIndexTests;
+      ret = QTest::qExec(&tests, argc, argv); // + QTest::qExec(&wordIndexTests, argc, argv);
    }
+
+   SETTINGS.free();
+   google::protobuf::ShutdownProtobufLibrary();
+
+   return ret;
+}
+
+Protos::Core::Settings* createDefaultValuesSettings()
+{
+   auto settings = new Protos::Core::Settings();
+   settings->set_buffer_size_reading(131072);
+   settings->set_buffer_size_writing(524288);
+   settings->set_socket_buffer_size(131072);
+   settings->set_socket_timeout(7000);
+
+   ///// FileManager /////
+   settings->set_minimum_duration_when_hashing(3000);
+   settings->set_scan_period_unwatchable_dirs(30000);
+   settings->set_unfinished_suffix_term(".unfinished");
+   settings->set_minimum_free_space(1048576);
+   settings->set_save_cache_period(60000);
+   settings->set_check_received_data_integrity(true);
+   settings->set_get_entries_timeout(5000);
+
+   return settings;
 }

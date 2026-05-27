@@ -9,9 +9,10 @@
 
 QT += core gui widgets network xml
 
-win32 {
-   QT += winextras
-}
+# TODO Qt6: Replace winextras.
+# win32 {
+#    QT += winextras
+# }
 
 TARGET = "D-LAN.GUI"
 TEMPLATE = app

@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <iostream>
 
 #include <QString>
@@ -38,20 +38,20 @@
 void printUsage(QString appName)
 {
    QTextStream out(stdout);
-   out << "Usage:" << endl <<
-          " " << appName << " [-r <roaming data directory>] [-l <local data directory>] [--reset-settings] [--lang <language>] [--pass <password> | --rmpass] [--version] [-i|-u|-e|-s|-v]" << endl <<
-          "  -i [account] [password] : Install the service, optionally using given account and password" << endl <<
-          "  -u : Uninstall the service." << endl <<
-          "  -e : Run as a regular application. Otherwise try to launch the installed service." << endl <<
-          "  -t : Stop the service." << endl <<
-          "  -v : Print service status information." << endl <<
-          "  <roaming data directory> : Where settings are put." << endl <<
-          "  <local data directory> : Where logs, download queue, and files cache are put." << endl <<
-          "  --reset-settings : Remove all settings except \"nick\" and \"peerID\" and quit, other settings are set to their default values." << endl <<
-          "  --lang <language> : set the language and save it to the settings file then quit. (ISO-639, two letters)" << endl <<
-          "  --pass <password> : set a password then quit. The core can be remotely controlled." << endl <<
-          "  --rmpass : remove the current password." << endl <<
-          "  --version : Print the version" << endl;
+   out << "Usage:" << Qt::endl <<
+          " " << appName << " [-r <roaming data directory>] [-l <local data directory>] [--reset-settings] [--lang <language>] [--pass <password> | --rmpass] [--version] [-i|-u|-e|-s|-v]" << Qt::endl <<
+          "  -i [account] [password] : Install the service, optionally using given account and password" << Qt::endl <<
+          "  -u : Uninstall the service." << Qt::endl <<
+          "  -e : Run as a regular application. Otherwise try to launch the installed service." << Qt::endl <<
+          "  -t : Stop the service." << Qt::endl <<
+          "  -v : Print service status information." << Qt::endl <<
+          "  <roaming data directory> : Where settings are put." << Qt::endl <<
+          "  <local data directory> : Where logs, download queue, and files cache are put." << Qt::endl <<
+          "  --reset-settings : Remove all settings except \"nick\" and \"peerID\" and quit, other settings are set to their default values." << Qt::endl <<
+          "  --lang <language> : set the language and save it to the settings file then quit. (ISO-639, two letters)" << Qt::endl <<
+          "  --pass <password> : set a password then quit. The core can be remotely controlled." << Qt::endl <<
+          "  --rmpass : remove the current password." << Qt::endl <<
+          "  --version : Print the version" << Qt::endl;
 }
 
 /**

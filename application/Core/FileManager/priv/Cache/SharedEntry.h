@@ -18,7 +18,8 @@
 
 #pragma once
 
-#include <QString>
+#include <QStringList>
+#include <QList>
 
 #include <Protos/common.pb.h>
 
@@ -37,12 +38,33 @@ namespace FM
 
    class SharedEntry : Common::Uncopyable
    {
+      friend Directory;
+      friend File;
+
    protected:
-      SharedEntry(Cache* cache, const Common::Path& path, const Common::Hash& id = Common::Hash());
-      ~SharedEntry();
+      SharedEntry(
+         Cache* cache,
+         const Common::Path& path,
+         const Common::Hash& id = Common::Hash(),
+         const QString& userName = QString()
+      );
+
+      virtual ~SharedEntry();
 
    public:
-      static SharedEntry* create(Cache* cache, const QString& pathStr, const Common::Hash& id = Common::Hash());
+      static SharedEntry* create(
+         Cache* cache,
+         const QString& pathStr,
+         const Common::Hash& id = Common::Hash(),
+         const QString& userName = QString()
+      );
+
+      static SharedEntry* create(
+         Cache* cache,
+         const Common::Path& path,
+         const Common::Hash& id = Common::Hash(),
+         const QString& userName = QString()
+      );
 
       /**
         * Try to merge other shared entry with this one.
@@ -50,6 +72,7 @@ namespace FM
         * Should be called after each new SharedDirectory created.
         */
       virtual void mergeSubSharedEntries() = 0;
+      // virtual Directory* createSubDirs(const QStringList& names, bool physically = false) = 0;
       virtual Entry* getRootEntry() const = 0;
 
       /**
@@ -63,28 +86,32 @@ namespace FM
         *  - 'C:/Users/Paul/My Movies/labyrinth.avi'
         *  - 'G:/'
         */
-      virtual Common::Path getFullPath() const = 0;
+      virtual Common::Path getPath() const = 0;
 
       void populateEntry(Protos::Common::Entry* entry) const;
 
       void del(bool invokeDelete = true);
 
-      void moveInto(Directory* directory);
-      void moveInto(const QString& path);
+      // void moveInto(Directory* directory);
+
+      // TODO: Common::Path should be used instead of QString.
+      void setPath(const Common::Path& path);
 
       Cache* getCache() const;
-      Common::Path getPath() const;
+      // Common::Path getPath() const;
       Common::Hash getId() const;
       QString getUserName() const;
 
-   private:
-      static QString entryName(const Common::Path& path);
-      static Common::Path pathWithoutEntryName(const Common::Path& path);
+   protected:
+      // static QString entryName(const Common::Path& path);
+      // static Common::Path pathWithoutEntryName(const Common::Path& path);
 
       Cache* cache; // To announce when an entry, chunk is created or deleted.
-      Common::Path path; // Always a directory.
+      Common::Path path; // The path to the directory containing the shared file or directory.
       Common::Hash id;
-      QString userName; // The name of the shared entry. Default is the directory or file name. It may be changed by the user.
+
+      // The name of the shared entry. Default is the directory or filename. It may be changed later by the user.
+      QString userName;
    };
 
    /////
@@ -92,11 +119,21 @@ namespace FM
    class SharedDirectory : public SharedEntry
    {
    public:
-      SharedDirectory(Cache* cache, const Common::Path& path, const Common::Hash& id = Common::Hash());
+      SharedDirectory(
+         Cache* cache,
+         const Common::Path& path,
+         const Common::Hash& id = Common::Hash(),
+         const QString& userName = QString()
+      );
 
-      void mergeSubSharedEntries();
-      Entry* getRootEntry() const;
-      Common::Path getFullPath() const;
+      ~SharedDirectory();
+
+      void mergeSubSharedEntries() override;
+      Directory* createSubDirs(const QStringList& names, bool physically = false);
+      Entry* getRootEntry() const override;
+      Common::Path getPath() const override;
+
+      Directory* getRootDir() const;
 
    private:
       Directory* directory;
@@ -107,11 +144,21 @@ namespace FM
    class SharedFile : public SharedEntry
    {
    public:
-      SharedFile(Cache* cache, const Common::Path& path, const Common::Hash& id = Common::Hash());
+      SharedFile(
+         Cache* cache,
+         const Common::Path& path,
+         const Common::Hash& id = Common::Hash(),
+         const QString& userName = QString()
+      );
 
-      void mergeSubSharedEntries();
-      Entry* getRootEntry() const;
-      Common::Path getFullPath() const;
+      ~SharedFile();
+
+      void mergeSubSharedEntries() override;
+      // Directory* createSubDirs(const QStringList& names, bool physically = false) ;
+      Entry* getRootEntry() const override;
+      Common::Path getPath() const override;
+
+      File* getRootFile() const;
 
    private:
       File* file;

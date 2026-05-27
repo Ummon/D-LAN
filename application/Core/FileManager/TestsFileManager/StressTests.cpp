@@ -44,7 +44,8 @@ void StressTests::initTestCase()
    try
    {
       QString tempFolder = Common::Global::setCurrentDirToTemp("FileManagerStressTests");
-      qDebug() << "Application folder path (where the persistent data is put): " <<  Common::Global::getDataFolder(Common::Global::DataFolderType::LOCAL, false);
+      qDebug() << "Application folder path (where the persistent data is put): " <<
+         Common::Global::getDataFolder(Common::Global::DataFolderType::LOCAL, false);
       qDebug() << "The file created during this test are put in : " << tempFolder;
    }
    catch (Common::Global::UnableToSetTempDirException& e)
@@ -52,7 +53,8 @@ void StressTests::initTestCase()
       QFAIL(e.errorMessage.toLatin1().constData());
    }
 
-   Common::PersistentData::rmValue(Common::Constants::FILE_CACHE, Common::Global::DataFolderType::LOCAL); // Reset the stored cache.
+   // Reset the stored cache.
+   // Common::PersistentData::rmValue(Common::Constants::FILE_CACHE, Common::Global::DataFolderType::LOCAL);
 
    SETTINGS.setFilename("core_settings_file_manager_stress_tests.txt");
    SETTINGS.setSettingsMessage(new Protos::Core::Settings());
@@ -66,6 +68,6 @@ void StressTests::stressTest()
 {
    qDebug() << "===== stressTest() =====";
 
-   Common::PersistentData::rmValue(Common::Constants::FILE_CACHE, Common::Global::DataFolderType::LOCAL);
+   // Common::PersistentData::rmValue(Common::Constants::FILE_CACHE, Common::Global::DataFolderType::LOCAL);
    StressTest test;
 }

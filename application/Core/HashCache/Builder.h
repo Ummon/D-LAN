@@ -27,6 +27,6 @@ namespace HC
    class Builder
    {
    public:
-      static QSharedPointer<IHashCache> newHashCache();
+      static QSharedPointer<IHashCache> newHashCache(const QString& databaseFolder);
    };
 }

@@ -15,14 +15,11 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
-#include <QApplication>
-#include <MainWindow.h>
 
-int main(int argc, char *argv[])
+#pragma once
+
+#include <QString>
+
+namespace HC
 {
-   QApplication a(argc, argv);
-   MainWindow w;
-   w.show();
-   return a.exec();
 }

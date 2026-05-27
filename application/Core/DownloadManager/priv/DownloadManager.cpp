@@ -92,11 +92,11 @@ void DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry, PM::
       QPair<Common::SharedEntry, QString> result = this->fileManager->addASharedPath(absolutePath);
       this->addDownload(remoteEntry, peerSource, result.first.ID, result.second, Protos::Queue::Queue::Entry::QUEUED, this->downloadQueue.size());
    }
-   catch (FM::ItemsNotFoundException& e)
+   catch (FM::EntriesNotFoundException& e)
    {
       L_WARN(QString("The following item isn't found: %1").arg(absolutePath));
    }
-   catch (FM::UnableToCreateSharedDirectory& e)
+   catch (FM::UnableToCreateSharedEntry& e)
    {
       L_WARN(QString("Unable to share the following directory: %1").arg(absolutePath));
    }
@@ -117,7 +117,7 @@ Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry,
    localEntry.clear_shared_entry();
    localEntry.set_exists(false);
 
-   Common::ProtoHelper::setStr(localEntry, &Protos::Common::Entry::set_path, localRelativePath);
+   localEntry.set_path(localRelativePath.toStdString());
    if (!destinationDirectoryID.isNull())
       localEntry.mutable_shared_entry()->mutable_id()->set_hash(destinationDirectoryID.getData(), Common::Hash::HASH_SIZE);
 

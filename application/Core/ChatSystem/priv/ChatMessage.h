@@ -30,7 +30,13 @@ namespace CS
    class ChatMessage
    {
    public:
-      ChatMessage(const QString& message, const Common::Hash& ownerID, const QString& ownerNick, const QString& roomName = QString(), const QList<Common::Hash>& peerIDsAnswer = QList<Common::Hash>());
+      ChatMessage(
+         const QString& message,
+         const Common::Hash& ownerID,
+         const QString& ownerNick,
+         const QString& roomName = QString(),
+         const QList<Common::Hash>& peerIDsAnswer = QList<Common::Hash>()
+      );
       ChatMessage(const Protos::Common::ChatMessage& chatMessage);
 
       quint64 getID() const;

@@ -1,7 +1,11 @@
 win32 {
-   PROTOBUF = c:/protobuf-3.11.4
-   LIBS += -L$$PROTOBUF/src/.libs -lprotobuf
-   INCLUDEPATH += $$PROTOBUF/src
+   PROTOBUF = c:/protobuf
+   PROTOBUF_BUILD = $$PROTOBUF/build
+
+   LIBS += $$system(pkg-config --define-variable=prefix=C:/protobuf --static --libs protobuf)
+   QMAKE_LFLAGS += $$system(pkg-config --static --libs protobuf)
+   CONFIG += link_pkgconfig
+   PKGCONFIG += protobuf
 }
 
 unix {

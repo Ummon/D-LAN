@@ -38,14 +38,20 @@ void GetEntriesResult::start()
    }
    else if (this->dir->isScanned())
    {
-      L_DEBU(QString("FM::GetEntriesResult::start(): directory scanned: %1").arg(this->dir->getFullPath()));
+      L_DEBU(QString("FM::GetEntriesResult::start(): directory scanned: %1").arg(this->dir->getAbsolutePath()));
       this->buildResult();
       emit result(this->res);
    }
    else
    {
-      L_DEBU(QString("FM::GetEntriesResult::start(): directory not yet scanned: %1").arg(this->dir->getFullPath()));
-      connect(this->dir->getCache(), &Cache::directoryScanned, this, &GetEntriesResult::directoryScanned, Qt::DirectConnection);
+      L_DEBU(QString("FM::GetEntriesResult::start(): directory not yet scanned: %1").arg(this->dir->getAbsolutePath()));
+      connect(
+         this->dir->getCache(),
+         &Cache::directoryScanned,
+         this,
+         &GetEntriesResult::directoryScanned,
+         Qt::DirectConnection
+      );
       this->startTimer();
    }
 }
@@ -58,7 +64,7 @@ void GetEntriesResult::directoryScanned(Directory* dir)
    if (dir != this->dir)
       return;
 
-   L_DEBU(QString("FM::GetEntriesResult::directoryScanned(): directory just scanned: %1").arg(this->dir->getFullPath()));
+   L_DEBU(QString("FM::GetEntriesResult::directoryScanned(): directory just scanned: %1").arg(this->dir->getAbsolutePath()));
 
    this->buildResult();
 

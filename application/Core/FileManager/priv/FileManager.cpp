@@ -56,8 +56,8 @@ LOG_INIT_CPP(FileManager)
 
 FileManager::FileManager(QSharedPointer<HC::IHashCache> hashCache) :
    fileUpdater(this),
-   cache(hashCache),
-   cacheLoading(true)
+   cache(hashCache)
+   // cacheLoading(true)
 {
    Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
 
@@ -70,15 +70,35 @@ FileManager::FileManager(QSharedPointer<HC::IHashCache> hashCache) :
    connect(&this->cache, &Cache::newSharedEntry, this, &FileManager::newSharedEntry, Qt::DirectConnection);
    connect(&this->cache, &Cache::sharedEntryRemoved, this, &FileManager::sharedEntryRemoved, Qt::DirectConnection);
 
-   connect(&this->fileUpdater, &FileUpdater::fileCacheLoaded, this, &FileManager::fileCacheLoadingComplete, Qt::QueuedConnection);
-   connect(&this->fileUpdater, &FileUpdater::deleteSharedEntry, this, &FileManager::deleteSharedEntry, Qt::QueuedConnection); // If the 'FileUpdater' wants to delete a shared directory.
+   // connect(&this->fileUpdater, &FileUpdater::fileCacheLoaded, this, &FileManager::fileCacheLoadingComplete, Qt::QueuedConnection);
+
+   // If the 'FileUpdater' wants to delete a shared directory.
+   connect(&this->fileUpdater, &FileUpdater::deleteSharedEntry, this, &FileManager::deleteSharedEntry, Qt::QueuedConnection);
+
+   connect(&this->cache, &Cache::entryResizing, this, &FileManager::entryResizing, Qt::DirectConnection);
+   connect(&this->cache, &Cache::entryResized, this, &FileManager::entryResized, Qt::DirectConnection);
 
    // Give stored shared entries to the cache:
-   SETTINGS.get<Protos::Common::SharedEntry>("shared_entry");
+   this->cache.setSharedEntries(SETTINGS.getRepeated<Protos::Common::SharedEntry>("shared_entry"));
 
-   this->fileUpdater.addRoot();
+   // TODO
+   for (const auto& sharedEntry : this->cache.getSharedEntries())
+   {
+      L_DEBU(QString("ID: %1").arg(sharedEntry.ID.toStr())); // TODO: test this code and remove this line.
+      this->fileUpdater.addRoot(this->cache.getSharedEntry(sharedEntry.ID));
+   }
 
-   // TODO: call addRoot for each shared entry in settings.
+   // this->cache.forall(
+   //    [&](Entry* entry)
+   //    {
+   //       this->sizeIndex.addItem(entry);
+   //    }
+   //    );
+
+   // this->cacheLoading = false;
+
+   // emit fileCacheLoaded();
+
    this->fileUpdater.start();
 }
 
@@ -91,15 +111,18 @@ FileManager::~FileManager()
 }
 
 /**
-  * @exception ItemsNotFoundException
+  * @exception EntriesNotFoundException
   */
 void FileManager::setSharedPaths(const QStringList& paths)
 {
-   this->cache.setSharedPaths(paths);
+   QList<Common::Path> commonPaths;
+   for (const QString& path : paths)
+      commonPaths << Common::Path(path);
+   this->cache.setSharedPaths(commonPaths);
 }
 
 /**
-  * @exception ItemsNotFoundException
+  * @exception EntriesNotFoundException
   */
 QPair<Common::SharedEntry, QString> FileManager::addASharedPath(const QString& absolutePath)
 {
@@ -115,7 +138,7 @@ QString FileManager::getSharedEntry(const Common::Hash& ID) const
 {
    SharedEntry* entry = this->cache.getSharedEntry(ID);
    if (entry)
-      return entry->getPath().getPath();
+      return entry->getPath().toString();
    else
       return QString();
 }
@@ -187,7 +210,15 @@ Protos::Common::Entries FileManager::getEntries()
    return this->cache.getProtoSharedEntries();
 }
 
-QList<Protos::Common::FindResult> FileManager::find(const QString& words, const QList<QString>& extensions, qint64 minFileSize, qint64 maxFileSize, Protos::Common::FindPattern_Category category, int maxNbResult, int maxSize)
+QList<Protos::Common::FindResult> FileManager::find(
+   const QString& words,
+   const QList<QString>& extensions,
+   qint64 minFileSize,
+   qint64 maxFileSize,
+   Protos::Common::FindPattern_Category category,
+   int maxNbResult,
+   int maxSize
+)
 {
    bool filterBySizeOn = minFileSize > 0 || maxFileSize != std::numeric_limits<qint64>::max();
    bool filterByExtensionsOn = !extensions.isEmpty();
@@ -221,7 +252,19 @@ QList<Protos::Common::FindResult> FileManager::find(const QString& words, const 
                      maxNbResult,
                      [&](const Entry* entry)
                      {
-                        return (!filterBySizeOn || entry->getSize() >= minFileSize && entry->getSize() <= maxFileSize) && (!filterByCategoryOn || (category == Protos::Common::FindPattern::FILE && dynamic_cast<const File*>(entry) || category == Protos::Common::FindPattern::DIR && dynamic_cast<const Directory*>(entry)));
+                        return (
+                           !filterBySizeOn ||
+                           entry->getSize() >= minFileSize &&
+                           entry->getSize() <= maxFileSize) &&
+                           (
+                              !filterByCategoryOn ||
+                              (
+                                 category == Protos::Common::FindPattern::FILE &&
+                                 dynamic_cast<const File*>(entry) ||
+                                 category == Protos::Common::FindPattern::DIR &&
+                                 dynamic_cast<const Directory*>(entry)
+                              )
+                           );
                      }
                   );
          else
@@ -237,7 +280,11 @@ QList<Protos::Common::FindResult> FileManager::find(const QString& words, const 
                      maxNbResult,
                      [&](const Entry* entry)
                      {
-                        return category == Protos::Common::FindPattern::FILE && dynamic_cast<const File*>(entry) || category == Protos::Common::FindPattern::DIR && dynamic_cast<const Directory*>(entry);
+                        return category ==
+                           Protos::Common::FindPattern::FILE &&
+                           dynamic_cast<const File*>(entry) ||
+                           category == Protos::Common::FindPattern::DIR &&
+                           dynamic_cast<const Directory*>(entry);
                      }
                );
          else
@@ -376,10 +423,15 @@ Directory* FileManager::getFittestDirectory(const QString& path)
    return this->cache.getFittestDirectory(path);
 }
 
+// Entry* FileManager::getEntry(const QString& path) const
+// {
+//    return this->cache.getEntry(path);
+// }
+
 /**
   * Used to retrieve a file or a directory by the fileUpdater when a filesystem event occurs.
   */
-Entry* FileManager::getEntry(const QString& path) const
+Entry* FileManager::getEntry(const Common::Path& path) const
 {
    return this->cache.getEntry(path);
 }
@@ -413,8 +465,8 @@ void FileManager::entryAdded(Entry* entry)
    L_DEBU(QString("Adding entry '%1' to the index . . .").arg(entry->getName()));
    this->wordIndex.addItem(Common::StringUtils::splitInWords(entry->getNameWithoutExtension()), entry);
    this->extensionIndex.addItem(entry->getExtension(), entry);
-   if (!this->cacheLoading)
-      this->sizeIndex.addItem(entry);
+   // if (!this->cacheLoading)
+      // this->sizeIndex.addItem(entry); // TODO: Nedded?
    L_DEBU("Entry added to the index");
 }
 
@@ -433,7 +485,7 @@ void FileManager::entryRemoved(Entry* entry)
 
 void FileManager::entryRenamed(Entry* entry, const QString& oldName)
 {
-   L_DEBU(QString("Renaming entry '%1' to '%2' in the index . . .").arg(entry->getName()).arg(oldName));
+   L_DEBU(QString("Renaming entry '%1' to '%2' in the index . . .").arg(entry->getName(), oldName));
    this->wordIndex.renameItem(Common::StringUtils::splitInWords(oldName), Common::StringUtils::splitInWords(entry->getName()), entry);
    this->extensionIndex.changeItem(Common::KnownExtensions::getExtension(oldName), entry->getExtension(), entry);
    L_DEBU("Entry renamed in the index");
@@ -494,7 +546,7 @@ void FileManager::chunkRemoved(const QSharedPointer<Chunk>& chunk)
 //      {
 //         this->cache.createSharedDirs(*savedCache);
 //      }
-//      catch (ItemsNotFoundException& e)
+//      catch (EntriesNotFoundException& e)
 //      {
 //         foreach (QString path, e.paths)
 //            L_WARN(QString("During the file cache loading, this directory hasn't been found: %1").arg(path));
@@ -574,17 +626,4 @@ void FileManager::setCacheChanged()
 
 void FileManager::fileCacheLoadingComplete()
 {
-   connect(&this->cache, &Cache::entryResizing, this, &FileManager::entryResizing, Qt::DirectConnection);
-   connect(&this->cache, &Cache::entryResized, this, &FileManager::entryResized, Qt::DirectConnection);
-
-   this->cache.forall(
-      [&](Entry* entry)
-      {
-         this->sizeIndex.addItem(entry);
-      }
-   );
-
-   this->cacheLoading = false;
-
-   emit fileCacheLoaded();
 }

@@ -18,10 +18,8 @@
 
 #pragma once
 
-#include <exception>
-
 #include <QString>
-#include <QLinkedList>
+#include <QList>
 #include <QMutex>
 #include <QWaitCondition>
 #include <QFile>
@@ -50,32 +48,33 @@ namespace FM
          const QString& name,
          qint64 size,
          const QDateTime& dateLastModified,
-         Directory* dir = nullptr,
+         Directory* parentDirectory = nullptr,
          const Common::Hashes& hashes = Common::Hashes(),
          bool createPhysically = false
       );
 
-      virtual ~File();
+      ~File() override;
 
-   public:
-      void del(bool invokeDelete = true);
+      void del(bool invokeDelete = true) override;
 
       FileForHasher* asFileForHasher();
 
       void setToUnfinished(qint64 size, const Common::Hashes& hashes = Common::Hashes());
 
-      bool restoreFromFileCache(const Protos::FileCache::Hashes::File& file);
-      void populateHashesFile(Protos::FileCache::Hashes_File& fileToFill) const;
+      Directory* createSubDirs(const QStringList& names, bool physically = false);
 
-      void populateEntry(Protos::Common::Entry* entry, bool setSharedDir = false) const;
+      // bool restoreFromFileCache(const Protos::FileCache::Hashes::File& file);
+      // void populateHashesFile(Protos::FileCache::Hashes_File& fileToFill) const;
+
+      void populateEntry(Protos::Common::Entry* entry, bool setSharedDir = false) const override;
       void populateEntry(Protos::Common::Entry* entry, bool setSharedDir, int maxHashes) const;
       bool matchesEntry(const Protos::Common::Entry& entry) const;
 
-      bool correspondTo(const QFileInfo& fileInfo, bool checkTheDateToo = true);
+      bool correspondTo(const QFileInfo& fileInfo, bool checkTheDateToo = true) const;
 
-      Common::Path getPath() const;
-      Common::Path getFullPath() const;
-      void rename(const QString& newName);
+      Common::Path getRelativePath() const override;
+      Common::Path getAbsolutePath() const override;
+      void rename(const QString& newName) override;
       QDateTime getDateLastModified() const;
 
       void newDataWriterCreated();
@@ -88,20 +87,20 @@ namespace FM
       qint64 read(char* buffer, qint64 offset, int maxBytesToRead);
 
       QVector<QSharedPointer<Chunk>> getChunks() const;
-      bool hasAllHashes();
-      bool hasOneOrMoreHashes();
+      bool hasAllHashes() const;
+      bool hasOneOrMoreHashes() const;
 
-      bool isComplete();
+      bool isComplete() const;
       void chunkComplete(const Chunk* chunk);
 
-      int getNbChunks();
+      int getNbChunks() const;
 
       void deleteIfIncomplete();
-      void removeUnfinishedFiles();
+      void removeUnfinishedFiles() override;
 
-      void moveInto(Directory* directory);
+      void moveInto(Directory* directory) override;
 
-      void changeDirectory(Directory* dir);
+      // void changeDirectory(Directory* dir);
       bool hasAParentDir(Directory* dir);
 
    private:
@@ -112,7 +111,6 @@ namespace FM
       void setHashes(const Common::Hashes& hashes);
 
    protected:
-      Directory* dir;
       QVector<QSharedPointer<Chunk>> chunks;
       QDateTime dateLastModified;
 
@@ -148,7 +146,7 @@ namespace FM
       File* next();
 
    private:
-      QLinkedList<File*> nextFiles;
-      QLinkedList<Directory*> dirsToVisit;
+      QList<File*> nextFiles;
+      QList<Directory*> dirsToVisit;
    };
 }

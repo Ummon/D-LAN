@@ -37,11 +37,11 @@ namespace FM
       virtual ~FilesNotFoundException() throw () {}
    };
 
-   class ItemsNotFoundException : public FileSystemEntriesNotFoundException
+   class EntriesNotFoundException : public FileSystemEntriesNotFoundException
    {
    public :
-      ItemsNotFoundException(const QStringList& paths) : FileSystemEntriesNotFoundException(paths) {}
-      virtual ~ItemsNotFoundException() throw () {}
+      EntriesNotFoundException(const QStringList& paths) : FileSystemEntriesNotFoundException(paths) {}
+      virtual ~EntriesNotFoundException() throw () {}
    };
 
    class hashMismatchException {};
@@ -72,5 +72,5 @@ namespace FM
 
    class UnableToCreateNewDirException {};
 
-   class UnableToCreateSharedDirectory {};
+   class UnableToCreateSharedEntry {};
 }

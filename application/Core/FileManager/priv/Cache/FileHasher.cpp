@@ -20,6 +20,7 @@
 using namespace FM;
 
 #include <QMutexLocker>
+#include <QByteArray>
 #include <QString>
 #include <QFile>
 #include <QElapsedTimer>
@@ -76,12 +77,17 @@ bool FileHasher::start(FileForHasher* fileCache, int n, int* amountHashed)
 
    this->hashing = true;
 
-   const QString& filePath = this->currentFileCache->getFullPath();
+   const QString& filePath = this->currentFileCache->getAbsolutePath();
 
    L_USER(tr("Computing hashes of %1 . . .").arg(filePath));
 
    // Same performance with or without "QIODevice::Unbuffered".
-   AutoReleasedFile file(FileHasher::filePool, filePath, QIODevice::ReadOnly | QIODevice::Unbuffered, this->currentFileCache->getSize() <= Chunk::CHUNK_SIZE);
+   AutoReleasedFile file(
+      FileHasher::filePool,
+      filePath,
+      QIODevice::ReadOnly | QIODevice::Unbuffered,
+      this->currentFileCache->getSize() <= Chunk::CHUNK_SIZE
+   );
 
    if (!file)
    {
@@ -115,7 +121,7 @@ bool FileHasher::start(FileForHasher* fileCache, int n, int* amountHashed)
 #endif
 
    static const int BUFFER_SIZE = SETTINGS.get<quint32>("buffer_size_reading");
-   char buffer[BUFFER_SIZE];
+   QByteArray buffer(BUFFER_SIZE, Qt::Uninitialized);
 
    Common::Hasher hasher;
    bool endOfFile = false;
@@ -152,7 +158,7 @@ bool FileHasher::start(FileForHasher* fileCache, int n, int* amountHashed)
                throw IOErrorException();
             }
 
-            bytesRead = file->read(buffer, BUFFER_SIZE);
+            bytesRead = file->read(buffer.data(), BUFFER_SIZE);
             switch (bytesRead)
             {
             case -1:
@@ -230,7 +236,12 @@ bool FileHasher::start(FileForHasher* fileCache, int n, int* amountHashed)
    {
       if (n != 0)
       {
-         L_DEBU(QString("The file content has changed during the hashes computing process. File = %1, bytes read = %2, previous size = %3").arg(filePath).arg(bytesReadTotal).arg(this->currentFileCache->getSize()));
+         L_DEBU(
+            QString(
+               "The file content has changed during the hashes computing process. File = %1, bytes read = %2, previous size = %3"
+            ).arg(filePath).arg(bytesReadTotal).arg(this->currentFileCache->getSize())
+         );
+
          this->currentFileCache->setSize(bytesReadTotal + bytesSkipped);
          this->currentFileCache->updateDateLastModified(QFileInfo(filePath).lastModified());
 
@@ -243,10 +254,10 @@ bool FileHasher::start(FileForHasher* fileCache, int n, int* amountHashed)
       }
       this->currentFileCache = 0;
       return false;
-
    }
 
-   this->currentFileCache->updateDateLastModified(QFileInfo(filePath).lastModified()); // A file may have been changed from its creation in the cache.
+   // A file may have been changed from its creation in the cache.
+   this->currentFileCache->updateDateLastModified(QFileInfo(filePath).lastModified());
    this->currentFileCache = 0;
    return true;
 }
@@ -269,7 +280,10 @@ void FileHasher::internalStop()
    this->toStopHashing = true;
    if (this->hashing)
    {
-      L_DEBU(QString("FileHasher::stop(): %1 . . .").arg(this->currentFileCache ? this->currentFileCache->getFullPath() : "?"));
+      L_DEBU(
+         QString("FileHasher::stop(): %1 . . .")
+            .arg(this->currentFileCache ? this->currentFileCache->getAbsolutePath().toString() : "?")
+      );
       this->hashingStopped.wait(&this->hashingMutex);
       L_DEBU("File hashing stopped");
    }

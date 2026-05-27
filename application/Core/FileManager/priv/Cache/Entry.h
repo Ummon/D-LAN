@@ -19,7 +19,7 @@
 #pragma once
 
 #include <QString>
-#include <QMutex>
+#include <QRecursiveMutex>
 
 #include <Common/Uncopyable.h>
 #include <Common/Path.h>
@@ -35,7 +35,7 @@ namespace FM
    class Entry : Common::Uncopyable
    {
    protected:
-      Entry(SharedEntry* root, const QString& name, qint64 size = 0);
+      Entry(SharedEntry* root, const QString& name, Directory* parentDirectory = nullptr, qint64 size = 0);
 
    public:
       virtual ~Entry();
@@ -47,43 +47,47 @@ namespace FM
 
       /**
         * Return the relative path from the root directory.
-        * It's the directory in which the entry is.
-        * For example : "/animals/fish/"
-        * An entry in a root will have a path like "/".
-        * A root (SharedEntry) will have an empty path ("").
         */
-      virtual Common::Path getPath() const = 0;
+      virtual Common::Path getRelativePath() const = 0;
 
       /**
-        * Return the full absolute path to the entry.
-        * Directories always end with a '/'.
+        * Return the full absolute path of the entry.
         */
-      virtual Common::Path getFullPath() const = 0;
+      virtual Common::Path getAbsolutePath() const = 0;
 
       virtual void removeUnfinishedFiles() = 0;
 
+      /**
+        * Move the entry to a cached directory.
+        */
       virtual void moveInto(Directory* directory) = 0;
 
+      bool isRoot() const;
       SharedEntry* getRoot() const;
+
       QString getName() const;
       QString getNameWithoutExtension() const;
       QString getExtension() const;
+
       virtual void rename(const QString& newName);
+
+      void setParentDirectory(Directory* dir);
 
       qint64 getSize() const;
       void setSize(qint64 newSize);
 
    protected:
       QString name;
+      SharedEntry* root;
+      Directory* parentDirectory; // Can be null if none.
 
    private:
       void populateSharedEntry(Protos::Common::Entry* entry) const;
 
-      SharedEntry* root;
       qint64 size;
 
    protected:
-      mutable QMutex mutex;
+      mutable QRecursiveMutex mutex;
    };
 
    inline bool operator<(const Entry& e1, const Entry& e2)

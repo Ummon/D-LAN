@@ -25,6 +25,9 @@
 #include <QStringList>
 #include <QFileSystemWatcher>
 
+#include <Common/LogManager/Builder.h>
+#include <Common/LogManager/LogMacros.h>
+
 #include <TableLogModel.h>
 #include <TooglableList/TooglableList.h>
 
@@ -54,6 +57,8 @@ private slots:
    void directoryChanged();
 
 private:
+   LOG_INIT_H("LogViewer")
+
    void setCurrentDir(const QString& dir);
    void readCurrentDir();
    void closeCurrentFile();

@@ -7,7 +7,7 @@
 #include <QSet>
 #include <QList>
 #include <QString>
-#include <QMutex>
+#include <QRecursiveMutex>
 
 namespace FM
 {
@@ -26,13 +26,12 @@ namespace FM
 
    private:
       QHash<QString, QSet<T>> index;
-      mutable QMutex mutex;
+      mutable QRecursiveMutex mutex;
    };
 }
 
 template<typename T>
-FM::ExtensionIndex<T>::ExtensionIndex() :
-   mutex(QMutex::Recursive)
+FM::ExtensionIndex<T>::ExtensionIndex()
 {
 }
 

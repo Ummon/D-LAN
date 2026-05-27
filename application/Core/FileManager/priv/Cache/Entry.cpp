@@ -28,8 +28,8 @@ using namespace FM;
 #include <priv/Cache/Cache.h>
 #include <priv/Cache/SharedEntry.h>
 
-Entry::Entry(SharedEntry* root, const QString& name, qint64 size) :
-    name(name), root(root), size(size), mutex(QMutex::Recursive)
+Entry::Entry(SharedEntry* root, const QString& name, Directory* parentDirectory, qint64 size) :
+   name(name), root(root), parentDirectory(parentDirectory), size(size)
 {
    this->getCache()->onEntryAdded(this);
 }
@@ -42,14 +42,16 @@ void Entry::del(bool invokeDelete)
 {
    this->getCache()->onEntryRemoved(this);
 
+   // Invoke 'deleteEntry' in the main loop.
    if (invokeDelete)
       QMetaObject::invokeMethod(this->getCache(), "deleteEntry", Qt::QueuedConnection, Q_ARG(Entry*, this));
 }
 
 void Entry::populateEntry(Protos::Common::Entry* entry, bool setSharedEntry) const
 {
-   Common::ProtoHelper::setStr(*entry, &Protos::Common::Entry::set_path, this->getPath());
-   Common::ProtoHelper::setStr(*entry, &Protos::Common::Entry::set_name, this->getName());
+   // The entry name is not included.
+   entry->set_path(this->getRelativePath().removeLastElement().toString().toStdString());
+   entry->set_name(this->getName().toStdString());
    entry->set_size(this->getSize());
 
    if (setSharedEntry)
@@ -59,6 +61,11 @@ void Entry::populateEntry(Protos::Common::Entry* entry, bool setSharedEntry) con
 Cache* Entry::getCache()
 {
    return this->root->getCache();
+}
+
+bool Entry::isRoot() const
+{
+   return this->root->getRootEntry() == this;
 }
 
 SharedEntry* Entry::getRoot() const
@@ -94,6 +101,11 @@ void Entry::rename(const QString& newName)
    this->getCache()->onEntryRenamed(this, oldName);
 }
 
+void Entry::setParentDirectory(Directory* dir)
+{
+   this->parentDirectory = dir;
+}
+
 qint64 Entry::getSize() const
 {
    return this->size;
@@ -112,10 +124,12 @@ void Entry::setSize(qint64 newSize)
 
 void Entry::populateSharedEntry(Protos::Common::Entry* entry) const
 {
-   SharedEntry* root = this->getRoot();
+   const SharedEntry* root = this->getRoot();
    if (root)
    {
       entry->mutable_shared_entry()->mutable_id()->set_hash(root->getId().getData(), Common::Hash::HASH_SIZE);
-      Common::ProtoHelper::setStr(*entry->mutable_shared_entry(), &Protos::Common::SharedEntry::set_shared_name, root->getName());
+
+      // TODO: is the correct field? Some other field to populate?
+      entry->mutable_shared_entry()->set_shared_name(root->getUserName().toStdString());
    }
 }
