@@ -376,7 +376,11 @@ QString Global::getDataFolder(DataFolderType type, bool create)
 
       if (create && !dataFolder.exists(Constants::APPLICATION_FOLDER_NAME))
          if (!dataFolder.mkdir(Constants::APPLICATION_FOLDER_NAME))
-            throw UnableToGetFolder(QString("Unable to create the directory %1 in %2").arg(Constants::APPLICATION_FOLDER_NAME).arg(dataFolder.absolutePath()));
+            throw UnableToGetFolder(
+               QString("Unable to create the directory %1 in %2")
+                  .arg(Constants::APPLICATION_FOLDER_NAME, dataFolder.absolutePath()
+               )
+            );
 
       return dataFolder.absoluteFilePath(Constants::APPLICATION_FOLDER_NAME);
 #else

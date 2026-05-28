@@ -350,12 +350,12 @@ void StressTest::doASearch()
 
       QList<Protos::Common::FindResult> results = this->fileManager->find(terms, 10000, 65536);
 
-      if (!results.isEmpty() && results.first().entry_size() != 0)
+      if (!results.isEmpty() && results.first().entries_size() != 0)
       {
          found = true;
          qDebug() << "Found, terms : " << terms;
-         for (int i = 0; i < results.first().entry_size(); i++)
-            qDebug() << "[" << results.first().entry(i).level() << "] " << results.first().entry(i).entry().name();
+         for (int i = 0; i < results.first().entries_size(); i++)
+            qDebug() << "[" << results.first().entries(i).level() << "] " << results.first().entries(i).entry().name();
       }
    }
    qint64 delta = timer.elapsed();
@@ -442,7 +442,7 @@ void StressTest::newFile()
    entry.set_size(bytes);
    for (int i = 0; i < this->randGen.rand(nbChunk); i++) // Do not give all hashes.
    {
-      Protos::Common::Hash* hash = entry.add_chunk();
+      Protos::Common::Hash* hash = entry.add_chunks();
       hash->set_hash(Common::Hash::rand().getData(), Common::Hash::HASH_SIZE);
    }
 
@@ -549,15 +549,15 @@ void StressTest::getEntries()
 
       Protos::Common::Entries entries = this->fileManager->getEntries(entry);
 
-      if (entries.entry_size() == 0)
+      if (entries.entries_size() == 0)
       {
          qDebug() << "No sub entries found";
          this->knownDirEntries.removeAt(n);
          continue;
       }
 
-      for (int i = 0; i < entries.entry_size(); i++)
-         entries.mutable_entry(i)->mutable_shared_entry()->CopyFrom(entry.shared_entry());
+      for (int i = 0; i < entries.entries_size(); i++)
+         entries.mutable_entries(i)->mutable_shared_entry()->CopyFrom(entry.shared_entry());
 
       this->addEntries(entries);
    }
@@ -610,24 +610,24 @@ void StressTest::nextHash(Protos::Core::HashResult hashResult)
 
 void StressTest::addEntries(const Protos::Common::Entries& entries)
 {
-   for (int i = 0; i < entries.entry_size(); i++)
+   for (int i = 0; i < entries.entries_size(); i++)
    {
       // Check if you don't already have the entry
       for (int j = 0; j < this->knownDirEntries.size(); j++)
-         if (this->knownDirEntries[j].path() == entries.entry(i).path() &&
-             this->knownDirEntries[j].name() == entries.entry(i).name() &&
-             this->knownDirEntries[j].shared_entry().id().hash() == entries.entry(i).shared_entry().id().hash())
+         if (this->knownDirEntries[j].path() == entries.entries(i).path() &&
+             this->knownDirEntries[j].name() == entries.entries(i).name() &&
+             this->knownDirEntries[j].shared_entry().id().hash() == entries.entries(i).shared_entry().id().hash())
             goto nextEntryResult;
 
-      qDebug() << entryToStr(entries.entry(i));
+      qDebug() << entryToStr(entries.entries(i));
 
-      if (entries.entry(i).type() == Protos::Common::Entry_Type_DIR)
-         this->knownDirEntries << entries.entry(i);
+      if (entries.entries(i).type() == Protos::Common::Entry_Type_DIR)
+         this->knownDirEntries << entries.entries(i);
       else
       {
-         this->knownFileEntries << entries.entry(i);
-         for (int j = 0; j < entries.entry(i).chunk_size(); j++)
-            this->someHashes << Common::Hash(entries.entry(i).chunk(j).hash());
+         this->knownFileEntries << entries.entries(i);
+         for (int j = 0; j < entries.entries(i).chunks_size(); j++)
+            this->someHashes << Common::Hash(entries.entries(i).chunks(j).hash());
       }
 
       nextEntryResult:;
@@ -644,9 +644,9 @@ QString StressTest::entryToStr(const Protos::Common::Entry& entry)
 
    if (entry.type() == Protos::Common::Entry_Type_FILE)
    {
-      str.append(QString(" number of chunk : %1").arg(entry.chunk_size()));
-      for (int i = 0; i < entry.chunk_size(); i++)
-         str.append(" ").append(Common::Hash(entry.chunk(i).hash()).toStr());
+      str.append(QString(" number of chunk : %1").arg(entry.chunks_size()));
+      for (int i = 0; i < entry.chunks_size(); i++)
+         str.append(" ").append(Common::Hash(entry.chunks(i).hash()).toStr());
    }
    return str;
 }

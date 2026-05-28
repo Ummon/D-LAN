@@ -19,9 +19,6 @@
 #include <Tests.h>
 using namespace FM;
 
-#include <string>
-using namespace std;
-
 #include <QtDebug>
 #include <QRegularExpression>
 #include <QFile>
@@ -235,7 +232,7 @@ void Tests::createAFile()
          [this, &sharedEntry]()
          {
             auto entries = this->fileManager->getEntries(sharedEntry);
-            for (const auto& entry : entries.entry())
+            for (const auto& entry : entries.entries())
             {
                if (entry.name() == "x.txt")
                   return true;
@@ -259,7 +256,7 @@ void Tests::moveAFile()
          [this, &sharedEntry]()
          {
             auto entries = this->fileManager->getEntries(sharedEntry);
-            for (const auto& entry : entries.entry())
+            for (const auto& entry : entries.entries())
             {
                if (entry.name() == "x.txt")
                   return true;
@@ -283,7 +280,7 @@ void Tests::renameAFile()
          [this, &sharedEntry]()
          {
             auto entries = this->fileManager->getEntries(sharedEntry);
-            for (const auto& entry : entries.entry())
+            for (const auto& entry : entries.entries())
             {
                if (entry.name() == "y.txt")
                   return true;
@@ -312,11 +309,11 @@ void Tests::modifyAFile()
          [this, &sharedEntry]()
          {
             auto entries = this->fileManager->getEntries(sharedEntry);
-            for (const auto& entry : entries.entry())
+            for (const auto& entry : entries.entries())
             {
-               if (entry.name() == "y.txt" && entry.chunk().size() == 1)
+               if (entry.name() == "y.txt" && entry.chunks().size() == 1)
                {
-                  const auto hash = Common::Hash(entry.chunk().Get(0).hash());
+                  const auto hash = Common::Hash(entry.chunks().Get(0).hash());
                   return hash.toStr() == "58bc9937ff71885bf52f92746c1a85447a81b9e959f35c1d00bd7dca";
                }
             }
@@ -339,7 +336,7 @@ void Tests::removeAFile()
          [this, &sharedEntry]()
          {
             auto entries = this->fileManager->getEntries(sharedEntry);
-            for (const auto& entry : entries.entry())
+            for (const auto& entry : entries.entries())
             {
                if (entry.name() == "y.txt")
                   return false;
@@ -363,11 +360,11 @@ void Tests::createASubFile()
          [this, &sharedEntry]()
          {
             auto entries = this->fileManager->getEntries(sharedEntry);
-            for (const auto& entry : entries.entry())
+            for (const auto& entry : entries.entries())
             {
-               if (entry.name() == "v.txt" && entry.chunk().size() == 1)
+               if (entry.name() == "v.txt" && entry.chunks().size() == 1)
                {
-                  const auto hash = Common::Hash(entry.chunk().Get(0).hash());
+                  const auto hash = Common::Hash(entry.chunks().Get(0).hash());
                   return hash.toStr() == "7b6f7f3309179b97b88de3c178274b7e38343267bcdfe653c819593e";
                }
             }
@@ -392,7 +389,7 @@ void Tests::createABigFile()
          [this, &sharedEntry]()
          {
             auto entries = this->fileManager->getEntries(sharedEntry);
-            for (const auto& entry : entries.entry())
+            for (const auto& entry : entries.entries())
             {
                if (entry.name() == "big.bin")
                   return entry.size() == 128 * 1024 * 1024;
@@ -1066,16 +1063,16 @@ void Tests::deleteAllFiles()
 void Tests::printSearch(const QString& terms, const Protos::Common::FindResult& result)
 {
    qDebug() << "Search: " << terms;
-   for (int i = 0; i < result.entry_size(); i++)
-      qDebug() << "[" << result.entry(i).level() << "] " << result.entry(i).entry().name();
+   for (int i = 0; i < result.entries_size(); i++)
+      qDebug() << "[" << result.entries(i).level() << "] " << result.entries(i).entry().name();
 }
 
 void Tests::compareExpectedResult(const Protos::Common::FindResult& result, const FindResult& expectedResult)
 {
-   for (int i = 0; i < result.entry_size(); i++)
+   for (int i = 0; i < result.entries_size(); i++)
    {
-      QVERIFY(expectedResult.contains(result.entry(i).level()));
-      QVERIFY(expectedResult[result.entry(i).level()].contains(result.entry(i).entry().name()));
+      QVERIFY(expectedResult.contains(result.entries(i).level()));
+      QVERIFY(expectedResult[result.entries(i).level()].contains(result.entries(i).entry().name()));
    }
 }
 

@@ -17,7 +17,7 @@ Protos::Common::Entry Utils::tryFindEntry(
 
    Protos::Common::Entry entry;
    auto entries = fileManager->getEntries();
-   for (const auto& sharedEntry : entries.entry())
+   for (const auto& sharedEntry : entries.entries())
    {
       if (sharedEntry.name() == dirs[0])
       {
@@ -32,7 +32,7 @@ Protos::Common::Entry Utils::tryFindEntry(
    {
       bool entryFound = false;
       auto entries = fileManager->getEntries(entry);
-      for (const auto& subEntry : entries.entry())
+      for (const auto& subEntry : entries.entries())
       {
          if (subEntry.name() == dirs[i])
          {
