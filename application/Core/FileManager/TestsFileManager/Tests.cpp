@@ -317,7 +317,7 @@ void Tests::modifyAFile()
                if (entry.name() == "y.txt" && entry.chunk().size() == 1)
                {
                   const auto hash = Common::Hash(entry.chunk().Get(0).hash());
-                  return hash.toStr() == "9524aaa40182630dec6997ef80ab6f6dc7a31b8197c22a037892c0c0";
+                  return hash.toStr() == "58bc9937ff71885bf52f92746c1a85447a81b9e959f35c1d00bd7dca";
                }
             }
             return false;
@@ -368,7 +368,7 @@ void Tests::createASubFile()
                if (entry.name() == "v.txt" && entry.chunk().size() == 1)
                {
                   const auto hash = Common::Hash(entry.chunk().Get(0).hash());
-                  return hash.toStr() == "bc10730addc030259209c5bf4f294922e3a4cf0283c70348859e23c6";
+                  return hash.toStr() == "7b6f7f3309179b97b88de3c178274b7e38343267bcdfe653c819593e";
                }
             }
             return false;

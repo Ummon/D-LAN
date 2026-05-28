@@ -23,7 +23,8 @@
 #include <QString>
 #include <QByteArray>
 #include <QDataStream>
-#include <QCryptographicHash>
+
+#include <blake3.h>
 
 #include <Common/Uncopyable.h>
 
@@ -141,6 +142,7 @@ namespace Common
       static Common::Hash hashWithRandomSalt(const Common::Hash& hash, quint64& salt);
 
    private:
-      QCryptographicHash cryptographicHash;
+      // QCryptographicHash cryptographicHash;
+      blake3_hasher hasher;
    };
 }

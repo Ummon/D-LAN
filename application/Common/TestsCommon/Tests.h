@@ -72,6 +72,7 @@ private slots:
    void compareTwoHash();
    void hashMoveConstructorAndAssignment();
    void hasher();
+   void hasherHashValue();
 
    // BloomFilter class.
    void bloomFilter();

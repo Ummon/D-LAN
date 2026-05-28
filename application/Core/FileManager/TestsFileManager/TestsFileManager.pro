@@ -8,6 +8,7 @@ CONFIG += link_prl console
 CONFIG -= app_bundle
 
 include(../../../Libs/protobuf.pri)
+include(../../../Libs/blake3.pri)
 include(../../../Common/common.pri)
 
 QMAKE_CXXFLAGS_WARN_ON += -Wno-pessimizing-move -Wno-unused-result

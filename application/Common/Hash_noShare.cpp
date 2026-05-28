@@ -178,40 +178,17 @@ Hash Hash::fromStr(const QString& str)
   * To create hash from row data.
   */
 
-Hasher::Hasher() :
-   cryptographicHash(QCryptographicHash::Sha3_224)
+Hasher::Hasher()
 {
-   this->reset();
+   blake3_hasher_init(&this->hasher);
 }
-
-/**
-  * Deprecated, it's useless to have a hardcoded salt.
-  *
-  * May be called right after the constructor or the 'reset()' method.
-  * @param salt Must be Hash::HASH_SIZE bytes length.
-  */
-/*void Hasher::addPredefinedSalt()
-{
-   static const char salt[] = {
-      -0x46, -0x1B,  0x4D, -0x0E,
-      -0x55, -0x7C, -0x4B, -0x32,
-      -0x07, -0x66,  0x6C,  0x78,
-      -0x7a,  0x7f,  0x6d,  0x7B,
-      -0x35, -0x24, -0x3F,  0x6A,
-      -0x1A,  0x03, -0x66,  0x3c,
-       0x75, -0x36,  0x4d, -0x24,
-      -0x70,  0x6A,  0x10,  0x11
-   };
-
-   this->cryptographicHash.addData(salt, sizeof(salt));
-}*/
 
 void Hasher::addSalt(quint64 salt)
 {
    QByteArray saltArray(8, 0);
    for (int i = 0; i < 8; i++)
       saltArray[i] = salt >> (8*i) & 0xFF;
-   this->cryptographicHash.addData(saltArray);
+   blake3_hasher_update(&this->hasher, saltArray.constData(), saltArray.length());
 }
 
 /**
@@ -223,19 +200,20 @@ void Hasher::addData(const char* data, int size)
    Q_ASSERT(data);
    Q_ASSERT(size >= 0);
 
-   this->cryptographicHash.addData(QByteArrayView(data, size));
+   blake3_hasher_update(&this->hasher, data, size);
 }
 
 Hash Hasher::getResult()
 {
    Hash result;
-   memcpy(result.data, this->cryptographicHash.result().constData(), Hash::HASH_SIZE);
+   blake3_hasher_finalize(&this->hasher, (uint8_t*)result.data, Hash::HASH_SIZE);
    return result;
 }
 
 void Hasher::reset()
 {
-   this->cryptographicHash.reset();
+   // this->cryptographicHash.reset();
+   blake3_hasher_reset(&this->hasher);
 }
 
 Common::Hash Hasher::hash(const QString& str)

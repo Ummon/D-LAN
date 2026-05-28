@@ -725,6 +725,15 @@ void Tests::hasher()
    QVERIFY(h4 == h5);
 }
 
+void Tests::hasherHashValue()
+{
+   char str1[] = "abc";
+   Hasher hasher;
+   hasher.addData(str1, sizeof(str1) - 1); // -1 to avoid the null termination.
+   Hash h1 = hasher.getResult();
+   QCOMPARE(h1.toStr(), "6437b3ac38465133ffb63b75273a8db548c558465d79db03fd359c6c");
+}
+
 void Tests::bloomFilter()
 {
    BloomFilter bloomFilter;

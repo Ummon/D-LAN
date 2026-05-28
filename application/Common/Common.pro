@@ -6,6 +6,7 @@ QT += network
 TARGET = Common
 
 include(common.pri)
+include(../Libs/blake3.pri)
 include(../Libs/protobuf.pri)
 include(../Protos/Protos.pri)
 

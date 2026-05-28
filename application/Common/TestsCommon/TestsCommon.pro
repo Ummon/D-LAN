@@ -7,6 +7,7 @@ TARGET = TestsCommon
 CONFIG += link_prl
 
 include(../common.pri)
+include(../../Libs/blake3.pri)
 include(../../Libs/protobuf.pri)
 
 QMAKE_CXXFLAGS_WARN_ON += -Wno-pessimizing-move -Wno-unused-result
