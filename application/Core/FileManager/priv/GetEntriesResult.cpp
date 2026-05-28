@@ -85,9 +85,9 @@ void GetEntriesResult::buildResult()
    this->res.set_status(Protos::Core::GetEntriesResult::EntryResult::OK);
 
    foreach (Directory* dir, this->dir->getSubDirs())
-      dir->populateEntry(this->res.mutable_entries()->add_entry());
+      dir->populateEntry(this->res.mutable_entries()->add_entries());
 
    foreach (File* file, this->dir->getFiles())
       if (file->isComplete())
-         file->populateEntry(this->res.mutable_entries()->add_entry(), false, this->maxNbHashesPerEntry);
+         file->populateEntry(this->res.mutable_entries()->add_entries(), false, this->maxNbHashesPerEntry);
 }

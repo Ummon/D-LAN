@@ -20,7 +20,7 @@
 
 #include <QObject>
 #include <QSharedPointer>
-#include <QNetworkConfigurationManager>
+#include <QNetworkConfigurationManager> // TODO: replace by QNetworkInformation!?
 
 #include <Common/Uncopyable.h>
 #include <Core/FileManager/IFileManager.h>

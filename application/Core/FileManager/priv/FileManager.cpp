@@ -305,7 +305,7 @@ QList<Protos::Common::FindResult> FileManager::find(
    for (QListIterator<NodeResult<Entry*>> i(result); i.hasNext();)
    {
       const NodeResult<Entry*>& entry = i.next();
-      Protos::Common::FindResult::EntryLevel* entryLevel = findResults.last().add_entry();
+      Protos::Common::FindResult::EntryLevel* entryLevel = findResults.last().add_entries();
       entryLevel->set_level(entry.level);
 
       File* file = dynamic_cast<File*>(entry.value);
@@ -320,18 +320,20 @@ QList<Protos::Common::FindResult> FileManager::find(
 
       if (findResultCurrentSize > maxSize)
       {
-         google::protobuf::RepeatedPtrField<Protos::Common::FindResult::EntryLevel>* entries = findResults.last().mutable_entry();
+         google::protobuf::RepeatedPtrField<Protos::Common::FindResult::EntryLevel>* entries =
+               findResults.last().mutable_entries();
+
          findResults << Protos::Common::FindResult();
          if (entries->size() > 0)
          {
-            findResults.last().add_entry()->CopyFrom(entries->Get(entries->size()-1));
+            findResults.last().add_entries()->CopyFrom(entries->Get(entries->size() - 1));
             entries->RemoveLast();
          }
          findResultCurrentSize = EMPTY_FIND_RESULT_SIZE + entryByteSize;
       }
    }
 
-   if (findResults.last().entry_size() == 0)
+   if (findResults.last().entries_size() == 0)
       findResults.removeLast();
 
    return findResults;

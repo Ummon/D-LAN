@@ -97,7 +97,7 @@ Protos::Common::Entries Cache::getProtoSharedEntries() const
 
    foreach (SharedEntry* sharedEntry, this->sharedEntries)
    {
-      Protos::Common::Entry* entry = result.add_entry();
+      Protos::Common::Entry* entry = result.add_entries();
       sharedEntry->populateEntry(entry);
    }
 
@@ -111,11 +111,11 @@ Protos::Common::Entries Cache::getProtoEntries(const Protos::Common::Entry& dir,
    if (Directory* directory = this->getDirectory(dir))
    {
       foreach (Directory* dir, directory->getSubDirs())
-         dir->populateEntry(result.add_entry());
+         dir->populateEntry(result.add_entries());
 
       foreach (File* file, directory->getFiles())
          if (file->isComplete())
-            file->populateEntry(result.add_entry(), false, maxNbHashesPerEntry);
+            file->populateEntry(result.add_entries(), false, maxNbHashesPerEntry);
    }
 
    return result;
@@ -359,8 +359,8 @@ QList<QSharedPointer<IChunk>> Cache::newFile(Protos::Common::Entry& fileEntry)
       throw UnableToCreateNewFileException();
 
    Common::Hashes hashes;
-   for (int i = 0; i < fileEntry.chunk_size(); i++)
-      hashes << fileEntry.chunk(i).hash();
+   for (int i = 0; i < fileEntry.chunks_size(); i++)
+      hashes << fileEntry.chunks(i).hash();
 
    const QString name = QString::fromStdString(fileEntry.name());
 
@@ -370,11 +370,11 @@ QList<QSharedPointer<IChunk>> Cache::newFile(Protos::Common::Entry& fileEntry)
    {
       bool resetExistingFile = false;
       const QVector<QSharedPointer<Chunk>>& existingChunks = file->getChunks();
-      if (existingChunks.size() != fileEntry.chunk_size())
+      if (existingChunks.size() != fileEntry.chunks_size())
          resetExistingFile = true;
       else
          for (int i = 0; i < existingChunks.size(); i++)
-            if (existingChunks[i]->getHash() != Common::Hash(fileEntry.chunk(i).hash()))
+            if (existingChunks[i]->getHash() != Common::Hash(fileEntry.chunks(i).hash()))
             {
                resetExistingFile = true;
                break;

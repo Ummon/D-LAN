@@ -209,7 +209,7 @@ QSharedPointer<IGetHashesResult> Peer::getHashes(const Protos::Common::Entry& fi
    );
 }
 
-QSharedPointer<IGetChunkResult> Peer::getChunk(const Protos::Core::GetChunk& chunk)
+QSharedPointer<IGetChunksResult> Peer::getChunk(const Protos::Core::GetChunk& chunk)
 {
    if (!this->isAvailable())
       return QSharedPointer<IGetChunkResult>();

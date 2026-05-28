@@ -42,11 +42,11 @@ ChatMessage::ChatMessage(
 
 ChatMessage::ChatMessage(const Protos::Common::ChatMessage& chatMessage) :
    ID(chatMessage.id()),
-   message(Common::ProtoHelper::getStr(chatMessage, &Protos::Common::ChatMessage::message)),
+   message(QString::fromStdString(chatMessage.message())),
    ownerID(chatMessage.peer_id().hash()),
    time(chatMessage.time() > 0 ? QDateTime::fromMSecsSinceEpoch(chatMessage.time()) : QDateTime::currentDateTimeUtc()),
-   ownerNick(Common::ProtoHelper::getStr(chatMessage, &Protos::Common::ChatMessage::peer_nick)),
-   room(Common::ProtoHelper::getStr(chatMessage, &Protos::Common::ChatMessage::chat_room))
+   ownerNick(QString::fromStdString(chatMessage.peer_nick())),
+   room(QString::fromStdString(chatMessage.chat_room()))
 {
 }
 

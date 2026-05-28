@@ -7,6 +7,7 @@ TARGET = NetworkListener
 TEMPLATE = lib
 
 include(../../Common/common.pri)
+include(../../Libs/blake3.pri)
 include(../../Libs/protobuf.pri)
 
 CONFIG += staticlib create_prl link_prl

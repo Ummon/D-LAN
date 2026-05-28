@@ -64,7 +64,7 @@ Protos::Core::GetHashesResult GetHashesResult::start()
    }
 
    const QVector<QSharedPointer<Chunk>>& chunks = this->file->getChunks();
-   if (this->fileEntry.chunk_size() != chunks.size())
+   if (this->fileEntry.chunks_size() != chunks.size())
    {
       L_ERRO("The number of chunks of the given file entry doesn't match the cache file number.");
       result.set_status(Protos::Core::GetHashesResult_Status_ERROR_UNKNOWN);
@@ -81,7 +81,7 @@ Protos::Core::GetHashesResult GetHashesResult::start()
       for (QVectorIterator<QSharedPointer<Chunk>> i(chunks); i.hasNext();)
       {
          auto chunk = i.next();
-         const Protos::Common::Hash& protoChunk = this->fileEntry.chunk(j++);
+         const Protos::Common::Hash& protoChunk = this->fileEntry.chunks(j++);
 
          if (protoChunk.hash().size() > 0)
          {

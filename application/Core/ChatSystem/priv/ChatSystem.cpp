@@ -21,7 +21,7 @@ using namespace CS;
 
 #include <QDateTime>
 #include <QRandomGenerator64>
-#include <QRegExp>
+#include <QRegularExpression>
 
 #include <Protos/common.pb.h>
 #include <Protos/core_protocol.pb.h>
@@ -90,7 +90,7 @@ ChatSystem::SendStatus ChatSystem::send(
        : this->rooms[roomName].messages.add(message, this->peerManager->getSelf()->getID(), this->peerManager->getSelf()->getNick(), roomName, peerIDsAnswer);
 
    Protos::Common::ChatMessages protoChatMessages;
-   Protos::Common::ChatMessage* protochatMessage = protoChatMessages.add_message();
+   Protos::Common::ChatMessage* protochatMessage = protoChatMessages.add_messages();
    chatMessage->fillProtoChatMessage(*protochatMessage);
 
    quint64 time = protochatMessage->time();
@@ -188,8 +188,7 @@ void ChatSystem::received(const Common::Message& message)
             QSet<QString> roomsWithPeer;
             for (int i = 0; i < IMAliveMessage.chat_rooms_size(); i++)
             {
-               const QString& roomName =
-                  Common::ProtoHelper::getRepeatedStr(IMAliveMessage, &Protos::Core::IMAlive::chat_rooms, i);
+               const QString& roomName = QString::fromStdString(IMAliveMessage.chat_rooms(i));
                roomsWithPeer.insert(roomName);
                Room& room = this->rooms[roomName];
                room.peers.insert(peer);
@@ -214,29 +213,29 @@ void ChatSystem::received(const Common::Message& message)
       {
          Protos::Common::ChatMessages chatMessages = message.getMessage<Protos::Common::ChatMessages>();
 
-         if (chatMessages.message_size() == 0)
+         if (chatMessages.messages_size() == 0)
             break;
 
          // Test if all messages belongs to the same chat room and set the peer ID of each message if not already set.
-         for (int i = 0; i < chatMessages.message_size(); i++)
+         for (int i = 0; i < chatMessages.messages_size(); i++)
          {
-            if (i != 0 && chatMessages.message(i).chat_room() != chatMessages.message(0).chat_room())
+            if (i != 0 && chatMessages.messages(i).chat_room() != chatMessages.messages(0).chat_room())
             {
                L_ERRO(QString("The 'CORE_CHAT_MESSAGES' message received from %1 contains messages from different chat rooms").arg(message.getHeader().toStr()));
                break;
             }
 
-            if (!chatMessages.message(i).has_peer_id())
-               chatMessages.mutable_message(i)->mutable_peer_id()->set_hash(
+            if (!chatMessages.messages(i).has_peer_id())
+               chatMessages.mutable_messages(i)->mutable_peer_id()->set_hash(
                   message.getHeader().getSenderID().getData(),
                   Common::Hash::HASH_SIZE
                );
          }
 
-         bool hasChatRoom = chatMessages.message(0).chat_room().size() > 0;
+         bool hasChatRoom = chatMessages.messages(0).chat_room().size() > 0;
          QString chatRoomName =
             hasChatRoom ?
-                 Common::ProtoHelper::getStr(chatMessages.message(0), &Protos::Common::ChatMessage::chat_room)
+                 QString::fromStdString(chatMessages.messages(0).chat_room())
                : QString();
 
          if (hasChatRoom && !this->rooms[chatRoomName].joined)
@@ -250,7 +249,7 @@ void ChatSystem::received(const Common::Message& message)
          Protos::Common::ChatMessages filteredChatMessages;
          ChatMessages::fillProtoChatMessages(filteredChatMessages, messages);
 
-         if (filteredChatMessages.message_size() > 0)
+         if (filteredChatMessages.messages_size() > 0)
             emit newMessages(filteredChatMessages);
       }
       break;
@@ -261,7 +260,7 @@ void ChatSystem::received(const Common::Message& message)
 
          QString roomName;
          if (getLastChatMessages.chat_room().size() > 0)
-            roomName = Common::ProtoHelper::getStr(getLastChatMessages, &Protos::Core::GetLastChatMessages::chat_room);
+            roomName = QString::fromStdString(getLastChatMessages.chat_room());
 
          QHash<QString, Room>::Iterator i = roomName.isEmpty() ? this->rooms.end() : this->rooms.find(roomName);
 
@@ -300,7 +299,7 @@ void ChatSystem::IMAliveMessageToBeSend(Protos::Core::IMAlive& IMAliveMessage)
    {
       auto room = i.next();
       if (room.value().joined)
-         Common::ProtoHelper::addRepeatedStr(IMAliveMessage, &Protos::Core::IMAlive::add_chat_rooms, room.key());
+         IMAliveMessage.add_chat_rooms(room.key().toStdString());
    }
 }
 
@@ -372,7 +371,7 @@ void ChatSystem::loadChatMessagesFromAllFiles()
 {
    this->loadChatMessages();
 
-   QRegExp filenameRegExp(Common::Constants::FILE_CHAT_ROOM_MESSAGES.arg("(.*)"));
+   QRegularExpression filenameRegExp(Common::Constants::FILE_CHAT_ROOM_MESSAGES.arg("(.*)"));
 
    QDir dir(
       Common::Global::getDataFolder(ChatMessages::FOLDER_TYPE_MESSAGES_SAVED)
@@ -381,9 +380,11 @@ void ChatSystem::loadChatMessagesFromAllFiles()
 
    foreach (QString filename, dir.entryList(QDir::Files))
    {
-      if (filenameRegExp.exactMatch(filename) && filenameRegExp.capturedTexts().length() >= 2)
+      auto matchResult = filenameRegExp.match(filename);
+      auto capturedTexts = matchResult.capturedTexts();
+      if (matchResult.hasMatch() && capturedTexts.length() >= 2)
       {
-         const QString& roomName = Common::Path::unSanitizePath(filenameRegExp.capturedTexts()[1]);
+         const QString& roomName = Common::Path::unSanitizePath(capturedTexts[1]);
          this->loadChatMessages(roomName);
       }
    }
@@ -414,7 +415,7 @@ void ChatSystem::emitNewMessages(const ChatMessages& messages)
    Protos::Common::ChatMessages protoChatMessages;
    for (QListIterator<QSharedPointer<ChatMessage>> i(messages.getMessages()); i.hasNext();)
    {
-      Protos::Common::ChatMessage* protochatMessage = protoChatMessages.add_message();
+      Protos::Common::ChatMessage* protochatMessage = protoChatMessages.add_messages();
       i.next()->fillProtoChatMessage(*protochatMessage);
    }
    emit newMessages(protoChatMessages);
@@ -439,7 +440,7 @@ void ChatSystem::retrieveLastChatMessagesFromPeers(const QList<PM::IPeer*>& peer
    Protos::Core::GetLastChatMessages getLastChatMessages;
    getLastChatMessages.set_number(N);
    for (QListIterator<quint64> i(messageIDs); i.hasNext();)
-      getLastChatMessages.add_message_id(i.next());
+      getLastChatMessages.add_message_ids(i.next());
    if (!roomName.isEmpty())
       getLastChatMessages.set_chat_room(roomName.toStdString());
 

@@ -84,7 +84,7 @@ namespace PM
 
       virtual QSharedPointer<IGetEntriesResult> getEntries(const Protos::Core::GetEntries& dirs);
       virtual QSharedPointer<IGetHashesResult> getHashes(const Protos::Common::Entry& file);
-      virtual QSharedPointer<IGetChunkResult> getChunk(const Protos::Core::GetChunk& chunk);
+      virtual QSharedPointer<IGetChunksResult> getChunks(const Protos::Core::GetChunks& chunk);
 
       void newConnexion(QTcpSocket* tcpSocket);
 

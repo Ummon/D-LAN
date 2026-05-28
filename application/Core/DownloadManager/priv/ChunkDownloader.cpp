@@ -46,8 +46,7 @@ ChunkDownloader::ChunkDownloader(LinkedPeers& linkedPeers, OccupiedPeers& occupi
    downloading(false),
    closeTheSocket(false),
    lastTransferStatus(QUEUED),
-   mainThread(QThread::currentThread()),
-   mutex(QMutex::Recursive)
+   mainThread(QThread::currentThread())
 {
    Q_ASSERT(!chunkHash.isNull());
    L_DEBU(QString("New ChunkDownloader: %1").arg(this->chunkHash.toStr()));

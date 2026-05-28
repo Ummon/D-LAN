@@ -21,6 +21,7 @@
 #include <QSharedPointer>
 #include <QList>
 #include <QThread>
+#include <QRecursiveMutex>
 #include <QElapsedTimer>
 
 #include <Protos/core_protocol.pb.h>
@@ -127,6 +128,6 @@ namespace DM
 
       QThread* mainThread;
 
-      mutable QMutex mutex; // To protect 'peers' and 'downloading'.
+      mutable QRecursiveMutex mutex; // To protect 'peers' and 'downloading'.
    };
 }

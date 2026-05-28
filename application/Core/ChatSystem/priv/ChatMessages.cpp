@@ -55,8 +55,8 @@ QList<QSharedPointer<ChatMessage>> ChatMessages::add(const Protos::Common::ChatM
 {
    QList<QSharedPointer<ChatMessage>> messages;
 
-   for (int i = 0; i < chatMessages.message_size(); i++)
-      messages << QSharedPointer<ChatMessage>(new ChatMessage(chatMessages.message(i)));
+   for (int i = 0; i < chatMessages.messages_size(); i++)
+      messages << QSharedPointer<ChatMessage>(new ChatMessage(chatMessages.messages(i)));
 
    return this->insert(messages);
 }
@@ -88,9 +88,9 @@ QList<QSharedPointer<ChatMessage>> ChatMessages::getUnknownMessages(
 ) const
 {
    QSet<quint64> knownIDs;
-   knownIDs.reserve(getLastChatMessage.message_id_size());
-   for (int i = 0; i < getLastChatMessage.message_id_size(); i++)
-      knownIDs.insert(getLastChatMessage.message_id(i));
+   knownIDs.reserve(getLastChatMessage.message_ids_size());
+   for (int i = 0; i < getLastChatMessage.message_ids_size(); i++)
+      knownIDs.insert(getLastChatMessage.message_ids(i));
 
    QList<QSharedPointer<ChatMessage>> result;
    for (int i = this->d->messages.size() - 1; i >= 0 && this->d->messages.size() - i <= int(getLastChatMessage.number()); i--)
@@ -106,7 +106,7 @@ void ChatMessages::fillProtoChatMessages(Protos::Common::ChatMessages& chatMessa
 {
    int i = number > this->d->messages.size() ? 0 : this->d->messages.size() - number;
    while (i < this->d->messages.size())
-      this->d->messages[i++]->fillProtoChatMessage(*chatMessages.add_message());
+      this->d->messages[i++]->fillProtoChatMessage(*chatMessages.add_messages());
 }
 
 /**
@@ -122,10 +122,10 @@ QList<QSharedPointer<ChatMessage>> ChatMessages::fillProtoChatMessages(
    QList<QSharedPointer<ChatMessage>> result(messages);
    for (QMutableListIterator<QSharedPointer<ChatMessage>> i(result); i.hasNext();)
    {
-      i.next()->fillProtoChatMessage(*chatMessages.add_message());
+      i.next()->fillProtoChatMessage(*chatMessages.add_messages());
       if (maxByteSize != std::numeric_limits<int>::max() && int(chatMessages.ByteSizeLong()) > maxByteSize)
       {
-         chatMessages.mutable_message()->RemoveLast();
+         chatMessages.mutable_messages()->RemoveLast();
          return result;
       }
       i.remove();

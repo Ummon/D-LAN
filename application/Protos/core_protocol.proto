@@ -32,7 +32,7 @@ message IMAlive {
    uint32 upload_rate = 8; // [byte/s]
 
    uint64 tag = 5; // A random number, all responds ('ChunkOwned' message) must repeat this number.
-   repeated Common.Hash chunk = 6; // The chunks the core wants to download. May be empty.
+   repeated Common.Hash chunks = 6; // The chunks the core wants to download. May be empty.
 
    repeated string chat_rooms = 10; // The joined chat rooms.
 }
@@ -70,7 +70,7 @@ message ChunksOwned {
 // id : 0x18
 message GetLastChatMessages {
    uint32 number = 1;
-   repeated uint64 message_id = 2 [packed=true];
+   repeated uint64 message_ids = 2 [packed=true];
    string chat_room = 3;
 }
 
@@ -125,7 +125,7 @@ message GetEntriesResult {
       Status status = 1; // [default = OK].
       Common.Entries entries = 2;
    }
-   repeated EntryResult result = 1;
+   repeated EntryResult results = 1;
 }
 
 

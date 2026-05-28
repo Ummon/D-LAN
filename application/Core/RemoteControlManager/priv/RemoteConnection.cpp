@@ -139,26 +139,26 @@ void RemoteConnection::refresh()
    state.set_password_defined(!SETTINGS.get<Common::Hash>("remote_password").isNull());
 
    // Ourself
-   Protos::GUI::State::Peer* self = state.add_peer();
+   Protos::GUI::State::Peer* self = state.add_peers();
    self->mutable_peer_id()->set_hash(this->peerManager->getSelf()->getID().getData(), Common::Hash::HASH_SIZE);
    self->set_sharing_amount(this->fileManager->getAmount());
    self->set_download_rate(downloadRate);
    self->set_upload_rate(uploadRate);
-   Common::ProtoHelper::setStr(*self, &Protos::GUI::State::Peer::set_nick, this->peerManager->getSelf()->getNick());
-   Common::ProtoHelper::setStr(*self, &Protos::GUI::State::Peer::set_core_version, Common::Global::getVersionFull());
+   self->set_nick(this->peerManager->getSelf()->getNick().toStdString());
+   self->set_core_version(Common::Global::getVersionFull().toStdString());
 
    // Peers.
    const QList<PM::IPeer*>& peers = this->peerManager->getPeers();
    for (QListIterator<PM::IPeer*> i(peers); i.hasNext();)
    {
       PM::IPeer* peer = i.next();
-      Protos::GUI::State::Peer* protoPeer = state.add_peer();
+      Protos::GUI::State::Peer* protoPeer = state.add_peers();
       protoPeer->mutable_peer_id()->set_hash(peer->getID().getData(), Common::Hash::HASH_SIZE);
-      Common::ProtoHelper::setStr(*protoPeer, &Protos::GUI::State::Peer::set_nick, peer->getNick());
+      protoPeer->set_nick(peer->getNick().toStdString());
 
       const QString coreVersion = peer->getCoreVersion();
       if (!coreVersion.isNull())
-         Common::ProtoHelper::setStr(*protoPeer, &Protos::GUI::State::Peer::set_core_version, coreVersion);
+         protoPeer->set_core_version(coreVersion.toStdString());
 
       protoPeer->set_sharing_amount(peer->getSharingAmount());
       protoPeer->set_download_rate(peer->getDownloadRate());
@@ -179,22 +179,22 @@ void RemoteConnection::refresh()
    for (QListIterator<DM::IDownload*> i(downloads); i.hasNext();)
    {
       DM::IDownload* download = i.next();
-      Protos::GUI::State_Download* protoDownload = state.add_download();
+      Protos::GUI::State_Download* protoDownload = state.add_downloads();
       protoDownload->set_id(download->getID());
       protoDownload->mutable_local_entry()->CopyFrom(download->getLocalEntry());
-      protoDownload->mutable_local_entry()->mutable_chunk()->Clear(); // We don't need to send the hashes.
+      protoDownload->mutable_local_entry()->mutable_chunks()->Clear(); // We don't need to send the hashes.
       protoDownload->set_status(static_cast<Protos::GUI::State::Download::Status>(download->getStatus())); // Warning, enums must be compatible.
       protoDownload->set_downloaded_bytes(download->getDownloadedBytes());
 
       PM::IPeer* peerSource = download->getPeerSource();
-      protoDownload->add_peer_id()->set_hash(peerSource->getID().getData(), Common::Hash::HASH_SIZE); // The first hash must be the source.
+      protoDownload->add_peer_ids()->set_hash(peerSource->getID().getData(), Common::Hash::HASH_SIZE); // The first hash must be the source.
       QSet<PM::IPeer*> peers = download->getPeers();
       peers.remove(peerSource);
       for (QSetIterator<PM::IPeer*> j(peers); j.hasNext();)
-         protoDownload->add_peer_id()->set_hash(j.next()->getID().getData(), Common::Hash::HASH_SIZE);
+         protoDownload->add_peer_ids()->set_hash(j.next()->getID().getData(), Common::Hash::HASH_SIZE);
 
       if (!peerSource->getNick().isNull())
-         Common::ProtoHelper::setStr(*protoDownload, &Protos::GUI::State::Download::set_peer_source_nick, peerSource->getNick());
+         protoDownload->set_peer_source_nick(peerSource->getNick().toStdString());
    }
 
    // Uploads.
@@ -202,10 +202,10 @@ void RemoteConnection::refresh()
    for (QListIterator<UM::IChunkUploader*> i(chunkUploaders); i.hasNext();)
    {
       UM::IChunkUploader* chunkUploader = i.next();
-      Protos::GUI::State_Upload* protoUpload = state.add_upload();
+      Protos::GUI::State_Upload* protoUpload = state.add_uploads();
       if (chunkUploader->getChunk()->populateEntry(protoUpload->mutable_file()))
       {
-         protoUpload->mutable_file()->mutable_chunk()->Clear();
+         protoUpload->mutable_file()->mutable_chunks()->Clear();
          protoUpload->set_id(chunkUploader->getID());
          protoUpload->set_current_part(chunkUploader->getChunk()->getNum() + 1); // "+ 1" to begin at 1 and not 0.
          protoUpload->set_nb_part(chunkUploader->getChunk()->getNbTotalChunk());
@@ -213,18 +213,18 @@ void RemoteConnection::refresh()
          protoUpload->mutable_peer_id()->set_hash(chunkUploader->getPeerID().getData(), Common::Hash::HASH_SIZE);
       }
       else
-         state.mutable_upload()->RemoveLast();
+         state.mutable_uploads()->RemoveLast();
    }
 
    // Shared entries.
    for (QListIterator<Common::SharedEntry> i(this->fileManager->getSharedEntries()); i.hasNext();)
    {
       Common::SharedEntry sharedEntry = i.next();
-      Protos::GUI::State::SharedEntry* sharedEntryProto = state.add_shared_entry();
-      Common::ProtoHelper::setStr(*sharedEntryProto, &Protos::GUI::State::SharedEntry::set_path, sharedEntry.path.getPath());
+      Protos::GUI::State::SharedEntry* sharedEntryProto = state.add_shared_entries();
+      sharedEntryProto->set_path(sharedEntry.path.getPath()); // TODO: set 'entry'.
       sharedEntryProto->set_size(sharedEntry.size);
       sharedEntryProto->set_free_space(sharedEntry.freeSpace);
-      sharedEntryProto->mutable_id()->set_hash(sharedEntry.ID.getData(), Common::Hash::HASH_SIZE);
+      sharedEntryProto->mutable_ids()->set_hash(sharedEntry.ID.getData(), Common::Hash::HASH_SIZE);
    }
 
    // Stats.
@@ -251,15 +251,15 @@ void RemoteConnection::refresh()
          const QList<QNetworkAddressEntry>& addresses = interface.addressEntries();
          if (!addresses.isEmpty())
          {
-            Protos::Common::Interface* interfaceMess = state.add_interface();
+            Protos::Common::Interface* interfaceMess = state.add_interfaces();
             interfaceMess->set_id(interface.index() == 0 ? Common::StringUtils::hashStringToInt(interface.name()) : interface.index());
-            Common::ProtoHelper::setStr(*interfaceMess, &Protos::Common::Interface::set_name, interface.humanReadableName());
+            interfaceMess->set_name(interface.humanReadableName().toStdString());
             interfaceMess->set_isup(interface.flags().testFlag(QNetworkInterface::IsUp) && interface.flags().testFlag(QNetworkInterface::IsRunning));
             for (QListIterator<QNetworkAddressEntry> j(addresses); j.hasNext();)
             {
                QHostAddress address = j.next().ip();
-               Protos::Common::Interface::Address* addressMess = interfaceMess->add_address();
-               Common::ProtoHelper::setStr(*addressMess, &Protos::Common::Interface::Address::set_address, address.toString());
+               Protos::Common::Interface::Address* addressMess = interfaceMess->add_addresses();
+               addressMess->set_address(address.toString().toStdString());
                addressMess->set_protocol(address.protocol() == QAbstractSocket::IPv6Protocol ? Protos::Common::Interface::Address::IPv6 : Protos::Common::Interface::Address::IPv4);
                addressMess->set_listened(address == addressToListen);
             }
@@ -271,11 +271,11 @@ void RemoteConnection::refresh()
    for (QListIterator<CS::IChatSystem::ChatRoom> i(this->chatSystem->getRooms()); i.hasNext();)
    {
       const CS::IChatSystem::ChatRoom& room = i.next();
-      Protos::GUI::State::Room* roomMess = state.add_room();
+      Protos::GUI::State::Room* roomMess = state.add_rooms();
 
-      Common::ProtoHelper::setStr(*roomMess, &Protos::GUI::State::Room::set_name, room.name);
+      roomMess->set_name(room.name.toStdString());
       for (QSetIterator<PM::IPeer*> j(room.peers); j.hasNext();)
-         roomMess->add_peer_id()->set_hash(j.next()->getID().getData(), Common::Hash::HASH_SIZE);
+         roomMess->add_peer_ids()->set_hash(j.next()->getID().getData(), Common::Hash::HASH_SIZE);
       roomMess->set_joined(room.joined);
    }
 
@@ -303,11 +303,11 @@ void RemoteConnection::getEntriesResult(const Protos::Core::GetEntriesResult& en
    PM::IGetEntriesResult* getEntriesResult = static_cast<PM::IGetEntriesResult*>(this->sender());
 
    Protos::GUI::BrowseResult result;
-   for (int i = 0; i < entries.result_size(); i++)
+   for (int i = 0; i < entries.results_size(); i++)
    {
       Protos::Common::Entries* entriesResult = result.add_entries();
-      if (entries.result(i).has_entries())
-         entriesResult->CopyFrom(entries.result(i).entries());
+      if (entries.results(i).has_entries())
+         entriesResult->CopyFrom(entries.results(i).entries());
    }
 
    result.set_tag(getEntriesResult->property("tag").toULongLong());
@@ -324,9 +324,9 @@ void RemoteConnection::getEntriesTimeout()
 
 void RemoteConnection::newLogEntry(QSharedPointer<LM::IEntry> entry)
 {
-   Protos::GUI::EventLogMessages::EventLogMessage* eventLogMessage = this->eventLogMessages.add_message();
+   Protos::GUI::EventLogMessages::EventLogMessage* eventLogMessage = this->eventLogMessages.add_messages();
    eventLogMessage->set_time(entry->getDate().currentMSecsSinceEpoch());
-   Common::ProtoHelper::setStr(*eventLogMessage, &Protos::GUI::EventLogMessages::EventLogMessage::set_message, entry->getMessage());
+   eventLogMessage->set_message(entry->getMessage().toStdString());
    eventLogMessage->set_severity(static_cast<Protos::GUI::EventLogMessages::EventLogMessage::Severity>(entry->getSeverity()));
 
    if (!this->sendLogMessagesTimer.isActive())
@@ -479,7 +479,7 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
          const Protos::GUI::CoreSettings& coreSettingsMessage = message.getMessage<Protos::GUI::CoreSettings>();
 
          if (coreSettingsMessage.nick_optional_case() == Protos::GUI::CoreSettings::NickOptionalCase::kNick)
-            this->peerManager->setNick(Common::ProtoHelper::getStr(coreSettingsMessage, &Protos::GUI::CoreSettings::nick));
+            this->peerManager->setNick(QString::fromStdString(coreSettingsMessage.nick()));
 
          if (coreSettingsMessage.enable_integrity_check() != Protos::Common::TS_NO_CHANGE)
             SETTINGS.set("check_received_data_integrity", coreSettingsMessage.enable_integrity_check() == Protos::Common::TriState::TS_TRUE);
@@ -488,7 +488,7 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
          {
             QStringList sharedPaths;
             for (int i = 0; i < coreSettingsMessage.shared_paths().path_size(); i++)
-               sharedPaths << Common::ProtoHelper::getRepeatedStr(coreSettingsMessage.shared_paths(), &Protos::GUI::CoreSettings::SharedPaths::path, i);
+               sharedPaths << QString::fromStdString(coreSettingsMessage.shared_paths().path(i));
             this->fileManager->setSharedPaths(sharedPaths);
          }
          catch (FM::EntriesNotFoundException& e)
@@ -499,7 +499,7 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
 
          QString currentAddressToListenTo = SETTINGS.get<QString>("listen_address");
          Protos::Common::Interface::Address::Protocol currentProtocol = static_cast<Protos::Common::Interface::Address::Protocol>(SETTINGS.get<quint32>("listen_any"));
-         const QString& newAddressToListenTo = Common::ProtoHelper::getStr(coreSettingsMessage, &Protos::GUI::CoreSettings::listen_address);
+         const QString& newAddressToListenTo = QString::fromStdString(coreSettingsMessage.listen_address());
          Protos::Common::Interface::Address::Protocol newProtocol = coreSettingsMessage.listen_any();
          SETTINGS.set("listen_address", newAddressToListenTo);
          SETTINGS.set("listen_any", static_cast<quint32>(newProtocol));
@@ -529,12 +529,12 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
             static const quint32 MAX_NUMBER_OF_RESULT_SHOWN = SETTINGS.get<quint32>("max_number_of_result_shown");
 
             QList<QString> extensions;
-            extensions.reserve(findPattern.extension_filter_size());
-            for (int i = 0; i < findPattern.extension_filter_size(); ++i)
-               extensions << Common::ProtoHelper::getRepeatedStr(findPattern, &Protos::Common::FindPattern::extension_filter, i);
+            extensions.reserve(findPattern.extension_filters_size());
+            for (int i = 0; i < findPattern.extension_filters_size(); ++i)
+               extensions << QString::fromStdString(findPattern.extension_filters(i));
 
             const QList<Protos::Common::FindResult>& results = this->fileManager->find(
-               Common::ProtoHelper::getStr(findPattern, &Protos::Common::FindPattern::pattern),
+               QString::fromStdString(findPattern.pattern()),
                extensions,
                findPattern.min_size() == 0 ? std::numeric_limits<qint64>::min() : (qint64)findPattern.min_size(),
                findPattern.max_size() == 0 ? std::numeric_limits<qint64>::max() : (qint64)findPattern.max_size(),
@@ -610,11 +610,11 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
             // If we want to browse our files.
             if (peerID == this->peerManager->getSelf()->getID())
             {
-               for (int i = 0; i < browseMessage.dirs().entry_size(); i++)
-                  result.add_entries()->CopyFrom(this->fileManager->getEntries(browseMessage.dirs().entry(i)));
+               for (int i = 0; i < browseMessage.dirs().entries_size(); i++)
+                  result.add_entries()->CopyFrom(this->fileManager->getEntries(browseMessage.dirs().entries(i)));
 
                // Add the root directories if asked. Populate shared dirs with their base path.
-               if (browseMessage.dirs().entry_size() == 0 || browseMessage.get_roots())
+               if (browseMessage.dirs().entries_size() == 0 || browseMessage.get_roots())
                   result.add_entries()->CopyFrom(this->fileManager->getEntries());
             }
 
@@ -632,8 +632,8 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
             this->downloadManager->removeAllCompleteDownloads();
 
          QList<quint64> IDs;
-         for (int i = 0; i < cancelDownloadsMessage.id_size(); i++)
-            IDs << cancelDownloadsMessage.id(i);
+         for (int i = 0; i < cancelDownloadsMessage.ids_size(); i++)
+            IDs << cancelDownloadsMessage.ids(i);
 
          this->downloadManager->removeDownloads(IDs);
 
@@ -646,8 +646,8 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
          const Protos::GUI::PauseDownloads& pauseDownloadsMessage = message.getMessage<Protos::GUI::PauseDownloads>();
 
          QList<quint64> IDs;
-         for (int i = 0; i < pauseDownloadsMessage.id_size(); i++)
-            IDs << pauseDownloadsMessage.id(i);
+         for (int i = 0; i < pauseDownloadsMessage.ids_size(); i++)
+            IDs << pauseDownloadsMessage.ids(i);
 
          this->downloadManager->pauseDownloads(IDs, pauseDownloadsMessage.pause());
 
@@ -660,12 +660,12 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
          const Protos::GUI::MoveDownloads& moveDownloadsMessage = message.getMessage<Protos::GUI::MoveDownloads>();
 
          QList<quint64> downloadIDRefs;
-         for (int i = 0; i < moveDownloadsMessage.id_ref_size(); i++)
-            downloadIDRefs << moveDownloadsMessage.id_ref(i);
+         for (int i = 0; i < moveDownloadsMessage.ids_ref_size(); i++)
+            downloadIDRefs << moveDownloadsMessage.ids_ref(i);
 
          QList<quint64> downloadIDs;
-         for (int i = 0; i < moveDownloadsMessage.id_to_move_size(); i++)
-            downloadIDs << moveDownloadsMessage.id_to_move(i);
+         for (int i = 0; i < moveDownloadsMessage.ids_to_move_size(); i++)
+            downloadIDs << moveDownloadsMessage.ids_to_move(i);
 
          this->downloadManager->moveDownloads(downloadIDRefs, downloadIDs, moveDownloadsMessage.position());
 
@@ -682,9 +682,18 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
          if (peer)
          {
             if (downloadMessage.has_destination_directory_id())
-               this->downloadManager->addDownload(downloadMessage.entry(), peer, downloadMessage.destination_directory_id().hash(), Common::ProtoHelper::getStr(downloadMessage, &Protos::GUI::Download::destination_path));
+               this->downloadManager->addDownload(
+                  downloadMessage.entry(),
+                  peer,
+                  downloadMessage.destination_directory_id().hash(),
+                  QString::fromStdString(downloadMessage.destination_path())
+               );
             else if (downloadMessage.destination_path().size() > 0)
-               this->downloadManager->addDownload(downloadMessage.entry(), peer, Common::ProtoHelper::getStr(downloadMessage, &Protos::GUI::Download::destination_path));
+               this->downloadManager->addDownload(
+                  downloadMessage.entry(),
+                  peer,
+                  QString::fromStdString(downloadMessage.destination_path())
+                  );
             else
                this->downloadManager->addDownload(downloadMessage.entry(), peer);
          }
@@ -699,8 +708,8 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
 
          CS::IChatSystem::SendStatus status =
             chatMessage.room().size() > 0 ?
-                 this->chatSystem->send(Common::ProtoHelper::getStr(chatMessage, &Protos::GUI::ChatMessage::message), Common::ProtoHelper::getStr(chatMessage, &Protos::GUI::ChatMessage::room))
-               : this->chatSystem->send(Common::ProtoHelper::getStr(chatMessage, &Protos::GUI::ChatMessage::message));
+                 this->chatSystem->send(QString::fromStdString(chatMessage.message()), QString::fromStdString(chatMessage.room()))
+               : this->chatSystem->send(QString::fromStdString(chatMessage.message()));
 
          Protos::GUI::ChatMessageResult result;
          result.set_status(status == CS::IChatSystem::SendStatus::OK ? Protos::GUI::ChatMessageResult::OK : (status == CS::IChatSystem::SendStatus::MESSAGE_TOO_LARGE ? Protos::GUI::ChatMessageResult::MESSAGE_TOO_LARGE : Protos::GUI::ChatMessageResult::ERROR_UNKNOWN));
@@ -712,7 +721,7 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
       {
          const Protos::GUI::JoinRoom joinRoomMessage = message.getMessage<Protos::GUI::JoinRoom>();
 
-         this->chatSystem->joinRoom(Common::ProtoHelper::getStr(joinRoomMessage, &Protos::GUI::JoinRoom::name));
+         this->chatSystem->joinRoom(QString::fromStdString(joinRoomMessage.name()));
       }
       break;
 
@@ -720,7 +729,7 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
       {
          const Protos::GUI::LeaveRoom leaveRoomMessage = message.getMessage<Protos::GUI::LeaveRoom>();
 
-         this->chatSystem->leaveRoom(Common::ProtoHelper::getStr(leaveRoomMessage, &Protos::GUI::LeaveRoom::name));
+         this->chatSystem->leaveRoom(QString::fromStdString(leaveRoomMessage.name()));
       }
       break;
 

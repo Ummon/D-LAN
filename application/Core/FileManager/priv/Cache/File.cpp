@@ -256,12 +256,12 @@ void File::populateEntry(Protos::Common::Entry* entry, bool setSharedDir, int ma
 
    entry->set_type(Protos::Common::Entry_Type_FILE);
 
-   entry->clear_chunk();
+   entry->clear_chunks();
 
    int nb = 0;
    for (QVectorIterator<QSharedPointer<Chunk>> i(this->chunks); i.hasNext();)
    {
-      Protos::Common::Hash* protoHash = entry->add_chunk();
+      Protos::Common::Hash* protoHash = entry->add_chunks();
 
       Common::Hash hash = i.next()->getHash();
       if (!hash.isNull() && ++nb <= maxHashes)

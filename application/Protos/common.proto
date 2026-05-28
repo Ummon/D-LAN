@@ -81,19 +81,19 @@ message Entry {
    // optional string mime_type = 9; // The mime type of the file. TODO: uncomment when #243 is implemented.
 
    // The number of chunk must always correspond to the size of the file. Unknown chunks are empty.
-   repeated Hash chunk = 8;
+   repeated Hash chunks = 8;
 }
 
 message Entries
 {
-   repeated Common.Entry entry = 1;
+   repeated Common.Entry entries = 1;
 }
 
 message FindPattern {
    string pattern = 2;
    uint64 min_size = 3; // [B]. 0 means there is no minimum size.
    uint64 max_size = 4; // [B]. 0 means there is no maximum size.
-   repeated string extension_filter = 5; // Only files that match one of the given extension will be returned.
+   repeated string extension_filters = 5; // Only files that match one of the given extension will be returned.
    enum Category {
       FILE_DIR = 0;
       FILE = 1;
@@ -111,7 +111,7 @@ message FindResult {
       Entry entry = 2; // The entry must have the field 'shared_dir'.
    }
    uint64 tag = 1;
-   repeated EntryLevel entry = 2;
+   repeated EntryLevel entries = 2;
    Common.Hash peer_id = 3;
 }
 
@@ -129,7 +129,7 @@ message ChatMessage {
 // All messages must belong to the same chat room (or from no room if they are from the main chat).
 // The messages are always sorted from oldest to youngest.
 message ChatMessages {
-   repeated ChatMessage message = 1;
+   repeated ChatMessage messages = 1;
 }
 
 message Interface {
@@ -144,6 +144,6 @@ message Interface {
    }
    uint32 id = 1;
    string name = 2;
-   repeated Address address = 3;
+   repeated Address addresses = 3;
    bool isUp = 4;
 }

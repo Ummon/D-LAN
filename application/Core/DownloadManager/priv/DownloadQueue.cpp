@@ -264,13 +264,16 @@ bool DownloadQueue::pauseDownloads(QList<quint64> IDs, bool pause)
   */
 bool DownloadQueue::isEntryAlreadyQueued(const Protos::Common::Entry& localEntry)
 {
-   QMap<std::string, Download*>::const_iterator i = this->downloadsIndexedByName.constFind(localEntry.name());
+   auto i = this->downloadsIndexedByName.constFind(localEntry.name());
 
    while (i != this->downloadsIndexedByName.constEnd() && i.key() == localEntry.name())
    {
       if (
          i.value()->getLocalEntry().path() == localEntry.path() &&
-         (!localEntry.has_shared_entry() || i.value()->getLocalEntry().shared_entry().id().hash() == localEntry.shared_entry().id().hash())
+         (
+            !localEntry.has_shared_entry() ||
+            i.value()->getLocalEntry().shared_entry().id().hash() == localEntry.shared_entry().id().hash()
+         )
       )
          return true;
 
@@ -299,7 +302,7 @@ QList<QSharedPointer<IChunkDownloader>> DownloadQueue::getTheOldestUnfinishedChu
 {
    QList<QSharedPointer<IChunkDownloader>> unfinishedChunks;
 
-   for (QMutableMapIterator<QTime, FileDownload*> i(this->downloadsSortedByTime); i.hasNext() && unfinishedChunks.size() < n;)
+   for (QMutableMultiMapIterator<QTime, FileDownload*> i(this->downloadsSortedByTime); i.hasNext() && unfinishedChunks.size() < n;)
    {
       i.next();
       if (i.value()->getStatus() == COMPLETE || i.value()->getStatus() == DELETED)
@@ -347,7 +350,7 @@ void DownloadQueue::saveToFile() const
 
    for (QListIterator<Download*> i(this->downloads); i.hasNext();)
    {
-      Protos::Queue::Queue::Entry* queueEntry = savedQueue.add_entry();
+      Protos::Queue::Queue::Entry* queueEntry = savedQueue.add_entries();
       Download* download = i.next();
       download->populateQueueEntry(queueEntry);
    }

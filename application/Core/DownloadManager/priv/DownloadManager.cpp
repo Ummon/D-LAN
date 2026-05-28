@@ -52,7 +52,7 @@ DownloadManager::DownloadManager(QSharedPointer<FM::IFileManager> fileManager, Q
    connect(&this->occupiedPeersDownloadingChunk, &OccupiedPeers::newFreePeer, this, &DownloadManager::peerNoLongerDownloadingChunk);
 
    // We wait the cache is loaded before loading the downloads queue.
-   connect(this->fileManager.data(), &FM::IFileManager::fileCacheLoaded, this, &DownloadManager::fileCacheLoaded);
+   // connect(this->fileManager.data(), &FM::IFileManager::fileCacheLoaded, this, &DownloadManager::fileCacheLoaded);
 
    this->startErroneousDownloadTimer.setInterval(RESTART_DOWNLOADS_PERIOD_IF_ERROR);
    this->startErroneousDownloadTimer.setSingleShot(true);
@@ -62,6 +62,8 @@ DownloadManager::DownloadManager(QSharedPointer<FM::IFileManager> fileManager, Q
    connect(&this->saveTimer, &QTimer::timeout, this, &DownloadManager::saveQueueToFile);
 
    connect(this->peerManager.data(), &PM::IPeerManager::peerBecomesAvailable, this, &DownloadManager::peerBecomesAvailable);
+
+   this->loadQueueFromFile(); // TODO: Check if correct.
 }
 
 DownloadManager::~DownloadManager()
@@ -281,10 +283,10 @@ void DownloadManager::peerBecomesAvailable(PM::IPeer* peer)
    this->occupiedPeersDownloadingChunk.newPeer(peer);
 }
 
-void DownloadManager::fileCacheLoaded()
-{
-   this->loadQueueFromFile();
-}
+// void DownloadManager::fileCacheLoaded()
+// {
+//    this->loadQueueFromFile();
+// }
 
 /**
   * Called when a directory knows its children. The children replace the directory.
@@ -299,16 +301,16 @@ void DownloadManager::newEntries(const Protos::Common::Entries& remoteEntries)
    this->downloadQueue.remove(position);
 
    const Protos::Common::Entry& localEntry = dirDownload->getLocalEntry();
-   const QString relativePath = Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::path).append(Common::ProtoHelper::getStr(localEntry, &Protos::Common::Entry::name)).append("/");
+   const QString relativePath = QString::fromStdString(localEntry.path()).append(localEntry.name()).append("/");
 
    // Add files first then directories.
    for (auto type : QList<Protos::Common::Entry::Type> { Protos::Common::Entry::FILE, Protos::Common::Entry::DIR })
    {
-      for (int n = 0; n < remoteEntries.entry_size(); n++)
-         if (remoteEntries.entry(n).type() == type)
+      for (int n = 0; n < remoteEntries.entries_size(); n++)
+         if (remoteEntries.entries(n).type() == type)
          {
             this->addDownload(
-               remoteEntries.entry(n),
+               remoteEntries.entries(n),
                dirDownload->getPeerSource(),
                localEntry.has_shared_entry() ? localEntry.shared_entry().id().hash() : Common::Hash(),
                relativePath,
@@ -356,7 +358,11 @@ void DownloadManager::peerNoLongerAskingForEntries(PM::IPeer* peer)
 
 void DownloadManager::peerNoLongerDownloadingChunk(PM::IPeer* peer)
 {
-   L_DEBU(QString("A peer is free from downloading: %1, number of downloading thread: %2").arg(peer->toStringLog()).arg(this->numberOfDownloadThreadRunning));
+   L_DEBU(
+      QString("A peer is free from downloading: %1, number of downloading thread: %2")
+         .arg(peer->toStringLog())
+         .arg(this->numberOfDownloadThreadRunning)
+   );
    this->scanTheQueue();
 }
 
@@ -452,13 +458,13 @@ void DownloadManager::loadQueueFromFile()
 {
    Protos::Queue::Queue savedQueue = DownloadQueue::loadFromFile();
 
-   for (int i = 0; i < savedQueue.entry_size(); i++)
+   for (int i = 0; i < savedQueue.entries_size(); i++)
    {
-      const Protos::Queue::Queue_Entry& entry = savedQueue.entry(i);
+      const Protos::Queue::Queue_Entry& entry = savedQueue.entries(i);
       this->addDownload(
          entry.remote_entry(),
          entry.local_entry(),
-         this->peerManager->createPeer(entry.peer_source_id().hash(), Common::ProtoHelper::getStr(entry, &Protos::Queue::Queue::Entry::peer_source_nick)),
+         this->peerManager->createPeer(entry.peer_source_id().hash(), QString::fromStdString(entry.peer_source_nick())),
          entry.status()
       );
    }

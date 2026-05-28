@@ -60,7 +60,7 @@ message State {
       Status status = 3;
       uint64 downloaded_bytes = 4; // Always 0 when 'local_entry' is a directory.
 
-      repeated Common.Hash peer_id = 5; // The first one always corresponds to the peer source.
+      repeated Common.Hash peer_ids = 5; // The first one always corresponds to the peer source.
       string peer_source_nick = 6;
    }
    message Upload {
@@ -106,27 +106,29 @@ message State {
    }
    message Room {
       string name = 1;
-      repeated Common.Hash peer_id = 2; // It never includes ourself.
+      repeated Common.Hash peer_ids = 2; // It never includes ourself.
       bool joined = 3;
    }
 
-   repeated Peer peer = 2; // The first peer is always ourself and always exists.
+   repeated Peer peers = 2; // The first peer is always ourself and always exists.
 
-   repeated SharedEntry shared_entry = 3;
+   repeated SharedEntry shared_entries = 3;
 
    bool integrity_check_enabled = 7;
 
    bool password_defined = 10; // [default = false].
 
-   repeated Download download = 4;
-   repeated Upload upload = 5;
+   repeated Download downloads = 4;
+   repeated Upload uploads = 5;
 
    Stats stats = 6;
 
-   Common.Interface.Address.Protocol listenAny = 8; // If this value is set then all the interfaces of the given protocol are listened. Otherwise see the following repeated 'interface' field.
-   repeated Common.Interface interface = 9;
+   // If this value is set then all the interfaces of the given protocol are listened.
+   // Otherwise see the following repeated 'interface' field.
+   Common.Interface.Address.Protocol listenAny = 8;
+   repeated Common.Interface interfaces = 9;
 
-   repeated Room room = 11;
+   repeated Room rooms = 11;
 }
 
 // GUI -> Core
@@ -161,7 +163,7 @@ message EventLogMessages {
       // Only in debug mode. (not used at all for the moment).
       // string component = 4;
    }
-   repeated EventLogMessage message = 1;
+   repeated EventLogMessage messages = 1;
 }
 
 /***** Commands. *****/
@@ -281,7 +283,7 @@ message BrowseResult {
 // Remove one or several download from the queue. If this download
 // is not finished the unfinished file is removed.
 message CancelDownloads {
-   repeated uint64 id = 1;
+   repeated uint64 ids = 1;
    bool complete = 2; // [default = false] If true all completed downloads are removed from the download queue.
 }
 
@@ -290,7 +292,7 @@ message CancelDownloads {
 // id: 0x10C1
 // Pause or unpause the given downloads.
 message PauseDownloads {
-   repeated uint64 id = 1;
+   repeated uint64 ids = 1;
    bool pause = 2; // [default = true] Id false -> unpause.
 }
 
@@ -313,8 +315,8 @@ message MoveDownloads {
       BEFORE = 0;
       AFTER = 1;
    }
-   repeated uint64 id_ref = 1;
-   repeated uint64 id_to_move = 2;
+   repeated uint64 ids_ref = 1;
+   repeated uint64 ids_to_move = 2;
    Position position = 3; // [default = BEFORE].
 }
 

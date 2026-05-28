@@ -80,7 +80,7 @@ namespace DM
    private slots:
       void peerBecomesAvailable(PM::IPeer* peer);
 
-      void fileCacheLoaded();
+      // void fileCacheLoaded();
 
       void newEntries(const Protos::Common::Entries& remoteEntries);
 

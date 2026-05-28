@@ -25,7 +25,7 @@ message Settings {
    uint32 main_window_height = 11; // [default = 620].
    bool main_window_maximized = 17; // [default = false].
 
-   repeated uint32 search_column_size = 19; // [Entry name, Folder name, Relvance, Peer, Size].
+   repeated uint32 search_column_sizes = 19; // [Entry name, Folder name, Relvance, Peer, Size].
 
    enum Window {
       WIN_SETTINGS = 0;
@@ -52,7 +52,7 @@ message Settings {
          uint32 color = 1; // RGB.
          Common.Hash id = 2;
       }
-      repeated Peer peer = 1;
+      repeated Peer peers = 1;
    }
    HighlightedPeers highlighted_peers = 23;
 

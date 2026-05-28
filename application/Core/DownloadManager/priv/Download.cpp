@@ -44,8 +44,8 @@ Download::Download(
 Download::~Download()
 {
    L_DEBU(QString("Download deleted: %1%2")
-      .arg(Common::ProtoHelper::getStr(this->localEntry, &Protos::Common::Entry::path))
-      .arg(Common::ProtoHelper::getStr(this->localEntry, &Protos::Common::Entry::name))
+      .arg(this->localEntry.path())
+      .arg(this->localEntry.name())
    );
 }
 

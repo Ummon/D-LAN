@@ -149,11 +149,11 @@ void UDPListener::sendIMAliveMessage()
 {
    Protos::Core::IMAlive IMAliveMessage;
    IMAliveMessage.set_version(Common::Constants::PROTOCOL_VERSION);
-   Common::ProtoHelper::setStr(IMAliveMessage, &Protos::Core::IMAlive::set_core_version, Common::Global::getVersionFull());
+   IMAliveMessage.set_core_version(Common::Global::getVersionFull().toStdString());
    IMAliveMessage.set_port(this->UNICAST_PORT);
 
    const QString& nick = this->peerManager->getSelf()->getNick();
-   Common::ProtoHelper::setStr(IMAliveMessage, &Protos::Core::IMAlive::set_nick, nick.length() > MAX_NICK_LENGTH ? nick.left(MAX_NICK_LENGTH) : nick);
+   IMAliveMessage.set_nick((nick.length() > MAX_NICK_LENGTH ? nick.left(MAX_NICK_LENGTH) : nick).toStdString());
 
    IMAliveMessage.set_amount(this->fileManager->getAmount());
    IMAliveMessage.set_download_rate(this->downloadManager->getDownloadRate());
@@ -191,11 +191,11 @@ void UDPListener::sendIMAliveMessage()
       break;
    }
 
-   IMAliveMessage.mutable_chunk()->Reserve(this->currentChunkDownloaders.size());
+   IMAliveMessage.mutable_chunks()->Reserve(this->currentChunkDownloaders.size());
    for (QListIterator<QSharedPointer<DM::IChunkDownloader>> i(this->currentChunkDownloaders); i.hasNext();)
    {
       QSharedPointer<DM::IChunkDownloader> chunkDownloader = i.next();
-      IMAliveMessage.add_chunk()->set_hash(chunkDownloader->getHash().getData(), Common::Hash::HASH_SIZE);
+      IMAliveMessage.add_chunks()->set_hash(chunkDownloader->getHash().getData(), Common::Hash::HASH_SIZE);
 
       // If we already have the chunk . . .
       QSharedPointer<FM::IChunk> chunk = this->fileManager->getChunk(chunkDownloader->getHash());
@@ -239,20 +239,20 @@ void UDPListener::processPendingMulticastDatagrams()
                   header.getSenderID(),
                   peerAddress,
                   IMAliveMessage.port(),
-                  Common::ProtoHelper::getStr(IMAliveMessage, &Protos::Core::IMAlive::nick),
+                  QString::fromStdString(IMAliveMessage.nick()),
                   IMAliveMessage.amount(),
-                  Common::ProtoHelper::getStr(IMAliveMessage, &Protos::Core::IMAlive::core_version),
+                  QString::fromStdString(IMAliveMessage.core_version()),
                   IMAliveMessage.download_rate(),
                   IMAliveMessage.upload_rate(),
                   IMAliveMessage.version()
                );
 
-               if (IMAliveMessage.chunk_size() > 0)
+               if (IMAliveMessage.chunks_size() > 0)
                {
                   QList<Common::Hash> hashes;
-                  hashes.reserve(IMAliveMessage.chunk_size());
-                  for (int i = 0; i < IMAliveMessage.chunk_size(); i++)
-                     hashes << IMAliveMessage.chunk(i).hash();
+                  hashes.reserve(IMAliveMessage.chunks_size());
+                  for (int i = 0; i < IMAliveMessage.chunks_size(); i++)
+                     hashes << IMAliveMessage.chunks(i).hash();
 
                   const QBitArray& bitArray = this->fileManager->haveChunks(hashes);
 
@@ -281,13 +281,13 @@ void UDPListener::processPendingMulticastDatagrams()
                {
                   const Protos::Core::Find& findMessage = message.getMessage<Protos::Core::Find>();
                   QList<QString> extensions;
-                  extensions.reserve(findMessage.pattern().extension_filter_size());
-                  for (int i = 0; i < findMessage.pattern().extension_filter_size(); i++)
-                     extensions << Common::ProtoHelper::getRepeatedStr(findMessage.pattern(), &Protos::Common::FindPattern::extension_filter, i);
+                  extensions.reserve(findMessage.pattern().extension_filters_size());
+                  for (int i = 0; i < findMessage.pattern().extension_filters_size(); i++)
+                     extensions << QString::fromStdString(findMessage.pattern().extension_filters(i));
 
                   QList<Protos::Common::FindResult> results =
                      this->fileManager->find(
-                        Common::ProtoHelper::getStr(findMessage.pattern(), &Protos::Common::FindPattern::pattern),
+                        QString::fromStdString(findMessage.pattern().pattern()),
                         extensions,
                         findMessage.pattern().min_size() == 0 ? std::numeric_limits<qint64>::min() : (qint64)findMessage.pattern().min_size(), // According the protocol.
                         findMessage.pattern().max_size() == 0 ? std::numeric_limits<qint64>::max() : (qint64)findMessage.pattern().max_size(), // According the protocol.
@@ -313,7 +313,7 @@ void UDPListener::processPendingMulticastDatagrams()
       }
       catch (Common::ReadErrorException&)
       {
-         L_WARN(QString("Unable to read a multicast message from peer %1 %2").arg(header.getSenderID().toStr()).arg(peerAddress.toString()));
+         L_WARN(QString("Unable to read a multicast message from peer %1 %2").arg(header.getSenderID().toStr(), peerAddress.toString()));
       }
    }
 }

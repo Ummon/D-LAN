@@ -77,7 +77,7 @@ bool DirDownload::retrieveEntries()
       return false;
 
    Protos::Core::GetEntries getEntries;
-   getEntries.mutable_dirs()->add_entry()->CopyFrom(this->remoteEntry);
+   getEntries.mutable_dirs()->add_entries()->CopyFrom(this->remoteEntry);
    this->getEntriesResult = this->peerSource->getEntries(getEntries);
 
    if (this->getEntriesResult.isNull() || !this->occupiedPeersAskingForEntries.setPeerAsOccupied(this->peerSource))
@@ -115,16 +115,16 @@ void DirDownload::retryToGetEntries()
 void DirDownload::result(const Protos::Core::GetEntriesResult& entries)
 {
    // We asked for one directory, we shouldn't have zero result.
-   if (entries.result_size() > 0 && entries.result(0).status() == Protos::Core::GetEntriesResult::EntryResult::OK)
+   if (entries.results_size() > 0 && entries.results(0).status() == Protos::Core::GetEntriesResult::EntryResult::OK)
    {
       Protos::Common::Entries entriesCopy;
 
-      if (entries.result(0).has_entries())
+      if (entries.results(0).has_entries())
       {
-         entriesCopy.CopyFrom(entries.result(0).entries());
+         entriesCopy.CopyFrom(entries.results(0).entries());
          // We need to specify the shared directory for each entry.
-         for (int i = 0; i < entriesCopy.entry_size(); i++)
-            entriesCopy.mutable_entry(i)->mutable_shared_entry()->CopyFrom(this->remoteEntry.shared_entry());
+         for (int i = 0; i < entriesCopy.entries_size(); i++)
+            entriesCopy.mutable_entries(i)->mutable_shared_entry()->CopyFrom(this->remoteEntry.shared_entry());
       }
 
       this->getEntriesResult.clear();
@@ -132,12 +132,12 @@ void DirDownload::result(const Protos::Core::GetEntriesResult& entries)
    }
    else
    {
-      if (entries.result_size() == 0 || entries.result(0).status() == Protos::Core::GetEntriesResult::EntryResult::DONT_HAVE)
+      if (entries.results_size() == 0 || entries.results(0).status() == Protos::Core::GetEntriesResult::EntryResult::DONT_HAVE)
       {
          L_DEBU("Unable to get the entries: ENTRY_NOT_FOUND");
          this->setStatus(ENTRY_NOT_FOUND);
       }
-      else if (entries.result(0).status() == Protos::Core::GetEntriesResult::EntryResult::TIMEOUT_SCANNING_IN_PROGRESS)
+      else if (entries.results(0).status() == Protos::Core::GetEntriesResult::EntryResult::TIMEOUT_SCANNING_IN_PROGRESS)
       {
          L_DEBU("Unable to get the entries: REMOTE_SCANNING_IN_PROGRESS");
          this->setStatus(REMOTE_SCANNING_IN_PROGRESS);
@@ -175,12 +175,12 @@ void DirDownload::createDirectory()
       }
       catch (FM::NoWriteableDirectoryException&)
       {
-         L_DEBU(QString("There is no shared directory with writing rights for this download: %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
+         L_DEBU(QString("There is no shared directory with writing rights for this download: %1").arg(this->remoteEntry.name()));
          this->setStatus(NO_SHARED_DIRECTORY_TO_WRITE);
       }
       catch (FM::UnableToCreateNewDirException&)
       {
-         L_DEBU(QString("Unable to create the directory, download: %1").arg(Common::ProtoHelper::getStr(this->remoteEntry, &Protos::Common::Entry::name)));
+         L_DEBU(QString("Unable to create the directory, download: %1").arg(this->remoteEntry.name()));
          this->setStatus(UNABLE_TO_CREATE_THE_DIRECTORY);
       }
    }

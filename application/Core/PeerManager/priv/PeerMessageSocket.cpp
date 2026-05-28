@@ -213,7 +213,7 @@ void PeerMessageSocket::entriesResult(const Protos::Core::GetEntriesResult::Entr
    {
       if (this->entriesResultsToReceive[i] == this->sender())
       {
-         this->entriesResultMessage.mutable_result(i)->CopyFrom(result);
+         this->entriesResultMessage.mutable_results(i)->CopyFrom(result);
          this->entriesResultsToReceive[i].clear();
       }
       else if (!this->entriesResultsToReceive[i].isNull())
@@ -238,7 +238,7 @@ void PeerMessageSocket::entriesResultTimeout()
    {
       if (this->entriesResultsToReceive[i] == this->sender())
       {
-         this->entriesResultMessage.mutable_result(i)->set_status(Protos::Core::GetEntriesResult::EntryResult::TIMEOUT_SCANNING_IN_PROGRESS);
+         this->entriesResultMessage.mutable_results(i)->set_status(Protos::Core::GetEntriesResult::EntryResult::TIMEOUT_SCANNING_IN_PROGRESS);
          this->entriesResultsToReceive[i].clear();
       }
       else if (!this->entriesResultsToReceive[i].isNull())
@@ -262,18 +262,18 @@ void PeerMessageSocket::onNewMessage(const Common::Message& message)
 
          const Protos::Core::GetEntries& getEntries = message.getMessage<Protos::Core::GetEntries>();
 
-         for (int i = 0; i < getEntries.dirs().entry_size(); i++)
+         for (int i = 0; i < getEntries.dirs().entries_size(); i++)
          {
-            QSharedPointer<FM::IGetEntriesResult> result = this->fileManager->getScannedEntries(getEntries.dirs().entry(i), getEntries.nb_max_hashes_per_entry() > 0 ? getEntries.nb_max_hashes_per_entry() : std::numeric_limits<int>::max());
+            QSharedPointer<FM::IGetEntriesResult> result = this->fileManager->getScannedEntries(getEntries.dirs().entries(i), getEntries.nb_max_hashes_per_entry() > 0 ? getEntries.nb_max_hashes_per_entry() : std::numeric_limits<int>::max());
             connect(result.data(), &FM::IGetEntriesResult::result, this, &PeerMessageSocket::entriesResult, Qt::DirectConnection);
             connect(result.data(), &FM::IGetEntriesResult::timeout, this, &PeerMessageSocket::entriesResultTimeout, Qt::DirectConnection);
             this->entriesResultsToReceive << result;
-            this->entriesResultMessage.add_result();
+            this->entriesResultMessage.add_results();
          }
 
          // Add the root directories if asked.
-         if (getEntries.dirs().entry_size() == 0 || getEntries.get_roots())
-            this->entriesResultMessage.add_result()->mutable_entries()->CopyFrom(this->fileManager->getEntries());
+         if (getEntries.dirs().entries_size() == 0 || getEntries.get_roots())
+            this->entriesResultMessage.add_results()->mutable_entries()->CopyFrom(this->fileManager->getEntries());
 
          if (this->entriesResultsToReceive.isEmpty())
             this->sendEntriesResultMessage();
@@ -320,11 +320,12 @@ void PeerMessageSocket::onNewMessage(const Common::Message& message)
       }
       break;
 
-   case Common::MessageHeader::CORE_GET_CHUNK:
+   // TODO: Send many chunks instead of just one.
+   case Common::MessageHeader::CORE_GET_CHUNKS:
       {
-         const Protos::Core::GetChunk& getChunkMessage = message.getMessage<Protos::Core::GetChunk>();
+         const Protos::Core::GetChunks& getChunksMessage = message.getMessage<Protos::Core::GetChunk>();
 
-         const Common::Hash hash(getChunkMessage.chunk().hash());
+         const Common::Hash hash(getChunksMessage.chunks().hash());
          if (hash.isNull())
          {
             L_WARN("GET_CHUNK: Chunk null");
@@ -336,17 +337,18 @@ void PeerMessageSocket::onNewMessage(const Common::Message& message)
          QSharedPointer<FM::IChunk> chunk = this->fileManager->getChunk(hash);
          if (chunk.isNull())
          {
-            Protos::Core::GetChunkResult result;
-            result.set_status(Protos::Core::GetChunkResult::DONT_HAVE);
-            this->send(Common::MessageHeader::CORE_GET_CHUNK_RESULT, result);
-            this->finished();
+            // TODO
+            // Protos::Core::GetChunksResult result;
+            // result.set_status(Protos::Core::GetChunksResult::ChunkResult::DONT_HAVE);
+            // this->send(Common::MessageHeader::CORE_GET_CHUNK_RESULT, result);
+            // this->finished();
 
             L_WARN(QString("GET_CHUNK: Chunk unknown: %1").arg(hash.toStr()));
          }
          else
          {
-            Protos::Core::GetChunkResult result;
-            result.set_status(Protos::Core::GetChunkResult::OK);
+            Protos::Core::GetChunksResult result;
+            result.set_status(Protos::Core::GetChunksResult::OK);
             result.set_chunk_size(chunk->getKnownBytes());
             this->send(Common::MessageHeader::CORE_GET_CHUNK_RESULT, result);
 

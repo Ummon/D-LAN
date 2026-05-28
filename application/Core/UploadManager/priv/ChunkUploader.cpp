@@ -97,12 +97,12 @@ void ChunkUploader::run()
    {
       QSharedPointer<FM::IDataReader> reader = this->chunk->getDataReader();
 
-      char buffer[BUFFER_SIZE];
+      QByteArray buffer(BUFFER_SIZE, Qt::Uninitialized);
       int bytesRead = 0;
 
-      while (bytesRead = reader->read(buffer, this->offset))
+      while (bytesRead = reader->read(buffer.data(), this->offset))
       {
-         const int bytesSent = this->socket->write(buffer, bytesRead);
+         const int bytesSent = this->socket->write(buffer.constData(), bytesRead);
 
          if (bytesSent == -1)
          {

@@ -8,6 +8,7 @@ TARGET = RemoteControlManager
 TEMPLATE = lib
 
 include(../../Common/common.pri)
+include(../../Libs/blake3.pri)
 include(../../Libs/protobuf.pri)
 
 CONFIG += staticlib \
