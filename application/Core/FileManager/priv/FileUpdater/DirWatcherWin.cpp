@@ -23,6 +23,8 @@ using namespace FM;
 
 #include <QMutexLocker>
 
+#include <Common/StringUtils.h>
+
 #include <priv/Exceptions.h>
 #include <priv/FileUpdater/WaitConditionWin.h>
 
@@ -55,13 +57,9 @@ bool DirWatcherWin::addPath(const QString& path, const QString& filename)
    if (this->dirs.size() > MAXIMUM_WAIT_OBJECTS - MAX_WAIT_CONDITION)
       return false;
 
-   QList<TCHAR> pathTCHAR(path.size() + 1);
-   path.toWCharArray(pathTCHAR.data());
-   pathTCHAR[path.size()] = 0;
-
    HANDLE fileHandle =
       CreateFile(
-         pathTCHAR.data(), // Pointer to the directory.
+         Common::StringUtils::towcharList(path).constData(), // Pointer to the directory.
          FILE_LIST_DIRECTORY, // Access (read/write) mode.
          FILE_SHARE_READ | FILE_SHARE_WRITE, // Share mode.
          NULL, // security descriptor
@@ -196,11 +194,11 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
 
          // We need to add a null character termination because 'QString::fromStdWString' need one.
          // 'filename' can be a directory or a file.
-         int nbChar = notifyInformation->FileNameLength / sizeof(TCHAR);
-         QList<TCHAR> filenameTCHAR(nbChar + 1);
-         wcsncpy(filenameTCHAR.data(), notifyInformation->FileName, nbChar);
-         filenameTCHAR[nbChar] = 0;
-         QString filename = QString::fromStdWString(filenameTCHAR.constData());
+         int nbChar = notifyInformation->FileNameLength / sizeof(wchar_t);
+         QList<wchar_t> filename_wchar(nbChar + 1);
+         wcsncpy(filename_wchar.data(), notifyInformation->FileName, nbChar);
+         filename_wchar[nbChar] = 0;
+         QString filename = QString::fromStdWString(filename_wchar.constData());
 
          const bool isWatchedFile = !dir->filename.isEmpty();
 

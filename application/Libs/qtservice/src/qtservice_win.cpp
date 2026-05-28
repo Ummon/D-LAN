@@ -179,7 +179,6 @@ bool QtServiceController::isRunning() const
     return result;
 }
 
-
 QString QtServiceController::serviceFilePath() const
 {
     Q_D(const QtServiceController);
@@ -198,7 +197,7 @@ QString QtServiceController::serviceFilePath() const
             char data[8 * 1024];
             if (pQueryServiceConfig(hService, (LPQUERY_SERVICE_CONFIG)data, 8 * 1024, &sizeNeeded)) {
                 LPQUERY_SERVICE_CONFIG config = (LPQUERY_SERVICE_CONFIG)data;
-                result = QString::fromUtf16((const ushort*)config->lpBinaryPathName);
+                result = QString::fromWCharArray(config->lpBinaryPathName);
             }
             pCloseServiceHandle(hService);
         }
@@ -231,7 +230,7 @@ QString QtServiceController::serviceDescription() const
                     &dwBytesNeeded)) {
                 LPSERVICE_DESCRIPTION desc = (LPSERVICE_DESCRIPTION)data;
                 if (desc->lpDescription)
-                    result = QString::fromUtf16((const ushort*)desc->lpDescription);
+                    result = QString::fromWCharArray(desc->lpDescription);
             }
             pCloseServiceHandle(hService);
         }
@@ -548,12 +547,12 @@ void WINAPI QtServiceSysPrivate::serviceMain(DWORD dwArgc, wchar_t** lpszArgv)
     // in the main thread to go ahead with start()'ing the service.
 
     for (DWORD i = 0; i < dwArgc; i++)
-        instance->serviceArgs.append(QString::fromUtf16((unsigned short*)lpszArgv[i]));
+        instance->serviceArgs.append(QString::fromWCharArray(lpszArgv[i]));
 
     instance->startSemaphore.release(); // let the qapp creation start
     instance->startSemaphore2.acquire(); // wait until its done
     // Register the control request handler
-    instance->serviceStatus = pRegisterServiceCtrlHandler((TCHAR*)QtServiceBase::instance()->serviceName().utf16(), handler);
+    instance->serviceStatus = pRegisterServiceCtrlHandler((wchar_t*)QtServiceBase::instance()->serviceName().utf16(), handler);
 
     if (!instance->serviceStatus) // cannot happen - something is utterly wrong
         return;

@@ -65,7 +65,7 @@ Language Languages::getBestMatchLanguage(ExeType exeType, QLocale locale)
       Language currentLanguage = i.next();
       if (currentLanguage.locale.language() == locale.language())
       {
-         if (currentLanguage.locale.country() == locale.country()) // Perfect match.
+         if (currentLanguage.locale.territory() == locale.territory()) // Perfect match.
             return currentLanguage;
          if (bestCurrentLanguage.filename.isEmpty())
             bestCurrentLanguage = currentLanguage;

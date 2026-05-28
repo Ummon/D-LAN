@@ -194,12 +194,25 @@ int StringUtils::strcmpi(const std::string& s1, const std::string& s2)
   */
 quint32 StringUtils::hashStringToInt(const QString& str)
 {
-   QByteArray data = str.toLocal8Bit();
+   const QByteArray data = str.toLocal8Bit();
+   const QByteArrayView view = QByteArrayView(data);
    if (data.size() <= 1)
-      return qChecksum(data.constData(), data.size());
+      return qChecksum(view);
 
-   const int s = data.size();
-   const quint32 part1 = qChecksum(data.constData(), s / 2);
-   const quint32 part2 = qChecksum(data.constData() + s / 2, s / 2 + (s % 2 == 0 ? 0 : 1));
+   auto s = data.length();
+
+   // const int s = data.size();
+   const quint32 part1 = qChecksum(view.sliced(0, s / 2));
+   const quint32 part2 = qChecksum(view.sliced(s / 2, s / 2 + (s % 2 == 0 ? 0 : 1)));
    return part1 | part2 << 16;
 }
+
+#ifdef Q_OS_WIN32
+QList<wchar_t> StringUtils::towcharList(const QString& str)
+{
+   QList<wchar_t> str_wchar(str.size() + 1);
+   str.toWCharArray(str_wchar.data());
+   str_wchar[str_wchar.size() - 1] = 0;
+   return str_wchar;
+}
+#endif

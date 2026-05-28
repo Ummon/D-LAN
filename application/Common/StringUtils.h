@@ -40,6 +40,10 @@ namespace Common
       static inline int commonPrefix(QStringView s1, QStringView s2);
 
       static quint32 hashStringToInt(const QString& str);
+
+#ifdef Q_OS_WIN32
+      static QList<wchar_t> towcharList(const QString& str);
+#endif
    };
 }
 

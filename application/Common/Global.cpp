@@ -24,6 +24,7 @@ using namespace Common;
 #include <QDir>
 #include <QDirIterator>
 #include <QStringBuilder>
+#include <QByteArray>
 #include <QtGlobal>
 #include <QHostAddress>
 #include <QNetworkInterface>
@@ -41,6 +42,7 @@ using namespace Common;
 
 #include <Constants.h>
 #include <Version.h>
+#include <StringUtils.h>
 
 /**
   * @class Common::Global
@@ -309,12 +311,7 @@ qint64 Global::availableDiskSpace(const QString& path)
 
 #if defined(Q_OS_WIN32)
    ULARGE_INTEGER space;
-   wchar_t buffer[path.size()];
-
-   int l = path.toWCharArray(buffer);
-   buffer[l] = 0;
-
-   if (!GetDiskFreeSpaceEx(buffer, &space, NULL, NULL))
+   if (!GetDiskFreeSpaceEx(StringUtils::towcharList(path).constData(), &space, NULL, NULL))
       return std::numeric_limits<qint64>::max();
    return space.QuadPart;
 #elif defined(Q_OS_LINUX)
@@ -369,12 +366,12 @@ QString Global::getDataFolder(DataFolderType type, bool create)
    else
    {
 #ifdef Q_OS_WIN32
-      TCHAR dataPath[MAX_PATH];
+      wchar_t dataPath[MAX_PATH];
 
       if (!SUCCEEDED(SHGetFolderPath(NULL, type == DataFolderType::ROAMING ? CSIDL_APPDATA : CSIDL_LOCAL_APPDATA, NULL, 0, dataPath)))
          throw UnableToGetFolder(QString("Unable to get the %1: SHGetFolderPath failed").arg(type == DataFolderType::ROAMING ? "roaming user directory path" : "local user directory path"));
 
-      const QString dataFolderPath = QString::fromUtf16((ushort*)dataPath);
+      const QString dataFolderPath = QString::fromWCharArray(dataPath);
       const QDir dataFolder(dataFolderPath);
 
       if (create && !dataFolder.exists(Constants::APPLICATION_FOLDER_NAME))
@@ -426,10 +423,10 @@ QString Global::getDataServiceFolder(DataFolderType type)
    {
       // For Windows XP, the service data folder is located in C:\Documents and Settings\LocalService.
 
-      TCHAR windowsPathTCHAR[MAX_PATH];
-      if (!SUCCEEDED(SHGetFolderPath(NULL, CSIDL_WINDOWS , NULL, 0, windowsPathTCHAR)))
+      wchar_t windowsPath_wchar[MAX_PATH];
+      if (!SUCCEEDED(SHGetFolderPath(NULL, CSIDL_WINDOWS , NULL, 0, windowsPath_wchar)))
          return QString();
-      const QString windowsPath = QString::fromUtf16((ushort*)windowsPathTCHAR);
+      const QString windowsPath = QString::fromWCharArray(windowsPath_wchar);
       QStringList windowsPathSplit = windowsPath.split('\\');
       if (windowsPathSplit.isEmpty())
          return QString();
@@ -448,11 +445,11 @@ QString Global::getDataServiceFolder(DataFolderType type)
 QString Global::getDataSystemFolder(DataFolderType type)
 {
 #ifdef Q_OS_WIN32
-   TCHAR dataPathSystem[MAX_PATH];
+   wchar_t dataPathSystem[MAX_PATH];
    // SHGetKnownFolderPath should be use for vista a superior but it doesn't exist in mingw.
    if (!SUCCEEDED(SHGetFolderPath(NULL, CSIDL_SYSTEMX86, NULL, 0, dataPathSystem)))
       return QString();
-   const QString dataFolderPath = QString::fromUtf16((ushort*)dataPathSystem).replace('\\', '/');
+   const QString dataFolderPath = QString::fromWCharArray(dataPathSystem).replace('\\', '/');
 
    OSVERSIONINFO versionInfo;
    memset(&versionInfo, 0, sizeof(versionInfo));
@@ -472,10 +469,10 @@ QString Global::getDataSystemFolder(DataFolderType type)
 QString Global::getCurrentUserName()
 {
 #if defined(Q_OS_WIN32)
-   TCHAR userName[UNLEN + 1]; // UNLEN is from Lmcons.h
+   wchar_t userName[UNLEN + 1]; // UNLEN is from Lmcons.h
    DWORD userNameSize = sizeof(userName);
    GetUserName(userName, &userNameSize);
-   return QString::fromUtf16((ushort*)userName);
+   return QString::fromWCharArray(userName);
 #elif defined(Q_OS_LINUX)
    char* login = getlogin();
    if (login)
@@ -490,10 +487,10 @@ QString Global::getCurrentUserName()
 QString Global::getCurrentMachineName()
 {
 #if defined(Q_OS_WIN32)
-   TCHAR machineName[MAX_COMPUTERNAME_LENGTH + 1];
+   wchar_t machineName[MAX_COMPUTERNAME_LENGTH + 1];
    DWORD machineNameSize = sizeof(machineName);
    GetComputerName(machineName, &machineNameSize);
-   return QString::fromUtf16((ushort*)machineName);
+   return QString::fromWCharArray(machineName);
 #elif defined(Q_OS_LINUX)
    char machineName[256];
    size_t machineNameSize = sizeof(machineName);
