@@ -117,8 +117,10 @@ namespace FM
 
       QList<Entry*> unwatchableEntries;
       QElapsedTimer timerScanUnwatchable;
+
       QList<Entry*> entriesToScan; ///< When something change in a directory or in a file we put it in this list until it is scanned.
       Entry* currentScanningEntry;
+
       QWaitCondition scanningStopped;
       mutable QMutex scanningMutex;
 

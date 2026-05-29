@@ -276,7 +276,7 @@ void FileUpdater::run()
          if (nextEntryToScan)
             this->scan(nextEntryToScan);
       }
-      else // Wait for filesystem modifications.
+      else
       {
          // If we have no dir to scan and no file to hash we wait for a new shared file
          // or a filesystem event.
@@ -288,6 +288,7 @@ void FileUpdater::run()
          {
             this->mutex.unlock();
             this->processEvents(
+               // Wait for filesystem modifications.
                this->dirWatcher->waitEvent(
                   this->unwatchableEntries.isEmpty()
                      ? -1
@@ -370,7 +371,8 @@ void FileUpdater::computeSomeHashes()
             }
             catch (IOErrorException&)
             {
-               gotAllHashes = true; // The hashes may be recomputed when a peer ask the hashes with a GET_HASHES request.
+               // The hashes may be recomputed later when a peer ask the hashes with a GET_HASHES request.
+               gotAllHashes = true;
             }
             locker.relock();
 
@@ -378,7 +380,6 @@ void FileUpdater::computeSomeHashes()
             // 'filesWithoutHashesPrioritized' by 'rmRoot(..)'.
             if (gotAllHashes && !fileList->isEmpty() && fileList->first() == nextFileToHash)
                fileList->removeFirst();
-
             // Special case for the prioritized list, we put the file at the end after the computation of a hash.
             else if (
                fileList == &this->filesWithoutHashesPrioritized &&
@@ -501,10 +502,7 @@ void FileUpdater::scan(Entry* entry, bool addUnfinished)
             }
             else if (addUnfinished || !Global::isFileUnfinished(fileInfo.fileName()))
             {
-               if (
-                  File* file =
-                     this->addScannedFile(fileInfo, currentDir->getFile(fileInfo.fileName()), currentDir)
-               )
+               if (File* file = this->addScannedFile(fileInfo, currentDir->getFile(fileInfo.fileName()), currentDir))
                   currentFiles.removeOne(file);
             }
          }
@@ -548,7 +546,7 @@ File* FileUpdater::addScannedFile(const QFileInfo& fileInfo, File* file, Directo
    //    this->fileCacheInformation->newFile();
    //    this->progress = this->fileCacheInformation->getProgress();
    // }
-/*
+   /*
    if (file)
    {
       if (
