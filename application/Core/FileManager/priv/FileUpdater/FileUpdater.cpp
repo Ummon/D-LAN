@@ -43,6 +43,7 @@ using namespace FM;
 
 FileUpdater::FileUpdater(FileManager* fileManager) :
    SCAN_PERIOD_UNWATCHABLE_DIRS(SETTINGS.get<quint32>("scan_period_unwatchable_dirs")),
+   IO_ERROR_WAITING_BEFORE_RETRY(3000),
    fileManager(fileManager),
    dirWatcher(DirWatcher::getNewWatcher()),
    // fileCacheInformation(nullptr),
@@ -290,9 +291,13 @@ void FileUpdater::run()
             this->processEvents(
                // Wait for filesystem modifications.
                this->dirWatcher->waitEvent(
-                  this->unwatchableEntries.isEmpty()
-                     ? -1
-                     : SCAN_PERIOD_UNWATCHABLE_DIRS, QList<WaitCondition*>() << this->dirEvent
+                  !this->filesWithoutHashesIOError.isEmpty() ?
+                       IO_ERROR_WAITING_BEFORE_RETRY
+                     : (!this->unwatchableEntries.isEmpty() ?
+                          SCAN_PERIOD_UNWATCHABLE_DIRS
+                        : -1
+                     ),
+                  QList<WaitCondition*> { this->dirEvent }
                )
             );
          }
@@ -303,7 +308,7 @@ void FileUpdater::run()
          }
       }
 
-      if (timerScanUnwatchable.elapsed() >= SCAN_PERIOD_UNWATCHABLE_DIRS)
+      if (timerScanUnwatchable.elapsed() >= SCAN_PERIOD_UNWATCHABLE_DIRS && !this->unwatchableEntries.isEmpty())
       {
          this->mutex.lock();
          QList<Entry*> unwatchableEntriesCopy = this->unwatchableEntries;
@@ -315,6 +320,12 @@ void FileUpdater::run()
             Entry* entry = i.next();
             this->scan(entry);
          }
+      }
+
+      if (!this->filesWithoutHashesIOError.isEmpty())
+      {
+         this->filesWithoutHashes.append(this->filesWithoutHashesIOError);
+         this->filesWithoutHashesIOError.clear();
       }
 
       if (this->toStop)
@@ -371,8 +382,8 @@ void FileUpdater::computeSomeHashes()
             }
             catch (IOErrorException&)
             {
-               // The hashes may be recomputed later when a peer ask the hashes with a GET_HASHES request.
-               gotAllHashes = true;
+               fileList->removeFirst();
+               this->filesWithoutHashesIOError << nextFileToHash;
             }
             locker.relock();
 
@@ -540,30 +551,8 @@ File* FileUpdater::addScannedFile(const QFileInfo& fileInfo, File* file, Directo
 {
    QMutexLocker locker(&this->mutex);
 
-   // Only used when loading the cache to compute the progress.
-   // if (this->fileCacheInformation)
-   // {
-   //    this->fileCacheInformation->newFile();
-   //    this->progress = this->fileCacheInformation->getProgress();
-   // }
-   /*
-   if (file)
-   {
-      if (
-         // The case where a file is being copied and a lot of modification event is thrown
-         // (thus the file is in this->filesWithoutHashes).
-         !this->filesWithoutHashes.contains(file) &&
-         !this->filesWithoutHashesPrioritized.contains(file) &&
-         file->isComplete() &&
-         // If the hashes of a file can't be computed
-         // (IO error, the file is being written for example) we only compare their sizes.
-         !file->correspondTo(fileInfo, file->hasAllHashes())
-      )
-      {
-         this->deleteEntry(file);
-         file = nullptr;
-      }
-   }*/
+   if (file && file->isComplete() && !file->correspondTo(fileInfo))
+      file->fileHasChangedOnDisk(fileInfo);
 
    if (parentDirectory && !file)
    {      

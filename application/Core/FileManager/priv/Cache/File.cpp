@@ -25,6 +25,8 @@ using namespace FM;
    #include <WinIoCtl.h>
 #endif
 
+#include <utility>
+
 #include <QString>
 #include <QFile>
 
@@ -129,7 +131,7 @@ File::~File()
    QMutexLocker lockerRead(&this->readLock);
    this->getCache()->getFilePool().release(this->fileInReadMode, true);
 
-   L_DEBU(QString("File deleted : %1").arg(this->getAbsolutePath()));
+   L_DEBU(QString("File deleted : %1").arg(this->File::getAbsolutePath()));
 
    QMutexLocker locker(&this->mutex); // We wait that all the current access to this file are finished.
 }
@@ -289,6 +291,18 @@ bool File::correspondTo(const QFileInfo& fileInfo, bool checkTheDateToo) const
    return
       this->getSize() == fileInfo.size() &&
       (!checkTheDateToo || this->getDateLastModified() == fileInfo.lastModified());
+}
+
+void File::fileHasChangedOnDisk(const QFileInfo fileInfo)
+{
+   for (auto chunk : std::as_const(this->chunks))
+   {
+      chunk->setHash(Common::Hash());
+      chunk->setKnownBytes(0);
+   }
+
+   this->setSize(fileInfo.size());
+   this->dateLastModified = fileInfo.lastModified();
 }
 
 Common::Path File::getRelativePath() const

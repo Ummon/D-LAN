@@ -356,17 +356,18 @@ void Tests::createASubFile()
    auto sharedEntry = Utils::tryFindEntry(this->fileManager, Common::Path("sharedDirs/share1/"));
    QVERIFY(sharedEntry.IsInitialized());
    QVERIFY(
-      Utils::retry(5, 100,
+      Utils::retry(5, 200,
          [this, &sharedEntry]()
          {
             auto entries = this->fileManager->getEntries(sharedEntry);
             for (const auto& entry : entries.entries())
             {
-               if (entry.name() == "v.txt" && entry.chunks().size() == 1)
-               {
-                  const auto hash = Common::Hash(entry.chunks().Get(0).hash());
-                  return hash.toStr() == "7b6f7f3309179b97b88de3c178274b7e38343267bcdfe653c819593e";
-               }
+               if (
+                  entry.name() == "v.txt" &&
+                  entry.chunks().size() == 1 &&
+                  Common::Hash(entry.chunks(0).hash()).toStr() == "7b6f7f3309179b97b88de3c178274b7e38343267bcdfe653c819593e"
+               )
+                  return true;
             }
             return false;
          }
@@ -377,22 +378,32 @@ void Tests::createASubFile()
 void Tests::createABigFile()
 {
    qDebug() << "===== createABigFile() =====";
+   auto size = 128 * 1024 * 1024; // 128Mo.
+   auto nbChunks = size / Common::Constants::CHUNK_SIZE;
 
-   QFile file("sharedDirs/big.bin");
-   file.open(QIODevice::WriteOnly);
-   file.resize(128 * 1024 * 1024); // 128Mo
+   {
+      QFile file("sharedDirs/big.bin");
+      file.open(QIODevice::WriteOnly);
+      file.resize(size);
+   }
 
    auto sharedEntry = Utils::tryFindEntry(this->fileManager, Common::Path("sharedDirs/"));
    QVERIFY(sharedEntry.IsInitialized());
    QVERIFY(
-      Utils::retry(5, 100,
-         [this, &sharedEntry]()
+      Utils::retry(10, 500,
+         [this, &sharedEntry, &nbChunks, &size]()
          {
             auto entries = this->fileManager->getEntries(sharedEntry);
             for (const auto& entry : entries.entries())
             {
-               if (entry.name() == "big.bin")
-                  return entry.size() == 128 * 1024 * 1024;
+               if (
+                  entry.name() == "big.bin" &&
+                  entry.size() == size &&
+                  entry.chunks_size() == nbChunks &&
+                  Common::Hash(entry.chunks(0).hash()).toStr() == "ea7b156fc9a810c181984f9e2da433feeeb2bf88ffa4d1f0dc1a9215" &&
+                  Common::Hash(entry.chunks(1).hash()).toStr() == "ea7b156fc9a810c181984f9e2da433feeeb2bf88ffa4d1f0dc1a9215"
+               )
+                  return true;
             }
             return false;
          }
@@ -400,26 +411,54 @@ void Tests::createABigFile()
    );
 }
 
-// void Tests::modifyABigFile()
-// {
-//    qDebug() << "===== modifyABigFile() =====";
+void Tests::modifyABigFile()
+{
+   qDebug() << "===== modifyABigFile() =====";
+   auto size = 128 * 1024 * 1024; // 128Mo.
+   auto nbChunks = size / Common::Constants::CHUNK_SIZE;
 
-//    {
-//       const QString filePath("sharedDirs/big.bin");
-//       QFile file(filePath);
-//       if (!file.open(QIODevice::ReadWrite))
-//       {
-//          qDebug() << "Can't create the file " << filePath;
-//          return;
-//       }
-//       QDataStream stream(&file);
-//       stream.skipRawData(32 * 1024 * 1024 - 3);
-//       QByteArray data("XXXXXX");
-//       stream.writeRawData(data.constData(), data.size());
-//    }
+   {
+      const QString filePath("sharedDirs/big.bin");
+      QFile file(filePath);
+      if (!file.open(QIODevice::ReadWrite))
+      {
+         qDebug() << "Can't open the file " << filePath;
+         return;
+      }
+      QDataStream stream(&file);
+      stream.skipRawData(32 * 1024 * 1024 - 3); // Write at the middle of the first data chunk.
+      QByteArray data("XXXXXX");
+      stream.writeRawData(data.constData(), data.size());
+   }
 
-//    QTest::qSleep(1000);
-// }
+   auto sharedEntry = Utils::tryFindEntry(this->fileManager, Common::Path("sharedDirs/"));
+   QVERIFY(sharedEntry.IsInitialized());
+   QVERIFY(
+      Utils::retry(10, 200,
+         [this, &sharedEntry, &nbChunks, &size]()
+         {
+            auto entries = this->fileManager->getEntries(sharedEntry);
+            for (const auto& entry : entries.entries())
+            {
+               if (
+                  entry.name() == "big.bin" &&
+                  entry.size() == size &&
+                  entry.chunks_size() == nbChunks &&
+                  Common::Hash(entry.chunks(0).hash()).toStr() == "93bcb2f6063a716b2a37ddbee031d07851811b72f21d5ece028b5544" &&
+                  Common::Hash(entry.chunks(1).hash()).toStr() == "ea7b156fc9a810c181984f9e2da433feeeb2bf88ffa4d1f0dc1a9215"
+               )
+               {
+                  // qDebug() << Common::Hash(entry.chunks(0).hash()).toStr();
+                  // qDebug() << Common::Hash(entry.chunks(1).hash()).toStr();
+                  // qDebug() << "--------------------------";
+                  return true;
+               }
+            }
+            return false;
+         }
+      )
+   );
+}
 
 // void Tests::removeABigFile()
 // {

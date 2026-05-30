@@ -18,6 +18,8 @@
   
 #pragma once
 
+#include <minwindef.h>
+
 #include <QObject>
 #include <QMutex>
 #include <QFile>
@@ -51,9 +53,12 @@ namespace FM
       struct OpenedFile
       {
          QFile* file;
+         QString path;
          QIODevice::OpenMode mode;
          QElapsedTimer releasedTime; // '!isValid()' if not released.
       };
+
+      static DWORD toCreateFileCreationDisposition(QIODevice::OpenMode mode);
 
       QList<OpenedFile> files;
       QMutex mutex;

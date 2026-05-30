@@ -60,7 +60,7 @@ bool Utils::retry(int nbTries, int waitBetweenTries_ms, std::function<bool()> fu
    while (i > 0) {
       if (fun())
          return true;
-      QTest::qSleep(200);
+      QTest::qWait(waitBetweenTries_ms);
       i--;
    }
    return false;

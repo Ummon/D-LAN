@@ -22,7 +22,7 @@ namespace FM
 {
    /**
      * A wait condition used instead of the Qt implementation (QWaitCondition) for
-     * only one reason : to be able to use it natively with DirWatcher to wait.
+     * only one reason: to be able to use it natively with DirWatcher to wait.
      */
    class WaitCondition
    {

@@ -15,9 +15,13 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <priv/Cache/FilePool.h>
 using namespace FM;
+
+#include <windows.h>
+#include <io.h>
+#include <fcntl.h>
 
 #include <QMutexLocker>
 
@@ -67,7 +71,7 @@ QFile* FilePool::open(const QString& path, QIODevice::OpenMode mode, bool* fileC
    {
       OpenedFile& file = i.next();
 
-      if (file.file->fileName() == path && file.mode == mode && file.releasedTime.isValid())
+      if (file.path == path && file.mode == mode && file.releasedTime.isValid())
       {
          L_DEBU(QString("FilePool::open(%1, %2): file already in cache").arg(path).arg(mode.toInt()));
          file.releasedTime.invalidate();
@@ -75,13 +79,38 @@ QFile* FilePool::open(const QString& path, QIODevice::OpenMode mode, bool* fileC
       }
    }
 
-   QFile* file = new QFile(path);
+   // TODO: Linux.
+   // We use the 'CreateFileW' function to get an exclusive access to the file.
+   HANDLE h =
+      CreateFileW(
+         reinterpret_cast<LPCWSTR>(path.utf16()),
+         GENERIC_READ,
+         0, // Exclusive: no sharing.
+         nullptr,
+         toCreateFileCreationDisposition(mode),
+         FILE_ATTRIBUTE_NORMAL,
+         nullptr
+      );
+
+   if (h == INVALID_HANDLE_VALUE)
+   {
+      L_DEBU(
+         QString("FilePool::open(%1, %2): invalid handle, error: %3")
+            .arg(path)
+            .arg(mode.toInt())
+            .arg(GetLastError())
+      );
+      return nullptr;
+   }
+
+   int fd = _open_osfhandle(reinterpret_cast<intptr_t>(h), _O_RDWR);
+   QFile* file = new QFile();
 
    if (fileCreated && mode.testFlag(QIODevice::WriteOnly) && !file->exists())
       *fileCreated = true;
 
-   if (!file->open(mode))
-   {      
+   if (!file->open(fd, mode, QFileDevice::AutoCloseHandle))
+   {
       if (fileCreated)
          *fileCreated = false;
       delete file;
@@ -89,7 +118,7 @@ QFile* FilePool::open(const QString& path, QIODevice::OpenMode mode, bool* fileC
    }
 
    L_DEBU(QString("FilePool::open(%1, %2): file added to the cache").arg(path).arg(mode.toInt()));
-   this->files << OpenedFile { file, mode, QElapsedTimer() };
+   this->files << OpenedFile { file, path, mode, QElapsedTimer() };
    return file;
 }
 
@@ -107,7 +136,7 @@ void FilePool::release(QFile* file, bool forceToClose)
       {
          if (forceToClose)
          {
-            L_DEBU(QString("FilePool::release(%1, %2): file forced to close").arg(file->fileName()).arg(forceToClose));
+            L_DEBU(QString("FilePool::release(%1, %2): file forced to close").arg(openedFile.path).arg(forceToClose));
             QFile* fileToDelete = openedFile.file;
             i.remove();
 
@@ -123,7 +152,7 @@ void FilePool::release(QFile* file, bool forceToClose)
 
             L_DEBU(
                QString("FilePool::release(%1, %2): file set as released. Timer already started? : %3")
-                  .arg(file->fileName())
+                  .arg(openedFile.path)
                   .arg(forceToClose)
                   .arg(this->timer.isActive())
             );
@@ -145,7 +174,7 @@ void FilePool::forceReleaseAll(const QString& path)
    for (QMutableListIterator<OpenedFile> i(this->files); i.hasNext();)
    {
       OpenedFile& openedFile = i.next();
-      if (openedFile.file->fileName() == path)
+      if (openedFile.path == path)
       {
          L_DEBU(QString("FilePool::forceReleaseAll(%1): file forced to release and close").arg(path));
          filesToDelete << openedFile.file;
@@ -179,7 +208,7 @@ void FilePool::tryToDeleteReleasedFiles()
       {
          if (openedFile.releasedTime.elapsed() > TIME_KEEP_FILE_OPEN_MIN)
          {
-            L_DEBU(QString("FilePool::tryToDeleteReleasedFiles(): file closed: %1").arg(openedFile.file->fileName()));
+            L_DEBU(QString("FilePool::tryToDeleteReleasedFiles(): file closed: %1").arg(openedFile.path));
             filesToDelete << openedFile.file;
             i.remove();
          }
@@ -202,4 +231,12 @@ void FilePool::tryToDeleteReleasedFiles()
       for (QListIterator<QFile*> i(filesToDelete); i.hasNext();)
          delete i.next();
    }
+}
+
+DWORD FilePool::toCreateFileCreationDisposition(QIODevice::OpenMode mode)
+{
+   if (mode.testFlag(QIODevice::ReadWrite))
+      return OPEN_ALWAYS;
+   else
+      return OPEN_EXISTING;
 }

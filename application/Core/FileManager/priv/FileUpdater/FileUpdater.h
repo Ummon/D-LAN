@@ -85,6 +85,7 @@ namespace FM
       bool processEvents(const QList<WatcherEvent>& events);
 
       const int SCAN_PERIOD_UNWATCHABLE_DIRS;
+      const int IO_ERROR_WAITING_BEFORE_RETRY;
 
       FileManager* fileManager;
       DirWatcher* dirWatcher;
@@ -130,6 +131,7 @@ namespace FM
 
       QList<Entry*> rootEntriesToRemove;
 
+      QList<File*> filesWithoutHashesIOError;
       QList<File*> filesWithoutHashes;
       QList<File*> filesWithoutHashesPrioritized;
       qint64 remainingSizeToHash;
