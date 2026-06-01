@@ -26,6 +26,7 @@ using namespace FM;
 #include <Common/Settings.h>
 #include <Common/ProtoHelper.h>
 #include <Common/Path.h>
+#include <Common/Hash.h>
 #include <Common/Constants.h>
 
 #include <Exceptions.h>
@@ -358,7 +359,7 @@ QList<QSharedPointer<IChunk>> Cache::newFile(Protos::Common::Entry& fileEntry)
    if (!dir)
       throw UnableToCreateNewFileException();
 
-   Common::Hashes hashes;
+   QList<Common::Hash> hashes;
    for (int i = 0; i < fileEntry.chunks_size(); i++)
       hashes << fileEntry.chunks(i).hash();
 

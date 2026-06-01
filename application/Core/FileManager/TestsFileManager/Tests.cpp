@@ -43,6 +43,13 @@ using namespace FM;
 #include <HashesReceiver.h>
 #include <Utils.h>
 
+/**
+  * The nu script 'application/Tools/compute_chunk_hash.nu' can be use to compute a given chunk,
+  * for example to compute the second chunk (n=1) of the file 'sharedDirs/big.bin':
+  * $> source compute_chunk_hash.nu
+  * $> chunk-hash `sharedDirs/big.bin` 2
+  */
+
 Tests::Tests()
 {
 }
@@ -382,8 +389,13 @@ void Tests::createABigFile()
    auto nbChunks = size / Common::Constants::CHUNK_SIZE;
 
    {
-      QFile file("sharedDirs/big.bin");
-      file.open(QIODevice::WriteOnly);
+      const QString filePath("sharedDirs/big.bin");
+      QFile file(filePath);
+      if (!Utils::tryOpen(file, QIODevice::ReadWrite))
+      {
+         qDebug() << "Can't open the file " << filePath;
+         return;
+      }
       file.resize(size);
    }
 
@@ -413,20 +425,22 @@ void Tests::createABigFile()
 
 void Tests::modifyABigFile()
 {
+    // Write at the middle of the first data chunk.
    qDebug() << "===== modifyABigFile() =====";
+
    auto size = 128 * 1024 * 1024; // 128Mo.
    auto nbChunks = size / Common::Constants::CHUNK_SIZE;
 
    {
       const QString filePath("sharedDirs/big.bin");
       QFile file(filePath);
-      if (!file.open(QIODevice::ReadWrite))
+      if (!Utils::tryOpen(file, QIODevice::ReadWrite))
       {
          qDebug() << "Can't open the file " << filePath;
          return;
       }
       QDataStream stream(&file);
-      stream.skipRawData(32 * 1024 * 1024 - 3); // Write at the middle of the first data chunk.
+      stream.skipRawData(32 * 1024 * 1024 - 3);
       QByteArray data("XXXXXX");
       stream.writeRawData(data.constData(), data.size());
    }
@@ -434,7 +448,7 @@ void Tests::modifyABigFile()
    auto sharedEntry = Utils::tryFindEntry(this->fileManager, Common::Path("sharedDirs/"));
    QVERIFY(sharedEntry.IsInitialized());
    QVERIFY(
-      Utils::retry(10, 200,
+      Utils::retry(10, 500,
          [this, &sharedEntry, &nbChunks, &size]()
          {
             auto entries = this->fileManager->getEntries(sharedEntry);
@@ -447,12 +461,96 @@ void Tests::modifyABigFile()
                   Common::Hash(entry.chunks(0).hash()).toStr() == "93bcb2f6063a716b2a37ddbee031d07851811b72f21d5ece028b5544" &&
                   Common::Hash(entry.chunks(1).hash()).toStr() == "ea7b156fc9a810c181984f9e2da433feeeb2bf88ffa4d1f0dc1a9215"
                )
-               {
-                  // qDebug() << Common::Hash(entry.chunks(0).hash()).toStr();
-                  // qDebug() << Common::Hash(entry.chunks(1).hash()).toStr();
-                  // qDebug() << "--------------------------";
                   return true;
-               }
+            }
+            return false;
+         }
+      )
+   );
+}
+
+void Tests::modifyABigFile2()
+{
+   qDebug() << "===== modifyABigFile2() =====";
+
+   // Add data at the end of the file.
+   auto size = 128 * 1024 * 1024 + 6; // 128Mo + 6 bytes.
+   int nbChunks = ceil(double(size) / double(Common::Constants::CHUNK_SIZE));
+
+   {
+      const QString filePath("sharedDirs/big.bin");
+      QFile file(filePath);
+      if (!Utils::tryOpen(file, QIODevice::ReadWrite))
+      {
+         qDebug() << "Can't open the file " << filePath;
+         return;
+      }
+      QDataStream stream(&file);
+      stream.skipRawData(file.size());
+      QByteArray data("AAAAAA");
+      stream.writeRawData(data.constData(), data.size());
+   }
+
+   auto sharedEntry = Utils::tryFindEntry(this->fileManager, Common::Path("sharedDirs/"));
+   QVERIFY(sharedEntry.IsInitialized());
+   QVERIFY(
+      Utils::retry(10, 500,
+         [this, &sharedEntry, &nbChunks, &size]()
+         {
+            auto entries = this->fileManager->getEntries(sharedEntry);
+            for (const auto& entry : entries.entries())
+            {
+               if (
+                  entry.name() == "big.bin" &&
+                  entry.size() == size &&
+                  entry.chunks_size() == nbChunks &&
+                  Common::Hash(entry.chunks(0).hash()).toStr() == "93bcb2f6063a716b2a37ddbee031d07851811b72f21d5ece028b5544" &&
+                  Common::Hash(entry.chunks(1).hash()).toStr() == "ea7b156fc9a810c181984f9e2da433feeeb2bf88ffa4d1f0dc1a9215" &&
+                  Common::Hash(entry.chunks(2).hash()).toStr() == "02fc503da5cd886aeed611e42b654f9b1e178865e03847377a796250"
+               )
+                  return true;
+            }
+            return false;
+         }
+      )
+   );
+}
+
+void Tests::modifyABigFile3()
+{
+   qDebug() << "===== modifyABigFile3() =====";
+
+   auto size = 64 * 1024 * 1024 + 10; // 64Mo + 10 bytes (2 chunks).
+   int nbChunks = ceil(double(size) / double(Common::Constants::CHUNK_SIZE));
+
+   {
+      const QString filePath("sharedDirs/big.bin");
+      QFile file(filePath);
+      if (!Utils::tryOpen(file, QIODevice::ReadWrite))
+      {
+         qDebug() << "Can't open the file " << filePath;
+         return;
+      }
+      file.resize(size); // Truncates the file.
+   }
+
+   auto sharedEntry = Utils::tryFindEntry(this->fileManager, Common::Path("sharedDirs/"));
+   QVERIFY(sharedEntry.IsInitialized());
+   QVERIFY(
+      Utils::retry(10, 500,
+         [this, &sharedEntry, &nbChunks, &size]()
+         {
+            auto entries = this->fileManager->getEntries(sharedEntry);
+            for (const auto& entry : entries.entries())
+            {
+               if (
+                  entry.name() == "big.bin" &&
+                  entry.size() == size &&
+                  entry.chunks_size() == nbChunks &&
+                  Common::Hash(entry.chunks(0).hash()).toStr() == "93bcb2f6063a716b2a37ddbee031d07851811b72f21d5ece028b5544" &&
+                  Common::Hash(entry.chunks(1).hash()).toStr() == "40772e14b7665a8e7f09de41da09c4191acac132a598e4e363d076e1"
+               )
+                  return true;
             }
             return false;
          }

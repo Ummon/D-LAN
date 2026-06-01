@@ -44,7 +44,7 @@ SOURCES += \
     Hash_share.cpp \
     Path.cpp
 
-HEADERS += Hashes.h \
+HEADERS += \
     Hash.h \
     Constants.h \
     Global.h \

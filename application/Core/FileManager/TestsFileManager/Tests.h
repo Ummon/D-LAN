@@ -62,6 +62,8 @@ private slots:
    void createASubFile();
    void createABigFile();
    void modifyABigFile();
+   void modifyABigFile2();
+   void modifyABigFile3();
    // void removeABigFile();
    // void createADirectory();
    // void renameADirectory();

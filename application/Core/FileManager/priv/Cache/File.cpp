@@ -76,7 +76,7 @@ File::File(
    qint64 size,
    const QDateTime& dateLastModified,
    Directory* parentDirectory,
-   const Common::Hashes& hashes,
+   const QList<Common::Hash>& hashes,
    bool createPhysically
 ) :
    Entry(
@@ -172,7 +172,7 @@ FileForHasher* File::asFileForHasher()
   * The old physical file is not removed and will be replaced only when this one is finished.
   * @exception UnableToCreateNewFileException
   */
-void File::setToUnfinished(qint64 size, const Common::Hashes& hashes)
+void File::setToUnfinished(qint64 size, const QList<Common::Hash>& hashes)
 {
    QMutexLocker locker(&this->mutex);
    L_DEBU(QString("File::setToUnfinished: %1").arg(this->getAbsolutePath().toString()));
@@ -295,14 +295,16 @@ bool File::correspondTo(const QFileInfo& fileInfo, bool checkTheDateToo) const
 
 void File::fileHasChangedOnDisk(const QFileInfo fileInfo)
 {
-   for (auto chunk : std::as_const(this->chunks))
-   {
-      chunk->setHash(Common::Hash());
-      chunk->setKnownBytes(0);
-   }
+   // L_DEBU(QString("~~~ File::fileHasChangedOnDisk, chunks size: %1").arg(this->chunks.size()));
+   // L_DEBU(QString("~~~ file.size: %1, fileInfo.size: %2").arg(this->getSize()).arg(fileInfo.size()));
+   // L_DEBU(QString("~~~ file.dateLastModified: %1, fileInfo.lastModified: %2").arg(this->dateLastModified.toString()).arg(fileInfo.lastModified().toString()));
 
    this->setSize(fileInfo.size());
    this->dateLastModified = fileInfo.lastModified();
+
+   this->deleteAllChunks();
+   QList<Common::Hash> hashes((qsizetype)this->getNbChunks());
+   this->setHashes(hashes);
 }
 
 Common::Path File::getRelativePath() const
@@ -543,7 +545,7 @@ void File::chunkComplete(const Chunk* chunk)
 
 int File::getNbChunks() const
 {
-   return this->getSize() / Chunk::CHUNK_SIZE + (this->getSize() % Chunk::CHUNK_SIZE == 0 ? 0 : 1);
+   return (this->getSize() + Chunk::CHUNK_SIZE - 1) / Chunk::CHUNK_SIZE;
 }
 
 void File::deleteIfIncomplete()
@@ -704,7 +706,7 @@ void File::setFileAsSparse(const QFile& file)
 /**
   * The number of given hashes may not match the total number of chunk.
   */
-void File::setHashes(const Common::Hashes& hashes)
+void File::setHashes(const QList<Common::Hash>& hashes)
 {
    this->chunks.reserve(this->getNbChunks());
    for (int i = 0; i < this->getNbChunks(); i++)

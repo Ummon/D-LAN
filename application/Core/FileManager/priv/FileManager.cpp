@@ -148,7 +148,10 @@ QSharedPointer<IChunk> FileManager::getChunk(const Common::Hash& hash) const
    return this->chunks.value(hash);
 }
 
-QList<QSharedPointer<IChunk>> FileManager::getAllChunks(const Protos::Common::Entry& localEntry, const Common::Hashes& hashes) const
+QList<QSharedPointer<IChunk>> FileManager::getAllChunks(
+   const Protos::Common::Entry& localEntry,
+   const QList<Common::Hash>& hashes
+) const
 {
    for (QListIterator<Common::Hash> h(hashes); h.hasNext();)
    {

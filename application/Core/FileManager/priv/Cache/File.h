@@ -29,7 +29,7 @@
 #include <QDateTime>
 
 #include <Protos/common.pb.h>
-#include <Common/Hashes.h>
+#include <Common/Hash.h>
 
 #include <priv/Cache/Entry.h>
 
@@ -49,7 +49,7 @@ namespace FM
          qint64 size,
          const QDateTime& dateLastModified,
          Directory* parentDirectory = nullptr,
-         const Common::Hashes& hashes = Common::Hashes(),
+         const QList<Common::Hash>& hashes = QList<Common::Hash>(),
          bool createPhysically = false
       );
 
@@ -59,7 +59,7 @@ namespace FM
 
       FileForHasher* asFileForHasher();
 
-      void setToUnfinished(qint64 size, const Common::Hashes& hashes = Common::Hashes());
+      void setToUnfinished(qint64 size, const QList<Common::Hash>& hashes = QList<Common::Hash>());
 
       Directory* createSubDirs(const QStringList& names, bool physically = false);
 
@@ -109,7 +109,7 @@ namespace FM
       void deleteAllChunks();
       void createPhysicalFile();
       static void setFileAsSparse(const QFile& file);
-      void setHashes(const Common::Hashes& hashes);
+      void setHashes(const QList<Common::Hash>& hashes);
 
    protected:
       QVector<QSharedPointer<Chunk>> chunks;

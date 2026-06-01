@@ -376,6 +376,7 @@ void FileUpdater::computeSomeHashes()
             {
                int hashedAmount = 0;
                // Be careful of methods 'prioritizeAFileToHash(..)' and 'rmRoot(..)' called concurrently here.
+               // We ask to compute the next unknown chunk (only one).
                gotAllHashes = this->fileHasher.start(nextFileToHash->asFileForHasher(), 1, &hashedAmount);
                this->remainingSizeToHash -= hashedAmount;
                this->updateHashingProgress();

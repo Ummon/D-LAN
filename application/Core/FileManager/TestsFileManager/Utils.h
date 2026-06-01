@@ -6,6 +6,7 @@ using namespace FM;
 #include <functional>
 
 #include <QSharedPointer>
+#include <QFile>
 
 #include <Common/Path.h>
 
@@ -18,5 +19,7 @@ class Utils
       );
 
       static bool retry(int nbTries, int waitBetweenTries_ms, std::function<bool()> fun);
+
+      static bool tryOpen(QFile& file, QIODeviceBase::OpenModeFlag flags);
 };
 

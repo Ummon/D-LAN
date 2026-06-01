@@ -35,7 +35,7 @@ namespace FM
    class FilePool : public QObject, Common::Uncopyable
    {
       Q_OBJECT
-      static const int TIME_KEEP_FILE_OPEN_MIN = 2000; // [ms].
+      static const int TIME_KEEP_FILE_OPEN_MIN = 1800; // [ms].
       static const int TIME_RECHECK_TO_RELEASE = 1000; // [ms].
 
    public:

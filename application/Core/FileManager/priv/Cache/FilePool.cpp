@@ -80,6 +80,7 @@ QFile* FilePool::open(const QString& path, QIODevice::OpenMode mode, bool* fileC
    }
 
    // TODO: Linux.
+   // TODO: Is there some option about buffering?
    // We use the 'CreateFileW' function to get an exclusive access to the file.
    HANDLE h =
       CreateFileW(

@@ -65,3 +65,15 @@ bool Utils::retry(int nbTries, int waitBetweenTries_ms, std::function<bool()> fu
    }
    return false;
 }
+
+bool Utils::tryOpen(QFile& file, QIODeviceBase::OpenModeFlag flags)
+{
+   for (int i = 0; i < 20; i++)
+   {
+      if (file.open(flags))
+         return true;
+      // qDebug() << "Can't open the file " << file.fileName() << ", retrying...";
+      QTest::qWait(200);
+   }
+   return false;
+}

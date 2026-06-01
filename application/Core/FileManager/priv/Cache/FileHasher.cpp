@@ -28,7 +28,6 @@ using namespace FM;
 #include <Common/Global.h>
 #include <Common/Settings.h>
 #include <Common/Hash.h>
-#include <Common/FileLocker.h>
 
 #include <Exceptions.h>
 #include <priv/Cache/Cache.h>
@@ -58,6 +57,7 @@ FileHasher::FileHasher() :
   * @param fileCache The file to hash.
   * @param n Number of hashes to compute, 0 if we want to compute all the hashes.
   * @param[out] amountHashed Write the number of bytes hashed. It may be a null pointer ('nullptr') if this information isn't needed.
+  * @return true if all the chunk hashes are known.
   * @exception IOErrorException Thrown when the file cannot be opened or read. Some chunk may be computed before this exception is thrown.
   */
 bool FileHasher::start(FileForHasher* fileCache, int n, int* amountHashed)
@@ -89,7 +89,7 @@ bool FileHasher::start(FileForHasher* fileCache, int n, int* amountHashed)
       this->currentFileCache->getSize() <= Chunk::CHUNK_SIZE
    );
 
-   if (!file)
+   if (!file || !file->reset())
    {
       this->toStopHashing = false;
       this->hashing = false;
@@ -97,8 +97,6 @@ bool FileHasher::start(FileForHasher* fileCache, int n, int* amountHashed)
       L_WARN(QString("Unable to open this file: %1").arg(filePath));
       throw IOErrorException();
    }
-
-   file->reset();
 
    const QVector<QSharedPointer<Chunk>>& chunks = this->currentFileCache->getChunks();
 
@@ -129,14 +127,12 @@ bool FileHasher::start(FileForHasher* fileCache, int n, int* amountHashed)
 
    while (!endOfFile)
    {
-      // See 'stopHashing()'.
-
       int bytesReadChunk = 0;
       while (bytesReadChunk < Chunk::CHUNK_SIZE)
       {
+         // See 'stopHashing()'.
          locker.unlock();
          locker.relock();
-
          if (this->toStopHashing)
          {
             this->hashingStopped.wakeOne();
@@ -148,16 +144,6 @@ bool FileHasher::start(FileForHasher* fileCache, int n, int* amountHashed)
 
          int bytesRead = 0;
          {
-            Common::FileLocker fileLocker(*file, BUFFER_SIZE, Common::FileLocker::READ);
-            if (!fileLocker.isLocked())
-            {
-               this->toStopHashing = false;
-               this->hashing = false;
-               this->currentFileCache = 0;
-               L_WARN(QString("Unable to acquire the lock for this file: %1").arg(filePath));
-               throw IOErrorException();
-            }
-
             bytesRead = file->read(buffer.data(), BUFFER_SIZE);
             switch (bytesRead)
             {
@@ -189,24 +175,16 @@ bool FileHasher::start(FileForHasher* fileCache, int n, int* amountHashed)
 
          const Common::Hash& hash = hasher.getResult();
 
-         if (chunks.size() <= chunkNum) // The size of the file has increased during the read . . .
+         if (chunks[chunkNum]->getHash() != hash)
          {
-            QSharedPointer<Chunk> newChunk(new Chunk(this->currentFileCache, chunkNum, bytesReadChunk, hash));
-            this->currentFileCache->addChunk(newChunk);
-            this->currentFileCache->getCache()->onChunkHashKnown(newChunk);
-         }
-         else
-         {
-            if (chunks[chunkNum]->getHash() != hash)
-            {
-               if (chunks[chunkNum]->hasHash())
-                  this->currentFileCache->getCache()->onChunkRemoved(chunks[chunkNum]); // To remove the chunk from the chunk index (TODO: find a more elegant way).
+            if (chunks[chunkNum]->hasHash())
+                // To remove the chunk from the chunk index (TODO: find a more elegant way).
+               this->currentFileCache->getCache()->onChunkRemoved(chunks[chunkNum]);
 
-               chunks[chunkNum]->setHash(hash);
-               chunks[chunkNum]->setKnownBytes(bytesReadChunk);
+            chunks[chunkNum]->setHash(hash);
+            chunks[chunkNum]->setKnownBytes(bytesReadChunk);
 
-               this->currentFileCache->getCache()->onChunkHashKnown(chunks[chunkNum]);
-            }
+            this->currentFileCache->getCache()->onChunkHashKnown(chunks[chunkNum]);
          }
 
          if (--n == 0)
@@ -231,35 +209,9 @@ bool FileHasher::start(FileForHasher* fileCache, int n, int* amountHashed)
    this->toStopHashing = false;
    this->hashing = false;
 
-   // TODO: seriously rethink this part, a file being written shouldn't be shared or hashed . . .
-   if (bytesReadTotal + bytesSkipped != this->currentFileCache->getSize())
-   {
-      if (n != 0)
-      {
-         L_DEBU(
-            QString(
-               "The file content has changed during the hashes computing process. File = %1, bytes read = %2, previous size = %3"
-            ).arg(filePath).arg(bytesReadTotal).arg(this->currentFileCache->getSize())
-         );
-
-         this->currentFileCache->setSize(bytesReadTotal + bytesSkipped);
-         this->currentFileCache->updateDateLastModified(QFileInfo(filePath).lastModified());
-
-         if (bytesReadTotal + bytesSkipped < this->currentFileCache->getSize()) // In this case, maybe some chunk must be deleted.
-            for (int i = this->currentFileCache->getNbChunks(); i < chunks.size(); i++)
-            {
-               QSharedPointer<Chunk> c = this->currentFileCache->removeLastChunk();
-               this->currentFileCache->getCache()->onChunkRemoved(c);
-            }
-      }
-      this->currentFileCache = 0;
-      return false;
-   }
-
-   // A file may have been changed from its creation in the cache.
-   this->currentFileCache->updateDateLastModified(QFileInfo(filePath).lastModified());
+   qint64 fileSize = this->currentFileCache->getSize();
    this->currentFileCache = 0;
-   return true;
+   return bytesReadTotal + bytesSkipped == fileSize;
 }
 
 void FileHasher::stop()

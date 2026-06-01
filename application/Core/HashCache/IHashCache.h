@@ -24,8 +24,8 @@
 
 #include <Protos/common.pb.h>
 
+#include <Common/Hash.h>
 #include <Common/Path.h>
-#include <Common/Hashes.h>
 
 namespace HC
 {
@@ -39,7 +39,7 @@ namespace HC
         * Some hashes may be null if unknown.
         * If the file path is unknown a empty list is returned.
         */
-      virtual Common::Hashes getHashes(const QString& filePath) = 0;
+      virtual QList<Common::Hash> getHashes(const QString& filePath) = 0;
 
       virtual void setHashes(QString& filePath, const QList<QString>& filePaths) = 0;
       virtual void setSizeAndDateTime(QString& filePath, qint64 size, QDateTime dateTime) = 0;

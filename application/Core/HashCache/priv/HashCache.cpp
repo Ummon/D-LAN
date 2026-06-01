@@ -23,12 +23,12 @@ HashCache::HashCache(const QString& databaseFolder) :
    }
 }
 
-Common::Hashes HashCache::getHashes(const QString& filePath)
+QList<Common::Hash> HashCache::getHashes(const QString& filePath)
 {
    QSqlQuery query(this->db);
    query.exec("SELECT * FROM...");
 
-   return Common::Hashes();
+   return QList<Common::Hash>();
 }
 
 void HashCache::setHashes(QString& filePath, const QList<QString>& filePaths)

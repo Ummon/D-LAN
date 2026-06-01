@@ -26,7 +26,6 @@
 #include <QSharedPointer>
 
 #include <Common/Hash.h>
-#include <Common/Hashes.h>
 #include <Common/SharedEntry.h>
 
 #include <Protos/common.pb.h>
@@ -89,7 +88,10 @@ namespace FM
         * The name and the path of the owner of the returned chunk must match the given entry.
         * ".unfinished" suffix is ignored in both side.
         */
-      virtual QList<QSharedPointer<IChunk>> getAllChunks(const Protos::Common::Entry& localEntry, const Common::Hashes& hashes) const = 0;
+      virtual QList<QSharedPointer<IChunk>> getAllChunks(
+         const Protos::Common::Entry& localEntry,
+         const QList<Common::Hash>& hashes
+      ) const = 0;
 
       /**
         * Create a new empty file.

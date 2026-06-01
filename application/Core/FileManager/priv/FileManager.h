@@ -69,7 +69,7 @@ namespace FM
 
       QList<QSharedPointer<IChunk>> getAllChunks(
          const Protos::Common::Entry& localEntry,
-         const Common::Hashes& hashes
+         const QList<Common::Hash>& hashes
       ) const override;
 
       QList<QSharedPointer<IChunk>> newFile(Protos::Common::Entry& entry) override;

@@ -4,9 +4,9 @@
 
 MockHashCache::MockHashCache() {}
 
-Common::Hashes MockHashCache::getHashes(const QString& filePath)
+QList<Common::Hash> MockHashCache::getHashes(const QString& filePath)
 {
-   return Common::Hashes();
+   return QList<Common::Hash>();
 }
 
 void MockHashCache::setHashes(QString& filePath, const QList<QString>& filePaths)
