@@ -74,10 +74,11 @@ namespace Common
       operator QString() const;
 
       // Helpers.
-
       static const QList<QChar> FORBIDDEN_CHARS_IN_PATH;
       static QString sanitizePath(QString filename);
       static QString unSanitizePath(QString filename);
+
+      static Common::Path fromExistingPath(const QString& path);
 
       // static QString cleanDirPath(const QString& path);
       static bool isWindowsPath(const QString& path);

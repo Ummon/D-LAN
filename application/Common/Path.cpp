@@ -333,6 +333,20 @@ QString Path::unSanitizePath(QString path)
    return path;
 }
 
+Common::Path Path::fromExistingPath(const QString& path)
+{
+   const auto cleanedPath = QDir::cleanPath(path);
+   const auto fileInfo = QFileInfo(cleanedPath);
+
+   if (!fileInfo.exists())
+      return Common::Path();
+
+   if (!cleanedPath.endsWith('/') && fileInfo.isDir())
+      return Common::Path(cleanedPath + '/');
+   else
+      return Common::Path(cleanedPath);
+}
+
 /**
   * See QDir::cleanPath(..) documentation.
   * Add a slash at the end.
