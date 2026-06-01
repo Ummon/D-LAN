@@ -58,7 +58,7 @@ void Download::populateQueueEntry(Protos::Queue::Queue::Entry* entry) const
       entry->set_status(static_cast<Protos::Queue::Queue::Entry::Status>(this->status));
 
    entry->mutable_peer_source_id()->set_hash(this->peerSource->getID().getData(), Common::Hash::HASH_SIZE);
-   Common::ProtoHelper::setStr(*entry, &Protos::Queue::Queue::Entry::set_peer_source_nick, this->peerSource->getNick());
+   Common::ProtoHelper::setStr(*entry, static_cast<void (Protos::Queue::Queue::Entry::*)(const std::string&)>(&Protos::Queue::Queue::Entry::set_peer_source_nick), this->peerSource->getNick());
 }
 
 quint64 Download::getID() const

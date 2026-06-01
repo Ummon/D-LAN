@@ -600,7 +600,7 @@ void Cache::populateHashes(Protos::FileCache::Hashes& hashes) const
       SharedDirectory* sharedDir = i.next();
       Protos::FileCache::Hashes_SharedDir* sharedDirMess = hashes.add_shareddir();
       sharedDirMess->mutable_id()->set_hash(sharedDir->getId().getData(), Common::Hash::HASH_SIZE);
-      Common::ProtoHelper::setStr(*sharedDirMess, &Protos::FileCache::Hashes_SharedDir::set_path, sharedDir->getFullPath());
+      Common::ProtoHelper::setStr(*sharedDirMess, static_cast<void (Protos::FileCache::Hashes_SharedDir::*)(const std::string&)>(&Protos::FileCache::Hashes_SharedDir::set_path), sharedDir->getFullPath());
 
       sharedDir->populateHashesDir(*sharedDirMess->mutable_root());
    }

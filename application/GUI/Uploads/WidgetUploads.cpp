@@ -67,13 +67,13 @@ WidgetUploads::WidgetUploads(QSharedPointer<RCC::ICoreConnection> coreConnection
    this->ui->tblUploads->setItemDelegate(&this->uploadsDelegate);
    this->ui->tblUploads->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
    this->ui->tblUploads->horizontalHeader()->setVisible(false);
-   this->ui->tblUploads->horizontalHeader()->setResizeMode(0, QHeaderView::Stretch);
-   this->ui->tblUploads->horizontalHeader()->setResizeMode(1, QHeaderView::ResizeToContents);
-   this->ui->tblUploads->horizontalHeader()->setResizeMode(2, QHeaderView::ResizeToContents);
-   this->ui->tblUploads->horizontalHeader()->setResizeMode(3, QHeaderView::ResizeToContents);
+   this->ui->tblUploads->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
+   this->ui->tblUploads->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+   this->ui->tblUploads->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
+   this->ui->tblUploads->horizontalHeader()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
 
    //this->ui->tblChat->verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
-   this->ui->tblUploads->verticalHeader()->setResizeMode(QHeaderView::Fixed);
+   // this->ui->tblUploads->verticalHeader()->setResizeMode(QHeaderView::Fixed); // Removed in Qt5
    this->ui->tblUploads->verticalHeader()->setDefaultSectionSize(QApplication::fontMetrics().height() + 2);
 
    this->ui->tblUploads->verticalHeader()->setVisible(false);

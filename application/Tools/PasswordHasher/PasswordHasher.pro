@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core network gui
+QT       += core network gui widgets
 
 TARGET = PasswordHasher
 TEMPLATE = app

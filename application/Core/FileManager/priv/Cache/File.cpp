@@ -179,7 +179,7 @@ void File::populateHashesFile(Protos::FileCache::Hashes_File& fileToFill) const
 {
    QMutexLocker locker(&this->mutex);
 
-   Common::ProtoHelper::setStr(fileToFill, &Protos::FileCache::Hashes_File::set_filename, this->name);
+   Common::ProtoHelper::setStr(fileToFill, static_cast<void (Protos::FileCache::Hashes_File::*)(const std::string&)>(&Protos::FileCache::Hashes_File::set_filename), this->name);
    fileToFill.set_size(this->size);
    fileToFill.set_date_last_modified(this->getDateLastModified().toMSecsSinceEpoch());
 

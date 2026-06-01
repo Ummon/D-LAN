@@ -19,6 +19,7 @@
 #include <Downloads/DownloadsModel.h>
 using namespace GUI;
 
+#include <QMimeData>
 #include <QPixmap>
 
 #include <Common/ProtoHelper.h>

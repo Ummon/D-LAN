@@ -23,7 +23,7 @@
 #define VERSION_TAG "Beta15"
 
 // These two values are automatically updated during the release building process. See the script 'Application/Tools/update_version.sh'
-#define BUILD_TIME "2012-12-02_16-03"
-#define GIT_VERSION "a6dfd850db6e42acfa88785689e5f77ad49330d5"
+#define BUILD_TIME "2026-05-08_16-56"
+#define GIT_VERSION "670bb4a6758d702732cf6328ecccfa876c88c549"
 
 #endif

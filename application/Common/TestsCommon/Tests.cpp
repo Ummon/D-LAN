@@ -514,8 +514,8 @@ void Tests::protoHelper()
    Protos::Common::Entry entry;
    entry.set_type(Protos::Common::Entry::FILE);
    entry.set_size(0);
-   ProtoHelper::setStr(entry, &Protos::Common::Entry::set_path, path);
-   ProtoHelper::setStr(entry, &Protos::Common::Entry::set_name, name);
+   ProtoHelper::setStr(entry, static_cast<void (Protos::Common::Entry::*)(const std::string&)>(&Protos::Common::Entry::set_path), path);
+   ProtoHelper::setStr(entry, static_cast<void (Protos::Common::Entry::*)(const std::string&)>(&Protos::Common::Entry::set_name), name);
 
    QCOMPARE(ProtoHelper::getStr(entry, &Protos::Common::Entry::path), path);
    QCOMPARE(ProtoHelper::getStr(entry, &Protos::Common::Entry::name), name);
@@ -523,7 +523,7 @@ void Tests::protoHelper()
    Protos::GUI::CoreSettings::SharedDirectories sharedDirs;
    const QList<QString> dirs = QList<QString>() << "abc" << "def" << "ghi";
    foreach (QString dir, dirs)
-      ProtoHelper::addRepeatedStr(sharedDirs, &Protos::GUI::CoreSettings::SharedDirectories::add_dir, dir);
+      ProtoHelper::addRepeatedStr(sharedDirs, static_cast<void (Protos::GUI::CoreSettings::SharedDirectories::*)(const std::string&)>(&Protos::GUI::CoreSettings::SharedDirectories::add_dir), dir);
    for (int i = 0; i < dirs.size(); i++)
       QCOMPARE(ProtoHelper::getRepeatedStr(sharedDirs, &Protos::GUI::CoreSettings::SharedDirectories::dir, i), dirs[i]);
 

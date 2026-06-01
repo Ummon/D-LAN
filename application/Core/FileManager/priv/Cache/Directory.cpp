@@ -132,7 +132,7 @@ void Directory::populateHashesDir(Protos::FileCache::Hashes::Dir& dirToFill) con
 
    {
       QMutexLocker locker(&this->mutex);
-      Common::ProtoHelper::setStr(dirToFill, &Protos::FileCache::Hashes_Dir::set_name, this->getName());
+      Common::ProtoHelper::setStr(dirToFill, static_cast<void (Protos::FileCache::Hashes_Dir::*)(const std::string&)>(&Protos::FileCache::Hashes_Dir::set_name), this->getName());
       subDirsCopy = this->subDirs.getList();
       filesCopy = this->files.getList();
    }

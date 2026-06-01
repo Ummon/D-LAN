@@ -397,8 +397,8 @@ QList<quint64> DownloadsTreeModel::getDownloadIDs(Tree* tree) const
 DownloadsTreeModel::Tree* DownloadsTreeModel::insertDirectory(Tree* parentTree, const QString& dir, const QString& peerSourceNick, const Common::Hash& peerSourceID, const Common::Hash& sharedDirID)
 {
    Protos::GUI::State::Download download;
-   ProtoHelper::setStr(*download.mutable_local_entry(), &Protos::Common::Entry::set_name, dir);
-   ProtoHelper::setStr(download, &Protos::GUI::State::Download::set_peer_source_nick, peerSourceNick);
+   ProtoHelper::setStr(*download.mutable_local_entry(), static_cast<void (Protos::Common::Entry::*)(const std::string&)>(&Protos::Common::Entry::set_name), dir);
+   ProtoHelper::setStr(download, static_cast<void (Protos::GUI::State::Download::*)(const std::string&)>(&Protos::GUI::State::Download::set_peer_source_nick), peerSourceNick);
    download.add_peer_id()->set_hash(peerSourceID.getData(), Common::Hash::HASH_SIZE);
    download.mutable_local_entry()->mutable_shared_dir()->mutable_id()->set_hash(sharedDirID.getData(), Common::Hash::HASH_SIZE);
    download.mutable_local_entry()->set_type(Protos::Common::Entry::DIR);

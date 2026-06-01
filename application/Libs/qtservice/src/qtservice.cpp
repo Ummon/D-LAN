@@ -64,14 +64,14 @@ static void qtServiceCloseDebugLog()
     if (!f)
         return;
     QString ps(QTime::currentTime().toString("HH:mm:ss.zzz ") + QLatin1String("--- DEBUG LOG CLOSED ---\n\n"));
-    f->write(ps.toAscii());
+    f->write(ps.toUtf8());
     f->flush();
     f->close();
     delete f;
     f = 0;
 }
 
-void qtServiceLogDebug(QtMsgType type, const char* msg)
+void qtServiceLogDebug(QtMsgType type, const QMessageLogContext& /*context*/, const QString& msg)
 {
     static QMutex mutex;
     QMutexLocker locker(&mutex);
@@ -95,7 +95,7 @@ void qtServiceLogDebug(QtMsgType type, const char* msg)
             return;
         }
         QString ps(QLatin1String("\n") + s + QLatin1String("--- DEBUG LOG OPENED ---\n"));
-        f->write(ps.toAscii());
+        f->write(ps.toUtf8());
     }
 
     switch (type) {
@@ -119,7 +119,7 @@ void qtServiceLogDebug(QtMsgType type, const char* msg)
     s += msg;
     s += QLatin1String("\n");
 
-    f->write(s.toAscii());
+    f->write(s.toUtf8());
     f->flush();
 
     if (type == QtFatalMsg) {
@@ -624,7 +624,7 @@ int QtServiceBasePrivate::run(bool asService, const QStringList &argList)
 QtServiceBase::QtServiceBase(int argc, char **argv, const QString &name)
 {
 #if defined(QTSERVICE_DEBUG)
-    qInstallMsgHandler(qtServiceLogDebug);
+    qInstallMessageHandler(qtServiceLogDebug);
     qAddPostRoutine(qtServiceCloseDebugLog);
 #endif
 

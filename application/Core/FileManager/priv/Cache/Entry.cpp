@@ -40,8 +40,8 @@ Entry::~Entry()
 
 void Entry::populateEntry(Protos::Common::Entry* entry, bool setSharedDir) const
 {
-   Common::ProtoHelper::setStr(*entry, &Protos::Common::Entry::set_path, this->getPath());
-   Common::ProtoHelper::setStr(*entry, &Protos::Common::Entry::set_name, this->getName());
+   Common::ProtoHelper::setStr(*entry, static_cast<void (Protos::Common::Entry::*)(const std::string&)>(&Protos::Common::Entry::set_path), this->getPath());
+   Common::ProtoHelper::setStr(*entry, static_cast<void (Protos::Common::Entry::*)(const std::string&)>(&Protos::Common::Entry::set_name), this->getName());
    entry->set_size(this->getSize());
 
    if (setSharedDir)
@@ -54,7 +54,7 @@ void Entry::populateEntrySharedDir(Protos::Common::Entry* entry) const
    if (dir)
    {
       entry->mutable_shared_dir()->mutable_id()->set_hash(dir->getId().getData(), Common::Hash::HASH_SIZE);
-      Common::ProtoHelper::setStr(*entry->mutable_shared_dir(), &Protos::Common::SharedDir::set_shared_name, dir->getName());
+      Common::ProtoHelper::setStr(*entry->mutable_shared_dir(), static_cast<void (Protos::Common::SharedDir::*)(const std::string&)>(&Protos::Common::SharedDir::set_shared_name), dir->getName());
    }
 }
 

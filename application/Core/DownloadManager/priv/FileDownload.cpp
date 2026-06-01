@@ -71,6 +71,7 @@ FileDownload::FileDownload(
       QSharedPointer<ChunkDownloader> chunkDownloader = QSharedPointer<ChunkDownloader>(new ChunkDownloader(this->linkedPeers, this->occupiedPeersDownloadingChunk, this->transferRateCalculator, this->threadPool, chunkHash));
 
       this->chunkDownloaders << chunkDownloader;
+      this->chunkDownloaders.last()->setSelf(chunkDownloader);
       this->connectChunkDownloaderSignals(this->chunkDownloaders.last());
    }
    this->nbHashesKnown = this->chunkDownloaders.size();

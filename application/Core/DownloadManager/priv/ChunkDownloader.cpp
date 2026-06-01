@@ -62,6 +62,11 @@ ChunkDownloader::~ChunkDownloader()
    L_DEBU(QString("ChunkDownloader deleted : %1").arg(this->chunkHash.toStr()));
 }
 
+void ChunkDownloader::setSelf(const QSharedPointer<ChunkDownloader>& self)
+{
+   this->self = self;
+}
+
 /**
   * Return true if the chunk was downloading.
   */
@@ -73,7 +78,7 @@ void ChunkDownloader::stop()
       this->downloading = false;
       this->mutex.unlock();
 
-      this->threadPool.wait(this);
+      this->threadPool.wait(this->self);
 
       this->downloadingEnded();
    }
@@ -472,7 +477,7 @@ void ChunkDownloader::stream(const QSharedPointer<PM::ISocket>& socket)
    this->socket = socket;
    static const quint32 SOCKET_BUFFER_SIZE = SETTINGS.get<quint32>("socket_buffer_size");
    this->socket->setReadBufferSize(SOCKET_BUFFER_SIZE);
-   this->threadPool.run(this);
+   this->threadPool.run(this->self);
 }
 
 void ChunkDownloader::getChunkTimeout()

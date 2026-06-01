@@ -7,7 +7,7 @@
 # Uncomment this line to enable the leak detector.
 # DEFINES += ENABLE_NVWA
 
-QT       += core gui network
+QT       += core gui widgets network
 TARGET = "D-LAN.GUI"
 TEMPLATE = app
 

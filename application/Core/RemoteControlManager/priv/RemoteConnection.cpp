@@ -132,7 +132,7 @@ void RemoteConnection::sendMessageToItself(const QString& message)
    Protos::GUI::EventChatMessages_Message* eventChatMessage = eventChatMessages.add_message();
    eventChatMessage->mutable_peer_id()->set_hash(this->peerManager->getSelf()->getID().getData(), Common::Hash::HASH_SIZE);
    eventChatMessage->set_time(QDateTime::currentMSecsSinceEpoch());
-   Common::ProtoHelper::setStr(*eventChatMessage, &Protos::GUI::EventChatMessages_Message::set_message, message);
+   Common::ProtoHelper::setStr(*eventChatMessage, static_cast<void (Protos::GUI::EventChatMessages_Message::*)(const std::string&)>(&Protos::GUI::EventChatMessages_Message::set_message), message);
 
    this->send(Common::MessageHeader::GUI_EVENT_CHAT_MESSAGES, eventChatMessages);
 }
@@ -156,8 +156,8 @@ void RemoteConnection::refresh()
    self->set_sharing_amount(this->fileManager->getAmount());
    self->set_download_rate(downloadRate);
    self->set_upload_rate(uploadRate);
-   Common::ProtoHelper::setStr(*self, &Protos::GUI::State::Peer::set_nick, this->peerManager->getSelf()->getNick());
-   Common::ProtoHelper::setStr(*self, &Protos::GUI::State::Peer::set_core_version, Common::Global::getVersionFull());
+   Common::ProtoHelper::setStr(*self, static_cast<void (Protos::GUI::State::Peer::*)(const std::string&)>(&Protos::GUI::State::Peer::set_nick), this->peerManager->getSelf()->getNick());
+   Common::ProtoHelper::setStr(*self, static_cast<void (Protos::GUI::State::Peer::*)(const std::string&)>(&Protos::GUI::State::Peer::set_core_version), Common::Global::getVersionFull());
 
    // Peers.
    const QList<PM::IPeer*>& peers = this->peerManager->getPeers();
@@ -166,11 +166,11 @@ void RemoteConnection::refresh()
       PM::IPeer* peer = i.next();
       Protos::GUI::State::Peer* protoPeer = state.add_peer();
       protoPeer->mutable_peer_id()->set_hash(peer->getID().getData(), Common::Hash::HASH_SIZE);
-      Common::ProtoHelper::setStr(*protoPeer, &Protos::GUI::State::Peer::set_nick, peer->getNick());
+      Common::ProtoHelper::setStr(*protoPeer, static_cast<void (Protos::GUI::State::Peer::*)(const std::string&)>(&Protos::GUI::State::Peer::set_nick), peer->getNick());
 
       const QString coreVersion = peer->getCoreVersion();
       if (!coreVersion.isNull())
-         Common::ProtoHelper::setStr(*protoPeer, &Protos::GUI::State::Peer::set_core_version, coreVersion);
+         Common::ProtoHelper::setStr(*protoPeer, static_cast<void (Protos::GUI::State::Peer::*)(const std::string&)>(&Protos::GUI::State::Peer::set_core_version), coreVersion);
 
       protoPeer->set_sharing_amount(peer->getSharingAmount());
       protoPeer->set_download_rate(peer->getDownloadRate());
@@ -198,7 +198,7 @@ void RemoteConnection::refresh()
          protoDownload->add_peer_id()->set_hash(j.next()->getID().getData(), Common::Hash::HASH_SIZE);
 
       if (!peerSource->getNick().isNull())
-         Common::ProtoHelper::setStr(*protoDownload, &Protos::GUI::State::Download::set_peer_source_nick, peerSource->getNick());
+         Common::ProtoHelper::setStr(*protoDownload, static_cast<void (Protos::GUI::State::Download::*)(const std::string&)>(&Protos::GUI::State::Download::set_peer_source_nick), peerSource->getNick());
    }
 
    // Uploads.
@@ -225,7 +225,7 @@ void RemoteConnection::refresh()
    {
       Common::SharedDir sharedDir = i.next();
       Protos::GUI::State::SharedDir* sharedDirProto = state.add_shared_directory();
-      Common::ProtoHelper::setStr(*sharedDirProto, &Protos::GUI::State::SharedDir::set_path, sharedDir.path);
+      Common::ProtoHelper::setStr(*sharedDirProto, static_cast<void (Protos::GUI::State::SharedDir::*)(const std::string&)>(&Protos::GUI::State::SharedDir::set_path), sharedDir.path);
       sharedDirProto->set_size(sharedDir.size);
       sharedDirProto->set_free_space(sharedDir.freeSpace);
       sharedDirProto->mutable_id()->set_hash(sharedDir.ID.getData(), Common::Hash::HASH_SIZE);
@@ -257,13 +257,13 @@ void RemoteConnection::refresh()
          {
             Protos::Common::Interface* interfaceMess = state.add_interface();
             interfaceMess->set_id(interface.index() == 0 ? Common::Global::hashStringToInt(interface.name()) : interface.index());
-            Common::ProtoHelper::setStr(*interfaceMess, &Protos::Common::Interface::set_name, interface.humanReadableName());
+            Common::ProtoHelper::setStr(*interfaceMess, static_cast<void (Protos::Common::Interface::*)(const std::string&)>(&Protos::Common::Interface::set_name), interface.humanReadableName());
             interfaceMess->set_isup(interface.flags().testFlag(QNetworkInterface::IsUp) && interface.flags().testFlag(QNetworkInterface::IsRunning));
             for (QListIterator<QNetworkAddressEntry> j(addresses); j.hasNext();)
             {
                QHostAddress address = j.next().ip();
                Protos::Common::Interface::Address* addressMess = interfaceMess->add_address();
-               Common::ProtoHelper::setStr(*addressMess, &Protos::Common::Interface::Address::set_address, address.toString());
+               Common::ProtoHelper::setStr(*addressMess, static_cast<void (Protos::Common::Interface::Address::*)(const std::string&)>(&Protos::Common::Interface::Address::set_address), address.toString());
                addressMess->set_protocol(address.protocol() == QAbstractSocket::IPv6Protocol ? Protos::Common::Interface::Address::IPv6 : Protos::Common::Interface::Address::IPv4);
                addressMess->set_listened(address == adressToListen);
             }
@@ -315,7 +315,7 @@ void RemoteConnection::newLogEntry(QSharedPointer<LM::IEntry> entry)
 {
    Protos::GUI::EventLogMessages::EventLogMessage* eventLogMessage = this->eventLogMessages.add_message();
    eventLogMessage->set_time(entry->getDate().currentMSecsSinceEpoch());
-   Common::ProtoHelper::setStr(*eventLogMessage, &Protos::GUI::EventLogMessages::EventLogMessage::set_message, entry->getMessage());
+   Common::ProtoHelper::setStr(*eventLogMessage, static_cast<void (Protos::GUI::EventLogMessages::EventLogMessage::*)(const std::string&)>(&Protos::GUI::EventLogMessages::EventLogMessage::set_message), entry->getMessage());
    eventLogMessage->set_severity(static_cast<Protos::GUI::EventLogMessages::EventLogMessage::Severity>(entry->getSeverity()));
 
    if (!this->sendLogMessagesTimer.isActive())

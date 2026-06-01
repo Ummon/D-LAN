@@ -117,7 +117,7 @@ Download* DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry,
    localEntry.clear_shared_dir();
    localEntry.set_exists(false);
 
-   Common::ProtoHelper::setStr(localEntry, &Protos::Common::Entry::set_path, localRelativePath);
+   Common::ProtoHelper::setStr(localEntry, static_cast<void (Protos::Common::Entry::*)(const std::string&)>(&Protos::Common::Entry::set_path), localRelativePath);
    if (!destinationDirectoryID.isNull())
       localEntry.mutable_shared_dir()->mutable_id()->set_hash(destinationDirectoryID.getData(), Common::Hash::HASH_SIZE);
 

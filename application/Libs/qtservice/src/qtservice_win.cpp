@@ -429,7 +429,7 @@ void QtServiceBase::logMessage(const QString &message, MessageType type,
     case Information: //fall through
     default: dbgMsg += "Information] "; break;
     }
-    dbgMsg += message.toAscii();
+    dbgMsg += message.toUtf8();
     qtServiceLogDebug((QtMsgType)-1, dbgMsg.constData());
 #endif
 

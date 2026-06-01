@@ -37,13 +37,13 @@ namespace Common
    {
    public:
       template <typename T>
-      static void setStr(T& mess, void (T::*setter)(const char*), const QString& str);
+      static void setStr(T& mess, void (T::*setter)(const std::string&), const QString& str);
 
       template <typename T>
       static QString getStr(const T& mess, const std::string& (T::*getter)() const);
 
       template <typename T>
-      static void addRepeatedStr(T& mess, void (T::*adder)(const char*), const QString& str);
+      static void addRepeatedStr(T& mess, void (T::*adder)(const std::string&), const QString& str);
 
       template <typename T>
       static QString getRepeatedStr(const T& mess, const std::string& (T::*getter)(int) const, int i);
@@ -71,10 +71,10 @@ namespace Common
 using namespace Common;
 
 template <typename T>
-void ProtoHelper::setStr(T& mess, void (T::*setter)(const char*), const QString& str)
+void ProtoHelper::setStr(T& mess, void (T::*setter)(const std::string&), const QString& str)
 {
-   const QByteArray& array = str.toUtf8();
-   (mess.*setter)(array.constData());
+   const std::string utf8 = str.toUtf8().constData();
+   (mess.*setter)(utf8);
 }
 
 template <typename T>
@@ -85,10 +85,10 @@ QString ProtoHelper::getStr(const T& mess, const std::string& (T::*getter)() con
 }
 
 template <typename T>
-void ProtoHelper::addRepeatedStr(T& mess, void (T::*adder)(const char*), const QString& str)
+void ProtoHelper::addRepeatedStr(T& mess, void (T::*adder)(const std::string&), const QString& str)
 {
-   const QByteArray& array = str.toUtf8();
-   (mess.*adder)(array.constData());
+   const std::string utf8 = str.toUtf8().constData();
+   (mess.*adder)(utf8);
 }
 
 template <typename T>

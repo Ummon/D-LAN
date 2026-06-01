@@ -55,13 +55,12 @@ WidgetSettings::WidgetSettings(QSharedPointer<RCC::ICoreConnection> coreConnecti
 
    this->ui->tblShareDirs->setItemDelegate(&this->dirListDelegate);
    this->ui->tblShareDirs->setModel(&this->sharedDirsModel);
-   this->ui->tblShareDirs->horizontalHeader()->setResizeMode(0, QHeaderView::Stretch);
-   this->ui->tblShareDirs->horizontalHeader()->setResizeMode(1, QHeaderView::ResizeToContents);
-   this->ui->tblShareDirs->horizontalHeader()->setResizeMode(2, QHeaderView::ResizeToContents);
-   this->ui->tblShareDirs->horizontalHeader()->setClickable(false);
+   this->ui->tblShareDirs->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
+   this->ui->tblShareDirs->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+   this->ui->tblShareDirs->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
    this->ui->tblShareDirs->horizontalHeader()->setVisible(true);
 
-   this->ui->tblShareDirs->verticalHeader()->setResizeMode(QHeaderView::Fixed);
+   // this->ui->tblShareDirs->verticalHeader()->setResizeMode(QHeaderView::Fixed); // Removed in Qt5
    this->ui->tblShareDirs->verticalHeader()->setDefaultSectionSize(QApplication::fontMetrics().height() + 2);
    this->ui->tblShareDirs->verticalHeader()->setVisible(false);
    this->ui->tblShareDirs->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -450,11 +449,11 @@ void WidgetSettings::saveCoreSettings()
       return;
 
    Protos::GUI::CoreSettings settings;
-   Common::ProtoHelper::setStr(settings, &Protos::GUI::CoreSettings::set_nick, this->ui->txtNick->text());
+   Common::ProtoHelper::setStr(settings, static_cast<void (Protos::GUI::CoreSettings::*)(const std::string&)>(&Protos::GUI::CoreSettings::set_nick), this->ui->txtNick->text());
    settings.set_enable_integrity_check(this->ui->chkEnableIntegrityCheck->isChecked());
 
    for (QListIterator<Common::SharedDir> i(this->sharedDirsModel.getDirs()); i.hasNext();)
-      Common::ProtoHelper::addRepeatedStr(*settings.mutable_shared_directories(), &Protos::GUI::CoreSettings::SharedDirectories::add_dir, i.next().path);
+      Common::ProtoHelper::addRepeatedStr(*settings.mutable_shared_directories(), static_cast<void (Protos::GUI::CoreSettings::SharedDirectories::*)(const std::string&)>(&Protos::GUI::CoreSettings::SharedDirectories::add_dir), i.next().path);
 
    if (this->ui->radIPv6->isChecked())
       settings.set_listen_any(Protos::Common::Interface::Address::IPv6);
@@ -467,7 +466,7 @@ void WidgetSettings::saveCoreSettings()
          QRadioButton* button = i.next();
          if (button->isChecked())
          {
-            Common::ProtoHelper::setStr(settings, &Protos::GUI::CoreSettings::set_listen_address, button->text());
+            Common::ProtoHelper::setStr(settings, static_cast<void (Protos::GUI::CoreSettings::*)(const std::string&)>(&Protos::GUI::CoreSettings::set_listen_address), button->text());
             break;
          }
       }

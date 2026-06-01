@@ -428,8 +428,8 @@ void StressTest::newFile()
 
    Protos::Common::Entry entry;
    entry.set_type(Protos::Common::Entry_Type_DIR);
-   Common::ProtoHelper::setStr(entry, &Protos::Common::Entry::set_path, path);
-   Common::ProtoHelper::setStr(entry, &Protos::Common::Entry::set_name, this->randGen.generateAName());
+   Common::ProtoHelper::setStr(entry, static_cast<void (Protos::Common::Entry::*)(const std::string&)>(&Protos::Common::Entry::set_path), path);
+   Common::ProtoHelper::setStr(entry, static_cast<void (Protos::Common::Entry::*)(const std::string&)>(&Protos::Common::Entry::set_name), this->randGen.generateAName());
    entry.set_size(bytes);
    for (int i = 0; i < this->randGen.rand(nbChunk); i++) // Do not give all hashes.
    {

@@ -1,0 +1,4 @@
+#!/bin/bash
+
+rm /usr/bin/d-lan-core
+rm /usr/bin/d-lan-gui

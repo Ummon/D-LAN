@@ -135,11 +135,11 @@ void UDPListener::sendIMAliveMessage()
 {
    Protos::Core::IMAlive IMAliveMessage;
    IMAliveMessage.set_version(PROTOCOL_VERSION);
-   ProtoHelper::setStr(IMAliveMessage, &Protos::Core::IMAlive::set_core_version, Common::Global::getVersionFull());
+   ProtoHelper::setStr(IMAliveMessage, static_cast<void (Protos::Core::IMAlive::*)(const std::string&)>(&Protos::Core::IMAlive::set_core_version), Common::Global::getVersionFull());
    IMAliveMessage.set_port(this->UNICAST_PORT);
 
    const QString& nick = this->peerManager->getSelf()->getNick();
-   Common::ProtoHelper::setStr(IMAliveMessage, &Protos::Core::IMAlive::set_nick, nick.length() > MAX_NICK_LENGTH ? nick.left(MAX_NICK_LENGTH) : nick);
+   Common::ProtoHelper::setStr(IMAliveMessage, static_cast<void (Protos::Core::IMAlive::*)(const std::string&)>(&Protos::Core::IMAlive::set_nick), nick.length() > MAX_NICK_LENGTH ? nick.left(MAX_NICK_LENGTH) : nick);
 
    IMAliveMessage.set_amount(this->fileManager->getAmount());
    IMAliveMessage.set_download_rate(this->downloadManager->getDownloadRate());

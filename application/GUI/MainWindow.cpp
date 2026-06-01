@@ -86,13 +86,13 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
    this->ui->tblPeers->setModel(&this->peerListModel);
 
    this->ui->tblPeers->setItemDelegate(&this->peerListDelegate);
-   this->ui->tblPeers->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
-   this->ui->tblPeers->horizontalHeader()->setResizeMode(1, QHeaderView::Stretch);
-   this->ui->tblPeers->horizontalHeader()->setResizeMode(2, QHeaderView::ResizeToContents);
+   this->ui->tblPeers->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+   this->ui->tblPeers->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
+   this->ui->tblPeers->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
    this->ui->tblPeers->horizontalHeader()->setVisible(false);
 
    // TODO: is there an another way to reduce the row size?
-   this->ui->tblPeers->verticalHeader()->setResizeMode(QHeaderView::Fixed);
+   this->ui->tblPeers->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
    this->ui->tblPeers->verticalHeader()->setDefaultSectionSize(QApplication::fontMetrics().height() + 4);
    this->ui->tblPeers->verticalHeader()->setVisible(false);
    this->ui->tblPeers->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -108,11 +108,11 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
    this->ui->tblLog->setModel(&this->logModel);
 
    this->ui->tblLog->setItemDelegate(&this->logDelegate);
-   this->ui->tblLog->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
-   this->ui->tblLog->horizontalHeader()->setResizeMode(1, QHeaderView::Stretch);
+   this->ui->tblLog->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+   this->ui->tblLog->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
    this->ui->tblLog->horizontalHeader()->setVisible(false);
 
-   this->ui->tblLog->verticalHeader()->setResizeMode(QHeaderView::Fixed);
+   this->ui->tblLog->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
    this->ui->tblLog->verticalHeader()->setDefaultSectionSize(QApplication::fontMetrics().height() + 2);
    this->ui->tblLog->verticalHeader()->setVisible(false);
    this->ui->tblLog->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -765,7 +765,7 @@ void MainWindow::setApplicationStateAsDisconnected()
 
 void MainWindow::saveWindowsSettings()
 {
-   L_DEBU(QString("Save state : %1").arg(QString::fromAscii(this->saveState().toHex().data())));
+   L_DEBU(QString("Save state : %1").arg(QString::fromLatin1(this->saveState().toHex().data())));
 
    SETTINGS.set("windows_state", this->saveState());
 

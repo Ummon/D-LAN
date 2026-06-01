@@ -20,6 +20,7 @@
 #define DOWNLOADMANAGER_CHUNKDOWNLOADER_H
 
 #include <QSharedPointer>
+#include <QWeakPointer>
 #include <QList>
 #include <QThread>
 #include <QElapsedTimer>
@@ -70,6 +71,7 @@ namespace DM
       QSharedPointer<FM::IChunk> getChunk() const;
 
       void setPeerSource(PM::IPeer* peer, bool informOccupiedPeers = true);
+      void setSelf(const QSharedPointer<ChunkDownloader>& self);
 
       int isReadyToDownload();
       bool isDownloading() const;
@@ -112,6 +114,7 @@ namespace DM
 
       Common::Hash chunkHash;
       QSharedPointer<FM::IChunk> chunk;
+      QWeakPointer<ChunkDownloader> self;
 
       QList<PM::IPeer*> peers; // The peers which own this chunk.
       PM::IPeer* currentDownloadingPeer;

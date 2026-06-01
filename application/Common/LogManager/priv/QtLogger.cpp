@@ -20,6 +20,7 @@
 using namespace LM;
 
 #include <QtGlobal>
+#include <QMessageLogContext>
 
 #include <IEntry.h>
 
@@ -33,7 +34,7 @@ using namespace LM;
   * will create its own handle and discard the current one.
   */
 
-void handler(QtMsgType type, const char* msg)
+void handler(QtMsgType type, const QMessageLogContext& /*context*/, const QString& msg)
 {
    Severity s =
          type == QtDebugMsg ? SV_DEBUG :
@@ -41,7 +42,7 @@ void handler(QtMsgType type, const char* msg)
          type == QtCriticalMsg ? SV_ERROR :
          type == QtFatalMsg ? SV_FATAL_ERROR : SV_UNKNOWN;
 
-   QtLogger::me.log(msg, s);
+   QtLogger::me.log(qPrintable(msg), s);
 }
 
 const QtLogger QtLogger::me;
@@ -52,7 +53,7 @@ const QtLogger QtLogger::me;
   */
 void QtLogger::initMsgHandler()
 {
-   qInstallMsgHandler(handler);
+   qInstallMessageHandler(handler);
 }
 
 QtLogger::QtLogger() :

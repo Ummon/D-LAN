@@ -115,7 +115,7 @@ void InternalCoreConnection::disconnectFromCore()
 void InternalCoreConnection::sendChatMessage(const QString& message)
 {
    Protos::GUI::ChatMessage chatMessage;
-   Common::ProtoHelper::setStr(chatMessage, &Protos::GUI::ChatMessage::set_message, message);
+   Common::ProtoHelper::setStr(chatMessage, static_cast<void (Protos::GUI::ChatMessage::*)(const std::string&)>(&Protos::GUI::ChatMessage::set_message), message);
    this->send(Common::MessageHeader::GUI_CHAT_MESSAGE, chatMessage);
 }
 
@@ -215,7 +215,7 @@ void InternalCoreConnection::download(const Common::Hash& peerID, const Protos::
    downloadMessage.mutable_entry()->CopyFrom(entry);
    if (!sharedFolderID.isNull())
       downloadMessage.mutable_destination_directory_id()->set_hash(sharedFolderID.getData(), Common::Hash::HASH_SIZE);
-   Common::ProtoHelper::setStr(downloadMessage, &Protos::GUI::Download::set_destination_path, path);
+   Common::ProtoHelper::setStr(downloadMessage, static_cast<void (Protos::GUI::Download::*)(const std::string&)>(&Protos::GUI::Download::set_destination_path), path);
    this->send(Common::MessageHeader::GUI_DOWNLOAD, downloadMessage);
 }
 

@@ -43,14 +43,16 @@ MainWindow::MainWindow(QWidget *parent) :
    this->ui->tblLog->setModel(&this->model);
    this->ui->tblLog->setItemDelegate(new TableLogItemDelegate(this));
 
-   this->ui->tblLog->horizontalHeader()->setResizeMode(QHeaderView::Interactive);
+   // setSectionResizeMode in Qt5 requires section index, setting for column 0 through 5
+   for (int i = 0; i <= 5; ++i)
+      this->ui->tblLog->horizontalHeader()->setSectionResizeMode(i, QHeaderView::Interactive);
    this->ui->tblLog->horizontalHeader()->resizeSection(0, 140);
    this->ui->tblLog->horizontalHeader()->resizeSection(1, 50);
    this->ui->tblLog->horizontalHeader()->resizeSection(2, 140);
    this->ui->tblLog->horizontalHeader()->resizeSection(3, 50);
    this->ui->tblLog->horizontalHeader()->resizeSection(4, 180);
    this->ui->tblLog->horizontalHeader()->resizeSection(5, 1200);
-   this->ui->tblLog->verticalHeader()->setResizeMode(QHeaderView::Fixed);
+   // verticalHeader()->setResizeMode no longer available in Qt5; using setDefaultSectionSize instead
    this->ui->tblLog->verticalHeader()->setDefaultSectionSize(17);
    this->ui->tblLog->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
 
@@ -139,10 +141,9 @@ void MainWindow::filtersChange()
       return;
 
    // TODO: find a better way to avoid slowing down.
-   this->ui->tblLog->verticalHeader()->setResizeMode(QHeaderView::Custom);
+   // Note: setResizeMode no longer available in Qt5; removed the custom resize mode settings
    for (int i = 0; i < this->model.rowCount(); i++)
       this->filterRow(i);
-   this->ui->tblLog->verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
 }
 
 /**

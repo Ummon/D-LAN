@@ -51,7 +51,7 @@ Chat::Chat(UDPListener& uDPListener) :
 void Chat::send(const QString& message)
 {
    Protos::Core::ChatMessage chatMessage;
-   Common::ProtoHelper::setStr(chatMessage, &Protos::Core::ChatMessage::set_message, message);
+   Common::ProtoHelper::setStr(chatMessage, static_cast<void (Protos::Core::ChatMessage::*)(const std::string&)>(&Protos::Core::ChatMessage::set_message), message);
 
    this->uDPListener.send(Common::MessageHeader::CORE_CHAT_MESSAGE, chatMessage);
 
