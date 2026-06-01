@@ -64,17 +64,17 @@ private slots:
    void modifyABigFile();
    void modifyABigFile2();
    void modifyABigFile3();
-   // void removeABigFile();
-   // void createADirectory();
-   // void renameADirectory();
-   // void moveAnEmptyDirectory();
-   // void moveADirectoryContainingFiles();
-   // void removeADirectory();
-   // void createAnEmptyFile();
+   void removeABigFile();
+   void createADirectory();
+   void renameADirectory();
+   void moveAnEmptyDirectory();
+   void moveADirectoryContainingFiles();
+   void removeADirectory();
+   void createAnEmptyFile();
 
    // /***** Ask for chunks by hash *****/
-   // void getAnExistingChunk();
-   // void getANonExistingChunk();
+   void getAnExistingChunk();
+   void getANonExistingChunk();
 
    // /***** Get Hashes from a FileEntry which the hash is already computed *****/
    // void getHashesFromAFileEntry1();
@@ -130,6 +130,8 @@ private:
    void addSuperSharedDirectoriesAndMerge();
 
    static void compareStrRegexp(const QString& regexp, const QString& str);
+
+   bool testBigFiles;
 
    QStringList sharedPaths;
    QSharedPointer<HC::IHashCache> hashCache;

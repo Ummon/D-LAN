@@ -556,7 +556,7 @@ File* FileUpdater::addScannedFile(const QFileInfo& fileInfo, File* file, Directo
       file->fileHasChangedOnDisk(fileInfo);
 
    if (parentDirectory && !file)
-   {      
+   {
       // Very special case: there is a file 'a' without File* in cache and a file 'a.unfinished'.
       // This case occurs when a file is redownloaded, the File* 'a' is renamed as 'a.unfinished' but the physical file 'a'
       // is not deleted.
@@ -749,17 +749,16 @@ bool FileUpdater::processEvents(const QList<WatcherEvent>& events)
       {
       case WatcherEvent::MOVE:
          {
-            const auto pathOrigin = Common::Path(event.path1);
-            const auto pathDestination = Common::Path(event.path2);
+            const auto pathDestination = Common::Path::fromExistingPath(event.path2);
+            const auto pathOrigin =
+                  Common::Path(
+                     !pathDestination.isFile() && !event.path1.endsWith('/') ? event.path1 + '/' : event.path1
+                  );
 
-            // const int lastSlashDestination = event.path2.lastIndexOf('/');
-            // if (lastSlashDestination == -1)
-            //    break;
-            // const QString& destinationPath = event.path2.left(lastSlashDestination);
+            // L_DEBU(QString("MOVE from %1, to %2").arg(pathOrigin.toString(), pathDestination.toString()));
 
             Directory* destination =
-               dynamic_cast<Directory*>(this->fileManager->getEntry(pathDestination.removeFilename()));
-
+               dynamic_cast<Directory*>(this->fileManager->getEntry(pathDestination.removeLastElement()));
             Entry* entryToMove = this->fileManager->getEntry(pathOrigin);
 
             if (entryToMove)
@@ -778,13 +777,9 @@ bool FileUpdater::processEvents(const QList<WatcherEvent>& events)
                {
                   this->deleteEntry(entryToMove);
                }
-
-               // A shared directory is moved in a directory not in cache.
-               // else if (SharedDirectory* sharedToMove = dynamic_cast<SharedDirectory*>(entryToMove))
-               // {
-               //    sharedToMove->moveInto(destinationPath);
-               // }
-            } else {
+            }
+            else
+            {
                L_DEBU(QString("Can't find the entry to move: %1").arg(event.path1));
             }
 
@@ -794,11 +789,17 @@ bool FileUpdater::processEvents(const QList<WatcherEvent>& events)
       case WatcherEvent::DELETED:
          {
             SharedEntry* sharedEntry = this->fileManager->getSharedEntry(event.path1);
+            if (!sharedEntry)
+               sharedEntry = this->fileManager->getSharedEntry(event.path1 + '/');
+
             if (sharedEntry)
                emit deleteSharedEntry(sharedEntry);
             else
             {
                Entry* entry = this->fileManager->getEntry(event.path1);
+               if (!entry)
+                  entry = this->fileManager->getEntry(Common::Path(event.path1 + '/'));
+
                if (entry)
                   this->deleteEntry(entry);
             }

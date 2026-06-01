@@ -50,8 +50,9 @@ using namespace FM;
   * $> chunk-hash `sharedDirs/big.bin` 2
   */
 
-Tests::Tests()
-{
+Tests::Tests() :
+   testBigFiles(false)
+{   
 }
 
 void Tests::initTestCase()
@@ -384,6 +385,9 @@ void Tests::createASubFile()
 
 void Tests::createABigFile()
 {
+   if (!this->testBigFiles)
+      return;
+
    qDebug() << "===== createABigFile() =====";
    auto size = 128 * 1024 * 1024; // 128Mo.
    auto nbChunks = size / Common::Constants::CHUNK_SIZE;
@@ -425,6 +429,9 @@ void Tests::createABigFile()
 
 void Tests::modifyABigFile()
 {
+   if (!this->testBigFiles)
+      return;
+
     // Write at the middle of the first data chunk.
    qDebug() << "===== modifyABigFile() =====";
 
@@ -471,6 +478,9 @@ void Tests::modifyABigFile()
 
 void Tests::modifyABigFile2()
 {
+   if (!this->testBigFiles)
+      return;
+
    qDebug() << "===== modifyABigFile2() =====";
 
    // Add data at the end of the file.
@@ -518,6 +528,9 @@ void Tests::modifyABigFile2()
 
 void Tests::modifyABigFile3()
 {
+   if (!this->testBigFiles)
+      return;
+
    qDebug() << "===== modifyABigFile3() =====";
 
    auto size = 64 * 1024 * 1024 + 10; // 64Mo + 10 bytes (2 chunks).
@@ -558,108 +571,221 @@ void Tests::modifyABigFile3()
    );
 }
 
-// void Tests::removeABigFile()
-// {
-//    qDebug() << "===== removeABigFile() =====";
+void Tests::removeABigFile()
+{
+   if (!this->testBigFiles)
+      return;
 
-//    while(!QFile("sharedDirs/big.bin").remove())
-//       QTest::qWait(100); // We use qWait because some events must be processed (timers).
-//    QTest::qWait(100);
-// }
+   qDebug() << "===== removeABigFile() =====";
 
-// void Tests::createADirectory()
-// {
-//    qDebug() << "===== createADirectory() =====";
+   while(!QFile("sharedDirs/big.bin").remove())
+      QTest::qWait(100);
 
-//    Common::Global::createFile("sharedDirs/a/");
-//    QTest::qSleep(100);
-// }
+   auto sharedEntry = Utils::tryFindEntry(this->fileManager, Common::Path("sharedDirs/"));
+   QVERIFY(sharedEntry.IsInitialized());
+   QVERIFY(
+      Utils::retry(10, 500,
+         [this, &sharedEntry]()
+         {
+            auto entries = this->fileManager->getEntries(sharedEntry);
+            for (const auto& entry : entries.entries())
+               if (entry.name() == "big.bin")
+                  return false;
+            return true;
+         }
+      )
+   );
+}
 
-// void Tests::renameADirectory()
-// {
-//    qDebug() << "===== renameADirectory() =====";
+void Tests::createADirectory()
+{
+   qDebug() << "===== createADirectory() =====";
 
-//    QDir("sharedDirs").rename("a", "b");
-//    QTest::qSleep(100);
-// }
+   Common::Global::createFile("sharedDirs/a/");
 
-// void Tests::moveAnEmptyDirectory()
-// {
-//    qDebug() << "===== moveAnEmptyDirectory() =====";
+   auto sharedEntry = Utils::tryFindEntry(this->fileManager, Common::Path("sharedDirs/"));
+   QVERIFY(sharedEntry.IsInitialized());
+   QVERIFY(
+      Utils::retry(5, 100,
+         [this, &sharedEntry]()
+         {
+            auto entries = this->fileManager->getEntries(sharedEntry);
+            for (const auto& entry : entries.entries())
+            {
+               if (
+                  entry.name() == "a" &&
+                  entry.type() == Protos::Common::Entry::Type::Entry_Type_DIR
+               )
+                  return true;
+            }
+            return false;
+         }
+      )
+   );
+}
 
-//    QDir("sharedDirs").rename("b", "share1/b");
-//    QTest::qSleep(100);
-// }
+void Tests::renameADirectory()
+{
+   qDebug() << "===== renameADirectory() =====";
 
-// void Tests::moveADirectoryContainingFiles()
-// {
-//    qDebug() << "===== moveADirectoryContainingFiles() =====";
+   while (!QDir("sharedDirs").rename("a", "b"))
+      QTest::qWait(100);
 
-//    QDir("sharedDirs").rename("share2", "share1/share2");
-//    QTest::qSleep(100);
-// }
+   auto sharedEntry = Utils::tryFindEntry(this->fileManager, Common::Path("sharedDirs/"));
+   QVERIFY(sharedEntry.IsInitialized());
+   QVERIFY(
+      Utils::retry(5, 100,
+         [this, &sharedEntry]()
+         {
+            auto entries = this->fileManager->getEntries(sharedEntry);
+            for (const auto& entry : entries.entries())
+            {
+               if (
+                  entry.name() == "b" &&
+                  entry.type() == Protos::Common::Entry::Type::Entry_Type_DIR
+               )
+                  return true;
+            }
+            return false;
+         }
+      )
+   );
+}
 
-// void Tests::removeADirectory()
-// {
-//    qDebug() << "===== removeADirectory() =====";
+void Tests::moveAnEmptyDirectory()
+{
+   qDebug() << "===== moveAnEmptyDirectory() =====";
 
-//    Common::Global::recursiveDeleteDirectory("sharedDirs/share1/share2");
-//    QTest::qSleep(100);
-// }
+   QDir("sharedDirs").rename("b", "share1/b");
 
-// void Tests::createAnEmptyFile()
-// {
-//    qDebug() << "===== createAnEmptyFile() =====";
+   auto sharedEntry = Utils::tryFindEntry(this->fileManager, Common::Path("sharedDirs/share1/"));
+   QVERIFY(sharedEntry.IsInitialized());
+   QVERIFY(
+      Utils::retry(5, 100,
+         [this, &sharedEntry]()
+         {
+            auto entries = this->fileManager->getEntries(sharedEntry);
+            for (const auto& entry : entries.entries())
+            {
+               if (
+                  entry.name() == "b" &&
+                  entry.type() == Protos::Common::Entry::Type::Entry_Type_DIR
+               )
+                  return true;
+            }
+            return false;
+         }
+      )
+   );
+}
 
-//    Protos::Common::Entry remoteEntry;
-//    remoteEntry.set_path("/remoteShare1/");
-//    remoteEntry.set_name("remoteFile.txt");
-//    remoteEntry.set_size(1 * 1024 * 1024); // 1Mo.
+void Tests::moveADirectoryContainingFiles()
+{
+   qDebug() << "===== moveADirectoryContainingFiles() =====";
 
-//    try
-//    {
-//       QList<QSharedPointer<IChunk>> chunks = this->fileManager->newFile(remoteEntry);
-//       for (int i = 0; i < chunks.size(); i++)
-//          QVERIFY(chunks[i]->getHash().isNull());
-//    }
-//    catch (NoWriteableDirectoryException&)
-//    {
-//       QFAIL("NoWriteableDirectoryException");
-//    }
-//    catch (InsufficientStorageSpaceException&)
-//    {
-//       QFAIL("InsufficientStorageSpaceException");
-//    }
-//    catch (UnableToCreateNewFileException&)
-//    {
-//       QFAIL("UnableToCreateNewFileException");
-//    }
-// }
+   QDir("sharedDirs").rename("share2", "share1/share2");
 
-// void Tests::getAnExistingChunk()
-// {
-//    qDebug() << "===== getAExistingChunk() =====";
+   auto sharedEntry = Utils::tryFindEntry(this->fileManager, Common::Path("sharedDirs/share1/"));
+   QVERIFY(sharedEntry.IsInitialized());
+   QVERIFY(
+      Utils::retry(5, 100,
+         [this, &sharedEntry]()
+         {
+            auto entries = this->fileManager->getEntries(sharedEntry);
+            for (const auto& entry : entries.entries())
+            {
+               if (
+                  entry.name() == "share2" &&
+                  entry.type() == Protos::Common::Entry::Type::Entry_Type_DIR
+               )
+                  return true;
+            }
+            return false;
+         }
+      )
+   );
+}
 
-//    // From 'sharedDirs/share1/subdir/p.txt'.
-//    QSharedPointer<IChunk> chunk =
-//       this->fileManager->getChunk(Common::Hash::fromStr("65a54d262cd45410230699b0efaeb936399cd21e29716e19f8405949"));
+void Tests::removeADirectory()
+{
+   qDebug() << "===== removeADirectory() =====";
 
-//    if (chunk.isNull())
-//       QFAIL("Chunk not found");
-//    else
-//       qDebug() << "Chunk found: " << chunk->getHash().toStr();
-// }
+   Common::Global::recursiveDeleteDirectory("sharedDirs/share1/share2");
 
-// void Tests::getANonExistingChunk()
-// {
-//    qDebug() << "===== getANonExistingChunk() =====";
+   auto sharedEntry = Utils::tryFindEntry(this->fileManager, Common::Path("sharedDirs/share1/"));
+   QVERIFY(sharedEntry.IsInitialized());
+   QVERIFY(
+      Utils::retry(5, 100,
+         [this, &sharedEntry]()
+         {
+            auto entries = this->fileManager->getEntries(sharedEntry);
+            for (const auto& entry : entries.entries())
+            {
+               if (
+                  entry.name() == "share2" &&
+                  entry.type() == Protos::Common::Entry::Type::Entry_Type_DIR
+               )
+                  return false;
+            }
+            return true;
+         }
+      )
+   );
+}
 
-//    QSharedPointer<IChunk> chunk = this->fileManager->getChunk(Common::Hash::rand(1));
-//    if (chunk.isNull())
-//       qDebug() << "Chunk not found: OK" << Common::Hash::rand().toStr();
-//    else
-//       QFAIL("No chunk must be found");
-// }
+void Tests::createAnEmptyFile()
+{
+   qDebug() << "===== createAnEmptyFile() =====";
+
+   Protos::Common::Entry remoteEntry;
+   remoteEntry.set_path("/remoteShare1/");
+   remoteEntry.set_name("remoteFile.txt");
+   remoteEntry.set_size(1 * 1024 * 1024); // 1 MB.
+
+   try
+   {
+      QList<QSharedPointer<IChunk>> chunks = this->fileManager->newFile(remoteEntry);
+      QCOMPARE(chunks.size(), 1);
+      QVERIFY(chunks[0]->getHash().isNull());
+   }
+   catch (NoWriteableDirectoryException&)
+   {
+      QFAIL("NoWriteableDirectoryException");
+   }
+   catch (InsufficientStorageSpaceException&)
+   {
+      QFAIL("InsufficientStorageSpaceException");
+   }
+   catch (UnableToCreateNewFileException&)
+   {
+      QFAIL("UnableToCreateNewFileException");
+   }
+}
+
+void Tests::getAnExistingChunk()
+{
+   qDebug() << "===== getAExistingChunk() =====";
+
+   // From 'sharedDirs/share1/subdir/p.txt'.
+   QSharedPointer<IChunk> chunk =
+      this->fileManager->getChunk(Common::Hash::fromStr("629c2ce8f7532e0c5e721157dd938c61f1f6e320043363ac5f243a32"));
+
+   if (chunk.isNull())
+      QFAIL("Chunk not found");
+   else
+      qDebug() << "Chunk found: " << chunk->getHash().toStr();
+}
+
+void Tests::getANonExistingChunk()
+{
+   qDebug() << "===== getANonExistingChunk() =====";
+
+   QSharedPointer<IChunk> chunk = this->fileManager->getChunk(Common::Hash::rand(1));
+   if (chunk.isNull())
+      qDebug() << "Chunk not found: OK" << Common::Hash::rand().toStr();
+   else
+      QFAIL("No chunk must be found");
+}
 
 // void Tests::getHashesFromAFileEntry1()
 // {
