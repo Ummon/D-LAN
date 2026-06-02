@@ -20,6 +20,7 @@
 
 #include <QObject>
 #include <QList>
+#include <QMutex>
 
 #include <Protos/core_protocol.pb.h>
 
@@ -38,4 +39,5 @@ public slots:
 private:
    QList<Common::Hash> receivedHashes;
    int num;
+   QMutex mutex;
 };

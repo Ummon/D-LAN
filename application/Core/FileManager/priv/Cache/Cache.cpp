@@ -141,7 +141,7 @@ Directory* Cache::getDirectory(const Protos::Common::Entry& dir) const
       if (sharedEntry->getId() == dir.shared_entry().id().hash())
       {
          QStringList folders = QDir::cleanPath(QString::fromStdString(dir.path())).split('/', Qt::SkipEmptyParts);
-         if (!dir.path().empty()) // An empty path means the dir is the root (a SharedDirectory).
+         if (!dir.name().empty()) // An empty name means the dir is the root (a SharedDirectory).
             folders << QString::fromStdString(dir.name());
 
          Directory* currentDir = dynamic_cast<Directory*>(sharedEntry->getRootEntry());
@@ -187,47 +187,14 @@ Entry* Cache::getEntry(const Common::Path& path) const
          if (!sharedEntryPath.getDirs().isEmpty())
             relativeDirs.erase(relativeDirs.begin(), relativeDirs.begin() + sharedEntryPath.getDirs().length());
 
-         Directory* currentDirectory = dynamic_cast<Directory*>(sharedEntry->getRootEntry());
+         Directory* directory =
+            dynamic_cast<Directory*>(sharedEntry->getRootEntry()->getEntry(Common::Path(relativeDirs)));
 
-         for (QStringListIterator i(relativeDirs); i.hasNext();)
-            currentDirectory = currentDirectory->getSubDir(i.next());
-
-         if (path.isFile())
-            return dynamic_cast<File*>(currentDirectory->getFile(path.getFilename()));
+         if (directory && path.isFile())
+            return dynamic_cast<File*>(directory->getFile(path.getFilename()));
          else
-            return currentDirectory;
+            return directory;
       }
-
-      /*
-       TODO: Old code -> to remove.
-
-      if (path.startsWith(currentPath) && (path.size() == currentPath.size() || path[currentPath.size()] == '/'))
-      {
-         QString relativePath(path);
-         relativePath.remove(0, currentPath.size());
-         const QStringList folders = relativePath.split('/', QString::SkipEmptyParts);
-
-         Directory* currentDir = sharedEntry;
-         for (QStringListIterator i(folders); i.hasNext();)
-         {
-            QString folder = i.next();
-            Directory* dir = currentDir->getSubDir(folder);
-            if (!dir)
-            {
-               if (!i.hasNext())
-               {
-                  File* file = currentDir->getFile(folder);
-                  if (file)
-                     return file;
-               }
-               return nullptr;
-            }
-            currentDir = dir;
-         }
-
-         return currentDir;
-      }
-      */
    }
 
    return nullptr;
@@ -250,71 +217,29 @@ SharedEntry* Cache::getSharedEntry(const Common::Path& path) const
   */
 File* Cache::getFile(const Protos::Common::Entry& fileEntry) const
 {
+   const auto relativePath = Common::ProtoHelper::getPath(fileEntry);
+
    if (fileEntry.type() == Protos::Common::Entry_Type_DIR)
    {
-      L_WARN(QString("Cache::getFile: 'fileEntry' must be a file (and not a directory)"));
+      L_WARN(QString("Cache::getFile: 'fileEntry' must be a file (and not a directory): %1").arg(relativePath.toString()));
       return nullptr;
    }
 
    if (!fileEntry.has_shared_entry())
    {
-      L_WARN(QString("Cache::getFile: 'fileEntry' doesn't have the field 'shared_dir' set!"));
+      L_WARN(QString("Cache::getFile: 'fileEntry' doesn't have the field 'shared_dir' set: %1").arg(relativePath.toString()));
       return nullptr;
    }
 
-   return dynamic_cast<File*>(
-      this->getEntry(Common::ProtoHelper::getPath(fileEntry, Common::EntriesToAppend::FILE, true))
-   );
-
-
-   /*
-   TODO: Old code -> to remove.
-
-   QMutexLocker locker(&this->mutex);
-
-   if (!fileEntry.has_shared_entry())
+   const auto sharedEntry = this->getSharedEntry(fileEntry.shared_entry().id().hash());   
+   if (!sharedEntry)
    {
-      L_WARN(QString("Cache::getFile: 'fileEntry' doesn't have the field 'shared_dir' set!"));
+      L_WARN(QString("Cache::getFile: Unable to find the shared directory of the file: %1").arg(relativePath.toString()));
+
       return nullptr;
    }
 
-   foreach (SharedDirectory* sharedDir, this->sharedDirs)
-   {
-      if (sharedDir->getId() == fileEntry.shared_dir().id().hash())
-      {
-         const QString& relativePath = Common::ProtoHelper::getStr(fileEntry, &Protos::Common::Entry::path);
-         const QStringList folders = relativePath.split('/', QString::SkipEmptyParts);
-
-         Directory* dir = sharedDir;
-         QStringListIterator i(folders);
-         forever
-         {
-            if (dir)
-            {
-               if (!i.hasNext())
-               {
-                  File* file = dir->getFile(Common::ProtoHelper::getStr(fileEntry, &Protos::Common::Entry::name));
-
-                  if (file)
-                     return file;
-                  return nullptr;
-               }
-            }
-            else
-               return nullptr;
-
-            if (!i.hasNext())
-               return nullptr;
-
-            dir = dir->getSubDir(i.next());
-         }
-
-         return nullptr;
-      }
-   }
-
-   return nullptr;
-   */
+   return dynamic_cast<File*>(sharedEntry->getRootEntry()->getEntry(relativePath));
 }
 
 /**

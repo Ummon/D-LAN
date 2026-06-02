@@ -113,7 +113,6 @@ SharedEntry::~SharedEntry()
 void SharedEntry::populateEntry(Protos::Common::Entry* entry) const
 {
    this->getRootEntry()->populateEntry(entry, true);
-   entry->set_path(""); // The path of a shared directory is private (we don't want the other peers to see absolute paths).
 }
 
 void SharedEntry::del(bool invokeDelete)

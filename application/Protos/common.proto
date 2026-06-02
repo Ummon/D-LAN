@@ -60,16 +60,15 @@ message Entry {
    }
    Type type = 1;
 
-   // Relative path from the sharing entry. For example : "/Videos/My cat/".
-   // A root directory or file has a one slash : "/".
-   // A shared directory or a shared file has an empty path.
+   // Relative path from the sharing entry. For example : "Videos/My cat/".
+   // A shared directory, shared file or a root entry has an empty path.
    // It doesn't contain the entry name. See 'name'.
    string path = 2;
 
-   string name = 3; // Directory name or filename. For example: "MyLOLCat.avi".
+   string name = 3; // Directory name or filename. For example: "MyLOLCat.avi". A shared dir/file has an empty name.
    uint64 size = 4; // [bytes]. For the directory it's the sum of all sub-items.
 
-   // The shared entry of the entry. If the entry is a file the shared_entry must be the same file.
+   // The shared entry of the entry. If the entry is a shared file the shared_entry must be the same file.
    SharedEntry shared_entry = 5;
 
    bool exists = 6; // [default = true] An entry may not yet be created.

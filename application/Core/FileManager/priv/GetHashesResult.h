@@ -44,7 +44,7 @@ namespace FM
       Protos::Core::GetHashesResult start();
 
    private slots:
-      void chunkHashKnown(QSharedPointer<Chunk> chunk);
+      void chunkHashKnown(QSharedPointer<FM::Chunk> chunk);
 
    private:
       void sendNextHash(QSharedPointer<Chunk> chunk, bool direct);

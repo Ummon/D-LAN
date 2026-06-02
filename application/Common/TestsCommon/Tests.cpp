@@ -303,9 +303,11 @@ void Tests::path()
 
    QCOMPARE(Path("/tmp/dir1/file.txt").appendDir("dir2"), Path("/tmp/dir1/dir2/file.txt"));
    QCOMPARE(Path("").appendDir("dir"), Path("dir/"));
+   QCOMPARE(Path("dir/").appendDir("dir2"), Path("dir/dir2/"));
 
    QCOMPARE(Path("/tmp/dir1/file.txt").prependDir("dir2"), Path("/dir2/tmp/dir1/file.txt"));
    QCOMPARE(Path("").prependDir("dir"), Path("dir/"));
+   QCOMPARE(Path("dir/").prependDir("dir2"), Path("dir2/dir/"));
 }
 
 void Tests::sortedList()

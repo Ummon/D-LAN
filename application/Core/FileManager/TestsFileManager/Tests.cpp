@@ -787,30 +787,31 @@ void Tests::getANonExistingChunk()
       QFAIL("No chunk must be found");
 }
 
-// void Tests::getHashesFromAFileEntry1()
-// {
-//    qDebug() << "===== getHashesFromAFileEntry1() =====";
+void Tests::getHashesFromAFileEntry1()
+{
+   qDebug() << "===== getHashesFromAFileEntry1() =====";
 
-//    // Find the id of the first shared directory.
-//    Protos::Common::Entries sharedDirs = this->fileManager->getEntries();
-//    const string sharedDirId = sharedDirs.entry(1).shared_entry().id().hash();
+   auto sharedEntry = Utils::tryFindEntry(this->fileManager, Common::Path("sharedDirs/share1/r.txt"));
+   QVERIFY(sharedEntry.IsInitialized());
 
-//    Protos::Common::Entry entry;
-//    entry.set_path("/share1/");
-//    entry.set_name("r.txt");
-//    entry.mutable_shared_entry()->mutable_id()->set_hash(sharedDirId);
-//    entry.add_chunk();
+   const std::string sharedDirId = sharedEntry.shared_entry().id().hash();
 
-//    QSharedPointer<IGetHashesResult> result = this->fileManager->getHashes(entry);
+   Protos::Common::Entry entry;
+   entry.set_path("share1/");
+   entry.set_name("r.txt");
+   entry.mutable_shared_entry()->mutable_id()->set_hash(sharedDirId);
+   entry.add_chunks();
 
-//    HashesReceiver hashesReceiver;
-//    connect(result.data(), &IGetHashesResult::nextHash, &hashesReceiver, &HashesReceiver::nextHash);
+   QSharedPointer<IGetHashesResult> result = this->fileManager->getHashes(entry);
 
-//    Protos::Core::GetHashesResult res = result->start();
+   HashesReceiver hashesReceiver;
+   connect(result.data(), &IGetHashesResult::nextHash, &hashesReceiver, &HashesReceiver::nextHash, Qt::QueuedConnection);
 
-//    QCOMPARE(res.status(), Protos::Core::GetHashesResult::OK);
-//    QVERIFY(hashesReceiver.waitToReceive(QList<Common::Hash>() << Common::Hash::fromStr("97d464813598e2e4299b5fe7db29aefffdf2641d"), 500));
-// }
+   Protos::Core::GetHashesResult res = result->start();
+
+   QCOMPARE(res.status(), Protos::Core::GetHashesResult::OK);
+   QVERIFY(hashesReceiver.waitToReceive(QList<Common::Hash>() << Common::Hash::fromStr("f4b8657efdd1a9c11379e23004493c4f7bb5eb190f10c696729f169f"), 500));
+}
 
 // void Tests::getHashesFromAFileEntry2()
 // {

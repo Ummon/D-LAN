@@ -75,6 +75,8 @@ namespace FM
 
       Common::Path getRelativePath() const override;
       Common::Path getAbsolutePath() const override;
+      Entry* getEntry(const Common::Path& path) override;
+
       void rename(const QString& newName) override;
       QDateTime getDateLastModified() const;
 

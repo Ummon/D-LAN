@@ -248,7 +248,7 @@ void Directory::subDirDeleted(Directory* dir)
 Common::Path Directory::getRelativePath() const
 {
    if (!this->parentDirectory)
-      return Common::Path("/");
+      return Common::Path();
    else
       return this->parentDirectory->getRelativePath().appendDir(this->name);
 }
@@ -263,10 +263,24 @@ Common::Path Directory::getAbsolutePath() const
       return this->getRoot()->path.appendDir(this->name);
    else
       return this->parentDirectory->getAbsolutePath().appendDir(this->name);
+}
 
+Entry* Directory::getEntry(const Common::Path& path)
+{
+   QMutexLocker locker(&this->mutex);
 
-   // return this->getRoot()->path
-   // return this->getRoot()->getPath().append(this->Directory::getRelativePath());
+   Directory* currentDirectory = this;
+   for (QStringListIterator i(path.getDirs()); i.hasNext();)
+   {
+      currentDirectory = currentDirectory->getSubDir(i.next());
+      if (!currentDirectory)
+         break;
+   }
+
+   if (currentDirectory && path.isFile())
+      return currentDirectory->getFile(path.getFilename());
+
+   return currentDirectory;
 }
 
 void Directory::rename(const QString& newName)

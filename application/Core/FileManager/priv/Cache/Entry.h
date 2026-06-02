@@ -46,14 +46,19 @@ namespace FM
       Cache* getCache();
 
       /**
-        * Return the relative path from the root directory.
+        * Returns the relative path from the root directory.
         */
       virtual Common::Path getRelativePath() const = 0;
 
       /**
-        * Return the full absolute path of the entry.
+        * Returns the full absolute path of the entry.
         */
       virtual Common::Path getAbsolutePath() const = 0;
+
+      /**
+        * Returns the entry matching the given path, it can be 'this'.
+        */
+      virtual Entry* getEntry(const Common::Path& path) = 0;
 
       virtual void removeUnfinishedFiles() = 0;
 
@@ -76,17 +81,16 @@ namespace FM
       qint64 getSize() const;
       void setSize(qint64 newSize);
 
+   private:
+      void populateSharedEntry(Protos::Common::Entry* entry) const;
+
    protected:
       QString name;
       SharedEntry* root;
       Directory* parentDirectory; // Can be null if none.
 
-   private:
-      void populateSharedEntry(Protos::Common::Entry* entry) const;
-
       qint64 size;
 
-   protected:
       mutable QRecursiveMutex mutex;
    };
 

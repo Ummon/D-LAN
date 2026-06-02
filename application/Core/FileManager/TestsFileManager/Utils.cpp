@@ -19,7 +19,8 @@ Protos::Common::Entry Utils::tryFindEntry(
    auto entries = fileManager->getEntries();
    for (const auto& sharedEntry : entries.entries())
    {
-      if (sharedEntry.name() == dirs[0])
+      auto sharedPath = Common::Path(QString::fromStdString(sharedEntry.shared_entry().path()));
+      if (sharedPath.getLastElement() == dirs[0])
       {
          entry = sharedEntry;
          break;

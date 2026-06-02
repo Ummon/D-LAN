@@ -25,6 +25,7 @@
 #include <google/protobuf/message.h>
 
 #include <Protos/common.pb.h>
+#include <Common/Path.h>
 
 namespace Common
 {
@@ -70,14 +71,10 @@ namespace Common
 
       /**
         * Return the path of an entry, for exemple:
-        *  - entry is a root: "/" (with 'prependSharedDir == false')
-        *  - entry is a root: "/root_dir/" ('prependSharedDir == true')
-        *  - entry is a directory: "/abc/xyz/" (with 'entriesToAppend == DIR' and 'prependSharedDir == false').
-        *  - entry is a file: "/abc/xyz/file.txt" (with 'entriesToAppend == DIR' and 'prependSharedDir == false').
-        *  - entry is a file: "/root_dir/abc/xyz/file.txt" (with 'entriesToAppend == DIR' and 'prependSharedDir == true').
-        *  - entry is a file: "/abc/xyz/" (with 'entriesToAppend != FILE' and 'prependSharedDir == false').
+        *  - entry is a root: "entry" (with 'absolutePath == false')
+        *  - entry is a root: "/root_dir/entry" ('absolutePath == true')
         */
-      static QString getPath(const Protos::Common::Entry& entry, EntriesToAppend entriesToAppend = EntriesToAppend::FILE | EntriesToAppend::DIR, bool prependSharedPath = false);
+      static Path getPath(const Protos::Common::Entry& entry, bool absolutePath = false);
 
       static bool isRoot(const Protos::Common::Entry& entry);
 

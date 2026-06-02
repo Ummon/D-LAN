@@ -46,6 +46,14 @@ Path::Path(const QString& path)
    }
 }
 
+/**
+  * Create a relative path from a list of directories.
+  */
+Path::Path(const QList<QString>& dirs) :
+   dirs(dirs)
+{
+}
+
 Path::Path(const QString& root, const QStringList& dirs, const QString& filename)
    : root(root), dirs(dirs), filename(filename)
 {

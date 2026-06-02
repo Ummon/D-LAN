@@ -23,7 +23,6 @@ using namespace Common;
 
 #include <Hash.h>
 #include <Global.h>
-#include <Path.h>
 
 void ProtoHelper::setLang(Protos::Common::Language& langMess, const QLocale& locale)
 {
@@ -114,39 +113,38 @@ QHostAddress ProtoHelper::getIP(const Protos::Common::IP& ipMess)
 }
 
 /**
-  * Return the path of a given entry, the path can be relative to the shared item or absolute ('prependSharedPath = true').
+  * Return the path of a given entry, the path can be relative to the shared item or absolute ('absolutePath = true').
   *
   */
-QString ProtoHelper::getPath(const Protos::Common::Entry& entry, EntriesToAppend entriesToAppend, bool prependSharedPath)
+Path ProtoHelper::getPath(const Protos::Common::Entry& entry, bool absolutePath)
 {
-   const QString& relativePath = QString::fromStdString(entry.path()); // Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::path);
-   const QString& sharedPath = QString::fromStdString(entry.shared_entry().path());
+   Q_ASSERT(entry.shared_entry().IsInitialized());
 
-   // Empty relative path means the directory/file is a shared item, see "application/Protos/common.proto" for more information.
+   QString relativePath = QString::fromStdString(entry.path());
+   // Entry relative path should not begin with a '/'.
+   if (relativePath.startsWith('/'))
+      relativePath.removeFirst();
+
+   const QString& sharedPath = QString::fromStdString(entry.shared_entry().path());
+   const bool isFile = entry.type() == Protos::Common::Entry::FILE;
+
    if (relativePath.isEmpty())
    {
-      QString path;
-      if (prependSharedPath)
-         path.append(sharedPath).append("/");
+      if (absolutePath)
+         return Path(sharedPath);
+      else if (isFile)
+         return Path(QString::fromStdString(entry.name()));
       else
-         path = "/";
-      return path;
+         return Path(QString::fromStdString(entry.name()) + '/');
    }
    else
    {
-      QString path = relativePath;
-
-      if (prependSharedPath)
-         path.prepend(sharedPath);
-
-      if (contains(entriesToAppend, EntriesToAppend::FILE) && entry.type() == Protos::Common::Entry_Type_FILE || contains(entriesToAppend, EntriesToAppend::DIR) && entry.type() == Protos::Common::Entry_Type_DIR)
-      {
-         path.append(QString::fromStdString(entry.name()));
-         if (entry.type() == Protos::Common::Entry_Type_DIR)
-            path.append("/");
-      }
-
-      return path;
+      if (absolutePath)
+         return Path(sharedPath + relativePath);
+      else if (isFile)
+         return Path(relativePath + '/' + QString::fromStdString(entry.name()));
+      else
+         return Path(relativePath + '/' + QString::fromStdString(entry.name()) + '/');
    }
 }
 

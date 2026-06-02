@@ -323,6 +323,13 @@ Common::Path File::getAbsolutePath() const
       return this->getRoot()->path.setFilename(this->name);
 }
 
+Entry* File::getEntry(const Common::Path& path)
+{
+   if (path.isFile() && !path.isAbsolute() && path.getDirs().isEmpty() && path.getFilename() == this->name)
+      return this;
+   return nullptr;
+}
+
 void File::rename(const QString& newName)
 {
    QMutexLocker locker(&this->mutex);

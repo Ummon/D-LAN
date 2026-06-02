@@ -19,6 +19,7 @@
 #include <HashesReceiver.h>
 
 #include <QtDebug>
+#include <QMutexLocker>
 #include <QElapsedTimer>
 #include <QTest>
 
@@ -40,29 +41,35 @@ HashesReceiver::HashesReceiver() :
   */
 bool HashesReceiver::waitToReceive(QList<Common::Hash>& hashes, int timeout)
 {
-   QListIterator<Common::Hash> i(this->receivedHashes);
-   QListIterator<Common::Hash> j(hashes);
-
-
    QElapsedTimer timer;
    timer.start();
 
    forever
    {
-      while (i.hasNext() && j.hasNext())
       {
-         Common::Hash h1 = i.next();
-         Common::Hash h2 = j.next();
-         if (h1 != h2)
+         QMutexLocker locker(&this->mutex);
+
+         if (this->receivedHashes.size() == hashes.size())
          {
-            qDebug() << "Error : " << h1.toStr() << " != " << h2.toStr();
-            return false;
+            QListIterator<Common::Hash> i(this->receivedHashes);
+            QListIterator<Common::Hash> j(hashes);
+
+            while (i.hasNext() && j.hasNext())
+            {
+               Common::Hash h1 = i.next();
+               Common::Hash h2 = j.next();
+               if (h1 != h2)
+               {
+                  qDebug() << "Error : " << h1.toStr() << " != " << h2.toStr();
+                  return false;
+               }
+            }
+
+            return true;
          }
       }
-      if (this->receivedHashes.size() == hashes.size())
-         return true;
 
-      QTest::qWait(50);
+      QTest::qWait(100);
 
       if (timer.elapsed() > timeout)
          return false;
@@ -71,8 +78,9 @@ bool HashesReceiver::waitToReceive(QList<Common::Hash>& hashes, int timeout)
 
 void HashesReceiver::nextHash(Protos::Core::HashResult hashResult)
 {
-   Common::Hash hash { hashResult.hash().hash() };
+   QMutexLocker locker(&this->mutex);
 
+   Common::Hash hash { hashResult.hash().hash() };
    qDebug() << this->num << " : " << hash.toStr();
    this->receivedHashes << hash;
    this->num++;

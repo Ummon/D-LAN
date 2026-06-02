@@ -41,8 +41,9 @@ GetHashesResult::GetHashesResult(const Protos::Common::Entry& fileEntry, Cache& 
 
 GetHashesResult::~GetHashesResult()
 {
-   // After the 'emit nextHash(chunk->getHash());' the receiver (in an other thread) can decide to clear the QSharedPointer, if it does and it's the last reference the
-   // object will be destroyed by an another thread and 'mutex' will be unlock by this other thread . . .
+   // After the 'emit nextHash(chunk->getHash());' the receiver (in another thread) can decide to clear the
+   // QSharedPointer, if it does and it's the last reference the object will be destroyed by an another thread and
+   // 'mutex' will be unlock by this other thread.
    QMutexLocker locker(&this->mutex);
 
    L_DEBU("GetHashesResult::~GetHashesResult()");
@@ -83,14 +84,14 @@ Protos::Core::GetHashesResult GetHashesResult::start()
          auto chunk = i.next();
          const Protos::Common::Hash& protoChunk = this->fileEntry.chunks(j++);
 
-         if (protoChunk.hash().size() > 0)
-         {
+         // if (protoChunk.hash().size() > 0)
+         // {
             nbOfHashToBeSent++;
             if (chunk->hasHash())
                this->sendNextHash(chunk, true);
             else
                this->hashesRemaining << chunk->getNum();
-         }
+         // }
       }
 
       result.set_nb_hash(nbOfHashToBeSent);

@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #pragma once
 
 #include <QTest>
@@ -77,7 +77,7 @@ private slots:
    void getANonExistingChunk();
 
    // /***** Get Hashes from a FileEntry which the hash is already computed *****/
-   // void getHashesFromAFileEntry1();
+   void getHashesFromAFileEntry1();
 
    // /***** Get Hashes from a FileEntry which the hash is unknown *****/
    // void getHashesFromAFileEntry2();
@@ -125,7 +125,7 @@ private:
    void deleteAllFiles();
 
    void printSearch(const QString& terms, const Protos::Common::FindResult& result);
-      void compareExpectedResult(const Protos::Common::FindResult& result, const FindResult& expectedResult);
+   void compareExpectedResult(const Protos::Common::FindResult& result, const FindResult& expectedResult);
 
    void addSuperSharedDirectoriesAndMerge();
 

@@ -11,6 +11,7 @@ namespace Common
    {
    public:
       Path(const QString& path);
+      explicit Path(const QList<QString>& dirs);
 
    private:
       Path(const QString& root, const QStringList& dirs, const QString& filename);

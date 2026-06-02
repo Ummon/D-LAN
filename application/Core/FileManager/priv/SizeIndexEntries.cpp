@@ -13,6 +13,7 @@ public:
 
    Common::Path getRelativePath() const { return QString(); }
    Common::Path getAbsolutePath() const { return QString(); }
+   Entry* getEntry(const Common::Path&) { return nullptr; }
    SharedDirectory* getRoot() const { return nullptr; }
    void removeUnfinishedFiles() {}
    void moveInto(Directory* directory) {}

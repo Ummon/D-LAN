@@ -49,9 +49,13 @@ void Entry::del(bool invokeDelete)
 
 void Entry::populateEntry(Protos::Common::Entry* entry, bool setSharedEntry) const
 {
-   // The entry name is not included.
-   entry->set_path(this->getRelativePath().removeLastElement().toString().toStdString());
-   entry->set_name(this->getName().toStdString());
+   if (this->parentDirectory)
+   {
+      // The entry name is not included.
+      entry->set_path(this->getRelativePath().removeLastElement().toString().toStdString());
+      entry->set_name(this->getName().toStdString());
+   }
+
    entry->set_size(this->getSize());
 
    if (setSharedEntry)
@@ -127,9 +131,10 @@ void Entry::populateSharedEntry(Protos::Common::Entry* entry) const
    const SharedEntry* root = this->getRoot();
    if (root)
    {
-      entry->mutable_shared_entry()->mutable_id()->set_hash(root->getId().getData(), Common::Hash::HASH_SIZE);
+      auto sharedEntry = entry->mutable_shared_entry();
 
-      // TODO: is the correct field? Some other field to populate?
-      entry->mutable_shared_entry()->set_shared_name(root->getUserName().toStdString());
+      sharedEntry->mutable_id()->set_hash(root->getId().getData(), Common::Hash::HASH_SIZE);
+      sharedEntry->set_path(root->getPath().toString().toStdString());
+      sharedEntry->set_shared_name(root->getUserName().toStdString());
    }
 }

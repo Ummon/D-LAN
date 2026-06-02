@@ -133,7 +133,6 @@ namespace FM
 
       /**
         * Returns the shared directories (roots).
-        * The absolute shared directory paths are set to "" to avoid sharing local paths.
         */
       virtual Protos::Common::Entries getEntries() = 0;
 
