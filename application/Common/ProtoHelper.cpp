@@ -156,7 +156,7 @@ bool ProtoHelper::isRoot(const Protos::Common::Entry& entry)
 QString ProtoHelper::getDebugStr(const google::protobuf::Message& mess)
 {
    std::string debugString = mess.DebugString();
-   QString str = QString::fromUtf8(debugString.data());
+   QString str = QString::fromStdString(debugString);
 
    // Very dirty : substitute the bytes representation (ascii + escaped octal number) with a hexadecimal representation.
    // hash: "ID\214\351\t\003\312w\213u\320\236@0o\032\220\"(\033"

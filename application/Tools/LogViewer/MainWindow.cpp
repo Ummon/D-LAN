@@ -56,7 +56,8 @@ MainWindow::MainWindow(QWidget *parent) :
    this->ui->tblLog->horizontalHeader()->resizeSection(3, 120);
    this->ui->tblLog->horizontalHeader()->resizeSection(4, 200);
    this->ui->tblLog->horizontalHeader()->resizeSection(5, 1200);
-   this->ui->tblLog->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+   this->ui->tblLog->verticalHeader()->setDefaultAlignment(Qt::AlignTop);
+   this->ui->tblLog->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
    this->ui->tblLog->verticalHeader()->setDefaultSectionSize(17);
    this->ui->tblLog->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
 

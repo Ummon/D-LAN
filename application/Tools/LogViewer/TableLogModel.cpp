@@ -65,7 +65,7 @@ QVariant TableLogModel::data(const QModelIndex& index, int role) const
          case 2: return entry->getName();
          case 3: return entry->getThread();
          case 4: return entry->getSource();
-         case 5: return entry->getMessage();
+         case 5: return entry->getMessageWithLF();
          default: return QVariant();
          }
       }
@@ -77,6 +77,9 @@ QVariant TableLogModel::data(const QModelIndex& index, int role) const
             return entry->getMessageWithLF();
          }
       }
+
+   case Qt::TextAlignmentRole:
+       return int(Qt::AlignLeft | Qt::AlignTop);
    }
 
    return QVariant();

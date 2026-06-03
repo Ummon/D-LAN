@@ -48,7 +48,7 @@ void StdLogger::init()
 void StdLogger::run()
 {
    qint64 size;
-   while((size = this->stdoutIn.readLine(this->buffer, BUFFER_SIZE)) != -1)
+   while ((size = this->stdoutIn.readLine(this->buffer, BUFFER_SIZE)) != -1)
       this->log(QString::fromLatin1(this->buffer, size), SV_DEBUG);
 }
 
