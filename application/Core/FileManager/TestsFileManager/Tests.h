@@ -80,10 +80,10 @@ private slots:
    void getHashesFromAFileEntry1();
 
    // /***** Get Hashes from a FileEntry which the hash is unknown *****/
-   // void getHashesFromAFileEntry2();
+   void getHashesFromAFileEntry2();
 
    // /***** Browse the shared directories *****/
-   // void browseSomeDirectories();
+   void browseSomeDirectories();
 
    // /***** Find files and directories by keywords *****/
    // void findExistingFilesWithOneWord();

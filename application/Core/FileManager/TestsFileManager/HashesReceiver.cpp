@@ -30,7 +30,8 @@
   * the class 'FM::IGetHashesResult' and print them.
   */
 
-HashesReceiver::HashesReceiver() :
+HashesReceiver::HashesReceiver(int numberChunksToReceive) :
+   numberChunksToReceive(numberChunksToReceive),
    num(0)
 {
 }
@@ -39,8 +40,9 @@ HashesReceiver::HashesReceiver() :
   * @return false if timeouted or if a hash is incorrect.
   * @param timeout [ms]
   */
-bool HashesReceiver::waitToReceive(QList<Common::Hash>& hashes, int timeout)
+bool HashesReceiver::waitToReceive(QList<Common::Hash>& expectedHashes, int timeout)
 {
+   // We don't use a QWaitCondition to avoid blocking the Qt main loop.
    QElapsedTimer timer;
    timer.start();
 
@@ -48,11 +50,10 @@ bool HashesReceiver::waitToReceive(QList<Common::Hash>& hashes, int timeout)
    {
       {
          QMutexLocker locker(&this->mutex);
-
-         if (this->receivedHashes.size() == hashes.size())
+         if (this->receivedHashes.size() == expectedHashes.size())
          {
             QListIterator<Common::Hash> i(this->receivedHashes);
-            QListIterator<Common::Hash> j(hashes);
+            QListIterator<Common::Hash> j(expectedHashes);
 
             while (i.hasNext() && j.hasNext())
             {
@@ -69,7 +70,7 @@ bool HashesReceiver::waitToReceive(QList<Common::Hash>& hashes, int timeout)
          }
       }
 
-      QTest::qWait(100);
+      QTest::qWait(50);
 
       if (timer.elapsed() > timeout)
          return false;
@@ -79,10 +80,10 @@ bool HashesReceiver::waitToReceive(QList<Common::Hash>& hashes, int timeout)
 void HashesReceiver::nextHash(Protos::Core::HashResult hashResult)
 {
    QMutexLocker locker(&this->mutex);
-
    Common::Hash hash { hashResult.hash().hash() };
-   qDebug() << this->num << " : " << hash.toStr();
+   qDebug() << "Hash received, chunk num:" << this->num << " hash:" << hash.toStr();
    this->receivedHashes << hash;
+
    this->num++;
 }
 

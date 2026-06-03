@@ -17,6 +17,9 @@ public:
    SharedDirectory* getRoot() const { return nullptr; }
    void removeUnfinishedFiles() {}
    void moveInto(Directory* directory) {}
+
+protected:
+   void setRootRecursively(SharedEntry* sharedEntry) {}
 };
 
 /////

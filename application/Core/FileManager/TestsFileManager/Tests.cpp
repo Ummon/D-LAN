@@ -804,78 +804,95 @@ void Tests::getHashesFromAFileEntry1()
 
    QSharedPointer<IGetHashesResult> result = this->fileManager->getHashes(entry);
 
-   HashesReceiver hashesReceiver;
+   HashesReceiver hashesReceiver(1);
    connect(result.data(), &IGetHashesResult::nextHash, &hashesReceiver, &HashesReceiver::nextHash, Qt::QueuedConnection);
-
    Protos::Core::GetHashesResult res = result->start();
 
    QCOMPARE(res.status(), Protos::Core::GetHashesResult::OK);
-   QVERIFY(hashesReceiver.waitToReceive(QList<Common::Hash>() << Common::Hash::fromStr("f4b8657efdd1a9c11379e23004493c4f7bb5eb190f10c696729f169f"), 500));
+   QVERIFY(
+      hashesReceiver.waitToReceive(
+         QList<Common::Hash>()
+            << Common::Hash::fromStr("f4b8657efdd1a9c11379e23004493c4f7bb5eb190f10c696729f169f")
+         ,
+         1000
+      )
+   );
 }
 
-// void Tests::getHashesFromAFileEntry2()
-// {
-//    qDebug() << "===== getHashesFromAFileEntry2() =====";
+void Tests::getHashesFromAFileEntry2()
+{
+   qDebug() << "===== getHashesFromAFileEntry2() =====";
 
-//    {
-//       QFile file1("sharedDirs/big2.bin");
-//       file1.open(QIODevice::WriteOnly);
+   {
+      QFile file1("sharedDirs/big2.bin");
+      QVERIFY(file1.open(QIODevice::WriteOnly));
 
-//       QFile file2("sharedDirs/big3.bin");
-//       file2.open(QIODevice::WriteOnly);
+      QFile file2("sharedDirs/big3.bin");
+      QVERIFY(file2.open(QIODevice::ReadWrite));
 
-//       file1.resize(128 * 1024 * 1024); // 128 MiB.
-//       file2.resize(128 * 1024 * 1024); // 128 MiB.
-//    }
+      QVERIFY(file1.resize(128 * 1024 * 1024)); // 128 MiB.
+      QVERIFY(file2.resize(128 * 1024 * 1024)); // 128 MiB.
 
-//    QTest::qWait(2000); // Begin the computing of the big2.bin hashes.
+      QDataStream stream(&file2);
+      QVERIFY(stream.skipRawData(64 * 1024 * 1024 + 100) > 0); // Write some data in the second chunk.
+      QByteArray data("AAAA");
+      QCOMPARE(stream.writeRawData(data.constData(), data.size()), data.size());
+   }
 
-//    Protos::Common::Entries sharedDirs = this->fileManager->getEntries();
-//    const string sharedDirId = sharedDirs.entry(1).shared_entry().id().hash();
+   QTest::qWait(100); // Begin the computing of the big2.bin hashes.
 
-//    Protos::Common::Entry entry;
-//    entry.set_path("/");
-//    entry.set_name("big3.bin");
-//    entry.mutable_shared_entry()->mutable_id()->set_hash(sharedDirId);
-//    for (int i = 0; i < 2; i++) // 128 MiB -> 2 chunks.
-//       entry.add_chunk();
-//    QSharedPointer<IGetHashesResult> result = this->fileManager->getHashes(entry);
+   auto sharedEntry = Utils::tryFindEntry(this->fileManager, Common::Path("sharedDirs/big3.bin"));
+   const std::string sharedDirId = sharedEntry.shared_entry().id().hash();
 
-//    HashesReceiver hashesReceiver;
-//    connect(result.data(), &IGetHashesResult::nextHash, &hashesReceiver, &HashesReceiver::nextHash);
-//    Protos::Core::GetHashesResult res = result->start(); // Should stop the computing of 'big2.bin' and switch to 'big3.bin'.
-//    qDebug() << res.status();
-//    QCOMPARE(res.status(), Protos::Core::GetHashesResult::OK);
+   Protos::Common::Entry entry;
+   entry.set_path("/");
+   entry.set_name("big3.bin");
+   entry.mutable_shared_entry()->mutable_id()->set_hash(sharedDirId);
+   for (int i = 0; i < 2; i++) // 128 MiB -> 2 chunks.
+      entry.add_chunks();
+   QSharedPointer<IGetHashesResult> result = this->fileManager->getHashes(entry);
 
-//    QTest::qWait(4000);
-// }
+   HashesReceiver hashesReceiver(2);
+   connect(result.data(), &IGetHashesResult::nextHash, &hashesReceiver, &HashesReceiver::nextHash);
+   Protos::Core::GetHashesResult res = result->start(); // Should stop the computing of 'big2.bin' and switch to 'big3.bin'.
+   QCOMPARE(res.status(), Protos::Core::GetHashesResult::OK);
+   QVERIFY(
+      hashesReceiver.waitToReceive(
+         QList<Common::Hash>()
+            << Common::Hash::fromStr("ea7b156fc9a810c181984f9e2da433feeeb2bf88ffa4d1f0dc1a9215")
+            << Common::Hash::fromStr("8bac0e4c2a03b716567e2f5dc33ca8c658dcdfa814f112ada0da4a4f")
+         ,
+         1000
+      )
+   );
+}
 
-// void Tests::browseSomeDirectories()
-// {
-//    qDebug() << "===== browseSomeDirectories() =====";
+void Tests::browseSomeDirectories()
+{
+   qDebug() << "===== browseSomeDirectories() =====";
 
-//    // TODO: active the regexp comparison.
+   // TODO: active the regexp comparison.
 
-//    // Get the shared directories.
-//    Protos::Common::Entries entries1 = this->fileManager->getEntries();
-//    /*QString entries1Str = Common::ProtoHelper::getDebugStr(entries1);
-//    Tests::compareStrRegexp(
-//       "dir\\s*\\{\n\\s*shared_dir\\s*\\{\n\\s*id\\s*\\{\n\\s*hash:\\s*\".+\"\n\\s*\\}\n\\s*\\}\n\\s*path:\\s*\"\"\n\\s*name:\\s*\"sharedDirs\"\n\\s*size:\\s*\\d+\n\\}\ndir\\s*\\{\n\\s*shared_dir\\s*\\{\n\\s*id\\s*\\{\n\\s*hash:\\s*\".+\"\n\\s*\\}\n\\s*\\}\n\\s*path:\\s*\"\"\n\\s*name:\\s*\"incoming\"\n\\s*size:\\s*\\d+\n\\}.*",
-//       entries1Str
-//    );
-//    QVERIFY(entries1Str != "");
-//    qDebug() << entries1Str;*/
-//    QVERIFY(entries1.entry_size() != 0);
-//    qDebug() << Common::ProtoHelper::getDebugStr(entries1);
+   // Get the shared directories.
+   Protos::Common::Entries entries1 = this->fileManager->getEntries();
+   QString entries1Str = Common::ProtoHelper::getDebugStr(entries1);
+   // Tests::compareStrRegexp(
+   //    "dir\\s*\\{\n\\s*shared_dir\\s*\\{\n\\s*id\\s*\\{\n\\s*hash:\\s*\".+\"\n\\s*\\}\n\\s*\\}\n\\s*path:\\s*\"\"\n\\s*name:\\s*\"sharedDirs\"\n\\s*size:\\s*\\d+\n\\}\ndir\\s*\\{\n\\s*shared_dir\\s*\\{\n\\s*id\\s*\\{\n\\s*hash:\\s*\".+\"\n\\s*\\}\n\\s*\\}\n\\s*path:\\s*\"\"\n\\s*name:\\s*\"incoming\"\n\\s*size:\\s*\\d+\n\\}.*",
+   //    entries1Str
+   // );
+   QVERIFY(entries1Str != "");
 
-//    // Ask for the files and directories of the first shared directory
-//    Protos::Common::Entries entries2 = this->fileManager->getEntries(entries1.entry(0));
-//    qDebug() << Common::ProtoHelper::getDebugStr(entries2);
+   QVERIFY(entries1.entries_size() != 0);
+   qDebug().noquote() << entries1Str;
 
-//    // Ask for the files and directores of the first directory of the first shared directory
-//    Protos::Common::Entries entries3 = this->fileManager->getEntries(entries2.entry(0));
-//    qDebug() << Common::ProtoHelper::getDebugStr(entries3);
-// }
+   // Ask for the files and directories of the thrid shared directory
+   Protos::Common::Entries entries2 = this->fileManager->getEntries(entries1.entries(2));
+   qDebug().noquote() << Common::ProtoHelper::getDebugStr(entries2);
+
+   // Ask for the files and directores of the second directory of the thrid shared directory
+   Protos::Common::Entries entries3 = this->fileManager->getEntries(entries2.entries(1));
+   qDebug().noquote() << Common::ProtoHelper::getDebugStr(entries3);
+}
 
 // void Tests::findExistingFilesWithOneWord()
 // {

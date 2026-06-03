@@ -96,6 +96,7 @@ namespace FM
 
    protected:
       void deleteSubDirs();
+      void setRootRecursively(SharedEntry* sharedEntry) override;
 
    private:
       void subdirNameChanged(Directory* dir);

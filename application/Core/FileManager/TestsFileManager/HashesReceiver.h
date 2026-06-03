@@ -30,7 +30,7 @@ class HashesReceiver : public QObject
 {
    Q_OBJECT
 public:
-   HashesReceiver();
+   HashesReceiver(int numberChunksToReceive);
    bool waitToReceive(QList<Common::Hash>& hashes, int timeout);
 
 public slots:
@@ -38,6 +38,7 @@ public slots:
 
 private:
    QList<Common::Hash> receivedHashes;
+   const int numberChunksToReceive;
    int num;
    QMutex mutex;
 };

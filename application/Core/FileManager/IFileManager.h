@@ -117,6 +117,7 @@ namespace FM
       /**
         * Return the hashes from a FileEntry. If the hashes don't exist they will be computed on the fly. However this
         * Method is non-blocking, when the hashes are ready a signal will be emitted by the IGetHashesResult object.
+        * Only unknown hashes are sent (null).
         */
       virtual QSharedPointer<IGetHashesResult> getHashes(const Protos::Common::Entry& file) = 0;
 

@@ -112,7 +112,7 @@ Protos::Common::Entries Cache::getProtoEntries(const Protos::Common::Entry& dir,
    if (Directory* directory = this->getDirectory(dir))
    {
       foreach (Directory* dir, directory->getSubDirs())
-         dir->populateEntry(result.add_entries());
+         dir->populateEntry(result.add_entries(), true);
 
       foreach (File* file, directory->getFiles())
          if (file->isComplete())

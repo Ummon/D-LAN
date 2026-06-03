@@ -42,6 +42,8 @@ namespace FM
 
    class File : public Entry
    {
+      friend class Directory;
+
    public:
       File(
          SharedEntry* root,
@@ -114,6 +116,8 @@ namespace FM
       void setHashes(const QList<Common::Hash>& hashes);
 
    protected:
+      void setRootRecursively(SharedEntry* sharedEntry) override;
+
       QVector<QSharedPointer<Chunk>> chunks;
       QDateTime dateLastModified;
 

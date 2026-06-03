@@ -739,6 +739,12 @@ void File::setHashes(const QList<Common::Hash>& hashes)
    }
 }
 
+void File::setRootRecursively(SharedEntry* sharedEntry)
+{
+   QMutexLocker locker(&this->mutex);
+   this->root = sharedEntry;
+}
+
 /////
 
 void FileForHasher::setSize(qint64 size)

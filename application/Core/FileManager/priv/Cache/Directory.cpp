@@ -478,6 +478,22 @@ void Directory::deleteSubDirs()
       d->del();
 }
 
+void Directory::setRootRecursively(SharedEntry* sharedEntry)
+{
+   QMutexLocker locker(&this->mutex);
+
+   if (this->root != sharedEntry)
+   {
+      this->root = sharedEntry;
+
+      for (auto file : this->files.getList())
+         file->setRootRecursively(sharedEntry);
+
+      for (auto dir : this->subDirs.getList())
+         dir->setRootRecursively(sharedEntry);
+   }
+}
+
 void Directory::subdirNameChanged(Directory* dir)
 {
    QMutexLocker locker(&this->mutex);

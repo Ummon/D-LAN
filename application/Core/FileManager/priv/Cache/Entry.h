@@ -85,6 +85,8 @@ namespace FM
       void populateSharedEntry(Protos::Common::Entry* entry) const;
 
    protected:
+      virtual void setRootRecursively(SharedEntry* sharedEntry) = 0;
+
       QString name;
       SharedEntry* root;
       Directory* parentDirectory; // Can be null if none.

@@ -27,6 +27,7 @@ using namespace FM;
 #include <priv/FileManager.h>
 #include <priv/Cache/Cache.h>
 #include <priv/Cache/SharedEntry.h>
+#include <priv/Cache/Directory.h>
 
 Entry::Entry(SharedEntry* root, const QString& name, Directory* parentDirectory, qint64 size) :
    name(name), root(root), parentDirectory(parentDirectory), size(size)
@@ -107,7 +108,12 @@ void Entry::rename(const QString& newName)
 
 void Entry::setParentDirectory(Directory* dir)
 {
-   this->parentDirectory = dir;
+   if (this->parentDirectory != dir)
+   {
+      this->parentDirectory = dir;
+      if (this->parentDirectory)
+         this->setRootRecursively(this->parentDirectory->getRoot());
+   }
 }
 
 qint64 Entry::getSize() const
@@ -138,3 +144,4 @@ void Entry::populateSharedEntry(Protos::Common::Entry* entry) const
       sharedEntry->set_shared_name(root->getUserName().toStdString());
    }
 }
+
