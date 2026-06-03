@@ -86,11 +86,11 @@ private slots:
    void browseSomeDirectories();
 
    // /***** Find files and directories by keywords *****/
-   // void findExistingFilesWithOneWord();
-   // void findNonExistingFilesWithOneWord();
-   // void findFilesWithSomeWords1();
-   // void findFilesWithSomeWords2();
-   // void findFilesWithResultFragmentation();
+   void findExistingFilesWithOneWord();
+   void findNonExistingFilesWithOneWord();
+   void findFilesWithSomeWords1();
+   void findFilesWithSomeWords2();
+   void findFilesWithResultFragmentation();
    // void findFilesWithSomeWordsAndExtensions();
    // void findFilesWithSomeWordsAndExtensionsAndSizeRange();
    // void findFilesByExtensions();

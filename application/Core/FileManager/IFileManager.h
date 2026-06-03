@@ -149,7 +149,16 @@ namespace FM
         * @remarks Will not fill the fields 'FindResult.tag' and 'FindResult.peer_id'.
         */
       virtual QList<Protos::Common::FindResult> find(const QString& words, int maxNbResult, int maxSize) = 0;
-      virtual QList<Protos::Common::FindResult> find(const QString& words, const QList<QString>& extensions, qint64 minFileSize, qint64 maxFileSize, Protos::Common::FindPattern_Category category, int maxNbResult, int maxSize) = 0;
+
+      virtual QList<Protos::Common::FindResult> find(
+         const QString& words,
+         const QList<QString>& extensions,
+         qint64 minFileSize,
+         qint64 maxFileSize,
+         Protos::Common::FindPattern_Category category,
+         int maxNbResult,
+         int maxSize
+      ) = 0;
 
       /**
         * Ask if we have the given hashes. For each hashes a bit is set (1 if the hash is known or 0 otherwise) into the returned QBitArray.

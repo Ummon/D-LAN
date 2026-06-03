@@ -300,9 +300,10 @@ QList<Protos::Common::FindResult> FileManager::find(
 
    QList<Protos::Common::FindResult> findResults;
    findResults << Protos::Common::FindResult();
-   findResults.last().set_tag(std::numeric_limits<quint64>::max()); // Worst case to compute the size (int fields have a variable size).
+   // Worst case to compute the size (int fields have a variable size).
+   findResults.last().set_tag(std::numeric_limits<quint64>::max());
 
-   const int EMPTY_FIND_RESULT_SIZE = findResults.last().ByteSizeLong();
+   const int EMPTY_FIND_RESULT_SIZE = findResults.last().ByteSizeLong(); // Around ~11 bytes.
    int findResultCurrentSize = EMPTY_FIND_RESULT_SIZE; // [Byte].
 
    for (QListIterator<NodeResult<Entry*>> i(result); i.hasNext();)
@@ -317,21 +318,21 @@ QList<Protos::Common::FindResult> FileManager::find(
       else
          entry.value->populateEntry(entryLevel->mutable_entry(), true);
 
-      // We wouldn't use 'findResults.last().ByteSize()' because is too slow. Instead we call 'ByteSize()' for each entry and sum it.
-      const int entryByteSize = entryLevel->ByteSizeLong() + 8; // Each entry take a bit of memory overhead . . . (Value found in an empiric way . . .).
+      // We wouldn't use 'findResults.last().ByteSizeLong()' because is too slow.
+      // Instead we call 'ByteSize()' for each entry and sum it.
+      const int entryByteSize = entryLevel->ByteSizeLong() + 8; // Each entry take a bit of memory overhead (value found in an empiric way).
       findResultCurrentSize += entryByteSize;
 
-      if (findResultCurrentSize > maxSize)
+      // If the last result is too big the last entry of the last result will be put in a new result.
+      if (findResultCurrentSize > maxSize && findResults.constLast().entries_size() > 1)
       {
-         google::protobuf::RepeatedPtrField<Protos::Common::FindResult::EntryLevel>* entries =
-               findResults.last().mutable_entries();
-
          findResults << Protos::Common::FindResult();
-         if (entries->size() > 0)
-         {
-            findResults.last().add_entries()->CopyFrom(entries->Get(entries->size() - 1));
-            entries->RemoveLast();
-         }
+
+         // Move the last entry to the new result.
+         findResults.last().mutable_entries()->AddAllocated(
+            findResults[findResults.size() - 2].mutable_entries()->ReleaseLast()
+         );
+
          findResultCurrentSize = EMPTY_FIND_RESULT_SIZE + entryByteSize;
       }
    }

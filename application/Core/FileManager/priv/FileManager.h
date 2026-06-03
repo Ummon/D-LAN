@@ -107,7 +107,8 @@ namespace FM
          qint64 minFileSize,
          qint64 maxFileSize,
          Protos::Common::FindPattern_Category category,
-         int maxNbResult, int maxSize
+         int maxNbResult,
+         int maxSize
       ) override;
 
       QBitArray haveChunks(const QList<Common::Hash>& hashes) override;
