@@ -206,6 +206,8 @@ bool FileHasher::start(FileForHasher* fileCache, int n, int* amountHashed)
    }
 #endif
 
+   this->currentFileCache->updateDateLastModified(QFileInfo(filePath).lastModified());
+
    this->toStopHashing = false;
    this->hashing = false;
 

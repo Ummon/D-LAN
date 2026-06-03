@@ -93,9 +93,10 @@ File::File(
    fileInReadMode(nullptr)
 {
    L_DEBU(
-      QString("New file: %1 (%2), createPhysically = %3")
+      QString("New file: %1 (%2), createPhysically = %3, dateLastModified = %4")
          .arg(this->File::getAbsolutePath().toString(), Common::Global::formatByteSize(this->getSize()))
          .arg(createPhysically)
+         .arg(dateLastModified.toString("dd.MM.yyyy-hh:mm:ss.zzz"))
    );
 
    if (createPhysically)

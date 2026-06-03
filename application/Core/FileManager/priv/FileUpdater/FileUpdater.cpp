@@ -806,13 +806,15 @@ bool FileUpdater::processEvents(const QList<WatcherEvent>& events)
             break;
          }
 
+      // TODO: Implement ::NEW, a new directory or file should be added directly without scanning an entire
+      // directory tree.
       case WatcherEvent::NEW:
       case WatcherEvent::CONTENT_CHANGED:
          {
-            if (event.isWatchedFile)
+            File* file = dynamic_cast<File*>(this->fileManager->getEntry(event.path1));
+            if (file)
             {
-               File* file = dynamic_cast<File*>(this->fileManager->getEntry(event.path1));
-               if (file && !this->entriesToScan.contains(file))
+               if (!this->entriesToScan.contains(file))
                   this->entriesToScan << file;
             }
             else
