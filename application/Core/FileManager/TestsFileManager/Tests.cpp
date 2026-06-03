@@ -871,27 +871,32 @@ void Tests::browseSomeDirectories()
 {
    qDebug() << "===== browseSomeDirectories() =====";
 
-   // TODO: active the regexp comparison.
+   // Here we only search some elements in the debug serialized protos.
 
    // Get the shared directories.
    Protos::Common::Entries entries1 = this->fileManager->getEntries();
+   QCOMPARE(entries1.entries_size(), 3);
    QString entries1Str = Common::ProtoHelper::getDebugStr(entries1);
-   // Tests::compareStrRegexp(
-   //    "dir\\s*\\{\n\\s*shared_dir\\s*\\{\n\\s*id\\s*\\{\n\\s*hash:\\s*\".+\"\n\\s*\\}\n\\s*\\}\n\\s*path:\\s*\"\"\n\\s*name:\\s*\"sharedDirs\"\n\\s*size:\\s*\\d+\n\\}\ndir\\s*\\{\n\\s*shared_dir\\s*\\{\n\\s*id\\s*\\{\n\\s*hash:\\s*\".+\"\n\\s*\\}\n\\s*\\}\n\\s*path:\\s*\"\"\n\\s*name:\\s*\"incoming\"\n\\s*size:\\s*\\d+\n\\}.*",
-   //    entries1Str
-   // );
-   QVERIFY(entries1Str != "");
-
-   QVERIFY(entries1.entries_size() != 0);
+   QVERIFY(entries1Str.contains("shared_name: \"incoming\""));
+   QVERIFY(entries1Str.contains("shared_name: \"shared file.txt\""));
+   QVERIFY(entries1Str.contains("shared_name: \"sharedDirs\""));
    qDebug().noquote() << entries1Str;
 
    // Ask for the files and directories of the thrid shared directory
    Protos::Common::Entries entries2 = this->fileManager->getEntries(entries1.entries(2));
-   qDebug().noquote() << Common::ProtoHelper::getDebugStr(entries2);
+   QCOMPARE(entries2.entries_size(), 4);
+   QString entries2Str = Common::ProtoHelper::getDebugStr(entries2);
+   QVERIFY(entries2Str.contains("name: \"share3\""));
+   QVERIFY(entries2Str.contains("hash: \"8bac0e4c2a03b716567e2f5dc33ca8c658dcdfa814f112ada0da4a4f\""));
+   qDebug().noquote() << entries2Str;
 
    // Ask for the files and directores of the second directory of the thrid shared directory
    Protos::Common::Entries entries3 = this->fileManager->getEntries(entries2.entries(1));
-   qDebug().noquote() << Common::ProtoHelper::getDebugStr(entries3);
+   QCOMPARE(entries3.entries_size(), 13);
+   QString entries3Str = Common::ProtoHelper::getDebugStr(entries3);
+   QVERIFY(entries3Str.contains("name: \"bbbb cccc.nfo\""));
+   QVERIFY(entries3Str.contains("hash: \"8cd9bf6803aa7f1acfb6095ad5ed6db68f5de6a7eacfa10a65da81e6\""));
+   qDebug().noquote() << entries3Str;
 }
 
 // void Tests::findExistingFilesWithOneWord()
