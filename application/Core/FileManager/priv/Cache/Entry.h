@@ -26,13 +26,15 @@
 
 #include <Protos/common.pb.h>
 
+#include <priv/SizeIndex.h>
+
 namespace FM
 {
    class Directory;
    class SharedEntry;
    class Cache;
 
-   class Entry : Common::Uncopyable
+   class Entry : public ISizeItem, Common::Uncopyable
    {
    protected:
       Entry(SharedEntry* root, const QString& name, Directory* parentDirectory = nullptr, qint64 size = 0);
@@ -72,14 +74,15 @@ namespace FM
 
       QString getName() const;
       QString getNameWithoutExtension() const;
-      QString getExtension() const;
 
       virtual void rename(const QString& newName);
 
       void setParentDirectory(Directory* dir);
 
-      qint64 getSize() const;
-      void setSize(qint64 newSize);
+      virtual qint64 getSize() const override;
+      virtual uint hash() const override { return qHash(this); }
+
+      virtual void setSize(qint64 newSize);
 
    private:
       void populateSharedEntry(Protos::Common::Entry* entry) const;

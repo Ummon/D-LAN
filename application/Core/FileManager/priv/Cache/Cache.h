@@ -90,8 +90,8 @@ namespace FM
       void onEntryAdded(Entry* entry);
       void onEntryRemoved(Entry* entry);
       void onEntryRenamed(Entry* entry, const QString& oldName);
-      void onEntryResizing(Entry* entry);
-      void onEntryResized(Entry* entry, qint64 oldSize);
+      void onFileResizing(File* file);
+      void onFileResized(File* file, qint64 oldSize);
 
       void onChunkHashKnown(const QSharedPointer<Chunk>& chunk);
       void onChunkRemoved(const QSharedPointer<Chunk>& chunk);
@@ -105,8 +105,8 @@ namespace FM
       void entryAdded(FM::Entry* entry);
       void entryRemoved(FM::Entry* entry);
       void entryRenamed(FM::Entry* entry, const QString& oldName);
-      void entryResizing(FM::Entry* entry);
-      void entryResized(FM::Entry* entry, qint64 oldSize);
+      void fileResizing(FM::File* file);
+      void fileResized(FM::File* file, qint64 oldSize);
 
       /**
         * May be emitted from a separated thread.

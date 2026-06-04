@@ -57,8 +57,8 @@ SOURCES += priv/Builder.cpp \
     priv/Cache/FilePool.cpp \
     priv/Cache/FileHasher.cpp \
     priv/GetEntriesResult.cpp \
-    priv/SizeIndexEntries.cpp \
-    priv/Cache/SharedEntry.cpp
+    priv/Cache/SharedEntry.cpp \
+    priv/SizeIndex.cpp
 HEADERS += IGetHashesResult.h \
     IFileManager.h \
     IChunk.h \
@@ -71,6 +71,7 @@ HEADERS += IGetHashesResult.h \
     priv/Cache/File.h \
     priv/Cache/Directory.h \
     priv/ChunkIndex/Chunks.h \
+    priv/SizeIndex.h \
     priv/WordIndex/WordIndex.h \
     priv/WordIndex/Node.h \
     ../../Protos/core_protocol.pb.h \
@@ -92,7 +93,6 @@ HEADERS += IGetHashesResult.h \
     IGetEntriesResult.h \
     priv/GetEntriesResult.h \
     priv/ExtensionIndex.h \
-    priv/SizeIndexEntries.h \
     priv/Cache/SharedEntry.h
 OTHER_FILES +=
 

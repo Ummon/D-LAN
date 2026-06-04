@@ -30,7 +30,8 @@
   *  - Access to element by integer index like an array: 0, 1, 2, . . .
   *  - Found the index of a given value.
   *  - The elements are kept ordered when a new one is inserted.
-  * The type T must have the operator '<' defined. Otherwise a "lesser than" function can be given with the method 'setSortedFunction'.
+  * The type T must have the operator '<' defined.
+  * Otherwise a "lesser than" function can be given with the method 'setSortedFunction'.
   *
   * 'SortedArray' is implemented as a B-Tree, see here for more information: http://en.wikipedia.org/wiki/B-tree
   * M is the order according Knuth's definition. This is the maximum number of children a node can have.
@@ -73,7 +74,8 @@ namespace Common
          bool operator!=(const iterator& other) const;
          const T& operator*() const;
          T* operator->() const;
-         iterator& operator++();
+         iterator& operator++(); // Pre-increment.
+         iterator operator++(int); // Post-increment.
 
          friend class SortedArray;
 
@@ -242,6 +244,14 @@ typename Common::SortedArray<T, M>::iterator& Common::SortedArray<T, M>::iterato
 {
    this->currentPosition = getNextPosition(this->currentPosition);
    return *this;
+}
+
+template <typename T, int M>
+typename Common::SortedArray<T, M>::iterator Common::SortedArray<T, M>::iterator::operator++(int)
+{
+   Common::SortedArray<T, M>::iterator i = *this;
+   ++(*this);
+   return i;
 }
 
 /////

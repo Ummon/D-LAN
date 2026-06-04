@@ -75,8 +75,8 @@ FileManager::FileManager(QSharedPointer<HC::IHashCache> hashCache) :
    // If the 'FileUpdater' wants to delete a shared directory.
    connect(&this->fileUpdater, &FileUpdater::deleteSharedEntry, this, &FileManager::deleteSharedEntry, Qt::QueuedConnection);
 
-   connect(&this->cache, &Cache::entryResizing, this, &FileManager::entryResizing, Qt::DirectConnection);
-   connect(&this->cache, &Cache::entryResized, this, &FileManager::entryResized, Qt::DirectConnection);
+   connect(&this->cache, &Cache::fileResizing, this, &FileManager::fileResizing, Qt::DirectConnection);
+   connect(&this->cache, &Cache::fileResized, this, &FileManager::fileResized, Qt::DirectConnection);
 
    // Give stored shared entries to the cache:
    this->cache.setSharedEntries(SETTINGS.getRepeated<Protos::Common::SharedEntry>("shared_entry"));
@@ -235,66 +235,43 @@ QList<Protos::Common::FindResult> FileManager::find(
       result = !filterOn
          ? this->wordIndex.search(Common::StringUtils::splitInWords(words), maxNbResult)
          : this->wordIndex.search(
-            Common::StringUtils::splitInWords(words), maxNbResult, [&](const Entry* entry) {
+            Common::StringUtils::splitInWords(words),
+            maxNbResult,
+            [&](const Entry* entry) {
+               const File* file = dynamic_cast<const File*>(entry);
                return (!filterBySizeOn || entry->getSize() >= minFileSize && entry->getSize() <= maxFileSize) &&
-                      (!filterByExtensionsOn || extensions.contains(entry->getExtension())) &&
+                      (!filterByExtensionsOn || file && extensions.contains(file->getExtension())) &&
                       (!filterByCategoryOn || (category == Protos::Common::FindPattern::FILE && dynamic_cast<const File*>(entry) || category == Protos::Common::FindPattern::DIR && dynamic_cast<const Directory*>(entry)));
             }
          );
    }
-   else if (filterBySizeOn || filterByExtensionsOn)
+   // We cannot find by extension or by size if the category is only directory.
+   else if ((filterBySizeOn || filterByExtensionsOn) && category != Protos::Common::FindPattern::DIR)
    {
-      QList<Entry*> intermediateResult;
+      QList<File*> intermediateResult;
 
       if (!extensions.isEmpty())
       {
-         if (filterBySizeOn || filterByCategoryOn)
+         if (filterBySizeOn)
             intermediateResult =
-                  this->extensionIndex.search(
-                     extensions,
-                     maxNbResult,
-                     [&](const Entry* entry)
-                     {
-                        return (
-                           !filterBySizeOn ||
-                           entry->getSize() >= minFileSize &&
-                           entry->getSize() <= maxFileSize) &&
-                           (
-                              !filterByCategoryOn ||
-                              (
-                                 category == Protos::Common::FindPattern::FILE &&
-                                 dynamic_cast<const File*>(entry) ||
-                                 category == Protos::Common::FindPattern::DIR &&
-                                 dynamic_cast<const Directory*>(entry)
-                              )
-                           );
-                     }
-                  );
+               this->extensionIndex.search(
+                  extensions,
+                  maxNbResult,
+                  [&](const File* file)
+                  {
+                     return (file->getSize() >= minFileSize && file->getSize() <= maxFileSize);
+                  }
+               );
          else
             intermediateResult = this->extensionIndex.search(extensions, maxNbResult);
       }
       else
       {
-         if (filterByCategoryOn)
-            intermediateResult =
-               this->sizeIndex.search(
-                     minFileSize,
-                     maxFileSize,
-                     maxNbResult,
-                     [&](const Entry* entry)
-                     {
-                        return category ==
-                           Protos::Common::FindPattern::FILE &&
-                           dynamic_cast<const File*>(entry) ||
-                           category == Protos::Common::FindPattern::DIR &&
-                           dynamic_cast<const Directory*>(entry);
-                     }
-               );
-         else
-            intermediateResult = this->sizeIndex.search(minFileSize, maxFileSize, maxNbResult);
+         for (auto file : this->sizeIndex.search(minFileSize, maxFileSize, maxNbResult))
+            intermediateResult << dynamic_cast<File*>(file);
       }
 
-      for (QListIterator<Entry*> i(intermediateResult); i.hasNext();)
+      for (QListIterator<File*> i(intermediateResult); i.hasNext();)
          result << NodeResult<Entry*>(i.next());
    }
 
@@ -470,9 +447,13 @@ void FileManager::entryAdded(Entry* entry)
 
    L_DEBU(QString("Adding entry '%1' to the index . . .").arg(entry->getName()));
    this->wordIndex.addItem(Common::StringUtils::splitInWords(entry->getNameWithoutExtension()), entry);
-   this->extensionIndex.addItem(entry->getExtension(), entry);
-   // if (!this->cacheLoading)
-      // this->sizeIndex.addItem(entry); // TODO: Nedded?
+
+   if (File* file = dynamic_cast<File*>(entry))
+   {
+      this->extensionIndex.addItem(file->getExtension(), file);
+      this->sizeIndex.addItem(file); // TODO: Nedded?
+   }
+
    L_DEBU("Entry added to the index");
 }
 
@@ -484,27 +465,36 @@ void FileManager::entryRemoved(Entry* entry)
    L_DEBU(QString("Removing entry '%1' from the index . . .").arg(entry->getName()));
    if (!this->wordIndex.rmItem(Common::StringUtils::splitInWords(entry->getName()), entry))
       L_DEBU(QString("The entry '%1' hasn't been found in the index!").arg(entry->getName()));
-   this->extensionIndex.rmItem(entry->getExtension(), entry);
-   this->sizeIndex.rmItem(entry);
+
+   if (File* file = dynamic_cast<File*>(entry))
+   {
+      this->extensionIndex.rmItem(file->getExtension(), file);
+      this->sizeIndex.rmItem(file);
+   }
+
    L_DEBU("Entry removed from the index");
 }
 
 void FileManager::entryRenamed(Entry* entry, const QString& oldName)
 {
    L_DEBU(QString("Renaming entry '%1' to '%2' in the index . . .").arg(entry->getName(), oldName));
+
    this->wordIndex.renameItem(Common::StringUtils::splitInWords(oldName), Common::StringUtils::splitInWords(entry->getName()), entry);
-   this->extensionIndex.changeItem(Common::KnownExtensions::getExtension(oldName), entry->getExtension(), entry);
+
+   if (File* file = dynamic_cast<File*>(entry))
+      this->extensionIndex.changeItem(Common::KnownExtensions::getExtension(oldName), file->getExtension(), file);
+
    L_DEBU("Entry renamed in the index");
 }
 
-void FileManager::entryResizing(Entry* entry)
+void FileManager::fileResizing(File* file)
 {
-   this->sizeIndex.rmItem(entry);
+   this->sizeIndex.rmItem(file);
 }
 
-void FileManager::entryResized(Entry* entry, qint64 oldSize)
+void FileManager::fileResized(File* file, qint64 oldSize)
 {
-   this->sizeIndex.addItem(entry);
+   this->sizeIndex.addItem(file);
 }
 
 void FileManager::chunkHashKnown(const QSharedPointer<Chunk>& chunk)

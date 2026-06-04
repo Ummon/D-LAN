@@ -667,14 +667,14 @@ void Cache::onEntryRenamed(Entry* entry, const QString& oldName)
    emit entryRenamed(entry, oldName);
 }
 
-void Cache::onEntryResizing(Entry* entry)
+void Cache::onFileResizing(File* file)
 {
-   emit entryResizing(entry);
+   emit fileResizing(file);
 }
 
-void Cache::onEntryResized(Entry* entry, qint64 oldSize)
+void Cache::onFileResized(File* file, qint64 oldSize)
 {
-   emit entryResized(entry, oldSize);
+   emit fileResized(file, oldSize);
 }
 
 void Cache::onChunkHashKnown(const QSharedPointer<Chunk>& chunk)

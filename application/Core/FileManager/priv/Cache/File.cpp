@@ -25,11 +25,10 @@ using namespace FM;
    #include <WinIoCtl.h>
 #endif
 
-#include <utility>
-
 #include <QString>
 #include <QFile>
 
+#include <Common/KnownExtensions.h>
 #include <Common/Global.h>
 #include <Common/Settings.h>
 #include <Common/ProtoHelper.h>
@@ -98,6 +97,9 @@ File::File(
          .arg(createPhysically)
          .arg(dateLastModified.toString("dd.MM.yyyy-hh:mm:ss.zzz"))
    );
+
+   if (auto cache = this->getCache())
+      cache->onEntryAdded(this);
 
    if (createPhysically)
       try
@@ -331,6 +333,11 @@ Entry* File::getEntry(const Common::Path& path)
    return nullptr;
 }
 
+QString File::getExtension() const
+{
+   return Common::KnownExtensions::getExtension(this->name);
+}
+
 void File::rename(const QString& newName)
 {
    QMutexLocker locker(&this->mutex);
@@ -554,6 +561,17 @@ void File::chunkComplete(const Chunk* chunk)
 int File::getNbChunks() const
 {
    return (this->getSize() + Chunk::CHUNK_SIZE - 1) / Chunk::CHUNK_SIZE;
+}
+
+void File::setSize(qint64 size)
+{
+   if (size != this->size)
+   {
+      this->getCache()->onFileResizing(this);
+      qint64 oldSize = this->size;
+      Entry::setSize(size);
+      this->getCache()->onFileResized(this, oldSize);
+   }
 }
 
 void File::deleteIfIncomplete()

@@ -26,6 +26,8 @@
 #include <QElapsedTimer>
 #include <QRandomGenerator64>
 
+#include <Common/LogManager/Builder.h>
+
 #include <Protos/common.pb.h>
 #include <Protos/core_settings.pb.h>
 #include <Protos/gui_protocol.pb.h>
@@ -51,6 +53,8 @@ Tests::Tests()
 
 void Tests::initTestCase()
 {
+   LM::Builder::initMsgHandler();
+
    QTest::qSleep(100); // If there is no delay when debugging, the debugger is not attached fast enough and some breakpoints are not triggered... very strange.
    qDebug() << "Application directory path (where the settings and persistent data are put) : " << Global::getDataFolder(Common::Global::DataFolderType::ROAMING, false);
 }
@@ -432,8 +436,16 @@ void Tests::sortedArray()
 
       QCOMPARE(array.indexOfNearest("aligator"), 1);
 
-      const QString& albinos = *array.iteratorOfNearest("aligator");
-      QCOMPARE(albinos, QString("albinos"));
+      qDebug() << "Sorted values using an iterator:";
+      auto i = array.begin();
+      QCOMPARE(*i, QString("actual"));
+      while (i != array.end())
+         qDebug() << *(i++);
+
+      QCOMPARE(*array.iteratorOfNearest("aligator"), "albinos");
+      QCOMPARE(*array.iteratorOfNearest("Aaron"), "actual");
+      QCOMPARE(*array.iteratorOfNearest("Zorro"), "double");
+      QCOMPARE(++array.iteratorOfNearest("Zorro"), array.end());
    }
 
    {
@@ -453,7 +465,7 @@ void Tests::sortedArray()
       QString result;
       for (int a : array)
          result.append(QString::number(a)).append(' ');
-      qDebug() << result;
+      QCOMPARE(result, "2 3 7 9 ");
    }
 }
 

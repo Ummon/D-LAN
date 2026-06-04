@@ -1,10 +1,11 @@
 # -------------------------------------------------
 # Project created by QtCreator 2009-10-04T02:24:09
 # -------------------------------------------------
-QT += network testlib
+QT += testlib network
 QT -= gui
 TARGET = TestsCommon
-CONFIG += link_prl
+CONFIG += link_prl console
+CONFIG -= app_bundle
 
 include(../common.pri)
 include(../../Libs/blake3.pri)
@@ -14,6 +15,9 @@ QMAKE_CXXFLAGS_WARN_ON += -Wno-pessimizing-move -Wno-unused-result
 
 LIBS += -L"../output/$$FOLDER" -lCommon
 POST_TARGETDEPS += ../output/$$FOLDER/libCommon.a
+
+LIBS += -L../LogManager/output/$$FOLDER -lLogManager
+POST_TARGETDEPS += ../LogManager/output/$$FOLDER/libLogManager.a
 
 INCLUDEPATH += . \
    .. \

@@ -19,9 +19,9 @@
 #include <priv/Cache/Entry.h>
 using namespace FM;
 
-#include <Common/KnownExtensions.h>
 #include <Common/ProtoHelper.h>
 #include <Common/Settings.h>
+#include <Common/KnownExtensions.h>
 
 #include <priv/Log.h>
 #include <priv/FileManager.h>
@@ -32,7 +32,6 @@ using namespace FM;
 Entry::Entry(SharedEntry* root, const QString& name, Directory* parentDirectory, qint64 size) :
    name(name), root(root), parentDirectory(parentDirectory), size(size)
 {
-   this->getCache()->onEntryAdded(this);
 }
 
 Entry::~Entry()
@@ -65,7 +64,10 @@ void Entry::populateEntry(Protos::Common::Entry* entry, bool setSharedEntry) con
 
 Cache* Entry::getCache()
 {
-   return this->root->getCache();
+   if (this->root)
+      return this->root->getCache();
+   else
+      return nullptr;
 }
 
 bool Entry::isRoot() const
@@ -86,11 +88,6 @@ QString Entry::getName() const
 QString Entry::getNameWithoutExtension() const
 {
    return Common::KnownExtensions::removeExtension(this->name);
-}
-
-QString Entry::getExtension() const
-{
-   return Common::KnownExtensions::getExtension(this->name);
 }
 
 /**
@@ -123,13 +120,7 @@ qint64 Entry::getSize() const
 
 void Entry::setSize(qint64 newSize)
 {
-   if (newSize != this->size)
-   {
-      this->getCache()->onEntryResizing(this);
-      qint64 oldSize = this->size;
-      this->size = newSize;
-      this->getCache()->onEntryResized(this, oldSize);
-   }
+   this->size = newSize;
 }
 
 void Entry::populateSharedEntry(Protos::Common::Entry* entry) const

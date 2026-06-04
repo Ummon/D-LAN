@@ -90,8 +90,8 @@ message Entries
 
 message FindPattern {
    string pattern = 2;
-   uint64 min_size = 3; // [B]. 0 means there is no minimum size.
-   uint64 max_size = 4; // [B]. 0 means there is no maximum size.
+   uint64 min_size = 3; // [B]. 0 means there is no minimum size. Only for files.
+   uint64 max_size = 4; // [B]. 0 means there is no maximum size. Only for files.
    repeated string extension_filters = 5; // Only files that match one of the given extension will be returned.
    enum Category {
       FILE_DIR = 0;

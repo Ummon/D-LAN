@@ -42,7 +42,7 @@
 #include <priv/ChunkIndex/Chunks.h>
 #include <priv/WordIndex/WordIndex.h>
 #include <priv/ExtensionIndex.h>
-#include <priv/SizeIndexEntries.h>
+#include <priv/SizeIndex.h>
 
 namespace FM
 {
@@ -131,8 +131,10 @@ namespace FM
       void entryAdded(FM::Entry* entry);
       void entryRemoved(FM::Entry* entry);
       void entryRenamed(FM::Entry* entry, const QString& oldName);
-      void entryResizing(FM::Entry* entry);
-      void entryResized(FM::Entry* entry, qint64 oldSize);
+
+      void fileResizing(FM::File* file);
+      void fileResized(FM::File* file, qint64 oldSize);
+
       void chunkHashKnown(const QSharedPointer<FM::Chunk>& chunk);
       void chunkRemoved(const QSharedPointer<FM::Chunk>& chunk);
 
@@ -148,8 +150,9 @@ namespace FM
       Chunks chunks; ///< The indexed chunks. It contains only completed chunks.
 
       WordIndex<Entry*> wordIndex;
-      ExtensionIndex<Entry*> extensionIndex;
-      SizeIndexEntries sizeIndex;
+
+      ExtensionIndex<File*> extensionIndex;
+      SizeIndex sizeIndex;
 
       QMutex mutexCacheChanged;
       // bool cacheLoading;

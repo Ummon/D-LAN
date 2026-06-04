@@ -52,6 +52,9 @@ Directory::Directory(
          .arg(createPhysically)
    );
 
+   if (auto cache = this->getCache())
+      cache->onEntryAdded(this);
+
    if (createPhysically)
       if (!QDir(this->Directory::getAbsolutePath().removeLastDir()).mkdir(this->name))
       {

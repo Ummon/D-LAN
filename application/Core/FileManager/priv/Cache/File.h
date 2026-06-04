@@ -79,6 +79,8 @@ namespace FM
       Common::Path getAbsolutePath() const override;
       Entry* getEntry(const Common::Path& path) override;
 
+      QString getExtension() const;
+
       void rename(const QString& newName) override;
       QDateTime getDateLastModified() const;
 
@@ -99,6 +101,8 @@ namespace FM
       void chunkComplete(const Chunk* chunk);
 
       int getNbChunks() const;
+
+      virtual void setSize(qint64 size) override;
 
       void deleteIfIncomplete();
       void removeUnfinishedFiles() override;
@@ -139,7 +143,7 @@ namespace FM
    class FileForHasher : public File
    {
    public:
-      void setSize(qint64 size);
+      void setSize(qint64 size) override;
       void updateDateLastModified(const QDateTime& date);
       void addChunk(const QSharedPointer<Chunk>& chunk);
       QSharedPointer<Chunk> removeLastChunk();
