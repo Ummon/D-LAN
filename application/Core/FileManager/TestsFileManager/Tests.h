@@ -104,19 +104,19 @@ private slots:
    void printAmount();
 
    // /***** Removing shared directories *****/
-   // void rmSharedDirectory();
+   void rmSharedDirectory();
 
    // /********** Unit tests of internals classes **********/
 
    // /***** Speed test of the class 'Chunks' *****/
-   // void chunksPerformance();
+   void chunksPerformance();
 
    // /***** The extension index class *****/
-   // void extensionIndexAddItem();
-   // void extensionIndexRmItem();
-   // void extensionIndexChangeItem();
-   // void extensionIndexSearchWithOneExtension();
-   // void extensionIndexSearchWithSomeExtensions();
+   void extensionIndexAddItem();
+   void extensionIndexRmItem();
+   void extensionIndexChangeItem();
+   void extensionIndexSearchWithOneExtension();
+   void extensionIndexSearchWithSomeExtensions();
 
    void cleanupTestCase();
 

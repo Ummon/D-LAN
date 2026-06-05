@@ -52,7 +52,7 @@ namespace FM
       mutable QMutex mutex;
 
 #ifdef BLOOM_FILTER_ON
-      BloomFilter bloomFilter;
+      Common::BloomFilter bloomFilter;
 #endif
    };
 }

@@ -1165,192 +1165,195 @@ void Tests::printAmount()
    QCOMPARE(amount, 269484255);
 }
 
-// void Tests::rmSharedDirectory()
-// {
-//    qDebug() << "===== rmSharedDirectory() =====";
+void Tests::rmSharedDirectory()
+{
+   qDebug() << "===== rmSharedDirectory() =====";
 
-//    this->sharedPaths.clear();
-//    this->fileManager->setSharedPaths(this->sharedPaths);
-// }
+   this->sharedPaths.clear();
+   this->fileManager->setSharedPaths(this->sharedPaths);
 
-// /**
-//   * The following case tests the Bloom filter performance
-//   * used in the class 'Chunks'.
-//   * The bloom filter can be enable in "Chunks.h".
-//   */
-// #include <priv/ChunkIndex/Chunks.h>
-// #include <priv/Cache/Chunk.h>
-// #include <priv/Cache/Directory.h>
-// #include <priv/Cache/File.h>
-// void Tests::chunksPerformance()
-// {
-//    qDebug() << "===== chunksPerformance() =====";
+   auto amount = this->fileManager->getAmount();
+   QCOMPARE(amount, 0);
+}
 
-//    const int HASH_POOL_SIZE = 100000;
-//    const int NB_HASHES_TO_CHECK = 10000000;
+/**
+  * The following case tests the Bloom filter performance
+  * used in the class 'Chunks'.
+  * The bloom filter can be enable in "Chunks.h".
+  */
+#include <priv/ChunkIndex/Chunks.h>
+#include <priv/Cache/Chunk.h>
+#include <priv/Cache/Directory.h>
+#include <priv/Cache/File.h>
+void Tests::chunksPerformance()
+{
+   QSKIP("TODO: Move this to a benchmark test case");
+   qDebug() << "===== chunksPerformance() =====";
 
-//    Chunks chunks;
+   const int HASH_POOL_SIZE = 500000;
+   const int NB_HASHES_TO_CHECK = 50000000;
 
-//    for (int i = 0; i < HASH_POOL_SIZE; i++)
-//    {
-//       QSharedPointer<Chunk> chunk(new Chunk(nullptr, 0, 0));
-//       chunk->setHash(Common::Hash::rand());
-//       chunks.add(chunk);
-//    }
+   Chunks chunks;
 
-//    Common::Hashes hashes;
-//    const int nbHashes = 100;
-//    for (int i = 0; i < nbHashes; i++)
-//       hashes << Common::Hash::rand();
+   for (int i = 0; i < HASH_POOL_SIZE; i++)
+   {
+      QSharedPointer<Chunk> chunk(new Chunk(nullptr, 0, 0));
+      chunk->setHash(Common::Hash::rand());
+      chunks.add(chunk);
+   }
 
-//    QElapsedTimer timer;
-//    timer.start();
+   QList<Common::Hash> hashes;
+   const int nbHashes = 100;
+   for (int i = 0; i < nbHashes; i++)
+      hashes << Common::Hash::rand();
 
-//    for (int i = 0; i < NB_HASHES_TO_CHECK; i++)
-//    {
-//       if(chunks.contains(hashes[i % nbHashes]))
-//          QFAIL("chunks cannot contains a random chunk");
-//    }
+   QElapsedTimer timer;
+   timer.start();
 
-//    qDebug() << "Time to check if" << NB_HASHES_TO_CHECK << "hashes exist among a pool of" << HASH_POOL_SIZE << "hashes:" << timer.elapsed() << "ms";
-// }
+   for (int i = 0; i < NB_HASHES_TO_CHECK; i++)
+   {
+      if(chunks.contains(hashes[i % nbHashes]))
+         QFAIL("chunks cannot contains a random chunk");
+   }
 
-// #include <priv/ExtensionIndex.h>
+   qDebug() << "Time to check if" << NB_HASHES_TO_CHECK << "hashes exist among a pool of" << HASH_POOL_SIZE << "hashes:" << timer.elapsed() << "ms";
+}
 
-// void Tests::extensionIndexAddItem()
-// {
-//    QList<QString> mp3s { "file1.mp3", "file2.MP3" };
+#include <priv/ExtensionIndex.h>
+void Tests::extensionIndexAddItem()
+{
+   QList<QString> mp3s { "file1.mp3", "file2.MP3" };
 
-//    ExtensionIndex<QString> index;
-//    index.addItem(mp3s[0].right(3), mp3s[0]);
-//    index.addItem(mp3s[1].right(3), mp3s[1]);
-//    index.addItem("jpg", "file3.jpg");
+   ExtensionIndex<QString> index;
+   index.addItem(mp3s[0].right(3), mp3s[0]);
+   index.addItem(mp3s[1].right(3), mp3s[1]);
+   index.addItem("jpg", "file3.jpg");
 
-//    for (int i = 0; i < 2; i++)
-//    {
-//       QList<QString> result = index.search(mp3s[i].right(3));
-//       QVERIFY(result.count() == 2);
-//       QVERIFY(mp3s.contains(result[0]));
-//       QVERIFY(mp3s.contains(result[1]));
-//    }
+   for (int i = 0; i < 2; i++)
+   {
+      QList<QString> result = index.search(mp3s[i].right(3));
+      QVERIFY(result.count() == 2);
+      QVERIFY(mp3s.contains(result[0]));
+      QVERIFY(mp3s.contains(result[1]));
+   }
 
-//    QList<QString> result = index.search("jpg");
-//    QVERIFY(result.count() == 1);
-//    QVERIFY(result[0] == "file3.jpg");
-// }
+   QList<QString> result = index.search("jpg");
+   QVERIFY(result.count() == 1);
+   QVERIFY(result[0] == "file3.jpg");
+}
 
-// void Tests::extensionIndexRmItem()
-// {
-//    QList<QString> mp3s { "file1.mp3", "file2.MP3" };
+void Tests::extensionIndexRmItem()
+{
+   QList<QString> mp3s { "file1.mp3", "file2.MP3" };
 
-//    ExtensionIndex<QString> index;
-//    index.addItem(mp3s[0].right(3), mp3s[0]);
-//    index.addItem(mp3s[1].right(3), mp3s[1]);
-//    index.addItem("jpg", "file3.jpg");
+   ExtensionIndex<QString> index;
+   index.addItem(mp3s[0].right(3), mp3s[0]);
+   index.addItem(mp3s[1].right(3), mp3s[1]);
+   index.addItem("jpg", "file3.jpg");
 
-//    index.rmItem(mp3s[0].right(3), mp3s[0]);
-//    index.rmItem("jpg", "file3.jpg");
+   index.rmItem(mp3s[0].right(3), mp3s[0]);
+   index.rmItem("jpg", "file3.jpg");
 
-//    {
-//       QList<QString> result = index.search(mp3s[1].right(3));
-//       QVERIFY(result.count() == 1);
-//       QVERIFY(result[0] == "file2.MP3");
-//    }
+   {
+      QList<QString> result = index.search(mp3s[1].right(3));
+      QVERIFY(result.count() == 1);
+      QVERIFY(result[0] == "file2.MP3");
+   }
 
-//    {
-//       QList<QString> result = index.search("jpg");
-//       QVERIFY(result.count() == 0);
-//    }
-// }
+   {
+      QList<QString> result = index.search("jpg");
+      QVERIFY(result.count() == 0);
+   }
+}
 
-// void Tests::extensionIndexChangeItem()
-// {
-//    QList<QString> mp3s { "file1.mp3", "file2.MP3" };
+void Tests::extensionIndexChangeItem()
+{
+   QList<QString> mp3s { "file1.mp3", "file2.MP3" };
 
-//    ExtensionIndex<QString> index;
-//    index.addItem(mp3s[0].right(3), mp3s[0]);
-//    index.addItem(mp3s[1].right(3), mp3s[1]);
+   ExtensionIndex<QString> index;
+   index.addItem(mp3s[0].right(3), mp3s[0]);
+   index.addItem(mp3s[1].right(3), mp3s[1]);
 
-//    index.changeItem("mp3", "JPG", mp3s[1]);
+   index.changeItem("mp3", "JPG", mp3s[1]);
 
-//    {
-//       QList<QString> result = index.search("mp3");
-//       QVERIFY(result.count() == 1);
-//       QVERIFY(result[0] == "file1.mp3");
-//    }
+   {
+      QList<QString> result = index.search("mp3");
+      QVERIFY(result.count() == 1);
+      QVERIFY(result[0] == "file1.mp3");
+   }
 
-//    {
-//       QList<QString> result = index.search("jpg");
-//       QVERIFY(result.count() == 1);
-//       QVERIFY(result[0] == "file2.MP3");
-//    }
-// }
+   {
+      QList<QString> result = index.search("jpg");
+      QVERIFY(result.count() == 1);
+      QVERIFY(result[0] == "file2.MP3");
+   }
+}
 
-// void Tests::extensionIndexSearchWithOneExtension()
-// {
-//    QList<QString> mp3s { "file1.mp3", "file2.MP3" };
+void Tests::extensionIndexSearchWithOneExtension()
+{
+   QList<QString> mp3s { "file1.mp3", "file2.MP3" };
 
-//    ExtensionIndex<QString> index;
-//    index.addItem(mp3s[0].right(3), mp3s[0]);
-//    index.addItem(mp3s[1].right(3), mp3s[1]);
-//    index.addItem("jpg", "file3.jpg");
+   ExtensionIndex<QString> index;
+   index.addItem(mp3s[0].right(3), mp3s[0]);
+   index.addItem(mp3s[1].right(3), mp3s[1]);
+   index.addItem("jpg", "file3.jpg");
 
-//    // When we search an existing extension by using a precise predicate we should get one result.
-//    {
-//       QList<QString> result = index.search("jpg", 1, [](const QString& item){ return item == "file3.jpg"; });
-//       QVERIFY(result.count() == 1);
-//       QVERIFY(result[0] == "file3.jpg");
-//    }
+   // When we search an existing extension by using a precise predicate we should get one result.
+   {
+      QList<QString> result = index.search("jpg", 1, [](const QString& item){ return item == "file3.jpg"; });
+      QVERIFY(result.count() == 1);
+      QVERIFY(result[0] == "file3.jpg");
+   }
 
-//    // When we search by using a null string as the extension we should get nothing.
-//    {
-//       QList<QString> result = index.search(QString());
-//       QVERIFY(result.count() == 0);
-//    }
+   // When we search by using a null string as the extension we should get nothing.
+   {
+      QList<QString> result = index.search(QString());
+      QVERIFY(result.count() == 0);
+   }
 
-//    // When we search an existing extension but with a always wrong predicate we should get nothing.
-//    {
-//       QList<QString> result = index.search("jpg", 1, [](const QString& item){ return item == "file3.mp3"; });
-//       QVERIFY(result.count() == 0);
-//    }
+   // When we search an existing extension but with a always wrong predicate we should get nothing.
+   {
+      QList<QString> result = index.search("jpg", 1, [](const QString& item){ return item == "file3.mp3"; });
+      QVERIFY(result.count() == 0);
+   }
 
-//    // We search an existing extension among some possibilities but we keep the only one matching the given predicate.
-//    // #1.
-//    {
-//       QList<QString> result = index.search("MP3", 1, [](const QString& item){ return item == "file1.mp3"; });
-//       QVERIFY(result.count() == 1);
-//       QVERIFY(result[0] == "file1.mp3");
-//    }
-//    // #2.
-//    {
-//       QList<QString> result = index.search("MP3", 1, [](const QString& item){ return item == "file2.MP3"; });
-//       QVERIFY(result.count() == 1);
-//       QVERIFY(result[0] == "file2.MP3");
-//    }
-// }
+   // We search an existing extension among some possibilities but we keep the only one matching the given predicate.
+   // #1.
+   {
+      QList<QString> result = index.search("MP3", 1, [](const QString& item){ return item == "file1.mp3"; });
+      QVERIFY(result.count() == 1);
+      QVERIFY(result[0] == "file1.mp3");
+   }
+   // #2.
+   {
+      QList<QString> result = index.search("MP3", 1, [](const QString& item){ return item == "file2.MP3"; });
+      QVERIFY(result.count() == 1);
+      QVERIFY(result[0] == "file2.MP3");
+   }
+}
 
-// void Tests::extensionIndexSearchWithSomeExtensions()
-// {
-//    QList<QString> mp3s { "file1.mp3", "file2.MP3" };
+void Tests::extensionIndexSearchWithSomeExtensions()
+{
+   QList<QString> mp3s { "file1.mp3", "file2.MP3" };
 
-//    ExtensionIndex<QString> index;
-//    index.addItem(mp3s[0].right(3), mp3s[0]);
-//    index.addItem(mp3s[1].right(3), mp3s[1]);
-//    index.addItem("jpg", "file3.jpg");
+   ExtensionIndex<QString> index;
+   index.addItem(mp3s[0].right(3), mp3s[0]);
+   index.addItem(mp3s[1].right(3), mp3s[1]);
+   index.addItem("jpg", "file3.jpg");
 
-//    {
-//       QList<QString> result = index.search(QList<QString>{ "jpg", "mp3", "png"}, 10);
-//       QVERIFY(result.count() == 3);
-//       QVERIFY(result.contains(mp3s[0]));
-//       QVERIFY(result.contains(mp3s[1]));
-//       QVERIFY(result.contains("file3.jpg"));
-//    }
+   {
+      QList<QString> result = index.search(QList<QString>{ "jpg", "mp3", "png"}, 10);
+      QVERIFY(result.count() == 3);
+      QVERIFY(result.contains(mp3s[0]));
+      QVERIFY(result.contains(mp3s[1]));
+      QVERIFY(result.contains("file3.jpg"));
+   }
 
-//    {
-//       QList<QString> result = index.search(QList<QString>{ "png", "html"}, 10);
-//       QVERIFY(result.count() == 0);
-//    }
-// }
+   {
+      QList<QString> result = index.search(QList<QString>{ "png", "html"}, 10);
+      QVERIFY(result.count() == 0);
+   }
+}
 
 void Tests::cleanupTestCase()
 {
