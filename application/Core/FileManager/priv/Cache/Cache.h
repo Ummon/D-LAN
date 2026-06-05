@@ -87,6 +87,8 @@ namespace FM
 
       FilePool& getFilePool() { return this->filePool; }
 
+      QString getTree_debug() const;
+
       void onEntryAdded(Entry* entry);
       void onEntryRemoved(Entry* entry);
       void onEntryRenamed(Entry* entry, const QString& oldName);

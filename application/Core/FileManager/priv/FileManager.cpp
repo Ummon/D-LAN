@@ -358,15 +358,15 @@ int FileManager::getProgress() const
    return this->fileUpdater.getProgress();
 }
 
-void FileManager::dumpWordIndex() const
+QString FileManager::getWordIndex_debug() const
 {
-   L_WARN(this->wordIndex.toStringLog());
+   return this->wordIndex.toStringLog();
 }
 
 /**
   * Incomplete, only the first hash is compared for the moment.
   */
-void FileManager::printSimilarFiles() const
+QString FileManager::getSimilarFiles_debug() const
 {
    QString result("Similar files:\n");
 
@@ -398,7 +398,12 @@ void FileManager::printSimilarFiles() const
       }
    }
 
-   L_WARN(result);
+   return result;
+}
+
+QString FileManager::getCacheTree_debug() const
+{
+   return this->cache.getTree_debug();
 }
 
 Directory* FileManager::getFittestDirectory(const QString& path)

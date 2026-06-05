@@ -1126,39 +1126,44 @@ void Tests::findFilesBySizeRange()
    this->compareExpectedResult(results.first(), expectedResult);
 }
 
-// void Tests::haveChunks()
-// {
-//    qDebug() << "===== haveChunks() =====";
+void Tests::haveChunks()
+{
+   qDebug() << "===== haveChunks() =====";
 
-//    QList<Common::Hash> hashes;
-//    hashes
-//       << Common::Hash::fromStr("f6126deaa5e1d9692d54e3bef0507721372ee7f8") // "/sharedDirs/share3/aaaa bbbb cccc.txt"
-//       << Common::Hash::fromStr("4c24e58c47746ea04296df9342185d9b3a447899") // "/sharedDirs/share1/v.txt"
-//       << Common::Hash::fromStr("954531aef8ac193ad62f4de783da9d7e6ebd59dd") // "/sharedDirs/share1/y.txt" (deleted)
-//       << Common::Hash::fromStr("8374d82e993012aa23b293f319eef2c21d2da3b9"); // Random hash
+   QList<Common::Hash> hashes;
+   hashes
+      << Common::Hash::fromStr("1cb04df35d745c1a5f3e514b5f09c7df5c0d0b8b43e6a3351ab85761") // "/sharedDirs/share3/aaaa bbbb cccc.txt"
+      << Common::Hash::fromStr("7b6f7f3309179b97b88de3c178274b7e38343267bcdfe653c819593e") // "/sharedDirs/share1/v.txt"
+      << Common::Hash::fromStr("6103413cbd2330b103bee4cdf16e18e1e19a9f00365d153ec8c61486") // "/sharedDirs/share1/y.txt" (deleted)
+      << Common::Hash::fromStr("c0a43102ae34f72965ef08f23fd045a44b8ac29cd20031f5c90d9b79"); // Random hash
 
-//    QBitArray expectedResult(hashes.size());
-//    expectedResult[0] = true;
-//    expectedResult[1] = true;
-//    expectedResult[2] = false;
-//    expectedResult[3] = false;
+   QBitArray expectedResult(hashes.size());
+   expectedResult[0] = true;
+   expectedResult[1] = true;
+   expectedResult[2] = false;
+   expectedResult[3] = false;
 
-//    QBitArray result = this->fileManager->haveChunks(hashes);
-//    QCOMPARE(result.size(), hashes.size());
+   QBitArray result = this->fileManager->haveChunks(hashes);
+   QCOMPARE(result.size(), hashes.size());
 
-//    for (int i = 0; i < result.size(); i++)
-//    {
-//       QVERIFY(result[i] == expectedResult[i]);
-//       qDebug() << hashes[i].toStr() << ":" << (result[i] ? "Yes" : "No");
-//    }
-// }
+   for (int i = 0; i < result.size(); i++)
+   {
+      QVERIFY(result[i] == expectedResult[i]);
+      qDebug() << hashes[i].toStr() << ":" << (result[i] ? "Yes" : "No");
+   }
+}
 
-// void Tests::printAmount()
-// {
-//    qDebug() << "===== printAmount() =====";
+void Tests::printAmount()
+{
+   qDebug() << "===== printAmount() =====";
 
-//    qDebug() << "Sharing amount: " << this->fileManager->getAmount() << " bytes";
-// }
+   auto amount = this->fileManager->getAmount();
+
+   qDebug() << "Sharing amount: " << amount << " bytes (" << Common::Global::formatByteSize(amount) << ")";
+   qDebug().noquote() << this->fileManager->getCacheTree_debug();
+
+   QCOMPARE(amount, 269484255);
+}
 
 // void Tests::rmSharedDirectory()
 // {

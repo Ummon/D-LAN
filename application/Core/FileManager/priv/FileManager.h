@@ -116,8 +116,9 @@ namespace FM
       CacheStatus getCacheStatus() const override;
       int getProgress() const override;
 
-      void dumpWordIndex() const override;
-      void printSimilarFiles() const override;
+      QString getWordIndex_debug() const override;
+      QString getSimilarFiles_debug() const override;
+      QString getCacheTree_debug() const override;
 
       Directory* getFittestDirectory(const QString& path);
       // Entry* getEntry(const QString& path) const;

@@ -49,6 +49,8 @@ void Entry::del(bool invokeDelete)
 
 void Entry::populateEntry(Protos::Common::Entry* entry, bool setSharedEntry) const
 {
+   QMutexLocker locker(&this->mutex);
+
    if (this->parentDirectory)
    {
       // The entry name is not included.
@@ -64,6 +66,8 @@ void Entry::populateEntry(Protos::Common::Entry* entry, bool setSharedEntry) con
 
 Cache* Entry::getCache()
 {
+   QMutexLocker locker(&this->mutex);
+
    if (this->root)
       return this->root->getCache();
    else
@@ -95,6 +99,8 @@ QString Entry::getNameWithoutExtension() const
   */
 void Entry::rename(const QString& newName)
 {
+   QMutexLocker locker(&this->mutex);
+
    if (this->name == newName)
       return;
 
@@ -105,6 +111,8 @@ void Entry::rename(const QString& newName)
 
 void Entry::setParentDirectory(Directory* dir)
 {
+   QMutexLocker locker(&this->mutex);
+
    if (this->parentDirectory != dir)
    {
       this->parentDirectory = dir;
@@ -123,8 +131,19 @@ void Entry::setSize(qint64 newSize)
    this->size = newSize;
 }
 
+int Entry::getDepth() const
+{
+   QMutexLocker locker(&this->mutex);
+
+   if (!this->parentDirectory)
+      return 0;
+   return this->parentDirectory->getDepth() + 1;
+}
+
 void Entry::populateSharedEntry(Protos::Common::Entry* entry) const
 {
+   QMutexLocker locker(&this->mutex);
+
    const SharedEntry* root = this->getRoot();
    if (root)
    {

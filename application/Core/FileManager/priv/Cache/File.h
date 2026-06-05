@@ -143,7 +143,6 @@ namespace FM
    class FileForHasher : public File
    {
    public:
-      void setSize(qint64 size) override;
       void updateDateLastModified(const QDateTime& date);
       void addChunk(const QSharedPointer<Chunk>& chunk);
       QSharedPointer<Chunk> removeLastChunk();

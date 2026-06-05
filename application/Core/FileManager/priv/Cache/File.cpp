@@ -91,6 +91,8 @@ File::File(
    fileInWriteMode(nullptr),
    fileInReadMode(nullptr)
 {
+   QMutexLocker locker(&this->mutex);
+
    L_DEBU(
       QString("New file: %1 (%2), createPhysically = %3, dateLastModified = %4")
          .arg(this->File::getAbsolutePath().toString(), Common::Global::formatByteSize(this->getSize()))
@@ -120,9 +122,6 @@ File::File(
 
 File::~File()
 {
-   if (this->parentDirectory)
-      this->parentDirectory->fileDeleted(this);
-
    for (QVectorIterator<QSharedPointer<Chunk>> i(this->chunks); i.hasNext();)
       i.next()->fileDeleted();
 
@@ -291,6 +290,8 @@ bool File::matchesEntry(const Protos::Common::Entry& entry) const
   */
 bool File::correspondTo(const QFileInfo& fileInfo, bool checkTheDateToo) const
 {
+   QMutexLocker locker(&this->mutex);
+
    return
       this->getSize() == fileInfo.size() &&
       (!checkTheDateToo || this->getDateLastModified() == fileInfo.lastModified());
@@ -302,6 +303,8 @@ void File::fileHasChangedOnDisk(const QFileInfo fileInfo)
    // L_DEBU(QString("~~~ file.size: %1, fileInfo.size: %2").arg(this->getSize()).arg(fileInfo.size()));
    // L_DEBU(QString("~~~ file.dateLastModified: %1, fileInfo.lastModified: %2").arg(this->dateLastModified.toString()).arg(fileInfo.lastModified().toString()));
 
+   QMutexLocker locker(&this->mutex);
+
    this->setSize(fileInfo.size());
    this->dateLastModified = fileInfo.lastModified();
 
@@ -312,6 +315,8 @@ void File::fileHasChangedOnDisk(const QFileInfo fileInfo)
 
 Common::Path File::getRelativePath() const
 {
+   QMutexLocker locker(&this->mutex);
+
    if (this->parentDirectory)
       return this->parentDirectory->getRelativePath().setFilename(this->name);
    else
@@ -320,6 +325,8 @@ Common::Path File::getRelativePath() const
 
 Common::Path File::getAbsolutePath() const
 {
+   QMutexLocker locker(&this->mutex);
+
    if (this->parentDirectory)
       return this->parentDirectory->getAbsolutePath().setFilename(this->name);
    else
@@ -328,6 +335,8 @@ Common::Path File::getAbsolutePath() const
 
 Entry* File::getEntry(const Common::Path& path)
 {
+   QMutexLocker locker(&this->mutex);
+
    if (path.isFile() && !path.isAbsolute() && path.getDirs().isEmpty() && path.getFilename() == this->name)
       return this;
    return nullptr;
@@ -350,6 +359,7 @@ void File::rename(const QString& newName)
 
 QDateTime File::getDateLastModified() const
 {
+   QMutexLocker locker(&this->mutex);
    return this->dateLastModified;
 }
 
@@ -513,6 +523,7 @@ QVector<QSharedPointer<Chunk>> File::getChunks() const
 bool File::hasAllHashes() const
 {
    QMutexLocker locker(&this->mutex);
+
    if (this->getSize() == 0)
       return false;
 
@@ -537,6 +548,7 @@ bool File::hasOneOrMoreHashes() const
 bool File::isComplete() const
 {
    QMutexLocker locker(&this->mutex);
+
    return this->complete;
 }
 
@@ -560,17 +572,24 @@ void File::chunkComplete(const Chunk* chunk)
 
 int File::getNbChunks() const
 {
+   QMutexLocker locker(&this->mutex);
+
    return (this->getSize() + Chunk::CHUNK_SIZE - 1) / Chunk::CHUNK_SIZE;
 }
 
 void File::setSize(qint64 size)
 {
-   if (size != this->size)
+   QMutexLocker locker(&this->mutex);
+
+   if (this->size != size)
    {
       this->getCache()->onFileResizing(this);
       qint64 oldSize = this->size;
       Entry::setSize(size);
       this->getCache()->onFileResized(this, oldSize);
+
+      if (this->parentDirectory)
+         this->parentDirectory->fileSizeChanged(oldSize, size);
    }
 }
 
@@ -631,6 +650,8 @@ void File::moveInto(Directory* directory)
   */
 bool File::hasAParentDir(Directory* dir)
 {
+   QMutexLocker locker(&this->mutex);
+
    if (this->parentDirectory == dir)
       return true;
    else if (this->parentDirectory)
@@ -734,6 +755,8 @@ void File::setFileAsSparse(const QFile& file)
   */
 void File::setHashes(const QList<Common::Hash>& hashes)
 {
+   QMutexLocker locker(&this->mutex);
+
    this->chunks.reserve(this->getNbChunks());
    for (int i = 0; i < this->getNbChunks(); i++)
    {
@@ -765,28 +788,21 @@ void File::setRootRecursively(SharedEntry* sharedEntry)
 
 /////
 
-void FileForHasher::setSize(qint64 size)
-{
-   if (this->getSize() != size)
-   {
-      if (this->parentDirectory)
-         this->parentDirectory->fileSizeChanged(this->getSize(), size);
-      File::setSize(size);
-   }
-}
-
 void FileForHasher::updateDateLastModified(const QDateTime& date)
 {
+   QMutexLocker locker(&this->mutex);
    this->dateLastModified = date;
 }
 
 void FileForHasher::addChunk(const QSharedPointer<Chunk>& chunk)
 {
+   QMutexLocker locker(&this->mutex);
    this->chunks << chunk;
 }
 
 QSharedPointer<Chunk> FileForHasher::removeLastChunk()
 {
+   QMutexLocker locker(&this->mutex);
    if (this->chunks.isEmpty())
       return QSharedPointer<Chunk>();
 

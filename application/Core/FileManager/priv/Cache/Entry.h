@@ -84,6 +84,8 @@ namespace FM
 
       virtual void setSize(qint64 newSize);
 
+      int getDepth() const;
+
    private:
       void populateSharedEntry(Protos::Common::Entry* entry) const;
 

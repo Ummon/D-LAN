@@ -186,16 +186,18 @@ namespace FM
       virtual int getProgress() const = 0;
 
       /**
-        * Dump the word index as text in the warning logger.
+        * Get the word index as text
         * Use only for debugging purpose.
         */
-      virtual void dumpWordIndex() const = 0;
+      virtual QString getWordIndex_debug() const = 0;
 
       /**
         * Experimental.
         * Use only for debugging purpose.
         */
-      virtual void printSimilarFiles() const = 0;
+      virtual QString getSimilarFiles_debug() const = 0;
+
+      virtual QString getCacheTree_debug() const = 0;
 
    // signals:
       /**

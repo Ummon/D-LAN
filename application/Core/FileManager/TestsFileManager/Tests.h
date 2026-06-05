@@ -98,10 +98,10 @@ private slots:
    void findFilesBySizeRange();
 
    // /***** Ask if the given hashes are known *****/
-   // void haveChunks();
+   void haveChunks();
 
    // /***** Ask for the amount of shared byte *****/
-   // void printAmount();
+   void printAmount();
 
    // /***** Removing shared directories *****/
    // void rmSharedDirectory();

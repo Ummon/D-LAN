@@ -46,6 +46,7 @@ Directory::Directory(
    scanned(true)
 {
    QMutexLocker locker(&this->mutex);
+
    L_DEBU(
       QString("New Directory: %1, createPhysically = %2")
          .arg(this->Directory::getAbsolutePath())
@@ -75,9 +76,6 @@ Directory::~Directory()
 
    foreach (File* f, this->files.getList())
       delete f;
-
-   if (this->parentDirectory)
-      this->parentDirectory->subDirDeleted(this);
 
    L_DEBU(QString("Directory deleted: %1").arg(this->getName()));
 }
@@ -225,9 +223,14 @@ void Directory::moveInto(Directory* directory)
    } while (parentDestination = parentDestination->parentDirectory);
 
    if (this->parentDirectory)
+   {
+      this->parentDirectory -= this->getSize();
       this->parentDirectory->subDirDeleted(this);
+   }
 
-   directory->add(this);
+   directory->add(this);   
+   directory += this->getSize();
+
    this->parentDirectory = directory;
 }
 
@@ -245,11 +248,14 @@ void Directory::fileDeleted(File* file)
 void Directory::subDirDeleted(Directory* dir)
 {
    QMutexLocker locker(&this->mutex);
+
    this->subDirs.removeOne(dir);
 }
 
 Common::Path Directory::getRelativePath() const
 {
+   QMutexLocker locker(&this->mutex);
+
    if (!this->parentDirectory)
       return Common::Path();
    else
@@ -262,6 +268,8 @@ Common::Path Directory::getRelativePath() const
   */
 Common::Path Directory::getAbsolutePath() const
 {
+   QMutexLocker locker(&this->mutex);
+
    if (!this->parentDirectory)
       return this->getRoot()->path.appendDir(this->name);
    else
@@ -289,6 +297,7 @@ Entry* Directory::getEntry(const Common::Path& path)
 void Directory::rename(const QString& newName)
 {
    QMutexLocker locker(&this->mutex);
+
    Entry::rename(newName);
    if (this->parentDirectory)
       this->parentDirectory->subdirNameChanged(this);
@@ -296,6 +305,8 @@ void Directory::rename(const QString& newName)
 
 bool Directory::isAChildOf(const Directory* dir) const
 {
+   QMutexLocker locker(&this->mutex);
+
    if (this->parentDirectory)
    {
       if (this->parentDirectory == dir)
@@ -326,19 +337,22 @@ Directory* Directory::getSubDir(const QString& name) const
 QList<Directory*> Directory::getSubDirs() const
 {
    QMutexLocker locker(&this->mutex);
+
    return this->subDirs.getList();
 }
 
 QList<File*> Directory::getFiles() const
 {
    QMutexLocker locker(&this->mutex);
+
    return this->files.getList();
 }
 
 QList<File*> Directory::getCompleteFiles() const
 {
    QMutexLocker locker(&this->mutex);
-   QList<File*> completeFiles;
+
+   QList<File*> completeFiles;   
    foreach (File* file, this->files.getList())
    {
       if (file->isComplete())
@@ -355,6 +369,7 @@ QList<File*> Directory::getCompleteFiles() const
 Directory* Directory::createSubDir(const QString& name, bool physically)
 {
    QMutexLocker locker(&this->mutex);
+
    if (Directory* subDir = this->getSubDir(name))
       return subDir;
    return new Directory(this->getRoot(), name, this, physically);
@@ -367,6 +382,8 @@ Directory* Directory::createSubDir(const QString& name, bool physically)
   */
 Directory* Directory::createSubDirs(const QStringList& names, bool physically)
 {
+   QMutexLocker locker(&this->mutex);
+
    Directory* currentDir = this;
    foreach (QString name, names)
    {
@@ -380,6 +397,7 @@ Directory* Directory::createSubDirs(const QStringList& names, bool physically)
 File* Directory::getFile(const QString& name) const
 {
    QMutexLocker locker(&this->mutex);
+
    foreach (File* f, this->files.getList())
       if (f->getName() == name)
          return f;
@@ -393,6 +411,7 @@ File* Directory::getFile(const QString& name) const
 void Directory::add(File* file)
 {
    QMutexLocker locker(&this->mutex);
+
    this->files.insert(file);
    (*this) += file->getSize();
 }
@@ -400,6 +419,7 @@ void Directory::add(File* file)
 void Directory::fileSizeChanged(qint64 oldSize, qint64 newSize)
 {
    QMutexLocker locker(&this->mutex);
+
    (*this) += newSize - oldSize;
 }
 
@@ -410,6 +430,7 @@ void Directory::fileSizeChanged(qint64 oldSize, qint64 newSize)
 void Directory::stealContent(Directory* dir)
 {
    QMutexLocker locker(&this->mutex);
+
    if (dir == this)
    {
       L_ERRO("Directory::stealSubDirs(..): dir == this");
@@ -445,12 +466,14 @@ void Directory::stealContent(Directory* dir)
 void Directory::add(Directory* dir)
 {
    QMutexLocker locker(&this->mutex);
+
    this->subDirs.insert(dir);
 }
 
 bool Directory::isScanned() const
 {
    QMutexLocker locker(&this->mutex);
+
    return this->scanned;
 }
 
@@ -472,6 +495,7 @@ void Directory::setScanned(bool value)
 void Directory::fileNameChanged(File* file)
 {
    QMutexLocker locker(&this->mutex);
+
    this->files.itemChanged(file);
 }
 
@@ -500,6 +524,7 @@ void Directory::setRootRecursively(SharedEntry* sharedEntry)
 void Directory::subdirNameChanged(Directory* dir)
 {
    QMutexLocker locker(&this->mutex);
+
    this->subDirs.itemChanged(dir);
 }
 
@@ -509,24 +534,30 @@ void Directory::subdirNameChanged(Directory* dir)
   */
 Directory& Directory::operator+=(qint64 size)
 {
-   QMutexLocker locker(&this->mutex);
+   if (size > 0)
+   {
+      QMutexLocker locker(&this->mutex);
 
-   this->setSize(this->getSize() + size);
+      this->setSize(this->getSize() + size);
 
-   if (this->parentDirectory)
-      (*this->parentDirectory) += size;
+      if (this->parentDirectory)
+         (*this->parentDirectory) += size;
+   }
 
    return *this;
 }
 
 Directory& Directory::operator-=(qint64 size)
 {
-   QMutexLocker locker(&this->mutex);
+   if (size > 0)
+   {
+      QMutexLocker locker(&this->mutex);
 
-   this->setSize(this->getSize() - size);
+      this->setSize(this->getSize() - size);
 
-   if (this->parentDirectory)
-      (*this->parentDirectory) -= size;
+      if (this->parentDirectory)
+         (*this->parentDirectory) -= size;
+   }
 
    return *this;
 }

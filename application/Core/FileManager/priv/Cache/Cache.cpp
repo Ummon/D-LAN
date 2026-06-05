@@ -652,6 +652,45 @@ quint64 Cache::getAmount() const
    return amount;
 }
 
+QString entryAsStringDebug(Entry* entry)
+{
+   QString result;
+
+   auto name = entry->getName();
+   auto size = entry->getSize();
+   auto indent = QString(" ").repeated(entry->getDepth() * 3);
+
+   if (Directory* dir = dynamic_cast<Directory*>(entry))
+   {
+      result.append(QString("%4[%1] : %2 Bytes (%3)\n").arg(name).arg(size).arg(Common::Global::formatByteSize(size)).arg(indent));
+      for (auto subFile : dir->getFiles())
+         result += entryAsStringDebug(subFile);
+      for (auto subDir : dir->getSubDirs())
+         result += entryAsStringDebug(subDir);
+   }
+   else
+   {
+      result.append(QString("%4<%1> : %2 Bytes (%3)\n").arg(name).arg(size).arg(Common::Global::formatByteSize(size)).arg(indent));
+   }
+
+   return result;
+}
+
+QString Cache::getTree_debug() const
+{
+   QMutexLocker locker(&this->mutex);
+
+   QString result;
+   for (auto sharedDir : this->sharedEntries)
+   {
+      if (!result.isEmpty())
+         result.append("---------------\n");
+      result += entryAsStringDebug(sharedDir->getRootEntry());
+
+   }
+   return result;
+}
+
 void Cache::onEntryAdded(Entry* entry)
 {
    emit entryAdded(entry);
