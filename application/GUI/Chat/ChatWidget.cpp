@@ -29,10 +29,9 @@ using namespace GUI;
 #include <QClipboard>
 #include <QKeyEvent>
 #include <QScrollBar>
-#include <QDesktopWidget>
+#include <QScreen>
 #include <QTimer>
 #include <QIcon>
-#include <QMutableLinkedListIterator>
 
 #include <Log.h>
 #include <Common/Settings.h>
@@ -790,8 +789,8 @@ void ChatWidget::displayEmoticons(const QPoint& positionSender, const QSize& siz
 
    this->emoticonsWidget->move(positionSender.x() + sizeSender.width(), positionSender.y() + sizeSender.height() - this->emoticonsWidget->height());
 
-   QDesktopWidget* desktop = QApplication::desktop();
-   QRect desktopGeom = desktop->availableGeometry(this);
+   // TODO: Check if correct.
+   QRect desktopGeom = qGuiApp->primaryScreen()->availableGeometry();
    if (this->emoticonsWidget->pos().y() < 0)
       this->emoticonsWidget->move(this->emoticonsWidget->pos().x(), 0);
 

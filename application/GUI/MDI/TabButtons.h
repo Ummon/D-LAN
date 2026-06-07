@@ -33,11 +33,11 @@ namespace GUI
       Q_OBJECT
    public:
       TabButton(QWidget* parent = nullptr);
-      virtual QSize sizeHint() const;
-      virtual QSize minimumSizeHint() const;
-      virtual void enterEvent(QEvent *event);
-      virtual void leaveEvent(QEvent *event);
-      virtual void paintEvent(QPaintEvent *event);
+      virtual QSize sizeHint() const override;
+      virtual QSize minimumSizeHint() const override;
+      virtual void enterEvent(QEnterEvent *event) override;
+      virtual void leaveEvent(QEvent *event) override;
+      virtual void paintEvent(QPaintEvent *event) override;
 
    protected:
       virtual void drawPrimitive(const QStyleOption& opt, QPainter& p) = 0;

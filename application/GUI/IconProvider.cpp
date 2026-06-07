@@ -26,7 +26,6 @@ using namespace GUI;
 #include <Log.h>
 
 #if defined(Q_OS_WIN32)
-   #include <QtWinExtras>
    #include <shlobj.h>
    #include <shellapi.h>
 #elif defined(Q_OS_LINUX)
@@ -57,7 +56,7 @@ QIcon IconProvider::getIcon(const Protos::Common::Entry& entry, bool withWarning
    }
    else
    {
-      const QString& name = Common::ProtoHelper::getStr(entry, &Protos::Common::Entry::name);
+      const QString& name = QString::fromStdString(entry.name());
       return IconProvider::getIconCache(name, withWarning);
    }
 }
@@ -120,8 +119,11 @@ QIcon IconProvider::getIconNative(const QString& extension)
    SHFILEINFO psfi;
    SHGetFileInfo(extension.toStdWString().c_str(), FILE_ATTRIBUTE_NORMAL, &psfi, sizeof(psfi), SHGFI_ICON | SHGFI_SMALLICON | SHGFI_USEFILEATTRIBUTES);
    if (psfi.hIcon != NULL)
-      icon = QIcon(QtWin::fromHICON(psfi.hIcon));
-#else
+   {
+      icon = QIcon(QPixmap::fromImage(QImage::fromHICON(psfi.hIcon)));
+      DestroyIcon(psfi.hIcon);
+   }
+#else   
    icon = IconProvider::iconProvider.icon(QFileIconProvider::File);
 #endif
    return icon;

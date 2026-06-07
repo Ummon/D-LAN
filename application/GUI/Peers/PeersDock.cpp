@@ -22,6 +22,7 @@ using namespace GUI;
 
 #include <QHostAddress>
 #include <QMenu>
+#include <QActionGroup>
 #include <QInputDialog>
 #include <QClipboard>
 
@@ -161,7 +162,9 @@ void PeersDock::takeControlOfACore()
       if (!Common::Global::isLocal(address))
       {
          QInputDialog inputDialog(this);
-         inputDialog.setWindowTitle(tr("Take control of %1").arg(Common::Global::formatIP(address, SETTINGS.get<quint32>("core_port"))));
+         inputDialog.setWindowTitle(
+            tr("Take control of %1").arg(Common::Global::formatIP(address, SETTINGS.get<quint32>("core_port")))
+         );
          inputDialog.setLabelText(tr("Enter a password"));
          inputDialog.setTextEchoMode(QLineEdit::Password);
          inputDialog.resize(300, 100);
@@ -216,19 +219,19 @@ void PeersDock::colorizeSelectedPeer()
 
    // Update the settings.
    Protos::GUI::Settings::HighlightedPeers highlightedPeers = SETTINGS.get<Protos::GUI::Settings::HighlightedPeers>("highlighted_peers");
-   for (int i = 0; i < highlightedPeers.peer_size() && !peerIDs.isEmpty(); i++)
+   for (int i = 0; i < highlightedPeers.peers_size() && !peerIDs.isEmpty(); i++)
    {
-      const Common::Hash peerID(highlightedPeers.peer(i).id().hash());
+      const Common::Hash peerID(highlightedPeers.peers(i).id().hash());
       if (peerIDs.contains(peerID))
       {
          peerIDs.remove(peerID);
-         highlightedPeers.mutable_peer(i)->set_color(color.rgb());
+         highlightedPeers.mutable_peers(i)->set_color(color.rgb());
       }
    }
 
    foreach (Common::Hash peerID, peerIDs)
    {
-      Protos::GUI::Settings::HighlightedPeers::Peer* peer = highlightedPeers.add_peer();
+      Protos::GUI::Settings::HighlightedPeers::Peer* peer = highlightedPeers.add_peers();
       peer->mutable_id()->set_hash(peerID.getData(), Common::Hash::HASH_SIZE);
       peer->set_color(color.rgb());
    }
@@ -250,15 +253,15 @@ void PeersDock::uncolorizeSelectedPeer()
 
    // Update the settings.
    Protos::GUI::Settings::HighlightedPeers highlightedPeers = SETTINGS.get<Protos::GUI::Settings::HighlightedPeers>("highlighted_peers");
-   for (int i = 0; i < highlightedPeers.peer_size() && !peerIDs.isEmpty(); i++)
+   for (int i = 0; i < highlightedPeers.peers_size() && !peerIDs.isEmpty(); i++)
    {
-      const Common::Hash peerID(highlightedPeers.peer(i).id().hash());
+      const Common::Hash peerID(highlightedPeers.peers(i).id().hash());
       if (peerIDs.contains(peerID))
       {
          peerIDs.remove(peerID);
-         if (i != highlightedPeers.peer_size() - 1)
-            highlightedPeers.mutable_peer()->SwapElements(i, highlightedPeers.peer_size() - 1);
-         highlightedPeers.mutable_peer()->RemoveLast();
+         if (i != highlightedPeers.peers_size() - 1)
+            highlightedPeers.mutable_peers()->SwapElements(i, highlightedPeers.peers_size() - 1);
+         highlightedPeers.mutable_peers()->RemoveLast();
          i--;
       }
    }
@@ -282,6 +285,6 @@ void PeersDock::coreDisconnected(bool force)
 void PeersDock::restoreColorizedPeers()
 {
    Protos::GUI::Settings::HighlightedPeers highlightedPeers = SETTINGS.get<Protos::GUI::Settings::HighlightedPeers>("highlighted_peers");
-   for (int i = 0; i < highlightedPeers.peer_size(); i++)
-      this->peerListModel.colorize(highlightedPeers.peer(i).id().hash(), QColor(highlightedPeers.peer(i).color()));
+   for (int i = 0; i < highlightedPeers.peers_size(); i++)
+      this->peerListModel.colorize(highlightedPeers.peers(i).id().hash(), QColor(highlightedPeers.peers(i).color()));
 }

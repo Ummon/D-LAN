@@ -223,18 +223,18 @@ void SettingsWidget::updateNetworkInterfaces(const Protos::GUI::State& state)
 
    QList<QLabel*> interfaceNotUpdated = this->ui->scoInterfacesContent->findChildren<QLabel*>("");
 
-   for (int i = 0; i < state.interface_size(); i++)
+   for (int i = 0; i < state.interfaces_size(); i++)
    {
-      const QString& interfaceName = Common::ProtoHelper::getStr(state.interface(i), &Protos::Common::Interface::name);
+      const QString& interfaceName = QString::fromStdString(state.interfaces(i).name());
 
       for (QListIterator<QObject*> j(this->ui->scoInterfacesContent->children()); j.hasNext();)
       {
          QLabel* lblInterface = dynamic_cast<QLabel*>(j.next());
-         if (lblInterface && lblInterface->property("id").toUInt() == state.interface(i).id())
+         if (lblInterface && lblInterface->property("id").toUInt() == state.interfaces(i).id())
          {
             interfaceNotUpdated.removeOne(lblInterface);
-            lblInterface->setText(interfaceName + (state.interface(i).isup() ? QString("") : " <img src= \":/icons/ressources/error.png\" /> <em>" + tr("Interface not active") + "</em>"));
-            this->updateAddresses(state.interface(i), static_cast<QWidget*>(j.next()));
+            lblInterface->setText(interfaceName + (state.interfaces(i).isup() ? QString("") : " <img src= \":/icons/ressources/error.png\" /> <em>" + tr("Interface not active") + "</em>"));
+            this->updateAddresses(state.interfaces(i), static_cast<QWidget*>(j.next()));
             goto nextInterface;
          }
       }
@@ -242,11 +242,11 @@ void SettingsWidget::updateNetworkInterfaces(const Protos::GUI::State& state)
       {
          // Interface not found -> add a new one.
          QLabel* label = new QLabel(interfaceName, this->ui->scoInterfacesContent);
-         label->setProperty("id", state.interface(i).id());
+         label->setProperty("id", state.interfaces(i).id());
          this->ui->layInterfaces->addWidget(label);
          QWidget* addressesContainer = new QWidget(this->ui->scoInterfacesContent);
          this->ui->layInterfaces->addWidget(addressesContainer);
-         this->updateAddresses(state.interface(i), addressesContainer);
+         this->updateAddresses(state.interfaces(i), addressesContainer);
       }
 
       nextInterface:;
@@ -288,9 +288,9 @@ void SettingsWidget::updateAddresses(const Protos::Common::Interface& interfaceM
 
    QList<QRadioButton*> addressesNotUpdated = container->findChildren<QRadioButton*>();
 
-   for (int i = 0; i < interfaceMess.address_size(); i++)
+   for (int i = 0; i < interfaceMess.addresses_size(); i++)
    {
-      const QString& addressName = Common::ProtoHelper::getStr(interfaceMess.address(i), &Protos::Common::Interface::Address::address);
+      const QString& addressName = QString::fromStdString(interfaceMess.addresses(i).address());
 
       for (QListIterator<QRadioButton*> j(container->findChildren<QRadioButton*>()); j.hasNext();)
       {
@@ -298,7 +298,7 @@ void SettingsWidget::updateAddresses(const Protos::Common::Interface& interfaceM
          if (addressButton->text() == addressName)
          {
             addressesNotUpdated.removeOne(addressButton);
-            if (interfaceMess.address(i).listened())
+            if (interfaceMess.addresses(i).listened())
                addressButton->setChecked(true);
             goto nextAddress;
          }
@@ -308,7 +308,7 @@ void SettingsWidget::updateAddresses(const Protos::Common::Interface& interfaceM
          // Address not found -> add a new one.
          QRadioButton* newAddressButton = new QRadioButton(addressName, container);
          this->ui->grpAddressesToListenTo->addButton(newAddressButton);
-         if (interfaceMess.address(i).listened())
+         if (interfaceMess.addresses(i).listened())
             newAddressButton->setChecked(true);
          layout->addWidget(newAddressButton);
       }
@@ -332,7 +332,7 @@ void SettingsWidget::updateAddresses(const Protos::Common::Interface& interfaceM
 void SettingsWidget::newState(const Protos::GUI::State& state)
 {
    if (!this->ui->txtNick->hasFocus())
-      this->ui->txtNick->setText(Common::ProtoHelper::getStr(state.peer(0), &Protos::GUI::State_Peer::nick));
+      this->ui->txtNick->setText(QString::fromStdString(state.peers(0).nick()));
 
    if (!this->ui->chkEnableIntegrityCheck->hasFocus())
       this->ui->chkEnableIntegrityCheck->setChecked(state.integrity_check_enabled());
@@ -351,14 +351,14 @@ void SettingsWidget::newState(const Protos::GUI::State& state)
    }
 
    QList<Common::SharedEntry> sharedEntries;
-   for (int i = 0; i < state.shared_entry_size(); i++)
+   for (int i = 0; i < state.shared_entries_size(); i++)
       sharedEntries <<
          Common::SharedEntry {
-            state.shared_entry(i).entry().id().hash(),
-            Common::ProtoHelper::getStr(state.shared_entry(i).entry(), &Protos::Common::SharedEntry::path),
-            Common::ProtoHelper::getStr(state.shared_entry(i).entry(), &Protos::Common::SharedEntry::shared_name),
-            (qint64)state.shared_entry(i).size(),
-            (qint64)state.shared_entry(i).free_space()
+            state.shared_entries(i).entry().id().hash(),
+            QString::fromStdString(state.shared_entries(i).entry().path()),
+            QString::fromStdString(state.shared_entries(i).entry().shared_name()),
+            (qint64)state.shared_entries(i).size(),
+            (qint64)state.shared_entries(i).free_space()
          };
    this->sharedEntryListModel.setEntries(sharedEntries);
 
@@ -456,11 +456,11 @@ void SettingsWidget::saveCoreSettings()
       return;
 
    Protos::GUI::CoreSettings settings;
-   Common::ProtoHelper::setStr(settings, &Protos::GUI::CoreSettings::set_nick, this->ui->txtNick->text());
+   settings.set_nick(this->ui->txtNick->text().toStdString());
    settings.set_enable_integrity_check(this->ui->chkEnableIntegrityCheck->isChecked() ? Protos::Common::TS_TRUE : Protos::Common::TS_FALSE);
 
    for (QListIterator<Common::SharedEntry> i(this->sharedEntryListModel.getSharedEntries()); i.hasNext();)
-      Common::ProtoHelper::addRepeatedStr(*settings.mutable_shared_paths(), &Protos::GUI::CoreSettings::SharedPaths::add_path, i.next().path.getPath());
+      settings.mutable_shared_paths()->add_path(i.next().path.toString().toStdString());
 
    if (this->ui->radIPv6->isChecked())
       settings.set_listen_any(Protos::Common::Interface::Address::IPv6);
@@ -473,7 +473,7 @@ void SettingsWidget::saveCoreSettings()
          QRadioButton* button = i.next();
          if (button->isChecked())
          {
-            Common::ProtoHelper::setStr(settings, &Protos::GUI::CoreSettings::set_listen_address, button->text());
+            settings.set_listen_address(button->text().toStdString());
             break;
          }
       }

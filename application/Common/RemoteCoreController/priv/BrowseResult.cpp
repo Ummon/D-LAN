@@ -31,7 +31,7 @@ BrowseResult::BrowseResult(InternalCoreConnection* coreConnection, const Common:
 BrowseResult::BrowseResult(InternalCoreConnection* coreConnection, const Common::Hash& peerID, const Protos::Common::Entry& entry, int socketTimeout) :
    IBrowseResult(socketTimeout), peerID(peerID), tag(0)
 {
-   this->browseMessage.mutable_dirs()->add_entry()->CopyFrom(entry);
+   this->browseMessage.mutable_dirs()->add_entries()->CopyFrom(entry);
    this->init(coreConnection);
 }
 

@@ -17,7 +17,6 @@
   */
 
 #include <QApplication>
-#include <QTextCodec>
 #include <QLocale>
 
 #include <Protos/gui_settings.pb.h>
@@ -45,8 +44,6 @@ int main(int argc, char *argv[])
 #if defined(DEBUG) && defined(ENABLE_NVWA)
    new_progname = argv[0];
 #endif
-
-   QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
 
    QLocale locale;
    for (int i = 1; i < argc; i++)

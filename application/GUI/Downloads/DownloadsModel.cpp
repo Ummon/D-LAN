@@ -34,7 +34,8 @@ DownloadsModel::DownloadsModel(QSharedPointer<RCC::ICoreConnection> coreConnecti
    sharedEntryListModel(sharedEntryListModel),
    filter(filter)
 {
-   qRegisterMetaTypeStreamOperators<Progress>("Progress"); // Don't know where to put this call . . .
+   // Not needed in Qt6: https://stackoverflow.com/questions/76590735/qregistermetatypestreamoperators-missing-in-qt6
+   // qRegisterMetaTypeStreamOperators<Progress>("Progress"); // Don't know where to put this call . . .
    connect(this->coreConnection.data(), SIGNAL(newState(Protos::GUI::State)), this, SLOT(onNewState(Protos::GUI::State)));
 }
 
@@ -50,7 +51,7 @@ QVariant DownloadsModel::getData(const Protos::GUI::State::Download& download, c
    case Qt::DisplayRole:
       switch (index.column())
       {
-      case 0: return Common::ProtoHelper::getStr(download.local_entry(), &Protos::Common::Entry::name);
+      case 0: return QString::fromStdString(download.local_entry().name());
       case 1: return Common::Global::formatByteSize(download.local_entry().size());
       case 2:
          return QVariant::fromValue(Progress(
@@ -59,11 +60,11 @@ QVariant DownloadsModel::getData(const Protos::GUI::State::Download& download, c
             download.local_entry().type()
          ));
       case 3:
-         return Common::ProtoHelper::getStr(download, &Protos::GUI::State::Download::peer_source_nick);
+         return QString::fromStdString(download.peer_source_nick());
 
       case 4:
-         if (download.peer_id_size() > 1)
-            return QString("+").append(QString::number(download.peer_id_size() - 1));
+         if (download.peer_ids_size() > 1)
+            return QString("+").append(QString::number(download.peer_ids_size() - 1));
          return QString();
 
       default: return QVariant();
@@ -83,7 +84,9 @@ QVariant DownloadsModel::getData(const Protos::GUI::State::Download& download, c
             switch (download.status())
             {
             case Protos::GUI::State::Download::UNKNOWN_PEER_SOURCE:
-               toolTip += tr("Source peer offline (%1)").arg(Common::ProtoHelper::getStr(download, &Protos::GUI::State::Download::peer_source_nick));
+               toolTip +=
+                  tr("Source peer offline (%1)")
+                     .arg(QString::fromStdString(download.peer_source_nick()));
                break;
             case Protos::GUI::State::Download::ENTRY_NOT_FOUND:
                toolTip += tr("The source peer doesn't have the entry");
@@ -102,7 +105,10 @@ QVariant DownloadsModel::getData(const Protos::GUI::State::Download& download, c
                toolTip += tr("Unable to create the file");
                break;
             case Protos::GUI::State::Download::UNABLE_TO_CREATE_THE_DIRECTORY:
-               toolTip += download.local_entry().type() == Protos::Common::Entry::DIR ? tr("Unable to create the directory") : tr("Unable to create the path of the file");
+               toolTip +=
+                  download.local_entry().type() == Protos::Common::Entry::DIR ?
+                       tr("Unable to create the directory")
+                     : tr("Unable to create the path of the file");
                break;
             case Protos::GUI::State::Download::UNABLE_TO_RETRIEVE_THE_HASHES:
                toolTip += tr("Unable to retrieve the hashes");
@@ -152,9 +158,9 @@ QVariant DownloadsModel::getData(const Protos::GUI::State::Download& download, c
       case 4:
          {
             QString peersStr;
-            for (int i = 1; i < download.peer_id_size(); i++)
+            for (int i = 1; i < download.peer_ids_size(); i++)
             {
-               Common::Hash peerID(download.peer_id(i).hash());
+               Common::Hash peerID(download.peer_ids(i).hash());
                const QString nick = this->peerListModel.getNick(peerID);
                if (nick.isNull())
                   continue;
@@ -174,7 +180,7 @@ QVariant DownloadsModel::getData(const Protos::GUI::State::Download& download, c
    case Qt::SizeHintRole:
       if (index.column() == 2)
          return QSize(120, 0);
-      else if (index.column() == 4 && download.peer_id_size() <= 1)
+      else if (index.column() == 4 && download.peer_ids_size() <= 1)
          return QSize(0, 0);
       else
          return QVariant();
@@ -191,9 +197,9 @@ QList<int> DownloadsModel::getNonFilteredDownloadIndices(const Protos::GUI::Stat
       statusToFilter |= filterStatus[i];
 
    QList<int> indices;
-   for (int i = 0; i < state.download_size(); i++)
+   for (int i = 0; i < state.downloads_size(); i++)
    {
-      switch (state.download(i).status())
+      switch (state.downloads(i).status())
       {
       case Protos::GUI::State::Download::QUEUED:
          if (!(statusToFilter & STATUS_QUEUED))
@@ -309,12 +315,12 @@ bool GUI::operator==(const Protos::GUI::State::Download& d1, const Protos::GUI::
       d1.local_entry().size() != d2.local_entry().size() ||
       d1.local_entry().name() != d2.local_entry().name() ||
       d1.local_entry().path() != d2.local_entry().path() ||
-      d1.peer_id_size() != d2.peer_id_size()
+      d1.peer_ids_size() != d2.peer_ids_size()
    )
       return false;
 
-   for (int i = 0; i < d1.peer_id_size(); i++)
-      if (d1.peer_id(i).hash() != d2.peer_id(i).hash())
+   for (int i = 0; i < d1.peer_ids_size(); i++)
+      if (d1.peer_ids(i).hash() != d2.peer_ids(i).hash())
          return false;
 
    return true;

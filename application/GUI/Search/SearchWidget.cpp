@@ -22,7 +22,6 @@ using namespace GUI;
 
 #include <QTextDocument>
 #include <QAbstractTextDocumentLayout>
-#include <QRegExp>
 #include <QMenu>
 #include <QIcon>
 #include <QUrl>
@@ -189,7 +188,7 @@ SearchWidget::SearchWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, 
 
    this->ui->lblSearchTerm->setText(SearchUtils::getFindPatternSummary(findPattern, local));
 
-   const QString& terms = Common::ProtoHelper::getStr(findPattern, &Protos::Common::FindPattern::pattern);
+   const QString& terms = QString::fromStdString(findPattern.pattern());
 
    this->searchDelegate.setTerms(terms);
 

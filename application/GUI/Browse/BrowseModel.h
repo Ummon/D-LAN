@@ -42,7 +42,12 @@ namespace GUI
       Q_OBJECT
 
    public:
-      BrowseModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const SharedEntryListModel& sharedEntryListModel, const Common::Hash& peerID, bool loadRoots = true);
+      BrowseModel(
+         QSharedPointer<RCC::ICoreConnection> coreConnection,
+         const SharedEntryListModel& sharedEntryListModel,
+         const Common::Hash& peerID,
+         bool loadRoots = true
+      );
       virtual ~BrowseModel();
 
       virtual QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
@@ -58,7 +63,7 @@ namespace GUI
 
       void refresh();
 
-      QModelIndex searchChild(const QString name, const QModelIndex& parent = QModelIndex());
+      QModelIndex searchChild(const QString& name, const QModelIndex& parent = QModelIndex());
 
       bool isWaitingResult() const;
 
@@ -99,7 +104,8 @@ namespace GUI
       const SharedEntryListModel& sharedEntryListModel;
       Common::Hash peerID;
 
-      QPersistentModelIndex currentBrowseIndex; // When we receive some entries after a browse query, they will be added as children to this index.
+      // When we receive some entries after a browse query, they will be added as children to this index.
+      QPersistentModelIndex currentBrowseIndex;
       QSharedPointer<RCC::IBrowseResult> browseResult;
 
       Tree* root; // The corresponding index is null: QModelIndex().

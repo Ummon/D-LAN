@@ -34,8 +34,12 @@ using namespace GUI;
   * Used by 'WidgetBrowse'.
   */
 
-BrowseModel::BrowseModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const SharedEntryListModel& sharedEntryListModel, const Common::Hash& peerID, bool loadRoots) :
-    coreConnection(coreConnection), sharedEntryListModel(sharedEntryListModel), peerID(peerID), root(new Tree())
+BrowseModel::BrowseModel(
+   QSharedPointer<RCC::ICoreConnection> coreConnection,
+   const SharedEntryListModel& sharedEntryListModel,
+   const Common::Hash& peerID, bool loadRoots
+) :
+   coreConnection(coreConnection), sharedEntryListModel(sharedEntryListModel), peerID(peerID), root(new Tree())
 {
    if (loadRoots && !this->peerID.isNull())
       this->browse();
@@ -166,22 +170,29 @@ QString BrowseModel::getPath(const QModelIndex& index, bool appendFilename) cons
 
    if (sharedEntry.path.isFile())
    {
-      return sharedEntry.path.getPath(appendFilename);
+      return sharedEntry.path.toString(appendFilename);
    }
    else
    {
-      QString path = sharedEntry.path.getPath();
-      if (!path.isEmpty())
-         path.remove(path.size() - 1, 1); // Remove the '/' at the end because path given by 'Common::ProtoHelper::getPath(..)' already begins with a '/'.
+      QString path = sharedEntry.path.toString();
 
-      return path.append(Common::ProtoHelper::getPath(entry, Common::EntriesToAppend::DIR | (appendFilename ? Common::EntriesToAppend::FILE : Common::EntriesToAppend::NONE)));
+      // TODO needed?
+      if (!path.isEmpty())
+         // Remove the '/' at the end because path given by 'Common::ProtoHelper::getPath(..)' already begins with a '/'.
+         path.remove(path.size() - 1, 1);
+
+      return path.append(
+         Common::ProtoHelper::getPath(entry).toString(appendFilename)
+      );
    }
 }
 
 void BrowseModel::refresh()
 {
    if (!this->browseResult.isNull())
+   {
       return;
+   }
 
    Protos::Common::Entries entries;
 
@@ -189,7 +200,7 @@ void BrowseModel::refresh()
       [&entries](Tree* tree)
       {
          if (tree->getNbChildren() > 0)
-            entries.add_entry()->CopyFrom(tree->getItem());
+            entries.add_entries()->CopyFrom(tree->getItem());
          return true;
       }
    );
@@ -200,13 +211,13 @@ void BrowseModel::refresh()
    this->browseResult->start();
 }
 
-QModelIndex BrowseModel::searchChild(const QString name, const QModelIndex& parent)
+QModelIndex BrowseModel::searchChild(const QString& name, const QModelIndex& parent)
 {
    Tree* tree = parent.isValid() ? static_cast<Tree*>(parent.internalPointer()) : this->root;
 
    for (int i = 0; i < tree->getNbChildren(); i++)
    {
-      if (Common::ProtoHelper::getStr(tree->getChild(i)->getItem(), &Protos::Common::Entry::name) == name)
+      if (QString::fromStdString(tree->getChild(i)->getItem().name()) == name)
       {
          return this->index(i, 0, parent);
       }
@@ -255,9 +266,9 @@ void BrowseModel::resultRefresh(const google::protobuf::RepeatedPtrField<Protos:
 
 void BrowseModel::result(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>& entries)
 {
-   if (entries.size() > 0 && entries.Get(0).entry_size() > 0)
+   if (entries.size() > 0 && entries.Get(0).entries_size() > 0)
    {
-      this->beginInsertRows(this->currentBrowseIndex, 0, entries.Get(0).entry_size() - 1);
+      this->beginInsertRows(this->currentBrowseIndex, 0, entries.Get(0).entries_size() - 1);
 
       if (this->currentBrowseIndex.internalPointer())
       {
@@ -310,15 +321,15 @@ void BrowseModel::synchronize(BrowseModel::Tree* tree, const Protos::Common::Ent
    int i = 0; // Children of 'Tree'.
    int j = 0; // Entries.
 
-   while (i < tree->getNbChildren() || j < entries.entry_size())
+   while (i < tree->getNbChildren() || j < entries.entries_size())
    {
-      if (i >= tree->getNbChildren() || j < entries.entry_size() && tree->getChild(i)->getItem() > entries.entry(j)) // New entry.
+      if (i >= tree->getNbChildren() || j < entries.entries_size() && tree->getChild(i)->getItem() > entries.entries(j)) // New entry.
       {
          this->beginInsertRows(parentIndex, i, i);
-         tree->insertChild(entries.entry(j++), i++);
+         tree->insertChild(entries.entries(j++), i++);
          this->endInsertRows();
       }
-      else if (j >= entries.entry_size() || tree->getChild(i)->getItem() < entries.entry(j)) // Entry deleted.
+      else if (j >= entries.entries_size() || tree->getChild(i)->getItem() < entries.entries(j)) // Entry deleted.
       {
          this->beginRemoveRows(parentIndex, i, i);
          delete tree->getChild(i);
@@ -326,9 +337,9 @@ void BrowseModel::synchronize(BrowseModel::Tree* tree, const Protos::Common::Ent
       }
       else // Entry paths are equal.
       {
-         if (tree->getChild(i)->getItem() != entries.entry(j))
+         if (tree->getChild(i)->getItem() != entries.entries(j))
          {
-            tree->getChild(i)->setItem(entries.entry(j));
+            tree->getChild(i)->setItem(entries.entries(j));
             emit dataChanged(this->createIndex(i, 0, tree->getChild(i)), this->createIndex(i, 1, tree->getChild(i)));
          }
          i++;
@@ -345,16 +356,16 @@ void BrowseModel::synchronizeRoot(const Protos::Common::Entries& entries)
    QModelIndex parentIndex = QModelIndex();
 
    int j = 0; // Root's children.
-   for (int i = 0 ; i < entries.entry_size(); i++)
+   for (int i = 0 ; i < entries.entries_size(); i++)
    {
       // We've searching if the entry already exists.
       for (int j2 = j; j2 < this->root->getNbChildren(); j2++)
       {
-         if (entries.entry(i).shared_entry().id().hash() == this->root->getChild(j2)->getItem().shared_entry().id().hash()) // ID's are equal -> same entry.
+         if (entries.entries(i).shared_entry().id().hash() == this->root->getChild(j2)->getItem().shared_entry().id().hash()) // ID's are equal -> same entry.
          {
-            if (entries.entry(i) != this->root->getChild(j2)->getItem()) // The entry data may have changed.
+            if (entries.entries(i) != this->root->getChild(j2)->getItem()) // The entry data may have changed.
             {
-               this->root->getChild(j2)->setItem(entries.entry(i));
+               this->root->getChild(j2)->setItem(entries.entries(i));
                emit dataChanged(this->index(j2, 0), this->index(j2, this->columnCount() - 1));
             }
 
@@ -370,7 +381,7 @@ void BrowseModel::synchronizeRoot(const Protos::Common::Entries& entries)
       }
       // The entry doesn't exist, we create it.
       this->beginInsertRows(parentIndex, j, j);
-      this->root->insertChild(entries.entry(i), j++);
+      this->root->insertChild(entries.entries(i), j++);
       this->endInsertRows();
       nextEntry:;
    }
@@ -422,8 +433,8 @@ BrowseModel::Tree::~Tree()
 
 void BrowseModel::Tree::insertChildren(const Protos::Common::Entries& entries)
 {
-   for (int i = 0; i < entries.entry_size(); i++)
-      this->insertChild(entries.entry(i));
+   for (int i = 0; i < entries.entries_size(); i++)
+      this->insertChild(entries.entries(i));
 }
 
 void BrowseModel::Tree::setItem(const Protos::Common::Entry& entry)
@@ -441,7 +452,7 @@ QVariant BrowseModel::Tree::data(int column) const
 {
    switch (column)
    {
-   case 0: return Common::ProtoHelper::getStr(this->getItem(), &Protos::Common::Entry::name);
+   case 0: QString::fromStdString(this->getItem().name());
    case 1: return Common::Global::formatByteSize(this->getItem().size());
    default: return QVariant();
    }
@@ -459,7 +470,7 @@ bool GUI::operator>(const Protos::Common::Entry& e1, const Protos::Common::Entry
    if (e1.type() != e2.type())
       return e1.type() == Protos::Common::Entry::FILE;
 
-   return Common::ProtoHelper::getStr(e1, &Protos::Common::Entry::name) > Common::ProtoHelper::getStr(e2, &Protos::Common::Entry::name);
+   return e1.name() > e2.name();
 }
 
 bool GUI::operator<(const Protos::Common::Entry& e1, const Protos::Common::Entry& e2)
@@ -467,12 +478,13 @@ bool GUI::operator<(const Protos::Common::Entry& e1, const Protos::Common::Entry
    if (e1.type() != e2.type())
       return e1.type() == Protos::Common::Entry::DIR;
 
-   return Common::ProtoHelper::getStr(e1, &Protos::Common::Entry::name) < Common::ProtoHelper::getStr(e2, &Protos::Common::Entry::name);
+   return e1.name() < e2.name();
 }
 
 bool GUI::operator==(const Protos::Common::Entry& e1, const Protos::Common::Entry& e2)
 {
-   return Common::ProtoHelper::getStr(e1, &Protos::Common::Entry::name) == Common::ProtoHelper::getStr(e2, &Protos::Common::Entry::name) &&
+   return
+      e1.name() == e2.name() &&
       e1.type() == e2.type() &&
       e1.size() == e2.size() &&
       e1.is_empty() == e2.is_empty();

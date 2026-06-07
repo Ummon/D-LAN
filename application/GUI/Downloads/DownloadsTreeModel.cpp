@@ -106,7 +106,10 @@ bool DownloadsTreeModel::isFileComplete(const QModelIndex& index) const
       for (Common::TreeBreadthFirstIterator<Tree> i(tree); i.hasNext();)
       {
          Tree* current = i.next();
-         if (current->getItem().local_entry().type() == Protos::Common::Entry::FILE && current->getItem().status() != Protos::GUI::State::Download::COMPLETE)
+         if (
+            current->getItem().local_entry().type() == Protos::Common::Entry::FILE &&
+            current->getItem().status() != Protos::GUI::State::Download::COMPLETE
+         )
             return false;
       }
       return true;
@@ -121,7 +124,7 @@ bool DownloadsTreeModel::isSourceAlive(const QModelIndex& index) const
    if (!tree)
       return false;
 
-   return tree->getItem().peer_id_size() > 0 && !this->peerListModel.getNick(tree->getItem().peer_id(0).hash()).isNull();
+   return tree->getItem().peer_ids_size() > 0 && !this->peerListModel.getNick(tree->getItem().peer_ids(0).hash()).isNull();
 }
 
 Protos::Common::Entry::Type DownloadsTreeModel::getType(const QModelIndex& index) const
@@ -139,17 +142,18 @@ QString DownloadsTreeModel::getPath(const QModelIndex& index, bool appendFilenam
    if (!tree)
       return QString();
 
-   const Common::SharedEntry& sharedEntry = this->sharedEntryListModel.getSharedEntry(tree->getItem().local_entry().shared_entry().id().hash());
+   const Common::SharedEntry& sharedEntry =
+      this->sharedEntryListModel.getSharedEntry(tree->getItem().local_entry().shared_entry().id().hash());
    if (sharedEntry.isNull())
       return QString();
 
    if (sharedEntry.path.isFile())
    {
-      return sharedEntry.path.getPath(appendFilename);
+      return sharedEntry.path.toString(appendFilename);
    }
    else
    {
-      const QString& sharedPath = sharedEntry.path.getPath();
+      const QString& sharedPath = sharedEntry.path.toString();
       QString path;
 
       if (tree->getItem().local_entry().type() == Protos::Common::Entry::DIR)
@@ -157,15 +161,17 @@ QString DownloadsTreeModel::getPath(const QModelIndex& index, bool appendFilenam
          Tree* superTree = tree;
          while (superTree != this->root)
          {
-            path.prepend(Common::ProtoHelper::getStr(superTree->getItem().local_entry(), &Protos::Common::Entry::name)).prepend('/');
+            path.prepend(QString::fromStdString(superTree->getItem().local_entry().name())).prepend('/');
             superTree = superTree->getParent();
          }
-         path.prepend(sharedPath.left(sharedPath.count() - 1));
+         path.prepend(sharedPath.left(sharedPath.size() - 1));
       }
       else
       {
-         path = sharedPath.left(sharedPath.count() - 1);
-         path.append(Common::ProtoHelper::getPath(tree->getItem().local_entry(), Common::EntriesToAppend::DIR | (appendFilename ? Common::EntriesToAppend::FILE : Common::EntriesToAppend::NONE)));
+         path = sharedPath.left(sharedPath.size() - 1);
+         path.append(
+            Common::ProtoHelper::getPath(tree->getItem().local_entry()).toString(appendFilename)
+         );
       }
       return path;
    }
@@ -325,7 +331,7 @@ void DownloadsTreeModel::onNewState(const Protos::GUI::State& state)
 
    for (int i = 0; i < activeDownloadIndices.size(); i++)
    {
-      const Protos::GUI::State::Download& download = state.download(activeDownloadIndices[i]);
+      const Protos::GUI::State::Download& download = state.downloads(activeDownloadIndices[i]);
 
       Tree* itemTree = this->indexedEntries.value(download.id(), 0);
       if (itemTree) // The item already exists in the tree, we will update its information and all parent directories.
@@ -342,7 +348,8 @@ void DownloadsTreeModel::onNewState(const Protos::GUI::State& state)
       }
       else // We have to create a new entry in the tree.
       {
-         const QStringList& path = Common::ProtoHelper::getStr(download.local_entry(), &Protos::Common::Entry::path).split('/', QString::SkipEmptyParts);
+         const QStringList& path =
+            QString::fromStdString(download.local_entry().path()).split('/', Qt::SkipEmptyParts);
 
          // A node is created for each directory.
          Tree* currentTree = this->root;
@@ -350,8 +357,8 @@ void DownloadsTreeModel::onNewState(const Protos::GUI::State& state)
             currentTree = this->updateDirectoryFromPath(
                currentTree,
                i.next(),
-               Common::ProtoHelper::getStr(download, &Protos::GUI::State::Download::peer_source_nick),
-               download.peer_id_size() == 0 ? Common::Hash() : Common::Hash(download.peer_id(0).hash()),
+               QString::fromStdString(download.peer_source_nick()),
+               download.peer_ids_size() == 0 ? Common::Hash() : Common::Hash(download.peer_ids(0).hash()),
                download.local_entry().shared_entry().id().hash()
             );
 
@@ -414,12 +421,18 @@ QList<quint64> DownloadsTreeModel::getDownloadIDs(Tree* tree) const
   * Insert (or update if it already exists) the given directory ('dir') as a sub-node of the given tree ('parentTree').
   * The id of all new directories equals 0.
   */
-DownloadsTreeModel::Tree* DownloadsTreeModel::updateDirectoryFromPath(Tree* parentTree, const QString& dir, const QString& peerSourceNick, const Common::Hash& peerSourceID, const Common::Hash& sharedDirID)
+DownloadsTreeModel::Tree* DownloadsTreeModel::updateDirectoryFromPath(
+   Tree* parentTree,
+   const QString& dir,
+   const QString& peerSourceNick,
+   const Common::Hash& peerSourceID,
+   const Common::Hash& sharedDirID
+)
 {
    Protos::GUI::State::Download download;
-   Common::ProtoHelper::setStr(*download.mutable_local_entry(), &Protos::Common::Entry::set_name, dir);
-   Common::ProtoHelper::setStr(download, &Protos::GUI::State::Download::set_peer_source_nick, peerSourceNick);
-   download.add_peer_id()->set_hash(peerSourceID.getData(), Common::Hash::HASH_SIZE);
+   download.mutable_local_entry()->set_name(dir.toStdString());
+   download.set_peer_source_nick(peerSourceNick.toStdString());
+   download.add_peer_ids()->set_hash(peerSourceID.getData(), Common::Hash::HASH_SIZE);
    download.mutable_local_entry()->mutable_shared_entry()->mutable_id()->set_hash(sharedDirID.getData(), Common::Hash::HASH_SIZE);
    download.mutable_local_entry()->set_type(Protos::Common::Entry::DIR);
 

@@ -61,7 +61,7 @@ void DownloadMenu::show(const QPoint& globalPosition)
       const auto& sharedDir = i.next();
       QAction* action = new QAction(
          QIcon(":/icons/ressources/download.png"),
-         QString(tr("Download selected items to %1")).arg(sharedDir.path.getPath()),
+         QString(tr("Download selected items to %1")).arg(sharedDir.path.toString()),
          &menu
       );
       // TODO: do something here.

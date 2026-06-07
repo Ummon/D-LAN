@@ -50,8 +50,8 @@ namespace GUI
 
    protected:
       void leaveEvent(QEvent* event) override;
-      void enterEvent(QEvent* event) override;
-      void	mousePressEvent(QMouseEvent* event) override;
+      void enterEvent(QEnterEvent* event) override;
+      void mousePressEvent(QMouseEvent* event) override;
 
    private:
       Ui::SingleEmoticonWidget* ui;

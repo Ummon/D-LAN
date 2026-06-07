@@ -89,7 +89,9 @@ bool DownloadsFlatModel::isSourceAlive(const QModelIndex& index) const
    if (index.row() >= this->downloads.size())
       return false;
 
-   return this->downloads[index.row()].peer_id_size() > 0 && !this->peerListModel.getNick(this->downloads[index.row()].peer_id(0).hash()).isNull();
+   return
+      this->downloads[index.row()].peer_ids_size() > 0 &&
+      !this->peerListModel.getNick(this->downloads[index.row()].peer_ids(0).hash()).isNull();
 }
 
 Protos::Common::Entry::Type DownloadsFlatModel::getType(const QModelIndex& index) const
@@ -108,22 +110,27 @@ QString DownloadsFlatModel::getPath(const QModelIndex& index, bool appendFilenam
    if (index.row() >= this->downloads.size())
       return QString();
 
-   const Common::SharedEntry& sharedEntry = this->sharedEntryListModel.getSharedEntry(this->downloads[index.row()].local_entry().shared_entry().id().hash());
+   const Common::SharedEntry& sharedEntry =
+      this->sharedEntryListModel.getSharedEntry(this->downloads[index.row()].local_entry().shared_entry().id().hash());
 
    if (sharedEntry.isNull())
       return QString();
 
    if (sharedEntry.path.isFile())
    {
-      return sharedEntry.path.getPath(appendFilename);
+      return sharedEntry.path.toString(appendFilename);
    }
    else
    {
-      QString path = sharedEntry.path.getPath();
+      QString path = sharedEntry.path.toString();
+
+      // TODO: Needed?
       if (!path.isEmpty())
          path.remove(path.size() - 1, 1); // Remove the '/' at the end because path given by 'Common::ProtoHelper::getPath(..)' already begins with a '/'.
 
-      return path.append(Common::ProtoHelper::getPath(this->downloads[index.row()].local_entry(), Common::EntriesToAppend::DIR | (appendFilename ? Common::EntriesToAppend::FILE : Common::EntriesToAppend::NONE)));
+      return path.append(
+         Common::ProtoHelper::getPath(this->downloads[index.row()].local_entry()).toString(appendFilename)
+      );
    }
 }
 
@@ -158,7 +165,13 @@ Qt::ItemFlags DownloadsFlatModel::flags(const QModelIndex& index) const
        return Qt::ItemIsDropEnabled | defaultFlags;
 }
 
-bool DownloadsFlatModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int /*column*/, const QModelIndex& /*parent*/)
+bool DownloadsFlatModel::dropMimeData(
+   const QMimeData* data,
+   Qt::DropAction action,
+   int row,
+   int /*column*/,
+   const QModelIndex& /*parent*/
+)
 {
    if (row == -1 || !data || action != Qt::MoveAction ||  this->downloads.isEmpty())
        return false;
@@ -222,10 +235,10 @@ void DownloadsFlatModel::onNewState(const Protos::GUI::State& state)
    this->totalBytesInQueue = 0;
    this->totalBytesDownloadedInQueue = 0;
 
-   for (int i = 0; i < state.download_size(); i++)
+   for (int i = 0; i < state.downloads_size(); i++)
    {
-      this->totalBytesInQueue += state.download(i).local_entry().size();
-      this->totalBytesDownloadedInQueue += state.download(i).downloaded_bytes();
+      this->totalBytesInQueue += state.downloads(i).local_entry().size();
+      this->totalBytesDownloadedInQueue += state.downloads(i).downloaded_bytes();
    }
 
    const QList<int>& activeDownloadIndices = this->getNonFilteredDownloadIndices(state);
@@ -233,9 +246,9 @@ void DownloadsFlatModel::onNewState(const Protos::GUI::State& state)
    int i = 0;
    for (; i < activeDownloadIndices.size() && i < this->downloads.size(); i++)
    {
-      if (state.download(activeDownloadIndices[i]) != this->downloads[i])
+      if (state.downloads(activeDownloadIndices[i]) != this->downloads[i])
       {
-         this->downloads[i].CopyFrom(state.download(activeDownloadIndices[i]));
+         this->downloads[i].CopyFrom(state.downloads(activeDownloadIndices[i]));
          emit dataChanged(this->createIndex(i, 0), this->createIndex(i, 3));
       }
    }
@@ -246,7 +259,7 @@ void DownloadsFlatModel::onNewState(const Protos::GUI::State& state)
       this->beginInsertRows(QModelIndex(), i, activeDownloadIndices.size() - 1);
       while (i < activeDownloadIndices.size())
       {
-         const Protos::GUI::State_Download& download = state.download(activeDownloadIndices[i++]);
+         const Protos::GUI::State_Download& download = state.downloads(activeDownloadIndices[i++]);
          this->downloads << download;
       }
       this->endInsertRows();

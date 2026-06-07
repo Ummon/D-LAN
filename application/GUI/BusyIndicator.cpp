@@ -64,7 +64,7 @@ void BusyIndicator::paintEvent(QPaintEvent* /*event*/)
    painter.setPen(Qt::NoPen);
 
    QStyleOption opt;
-   opt.init(this);
+   opt.initFrom(this);
    QColor currentColor = opt.palette.brush(QPalette::Highlight).color();
 
    for (int i = 0; i < NB_OF_POINTS; i++)

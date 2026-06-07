@@ -252,7 +252,7 @@ void InternalCoreConnection::cancelDownloads(const QList<quint64>& downloadIDs, 
 {
    Protos::GUI::CancelDownloads cancelDownloadsMessage;
    for (QListIterator<quint64> i(downloadIDs); i.hasNext();)
-      cancelDownloadsMessage.add_id(i.next());
+      cancelDownloadsMessage.add_ids(i.next());
    cancelDownloadsMessage.set_complete(complete);
    this->send(Common::MessageHeader::GUI_CANCEL_DOWNLOADS, cancelDownloadsMessage);
 }
@@ -261,7 +261,7 @@ void InternalCoreConnection::pauseDownloads(const QList<quint64>& downloadIDs, b
 {
    Protos::GUI::PauseDownloads pauseDownloadsMessage;
    for (QListIterator<quint64> i(downloadIDs); i.hasNext();)
-      pauseDownloadsMessage.add_id(i.next());
+      pauseDownloadsMessage.add_ids(i.next());
    pauseDownloadsMessage.set_pause(pause);
    this->send(Common::MessageHeader::GUI_PAUSE_DOWNLOADS, pauseDownloadsMessage);
 }
@@ -273,10 +273,10 @@ void InternalCoreConnection::moveDownloads(const QList<quint64>& downloadIDRefs,
 
    Protos::GUI::MoveDownloads moveDownloadsMessage;
    for (QListIterator<quint64> i(downloadIDRefs); i.hasNext();)
-      moveDownloadsMessage.add_id_ref(i.next());
+      moveDownloadsMessage.add_ids_ref(i.next());
    moveDownloadsMessage.set_position(position);
    for (QListIterator<quint64> i(downloadIDs); i.hasNext();)
-      moveDownloadsMessage.add_id_to_move(i.next());
+      moveDownloadsMessage.add_ids_to_move(i.next());
    this->send(Common::MessageHeader::GUI_MOVE_DOWNLOADS, moveDownloadsMessage);
 }
 
@@ -472,7 +472,7 @@ void InternalCoreConnection::onNewMessage(const Common::Message& message)
    case Common::MessageHeader::GUI_EVENT_CHAT_MESSAGES:
       {
          const Protos::Common::ChatMessages& chatMessages = message.getMessage<Protos::Common::ChatMessages>();
-         if (chatMessages.message_size() > 0)
+         if (chatMessages.messages_size() > 0)
             emit newChatMessages(chatMessages);
       }
       break;
@@ -483,11 +483,11 @@ void InternalCoreConnection::onNewMessage(const Common::Message& message)
 
          QList<QSharedPointer<LM::IEntry>> entries;
 
-         for (int i = 0; i < eventLogMessages.message_size(); i++)
+         for (int i = 0; i < eventLogMessages.messages_size(); i++)
          {
-            const QDateTime dateTime = QDateTime::fromMSecsSinceEpoch(eventLogMessages.message(i).time());
-            const QString& message = Common::ProtoHelper::getStr(eventLogMessages.message(i), &Protos::GUI::EventLogMessages::EventLogMessage::message);
-            const LM::Severity severity = LM::Severity(eventLogMessages.message(i).severity());
+            const QDateTime dateTime = QDateTime::fromMSecsSinceEpoch(eventLogMessages.messages(i).time());
+            const QString& message = QString::fromStdString(eventLogMessages.messages(i).message());
+            const LM::Severity severity = LM::Severity(eventLogMessages.messages(i).severity());
             entries << LM::Builder::newEntry(dateTime, severity, message);
          }
 

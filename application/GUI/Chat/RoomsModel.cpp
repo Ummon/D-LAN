@@ -87,7 +87,7 @@ QVariant RoomsModel::data(const QModelIndex& index, int role) const
       break;
    }
    case Qt::TextAlignmentRole:
-      return (index.column() == 1 ? Qt::AlignRight : Qt::AlignLeft) + Qt::AlignVCenter;
+      return QVariant((index.column() == 1 ? Qt::AlignRight : Qt::AlignLeft) | Qt::AlignVCenter);
    }
 
    return QVariant();
@@ -138,7 +138,7 @@ Protos::GUI::Settings::RoomSortType RoomsModel::getSortType() const
 
 void RoomsModel::newState(const Protos::GUI::State& state)
 {
-   this->updateRooms(state.room());
+   this->updateRooms(state.rooms());
 }
 
 void RoomsModel::coreDisconnected(bool force)
@@ -164,9 +164,9 @@ void RoomsModel::updateRooms(const google::protobuf::RepeatedPtrField<Protos::GU
    for (int i = 0; i < rooms.size(); i++)
    {
       QSet<Common::Hash> peerIDs;
-      for (int j = 0; j < rooms.Get(i).peer_id_size(); j++)
-         peerIDs << Common::Hash(rooms.Get(i).peer_id(j).hash());
-      const QString& name = Common::ProtoHelper::getStr(rooms.Get(i), &Protos::GUI::State::Room::name);
+      for (int j = 0; j < rooms.Get(i).peer_ids_size(); j++)
+         peerIDs << Common::Hash(rooms.Get(i).peer_ids(j).hash());
+      const QString name = QString::fromStdString(rooms.Get(i).name());
       const bool joined = rooms.Get(i).joined();
 
       auto roomIterator = this->indexedRooms.find(name);

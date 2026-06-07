@@ -52,7 +52,7 @@ QVariant UploadsModel::data(const QModelIndex& index, int role) const
          const Protos::GUI::State_Upload& currentUpload = this->uploads[index.row()];
          switch (index.column())
          {
-         case 0: return Common::ProtoHelper::getStr(currentUpload.file(), &Protos::Common::Entry::name);
+         case 0: return QString::fromStdString(currentUpload.file().name());
          case 1: return QString("%1/%2").arg(currentUpload.current_part()).arg(currentUpload.nb_part());
          case 2: return currentUpload.progress();
          case 3: return this->peerListModel.getNick(currentUpload.peer_id().hash(), tr("<unknown>"));
@@ -70,22 +70,22 @@ QVariant UploadsModel::data(const QModelIndex& index, int role) const
 void UploadsModel::newState(const Protos::GUI::State& state)
 {
    int i = 0;
-   for (; i < state.upload_size() && i < this->uploads.size(); i++)
+   for (; i < state.uploads_size() && i < this->uploads.size(); i++)
    {
-      if (state.upload(i) != this->uploads[i])
+      if (state.uploads(i) != this->uploads[i])
       {
-         this->uploads[i].CopyFrom(state.upload(i));
+         this->uploads[i].CopyFrom(state.uploads(i));
          emit dataChanged(this->createIndex(i, 0), this->createIndex(i, 3));
       }
    }
 
    // Insert new elements.
-   if (i < state.upload_size())
+   if (i < state.uploads_size())
    {
-      this->beginInsertRows(QModelIndex(), i, state.upload_size() - 1);
-      while (i < state.upload_size())
+      this->beginInsertRows(QModelIndex(), i, state.uploads_size() - 1);
+      while (i < state.uploads_size())
       {
-         const Protos::GUI::State_Upload& upload = state.upload(i++);
+         const Protos::GUI::State_Upload& upload = state.uploads(i++);
          this->uploads << upload;
       }
       this->endInsertRows();

@@ -47,7 +47,7 @@ QSize TabButton::minimumSizeHint() const
    return this->sizeHint();
 }
 
-void TabButton::enterEvent(QEvent *event)
+void TabButton::enterEvent(QEnterEvent *event)
 {
    if (this->isEnabled())
        this->update();
@@ -65,7 +65,7 @@ void TabButton::paintEvent(QPaintEvent* pe)
 {
     QPainter p(this);
     QStyleOption opt;
-    opt.init(this);
+    opt.initFrom(this);
     opt.state |= QStyle::State_AutoRaise;
     if (isEnabled() && underMouse() && !isChecked() && !isDown())
         opt.state |= QStyle::State_Raised;

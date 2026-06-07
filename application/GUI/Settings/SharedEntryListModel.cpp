@@ -114,7 +114,7 @@ QString SharedEntryListModel::getLocationPath(const QModelIndex& index) const
    if (index.row() >= this->sharedEntries.size())
       return QString();
 
-   return this->sharedEntries[index.row()].path.getPath();
+   return this->sharedEntries[index.row()].path.toString();
 }
 
 const QList<Common::SharedEntry>& SharedEntryListModel::getSharedEntries() const
@@ -194,7 +194,7 @@ QVariant SharedEntryListModel::data(const QModelIndex& index, int role) const
 
       // Path of the entry.
       case 1:
-         return this->sharedEntries[index.row()].path.getPath();
+         return this->sharedEntries[index.row()].path.toString();
 
       case 2:
          return Common::Global::formatByteSize(this->sharedEntries[index.row()].size);

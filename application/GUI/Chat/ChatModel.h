@@ -24,7 +24,7 @@
 #include <QDateTime>
 #include <QList>
 #include <QSize>
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QPair>
 
 #include <Protos/gui_protocol.pb.h>
@@ -109,9 +109,9 @@ namespace GUI
       QList<Message> messages; // Always sorted by date-time.
       QList<Common::Hash> peersAnsweringToUs;
 
-      QRegExp regexMatchMessageContent;
-      QRegExp regexMatchFirstBR;
-      QRegExp regexMatchLastBR;
+      QRegularExpression regexMatchMessageContent;
+      QRegularExpression regexMatchFirstBR;
+      QRegularExpression regexMatchLastBR;
    };
 
 }

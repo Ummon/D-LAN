@@ -150,7 +150,7 @@ void SearchDock::search()
       return;
 
    Protos::Common::FindPattern pattern;
-   Common::ProtoHelper::setStr(pattern, &Protos::Common::FindPattern::set_pattern, this->ui->txtSearch->text());
+   pattern.set_pattern(this->ui->txtSearch->text().toStdString());
 
    bool local = false;
 
@@ -160,7 +160,8 @@ void SearchDock::search()
       if (type.entryType == SearchType::EntryType::FILES_BY_EXTENSION)
       {
          foreach (QString e, Common::KnownExtensions::getExtensions(type.extensionCategory))
-            Common::ProtoHelper::addRepeatedStr(pattern, &Protos::Common::FindPattern::add_extension_filter, e);
+            pattern.add_extension_filters(e.toStdString());
+
           pattern.set_category(Protos::Common::FindPattern::FILE);
       }
       else

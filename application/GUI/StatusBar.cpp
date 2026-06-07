@@ -88,9 +88,9 @@ void StatusBar::newState(const Protos::GUI::State& state)
    this->setUploadRate(state.stats().upload_rate());
 
    qint64 totalSharing = 0;
-   for (int i = 0; i < state.peer_size(); i++)
-      totalSharing += state.peer(i).sharing_amount();
-   this->setTotalSharing(state.peer_size(), totalSharing);
+   for (int i = 0; i < state.peers_size(); i++)
+      totalSharing += state.peers(i).sharing_amount();
+   this->setTotalSharing(state.peers_size(), totalSharing);
 
    this->updateCoreStatus(state.stats().cache_status(), state.stats().progress());
 }
@@ -113,7 +113,13 @@ void StatusBar::setUploadRate(qint64 rate)
 
 void StatusBar::setTotalSharing(int nbPeer, qint64 amount)
 {
-   this->ui->lblTotalSharing->setText(QString::number(nbPeer).append(" ").append(nbPeer > 1 ? tr("peers") : tr("peer")).append(": ").append(Common::Global::formatByteSize(amount)));
+   this->ui->lblTotalSharing->setText(
+      QString::number(nbPeer)
+         .append(" ")
+         .append(nbPeer > 1 ? tr("peers") : tr("peer"))
+         .append(": ")
+         .append(Common::Global::formatByteSize(amount))
+   );
 }
 
 void StatusBar::updateCoreStatus(Protos::GUI::State_Stats_CacheStatus status, int progress)

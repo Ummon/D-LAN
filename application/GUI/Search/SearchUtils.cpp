@@ -91,15 +91,16 @@ QString SearchUtils::getFindPatternSummary(const Protos::Common::FindPattern& fi
    const QString SEPARATOR(" / ");
    QString result;
 
-   const QString pattern = Common::ProtoHelper::getStr(findPattern, &Protos::Common::FindPattern::pattern);
+   const QString pattern = QString::fromStdString(findPattern.pattern());
    if (!pattern.isEmpty())
       result.append(pattern);
 
-   if (findPattern.extension_filter_size() > 0)
+   if (findPattern.extension_filters_size() > 0)
    {
       try
       {
-         Common::ExtensionCategory cat = Common::KnownExtensions::getCategoryFrom(Common::ProtoHelper::getRepeatedStr(findPattern, &Protos::Common::FindPattern::extension_filter, 0));
+         Common::ExtensionCategory cat =
+            Common::KnownExtensions::getCategoryFrom(QString::fromStdString(findPattern.extension_filters(0)));
          if (!result.isEmpty())
             result += SEPARATOR;
          result += getSearchTypeText(cat);
@@ -147,15 +148,16 @@ QString SearchUtils::getFindPatternSummary(const Protos::Common::FindPattern& fi
 
 QString SearchUtils::getFindPatternWindowTitle(const Protos::Common::FindPattern& findPattern)
 {
-   const QString pattern = Common::ProtoHelper::getStr(findPattern, &Protos::Common::FindPattern::pattern);
+   const QString pattern = QString::fromStdString(findPattern.pattern());
    if (!pattern.isEmpty())
       return pattern;
 
-   if (findPattern.extension_filter_size() > 0)
+   if (findPattern.extension_filters_size() > 0)
    {
       try
       {
-         Common::ExtensionCategory cat = Common::KnownExtensions::getCategoryFrom(Common::ProtoHelper::getRepeatedStr(findPattern, &Protos::Common::FindPattern::extension_filter, 0));
+         Common::ExtensionCategory cat =
+            Common::KnownExtensions::getCategoryFrom(QString::fromStdString(findPattern.extension_filters(0)));
          return getExtensionText(cat, false);
       }
       catch (const Common::CategoryNotFoundException&)

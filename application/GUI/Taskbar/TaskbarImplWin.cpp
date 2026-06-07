@@ -19,8 +19,6 @@
 #include <Taskbar/TaskbarImplWin.h>
 using namespace GUI;
 
-#include <QtWinExtras>
-
 TaskbarImplWin::TaskbarImplWin() :
    winHandle(nullptr),
    taskbarInterface(nullptr)
@@ -78,7 +76,7 @@ void TaskbarImplWin::setOverlayIcon(const QIcon& icon, const QString& descriptio
    if (!this->winHandle || !this->taskbarInterface)
       return;
 
-   HICON overlayIcon = icon.isNull() ? NULL : QtWin::toHICON(icon.pixmap(48));
+   HICON overlayIcon = icon.isNull() ? NULL : icon.pixmap(48).toImage().toHICON();
    this->taskbarInterface->SetOverlayIcon(this->winHandle, overlayIcon, description.toStdWString().c_str());
 
    if (overlayIcon)

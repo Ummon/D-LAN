@@ -33,7 +33,12 @@ using namespace GUI;
 
 #include <Log.h>
 
-ChatModel::ChatModel(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const Emoticons& emoticons, const QString& roomName) :
+ChatModel::ChatModel(
+   QSharedPointer<RCC::ICoreConnection> coreConnection,
+   PeerListModel& peerListModel,
+   const Emoticons& emoticons,
+   const QString& roomName
+) :
    coreConnection(coreConnection),
    peerListModel(peerListModel),
    emoticons(emoticons),
@@ -42,7 +47,12 @@ ChatModel::ChatModel(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerLi
    regexMatchFirstBR("^\\s*<br[^>]*>"),
    regexMatchLastBR("<br[^>]*>\\s*$")
 {
-   connect(this->coreConnection.data(), SIGNAL(newChatMessages(const Protos::Common::ChatMessages&)), this, SLOT(newChatMessages(const Protos::Common::ChatMessages&)));
+   connect(
+      this->coreConnection.data(),
+      SIGNAL(newChatMessages(const Protos::Common::ChatMessages&)),
+      this,
+      SLOT(newChatMessages(const Protos::Common::ChatMessages&))
+   );
 }
 
 bool ChatModel::isMainChat() const
@@ -121,7 +131,7 @@ QString ChatModel::getLineStr(int row, bool withHTML) const
          QDomElement nextElement = currentElement.nextSiblingElement();
          if (currentElement.tagName() == "img")
          {
-            QStringList srcEmoticon = currentElement.attribute("src").split('/', QString::SkipEmptyParts);
+            QStringList srcEmoticon = currentElement.attribute("src").split('/', Qt::SkipEmptyParts);
             if (srcEmoticon.count() == 3)
             {
                QStringList emoticonSymbols = this->emoticons.getSmileSymbols(srcEmoticon[1], srcEmoticon[2]);
@@ -195,12 +205,18 @@ void ChatModel::sendMessage(const QString& message, const QList<Common::Hash>& p
       return;
 
    // Remove the HTML header and footer with a regular expression . . . I know: http://stackoverflow.com/a/1732454 . . .
-   const int beginning = this->regexMatchMessageContent.indexIn(message);
+   // TODO: test that and try to remove regexp usage.
+   const auto messageContentMatch = this->regexMatchMessageContent.match(message);
+   const int beginning = messageContentMatch.lastCapturedIndex();
    const int end = message.lastIndexOf("</p>");
 
-   if (beginning != -1 && end > beginning + this->regexMatchMessageContent.matchedLength())
+   if (beginning != -1 && end > beginning + messageContentMatch.captured().length())
    {
-      QString innerMessage = message.mid(beginning + this->regexMatchMessageContent.matchedLength(), end - beginning - this->regexMatchMessageContent.matchedLength()).trimmed();
+      QString innerMessage =
+         message.mid(
+            beginning + messageContentMatch.captured().length(),
+            end - beginning - messageContentMatch.captured().length()
+         ).trimmed();
 
       innerMessage.remove(this->regexMatchFirstBR);
       innerMessage.remove(this->regexMatchLastBR);
@@ -234,10 +250,10 @@ void ChatModel::sendRawMessage(const QString& message, const QList<Common::Hash>
 
 void ChatModel::newChatMessages(const Protos::Common::ChatMessages& messages)
 {
-   if (messages.message_size() == 0)
+   if (messages.messages_size() == 0)
       return;
 
-   QString roomName = Common::ProtoHelper::getStr(messages.message(0), &Protos::Common::ChatMessage::chat_room);
+   QString roomName = QString::fromStdString(messages.messages(0).chat_room());
    if (roomName != this->roomName)
       return;
 
@@ -246,25 +262,25 @@ void ChatModel::newChatMessages(const Protos::Common::ChatMessages& messages)
    int j = this->messages.size();
    QList<Message> toInsert;
 
-   for (int i = messages.message_size() - 1; i >= 0; i--)
+   for (int i = messages.messages_size() - 1; i >= 0; i--)
    {
-      const Common::Hash peerID(messages.message(i).peer_id().hash());
+      const Common::Hash peerID(messages.messages(i).peer_id().hash());
 
       bool isTheMessageAnsweringToUs = false;
-      for (int j = 0; j < messages.message(i).peer_ids_answer_size(); j++)
-         if (Common::Hash(messages.message(i).peer_ids_answer(j).hash()) == ourPeerID)
+      for (int j = 0; j < messages.messages(i).peer_ids_answer_size(); j++)
+         if (Common::Hash(messages.messages(i).peer_ids_answer(j).hash()) == ourPeerID)
          {
             isTheMessageAnsweringToUs = true;
             break;
          }
 
       Message message {
-         messages.message(i).id(),
+         messages.messages(i).id(),
          peerID,
          isTheMessageAnsweringToUs,
-         this->peerListModel.getNick(peerID, Common::ProtoHelper::getStr(messages.message(i), &Protos::Common::ChatMessage::peer_nick)),
-         QDateTime::fromMSecsSinceEpoch(messages.message(i).time()),
-         Common::ProtoHelper::getStr(messages.message(i), &Protos::Common::ChatMessage::message)
+         this->peerListModel.getNick(peerID, QString::fromStdString(messages.messages(i).peer_nick())),
+         QDateTime::fromMSecsSinceEpoch(messages.messages(i).time()),
+         QString::fromStdString(messages.messages(i).message())
       };
 
       int previousJ = j;
@@ -339,7 +355,11 @@ QString ChatModel::formatMessage(const Message& message) const
          "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">"
          "p, li { white-space: pre-wrap; }"
          "</style></head><body style=\" font-family:'Sans'; font-size:8pt; font-weight:400; font-style:normal;\">")
-      .append(now.date() == message.dateTime.date() ? message.dateTime.toString("[HH:mm:ss] ") : message.dateTime.toString("[%1 HH:mm:ss] ").arg(message.dateTime.date().toString(Qt::SystemLocaleShortDate))) // TODO : add date.
+      .append(
+         now.date() == message.dateTime.date() ?
+           message.dateTime.toString("[HH:mm:ss] ")
+         : message.dateTime.toString("[%1 HH:mm:ss] ")
+            .arg(message.dateTime.date().toString(Qt::TextDate))) // TODO: add date.
       .append("<b>").append(message.nick).append("</b>: ")
       .append(message.message)
       .append("</body></html>");

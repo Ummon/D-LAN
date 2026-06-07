@@ -21,6 +21,7 @@
 using namespace GUI;
 
 #include <QMessageBox>
+#include <QRegularExpression>
 
 #include <Common/Settings.h>
 
@@ -59,7 +60,7 @@ void AskNewPasswordDialog::ok()
       QMessageBox::information(this, "Error", "The password can't be empty");
       return;
    }
-   else if (this->ui->txtNewPassword->text().contains(QRegExp("\\s")))
+   else if (this->ui->txtNewPassword->text().contains(QRegularExpression("\\s")))
    {
       QMessageBox::information(this, "Error", "The password can't contain one or more whitespace");
       return;

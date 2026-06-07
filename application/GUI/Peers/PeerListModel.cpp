@@ -228,7 +228,7 @@ QVariant PeerListModel::data(const QModelIndex& index, int role) const
       return QVariant();
 
    case Qt::TextAlignmentRole:
-      return (index.column() == 2 ? Qt::AlignRight : Qt::AlignLeft) + Qt::AlignVCenter;
+      return QVariant((index.column() == 2 ? Qt::AlignRight : Qt::AlignLeft) | Qt::AlignVCenter);
 
    case Qt::ToolTipRole:
       if (this->toolTipEnabled)
@@ -292,24 +292,24 @@ void PeerListModel::uncolorize(const QModelIndex& index)
 void PeerListModel::newState(const Protos::GUI::State& state)
 {
    QSet<Common::Hash> peersDownloadingOurData;
-   for (int i = 0; i < state.upload_size(); i++)
-      peersDownloadingOurData << Common::Hash(state.upload(i).peer_id().hash());
+   for (int i = 0; i < state.uploads_size(); i++)
+      peersDownloadingOurData << Common::Hash(state.uploads(i).peer_id().hash());
 
    QSet<Common::Hash> peersToDisplay;
    if (!this->room.isEmpty())
-      for (int i = 0; i < state.room_size(); i++)
-         if (state.room(i).name() == this->room.toStdString())
+      for (int i = 0; i < state.rooms_size(); i++)
+         if (state.rooms(i).name() == this->room.toStdString())
          {
-            for (int j = 0; j < state.room(i).peer_id_size(); j++)
-               peersToDisplay << Common::Hash(state.room(i).peer_id(j).hash());
+            for (int j = 0; j < state.rooms(i).peer_ids_size(); j++)
+               peersToDisplay << Common::Hash(state.rooms(i).peer_ids(j).hash());
 
-            if (state.room(i).joined())
+            if (state.rooms(i).joined())
                peersToDisplay << this->coreConnection->getRemoteID();
 
             break;
          }
 
-   this->updatePeers(state.peer(), peersDownloadingOurData, peersToDisplay);
+   this->updatePeers(state.peers(), peersDownloadingOurData, peersToDisplay);
 }
 
 void PeerListModel::coreDisconnected(bool forced)
@@ -321,7 +321,11 @@ void PeerListModel::coreDisconnected(bool forced)
 /**
   * @param peersToDisplay If empty then all peers are displayed.
   */
-void PeerListModel::updatePeers(const google::protobuf::RepeatedPtrField<Protos::GUI::State::Peer>& peers, const QSet<Common::Hash>& peersDownloadingOurData, const QSet<Common::Hash>& peersToDisplay)
+void PeerListModel::updatePeers(
+   const google::protobuf::RepeatedPtrField<Protos::GUI::State::Peer>& peers,
+   const QSet<Common::Hash>& peersDownloadingOurData,
+   const QSet<Common::Hash>& peersToDisplay
+)
 {
    bool dataChanged = false;
    auto setDataChanged =
@@ -340,13 +344,18 @@ void PeerListModel::updatePeers(const google::protobuf::RepeatedPtrField<Protos:
       const Common::Hash peerID { peers.Get(i).peer_id().hash() };
 
       // We ignore some peers depending 'peersToDisplay' and 'this->displayOnlyPeersWithStatusOK'.
-      if (!peersToDisplay.isEmpty() && !peersToDisplay.contains(peerID) || this->displayOnlyPeersWithStatusOK && peers.Get(i).status() != Protos::GUI::State::Peer::OK)
+      if (
+         !peersToDisplay.isEmpty() && !peersToDisplay.contains(peerID) ||
+         this->displayOnlyPeersWithStatusOK && peers.Get(i).status() != Protos::GUI::State::Peer::OK
+      )
          continue;
 
-      const QString& nick = Common::ProtoHelper::getStr(peers.Get(i), &Protos::GUI::State::Peer::nick);
-      const QString& coreVersion = Common::ProtoHelper::getStr(peers.Get(i), &Protos::GUI::State::Peer::core_version);
+      const QString nick = QString::fromStdString(peers.Get(i).nick());
+      const QString coreVersion = QString::fromStdString(peers.Get(i).core_version());
       const quint64 sharingAmount = peers.Get(i).sharing_amount();
-      const TransferInformation transferInformation { peers.Get(i).download_rate(), peers.Get(i).upload_rate(),  peersDownloadingOurData.contains(peerID) };
+      const TransferInformation transferInformation {
+         peers.Get(i).download_rate(), peers.Get(i).upload_rate(),  peersDownloadingOurData.contains(peerID)
+      };
       const Protos::GUI::State::Peer::PeerStatus status = peers.Get(i).status();
       const QHostAddress ip =
          peers.Get(i).has_ip() ?

@@ -72,7 +72,7 @@ void SingleEmoticonWidget::leaveEvent(QEvent*)
    this->setBackgroundRole(QPalette::Window);
 }
 
-void SingleEmoticonWidget::enterEvent(QEvent*)
+void SingleEmoticonWidget::enterEvent(QEnterEvent*)
 {
    this->setBackgroundRole(QPalette::Highlight);
 }

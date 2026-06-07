@@ -2,13 +2,12 @@ QT -= gui
 QT += network
 TARGET = RemoteCoreController
 
-INCLUDEPATH += . \
-   .. \
-   ../..
+INCLUDEPATH += . .. ../..
 TEMPLATE = lib
 CONFIG += staticlib create_prl
 
 include(../common.pri)
+include(../../Libs/blake3.pri)
 include(../../Libs/protobuf.pri)
 include(../../Libs/qtservice/src/qtservice.pri)
 

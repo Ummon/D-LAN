@@ -20,10 +20,11 @@
 #include <ui_RoomsDock.h>
 using namespace GUI;
 
-#include <Common/Settings.h>
-
 #include <QKeyEvent>
 #include <QMenu>
+#include <QActionGroup>
+
+#include <Common/Settings.h>
 
 RoomsDock::RoomsDock(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidget *parent) :
    QDockWidget(parent),
