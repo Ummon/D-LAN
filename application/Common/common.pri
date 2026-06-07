@@ -3,13 +3,15 @@ CONFIG(debug, debug|release) {
    DEFINES += DEBUG
 } else {
    FOLDER = release
+   CONFIG += ltcg
 
+   # TODO: remove
    # The standard Qt distribution on Windows doesn't support ar.
-   unix {
-      QMAKE_AR = gcc-ar cqs
-      QMAKE_CXXFLAGS_RELEASE += -flto
-      QMAKE_LFLAGS_RELEASE += -flto
-   }
+   # unix {
+   #    QMAKE_AR = gcc-ar cqs
+   #    QMAKE_CXXFLAGS_RELEASE += -flto
+   #    QMAKE_LFLAGS_RELEASE += -flto
+   # }
 
    prof {
       QMAKE_CXXFLAGS += -pg -g
