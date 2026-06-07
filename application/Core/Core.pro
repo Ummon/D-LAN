@@ -12,6 +12,7 @@ CONFIG += link_prl
 RC_FILE = ../Common/version.rc
 
 include(../Common/common.pri)
+include(../Libs/blake3.pri)
 include(../Libs/protobuf.pri)
 include(../Protos/Protos.pri)
 
@@ -44,6 +45,10 @@ PRE_TARGETDEPS += PeerManager/output/$$FOLDER/libPeerManager.a
 LIBS += -LFileManager/output/$$FOLDER \
     -lFileManager
 PRE_TARGETDEPS += FileManager/output/$$FOLDER/libFileManager.a
+
+LIBS += -LHashCache/output/$$FOLDER \
+    -lHashCache
+PRE_TARGETDEPS += HashCache//output/$$FOLDER/libHashCache.a
 
 LIBS += -L../Common/LogManager/output/$$FOLDER \
     -lLogManager

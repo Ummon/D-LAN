@@ -19,6 +19,8 @@
 #include <priv/NetworkListener.h>
 using namespace NL;
 
+// #include <QNetworkInformation>
+
 #include <Common/LogManager/Builder.h>
 
 #include <priv/Search.h>
@@ -38,7 +40,8 @@ NetworkListener::NetworkListener(
    tCPListener(peerManager),
    uDPListener(fileManager, peerManager, uploadManager, downloadManager, tCPListener.getCurrentPort())
 {
-   connect(&this->configManager, &QNetworkConfigurationManager::configurationChanged, this, &NetworkListener::rebindSockets);
+   // TODO: use 'QNetworkInformation' to know when the network configuration has changed.
+   // connect(&this->configManager, &QNetworkConfigurationManager::configurationChanged, this, &NetworkListener::rebindSockets);
    connect(&this->uDPListener, &UDPListener::received, this, &NetworkListener::received);
    connect(&this->uDPListener, &UDPListener::IMAliveMessageToBeSend, this, &NetworkListener::IMAliveMessageToBeSend);
 }

@@ -19,9 +19,9 @@
 #include <iostream>
 
 #include <QString>
-#include <QTextCodec>
 #include <QTextStream>
 #include <QLocale>
+#include <QRegularExpression>
 
 #include <Common/Global.h>
 #include <Common/LogManager/Builder.h>
@@ -39,19 +39,19 @@ void printUsage(QString appName)
 {
    QTextStream out(stdout);
    out << "Usage:" << Qt::endl <<
-          " " << appName << " [-r <roaming data directory>] [-l <local data directory>] [--reset-settings] [--lang <language>] [--pass <password> | --rmpass] [--version] [-i|-u|-e|-s|-v]" << Qt::endl <<
-          "  -i [account] [password] : Install the service, optionally using given account and password" << Qt::endl <<
-          "  -u : Uninstall the service." << Qt::endl <<
-          "  -e : Run as a regular application. Otherwise try to launch the installed service." << Qt::endl <<
-          "  -t : Stop the service." << Qt::endl <<
-          "  -v : Print service status information." << Qt::endl <<
-          "  <roaming data directory> : Where settings are put." << Qt::endl <<
-          "  <local data directory> : Where logs, download queue, and files cache are put." << Qt::endl <<
-          "  --reset-settings : Remove all settings except \"nick\" and \"peerID\" and quit, other settings are set to their default values." << Qt::endl <<
-          "  --lang <language> : set the language and save it to the settings file then quit. (ISO-639, two letters)" << Qt::endl <<
-          "  --pass <password> : set a password then quit. The core can be remotely controlled." << Qt::endl <<
-          "  --rmpass : remove the current password." << Qt::endl <<
-          "  --version : Print the version" << Qt::endl;
+      " " << appName << " [-r <roaming data directory>] [-l <local data directory>] [--reset-settings] [--lang <language>] [--pass <password> | --rmpass] [--version] [-i|-u|-e|-s|-v]" << Qt::endl <<
+      "  -i [account] [password] : Install the service, optionally using given account and password" << Qt::endl <<
+      "  -u : Uninstall the service." << Qt::endl <<
+      "  -e : Run as a regular application. Otherwise try to launch the installed service." << Qt::endl <<
+      "  -t : Stop the service." << Qt::endl <<
+      "  -v : Print service status information." << Qt::endl <<
+      "  <roaming data directory> : Where settings are put." << Qt::endl <<
+      "  <local data directory> : Where logs, download queue, and files cache are put." << Qt::endl <<
+      "  --reset-settings : Remove all settings except \"nick\" and \"peerID\" and quit, other settings are set to their default values." << Qt::endl <<
+      "  --lang <language> : set the language and save it to the settings file then quit. (ISO-639, two letters)" << Qt::endl <<
+      "  --pass <password> : set a password then quit. The core can be remotely controlled." << Qt::endl <<
+      "  --rmpass : remove the current password." << Qt::endl <<
+      "  --version : Print the version" << Qt::endl;
 }
 
 /**
@@ -64,15 +64,13 @@ try
    new_progname = argv[0];
 #endif
 
-   QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
-
    // Look for "-h" or "--help".
    for (int i = 1; i < argc; i++)
    {
       const QString arg = QString::fromLatin1(argv[i]);
       if (arg == "-h" || arg == "--help")
       {
-         printUsage(QString::fromLatin1(argv[0]).split(QRegExp("\\\\|/")).last());
+         printUsage(QString::fromLatin1(argv[0]).split(QRegularExpression("\\\\|/")).last());
          return 0;
       }
    }
@@ -101,7 +99,7 @@ try
       {
          QTextStream out(stdout);
          const QString versionTag = Common::Global::getVersionTag();
-         out << Common::Global::getVersion() % (versionTag.isEmpty() ? QString() : " " % versionTag) << " " << Common::Global::getBuildTime().toString("yyyy-MM-dd_HH-mm") << endl;
+         out << Common::Global::getVersion() % (versionTag.isEmpty() ? QString() : " " % versionTag) << " " << Common::Global::getBuildTime().toString("yyyy-MM-dd_HH-mm") << Qt::endl;
          return 0;
       }
    }

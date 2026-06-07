@@ -198,22 +198,28 @@ void RemoteConnection::refresh()
    }
 
    // Uploads.
-   QList<UM::IChunkUploader*> chunkUploaders = this->uploadManager->getChunkUploaders();
-   for (QListIterator<UM::IChunkUploader*> i(chunkUploaders); i.hasNext();)
+   QList<UM::IChunksUploader*> chunksUploaders = this->uploadManager->getChunksUploaders();
+   for (QListIterator<UM::IChunksUploader*> i(chunksUploaders); i.hasNext();)
    {
-      UM::IChunkUploader* chunkUploader = i.next();
+      UM::IChunksUploader* chunksUploader = i.next();
       Protos::GUI::State_Upload* protoUpload = state.add_uploads();
-      if (chunkUploader->getChunk()->populateEntry(protoUpload->mutable_file()))
+      // TODO: TEST
+      for (const auto& chunk : chunksUploader->getChunks())
       {
-         protoUpload->mutable_file()->mutable_chunks()->Clear();
-         protoUpload->set_id(chunkUploader->getID());
-         protoUpload->set_current_part(chunkUploader->getChunk()->getNum() + 1); // "+ 1" to begin at 1 and not 0.
-         protoUpload->set_nb_part(chunkUploader->getChunk()->getNbTotalChunk());
-         protoUpload->set_progress(chunkUploader->getProgress());
-         protoUpload->mutable_peer_id()->set_hash(chunkUploader->getPeerID().getData(), Common::Hash::HASH_SIZE);
+         if (chunk->populateEntry(protoUpload->mutable_file()))
+         {
+            protoUpload->mutable_file()->mutable_chunks()->Clear();
+            protoUpload->set_id(chunksUploader->getID());
+            protoUpload->set_current_part(chunk->getNum() + 1); // "+ 1" to begin at 1 and not 0.
+            protoUpload->set_nb_part(chunk->getNbTotalChunk());
+            protoUpload->set_progress(chunksUploader->getProgress());
+            protoUpload->mutable_peer_id()->set_hash(chunksUploader->getPeerID().getData(), Common::Hash::HASH_SIZE);
+         }
+         else
+         {
+            state.mutable_uploads()->RemoveLast();
+         }
       }
-      else
-         state.mutable_uploads()->RemoveLast();
    }
 
    // Shared entries.
@@ -221,15 +227,16 @@ void RemoteConnection::refresh()
    {
       Common::SharedEntry sharedEntry = i.next();
       Protos::GUI::State::SharedEntry* sharedEntryProto = state.add_shared_entries();
-      sharedEntryProto->set_path(sharedEntry.path.getPath()); // TODO: set 'entry'.
+      sharedEntryProto->mutable_entry()->set_path(sharedEntry.path.toString().toStdString());
       sharedEntryProto->set_size(sharedEntry.size);
       sharedEntryProto->set_free_space(sharedEntry.freeSpace);
-      sharedEntryProto->mutable_ids()->set_hash(sharedEntry.ID.getData(), Common::Hash::HASH_SIZE);
+      sharedEntryProto->mutable_entry()->mutable_id()->set_hash(sharedEntry.ID.getData(), Common::Hash::HASH_SIZE);
    }
 
    // Stats.
-   Protos::GUI::State_Stats* stats = state.mutable_stats();
-   stats->set_cache_status(static_cast<Protos::GUI::State::Stats::CacheStatus>(this->fileManager->getCacheStatus())); // Warning: IFileManager::CacheStatus and Protos::GUI::State_Stats_CacheStatus must be compatible.
+   Protos::GUI::State_Stats* stats = state.mutable_stats();   
+   // Warning: IFileManager::CacheStatus and Protos::GUI::State_Stats_CacheStatus must be compatible.
+   stats->set_cache_status(static_cast<Protos::GUI::State::Stats::CacheStatus>(this->fileManager->getCacheStatus()));
    stats->set_progress(this->fileManager->getProgress());
    stats->set_download_rate(downloadRate);
    stats->set_upload_rate(uploadRate);

@@ -20,6 +20,7 @@
 using namespace CoreSpace;
 
 #include <QRandomGenerator64>
+#include <QRegularExpression>
 
 #include <Common/PersistentData.h>
 #include <Common/Constants.h>
@@ -112,14 +113,19 @@ void Core::start()
    this->chatSystem = CS::Builder::newChatSystem(this->peerManager, this->networkListener);
    this->remoteControlManager = RCM::Builder::newRemoteControlManager(this->fileManager, this->peerManager, this->uploadManager, this->downloadManager, this->networkListener, this->chatSystem);
 
-   connect(this->remoteControlManager.data(), &RCM::IRemoteControlManager::languageDefined, this, &Core::setLanguage);
+   connect(
+      this->remoteControlManager.data(),
+      &RCM::IRemoteControlManager::languageDefined,
+      this,
+      [this](QLocale locals){ this->setLanguage(locals); }
+   );
 
    L_USER(QObject::tr("Ready to serve"));
 }
 
 void Core::dumpWordIndex() const
 {
-   L_WARN(this->fileManager->getdumpWordIndex_debug());
+   L_WARN(this->fileManager->getWordIndex_debug());
 }
 
 void Core::printSimilarFiles() const
@@ -249,12 +255,15 @@ void Core::checkSettingsIntegrity()
 
    this->checkSetting("minimum_duration_when_hashing", 100u, 30u * 1000u);
    this->checkSetting("scan_period_unwatchable_dirs", 1000u, 60u * 60u * 1000u);
-   static const QRegExp unfinishedSuffixExp("^\\.\\S+$");
-   if (!unfinishedSuffixExp.exactMatch(SETTINGS.get<QString>("unfinished_suffix_term")))
+
+   static const QRegularExpression unfinishedSuffixExp("^\\.\\S+$");
+   auto unfinishedSuffixMatch = unfinishedSuffixExp.match(SETTINGS.get<QString>("unfinished_suffix_term"));
+   if (!unfinishedSuffixMatch.hasMatch())
    {
       L_ERRO("Settings: 'unfinished_suffix_term' must begin with a dot and not contain any space character");
       SETTINGS.rm("unfinished_suffix_term");
    }
+
    this->checkSetting("minimum_free_space", 0u, 4294967295u);
    this->checkSetting("save_cache_period", 1000u, 4294967295u);
 

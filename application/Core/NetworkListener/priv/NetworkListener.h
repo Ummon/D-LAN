@@ -20,7 +20,7 @@
 
 #include <QObject>
 #include <QSharedPointer>
-#include <QNetworkConfigurationManager> // TODO: replace by QNetworkInformation!?
+// #include <QNetworkConfigurationManager> // TODO: replace by QNetworkInformation!?
 
 #include <Common/Uncopyable.h>
 #include <Core/FileManager/IFileManager.h>
@@ -54,17 +54,19 @@ namespace NL
       void rebindSockets();
 
    public:
-      SendStatus send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message, const Common::Hash& peerID = Common::Hash());
+      SendStatus send(
+         Common::MessageHeader::MessageType type,
+         const google::protobuf::Message& message,
+         const Common::Hash& peerID = Common::Hash()
+      );
 
-   private:      
+   private:
       LOG_INIT_H("NetworkListener")
 
       QSharedPointer<FM::IFileManager> fileManager;
       QSharedPointer<PM::IPeerManager> peerManager;
       QSharedPointer<UM::IUploadManager> uploadManager;
       QSharedPointer<DM::IDownloadManager> downloadManager;
-
-      QNetworkConfigurationManager configManager;
 
       TCPListener tCPListener;
       UDPListener uDPListener;

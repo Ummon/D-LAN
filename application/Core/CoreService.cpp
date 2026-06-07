@@ -21,12 +21,13 @@ using namespace CoreSpace;
 
 #include <QObject>
 #include <QThread>
-#include <QRegExp>
 
 #include <Common/Constants.h>
 
 CoreService::CoreService(bool resetSettings, QLocale locale, int argc, char** argv) :
-   QtService<CoreApplication>(argc, argv, Common::Constants::SERVICE_NAME), core(new Core(resetSettings, locale)), consoleSupport(false)
+   QtService<CoreApplication>(argc, argv, Common::Constants::SERVICE_NAME),
+   core(new Core(resetSettings, locale)),
+   consoleSupport(false)
 {
    this->setServiceDescription(tr("A LAN file sharing system"));
    this->setStartupType(QtServiceController::ManualStartup);
@@ -116,8 +117,8 @@ void CoreService::printCommands()
 {
    QTextStream out(stdout);
    out << "Commands:" << Qt::endl
-       << " - help: show this message" << Qt::endl
-       << " - quit: stop the core" << Qt::endl
-       << " - dumpwi: dump the word index in the log as a warning" << Qt::endl
-       << " - printsf: print the similar files in the log as a warning" << Qt::endl;
+      << " - help: show this message" << Qt::endl
+      << " - quit: stop the core" << Qt::endl
+      << " - dumpwi: dump the word index in the log as a warning" << Qt::endl
+      << " - printsf: print the similar files in the log as a warning" << Qt::endl;
 }
