@@ -54,45 +54,58 @@ namespace PM
       };
 
    public:
-      PeerMessageSocket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const Common::Hash& remotePeerID, QTcpSocket* socket);
-      PeerMessageSocket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const Common::Hash& remotePeerID, const QHostAddress& address, quint16 port);
+      PeerMessageSocket(
+         PeerManager* peerManager,
+         QSharedPointer<FM::IFileManager> fileManager,
+         const Common::Hash& remotePeerID,
+         QTcpSocket* socket
+      );
+
+      PeerMessageSocket(
+         PeerManager* peerManager,
+         QSharedPointer<FM::IFileManager> fileManager,
+         const Common::Hash& remotePeerID,
+         const QHostAddress& address,
+         quint16 port
+      );
+
       ~PeerMessageSocket();
 
-      void setReadBufferSize(qint64 size);
+      void setReadBufferSize(qint64 size) override;
 
-      qint64 bytesAvailable() const;
-      qint64 read(char* data, qint64 maxSize);
-      QByteArray readAll();
-      bool waitForReadyRead(int msecs);
+      qint64 bytesAvailable() const override;
+      qint64 read(char* data, qint64 maxSize) override;
+      QByteArray readAll() override;
+      bool waitForReadyRead(int msecs) override;
 
-      qint64 bytesToWrite() const;
-      qint64 write(const char* data, qint64 maxSize);
-      qint64 write(const QByteArray& byteArray);
-      bool waitForBytesWritten(int msecs);
+      qint64 bytesToWrite() const override;
+      qint64 write(const char* data, qint64 maxSize) override;
+      qint64 write(const QByteArray& byteArray) override;
+      bool waitForBytesWritten(int msecs) override;
 
-      void moveToThread(QThread* targetThread);
-      QString errorString() const;
+      void moveToThread(QThread* targetThread) override;
+      QString errorString() const override;
 
-      Common::Hash getRemotePeerID() const;
+      Common::Hash getRemotePeerID() const override;
 
-      void send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);
+      void send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message) override;
 
       bool isActive() const;
       void setActive();
 
-      void finished(bool closeTheSocket = false);
+      void finished(bool closeTheSocket = false) override;
 
    public slots:
-      void close();
+      void close() override;
 
    signals:
-      void getChunk(QSharedPointer<FM::IChunk>, int, PeerMessageSocket*);
-      void becomeIdle(PeerMessageSocket*);
+      void getChunks(QList<std::pair<QSharedPointer<FM::IChunk>, int>>, PM::PeerMessageSocket*);
+      void becomeIdle(PM::PeerMessageSocket*);
 
       /**
         * Emitted when the socket is disconnected or explicitly closed by calling 'close()'.
         */
-      void closed(PeerMessageSocket*);
+      void closed(PM::PeerMessageSocket*);
 
    private slots:
       void nextAskedHash(Protos::Core::HashResult hash);
@@ -100,9 +113,9 @@ namespace PM
       void entriesResultTimeout();
 
    private:
-      void onNewMessage(const Common::Message& message);
-      void onNewDataReceived();
-      void onDisconnected();
+      void onNewMessage(const Common::Message& message) override;
+      void onNewDataReceived() override;
+      void onDisconnected() override;
       void initUnactiveTimer();
 
       void sendEntriesResultMessage();

@@ -55,17 +55,53 @@ namespace DM
       ~DownloadManager();
 
       void addDownload(const Protos::Common::Entry& remoteEntry, PM::IPeer* peerSource);
-      void addDownload(const Protos::Common::Entry& remoteEntry, PM::IPeer* peerSource, const Common::Hash& destinationDirectoryID, const QString& relativePath);
-      void addDownload(const Protos::Common::Entry& remoteEntry, PM::IPeer* peerSource, const QString& absolutePath);
+      void addDownload(
+         const Protos::Common::Entry& remoteEntry,
+         PM::IPeer* peerSource,
+         const Common::Hash& destinationDirectoryID,
+         const QString& relativePath
+      );
+      void addDownload(
+         const Protos::Common::Entry& remoteEntry,
+         PM::IPeer* peerSource,
+         const QString& absolutePath
+      );
 
-      Download* addDownload(const Protos::Common::Entry& remoteEntry, PM::IPeer* peerSource, const Common::Hash& destinationDirectoryID, const QString& localRelativePath, Protos::Queue::Queue::Entry::Status status);
-      Download* addDownload(const Protos::Common::Entry& remoteEntry, PM::IPeer* peerSource, const Common::Hash& destinationDirectoryID, const QString& localRelativePath, Protos::Queue::Queue::Entry::Status status, int position);
+      Download* addDownload(
+         const Protos::Common::Entry& remoteEntry,
+         PM::IPeer* peerSource,
+         const Common::Hash& destinationDirectoryID,
+         const QString& localRelativePath,
+         Protos::Queue::Queue::Entry::Status status
+      );
+      Download* addDownload(
+         const Protos::Common::Entry& remoteEntry,
+         PM::IPeer* peerSource,
+         const Common::Hash& destinationDirectoryID,
+         const QString& localRelativePath,
+         Protos::Queue::Queue::Entry::Status status, int position
+      );
 
-      Download* addDownload(const Protos::Common::Entry& remoteEntry, const Protos::Common::Entry& localEntry, PM::IPeer* peerSource, Protos::Queue::Queue::Entry::Status status);
-      Download* addDownload(const Protos::Common::Entry& remoteEntry, const Protos::Common::Entry& localEntry, PM::IPeer* peerSource, Protos::Queue::Queue::Entry::Status status, int position);
+      Download* addDownload(
+         const Protos::Common::Entry& remoteEntry,
+         const Protos::Common::Entry& localEntry,
+         PM::IPeer* peerSource,
+         Protos::Queue::Queue::Entry::Status status
+      );
+      Download* addDownload(
+         const Protos::Common::Entry& remoteEntry,
+         const Protos::Common::Entry& localEntry,
+         PM::IPeer* peerSource,
+         Protos::Queue::Queue::Entry::Status status,
+         int position
+      );
 
       QList<IDownload*> getDownloads() const;
-      void moveDownloads(const QList<quint64>& downloadIDRefs, const QList<quint64>& downloadIDs, Protos::GUI::MoveDownloads::Position position);
+      void moveDownloads(
+         const QList<quint64>& downloadIDRefs,
+         const QList<quint64>& downloadIDs,
+         Protos::GUI::MoveDownloads::Position position
+      );
 
       void removeAllCompleteDownloads();
       void removeDownloads(QList<quint64> IDs);
@@ -91,7 +127,7 @@ namespace DM
       void scanTheQueue();
       void restartErroneousDownloads();
       void chunkDownloaderFinished();
-      void downloadStatusBecomeErroneous(Download* download);
+      void downloadStatusBecomeErroneous(DM::Download* download);
 
    private:
       void loadQueueFromFile();

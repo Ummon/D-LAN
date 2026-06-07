@@ -51,25 +51,25 @@ namespace PM
    public:
       Peer(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, Common::Hash ID, const QString& nick = QString());
 
-      virtual QString toStringLog() const;
+      virtual QString toStringLog() const override;
 
-      virtual Common::Hash getID() const;
-      virtual QHostAddress getIP() const;
-      virtual quint16 getPort() const;
-      virtual QString getNick() const;
-      virtual QString getCoreVersion() const;
-      virtual quint64 getSharingAmount() const;
-      virtual quint32 getDownloadRate() const;
-      virtual quint32 getUploadRate() const;
+      virtual Common::Hash getID() const override;
+      virtual QHostAddress getIP() const override;
+      virtual quint16 getPort() const override;
+      virtual QString getNick() const override;
+      virtual QString getCoreVersion() const override;
+      virtual quint64 getSharingAmount() const override;
+      virtual quint32 getDownloadRate() const override;
+      virtual quint32 getUploadRate() const override;
 
-      virtual quint32 getSpeed();
-      virtual void setSpeed(quint32 newSpeed);
+      virtual quint32 getSpeed() override;
+      virtual void setSpeed(quint32 newSpeed) override;
 
-      virtual void block(int duration, const QString& reason = QString());
+      virtual void block(int duration, const QString& reason = QString()) override;
 
-      virtual bool isAlive() const;
-      virtual bool isAvailable() const;
-      virtual quint32 getProtocolVersion() const;
+      virtual bool isAlive() const override;
+      virtual bool isAvailable() const override;
+      virtual quint32 getProtocolVersion() const override;
       virtual void update(
          const QHostAddress& IP,
          quint16 port,
@@ -82,9 +82,9 @@ namespace PM
       );
       virtual void setAsDead();
 
-      virtual QSharedPointer<IGetEntriesResult> getEntries(const Protos::Core::GetEntries& dirs);
-      virtual QSharedPointer<IGetHashesResult> getHashes(const Protos::Common::Entry& file);
-      virtual QSharedPointer<IGetChunksResult> getChunks(const Protos::Core::GetChunks& chunk);
+      virtual QSharedPointer<IGetEntriesResult> getEntries(const Protos::Core::GetEntries& dirs) override;
+      virtual QSharedPointer<IGetHashesResult> getHashes(const Protos::Common::Entry& file) override;
+      virtual QSharedPointer<IGetChunksResult> getChunks(const Protos::Core::GetChunks& chunk) override;
 
       void newConnexion(QTcpSocket* tcpSocket);
 

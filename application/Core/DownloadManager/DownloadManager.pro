@@ -51,3 +51,6 @@ HEADERS += IDownloadManager.h \
     priv/LinkedPeers.h \
     IChunkDownloader.h \
     priv/ChunkDownloader.h
+
+DISTFILES += \
+   downloadmanager_model.qmodel

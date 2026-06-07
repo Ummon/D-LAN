@@ -30,7 +30,7 @@ using namespace PM;
 /**
   * @class PM::ConnectionPool
   *
-  * @brief Manage a set of opened sockets to a remote peer.
+  * @brief Manage a set of opened TCP sockets to a remote peer.
   *
   * There is two kind of socket.
   * 1) Socket opened by another peer.
@@ -66,7 +66,10 @@ void ConnectionPool::setIP(const QHostAddress& IP, quint16 port)
   */
 void ConnectionPool::newConnexion(QTcpSocket* tcpSocket)
 {
-   this->addNewSocket(QSharedPointer<PeerMessageSocket>(new PeerMessageSocket(this->peerManager, this->fileManager, this->peerID, tcpSocket)), FROM_PEER);
+   this->addNewSocket(QSharedPointer<PeerMessageSocket>(
+      new PeerMessageSocket(this->peerManager, this->fileManager, this->peerID, tcpSocket)),
+      FROM_PEER
+   );
 }
 
 /**
@@ -139,14 +142,17 @@ void ConnectionPool::socketClosed(PeerMessageSocket* socket)
    }
 }
 
-void ConnectionPool::socketGetChunk(QSharedPointer<FM::IChunk> chunk, int offset, PeerMessageSocket* socket)
+void ConnectionPool::socketGetChunks(
+   QList<std::pair<QSharedPointer<FM::IChunk>, int>> chunksAndOffsets,
+   PeerMessageSocket* socket
+)
 {
    for (QListIterator<QSharedPointer<PeerMessageSocket>> i(this->socketsFromPeer); i.hasNext();)
    {
       QSharedPointer<PeerMessageSocket> socketShared = i.next();
       if (socketShared.data() == socket)
       {
-         this->peerManager->onGetChunk(chunk, offset, socketShared);
+         this->peerManager->onGetChunks(chunksAndOffsets, socketShared);
          break;
       }
    }
@@ -164,7 +170,7 @@ QSharedPointer<PeerMessageSocket> ConnectionPool::addNewSocket(QSharedPointer<Pe
       break;
    case FROM_PEER:
       this->socketsFromPeer << socket;
-      connect(socket.data(), &PeerMessageSocket::getChunk, this, &ConnectionPool::socketGetChunk, Qt::DirectConnection);
+      connect(socket.data(), &PeerMessageSocket::getChunks, this, &ConnectionPool::socketGetChunks, Qt::DirectConnection);
       break;
    }
 

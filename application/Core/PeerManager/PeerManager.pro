@@ -14,6 +14,8 @@ CONFIG += staticlib link_prl create_prl
 INCLUDEPATH += . ../..
 
 DEFINES += PEERMANAGER_LIBRARY
+
+DEFINES += PEERMANAGER_LIBRARY
 SOURCES += priv/PeerManager.cpp \
     priv/GetChunksResult.cpp \
     priv/Peer.cpp \

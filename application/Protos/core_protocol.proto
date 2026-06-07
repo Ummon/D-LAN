@@ -149,7 +149,10 @@ message GetHashesResult {
    enum Status {
       OK = 0;
       DONT_HAVE = 1; // 'b' doesn't have the requested entry.
-      HASHES_DONT_MATCH = 2; // If one or more hashes of the given entry (GetHashes.file) don't match the hashes of the 'b' entry. Not implemented (no check is performed).
+
+      // If one or more hashes of the given entry (GetHashes.file) don't match the hashes of the 'b' entry.
+      // Not implemented (no check is performed).
+      HASHES_DONT_MATCH = 2;
       ERROR_UNKNOWN = 255;
    }
    Status status = 1; // If status != OK nb_hash is not set.
@@ -160,7 +163,7 @@ message GetHashesResult {
 // b -> a
 // id = 0x43
 message HashResult {
-   uint32 num = 1;
+   uint32 num = 1; // Chunk number, first is 0.
    Common.Hash hash = 2;
 }
 
@@ -190,7 +193,8 @@ message GetChunksResult {
       enum ChunkStatus {
          OK = 0;
          DONT_HAVE = 1; // 'b' doesn't have this chunk.
-         DONT_HAVE_DATA_FROM_OFFSET = 4; // If we have the chunk but we don't have the data from the given offset.
+         DONT_HAVE_DATA_FROM_OFFSET = 2; // If we have the chunk but we don't have the data from the given offset.
+         ERROR_HASH_NULL = 3;
          ERROR_UNKNOWN = 255;
       }
       ChunkStatus status = 1;
@@ -201,4 +205,5 @@ message GetChunksResult {
    repeated ChunkResult results = 2; // The number of results must be the same as the asked chunks.
 }
 
-// b -> a : stream of data of each chunk in the same order as requested. Only if 'GetChunkResult.status == OK' and only for the chunks with 'ChunkResult.status == OK').
+// b -> a : stream of data of each chunk in the same order as requested. Only if 'GetChunkResult.status == OK' and
+// only for the chunks with 'ChunkResult.status == OK').

@@ -589,9 +589,56 @@
                       </DAssociation>
                      </instance>
                     </item>
+                    <item>
+                     <instance type="DClass">
+                      <DClass>
+                       <base-DObject>
+                        <DObject>
+                         <base-DElement>
+                          <DElement>
+                           <uid>{519e4f52-096b-4871-9cd0-9bce49367818}</uid>
+                          </DElement>
+                         </base-DElement>
+                         <object>{14aab027-f2b8-4fd7-8200-2fe15ba42b10}</object>
+                         <context>FileUpdater</context>
+                         <name>FileUpdater</name>
+                         <pos>x:680;y:170</pos>
+                         <rect>x:-40;y:-40;w:80;h:80</rect>
+                         <visual-role>0</visual-role>
+                        </DObject>
+                       </base-DObject>
+                       <namespace>FM</namespace>
+                      </DClass>
+                     </instance>
+                    </item>
+                    <item>
+                     <instance type="DAssociation">
+                      <DAssociation>
+                       <base-DRelation>
+                        <DRelation>
+                         <base-DElement>
+                          <DElement>
+                           <uid>{c9c08b18-7718-4d03-8099-7cda97576769}</uid>
+                          </DElement>
+                         </base-DElement>
+                         <object>{e2a1dc35-1a9b-44c5-bf63-72d2ee200f05}</object>
+                         <a>{761a3221-9caa-4833-a0a2-e518c3f6f92e}</a>
+                         <b>{519e4f52-096b-4871-9cd0-9bce49367818}</b>
+                        </DRelation>
+                       </base-DRelation>
+                       <a>
+                        <DAssociationEnd>
+                         <cradinality>1</cradinality>
+                         <navigable>true</navigable>
+                         <kind>2</kind>
+                        </DAssociationEnd>
+                       </a>
+                      </DAssociation>
+                     </instance>
+                    </item>
                    </qlist>
                   </elements>
-                  <last-modified>1779216812242</last-modified>
+                  <last-modified>1780060608857</last-modified>
                   <toolbarid>Classes</toolbarid>
                  </MDiagram>
                 </base-MDiagram>
@@ -653,6 +700,35 @@
                                         </base-MElement>
                                         <a>{c29e5903-96e9-48ab-a8ec-63dc5e1024aa}</a>
                                         <b>{0eecb20f-fd58-4fff-a0f2-f782925d66d1}</b>
+                                       </MRelation>
+                                      </base-MRelation>
+                                      <a>
+                                       <MAssociationEnd>
+                                        <cardinality>1</cardinality>
+                                        <navigable>true</navigable>
+                                        <kind>2</kind>
+                                       </MAssociationEnd>
+                                      </a>
+                                     </MAssociation>
+                                    </instance>
+                                   </target>
+                                  </handle>
+                                 </item>
+                                 <item>
+                                  <handle>
+                                   <uid>{e2a1dc35-1a9b-44c5-bf63-72d2ee200f05}</uid>
+                                   <target>
+                                    <instance type="MAssociation">
+                                     <MAssociation>
+                                      <base-MRelation>
+                                       <MRelation>
+                                        <base-MElement>
+                                         <MElement>
+                                          <uid>{e2a1dc35-1a9b-44c5-bf63-72d2ee200f05}</uid>
+                                         </MElement>
+                                        </base-MElement>
+                                        <a>{c29e5903-96e9-48ab-a8ec-63dc5e1024aa}</a>
+                                        <b>{14aab027-f2b8-4fd7-8200-2fe15ba42b10}</b>
                                        </MRelation>
                                       </base-MRelation>
                                       <a>
@@ -1311,6 +1387,59 @@
                                          </MElement>
                                         </base-MElement>
                                         <name>Chunk</name>
+                                       </MObject>
+                                      </base-MObject>
+                                      <namespace>FM</namespace>
+                                     </MClass>
+                                    </instance>
+                                   </target>
+                                  </handle>
+                                 </item>
+                                </qlist>
+                               </handles>
+                              </handles>
+                             </children>
+                            </MObject>
+                           </base-MObject>
+                          </MPackage>
+                         </instance>
+                        </target>
+                       </handle>
+                      </item>
+                      <item>
+                       <handle>
+                        <uid>{92628c9c-8dfe-4c02-8a10-aeb2d3f920ec}</uid>
+                        <target>
+                         <instance type="MPackage">
+                          <MPackage>
+                           <base-MObject>
+                            <MObject>
+                             <base-MElement>
+                              <MElement>
+                               <uid>{92628c9c-8dfe-4c02-8a10-aeb2d3f920ec}</uid>
+                               <flags>1</flags>
+                              </MElement>
+                             </base-MElement>
+                             <name>FileUpdater</name>
+                             <children>
+                              <handles>
+                               <handles>
+                                <qlist>
+                                 <item>
+                                  <handle>
+                                   <uid>{14aab027-f2b8-4fd7-8200-2fe15ba42b10}</uid>
+                                   <target>
+                                    <instance type="MClass">
+                                     <MClass>
+                                      <base-MObject>
+                                       <MObject>
+                                        <base-MElement>
+                                         <MElement>
+                                          <uid>{14aab027-f2b8-4fd7-8200-2fe15ba42b10}</uid>
+                                          <flags>1</flags>
+                                         </MElement>
+                                        </base-MElement>
+                                        <name>FileUpdater</name>
                                        </MObject>
                                       </base-MObject>
                                       <namespace>FM</namespace>

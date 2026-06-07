@@ -28,7 +28,7 @@ using namespace UM;
 #include <Core/FileManager/IChunk.h>
 #include <Core/PeerManager/ISocket.h>
 
-#include <priv/ChunkUploader.h>
+#include <priv/ChunksUploader.h>
 
 /**
   * @class UM::UploaderManager
@@ -49,9 +49,9 @@ UploadManager::UploadManager(QSharedPointer<PM::IPeerManager> peerManager) :
    this->threadPool.setStackSize(MIN_UPLOAD_THREAD_STACK_SIZE + SETTINGS.get<quint32>("buffer_size_reading"));
    connect(
       this->peerManager.data(),
-      SIGNAL(getChunk(QSharedPointer<FM::IChunk>, int, QSharedPointer<PM::ISocket>)),
+      &PM::IPeerManager::getChunks,
       this,
-      SLOT(getChunk(QSharedPointer<FM::IChunk>, int, QSharedPointer<PM::ISocket>)),
+      &UploadManager::getChunks,
       Qt::DirectConnection
    );
 }
@@ -61,15 +61,15 @@ UploadManager::~UploadManager()
    L_DEBU("UploadManager deleted");
 
    // We stop all uploads to avoid the thread pool to wait that all threads have finished their job.
-   for (QListIterator<QSharedPointer<ChunkUploader>> i(this->uploads); i.hasNext();)
+   for (QListIterator<QSharedPointer<ChunksUploader>> i(this->uploads); i.hasNext();)
       i.next()->stop();
 }
 
-QList<IChunkUploader*> UploadManager::getChunkUploaders() const
+QList<IChunksUploader*> UploadManager::getChunksUploaders() const
 {
-   QList<IChunkUploader*> uploaders;
+   QList<IChunksUploader*> uploaders;
 
-   for (QListIterator<QSharedPointer<ChunkUploader>> i(this->uploads); i.hasNext();)
+   for (QListIterator<QSharedPointer<ChunksUploader>> i(this->uploads); i.hasNext();)
       uploaders << i.next().data();
 
    return uploaders;
@@ -80,19 +80,23 @@ int UploadManager::getUploadRate()
    return this->transferRateCalculator.getTransferRate();
 }
 
-void UploadManager::getChunk(const QSharedPointer<FM::IChunk>& chunk, int offset, const QSharedPointer<PM::ISocket>& socket)
+void UploadManager::getChunks(
+   const QList<std::pair<QSharedPointer<FM::IChunk>, int>>& chunksAndOffsets,
+   const QSharedPointer<PM::ISocket>& socket
+)
 {
-   QSharedPointer<ChunkUploader> upload(new ChunkUploader(chunk, offset, socket, this->transferRateCalculator));
-   connect(upload.data(), SIGNAL(timeout()), this, SLOT(uploadTimeout()));
+   QSharedPointer<ChunksUploader> upload(new ChunksUploader(chunksAndOffsets, socket, this->transferRateCalculator));
+   connect(upload.data(), &Common::Timeoutable::timeout, this, &UploadManager::uploadTimeout);
    this->uploads << upload;
    this->threadPool.run(upload.toWeakRef());
 }
 
+// TODO: test timeout.
 void UploadManager::uploadTimeout()
 {
-   ChunkUploader* upload = static_cast<ChunkUploader*>(this->sender());
+   ChunksUploader* upload = static_cast<ChunksUploader*>(this->sender());
 
-   for (QMutableListIterator<QSharedPointer<ChunkUploader>> i(this->uploads); i.hasNext();)
+   for (QMutableListIterator<QSharedPointer<ChunksUploader>> i(this->uploads); i.hasNext();)
       if (i.next().data() == upload)
       {
          i.remove();

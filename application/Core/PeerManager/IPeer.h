@@ -25,7 +25,7 @@
 #include <Protos/common.pb.h>
 #include <Protos/core_protocol.pb.h>
 
-#include <Common/Hashes.h>
+#include <Common/Hash.h>
 #include <Common/LogManager/ILoggable.h>
 #include <Core/PeerManager/IGetEntriesResult.h>
 #include <Core/PeerManager/IGetHashesResult.h>

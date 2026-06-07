@@ -240,7 +240,7 @@
                          <object>{fcf56287-4d59-4210-a55e-76f5b4424ec2}</object>
                          <context>UploadManager</context>
                          <name>UploadManager</name>
-                         <pos>x:65;y:-345</pos>
+                         <pos>x:65;y:-355</pos>
                          <rect>x:-70;y:-30;w:140;h:60</rect>
                          <visual-role>0</visual-role>
                         </DObject>
@@ -748,7 +748,7 @@
                     </item>
                    </qlist>
                   </elements>
-                  <last-modified>1778767946899</last-modified>
+                  <last-modified>1780742311075</last-modified>
                   <toolbarid>Components</toolbarid>
                  </MDiagram>
                 </base-MDiagram>

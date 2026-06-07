@@ -105,10 +105,13 @@ namespace PM
 
    signals:
       /**
-        * When a remote peer want a chunk, this signal is emitted.
-        * The chunk will be sent using the socket object. Once the data is finished to send the method 'ISocket::finished()' must be called.
+        * When a remote peer want one or more chunks, this signal is emitted.
+        * The chunks will be sent using the socket object. Once the data is finished to send the method 'ISocket::finished()' must be called.
         */
-      void getChunk(const QSharedPointer<FM::IChunk>& chunk, int offset, const QSharedPointer<PM::ISocket>& socket);
+      void getChunks(
+         QList<std::pair<QSharedPointer<FM::IChunk>, int>> chunksAndOffsets,
+         const QSharedPointer<PM::ISocket>& socket
+      );
 
       /**
         * Emitted when a peer becomes alive or is not blocked anymore.

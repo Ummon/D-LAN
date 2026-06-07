@@ -38,7 +38,7 @@ using namespace RCM;
 #include <Core/FileManager/Exceptions.h>
 #include <Core/PeerManager/IPeer.h>
 #include <Core/DownloadManager/IDownload.h>
-#include <Core/UploadManager/IChunkUploader.h>
+#include <Core/UploadManager/IChunksUploader.h>
 
 #include <priv/Log.h>
 

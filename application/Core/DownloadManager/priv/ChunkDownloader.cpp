@@ -42,7 +42,7 @@ ChunkDownloader::ChunkDownloader(LinkedPeers& linkedPeers, OccupiedPeers& occupi
    transferRateCalculator(transferRateCalculator),
    threadPool(threadPool),
    chunkHash(chunkHash),
-   socket(0),
+   socket(nullptr),
    downloading(false),
    closeTheSocket(false),
    lastTransferStatus(QUEUED),
@@ -135,10 +135,12 @@ void ChunkDownloader::run()
       QSharedPointer<FM::IDataWriter> writer = this->chunk->getDataWriter();
 
       static const int SOCKET_TIMEOUT = SETTINGS.get<quint32>("socket_timeout");
-      static const int TIME_PERIOD_CHOOSE_ANOTHER_PEER = 1000.0 * SETTINGS.get<double>("time_recheck_chunk_factor") * SETTINGS.get<quint32>("chunk_size") / SETTINGS.get<quint32>("lan_speed");
+      static const int TIME_PERIOD_CHOOSE_ANOTHER_PEER =
+         1000.0 * SETTINGS.get<double>("time_recheck_chunk_factor") *
+         SETTINGS.get<quint32>("chunk_size") / SETTINGS.get<quint32>("lan_speed");
 
       static const int BUFFER_SIZE = SETTINGS.get<quint32>("buffer_size_writing");
-      char buffer[BUFFER_SIZE];
+      QByteArray buffer(BUFFER_SIZE, Qt::Uninitialized);
 
       const int initialKnownBytes = this->chunk->getKnownBytes();
       int bytesToRead = this->chunkSize - initialKnownBytes;
@@ -150,21 +152,34 @@ void ChunkDownloader::run()
          this->mutex.lock();
          if (!this->downloading)
          {
-            L_DEBU(QString("Downloading aborted, chunk: %1%2").arg(this->chunk->toStringLog()).arg(this->chunk->isComplete() ? "" : " Not complete!"));
-            this->closeTheSocket = true; // Because some garbage from the remote uploader will continue to come in this socket.
+            L_DEBU(
+               QString("Downloading aborted, chunk: %1%2")
+                  .arg(this->chunk->toStringLog())
+                  .arg(this->chunk->isComplete() ? "" : " Not complete!")
+            );
+            // Because some garbage from the remote uploader will continue to come in this socket.
+            this->closeTheSocket = true;
             this->mutex.unlock();
             break;
          }
          this->mutex.unlock();
 
-         int bytesRead = this->socket->read(buffer + bytesToWrite, bytesToRead < BUFFER_SIZE - bytesToWrite ? bytesToRead : BUFFER_SIZE - bytesToWrite);
+         int bytesRead =
+            this->socket->read(
+               buffer.data() + bytesToWrite,
+               bytesToRead < BUFFER_SIZE - bytesToWrite ? bytesToRead : BUFFER_SIZE - bytesToWrite
+            );
+
          bytesToRead -= bytesRead;
 
          if (bytesRead == 0)
          {
             if (!this->socket->waitForReadyRead(SOCKET_TIMEOUT))
             {
-               L_WARN(QString("Connection dropped, error = %1, bytesAvailable = %2").arg(socket->errorString()).arg(socket->bytesAvailable()));
+               L_WARN(
+                  QString("Connection dropped, error = %1, bytesAvailable = %2")
+                     .arg(socket->errorString()).arg(socket->bytesAvailable())
+               );
                this->closeTheSocket = true;
                this->lastTransferStatus = TRANSFER_ERROR;
                break;
@@ -185,7 +200,10 @@ void ChunkDownloader::run()
          if (timer.elapsed() > TIME_PERIOD_CHOOSE_ANOTHER_PEER)
          {
             this->currentDownloadingPeer->setSpeed(deltaRead / timer.elapsed() * 1000);
-            L_DEBU(QString("Check for a better peer for the chunk: %1, current peer: %2 . . .").arg(this->chunk->toStringLog()).arg(this->currentDownloadingPeer->toStringLog()));
+            L_DEBU(
+               QString("Check for a better peer for the chunk: %1, current peer: %2 . . .")
+                  .arg(this->chunk->toStringLog(), this->currentDownloadingPeer->toStringLog())
+            );
             timer.start();
             deltaRead = 0;
 

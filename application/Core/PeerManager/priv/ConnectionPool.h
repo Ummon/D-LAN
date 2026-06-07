@@ -51,9 +51,12 @@ namespace PM
       void closeAllSocket();
 
    private slots:
-      void socketBecomeIdle(PeerMessageSocket* socket);
-      void socketClosed(PeerMessageSocket* socket);
-      void socketGetChunk(QSharedPointer<FM::IChunk> chunk, int offset, PeerMessageSocket* socket);
+      void socketBecomeIdle(PM::PeerMessageSocket* socket);
+      void socketClosed(PM::PeerMessageSocket* socket);
+      void socketGetChunks(
+         QList<std::pair<QSharedPointer<FM::IChunk>, int>> chunksAndOffsets,
+         PM::PeerMessageSocket* socket
+      );
 
    private:
       enum Direction { TO_PEER, FROM_PEER };

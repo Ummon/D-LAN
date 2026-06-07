@@ -78,7 +78,7 @@ namespace DM
       virtual void remove();
 
    signals:
-      void becomeErroneous(Download*);
+      void becomeErroneous(DM::Download*);
 
    public slots:
       virtual bool updateStatus();

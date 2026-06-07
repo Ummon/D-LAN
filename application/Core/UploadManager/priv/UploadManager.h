@@ -28,11 +28,12 @@
 #include <Core/PeerManager/IPeerManager.h>
 
 #include <IUploadManager.h>
+#include <IChunksUploader.h>
 #include <priv/Log.h>
 
 namespace UM
 {
-   class ChunkUploader;
+   class ChunksUploader;
 
    class UploadManager : public QObject, public IUploadManager, Common::Uncopyable
    {
@@ -41,12 +42,16 @@ namespace UM
       UploadManager(QSharedPointer<PM::IPeerManager> peerManager);
       ~UploadManager();
 
-      QList<IChunkUploader*> getChunkUploaders() const;
+      QList<IChunksUploader*> getChunksUploaders() const override;
 
-      int getUploadRate();
+      int getUploadRate() override;
 
    private slots:
-      void getChunk(const QSharedPointer<FM::IChunk>& chunk, int offset, const QSharedPointer<PM::ISocket>& socket);
+      void getChunks(
+         const QList<std::pair<QSharedPointer<FM::IChunk>, int>>& chunksAndOffsets,
+         const QSharedPointer<PM::ISocket>& socket
+      );
+
       void uploadTimeout();
 
    private:
@@ -58,7 +63,7 @@ namespace UM
 
       QSharedPointer<PM::IPeerManager> peerManager;
 
-      QList<QSharedPointer<ChunkUploader>> uploads;
+      QList<QSharedPointer<ChunksUploader>> uploads;
 
       Common::ThreadPool threadPool;
    };

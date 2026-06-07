@@ -27,7 +27,7 @@ using namespace DM;
 
 #include <Common/Settings.h>
 #include <Common/ProtoHelper.h>
-#include <Common/Hashes.h>
+#include <Common/Hash.h>
 #include <Common/Constants.h>
 
 #include <Core/FileManager/Exceptions.h>
@@ -49,7 +49,10 @@ FileDownload::FileDownload(
 ) :
    Download(fileManager, peerSource, remoteEntry, localEntry),
    linkedPeers(linkedPeers),
-   NB_CHUNK(this->remoteEntry.size() / Common::Constants::CHUNK_SIZE + (this->remoteEntry.size() % Common::Constants::CHUNK_SIZE == 0 ? 0 : 1)),
+   NB_CHUNK(
+      this->remoteEntry.size() / Common::Constants::CHUNK_SIZE +
+      (this->remoteEntry.size() % Common::Constants::CHUNK_SIZE == 0 ? 0 : 1)
+   ),
    nbChunkAsked(0),
    occupiedPeersAskingForHashes(occupiedPeersAskingForHashes),
    occupiedPeersDownloadingChunk(occupiedPeersDownloadingChunk),
@@ -58,9 +61,11 @@ FileDownload::FileDownload(
    transferRateCalculator(transferRateCalculator)
 {
    L_DEBU(QString("New FileDownload: peer source = %1, remoteEntry: \n%2\nlocalEntry: \n%3").
-      arg(this->peerSource->toStringLog()).
-      arg(Common::ProtoHelper::getDebugStr(this->remoteEntry)).
-      arg(Common::ProtoHelper::getDebugStr(this->localEntry))
+      arg(
+         this->peerSource->toStringLog(),
+         Common::ProtoHelper::getDebugStr(this->remoteEntry),
+         Common::ProtoHelper::getDebugStr(this->localEntry)
+      )
    );
 
    this->setStatus(static_cast<Status>(status));
@@ -69,15 +74,15 @@ FileDownload::FileDownload(
    for (int i = 0; i < this->NB_CHUNK; i++)
    {
       QSharedPointer<ChunkDownloader> chunkDownloader =
-            (i < this->remoteEntry.chunks_size() && this->remoteEntry.chunks(i).hash().size() > 0) ?
-                  (new ChunkDownloader(
-                     this->linkedPeers,
-                     this->occupiedPeersDownloadingChunk,
-                     this->transferRateCalculator,
-                     this->threadPool,
-                     Common::Hash(this->remoteEntry.chunks(i).hash())
-                  ))->grabStrongRef()
-               : QSharedPointer<ChunkDownloader>();
+         (i < this->remoteEntry.chunks_size() && this->remoteEntry.chunks(i).hash().size() > 0) ?
+               (new ChunkDownloader(
+                  this->linkedPeers,
+                  this->occupiedPeersDownloadingChunk,
+                  this->transferRateCalculator,
+                  this->threadPool,
+                  Common::Hash(this->remoteEntry.chunks(i).hash())
+               ))->grabStrongRef()
+            : QSharedPointer<ChunkDownloader>();
 
       this->chunkDownloaders << chunkDownloader;
 
@@ -250,7 +255,9 @@ QSharedPointer<ChunkDownloader> FileDownload::getAChunkToDownload()
             break;
          }
          else if (nbPeer == bestNbPeer)
+         {
             chunksReadyToDownload << chunkDownloader;
+         }
          else if (nbPeer < bestNbPeer)
          {
             chunksReadyToDownload.clear();
@@ -515,7 +522,17 @@ void FileDownload::nextHash(const Protos::Core::HashResult& hashResult)
       return;
    }
 
-   QSharedPointer<ChunkDownloader> chunkDownloader = (new ChunkDownloader(this->linkedPeers, this->occupiedPeersDownloadingChunk, this->transferRateCalculator, this->threadPool, hash))->grabStrongRef();
+   QSharedPointer<ChunkDownloader> chunkDownloader =
+      (
+         new ChunkDownloader(
+            this->linkedPeers,
+            this->occupiedPeersDownloadingChunk,
+            this->transferRateCalculator,
+            this->threadPool,
+            hash
+         )
+      )->grabStrongRef();
+
    this->chunkDownloaders[num] = chunkDownloader;
 
    // If the file has already been created, the chunks are known.
@@ -570,7 +587,7 @@ bool FileDownload::tryToLinkToAnExistingFile()
 
    if (this->nbHashesKnown > 0)
    {
-      Common::Hashes hashes;
+      QList<Common::Hash> hashes;
       for (QListIterator<QSharedPointer<ChunkDownloader>> i(this->chunkDownloaders); i.hasNext();)
       {
          auto chunkDownloader = i.next();

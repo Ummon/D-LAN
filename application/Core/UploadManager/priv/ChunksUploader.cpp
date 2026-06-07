@@ -16,7 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
 
-#include <priv/ChunkUploader.h>
+#include <priv/ChunksUploader.h>
 using namespace UM;
 
 #include <QCoreApplication>
@@ -30,14 +30,17 @@ using namespace UM;
   * This operation is threaded and must be run by a 'Common::ThreadPool'.
   */
 
-quint64 ChunkUploader::currentID(1);
+quint64 ChunksUploader::currentID(1);
 
-ChunkUploader::ChunkUploader(const QSharedPointer<FM::IChunk>& chunk, int offset, const QSharedPointer<PM::ISocket>& socket, Common::TransferRateCalculator& transferRateCalculator) :
+ChunksUploader::ChunksUploader(
+   QList<std::pair<QSharedPointer<FM::IChunk>, int>> chunksAndOffsets,
+   const QSharedPointer<PM::ISocket>& socket,
+   Common::TransferRateCalculator& transferRateCalculator
+) :
    Common::Timeoutable(SETTINGS.get<quint32>("upload_lifetime")),
    mainThread(QThread::currentThread()),
    ID(currentID++),
-   chunk(chunk),
-   offset(offset),
+   chunks(chunksAndOffsets),
    socket(socket),
    transferRateCalculator(transferRateCalculator),
    closeTheSocket(false),
@@ -45,39 +48,55 @@ ChunkUploader::ChunkUploader(const QSharedPointer<FM::IChunk>& chunk, int offset
 {
 }
 
-ChunkUploader::~ChunkUploader()
+ChunksUploader::~ChunksUploader()
 {
    this->stop();
    L_DEBU(QString("Upload#%1 deleted").arg(this->ID));
 }
 
-quint64 ChunkUploader::getID() const
+quint64 ChunksUploader::getID() const
 {
    return this->ID;
 }
 
-Common::Hash ChunkUploader::getPeerID() const
+Common::Hash ChunksUploader::getPeerID() const
 {
    return this->socket->getRemotePeerID();
 }
 
-int ChunkUploader::getProgress() const
+int ChunksUploader::getProgress() const
 {
    QMutexLocker locker(&this->mutex);
 
-   const int chunkSize = this->chunk->getChunkSize();
-   if (chunkSize != 0)
-      return 10000LL * this->offset / chunkSize;
-   else
-      return 0;
+   Q_ASSERT(!this->chunks.isEmpty());
+
+   int totalOffset = 0;
+   for (const auto& chunk : this->chunks)
+   {
+      const int chunkSize = chunk.first->getChunkSize();
+      if (chunkSize > 0)
+         totalOffset += 10000LL * chunk.second / chunkSize;
+   }
+
+   return totalOffset / this->chunks.size();
+
+   // const int chunkSize = this->chunk->getChunkSize();
+   // if (chunkSize != 0)
+   //    return 10000LL * this->offset / chunkSize;
+   // else
+   //    return 0;
 }
 
-QSharedPointer<FM::IChunk> ChunkUploader::getChunk() const
+QList<QSharedPointer<FM::IChunk>> ChunksUploader::getChunks() const
 {
-   return this->chunk;
+   // TODO: Offsets needed?
+   QList<QSharedPointer<FM::IChunk>> result;
+   for (auto chunk : this->chunks)
+      result << chunk.first;
+   return result;
 }
 
-void ChunkUploader::init(QThread* thread)
+void ChunksUploader::init(QThread* thread)
 {
   this->socket->moveToThread(thread);
 }
@@ -85,52 +104,65 @@ void ChunkUploader::init(QThread* thread)
 /**
   * Called by the thread pool ('Common::ThreadPool') in another thread.
   */
-void ChunkUploader::run()
+void ChunksUploader::run()
 {
-   L_DEBU(QString("Starting uploading a chunk from offset %1: %2").arg(this->offset).arg(this->chunk->toStringLog()));
-
    static const quint32 BUFFER_SIZE = SETTINGS.get<quint32>("buffer_size_reading");
    static const quint32 SOCKET_BUFFER_SIZE = SETTINGS.get<quint32>("socket_buffer_size");
    static const quint32 SOCKET_TIMEOUT = SETTINGS.get<quint32>("socket_timeout");
 
    try
    {
-      QSharedPointer<FM::IDataReader> reader = this->chunk->getDataReader();
-
-      QByteArray buffer(BUFFER_SIZE, Qt::Uninitialized);
-      int bytesRead = 0;
-
-      while (bytesRead = reader->read(buffer.data(), this->offset))
+      for (auto& chunk : this->chunks)
       {
-         const int bytesSent = this->socket->write(buffer.constData(), bytesRead);
+         L_DEBU(
+            QString("Starting uploading a chunk from offset %1: %2")
+               .arg(chunk.second)
+               .arg(chunk.first->toStringLog()
+            )
+         );
 
-         if (bytesSent == -1)
-         {
-            L_WARN(QString("Socket: cannot send data: %1").arg(this->chunk->toStringLog()));
-            this->closeTheSocket = true;
-            goto end;
-         }
+         QSharedPointer<FM::IDataReader> reader = chunk.first->getDataReader();
 
-         this->mutex.lock();
-         if (this->toStop)
-         {
-            this->mutex.unlock();
-            goto end;
-         }
-         this->offset += bytesSent;
-         this->mutex.unlock();
+         QByteArray buffer(BUFFER_SIZE, Qt::Uninitialized);
+         int bytesRead = 0;
 
-         while (socket->bytesToWrite() > SOCKET_BUFFER_SIZE)
+         while (bytesRead = reader->read(buffer.data(), chunk.second))
          {
-            if (!socket->waitForBytesWritten(SOCKET_TIMEOUT))
+            const int bytesSent = this->socket->write(buffer.constData(), bytesRead);
+
+            if (bytesSent == -1)
             {
-               L_WARN(QString("Socket: cannot write data, error: \"%1\", chunk: %2").arg(socket->errorString()).arg(this->chunk->toStringLog()));
+               L_WARN(QString("Socket: cannot send data: %1").arg(chunk.first->toStringLog()));
                this->closeTheSocket = true;
                goto end;
             }
-         }
 
-         this->transferRateCalculator.addData(bytesSent);
+            this->mutex.lock();
+            if (this->toStop)
+            {
+               this->mutex.unlock();
+               goto end;
+            }
+
+            chunk.second += bytesSent;
+            this->mutex.unlock();
+
+            while (socket->bytesToWrite() > SOCKET_BUFFER_SIZE)
+            {
+               if (!socket->waitForBytesWritten(SOCKET_TIMEOUT))
+               {
+                  L_WARN(
+                     QString("Socket: cannot write data, error: \"%1\", chunk: %2")
+                        .arg(socket->errorString(), chunk.first->toStringLog()
+                     )
+                  );
+                  this->closeTheSocket = true;
+                  goto end;
+               }
+            }
+
+            this->transferRateCalculator.addData(bytesSent);
+         }
       }
    }
    catch (FM::UnableToOpenFileInReadModeException&)
@@ -158,7 +190,7 @@ end:
    this->socket->moveToThread(this->mainThread);
 }
 
-void ChunkUploader::finished()
+void ChunksUploader::finished()
 {
    this->socket->finished(this->closeTheSocket);
    this->startTimer();
@@ -169,7 +201,7 @@ void ChunkUploader::finished()
   * Do nothing if there is no current upload.
   * See 'Upload::upload()'.
   */
-void ChunkUploader::stop()
+void ChunksUploader::stop()
 {
    this->mutex.lock();
    this->toStop = true;

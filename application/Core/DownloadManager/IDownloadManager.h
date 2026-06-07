@@ -40,21 +40,33 @@ namespace DM
       virtual ~IDownloadManager() {}
 
       /**
-        * The entry will be put in the root of the first shared directory with enough space. This shared directory is defined when the download starts.
+        * The entry will be put in the root of the first shared directory with enough space.
+        * This shared directory is defined when the download starts.
         * @remarks 'remoteEntry.path' is not taken into account when creating the local file.
         */
       virtual void addDownload(const Protos::Common::Entry& remoteEntry, PM::IPeer* peerSource) = 0;
 
       /**
-        * The entry will be put in the given path relatively to the given directory. The path directories are created if they don't exist.
+        * The entry will be put in the given path relatively to the given directory.
+        * The path directories are created if they don't exist.
         */
-      virtual void addDownload(const Protos::Common::Entry& remoteEntry, PM::IPeer* peerSource, const Common::Hash& destinationDirectoryID, const QString& relativePath) = 0;
+      virtual void addDownload(
+         const Protos::Common::Entry& remoteEntry,
+         PM::IPeer* peerSource,
+         const Common::Hash& destinationDirectoryID,
+         const QString& relativePath
+      ) = 0;
 
       /**
         * The entry is put in the given absolute path.
-        * @param absolutePath Path to a local directory where to put the entry (file or directory). It can be a shared or not shared.
+        * @param absolutePath Path to a local directory where to put the entry (file or directory).
+        *        It can be a shared or not shared.
         */
-      virtual void addDownload(const Protos::Common::Entry& remoteEntry, PM::IPeer* peerSource, const QString& absolutePath) = 0;
+      virtual void addDownload(
+         const Protos::Common::Entry& remoteEntry,
+         PM::IPeer* peerSource,
+         const QString& absolutePath
+      ) = 0;
 
       /**
         * @remarks The returned download pointers must not be retained.
@@ -64,7 +76,11 @@ namespace DM
       /**
         * Move all downloads 'downloadIDs' before or after 'downloadIDRefs' depending of 'position'.
         */
-      virtual void moveDownloads(const QList<quint64>& downloadIDRefs, const QList<quint64>& downloadIDs, Protos::GUI::MoveDownloads::Position position) = 0;
+      virtual void moveDownloads(
+         const QList<quint64>& downloadIDRefs,
+         const QList<quint64>& downloadIDs,
+         Protos::GUI::MoveDownloads::Position position
+      ) = 0;
 
       /**
         * Remove all completed download from the queue, will not delete any physical file.

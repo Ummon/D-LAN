@@ -133,7 +133,7 @@ void PeerManager::updatePeer(
    if (ID.isNull() || ID == this->self->getID())
       return;
 
-   L_DEBU(QString("%1 (%2) is alive!").arg(ID.toStr()).arg(nick));
+   L_DEBU(QString("%1 (%2) is alive!").arg(ID.toStr(), nick));
 
    Peer* peer = static_cast<Peer*>(this->getPeer(ID));
    if (!peer)
@@ -194,19 +194,22 @@ void PeerManager::newConnection(QTcpSocket* tcpSocket)
    }
 }
 
-void PeerManager::onGetChunk(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<PeerMessageSocket> socket)
+void PeerManager::onGetChunks(
+   QList<std::pair<QSharedPointer<FM::IChunk>, int>> chunksAndOffsets,
+   QSharedPointer<PeerMessageSocket> socket
+)
 {
-   if (this->receivers(SIGNAL(getChunk(QSharedPointer<FM::IChunk>, int, QSharedPointer<PM::ISocket>))) < 1)
+   if (this->receivers(SIGNAL(getChunks(QList<std::pair<QSharedPointer<FM::IChunk>, int>>, QSharedPointer<PM::ISocket>))) < 1)
    {
-      Protos::Core::GetChunkResult mess;
-      mess.set_status(Protos::Core::GetChunkResult::ERROR_UNKNOWN);
-      socket->send(Common::MessageHeader::CORE_GET_CHUNK_RESULT, mess);
+      Protos::Core::GetChunksResult mess;
+      mess.set_status(Protos::Core::GetChunksResult::ERROR_UNKNOWN);
+      socket->send(Common::MessageHeader::CORE_GET_CHUNKS_RESULT, mess);
       socket->finished();
-      L_ERRO("PeerManager::onGetChunk(..): no slot connected to the signal 'getChunk(..)'");
+      L_ERRO("PeerManager::onGetChunks(..): no slot connected to the signal 'getChunks(..)'");
       return;
    }
 
-   emit getChunk(chunk, offset, socket);
+   emit getChunks(chunksAndOffsets, socket);
 }
 
 void PeerManager::dataReceived(QTcpSocket* tcpSocket)

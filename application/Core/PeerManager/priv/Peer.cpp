@@ -60,7 +60,16 @@ Peer::Peer(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManage
   */
 QString Peer::toStringLog() const
 {
-   return QString("%1 %2 %3:%4 %5 %6/s").arg(this->nick).arg(this->ID.toStr()).arg(this->IP.toString()).arg(this->port).arg(this->alive ? "<alive>" : "<dead>").arg(Common::Global::formatByteSize(const_cast<Peer*>(this)->getSpeed(), 4));
+   return
+      QString("%1 %2 %3:%4 %5 %6/s")
+         .arg(
+            this->nick,
+            this->ID.toStr(),
+            this->IP.toString()
+         )
+         .arg(this->port)
+         .arg(this->alive ? "<alive>" : "<dead>")
+         .arg(Common::Global::formatByteSize(const_cast<Peer*>(this)->getSpeed(), 4));
 }
 
 Common::Hash Peer::getID() const
@@ -108,7 +117,8 @@ quint32 Peer::getSpeed()
    QMutexLocker locker(&this->mutex);
 
    // In [ms].
-   static const quint32 SPEED_VALIDITY_PERIOD = 1000 * SETTINGS.get<quint32>("download_rate_valid_time_factor") / (SETTINGS.get<quint32>("lan_speed") / 1024 / 1024);
+   static const quint32 SPEED_VALIDITY_PERIOD =
+      1000 * SETTINGS.get<quint32>("download_rate_valid_time_factor") / (SETTINGS.get<quint32>("lan_speed") / 1024 / 1024);
 
    if (this->speedTimer.isValid() && this->speedTimer.elapsed() > SPEED_VALIDITY_PERIOD)
       this->speed = MAX_SPEED;
@@ -209,14 +219,14 @@ QSharedPointer<IGetHashesResult> Peer::getHashes(const Protos::Common::Entry& fi
    );
 }
 
-QSharedPointer<IGetChunksResult> Peer::getChunk(const Protos::Core::GetChunk& chunk)
+QSharedPointer<IGetChunksResult> Peer::getChunks(const Protos::Core::GetChunks& chunks)
 {
    if (!this->isAvailable())
-      return QSharedPointer<IGetChunkResult>();
+      return QSharedPointer<IGetChunksResult>();
 
-   return QSharedPointer<IGetChunkResult>(
-      new GetChunksResult(chunk, this->connectionPool.getASocket()),
-      &IGetChunkResult::doDeleteLater
+   return QSharedPointer<IGetChunksResult>(
+      new GetChunksResult(chunks, this->connectionPool.getASocket()),
+      &IGetChunksResult::doDeleteLater
    );
 }
 

@@ -29,10 +29,10 @@ namespace UM
    class IPeer;
    class IChunk;
 
-   class IChunkUploader
+   class IChunksUploader
    {
    public:
-      virtual ~IChunkUploader() {}
+      virtual ~IChunksUploader() {}
 
       /**
         * Returns the upload ID, it can be use later to retrieve an upload.
@@ -52,6 +52,6 @@ namespace UM
       /**
         * Returns the chunk being uploaded.
         */
-      virtual QSharedPointer<FM::IChunk> getChunk() const = 0;
+      virtual QList<QSharedPointer<FM::IChunk>> getChunks() const = 0;
    };
 }

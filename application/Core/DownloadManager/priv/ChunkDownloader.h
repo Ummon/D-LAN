@@ -47,13 +47,24 @@ namespace PM { class IPeer; }
 
 namespace DM
 {
-   class ChunkDownloader : public QObject, public Common::SelfWeakPointer<ChunkDownloader>, public Common::IRunnable, public IChunkDownloader, Common::Uncopyable
+   class ChunkDownloader :
+      public QObject,
+      public Common::SelfWeakPointer<ChunkDownloader>,
+      public Common::IRunnable,
+      public IChunkDownloader,
+      Common::Uncopyable
    {
       static const int MINIMUM_DELTA_TIME_TO_COMPUTE_SPEED;
 
       Q_OBJECT
    public:
-      ChunkDownloader(LinkedPeers& linkedPeers, OccupiedPeers& occupiedPeersDownloadingChunk, Common::TransferRateCalculator& transferRateCalculator, Common::ThreadPool& threadPool, Common::Hash chunkHash);
+      ChunkDownloader(
+         LinkedPeers& linkedPeers,
+         OccupiedPeers& occupiedPeersDownloadingChunk,
+         Common::TransferRateCalculator& transferRateCalculator,
+         Common::ThreadPool& threadPool,
+         Common::Hash chunkHash
+      );
       ~ChunkDownloader();
 
       void stop();

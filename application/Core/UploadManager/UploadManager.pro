@@ -19,13 +19,13 @@ INCLUDEPATH += . \
 
 DEFINES += UPLOADMANAGER_LIBRARY
 SOURCES += priv/UploadManager.cpp \
+    priv/ChunksUploader.cpp \
     priv/Log.cpp \
-    priv/ChunkUploader.cpp \
     priv/Builder.cpp
 HEADERS += IUploadManager.h \
+    IChunksUploader.h \
+    priv/ChunksUploader.h \
     priv/UploadManager.h \
     Builder.h \
     priv/Constants.h \
-    priv/Log.h \
-    priv/ChunkUploader.h \
-    IChunkUploader.h
+    priv/Log.h

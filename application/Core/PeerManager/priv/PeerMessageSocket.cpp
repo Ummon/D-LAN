@@ -320,42 +320,86 @@ void PeerMessageSocket::onNewMessage(const Common::Message& message)
       }
       break;
 
-   // TODO: Send many chunks instead of just one.
    case Common::MessageHeader::CORE_GET_CHUNKS:
       {
-         const Protos::Core::GetChunks& getChunksMessage = message.getMessage<Protos::Core::GetChunk>();
+         const Protos::Core::GetChunks& getChunksMessage = message.getMessage<Protos::Core::GetChunks>();
 
-         const Common::Hash hash(getChunksMessage.chunks().hash());
-         if (hash.isNull())
-         {
-            L_WARN("GET_CHUNK: Chunk null");
-            this->finished(true);
-            break;
-         }
+         QList<std::pair<QSharedPointer<FM::IChunk>, int>> chunksAndOffsets;
+         Protos::Core::GetChunksResult chunksResult;
 
          // TODO: implements 'GetChunkResult.ALREADY_DOWNLOADING', 'GetChunkResult.TOO_MANY_CONNECTIONS' and 'GetChunkResult.DONT_HAVE_DATA_FROM_OFFSET'
-         QSharedPointer<FM::IChunk> chunk = this->fileManager->getChunk(hash);
-         if (chunk.isNull())
-         {
-            // TODO
-            // Protos::Core::GetChunksResult result;
-            // result.set_status(Protos::Core::GetChunksResult::ChunkResult::DONT_HAVE);
-            // this->send(Common::MessageHeader::CORE_GET_CHUNK_RESULT, result);
-            // this->finished();
 
-            L_WARN(QString("GET_CHUNK: Chunk unknown: %1").arg(hash.toStr()));
+         for (int i = 0; i < getChunksMessage.chunks_size(); i++)
+         {
+            const auto& chunkNeeded = getChunksMessage.chunks(i);
+            const Common::Hash hash(chunkNeeded.hash().hash());
+            Protos::Core::GetChunksResult::ChunkResult* result = chunksResult.add_results();
+            if (hash.isNull())
+            {
+               result->set_status(Protos::Core::GetChunksResult::ChunkResult::ERROR_HASH_NULL);
+            }
+            else
+            {
+               QSharedPointer<FM::IChunk> chunk = this->fileManager->getChunk(hash);
+               if (chunk.isNull())
+               {
+                  result->set_status(Protos::Core::GetChunksResult::ChunkResult::DONT_HAVE);
+               }
+               else
+               {
+                  chunksAndOffsets += std::make_pair(chunk, chunkNeeded.offset());
+               }
+            }
+         }
+
+         if (!chunksAndOffsets.empty())
+            chunksResult.set_status(Protos::Core::GetChunksResult::OK);
+         else
+            chunksResult.set_status(Protos::Core::GetChunksResult::ERROR_UNKNOWN);
+
+         this->send(Common::MessageHeader::CORE_GET_CHUNKS_RESULT, chunksResult);
+
+         if (!chunksAndOffsets.empty())
+         {
+            this->stopListening();
+            emit getChunks(chunksAndOffsets, this);
          }
          else
          {
-            Protos::Core::GetChunksResult result;
-            result.set_status(Protos::Core::GetChunksResult::OK);
-            result.set_chunk_size(chunk->getKnownBytes());
-            this->send(Common::MessageHeader::CORE_GET_CHUNK_RESULT, result);
-
-            this->stopListening();
-
-            emit getChunk(chunk, getChunkMessage.offset(), this);
+            this->finished();
          }
+
+         // const Common::Hash hash(getChunksMessage.chunks().hash());
+         // if (hash.isNull())
+         // {
+         //    L_WARN("GET_CHUNK: Chunk null");
+         //    this->finished(true);
+         //    break;
+         // }
+
+         // // TODO: implements 'GetChunkResult.ALREADY_DOWNLOADING', 'GetChunkResult.TOO_MANY_CONNECTIONS' and 'GetChunkResult.DONT_HAVE_DATA_FROM_OFFSET'
+         // QSharedPointer<FM::IChunk> chunk = this->fileManager->getChunk(hash);
+         // if (chunk.isNull())
+         // {
+         //    // TODO
+         //    // Protos::Core::GetChunksResult result;
+         //    // result.set_status(Protos::Core::GetChunksResult::ChunkResult::DONT_HAVE);
+         //    // this->send(Common::MessageHeader::CORE_GET_CHUNK_RESULT, result);
+         //    // this->finished();
+
+         //    L_WARN(QString("GET_CHUNK: Chunk unknown: %1").arg(hash.toStr()));
+         // }
+         // else
+         // {
+         //    Protos::Core::GetChunksResult result;
+         //    result.set_status(Protos::Core::GetChunksResult::OK);
+         //    result.set_chunk_size(chunk->getKnownBytes());
+         //    this->send(Common::MessageHeader::CORE_GET_CHUNK_RESULT, result);
+
+         //    this->stopListening();
+
+         //    emit getChunk(chunk, getChunkMessage.offset(), this);
+         // }
       }
       break;
 

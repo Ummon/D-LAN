@@ -11,7 +11,6 @@ include(../../Libs/blake3.pri)
 include(../../Libs/protobuf.pri)
 
 CONFIG += staticlib link_prl create_prl
-
 INCLUDEPATH += . ../..
 
 DEFINES += FILEMANAGER_LIBRARY

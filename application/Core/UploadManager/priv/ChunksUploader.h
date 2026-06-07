@@ -29,26 +29,32 @@
 #include <Core/FileManager/IDataReader.h>
 #include <Core/PeerManager/ISocket.h>
 
-#include <IChunkUploader.h>
+#include <IChunksUploader.h>
 
 namespace UM
 {
-   class ChunkUploader : public Common::IRunnable, public IChunkUploader, public Common::Timeoutable
+   class ChunksUploader : public Common::IRunnable, public IChunksUploader, public Common::Timeoutable
    {
       static quint64 currentID; ///< Used to generate the new upload ID.
 
    public:
-      ChunkUploader(const QSharedPointer<FM::IChunk>& chunk, int offset, const QSharedPointer<PM::ISocket>& socket, Common::TransferRateCalculator& transferRateCalculator);
-      ~ChunkUploader();
+      ChunksUploader(
+         QList<std::pair<QSharedPointer<FM::IChunk>, int>> chunksAndOffsets,
+         const QSharedPointer<PM::ISocket>& socket,
+         Common::TransferRateCalculator& transferRateCalculator
+      );
 
-      quint64 getID() const;
-      Common::Hash getPeerID() const;
-      int getProgress() const;
-      QSharedPointer<FM::IChunk> getChunk() const;
+      ~ChunksUploader();
 
-      void init(QThread* thread);
-      void run();
-      void finished();
+      quint64 getID() const override;
+      Common::Hash getPeerID() const override;
+      int getProgress() const override;
+      QList<QSharedPointer<FM::IChunk>> getChunks() const override;
+
+      void init(QThread* thread) override;
+      void run() override;
+      void finished() override;
+
       void stop();
 
    private:
@@ -57,8 +63,8 @@ namespace UM
       QThread* mainThread;
 
       const quint64 ID; ///< Each uploader has an ID to identified it.
-      QSharedPointer<FM::IChunk> chunk; ///< The chunk uploaded.
-      int offset; ///< The current offset into the chunk.
+      QList<std::pair<QSharedPointer<FM::IChunk>, int>> chunks; ///< The chunks uploaded.
+      // int offset; ///< The current offset into the chunk.
       QSharedPointer<PM::ISocket> socket;
 
       Common::TransferRateCalculator& transferRateCalculator;
