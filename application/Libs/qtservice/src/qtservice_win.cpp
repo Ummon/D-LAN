@@ -907,7 +907,7 @@ QString QtServiceBasePrivate::filePath() const
 {
     wchar_t path[_MAX_PATH];
     ::GetModuleFileNameW( 0, path, sizeof(path) );
-    return QString::fromUtf16((unsigned short*)path);
+    return QString::fromWCharArray(path);
 }
 
 bool QtServiceBasePrivate::sysInit()

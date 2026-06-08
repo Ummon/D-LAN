@@ -19,6 +19,8 @@
 #include <priv/StdLogger.h>
 using namespace LM;
 
+#include <iostream>
+
 #if defined(Q_OS_WIN32)
    #include <fcntl.h>
 #elif defined (Q_OS_LINUX)
@@ -65,7 +67,10 @@ StdLogger::StdLogger(int channel, const QString& name) :
    dup2(this->input[1], this->channel);
    close(this->input[1]);
 
-   this->stdoutIn.open(this->input[0], QIODevice::ReadOnly);
+   if (!this->stdoutIn.open(this->input[0], QIODevice::ReadOnly))
+   {
+      std::cerr << "Error: can't open stdout" << std::endl;
+   }
 
    this->start();
 }

@@ -106,7 +106,9 @@ try
    {
       QFile file(TEMP_FILEPATH);
       if (!file.open(QIODevice::WriteOnly))
-         throw PersistentDataIOException(QString("Unable to open the file in write mode: %1, error: %2").arg(TEMP_FILEPATH).arg(file.errorString()));
+         throw PersistentDataIOException(
+            QString("Unable to open the file in write mode: %1, error: %2").arg(TEMP_FILEPATH, file.errorString())
+         );
 
 #if !DEBUG
       if (humanReadable)
@@ -159,7 +161,9 @@ try
       google::protobuf::util::JsonParseOptions jsonOptions;
       jsonOptions.ignore_unknown_fields = true;
 
-      google::protobuf::util::JsonStringToMessage(json, &data, jsonOptions);
+      auto status = google::protobuf::util::JsonStringToMessage(json, &data, jsonOptions);
+      if (!status.ok())
+         throw PersistentDataIOException(QString::fromStdString(std::string(status.message())));
 
 #if !DEBUG
    }
