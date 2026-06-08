@@ -116,9 +116,13 @@ quint32 Peer::getSpeed()
 {
    QMutexLocker locker(&this->mutex);
 
+   static const quint32 lanSpeed = SETTINGS.get<quint32>("lan_speed");
+
    // In [ms].
    static const quint32 SPEED_VALIDITY_PERIOD =
-      1000 * SETTINGS.get<quint32>("download_rate_valid_time_factor") / (SETTINGS.get<quint32>("lan_speed") / 1024 / 1024);
+      lanSpeed > 0 ?
+           1000 * SETTINGS.get<quint32>("download_rate_valid_time_factor") / (lanSpeed / 1024 / 1024)
+         : 0;
 
    if (this->speedTimer.isValid() && this->speedTimer.elapsed() > SPEED_VALIDITY_PERIOD)
       this->speed = MAX_SPEED;

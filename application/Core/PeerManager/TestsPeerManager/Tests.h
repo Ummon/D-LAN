@@ -38,6 +38,7 @@ using namespace PM;
 #include <TestServer.h>
 #include <PeerUpdater.h>
 #include <ResultListener.h>
+#include <MockHashCache.h>
 
 class Tests : public QObject
 {
@@ -61,6 +62,7 @@ private:
    bool createInitialFiles();
    bool deleteAllFiles();
 
+   QList<QSharedPointer<HC::IHashCache>> hashCaches;
    QList<QSharedPointer<FM::IFileManager>> fileManagers;
    QList<QSharedPointer<IPeerManager>> peerManagers;
    QList<TestServer*> servers;

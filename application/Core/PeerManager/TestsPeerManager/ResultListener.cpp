@@ -46,7 +46,7 @@ int ResultListener::getNbEntriesResultReceived(int n) const
    if (n >= this->entriesResultList.size())
       return 0;
 
-   return this->entriesResultList.last().result(n).entries().entry_size();
+   return this->entriesResultList.last().results(n).entries().entries_size();
 }
 
 const Protos::Core::GetHashesResult& ResultListener::getLastGetHashesResult()
@@ -89,9 +89,9 @@ void ResultListener::nextHashResult(const Protos::Core::HashResult& hashResult)
    this->currentHash++;
 }
 
-void ResultListener::chunkResult(const Protos::Core::GetChunkResult& result)
+void ResultListener::chunksResult(const Protos::Core::GetChunksResult& result)
 {
-   qDebug() << "ResultListener::chunkResult : " << Common::ProtoHelper::getDebugStr(result);
+   qDebug() << "ResultListener::chunksResult : " << Common::ProtoHelper::getDebugStr(result);
 }
 
 static const QByteArray CHUNK_DATA("ALL YOUR BYTE ARE BELONG TO US");
@@ -105,7 +105,7 @@ void ResultListener::stream(QSharedPointer<PM::ISocket> socket)
    this->streamReceived = true;
 }
 
-void ResultListener::getChunk(QSharedPointer<FM::IChunk> chunk, int offset, QSharedPointer<ISocket> socket)
+void ResultListener::getChunks(QList<std::pair<QSharedPointer<FM::IChunk>, int>> chunksAndOffsets, const QSharedPointer<PM::ISocket>& socket)
 {
    socket->write(CHUNK_DATA);
    socket->finished();

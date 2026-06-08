@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
    {
       Tests tests;
       WordIndexTests wordIndexTests;
-      ret = QTest::qExec(&tests, argc, argv); // + QTest::qExec(&wordIndexTests, argc, argv);
+      ret = QTest::qExec(&tests, argc, argv) + QTest::qExec(&wordIndexTests, argc, argv);
    }
 
    SETTINGS.free();

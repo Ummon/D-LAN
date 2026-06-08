@@ -51,6 +51,7 @@ Tests::Tests()
 void Tests::initTestCase()
 {
    LM::Builder::initMsgHandler();
+
    qDebug() << "===== initTestCase() =====";
    try
    {
@@ -63,17 +64,18 @@ void Tests::initTestCase()
       QFAIL(e.errorMessage.toLatin1().constData());
    }
 
-   Common::PersistentData::rmValue(Common::Constants::FILE_CACHE, Common::Global::DataFolderType::LOCAL); // Reset the stored cache.
+   // Common::PersistentData::rmValue(Common::Constants::FILE_CACHE, Common::Global::DataFolderType::LOCAL); // Reset the stored cache.
 
    SETTINGS.setFilename("core_settings_peer_manager_tests.txt");
    SETTINGS.setSettingsMessage(new Protos::Core::Settings());
 
    QVERIFY(this->createInitialFiles());
 
-   this->fileManagers << FM::Builder::newFileManager() << FM::Builder::newFileManager();
+   this->hashCaches << QSharedPointer<HC::IHashCache>(new MockHashCache()) << QSharedPointer<HC::IHashCache>(new MockHashCache());
+   this->fileManagers << FM::Builder::newFileManager(this->hashCaches[0]) << FM::Builder::newFileManager(this->hashCaches[1]);
 
-   this->peerIDs << Common::Hash::fromStr("1111111111111111111111111111111111111111") <<
-                    Common::Hash::fromStr("2222222222222222222222222222222222222222");
+   this->peerIDs << Common::Hash::fromStr("11111111111111111111111111111111111111111111111111111111") <<
+                    Common::Hash::fromStr("22222222222222222222222222222222222222222222222222222222");
 
    this->peerSharedDirs << "/sharedDirs/peer1" << "/sharedDirs/peer2";
 
@@ -89,7 +91,7 @@ void Tests::initTestCase()
    // 2) Set the shared directories.
    for (int i = 0; i < this->peerIDs.size(); i++)
    {
-      this->fileManagers[i]->setSharedDirs(QStringList() << QDir::currentPath().append(this->peerSharedDirs[i]));
+      this->fileManagers[i]->setSharedPaths(QStringList() << QDir::currentPath().append(this->peerSharedDirs[i]));
    }
 
    // 3) Create the peer update (to simulate the periodic update).
@@ -213,7 +215,7 @@ void Tests::askForSomeEntries()
    QVERIFY(!this->resultListener.getEntriesResultList().isEmpty());
 
    Protos::Core::GetEntries getEntriesMessage1;
-   getEntriesMessage1.mutable_dirs()->add_entry()->CopyFrom(this->resultListener.getEntriesResultList().last().result(0).entries().entry(0));
+   getEntriesMessage1.mutable_dirs()->add_entries()->CopyFrom(this->resultListener.getEntriesResultList().constLast().results(0).entries().entries(0));
    QSharedPointer<IGetEntriesResult> result1 = this->peerManagers[0]->getPeers()[0]->getEntries(getEntriesMessage1);
    QVERIFY(!result1.isNull());
    connect(result1.data(), &IGetEntriesResult::result, &this->resultListener, &ResultListener::entriesResult);
@@ -228,9 +230,9 @@ void Tests::askForSomeEntries()
    }
 
    Protos::Core::GetEntries getEntriesMessage2;
-   Protos::Common::Entry* entry = getEntriesMessage2.mutable_dirs()->add_entry();
-   entry->CopyFrom(this->resultListener.getEntriesResultList().last().result(0).entries().entry(0));
-   entry->mutable_shared_dir()->CopyFrom(getEntriesMessage1.dirs().entry(0).shared_dir());
+   Protos::Common::Entry* entry = getEntriesMessage2.mutable_dirs()->add_entries();
+   entry->CopyFrom(this->resultListener.getEntriesResultList().constLast().results(0).entries().entries(0));
+   entry->mutable_shared_entry()->CopyFrom(getEntriesMessage1.dirs().entries(0).shared_entry());
    QSharedPointer<IGetEntriesResult> result2 = this->peerManagers[0]->getPeers()[0]->getEntries(getEntriesMessage2);
    QVERIFY(!result2.isNull());
    connect(result2.data(), &IGetEntriesResult::result, &this->resultListener, &ResultListener::entriesResult);
@@ -254,8 +256,12 @@ void Tests::askForHashes()
 
    // 1) Create a big file.
    {
-      QFile file("sharedDirs/peer2/big.bin");
-      file.open(QIODevice::WriteOnly);
+      QString filename("sharedDirs/peer2/big.bin");
+      QFile file(filename);
+      if (!file.open(QIODevice::WriteOnly))
+      {
+         QFAIL(QString("Can't open file: %1").arg(filename).toUtf8().constData());
+      }
 
       // To have four different hashes.
       for (quint32 i = 0; i < NUMBER_OF_CHUNK; i++)
@@ -283,9 +289,9 @@ void Tests::askForHashes()
    fileEntry.set_name("big.bin");
    fileEntry.set_size(0); // No obligation to set the correct size.
    for (quint32 i = 0; i < NUMBER_OF_CHUNK; i++)
-      fileEntry.add_chunk();
+      fileEntry.add_chunks();
    // Sets the root directory.
-   fileEntry.mutable_shared_dir()->CopyFrom(this->resultListener.getEntriesResultList().first().result(0).entries().entry(0).shared_dir());
+   fileEntry.mutable_shared_entry()->CopyFrom(this->resultListener.getEntriesResultList().constFirst().results(0).entries().entries(0).shared_entry());
 
    QSharedPointer<IGetHashesResult> result = this->peerManagers[0]->getPeers()[0]->getHashes(fileEntry);
    QVERIFY(!result.isNull());
@@ -315,15 +321,15 @@ void Tests::askForAChunk()
 {
    qDebug() << "===== askForAChunk() =====";
 
-   connect(this->peerManagers[1].data(), &IPeerManager::getChunk, &this->resultListener, &ResultListener::getChunk);
+   connect(this->peerManagers[1].data(), &IPeerManager::getChunks, &this->resultListener, &ResultListener::getChunks);
 
-   Protos::Core::GetChunk getChunkMessage;
-   getChunkMessage.mutable_chunk()->set_hash(this->resultListener.getLastReceivedHash().getData(), Common::Hash::HASH_SIZE);
-   getChunkMessage.set_offset(0);
-   QSharedPointer<IGetChunkResult> result = this->peerManagers[0]->getPeers()[0]->getChunk(getChunkMessage);
+   Protos::Core::GetChunks getChunksMessage;
+   getChunksMessage.add_chunks()->mutable_hash()->set_hash(this->resultListener.getLastReceivedHash().getData(), Common::Hash::HASH_SIZE);
+   getChunksMessage.mutable_chunks(0)->set_offset(0);
+   QSharedPointer<IGetChunksResult> result = this->peerManagers[0]->getPeers()[0]->getChunks(getChunksMessage);
    QVERIFY(!result.isNull());
-   connect(result.data(), &IGetChunkResult::result, &this->resultListener, &ResultListener::chunkResult);
-   connect(result.data(), &IGetChunkResult::stream, &this->resultListener, &ResultListener::stream);
+   connect(result.data(), &IGetChunksResult::result, &this->resultListener, &ResultListener::chunksResult);
+   connect(result.data(), &IGetChunksResult::stream, &this->resultListener, &ResultListener::stream);
    result->start();
 
    QElapsedTimer timer;
@@ -335,6 +341,12 @@ void Tests::askForAChunk()
          QFAIL("We don't receive the stream");
    }
 }
+
+// TODO
+// void Tests::askForMultipleChunks()
+// {
+
+// }
 
 void Tests::cleanupTestCase()
 {
