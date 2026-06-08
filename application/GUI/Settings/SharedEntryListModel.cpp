@@ -157,14 +157,14 @@ Common::SharedEntry SharedEntryListModel::getSharedFile(const Common::Hash& ID) 
 QList<Common::SharedEntry> SharedEntryListModel::getSharedDirectories() const
 {
    QList sharedDirectories = this->sharedEntries;
-   std::remove_if(sharedDirectories.begin(), sharedDirectories.end(), [](const auto& entry){ return entry.path.isFile(); });
+   sharedDirectories.removeIf([](const auto& entry){ return entry.path.isFile(); });
    return sharedDirectories;
 }
 
 QList<Common::SharedEntry> SharedEntryListModel::getSharedFiles() const
 {
    QList sharedFiles = this->sharedEntries;
-   std::remove_if(sharedFiles.begin(), sharedFiles.end(), [](const auto& entry){ return !entry.path.isFile(); });
+   sharedFiles.removeIf([](const auto& entry){ return !entry.path.isFile(); });
    return sharedFiles;
 }
 
