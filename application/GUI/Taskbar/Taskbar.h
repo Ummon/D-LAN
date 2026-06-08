@@ -57,7 +57,7 @@ namespace GUI
         * Only for Windows.
         * Must be called when a 'winEvent' event occurs.
         */
-      void winEvent(MSG* message, long* result) { this->impl->winEvent(message, result); }
+      void winEvent(MSG* message, qintptr* result) { this->impl->winEvent(message, result); }
 #endif
 
    private:

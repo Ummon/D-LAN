@@ -76,7 +76,7 @@ UploadsWidget::UploadsWidget(QSharedPointer<RCC::ICoreConnection> coreConnection
 
    //this->ui->tblChat->verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
    this->ui->tblUploads->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-   this->ui->tblUploads->verticalHeader()->setDefaultSectionSize(QApplication::fontMetrics().height() + 2);
+   this->ui->tblUploads->verticalHeader()->setDefaultSectionSize(QFontMetrics(QApplication::font()).height() + 2);
 
    this->ui->tblUploads->verticalHeader()->setVisible(false);
    this->ui->tblUploads->setSelectionBehavior(QAbstractItemView::SelectRows);

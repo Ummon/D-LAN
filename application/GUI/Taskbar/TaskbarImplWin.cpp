@@ -88,7 +88,7 @@ void TaskbarImplWin::setWinHandle(HWND winHandle)
    this->winHandle = winHandle;
 }
 
-void TaskbarImplWin::winEvent(MSG* message, long* /*result*/)
+void TaskbarImplWin::winEvent(MSG* message, qintptr* /*result*/)
 {
    if (message->message == iDTaskbarButtonCreated)
    {

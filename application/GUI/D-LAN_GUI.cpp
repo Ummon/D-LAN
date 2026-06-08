@@ -26,8 +26,9 @@ using namespace GUI;
 #include <Common/Constants.h>
 #include <Common/Settings.h>
 #include <Common/Languages.h>
-
 #include <Common/RemoteCoreController/Builder.h>
+
+#include <Log.h>
 
 const QString D_LAN_GUI::SHARED_MEMORY_KEYNAME("D-LAN GUI instance");
 
@@ -128,7 +129,11 @@ void D_LAN_GUI::updateTrayIconMenu()
   */
 void D_LAN_GUI::loadLanguage(const QString& filename)
 {
-   this->translator.load(filename, QCoreApplication::applicationDirPath() + "/" + Common::Constants::LANGUAGE_DIRECTORY);
+   const auto directory = QCoreApplication::applicationDirPath() + "/" + Common::Constants::LANGUAGE_DIRECTORY;
+   if (!this->translator.load(filename, directory))
+   {
+      L_WARN(QString("Can't load translation file '%1' from directory '%2").arg(filename, directory));
+   }
 }
 
 void D_LAN_GUI::mainWindowClosed()

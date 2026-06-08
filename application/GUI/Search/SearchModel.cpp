@@ -81,7 +81,12 @@ void SearchModel::search(const Protos::Common::FindPattern& findPattern, bool lo
       return;
 
    this->searchResult = this->coreConnection->search(findPattern, local);
-   connect(this->searchResult.data(), SIGNAL(result(const Protos::Common::FindResult&)), this, SLOT(result(const Protos::Common::FindResult&)));
+   connect(
+      this->searchResult.data(),
+      SIGNAL(result(const Protos::Common::FindResult&)),
+      this,
+      SLOT(resultFromFindResult(const Protos::Common::FindResult&))
+   );
    // We don't use the 'timout' signal from 'ISearchResult', not useful.
    this->searchResult->start();
 
@@ -179,7 +184,16 @@ void SearchModel::loadChildren(const QPersistentModelIndex &index)
    BrowseModel::loadChildren(index);
 }
 
-bool entryLessThan(const Protos::Common::Entry& e1, int level1, const QString& peerNick1, const Protos::Common::Entry& e2, int level2, const QString& peerNick2, SearchColumn column, Qt::SortOrder order)
+bool entryLessThan(
+   const Protos::Common::Entry& e1,
+   int level1,
+   const QString& peerNick1,
+   const Protos::Common::Entry& e2,
+   int level2,
+   const QString& peerNick2,
+   SearchColumn column,
+   Qt::SortOrder order
+)
 {
    // TODO: check if correct.
    const QString& path1 = Common::ProtoHelper::getPath(e1, !Common::ProtoHelper::isRoot(e1)).toString(false).toLower();
@@ -276,7 +290,7 @@ void SearchModel::sort(int column, Qt::SortOrder order)
   *  - All entries with the same level are sorted first by their path (prefixed with the shared directory name) and then by their name.
   *  - All file entries with the same chunks (identical data) are grouped. They can be owned by different peer.
   */
-void SearchModel::result(const Protos::Common::FindResult& findResult)
+void SearchModel::resultFromFindResult(const Protos::Common::FindResult& findResult)
 {
    if (findResult.entries_size() == 0)
       return;
@@ -314,7 +328,7 @@ void SearchModel::result(const Protos::Common::FindResult& findResult)
             if (similarTree->getNbChildren() == 0)
             {
                this->beginInsertRows(this->createIndex(0, 0, similarTree), 0, 0);
-               similarTree->insertChild(similarTree);
+               similarTree->insertChildSubTree(similarTree);
                this->endInsertRows();
             }
 
@@ -329,7 +343,7 @@ void SearchModel::result(const Protos::Common::FindResult& findResult)
                   this->beginInsertRows(this->createIndex(0, 0, similarTree), i, i);
                   Common::Hash peerID = findResult.peer_id().hash();
                   SearchTree* newTree =
-                     similarTree->insertChild(i, *entry, peerID, this->peerListModel.getNick(peerID, tr("<unknown>")));
+                     similarTree->insertChildEntryAtIndex(i, *entry, peerID, this->peerListModel.getNick(peerID, tr("<unknown>")));
                   this->endInsertRows();
 
                   if (static_cast<int>(entry->level()) < similarTree->getLevel())
@@ -402,7 +416,7 @@ int SearchModel::insertTree(const Protos::Common::FindResult_EntryLevel& entry, 
       currentIndex++;
 
    this->beginInsertRows(QModelIndex(), currentIndex, currentIndex);
-   SearchTree* newTree = root->insertChild(currentIndex++, entry, peerID, peerNick);
+   SearchTree* newTree = root->insertChildEntryAtIndex(currentIndex++, entry, peerID, peerNick);
    this->endInsertRows();
 
    if (newTree->getItem().type() == Protos::Common::Entry_Type_FILE && newTree->getItem().chunks_size() > 0)
@@ -448,7 +462,7 @@ SearchModel::SearchTree::SearchTree(const Protos::Common::Entry& entry, const Co
 {
 }
 
-SearchModel::SearchTree* SearchModel::SearchTree::insertChild(
+SearchModel::SearchTree* SearchModel::SearchTree::insertChildEntry(
    const Protos::Common::FindResult_EntryLevel& entry,
    const Common::Hash& peerID, const QString& peerNick
 )
@@ -458,7 +472,7 @@ SearchModel::SearchTree* SearchModel::SearchTree::insertChild(
    return searchTree;
 }
 
-SearchModel::SearchTree* SearchModel::SearchTree::insertChild(
+SearchModel::SearchTree* SearchModel::SearchTree::insertChildEntryAtIndex(
    int index,
    const Protos::Common::FindResult_EntryLevel& entry,
    const Common::Hash& peerID,
@@ -470,7 +484,7 @@ SearchModel::SearchTree* SearchModel::SearchTree::insertChild(
    return searchTree;
 }
 
-SearchModel::SearchTree* SearchModel::SearchTree::insertChild(SearchModel::SearchTree* tree)
+SearchModel::SearchTree* SearchModel::SearchTree::insertChildSubTree(SearchModel::SearchTree* tree)
 {
    SearchTree* searchTree = new SearchTree(tree->getItem(), tree->getLevel(), tree->getPeerID(), tree->peerNick, this);
    this->children << searchTree;

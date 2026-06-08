@@ -44,7 +44,7 @@ RoomsDock::RoomsDock(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidge
    this->ui->tblRooms->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
    this->ui->tblRooms->horizontalHeader()->setVisible(false);
    this->ui->tblRooms->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-   this->ui->tblRooms->verticalHeader()->setDefaultSectionSize(QApplication::fontMetrics().height() + 4);
+   this->ui->tblRooms->verticalHeader()->setDefaultSectionSize(QFontMetrics(QApplication::font()).height() + 4);
    this->ui->tblRooms->verticalHeader()->setVisible(false);
    this->ui->tblRooms->setSelectionBehavior(QAbstractItemView::SelectRows);
    this->ui->tblRooms->setSelectionMode(QAbstractItemView::ExtendedSelection);

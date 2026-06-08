@@ -54,17 +54,21 @@ namespace GUI
       static SearchColumn toSearchColumn(int number);
       static int toColumnNumber(SearchColumn column);
 
-      SearchModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const SharedEntryListModel& sharedEntryListModel);
+      SearchModel(
+         QSharedPointer<RCC::ICoreConnection> coreConnection,
+         const PeerListModel& peerListModel,
+         const SharedEntryListModel& sharedEntryListModel
+      );
       ~SearchModel();
 
       Common::Hash getPeerID(const QModelIndex& index) const;
 
       void search(const Protos::Common::FindPattern& findPattern, bool local = false);
 
-      QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
-      QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
+      QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+      QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
-      int columnCount(const QModelIndex& parent = QModelIndex()) const;
+      int columnCount(const QModelIndex& parent = QModelIndex()) const override;
 
       int getNbFolders() const;
       int getNbFiles() const;
@@ -78,11 +82,11 @@ namespace GUI
       void progress(int);
 
    protected:
-      void loadChildren(const QPersistentModelIndex &index);
+      void loadChildren(const QPersistentModelIndex &index) override;
       void sort(int column, Qt::SortOrder order = Qt::AscendingOrder) override;
 
    protected slots:
-      void result(const Protos::Common::FindResult& findResult);
+      void resultFromFindResult(const Protos::Common::FindResult& findResult);
       void sendNextProgress();
       void stopSearching();
 
@@ -117,9 +121,9 @@ namespace GUI
          SearchTree(const Protos::Common::Entry& entry, int level, const Common::Hash& peerID, const QString& peerNick, SearchTree* parent);
          SearchTree(const Protos::Common::Entry& entry, const Common::Hash& peerID,  SearchTree* parent);
 
-         SearchTree* insertChild(const Protos::Common::FindResult::EntryLevel& entry, const Common::Hash& peerID, const QString& peerNick);
-         SearchTree* insertChild(int index, const Protos::Common::FindResult::EntryLevel& entry, const Common::Hash& peerID, const QString& peerNick);
-         SearchTree* insertChild(SearchTree* node);
+         SearchTree* insertChildEntry(const Protos::Common::FindResult::EntryLevel& entry, const Common::Hash& peerID, const QString& peerNick);
+         SearchTree* insertChildEntryAtIndex(int index, const Protos::Common::FindResult::EntryLevel& entry, const Common::Hash& peerID, const QString& peerNick);
+         SearchTree* insertChildSubTree(SearchTree* node);
 
          int getLevel() const;
          Common::Hash getPeerID() const;

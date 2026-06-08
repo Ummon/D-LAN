@@ -41,7 +41,7 @@ namespace GUI
       void setOverlayIcon(const QIcon& icon, const QString& description);
 
       void setWinHandle(HWND winHandle);
-      void winEvent(MSG* message, long* result);
+      void winEvent(MSG* message, qintptr* result);
 
    private:
       void initTaskbarButton();

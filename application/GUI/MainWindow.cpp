@@ -20,8 +20,6 @@
 #include <ui_MainWindow.h>
 using namespace GUI;
 
-#include <cmath>
-
 #include <QTabBar>
 #include <QClipboard>
 #include <QStringBuilder>
@@ -93,7 +91,7 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
    this->ui->tblLog->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
    this->ui->tblLog->horizontalHeader()->setVisible(false);
    this->ui->tblLog->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-   this->ui->tblLog->verticalHeader()->setDefaultSectionSize(QApplication::fontMetrics().height() + 2);
+   this->ui->tblLog->verticalHeader()->setDefaultSectionSize(QFontMetrics(QApplication::font()).height() + 2);
    this->ui->tblLog->verticalHeader()->setVisible(false);
    this->ui->tblLog->setSelectionBehavior(QAbstractItemView::SelectRows);
    this->ui->tblLog->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -172,7 +170,11 @@ void MainWindow::coreConnectionError(RCC::ICoreConnection::ConnectionErrorCode e
 
    QMessageBox msgBox(this);
    msgBox.setWindowTitle(tr("Unable to connect to the core"));
-   msgBox.setText(QString("<p>%1</p><p>%2 <em>%3:%4</em></p>").arg(error).arg(tr("Core address:")).arg(this->coreConnection->getConnectionInfoConnecting().address).arg(this->coreConnection->getConnectionInfoConnecting().port));
+   msgBox.setText(
+      QString("<p>%1</p><p>%2 <em>%3:%4</em></p>")
+         .arg(error, tr("Core address:"), this->coreConnection->getConnectionInfoConnecting().address)
+         .arg(this->coreConnection->getConnectionInfoConnecting().port)
+   );
    msgBox.setIcon(QMessageBox::Information);
    msgBox.setStandardButtons(QMessageBox::Ok);
    msgBox.exec();
@@ -189,7 +191,15 @@ void MainWindow::coreDisconnected(bool forced)
    {
       QMessageBox msgBox(this);
       msgBox.setWindowTitle(tr("Connection lost"));
-      msgBox.setText(QString("<p>%1</p><p>%2 <em>%3:%4</em></p>").arg(tr("The connection to the core has been lost")).arg(tr("Core address:")).arg(this->coreConnection->getConnectionInfo().address).arg(this->coreConnection->getConnectionInfo().port));
+      msgBox.setText(
+         QString("<p>%1</p><p>%2 <em>%3:%4</em></p>")
+            .arg(
+               tr("The connection to the core has been lost"),
+               tr("Core address:"),
+               this->coreConnection->getConnectionInfo().address
+            )
+            .arg(this->coreConnection->getConnectionInfo().port)
+      );
       msgBox.setIcon(QMessageBox::Information);
       msgBox.setStandardButtons(QMessageBox::Ok);
       msgBox.exec();
@@ -242,7 +252,7 @@ void MainWindow::loadCustomStyle(const QString& filepath)
          if (this->windowFlags() != FRAMELESS_FLAGS)
          {
             this->setWindowFlags(FRAMELESS_FLAGS);
-            this->resizeEvent(0);
+            this->resizeEvent(nullptr);
             this->show();
          }
          return;
@@ -336,7 +346,7 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* event)
    {
       if (event->type() == QEvent::MouseButtonPress && static_cast<QMouseEvent*>(event)->button() == Qt::LeftButton)
       {
-         this->dragPosition = static_cast<QMouseEvent*>(event)->globalPos() - frameGeometry().topLeft();
+         this->dragPosition = static_cast<QMouseEvent*>(event)->globalPosition().toPoint() - frameGeometry().topLeft();
       }
       if (event->type() == QEvent::MouseButtonRelease && static_cast<QMouseEvent*>(event)->button() == Qt::LeftButton)
       {
@@ -344,7 +354,7 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* event)
       }
       else if (event->type() == QEvent::MouseMove && !this->isMaximized() && static_cast<QMouseEvent*>(event)->buttons() & Qt::LeftButton && !this->dragPosition.isNull())
       {
-         move(static_cast<QMouseEvent*>(event)->globalPos() - this->dragPosition);
+         move(static_cast<QMouseEvent*>(event)->globalPosition().toPoint() - this->dragPosition);
       }
       else if (event->type() == QEvent::Resize)
       {
@@ -396,7 +406,7 @@ void MainWindow::resizeEvent(QResizeEvent* event)
       this->taskbar.setWinHandle((HWND)this->winId());
    }
 
-   bool MainWindow::nativeEvent(const QByteArray&, void* message, long* result)
+   bool MainWindow::nativeEvent(const QByteArray&, void* message, qintptr* result)
    {
       this->taskbar.winEvent(reinterpret_cast<MSG*>(message), result);
       return false;

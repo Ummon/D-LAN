@@ -122,11 +122,14 @@ void Emoticons::loadThemes()
 
       QDomDocument doc;
 
-      QString errorMessage;
-      int errorLine;
-      if (!doc.setContent(&metaFile, false, &errorMessage, &errorLine))
+      auto parseResult = doc.setContent(&metaFile);
+      if (!parseResult)
       {
-         L_WARN(QString("Unable to parse the meta file: %1, error: %2, line: %3").arg(metaFilePath).arg(errorMessage).arg(errorLine));
+         L_WARN(
+            QString("Unable to parse the meta file: %1, error: %2, line: %3")
+               .arg(metaFilePath, parseResult.errorMessage)
+               .arg(parseResult.errorLine)
+         );
          continue;
       }
 

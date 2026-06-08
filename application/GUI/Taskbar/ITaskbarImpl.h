@@ -35,7 +35,7 @@ namespace GUI
 
 #ifdef Q_OS_WIN32
       virtual void setWinHandle(HWND winHandle) = 0;
-      virtual void winEvent(MSG* message, long* result) = 0;
+      virtual void winEvent(MSG* message, qintptr* result) = 0;
 #endif
    };
 }

@@ -36,7 +36,7 @@ namespace GUI
    class PeerListModel : public QAbstractTableModel
    {
       Q_OBJECT
-      class Peer;
+      struct Peer;
 
    public:
       PeerListModel(QSharedPointer<RCC::ICoreConnection> coreConnection);

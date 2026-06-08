@@ -34,7 +34,7 @@ namespace GUI
    class RoomsModel : public QAbstractTableModel
    {
       Q_OBJECT
-      class Room;
+      struct Room;
 
    public:
       RoomsModel(QSharedPointer<RCC::ICoreConnection> coreConnection);

@@ -68,7 +68,7 @@ SettingsWidget::SettingsWidget(QSharedPointer<RCC::ICoreConnection> coreConnecti
    this->ui->tblShareDirs->horizontalHeader()->setVisible(true);
 
    this->ui->tblShareDirs->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-   this->ui->tblShareDirs->verticalHeader()->setDefaultSectionSize(QApplication::fontMetrics().height() + 2);
+   this->ui->tblShareDirs->verticalHeader()->setDefaultSectionSize(QFontMetrics(QApplication::font()).height() + 2);
    this->ui->tblShareDirs->verticalHeader()->setVisible(false);
    this->ui->tblShareDirs->setSelectionBehavior(QAbstractItemView::SelectRows);
    this->ui->tblShareDirs->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -183,7 +183,7 @@ void SettingsWidget::fillComboBoxLanguages()
 
       if (!exactMatchFound && lang.locale.language() == current.language())
       {
-         exactMatchFound = lang.locale.country() == current.country();
+         exactMatchFound = lang.locale.territory() == current.territory();
          this->ui->cmbLanguages->setCurrentIndex(this->ui->cmbLanguages->count() - 1);
       }
    }
