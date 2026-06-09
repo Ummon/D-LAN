@@ -136,7 +136,13 @@ void MessageSocket::send(MessageHeader::MessageType type, const google::protobuf
 
    MessageHeader header(type, message ? message->ByteSizeLong() : 0, this->localID);
 
-   MESSAGE_SOCKET_LOG_DEBUG(QString("Socket[%1]::send: %2 to %3\n%4").arg(this->num).arg(header.toStr()).arg(this->remoteID.toStr()).arg(message ? ProtoHelper::getDebugStr(*message) : "<empty message>"));
+   MESSAGE_SOCKET_LOG_DEBUG(
+      QString("Socket[%1]::send: %2 to %3\n%4")
+         .arg(this->num)
+         .arg(header.toStr())
+         .arg(this->remoteID.toStrShort())
+         .arg(message ? ProtoHelper::getDebugStr(*message) : "<empty message>")
+   );
 
    Message::writeMessageToDevice(this->socket, header, message);
 }
@@ -213,7 +219,11 @@ void MessageSocket::dataReceivedSlot()
 
          if (this->currentHeader.getSenderID() != this->remoteID)
          {
-            MESSAGE_SOCKET_LOG_DEBUG(QString("Socket[%1]: Peer ID from message (%2) doesn't match the known peer ID (%3)").arg(this->num).arg(this->currentHeader.getSenderID().toStr()).arg(this->localID.toStr()));
+            MESSAGE_SOCKET_LOG_DEBUG(
+               QString("Socket[%1]: Peer ID from message (%2) doesn't match the known peer ID (%3)")
+                  .arg(this->num)
+                  .arg(this->currentHeader.getSenderID().toStrShort(), this->localID.toStrShort())
+            );
             this->currentHeader.setNull();
             this->socket->close();
             return;
@@ -224,7 +234,11 @@ void MessageSocket::dataReceivedSlot()
       {
          if (!this->readMessage())
          {
-            MESSAGE_SOCKET_LOG_DEBUG(QString("Socket[%1]: Unable to read the received message, closing the socket. Message type: %2").arg(this->num).arg(this->currentHeader.getType()));
+            MESSAGE_SOCKET_LOG_DEBUG(
+               QString("Socket[%1]: Unable to read the received message, closing the socket. Message type: %2")
+                  .arg(this->num)
+                  .arg(this->currentHeader.getType())
+            );
             this->socket->close();
             return;
          }

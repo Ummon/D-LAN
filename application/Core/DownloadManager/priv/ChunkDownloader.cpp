@@ -49,7 +49,7 @@ ChunkDownloader::ChunkDownloader(LinkedPeers& linkedPeers, OccupiedPeers& occupi
    mainThread(QThread::currentThread())
 {
    Q_ASSERT(!chunkHash.isNull());
-   L_DEBU(QString("New ChunkDownloader: %1").arg(this->chunkHash.toStr()));
+   L_DEBU(QString("New ChunkDownloader: %1").arg(this->chunkHash.toStrShort()));
 }
 
 ChunkDownloader::~ChunkDownloader()
@@ -59,7 +59,7 @@ ChunkDownloader::~ChunkDownloader()
    for (QListIterator<PM::IPeer*> i(this->peers); i.hasNext();)
       this->linkedPeers.rmLink(i.next());
 
-   L_DEBU(QString("ChunkDownloader deleted: %1").arg(this->chunkHash.toStr()));
+   L_DEBU(QString("ChunkDownloader deleted: %1").arg(this->chunkHash.toStrShort()));
 }
 
 /**
@@ -426,7 +426,7 @@ PM::IPeer* ChunkDownloader::startDownloading()
 {
    if (this->chunk.isNull())
    {
-      L_WARN(QString("Unable to download without the chunk. Hash: %1").arg(this->chunkHash.toStr()));
+      L_WARN(QString("Unable to download without an associated chunk. Hash: %1").arg(this->chunkHash.toStr()));
       return nullptr;
    }
 
@@ -442,7 +442,10 @@ PM::IPeer* ChunkDownloader::startDownloading()
    if (this->getChunksResult.isNull())
       return nullptr;
 
-   L_DEBU(QString("Starting downloading a chunk: %1 from %2").arg(this->chunk->toStringLog()).arg(this->currentDownloadingPeer->getID().toStr()));
+   L_DEBU(
+      QString("Starting downloading a chunk: %1 from %2")
+         .arg(this->chunk->toStringLog(), this->currentDownloadingPeer->getID().toStrShort())
+   );
 
    this->downloading = true;
    emit downloadStarted();
@@ -484,7 +487,10 @@ void ChunkDownloader::result(const Protos::Core::GetChunksResult& result)
    {
       if (result.results_size() == 0 || result.results(0).chunk_size() == 0)
       {
-         L_ERRO(QString("Message 'GetChunkResult' doesn't contain the size of the chunk: %1. Download aborted.").arg(this->chunk->getHash().toStr()));
+         L_ERRO(
+            QString("Message 'GetChunkResult' doesn't contain the size of the chunk: %1. Download aborted.")
+               .arg(this->chunk->getHash().toStrShort())
+         );
          this->closeTheSocket = true;
          this->downloadingEnded();
       }

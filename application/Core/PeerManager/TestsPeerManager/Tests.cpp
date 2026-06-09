@@ -56,28 +56,27 @@ void Tests::initTestCase()
    try
    {
       QString tempFolder = Common::Global::setCurrentDirToTemp("PeerManagerTests");
-      qDebug() << "Application directory path (where the persistent data is put) : " <<  Common::Global::getDataFolder(Common::Global::DataFolderType::LOCAL, false);
+      qDebug() << "Application directory path (where the persistent data is put) : " <<
+         Common::Global::getDataFolder(Common::Global::DataFolderType::LOCAL, false);
       qDebug() << "The file created during this test are put in : " << tempFolder;
    }
    catch (Common::Global::UnableToSetTempDirException& e)
    {
-      QFAIL(e.errorMessage.toLatin1().constData());
+      QFAIL(e.errorMessage.toUtf8());
    }
 
    // Common::PersistentData::rmValue(Common::Constants::FILE_CACHE, Common::Global::DataFolderType::LOCAL); // Reset the stored cache.
-
-   SETTINGS.setFilename("core_settings_peer_manager_tests.txt");
-   SETTINGS.setSettingsMessage(new Protos::Core::Settings());
 
    QVERIFY(this->createInitialFiles());
 
    this->hashCaches << QSharedPointer<HC::IHashCache>(new MockHashCache()) << QSharedPointer<HC::IHashCache>(new MockHashCache());
    this->fileManagers << FM::Builder::newFileManager(this->hashCaches[0]) << FM::Builder::newFileManager(this->hashCaches[1]);
 
-   this->peerIDs << Common::Hash::fromStr("11111111111111111111111111111111111111111111111111111111") <<
-                    Common::Hash::fromStr("22222222222222222222222222222222222222222222222222222222");
+   this->peerIDs <<
+      Common::Hash::fromStr("11111111111111111111111111111111111111111111111111111111") <<
+      Common::Hash::fromStr("22222222222222222222222222222222222222222222222222222222");
 
-   this->peerSharedDirs << "/sharedDirs/peer1" << "/sharedDirs/peer2";
+   this->peerSharedDirs << "/sharedDirs/peer1/" << "/sharedDirs/peer2/";
 
    // 1) Create each peer manager.
    for (int i = 0; i < this->peerIDs.size(); i++)
@@ -168,10 +167,14 @@ void Tests::getPeerFromID()
       {
          if (j == i)
             continue;
-         QCOMPARE(this->peerManagers[i]->getSelf()->getID(), this->peerManagers[j]->getPeer(this->peerManagers[i]->getSelf()->getID())->getID());
+
+         QCOMPARE(
+            this->peerManagers[i]->getSelf()->getID(),
+            this->peerManagers[j]->getPeer(this->peerManagers[i]->getSelf()->getID())->getID()
+         );
       }
 
-      QVERIFY(this->peerManagers[i]->getPeer(Common::Hash::rand()) == 0);
+      QVERIFY(this->peerManagers[i]->getPeer(Common::Hash::rand()) == nullptr);
    }
 }
 
@@ -198,7 +201,10 @@ void Tests::askForRootEntries()
    {
       QTest::qWait(100);
       if (timer.elapsed() > 5000)
-         QFAIL(QString("We don't receive the right number of root entry. Number received: %1").arg(nbEntriesReceived).toLatin1());
+         QFAIL(
+            QString("We don't receive the right number of root entry. Number received: %1")
+               .arg(nbEntriesReceived).toUtf8()
+         );
    }
 }
 
@@ -215,7 +221,9 @@ void Tests::askForSomeEntries()
    QVERIFY(!this->resultListener.getEntriesResultList().isEmpty());
 
    Protos::Core::GetEntries getEntriesMessage1;
-   getEntriesMessage1.mutable_dirs()->add_entries()->CopyFrom(this->resultListener.getEntriesResultList().constLast().results(0).entries().entries(0));
+   getEntriesMessage1.mutable_dirs()->add_entries()->CopyFrom(
+      this->resultListener.getEntriesResultList().constLast().results(0).entries().entries(0)
+   );
    QSharedPointer<IGetEntriesResult> result1 = this->peerManagers[0]->getPeers()[0]->getEntries(getEntriesMessage1);
    QVERIFY(!result1.isNull());
    connect(result1.data(), &IGetEntriesResult::result, &this->resultListener, &ResultListener::entriesResult);
@@ -260,7 +268,7 @@ void Tests::askForHashes()
       QFile file(filename);
       if (!file.open(QIODevice::WriteOnly))
       {
-         QFAIL(QString("Can't open file: %1").arg(filename).toUtf8().constData());
+         QFAIL(QString("Can't open file: %1").arg(filename).toUtf8());
       }
 
       // To have four different hashes.
@@ -291,7 +299,9 @@ void Tests::askForHashes()
    for (quint32 i = 0; i < NUMBER_OF_CHUNK; i++)
       fileEntry.add_chunks();
    // Sets the root directory.
-   fileEntry.mutable_shared_entry()->CopyFrom(this->resultListener.getEntriesResultList().constFirst().results(0).entries().entries(0).shared_entry());
+   fileEntry.mutable_shared_entry()->CopyFrom(
+      this->resultListener.getEntriesResultList().constFirst().results(0).entries().entries(0).shared_entry()
+   );
 
    QSharedPointer<IGetHashesResult> result = this->peerManagers[0]->getPeers()[0]->getHashes(fileEntry);
    QVERIFY(!result.isNull());
@@ -300,7 +310,10 @@ void Tests::askForHashes()
    result->start();
 
    timer.start();
-   while (this->resultListener.getLastGetHashesResult().status() != Protos::Core::GetHashesResult::OK && this->resultListener.getLastGetHashesResult().nb_hash() != NUMBER_OF_CHUNK)
+   while (
+      this->resultListener.getLastGetHashesResult().status() != Protos::Core::GetHashesResult::OK &&
+      this->resultListener.getLastGetHashesResult().nb_hash() != NUMBER_OF_CHUNK
+   )
    {
       QTest::qWait(100);
       if (timer.elapsed() > 5000)
@@ -324,7 +337,10 @@ void Tests::askForAChunk()
    connect(this->peerManagers[1].data(), &IPeerManager::getChunks, &this->resultListener, &ResultListener::getChunks);
 
    Protos::Core::GetChunks getChunksMessage;
-   getChunksMessage.add_chunks()->mutable_hash()->set_hash(this->resultListener.getLastReceivedHash().getData(), Common::Hash::HASH_SIZE);
+   getChunksMessage.add_chunks()->mutable_hash()->set_hash(
+      this->resultListener.getLastReceivedHash().getData(),
+      Common::Hash::HASH_SIZE
+   );
    getChunksMessage.mutable_chunks(0)->set_offset(0);
    QSharedPointer<IGetChunksResult> result = this->peerManagers[0]->getPeers()[0]->getChunks(getChunksMessage);
    QVERIFY(!result.isNull());

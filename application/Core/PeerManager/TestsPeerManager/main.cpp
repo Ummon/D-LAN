@@ -32,8 +32,9 @@ int main(int argc, char *argv[])
 {
    QCoreApplication a(argc, argv);
 
-   SETTINGS.setFilename("core_settings_file_manager_tests.txt");
+   SETTINGS.setFilename("core_settings_peer_manager_tests.json");
    SETTINGS.setSettingsMessage(createDefaultValuesSettings());
+   SETTINGS.save();
 
    Tests tests;
    int ret = QTest::qExec(&tests, argc, argv);
@@ -60,6 +61,14 @@ Protos::Core::Settings* createDefaultValuesSettings()
    settings->set_save_cache_period(60000);
    settings->set_check_received_data_integrity(true);
    settings->set_get_entries_timeout(5000);
+
+   ///// PeerManager /////
+   settings->set_pending_socket_timeout(10000);
+   settings->set_peer_timeout_factor(3.2);
+   settings->set_peer_imalive_period(5000);
+   settings->set_idle_socket_timeout(60000);
+   settings->set_max_number_idle_socket(6);
+   settings->set_get_hashes_timeout(20000);
 
    return settings;
 }

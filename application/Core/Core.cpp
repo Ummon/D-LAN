@@ -157,7 +157,11 @@ void Core::setLanguage(QLocale locale, bool load)
       Common::Language lang = languages.getBestMatchLanguage(Common::Languages::ExeType::CORE, locale);
       SETTINGS.set("language", lang.locale);
       SETTINGS.save();
-      this->translator.load(lang.filename, QCoreApplication::applicationDirPath() + "/" + Common::Constants::LANGUAGE_DIRECTORY);
+      const QString directory = QCoreApplication::applicationDirPath() + "/" + Common::Constants::LANGUAGE_DIRECTORY;
+      if (!this->translator.load(lang.filename, directory))
+      {
+         L_WARN(QString("Unable to load language file '%1' from directory '%2'").arg(lang.filename, directory));
+      }
    }
    else
    {
@@ -186,6 +190,7 @@ Protos::Core::Settings* Core::createDefaultValuesSettings()
    ///// PeerManager /////
    settings->set_pending_socket_timeout(10000);
    settings->set_peer_timeout_factor(3.2);
+   settings->set_peer_imalive_period(5000);
    settings->set_idle_socket_timeout(60000);
    settings->set_max_number_idle_socket(6);
    settings->set_get_hashes_timeout(20000);
@@ -205,7 +210,6 @@ Protos::Core::Settings* Core::createDefaultValuesSettings()
    settings->set_upload_thread_lifetime(30000);
 
    ///// NetworkListener /////
-   settings->set_peer_imalive_period(5000);
    settings->set_unicast_base_port(59487);
    settings->set_multicast_port(59486);
    settings->set_multicast_group(3960285976);

@@ -72,7 +72,11 @@ QString MessageHeader::toStr() const
    if (this->isNull())
       return QString("MessageHeader: <null>");
    else
-      return QString("MessageHeader: type = %1, size = %2, senderID = %3").arg(messToStr(this->type)).arg(this->size).arg(this->senderID.toStr());
+      return
+         QString("MessageHeader: type = %1, size = %2, senderID = %3")
+            .arg(messToStr(this->type))
+            .arg(this->size)
+            .arg(this->senderID.toStrShort());
 }
 
 QString MessageHeader::messToStr(MessageType type)

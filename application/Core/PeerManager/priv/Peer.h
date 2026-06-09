@@ -49,7 +49,13 @@ namespace PM
       static const quint32 MAX_SPEED;
 
    public:
-      Peer(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, Common::Hash ID, const QString& nick = QString());
+      Peer(
+         PeerManager* peerManager,
+         QSharedPointer<FM::IFileManager> fileManager,
+         Common::Hash ID,
+         const QString& nick = QString()
+      );
+      virtual ~Peer() {}
 
       virtual QString toStringLog() const override;
 

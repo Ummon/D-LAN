@@ -34,8 +34,9 @@ int main(int argc, char *argv[])
 {
    QCoreApplication a(argc, argv);
 
-   SETTINGS.setFilename("core_settings_file_manager_tests.txt");
+   SETTINGS.setFilename("core_settings_file_manager_tests.json");
    SETTINGS.setSettingsMessage(createDefaultValuesSettings());
+   SETTINGS.save();
 
    int ret = 0;
 

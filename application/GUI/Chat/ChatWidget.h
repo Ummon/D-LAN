@@ -66,8 +66,17 @@ namespace GUI
 
       Q_OBJECT
    public:
-      explicit ChatWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, Emoticons& emoticons, QWidget* parent = nullptr);
-      explicit ChatWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, Emoticons& emoticons, const QString& roomName, QWidget* parent = nullptr);
+      explicit ChatWidget(
+         QSharedPointer<RCC::ICoreConnection> coreConnection,
+         Emoticons& emoticons,
+         QWidget* parent = nullptr
+      );
+      explicit ChatWidget(
+         QSharedPointer<RCC::ICoreConnection> coreConnection,
+         Emoticons& emoticons,
+         const QString& roomName,
+         QWidget* parent = nullptr
+      );
       ~ChatWidget();
 
       bool isGeneral() const;

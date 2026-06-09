@@ -19,6 +19,9 @@
 #include <ProtoHelper.h>
 using namespace Common;
 
+#include <google/protobuf/text_format.h>
+#include <google/protobuf/util/json_util.h>
+
 #include <QStringList>
 
 #include <Hash.h>
@@ -155,14 +158,21 @@ bool ProtoHelper::isRoot(const Protos::Common::Entry& entry)
 
 QString ProtoHelper::getDebugStr(const google::protobuf::Message& mess)
 {
-   std::string debugString = mess.DebugString();
+   std::string debugString;
+
+   google::protobuf::util::JsonPrintOptions printOptions;
+   printOptions.always_print_fields_with_no_presence = true;
+   printOptions.add_whitespace = true;
+
+   auto status = google::protobuf::util::MessageToJsonString(mess, &debugString, printOptions);
+   if (!status.ok())
+      return QString("Error: can't transform message into JSON: %1").arg(status.message());
+
    QString str = QString::fromStdString(debugString);
 
    // Very dirty : substitute the bytes representation (ascii + escaped octal number) with a hexadecimal representation.
    // hash: "ID\214\351\t\003\312w\213u\320\236@0o\032\220\"(\033"
-
    const QString prefix("hash: \"");
-
    int pos = 0;
    while ((pos = str.indexOf(prefix, pos)) != -1)
    {

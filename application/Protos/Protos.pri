@@ -8,6 +8,10 @@
 #   PRE_TARGETDEPS += $$PWD/$${proto}.pb.cc
 #}
 
+proto_common.target = $$PWD/common.pb.cc
+proto_common.depends = $$PWD/common.proto
+proto_common.commands = cd $$PWD && protoc --cpp_out . common.proto
+
 proto_queue.target = $$PWD/queue.pb.cc
 proto_queue.depends = $$PWD/queue.proto
 proto_queue.commands = cd $$PWD && protoc --cpp_out . queue.proto
@@ -27,10 +31,6 @@ proto_core_settings.commands = cd $$PWD && protoc --cpp_out . core_settings.prot
 proto_core_protocol.target = $$PWD/core_protocol.pb.cc
 proto_core_protocol.depends = $$PWD/core_protocol.proto
 proto_core_protocol.commands = cd $$PWD && protoc --cpp_out . core_protocol.proto
-
-proto_common.target = $$PWD/common.pb.cc
-proto_common.depends = $$PWD/common.proto
-proto_common.commands = cd $$PWD && protoc --cpp_out . common.proto
 
 QMAKE_EXTRA_TARGETS += proto_queue proto_gui_settings proto_gui_protocol proto_files_cache proto_core_settings proto_core_protocol proto_common
 PRE_TARGETDEPS += $$PWD/queue.pb.cc $$PWD/gui_settings.pb.cc $$PWD/gui_protocol.pb.cc $$PWD/core_settings.pb.cc $$PWD/core_protocol.pb.cc $$PWD/common.pb.cc

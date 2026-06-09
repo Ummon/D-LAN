@@ -97,6 +97,24 @@ QString Hash::toStr() const
 }
 
 /**
+  * Return a human readable partial string, only the first 3 bytes.
+  * For example : "16bd4b".
+  */
+QString Hash::toStrShort() const
+{
+   QString ret(2 * NB_BYTES_SHORT_STR, QChar());
+
+   for (int i = 0; i < NB_BYTES_SHORT_STR; i++)
+   {
+      char p1 = (this->data[i] & 0xF0) >> 4;
+      char p2 = this->data[i] & 0x0F;
+      ret[i*2] = p1 <= 9 ? char('0' + p1) : char('a' + (p1-10));
+      ret[i*2 + 1] = p2 <= 9 ? char('0' + p2) : char('a' + (p2-10));
+   }
+   return ret;
+}
+
+/**
   * Return a C Array, for example :
   * "{
   * 0x4f, 0xb9, 0x6c, 0x68,

@@ -133,7 +133,7 @@ void PeerManager::updatePeer(
    if (ID.isNull() || ID == this->self->getID())
       return;
 
-   L_DEBU(QString("%1 (%2) is alive!").arg(ID.toStr(), nick));
+   L_DEBU(QString("%1 (%2) is alive!").arg(ID.toStrShort(), nick));
 
    Peer* peer = static_cast<Peer*>(this->getPeer(ID));
    if (!peer)

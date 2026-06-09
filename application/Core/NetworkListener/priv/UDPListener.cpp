@@ -100,8 +100,7 @@ INetworkListener::SendStatus UDPListener::send(Common::MessageHeader::MessageTyp
       return INetworkListener::SendStatus::MESSAGE_TOO_LARGE;
 
    L_DEBU(QString("Send unicast UDP to %1, header.getType(): %2, message size: %3 \n%4").
-      arg(peer->toStringLog()).
-      arg(Common::MessageHeader::messToStr(type)).
+      arg(peer->toStringLog(), Common::MessageHeader::messToStr(type)).
       arg(messageSize).
       arg(Common::ProtoHelper::getDebugStr(message))
    );
@@ -313,7 +312,10 @@ void UDPListener::processPendingMulticastDatagrams()
       }
       catch (Common::ReadErrorException&)
       {
-         L_WARN(QString("Unable to read a multicast message from peer %1 %2").arg(header.getSenderID().toStr(), peerAddress.toString()));
+         L_WARN(
+            QString("Unable to read a multicast message from peer %1 %2")
+               .arg(header.getSenderID().toStrShort(), peerAddress.toString())
+         );
       }
    }
 }
@@ -378,7 +380,10 @@ void UDPListener::processPendingUnicastDatagrams()
       }
       catch (Common::ReadErrorException&)
       {
-         L_WARN(QString("Unable to read an unicast message from peer %1 %2").arg(header.getSenderID().toStr()).arg(peerAddress.toString()));
+         L_WARN(
+            QString("Unable to read an unicast message from peer %1 %2")
+               .arg(header.getSenderID().toStrShort(), peerAddress.toString())
+         );
       }
    }
 }
@@ -408,7 +413,10 @@ void UDPListener::initMulticastUDPSocket()
 
    QNetworkInterface networkInterface = Utils::getCurrentInterfaceToListenTo();
    if (networkInterface.isValid() ? !this->multicastSocket.joinMulticastGroup(this->multicastGroup, networkInterface) : !this->multicastSocket.joinMulticastGroup(this->multicastGroup))
-      L_ERRO(QString("Unable to join the multicast group: %1 on the interface: %2").arg(this->multicastGroup.toString()).arg(networkInterface.name()));
+      L_ERRO(
+         QString("Unable to join the multicast group: %1 on the interface: %2")
+            .arg(this->multicastGroup.toString(), networkInterface.name())
+      );
 
    static const int BUFFER_SIZE_UDP = SETTINGS.get<quint32>("udp_buffer_size");
    this->multicastSocket.setSocketOption(QAbstractSocket::SendBufferSizeSocketOption, BUFFER_SIZE_UDP);
@@ -493,11 +501,11 @@ Common::MessageHeader UDPListener::readDatagramToBuffer(QUdpSocket& socket, QHos
          return header;
       }
 
-      L_DEBU(QString("Receive a datagram UDP from %1, %2").arg(peer->toStringLog()).arg(header.toStr()));
+      L_DEBU(QString("Receive a datagram UDP from %1: %2").arg(peer->toStringLog(), header.toStr()));
    }
    else
    {
-      L_DEBU(QString("Receive a datagram UDP from %1, %2").arg(header.getSenderID().toStr()).arg(header.toStr()));
+      L_DEBU(QString("Receive a datagram UDP from %1: %2").arg(header.getSenderID().toStrShort(), header.toStr()));
    }
    return header;
 }

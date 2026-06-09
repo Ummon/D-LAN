@@ -41,14 +41,42 @@ void PeerMessageSocket::Logger::logError(const QString& message)
    L_WARN(message);
 }
 
-PeerMessageSocket::PeerMessageSocket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const Common::Hash& remotePeerID, QTcpSocket* socket) :
-   MessageSocket(new PeerMessageSocket::Logger(), socket, peerManager->getSelf()->getID(), remotePeerID), fileManager(fileManager), active(true), nbError(0)
+PeerMessageSocket::PeerMessageSocket(
+   PeerManager* peerManager,
+   QSharedPointer<FM::IFileManager> fileManager,
+   const Common::Hash& remotePeerID,
+   QTcpSocket* socket
+) :
+   MessageSocket(
+      new PeerMessageSocket::Logger(),
+      socket,
+      peerManager->getSelf()->getID(),
+      remotePeerID
+   ),
+   fileManager(fileManager),
+   active(true),
+   nbError(0)
 {
    this->initUnactiveTimer();
 }
 
-PeerMessageSocket::PeerMessageSocket(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, const Common::Hash& remotePeerID, const QHostAddress& address, quint16 port) :
-   MessageSocket(new PeerMessageSocket::Logger(), address, port, peerManager->getSelf()->getID(), remotePeerID), fileManager(fileManager), active(true), nbError(0)
+PeerMessageSocket::PeerMessageSocket(
+   PeerManager* peerManager,
+   QSharedPointer<FM::IFileManager> fileManager,
+   const Common::Hash& remotePeerID,
+   const QHostAddress& address,
+   quint16 port
+) :
+   MessageSocket(
+      new PeerMessageSocket::Logger(),
+      address,
+      port,
+      peerManager->getSelf()->getID(),
+      remotePeerID
+   ),
+   fileManager(fileManager),
+   active(true),
+   nbError(0)
 {
    this->initUnactiveTimer();
 }
@@ -141,12 +169,13 @@ bool PeerMessageSocket::isActive() const
   */
 void PeerMessageSocket::setActive()
 {
-   this->inactiveTimer.start(); // Some transactions (like GET_HASHES) can go for a long time, we have to restart the timer even for an active connection.
+   // Some transactions (like GET_HASHES) can go for a long time, we have to restart the timer even for an active connection.
+   this->inactiveTimer.start();
 
    if (this->active)
       return;
 
-   L_DEBU(QString("Socket[%1] set to active >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>").arg(this->num));
+   L_DEBU(QString("Socket[%1] set to active >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>").arg(this->num));
 
    this->active = true;
 }
@@ -159,7 +188,7 @@ void PeerMessageSocket::finished(bool closeTheSocket)
    if (!this->active)
       return;
 
-   L_DEBU(QString("Socket[%1] set to idle%2<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<").arg(this->num).arg(closeTheSocket ? " (socket forced to close) " : " "));
+   L_DEBU(QString("Socket[%1] set to idle%2<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<").arg(this->num).arg(closeTheSocket ? " (socket forced to close) " : " "));
 
    if (closeTheSocket)
    {

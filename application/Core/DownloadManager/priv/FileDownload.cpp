@@ -500,7 +500,7 @@ void FileDownload::nextHash(const Protos::Core::HashResult& hashResult)
    Common::Hash hash { hashResult.hash().hash() };
    quint32 num = hashResult.num();
 
-   L_DEBU(QString("New Hash received %2 num %1").arg(num).arg(hash.toStr()));
+   L_DEBU(QString("New Hash received %2 num %1").arg(num).arg(hash.toStrShort()));
 
    if (num >= static_cast<quint32>(this->chunkDownloaders.size()))
    {

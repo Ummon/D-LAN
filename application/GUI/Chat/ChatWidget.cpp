@@ -150,7 +150,12 @@ ChatWidget::ChatWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, Emot
    this->init();
 }
 
-ChatWidget::ChatWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, Emoticons& emoticons, const QString& roomName, QWidget* parent) :
+ChatWidget::ChatWidget(
+   QSharedPointer<RCC::ICoreConnection> coreConnection,
+   Emoticons& emoticons,
+   const QString& roomName,
+   QWidget* parent
+) :
    MdiWidget(parent),
    ui(new Ui::ChatWidget),
    coreConnection(coreConnection),

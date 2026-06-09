@@ -171,13 +171,11 @@ QSharedPointer<IBrowseResult> CoreConnection::browse(const Common::Hash& peerID)
 
 QSharedPointer<IBrowseResult> CoreConnection::browse(const Common::Hash& peerID, const Protos::Common::Entry& entry)
 {
-
    return this->current().browse(peerID, entry, this->SOCKET_TIMEOUT);
 }
 
 QSharedPointer<IBrowseResult> CoreConnection::browse(const Common::Hash& peerID, const Protos::Common::Entries& entries, bool withRoots)
 {
-
    return this->current().browse(peerID, entries, withRoots, this->SOCKET_TIMEOUT);
 }
 

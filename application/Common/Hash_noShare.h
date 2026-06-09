@@ -35,6 +35,7 @@ namespace Common
    {
    public:
       static const int HASH_SIZE = 28;
+      static const int NB_BYTES_SHORT_STR = 3;
 
    private:
       static const char NULL_HASH[HASH_SIZE];
@@ -61,6 +62,7 @@ namespace Common
       inline QByteArray getByteArray() const { return QByteArray(this->data, HASH_SIZE); }
 
       QString toStr() const;
+      QString toStrShort() const;
       QString toStrCArray() const;
       bool isNull() const noexcept;
 

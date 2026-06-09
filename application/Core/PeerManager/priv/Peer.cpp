@@ -47,8 +47,11 @@ Peer::Peer(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManage
 {
    this->speedTimer.invalidate();
 
+   static int interval_ms = SETTINGS.get<double>("peer_timeout_factor") * SETTINGS.get<quint32>("peer_imalive_period");
+   Q_ASSERT(interval_ms > 100); // An inteval near zero shouldn't be possible.
+
    this->aliveTimer.setSingleShot(true);
-   this->aliveTimer.setInterval(SETTINGS.get<double>("peer_timeout_factor") * SETTINGS.get<quint32>("peer_imalive_period"));
+   this->aliveTimer.setInterval(interval_ms);
    connect(&this->aliveTimer, &QTimer::timeout, this, &Peer::consideredDead);
 
    this->blockedTimer.setSingleShot(true);
@@ -64,7 +67,7 @@ QString Peer::toStringLog() const
       QString("%1 %2 %3:%4 %5 %6/s")
          .arg(
             this->nick,
-            this->ID.toStr(),
+            this->ID.toStrShort(),
             this->IP.toString()
          )
          .arg(this->port)
@@ -126,6 +129,7 @@ quint32 Peer::getSpeed()
 
    if (this->speedTimer.isValid() && this->speedTimer.elapsed() > SPEED_VALIDITY_PERIOD)
       this->speed = MAX_SPEED;
+
    return this->speed;
 }
 

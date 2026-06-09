@@ -49,7 +49,7 @@ Chunk::Chunk(File* file, int num, quint32 knownBytes) :
       QString("New chunk[%1]: %2. File: %3")
          .arg(num)
          .arg(
-            hash.toStr(),
+            hash.toStrShort(),
             this->file ? this->file->getRelativePath().toString() : "<no file defined>"
          )
    );
@@ -62,7 +62,7 @@ Chunk::Chunk(File* file, int num, quint32 knownBytes, const Common::Hash& hash) 
       QString("New chunk[%1]: %2. File: %3")
          .arg(num)
          .arg(
-            hash.toStr(),
+            hash.toStrShort(),
             this->file ? this->file->getAbsolutePath().toString() : "<no file defined>"
          )
    );
@@ -74,7 +74,7 @@ Chunk::~Chunk()
       QString("Chunk Deleted[%1]: %2. File: %3")
          .arg(num)
          .arg(
-            this->hash.toStr(),
+            this->hash.toStrShort(),
             this->file ? this->file->getAbsolutePath().toString() : "<file deleted>"
          )
    );
@@ -85,7 +85,7 @@ QString Chunk::toStringLog() const
    return
       QString("num = [%1], hash = %2, knownBytes = %3, size = %4")
          .arg(this->num)
-         .arg(this->getHash().toStr())
+         .arg(this->getHash().toStrShort())
          .arg(this->getKnownBytes())
          .arg(this->getChunkSize());
 }
@@ -189,7 +189,7 @@ Common::Hash Chunk::getHash() const
 void Chunk::setHash(const Common::Hash& hash)
 {
    #ifdef DEBUG
-      L_DEBU(QString("Chunk[%1] setHash(..): %2").arg(this->num).arg(hash.toStr()));
+      L_DEBU(QString("Chunk[%1] setHash(..): %2").arg(this->num).arg(hash.toStrShort()));
       if (!this->hash.isNull() && this->hash != hash)
          L_WARN(
             QString("Chunk::setHash: Hash chunk changed from %1 to %2 for the file %3")
