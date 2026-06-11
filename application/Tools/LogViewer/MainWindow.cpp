@@ -41,6 +41,7 @@ MainWindow::MainWindow(QWidget *parent) :
    this->ui->setupUi(this);
 
    connect(this->ui->actOpen, &QAction::triggered, this, &MainWindow::openDir);
+   connect(this->ui->actShowMultipleLines, &QAction::triggered, this, &MainWindow::setShowMultipleLines);
    connect(this->ui->butFilterAll, &QPushButton::clicked, this, &MainWindow::checkAll);
    connect(this->ui->butRefresh, &QPushButton::clicked, this, &MainWindow::reloadAll);
 
@@ -111,6 +112,11 @@ void MainWindow::openDir()
 
    if (!dir.isNull())
       this->setCurrentDir(dir);
+}
+
+void MainWindow::setShowMultipleLines(bool checked)
+{
+   this->model.setShowMultipleLines(checked);
 }
 
 /**

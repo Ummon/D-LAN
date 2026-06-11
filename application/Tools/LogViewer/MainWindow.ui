@@ -295,6 +295,7 @@
      <string>&amp;File</string>
     </property>
     <addaction name="actOpen"/>
+    <addaction name="actShowMultipleLines"/>
    </widget>
    <addaction name="mnuFile"/>
   </widget>
@@ -308,6 +309,28 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="actShowMultipleLines">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Show multiple lines</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+M</string>
+   </property>
+  </action>
+  <action name="actAutoRefresh">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Auto-refresh</string>
    </property>
   </action>
  </widget>

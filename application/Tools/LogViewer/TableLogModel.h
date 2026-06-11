@@ -42,6 +42,7 @@ public:
    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
 
    void setDataSource(QFile* source);
+   void setShowMultipleLines(bool enabled);
    void removeDataSource();
 
    LM::Severity getSeverity(int row) const;
@@ -77,6 +78,8 @@ private:
    QTimer timer;
 
    QVector<QSharedPointer<LM::IEntry>> entries;
+
+   bool showMultipleLines;
 
    QStringList severities;
    QStringList modules;

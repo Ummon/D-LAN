@@ -31,7 +31,7 @@
   */
 
 TableLogModel::TableLogModel() :
-   source(0)
+   source(nullptr), showMultipleLines(false)
 {
    this->timer.setInterval(500);
    connect(&this->timer, &QTimer::timeout, this, &TableLogModel::fileChanged);
@@ -65,7 +65,7 @@ QVariant TableLogModel::data(const QModelIndex& index, int role) const
          case 2: return entry->getName();
          case 3: return entry->getThread();
          case 4: return entry->getSource();
-         case 5: return entry->getMessageWithLF();
+         case 5: return this->showMultipleLines ? entry->getMessageWithLF() : entry->getMessage();
          default: return QVariant();
          }
       }
@@ -109,10 +109,19 @@ void TableLogModel::setDataSource(QFile* source)
    this->readLines();
 }
 
+void TableLogModel::setShowMultipleLines(bool enabled)
+{
+   if (this->showMultipleLines == enabled)
+      return;
+   this->showMultipleLines = enabled;
+
+   emit(dataChanged(this->index(0, 5), this->index(this->entries.size()-1, 5)));
+}
+
 void TableLogModel::removeDataSource()
 {
    this->clear();
-   this->source = 0;
+   this->source = nullptr;
 }
 
 LM::Severity TableLogModel::getSeverity(int row) const
@@ -169,7 +178,7 @@ void TableLogModel::readLines()
    QTextStream stream(this->source);
    stream.setEncoding(QStringConverter::Utf8);
 
-   int count = this->entries.count();
+   const int count = this->entries.count();
 
    QString line;
    while (line = stream.readLine(), !line.isNull())

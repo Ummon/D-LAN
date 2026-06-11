@@ -45,6 +45,7 @@ protected:
 
 private slots:
    void openDir();
+   void setShowMultipleLines(bool checked);
    void setCurrentFile(QString file);
 
    void filtersChange();
