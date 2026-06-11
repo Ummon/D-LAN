@@ -71,7 +71,12 @@ BrowseWidget::BrowseWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, 
 
    connect(&this->downloadMenu, SIGNAL(download()), this, SLOT(download()));
    connect(&this->downloadMenu, SIGNAL(downloadTo()), this, SLOT(downloadTo()));
-   connect(&this->downloadMenu, SIGNAL(downloadTo(const QString&, const Common::Hash&)), this, SLOT(downloadTo(const QString&, const Common::Hash&)));
+   connect(
+      &this->downloadMenu,
+      SIGNAL(downloadTo(const Common::Path&, const Common::Hash&)),
+      this,
+      SLOT(downloadTo(const Common::Path&, const Common::Hash&))
+   );
 
    connect(&this->browseModel, SIGNAL(loadingResultFinished()), this, SLOT(tryToReachEntryToBrowse()));
 
@@ -168,7 +173,7 @@ void BrowseWidget::downloadTo()
       this->downloadTo(dirs.first());
 }
 
-void BrowseWidget::downloadTo(const QString& path, const Common::Hash& sharedDirID)
+void BrowseWidget::downloadTo(const Common::Path& path, const Common::Hash& sharedDirID)
 {
    QModelIndexList selectedRows = this->ui->treeView->selectionModel()->selectedRows();
 

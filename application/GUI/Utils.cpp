@@ -28,6 +28,7 @@ using namespace GUI;
 #include <QUrl>
 #include <QProcess>
 #include <QGridLayout>
+#include <QTreeView>
 #include <QLabel>
 
 #include <Settings/RemoteFileDialog.h>
@@ -39,41 +40,49 @@ using namespace GUI;
   */
 QStringList Utils::askForDirectoriesOrFiles(QSharedPointer<RCC::ICoreConnection> coreConnection)
 {
-   if (coreConnection->isLocal())
-   {
-      QFileDialog fileDialog(0, "Choose a directory");
-      fileDialog.setOption(QFileDialog::DontUseNativeDialog, true);
+   // if (coreConnection->isLocal())
+   // {
 
-      // TODO: test to select files and dirs.
-      //fileDialog.setFileMode(QFileDialog::Directory);
+   QFileDialog fileDialog(0, QObject::tr("Choose directories or files"));
+   fileDialog.setOption(QFileDialog::DontUseNativeDialog);
+   fileDialog.setViewMode(QFileDialog::Detail);
+   fileDialog.setFileMode(QFileDialog::ExistingFiles);
 
-      QListView* l = fileDialog.findChild<QListView*>("listView");
-      if (l)
-         l->setSelectionMode(QAbstractItemView::ExtendedSelection);
-
-      /* needed?
-      QTreeView *t = w.findChild<QTreeView*>();
-       if (t) {
-         t->setSelectionMode(QAbstractItemView::MultiSelection);
-         */
-
-      if (fileDialog.exec())
+   QObject::connect(
+      &fileDialog,
+      &QFileDialog::currentChanged,
+      &fileDialog,
+      [&fileDialog](const QString& path)
       {
-         return fileDialog.selectedFiles();
+         QFileInfo info(path);
+         fileDialog.setFileMode(info.isDir() ? QFileDialog::Directory : QFileDialog::ExistingFile);
       }
-      return QStringList();
-   }
-   else
+   );
+
+   if (auto* list = fileDialog.findChild<QListView*>("listView"))
+       list->setSelectionMode(QAbstractItemView::ExtendedSelection);
+   if (auto* tree = fileDialog.findChild<QTreeView*>())
+       tree->setSelectionMode(QAbstractItemView::ExtendedSelection);
+
+   if (fileDialog.exec())
    {
-      RemoteFileDialog fileDialog;
-      fileDialog.setWindowTitle("Remote directory");
-      fileDialog.setText("Remote directory to share: ");
-      if (fileDialog.exec())
-      {
-         return QStringList() << fileDialog.getFolder();
-      }
-      return QStringList();
+      return fileDialog.selectedFiles();
    }
+
+   return QStringList();
+
+   // }
+   // else
+   // {
+   //    RemoteFileDialog fileDialog;
+   //    fileDialog.setWindowTitle("Remote directory");
+   //    fileDialog.setText("Remote directory to share: ");
+   //    if (fileDialog.exec())
+   //    {
+   //       return QStringList() << fileDialog.getFolder();
+   //    }
+   //    return QStringList();
+   // }
 }
 
 QStringList Utils::askForDirectoriesToDownloadTo(QSharedPointer<RCC::ICoreConnection> coreConnection)

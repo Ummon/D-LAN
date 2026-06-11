@@ -40,15 +40,7 @@ namespace Common
       QString getName() const
       {
          if (this->name.isEmpty())
-         {
-            if (this->path.isFile())
-               return this->path.getFilename();
-
-            if (this->path.getDirs().isEmpty())
-               return this->path.getRoot();
-
-            return this->path.getDirs().constLast();
-         }
+            return this->path.getLastElement();
 
          return this->name;
       }

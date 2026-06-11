@@ -48,7 +48,11 @@ namespace GUI
       Q_OBJECT
 
    public:
-      explicit SettingsWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, SharedEntryListModel& sharedEntryListModel, QWidget* parent = nullptr);
+      explicit SettingsWidget(
+         QSharedPointer<RCC::ICoreConnection> coreConnection,
+         SharedEntryListModel& sharedEntryListModel,
+         QWidget* parent = nullptr
+      );
       ~SettingsWidget();
 
    public slots:

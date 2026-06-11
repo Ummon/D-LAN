@@ -121,7 +121,12 @@ void InternalCoreConnection::disconnectFromCore()
    this->connectionInfo.clear();
 }
 
-QSharedPointer<ISendChatMessageResult> InternalCoreConnection::sendChatMessage(int socketTimeout, const QString& message, const QString& roomName, const QList<Common::Hash>& peerIDsAnswered)
+QSharedPointer<ISendChatMessageResult> InternalCoreConnection::sendChatMessage(
+   int socketTimeout,
+   const QString& message,
+   const QString& roomName,
+   const QList<Common::Hash>& peerIDsAnswered
+)
 {
    QSharedPointer<SendChatMessageResult> sendChatMessageResult = QSharedPointer<SendChatMessageResult>(new SendChatMessageResult(this, socketTimeout, message, roomName, peerIDsAnswered));
    this->sendChatMessageResultWithoutReply << sendChatMessageResult.toWeakRef();
@@ -233,7 +238,12 @@ void InternalCoreConnection::download(const Common::Hash& peerID, const Protos::
    this->send(Common::MessageHeader::GUI_DOWNLOAD, downloadMessage);
 }
 
-void InternalCoreConnection::download(const Common::Hash& peerID, const Protos::Common::Entry& entry, const Common::Hash& sharedFolderID, const QString& path)
+void InternalCoreConnection::download(
+   const Common::Hash& peerID,
+   const Protos::Common::Entry& entry,
+   const Common::Hash& sharedFolderID,
+   const Common::Path& path
+)
 {
    // We cannot download our entries.
    if (peerID == this->getLocalID())
@@ -244,7 +254,7 @@ void InternalCoreConnection::download(const Common::Hash& peerID, const Protos::
    downloadMessage.mutable_entry()->CopyFrom(entry);
    if (!sharedFolderID.isNull())
       downloadMessage.mutable_destination_directory_id()->set_hash(sharedFolderID.getData(), Common::Hash::HASH_SIZE);
-   downloadMessage.set_destination_path(path.toStdString());
+   downloadMessage.set_destination_path(path.toString().toStdString());
    this->send(Common::MessageHeader::GUI_DOWNLOAD, downloadMessage);
 }
 
@@ -408,7 +418,10 @@ void InternalCoreConnection::sendCurrentLanguage()
 void InternalCoreConnection::onNewMessage(const Common::Message& message)
 {
    // While we are not authenticated we accept only two message types.
-   if (!this->authenticated && message.getHeader().getType() != Common::MessageHeader::GUI_ASK_FOR_AUTHENTICATION && message.getHeader().getType() != Common::MessageHeader::GUI_AUTHENTICATION_RESULT)
+   if (
+      !this->authenticated && message.getHeader().getType() != Common::MessageHeader::GUI_ASK_FOR_AUTHENTICATION &&
+      message.getHeader().getType() != Common::MessageHeader::GUI_AUTHENTICATION_RESULT
+   )
       return;
 
    switch (message.getHeader().getType())

@@ -189,12 +189,21 @@ void CoreConnection::download(const Common::Hash& peerID, const Protos::Common::
    this->current().download(peerID, entry);
 }
 
-void CoreConnection::download(const Common::Hash& peerID, const Protos::Common::Entry& entry, const Common::Hash& sharedFolderID, const QString& path)
+void CoreConnection::download(
+   const Common::Hash& peerID,
+   const Protos::Common::Entry& entry,
+   const Common::Hash& sharedFolderID,
+   const Common::Path& path
+)
 {
    this->current().download(peerID, entry, sharedFolderID, path);
 }
 
-void CoreConnection::download(const Common::Hash& peerID, const Protos::Common::Entry& entry, const QString& absolutePath)
+void CoreConnection::download(
+   const Common::Hash& peerID,
+   const Protos::Common::Entry& entry,
+   const Common::Path& absolutePath
+)
 {
    this->current().download(peerID, entry, Common::Hash(), absolutePath);
 }

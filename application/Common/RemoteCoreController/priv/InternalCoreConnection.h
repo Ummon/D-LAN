@@ -30,6 +30,7 @@
 #include <Protos/gui_protocol.pb.h>
 #include <Protos/common.pb.h>
 
+#include <Common/Path.h>
 #include <Common/Network/MessageSocket.h>
 #include <Common/Timeoutable.h>
 #include <Common/LogManager/IEntry.h>
@@ -88,7 +89,12 @@ namespace RCC
       QSharedPointer<ISearchResult> search(const Protos::Common::FindPattern& findPattern, bool local, int socketTimeout);
 
       void download(const Common::Hash& peerID, const Protos::Common::Entry& entry);
-      void download(const Common::Hash& peerID, const Protos::Common::Entry& entry, const Common::Hash& sharedFolderID, const QString& path = "/");
+      void download(
+         const Common::Hash& peerID,
+         const Protos::Common::Entry& entry,
+         const Common::Hash& sharedFolderID,
+         const Common::Path& path = Common::Path("/")
+      );
       void cancelDownloads(const QList<quint64>& downloadIDs, bool complete = false);
       void pauseDownloads(const QList<quint64>& downloadIDs, bool pause = true);
       void moveDownloads(const QList<quint64>& downloadIDRefs, const QList<quint64>& downloadIDs, Protos::GUI::MoveDownloads::Position position);

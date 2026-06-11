@@ -224,7 +224,7 @@ SearchWidget::SearchWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, 
 
    connect(&this->downloadMenu, SIGNAL(download()), this, SLOT(download()));
    connect(&this->downloadMenu, SIGNAL(downloadTo()), this, SLOT(downloadTo()));
-   connect(&this->downloadMenu, SIGNAL(downloadTo(const QString&, const Common::Hash&)), this, SLOT(downloadTo(const QString&, const Common::Hash&)));
+   connect(&this->downloadMenu, SIGNAL(downloadTo(const Common::Path&, const Common::Hash&)), this, SLOT(downloadTo(const Common::Path&, const Common::Hash&)));
    connect(&this->downloadMenu, SIGNAL(browse()), this, SLOT(browseCurrents()));
 
    this->setWindowTitle(SearchUtils::getFindPatternWindowTitle(findPattern));
@@ -320,7 +320,7 @@ void SearchWidget::downloadTo()
       this->downloadTo(dirs.first());
 }
 
-void SearchWidget::downloadTo(const QString& path, const Common::Hash& sharedDirID)
+void SearchWidget::downloadTo(const Common::Path& path, const Common::Hash& sharedDirID)
 {
    QModelIndexList selectedRows = this->ui->treeView->selectionModel()->selectedRows();
    for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)

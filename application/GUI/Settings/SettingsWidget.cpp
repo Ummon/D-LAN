@@ -49,7 +49,11 @@ void DirListDelegate::paint(QPainter* painter, const QStyleOptionViewItem& optio
 
 /////
 
-SettingsWidget::SettingsWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, SharedEntryListModel& sharedEntryListModel, QWidget* parent) :
+SettingsWidget::SettingsWidget(
+   QSharedPointer<RCC::ICoreConnection> coreConnection,
+   SharedEntryListModel& sharedEntryListModel,
+   QWidget* parent
+) :
    MdiWidget(parent),
    ui(new Ui::SettingsWidget),
    getAtLeastOneState(false),
@@ -59,7 +63,7 @@ SettingsWidget::SettingsWidget(QSharedPointer<RCC::ICoreConnection> coreConnecti
 {
    this->ui->setupUi(this);
 
-   this->ui->tblShareDirs->setItemDelegate(&this->dirListDelegate);
+   this->ui->tblShareDirs->setItemDelegate(&this->dirListDelegate); // TODO: Still needed?
    this->ui->tblShareDirs->setModel(&this->sharedEntryListModel);
    this->ui->tblShareDirs->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
    this->ui->tblShareDirs->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
@@ -520,7 +524,7 @@ void SettingsWidget::resetPassword()
 
 void SettingsWidget::addShared()
 {
-   QStringList entries = Utils::askForDirectoriesOrFiles(this->coreConnection);
+   QStringList entries = Utils::askForDirectoriesOrFiles(this->coreConnection);   
    if (!entries.isEmpty())
    {
       this->sharedEntryListModel.addEntries(entries);
@@ -535,7 +539,7 @@ void SettingsWidget::removeShared()
    {
       QMessageBox msgBox(this);
       msgBox.setWindowTitle("Remove selected shared directory");
-      msgBox.setText("Are you sure to remove the selected shared directory? All computed hashes will be lost.");
+      msgBox.setText("Are you sure to remove the selected shared directory?");
       msgBox.setIcon(QMessageBox::Question);
       msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
       msgBox.setDefaultButton(QMessageBox::Ok);

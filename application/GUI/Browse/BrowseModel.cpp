@@ -37,7 +37,8 @@ using namespace GUI;
 BrowseModel::BrowseModel(
    QSharedPointer<RCC::ICoreConnection> coreConnection,
    const SharedEntryListModel& sharedEntryListModel,
-   const Common::Hash& peerID, bool loadRoots
+   const Common::Hash& peerID,
+   bool loadRoots
 ) :
    coreConnection(coreConnection), sharedEntryListModel(sharedEntryListModel), peerID(peerID), root(new Tree())
 {
@@ -56,19 +57,19 @@ BrowseModel::~BrowseModel()
 QModelIndex BrowseModel::index(int row, int column, const QModelIndex& parent) const
 {
    if (!this->hasIndex(row, column, parent))
-       return QModelIndex();
+      return QModelIndex();
 
    const Tree* parentTree;
 
    if (!parent.isValid())
-       parentTree = this->root;
+      parentTree = this->root;
    else
-       parentTree = static_cast<Tree*>(parent.internalPointer());
+      parentTree = static_cast<Tree*>(parent.internalPointer());
 
    Tree* childTree = parentTree->getChild(row);
 
    if (childTree)
-       return this->createIndex(row, column, childTree);
+      return this->createIndex(row, column, childTree);
    else if (parentTree->hasUnloadedChildren()) // The view want some not yet loaded children . . . so we will load them.
       const_cast<BrowseModel*>(this)->loadChildren(parent);
 
@@ -78,13 +79,13 @@ QModelIndex BrowseModel::index(int row, int column, const QModelIndex& parent) c
 QModelIndex BrowseModel::parent(const QModelIndex& index) const
 {
    if (!index.isValid())
-       return QModelIndex();
+      return QModelIndex();
 
    Tree* tree = static_cast<Tree*>(index.internalPointer());
    Tree* parentItem = tree->getParent();
 
    if (!parentItem || parentItem == this->root)
-       return QModelIndex();
+      return QModelIndex();
 
    return this->createIndex(parentItem->getOwnPosition(), 0, parentItem);
 }
@@ -93,12 +94,12 @@ int BrowseModel::rowCount(const QModelIndex& parent) const
 {
    const Tree* parentTree;
    if (parent.column() > 0)
-       return 0;
+      return 0;
 
    if (!parent.isValid())
-       parentTree = this->root;
+      parentTree = this->root;
    else
-       parentTree = static_cast<Tree*>(parent.internalPointer());
+      parentTree = static_cast<Tree*>(parent.internalPointer());
 
    int nbLoadedChildren = parentTree->getNbChildren();
    if (nbLoadedChildren > 0)
@@ -175,15 +176,12 @@ QString BrowseModel::getPath(const QModelIndex& index, bool appendFilename) cons
    else
    {
       QString path = sharedEntry.path.toString();
+      QString relativePath = Common::ProtoHelper::getPath(entry).toString(appendFilename);
 
-      // TODO needed?
-      if (!path.isEmpty())
-         // Remove the '/' at the end because path given by 'Common::ProtoHelper::getPath(..)' already begins with a '/'.
-         path.remove(path.size() - 1, 1);
-
-      return path.append(
-         Common::ProtoHelper::getPath(entry).toString(appendFilename)
-      );
+      if (relativePath == '/')
+         return path;
+      else
+         return path.append(relativePath);
    }
 }
 
@@ -206,7 +204,14 @@ void BrowseModel::refresh()
    );
 
    this->browseResult = this->coreConnection->browse(this->peerID, entries, true);
-   connect(this->browseResult.data(), SIGNAL(result(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>&)), this, SLOT(resultRefresh(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>&)));
+
+   connect(
+      this->browseResult.data(),
+      SIGNAL(result(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>&)),
+      this,
+      SLOT(resultRefresh(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>&))
+   );
+
    connect(this->browseResult.data(), SIGNAL(timeout()), this, SLOT(resultTimeout()));
    this->browseResult->start();
 }
@@ -289,6 +294,7 @@ void BrowseModel::result(const google::protobuf::RepeatedPtrField<Protos::Common
 void BrowseModel::resultTimeout()
 {
    L_WARN("Asking for entries message timedout");
+   this->currentBrowseIndex = QModelIndex();
    this->browseResult.clear();
    emit loadingResultFinished();
 }
@@ -303,6 +309,9 @@ void BrowseModel::browse(Tree* tree)
 
 void BrowseModel::loadChildren(const QPersistentModelIndex &index)
 {
+   if (index == this->currentBrowseIndex)
+      return;
+
    this->currentBrowseIndex = index;
    this->browse(static_cast<Tree*>(index.internalPointer()));
 }
@@ -445,14 +454,24 @@ void BrowseModel::Tree::setItem(const Protos::Common::Entry& entry)
 
 bool BrowseModel::Tree::hasUnloadedChildren() const
 {
-   return this->getItem().type() == Protos::Common::Entry_Type_DIR && this->getNbChildren() == 0 && !this->getItem().is_empty();
+   return
+      this->getItem().type() == Protos::Common::Entry_Type_DIR &&
+      this->getNbChildren() == 0 &&
+      !this->getItem().is_empty();
 }
 
 QVariant BrowseModel::Tree::data(int column) const
 {
    switch (column)
    {
-   case 0: QString::fromStdString(this->getItem().name());
+   case 0:
+      {
+         const auto& item = this->getItem();
+         if (item.name().empty())
+            return QString::fromStdString(this->getItem().shared_entry().shared_name());
+         else
+            return QString::fromStdString(this->getItem().name());
+      }
    case 1: return Common::Global::formatByteSize(this->getItem().size());
    default: return QVariant();
    }

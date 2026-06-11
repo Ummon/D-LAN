@@ -66,7 +66,7 @@ namespace GUI
 
       void download();
       void downloadTo();
-      void downloadTo(const QString& path, const Common::Hash& sharedDirID = Common::Hash());
+      void downloadTo(const Common::Path& path, const Common::Hash& sharedDirID = Common::Hash());
 
       void openLocation();
       void tryToReachEntryToBrowse();

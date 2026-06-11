@@ -19,6 +19,9 @@
 #include <Settings/SharedEntryListModel.h>
 using namespace GUI;
 
+#include <QFileInfo>
+#include <QDir>
+
 #include <Common/Global.h>
 
 #include <IconProvider.h>
@@ -75,8 +78,14 @@ void SharedEntryListModel::addEntry(const Common::SharedEntry& entry)
 
 void SharedEntryListModel::addEntries(const QStringList& entries)
 {
-   foreach (QString entry, entries)
-      this->addEntry(Common::SharedEntry { Common::Hash(), entry, QString(), 0 ,0 });
+   for (const auto& entry : entries)
+   {
+      QString cleaned = QDir::cleanPath(entry);
+      if (QFileInfo(cleaned).isDir() && (cleaned.isEmpty() || !cleaned.endsWith('/')))
+         cleaned += '/';
+
+      this->addEntry(Common::SharedEntry { Common::Hash(), cleaned, QString(), 0 ,0 });
+   }
 }
 
 void SharedEntryListModel::rmEntry(int row)
@@ -214,7 +223,7 @@ QVariant SharedEntryListModel::data(const QModelIndex& index, int role) const
       return QVariant();
 
    case Qt::TextAlignmentRole:
-      return index.column() == 0 ? Qt::AlignLeft : Qt::AlignRight;
+      return QVariant((index.column() == 0 || index.column() == 1 ? Qt::AlignLeft : Qt::AlignRight) | Qt::AlignVCenter);
 
    default: return QVariant();
    }

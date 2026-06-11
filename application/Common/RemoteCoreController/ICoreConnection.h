@@ -26,6 +26,7 @@
 #include <Protos/gui_protocol.pb.h>
 
 #include <Common/Hash.h>
+#include <Common/Path.h>
 #include <Common/LogManager/IEntry.h>
 
 #include <Common/RemoteCoreController/Types.h>
@@ -187,13 +188,22 @@ namespace RCC
       /**
         * @param relativePath Must ended with a slash ('/').
         */
-      virtual void download(const Common::Hash& peerID, const Protos::Common::Entry& entry, const Common::Hash& sharedFolderID, const QString& relativePath = "/") = 0;
+      virtual void download(
+         const Common::Hash& peerID,
+         const Protos::Common::Entry& entry,
+         const Common::Hash& sharedFolderID,
+         const Common::Path& relativePath = Common::Path("/")
+      ) = 0;
 
       /**
         * Download an entry 'entry' from the peer 'peerID' to a local path 'absolutePath'. If there is no shared directory corresponding
         * to the given path a new shared directory is automatically created.
         */
-      virtual void download(const Common::Hash& peerID, const Protos::Common::Entry& entry, const QString& absolutePath) = 0;
+      virtual void download(
+         const Common::Hash& peerID,
+         const Protos::Common::Entry& entry,
+         const Common::Path& absolutePath
+      ) = 0;
 
       /**
         * Cancel one or more download. IDs are given by the signal 'newState'.

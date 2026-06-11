@@ -50,11 +50,11 @@ namespace GUI
       );
       virtual ~BrowseModel();
 
-      virtual QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
-      virtual QModelIndex parent(const QModelIndex& child) const;
-      virtual int rowCount(const QModelIndex& parent = QModelIndex()) const;
-      virtual int columnCount(const QModelIndex& parent = QModelIndex()) const;
-      virtual QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
+      virtual QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
+      virtual QModelIndex parent(const QModelIndex& child) const override;
+      virtual int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+      virtual int columnCount(const QModelIndex& parent = QModelIndex()) const override;
+      virtual QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
       virtual Protos::Common::Entry getEntry(const QModelIndex& index) const;
 
@@ -92,7 +92,7 @@ namespace GUI
          virtual ~Tree();
 
          virtual void insertChildren(const Protos::Common::Entries& entries);
-         virtual void setItem(const Protos::Common::Entry& entry);
+         virtual void setItem(const Protos::Common::Entry& entry) override;
          virtual bool hasUnloadedChildren() const;
          virtual QVariant data(int column) const;
 

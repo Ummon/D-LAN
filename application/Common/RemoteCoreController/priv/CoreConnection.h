@@ -54,54 +54,63 @@ namespace RCC
       CoreConnection(int socketTimeout = DEFAULT_SOCKET_TIMEOUT);
       ~CoreConnection();
 
-      void setCoreExecutableDirectory(const QString& dir);
-      void startLocalCore();
-      void stopLocalCore();
-      CoreStatus getLocalCoreStatus() const;
+      void setCoreExecutableDirectory(const QString& dir) override;
+      void startLocalCore() override;
+      void stopLocalCore() override;
+      CoreStatus getLocalCoreStatus() const override;
 
-      void connectToCore();
-      void connectToCore(quint16 port);
-      void connectToCore(const QString& address, quint16 port, Common::Hash password);
-      void connectToCore(const QString& address, quint16 port, const QString& password);
+      void connectToCore() override;
+      void connectToCore(quint16 port) override;
+      void connectToCore(const QString& address, quint16 port, Common::Hash password) override;
+      void connectToCore(const QString& address, quint16 port, const QString& password) override;
 
       Common::Hash getLocalID() const;
-      Common::Hash getRemoteID() const;
+      Common::Hash getRemoteID() const override;
 
-      bool isLocal() const;
-      bool isConnected() const;
-      bool isConnecting() const;
+      bool isLocal() const override;
+      bool isConnected() const override;
+      bool isConnecting() const override;
 
-      void disconnectFromCore();
+      void disconnectFromCore() override;
 
-      QSharedPointer<ISendChatMessageResult> sendChatMessage(const QString& message);
-      QSharedPointer<ISendChatMessageResult> sendChatMessage(const QString& message, const QString& roomName);
-      QSharedPointer<ISendChatMessageResult> sendChatMessage(const QString& message, const QString& roomName, const QList<Common::Hash>& peerIDsAnswered);
-      void joinRoom(const QString& room);
-      void leaveRoom(const QString& room);
-      void setCoreSettings(const Protos::GUI::CoreSettings settings);
-      void setCoreLanguage(const QLocale& locale);
-      bool setCorePassword(const QString& newPassword, const QString& oldPassword = QString());
-      void resetCorePassword();
+      QSharedPointer<ISendChatMessageResult> sendChatMessage(const QString& message) override;
+      QSharedPointer<ISendChatMessageResult> sendChatMessage(const QString& message, const QString& roomName) override;
+      QSharedPointer<ISendChatMessageResult> sendChatMessage(const QString& message, const QString& roomName, const QList<Common::Hash>& peerIDsAnswered) override;
+      void joinRoom(const QString& room) override;
+      void leaveRoom(const QString& room) override;
+      void setCoreSettings(const Protos::GUI::CoreSettings settings) override;
+      void setCoreLanguage(const QLocale& locale) override;
+      bool setCorePassword(const QString& newPassword, const QString& oldPassword = QString()) override;
+      void resetCorePassword() override;
 
-      QSharedPointer<IBrowseResult> browse(const Common::Hash& peerID);
-      QSharedPointer<IBrowseResult> browse(const Common::Hash& peerID, const Protos::Common::Entry& entry);
-      QSharedPointer<IBrowseResult> browse(const Common::Hash& peerID, const Protos::Common::Entries& entries, bool withRoots = true);
+      QSharedPointer<IBrowseResult> browse(const Common::Hash& peerID) override;
+      QSharedPointer<IBrowseResult> browse(const Common::Hash& peerID, const Protos::Common::Entry& entry) override;
+      QSharedPointer<IBrowseResult> browse(const Common::Hash& peerID, const Protos::Common::Entries& entries, bool withRoots = true) override;
 
-      QSharedPointer<ISearchResult> search(const Protos::Common::FindPattern& findPattern, bool local = false);
+      QSharedPointer<ISearchResult> search(const Protos::Common::FindPattern& findPattern, bool local = false) override;
 
-      void download(const Common::Hash& peerID, const Protos::Common::Entry& entry);
-      void download(const Common::Hash& peerID, const Protos::Common::Entry& entry, const Common::Hash& sharedFolderID, const QString& path = "/");
-      void download(const Common::Hash& peerID, const Protos::Common::Entry& entry, const QString& absolutePath);
-      void cancelDownloads(const QList<quint64>& downloadIDs, bool complete = false);
-      void pauseDownloads(const QList<quint64>& downloadIDs, bool pause = true);
-      void moveDownloads(quint64 downloadIDRef, const QList<quint64>& downloadIDs, Protos::GUI::MoveDownloads::Position position = Protos::GUI::MoveDownloads::BEFORE);
-      void moveDownloads(const QList<quint64>& downloadIDRefs, const QList<quint64>& downloadIDs, Protos::GUI::MoveDownloads::Position position = Protos::GUI::MoveDownloads::BEFORE);
+      void download(const Common::Hash& peerID, const Protos::Common::Entry& entry) override;
+      void download(
+         const Common::Hash& peerID,
+         const Protos::Common::Entry& entry,
+         const Common::Hash& sharedFolderID,
+         const Common::Path& path = Common::Path("/")
+      ) override;
+      void download(
+         const Common::Hash& peerID,
+         const Protos::Common::Entry& entry,
+         const Common::Path& absolutePath
+      ) override;
+      void cancelDownloads(const QList<quint64>& downloadIDs, bool complete = false) override;
+      void pauseDownloads(const QList<quint64>& downloadIDs, bool pause = true) override;
+      void moveDownloads(quint64 downloadIDRef, const QList<quint64>& downloadIDs, Protos::GUI::MoveDownloads::Position position = Protos::GUI::MoveDownloads::BEFORE) override;
+      void moveDownloads(const QList<quint64>& downloadIDRefs, const QList<quint64>& downloadIDs, Protos::GUI::MoveDownloads::Position position = Protos::GUI::MoveDownloads::BEFORE) override;
 
-      void refresh();
-      void refreshNetworkInterfaces();
+      void refresh() override;
+      void refreshNetworkInterfaces() override;
 
-      ConnectionInfo getConnectionInfo() const;
-      ConnectionInfo getConnectionInfoConnecting() const;
+      ConnectionInfo getConnectionInfo() const override;
+      ConnectionInfo getConnectionInfoConnecting() const override;
 
    private slots:
       void tempConnectingError(RCC::ICoreConnection::ConnectionErrorCode code);
