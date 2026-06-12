@@ -189,7 +189,7 @@ void DownloadsWidget::displayContextMenuDownloads(const QPoint& point)
       for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
          if (this->currentDownloadsModel->isFileLocationKnown(i.next()))
          {
-            menu.addAction(QIcon(":/icons/ressources/explore_folder.png"), tr("Open location"), this, SLOT(openLocationSelectedEntries()));
+            menu.addAction(QIcon(":/icons/ressources/explore_folder.svg"), tr("Open location"), this, SLOT(openLocationSelectedEntries()));
             break;
          }
 

@@ -577,12 +577,12 @@ void SettingsWidget::displayContextMenuSharedDirs(const QPoint& point)
    globalPosition.setY(globalPosition.y() + this->ui->tblShareDirs->horizontalHeader()->height());
 
    QMenu menu;
-   QAction* actionDelete = menu.addAction(QIcon(":/icons/ressources/delete.png"), tr("Remove the shared directory"), this, SLOT(removeShared()));
-   QAction* actionUp = menu.addAction(QIcon(":/icons/ressources/arrow_up.png"), tr("Move up"), this, SLOT(moveUpShared()));
-   QAction* actionDown = menu.addAction(QIcon(":/icons/ressources/arrow_down.png"), tr("Move down"), this, SLOT(moveDownShared()));
+   QAction* actionDelete = menu.addAction(QIcon(":/icons/ressources/remove_file_folder.svg"), tr("Remove the shared directory"), this, SLOT(removeShared()));
+   QAction* actionUp = menu.addAction(QIcon(":/icons/ressources/arrow_up.svg"), tr("Move up"), this, SLOT(moveUpShared()));
+   QAction* actionDown = menu.addAction(QIcon(":/icons/ressources/arrow_down.svg"), tr("Move down"), this, SLOT(moveDownShared()));
 
    if (this->coreConnection->isLocal() && this->sharedEntryListModel.rowCount() > 0)
-      menu.addAction(QIcon(":/icons/ressources/explore_folder.png"), tr("Open location"), this, SLOT(openLocation()));
+      menu.addAction(QIcon(":/icons/ressources/explore_folder.svg"), tr("Open location"), this, SLOT(openLocation()));
 
    if (this->sharedEntryListModel.rowCount() == 0)
       actionDelete->setDisabled(true);

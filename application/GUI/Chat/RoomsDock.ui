@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="features">
-   <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable|QDockWidget::DockWidgetVerticalTitleBar</set>
+   <set>QDockWidget::DockWidgetFeature::DockWidgetFloatable|QDockWidget::DockWidgetFeature::DockWidgetMovable|QDockWidget::DockWidgetFeature::DockWidgetVerticalTitleBar</set>
   </property>
   <property name="windowTitle">
    <string>Chat rooms</string>
@@ -61,7 +61,13 @@
         </property>
         <property name="icon">
          <iconset resource="../ressources.qrc">
-          <normaloff>:/icons/ressources/join_chat_room.png</normaloff>:/icons/ressources/join_chat_room.png</iconset>
+          <normaloff>:/icons/ressources/join_chat_room.svg</normaloff>:/icons/ressources/join_chat_room.svg</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>16</width>
+          <height>16</height>
+         </size>
         </property>
         <property name="flat">
          <bool>true</bool>

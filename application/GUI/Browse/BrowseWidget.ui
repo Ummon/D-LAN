@@ -15,7 +15,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="../ressources.qrc">
-    <normaloff>:/icons/ressources/folder.png</normaloff>:/icons/ressources/folder.png</iconset>
+    <normaloff>:/icons/ressources/folder.svg</normaloff>:/icons/ressources/folder.svg</iconset>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="leftMargin">
@@ -56,7 +56,7 @@
      </property>
      <property name="icon">
       <iconset resource="../ressources.qrc">
-       <normaloff>:/icons/ressources/download.png</normaloff>:/icons/ressources/download.png</iconset>
+       <normaloff>:/icons/ressources/dowload.svg</normaloff>:/icons/ressources/dowload.svg</iconset>
      </property>
     </widget>
    </item>

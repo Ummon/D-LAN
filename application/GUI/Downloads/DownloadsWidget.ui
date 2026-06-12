@@ -15,7 +15,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="../ressources.qrc">
-    <normaloff>:/icons/ressources/download.png</normaloff>:/icons/ressources/download.png</iconset>
+    <normaloff>:/icons/ressources/dowload.svg</normaloff>:/icons/ressources/dowload.svg</iconset>
   </property>
   <layout class="QVBoxLayout" name="layMain">
    <property name="spacing">
@@ -178,7 +178,7 @@
         <number>0</number>
        </property>
        <property name="alignment">
-        <set>Qt::AlignCenter</set>
+        <set>Qt::AlignmentFlag::AlignCenter</set>
        </property>
        <property name="format">
         <string notr="true"/>

@@ -19,6 +19,8 @@
 #include <Peers/PeerListModel.h>
 using namespace GUI;
 
+#include <QGuiApplication>
+#include <QPalette>
 #include <QtAlgorithms>
 #include <QStringBuilder>
 #include <QSet>
@@ -49,6 +51,12 @@ struct PeerListModel::Peer
    TransferInformation transferInformation;
    Protos::GUI::State::Peer::PeerStatus status;
 };
+
+const QColor PeerListModel::COLOR_OURSELF = QColor::fromHslF(0.17, 0.3, 0.0);
+const QColor PeerListModel::COLOR_PEER_ERROR(160, 160, 160);
+const QColor PeerListModel::COLOR_PEER_RED(118, 0, 0);
+const QColor PeerListModel::COLOR_PEER_GREEN(0, 88, 0);
+const QColor PeerListModel::COLOR_PEER_BLUE(0, 0, 108);
 
 PeerListModel::PeerListModel(QSharedPointer<RCC::ICoreConnection> coreConnection) :
    coreConnection(coreConnection),
@@ -215,16 +223,24 @@ QVariant PeerListModel::data(const QModelIndex& index, int role) const
       if (this->peersToColorize.contains(this->orderedPeers.getFromIndex(index.row())->peerID))
          return this->peersToColorize[this->orderedPeers.getFromIndex(index.row())->peerID];
       if (this->isOurself(index.row()))
-         return QColor(192, 255, 192);
+      {
+         auto color = QGuiApplication::palette().color(QPalette::Normal, QPalette::Window).toHsl();
+         color.setHslF(COLOR_OURSELF.hslHueF(), COLOR_OURSELF.hslSaturationF(), color.lightnessF());
+         return color;
+      }
       return QVariant();
 
    case Qt::ForegroundRole:
       if (this->orderedPeers.getFromIndex(index.row())->status != Protos::GUI::State::Peer::OK)
-         return QColor(160, 160, 160);
+         return COLOR_PEER_ERROR;
       if (this->peersToColorize.contains(this->orderedPeers.getFromIndex(index.row())->peerID))
-         return QColor(255, 255, 255);
+         return QColor(240, 240, 240);
       if (this->isOurself(index.row()))
-         return QColor(0, 0, 0);
+      {
+         auto color = QGuiApplication::palette().color(QPalette::Normal, QPalette::WindowText).toHsl();
+         color.setHslF(COLOR_OURSELF.hslHueF(), COLOR_OURSELF.hslSaturationF(), color.lightnessF());
+         return color;
+      }
       return QVariant();
 
    case Qt::TextAlignmentRole:

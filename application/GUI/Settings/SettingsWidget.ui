@@ -15,7 +15,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="../ressources.qrc">
-    <normaloff>:/icons/ressources/settings.png</normaloff>:/icons/ressources/settings.png</iconset>
+    <normaloff>:/icons/ressources/settings.svg</normaloff>:/icons/ressources/settings.svg</iconset>
   </property>
   <layout class="QVBoxLayout" name="layMain">
    <property name="leftMargin">
@@ -33,7 +33,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="tabBasicSettings">
       <attribute name="title">
@@ -73,7 +73,13 @@
            </property>
            <property name="icon">
             <iconset resource="../ressources.qrc">
-             <normaloff>:/icons/ressources/add.png</normaloff>:/icons/ressources/add.png</iconset>
+             <normaloff>:/icons/ressources/add_file_folder.svg</normaloff>:/icons/ressources/add_file_folder.svg</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>16</width>
+             <height>16</height>
+            </size>
            </property>
            <property name="flat">
             <bool>false</bool>
@@ -90,7 +96,13 @@
            </property>
            <property name="icon">
             <iconset resource="../ressources.qrc">
-             <normaloff>:/icons/ressources/delete.png</normaloff>:/icons/ressources/delete.png</iconset>
+             <normaloff>:/icons/ressources/remove_file_folder.svg</normaloff>:/icons/ressources/remove_file_folder.svg</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>16</width>
+             <height>16</height>
+            </size>
            </property>
           </widget>
          </item>
@@ -104,7 +116,13 @@
            </property>
            <property name="icon">
             <iconset resource="../ressources.qrc">
-             <normaloff>:/icons/ressources/arrow_down.png</normaloff>:/icons/ressources/arrow_down.png</iconset>
+             <normaloff>:/icons/ressources/arrow_down.svg</normaloff>:/icons/ressources/arrow_down.svg</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>16</width>
+             <height>16</height>
+            </size>
            </property>
           </widget>
          </item>
@@ -118,7 +136,13 @@
            </property>
            <property name="icon">
             <iconset resource="../ressources.qrc">
-             <normaloff>:/icons/ressources/arrow_up.png</normaloff>:/icons/ressources/arrow_up.png</iconset>
+             <normaloff>:/icons/ressources/arrow_up.svg</normaloff>:/icons/ressources/arrow_up.svg</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>16</width>
+             <height>16</height>
+            </size>
            </property>
           </widget>
          </item>
@@ -132,14 +156,20 @@
            </property>
            <property name="icon">
             <iconset resource="../ressources.qrc">
-             <normaloff>:/icons/ressources/explore_folder.png</normaloff>:/icons/ressources/explore_folder.png</iconset>
+             <normaloff>:/icons/ressources/explore_folder.svg</normaloff>:/icons/ressources/explore_folder.svg</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>16</width>
+             <height>16</height>
+            </size>
            </property>
           </widget>
          </item>
          <item>
           <spacer name="horizontalSpacer">
            <property name="orientation">
-            <enum>Qt::Horizontal</enum>
+            <enum>Qt::Orientation::Horizontal</enum>
            </property>
            <property name="sizeHint" stdset="0">
             <size>
@@ -193,7 +223,7 @@
              </sizepolicy>
             </property>
             <property name="horizontalScrollBarPolicy">
-             <enum>Qt::ScrollBarAlwaysOff</enum>
+             <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
             </property>
             <property name="widgetResizable">
              <bool>true</bool>
@@ -203,8 +233,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>591</width>
-               <height>93</height>
+               <width>603</width>
+               <height>75</height>
               </rect>
              </property>
              <property name="sizePolicy">
@@ -280,10 +310,10 @@
        <item>
         <spacer name="verticalSpacer_2">
          <property name="orientation">
-          <enum>Qt::Vertical</enum>
+          <enum>Qt::Orientation::Vertical</enum>
          </property>
          <property name="sizeType">
-          <enum>QSizePolicy::Preferred</enum>
+          <enum>QSizePolicy::Policy::Preferred</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
@@ -344,7 +374,13 @@
            </property>
            <property name="icon">
             <iconset resource="../ressources.qrc">
-             <normaloff>:/icons/ressources/refresh.png</normaloff>:/icons/ressources/refresh.png</iconset>
+             <normaloff>:/icons/ressources/refresh.svg</normaloff>:/icons/ressources/refresh.svg</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>16</width>
+             <height>16</height>
+            </size>
            </property>
           </widget>
          </item>
@@ -385,17 +421,17 @@
             <item row="3" column="0">
              <widget class="QLineEdit" name="txtPassword">
               <property name="echoMode">
-               <enum>QLineEdit::Password</enum>
+               <enum>QLineEdit::EchoMode::Password</enum>
               </property>
              </widget>
             </item>
             <item row="4" column="0" colspan="2">
              <spacer name="verticalSpacer_3">
               <property name="orientation">
-               <enum>Qt::Vertical</enum>
+               <enum>Qt::Orientation::Vertical</enum>
               </property>
               <property name="sizeType">
-               <enum>QSizePolicy::Fixed</enum>
+               <enum>QSizePolicy::Policy::Fixed</enum>
               </property>
               <property name="sizeHint" stdset="0">
                <size>
@@ -414,7 +450,13 @@
                 </property>
                 <property name="icon">
                  <iconset resource="../ressources.qrc">
-                  <normaloff>:/icons/ressources/lightning.png</normaloff>:/icons/ressources/lightning.png</iconset>
+                  <normaloff>:/icons/ressources/connect.svg</normaloff>:/icons/ressources/connect.svg</iconset>
+                </property>
+                <property name="iconSize">
+                 <size>
+                  <width>16</width>
+                  <height>16</height>
+                 </size>
                 </property>
                 <property name="default">
                  <bool>true</bool>
@@ -465,7 +507,7 @@
        <item>
         <spacer name="verticalSpacer">
          <property name="orientation">
-          <enum>Qt::Vertical</enum>
+          <enum>Qt::Orientation::Vertical</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>

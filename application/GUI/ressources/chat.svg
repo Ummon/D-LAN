@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 69 69" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;">
+    <g transform="matrix(1,0,0,1,-81.886476,-8.00569)">
+        <g id="Chat">
+            <g transform="matrix(0.177329,0,0,0.205729,34.258148,-62.000004)">
+                <rect x="280.506" y="349.975" width="360.911" height="311.089" style="fill:none;"/>
+            </g>
+            <g transform="matrix(2.777924,0,0,2.777924,82.664915,8.784129)">
+                <path d="M12,22C17.523,22 22,17.523 22,12C22,6.477 17.523,2 12,2C6.477,2 2,6.477 2,12C2,13.6 2.376,15.112 3.043,16.453C3.221,16.809 3.28,17.216 3.177,17.601L2.582,19.827C2.323,20.793 3.207,21.677 4.173,21.419L6.399,20.823C6.784,20.72 7.191,20.779 7.548,20.956C8.888,21.624 10.4,22 12,22Z" style="fill:rgb(169,155,224);fill-rule:nonzero;stroke:black;stroke-width:1.11px;"/>
+            </g>
+        </g>
+    </g>
+</svg>

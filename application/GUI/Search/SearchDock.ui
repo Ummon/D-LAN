@@ -3,7 +3,7 @@
  <class>SearchDock</class>
  <widget class="QDockWidget" name="SearchDock">
   <property name="windowModality">
-   <enum>Qt::NonModal</enum>
+   <enum>Qt::WindowModality::NonModal</enum>
   </property>
   <property name="geometry">
    <rect>
@@ -20,7 +20,7 @@
    </size>
   </property>
   <property name="features">
-   <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable|QDockWidget::DockWidgetVerticalTitleBar</set>
+   <set>QDockWidget::DockWidgetFeature::DockWidgetFloatable|QDockWidget::DockWidgetFeature::DockWidgetMovable|QDockWidget::DockWidgetFeature::DockWidgetVerticalTitleBar</set>
   </property>
   <property name="windowTitle">
    <string>Search</string>
@@ -82,7 +82,13 @@
         </property>
         <property name="icon">
          <iconset resource="../ressources.qrc">
-          <normaloff>:/icons/ressources/zoom.png</normaloff>:/icons/ressources/zoom.png</iconset>
+          <normaloff>:/icons/ressources/search.svg</normaloff>:/icons/ressources/search.svg</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>16</width>
+          <height>16</height>
+         </size>
         </property>
         <property name="flat">
          <bool>true</bool>
@@ -99,7 +105,13 @@
         </property>
         <property name="icon">
          <iconset resource="../ressources.qrc">
-          <normaloff>:/icons/ressources/clear_fields.png</normaloff>:/icons/ressources/clear_fields.png</iconset>
+          <normaloff>:/icons/ressources/clear_fields.svg</normaloff>:/icons/ressources/clear_fields.svg</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>16</width>
+          <height>16</height>
+         </size>
         </property>
         <property name="checkable">
          <bool>false</bool>
@@ -165,9 +177,6 @@
            <property name="editable">
             <bool>false</bool>
            </property>
-           <property name="sizeAdjustPolicy">
-            <enum>QComboBox::AdjustToMinimumContentsLength</enum>
-           </property>
            <property name="minimumContentsLength">
             <number>3</number>
            </property>
@@ -213,9 +222,6 @@
          </item>
          <item>
           <widget class="QComboBox" name="cmbMinSize">
-           <property name="sizeAdjustPolicy">
-            <enum>QComboBox::AdjustToMinimumContentsLength</enum>
-           </property>
            <property name="minimumContentsLength">
             <number>3</number>
            </property>
@@ -229,10 +235,10 @@
     <item>
      <spacer name="verticalSpacer">
       <property name="orientation">
-       <enum>Qt::Vertical</enum>
+       <enum>Qt::Orientation::Vertical</enum>
       </property>
       <property name="sizeType">
-       <enum>QSizePolicy::MinimumExpanding</enum>
+       <enum>QSizePolicy::Policy::MinimumExpanding</enum>
       </property>
       <property name="sizeHint" stdset="0">
        <size>

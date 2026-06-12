@@ -235,7 +235,7 @@ void ChatWidget::displayContextMenuPeers(const QPoint& point)
    addrVariant.setValue(addr);
 
    QMenu menu;
-   menu.addAction(QIcon(":/icons/ressources/folder.png"), tr("Browse"), this, SLOT(browseSelectedPeers()));
+   menu.addAction(QIcon(":/icons/ressources/folder.svg"), tr("Browse"), this, SLOT(browseSelectedPeers()));
 
    if (!addr.isNull())
    {
@@ -275,7 +275,7 @@ void ChatWidget::displayContextMenu(const QPoint& point)
 {
    QMenu menu;
    menu.addAction(tr("Copy selected lines"), this, SLOT(copySelectedLineToClipboard()));
-   menu.addAction(QIcon(":/icons/ressources/folder.png"), tr("Browse selected peers"), this, SLOT(browseSelectedMessages()));
+   menu.addAction(QIcon(":/icons/ressources/folder.svg"), tr("Browse selected peers"), this, SLOT(browseSelectedMessages()));
    menu.exec(this->ui->tblChat->mapToGlobal(point));
 }
 
@@ -850,22 +850,22 @@ void ChatWidget::setNewMessageState(bool newMessage)
    {      
       if (this->chatModel.isMainChat())
       {
-         this->setWindowIcon(QIcon(":/icons/ressources/chat_new_mess.png"));
+         this->setWindowIcon(QIcon(":/icons/ressources/chat_new_mess.svg"));
       }
       else
       {
-         this->setWindowIcon(QIcon(":/icons/ressources/chat_room_new_mess.png"));
+         this->setWindowIcon(QIcon(":/icons/ressources/chat_room_new_mess.svg"));
       }
    }
    else
    {
       if (this->chatModel.isMainChat())
       {
-         this->setWindowIcon(QIcon(":/icons/ressources/chat.png"));
+         this->setWindowIcon(QIcon(":/icons/ressources/chat.svg"));
       }
       else
       {
-         this->setWindowIcon(QIcon(":/icons/ressources/chat_room.png"));
+         this->setWindowIcon(QIcon(":/icons/ressources/chat_room.svg"));
       }
    }
 }

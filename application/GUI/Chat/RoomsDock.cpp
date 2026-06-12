@@ -89,7 +89,7 @@ bool RoomsDock::eventFilter(QObject* obj, QEvent* event)
 void RoomsDock::displayContextMenuRooms(const QPoint& point)
 {
    QMenu menu;
-   menu.addAction(QIcon(":/icons/ressources/join_chat_room.png"), tr("Join"), this, SLOT(joinSelectedRoom()));
+   menu.addAction(QIcon(":/icons/ressources/join_chat_room.svg"), tr("Join"), this, SLOT(joinSelectedRoom()));
 
    menu.addSeparator();
 

@@ -136,9 +136,9 @@ void TabCloseButton::setToolTipTranslate()
 TabRefreshButton::TabRefreshButton(QWidget* parent) :
    TabButton(parent)
 {
-   this->icon.addPixmap(QPixmap(":/icons/ressources/refresh.png"), QIcon::Normal, QIcon::Off);
-   this->icon.addPixmap(QPixmap(":/icons/ressources/refresh-down.png"), QIcon::Normal, QIcon::On);
-   this->icon.addPixmap(QPixmap(":/icons/ressources/refresh-hover.png"), QIcon::Active, QIcon::Off);
+   this->icon.addPixmap(QPixmap(":/icons/ressources/refresh.svg"), QIcon::Normal, QIcon::Off);
+   this->icon.addPixmap(QPixmap(":/icons/ressources/refresh-down.svg"), QIcon::Normal, QIcon::On);
+   this->icon.addPixmap(QPixmap(":/icons/ressources/refresh-hover.svg"), QIcon::Active, QIcon::Off);
    this->setToolTipTranslate();
 }
 

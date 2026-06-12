@@ -94,13 +94,13 @@ void PeersDock::displayContextMenuPeers(const QPoint& point)
 
    QMenu menu;
    if (peerStatus == Protos::GUI::State::Peer::OK)
-      menu.addAction(QIcon(":/icons/ressources/folder.png"), tr("Browse"), this, SLOT(browse()));
+      menu.addAction(QIcon(":/icons/ressources/folder.svg"), tr("Browse"), this, SLOT(browse()));
 
    if (!addr.isNull())
    {
       if (peerStatus == Protos::GUI::State::Peer::OK)
       {
-         QAction* takeControlAction = menu.addAction(QIcon(":/icons/ressources/lightning.png"), tr("Take control"), this, SLOT(takeControlOfACore()));
+         QAction* takeControlAction = menu.addAction(QIcon(":/icons/ressources/connect.svg"), tr("Take control"), this, SLOT(takeControlOfACore()));
          takeControlAction->setData(addrVariant);
       }
 
@@ -110,8 +110,11 @@ void PeersDock::displayContextMenuPeers(const QPoint& point)
 
    menu.addSeparator();
 
-   QAction* sortBySharingAmountAction = menu.addAction(tr("Sort by the amount of sharing"), this, SLOT(sortPeersBySharingAmount()));
-   QAction* sortByNickAction = menu.addAction(tr("Sort alphabetically"), this, SLOT(sortPeersByNick()));
+   QAction* sortBySharingAmountAction =
+      menu.addAction(tr("Sort by the amount of sharing"), this, &PeersDock::sortPeersBySharingAmount);
+
+   QAction* sortByNickAction =
+      menu.addAction(tr("Sort alphabetically"), this, &PeersDock::sortPeersByNick);
 
    QActionGroup sortGroup(this);
    sortGroup.setExclusive(true);
@@ -124,10 +127,29 @@ void PeersDock::displayContextMenuPeers(const QPoint& point)
 
    menu.addSeparator();
 
-   menu.addAction(QIcon(":/icons/ressources/marble_red.png"), tr("Colorize in red"), this, SLOT(colorizeSelectedPeer()))->setData(QColor(128, 0, 0));
-   menu.addAction(QIcon(":/icons/ressources/marble_blue.png"), tr("Colorize in blue"), this, SLOT(colorizeSelectedPeer()))->setData(QColor(0, 0, 128));
-   menu.addAction(QIcon(":/icons/ressources/marble_green.png"), tr("Colorize in green"), this, SLOT(colorizeSelectedPeer()))->setData(QColor(0, 128, 0));
-   menu.addAction(tr("Uncolorize"), this, SLOT(uncolorizeSelectedPeer()));
+   menu.addAction(
+      QIcon(":/icons/ressources/marble_red.svg"),
+      tr("Colorize in red"),
+      this,
+      &PeersDock::colorizeSelectedPeer
+   )->setData(PeerListModel::COLOR_PEER_RED);
+
+   menu.addAction(
+      QIcon(":/icons/ressources/marble_blue.svg"),
+      tr("Colorize in blue"),
+      this,
+      &PeersDock::colorizeSelectedPeer
+   )->setData(PeerListModel::COLOR_PEER_BLUE);
+
+
+   menu.addAction(
+      QIcon(":/icons/ressources/marble_green.svg"),
+      tr("Colorize in green"),
+      this,
+      &PeersDock::colorizeSelectedPeer
+   )->setData(PeerListModel::COLOR_PEER_GREEN);
+
+   menu.addAction(tr("Uncolorize"), this, &PeersDock::uncolorizeSelectedPeer);
 
    menu.exec(this->ui->tblPeers->mapToGlobal(point));
 }
@@ -218,7 +240,8 @@ void PeersDock::colorizeSelectedPeer()
    }
 
    // Update the settings.
-   Protos::GUI::Settings::HighlightedPeers highlightedPeers = SETTINGS.get<Protos::GUI::Settings::HighlightedPeers>("highlighted_peers");
+   Protos::GUI::Settings::HighlightedPeers highlightedPeers =
+      SETTINGS.get<Protos::GUI::Settings::HighlightedPeers>("highlighted_peers");
    for (int i = 0; i < highlightedPeers.peers_size() && !peerIDs.isEmpty(); i++)
    {
       const Common::Hash peerID(highlightedPeers.peers(i).id().hash());
@@ -252,7 +275,8 @@ void PeersDock::uncolorizeSelectedPeer()
    }
 
    // Update the settings.
-   Protos::GUI::Settings::HighlightedPeers highlightedPeers = SETTINGS.get<Protos::GUI::Settings::HighlightedPeers>("highlighted_peers");
+   Protos::GUI::Settings::HighlightedPeers highlightedPeers =
+      SETTINGS.get<Protos::GUI::Settings::HighlightedPeers>("highlighted_peers");
    for (int i = 0; i < highlightedPeers.peers_size() && !peerIDs.isEmpty(); i++)
    {
       const Common::Hash peerID(highlightedPeers.peers(i).id().hash());

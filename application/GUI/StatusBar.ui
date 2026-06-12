@@ -14,7 +14,7 @@
    <string notr="true"/>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
-   <property name="margin">
+   <property name="margin" stdset="0">
     <number>2</number>
    </property>
    <item>
@@ -33,8 +33,14 @@
      </property>
      <property name="icon">
       <iconset resource="ressources.qrc">
-       <normaloff>:/icons/ressources/log.png</normaloff>
-       <activeon>:/icons/ressources/log_active.png</activeon>:/icons/ressources/log.png</iconset>
+       <normaloff>:/icons/ressources/log.svg</normaloff>
+       <activeon>:/icons/ressources/log_active.svg</activeon>:/icons/ressources/log.svg</iconset>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>16</width>
+       <height>16</height>
+      </size>
      </property>
      <property name="checkable">
       <bool>true</bool>
@@ -69,7 +75,13 @@
      </property>
      <property name="icon">
       <iconset resource="ressources.qrc">
-       <normaloff>:/icons/ressources/help.png</normaloff>:/icons/ressources/help.png</iconset>
+       <normaloff>:/icons/ressources/information.svg</normaloff>:/icons/ressources/information.svg</iconset>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>16</width>
+       <height>16</height>
+      </size>
      </property>
      <property name="default">
       <bool>false</bool>
@@ -82,10 +94,10 @@
    <item>
     <spacer name="horizontalSpacer">
      <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
      <property name="sizeType">
-      <enum>QSizePolicy::Expanding</enum>
+      <enum>QSizePolicy::Policy::Expanding</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>
@@ -110,7 +122,10 @@
       <string/>
      </property>
      <property name="pixmap">
-      <pixmap resource="ressources.qrc">:/icons/ressources/download.png</pixmap>
+      <pixmap resource="ressources.qrc">:/icons/ressources/dowload.svg</pixmap>
+     </property>
+     <property name="scaledContents">
+      <bool>true</bool>
      </property>
     </widget>
    </item>
@@ -148,7 +163,10 @@
       <string/>
      </property>
      <property name="pixmap">
-      <pixmap resource="ressources.qrc">:/icons/ressources/upload.png</pixmap>
+      <pixmap resource="ressources.qrc">:/icons/ressources/upload.svg</pixmap>
+     </property>
+     <property name="scaledContents">
+      <bool>true</bool>
      </property>
     </widget>
    </item>
@@ -180,7 +198,10 @@
       <string/>
      </property>
      <property name="pixmap">
-      <pixmap resource="ressources.qrc">:/icons/ressources/world.png</pixmap>
+      <pixmap resource="ressources.qrc">:/icons/ressources/world.svg</pixmap>
+     </property>
+     <property name="scaledContents">
+      <bool>true</bool>
      </property>
     </widget>
    </item>
@@ -209,7 +230,7 @@
       <string/>
      </property>
      <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
      </property>
     </widget>
    </item>
@@ -234,7 +255,7 @@
       <number>0</number>
      </property>
      <property name="alignment">
-      <set>Qt::AlignCenter</set>
+      <set>Qt::AlignmentFlag::AlignCenter</set>
      </property>
      <property name="textVisible">
       <bool>true</bool>

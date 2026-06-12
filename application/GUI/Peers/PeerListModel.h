@@ -39,6 +39,12 @@ namespace GUI
       struct Peer;
 
    public:
+      static const QColor COLOR_OURSELF;
+      static const QColor COLOR_PEER_ERROR;
+      static const QColor COLOR_PEER_RED;
+      static const QColor COLOR_PEER_GREEN;
+      static const QColor COLOR_PEER_BLUE;
+
       PeerListModel(QSharedPointer<RCC::ICoreConnection> coreConnection);
       ~PeerListModel();
 
