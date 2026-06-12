@@ -19,7 +19,6 @@
         <file>ressources/arrow_down.png</file>
         <file>ressources/arrow_up.png</file>
         <file>ressources/explore_folder.png</file>
-        <file>ressources/icon.png</file>
         <file>ressources/log.png</file>
         <file>ressources/log_active.png</file>
         <file>ressources/information.png</file>
@@ -70,5 +69,17 @@
         <file>ressources/marble_blue.svg</file>
         <file>ressources/marble_green.svg</file>
         <file>ressources/clear_fields.svg</file>
+        <file>ressources/text_underline.svg</file>
+        <file>ressources/text_bold.svg</file>
+        <file>ressources/text_italic.svg</file>
+        <file>ressources/text_bold_selected.svg</file>
+        <file>ressources/text_italic_selected.svg</file>
+        <file>ressources/text_underline_selected.svg</file>
+        <file>ressources/eraser.svg</file>
+        <file>ressources/bin.svg</file>
+        <file>ressources/pause.svg</file>
+        <file>ressources/list_view.svg</file>
+        <file>ressources/tree_view.svg</file>
+        <file>ressources/logo.svg</file>
     </qresource>
 </RCC>

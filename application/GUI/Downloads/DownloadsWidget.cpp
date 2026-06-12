@@ -193,10 +193,10 @@ void DownloadsWidget::displayContextMenuDownloads(const QPoint& point)
             break;
          }
 
-   menu.addAction(QIcon(":/icons/ressources/arrow_up.png"), tr("Move to top"), this, SLOT(moveSelectedEntriesToTop()));
+   menu.addAction(QIcon(":/icons/ressources/arrow_up.svg"), tr("Move to top"), this, SLOT(moveSelectedEntriesToTop()));
 
-   menu.addAction(QIcon(":/icons/ressources/remove_complete_files.png"), this->ui->butRemoveComplete->toolTip(), this, SLOT(removeCompletedFiles()));
-   menu.addAction(QIcon(":/icons/ressources/delete.png"), this->ui->butRemoveSelected->toolTip(), this, SLOT(removeSelectedEntries()));
+   menu.addAction(QIcon(":/icons/ressources/eraser.svg"), this->ui->butRemoveComplete->toolTip(), this, SLOT(removeCompletedFiles()));
+   menu.addAction(QIcon(":/icons/ressources/bin.svg"), this->ui->butRemoveSelected->toolTip(), this, SLOT(removeSelectedEntries()));
 
    QPair<QList<quint64>, bool> IDs = this->getDownloadIDsToPause();
    if (!IDs.first.isEmpty())
@@ -284,7 +284,7 @@ void DownloadsWidget::removeSelectedEntries()
       if (!allComplete)
       {
          QMessageBox msgBox(this);
-         msgBox.setWindowIcon(QIcon(":/icons/ressources/delete.png"));
+         msgBox.setWindowIcon(QIcon(":/icons/ressources/bin.svg"));
          msgBox.setWindowTitle(tr("Remove selected downloads"));
          msgBox.setText(tr("Are you sure to remove the selected downloads? There is one or more unfinished download."));
          msgBox.setIcon(QMessageBox::Question);
@@ -336,7 +336,7 @@ void DownloadsWidget::switchView(Protos::GUI::Settings::DownloadView view)
 {
    if (view == Protos::GUI::Settings::TREE_VIEW)
    {
-      this->ui->butSwitchView->setIcon(QIcon(":/icons/ressources/list_view.png"));
+      this->ui->butSwitchView->setIcon(QIcon(":/icons/ressources/list_view.svg"));
       this->ui->butSwitchView->setToolTip(tr("Switch to file list view"));
       this->ui->tblDownloads->setIndentation(20);
 
@@ -349,7 +349,7 @@ void DownloadsWidget::switchView(Protos::GUI::Settings::DownloadView view)
    }
    else if (view == Protos::GUI::Settings::LIST_VIEW)
    {
-      this->ui->butSwitchView->setIcon(QIcon(":/icons/ressources/tree_view.png"));
+      this->ui->butSwitchView->setIcon(QIcon(":/icons/ressources/tree_view.svg"));
       this->ui->butSwitchView->setToolTip(tr("Switch to tree view"));
       this->ui->tblDownloads->setIndentation(0);
 

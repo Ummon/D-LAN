@@ -59,7 +59,13 @@
        </property>
        <property name="icon">
         <iconset resource="../ressources.qrc">
-         <normaloff>:/icons/ressources/tree_view.png</normaloff>:/icons/ressources/tree_view.png</iconset>
+         <normaloff>:/icons/ressources/tree_view.svg</normaloff>:/icons/ressources/tree_view.svg</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>16</width>
+         <height>16</height>
+        </size>
        </property>
       </widget>
      </item>
@@ -73,7 +79,13 @@
        </property>
        <property name="icon">
         <iconset resource="../ressources.qrc">
-         <normaloff>:/icons/ressources/remove_complete_files.png</normaloff>:/icons/ressources/remove_complete_files.png</iconset>
+         <normaloff>:/icons/ressources/eraser.svg</normaloff>:/icons/ressources/eraser.svg</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>16</width>
+         <height>16</height>
+        </size>
        </property>
       </widget>
      </item>
@@ -87,7 +99,13 @@
        </property>
        <property name="icon">
         <iconset resource="../ressources.qrc">
-         <normaloff>:/icons/ressources/delete.png</normaloff>:/icons/ressources/delete.png</iconset>
+         <normaloff>:/icons/ressources/bin.svg</normaloff>:/icons/ressources/bin.svg</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>16</width>
+         <height>16</height>
+        </size>
        </property>
       </widget>
      </item>
@@ -101,7 +119,13 @@
        </property>
        <property name="icon">
         <iconset resource="../ressources.qrc">
-         <normaloff>:/icons/ressources/pause.png</normaloff>:/icons/ressources/pause.png</iconset>
+         <normaloff>:/icons/ressources/pause.svg</normaloff>:/icons/ressources/pause.svg</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>16</width>
+         <height>16</height>
+        </size>
        </property>
       </widget>
      </item>
@@ -181,7 +205,7 @@
         <set>Qt::AlignmentFlag::AlignCenter</set>
        </property>
        <property name="format">
-        <string notr="true"/>
+        <string/>
        </property>
       </widget>
      </item>

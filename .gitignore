@@ -24,6 +24,7 @@ TODO.md
 Thumbs.db
 build-*
 *.code-workspace
+*.af~lock~
 
 .qtc_clangd
 application/.qmake.stash

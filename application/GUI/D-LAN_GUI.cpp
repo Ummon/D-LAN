@@ -41,7 +41,7 @@ const QString D_LAN_GUI::SHARED_MEMORY_KEYNAME("D-LAN GUI instance");
 D_LAN_GUI::D_LAN_GUI(int& argc, char* argv[]) :
    QApplication(argc, argv),
    mainWindow(0),
-   trayIcon(QIcon(":/icons/ressources/icon.png")),
+   trayIcon(QIcon(":/icons/ressources/icon.svg")),
    coreConnection(RCC::Builder::newCoreConnection(SETTINGS.get<quint32>("socket_timeout")))
 {
    this->installTranslator(&this->translator);

@@ -7,7 +7,7 @@
 # Uncomment this line to enable the leak detector.
 # DEFINES += ENABLE_NVWA
 
-QT += core gui widgets network xml svg
+QT += core gui widgets network xml svgwidgets
 
 # TODO Qt6: Replace winextras.
 # win32 {

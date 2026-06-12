@@ -161,7 +161,9 @@ QDateTime Global::getBuildTime()
 
 QString Global::getCompilerName()
 {
-#if defined(__GNUC__)
+#if defined(__clang__)
+   return "Clang";
+#elif defined(__GNUC__)
    return "GCC";
 #else
    return "";
@@ -170,8 +172,18 @@ QString Global::getCompilerName()
 
 QString Global::getCompilerVersion()
 {
-#if defined(__GNUC__)
-   return QString::number(__GNUC__).append(".").append(QString::number(__GNUC_MINOR__)).append(".").append(QString::number(__GNUC_PATCHLEVEL__));
+#if defined(__clang__)
+   return
+      QString::number(__clang_major__)
+         .append(".")
+         .append(QString::number(__clang_minor__))
+         .append(".").append(QString::number(__clang_patchlevel__));
+#elif defined(__GNUC__)
+   return
+      QString::number(__GNUC__)
+         .append(".")
+         .append(QString::number(__GNUC_MINOR__))
+         .append(".").append(QString::number(__GNUC_PATCHLEVEL__));
 #else
    return "";
 #endif

@@ -23,6 +23,7 @@ using namespace GUI;
 #include <QPainter>
 #include <QDateTime>
 #include <QLocale>
+#include <QSvgRenderer>
 
 #include <Common/Version.h>
 #include <Common/Global.h>
@@ -33,23 +34,32 @@ DialogAbout::DialogAbout(QWidget *parent) :
 {
    this->ui->setupUi(this);
 
+   this->ui->svgLogo->load(QStringLiteral(":/icons/ressources/logo.svg"));
+   this->ui->svgLogo->renderer()->setAspectRatioMode(Qt::KeepAspectRatio);
+
    this->setWindowFlags(this->windowFlags() & (~Qt::WindowContextHelpButtonHint));
 
    QDateTime buildTime = QDateTime::fromString(BUILD_TIME, "yyyy-MM-dd_hh-mm");
 
    QLocale locale = SETTINGS.get<QLocale>("language");
 
-   this->ui->lblTitle->setText(QString("%1 %2 %3").arg(this->ui->lblTitle->text()).arg(VERSION).arg(VERSION_TAG));
-   this->ui->lblBuiltOn->setText(QString("%1 %2").arg(this->ui->lblBuiltOn->text()).arg(locale.toString(buildTime)));
-   this->ui->lblFromRevision->setText(QString("<html><head/><body><p>%1 <a href=\"https://github.com/Ummon/D-LAN/commit/%2\"><span style=\"color: #fd2435\">%2</span></a></p></body></html>").arg(this->ui->lblFromRevision->text()).arg(GIT_VERSION));
+   this->ui->lblTitle->setText(QString("%1 %2 %3").arg(this->ui->lblTitle->text(), VERSION, VERSION_TAG));
+   this->ui->lblBuiltOn->setText(QString("%1 %2").arg(this->ui->lblBuiltOn->text(), locale.toString(buildTime)));
+   this->ui->lblFromRevision->setText(
+      QString("<html><head/><body><p>%1 <a href=\"https://github.com/Ummon/D-LAN/commit/%2\"><span style=\"color: #fd2435\">%2</span></a></p></body></html>")
+         .arg(this->ui->lblFromRevision->text(), GIT_VERSION)
+   );
    this->ui->lblCopyright->setText(this->ui->lblCopyright->text().arg(buildTime.date().year()));
    const QString& compilerName = Common::Global::getCompilerName();
    const QString& compilerVersion = Common::Global::getCompilerVersion();
 
    if (compilerName.isEmpty())
-      this->ui->lblCompiler->setText(QString("%1 Qt %4").arg(this->ui->lblCompiler->text()).arg(QT_VERSION_STR));
+      this->ui->lblCompiler->setText(QString("%1 Qt %4").arg(this->ui->lblCompiler->text(), QT_VERSION_STR));
    else
-      this->ui->lblCompiler->setText(QString("%1 %2 %3 - Qt %4").arg(this->ui->lblCompiler->text()).arg(compilerName).arg(compilerVersion).arg(QT_VERSION_STR));
+      this->ui->lblCompiler->setText(
+         QString("%1 %2 %3 - Qt %4")
+            .arg(this->ui->lblCompiler->text(), compilerName, compilerVersion, QT_VERSION_STR)
+      );
 
 #ifdef DEBUG
    this->ui->lblTitle->setText(this->ui->lblTitle->text() + " (DEBUG)");

@@ -3,15 +3,21 @@
  <class>DialogAbout</class>
  <widget class="QDialog" name="DialogAbout">
   <property name="windowModality">
-   <enum>Qt::ApplicationModal</enum>
+   <enum>Qt::WindowModality::ApplicationModal</enum>
   </property>
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>451</width>
-    <height>279</height>
+    <width>450</width>
+    <height>290</height>
    </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>450</width>
+    <height>290</height>
+   </size>
   </property>
   <property name="palette">
    <palette>
@@ -61,24 +67,12 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QLabel" name="lblLogo">
-     <property name="minimumSize">
-      <size>
-       <width>0</width>
-       <height>110</height>
-      </size>
-     </property>
-     <property name="autoFillBackground">
-      <bool>false</bool>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-     <property name="pixmap">
-      <pixmap resource="ressources.qrc">:/icons/ressources/logo.png</pixmap>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+    <widget class="QSvgWidget" name="svgLogo" native="true">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
      </property>
     </widget>
    </item>
@@ -86,7 +80,6 @@
     <widget class="QLabel" name="lblTitle">
      <property name="font">
       <font>
-       <weight>75</weight>
        <bold>true</bold>
       </font>
      </property>
@@ -127,7 +120,7 @@
       <string>From revision</string>
      </property>
      <property name="textFormat">
-      <enum>Qt::RichText</enum>
+      <enum>Qt::TextFormat::RichText</enum>
      </property>
      <property name="indent">
       <number>15</number>
@@ -163,7 +156,10 @@
    <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
-      <enum>Qt::Vertical</enum>
+      <enum>Qt::Orientation::Vertical</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Policy::Maximum</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>
@@ -181,7 +177,7 @@
      <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -200,7 +196,7 @@
         </sizepolicy>
        </property>
        <property name="layoutDirection">
-        <enum>Qt::LeftToRight</enum>
+        <enum>Qt::LayoutDirection::LeftToRight</enum>
        </property>
        <property name="text">
         <string>Close</string>
@@ -214,9 +210,15 @@
    </item>
   </layout>
  </widget>
- <resources>
-  <include location="ressources.qrc"/>
- </resources>
+ <customwidgets>
+  <customwidget>
+   <class>QSvgWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">QSvgWidget</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
  <connections>
   <connection>
    <sender>butClose</sender>
