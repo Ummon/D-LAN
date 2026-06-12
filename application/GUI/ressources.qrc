@@ -1,47 +1,8 @@
 <RCC>
     <qresource prefix="/icons">
-        <file>ressources/zoom.png</file>
-        <file>ressources/add.png</file>
-        <file>ressources/delete.png</file>
-        <file>ressources/world.png</file>
-        <file>ressources/file.png</file>
-        <file>ressources/folder.png</file>
-        <file>ressources/error.png</file>
-        <file>ressources/download.png</file>
-        <file>ressources/upload.png</file>
-        <file>ressources/help.png</file>
-        <file>ressources/logo.png</file>
-        <file>ressources/remove_complete_files.png</file>
-        <file>ressources/refresh.png</file>
-        <file>ressources/refresh-down.png</file>
-        <file>ressources/refresh-hover.png</file>
-        <file>ressources/settings.png</file>
-        <file>ressources/arrow_down.png</file>
-        <file>ressources/arrow_up.png</file>
-        <file>ressources/explore_folder.png</file>
-        <file>ressources/log.png</file>
-        <file>ressources/log_active.png</file>
-        <file>ressources/information.png</file>
-        <file>ressources/pause.png</file>
-        <file>ressources/lightning.png</file>
-        <file>ressources/tree_view.png</file>
-        <file>ressources/list_view.png</file>
-        <file>ressources/marble_red.png</file>
-        <file>ressources/marble_blue.png</file>
-        <file>ressources/marble_green.png</file>
-        <file>ressources/text_bold.png</file>
-        <file>ressources/text_italic.png</file>
-        <file>ressources/text_underline.png</file>
-        <file>ressources/join_chat_room.png</file>
-        <file>ressources/chat_new_mess.png</file>
-        <file>ressources/chat_room.png</file>
-        <file>ressources/chat_room_new_mess.png</file>
-        <file>ressources/chat.png</file>
-        <file>ressources/error_mini.png</file>
         <file>ressources/emoticon.png</file>
         <file>ressources/plus.png</file>
         <file>ressources/zoom_monitor.png</file>
-        <file>ressources/clear_fields.png</file>
         <file>ressources/settings.svg</file>
         <file>ressources/chat.svg</file>
         <file>ressources/chat_new_mess.svg</file>
@@ -81,5 +42,6 @@
         <file>ressources/list_view.svg</file>
         <file>ressources/tree_view.svg</file>
         <file>ressources/logo.svg</file>
+        <file>ressources/error.svg</file>
     </qresource>
 </RCC>

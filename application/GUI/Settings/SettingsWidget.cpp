@@ -237,7 +237,24 @@ void SettingsWidget::updateNetworkInterfaces(const Protos::GUI::State& state)
          if (lblInterface && lblInterface->property("id").toUInt() == state.interfaces(i).id())
          {
             interfaceNotUpdated.removeOne(lblInterface);
-            lblInterface->setText(interfaceName + (state.interfaces(i).isup() ? QString("") : " <img src= \":/icons/ressources/error.png\" /> <em>" + tr("Interface not active") + "</em>"));
+
+            if (state.interfaces(i).isup())
+            {
+               lblInterface->setText(interfaceName);
+            }
+            else
+            {
+               const QFontMetrics fm(lblInterface->font());
+               const int h = fm.height();
+
+               lblInterface->setText(
+                  interfaceName +
+                     QString(" <img src= \":/icons/ressources/error.svg\" height=\"%1\" style=\"vertical-align: middle\" /> <em>")
+                        .arg(h) + tr("Interface not active") + "</em>"
+               );
+
+            }
+
             this->updateAddresses(state.interfaces(i), static_cast<QWidget*>(j.next()));
             goto nextInterface;
          }

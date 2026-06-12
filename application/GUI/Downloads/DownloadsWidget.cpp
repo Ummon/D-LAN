@@ -200,7 +200,7 @@ void DownloadsWidget::displayContextMenuDownloads(const QPoint& point)
 
    QPair<QList<quint64>, bool> IDs = this->getDownloadIDsToPause();
    if (!IDs.first.isEmpty())
-      menu.addAction(QIcon(":/icons/ressources/pause.png"), IDs.second ? tr("Pause selected entries") : tr("Unpause selected entries"), this, SLOT(pauseSelectedEntries()));
+      menu.addAction(QIcon(":/icons/ressources/pause.svg"), IDs.second ? tr("Pause selected entries") : tr("Unpause selected entries"), this, SLOT(pauseSelectedEntries()));
 
    menu.exec(this->ui->tblDownloads->mapToGlobal(point));
 }

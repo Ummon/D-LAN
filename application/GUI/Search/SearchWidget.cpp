@@ -177,7 +177,14 @@ void SearchMenu::onShowMenu(QMenu& menu)
 
 /////
 
-SearchWidget::SearchWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const SharedEntryListModel& sharedEntryListModel, const Protos::Common::FindPattern& findPattern, bool local, QWidget* parent) :
+SearchWidget::SearchWidget(
+   QSharedPointer<RCC::ICoreConnection> coreConnection,
+   PeerListModel& peerListModel,
+   const SharedEntryListModel& sharedEntryListModel,
+   const Protos::Common::FindPattern& findPattern,
+   bool local,
+   QWidget* parent
+) :
    QWidget(parent),
    ui(new Ui::SearchWidget),
    downloadMenu(sharedEntryListModel),

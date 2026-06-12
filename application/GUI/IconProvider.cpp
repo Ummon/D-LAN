@@ -131,7 +131,7 @@ QIcon IconProvider::getIconNative(const QString& extension)
 
 QIcon IconProvider::drawWarning(const QIcon& icon)
 {
-   QPixmap miniError(":/icons/ressources/error_mini.png");
+   QPixmap miniError(":/icons/ressources/error.svg");
    QIcon result;
    foreach (auto size, icon.availableSizes())
    {
