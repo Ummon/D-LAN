@@ -106,11 +106,11 @@ namespace GUI
       void buttonAddressToggled(bool checked);
 
    protected:
-      bool eventFilter(QObject* obj, QEvent* event);
-      void changeEvent(QEvent* event);
+      bool eventFilter(QObject* obj, QEvent* event) override;
+      void changeEvent(QEvent* event) override;
 
    private:
-      void onActivate();
+      void onActivate() override;
 
       Ui::SettingsWidget* ui;
 

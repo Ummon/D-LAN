@@ -469,7 +469,8 @@ void SettingsWidget::coreConnected()
 
    this->ui->butChangePassword->setDisabled(false);
 
-   this->ui->butOpenFolder->setDisabled(!this->coreConnection->isLocal());
+   // TODO: needed?
+   // this->ui->butOpenFolder->setDisabled(!this->coreConnection->isLocal());
 }
 
 void SettingsWidget::coreDisconnected()

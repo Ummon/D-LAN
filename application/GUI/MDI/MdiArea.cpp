@@ -57,7 +57,7 @@ MdiArea::MdiArea(
    this->setOption(QMdiArea::DontMaximizeSubWindowOnActivation, true);
 
    // TODO: replace by an event?
-   connect(this, &MdiArea::subWindowActivated, this, &MdiArea::subWindowActivated);
+   connect(this, &QMdiArea::subWindowActivated, this, &MdiArea::subWindowActivated);
 
    this->mdiAreaTabBar = this->findChild<QTabBar*>();
    this->mdiAreaTabBar->setMovable(true);
