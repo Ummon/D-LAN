@@ -166,7 +166,7 @@ QWidget* CheckBoxListDelegate::createEditor(QWidget* parent, const QStyleOptionV
    // Create check box as our editor.
    QCheckBox* editor = new QCheckBox(parent);
    editor->setObjectName("checkBoxListItem");
-   connect(editor, SIGNAL(stateChanged(int)), this, SLOT(checkBoxStateChanged()));
+   connect(editor, &QCheckBox::checkStateChanged, this, &CheckBoxListDelegate::checkBoxStateChanged);
    return editor;
 }
 

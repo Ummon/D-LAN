@@ -43,7 +43,7 @@ BusyIndicator::BusyIndicator(QWidget* parent, int refreshRate, int animationDura
    this->timer.start();
 
    this->refreshTimer.setInterval(refreshRate);
-   connect(&this->refreshTimer, SIGNAL(timeout()), this, SLOT(update()));
+   connect(&this->refreshTimer, &QTimer::timeout, this, qOverload<>(&QWidget::update));
    this->refreshTimer.start();
 }
 

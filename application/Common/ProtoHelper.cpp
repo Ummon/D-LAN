@@ -168,63 +168,64 @@ QString ProtoHelper::getDebugStr(const google::protobuf::Message& mess)
    if (!status.ok())
       return QString("Error: can't transform message into JSON: %1").arg(status.message());
 
-   QString str = QString::fromStdString(debugString);
+   return QString::fromStdString(debugString);
 
+   // Commented because MessageJsonString uses base64 encoding.
    // Very dirty : substitute the bytes representation (ascii + escaped octal number) with a hexadecimal representation.
    // hash: "ID\214\351\t\003\312w\213u\320\236@0o\032\220\"(\033"
-   const QString prefix("hash: \"");
-   int pos = 0;
-   while ((pos = str.indexOf(prefix, pos)) != -1)
-   {
-      pos += prefix.size();
-      const int initialPos = pos;
-      QString hashHex;
-      hashHex.reserve(2 * Hash::HASH_SIZE);
-      while (str[pos] != '"')
-      {
-         if (str[pos] != '\\')
-         {
-            hashHex.append(QString::number(str[pos].toLatin1(), 16));
-            pos++;
-         }
-         else
-         {
-            switch (str[pos+1].toLatin1())
-            {
-            case 'r':
-               hashHex.append("0d");
-               pos += 2;
-               break;
-            case 'n':
-               hashHex.append("0a");
-               pos += 2;
-               break;
-            case 't':
-               hashHex.append("09");
-               pos += 2;
-               break;
-            case '"':
-            case '\'':
-            case '\\':
-               hashHex.append(QString::number(str[pos+1].toLatin1(), 16));
-               pos += 2;
-               break;
-            default: // It's an octal number, for example : "\123"
-               bool ok;
-               hashHex.append(QString("%1").arg(str.mid(pos+1, 3).toInt(&ok, 8), 2, 16, QLatin1Char('0')));
-               pos += 4;
-            }
-         }
-      }
+   // const QString prefix("\"hash\": \"");
+   // int pos = 0;
+   // while ((pos = str.indexOf(prefix, pos)) != -1)
+   // {
+   //    pos += prefix.size();
+   //    const int initialPos = pos;
+   //    QString hashHex;
+   //    hashHex.reserve(2 * Hash::HASH_SIZE);
+   //    while (str[pos] != '"')
+   //    {
+   //       if (str[pos] != '\\')
+   //       {
+   //          hashHex.append(QString::number(str[pos].toLatin1(), 16));
+   //          pos++;
+   //       }
+   //       else
+   //       {
+   //          switch (str[pos+1].toLatin1())
+   //          {
+   //          case 'r':
+   //             hashHex.append("0d");
+   //             pos += 2;
+   //             break;
+   //          case 'n':
+   //             hashHex.append("0a");
+   //             pos += 2;
+   //             break;
+   //          case 't':
+   //             hashHex.append("09");
+   //             pos += 2;
+   //             break;
+   //          case '"':
+   //          case '\'':
+   //          case '\\':
+   //             hashHex.append(QString::number(str[pos+1].toLatin1(), 16));
+   //             pos += 2;
+   //             break;
+   //          default: // It's an octal number, for example : "\123"
+   //             bool ok;
+   //             hashHex.append(QString("%1").arg(str.mid(pos+1, 3).toInt(&ok, 8), 2, 16, QLatin1Char('0')));
+   //             pos += 4;
+   //          }
+   //       }
+   //    }
       /* Used during debugging :
       const int length = hashHex.size();
       const QString hash = str.mid(initialPos, pos - initialPos);*/
 
-      str.replace(initialPos, pos - initialPos, hashHex);
-      pos = initialPos + 2 * Hash::HASH_SIZE;
-  }
+      // str.replace(initialPos, pos - initialPos, hashHex);
+      // pos = initialPos + 2 * Hash::HASH_SIZE;
+  // }
 
-   return str;
+   // return str;
 }
 
 void ProtoHelper::readUInt(const quint8*& p, quint32 res, quint32& result)

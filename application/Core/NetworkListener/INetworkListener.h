@@ -54,10 +54,18 @@ namespace NL
       /**
         * Send a message to a particular peer, if the peer ID isn't given the message is sent to everyone.
         */
-      virtual SendStatus send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message, const Common::Hash& peerID = Common::Hash()) = 0;
+      virtual SendStatus send(
+         Common::MessageHeader::MessageType type,
+         const google::protobuf::Message& message,
+         const Common::Hash& peerID = Common::Hash()
+      ) = 0;
 
    signals:
       void received(const Common::Message& message);
+
+      /**
+        * Signal emitted before sending the IMAlive message, it allows to modify it before sending.
+        */
       void IMAliveMessageToBeSend(Protos::Core::IMAlive& IMAliveMessage);
    };
 }

@@ -71,7 +71,14 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      explicit SearchWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const SharedEntryListModel& sharedEntryListModel, const Protos::Common::FindPattern& findPattern, bool local = false, QWidget* parent = nullptr);
+      explicit SearchWidget(
+         QSharedPointer<RCC::ICoreConnection> coreConnection,
+         PeerListModel& peerListModel,
+         const SharedEntryListModel& sharedEntryListModel,
+         const Protos::Common::FindPattern& findPattern,
+         bool local = false,
+         QWidget* parent = nullptr
+      );
       ~SearchWidget();
 
    signals:

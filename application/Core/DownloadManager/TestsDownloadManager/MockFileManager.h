@@ -10,26 +10,27 @@ public:
    MockFileManager();
    ~MockFileManager();
 
-   void setSharedDirs(const QStringList& dirs);
-   QPair<Common::SharedDir, QString> addASharedDir(const QString& absoluteDir);
-   QList<Common::SharedDir> getSharedDirs() const;
-   QString getSharedDir(const Common::Hash& ID) const;
-   QSharedPointer<FM::IChunk> getChunk(const Common::Hash& hash) const;
-   QList<QSharedPointer<FM::IChunk>> getAllChunks(const Protos::Common::Entry& localEntry, const Common::Hashes& hashes) const;
-   QList<QSharedPointer<FM::IChunk>> newFile(Protos::Common::Entry& entry);
-   void newDirectory(Protos::Common::Entry& entry);
-   QSharedPointer<FM::IGetHashesResult> getHashes(const Protos::Common::Entry& file);
-   QSharedPointer<FM::IGetEntriesResult> getScannedEntries(const Protos::Common::Entry& dir, int maxNbHashesPerEntry = std::numeric_limits<int>::max());
-   Protos::Common::Entries getEntries(const Protos::Common::Entry& dir, int maxNbHashesPerEntry = std::numeric_limits<int>::max());
-   Protos::Common::Entries getEntries();
-   QList<Protos::Common::FindResult> find(const QString& words, int maxNbResult, int maxSize);
-   QList<Protos::Common::FindResult> find(const QString& words, const QList<QString>& extensions, qint64 minFileSize, qint64 maxFileSize, Protos::Common::FindPattern_Category category, int maxNbResult, int maxSize);
-   QBitArray haveChunks(const QList<Common::Hash>& hashes);
-   quint64 getAmount();
-   CacheStatus getCacheStatus() const;
-   int getProgress() const;
-   void dumpWordIndex() const;
-   void printSimilarFiles() const;
+   void setSharedPaths(const QStringList& path) override;
+   QPair<Common::SharedEntry, QString> addASharedPath(const QString& absoluteDir) override;
+   QList<Common::SharedEntry> getSharedEntries() const override;
+   QString getSharedEntry(const Common::Hash& ID) const override;
+   QSharedPointer<FM::IChunk> getChunk(const Common::Hash& hash) const override;
+   QList<QSharedPointer<FM::IChunk>> getAllChunks(const Protos::Common::Entry& localEntry, const QList<Common::Hash>& hashes) const override;
+   QList<QSharedPointer<FM::IChunk>> newFile(Protos::Common::Entry& entry) override;
+   void newDirectory(Protos::Common::Entry& entry) override;
+   QSharedPointer<FM::IGetHashesResult> getHashes(const Protos::Common::Entry& file) override;
+   QSharedPointer<FM::IGetEntriesResult> getScannedEntries(const Protos::Common::Entry& dir, int maxNbHashesPerEntry = std::numeric_limits<int>::max()) override;
+   Protos::Common::Entries getEntries(const Protos::Common::Entry& dir, int maxNbHashesPerEntry = std::numeric_limits<int>::max()) override;
+   Protos::Common::Entries getEntries() override;
+   QList<Protos::Common::FindResult> find(const QString& words, int maxNbResult, int maxSize) override;
+   QList<Protos::Common::FindResult> find(const QString& words, const QList<QString>& extensions, qint64 minFileSize, qint64 maxFileSize, Protos::Common::FindPattern_Category category, int maxNbResult, int maxSize) override;
+   QBitArray haveChunks(const QList<Common::Hash>& hashes) override;
+   quint64 getAmount() override;
+   CacheStatus getCacheStatus() const override;
+   int getProgress() const override;
+   QString getWordIndex_debug() const override;
+   QString getSimilarFiles_debug() const override;
+   QString getCacheTree_debug() const override;
 };
 
 #endif

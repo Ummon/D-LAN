@@ -187,8 +187,8 @@ void PeerManager::newConnection(QTcpSocket* tcpSocket)
       if (!this->timer.isActive())
          this->timer.start();
 
-      connect(tcpSocket, SIGNAL(readyRead()), this, SLOT(dataReceived()), Qt::DirectConnection);
-      connect(tcpSocket, SIGNAL(disconnected()), this, SLOT(disconnected()), Qt::DirectConnection);
+      connect(tcpSocket, &QTcpSocket::readyRead, this, [this](){ this->dataReceived(); }, Qt::DirectConnection);
+      connect(tcpSocket, &QTcpSocket::disconnected, this, [this](){ this->disconnected(); }, Qt::DirectConnection);
       this->pendingSockets << PendingSocket(tcpSocket);
       this->dataReceived(tcpSocket); // The case where some data arrived before the 'connect' above.
    }

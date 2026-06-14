@@ -20,8 +20,12 @@ namespace GUI
       };
 
       SearchType() : entryType(EntryType::ALL) {}
+
       SearchType(EntryType entryType) : entryType(entryType) {}
-      SearchType(Common::ExtensionCategory extensionCategory) : entryType(EntryType::FILES_BY_EXTENSION), extensionCategory(extensionCategory) {}
+
+      SearchType(Common::ExtensionCategory extensionCategory) :
+         entryType(EntryType::FILES_BY_EXTENSION), extensionCategory(extensionCategory)
+      {}
 
       EntryType entryType;
       Common::ExtensionCategory extensionCategory;

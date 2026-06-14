@@ -4,30 +4,26 @@ TARGET = TestsDownloadManager
 CONFIG += link_prl console
 CONFIG -= app_bundle
 
-include(../../../Common/common.pri)
 include(../../../Libs/protobuf.pri)
-include(../../../Protos/Protos.pri)
+include(../../../Libs/blake3.pri)
+include(../../../Common/common.pri)
 
+QMAKE_CXXFLAGS_WARN_ON += -Wno-pessimizing-move -Wno-unused-result
 
-LIBS += -L../output/$$FOLDER \
-    -lDownloadManager
+LIBS += -L../output/$$FOLDER -lDownloadManager
 POST_TARGETDEPS += ../output/$$FOLDER/libDownloadManager.a
 
-LIBS += -L../../FileManager/output/$$FOLDER \
-    -lFileManager
+LIBS += -L../../FileManager/output/$$FOLDER -lFileManager
 POST_TARGETDEPS += ../../FileManager/output/$$FOLDER/libFileManager.a
 
-LIBS += -L../../PeerManager/output/$$FOLDER \
-    -lPeerManager
+LIBS += -L../../PeerManager/output/$$FOLDER -lPeerManager
 POST_TARGETDEPS += ../../PeerManager/output/$$FOLDER/libPeerManager.a
 
-LIBS += -L../../../Common/output/$$FOLDER \
-    -lCommon
+LIBS += -L../../../Common/output/$$FOLDER -lCommon
 POST_TARGETDEPS += ../../../Common/output/$$FOLDER/libCommon.a
 
 # FIXME: Should not be here, all dependencies are read from the prl file (see link_prl):
-LIBS += -L../../../Common/LogManager/output/$$FOLDER \
-    -lLogManager
+LIBS += -L../../../Common/LogManager/output/$$FOLDER -lLogManager
 POST_TARGETDEPS += ../../../Common/LogManager/output/$$FOLDER/libLogManager.a
 
 INCLUDEPATH += . \

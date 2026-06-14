@@ -612,9 +612,29 @@ bool FileDownload::tryToLinkToAnExistingFile()
 
 void FileDownload::connectChunkDownloaderSignals(const QSharedPointer<ChunkDownloader>& chunkDownloader)
 {
-   connect(chunkDownloader.data(), &ChunkDownloader::downloadStarted, this, &FileDownload::chunkDownloaderStarted, Qt::DirectConnection);
-   connect(chunkDownloader.data(), &ChunkDownloader::downloadFinished, this, &FileDownload::chunkDownloaderFinished, Qt::DirectConnection);
-   connect(chunkDownloader.data(), &ChunkDownloader::numberOfPeersChanged, this, &FileDownload::updateStatus, Qt::DirectConnection);
+   connect(
+      chunkDownloader.data(),
+      &ChunkDownloader::downloadStarted,
+      this,
+      &FileDownload::chunkDownloaderStarted,
+      Qt::ConnectionType(Qt::DirectConnection | Qt::SingleShotConnection)
+   );
+
+   connect(
+      chunkDownloader.data(),
+      &ChunkDownloader::downloadFinished,
+      this,
+      &FileDownload::chunkDownloaderFinished,
+      Qt::ConnectionType(Qt::DirectConnection | Qt::SingleShotConnection)
+   );
+
+   connect(
+      chunkDownloader.data(),
+      &ChunkDownloader::numberOfPeersChanged,
+      this,
+      &FileDownload::updateStatus,
+      Qt::DirectConnection
+   );
 }
 
 /**

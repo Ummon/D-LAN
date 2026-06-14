@@ -94,17 +94,24 @@ void PeersDock::displayContextMenuPeers(const QPoint& point)
 
    QMenu menu;
    if (peerStatus == Protos::GUI::State::Peer::OK)
-      menu.addAction(QIcon(":/icons/ressources/folder.svg"), tr("Browse"), this, SLOT(browse()));
+      menu.addAction(QIcon(":/icons/ressources/folder.svg"), tr("Browse"), this, &PeersDock::browse);
 
    if (!addr.isNull())
    {
       if (peerStatus == Protos::GUI::State::Peer::OK)
       {
-         QAction* takeControlAction = menu.addAction(QIcon(":/icons/ressources/connect.svg"), tr("Take control"), this, SLOT(takeControlOfACore()));
+         QAction* takeControlAction =
+            menu.addAction(
+               QIcon(":/icons/ressources/connect.svg"),
+               tr("Take control"),
+               this,
+               &PeersDock::takeControlOfACore
+            );
          takeControlAction->setData(addrVariant);
       }
 
-      QAction* copyIPAction = menu.addAction(tr("Copy IP: %1").arg(addr.toString()), this, SLOT(copyIPToClipboard()));
+      QAction* copyIPAction =
+         menu.addAction(tr("Copy IP: %1").arg(addr.toString()), this, &PeersDock::copyIPToClipboard);
       copyIPAction->setData(addrVariant);
    }
 

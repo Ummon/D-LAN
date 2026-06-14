@@ -25,7 +25,11 @@ using namespace GUI;
 
 #include <Common/Settings.h>
 
-AskNewPasswordDialog::AskNewPasswordDialog(QSharedPointer<RCC::ICoreConnection> coreConnection, bool askOldPassword, QWidget *parent) :
+AskNewPasswordDialog::AskNewPasswordDialog(
+   QSharedPointer<RCC::ICoreConnection> coreConnection,
+   bool askOldPassword,
+   QWidget *parent
+) :
    QDialog(parent),
    ui(new Ui::AskNewPasswordDialog),
    coreConnection(coreConnection)
@@ -39,8 +43,8 @@ AskNewPasswordDialog::AskNewPasswordDialog(QSharedPointer<RCC::ICoreConnection> 
    }
    this->setMaximumHeight(0);
 
-   connect(this->ui->buttons, SIGNAL(rejected()), this, SLOT(reject()));
-   connect(this->ui->buttons, SIGNAL(accepted()), this, SLOT(ok()));
+   connect(this->ui->buttons, &QDialogButtonBox::rejected, this, &AskNewPasswordDialog::reject);
+   connect(this->ui->buttons, &QDialogButtonBox::accepted, this, &AskNewPasswordDialog::ok);
 }
 
 AskNewPasswordDialog::~AskNewPasswordDialog()
@@ -77,7 +81,12 @@ void AskNewPasswordDialog::ok()
    }
    else
    {
-      if (!this->coreConnection->setCorePassword(this->ui->txtNewPassword->text(), this->ui->txtOldPassword->isHidden() ? QString() : this->ui->txtOldPassword->text()))
+      if (
+         !this->coreConnection->setCorePassword(
+            this->ui->txtNewPassword->text(),
+            this->ui->txtOldPassword->isHidden() ? QString() : this->ui->txtOldPassword->text()
+         )
+      )
          QMessageBox::information(this, "Error", "The old password doesn't match");
       else
       {

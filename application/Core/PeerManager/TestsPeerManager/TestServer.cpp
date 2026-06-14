@@ -34,7 +34,7 @@
 TestServer::TestServer(QSharedPointer<PM::IPeerManager> peerManager, int port) :
    peerManager(peerManager)
 {
-   connect(&this->server, SIGNAL(newConnection()), this, SLOT(newConnection()));
+   connect(&this->server, &QTcpServer::newConnection, this, &TestServer::newConnection);
    QVERIFY(this->server.listen(QHostAddress::Any, port));
 }
 

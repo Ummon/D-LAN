@@ -150,7 +150,7 @@ void DirDownload::result(const Protos::Core::GetEntriesResult& entries)
 
       this->getEntriesResult.clear();
       this->occupiedPeersAskingForEntries.setPeerAsFree(this->peerSource);
-      QTimer::singleShot(RETRY_GET_ENTRIES_PERIOD, this, SLOT(retryToGetEntries()));
+      QTimer::singleShot(RETRY_GET_ENTRIES_PERIOD, this, &DirDownload::retryToGetEntries);
    }
 }
 
@@ -161,7 +161,7 @@ void DirDownload::resultTimeout()
 
    this->getEntriesResult.clear();
    this->occupiedPeersAskingForEntries.setPeerAsFree(this->peerSource);
-   QTimer::singleShot(RETRY_GET_ENTRIES_PERIOD, this, SLOT(retryToGetEntries()));
+   QTimer::singleShot(RETRY_GET_ENTRIES_PERIOD, this, &DirDownload::retryToGetEntries);
 }
 
 void DirDownload::createDirectory()

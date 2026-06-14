@@ -30,7 +30,12 @@ namespace GUI
       static const int WEIGHT_LAST_ETA = 3; // Used in the weighted mean computation.
 
    public:
-      DownloadsFlatModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const SharedEntryListModel& sharedEntryListModel, const IFilter<DownloadFilterStatus>& filter);
+      DownloadsFlatModel(
+         QSharedPointer<RCC::ICoreConnection> coreConnection,
+         const PeerListModel& peerListModel,
+         const SharedEntryListModel& sharedEntryListModel,
+         const IFilter<DownloadFilterStatus>& filter
+      );
 
       quint64 getTotalBytesInQueue() const;
       quint64 getTotalBytesDownloadedInQueue() const;
@@ -55,7 +60,13 @@ namespace GUI
       void globalProgressChanged();
 
    protected:
-      bool dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex & parent);
+      bool dropMimeData(
+         const QMimeData* data,
+         Qt::DropAction action,
+         int row,
+         int column,
+         const QModelIndex & parent
+      );
 
    protected slots:
       void onNewState(const Protos::GUI::State& state);

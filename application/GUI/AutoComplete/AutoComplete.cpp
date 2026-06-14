@@ -73,7 +73,11 @@ bool AutoComplete::eventFilter(QObject* obj, QEvent* event)
    {
       QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
 
-      // L_DEBU(QString("AutoComplete::eventFilter, key: %1, modifier: %2, text: %3").arg(keyEvent->key()).arg(keyEvent->modifiers()).arg(keyEvent->text()));
+      /* L_DEBU(
+         QString("AutoComplete::eventFilter, key: %1, modifier: %2, text: %3")
+            .arg(keyEvent->key()).arg(keyEvent->modifiers()).arg(keyEvent->text())
+      );
+      */
 
       switch (keyEvent->key())
       {

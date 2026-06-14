@@ -140,7 +140,7 @@ QVariant BrowseModel::data(const QModelIndex& index, int role) const
       }
 
    case Qt::TextAlignmentRole:
-      return static_cast<int>((index.column() < this->columnCount() - 1 ? Qt::AlignLeft : Qt::AlignRight) | Qt::AlignVCenter);
+      return QVariant((index.column() < this->columnCount() - 1 ? Qt::AlignLeft : Qt::AlignRight) | Qt::AlignVCenter);
 
    default:
       return QVariant();
@@ -205,14 +205,8 @@ void BrowseModel::refresh()
 
    this->browseResult = this->coreConnection->browse(this->peerID, entries, true);
 
-   connect(
-      this->browseResult.data(),
-      SIGNAL(result(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>&)),
-      this,
-      SLOT(resultRefresh(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>&))
-   );
-
-   connect(this->browseResult.data(), SIGNAL(timeout()), this, SLOT(resultTimeout()));
+   connect(this->browseResult.data(), &RCC::IBrowseResult::result, this, &BrowseModel::resultRefresh);
+   connect(this->browseResult.data(), &Common::Timeoutable::timeout, this, &BrowseModel::resultTimeout);
    this->browseResult->start();
 }
 
@@ -301,9 +295,11 @@ void BrowseModel::resultTimeout()
 
 void BrowseModel::browse(Tree* tree)
 {
-   this->browseResult = tree ? this->coreConnection->browse(this->peerID, tree->getItem()) : this->coreConnection->browse(this->peerID);
-   connect(this->browseResult.data(), SIGNAL(result(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>&)), this, SLOT(result(const google::protobuf::RepeatedPtrField<Protos::Common::Entries>&)));
-   connect(this->browseResult.data(), SIGNAL(timeout()), this, SLOT(resultTimeout()));
+   this->browseResult = tree ?
+        this->coreConnection->browse(this->peerID, tree->getItem())
+      : this->coreConnection->browse(this->peerID);
+   connect(this->browseResult.data(), &RCC::IBrowseResult::result, this, &BrowseModel::result);
+   connect(this->browseResult.data(), &Common::Timeoutable::timeout, this, &BrowseModel::resultTimeout);
    this->browseResult->start();
 }
 
@@ -332,7 +328,8 @@ void BrowseModel::synchronize(BrowseModel::Tree* tree, const Protos::Common::Ent
 
    while (i < tree->getNbChildren() || j < entries.entries_size())
    {
-      if (i >= tree->getNbChildren() || j < entries.entries_size() && tree->getChild(i)->getItem() > entries.entries(j)) // New entry.
+      // New entry.
+      if (i >= tree->getNbChildren() || j < entries.entries_size() && tree->getChild(i)->getItem() > entries.entries(j))
       {
          this->beginInsertRows(parentIndex, i, i);
          tree->insertChild(entries.entries(j++), i++);
@@ -370,7 +367,8 @@ void BrowseModel::synchronizeRoot(const Protos::Common::Entries& entries)
       // We've searching if the entry already exists.
       for (int j2 = j; j2 < this->root->getNbChildren(); j2++)
       {
-         if (entries.entries(i).shared_entry().id().hash() == this->root->getChild(j2)->getItem().shared_entry().id().hash()) // ID's are equal -> same entry.
+         // ID's are equal -> same entry.
+         if (entries.entries(i).shared_entry().id().hash() == this->root->getChild(j2)->getItem().shared_entry().id().hash())
          {
             if (entries.entries(i) != this->root->getChild(j2)->getItem()) // The entry data may have changed.
             {

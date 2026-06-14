@@ -42,7 +42,12 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      explicit MdiArea(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, Taskbar taskbar, QWidget* parent = 0);
+      explicit MdiArea(
+         QSharedPointer<RCC::ICoreConnection> coreConnection,
+         PeerListModel& peerListModel,
+         Taskbar taskbar,
+         QWidget* parent = 0
+      );
       ~MdiArea();
 
       void focusNthWindow(int num);
@@ -96,7 +101,7 @@ namespace GUI
       BrowseWidget* addBrowseWindow(const Common::Hash& peerID);
 
    private slots:
-      BrowseWidget* addBrowseWindow(const Common::Hash& peerID, const Protos::Common::Entry& remoteEntry);
+      GUI::BrowseWidget* addBrowseWindow(const Common::Hash& peerID, const Protos::Common::Entry& remoteEntry);
 
    private:
       SearchWidget* addSearchWindow(const Protos::Common::FindPattern& findPattern, bool local = false);
@@ -129,7 +134,7 @@ namespace GUI
       // This widget is shown on the tab of the downloads page. It is visible only after D-LAN has started and during the loading
       // of the cache (before the downloads are loaded).
       // This widget is owned by the tab bar of the 'QMdiArea'.
-      BusyIndicator* downloadsBusyIndicator;
+      BusyIndicator* downloadsBusyIndicator; // TODO: remove it?
 
       SharedEntryListModel sharedEntryListModel;
    };

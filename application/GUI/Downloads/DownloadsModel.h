@@ -37,7 +37,12 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      DownloadsModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const SharedEntryListModel& sharedEntryListModel, const IFilter<DownloadFilterStatus>& filter);
+      DownloadsModel(
+         QSharedPointer<RCC::ICoreConnection> coreConnection,
+         const PeerListModel& peerListModel,
+         const SharedEntryListModel& sharedEntryListModel,
+         const IFilter<DownloadFilterStatus>& filter
+      );
       virtual ~DownloadsModel() {}
 
       virtual QList<quint64> getDownloadIDs(const QModelIndex& index) const = 0;
@@ -72,7 +77,11 @@ namespace GUI
    struct Progress
    {
       Progress() : progress(0), status(Protos::GUI::State::Download::QUEUED), type(Protos::Common::Entry::FILE) {}
-      Progress(quint32 progress, Protos::GUI::State::Download::Status status, Protos::Common::Entry::Type type) : progress(progress), status(status), type(type) {}
+      Progress(
+         quint32 progress,
+         Protos::GUI::State::Download::Status status,
+         Protos::Common::Entry::Type type
+      ) : progress(progress), status(status), type(type) {}
 
       quint32 progress; // 0 to 10'000.
       Protos::GUI::State::Download::Status status;

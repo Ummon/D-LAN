@@ -10,22 +10,22 @@ MockFileManager::~MockFileManager()
 
 }
 
-void MockFileManager::setSharedDirs(const QStringList& dirs)
+void MockFileManager::setSharedPaths(const QStringList& path)
 {
 
 }
 
-QPair<Common::SharedDir, QString> MockFileManager::addASharedDir(const QString& absoluteDir)
+QPair<Common::SharedEntry, QString> MockFileManager::addASharedPath(const QString& absoluteDir)
 {
-   return qMakePair(Common::SharedDir(), QString());
+   return qMakePair(Common::SharedEntry(), QString());
 }
 
-QList<Common::SharedDir> MockFileManager::getSharedDirs() const
+QList<Common::SharedEntry> MockFileManager::getSharedEntries() const
 {
-   return QList<Common::SharedDir>();
+   return QList<Common::SharedEntry>();
 }
 
-QString MockFileManager::getSharedDir(const Common::Hash& ID) const
+QString MockFileManager::getSharedEntry(const Common::Hash& ID) const
 {
    return QString();
 }
@@ -35,7 +35,7 @@ QSharedPointer<FM::IChunk> MockFileManager::getChunk(const Common::Hash& hash) c
    return QSharedPointer<FM::IChunk>();
 }
 
-QList<QSharedPointer<FM::IChunk>> MockFileManager::getAllChunks(const Protos::Common::Entry& localEntry, const Common::Hashes& hashes) const
+QList<QSharedPointer<FM::IChunk>> MockFileManager::getAllChunks(const Protos::Common::Entry& localEntry, const QList<Common::Hash>& hashes) const
 {
    return QList<QSharedPointer<FM::IChunk>>();
 }
@@ -90,9 +90,9 @@ quint64 MockFileManager::getAmount()
    return 0;
 }
 
-MockFileManager::CacheStatus MockFileManager::getCacheStatus() const
+FM::IFileManager::CacheStatus MockFileManager::getCacheStatus() const
 {
-   return LOADING_CACHE_IN_PROGRSS;
+   return FM::IFileManager::CacheStatus::SCANNING_IN_PROGRESS;
 }
 
 int MockFileManager::getProgress() const
@@ -100,12 +100,17 @@ int MockFileManager::getProgress() const
    return 0;
 }
 
-void MockFileManager::dumpWordIndex() const
+QString MockFileManager::getWordIndex_debug() const
 {
-
+   return QString();
 }
 
-void MockFileManager::printSimilarFiles() const
+QString MockFileManager::getSimilarFiles_debug() const
 {
+   return QString();
+}
 
+QString MockFileManager::getCacheTree_debug() const
+{
+   return QString();
 }

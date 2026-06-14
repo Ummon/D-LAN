@@ -48,7 +48,8 @@ QIcon IconProvider::getIcon(const Protos::Common::Entry& entry, bool withWarning
       if (withWarning)
       {
          if (IconProvider::folderIconWithWarning.isNull())
-            IconProvider::folderIconWithWarning = IconProvider::drawWarning(IconProvider::iconProvider.icon(QFileIconProvider::Folder));
+            IconProvider::folderIconWithWarning =
+               IconProvider::drawWarning(IconProvider::iconProvider.icon(QFileIconProvider::Folder));
          return IconProvider::folderIconWithWarning;
       }
       else
@@ -81,7 +82,8 @@ QIcon IconProvider::getIconCache(const QString& filename, bool withWarning)
       if (withWarning)
       {
          if (IconProvider::fileIconWithWarning.isNull())
-            IconProvider::fileIconWithWarning = IconProvider::drawWarning(IconProvider::iconProvider.icon(QFileIconProvider::File));
+            IconProvider::fileIconWithWarning =
+               IconProvider::drawWarning(IconProvider::iconProvider.icon(QFileIconProvider::File));
          return IconProvider::fileIconWithWarning;
       }
       else
@@ -117,7 +119,13 @@ QIcon IconProvider::getIconNative(const QString& extension)
    QIcon icon;
 #if defined(Q_OS_WIN32)
    SHFILEINFO psfi;
-   SHGetFileInfo(extension.toStdWString().c_str(), FILE_ATTRIBUTE_NORMAL, &psfi, sizeof(psfi), SHGFI_ICON | SHGFI_SMALLICON | SHGFI_USEFILEATTRIBUTES);
+   SHGetFileInfo(
+      extension.toStdWString().c_str(),
+      FILE_ATTRIBUTE_NORMAL,
+      &psfi,
+      sizeof(psfi),
+      SHGFI_ICON | SHGFI_SMALLICON | SHGFI_USEFILEATTRIBUTES
+   );
    if (psfi.hIcon != NULL)
    {
       icon = QIcon(QPixmap::fromImage(QImage::fromHICON(psfi.hIcon)));
@@ -139,7 +147,13 @@ QIcon IconProvider::drawWarning(const QIcon& icon)
       if (pixmap.width() >= miniError.width() && pixmap.height() >= miniError.height() + 1)
       {
          QPainter painter(&pixmap);
-         painter.drawPixmap(pixmap.width() - miniError.width(), pixmap.height() - miniError.height() - 1, miniError.width(), miniError.height(), miniError);
+         painter.drawPixmap(
+            pixmap.width() - miniError.width(),
+            pixmap.height() - miniError.height() - 1,
+            miniError.width(),
+            miniError.height(),
+            miniError
+         );
       }
       result.addPixmap(pixmap);
    }

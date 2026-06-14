@@ -27,7 +27,7 @@ LogModel::LogModel(QSharedPointer<RCC::ICoreConnection> coreConnection) :
 {
    connect(this->coreConnection.data(), &RCC::ICoreConnection::newLogMessages, this, &LogModel::newLogEntries);
 
-   this->loggerHook = LM::Builder::newLoggerHook(LM::Severity(LM::SV_FATAL_ERROR | LM::SV_ERROR | LM::SV_END_USER | LM::SV_WARNING));
+   this->loggerHook = LM::Builder::newLoggerHook(LM::SV_FATAL_ERROR | LM::SV_ERROR | LM::SV_END_USER | LM::SV_WARNING);
    connect(this->loggerHook.data(), &LM::ILoggerHook::newLogEntry, this, &LogModel::newLogEntry);
 }
 

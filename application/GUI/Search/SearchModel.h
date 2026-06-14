@@ -118,11 +118,32 @@ namespace GUI
       {
       public:
          SearchTree();
-         SearchTree(const Protos::Common::Entry& entry, int level, const Common::Hash& peerID, const QString& peerNick, SearchTree* parent);
-         SearchTree(const Protos::Common::Entry& entry, const Common::Hash& peerID,  SearchTree* parent);
+         SearchTree(
+            const Protos::Common::Entry& entry,
+            int level,
+            const Common::Hash& peerID,
+            const QString& peerNick,
+            SearchTree* parent
+         );
+         SearchTree(
+            const Protos::Common::Entry& entry,
+            const Common::Hash& peerID,
+            SearchTree* parent
+         );
 
-         SearchTree* insertChildEntry(const Protos::Common::FindResult::EntryLevel& entry, const Common::Hash& peerID, const QString& peerNick);
-         SearchTree* insertChildEntryAtIndex(int index, const Protos::Common::FindResult::EntryLevel& entry, const Common::Hash& peerID, const QString& peerNick);
+         SearchTree* insertChildEntry(
+            const Protos::Common::FindResult::EntryLevel& entry,
+            const Common::Hash& peerID,
+            const QString& peerNick
+         );
+
+         SearchTree* insertChildEntryAtIndex(
+            int index,
+            const Protos::Common::FindResult::EntryLevel& entry,
+            const Common::Hash& peerID,
+            const QString& peerNick
+         );
+
          SearchTree* insertChildSubTree(SearchTree* node);
 
          int getLevel() const;

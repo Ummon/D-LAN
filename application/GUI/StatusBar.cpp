@@ -31,18 +31,18 @@ StatusBar::StatusBar(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidge
    this->ui->setupUi(this);
    this->coreDisconnected();
 
-   connect(this->coreConnection.data(), SIGNAL(newState(const Protos::GUI::State&)), this, SLOT(newState(const Protos::GUI::State&)));
-   connect(this->coreConnection.data(), SIGNAL(connected()), this, SLOT(coreConnected()));
-   connect(this->coreConnection.data(), SIGNAL(disconnected(bool)), this, SLOT(coreDisconnected()));
+   connect(this->coreConnection.data(), &RCC::ICoreConnection::newState, this, &StatusBar::newState);
+   connect(this->coreConnection.data(), &RCC::ICoreConnection::connected, this, &StatusBar::coreConnected);
+   connect(this->coreConnection.data(), &RCC::ICoreConnection::disconnected, this, &StatusBar::coreDisconnected);
 
    this->ui->lblDownloadRate->installEventFilter(this);
    this->ui->icoDownloadRate->installEventFilter(this);
    this->ui->lblUploadRate->installEventFilter(this);
    this->ui->icoUploadRate->installEventFilter(this);
 
-   connect(this->ui->butHelp, SIGNAL(clicked()), this, SLOT(showAbout()));
+   connect(this->ui->butHelp, &QPushButton::clicked, this, &StatusBar::showAbout);
 
-   connect(this->ui->butLog, SIGNAL(toggled(bool)), this, SIGNAL(showDockLog(bool)));
+   connect(this->ui->butLog, &QPushButton::toggled, this, &StatusBar::showDockLog);
 }
 
 StatusBar::~StatusBar()

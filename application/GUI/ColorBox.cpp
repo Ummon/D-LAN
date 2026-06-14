@@ -32,7 +32,7 @@ using namespace GUI;
 ColorBox::ColorBox(QWidget* parent) :
    QPushButton(parent)
 {
-   connect(this, SIGNAL(clicked()), this, SLOT(chooseColor()));
+   connect(this, &QPushButton::clicked, this, &ColorBox::chooseColor);
 }
 
 void ColorBox::setColor(const QColor& color)

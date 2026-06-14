@@ -90,22 +90,22 @@ RemoteConnection::RemoteConnection(
 
    this->sendLogMessagesTimer.setInterval(SETTINGS.get<quint32>("delay_before_sending_log_messages"));
    this->sendLogMessagesTimer.setSingleShot(true);
-   connect(&this->sendLogMessagesTimer, SIGNAL(timeout()), this, SLOT(sendLogMessages()));
+   connect(&this->sendLogMessagesTimer, &QTimer::timeout, this, &RemoteConnection::sendLogMessages);
 
    this->timerRefresh.setInterval(SETTINGS.get<quint32>("remote_refresh_rate"));
    this->timerRefresh.setSingleShot(true);
-   connect(&this->timerRefresh, SIGNAL(timeout()), this, SLOT(refresh()));
+   connect(&this->timerRefresh, &QTimer::timeout, this, &RemoteConnection::refresh);
 
    this->timerCloseSocket.setInterval(MAX_DELAY_WAITING_AUTH_RES);
    this->timerCloseSocket.setSingleShot(true);
-   connect(&this->timerCloseSocket, SIGNAL(timeout()), this, SLOT(closeSocket()));
+   connect(&this->timerCloseSocket, &QTimer::timeout, this, &RemoteConnection::closeSocket);
 
-   connect(this->chatSystem.data(), SIGNAL(newMessages(Protos::Common::ChatMessages)), this, SLOT(newChatMessages(Protos::Common::ChatMessages)));
+   connect(this->chatSystem.data(), &CS::IChatSystem::newMessages, this, &RemoteConnection::newChatMessages);
 
-   this->loggerHook = LM::Builder::newLoggerHook(LM::Severity(LM::SV_FATAL_ERROR | LM::SV_ERROR | LM::SV_END_USER | LM::SV_WARNING));
+   this->loggerHook = LM::Builder::newLoggerHook(LM::SV_FATAL_ERROR | LM::SV_ERROR | LM::SV_END_USER | LM::SV_WARNING);
 
    qRegisterMetaType<QSharedPointer<LM::IEntry>>("QSharedPointer<LM::IEntry>");
-   connect(this->loggerHook.data(), SIGNAL(newLogEntry(QSharedPointer<LM::IEntry>)), this, SLOT(newLogEntry(QSharedPointer<LM::IEntry>)), Qt::QueuedConnection);
+   connect(this->loggerHook.data(), &LM::ILoggerHook::newLogEntry, this, &RemoteConnection::newLogEntry, Qt::QueuedConnection);
 
    this->askForAuthentication();
 }
@@ -428,15 +428,16 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
          {
             Common::Hash passwordReceived(authenticationMessage.password_challenge().hash());
             Common::Hash currentPassword = SETTINGS.get<Common::Hash>("remote_password");
+            static quint32 delayGuiConnectionFail = SETTINGS.get<quint32>("delay_gui_connection_fail");
 
             if (currentPassword.isNull())
             {
-               QTimer::singleShot(SETTINGS.get<quint32>("delay_gui_connection_fail"), this, SLOT(sendNoPasswordDefinedResult()));
+               QTimer::singleShot(delayGuiConnectionFail, this, &RemoteConnection::sendNoPasswordDefinedResult);
                break;
             }
             else if (passwordReceived != Common::Hasher::hashWithSalt(currentPassword, this->saltChallenge))
             {
-               QTimer::singleShot(SETTINGS.get<quint32>("delay_gui_connection_fail"), this, SLOT(sendBadPasswordResult()));
+               QTimer::singleShot(delayGuiConnectionFail, this, &RemoteConnection::sendBadPasswordResult);
                break;
             }
          }
@@ -566,7 +567,7 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
          else
          {
             QSharedPointer<NL::ISearch> search = this->networkListener->newSearch();
-            connect(search.data(), SIGNAL(found(const Protos::Common::FindResult&)), this, SLOT(searchFound(const Protos::Common::FindResult&)));
+            connect(search.data(), &NL::ISearch::found, this, &RemoteConnection::searchFound);
             this->currentSearches << search;
             const quint64 tag = search->search(findPattern);
 
@@ -605,8 +606,8 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
             }
 
             entries->setProperty("tag", tag);
-            connect(entries.data(), SIGNAL(result(const Protos::Core::GetEntriesResult&)), this, SLOT(getEntriesResult(const Protos::Core::GetEntriesResult&)));
-            connect(entries.data(), SIGNAL(timeout()), this, SLOT(getEntriesTimeout()));
+            connect(entries.data(), &PM::IGetEntriesResult::result, this, &RemoteConnection::getEntriesResult);
+            connect(entries.data(), &PM::IGetEntriesResult::timeout, this, &RemoteConnection::getEntriesTimeout);
             entries->start();
             this->getEntriesResults << entries;
          }

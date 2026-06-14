@@ -48,7 +48,13 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      explicit BrowseWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const SharedEntryListModel& sharedEntryListModel, const Common::Hash& peerID, QWidget* parent = nullptr);
+      explicit BrowseWidget(
+         QSharedPointer<RCC::ICoreConnection> coreConnection,
+         const PeerListModel& peerListModel,
+         const SharedEntryListModel& sharedEntryListModel,
+         const Common::Hash& peerID,
+         QWidget* parent = nullptr
+      );
       ~BrowseWidget();
       Common::Hash getPeerID() const;
       void browseTo(const Protos::Common::Entry& remoteEntry);

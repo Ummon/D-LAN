@@ -89,7 +89,11 @@ UDPListener::UDPListener(
   * Send an UDP unicast datagram to the given peer.
   * @return 'false' if the datagram can't be sent.
   */
-INetworkListener::SendStatus UDPListener::send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message, const Common::Hash& peerID)
+INetworkListener::SendStatus UDPListener::send(
+   Common::MessageHeader::MessageType type,
+   const google::protobuf::Message& message,
+   const Common::Hash& peerID
+)
 {
    PM::IPeer* peer = this->peerManager->getPeer(peerID);
    if (!peer)
@@ -117,7 +121,10 @@ INetworkListener::SendStatus UDPListener::send(Common::MessageHeader::MessageTyp
 /**
   * Send an UDP multicast message.
   */
-INetworkListener::SendStatus UDPListener::send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message)
+INetworkListener::SendStatus UDPListener::send(
+   Common::MessageHeader::MessageType type,
+   const google::protobuf::Message& message
+)
 {
    int messageSize;
    if (!(messageSize = this->writeMessageToBuffer(type, message)))
@@ -169,9 +176,15 @@ void UDPListener::sendIMAliveMessage()
    static const int HASH_SIZE = Common::Hash::HASH_SIZE + 4; // "4" is the overhead added by protobuff for each hash.
 
    const int numberOfPeers = this->peerManager->getNbOfPeers();
-   const int maxNumberOfHashesToSend = numberOfPeers == 0 ? std::numeric_limits<int>::max() : IMALIVE_PERIOD * (MAX_IMALIVE_THROUGHPUT - numberOfPeers * FIXED_RATE_PER_PEER) / (numberOfPeers * HASH_SIZE);
+   const int maxNumberOfHashesToSend =
+      numberOfPeers == 0 ?
+           std::numeric_limits<int>::max()
+         : IMALIVE_PERIOD * (MAX_IMALIVE_THROUGHPUT - numberOfPeers * FIXED_RATE_PER_PEER) / (numberOfPeers * HASH_SIZE);
 
-   int numberOfHashesToSend = (this->MAX_UDP_DATAGRAM_PAYLOAD_SIZE - IMAliveMessage.ByteSizeLong() - Common::MessageHeader::HEADER_SIZE) / HASH_SIZE;
+   int numberOfHashesToSend =
+      (this->MAX_UDP_DATAGRAM_PAYLOAD_SIZE - IMAliveMessage.ByteSizeLong() - Common::MessageHeader::HEADER_SIZE) /
+      HASH_SIZE;
+
    if (numberOfHashesToSend > maxNumberOfHashesToSend)
       numberOfHashesToSend = maxNumberOfHashesToSend;
 
@@ -347,13 +360,19 @@ void UDPListener::processPendingUnicastDatagrams()
 
                if (chunksOwnedMessage.tag() != this->currentIMAliveTag)
                {
-                  L_WARN(QString("ChunksOwned: tag (%1) doesn't match current tag (%2)").arg(chunksOwnedMessage.tag()).arg(currentIMAliveTag));
+                  L_WARN(
+                     QString("ChunksOwned: tag (%1) doesn't match current tag (%2)")
+                        .arg(chunksOwnedMessage.tag()).arg(currentIMAliveTag)
+                  );
                   continue;
                }
 
                if (chunksOwnedMessage.chunk_state_size() != this->currentChunkDownloaders.size())
                {
-                  L_WARN(QString("ChunksOwned: The size (%1) doesn't match the expected one (%2)").arg(chunksOwnedMessage.chunk_state_size()).arg(this->currentChunkDownloaders.size()));
+                  L_WARN(
+                     QString("ChunksOwned: The size (%1) doesn't match the expected one (%2)")
+                        .arg(chunksOwnedMessage.chunk_state_size()).arg(this->currentChunkDownloaders.size())
+                  );
                   continue;
                }
 
@@ -412,7 +431,11 @@ void UDPListener::initMulticastUDPSocket()
    this->multicastSocket.setSocketOption(QAbstractSocket::MulticastTtlOption, SETTINGS.get<quint32>("multicast_ttl"));
 
    QNetworkInterface networkInterface = Utils::getCurrentInterfaceToListenTo();
-   if (networkInterface.isValid() ? !this->multicastSocket.joinMulticastGroup(this->multicastGroup, networkInterface) : !this->multicastSocket.joinMulticastGroup(this->multicastGroup))
+   if (
+      networkInterface.isValid() ?
+           !this->multicastSocket.joinMulticastGroup(this->multicastGroup, networkInterface)
+         : !this->multicastSocket.joinMulticastGroup(this->multicastGroup)
+   )
       L_ERRO(
          QString("Unable to join the multicast group: %1 on the interface: %2")
             .arg(this->multicastGroup.toString(), networkInterface.name())
@@ -450,7 +473,10 @@ int UDPListener::writeMessageToBuffer(Common::MessageHeader::MessageType type, c
 
    const int nbBytesWritten = Common::Message::writeMessageToBuffer(this->buffer, this->MAX_UDP_DATAGRAM_PAYLOAD_SIZE, header, &message);
    if (!nbBytesWritten)
-      L_ERRO(QString("Datagram size too big: %1, max allowed: %2").arg(Common::MessageHeader::HEADER_SIZE + header.getSize()).arg(this->MAX_UDP_DATAGRAM_PAYLOAD_SIZE));
+      L_ERRO(
+         QString("Datagram size too big: %1, max allowed: %2")
+            .arg(Common::MessageHeader::HEADER_SIZE + header.getSize()).arg(this->MAX_UDP_DATAGRAM_PAYLOAD_SIZE)
+      );
 
    return nbBytesWritten;
 }
@@ -464,7 +490,11 @@ Common::MessageHeader UDPListener::readDatagramToBuffer(QUdpSocket& socket, QHos
    const qint64 datagramSize = socket.readDatagram(this->buffer, BUFFER_SIZE, &peerAddress, &port);
    if (datagramSize == -1)
    {
-      L_WARN(QString("UDPListener::readDatagramToBuffer(..): Unable to read multicast datagram from address:port: %1:%2").arg(peerAddress.toString()).arg(port));
+      L_WARN(
+         QString("UDPListener::readDatagramToBuffer(..): Unable to read multicast datagram from address:port: %1:%2")
+            .arg(peerAddress.toString())
+            .arg(port)
+      );
       return Common::MessageHeader();
    }
 

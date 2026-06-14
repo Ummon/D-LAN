@@ -56,6 +56,8 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
 {
    this->ui->setupUi(this);
 
+   this->setTabPosition(Qt::AllDockWidgetAreas, QTabWidget::North);
+
    this->taskbar.setStatus(TaskbarButtonStatus::BUTTON_STATUS_NOPROGRESS);
 
    this->mdiArea = new MdiArea(this->coreConnection, this->peersDock->getModel(), this->taskbar, this->ui->centralWidget);
@@ -65,24 +67,24 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
    sizePolicy.setHeightForWidth(this->mdiArea->sizePolicy().hasHeightForWidth());
    this->mdiArea->setSizePolicy(sizePolicy);*/
    this->ui->verticalLayout->addWidget(this->mdiArea);
-   connect(this->mdiArea, SIGNAL(languageChanged(QString)), this, SIGNAL(languageChanged(QString)));
-   connect(this->mdiArea, SIGNAL(styleChanged(QString)), this, SLOT(loadCustomStyle(QString)));
+   connect(this->mdiArea, &MdiArea::languageChanged, this, &MainWindow::languageChanged);
+   connect(this->mdiArea, &MdiArea::styleChanged, this, &MainWindow::loadCustomStyle);
 
    this->initialWindowFlags = this->windowFlags();
 
    StatusBar* statusBar = new StatusBar(this->coreConnection);
    ui->statusBar->addWidget(statusBar, 1);
-   connect(statusBar, SIGNAL(showDockLog(bool)), this->ui->dockLog, SLOT(setVisible(bool)));
-   connect(statusBar, SIGNAL(downloadClicked()), this->mdiArea, SLOT(showDownloads()));
-   connect(statusBar, SIGNAL(uploadClicked()), this->mdiArea, SLOT(showUploads()));
+   connect(statusBar, &StatusBar::showDockLog, this->ui->dockLog, &QDockWidget::setVisible);
+   connect(statusBar, &StatusBar::downloadClicked, this->mdiArea, &MdiArea::showDownloads);
+   connect(statusBar, &StatusBar::uploadClicked, this->mdiArea, &MdiArea::showUploads);
 
    ///// Dockable widgets
    this->addDockWidget(Qt::LeftDockWidgetArea, this->searchDock);
-   connect(this->searchDock, SIGNAL(search(const Protos::Common::FindPattern&, bool)), this, SLOT(search(const Protos::Common::FindPattern&, bool)));
+   connect(this->searchDock, qOverload<const Protos::Common::FindPattern&, bool>(&SearchDock::search), this, &MainWindow::search);
    this->addDockWidget(Qt::LeftDockWidgetArea, this->peersDock);
-   connect(this->peersDock, SIGNAL(browsePeer(Common::Hash)), this, SLOT(browsePeer(Common::Hash)));
+   connect(this->peersDock, &PeersDock::browsePeer, this, &MainWindow::browsePeer);
    this->addDockWidget(Qt::LeftDockWidgetArea, this->roomsDock);
-   connect(this->roomsDock, SIGNAL(roomJoined(QString)), this, SLOT(roomJoined(QString)));
+   connect(this->roomsDock, &RoomsDock::roomJoined, this, &MainWindow::roomJoined);
    /////
 
    this->ui->tblLog->setModel(&this->logModel);
@@ -100,30 +102,30 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
    this->ui->tblLog->setAutoScroll(false);
    this->ui->tblLog->setAlternatingRowColors(true);
 
-   connect(&this->logModel, SIGNAL(rowsInserted(const QModelIndex&, int, int)), this, SLOT(newLogMessage()));
-   connect(this->ui->tblLog->verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(logScrollChanged(int)));
-   connect(this->ui->dockLog, SIGNAL(visibilityChanged(bool)), statusBar, SLOT(dockLogVisibilityChanged(bool)));
+   connect(&this->logModel, &LogModel::rowsInserted, this, &MainWindow::newLogMessage);
+   connect(this->ui->tblLog->verticalScrollBar(), &QScrollBar::valueChanged, this, &MainWindow::logScrollChanged);
+   connect(this->ui->dockLog, &QDockWidget::visibilityChanged, statusBar, &StatusBar::dockLogVisibilityChanged);
 
    this->ui->grip->setVisible(false);
    this->ui->grip->installEventFilter(this);
-   connect(this->ui->butClose, SIGNAL(clicked()), this, SLOT(close()));
-   connect(this->ui->butMinimize, SIGNAL(clicked()), this, SLOT(showMinimized()));
-   connect(this->ui->butMaximize, SIGNAL(clicked()), this, SLOT(maximize()));
+   connect(this->ui->butClose, &QPushButton::clicked, this, &MainWindow::close);
+   connect(this->ui->butMinimize, &QPushButton::clicked, this, &MainWindow::showMinimized);
+   connect(this->ui->butMaximize, &QPushButton::clicked, this, &MainWindow::maximize);
    if (!SETTINGS.get<QString>("style").isEmpty())
       this->loadCustomStyle(QCoreApplication::applicationDirPath() % "/" % Common::Constants::STYLE_DIRECTORY % "/" % SETTINGS.get<QString>("style") % "/" % Common::Constants::STYLE_FILE_NAME);
 
    this->restoreWindowsSettings();
 
-   connect(this->coreConnection.data(), SIGNAL(connectingError(RCC::ICoreConnection::ConnectionErrorCode)), this, SLOT(coreConnectionError(RCC::ICoreConnection::ConnectionErrorCode)));
-   connect(this->coreConnection.data(), SIGNAL(connected()), this, SLOT(coreConnected()));
-   connect(this->coreConnection.data(), SIGNAL(disconnected(bool)), this, SLOT(coreDisconnected(bool)));
+   connect(this->coreConnection.data(), &RCC::ICoreConnection::connectingError, this, &MainWindow::coreConnectionError);
+   connect(this->coreConnection.data(), &RCC::ICoreConnection::connected, this, &MainWindow::coreConnected);
+   connect(this->coreConnection.data(), &RCC::ICoreConnection::disconnected, this, &MainWindow::coreDisconnected);
 
    this->coreConnection->connectToCore(SETTINGS.get<QString>("core_address"), SETTINGS.get<quint32>("core_port"), SETTINGS.get<Common::Hash>("password"));
 
 #ifdef DEBUG
    QPushButton* logEntireQWidgetTreeButton = new QPushButton();
    logEntireQWidgetTreeButton->setText("log widget tree");
-   connect(logEntireQWidgetTreeButton, SIGNAL(clicked()), this, SLOT(logEntireQWidgetTree()));
+   connect(logEntireQWidgetTreeButton, &QPushButton::clicked, this, &MainWindow::logEntireQWidgetTree);
    this->ui->statusBar->addWidget(logEntireQWidgetTreeButton);
 #endif
 }

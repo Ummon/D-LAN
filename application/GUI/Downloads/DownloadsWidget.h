@@ -58,7 +58,12 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      explicit DownloadsWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const SharedEntryListModel& sharedEntryListModel, QWidget* parent = nullptr);
+      explicit DownloadsWidget(
+         QSharedPointer<RCC::ICoreConnection> coreConnection,
+         const PeerListModel& peerListModel,
+         const SharedEntryListModel& sharedEntryListModel,
+         QWidget* parent = nullptr
+      );
       ~DownloadsWidget() override;
 
    signals:

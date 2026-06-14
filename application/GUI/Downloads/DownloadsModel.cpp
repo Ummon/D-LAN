@@ -28,7 +28,12 @@ using namespace GUI;
 #include <IconProvider.h>
 #include <Log.h>
 
-DownloadsModel::DownloadsModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const SharedEntryListModel& sharedEntryListModel, const IFilter<DownloadFilterStatus>& filter) :
+DownloadsModel::DownloadsModel(
+   QSharedPointer<RCC::ICoreConnection> coreConnection,
+   const PeerListModel& peerListModel,
+   const SharedEntryListModel& sharedEntryListModel,
+   const IFilter<DownloadFilterStatus>& filter
+) :
    coreConnection(coreConnection),
    peerListModel(peerListModel),
    sharedEntryListModel(sharedEntryListModel),
@@ -36,7 +41,8 @@ DownloadsModel::DownloadsModel(QSharedPointer<RCC::ICoreConnection> coreConnecti
 {
    // Not needed in Qt6: https://stackoverflow.com/questions/76590735/qregistermetatypestreamoperators-missing-in-qt6
    // qRegisterMetaTypeStreamOperators<Progress>("Progress"); // Don't know where to put this call . . .
-   connect(this->coreConnection.data(), SIGNAL(newState(Protos::GUI::State)), this, SLOT(onNewState(Protos::GUI::State)));
+
+   connect(this->coreConnection.data(), &RCC::ICoreConnection::newState, this, &DownloadsModel::onNewState);
 }
 
 int DownloadsModel::columnCount(const QModelIndex& /*parent*/) const
@@ -72,7 +78,10 @@ QVariant DownloadsModel::getData(const Protos::GUI::State::Download& download, c
 
    case Qt::DecorationRole:
       if (index.column() == 0)
-         return IconProvider::getIcon(download.local_entry(), download.status() >= Protos::GUI::State::Download::UNKNOWN_PEER_SOURCE);
+         return IconProvider::getIcon(
+            download.local_entry(),
+            download.status() >= Protos::GUI::State::Download::UNKNOWN_PEER_SOURCE
+         );
       return QVariant();
 
    case Qt::ToolTipRole:

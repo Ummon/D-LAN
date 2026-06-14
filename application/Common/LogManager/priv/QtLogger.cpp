@@ -36,10 +36,10 @@ using namespace LM;
 void handler(QtMsgType type, const QMessageLogContext&, const QString& msg)
 {
    Severity s =
-         type == QtDebugMsg ? SV_DEBUG :
-         type == QtWarningMsg ? SV_WARNING :
-         type == QtCriticalMsg ? SV_ERROR :
-         type == QtFatalMsg ? SV_FATAL_ERROR : SV_UNKNOWN;
+      type == QtDebugMsg ? SV_DEBUG :
+      type == QtWarningMsg ? SV_WARNING :
+      type == QtCriticalMsg ? SV_ERROR :
+      type == QtFatalMsg ? SV_FATAL_ERROR : SV_UNKNOWN;
 
    QtLogger::me.log(msg, s);
 }

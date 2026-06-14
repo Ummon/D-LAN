@@ -80,55 +80,80 @@ SettingsWidget::SettingsWidget(
    this->ui->tblShareDirs->setAlternatingRowColors(true);
 
    this->ui->txtCoreAddress->setText(SETTINGS.get<QString>("core_address"));
-   connect(this->ui->txtCoreAddress, SIGNAL(returnPressed()), this->ui->butConnect, SLOT(click()));
-   connect(this->ui->txtPassword, SIGNAL(returnPressed()), this->ui->butConnect, SLOT(click()));
+   connect(this->ui->txtCoreAddress, &QLineEdit::returnPressed, this->ui->butConnect, &QPushButton::click);
+   connect(this->ui->txtPassword, &QLineEdit::returnPressed, this->ui->butConnect, &QPushButton::click);
 
-   connect(this->coreConnection.data(), SIGNAL(newState(Protos::GUI::State)), this, SLOT(newState(Protos::GUI::State)));
-   connect(this->coreConnection.data(), SIGNAL(connecting()), this, SLOT(coreConnecting()));
-   connect(this->coreConnection.data(), SIGNAL(connectingError(RCC::ICoreConnection::ConnectionErrorCode)), this, SLOT(coreConnectingError()));
-   connect(this->coreConnection.data(), SIGNAL(connected()), this, SLOT(coreConnected()));
-   connect(this->coreConnection.data(), SIGNAL(disconnected(bool)), this, SLOT(coreDisconnected()));
+   connect(this->coreConnection.data(), &RCC::ICoreConnection::newState, this, &SettingsWidget::newState);
+   connect(this->coreConnection.data(), &RCC::ICoreConnection::connecting, this, &SettingsWidget::coreConnecting);
+   connect(this->coreConnection.data(), &RCC::ICoreConnection::connectingError, this, &SettingsWidget::coreConnectingError);
+   connect(this->coreConnection.data(), &RCC::ICoreConnection::connected, this, &SettingsWidget::coreConnected);
+   connect(this->coreConnection.data(), &RCC::ICoreConnection::disconnected, this, &SettingsWidget::coreDisconnected);
 
-   connect(this->ui->txtNick, SIGNAL(editingFinished()), this, SLOT(saveCoreSettings()));
+   connect(this->ui->txtNick, &QLineEdit::editingFinished, this, &SettingsWidget::saveCoreSettings);
 
-   connect(this->ui->chkEnableIntegrityCheck, SIGNAL(clicked()), this, SLOT(saveCoreSettings()));
-   connect(this->ui->butRefreshInterfaces, SIGNAL(clicked()), this, SLOT(refreshNetworkInterfaces()));
+   connect(this->ui->chkEnableIntegrityCheck, &QCheckBox::clicked, this, &SettingsWidget::saveCoreSettings);
+   connect(this->ui->butRefreshInterfaces, &QPushButton::clicked, this, &SettingsWidget::refreshNetworkInterfaces);
 
    this->connectAllAddressButtons();
 
-   connect(this->ui->butAddShared, SIGNAL(clicked()), this, SLOT(addShared()));
-   connect(this->ui->butRemoveShared, SIGNAL(clicked()), this, SLOT(removeShared()));
+   connect(this->ui->butAddShared, &QPushButton::clicked, this, &SettingsWidget::addShared);
+   connect(this->ui->butRemoveShared, &QPushButton::clicked, this, &SettingsWidget::removeShared);
 
-   connect(this->ui->butMoveUpShared, SIGNAL(clicked()), this, SLOT(moveUpShared()));
-   connect(this->ui->butMoveDownShared, SIGNAL(clicked()), this, SLOT(moveDownShared()));
+   connect(this->ui->butMoveUpShared, &QPushButton::clicked, this, &SettingsWidget::moveUpShared);
+   connect(this->ui->butMoveDownShared, &QPushButton::clicked, this, &SettingsWidget::moveDownShared);
 
-   connect(this->ui->butOpenFolder, SIGNAL(clicked()), this, SLOT(openLocation()));
+   connect(this->ui->butOpenFolder, &QPushButton::clicked, this, &SettingsWidget::openLocation);
 
-   connect(this->ui->butResetCoreAddress, SIGNAL(clicked()), this, SLOT(resetCoreAddress()));
-   connect(this->ui->butConnect, SIGNAL(clicked()), this, SLOT(connectToCore()));
-   connect(this->ui->butDisconnect, SIGNAL(clicked()), this, SLOT(disconnectFromTheCore()));
+   connect(this->ui->butResetCoreAddress, &QPushButton::clicked, this, &SettingsWidget::resetCoreAddress);
+   connect(this->ui->butConnect, &QPushButton::clicked, this, &SettingsWidget::connectToCore);
+   connect(this->ui->butDisconnect, &QPushButton::clicked, this, &SettingsWidget::disconnectFromTheCore);
    this->ui->tabAdvancedSettings->installEventFilter(this);
 
    this->ui->tblShareDirs->setContextMenuPolicy(Qt::CustomContextMenu);
-   connect(this->ui->tblShareDirs, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuSharedDirs(const QPoint&)));
-   connect(this->ui->tblShareDirs, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(openLocation()));
+   connect(this->ui->tblShareDirs, &QTableView::customContextMenuRequested, this, &SettingsWidget::displayContextMenuSharedDirs);
+   connect(this->ui->tblShareDirs, &QTableView::doubleClicked, this, &SettingsWidget::openLocation);
 
    // When the selection change or a shared dir is moved/deleted/inserted we must set the availability of the action buttons.
-   connect(this->ui->tblShareDirs->selectionModel(), SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)), this, SLOT(refreshButtonsAvailability(const QItemSelection&)));
-   connect(&this->sharedEntryListModel, SIGNAL(layoutChanged()), this, SLOT(refreshButtonsAvailability()));
-   connect(&this->sharedEntryListModel, SIGNAL(rowsInserted(const QModelIndex&, int, int)), this, SLOT(refreshButtonsAvailability()));
-   connect(&this->sharedEntryListModel, SIGNAL(rowsRemoved(const QModelIndex&, int, int)), this, SLOT(refreshButtonsAvailability()));
-   connect(&this->sharedEntryListModel, SIGNAL(rowsMoved(const QModelIndex&, int, int, QModelIndex, int)), this, SLOT(refreshButtonsAvailability()));
+   connect(
+      this->ui->tblShareDirs->selectionModel(),
+      &QItemSelectionModel::selectionChanged,
+      this,
+      qOverload<const QItemSelection&>(&SettingsWidget::refreshButtonsAvailability)
+   );
+   connect(
+      &this->sharedEntryListModel,
+      &SharedEntryListModel::layoutChanged,
+      this,
+      qOverload<>(&SettingsWidget::refreshButtonsAvailability)
+   );
+   connect(
+      &this->sharedEntryListModel,
+      &SharedEntryListModel::rowsInserted,
+      this,
+      qOverload<>(&SettingsWidget::refreshButtonsAvailability)
+   );
+   connect(
+      &this->sharedEntryListModel,
+      &SharedEntryListModel::rowsRemoved,
+      this,
+      qOverload<>(&SettingsWidget::refreshButtonsAvailability)
+   );
+   connect(
+      &this->sharedEntryListModel,
+      &SharedEntryListModel::rowsMoved,
+      this,
+      qOverload<>(&SettingsWidget::refreshButtonsAvailability)
+   );
 
    this->fillComboBoxLanguages();
-   connect(this->ui->cmbLanguages, SIGNAL(currentIndexChanged(int)), this, SLOT(cmbLanguageChanged(int)));
+   connect(this->ui->cmbLanguages, &QComboBox::currentIndexChanged, this, &SettingsWidget::cmbLanguageChanged);
 
    this->fillComboBoxStyles();
-   connect(this->ui->cmbStyles, SIGNAL(currentIndexChanged(int)), this, SLOT(cmbStyleChanged(int)));
-   connect(this->ui->butReloadStyle, SIGNAL(clicked()), this, SLOT(reloadCurrentStyle()));
+   connect(this->ui->cmbStyles, &QComboBox::currentIndexChanged, this, &SettingsWidget::cmbStyleChanged);
+   connect(this->ui->butReloadStyle, &QPushButton::clicked, this, &SettingsWidget::reloadCurrentStyle);
 
-   connect(this->ui->butChangePassword, SIGNAL(clicked()), this, SLOT(changePassword()));
-   connect(this->ui->butResetPassword, SIGNAL(clicked()), this, SLOT(resetPassword()));
+   connect(this->ui->butChangePassword, &QPushButton::clicked, this, &SettingsWidget::changePassword);
+   connect(this->ui->butResetPassword, &QPushButton::clicked, this, &SettingsWidget::resetPassword);
 
    this->refreshButtonsAvailability();
    this->coreDisconnected(); // To set the initial state.
@@ -212,7 +237,7 @@ void SettingsWidget::fillComboBoxStyles()
 void SettingsWidget::connectAllAddressButtons()
 {
    for (QListIterator<QRadioButton*> i(this->ui->scoInterfacesContent->findChildren<QRadioButton*>()); i.hasNext();)
-      connect(i.next(), SIGNAL(toggled(bool)), this, SLOT(buttonAddressToggled(bool)));
+      connect(i.next(), &QRadioButton::toggled, this, &SettingsWidget::buttonAddressToggled);
 }
 
 void SettingsWidget::disconnectAllAddressButtons()
@@ -594,12 +619,37 @@ void SettingsWidget::displayContextMenuSharedDirs(const QPoint& point)
    globalPosition.setY(globalPosition.y() + this->ui->tblShareDirs->horizontalHeader()->height());
 
    QMenu menu;
-   QAction* actionDelete = menu.addAction(QIcon(":/icons/ressources/remove_file_folder.svg"), tr("Remove the shared directory"), this, SLOT(removeShared()));
-   QAction* actionUp = menu.addAction(QIcon(":/icons/ressources/arrow_up.svg"), tr("Move up"), this, SLOT(moveUpShared()));
-   QAction* actionDown = menu.addAction(QIcon(":/icons/ressources/arrow_down.svg"), tr("Move down"), this, SLOT(moveDownShared()));
+   QAction* actionDelete =
+      menu.addAction(
+         QIcon(":/icons/ressources/remove_file_folder.svg"),
+         tr("Remove the shared directory"),
+         this,
+         &SettingsWidget::removeShared
+      );
+
+   QAction* actionUp =
+      menu.addAction(
+         QIcon(":/icons/ressources/arrow_up.svg"),
+         tr("Move up"),
+         this,
+         &SettingsWidget::moveUpShared
+      );
+
+   QAction* actionDown =
+      menu.addAction(
+         QIcon(":/icons/ressources/arrow_down.svg"),
+         tr("Move down"),
+         this,
+         &SettingsWidget::moveDownShared
+      );
 
    if (this->coreConnection->isLocal() && this->sharedEntryListModel.rowCount() > 0)
-      menu.addAction(QIcon(":/icons/ressources/explore_folder.svg"), tr("Open location"), this, SLOT(openLocation()));
+      menu.addAction(
+         QIcon(":/icons/ressources/explore_folder.svg"),
+         tr("Open location"),
+         this,
+         &SettingsWidget::openLocation
+      );
 
    if (this->sharedEntryListModel.rowCount() == 0)
       actionDelete->setDisabled(true);

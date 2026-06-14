@@ -31,7 +31,7 @@ ChatTextEdit::ChatTextEdit(QWidget* parent) :
    this->addIgnoreKeyCombination({ Qt::ControlModifier, 'i' });
    this->addIgnoreKeyCombination({ Qt::ControlModifier, 'I' });
 
-   connect(this->document(), SIGNAL(contentsChange(int, int, int)), this, SLOT(documentContentsChange(int, int, int)));
+   connect(this->document(), &QTextDocument::contentsChange, this, &ChatTextEdit::documentContentsChange);
 }
 
 void ChatTextEdit::addIgnoreKeyCombination(KeyCombination keyCombination)

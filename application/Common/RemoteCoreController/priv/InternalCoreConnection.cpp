@@ -90,7 +90,8 @@ void InternalCoreConnection::connectToCore(const QString& address, quint16 port,
    if (this->currentHostLookupID != -1)
       QHostInfo::abortHostLookup(this->currentHostLookupID);
 
-   this->currentHostLookupID = QHostInfo::lookupHost(this->connectionInfo.address, this, SLOT(addressResolved(QHostInfo)));
+   this->currentHostLookupID =
+      QHostInfo::lookupHost(this->connectionInfo.address, this, &InternalCoreConnection::addressResolved);
 }
 
 void InternalCoreConnection::connectToCore(const QString& address, quint16 port, const QString& password)
@@ -377,7 +378,7 @@ void InternalCoreConnection::stateChanged(QAbstractSocket::SocketState socketSta
       {
          this->addressesToTry = this->addressesToRetry;
          this->addressesToRetry.clear();
-         QTimer::singleShot(TIME_BETWEEN_RETRIES, this, SLOT(tryToConnectToTheNextAddress()));
+         QTimer::singleShot(TIME_BETWEEN_RETRIES, this, &InternalCoreConnection::tryToConnectToTheNextAddress);
       }
       else
       {

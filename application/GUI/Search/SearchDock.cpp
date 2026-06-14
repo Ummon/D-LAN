@@ -62,26 +62,26 @@ SearchDock::SearchDock(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
 
    this->loadSettings();
 
-   connect(this->ui->butSearch, SIGNAL(clicked()), this, SLOT(search()));
-   connect(this->ui->butClear, SIGNAL(clicked()), this, SLOT(clear()));
+   connect(this->ui->butSearch, &QPushButton::clicked, this, qOverload<>(&SearchDock::search));
+   connect(this->ui->butClear, &QPushButton::clicked, this, &SearchDock::clear);
 
-   connect(this->ui->cmbType, SIGNAL(currentIndexChanged(int)), this, SLOT(saveSettings()));
+   connect(this->ui->cmbType, &QComboBox::currentIndexChanged, this, &SearchDock::saveSettings);
 
-   connect(this->ui->txtMinSize, SIGNAL(textChanged(QString)), this, SLOT(saveSettings()));
-   connect(this->ui->txtMaxSize, SIGNAL(textChanged(QString)), this, SLOT(saveSettings()));
+   connect(this->ui->txtMinSize, &QLineEdit::textChanged, this, &SearchDock::saveSettings);
+   connect(this->ui->txtMaxSize, &QLineEdit::textChanged, this, &SearchDock::saveSettings);
 
-   connect(this->ui->cmbMinSize, SIGNAL(currentIndexChanged(int)), this, SLOT(saveSettings()));
-   connect(this->ui->cmbMaxSize, SIGNAL(currentIndexChanged(int)), this, SLOT(saveSettings()));
+   connect(this->ui->cmbMinSize, &QComboBox::currentIndexChanged, this, &SearchDock::saveSettings);
+   connect(this->ui->cmbMaxSize, &QComboBox::currentIndexChanged, this, &SearchDock::saveSettings);
 
-   connect(this->ui->chkOwnFiles, SIGNAL(stateChanged(int)), this, SLOT(saveSettings()));
+   connect(this->ui->chkOwnFiles, &QCheckBox::checkStateChanged, this, &SearchDock::saveSettings);
 
-   connect(this->coreConnection.data(), SIGNAL(connected()), this, SLOT(coreConnected()));
-   connect(this->coreConnection.data(), SIGNAL(disconnected(bool)), this, SLOT(coreDisconnected(bool)));
+   connect(this->coreConnection.data(), &RCC::ICoreConnection::connected, this, &SearchDock::coreConnected);
+   connect(this->coreConnection.data(), &RCC::ICoreConnection::disconnected, this, &SearchDock::coreDisconnected);
 
 #if not HIDE_BUTTON
    this->ui->butAdvanced->hide();
 #else
-   connect(this->ui->butAdvanced, SIGNAL(clicked(bool)), this, SLOT(advancedOptionsVisibility(bool)));
+   connect(this->ui->butAdvanced, &QPushButton::clicked, this, &SearchDock::advancedOptionsVisibility);
 #endif
 
    this->coreDisconnected(false); // Initial state.
@@ -146,7 +146,12 @@ void SearchDock::search()
 
    this->ui->txtSearch->setText(this->ui->txtSearch->text().trimmed());
 
-   if (this->ui->txtSearch->text().isEmpty() && this->currentType().entryType != SearchType::EntryType::FILES_BY_EXTENSION && this->currentMinSize() == 0 && this->currentMaxSize() == 0)
+   if (
+      this->ui->txtSearch->text().isEmpty() &&
+      this->currentType().entryType != SearchType::EntryType::FILES_BY_EXTENSION &&
+      this->currentMinSize() == 0 &&
+      this->currentMaxSize() == 0
+   )
       return;
 
    Protos::Common::FindPattern pattern;

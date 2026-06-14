@@ -64,8 +64,8 @@ PeerListModel::PeerListModel(QSharedPointer<RCC::ICoreConnection> coreConnection
    displayOnlyPeersWithStatusOK(false),
    toolTipEnabled(true)
 {
-   connect(this->coreConnection.data(), SIGNAL(newState(Protos::GUI::State)), this, SLOT(newState(Protos::GUI::State)));
-   connect(this->coreConnection.data(), SIGNAL(disconnected(bool)), this, SLOT(coreDisconnected(bool)));
+   connect(this->coreConnection.data(), &RCC::ICoreConnection::newState, this, &PeerListModel::newState);
+   connect(this->coreConnection.data(), &RCC::ICoreConnection::disconnected, this, &PeerListModel::coreDisconnected);
 }
 
 PeerListModel::~PeerListModel()

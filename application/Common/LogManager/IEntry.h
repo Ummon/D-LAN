@@ -33,6 +33,11 @@ namespace LM
       SV_UNKNOWN = 0x20
    };
 
+   inline Severity operator|(Severity s1, Severity s2)
+   {
+      return static_cast<Severity>(static_cast<int>(s1) | static_cast<int>(s2));
+   }
+
    class IEntry
    {
    public:

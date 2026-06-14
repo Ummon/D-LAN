@@ -27,7 +27,6 @@
 #include <Common/LogManager/ILogger.h>
 #include <FileManager/IFileManager.h>
 #include <NetworkListener/INetworkListener.h>
-#include <NetworkListener/IChat.h>
 #include <PeerManager/IPeerManager.h>
 
 using namespace NL;
@@ -45,7 +44,7 @@ private slots:
    void initTestCase();
    void testSending();
    void testReception();
-   void messageRecevied(const Protos::Core::ChatMessage& message);
+   void messageRecevied(const Common::Message& message);
 
 
 private :

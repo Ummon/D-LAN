@@ -20,8 +20,6 @@
 #include <ui_DownloadsWidget.h>
 using namespace GUI;
 
-#include <limits>
-
 #include <QMenu>
 #include <QMessageBox>
 #include <QUrl>
@@ -49,7 +47,8 @@ void DownloadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
       progressBarOption.minimum = 0;
       progressBarOption.maximum = 10000;
       progressBarOption.textAlignment = Qt::AlignHCenter | Qt::AlignVCenter;
-      progressBarOption.progress = progress.status == Protos::GUI::State::Download::COMPLETE ? 10000 : progress.progress; // Complete -> 100%.
+      // Complete -> 100%.
+      progressBarOption.progress = progress.status == Protos::GUI::State::Download::COMPLETE ? 10000 : progress.progress;
 
       switch (progress.status)
       {
@@ -97,7 +96,12 @@ void DownloadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
 
 /////
 
-DownloadsWidget::DownloadsWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const SharedEntryListModel& sharedEntryListModel, QWidget* parent) :
+DownloadsWidget::DownloadsWidget(
+   QSharedPointer<RCC::ICoreConnection> coreConnection,
+   const PeerListModel& peerListModel,
+   const SharedEntryListModel& sharedEntryListModel,
+   QWidget* parent
+) :
    QWidget(parent),
    ui(new Ui::DownloadsWidget),
    coreConnection(coreConnection),
@@ -130,22 +134,37 @@ DownloadsWidget::DownloadsWidget(QSharedPointer<RCC::ICoreConnection> coreConnec
    this->ui->tblDownloads->setAlternatingRowColors(true);
 
    this->ui->tblDownloads->setContextMenuPolicy(Qt::CustomContextMenu);
-   connect(this->ui->tblDownloads, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuDownloads(const QPoint&)));
-   connect(this->ui->tblDownloads, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(downloadDoubleClicked(const QModelIndex&)));
+   connect(
+      this->ui->tblDownloads,
+      &QTreeView::customContextMenuRequested,
+      this,
+      &DownloadsWidget::displayContextMenuDownloads
+   );
+   connect(
+      this->ui->tblDownloads,
+      &QTreeView::doubleClicked,
+      this,
+      &DownloadsWidget::downloadDoubleClicked
+   );
 
-   connect(&this->downloadsFlatModel, SIGNAL(globalProgressChanged()), this, SLOT(updateGlobalProgressBar()));
+   connect(
+      &this->downloadsFlatModel,
+      &DownloadsFlatModel::globalProgressChanged,
+      this,
+      &DownloadsWidget::updateGlobalProgressBar
+   );
 
-   connect(this->ui->butRemoveComplete, SIGNAL(clicked()), this, SLOT(removeCompletedFiles()));
-   connect(this->ui->butRemoveSelected, SIGNAL(clicked()), this, SLOT(removeSelectedEntries()));
-   connect(this->ui->butPause, SIGNAL(clicked()), this, SLOT(pauseSelectedEntries()));
-   connect(this->ui->butSwitchView, SIGNAL(clicked()), this, SLOT(switchView()));
+   connect(this->ui->butRemoveComplete, &QPushButton::clicked, this, &DownloadsWidget::removeCompletedFiles);
+   connect(this->ui->butRemoveSelected, &QPushButton::clicked, this, &DownloadsWidget::removeSelectedEntries);
+   connect(this->ui->butPause, &QPushButton::clicked, this, &DownloadsWidget::pauseSelectedEntries);
+   connect(this->ui->butSwitchView, &QPushButton::clicked, this,  qOverload<>(&DownloadsWidget::switchView));
 
    this->filterStatusList = new CheckBoxList(this);
    this->filterStatusList->setModel(&this->checkBoxModel);
    this->updateCheckBoxElements();
    this->ui->layTools->insertWidget(1, this->filterStatusList);
 
-   connect(&this->checkBoxModel, SIGNAL(dataChanged(QModelIndex,QModelIndex)), this, SLOT(filterChanged()));
+   connect(&this->checkBoxModel, &CheckBoxModel<DownloadFilterStatus>::dataChanged, this, &DownloadsWidget::filterChanged);
 }
 
 DownloadsWidget::~DownloadsWidget()
@@ -184,23 +203,50 @@ void DownloadsWidget::displayContextMenuDownloads(const QPoint& point)
 
    QMenu menu;
 
-   // If the connection isn't remote and there is at least one complete or downloading file we show a menu action to open the file location.
+   // If the connection isn't remote and there is at least one complete or downloading file we show a menu action
+   // to open the file location.
    if (this->coreConnection->isLocal())
       for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
          if (this->currentDownloadsModel->isFileLocationKnown(i.next()))
          {
-            menu.addAction(QIcon(":/icons/ressources/explore_folder.svg"), tr("Open location"), this, SLOT(openLocationSelectedEntries()));
+            menu.addAction(
+               QIcon(":/icons/ressources/explore_folder.svg"),
+               tr("Open location"),
+               this,
+               &DownloadsWidget::openLocationSelectedEntries
+            );
             break;
          }
 
-   menu.addAction(QIcon(":/icons/ressources/arrow_up.svg"), tr("Move to top"), this, SLOT(moveSelectedEntriesToTop()));
+   menu.addAction(
+      QIcon(":/icons/ressources/arrow_up.svg"),
+      tr("Move to top"),
+      this,
+      &DownloadsWidget::moveSelectedEntriesToTop
+   );
 
-   menu.addAction(QIcon(":/icons/ressources/eraser.svg"), this->ui->butRemoveComplete->toolTip(), this, SLOT(removeCompletedFiles()));
-   menu.addAction(QIcon(":/icons/ressources/bin.svg"), this->ui->butRemoveSelected->toolTip(), this, SLOT(removeSelectedEntries()));
+   menu.addAction(
+      QIcon(":/icons/ressources/eraser.svg"),
+      this->ui->butRemoveComplete->toolTip(),
+      this,
+      &DownloadsWidget::removeCompletedFiles
+   );
+
+   menu.addAction(
+      QIcon(":/icons/ressources/bin.svg"),
+      this->ui->butRemoveSelected->toolTip(),
+      this,
+      &DownloadsWidget::removeSelectedEntries
+   );
 
    QPair<QList<quint64>, bool> IDs = this->getDownloadIDsToPause();
    if (!IDs.first.isEmpty())
-      menu.addAction(QIcon(":/icons/ressources/pause.svg"), IDs.second ? tr("Pause selected entries") : tr("Unpause selected entries"), this, SLOT(pauseSelectedEntries()));
+      menu.addAction(
+         QIcon(":/icons/ressources/pause.svg"),
+         IDs.second ? tr("Pause selected entries") : tr("Unpause selected entries"),
+         this,
+         &DownloadsWidget::pauseSelectedEntries
+      );
 
    menu.exec(this->ui->tblDownloads->mapToGlobal(point));
 }
@@ -240,7 +286,7 @@ void DownloadsWidget::moveSelectedEntriesToTop()
    // Search a download which is not selected
    for (int r = 0; r < this->downloadsFlatModel.rowCount(); r++)
    {
-      const quint64 id = this->downloadsFlatModel.getDownloadIDs(this->downloadsFlatModel.index(r, 0)).first();
+      const quint64 id = this->downloadsFlatModel.getDownloadIDs(this->downloadsFlatModel.index(r, 0)).constFirst();
       if (!downloadIDs.contains(id))
       {
          this->coreConnection->moveDownloads(QList<quint64>() << id, downloadIDs.values());
@@ -326,10 +372,12 @@ void DownloadsWidget::updateGlobalProgressBar()
    else
       this->ui->prgGlobalProgress->setFormat(
          QString("%1 / %2%3")
-            .arg(Common::Global::formatByteSize(bytesDownloaded))
-            .arg(Common::Global::formatByteSize(bytesInQueue))
-            .arg(eta == 0 || eta > 604800 ? QString("") : " (" + Common::Global::formatTime(eta) + ")")
-            );
+            .arg(
+               Common::Global::formatByteSize(bytesDownloaded),
+               Common::Global::formatByteSize(bytesInQueue),
+               eta == 0 || eta > 604800 ? QString("") : " (" + Common::Global::formatTime(eta) + ")"
+            )
+      );
 }
 
 void DownloadsWidget::switchView(Protos::GUI::Settings::DownloadView view)
@@ -413,7 +461,10 @@ void DownloadsWidget::saveTreeViewState(const QModelIndex& index, Common::Simple
    {
       const QModelIndex& childIndex = this->downloadsTreeModel.index(row, 0, index);
       if (this->ui->tblDownloads->isExpanded(childIndex))
-         this->saveTreeViewState(childIndex, tree->insertChild(Common::StringUtils::hashStringToInt(this->downloadsTreeModel.data(childIndex).toString())));
+         this->saveTreeViewState(
+            childIndex,
+            tree->insertChild(Common::StringUtils::hashStringToInt(this->downloadsTreeModel.data(childIndex).toString()))
+         );
    }
 }
 

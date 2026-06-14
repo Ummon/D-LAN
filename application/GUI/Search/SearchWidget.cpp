@@ -172,7 +172,7 @@ QString SearchDelegate::toHtmlText(const QString& text) const
 
 void SearchMenu::onShowMenu(QMenu& menu)
 {
-   menu.addAction(QIcon(":/icons/ressources/folder.svg"), tr("Browse"), this, SIGNAL(browse()));
+   menu.addAction(QIcon(":/icons/ressources/folder.svg"), tr("Browse"), this, &SearchMenu::browse);
 }
 
 /////
@@ -199,7 +199,7 @@ SearchWidget::SearchWidget(
 
    this->searchDelegate.setTerms(terms);
 
-   connect(&this->searchModel, SIGNAL(progress(int)), this, SLOT(progress(int)));
+   connect(&this->searchModel, &SearchModel::progress, this, &SearchWidget::progress);
 
    this->ui->treeView->setModel(&this->searchModel);
    this->ui->treeView->setItemDelegate(&this->searchDelegate);
@@ -213,8 +213,19 @@ SearchWidget::SearchWidget(
    for (int i = 0; i < this->ui->treeView->header()->count(); i++)
       this->ui->treeView->header()->resizeSection(i, columnSizes[i]);
 
-   connect(this->ui->treeView->selectionModel(), SIGNAL(selectionChanged(QItemSelection, QItemSelection)), this, SLOT(treeviewSelectionChanged(QItemSelection, QItemSelection)));
-   connect(this->ui->treeView->header(), SIGNAL(sectionResized(int, int, int)), this, SLOT(treeviewSectionResized(int, int, int)));
+   connect(
+      this->ui->treeView->selectionModel(),
+      &QItemSelectionModel::selectionChanged,
+      this,
+      &SearchWidget::treeviewSelectionChanged
+   );
+
+   connect(
+      this->ui->treeView->header(),
+      &QHeaderView::sectionResized,
+      this,
+      &SearchWidget::treeviewSectionResized
+   );
 
    this->ui->treeView->setSelectionBehavior(QAbstractItemView::SelectRows);
    this->ui->treeView->setSelectionMode(QAbstractItemView::ExtendedSelection);
@@ -223,16 +234,26 @@ SearchWidget::SearchWidget(
    this->searchModel.search(findPattern, local);
 
    this->ui->treeView->setContextMenuPolicy(Qt::CustomContextMenu);
-   connect(this->ui->treeView, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenuDownload(const QPoint&)));
-   connect(this->ui->treeView, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(entryDoubleClicked(const QModelIndex&)));
+   connect(this->ui->treeView, &QTreeView::customContextMenuRequested, this, &SearchWidget::displayContextMenuDownload);
+   connect(this->ui->treeView, &QTreeView::doubleClicked, this, &SearchWidget::entryDoubleClicked);
 
    this->ui->butDownload->setEnabled(false);
-   connect(this->ui->butDownload, SIGNAL(clicked()), this, SLOT(download()));
+   connect(this->ui->butDownload, &QPushButton::clicked, this, &SearchWidget::download);
 
-   connect(&this->downloadMenu, SIGNAL(download()), this, SLOT(download()));
-   connect(&this->downloadMenu, SIGNAL(downloadTo()), this, SLOT(downloadTo()));
-   connect(&this->downloadMenu, SIGNAL(downloadTo(const Common::Path&, const Common::Hash&)), this, SLOT(downloadTo(const Common::Path&, const Common::Hash&)));
-   connect(&this->downloadMenu, SIGNAL(browse()), this, SLOT(browseCurrents()));
+   connect(&this->downloadMenu, &SearchMenu::download, this, &SearchWidget::download);
+   connect(
+      &this->downloadMenu,
+      qOverload<>(&SearchMenu::downloadTo),
+      this,
+      qOverload<>(&SearchWidget::downloadTo)
+   );
+   connect(
+      &this->downloadMenu,
+      qOverload<const Common::Path&, const Common::Hash&>(&SearchMenu::downloadTo),
+      this,
+      qOverload<const Common::Path&, const Common::Hash&>(&SearchWidget::downloadTo)
+   );
+   connect(&this->downloadMenu, &SearchMenu::browse, this, &SearchWidget::browseCurrents);
 
    this->setWindowTitle(SearchUtils::getFindPatternWindowTitle(findPattern));
 
@@ -242,7 +263,7 @@ SearchWidget::SearchWidget(
 
 SearchWidget::~SearchWidget()
 {
-   disconnect(&this->searchModel, SIGNAL(progress(int)), this->ui->prgSearch, SLOT(setValue(int)));
+   disconnect(&this->searchModel, &SearchModel::progress, this->ui->prgSearch, &QProgressBar::setValue);
    delete this->ui;
 }
 
@@ -290,8 +311,8 @@ void SearchWidget::displayContextMenuDownload(const QPoint& point)
       if (!allSelectedEntriesAreTerminalFiles)
       {
          QMenu menu;
-         menu.addAction(QIcon(":/icons/ressources/explore_folder.svg"), tr("Open location"), this, SLOT(openLocation()));
-         menu.addAction(QIcon(":/icons/ressources/folder.svg"), tr("Browse"), this, SLOT(browseCurrents()));
+         menu.addAction(QIcon(":/icons/ressources/explore_folder.svg"), tr("Open location"), this, &SearchWidget::openLocation);
+         menu.addAction(QIcon(":/icons/ressources/folder.svg"), tr("Browse"), this, &SearchWidget::browseCurrents);
          menu.exec(globalPosition);
       }
    }

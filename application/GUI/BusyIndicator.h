@@ -30,7 +30,13 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      BusyIndicator(QWidget* parent = 0, int refreshRate = 30, int animationDuration = 1200, int nbOfPoints = 12, int radiusOfThePoints = 20);
+      BusyIndicator(
+         QWidget* parent = 0,
+         int refreshRate = 30,
+         int animationDuration = 1200,
+         int nbOfPoints = 12,
+         int radiusOfThePoints = 20
+      );
 
       QSize	sizeHint() const;
 

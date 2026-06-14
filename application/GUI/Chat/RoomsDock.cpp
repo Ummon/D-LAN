@@ -52,13 +52,13 @@ RoomsDock::RoomsDock(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidge
    this->ui->tblRooms->setAlternatingRowColors(false);
    this->ui->tblRooms->setContextMenuPolicy(Qt::CustomContextMenu);
 
-   connect(this->ui->tblRooms, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(displayContextMenuRooms(QPoint)));
-   connect(this->ui->tblRooms, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(roomDoubleClicked(QModelIndex)));
+   connect(this->ui->tblRooms, &QTableView::customContextMenuRequested, this, &RoomsDock::displayContextMenuRooms);
+   connect(this->ui->tblRooms, &QTableView::doubleClicked, this, &RoomsDock::roomDoubleClicked);
 
-   connect(this->ui->butJoinRoom, SIGNAL(clicked()), this, SLOT(joinRoom()));
+   connect(this->ui->butJoinRoom, &QPushButton::clicked, this, qOverload<>(&RoomsDock::joinRoom));
 
-   connect(this->coreConnection.data(), SIGNAL(connected()), this, SLOT(coreConnected()));
-   connect(this->coreConnection.data(), SIGNAL(disconnected(bool)), this, SLOT(coreDisconnected(bool)));
+   connect(this->coreConnection.data(), &RCC::ICoreConnection::connected, this, &RoomsDock::coreConnected);
+   connect(this->coreConnection.data(), &RCC::ICoreConnection::disconnected, this, &RoomsDock::coreDisconnected);
 
    this->coreDisconnected(false); // Initial state.
 }
@@ -78,7 +78,11 @@ void RoomsDock::changeEvent(QEvent* event)
 
 bool RoomsDock::eventFilter(QObject* obj, QEvent* event)
 {
-   if (obj == this->ui->txtRoomName && event->type() == QEvent::KeyPress && static_cast<QKeyEvent*>(event)->key() == Qt::Key_Return)
+   if (
+      obj == this->ui->txtRoomName &&
+      event->type() == QEvent::KeyPress &&
+      static_cast<QKeyEvent*>(event)->key() == Qt::Key_Return
+   )
    {
       this->joinRoom();
    }
@@ -89,12 +93,12 @@ bool RoomsDock::eventFilter(QObject* obj, QEvent* event)
 void RoomsDock::displayContextMenuRooms(const QPoint& point)
 {
    QMenu menu;
-   menu.addAction(QIcon(":/icons/ressources/join_chat_room.svg"), tr("Join"), this, SLOT(joinSelectedRoom()));
+   menu.addAction(QIcon(":/icons/ressources/join_chat_room.svg"), tr("Join"), this, &RoomsDock::joinSelectedRoom);
 
    menu.addSeparator();
 
-   QAction* sortByNbPeersAction = menu.addAction(tr("Sort by number of peers"), this, SLOT(sortByNbPeers()));
-   QAction* sortByNameAction = menu.addAction(tr("Sort alphabetically"), this, SLOT(sortByName()));
+   QAction* sortByNbPeersAction = menu.addAction(tr("Sort by number of peers"), this, &RoomsDock::sortByNbPeers);
+   QAction* sortByNameAction = menu.addAction(tr("Sort alphabetically"), this, &RoomsDock::sortByName);
 
    QActionGroup sortGroup(this);
    sortGroup.setExclusive(true);

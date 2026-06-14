@@ -43,8 +43,8 @@ RoomsModel::RoomsModel(QSharedPointer<RCC::ICoreConnection> coreConnection) :
    coreConnection(coreConnection),
    currentSortType(Protos::GUI::Settings::BY_NAME)
 {
-   connect(coreConnection.data(), SIGNAL(newState(const Protos::GUI::State&)), this, SLOT(newState(const Protos::GUI::State&)));
-   connect(coreConnection.data(), SIGNAL(disconnected(bool)), this, SLOT(coreDisconnected(bool)));
+   connect(coreConnection.data(), &RCC::ICoreConnection::newState, this, &RoomsModel::newState);
+   connect(coreConnection.data(), &RCC::ICoreConnection::disconnected, this, &RoomsModel::coreDisconnected);
 }
 
 RoomsModel::~RoomsModel()

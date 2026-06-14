@@ -209,7 +209,8 @@ void ChatWidget::sendMessageStatus(ChatModel::SendMessageStatus status)
    switch (status)
    {
    case  ChatModel::OK:
-      this->ui->txtMessage->document()->setHtml(""); // We avoid the 'clear()' method because it removes all ressources (emoticon images).
+      // We avoid the 'clear()' method because it removes all ressources (emoticon images).
+      this->ui->txtMessage->document()->setHtml("");
       break;
 
    case ChatModel::MESSAGE_TOO_LARGE:
@@ -235,11 +236,11 @@ void ChatWidget::displayContextMenuPeers(const QPoint& point)
    addrVariant.setValue(addr);
 
    QMenu menu;
-   menu.addAction(QIcon(":/icons/ressources/folder.svg"), tr("Browse"), this, SLOT(browseSelectedPeers()));
+   menu.addAction(QIcon(":/icons/ressources/folder.svg"), tr("Browse"), this, &ChatWidget::browseSelectedPeers);
 
    if (!addr.isNull())
    {
-      QAction* copyIPAction = menu.addAction(tr("Copy IP: %1").arg(addr.toString()), this, SLOT(copyIPToClipboard()));
+      QAction* copyIPAction = menu.addAction(tr("Copy IP: %1").arg(addr.toString()), this, &ChatWidget::copyIPToClipboard);
       copyIPAction->setData(addrVariant);
    }
 
@@ -274,8 +275,8 @@ void ChatWidget::copyIPToClipboard()
 void ChatWidget::displayContextMenu(const QPoint& point)
 {
    QMenu menu;
-   menu.addAction(tr("Copy selected lines"), this, SLOT(copySelectedLineToClipboard()));
-   menu.addAction(QIcon(":/icons/ressources/folder.svg"), tr("Browse selected peers"), this, SLOT(browseSelectedMessages()));
+   menu.addAction(tr("Copy selected lines"), this, &ChatWidget::copySelectedLineToClipboard);
+   menu.addAction(QIcon(":/icons/ressources/folder.svg"), tr("Browse selected peers"), this, &ChatWidget::browseSelectedMessages);
    menu.exec(this->ui->tblChat->mapToGlobal(point));
 }
 
@@ -325,9 +326,21 @@ void ChatWidget::currentCharFormatChanged(const QTextCharFormat& charFormat)
    }
    else // Special case to avoid to reset the formatting when the cursor is put at the beginning.
    {
-      this->ui->txtMessage->disconnect(this, SIGNAL(currentCharFormatChanged(QTextCharFormat)));
+      disconnect(
+         this->ui->txtMessage,
+         &ChatTextEdit::currentCharFormatChanged,
+         this,
+         &ChatWidget::currentCharFormatChanged
+      );
+
       this->applyCurrentFormat();
-      connect(this->ui->txtMessage, SIGNAL(currentCharFormatChanged(QTextCharFormat)), this, SLOT(currentCharFormatChanged(QTextCharFormat)));
+
+      connect(
+         this->ui->txtMessage,
+         &ChatTextEdit::currentCharFormatChanged,
+         this,
+         &ChatWidget::currentCharFormatChanged
+      );
    }
 }
 
@@ -341,9 +354,9 @@ void ChatWidget::cursorPositionChanged()
    }
    else
    {
-      this->ui->txtMessage->disconnect(this, SIGNAL(cursorPositionChanged()));
+      disconnect(this->ui->txtMessage, &ChatTextEdit::cursorPositionChanged, this, &ChatWidget::cursorPositionChanged);
       this->ui->txtMessage->setTextColor(this->ui->butColorBox->getCurrentColor());
-      connect(this->ui->txtMessage, SIGNAL(cursorPositionChanged()), this, SLOT(cursorPositionChanged()));
+      connect(this->ui->txtMessage, &ChatTextEdit::cursorPositionChanged, this, &ChatWidget::cursorPositionChanged);
    }
 }
 
@@ -463,7 +476,7 @@ void ChatWidget::emoticonsWindowHidden()
    // I know it's bad but I didn't find another solution.
    // The issue is when the emoticons window is displayed and the user press on the emoticons button again. In this
    // case the window 'hidden' signal is triggered before the button 'toggled' signal, so the button is set to unchecked before it is pressed again . . .
-   QTimer::singleShot(100, this, SLOT(emoticonsWindowHiddenDelayed()));
+   QTimer::singleShot(100, this, &ChatWidget::emoticonsWindowHiddenDelayed);
 }
 
 void ChatWidget::emoticonsWindowHiddenDelayed()
@@ -474,7 +487,10 @@ void ChatWidget::emoticonsWindowHiddenDelayed()
 
 void ChatWidget::insertEmoticon(const QString& theme, const QString& emoticonName)
 {
-   if (!this->ui->txtMessage->textCursor().atStart() && !this->ui->txtMessage->document()->characterAt(this->ui->txtMessage->textCursor().position() - 1).isSpace())
+   if (
+      !this->ui->txtMessage->textCursor().atStart() &&
+      !this->ui->txtMessage->document()->characterAt(this->ui->txtMessage->textCursor().position() - 1).isSpace()
+   )
       this->ui->txtMessage->insertPlainText(" ");
 
    this->ui->txtMessage->insertHtml(htmlEmoticon(theme, emoticonName));
@@ -665,8 +681,8 @@ void ChatWidget::init()
       this->ui->tblRoomPeers->setShowGrid(false);
       this->ui->tblRoomPeers->setAlternatingRowColors(false);
       this->ui->tblRoomPeers->setContextMenuPolicy(Qt::CustomContextMenu);
-      connect(this->ui->tblRoomPeers, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(displayContextMenuPeers(QPoint)));
-      connect(this->ui->tblRoomPeers, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(browseSelectedPeers()));
+      connect(this->ui->tblRoomPeers, &QTableView::customContextMenuRequested, this, &ChatWidget::displayContextMenuPeers);
+      connect(this->ui->tblRoomPeers, &QTableView::doubleClicked, this, &ChatWidget::browseSelectedPeers);
    }
 
    int defaultFontIndex = 0;
@@ -699,32 +715,32 @@ void ChatWidget::init()
    this->ui->tblChat->setEditTriggers(QAbstractItemView::AllEditTriggers);
 
    this->ui->tblChat->setContextMenuPolicy(Qt::CustomContextMenu);
-   connect(this->ui->tblChat, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayContextMenu(const QPoint&)));
+   connect(this->ui->tblChat, &QTableView::customContextMenuRequested, this, &ChatWidget::displayContextMenu);
 
-   connect(&this->chatModel, SIGNAL(rowsInserted(const QModelIndex&, int, int)), this, SLOT(newRows(const QModelIndex&, int, int)));
-   connect(&this->chatModel, SIGNAL(sendMessageStatus(ChatModel::SendMessageStatus)), this, SLOT(sendMessageStatus(ChatModel::SendMessageStatus)));
+   connect(&this->chatModel, &ChatModel::rowsInserted, this, &ChatWidget::newRows);
+   connect(&this->chatModel, &ChatModel::sendMessageStatus, this, &ChatWidget::sendMessageStatus);
 
-   connect(this->ui->tblChat->verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(scrollChanged(int)));
+   connect(this->ui->tblChat->verticalScrollBar(), &QScrollBar::valueChanged, this, &ChatWidget::scrollChanged);
 
-   connect(this->ui->txtMessage, SIGNAL(currentCharFormatChanged(QTextCharFormat)), this, SLOT(currentCharFormatChanged(QTextCharFormat)));
-   connect(this->ui->txtMessage, SIGNAL(cursorPositionChanged()), this, SLOT(cursorPositionChanged()));
-   connect(this->ui->txtMessage, SIGNAL(textChanged()), this, SLOT(textChanged()));
-   connect(this->ui->txtMessage->document(), SIGNAL(contentsChange(int, int, int)), this, SLOT(documentChanged(int,int,int)));
+   connect(this->ui->txtMessage, &ChatTextEdit::currentCharFormatChanged, this, &ChatWidget::currentCharFormatChanged);
+   connect(this->ui->txtMessage, &ChatTextEdit::cursorPositionChanged, this, &ChatWidget::cursorPositionChanged);
+   connect(this->ui->txtMessage, &ChatTextEdit::textChanged, this, &ChatWidget::textChanged);
+   connect(this->ui->txtMessage->document(), &QTextDocument::contentsChange, this, &ChatWidget::documentChanged);
 
-   connect(this->ui->cmbFontSize, SIGNAL(currentIndexChanged(int)), this, SLOT(setFocusTxtMessage()));
-   connect(this->ui->butBold, SIGNAL(clicked()), this, SLOT(setFocusTxtMessage()));
-   connect(this->ui->butItalic, SIGNAL(clicked()), this, SLOT(setFocusTxtMessage()));
-   connect(this->ui->butUnderline, SIGNAL(clicked()), this, SLOT(setFocusTxtMessage()));
-   connect(this->ui->butColorBox, SIGNAL(clicked()), this, SLOT(setFocusTxtMessage()));
+   connect(this->ui->cmbFontSize, &QComboBox::currentIndexChanged, this, &ChatWidget::setFocusTxtMessage);
+   connect(this->ui->butBold, &QPushButton::clicked, this, &ChatWidget::setFocusTxtMessage);
+   connect(this->ui->butItalic, &QPushButton::clicked, this, &ChatWidget::setFocusTxtMessage);
+   connect(this->ui->butUnderline, &QPushButton::clicked, this, &ChatWidget::setFocusTxtMessage);
+   connect(this->ui->butColorBox, &QPushButton::clicked, this, &ChatWidget::setFocusTxtMessage);
 
-   connect(this->ui->butResetFormat, SIGNAL(clicked()), this, SLOT(setFocusTxtMessage()));
-   connect(this->ui->butResetFormat, SIGNAL(clicked()), this, SLOT(resetFormat()));
+   connect(this->ui->butResetFormat, &QPushButton::clicked, this, &ChatWidget::setFocusTxtMessage);
+   connect(this->ui->butResetFormat, &QPushButton::clicked, this, &ChatWidget::resetFormat);
 
-   connect(this->ui->butEmoticons, SIGNAL(toggled(bool)), this, SLOT(emoticonsButtonToggled(bool)));
-   connect(this->ui->txtMessage, SIGNAL(wordTyped(int, QString)), this, SLOT(messageWordTyped(int, QString)));
-   connect(this->emoticonsWidget, SIGNAL(hidden()), this, SLOT(emoticonsWindowHidden()));
-   connect(this->emoticonsWidget, SIGNAL(emoticonChosen(QString, QString)), this, SLOT(insertEmoticon(QString, QString)));
-   connect(this->emoticonsWidget, SIGNAL(defaultThemeChanged(QString)), this, SLOT(defaultEmoticonThemeChanged(QString)));
+   connect(this->ui->butEmoticons, &QPushButton::toggled, this, &ChatWidget::emoticonsButtonToggled);
+   connect(this->ui->txtMessage, &ChatTextEdit::wordTyped, this, &ChatWidget::messageWordTyped);
+   connect(this->emoticonsWidget, &EmoticonsWidget::hidden, this, &ChatWidget::emoticonsWindowHidden);
+   connect(this->emoticonsWidget, &EmoticonsWidget::emoticonChosen, this, &ChatWidget::insertEmoticon);
+   connect(this->emoticonsWidget, &EmoticonsWidget::defaultThemeChanged, this, &ChatWidget::defaultEmoticonThemeChanged);
 
    connect(this->autoComplete, &AutoComplete::stringAdded, this, &ChatWidget::autoCompleteStringAdded);
    connect(this->autoComplete, &AutoComplete::lastCharRemoved, this, &ChatWidget::autoCompleteLastCharRemoved);
@@ -752,20 +768,20 @@ void ChatWidget::applyCurrentFormat()
 
 void ChatWidget::connectFormatWidgets()
 {
-   connect(this->ui->cmbFontSize, SIGNAL(currentIndexChanged(int)), this, SLOT(comboFontSizeChanged(int)));
-   connect(this->ui->butBold, SIGNAL(toggled(bool)), this, SLOT(setBold(bool)));
-   connect(this->ui->butItalic, SIGNAL(toggled(bool)), this, SLOT(setItalic(bool)));
-   connect(this->ui->butUnderline, SIGNAL(toggled(bool)), this, SLOT(setUnderline(bool)));
-   connect(this->ui->butColorBox, SIGNAL(colorChanged(QColor)), this, SLOT(setTextColor(QColor)));
+   connect(this->ui->cmbFontSize, &QComboBox::currentIndexChanged, this, &ChatWidget::comboFontSizeChanged);
+   connect(this->ui->butBold, &QPushButton::toggled, this, &ChatWidget::setBold);
+   connect(this->ui->butItalic, &QPushButton::toggled, this, &ChatWidget::setItalic);
+   connect(this->ui->butUnderline, &QPushButton::toggled, this, &ChatWidget::setUnderline);
+   connect(this->ui->butColorBox, &ColorBox::colorChanged, this, &ChatWidget::setTextColor);
 }
 
 void ChatWidget::disconnectFormatWidgets()
 {
-   this->ui->cmbFontSize->disconnect(this, SLOT(comboFontSizeChanged(int)));
-   this->ui->butBold->disconnect(this, SLOT(setBold(bool)));
-   this->ui->butItalic->disconnect(this, SLOT(setItalic(bool)));
-   this->ui->butUnderline->disconnect(this, SLOT(setUnderline(bool)));
-   this->ui->butColorBox->disconnect(this, SLOT(setTextColor(QColor)));
+   disconnect(this->ui->cmbFontSize, &QComboBox::currentIndexChanged, this, &ChatWidget::comboFontSizeChanged);
+   disconnect(this->ui->butBold, &QPushButton::toggled, this, &ChatWidget::setBold);
+   disconnect(this->ui->butItalic, &QPushButton::toggled, this, &ChatWidget::setItalic);
+   disconnect(this->ui->butUnderline, &QPushButton::toggled, this, &ChatWidget::setUnderline);
+   disconnect(this->ui->butColorBox, &ColorBox::colorChanged, this, &ChatWidget::setTextColor);
 }
 
 void ChatWidget::setComboFontSize(int fontSize)
@@ -792,7 +808,10 @@ void ChatWidget::displayEmoticons(const QPoint& positionSender, const QSize& siz
 {
    this->emoticonsWidget->show();
 
-   this->emoticonsWidget->move(positionSender.x() + sizeSender.width(), positionSender.y() + sizeSender.height() - this->emoticonsWidget->height());
+   this->emoticonsWidget->move(
+      positionSender.x() + sizeSender.width(),
+      positionSender.y() + sizeSender.height() - this->emoticonsWidget->height()
+   );
 
    // TODO: Check if correct.
    QRect desktopGeom = qGuiApp->primaryScreen()->availableGeometry();
@@ -808,7 +827,9 @@ void ChatWidget::activatePeerNameInsertionMode()
    if (this->peerNameInsertionMode)
       return;
 
-   const bool insertSpaceBefore = !this->ui->txtMessage->textCursor().atStart() && !this->ui->txtMessage->document()->characterAt(this->ui->txtMessage->textCursor().position() - 1).isSpace();
+   const bool insertSpaceBefore =
+      !this->ui->txtMessage->textCursor().atStart() &&
+      !this->ui->txtMessage->document()->characterAt(this->ui->txtMessage->textCursor().position() - 1).isSpace();
 
    if (insertSpaceBefore)
       this->ui->txtMessage->insertPlainText(" ");

@@ -125,7 +125,7 @@ void MainWindow::setShowMultipleLines(bool checked)
 void MainWindow::setCurrentFile(QString file)
 {
    this->closeCurrentFile();
-   disconnect(&this->model, SIGNAL(newLogEntries(int)), 0, 0);
+   disconnect(&this->model, &TableLogModel::newLogEntries, nullptr, nullptr);
 
    this->currentFile = new QFile(this->currentDir.absolutePath() + '/' + file);
    if (currentFile->exists() && this->currentFile->open(QIODevice::ReadOnly))

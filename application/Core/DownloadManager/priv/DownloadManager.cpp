@@ -514,7 +514,6 @@ void DownloadManager::chunkDownloaderFinished()
       QString("DownloadManager::chunkDownloaderFinished, numberOfDownloadThreadRunning = %1")
          .arg(this->numberOfDownloadThreadRunning)
    );
-   this->sender()->disconnect(this, SLOT(chunkDownloaderFinished()));
    this->numberOfDownloadThreadRunning--;
 }
 

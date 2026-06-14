@@ -49,9 +49,9 @@ ChatModel::ChatModel(
 {
    connect(
       this->coreConnection.data(),
-      SIGNAL(newChatMessages(const Protos::Common::ChatMessages&)),
+      &RCC::ICoreConnection::newChatMessages,
       this,
-      SLOT(newChatMessages(const Protos::Common::ChatMessages&))
+      &ChatModel::newChatMessages
    );
 }
 
@@ -233,9 +233,11 @@ void ChatModel::sendMessage(const QString& message, const QList<Common::Hash>& p
 }
 void ChatModel::sendRawMessage(const QString& message, const QList<Common::Hash>& peerIDsAnswered)
 {
-   QSharedPointer<RCC::ISendChatMessageResult> result = this->coreConnection->sendChatMessage(message, this->roomName, peerIDsAnswered);
-   connect(result.data(), SIGNAL(result(const Protos::GUI::ChatMessageResult&)), this, SLOT(result(const Protos::GUI::ChatMessageResult&)));
-   connect(result.data(), SIGNAL(timeout()), this, SLOT(resultTimeout()));
+   QSharedPointer<RCC::ISendChatMessageResult> result =
+      this->coreConnection->sendChatMessage(message, this->roomName, peerIDsAnswered);
+
+   connect(result.data(), &RCC::ISendChatMessageResult::result, this, &ChatModel::result);
+   connect(result.data(), &Common::Timeoutable::timeout, this, &ChatModel::resultTimeout);
    this->results << result;
    result->start();
 }

@@ -87,11 +87,11 @@ D_LAN_GUI::D_LAN_GUI(int& argc, char* argv[]) :
    this->showMainWindow();
 
    RCC::ICoreConnection* coreConnectionPointer = this->coreConnection.data();
-   connect(coreConnectionPointer, SIGNAL(localCoreStatusChanged()), this, SLOT(updateTrayIconMenu()));
-   connect(coreConnectionPointer, SIGNAL(connected()), this, SLOT(updateTrayIconMenu()));
-   connect(coreConnectionPointer, SIGNAL(disconnected(bool)), this, SLOT(updateTrayIconMenu()));
+   connect(coreConnectionPointer, &RCC::ICoreConnection::localCoreStatusChanged, this, &D_LAN_GUI::updateTrayIconMenu);
+   connect(coreConnectionPointer, &RCC::ICoreConnection::connected, this, &D_LAN_GUI::updateTrayIconMenu);
+   connect(coreConnectionPointer, &RCC::ICoreConnection::disconnected, this, &D_LAN_GUI::updateTrayIconMenu);
 
-   connect(&this->trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(trayIconActivated(QSystemTrayIcon::ActivationReason)));
+   connect(&this->trayIcon, &QSystemTrayIcon::activated, this, &D_LAN_GUI::trayIconActivated);
 
    this->updateTrayIconMenu();
 
@@ -117,11 +117,14 @@ void D_LAN_GUI::trayIconActivated(QSystemTrayIcon::ActivationReason reason)
 void D_LAN_GUI::updateTrayIconMenu()
 {
    this->trayIconMenu.clear();
-   this->trayIconMenu.addAction(tr("Show the user interface"), this, SLOT(showMainWindow()));
-   if (this->coreConnection->getLocalCoreStatus() == RCC::RUNNING_AS_SERVICE) // We cannot stop a parent process without killing his child (case with RCC::RUNNING_AS_SUB_PROCESS).
-      this->trayIconMenu.addAction(tr("Stop the user interface"), this, SLOT(exitGUI()));
+   this->trayIconMenu.addAction(tr("Show the user interface"), this, &D_LAN_GUI::showMainWindow);
+
+   // We cannot stop a parent process without killing his child (case with RCC::RUNNING_AS_SUB_PROCESS).
+   if (this->coreConnection->getLocalCoreStatus() == RCC::RUNNING_AS_SERVICE)
+      this->trayIconMenu.addAction(tr("Stop the user interface"), this, &D_LAN_GUI::exitGUI);
+
    this->trayIconMenu.addSeparator();
-   this->trayIconMenu.addAction(tr("Exit"), this, SLOT(exit()));
+   this->trayIconMenu.addAction(tr("Exit"), this, &D_LAN_GUI::exit);
 }
 
 /**
@@ -129,7 +132,7 @@ void D_LAN_GUI::updateTrayIconMenu()
   */
 void D_LAN_GUI::loadLanguage(const QString& filename)
 {
-   const auto directory = QCoreApplication::applicationDirPath() + "/" + Common::Constants::LANGUAGE_DIRECTORY;
+   const QString directory = QCoreApplication::applicationDirPath() + "/" + Common::Constants::LANGUAGE_DIRECTORY;
    if (!this->translator.load(filename, directory))
    {
       L_WARN(QString("Can't load translation file '%1' from directory '%2").arg(filename, directory));
@@ -139,7 +142,11 @@ void D_LAN_GUI::loadLanguage(const QString& filename)
 void D_LAN_GUI::mainWindowClosed()
 {
    if (this->coreConnection->isConnected())
-      this->trayIcon.showMessage("D-LAN user interface closed", "D-LAN Core is still running in background. Select 'exit' from the contextual menu if you want to stop it.");
+      // TODO: translate?
+      this->trayIcon.showMessage(
+         "D-LAN user interface closed",
+         "D-LAN Core is still running in background. Select 'exit' from the contextual menu if you want to stop it."
+      );
    this->coreConnection->disconnectFromCore();
    this->mainWindow = nullptr;
 }
@@ -155,8 +162,8 @@ void D_LAN_GUI::showMainWindow()
    else
    {
       this->mainWindow = new MainWindow(this->coreConnection);
-      connect(this->mainWindow, SIGNAL(languageChanged(QString)), this, SLOT(loadLanguage(QString)));
-      connect(this->mainWindow, SIGNAL(destroyed()), this, SLOT(mainWindowClosed()));
+      connect(this->mainWindow, &MainWindow::languageChanged, this, &D_LAN_GUI::loadLanguage);
+      connect(this->mainWindow, &MainWindow::destroyed, this, &D_LAN_GUI::mainWindowClosed);
       this->mainWindow->show();
    }
 }
@@ -178,7 +185,7 @@ void D_LAN_GUI::exit(bool stopTheCore)
 
    if (this->mainWindow)
    {
-      disconnect(this->mainWindow, SIGNAL(destroyed()), this, SLOT(mainWindowClosed()));
+      disconnect(this->mainWindow, &MainWindow::destroyed, this, &D_LAN_GUI::mainWindowClosed);
       delete this->mainWindow;
    }
 

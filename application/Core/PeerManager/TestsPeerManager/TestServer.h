@@ -23,9 +23,10 @@
 
 #include <Core/PeerManager/IPeerManager.h>
 
-class TestServer : QObject
+class TestServer : public QObject
 {
    Q_OBJECT
+
 public:
    TestServer(QSharedPointer<PM::IPeerManager> peerManager, int port);
 
@@ -34,7 +35,6 @@ private slots:
 
 private:
    QSharedPointer<PM::IPeerManager> peerManager;
-
    QTcpServer server;
 };
 

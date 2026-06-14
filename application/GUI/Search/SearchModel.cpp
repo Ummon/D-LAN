@@ -20,7 +20,6 @@
 using namespace GUI;
 
 #include <algorithm>
-#include <functional>
 #include <string>
 
 #include <QtAlgorithms>
@@ -48,18 +47,29 @@ int SearchModel::toColumnNumber(SearchColumn column)
   * The directories from the result can be browsed, thus this model inherits from the 'BrowseModel'.
   */
 
-SearchModel::SearchModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const SharedEntryListModel& sharedEntryListModel) :
-   BrowseModel(coreConnection, sharedEntryListModel, Common::Hash()), peerListModel(peerListModel), maxLevel(0), nbFolders(0), nbFiles(0), currentProgress(0)
+SearchModel::SearchModel(
+   QSharedPointer<RCC::ICoreConnection> coreConnection,
+   const PeerListModel& peerListModel,
+   const SharedEntryListModel& sharedEntryListModel
+) :
+   BrowseModel(coreConnection, sharedEntryListModel, Common::Hash()),
+   peerListModel(peerListModel),
+   maxLevel(0),
+   nbFolders(0),
+   nbFiles(0),
+   currentProgress(0)
 {
    delete this->root;
    this->root = new SearchTree();
 
-   this->timerProgress.setInterval(SETTINGS.get<quint32>("search_time") / NB_SIGNAL_PROGRESS);
-   connect(&this->timerProgress, SIGNAL(timeout()), this, SLOT(sendNextProgress()));
+   static const quint32 searchTime = SETTINGS.get<quint32>("search_time");
 
-   this->timerTimeout.setInterval(SETTINGS.get<quint32>("search_time"));
+   this->timerProgress.setInterval(searchTime / NB_SIGNAL_PROGRESS);
+   connect(&this->timerProgress, &QTimer::timeout, this, &SearchModel::sendNextProgress);
+
+   this->timerTimeout.setInterval(searchTime);
    this->timerTimeout.setSingleShot(true);
-   connect(&this->timerTimeout, SIGNAL(timeout()), this, SLOT(stopSearching()));
+   connect(&this->timerTimeout, &QTimer::timeout, this, &SearchModel::stopSearching);
 }
 
 SearchModel::~SearchModel()
@@ -81,12 +91,7 @@ void SearchModel::search(const Protos::Common::FindPattern& findPattern, bool lo
       return;
 
    this->searchResult = this->coreConnection->search(findPattern, local);
-   connect(
-      this->searchResult.data(),
-      SIGNAL(result(const Protos::Common::FindResult&)),
-      this,
-      SLOT(resultFromFindResult(const Protos::Common::FindResult&))
-   );
+   connect(this->searchResult.data(), &RCC::ISearchResult::result, this, &SearchModel::resultFromFindResult);
    // We don't use the 'timout' signal from 'ISearchResult', not useful.
    this->searchResult->start();
 
@@ -107,7 +112,10 @@ QVariant SearchModel::data(const QModelIndex& index, int role) const
          {
             SearchTree* tree = static_cast<SearchTree*>(index.internalPointer());
 
-            if (tree->getParent()->getParent() != 0 && tree->getParent()->getItem().type() == Protos::Common::Entry_Type_DIR)
+            if (
+               tree->getParent()->getParent() != 0 &&
+               tree->getParent()->getItem().type() == Protos::Common::Entry_Type_DIR
+            )
                return QVariant();
 
             int percentMatch = 100 - 100 * tree->getLevel() / (this->maxLevel + 1);
@@ -255,7 +263,10 @@ void SearchModel::sort(int column, Qt::SortOrder order)
    this->currentSortedColumn = column == -1 ? SearchColumn::RELEVANCE : toSearchColumn(column);
    this->currentSortOrder = order;
 
-   emit layoutAboutToBeChanged(QList<QPersistentModelIndex> { QPersistentModelIndex(QModelIndex()) }, QAbstractItemModel::VerticalSortHint);
+   emit layoutAboutToBeChanged(
+      QList<QPersistentModelIndex> { QPersistentModelIndex(QModelIndex()) },
+      QAbstractItemModel::VerticalSortHint
+   );
 
    QHash<Tree*, QModelIndex> unsortedChildren;
    for (int i = 0; i < this->root->getNbChildren(); i++)
@@ -277,7 +288,8 @@ void SearchModel::sort(int column, Qt::SortOrder order)
       }
    );
 
-   // As the documentation says we have to tell the views which index goes who... it's a bit complicated and CPU consuming, is there a simplest way?
+   // As the documentation says we have to tell the views which index goes where...
+   // it's a bit complicated and CPU consuming, is there a simplest way?
    for (int i = 0; i < this->root->getNbChildren(); i++)
       this->changePersistentIndex(unsortedChildren.value(this->root->getChild(i)), this->index(i, 0));
 
@@ -305,7 +317,16 @@ void SearchModel::resultFromFindResult(const Protos::Common::FindResult& findRes
       [&](const Protos::Common::FindResult_EntryLevel* e1, const Protos::Common::FindResult_EntryLevel* e2)
       {
          // The peer nick isn't necessary because the results are from the same peer.
-         return entryLessThan(e1->entry(), e1->level(), QString(), e2->entry(), e2->level(), QString(), this->currentSortedColumn, this->currentSortOrder);
+         return entryLessThan(
+            e1->entry(),
+            e1->level(),
+            QString(),
+            e2->entry(),
+            e2->level(),
+            QString(),
+            this->currentSortedColumn,
+            this->currentSortOrder
+         );
       }
    );
 

@@ -39,7 +39,7 @@ EmoticonsWidget::EmoticonsWidget(Emoticons& emoticons, QWidget* parent) :
    foreach (QString theme, this->emoticons.getThemes())
    {
       QRadioButton* radio = new QRadioButton(this);
-      connect(radio, SIGNAL(toggled(bool)), this, SLOT(themeButtonToggled(bool)));
+      connect(radio, &QRadioButton::toggled, this, &EmoticonsWidget::themeButtonToggled);
       this->themeButtons << radio;
       radio->setToolTip(tr("Set as the default theme"));
       radio->setText(theme);
@@ -50,7 +50,7 @@ EmoticonsWidget::EmoticonsWidget(Emoticons& emoticons, QWidget* parent) :
       foreach (QString smileName, this->emoticons.getSmileNames(theme))
       {
          SingleEmoticonWidget* emoticonWidget = new SingleEmoticonWidget(this);
-         connect(emoticonWidget, SIGNAL(clicked()), this, SLOT(emoticonClicked()));
+         connect(emoticonWidget, &SingleEmoticonWidget::clicked, this, &EmoticonsWidget::emoticonClicked);
          emoticonWidget->setTheme(theme);
          emoticonWidget->setEmoticonName(smileName);
          emoticonWidget->setSymbols(this->emoticons.getSmileSymbols(theme, smileName));
@@ -66,7 +66,7 @@ EmoticonsWidget::EmoticonsWidget(Emoticons& emoticons, QWidget* parent) :
       if (col != 0)
          row++;
    }
-}
+} // NOLINT(clang-analyzer-cplusplus.NewDeleteLeaks). 'layout' is deallocated by its parent.
 
 void EmoticonsWidget::setDefaultTheme(const QString& theme)
 {

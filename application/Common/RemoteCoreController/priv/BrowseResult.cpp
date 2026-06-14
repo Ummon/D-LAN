@@ -28,14 +28,25 @@ BrowseResult::BrowseResult(InternalCoreConnection* coreConnection, const Common:
    this->init(coreConnection);
 }
 
-BrowseResult::BrowseResult(InternalCoreConnection* coreConnection, const Common::Hash& peerID, const Protos::Common::Entry& entry, int socketTimeout) :
+BrowseResult::BrowseResult(
+   InternalCoreConnection* coreConnection,
+   const Common::Hash& peerID,
+   const Protos::Common::Entry& entry,
+   int socketTimeout
+) :
    IBrowseResult(socketTimeout), peerID(peerID), tag(0)
 {
    this->browseMessage.mutable_dirs()->add_entries()->CopyFrom(entry);
    this->init(coreConnection);
 }
 
-BrowseResult::BrowseResult(InternalCoreConnection* coreConnection, const Common::Hash& peerID, const Protos::Common::Entries& entries, bool withRoots, int socketTimeout) :
+BrowseResult::BrowseResult(
+   InternalCoreConnection* coreConnection,
+   const Common::Hash& peerID,
+   const Protos::Common::Entries& entries,
+   bool withRoots,
+   int socketTimeout
+) :
    IBrowseResult(socketTimeout), peerID(peerID), tag(0)
 {
    this->browseMessage.mutable_dirs()->CopyFrom(entries);

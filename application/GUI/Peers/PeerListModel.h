@@ -79,7 +79,14 @@ namespace GUI
          quint32 uploadRate;
          bool isDownloadingOurData;
 
-         bool operator==(const TransferInformation& ti) const { return ti.downloadRate == this->downloadRate && ti.uploadRate == this->uploadRate && ti.isDownloadingOurData == this->isDownloadingOurData; }
+         bool operator==(const TransferInformation& ti) const
+         {
+            return
+               ti.downloadRate == this->downloadRate &&
+               ti.uploadRate == this->uploadRate &&
+               ti.isDownloadingOurData == this->isDownloadingOurData;
+         }
+
          bool operator!=(const TransferInformation& ti) const { return !(ti == *this); }
       };
 
@@ -94,7 +101,11 @@ namespace GUI
       void coreDisconnected(bool forced);
 
    private:
-      void updatePeers(const google::protobuf::RepeatedPtrField<Protos::GUI::State::Peer>& peers, const QSet<Common::Hash>& peersDownloadingOurData = QSet<Common::Hash>(), const QSet<Common::Hash>& peersToDisplay = QSet<Common::Hash>());
+      void updatePeers(
+         const google::protobuf::RepeatedPtrField<Protos::GUI::State::Peer>& peers,
+         const QSet<Common::Hash>& peersDownloadingOurData = QSet<Common::Hash>(),
+         const QSet<Common::Hash>& peersToDisplay = QSet<Common::Hash>()
+      );
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;
 

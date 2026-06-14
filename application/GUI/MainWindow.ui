@@ -14,13 +14,13 @@
    <string>D-LAN</string>
   </property>
   <property name="toolButtonStyle">
-   <enum>Qt::ToolButtonIconOnly</enum>
+   <enum>Qt::ToolButtonStyle::ToolButtonIconOnly</enum>
   </property>
   <property name="dockNestingEnabled">
    <bool>true</bool>
   </property>
   <property name="dockOptions">
-   <set>QMainWindow::AllowNestedDocks|QMainWindow::AllowTabbedDocks|QMainWindow::AnimatedDocks</set>
+   <set>QMainWindow::DockOption::AllowNestedDocks|QMainWindow::DockOption::AllowTabbedDocks|QMainWindow::DockOption::AnimatedDocks</set>
   </property>
   <widget class="QWidget" name="centralWidget">
    <property name="sizePolicy">
@@ -34,9 +34,21 @@
      <number>3</number>
     </property>
     <property name="sizeConstraint">
-     <enum>QLayout::SetMaximumSize</enum>
+     <enum>QLayout::SizeConstraint::SetMaximumSize</enum>
     </property>
-    <property name="margin">
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
+    <property name="margin" stdset="0">
      <number>3</number>
     </property>
     <item>
@@ -45,13 +57,13 @@
        <property name="spacing">
         <number>3</number>
        </property>
-       <property name="margin">
+       <property name="margin" stdset="0">
         <number>3</number>
        </property>
        <item>
         <spacer name="titleSpacer">
          <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+          <enum>Qt::Orientation::Horizontal</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
@@ -106,7 +118,7 @@
     <string/>
    </property>
    <property name="features">
-    <set>QDockWidget::DockWidgetFeatureMask</set>
+    <set>QDockWidget::DockWidgetFeature::DockWidgetFeatureMask</set>
    </property>
    <property name="windowTitle">
     <string>Log</string>
@@ -125,7 +137,7 @@
      <property name="spacing">
       <number>2</number>
      </property>
-     <property name="margin">
+     <property name="margin" stdset="0">
       <number>2</number>
      </property>
      <item>

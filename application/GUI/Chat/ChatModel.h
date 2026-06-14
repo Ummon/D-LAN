@@ -44,7 +44,12 @@ namespace GUI
       static const int MAX_NICK_LENGTH = 12;
 
    public:
-      ChatModel(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel, const Emoticons& emoticons, const QString& roomName = QString());
+      ChatModel(
+         QSharedPointer<RCC::ICoreConnection> coreConnection,
+         PeerListModel& peerListModel,
+         const Emoticons& emoticons,
+         const QString& roomName = QString()
+      );
 
       bool isMainChat() const;
       QString getRoomName() const;
@@ -78,7 +83,7 @@ namespace GUI
       void sendRawMessage(const QString& message, const QList<Common::Hash>& peerIDsAnswered);
 
    signals:
-      void sendMessageStatus(ChatModel::SendMessageStatus status);
+      void sendMessageStatus(GUI::ChatModel::SendMessageStatus status);
 
    private slots:
       void newChatMessages(const Protos::Common::ChatMessages& messages);

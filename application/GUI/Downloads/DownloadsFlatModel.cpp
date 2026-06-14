@@ -30,7 +30,12 @@ using namespace GUI;
 #include <Log.h>
 #include <Settings/SharedEntryListModel.h>
 
-DownloadsFlatModel::DownloadsFlatModel(QSharedPointer<RCC::ICoreConnection> coreConnection, const PeerListModel& peerListModel, const SharedEntryListModel& sharedEntryListModel, const IFilter<DownloadFilterStatus>& filter) :
+DownloadsFlatModel::DownloadsFlatModel(
+   QSharedPointer<RCC::ICoreConnection> coreConnection,
+   const PeerListModel& peerListModel,
+   const SharedEntryListModel& sharedEntryListModel,
+   const IFilter<DownloadFilterStatus>& filter
+) :
    DownloadsModel(coreConnection, peerListModel, sharedEntryListModel, filter),
    totalBytesInQueue(0),
    totalBytesDownloadedInQueue(0),
@@ -281,9 +286,17 @@ void DownloadsFlatModel::onNewState(const Protos::GUI::State& state)
    else
    {
       const int weightLastEta = this->eta == 0 ? 1 : WEIGHT_LAST_ETA;
-      this->eta = (weightLastEta * this->eta + (this->totalBytesInQueue - this->totalBytesDownloadedInQueue) / state.stats().download_rate()) / (weightLastEta + 1);
+      this->eta =
+         (
+            weightLastEta * this->eta +
+            (this->totalBytesInQueue - this->totalBytesDownloadedInQueue) / state.stats().download_rate()
+         ) / (weightLastEta + 1);
    }
 
-   if (this->totalBytesInQueue != oldTotalBytesInQueue || this->totalBytesDownloadedInQueue != oldTotalBytesDownloadedInQueue || this->eta != oldEta)
+   if (
+      this->totalBytesInQueue != oldTotalBytesInQueue ||
+      this->totalBytesDownloadedInQueue != oldTotalBytesDownloadedInQueue ||
+      this->eta != oldEta
+   )
       emit globalProgressChanged();
 }
