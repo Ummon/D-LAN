@@ -355,8 +355,7 @@ void InternalCoreConnection::tryToConnectToTheNextAddress()
    if (Common::Global::isLocal(address))
    {
       this->coreController.startCore(this->connectionInfo.port);
-      if (this->coreController.getStatus() == NOT_RUNNING)
-         L_WARN("Unable to start the Core");
+      L_DEBU(QString("Core controller status: %1").arg(this->coreController.getStatus()));
    }
 
    connect(this->socket, &QAbstractSocket::stateChanged, this, &InternalCoreConnection::stateChanged);

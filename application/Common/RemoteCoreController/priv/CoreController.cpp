@@ -80,7 +80,7 @@ void CoreController::startCore(int port)
             if (this->coreProcess.waitForStarted(TIMEOUT_SUBPROCESS_WAIT_FOR_STARTED))
                L_USER(QObject::tr("Core launched as subprocess"));
             else
-               L_USER(QObject::tr("Unable to launch the Core as subprocess"));
+               L_WARN(QObject::tr("Unable to launch the Core as subprocess"));
          }
       }
       else

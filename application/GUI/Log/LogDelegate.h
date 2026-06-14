@@ -25,6 +25,15 @@ namespace GUI
    class LogDelegate : public QStyledItemDelegate
    {
       Q_OBJECT
+
+      static const QColor COLOR_WARNING;
+
+      static const QColor COLOR_BACKGROUND_ERROR;
+      static const QColor COLOR_FOREGROUND_ERROR;
+
+      static const QColor COLOR_BACKGROUND_FATAL_ERROR;
+      static const QColor COLOR_FOREGROUND_FATAL_ERROR;
+
    public:
       void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
    };

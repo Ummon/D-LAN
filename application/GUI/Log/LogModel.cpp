@@ -64,6 +64,9 @@ QVariant LogModel::data(const QModelIndex& index, int role) const
          case LM::SV_ERROR:
             message.append("[Error] ");
             break;
+         case LM::SV_WARNING:
+            message.append("[Warning] ");
+            break;
          default:;
          }
          message.append(entry->getMessage());

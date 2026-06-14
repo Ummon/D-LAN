@@ -20,9 +20,19 @@
 using namespace GUI;
 
 #include <QPainter>
+#include <QPalette>
+#include <QGuiApplication>
 #include <QModelIndex>
 
 #include <Log/LogModel.h>
+
+const QColor LogDelegate::COLOR_WARNING(150, 20, 20);
+
+const QColor LogDelegate::COLOR_BACKGROUND_ERROR(200, 0, 0);
+const QColor LogDelegate::COLOR_FOREGROUND_ERROR(255, 255, 255);
+
+const QColor LogDelegate::COLOR_BACKGROUND_FATAL_ERROR(50, 0, 0);
+const QColor LogDelegate::COLOR_FOREGROUND_FATAL_ERROR(255, 255, 0);
 
 void LogDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
@@ -34,15 +44,19 @@ void LogDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, c
    switch (model->getSeverity(index.row()))
    {
    case LM::SV_WARNING:
-      painter->fillRect(option.rect, QColor(235, 199, 199));
+      {
+         auto color = QGuiApplication::palette().color(QPalette::Normal, QPalette::Window).toHsl();
+         color.setHslF(COLOR_WARNING.hslHueF(), COLOR_WARNING.hslSaturationF(), color.lightnessF());
+         painter->fillRect(option.rect, color);
+      }
       break;
    case LM::SV_ERROR:
-      painter->fillRect(option.rect, QColor(200, 0, 0));
-      newOption.palette.setColor(QPalette::Text, QColor(255, 255, 255));
+      painter->fillRect(option.rect, COLOR_BACKGROUND_ERROR);
+      newOption.palette.setColor(QPalette::Text, COLOR_FOREGROUND_ERROR);
       break;
    case LM::SV_FATAL_ERROR:
-      painter->fillRect(option.rect, QColor(50, 0, 0));
-      newOption.palette.setColor(QPalette::Text, QColor(255, 255, 0));
+      painter->fillRect(option.rect, COLOR_BACKGROUND_FATAL_ERROR);
+      newOption.palette.setColor(QPalette::Text, COLOR_FOREGROUND_FATAL_ERROR);
       break;
    default:;
    }
