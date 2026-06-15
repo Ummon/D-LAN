@@ -53,11 +53,13 @@ namespace FM
    public:
       virtual ~IFileManager() {}
 
+      struct SharedPath { QString name; QString path; };
+
       /**
         * Define the shared paths. A path can be a file or a directory.
         * @exception EntriesNotFoundException
         */
-      virtual void setSharedPaths(const QStringList& paths) = 0;
+      virtual void setSharedPaths(const QList<SharedPath>& paths) = 0;
 
       /**
         * Add a shared entry and return a 'Common::SharedEntry' object and the relative path.

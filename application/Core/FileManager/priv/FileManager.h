@@ -59,7 +59,7 @@ namespace FM
       FileManager(QSharedPointer<HC::IHashCache> hashCache);
       ~FileManager();
 
-      void setSharedPaths(const QStringList& paths) override;
+      void setSharedPaths(const QList<IFileManager::SharedPath>& paths) override;
       QPair<Common::SharedEntry, QString> addASharedPath(const QString& absolutePath) override;
 
       QList<Common::SharedEntry> getSharedEntries() const override;

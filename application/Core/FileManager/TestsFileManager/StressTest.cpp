@@ -120,7 +120,8 @@ void FilesAndDirs::createADir()
    PROB_100(30);
 
    QStringList dirs;
-   dirs.append(this->stressTest->getSharedDirs());
+   for (auto path : this->stressTest->getSharedDirs())
+      dirs << path.path;
    dirs.append(this->directories);
 
    if (dirs.empty())
@@ -158,7 +159,8 @@ void FilesAndDirs::createAFile()
    PROB_100(60);
 
    QStringList dirs;
-   dirs.append(this->stressTest->getSharedDirs());
+   for (auto path : this->stressTest->getSharedDirs())
+      dirs << path.path;
    dirs.append(this->directories);
 
    if (dirs.empty())
@@ -269,7 +271,7 @@ StressTest::StressTest()
    }
 }
 
-QStringList StressTest::getSharedDirs() const
+QList<IFileManager::SharedPath> StressTest::getSharedDirs() const
 {
    return this->sharedDirs;
 }
@@ -305,7 +307,7 @@ void StressTest::createASharedDir()
 
    try
    {
-      this->sharedDirs << ROOT_DIR.dirName().append("/").append(name);
+      this->sharedDirs << IFileManager::SharedPath{ QString(), ROOT_DIR.dirName().append("/").append(name) };
       this->fileManager->setSharedPaths(this->sharedDirs);
    }
    catch (EntriesNotFoundException& e)
@@ -324,7 +326,7 @@ void StressTest::removeASharedDir()
       if (this->sharedDirs.isEmpty())
          return;
       int i = this->randGen.rand(this->sharedDirs.size()-1);
-      this->dirsToDelete << this->sharedDirs[i];
+      this->dirsToDelete << this->sharedDirs[i].path;
       this->sharedDirs.removeAt(i);
       this->fileManager->setSharedPaths(this->sharedDirs);
    }

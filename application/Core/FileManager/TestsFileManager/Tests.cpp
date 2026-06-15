@@ -91,34 +91,34 @@ void Tests::addASharedDirectoryIncoming()
 {
    qDebug() << "===== addASharedDirectoryIncoming() =====";
 
-   this->sharedPaths << QDir::currentPath().append("/incoming/");
+   this->sharedPaths << IFileManager::SharedPath{ QString(), QDir::currentPath().append("/incoming/") };
    this->fileManager->setSharedPaths(this->sharedPaths);
 
    QList<Common::SharedEntry> paths = this->fileManager->getSharedEntries();
    QVERIFY(paths.size() == 1);
-   QCOMPARE(paths.at(0).path.toString(), this->sharedPaths.at(0));
+   QCOMPARE(paths.at(0).path.toString(), this->sharedPaths.at(0).path);
 }
 
 void Tests::addASharedDirectory()
 {
    qDebug() << "===== addASharedDirectory() =====";
 
-   this->sharedPaths << QDir::currentPath().append("/sharedDirs/share1/");
+   this->sharedPaths << IFileManager::SharedPath{ QString(), QDir::currentPath().append("/sharedDirs/share1/") };
    this->fileManager->setSharedPaths(this->sharedPaths);
    QList<Common::SharedEntry> paths = this->fileManager->getSharedEntries();
    QVERIFY(paths.size() == 2);
-   QCOMPARE(paths.at(1).path.toString(), this->sharedPaths.at(1));
+   QCOMPARE(paths.at(1).path.toString(), this->sharedPaths.at(1).path);
 }
 
 void Tests::addASharedFile()
 {
    qDebug() << "===== addASharedFile() =====";
 
-   this->sharedPaths << QDir::currentPath().append("/shared file.txt");
+   this->sharedPaths << IFileManager::SharedPath{ QString(), QDir::currentPath().append("/shared file.txt") };
    this->fileManager->setSharedPaths(this->sharedPaths);
    QList<Common::SharedEntry> paths = this->fileManager->getSharedEntries();
    QVERIFY(paths.size() == 3);
-   QCOMPARE(paths.at(2).path.toString(), this->sharedPaths.at(2));
+   QCOMPARE(paths.at(2).path.toString(), this->sharedPaths.at(2).path);
 }
 
 void Tests::addSomeAlreadySharedEntries()
@@ -129,7 +129,7 @@ void Tests::addSomeAlreadySharedEntries()
    QList<Common::SharedEntry> paths = this->fileManager->getSharedEntries();
    QVERIFY(paths.size() == 3);
    for (int i = 0; i < paths.size(); i++)
-      QCOMPARE(paths.at(i).path.toString(), this->sharedPaths.at(i));
+      QCOMPARE(paths.at(i).path.toString(), this->sharedPaths.at(i).path);
 }
 
 void Tests::swapTwoDirectories()
@@ -139,21 +139,21 @@ void Tests::swapTwoDirectories()
    this->sharedPaths.move(1, 0);
    this->fileManager->setSharedPaths(this->sharedPaths);
    QList<Common::SharedEntry> paths = this->fileManager->getSharedEntries();
-   QCOMPARE(paths.at(0).path.toString(), this->sharedPaths.at(0));
-   QCOMPARE(paths.at(1).path.toString(), this->sharedPaths.at(1));
+   QCOMPARE(paths.at(0).path.toString(), this->sharedPaths.at(0).path);
+   QCOMPARE(paths.at(1).path.toString(), this->sharedPaths.at(1).path);
 
    this->sharedPaths.move(1, 0);
    this->fileManager->setSharedPaths(this->sharedPaths);
    QList<Common::SharedEntry> paths2 = this->fileManager->getSharedEntries();
-   QCOMPARE(paths2.at(0).path.toString(), this->sharedPaths.at(0));
-   QCOMPARE(paths2.at(1).path.toString(), this->sharedPaths.at(1));
+   QCOMPARE(paths2.at(0).path.toString(), this->sharedPaths.at(0).path);
+   QCOMPARE(paths2.at(1).path.toString(), this->sharedPaths.at(1).path);
 }
 
 void Tests::addInexistingSharedDirectory()
 {
    qDebug() << "===== addInexistingSharedDirectory() =====";
 
-   this->sharedPaths << QDir::currentPath().append("/this_is_spartaaaaaa/"); // This directory doesn't exit.
+   this->sharedPaths << IFileManager::SharedPath{ QString(), QDir::currentPath().append("/this_is_spartaaaaaa/") }; // This directory doesn't exit.
    try
    {
       this->fileManager->setSharedPaths(this->sharedPaths);
@@ -162,7 +162,7 @@ void Tests::addInexistingSharedDirectory()
    catch (EntriesNotFoundException& e)
    {
       QVERIFY(e.paths.size() == 1);
-      QCOMPARE(e.paths.at(0), this->sharedPaths.last());
+      QCOMPARE(e.paths.at(0), this->sharedPaths.last().path);
       qDebug() << "This directory hasn't been found: " << e.paths.at(0) << " (Exception thrown)";
    }
    this->sharedPaths.removeLast();
@@ -172,7 +172,7 @@ void Tests::addInexistingSharedFile()
 {
    qDebug() << "===== addInexistingSharedFile() =====";
 
-   this->sharedPaths << QDir::currentPath().append("/inexisting file.txt"); // This directory doesn't exit.
+   this->sharedPaths << IFileManager::SharedPath{ QString(), QDir::currentPath().append("/inexisting file.txt") }; // This directory doesn't exit.
    try
    {
       this->fileManager->setSharedPaths(this->sharedPaths);
@@ -181,7 +181,7 @@ void Tests::addInexistingSharedFile()
    catch (EntriesNotFoundException& e)
    {
       QVERIFY(e.paths.size() == 1);
-      QCOMPARE(e.paths.at(0), this->sharedPaths.last());
+      QCOMPARE(e.paths.at(0), this->sharedPaths.last().path);
       qDebug() << "This file hasn't been found: " << e.paths.at(0) << " (Exception thrown)";
    }
    this->sharedPaths.removeLast();
@@ -194,8 +194,8 @@ void Tests::addSubSharedDirectories()
 {
    qDebug() << "===== addSubSharedDirectories() =====";
 
-   this->sharedPaths << QDir::currentPath().append("/sharedDirs/share1/subdir/");
-   this->sharedPaths << QDir::currentPath().append("/sharedDirs/share1/another subdir/");
+   this->sharedPaths << IFileManager::SharedPath{ QString(), QDir::currentPath().append("/sharedDirs/share1/subdir/") };
+   this->sharedPaths << IFileManager::SharedPath{ QString(), QDir::currentPath().append("/sharedDirs/share1/another subdir/") };
 
    this->fileManager->setSharedPaths(this->sharedPaths);
 
@@ -216,7 +216,7 @@ void Tests::addSuperSharedDirectories()
 {
    qDebug() << "===== addSuperSharedDirectories() =====";
 
-   this->sharedPaths << QDir::currentPath().append("/sharedDirs/");
+   this->sharedPaths << IFileManager::SharedPath{ QString(), QDir::currentPath().append("/sharedDirs/") };
 
    this->fileManager->setSharedPaths(this->sharedPaths);
 
@@ -875,22 +875,23 @@ void Tests::browseSomeDirectories()
 
    // Get the shared directories.
    Protos::Common::Entries entries1 = this->fileManager->getEntries();
-   QCOMPARE(entries1.entries_size(), 3);
    QString entries1Str = Common::ProtoHelper::getDebugStr(entries1);
+   qDebug().noquote() << entries1Str;
+
+   QCOMPARE(entries1.entries_size(), 3);
    QVERIFY(entries1Str.contains("\"sharedName\": \"incoming\""));
    QVERIFY(entries1Str.contains("\"sharedName\": \"shared file.txt\""));
    QVERIFY(entries1Str.contains("\"sharedName\": \"sharedDirs\""));
-   qDebug().noquote() << entries1Str;
 
    // Ask for the files and directories of the thrid shared directory
    Protos::Common::Entries entries2 = this->fileManager->getEntries(entries1.entries(2));
    {
       QCOMPARE(entries2.entries_size(), 4);
       QString entries2Str = Common::ProtoHelper::getDebugStr(entries2);
+      qDebug().noquote() << entries2Str;
       QVERIFY(entries2Str.contains("\"name\": \"share3\""));
       const QString hashAsBase64 = QByteArray::fromHex("8bac0e4c2a03b716567e2f5dc33ca8c658dcdfa814f112ada0da4a4f").toBase64();
       QVERIFY(entries2Str.contains(QString("\"hash\": \"%1\"").arg(hashAsBase64)));
-      qDebug().noquote() << entries2Str;
    }
 
    // Ask for the files and directores of the second directory of the thrid shared directory
@@ -898,10 +899,10 @@ void Tests::browseSomeDirectories()
    {
       QCOMPARE(entries3.entries_size(), 13);
       QString entries3Str = Common::ProtoHelper::getDebugStr(entries3);
+      qDebug().noquote() << entries3Str;
       QVERIFY(entries3Str.contains("\"name\": \"bbbb cccc.nfo\""));
       const QString hashAsBase64 = QByteArray::fromHex("8cd9bf6803aa7f1acfb6095ad5ed6db68f5de6a7eacfa10a65da81e6").toBase64();
       QVERIFY(entries3Str.contains(QString("\"hash\": \"%1\"").arg(hashAsBase64)));
-      qDebug().noquote() << entries3Str;
    }
 }
 

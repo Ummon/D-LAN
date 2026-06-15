@@ -228,6 +228,7 @@ void RemoteConnection::refresh()
       Common::SharedEntry sharedEntry = i.next();
       Protos::GUI::State::SharedEntry* sharedEntryProto = state.add_shared_entries();
       sharedEntryProto->mutable_entry()->set_path(sharedEntry.path.toString().toStdString());
+      sharedEntryProto->mutable_entry()->set_shared_name(sharedEntry.name.toStdString());
       sharedEntryProto->set_size(sharedEntry.size);
       sharedEntryProto->set_free_space(sharedEntry.freeSpace);
       sharedEntryProto->mutable_entry()->mutable_id()->set_hash(sharedEntry.ID.getData(), Common::Hash::HASH_SIZE);
@@ -494,9 +495,13 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
 
          try
          {
-            QStringList sharedPaths;
-            for (int i = 0; i < coreSettingsMessage.shared_paths().path_size(); i++)
-               sharedPaths << QString::fromStdString(coreSettingsMessage.shared_paths().path(i));
+            QList<FM::IFileManager::SharedPath> sharedPaths;
+            for (int i = 0; i < coreSettingsMessage.shared_paths_size(); i++)
+               sharedPaths <<
+                  FM::IFileManager::SharedPath{
+                     QString::fromStdString(coreSettingsMessage.shared_paths(i).name()),
+                     QString::fromStdString(coreSettingsMessage.shared_paths(i).path())
+                  };
             this->fileManager->setSharedPaths(sharedPaths);
          }
          catch (FM::EntriesNotFoundException& e)

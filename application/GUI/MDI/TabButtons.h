@@ -47,13 +47,18 @@ namespace GUI
 
    class TabCloseButton : public TabButton
    {
-       Q_OBJECT
+      Q_OBJECT
    public:
-       TabCloseButton(QWidget* widget, QWidget* parent = nullptr, bool autoDelete = true, function<QString()> tooltipFun = nullptr);
+      TabCloseButton(
+         QWidget* widget,
+         QWidget* parent = nullptr,
+         bool autoDelete = true,
+         function<QString()> tooltipFun = nullptr
+      );
 
    protected:
-       void changeEvent(QEvent* event);
-       void drawPrimitive(const QStyleOption& opt, QPainter& p);
+      void changeEvent(QEvent* event);
+      void drawPrimitive(const QStyleOption& opt, QPainter& p);
 
    signals:
       void clicked(QWidget* widget);
@@ -72,16 +77,16 @@ namespace GUI
 
    class TabRefreshButton : public TabButton
    {
-       Q_OBJECT
+      Q_OBJECT
    public:
-       TabRefreshButton(QWidget* parent = nullptr);
+      TabRefreshButton(QWidget* parent = nullptr);
 
    protected:
-       void changeEvent(QEvent* event);
-       void drawPrimitive(const QStyleOption& option, QPainter& painter);
+      void changeEvent(QEvent* event);
+      void drawPrimitive(const QStyleOption& option, QPainter& painter);
 
    private:
-       void setToolTipTranslate();
-       QIcon icon;
+      void setToolTipTranslate();
+      QIcon icon;
    };
 }

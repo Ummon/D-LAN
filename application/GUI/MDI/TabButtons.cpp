@@ -102,7 +102,7 @@ TabCloseButton::TabCloseButton(QWidget* widget, QWidget* parent, bool autoDelete
    TabButton(parent), widget(widget), autoDelete(autoDelete), tooltipFun(tooltipFun)
 {
    // TODO: replace by an event?
-   connect(this, &TabCloseButton::clicked, this, &TabCloseButton::buttonClicked);
+   connect(this, &QAbstractButton::clicked, this, &TabCloseButton::buttonClicked);
    this->setToolTipTranslate();
 }
 

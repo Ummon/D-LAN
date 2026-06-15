@@ -57,6 +57,7 @@ SOURCES += main.cpp\
     ../Protos/common.pb.cc \
     ../Protos/gui_settings.pb.cc \
     ../Protos/core_settings.pb.cc \
+    Settings/SharedEntryListDelegate.cpp \
     Settings/SharedEntryListModel.cpp \
     StatusBar.cpp \
     DialogAbout.cpp \
@@ -110,6 +111,7 @@ HEADERS  += MainWindow.h \
     ../Protos/common.pb.h \
     ../Protos/gui_settings.pb.h \
     ../Protos/core_settings.pb.h \
+    Settings/SharedEntryListDelegate.h \
     Settings/SharedEntryListModel.h \
     StatusBar.h \
     Log.h \

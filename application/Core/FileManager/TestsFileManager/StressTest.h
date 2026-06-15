@@ -76,7 +76,7 @@ class StressTest : public QObject
    static const int NB_FILES_AND_DIR_THREAD;
 public:
    StressTest();
-   QStringList getSharedDirs() const;
+   QList<IFileManager::SharedPath> getSharedDirs() const;
 
 private:
    static void (StressTest::*actions[])();
@@ -104,7 +104,7 @@ private:
    QSharedPointer<HC::IHashCache> hashCache;
    QSharedPointer<IFileManager> fileManager;
    QList<FilesAndDirs*> filesAndDirs;
-   QStringList sharedDirs;
+   QList<IFileManager::SharedPath> sharedDirs;
    QStringList dirsToDelete;
 
    QList<Common::Hash> someHashes;
@@ -118,7 +118,8 @@ private:
       int nb;
       QString filename;
    };
-   QList< HashesResult > getHashesResults;
+
+   QList<HashesResult> getHashesResults;
 
    RandGenerator randGen;
 };

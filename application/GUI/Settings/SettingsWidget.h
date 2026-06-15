@@ -27,6 +27,7 @@
 #include <Common/RemoteCoreController/ICoreConnection.h>
 
 #include <Settings/SharedEntryListModel.h>
+#include <Settings/SharedEntryListDelegate.h>
 #include <Settings/AskNewPasswordDialog.h>
 #include <MDI/MdiWidget.h>
 
@@ -119,7 +120,8 @@ namespace GUI
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;
 
-      SharedEntryListModel& sharedEntryListModel;
+      SharedEntryListModel& sharedEntryListModel;      
+      SharedEntryListDelegate sharedEntryListDelegate;
 
       DirListDelegate dirListDelegate;
 

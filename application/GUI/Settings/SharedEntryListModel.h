@@ -30,6 +30,14 @@ namespace GUI
    {
       Q_OBJECT
 
+      enum Column
+      {
+         NAME = 0,
+         PATH = 1,
+         SIZE = 2,
+         FREE_SPACE = 3,
+      };
+
    public:
       void setEntries(const QList<Common::SharedEntry>& entries);
       void addEntry(const Common::SharedEntry& entry);
@@ -49,12 +57,21 @@ namespace GUI
       QList<Common::SharedEntry> getSharedDirectories() const;
       QList<Common::SharedEntry> getSharedFiles() const;
 
-      int rowCount(const QModelIndex& parent = QModelIndex()) const;
-      int columnCount(const QModelIndex& parent = QModelIndex()) const;
-      QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
-      QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
+      int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+      int columnCount(const QModelIndex& parent = QModelIndex()) const override;
+      QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+      Qt::ItemFlags flags(const QModelIndex &index) const override;
+      bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;
+      QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+
+   public slots:
+      void setEditing(const QModelIndex& index);
+
+   signals:
+      void nameChanged(const QModelIndex& index);
 
    private:
       QList<Common::SharedEntry> sharedEntries;
+      QModelIndex currentEditingIndex;
    };
 }

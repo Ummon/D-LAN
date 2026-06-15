@@ -70,8 +70,11 @@ namespace FM
 
       QList<Common::SharedEntry> getSharedEntries() const;
       SharedEntry* getSharedEntry(const Common::Hash& ID) const;
-      void setSharedPaths(const QList<Common::Path>& paths);
+
+      void setSharedPaths(const QList<std::pair<QString, Common::Path>>& paths);
       QPair<Common::SharedEntry, QString> addASharedPath(const QString& absolutePath);
+
+      void addExistingSharedEntry(const Protos::Common::SharedEntry& sharedEntry);
       void removeSharedEntry(SharedEntry* entry, Directory* dir = nullptr);
 
       SharedDirectory* getSuperSharedDirectory(const Common::Path& path) const;
@@ -79,9 +82,6 @@ namespace FM
       bool isShared(const Common::Path& path) const;
 
       Directory* getFittestDirectory(const Common::Path& path) const;
-
-      void setSharedEntries(const QList<Protos::Common::SharedEntry>& entries);
-      // void populateHashes(Protos::FileCache::Hashes& hashes) const;
 
       quint64 getAmount() const;
 
@@ -122,8 +122,13 @@ namespace FM
 
    private:
       static Common::SharedEntry makeSharedEntry(const SharedEntry* entry);
-      SharedEntry* createSharedEntry(const Common::Path& path, const Common::Hash& ID = Common::Hash(), int pos = -1);
-      void createSharedEntries(const QList<Common::Path>& paths, const QList<Common::Hash>& ids = QList<Common::Hash>());
+      SharedEntry* createSharedEntry(
+         const Common::Path& path,
+         const Common::Hash& ID = Common::Hash(),
+         int pos = -1,
+         const QString& name = QString()
+      );
+      void saveSharedEntries() const;
 
       Directory* getWriteableDirectory(const Common::Path& path, qint64 spaceNeeded = 0) const;
 

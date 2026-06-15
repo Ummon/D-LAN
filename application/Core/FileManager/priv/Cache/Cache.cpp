@@ -349,7 +349,6 @@ QList<QSharedPointer<IChunk>> Cache::newFile(Protos::Common::Entry& fileEntry)
   */
 void Cache::newDirectory(Protos::Common::Entry& dirEntry)
 {
-
    QMutexLocker locker(&this->mutex);
 
    const QString& dirPath =
@@ -403,7 +402,7 @@ SharedEntry* Cache::getSharedEntry(const Common::Hash& ID) const
 /**
   * @exception EntriesNotFoundException
   */
-void Cache::setSharedPaths(const QList<Common::Path>& paths)
+void Cache::setSharedPaths(const QList<std::pair<QString, Common::Path>>& paths)
 {
    QMutexLocker locker(&this->mutex);
 
@@ -412,8 +411,11 @@ void Cache::setSharedPaths(const QList<Common::Path>& paths)
    int j = 0;
    for (int i = 0; i < paths.size(); i++) {
       for (int j2 = j; j2 < this->sharedEntries.size(); j2++) {
-         if (paths[i] == this->sharedEntries[j2]->getPath())
+         if (paths[i].second == this->sharedEntries[j2]->getPath())
          {
+            if (!paths[i].first.isEmpty())
+               this->sharedEntries[j2]->setUserName(paths[i].first);
+
             this->sharedEntries.move(j2, j++);
             goto nextEntry;
          }
@@ -421,7 +423,7 @@ void Cache::setSharedPaths(const QList<Common::Path>& paths)
       try
       {
          // dirs[i] not found -> we create a new one.
-         if (this->createSharedEntry(paths[i], Common::Hash(), j))
+         if (this->createSharedEntry(paths[i].second, Common::Hash(), j, paths[i].first))
             j++;
       }
       catch (PathNotFoundException& e)
@@ -439,6 +441,8 @@ void Cache::setSharedPaths(const QList<Common::Path>& paths)
 
    if (!pathsNotFound.isEmpty())
       throw EntriesNotFoundException(pathsNotFound);
+
+   this->saveSharedEntries();
 }
 
 /**
@@ -452,7 +456,7 @@ QPair<Common::SharedEntry, QString> Cache::addASharedPath(const QString& absolut
    const Common::Path absolutePathCleaned = Common::Path(absolutePath);
 
    // If the given entry is already a shared entry.
-   for (SharedEntry*& current: this->sharedEntries)
+   for (SharedEntry*& current : this->sharedEntries)
    {
       if (absolutePathCleaned == current->getPath())
          return qMakePair(makeSharedEntry(current), QString("/"));
@@ -476,6 +480,7 @@ QPair<Common::SharedEntry, QString> Cache::addASharedPath(const QString& absolut
       if (entry)
       {
          entry->mergeSubSharedEntries();
+         this->saveSharedEntries();
          return qMakePair(makeSharedEntry(entry), QString("/"));
       }
       else
@@ -484,6 +489,41 @@ QPair<Common::SharedEntry, QString> Cache::addASharedPath(const QString& absolut
    catch (PathNotFoundException& e)
    {
       throw EntriesNotFoundException(QStringList() << e.path);
+   }
+}
+
+/**
+  * @exception EntriesNotFoundException
+  */
+void Cache::addExistingSharedEntry(const Protos::Common::SharedEntry& sharedEntry)
+{
+   const QString path = QString::fromStdString(sharedEntry.path());
+
+   try
+   {
+      if (!QFileInfo::exists(path))
+         throw EntriesNotFoundException(QStringList{ path });
+
+      const Common::Path commonPath = Common::Path(path);
+      const Common::Hash id = Common::Hash(sharedEntry.id().hash());
+
+      SharedEntry* entry = SharedEntry::create(this, path, id);
+
+      L_DEBU(QString("Add an existing shared entry: %1").arg(path));
+
+      this->sharedEntries << entry;
+
+      emit newSharedEntry(entry);
+   }
+   catch (SharedEntryAlreadySharedException&)
+   {
+      L_DEBU(QString("Shared entry already shared: %1").arg(path));
+   }
+   catch (SuperDirectoryExistsException& e)
+   {
+      L_WARN(
+         QString("There is already a super directory: %1 for this entry: %2").arg(e.superDirectory, e.subPath)
+      );
    }
 }
 
@@ -499,6 +539,7 @@ void Cache::removeSharedEntry(SharedEntry* entry, Directory* dir)
    if (this->sharedEntries.contains(entry))
    {
       this->sharedEntries.removeOne(entry);
+      this->saveSharedEntries();
       emit sharedEntryRemoved(entry, dir);
    }
 }
@@ -594,27 +635,6 @@ Directory* Cache::getFittestDirectory(const Common::Path& path) const
    }
 
    return nullptr;
-}
-
-/**
-  * Defines the shared items from the persisted given data.
-  */
-void Cache::setSharedEntries(const QList<Protos::Common::SharedEntry>& entries)
-{
-   QList<Common::Path> paths;
-   QList<Common::Hash> ids;
-
-   // Add the shared entries from the file cache.
-   for (const auto& entry : entries)
-   {
-      // paths << QString::fromStdString(entries[i].path());
-      // ids << entries[i].id().hash();
-
-      paths << Common::Path(QString::fromStdString(entry.path()));
-      ids << entry.id().hash();
-   }
-
-   this->createSharedEntries(paths, ids);
 }
 
 /**
@@ -754,13 +774,18 @@ Common::SharedEntry Cache::makeSharedEntry(const SharedEntry* entry)
   *
   * @exception PathNotFoundException
   */
-SharedEntry* Cache::createSharedEntry(const Common::Path& path, const Common::Hash& id, int pos)
+SharedEntry* Cache::createSharedEntry(
+   const Common::Path& path,
+   const Common::Hash& id,
+   int pos,
+   const QString& name
+)
 {
    try
    {
-      SharedEntry* entry = SharedEntry::create(this, path, id);
+      SharedEntry* entry = SharedEntry::create(this, path, id, name);
 
-      L_DEBU(QString("Add a new shared entry: %1").arg(path));
+      L_DEBU(QString("Add a new shared entry: %1,").arg(path));
 
       if (pos == -1 || pos > this->sharedEntries.size())
          this->sharedEntries << entry;
@@ -785,40 +810,22 @@ SharedEntry* Cache::createSharedEntry(const Common::Path& path, const Common::Ha
    return nullptr;
 }
 
-/**
-  * Create new shared entries.
-  *
-  * @exception EntriesNotFoundException
-  */
-void Cache::createSharedEntries(const QList<Common::Path>& paths, const QList<Common::Hash>& ids)
+void Cache::saveSharedEntries() const
 {
-   QMutexLocker locker(&this->mutex);
+   QList<Protos::Common::SharedEntry> sharedEntries;
 
-   QStringList entriesNotFound;
-
-   QListIterator<Common::Path> i(paths);
-   QListIterator<Common::Hash> k(ids);
-   while (i.hasNext())
+   for (auto sharedEntry : this->sharedEntries)
    {
-      auto& path = i.next();
+      auto protoSharedEntry = Protos::Common::SharedEntry();
+      protoSharedEntry.mutable_id()->set_hash(sharedEntry->getId().getData());
+      protoSharedEntry.set_shared_name(sharedEntry->getUserName().toStdString());
+      protoSharedEntry.set_path(sharedEntry->getPath().toString().toStdString());
 
-      try
-      {
-         SharedEntry* entry = k.hasNext() ?
-            this->createSharedEntry(path, k.next()) :
-            this->createSharedEntry(path);
-
-         if (entry)
-            entry->mergeSubSharedEntries();
-      }
-      catch (DirNotFoundException& e)
-      {
-         entriesNotFound << e.path;
-      }
+      sharedEntries << protoSharedEntry;
    }
 
-   if (!entriesNotFound.isEmpty())
-      throw EntriesNotFoundException(entriesNotFound);
+   SETTINGS.set("shared_entries", sharedEntries);
+   SETTINGS.save();
 }
 
 /**

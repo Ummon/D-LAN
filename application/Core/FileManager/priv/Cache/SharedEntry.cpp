@@ -167,6 +167,11 @@ QString SharedEntry::getUserName() const
    return this->userName;
 }
 
+void SharedEntry::setUserName(const QString& name)
+{
+   this->userName = name;
+}
+
 /**
   * Extract the entry name. The entry name is a user name and will not be used in a real path.
   * 'C:/User/Paul/Movies/' -> 'Movies'

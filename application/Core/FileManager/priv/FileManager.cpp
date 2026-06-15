@@ -79,25 +79,17 @@ FileManager::FileManager(QSharedPointer<HC::IHashCache> hashCache) :
    connect(&this->cache, &Cache::fileResized, this, &FileManager::fileResized, Qt::DirectConnection);
 
    // Give stored shared entries to the cache:
-   this->cache.setSharedEntries(SETTINGS.getRepeated<Protos::Common::SharedEntry>("shared_entry"));
-
-   // TODO
-   for (const auto& sharedEntry : this->cache.getSharedEntries())
+   for (const auto& entry : SETTINGS.getRepeated<Protos::Common::SharedEntry>("shared_entries"))
    {
-      L_DEBU(QString("ID: %1").arg(sharedEntry.ID.toStr())); // TODO: test this code and remove this line.
-      this->fileUpdater.addRoot(this->cache.getSharedEntry(sharedEntry.ID));
+      try
+      {
+         this->cache.addExistingSharedEntry(entry);
+      }
+      catch (EntriesNotFoundException e)
+      {
+         L_WARN(QString("Unable to add shared entry: %1").arg(e.paths.constFirst()));
+      }
    }
-
-   // this->cache.forall(
-   //    [&](Entry* entry)
-   //    {
-   //       this->sizeIndex.addItem(entry);
-   //    }
-   //    );
-
-   // this->cacheLoading = false;
-
-   // emit fileCacheLoaded();
 
    this->fileUpdater.start();
 }
@@ -113,11 +105,11 @@ FileManager::~FileManager()
 /**
   * @exception EntriesNotFoundException
   */
-void FileManager::setSharedPaths(const QStringList& paths)
+void FileManager::setSharedPaths(const QList<IFileManager::SharedPath>& paths)
 {
-   QList<Common::Path> commonPaths;
-   for (const QString& path : paths)
-      commonPaths << Common::Path(path);
+   QList<std::pair<QString, Common::Path>> commonPaths;
+   for (const auto& path : paths)
+      commonPaths << std::make_pair(path.name, Common::Path(path.path));
    this->cache.setSharedPaths(commonPaths);
 }
 

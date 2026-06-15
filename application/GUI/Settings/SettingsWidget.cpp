@@ -65,9 +65,11 @@ SettingsWidget::SettingsWidget(
 
    this->ui->tblShareDirs->setItemDelegate(&this->dirListDelegate); // TODO: Still needed?
    this->ui->tblShareDirs->setModel(&this->sharedEntryListModel);
-   this->ui->tblShareDirs->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
-   this->ui->tblShareDirs->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+   this->ui->tblShareDirs->setItemDelegate(&this->sharedEntryListDelegate);
+   this->ui->tblShareDirs->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+   this->ui->tblShareDirs->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
    this->ui->tblShareDirs->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
+   this->ui->tblShareDirs->horizontalHeader()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
    this->ui->tblShareDirs->horizontalHeader()->setSectionsClickable(false);
    this->ui->tblShareDirs->horizontalHeader()->setVisible(true);
 
@@ -111,7 +113,9 @@ SettingsWidget::SettingsWidget(
 
    this->ui->tblShareDirs->setContextMenuPolicy(Qt::CustomContextMenu);
    connect(this->ui->tblShareDirs, &QTableView::customContextMenuRequested, this, &SettingsWidget::displayContextMenuSharedDirs);
-   connect(this->ui->tblShareDirs, &QTableView::doubleClicked, this, &SettingsWidget::openLocation);
+
+   // Commented: double click is now used to edit share name.
+   // connect(this->ui->tblShareDirs, &QTableView::doubleClicked, this, &SettingsWidget::openLocation);
 
    // When the selection change or a shared dir is moved/deleted/inserted we must set the availability of the action buttons.
    connect(
@@ -143,6 +147,29 @@ SettingsWidget::SettingsWidget(
       &SharedEntryListModel::rowsMoved,
       this,
       qOverload<>(&SettingsWidget::refreshButtonsAvailability)
+   );
+   connect(
+      &this->sharedEntryListModel,
+      &SharedEntryListModel::nameChanged,
+      this,
+      [this]()
+      {
+         this->saveCoreSettings();
+      }
+   );
+
+   connect(
+      &this->sharedEntryListDelegate,
+      &SharedEntryListDelegate::editingStarted,
+      &this->sharedEntryListModel,
+      &SharedEntryListModel::setEditing
+   );
+
+   connect(
+      &this->sharedEntryListDelegate,
+      &QAbstractItemDelegate::closeEditor,
+      &this->sharedEntryListModel,
+      [this](QWidget*, QAbstractItemDelegate::EndEditHint){ this->sharedEntryListModel.setEditing(QModelIndex()); }
    );
 
    this->fillComboBoxLanguages();
@@ -506,8 +533,12 @@ void SettingsWidget::saveCoreSettings()
    settings.set_nick(this->ui->txtNick->text().toStdString());
    settings.set_enable_integrity_check(this->ui->chkEnableIntegrityCheck->isChecked() ? Protos::Common::TS_TRUE : Protos::Common::TS_FALSE);
 
-   for (QListIterator<Common::SharedEntry> i(this->sharedEntryListModel.getSharedEntries()); i.hasNext();)
-      settings.mutable_shared_paths()->add_path(i.next().path.toString().toStdString());
+   for (const Common::SharedEntry& sharedEntry : this->sharedEntryListModel.getSharedEntries())
+   {
+      auto sharedPath = settings.add_shared_paths();
+      sharedPath->set_path(sharedEntry.path.toString().toStdString());
+      sharedPath->set_name(sharedEntry.name.toStdString());
+   }
 
    if (this->ui->radIPv6->isChecked())
       settings.set_listen_any(Protos::Common::Interface::Address::IPv6);

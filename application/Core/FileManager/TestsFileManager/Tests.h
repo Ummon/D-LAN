@@ -133,7 +133,7 @@ private:
 
    bool testBigFiles;
 
-   QStringList sharedPaths;
+   QList<IFileManager::SharedPath> sharedPaths;
    QSharedPointer<HC::IHashCache> hashCache;
    QSharedPointer<IFileManager> fileManager;
 };

@@ -101,6 +101,7 @@ namespace FM
       // Common::Path getPath() const;
       Common::Hash getId() const;
       QString getUserName() const;
+      void setUserName(const QString& name);
 
    protected:
       // static QString entryName(const Common::Path& path);

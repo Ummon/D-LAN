@@ -28,6 +28,10 @@ using namespace GUI;
 
 void SharedEntryListModel::setEntries(const QList<Common::SharedEntry>& entries)
 {
+   // Model updating is not permitted during editing.
+   if (this->currentEditingIndex.isValid())
+      return;
+
    // TODO: Try to factor this code with the one in BrowseModel::synchronizeRoot
    int j = 0;
    for (int i = 0; i < entries.size(); i++)
@@ -194,21 +198,20 @@ QVariant SharedEntryListModel::data(const QModelIndex& index, int role) const
 
    switch (role)
    {
+   case Qt::EditRole:
    case Qt::DisplayRole:
       switch (index.column())
       {
-      // Name of the entry.
-      case 0:
+      case Column::NAME:
          return this->sharedEntries[index.row()].getName();
 
-      // Path of the entry.
-      case 1:
+      case Column::PATH:
          return this->sharedEntries[index.row()].path.toString();
 
-      case 2:
+      case Column::SIZE:
          return Common::Global::formatByteSize(this->sharedEntries[index.row()].size);
 
-      case 3:
+      case Column::FREE_SPACE:
          return Common::Global::formatByteSize(this->sharedEntries[index.row()].freeSpace);
 
       default:
@@ -227,6 +230,36 @@ QVariant SharedEntryListModel::data(const QModelIndex& index, int role) const
 
    default: return QVariant();
    }
+}
+
+Qt::ItemFlags SharedEntryListModel::flags(const QModelIndex &index) const
+{
+   auto flags = QAbstractTableModel::flags(index);
+
+   if (index.column() == Column::NAME)
+      return flags | Qt::ItemIsEditable;
+
+   return flags;
+}
+
+bool SharedEntryListModel::setData(const QModelIndex& index, const QVariant& value, int role)
+{
+   if (!QAbstractTableModel::setData(index, value, role))
+   {
+      if (role == Qt::EditRole && index.column() == Column::NAME && index.row() < this->sharedEntries.size())
+      {
+         const QString name = value.toString().trimmed();
+         if (name.isEmpty() || this->sharedEntries[index.row()].name == name)
+            return false;
+
+         this->sharedEntries[index.row()].name = name;
+
+         emit nameChanged(index);
+         emit dataChanged(index, index);
+      }
+   }
+
+   return true;
 }
 
 QVariant SharedEntryListModel::headerData(int section, Qt::Orientation orientation, int role) const
@@ -251,4 +284,9 @@ QVariant SharedEntryListModel::headerData(int section, Qt::Orientation orientati
    }
 
    return QAbstractTableModel::headerData(section, orientation, role);
+}
+
+void SharedEntryListModel::setEditing(const QModelIndex& index)
+{
+   this->currentEditingIndex = index;
 }
