@@ -161,8 +161,10 @@ QString ProtoHelper::getDebugStr(const google::protobuf::Message& mess)
    std::string debugString;
 
    google::protobuf::util::JsonPrintOptions printOptions;
-   printOptions.always_print_fields_with_no_presence = true;
    printOptions.add_whitespace = true;
+   printOptions.always_print_enums_as_ints = false;
+   printOptions.always_print_fields_with_no_presence = true;
+   printOptions.preserve_proto_field_names = true;
 
    auto status = google::protobuf::util::MessageToJsonString(mess, &debugString, printOptions);
    if (!status.ok())
