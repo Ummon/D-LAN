@@ -6,7 +6,6 @@
         <file>ressources/settings.svg</file>
         <file>ressources/chat.svg</file>
         <file>ressources/chat_new_mess.svg</file>
-        <file>ressources/dowload.svg</file>
         <file>ressources/upload.svg</file>
         <file>ressources/information.svg</file>
         <file>ressources/world.svg</file>
@@ -43,5 +42,6 @@
         <file>ressources/tree_view.svg</file>
         <file>ressources/logo.svg</file>
         <file>ressources/error.svg</file>
+        <file>ressources/download.svg</file>
     </qresource>
 </RCC>
