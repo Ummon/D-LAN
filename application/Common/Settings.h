@@ -72,6 +72,9 @@ namespace Common
       void set(const QString& name, const QList<QString>& values);
 
       template <typename T>
+      void set(const QString& name, const QList<T>& values);
+
+      template <typename T>
       T get(const QString& name) const;
 
       template <typename T>
@@ -104,6 +107,40 @@ namespace Common
 
       const google::protobuf::Descriptor* descriptor;
    };
+}
+
+template <typename T>
+void Common::Settings::set(const QString& name, const QList<T>& values)
+{
+   // this->settings->GetReflection()->GetMutableRepeatedFieldRef()
+   QMutexLocker locker(&this->mutex);
+
+   Q_ASSERT(!name.isEmpty());
+   Q_ASSERT(this->settings);
+
+   if (!this->settings)
+      return;
+
+   const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
+   if (!fieldDescriptor)
+   {
+      printErrorNameNotFound(name);
+      return;
+   }
+
+   if (!fieldDescriptor->is_repeated())
+   {
+      printError(QString("The field '%1' isn't a repeated field").arg(name));
+      return;
+   }
+
+   this->settings->GetReflection()->ClearField(this->settings, fieldDescriptor);
+
+   google::protobuf::MutableRepeatedFieldRef<T> repeatedField =
+      this->settings->GetReflection()->GetMutableRepeatedFieldRef<T>(this->settings, fieldDescriptor);
+
+   for (const auto& v : values)
+      repeatedField.Add(v);
 }
 
 template <typename T>
