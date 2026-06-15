@@ -66,7 +66,7 @@ SettingsWidget::SettingsWidget(
    this->ui->tblShareDirs->setItemDelegate(&this->dirListDelegate); // TODO: Still needed?
    this->ui->tblShareDirs->setModel(&this->sharedEntryListModel);
    this->ui->tblShareDirs->setItemDelegate(&this->sharedEntryListDelegate);
-   this->ui->tblShareDirs->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+   this->ui->tblShareDirs->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
    this->ui->tblShareDirs->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
    this->ui->tblShareDirs->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
    this->ui->tblShareDirs->horizontalHeader()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
