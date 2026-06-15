@@ -43,5 +43,6 @@
         <file>ressources/logo.svg</file>
         <file>ressources/error.svg</file>
         <file>ressources/download.svg</file>
+        <file>ressources/icon.svg</file>
     </qresource>
 </RCC>
