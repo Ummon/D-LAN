@@ -413,9 +413,8 @@ void Cache::setSharedPaths(const QList<std::pair<QString, Common::Path>>& paths)
       for (int j2 = j; j2 < this->sharedEntries.size(); j2++) {
          if (paths[i].second == this->sharedEntries[j2]->getPath())
          {
-            if (!paths[i].first.isEmpty())
-               this->sharedEntries[j2]->setUserName(paths[i].first);
-
+            const QString trimmedName = paths[i].first.trimmed();
+            this->sharedEntries[j2]->setUserName(trimmedName);
             this->sharedEntries.move(j2, j++);
             goto nextEntry;
          }
@@ -505,9 +504,10 @@ void Cache::addExistingSharedEntry(const Protos::Common::SharedEntry& sharedEntr
          throw EntriesNotFoundException(QStringList{ path });
 
       const Common::Path commonPath = Common::Path(path);
+      const QString name = QString::fromStdString(sharedEntry.shared_name());
       const Common::Hash id = Common::Hash(sharedEntry.id().hash());
 
-      SharedEntry* entry = SharedEntry::create(this, path, id);
+      SharedEntry* entry = SharedEntry::create(this, path, id, name);
 
       L_DEBU(QString("Add an existing shared entry: %1").arg(path));
 

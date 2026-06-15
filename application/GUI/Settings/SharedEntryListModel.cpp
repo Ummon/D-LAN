@@ -249,7 +249,7 @@ bool SharedEntryListModel::setData(const QModelIndex& index, const QVariant& val
       if (role == Qt::EditRole && index.column() == Column::NAME && index.row() < this->sharedEntries.size())
       {
          const QString name = value.toString().trimmed();
-         if (name.isEmpty() || this->sharedEntries[index.row()].name == name)
+         if (this->sharedEntries[index.row()].name == name)
             return false;
 
          this->sharedEntries[index.row()].name = name;

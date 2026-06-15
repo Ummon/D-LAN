@@ -355,7 +355,8 @@ void BrowseModel::synchronize(BrowseModel::Tree* tree, const Protos::Common::Ent
 }
 
 /**
-  * Special case for the shared directories (roots). They may not be sorted in a alphabetic way. They are identified by their ID.
+  * Special case for the shared directories (roots). They may not be sorted in a alphabetic way.
+  * They are identified by their ID.
   */
 void BrowseModel::synchronizeRoot(const Protos::Common::Entries& entries)
 {
@@ -370,7 +371,11 @@ void BrowseModel::synchronizeRoot(const Protos::Common::Entries& entries)
          // ID's are equal -> same entry.
          if (entries.entries(i).shared_entry().id().hash() == this->root->getChild(j2)->getItem().shared_entry().id().hash())
          {
-            if (entries.entries(i) != this->root->getChild(j2)->getItem()) // The entry data may have changed.
+            // The entry data may have changed.
+            if (
+               entries.entries(i) != this->root->getChild(j2)->getItem() ||
+               entries.entries(i).shared_entry().shared_name() != this->root->getChild(j2)->getItem().shared_entry().shared_name()
+            )
             {
                this->root->getChild(j2)->setItem(entries.entries(i));
                emit dataChanged(this->index(j2, 0), this->index(j2, this->columnCount() - 1));
@@ -466,7 +471,13 @@ QVariant BrowseModel::Tree::data(int column) const
       {
          const auto& item = this->getItem();
          if (item.name().empty())
-            return QString::fromStdString(this->getItem().shared_entry().shared_name());
+         {
+            const auto shareName = QString::fromStdString(this->getItem().shared_entry().shared_name());
+            if (!shareName.isEmpty())
+               return shareName;
+            else
+               return Common::Path(QString::fromStdString(this->getItem().shared_entry().path())).getLastElement();
+         }
          else
             return QString::fromStdString(this->getItem().name());
       }
