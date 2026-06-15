@@ -321,9 +321,14 @@ qint64 Global::availableDiskSpace(const QString& path)
 {
    Q_ASSERT(!path.isEmpty());
 
+   QString pathToDir = path;
+   QFileInfo fileInfo(path);
+   if (fileInfo.isFile())
+      pathToDir = fileInfo.absolutePath();
+
 #if defined(Q_OS_WIN32)
    ULARGE_INTEGER space;
-   if (!GetDiskFreeSpaceEx(StringUtils::towcharList(path).constData(), &space, NULL, NULL))
+   if (!GetDiskFreeSpaceEx(StringUtils::towcharList(pathToDir).constData(), &space, NULL, NULL))
       return std::numeric_limits<qint64>::max();
    return space.QuadPart;
 #elif defined(Q_OS_LINUX)
