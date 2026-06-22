@@ -33,6 +33,15 @@
 class TableLogModel : public QAbstractTableModel
 {
    Q_OBJECT
+   enum Column {
+      DATE_TIME = 0,
+      SEVERITY = 1,
+      MODULE_NAME = 2,
+      THREAD_NAME = 3,
+      SOURCE = 4,
+      MESSAGE = 5
+   };
+
 public:
    TableLogModel();
 
@@ -52,6 +61,8 @@ public:
    const QStringList& getThreads() const;
 
    bool isFiltered(int num, const QStringList& severities, const QStringList& modules, const QStringList& threads) const;
+
+   QModelIndex search(QModelIndex from, const QString& word) const;
 
 public slots:
    void setWatchingPause(bool pause);

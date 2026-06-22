@@ -41,7 +41,8 @@ public:
    ~MainWindow();
 
 protected:
-   void changeEvent(QEvent *e);
+   void changeEvent(QEvent *e) override;
+   void keyPressEvent(QKeyEvent* event) override;
 
 private slots:
    void openDir();
@@ -56,6 +57,8 @@ private slots:
 
    void setWatchingPause(bool pause);
    void directoryChanged();
+
+   void search();
 
 private:
    LOG_INIT_H("LogViewer")

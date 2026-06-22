@@ -36,11 +36,8 @@
     <property name="spacing">
      <number>4</number>
     </property>
-    <property name="margin" stdset="0">
-     <number>4</number>
-    </property>
     <item>
-     <layout class="QHBoxLayout" name="layHeader" stretch="1,0">
+     <layout class="QHBoxLayout" name="layHeader" stretch="1,0,1">
       <property name="spacing">
        <number>6</number>
       </property>
@@ -127,6 +124,20 @@
            <bool>false</bool>
           </property>
          </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="laySearch">
+        <item>
+         <widget class="QLabel" name="lblSearch">
+          <property name="text">
+           <string>Search</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="txtSearch"/>
         </item>
        </layout>
       </item>

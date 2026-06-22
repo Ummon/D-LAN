@@ -15,12 +15,14 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <MainWindow.h>
 #include <ui_MainWindow.h>
 
+#include <QKeyEvent>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QMessageBox>
 
 #include <Common/Global.h>
 
@@ -44,6 +46,8 @@ MainWindow::MainWindow(QWidget *parent) :
    connect(this->ui->actShowMultipleLines, &QAction::triggered, this, &MainWindow::setShowMultipleLines);
    connect(this->ui->butFilterAll, &QPushButton::clicked, this, &MainWindow::checkAll);
    connect(this->ui->butRefresh, &QPushButton::clicked, this, &MainWindow::reloadAll);
+
+   connect(this->ui->txtSearch, &QLineEdit::returnPressed, this, &MainWindow::search);
 
    this->currentDir.setSorting(QDir::Name);
    this->ui->tblLog->setWordWrap(false);
@@ -97,6 +101,29 @@ void MainWindow::changeEvent(QEvent *e)
    default:
       break;
    }
+}
+
+void MainWindow::keyPressEvent(QKeyEvent* event)
+{
+   // CTRL.
+   if (event->modifiers().testFlag(Qt::ControlModifier))
+   {
+      switch (event->key())
+      {
+      // Search.
+      case 'f':
+      case 'F':
+         this->ui->txtSearch->setFocus();
+         this->ui->txtSearch->selectAll();
+         return;
+      }
+   }
+   else if (event->key() == Qt::Key_F3)
+   {
+      this->search();
+   }
+
+   QMainWindow::keyPressEvent(event);
 }
 
 /**
@@ -211,6 +238,34 @@ void MainWindow::directoryChanged()
       return;
 
    this->readCurrentDir();
+}
+
+void MainWindow::search()
+{
+   const QString toSearch = this->ui->txtSearch->text().trimmed();
+
+   if (toSearch.isEmpty())
+   {
+      QMessageBox msgBox(this);
+      msgBox.setText("Search term empty");
+      msgBox.exec();
+      return;
+   }
+
+   const QModelIndex from = this->ui->tblLog->currentIndex().siblingAtRow(this->ui->tblLog->currentIndex().row() + 1);
+
+   const QModelIndex index = this->model.search(from, toSearch);
+
+   if (index.isValid() && index != this->ui->tblLog->currentIndex())
+   {
+      this->ui->tblLog->selectRow(index.row());
+   }
+   else
+   {
+      QMessageBox msgBox(this);
+      msgBox.setText("Not found");
+      msgBox.exec();
+   }
 }
 
 /**

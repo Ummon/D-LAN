@@ -60,18 +60,18 @@ QVariant TableLogModel::data(const QModelIndex& index, int role) const
 
          switch (index.column())
          {
-         case 0: return entry->getDateStr();
-         case 1: return entry->getSeverityStr();
-         case 2: return entry->getName();
-         case 3: return entry->getThread();
-         case 4: return entry->getSource();
-         case 5: return this->showMultipleLines ? entry->getMessageWithLF() : entry->getMessage();
+         case DATE_TIME: return entry->getDateStr();
+         case SEVERITY: return entry->getSeverityStr();
+         case MODULE_NAME: return entry->getName();
+         case THREAD_NAME: return entry->getThread();
+         case SOURCE: return entry->getSource();
+         case MESSAGE: return this->showMultipleLines ? entry->getMessageWithLF() : entry->getMessage();
          default: return QVariant();
          }
       }
    case Qt::ToolTipRole:
       {
-         if (index.column() == 5)
+         if (index.column() == MESSAGE)
          {
             QSharedPointer<LM::IEntry> entry = this->entries[index.row()];
             return entry->getMessageWithLF();
@@ -92,12 +92,12 @@ QVariant TableLogModel::headerData(int section, Qt::Orientation orientation, int
 
    switch (section)
    {
-   case 0: return "Date+Time";
-   case 1: return "Severity";
-   case 2: return "Module";
-   case 3: return "Thread";
-   case 4: return "Source";
-   case 5: return "Message";
+   case DATE_TIME: return "Date+Time";
+   case SEVERITY: return "Severity";
+   case MODULE_NAME: return "Module";
+   case THREAD_NAME: return "Thread";
+   case SOURCE: return "Source";
+   case MESSAGE: return "Message";
    default: return QVariant();
    }
 }
@@ -155,6 +155,30 @@ bool TableLogModel::isFiltered(int num, const QStringList& severities, const QSt
       modules.contains(this->entries[num]->getName()) &&
       threads.contains(this->entries[num]->getThread())
    );
+}
+
+QModelIndex TableLogModel::search(QModelIndex from, const QString& word) const
+{
+   if (!from.isValid())
+      from = this->createIndex(0, 0);
+
+   if (this->entries.size() <= from.row())
+      return QModelIndex();
+
+   int nbRow = this->entries.size();
+   int startRow = from.isValid() ? from.row() : 0;
+   int currentRow = startRow;
+
+   const QString wordLower = word.toLower();
+
+   do {
+      if (this->entries[currentRow]->getMessage().toLower().contains(wordLower))
+         return this->createIndex(currentRow, MESSAGE);
+
+      currentRow = (currentRow + 1) % nbRow;
+   } while (currentRow != startRow);
+
+   return QModelIndex();
 }
 
 void TableLogModel::setWatchingPause(bool pause)
