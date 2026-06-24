@@ -67,77 +67,7 @@ QString Global::getVersionTag()
 
 QString Global::getSystemVersion()
 {
-   static QString systemVersion; // The version is cached.
-   if (systemVersion.isNull())
-   {
-   #if defined(Q_OS_WIN32)
-      // Reference: http://msdn.microsoft.com/en-us/library/windows/desktop/ms724429(v=vs.85).aspx
-      OSVERSIONINFOEX versionInfo;
-      memset(&versionInfo, 0, sizeof(versionInfo));
-      versionInfo.dwOSVersionInfoSize = sizeof(versionInfo);
-      GetVersionEx((OSVERSIONINFO*)&versionInfo);
-
-      if (versionInfo.dwMajorVersion == 10 && versionInfo.dwMinorVersion == 0)
-      {
-         if (versionInfo.wProductType == VER_NT_WORKSTATION)
-            systemVersion = "Windows 10";
-         else
-            systemVersion = "Windows Server 2016";
-      }
-      if (versionInfo.dwMajorVersion == 6 && versionInfo.dwMinorVersion == 3)
-      {
-         if (versionInfo.wProductType == VER_NT_WORKSTATION)
-            systemVersion = "Windows 8.1";
-         else
-            systemVersion = "Windows Server 2012 R2";
-      }
-      else if (versionInfo.dwMajorVersion == 6 && versionInfo.dwMinorVersion == 2)
-      {
-         if (versionInfo.wProductType == VER_NT_WORKSTATION)
-            systemVersion = "Windows 8";
-         else
-            systemVersion = "Windows Server 2012";
-      }
-      else if (versionInfo.dwMajorVersion == 6 && versionInfo.dwMinorVersion == 1)
-      {
-         if (versionInfo.wProductType == VER_NT_WORKSTATION)
-            systemVersion = "Windows 7";
-         else
-            systemVersion = "Windows Server 2008 R2";
-      }
-      else if (versionInfo.dwMajorVersion == 6 && versionInfo.dwMinorVersion == 0)
-      {
-         if (versionInfo.wProductType == VER_NT_WORKSTATION)
-            systemVersion = "Windows Vista";
-         else
-            systemVersion = "Windows Server 2008";
-      }
-      else if (versionInfo.dwMajorVersion == 5 && versionInfo.dwMinorVersion == 2)
-      {
-         systemVersion = "Windows Server 2003";
-      }
-      else if (versionInfo.dwMajorVersion == 5 && versionInfo.dwMinorVersion == 1)
-      {
-         systemVersion = "Windows XP";
-      }
-      else if (versionInfo.dwMajorVersion == 5 && versionInfo.dwMinorVersion == 0)
-      {
-         systemVersion = "Windows 2000";
-      }
-      else
-      {
-         systemVersion = "Windows";
-      }
-   #elif defined(Q_OS_LINUX)
-      struct utsname name;
-      if (uname(&name) == 0)
-         systemVersion = QString::fromUtf8(name.sysname) % " " % QString::fromUtf8(name.release);
-      else
-         systemVersion = "Linux";
-   #elif defined(Q_OS_DARWIN)
-      systemVersion = "Mac OS X";
-   #endif
-   }
+   static const QString systemVersion = QSysInfo::prettyProductName();
    return systemVersion;
 }
 
