@@ -16,18 +16,22 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef TABLELOGITEMDELEGATE_H
-#define TABLELOGITEMDELEGATE_H
+#pragma once
 
-#include <QItemDelegate>
+#include <QTextDocument>
+#include <QStyledItemDelegate>
 
-class TableLogItemDelegate : public QItemDelegate
+class TableLogItemDelegate : public QStyledItemDelegate
 {
+   static const QString OPEN_HTML_FOUND_TERM;
+   static const QString CLOSE_HTML_FOUND_TERM;
+
 public:
-    TableLogItemDelegate(QObject *parent = 0);
+   TableLogItemDelegate(QObject *parent = 0);
 
-    void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
-    //QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index ) const;
+   void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+   QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+
+private:
+   void configureDoc(QTextDocument& doc, const QStyleOptionViewItem& option, const QModelIndex& index) const;
 };
-
-#endif

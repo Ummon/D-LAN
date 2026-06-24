@@ -55,12 +55,12 @@ MainWindow::MainWindow(QWidget *parent) :
    this->ui->tblLog->setItemDelegate(new TableLogItemDelegate(this));
 
    this->ui->tblLog->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
-   this->ui->tblLog->horizontalHeader()->resizeSection(0, 140);
-   this->ui->tblLog->horizontalHeader()->resizeSection(1, 50);
-   this->ui->tblLog->horizontalHeader()->resizeSection(2, 100);
-   this->ui->tblLog->horizontalHeader()->resizeSection(3, 120);
-   this->ui->tblLog->horizontalHeader()->resizeSection(4, 200);
-   this->ui->tblLog->horizontalHeader()->resizeSection(5, 1200);
+   this->ui->tblLog->horizontalHeader()->resizeSection(TableLogModel::DATE_TIME, 140);
+   this->ui->tblLog->horizontalHeader()->resizeSection(TableLogModel::SEVERITY, 50);
+   this->ui->tblLog->horizontalHeader()->resizeSection(TableLogModel::MODULE_NAME, 150);
+   this->ui->tblLog->horizontalHeader()->resizeSection(TableLogModel::THREAD_NAME, 120);
+   this->ui->tblLog->horizontalHeader()->resizeSection(TableLogModel::SOURCE, 200);
+   this->ui->tblLog->horizontalHeader()->setSectionResizeMode(TableLogModel::MESSAGE, QHeaderView::ResizeToContents);
    this->ui->tblLog->verticalHeader()->setDefaultAlignment(Qt::AlignTop);
    this->ui->tblLog->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
    this->ui->tblLog->verticalHeader()->setDefaultSectionSize(17);
@@ -120,7 +120,7 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
    }
    else if (event->key() == Qt::Key_F3)
    {
-      this->search();
+      this->selectNextSearch();
    }
 
    QMainWindow::keyPressEvent(event);
@@ -252,9 +252,16 @@ void MainWindow::search()
       return;
    }
 
-   const QModelIndex from = this->ui->tblLog->currentIndex().siblingAtRow(this->ui->tblLog->currentIndex().row() + 1);
+   this->model.search(toSearch);
+   this->selectNextSearch();
+}
 
-   const QModelIndex index = this->model.search(from, toSearch);
+void MainWindow::selectNextSearch()
+{
+   const QModelIndex index =
+      this->model.nextResult(
+         this->ui->tblLog->currentIndex().siblingAtRow(this->ui->tblLog->currentIndex().row() + 1)
+      );
 
    if (index.isValid() && index != this->ui->tblLog->currentIndex())
    {

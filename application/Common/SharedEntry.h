@@ -19,7 +19,6 @@
 #pragma once
 
 #include <QString>
-#include <QMetaType>
 
 #include <Common/Hash.h>
 #include <Common/Path.h>
@@ -52,5 +51,3 @@ namespace Common
       qint64 freeSpace;
    };
 }
-
-Q_DECLARE_METATYPE(Common::SharedEntry)

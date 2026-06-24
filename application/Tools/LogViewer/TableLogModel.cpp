@@ -113,8 +113,8 @@ void TableLogModel::setShowMultipleLines(bool enabled)
 {
    if (this->showMultipleLines == enabled)
       return;
-   this->showMultipleLines = enabled;
 
+   this->showMultipleLines = enabled;
    emit(dataChanged(this->index(0, 5), this->index(this->entries.size()-1, 5)));
 }
 
@@ -157,28 +157,54 @@ bool TableLogModel::isFiltered(int num, const QStringList& severities, const QSt
    );
 }
 
-QModelIndex TableLogModel::search(QModelIndex from, const QString& word) const
+void TableLogModel::search(const QString& word)
 {
-   if (!from.isValid())
-      from = this->createIndex(0, 0);
+   this->indexesFound.clear();
+   this->currentSearch = word.toLower();
 
-   if (this->entries.size() <= from.row())
+   for (int row = 0; row < this->entries.size(); ++row)
+   {
+      if (this->entries[row]->getMessage().toLower().contains(this->currentSearch))
+         this->indexesFound.append(row);
+   }
+}
+
+QModelIndex TableLogModel::nextResult(const QModelIndex& from) const
+{
+   const int s = this->indexesFound.size();
+   if (s == 0)
       return QModelIndex();
 
-   int nbRow = this->entries.size();
-   int startRow = from.isValid() ? from.row() : 0;
-   int currentRow = startRow;
+   const int fromRow = !from.isValid() ? 0 : from.row();
 
-   const QString wordLower = word.toLower();
+   int start = 0;
+   int end = s;
 
-   do {
-      if (this->entries[currentRow]->getMessage().toLower().contains(wordLower))
-         return this->createIndex(currentRow, MESSAGE);
+   while (start < end) {
+      const int i = (end - start) / 2 + start;
+      const int currentRow = this->indexesFound[i];
+      if (currentRow == fromRow)
+         return this->createIndex(this->indexesFound[i % s], MESSAGE);
+      else if (currentRow > fromRow)
+         end = i;
+      else
+         start = i + 1;
+   }
 
-      currentRow = (currentRow + 1) % nbRow;
-   } while (currentRow != startRow);
+   if (start < s && this->indexesFound[start] < fromRow)
+      start += 1;
 
-   return QModelIndex();
+   return this->createIndex(this->indexesFound[start % s], MESSAGE);
+}
+
+bool TableLogModel::inSearchResult(const QModelIndex& index) const
+{
+   return this->nextResult(index).row() == index.row();
+}
+
+const QString& TableLogModel::currentSearchTerm() const
+{
+   return this->currentSearch;
 }
 
 void TableLogModel::setWatchingPause(bool pause)

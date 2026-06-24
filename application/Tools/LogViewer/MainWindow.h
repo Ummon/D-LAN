@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#pragma once
 
 #include <QMainWindow>
 #include <QDir>
@@ -59,6 +58,7 @@ private slots:
    void directoryChanged();
 
    void search();
+   void selectNextSearch();
 
 private:
    LOG_INIT_H("LogViewer")
@@ -85,5 +85,3 @@ private:
    QFile* currentFile;
    QFileSystemWatcher watcher;
 };
-
-#endif

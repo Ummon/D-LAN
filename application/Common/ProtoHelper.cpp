@@ -170,7 +170,7 @@ QString ProtoHelper::getDebugStr(const google::protobuf::Message& mess)
    if (!status.ok())
       return QString("Error: can't transform message into JSON: %1").arg(status.message());
 
-   return QString::fromStdString(debugString);
+   return "<pre style=\"margin: 0px; padding: 0px\">" + QString::fromStdString(debugString) + "</pre>";
 
    // Commented because MessageJsonString uses base64 encoding.
    // Very dirty : substitute the bytes representation (ascii + escaped octal number) with a hexadecimal representation.

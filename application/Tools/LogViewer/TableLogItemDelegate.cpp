@@ -18,7 +18,9 @@
   
 #include <TableLogItemDelegate.h>
 
+#include <QApplication>
 #include <QPainter>
+#include <QAbstractTextDocumentLayout>
 
 #include <Common/LogManager/IEntry.h>
 
@@ -31,47 +33,118 @@
   * draw them in function of their severity.
   */
 
+
+const QString TableLogItemDelegate::OPEN_HTML_FOUND_TERM("<span style=\"font-weight: bold;color: #FFFF00;background-color: #21218B;\">");
+const QString TableLogItemDelegate::CLOSE_HTML_FOUND_TERM("</span>");
+
 TableLogItemDelegate::TableLogItemDelegate(QObject *parent) :
-    QItemDelegate(parent)
+   QStyledItemDelegate(parent)
 {
 }
 
 void TableLogItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
    const TableLogModel* model = static_cast<const TableLogModel*>(index.model());
-   QStyleOptionViewItem newOption(option);
 
-   switch (model->getSeverity(index.row()))
+   QStyleOptionViewItem styleOption = option;
+   this->initStyleOption(&styleOption, index); // Pulls in selection state, etc.
+   QStyle* style = styleOption.widget ? styleOption.widget->style() : QApplication::style();
+
+   QTextDocument doc;
+   this->configureDoc(doc, option, index);
+
+   // Draw the styled background/selection but suppress the default text.
+   styleOption.text.clear();
+   style->drawControl(QStyle::CE_ItemViewItem, &styleOption, painter, styleOption.widget);
+
+   painter->save();
+
+   if (index.column() == TableLogModel::SEVERITY)
    {
-   case LM::SV_END_USER :
-      painter->fillRect(option.rect, QColor(41, 33, 53));
-      break;
-   case LM::SV_WARNING :
-      painter->fillRect(option.rect, QColor(0, 47, 28));
-      break;
-   case LM::SV_ERROR :
-      painter->fillRect(option.rect, QColor(200, 0, 0));
-      newOption.palette.setColor(QPalette::Text, QColor(255, 255, 255));
-      break;
-   case LM::SV_FATAL_ERROR :
-      painter->fillRect(option.rect, QColor(50, 0, 0));
-      newOption.palette.setColor(QPalette::Text, QColor(255, 255, 0));
-      break;
-   // No special color for these cases.
-   case LM::SV_DEBUG :
-   case LM::SV_UNKNOWN :
-   default:;
+      switch (model->getSeverity(index.row()))
+      {
+      case LM::SV_END_USER :
+         painter->fillRect(styleOption.rect, QColor(41, 33, 53));
+         break;
+      case LM::SV_WARNING :
+         painter->fillRect(styleOption.rect, QColor(0, 47, 28));
+         break;
+      case LM::SV_ERROR :
+         painter->fillRect(styleOption.rect, QColor(200, 0, 0));
+         // newOption.palette.setColor(QPalette::Text, QColor(255, 255, 255));
+         break;
+      case LM::SV_FATAL_ERROR :
+         painter->fillRect(styleOption.rect, QColor(50, 0, 0));
+         // newOption.palette.setColor(QPalette::Text, QColor(255, 255, 0));
+         break;
+      // No special color for these cases.
+      case LM::SV_DEBUG :
+      case LM::SV_UNKNOWN :
+      default:;
+      }
    }
 
-   QItemDelegate::paint(painter, newOption, index);
+   // Use the correct text colour for the selected/normal state.
+   QAbstractTextDocumentLayout::PaintContext ctx;
+   if (styleOption.state & QStyle::State_Selected)
+      ctx.palette.setColor(QPalette::Text, styleOption.palette.color(QPalette::Active, QPalette::HighlightedText));
+
+   QRect textRect = style->subElementRect(QStyle::SE_ItemViewItemText, &styleOption, styleOption.widget);
+   painter->translate(textRect.topLeft());
+   painter->setClipRect(textRect.translated(-textRect.topLeft()));
+
+   ctx.clip = QRectF(0, 0, textRect.width(), textRect.height());
+   doc.documentLayout()->draw(painter, ctx);
+
+   painter->restore();
 }
 
-/*QSize TableLogItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index ) const
+QSize TableLogItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index ) const
 {
-   QSize s = QItemDelegate::sizeHint(option, index);
-   if (s.isValid())
+   QStyleOptionViewItem opt = option;
+   this->initStyleOption(&opt, index);
+
+   QTextDocument doc;
+   this->configureDoc(doc, option, index);
+
+   return QSize(int(doc.idealWidth()), int(doc.size().height()));
+}
+
+void TableLogItemDelegate::configureDoc(QTextDocument& doc, const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+   const TableLogModel* model = static_cast<const TableLogModel*>(index.model());
+
+   QStyleOptionViewItem styleOption = option;
+   this->initStyleOption(&styleOption, index); // Pulls in selection state, etc.
+
+   QTextOption textOption = doc.defaultTextOption();
+   textOption.setWrapMode(QTextOption::NoWrap);
+   doc.setDefaultTextOption(textOption);
+
+   if (index.column() == TableLogModel::MESSAGE)
    {
-      s.setHeight(0.5 * s.height());
+      QString message = styleOption.text;
+      if (model->inSearchResult(index))
+      {
+         const QString& term = model->currentSearchTerm();
+         int i = 0;
+         while ((i = message.indexOf(term, i, Qt::CaseInsensitive)) != -1)
+         {
+            message.insert(i, OPEN_HTML_FOUND_TERM);
+            i += term.size() + OPEN_HTML_FOUND_TERM.size();
+            message.insert(i, CLOSE_HTML_FOUND_TERM);
+            i += CLOSE_HTML_FOUND_TERM.size();
+         }
+         // message.replace(QChar::LineSeparator, "<br>");
+         // message.replace("\n", "<br>");
+      }
+      doc.setHtml(message);
    }
-   return s;
-}*/
+   else
+   {
+      doc.setPlainText(styleOption.text);
+   }
+
+   doc.setDefaultFont(styleOption.font);
+   doc.setTextWidth(styleOption.rect.width());
+}

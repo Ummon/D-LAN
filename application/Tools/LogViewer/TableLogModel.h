@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef TABLELOGMODEL_H
-#define TABLELOGMODEL_H
+#pragma once
 
 #include <QAbstractTableModel>
 #include <QFile>
@@ -33,6 +32,8 @@
 class TableLogModel : public QAbstractTableModel
 {
    Q_OBJECT
+
+public:
    enum Column {
       DATE_TIME = 0,
       SEVERITY = 1,
@@ -42,13 +43,12 @@ class TableLogModel : public QAbstractTableModel
       MESSAGE = 5
    };
 
-public:
    TableLogModel();
 
-   int rowCount(const QModelIndex& parent = QModelIndex()) const;
-   int columnCount(const QModelIndex& parent = QModelIndex()) const;
-   QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
-   QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
+   int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+   int columnCount(const QModelIndex& parent = QModelIndex()) const override;
+   QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+   QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
    void setDataSource(QFile* source);
    void setShowMultipleLines(bool enabled);
@@ -62,7 +62,10 @@ public:
 
    bool isFiltered(int num, const QStringList& severities, const QStringList& modules, const QStringList& threads) const;
 
-   QModelIndex search(QModelIndex from, const QString& word) const;
+   void search(const QString& word);
+   QModelIndex nextResult(const QModelIndex& from) const;
+   bool inSearchResult(const QModelIndex& from) const;
+   const QString& currentSearchTerm() const;
 
 public slots:
    void setWatchingPause(bool pause);
@@ -95,6 +98,9 @@ private:
    QStringList severities;
    QStringList modules;
    QStringList threads;
-};
 
-#endif
+   // Search.
+   QList<int> indexesFound; // Ordered from top to bottom, only rows are stored.
+   QString currentSearch;
+
+};

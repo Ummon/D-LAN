@@ -16,8 +16,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#ifndef TOOGLABLELIST_H
-#define TOOGLABLELIST_H
+#pragma once
 
 #include <QWidget>
 
@@ -54,5 +53,3 @@ private:
 
    Ui::TooglableList* ui;
 };
-
-#endif
