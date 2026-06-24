@@ -86,10 +86,13 @@ void Thread::run()
    forever
    {
       this->mutex.lock();
-      if (!this->active && !this->toStop)
+      while (!this->active && !this->toStop)
          this->waitCondition.wait(&this->mutex);
       if (this->toStop)
+      {
+         this->mutex.unlock();
          return;
+      }
       this->mutex.unlock();
 
       QSharedPointer<IRunnable> runnableSharedPointer = this->runnable.toStrongRef();
@@ -139,7 +142,7 @@ ThreadPool::ThreadPool(int nbMinThread, int threadInactiveLifetime) :
   */
 ThreadPool::~ThreadPool()
 {
-   foreach (Thread* thread, this->activeThreads + this->inactiveThreads)
+   for (Thread* thread : this->activeThreads + this->inactiveThreads)
       delete thread;
 }
 
@@ -203,9 +206,11 @@ void ThreadPool::threadTimeout()
 {
    Thread* thread = static_cast<Thread*>(this->sender());
 
-   if (this->activeThreads.size() + this->inactiveThreads.size() > this->nbMinThread)
+   if (
+      this->activeThreads.size() + this->inactiveThreads.size() > this->nbMinThread &&
+      this->inactiveThreads.removeOne(thread)
+   )
    {
-      this->inactiveThreads.removeOne(thread);
       delete thread;
    }
 }
