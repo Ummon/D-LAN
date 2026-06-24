@@ -38,6 +38,6 @@ void ProgressBar::paintEvent(QPaintEvent* paintEvent)
    QStylePainter paint(this);
    QStyleOptionProgressBar opt;
    initStyleOption(&opt);
-   opt.text = QString("%1%").arg(static_cast<double>(this->value()) / 100);
+   opt.text = QStringLiteral("%1%").arg(static_cast<double>(this->value()) / 100);
    paint.drawControl(QStyle::CE_ProgressBar, opt);
 }

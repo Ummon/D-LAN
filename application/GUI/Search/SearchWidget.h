@@ -93,8 +93,10 @@ namespace GUI
       void entryDoubleClicked(const QModelIndex& index);
 
       void download();
+
       void downloadTo();
-      void downloadTo(const Common::Path& path, const Common::Hash& sharedDirID = Common::Hash());
+      void downloadTo(const Common::Path& path);
+      void downloadTo(const Common::Hash& sharedDirID);
 
       void openLocation();
       void browseCurrents();

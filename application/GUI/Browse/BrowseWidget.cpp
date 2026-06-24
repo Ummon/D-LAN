@@ -79,9 +79,9 @@ BrowseWidget::BrowseWidget(
    connect(&this->downloadMenu, qOverload<>(&DownloadMenu::downloadTo), this, qOverload<>(&BrowseWidget::downloadTo));
    connect(
       &this->downloadMenu,
-      qOverload<const Common::Path&, const Common::Hash&>(&DownloadMenu::downloadTo),
+      qOverload<const Common::Hash&>(&DownloadMenu::downloadTo),
       this,
-      qOverload<const Common::Path&, const Common::Hash&>(&BrowseWidget::downloadTo)
+      qOverload<const Common::Hash&>(&BrowseWidget::downloadTo)
    );
 
    connect(&this->browseModel, &BrowseModel::loadingResultFinished, this, &BrowseWidget::tryToReachEntryToBrowse);
@@ -159,21 +159,27 @@ void BrowseWidget::entryDoubleClicked(const QModelIndex& index)
    this->openFile(index);
 }
 
+/**
+  * Download all selected items to the first available directory.
+  * If not directory is available then ask the user to choose one.
+  */
 void BrowseWidget::download()
 {
    if (this->browseModel.nbSharedDirs() == 0)
    {
       QStringList dirs = Utils::askForDirectoriesToDownloadTo(this->coreConnection);
       if (!dirs.isEmpty())
-         this->downloadTo(dirs.first(), Common::Hash());
+         this->downloadTo(dirs.first());
       return;
    }
 
-   QModelIndexList selectedRows = this->ui->treeView->selectionModel()->selectedRows();
-   for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
-      this->coreConnection->download(this->peerID, this->browseModel.getEntry(i.next()));
+   for (const auto& index : this->ui->treeView->selectionModel()->selectedRows())
+      this->coreConnection->download(this->peerID, this->browseModel.getEntry(index));
 }
 
+/**
+  * Ask the user to chose a directory and download all selected items into it.
+  */
 void BrowseWidget::downloadTo()
 {
    QStringList dirs = Utils::askForDirectoriesToDownloadTo(this->coreConnection);
@@ -181,12 +187,22 @@ void BrowseWidget::downloadTo()
       this->downloadTo(dirs.first());
 }
 
-void BrowseWidget::downloadTo(const Common::Path& path, const Common::Hash& sharedDirID)
+/**
+  * Download all selected items to 'path'.
+  */
+void BrowseWidget::downloadTo(const Common::Path& path)
 {
-   QModelIndexList selectedRows = this->ui->treeView->selectionModel()->selectedRows();
+   for (const auto& index : this->ui->treeView->selectionModel()->selectedRows())
+      this->coreConnection->download(this->peerID, this->browseModel.getEntry(index), path);
+}
 
-   for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
-      this->coreConnection->download(this->peerID, this->browseModel.getEntry(i.next()), sharedDirID, path);
+/**
+  * Download all selected items to the shared directory.
+  */
+void BrowseWidget::downloadTo(const Common::Hash& sharedDirID)
+{
+   for (const auto& index : this->ui->treeView->selectionModel()->selectedRows())
+      this->coreConnection->download(this->peerID, this->browseModel.getEntry(index), sharedDirID);
 }
 
 void BrowseWidget::openLocation()

@@ -19,8 +19,6 @@
 #include <DownloadMenu.h>
 using namespace GUI;
 
-#include <algorithm>
-
 #include <QAction>
 
 #include <Utils.h>
@@ -56,17 +54,14 @@ void DownloadMenu::show(const QPoint& globalPosition)
       menu.addAction(actionDownload);
    }
 
-   for (QListIterator<Common::SharedEntry> i(sharedDirs); i.hasNext();)
+   for (const auto& sharedDir : sharedDirs)
    {
-      const auto& sharedDir = i.next();
       QAction* action = new QAction(
          QIcon(":/icons/ressources/download.svg"),
          QString(tr("Download selected items to %1")).arg(sharedDir.path.toString()),
          &menu
       );
-      // TODO: do something here.
-      // sharedDir.path = "/"; // A bit dirty, path semantic change, it's now the relative path (not the absolute path).
-      action->setData(QVariant::fromValue(sharedDir));
+      action->setData(QVariant::fromValue(sharedDir.ID));
       connect(action, &QAction::triggered, this, &DownloadMenu::actionTriggered);
       menu.addAction(action);
    }
@@ -87,10 +82,6 @@ void DownloadMenu::show(const QPoint& globalPosition)
 void DownloadMenu::actionTriggered()
 {
    QAction* action = static_cast<QAction*>(this->sender());
-
    if (!action->data().isNull())
-   {
-      Common::SharedEntry sharedDir = action->data().value<Common::SharedEntry>();
-      emit downloadTo(sharedDir.path, sharedDir.ID);
-   }
+      emit downloadTo(action->data().value<Common::Hash>());
 }

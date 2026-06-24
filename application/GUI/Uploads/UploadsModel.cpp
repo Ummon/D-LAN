@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <Uploads/UploadsModel.h>
 using namespace GUI;
 
@@ -53,7 +53,7 @@ QVariant UploadsModel::data(const QModelIndex& index, int role) const
          switch (index.column())
          {
          case 0: return QString::fromStdString(currentUpload.file().name());
-         case 1: return QString("%1/%2").arg(currentUpload.current_part()).arg(currentUpload.nb_part());
+         case 1: return QStringLiteral("%1/%2").arg(currentUpload.current_part()).arg(currentUpload.nb_part());
          case 2: return currentUpload.progress();
          case 3: return this->peerListModel.getNick(currentUpload.peer_id().hash(), tr("<unknown>"));
          default: return QVariant();

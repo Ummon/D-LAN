@@ -39,9 +39,20 @@ namespace GUI
       void show(const QPoint& globalPosition);
 
    signals:
+      /**
+        * Download the selected items to the first available shared directory.
+        */
       void download();
+
+      /**
+        * Download the selected items to a chosen custom directory.
+        */
       void downloadTo();
-      void downloadTo(const Common::Path&, const Common::Hash&);
+
+      /**
+        * Download the selected items to the shared directory.
+        */
+      void downloadTo(const Common::Hash&);
 
    private slots:
       void actionTriggered();

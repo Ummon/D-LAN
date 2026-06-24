@@ -62,7 +62,7 @@ void DownloadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
          {
             // We avoid to disturb the user and to show "100 %" if the file is downloading.
             const double percentProgress = static_cast<double>(progress.progress) / 100;
-            progressBarOption.text = QString("%1%").arg(percentProgress > 99.99 ? 99.99 : percentProgress);
+            progressBarOption.text = QStringLiteral("%1%").arg(percentProgress > 99.99 ? 99.99 : percentProgress);
             break;
          }
       case Protos::GUI::State::Download::COMPLETE:
@@ -371,11 +371,11 @@ void DownloadsWidget::updateGlobalProgressBar()
       this->ui->prgGlobalProgress->setFormat("");
    else
       this->ui->prgGlobalProgress->setFormat(
-         QString("%1 / %2%3")
+         QStringLiteral("%1 / %2%3")
             .arg(
                Common::Global::formatByteSize(bytesDownloaded),
                Common::Global::formatByteSize(bytesInQueue),
-               eta == 0 || eta > 604800 ? QString("") : " (" + Common::Global::formatTime(eta) + ")"
+               eta == 0 || eta > 604800 ? QString() : " (" + Common::Global::formatTime(eta) + ")"
             )
       );
 }

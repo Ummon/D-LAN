@@ -70,7 +70,7 @@ QVariant DownloadsModel::getData(const Protos::GUI::State::Download& download, c
 
       case 4:
          if (download.peer_ids_size() > 1)
-            return QString("+").append(QString::number(download.peer_ids_size() - 1));
+            return QStringLiteral("+").append(QString::number(download.peer_ids_size() - 1));
          return QString();
 
       default: return QVariant();

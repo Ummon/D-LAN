@@ -14,7 +14,7 @@
    <string>Settings</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../ressources.qrc">
+   <iconset>
     <normaloff>:/icons/ressources/settings.svg</normaloff>:/icons/ressources/settings.svg</iconset>
   </property>
   <layout class="QVBoxLayout" name="layMain">
@@ -72,7 +72,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="../ressources.qrc">
+            <iconset>
              <normaloff>:/icons/ressources/add_file_folder.svg</normaloff>:/icons/ressources/add_file_folder.svg</iconset>
            </property>
            <property name="iconSize">
@@ -95,7 +95,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="../ressources.qrc">
+            <iconset>
              <normaloff>:/icons/ressources/remove_file_folder.svg</normaloff>:/icons/ressources/remove_file_folder.svg</iconset>
            </property>
            <property name="iconSize">
@@ -115,7 +115,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="../ressources.qrc">
+            <iconset>
              <normaloff>:/icons/ressources/arrow_down.svg</normaloff>:/icons/ressources/arrow_down.svg</iconset>
            </property>
            <property name="iconSize">
@@ -135,7 +135,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="../ressources.qrc">
+            <iconset>
              <normaloff>:/icons/ressources/arrow_up.svg</normaloff>:/icons/ressources/arrow_up.svg</iconset>
            </property>
            <property name="iconSize">
@@ -155,7 +155,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="../ressources.qrc">
+            <iconset>
              <normaloff>:/icons/ressources/explore_folder.svg</normaloff>:/icons/ressources/explore_folder.svg</iconset>
            </property>
            <property name="iconSize">
@@ -373,7 +373,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="../ressources.qrc">
+            <iconset>
              <normaloff>:/icons/ressources/refresh.svg</normaloff>:/icons/ressources/refresh.svg</iconset>
            </property>
            <property name="iconSize">
@@ -449,7 +449,7 @@
                  <string notr="true"/>
                 </property>
                 <property name="icon">
-                 <iconset resource="../ressources.qrc">
+                 <iconset>
                   <normaloff>:/icons/ressources/connect.svg</normaloff>:/icons/ressources/connect.svg</iconset>
                 </property>
                 <property name="iconSize">
@@ -523,9 +523,7 @@
    </item>
   </layout>
  </widget>
- <resources>
-  <include location="../ressources.qrc"/>
- </resources>
+ <resources/>
  <connections/>
  <buttongroups>
   <buttongroup name="grpAddressesToListenTo"/>

@@ -35,7 +35,7 @@ using namespace GUI;
   */
 
 const QColor PeerListDelegate::DOWNLOAD_COLOR(100, 255, 100);
-const QColor PeerListDelegate::UPLOAD_COLOR(100, 100, 255);
+const QColor PeerListDelegate::UPLOAD_COLOR(100, 175, 255);
 
 void PeerListDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {

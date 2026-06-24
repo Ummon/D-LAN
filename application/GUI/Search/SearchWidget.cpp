@@ -52,7 +52,7 @@ void SearchDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option
          QTextDocument doc;
          // We have to manually set the text color depending of the selection.
          doc.setDefaultStyleSheet(
-            QString("span { color: %1 }").arg(newOption.state & QStyle::State_Selected ?
+            QStringLiteral("span { color: %1 }").arg(newOption.state & QStyle::State_Selected ?
                                         #ifdef Q_OS_WIN32
                                                  newOption.palette.text().color().name() // FIXME: on Windows 'highlightedText' doesn't return the correct value.
                                         #else
@@ -249,9 +249,9 @@ SearchWidget::SearchWidget(
    );
    connect(
       &this->downloadMenu,
-      qOverload<const Common::Path&, const Common::Hash&>(&SearchMenu::downloadTo),
+      qOverload<const Common::Hash&>(&SearchMenu::downloadTo),
       this,
-      qOverload<const Common::Path&, const Common::Hash&>(&SearchWidget::downloadTo)
+      qOverload<const Common::Hash&>(&SearchWidget::downloadTo)
    );
    connect(&this->downloadMenu, &SearchMenu::browse, this, &SearchWidget::browseCurrents);
 
@@ -329,16 +329,12 @@ void SearchWidget::download()
    {
       QStringList dirs = Utils::askForDirectoriesToDownloadTo(this->coreConnection);
       if (!dirs.isEmpty())
-         this->downloadTo(dirs.first(), Common::Hash());
+         this->downloadTo(dirs.first());
       return;
    }
 
-   QModelIndexList selectedRows = this->ui->treeView->selectionModel()->selectedRows();
-   for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
-   {
-      QModelIndex index = i.next();
+   for (const auto& index : this->ui->treeView->selectionModel()->selectedRows())
       this->coreConnection->download(this->searchModel.getPeerID(index), this->searchModel.getEntry(index));
-   }
 }
 
 void SearchWidget::downloadTo()
@@ -347,15 +343,22 @@ void SearchWidget::downloadTo()
    if (!dirs.isEmpty())
       this->downloadTo(dirs.first());
 }
-
-void SearchWidget::downloadTo(const Common::Path& path, const Common::Hash& sharedDirID)
+/**
+  * Download all selected items to 'path'.
+  */
+void SearchWidget::downloadTo(const Common::Path& path)
 {
-   QModelIndexList selectedRows = this->ui->treeView->selectionModel()->selectedRows();
-   for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
-   {
-      QModelIndex index = i.next();
-      this->coreConnection->download(this->searchModel.getPeerID(index), this->searchModel.getEntry(index), sharedDirID, path);
-   }
+   for (const auto& index : this->ui->treeView->selectionModel()->selectedRows())
+      this->coreConnection->download(this->searchModel.getPeerID(index), this->searchModel.getEntry(index), path);
+}
+
+/**
+  * Download all selected items to the shared directory.
+  */
+void SearchWidget::downloadTo(const Common::Hash& sharedDirID)
+{
+   for (const auto& index : this->ui->treeView->selectionModel()->selectedRows())
+      this->coreConnection->download(this->searchModel.getPeerID(index), this->searchModel.getEntry(index), sharedDirID);
 }
 
 void SearchWidget::openLocation()
