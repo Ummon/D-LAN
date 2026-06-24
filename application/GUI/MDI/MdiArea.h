@@ -128,6 +128,8 @@ namespace GUI
       QList<SearchWidget*> searchWidgets;
       QList<ChatWidget*> chatRooms;
 
+      QMdiSubWindow* lastActiveWindow = nullptr;
+
       // The is to avoid to close a new joined room right after receiving a state without this new room.
       QString newOpenedChatRoom;
 
