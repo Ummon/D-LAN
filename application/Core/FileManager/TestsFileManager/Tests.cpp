@@ -36,6 +36,7 @@ using namespace FM;
 #include <Common/SharedEntry.h>
 
 #include <IChunk.h>
+#include <IDataWriter.h>
 #include <IGetHashesResult.h>
 #include <Exceptions.h>
 #include <priv/Constants.h>
@@ -104,7 +105,7 @@ void Tests::addASharedDirectory()
    qDebug() << "===== addASharedDirectory() =====";
 
    this->sharedPaths << IFileManager::SharedPath{ QString("share1"), QDir::currentPath().append("/sharedDirs/share1/") };
-   this->fileManager->setSharedPaths(this->sharedPaths);
+   this->fileManager->addASharedPath(this->sharedPaths.last().path);
    QList<Common::SharedEntry> paths = this->fileManager->getSharedEntries();
    QVERIFY(paths.size() == 2);
    QCOMPARE(paths.at(1).path.toString(), this->sharedPaths.at(1).path);
@@ -733,20 +734,26 @@ void Tests::removeADirectory()
    );
 }
 
-void Tests::createAnEmptyFile()
+void Tests::createNewFileAndWriteData()
 {
-   qDebug() << "===== createAnEmptyFile() =====";
+   qDebug() << "===== createNewFileAndWriteData() =====";
 
    Protos::Common::Entry remoteEntry;
-   remoteEntry.set_path("/remoteShare1/");
+   remoteEntry.set_path("/remoteShare1/"); // Path is ignored.
    remoteEntry.set_name("remoteFile.txt");
-   remoteEntry.set_size(1 * 1024 * 1024); // 1 MB.
+   remoteEntry.set_size(12);
 
    try
    {
       QList<QSharedPointer<IChunk>> chunks = this->fileManager->newFile(remoteEntry);
       QCOMPARE(chunks.size(), 1);
       QVERIFY(chunks[0]->getHash().isNull());
+
+      chunks[0]->setHash(Common::Hash::fromStr("a74a542ea1f9957f55bae199f89ab46b90c8b41e940489075ec92449"));
+
+      auto writer = chunks[0]->getDataWriter();
+      QByteArray data("abcdefghijkl", 12);
+      writer->write(data.constData(), data.size());
    }
    catch (NoWriteableDirectoryException&)
    {
@@ -1089,7 +1096,7 @@ void Tests::findFilesByExtensionsAndSizeRange()
    qDebug() << "===== findFilesByExtensionsAndSizeRange() =====";
 
    FindResult expectedResult;
-   expectedResult[0] << "aaaa bbbb.txt" << "aaaa cccc.txt";
+   expectedResult[0] << "aaaa bbbb.txt" << "aaaa cccc.txt" << "remoteFile.txt";
 
    QList<Protos::Common::FindResult> results =
       this->fileManager->find(
@@ -1169,7 +1176,7 @@ void Tests::printAmount()
    qDebug() << "Sharing amount: " << amount << " bytes (" << Common::Global::formatByteSize(amount) << ")";
    qDebug().noquote() << this->fileManager->getCacheTree_debug();
 
-   QCOMPARE(amount, 269484255);
+   QCOMPARE(amount, 268435691);
 }
 
 void Tests::rmSharedDirectory()
@@ -1223,7 +1230,10 @@ void Tests::chunksPerformance()
          QFAIL("chunks cannot contains a random chunk");
    }
 
-   qDebug() << "Time to check if" << NB_HASHES_TO_CHECK << "hashes exist among a pool of" << HASH_POOL_SIZE << "hashes:" << timer.elapsed() << "ms";
+   qDebug() <<
+      "Time to check if" << NB_HASHES_TO_CHECK <<
+      "hashes exist among a pool of" << HASH_POOL_SIZE <<
+      "hashes:" << timer.elapsed() << "ms";
 }
 
 #include <priv/ExtensionIndex.h>
