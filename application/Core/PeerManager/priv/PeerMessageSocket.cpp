@@ -302,7 +302,14 @@ void PeerMessageSocket::onNewMessage(const Common::Message& message)
 
          // Add the root directories if asked.
          if (getEntries.dirs().entries_size() == 0 || getEntries.get_roots())
-            this->entriesResultMessage.add_results()->mutable_entries()->CopyFrom(this->fileManager->getEntries());
+         {
+            auto entries = this->entriesResultMessage.add_results()->mutable_entries();
+            entries->CopyFrom(this->fileManager->getEntries());
+
+            // Remove local absolute paths.
+            for (int i = 0; i < entries->entries_size(); ++i)
+               entries->mutable_entries(i)->mutable_shared_entry()->mutable_path()->clear();
+         }
 
          if (this->entriesResultsToReceive.isEmpty())
             this->sendEntriesResultMessage();
@@ -376,6 +383,8 @@ void PeerMessageSocket::onNewMessage(const Common::Message& message)
                }
                else
                {
+                  result->set_status(Protos::Core::GetChunksResult::ChunkResult::OK);
+                  result->set_chunk_size(chunk->getKnownBytes());
                   chunksAndOffsets += std::make_pair(chunk, chunkNeeded.offset());
                }
             }

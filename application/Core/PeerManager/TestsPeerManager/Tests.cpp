@@ -90,7 +90,10 @@ void Tests::initTestCase()
    // 2) Set the shared directories.
    for (int i = 0; i < this->peerIDs.size(); i++)
    {
-      this->fileManagers[i]->setSharedPaths(QStringList() << QDir::currentPath().append(this->peerSharedDirs[i]));
+      this->fileManagers[i]->setSharedPaths(
+         QList<FM::IFileManager::SharedPath>() <<
+            FM::IFileManager::SharedPath{ QString(), QDir::currentPath().append(this->peerSharedDirs[i]) }
+      );
    }
 
    // 3) Create the peer update (to simulate the periodic update).
@@ -106,6 +109,8 @@ void Tests::initTestCase()
 void Tests::updatePeers()
 {
    qDebug() << "===== updatePeers() =====";
+
+   qDebug() << "Header size: " << Common::MessageHeader::HEADER_SIZE;
 
    this->peerUpdater->start();
 

@@ -59,9 +59,9 @@ void GetChunksResult::newMessage(const Common::Message& message)
    const Protos::Core::GetChunksResult& chunksResult = message.getMessage<Protos::Core::GetChunksResult>();
    emit result(chunksResult);
 
-   if (chunksResult.status() == Protos::Core::GetChunksResult::OK)
+   if (this->socket && chunksResult.status() == Protos::Core::GetChunksResult::OK)
    {
-      socket->stopListening();
+      this->socket->stopListening();
       emit stream(this->socket);
    }
    else
