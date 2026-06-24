@@ -48,7 +48,7 @@ namespace RCC
    class CoreConnection : public ICoreConnection
    {
       Q_OBJECT
-      static const int DEFAULT_SOCKET_TIMEOUT = 6000; // 6 seconds.
+      static const int DEFAULT_SOCKET_TIMEOUT = 5000; // 5 seconds.
 
    public:
       CoreConnection(int socketTimeout = DEFAULT_SOCKET_TIMEOUT);
