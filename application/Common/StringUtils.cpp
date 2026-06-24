@@ -23,95 +23,19 @@ using namespace Common;
 
 QString StringUtils::toLowerAndRemoveAccents(const QString& str)
 {
-   QString strLower = str.toLower(); // It depends of the current locale.
-
-   for (int i = 0; i < strLower.size(); i++)
-      switch (strLower[i].unicode())
-      {
-      case 0x00E0: // à .
-      case 0x00E1: // á.
-      case 0x00E2: // â.
-      case 0x00E3: // ã.
-      case 0x00E4: // ä.
-      case 0x00E5: // å.
-      case 0x0101: // ā.
-      case 0x0103: // ă.
-      case 0x0105: // ą.
-         strLower[i] = 'a';
-         break;
-      case 0x00E7: // ç.
-      case 0x0107: // ć.
-      case 0x0109: // ĉ.
-      case 0x010B: // ċ.
-      case 0x010D: // č.
-         strLower[i] = 'c';
-         break;
-      case 0x010F: // ď.
-      case 0x0111: // đ.
-         strLower[i] = 'd';
-         break;
-      case 0x00E8: // è.
-      case 0x00E9: // é.
-      case 0x00EA: // ê.
-      case 0x00EB: // ë.
-      case 0x0113: // ē.
-      case 0x0115: // ĕ.
-      case 0x0117: // ė.
-      case 0x0119: // ę.
-      case 0x011B: // ě.
-         strLower[i] = 'e';
-         break;
-      case 0x011D: // ĝ.
-      case 0x011F: // ğ.
-      case 0x0121: // ġ.
-      case 0x0123: // ģ.
-         strLower[i] = 'g';
-         break;
-      case 0x0125: // ĥ.
-      case 0x0127: // ħ.
-         strLower[i] = 'h';
-         break;
-      case 0x00EC: // ì.
-      case 0x00ED: // í.
-      case 0x00EE: // î.
-      case 0x00EF: // ï.
-      case 0x0129: // ĩ.
-      case 0x012B: // ī.
-      case 0x012D: // ĭ.
-      case 0x012F: // į.
-      case 0x0131: // ı.
-         strLower[i] = 'i';
-         break;
-      case 0x00F1: // ñ.
-         strLower[i] = 'n';
-         break;
-      case 0x00F2: // ò.
-      case 0x00F3: // ó.
-      case 0x00F4: // ô.
-      case 0x00F5: // õ.
-      case 0x00F6: // ö.
-         strLower[i] = 'o';
-         break;
-      case 0x00F9: // ù.
-      case 0x00FA: // ú.
-      case 0x00FB: // û.
-      case 0x00FC: // ü.
-         strLower[i] = 'u';
-         break;
-      case 0x00FD: // ý.
-      case 0x00FE: // ÿ.
-         strLower[i] = 'y';
-         break;
-      }
-
-   return strLower;
+   const QString decomposed = str.toLower().normalized(QString::NormalizationForm_KD);
+   QString result;
+   result.reserve(decomposed.size());
+   for (const QChar c : decomposed)
+      if (c.category() != QChar::Mark_NonSpacing && c.category() != QChar::Mark_SpacingCombining)
+         result.append(c);
+   return result;
 }
 
 /**
   * Take raw terms in a string and split, trim and filter to
-  * return a list of keyword.
+  * return a list of lower case keywords without accents.
   * Some character or word can be removed.
-  * Maybe a class 'WordSplitter' should be created.
   * @example " The little  DUCK " => ["the", "little", "duck"].
   */
 QStringList StringUtils::splitInWords(const QString& words)
@@ -194,14 +118,13 @@ int StringUtils::strcmpi(const std::string& s1, const std::string& s2)
   */
 quint32 StringUtils::hashStringToInt(const QString& str)
 {
-   const QByteArray data = str.toLocal8Bit();
+   const QByteArray data = str.toUtf8();
    const QByteArrayView view = QByteArrayView(data);
    if (data.size() <= 1)
       return qChecksum(view);
 
    auto s = data.length();
 
-   // const int s = data.size();
    const quint32 part1 = qChecksum(view.sliced(0, s / 2));
    const quint32 part2 = qChecksum(view.sliced(s / 2, s / 2 + (s % 2 == 0 ? 0 : 1)));
    return part1 | part2 << 16;
