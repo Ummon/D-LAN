@@ -18,8 +18,9 @@
 
 #pragma once
 
-#include <string>
+#include <cstring>
 
+#include <QHash>
 #include <QString>
 #include <QByteArray>
 #include <QDataStream>
@@ -49,7 +50,7 @@ namespace Common
       Hash(const std::string& str);
       Hash(const QByteArray& a);
 
-      ~Hash() {}
+      ~Hash() = default;
 
       Hash& operator=(const Hash&) = default;
       Hash& operator=(Hash&&) = default;
@@ -121,10 +122,9 @@ namespace Common
    /**
      * Used by QHash.
      */
-   inline uint qHash(const Hash& h)
+   inline size_t qHash(const Hash& h, size_t seed = 0)
    {
-      // Take the first sizeof(uint) bytes of the hash data.
-      return *(const uint*)(h.getData());
+      return qHashBits(h.getData(), Hash::HASH_SIZE, seed);
    }
 
    class Hasher : Uncopyable
@@ -144,7 +144,6 @@ namespace Common
       static Common::Hash hashWithRandomSalt(const Common::Hash& hash, quint64& salt);
 
    private:
-      // QCryptographicHash cryptographicHash;
       blake3_hasher hasher;
    };
 }

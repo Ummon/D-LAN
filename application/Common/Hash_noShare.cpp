@@ -45,8 +45,6 @@ Hash::Hash() noexcept :
   */
 Hash::Hash(const char* h)
 {
-   Q_ASSERT(h);
-
    memcpy(this->data, h == nullptr ? NULL_HASH : h, HASH_SIZE);
 }
 
@@ -62,7 +60,7 @@ Hash::Hash(const char* h)
   */
 Hash::Hash(const std::string& str)
 {
-   memcpy(this->data, str.size() == 0 || static_cast<int>(str.size()) != HASH_SIZE ? NULL_HASH : str.data(), HASH_SIZE);
+   memcpy(this->data, static_cast<int>(str.size()) != HASH_SIZE ? NULL_HASH : str.data(), HASH_SIZE);
 }
 
 /**
@@ -79,7 +77,7 @@ Hash::Hash(const QByteArray& a)
 
 /**
   * Return a human readable string.
-  * For example : "16bd4b1e656129eb9ddaa2ce0f0705f1cc161f77".
+  * For example : "7b6f7f3309179b97b88de3c178274b7e38343267bcdfe653c819593e".
   * @see fromStr to decode a such string.
   */
 QString Hash::toStr() const
@@ -230,7 +228,6 @@ Hash Hasher::getResult()
 
 void Hasher::reset()
 {
-   // this->cryptographicHash.reset();
    blake3_hasher_reset(&this->hasher);
 }
 
