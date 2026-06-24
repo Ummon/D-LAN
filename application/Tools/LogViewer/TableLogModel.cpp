@@ -65,7 +65,19 @@ QVariant TableLogModel::data(const QModelIndex& index, int role) const
          case MODULE_NAME: return entry->getName();
          case THREAD_NAME: return entry->getThread();
          case SOURCE: return entry->getSource();
-         case MESSAGE: return this->showMultipleLines ? entry->getMessageWithLF() : entry->getMessage();
+         case MESSAGE:
+            {
+               if (this->showMultipleLines)
+                  return entry->getMessageWithLF();
+               else
+               {
+                  // Replace <pre> by <span> to get inline code.
+                  QString message = entry->getMessageWithLF();
+                  message.replace("<pre", "<span");
+                  message.replace("pre>", "span>");
+                  return message;
+               }
+            }
          default: return QVariant();
          }
       }
@@ -74,7 +86,8 @@ QVariant TableLogModel::data(const QModelIndex& index, int role) const
          if (index.column() == MESSAGE)
          {
             QSharedPointer<LM::IEntry> entry = this->entries[index.row()];
-            return entry->getMessageWithLF();
+            // Force HTML detection with <qt> tag.
+            return QVariant("<qt>" + entry->getMessageWithLF() + "</qt>");
          }
       }
 
