@@ -31,7 +31,7 @@ namespace Common
    class MessageHeader
    {
    public:
-      enum MessageType
+      enum MessageType : quint16
       {
          NULL_MESS =                      0x0000,
 
@@ -115,7 +115,9 @@ namespace Common
       static QString messToStr(MessageType type);
 
       static MessageHeader readHeader(QIODevice& device, bool skipReadData = true);
+      static MessageHeader readHeader(const QByteArray& data);
       static MessageHeader readHeader(const char* data);
+
       static void writeHeader(QIODevice& device, const MessageHeader& header);
       static void writeHeader(char* buffer, const MessageHeader& header);
 

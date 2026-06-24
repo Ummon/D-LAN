@@ -138,34 +138,33 @@ MessageHeader MessageHeader::readHeader(QIODevice& device, bool skipReadData)
    if (device.bytesAvailable() < HEADER_SIZE)
       throw notEnoughDataException();
 
-   char data[HEADER_SIZE];
+   QByteArray data(HEADER_SIZE, Qt::Uninitialized);
 
    if (skipReadData)
-      device.read(data, HEADER_SIZE);
+      device.read(data.data(), HEADER_SIZE);
    else
-      device.peek(data, HEADER_SIZE);
+      device.peek(data.data(), HEADER_SIZE);
 
    return MessageHeader::readHeader(data);
 }
 
 /**
-  * @remarks The buffer size must be at least the header size (32 bytes).
+  * @remarks The buffer size must be at least the header size (34 bytes).
   */
-MessageHeader MessageHeader::readHeader(const char* data)
+MessageHeader MessageHeader::readHeader(const QByteArray& data)
 {
+   QDataStream stream(data);
+
    MessageHeader header;
-
-   QByteArray array = QByteArray::fromRawData(data, HEADER_SIZE);
-   QDataStream stream(&array, QIODevice::ReadOnly);
-
-   quint32 type;
-   stream >> type;
-   header.type = static_cast<MessageType>(type);
-
+   stream >> header.type;
    stream >> header.size;
    stream >> header.senderID;
-
    return header;
+}
+
+MessageHeader MessageHeader::readHeader(const char* data)
+{
+   return MessageHeader::readHeader(QByteArray::fromRawData(data, HEADER_SIZE));
 }
 
 void MessageHeader::writeHeader(QIODevice& device, const MessageHeader& header)
