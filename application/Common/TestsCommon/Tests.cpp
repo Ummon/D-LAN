@@ -153,13 +153,16 @@ void Tests::availableDiskSpace()
 
 void Tests::splitInWords()
 {
-    QCOMPARE(StringUtils::splitInWords("a"), QStringList() << "a");
-    QCOMPARE(StringUtils::splitInWords("a b"), QStringList() << "a" << "b");
-    QCOMPARE(StringUtils::splitInWords("    a    b    "), QStringList() << "a" << "b");
-    QCOMPARE(StringUtils::splitInWords("a_b"), QStringList() << "a" << "b");
-    QCOMPARE(StringUtils::splitInWords("ABC DEF"), QStringList() << "abc" << "def");
-    QCOMPARE(StringUtils::splitInWords(QString::fromUtf8("àéè")), QStringList() << "aee");
-    QCOMPARE(StringUtils::splitInWords("abc%_-[]def"), QStringList() << "abc" << "def");
+   QCOMPARE(StringUtils::splitInWords("a"), QStringList() << "a");
+   QCOMPARE(StringUtils::splitInWords("a b"), QStringList() << "a" << "b");
+   QCOMPARE(StringUtils::splitInWords("    a    b    "), QStringList() << "a" << "b");
+   QCOMPARE(StringUtils::splitInWords("a_b"), QStringList() << "a" << "b");
+   QCOMPARE(StringUtils::splitInWords("ABC DEF"), QStringList() << "abc" << "def");
+   QCOMPARE(StringUtils::splitInWords("abc%_-[]def"), QStringList() << "abc" << "def");
+
+   // Words with accents.
+   QCOMPARE(StringUtils::splitInWords("ÿÀÃé"), QStringList() << "yaae");
+   QCOMPARE(StringUtils::splitInWords("àšř"), QStringList() << "asr");
 }
 
 void Tests::hashStringToInt()
@@ -785,8 +788,13 @@ void Tests::bloomFilter()
 void Tests::messageHeader()
 {
    const uchar data[] = {
-      0x00, 0x00, 0x00, 0x01,
+      // Type (16 bits).
+      0x00, 0x01,
+
+      // Payload size (32 bits).
       0x00, 0x00, 0x00, 0x2a,
+
+      // Sender ID (224 bits).
       0xf2, 0xb2, 0x95, 0xb4,
       0x49, 0x4a, 0x9f, 0x0d,
       0x33, 0xd9, 0x21, 0x4d,
