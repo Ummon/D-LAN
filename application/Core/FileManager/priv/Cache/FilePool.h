@@ -58,6 +58,7 @@ namespace FM
          QElapsedTimer releasedTime; // '!isValid()' if not released.
       };
 
+      static DWORD toCreateFileDesiredAccess(QIODevice::OpenMode mode);
       static DWORD toCreateFileCreationDisposition(QIODevice::OpenMode mode);
 
       QList<OpenedFile> files;

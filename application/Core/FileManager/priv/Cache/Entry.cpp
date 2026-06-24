@@ -40,11 +40,13 @@ Entry::~Entry()
 
 void Entry::del(bool invokeDelete)
 {
-   this->getCache()->onEntryRemoved(this);
+   Cache* cache = this->getCache();
+
+   cache->onEntryRemoved(this);
 
    // Invoke 'deleteEntry' in the main loop.
    if (invokeDelete)
-      QMetaObject::invokeMethod(this->getCache(), "deleteEntry", Qt::QueuedConnection, Q_ARG(Entry*, this));
+      QMetaObject::invokeMethod(cache, "deleteEntry", Qt::QueuedConnection, Q_ARG(Entry*, this));
 }
 
 void Entry::populateEntry(Protos::Common::Entry* entry, bool setSharedEntry) const

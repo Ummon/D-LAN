@@ -73,7 +73,7 @@ QFile* FilePool::open(const QString& path, QIODevice::OpenMode mode, bool* fileC
 
       if (file.path == path && file.mode == mode && file.releasedTime.isValid())
       {
-         L_DEBU(QString("FilePool::open(%1, %2): file already in cache").arg(path).arg(mode.toInt()));
+         L_DEBU(QString("FilePool::open(%1, %2): file already in pool").arg(path).arg(mode.toInt()));
          file.releasedTime.invalidate();
          return file.file;
       }
@@ -85,8 +85,8 @@ QFile* FilePool::open(const QString& path, QIODevice::OpenMode mode, bool* fileC
    HANDLE h =
       CreateFileW(
          reinterpret_cast<LPCWSTR>(path.utf16()),
-         GENERIC_READ,
-         0, // Exclusive: no sharing.
+         toCreateFileDesiredAccess(mode),
+         FILE_SHARE_READ, // We permit to read the file.
          nullptr,
          toCreateFileCreationDisposition(mode),
          FILE_ATTRIBUTE_NORMAL,
@@ -118,7 +118,7 @@ QFile* FilePool::open(const QString& path, QIODevice::OpenMode mode, bool* fileC
       return nullptr;
    }
 
-   L_DEBU(QString("FilePool::open(%1, %2): file added to the cache").arg(path).arg(mode.toInt()));
+   L_DEBU(QString("FilePool::open(%1, %2): file added to the pool").arg(path).arg(mode.toInt()));
    this->files << OpenedFile { file, path, mode, QElapsedTimer() };
    return file;
 }
@@ -197,7 +197,7 @@ void FilePool::tryToDeleteReleasedFiles()
 {
    QMutexLocker locker(&this->mutex);
 
-   L_DEBU(QString("FilePool::tryToDeleteReleasedFiles(): number of cached file : %1").arg(this->files.size()));
+   L_DEBU(QString("FilePool::tryToDeleteReleasedFiles(): number of files in pool : %1").arg(this->files.size()));
 
    QList<QFile*> filesToDelete;
 
@@ -233,6 +233,15 @@ void FilePool::tryToDeleteReleasedFiles()
          delete i.next();
    }
 }
+
+DWORD FilePool::toCreateFileDesiredAccess(QIODevice::OpenMode mode)
+{
+   if (mode.testFlag(QIODevice::ReadWrite))
+      return GENERIC_READ | GENERIC_WRITE;
+   else
+      return GENERIC_READ;
+}
+
 
 DWORD FilePool::toCreateFileCreationDisposition(QIODevice::OpenMode mode)
 {
