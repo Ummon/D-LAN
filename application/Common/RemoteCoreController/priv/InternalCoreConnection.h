@@ -74,7 +74,12 @@ namespace RCC
 
       void disconnectFromCore();
 
-      QSharedPointer<ISendChatMessageResult> sendChatMessage(int socketTimeout, const QString& message, const QString& roomName = QString(), const QList<Common::Hash>& peerIDsAnswered = QList<Common::Hash>());
+      QSharedPointer<ISendChatMessageResult> sendChatMessage(
+         int socketTimeout,
+         const QString& message,
+         const QString& roomName = QString(),
+         const QList<Common::Hash>& peerIDsAnswered = QList<Common::Hash>()
+      );
       void joinRoom(const QString& room);
       void leaveRoom(const QString& room);
       void setCoreSettings(const Protos::GUI::CoreSettings settings);
@@ -83,8 +88,16 @@ namespace RCC
       void resetCorePassword();
 
       QSharedPointer<IBrowseResult> browse(const Common::Hash& peerID, int socketTimeout);
-      QSharedPointer<IBrowseResult> browse(const Common::Hash& peerID, const Protos::Common::Entry& entry, int socketTimeout);
-      QSharedPointer<IBrowseResult> browse(const Common::Hash& peerID, const Protos::Common::Entries& entries, bool withRoots, int socketTimeout);
+      QSharedPointer<IBrowseResult> browse(
+         const Common::Hash& peerID,
+         const Protos::Common::Entry& entry,
+         int socketTimeout
+      );
+      QSharedPointer<IBrowseResult> browse(
+         const Common::Hash& peerID,
+         const Protos::Common::Entries& entries,
+         bool withRoots, int socketTimeout
+      );
 
       QSharedPointer<ISearchResult> search(const Protos::Common::FindPattern& findPattern, bool local, int socketTimeout);
 
@@ -97,7 +110,11 @@ namespace RCC
       );
       void cancelDownloads(const QList<quint64>& downloadIDs, bool complete = false);
       void pauseDownloads(const QList<quint64>& downloadIDs, bool pause = true);
-      void moveDownloads(const QList<quint64>& downloadIDRefs, const QList<quint64>& downloadIDs, Protos::GUI::MoveDownloads::Position position);
+      void moveDownloads(
+         const QList<quint64>& downloadIDRefs,
+         const QList<quint64>& downloadIDs,
+         Protos::GUI::MoveDownloads::Position position
+      );
 
       void refresh();
       void refreshNetworkInterfaces();
@@ -141,7 +158,9 @@ namespace RCC
 
       int currentHostLookupID;
 
-      QList<QHostAddress> addressesToTry; // When a name is resolved many addresses can be returned, we will try all of them until a connection is successfully established.
+      // When a name is resolved many addresses can be returned, we will try all of
+      // them until a connection is successfully established.
+      QList<QHostAddress> addressesToTry;
       QList<QHostAddress> addressesToRetry;
       int nbRetries;
 
@@ -152,7 +171,8 @@ namespace RCC
       bool authenticated;
       bool forcedToClose;
 
-      // Temporary text password. Once we got the salt sent by the Core we set 'connectionInfo.password' with the salted password and we erase this member.
+      // Temporary text password. Once we got the salt sent by the Core we set 'connectionInfo.password'
+      // with the salted password and we erase this member.
       QString password;
       quint64 salt;
    };

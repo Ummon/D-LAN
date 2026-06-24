@@ -122,7 +122,11 @@ namespace RCC
 
       virtual QSharedPointer<ISendChatMessageResult> sendChatMessage(const QString& message, const QString& roomName) = 0;
 
-      virtual QSharedPointer<ISendChatMessageResult> sendChatMessage(const QString& message, const QString& roomName, const QList<Common::Hash>& peerIDsAnswered) = 0;
+      virtual QSharedPointer<ISendChatMessageResult> sendChatMessage(
+         const QString& message,
+         const QString& roomName,
+         const QList<Common::Hash>& peerIDsAnswered
+      ) = 0;
 
       virtual void joinRoom(const QString& room) = 0;
 
@@ -172,7 +176,11 @@ namespace RCC
         * @param entries One or more folders from the remote peer.
         * @param withRoots
         */
-      virtual QSharedPointer<IBrowseResult> browse(const Common::Hash& peerID, const Protos::Common::Entries& entries, bool withRoots = true) = 0;
+      virtual QSharedPointer<IBrowseResult> browse(
+         const Common::Hash& peerID,
+         const Protos::Common::Entries& entries,
+         bool withRoots = true
+      ) = 0;
 
       /**
         * Search some files and folders to the entire network, do not search in our own folders.

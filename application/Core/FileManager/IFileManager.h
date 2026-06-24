@@ -97,11 +97,13 @@ namespace FM
 
       /**
         * Create a new empty file.
-        * If 'entry.shared_dir' isn't defined it will take the shared directory which has enough storage space and matches paths the closest.
+        * If 'entry.shared_dir' isn't defined it will take the shared directory which has enough storage space and
+        * matches paths the closest.
         * The file will have the exact final size and filled with 0.
         * The filename will end with ".unfinished" if the file size is not zero.
         * Some or all hashes can be null (see Protos.Common.Hash). They can be set later with IChunk::setHash(..).
-        * If the file already exists we will compare its hashes to 'entry.chunk', if not all hashes match file is reset.
+        * If the file already exists we will compare its hashes to 'entry.chunk',
+        * if not all hashes match file chunks are reset.
         * @exception NoWriteableDirectoryException
         * @exception InsufficientStorageSpaceException
         * @exception UnableToCreateNewFileException

@@ -144,8 +144,11 @@ void FM::WordIndex<T>::renameItem(const QStringList& oldWords, const QStringList
 }
 
 /**
-  * Return a an unordered list of 'NodeResult' matching the given word. If 'NodeResult::level' is 0 then the item matches entirely the given word otherwise (level is 1) the word match the beginning of the indexed string.
-  * There is a particular case when the word length is below 'MIN_WORD_SIZE_PARTIAL_MATCH', see the comment associated to this constant for more information.
+  * Return a an unordered list of 'NodeResult' matching the given word.
+  * If 'NodeResult::level' is 0 then the item matches entirely the given word otherwise (level is 1)
+  * the word match the beginning of the indexed string.
+  * There is a particular case when the word length is below 'MIN_WORD_SIZE_PARTIAL_MATCH',
+  * see the comment associated to this constant for more information.
   */
 template<typename T>
 QList<FM::NodeResult<T>> FM::WordIndex<T>::search(
@@ -155,7 +158,18 @@ QList<FM::NodeResult<T>> FM::WordIndex<T>::search(
 ) const
 {
    QMutexLocker locker(&this->mutex);
-   return this->root.search(word, word.size() >= (Common::StringUtils::isKorean(word) ? MIN_WORD_SIZE_PARTIAL_MATCH_KOREAN : MIN_WORD_SIZE_PARTIAL_MATCH), maxNbResult, predicat);
+   return
+      this->root.search(
+         word,
+         word.size() >=
+            (
+               Common::StringUtils::isKorean(word) ?
+                    MIN_WORD_SIZE_PARTIAL_MATCH_KOREAN
+                  : MIN_WORD_SIZE_PARTIAL_MATCH
+            ),
+         maxNbResult,
+         predicat
+      );
 }
 
 /**
@@ -243,7 +257,7 @@ QList<FM::NodeResult<T>> FM::WordIndex<T>::search(
          level += 1;
       }
 
-      std::sort(nodesToSort.begin(), nodesToSort.end()); // Sort by level
+      std::sort(nodesToSort.begin(), nodesToSort.end()); // Sort by level.
 
       finalResult << nodesToSort;
 

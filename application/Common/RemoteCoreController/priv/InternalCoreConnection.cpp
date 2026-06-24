@@ -129,7 +129,11 @@ QSharedPointer<ISendChatMessageResult> InternalCoreConnection::sendChatMessage(
    const QList<Common::Hash>& peerIDsAnswered
 )
 {
-   QSharedPointer<SendChatMessageResult> sendChatMessageResult = QSharedPointer<SendChatMessageResult>(new SendChatMessageResult(this, socketTimeout, message, roomName, peerIDsAnswered));
+   QSharedPointer<SendChatMessageResult> sendChatMessageResult =
+      QSharedPointer<SendChatMessageResult>(
+         new SendChatMessageResult(this, socketTimeout, message, roomName, peerIDsAnswered)
+      );
+
    this->sendChatMessageResultWithoutReply << sendChatMessageResult.toWeakRef();
    return sendChatMessageResult;
 }
