@@ -65,6 +65,7 @@ MainWindow::MainWindow(QWidget *parent) :
    this->ui->tblLog->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
    this->ui->tblLog->verticalHeader()->setDefaultSectionSize(17);
    this->ui->tblLog->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+   this->ui->tblLog->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
 
    this->severities = new TooglableList(this);
    this->modules = new TooglableList(this);
