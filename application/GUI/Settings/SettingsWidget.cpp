@@ -279,6 +279,8 @@ void SettingsWidget::updateNetworkInterfaces(const Protos::GUI::State& state)
 
    QList<QLabel*> interfaceNotUpdated = this->ui->scoInterfacesContent->findChildren<QLabel*>("");
 
+   bool addressIslistenedTo = false;
+
    for (int i = 0; i < state.interfaces_size(); i++)
    {
       const QString& interfaceName = QString::fromStdString(state.interfaces(i).name());
@@ -290,7 +292,7 @@ void SettingsWidget::updateNetworkInterfaces(const Protos::GUI::State& state)
          {
             interfaceNotUpdated.removeOne(lblInterface);
 
-            if (state.interfaces(i).isup())
+            if (state.interfaces(i).is_up())
             {
                lblInterface->setText(interfaceName);
             }
@@ -307,7 +309,7 @@ void SettingsWidget::updateNetworkInterfaces(const Protos::GUI::State& state)
 
             }
 
-            this->updateAddresses(state.interfaces(i), static_cast<QWidget*>(j.next()));
+            addressIslistenedTo |= this->updateAddresses(state.interfaces(i), static_cast<QWidget*>(j.next()));
             goto nextInterface;
          }
       }
@@ -319,7 +321,7 @@ void SettingsWidget::updateNetworkInterfaces(const Protos::GUI::State& state)
          this->ui->layInterfaces->addWidget(label);
          QWidget* addressesContainer = new QWidget(this->ui->scoInterfacesContent);
          this->ui->layInterfaces->addWidget(addressesContainer);
-         this->updateAddresses(state.interfaces(i), addressesContainer);
+         addressIslistenedTo |= this->updateAddresses(state.interfaces(i), addressesContainer);
       }
 
       nextInterface:;
@@ -339,17 +341,25 @@ void SettingsWidget::updateNetworkInterfaces(const Protos::GUI::State& state)
       }
    }
 
-   // Set the current address.
-   if (state.listenany() == Protos::Common::Interface::Address::IPv6)
-      this->ui->radIPv6->setChecked(true);
-   else
-      this->ui->radIPv4->setChecked(true);
+   if (!addressIslistenedTo)
+   {
+      // Set the current address.
+      if (state.listen_any() == Protos::Common::Interface::Address::IPv6)
+         this->ui->radIPv6->setChecked(true);
+      else
+         this->ui->radIPv4->setChecked(true);
+   }
 
    this->connectAllAddressButtons();
 }
 
-void SettingsWidget::updateAddresses(const Protos::Common::Interface& interfaceMess, QWidget* container)
+/**
+  * Returns 'true' if one of the addresses is listened to.
+  */
+bool SettingsWidget::updateAddresses(const Protos::Common::Interface& interfaceMess, QWidget* container)
 {
+   bool listenedTo = false;
+
    QVBoxLayout* layout = container->findChild<QVBoxLayout*>();
    if (!layout)
    {
@@ -372,7 +382,10 @@ void SettingsWidget::updateAddresses(const Protos::Common::Interface& interfaceM
          {
             addressesNotUpdated.removeOne(addressButton);
             if (interfaceMess.addresses(i).listened())
+            {
+               listenedTo = true;
                addressButton->setChecked(true);
+            }
             goto nextAddress;
          }
       }
@@ -382,7 +395,10 @@ void SettingsWidget::updateAddresses(const Protos::Common::Interface& interfaceM
          QRadioButton* newAddressButton = new QRadioButton(addressName, container);
          this->ui->grpAddressesToListenTo->addButton(newAddressButton);
          if (interfaceMess.addresses(i).listened())
+         {
+            listenedTo = true;
             newAddressButton->setChecked(true);
+         }
          layout->addWidget(newAddressButton);
       }
 
@@ -400,6 +416,8 @@ void SettingsWidget::updateAddresses(const Protos::Common::Interface& interfaceM
          delete current;
       }
    }
+
+   return listenedTo;
 }
 
 void SettingsWidget::newState(const Protos::GUI::State& state)

@@ -139,10 +139,10 @@ message Interface {
       }
       string address = 1;
       Protocol protocol = 2;
-       bool listened = 3;
+      bool listened = 3;
    }
    uint32 id = 1;
    string name = 2;
    repeated Address addresses = 3;
-   bool isUp = 4;
+   bool is_up = 4;
 }

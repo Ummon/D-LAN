@@ -123,9 +123,9 @@ message State {
 
    Stats stats = 6;
 
-   // If this value is set then all the interfaces of the given protocol are listened.
-   // Otherwise see the following repeated 'interface' field.
-   Common.Interface.Address.Protocol listenAny = 8;
+   // If no address from an interface (see field 'interfaces' below) is listened to (Common.Interface.Address.listened)
+   // then listen_any interface is used.
+   Common.Interface.Address.Protocol listen_any = 8;
    repeated Common.Interface interfaces = 9;
 
    repeated Room rooms = 11;
@@ -236,7 +236,7 @@ message CoreSettings {
    repeated SharedPath shared_paths = 2;
    Common.TriState enable_integrity_check = 3;
 
-   string listen_address = 4; // [default = ""] If address is empty then listen to any addresses, in this case the protocol is given by 'listenAny'.
+   string listen_address = 4; // [default = ""] If address is empty then listen to any addresses, in this case the protocol is given by 'listen_any'.
    Common.Interface.Address.Protocol listen_any = 5; // [default = IPv6]
 }
 

@@ -246,7 +246,7 @@ void RemoteConnection::refresh()
    const QString& addressToListenStr = SETTINGS.get<QString>("listen_address");
    const QHostAddress addressToListen(addressToListenStr);
    if (addressToListenStr.isEmpty())
-      state.set_listenany(static_cast<Protos::Common::Interface::Address::Protocol>(SETTINGS.get<quint32>("listen_any")));
+      state.set_listen_any(static_cast<Protos::Common::Interface::Address::Protocol>(SETTINGS.get<quint32>("listen_any")));
    for (QListIterator<QNetworkInterface> i(this->interfaces); i.hasNext();)
    {
       const QNetworkInterface& interface = i.next();
@@ -262,7 +262,7 @@ void RemoteConnection::refresh()
             Protos::Common::Interface* interfaceMess = state.add_interfaces();
             interfaceMess->set_id(interface.index() == 0 ? Common::StringUtils::hashStringToInt(interface.name()) : interface.index());
             interfaceMess->set_name(interface.humanReadableName().toStdString());
-            interfaceMess->set_isup(interface.flags().testFlag(QNetworkInterface::IsUp) && interface.flags().testFlag(QNetworkInterface::IsRunning));
+            interfaceMess->set_is_up(interface.flags().testFlag(QNetworkInterface::IsUp) && interface.flags().testFlag(QNetworkInterface::IsRunning));
             for (QListIterator<QNetworkAddressEntry> j(addresses); j.hasNext();)
             {
                QHostAddress address = j.next().ip();

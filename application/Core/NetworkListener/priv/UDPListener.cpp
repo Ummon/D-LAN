@@ -435,8 +435,8 @@ void UDPListener::initMulticastUDPSocket()
 #else
    const bool loop = false;
 #endif
-   this->multicastSocket.setSocketOption(QAbstractSocket::MulticastLoopbackOption, loop);
 
+   this->multicastSocket.setSocketOption(QAbstractSocket::MulticastLoopbackOption, loop);
    this->multicastSocket.setSocketOption(QAbstractSocket::MulticastTtlOption, SETTINGS.get<quint32>("multicast_ttl"));
 
    QNetworkInterface networkInterface = Utils::getCurrentInterfaceToListenTo();
