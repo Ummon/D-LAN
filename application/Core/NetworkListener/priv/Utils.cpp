@@ -80,7 +80,10 @@ QHostAddress Utils::getCurrentAddressToListenTo()
    if (!hasAnyIPv6 && SETTINGS.get<quint32>("listen_any") == Protos::Common::Interface::Address::IPv6)
       SETTINGS.set("listen_any", static_cast<quint32>(Protos::Common::Interface::Address::IPv4));
 
-   return SETTINGS.get<quint32>("listen_any") == Protos::Common::Interface::Address::IPv4 ? QHostAddress::AnyIPv4 : QHostAddress::AnyIPv6;
+   return
+      SETTINGS.get<quint32>("listen_any") == Protos::Common::Interface::Address::IPv4 ?
+           QHostAddress::AnyIPv4
+         : QHostAddress::AnyIPv6;
 }
 
 /**
