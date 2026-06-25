@@ -414,7 +414,16 @@ void UDPListener::initMulticastUDPSocket()
 
    this->multicastGroup = Utils::getMulticastGroup();
 
-   if (!this->multicastSocket.bind(Utils::getCurrentAddressToListenTo(), MULTICAST_PORT))
+   if (
+      !this->multicastSocket.bind(
+         // Always bind to any, it seems there are some issue on Windows to bind multicast address to specific interface.
+         Utils::getCurrentAddressToListenTo().protocol() == QAbstractSocket::IPv4Protocol ?
+              QHostAddress::AnyIPv4
+            : QHostAddress::AnyIPv6,
+         MULTICAST_PORT,
+         QUdpSocket::ShareAddress | QUdpSocket::ReuseAddressHint
+      )
+   )
    {
       L_ERRO("Can't bind the multicast socket");
       return;
@@ -422,9 +431,9 @@ void UDPListener::initMulticastUDPSocket()
 
    // 'loop' is activated only for tests.
 #if DEBUG
-   const char loop = 1;
+   const bool loop = true;
 #else
-   const char loop = 0;
+   const bool loop = false;
 #endif
    this->multicastSocket.setSocketOption(QAbstractSocket::MulticastLoopbackOption, loop);
 
@@ -441,7 +450,8 @@ void UDPListener::initMulticastUDPSocket()
             .arg(this->multicastGroup.toString(), networkInterface.name())
       );
 
-   static const int BUFFER_SIZE_UDP = SETTINGS.get<quint32>("udp_buffer_size");
+   // This settings cannot change dynamically -> static.
+   static const quint32 BUFFER_SIZE_UDP = SETTINGS.get<quint32>("udp_buffer_size");
    this->multicastSocket.setSocketOption(QAbstractSocket::SendBufferSizeSocketOption, BUFFER_SIZE_UDP);
    this->multicastSocket.setSocketOption(QAbstractSocket::ReceiveBufferSizeSocketOption, BUFFER_SIZE_UDP);
 
@@ -456,6 +466,7 @@ void UDPListener::initUnicastUDPSocket()
    if (!this->unicastSocket.bind(Utils::getCurrentAddressToListenTo(), UNICAST_PORT, QUdpSocket::ReuseAddressHint))
       L_ERRO("Can't bind the unicast socket");
 
+   // This settings cannot change dynamically -> static.
    static const int BUFFER_SIZE_UDP = SETTINGS.get<quint32>("udp_buffer_size");
    this->unicastSocket.setSocketOption(QAbstractSocket::SendBufferSizeSocketOption, BUFFER_SIZE_UDP);
    this->unicastSocket.setSocketOption(QAbstractSocket::ReceiveBufferSizeSocketOption, BUFFER_SIZE_UDP);
@@ -464,14 +475,17 @@ void UDPListener::initUnicastUDPSocket()
 }
 
 /**
-  * Writes a given protobuff message to the buffer (this->buffer) prefixed by a header.
-  * @return the total size (header size + message size). Return 0 if the total size is bigger than 'Protos.Core.Settings.max_udp_datagram_size'.
+  * Writes a given protobuf message to the buffer (this->buffer) prefixed by a header.
+  * @return the total size (header size + message size).
+  *         Return 0 if the total size is bigger than 'Protos.Core.Settings.max_udp_datagram_size'.
   */
 int UDPListener::writeMessageToBuffer(Common::MessageHeader::MessageType type, const google::protobuf::Message& message)
 {
    const Common::MessageHeader header(type, message.ByteSizeLong(), this->getOwnID());
 
-   const int nbBytesWritten = Common::Message::writeMessageToBuffer(this->buffer, this->MAX_UDP_DATAGRAM_PAYLOAD_SIZE, header, &message);
+   const int nbBytesWritten =
+      Common::Message::writeMessageToBuffer(this->buffer, this->MAX_UDP_DATAGRAM_PAYLOAD_SIZE, header, &message);
+
    if (!nbBytesWritten)
       L_ERRO(
          QString("Datagram size too big: %1, max allowed: %2")
