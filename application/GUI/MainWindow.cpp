@@ -111,8 +111,15 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
    connect(this->ui->butClose, &QPushButton::clicked, this, &MainWindow::close);
    connect(this->ui->butMinimize, &QPushButton::clicked, this, &MainWindow::showMinimized);
    connect(this->ui->butMaximize, &QPushButton::clicked, this, &MainWindow::maximize);
+
    if (!SETTINGS.get<QString>("style").isEmpty())
-      this->loadCustomStyle(QCoreApplication::applicationDirPath() % "/" % Common::Constants::STYLE_DIRECTORY % "/" % SETTINGS.get<QString>("style") % "/" % Common::Constants::STYLE_FILE_NAME);
+      this->loadCustomStyle(
+         QCoreApplication::applicationDirPath() % "/" %
+         Common::Constants::STYLE_DIRECTORY % "/" %
+         SETTINGS.get<QString>("style") % "/" % Common::Constants::STYLE_FILE_NAME
+      );
+   else
+      this->loadCustomStyle();
 
    this->restoreWindowsSettings();
 
@@ -238,7 +245,7 @@ void MainWindow::loadCustomStyle(const QString& filepath)
 {
    QApplication* app = dynamic_cast<QApplication*>(QApplication::instance());
 
-   if (!filepath.isNull())
+   if (!filepath.isEmpty())
    {
       // The css images are search from the current path.
       QDir::setCurrent(QCoreApplication::applicationDirPath());
@@ -268,6 +275,9 @@ void MainWindow::loadCustomStyle(const QString& filepath)
 
    // Set the default style.
    this->customStyleLoaded = false;
+   // We use the fusion style instead of the "native" one because some widget doesn't render correctly in native.
+   // For example QProgressBar cannot render text in it.
+   app->setStyle("Fusion");
    app->setStyleSheet(QString());
    this->ui->grip->setVisible(false);
    this->setMask(QRegion());

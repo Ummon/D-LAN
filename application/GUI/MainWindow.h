@@ -69,7 +69,7 @@ namespace GUI
       void logScrollChanged(int value);
       void newLogMessage();
 
-      void loadCustomStyle(const QString& filepath);
+      void loadCustomStyle(const QString& filepath = QString());
 
       void maximize();
 
