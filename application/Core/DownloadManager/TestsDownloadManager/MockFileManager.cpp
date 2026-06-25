@@ -10,7 +10,7 @@ MockFileManager::~MockFileManager()
 
 }
 
-void MockFileManager::setSharedPaths(const QStringList& path)
+void MockFileManager::setSharedPaths(const QList<SharedPath>& paths)
 {
 
 }

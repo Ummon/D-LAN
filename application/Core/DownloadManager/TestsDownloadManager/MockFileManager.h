@@ -10,7 +10,7 @@ public:
    MockFileManager();
    ~MockFileManager();
 
-   void setSharedPaths(const QStringList& path) override;
+   void setSharedPaths(const QList<SharedPath>& paths) override;
    QPair<Common::SharedEntry, QString> addASharedPath(const QString& absoluteDir) override;
    QList<Common::SharedEntry> getSharedEntries() const override;
    QString getSharedEntry(const Common::Hash& ID) const override;
