@@ -191,15 +191,20 @@ QString DownloadsTreeModel::getPath(const QModelIndex& index, bool appendFilenam
    }
 }
 
+bool DownloadsTreeModel::hasChildren(const QModelIndex& parent) const
+{
+   return this->rowCount(parent) > 0;
+}
+
 int DownloadsTreeModel::rowCount(const QModelIndex& parent) const
 {
    if (parent.column() > 0)
-       return 0;
+      return 0;
 
    if (!parent.isValid())
-       return this->root->getNbChildren();
+      return this->root->getNbChildren();
    else
-       return static_cast<Tree*>(parent.internalPointer())->getNbChildren();
+      return static_cast<Tree*>(parent.internalPointer())->getNbChildren();
 }
 
 QVariant DownloadsTreeModel::data(const QModelIndex& index, int role) const
@@ -216,19 +221,19 @@ QVariant DownloadsTreeModel::data(const QModelIndex& index, int role) const
 QModelIndex DownloadsTreeModel::index(int row, int column, const QModelIndex& parent) const
 {
    if (!this->hasIndex(row, column, parent))
-       return QModelIndex();
+      return QModelIndex();
 
    const Tree* parentTree;
 
     if (!parent.isValid())
-       parentTree = this->root;
+      parentTree = this->root;
    else
-       parentTree = static_cast<Tree*>(parent.internalPointer());
+      parentTree = static_cast<Tree*>(parent.internalPointer());
 
    Tree* childTree = parentTree->getChild(row);
 
    if (childTree)
-       return this->createIndex(row, column, childTree);
+      return this->createIndex(row, column, childTree);
 
    return QModelIndex();
 }
@@ -236,13 +241,13 @@ QModelIndex DownloadsTreeModel::index(int row, int column, const QModelIndex& pa
 QModelIndex DownloadsTreeModel::parent(const QModelIndex& index) const
 {
    if (!index.isValid())
-       return QModelIndex();
+      return QModelIndex();
 
    Tree* tree = static_cast<Tree*>(index.internalPointer());
    Tree* parentItem = tree->getParent();
 
    if (!parentItem || parentItem == this->root)
-       return QModelIndex();
+      return QModelIndex();
 
    return this->createIndex(parentItem->getOwnPosition(), 0, parentItem);
 }

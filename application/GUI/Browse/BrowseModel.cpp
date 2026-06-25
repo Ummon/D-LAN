@@ -92,9 +92,10 @@ QModelIndex BrowseModel::parent(const QModelIndex& index) const
 
 int BrowseModel::rowCount(const QModelIndex& parent) const
 {
-   const Tree* parentTree;
    if (parent.column() > 0)
       return 0;
+
+   const Tree* parentTree;
 
    if (!parent.isValid())
       parentTree = this->root;
