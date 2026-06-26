@@ -68,7 +68,7 @@ FileDownload::FileDownload(
       )
    );
 
-   this->setStatus(static_cast<Status>(status));
+   this->setStatus(static_cast<Protos::Common::DownloadStatus>(status));
 
    // We create a 'ChunkDownloader' for each known chunk in the entry.
    for (int i = 0; i < this->NB_CHUNK; i++)
@@ -96,7 +96,7 @@ FileDownload::FileDownload(
 
 FileDownload::~FileDownload()
 {
-   this->setStatus(DELETED);
+   this->setStatus(Protos::Common::DownloadStatus::DELETED);
 
    if (!this->getHashesResult.isNull())
    {
@@ -143,18 +143,18 @@ void FileDownload::stop()
 
 bool FileDownload::pause(bool pause)
 {
-   if (this->status == COMPLETE || this->status == DELETED)
+   if (this->status == Protos::Common::DownloadStatus::COMPLETE || this->status == Protos::Common::DownloadStatus::DELETED)
       return false;
 
-   if (pause && this->status != PAUSED)
+   if (pause && this->status != Protos::Common::DownloadStatus::PAUSED)
    {
-      this->setStatus(PAUSED);
+      this->setStatus(Protos::Common::DownloadStatus::PAUSED);
       this->stop();
       return true;
    }
-   else if (!pause && this->status == PAUSED)
+   else if (!pause && this->status == Protos::Common::DownloadStatus::PAUSED)
    {
-      this->setStatus(QUEUED);
+      this->setStatus(Protos::Common::DownloadStatus::QUEUED);
       this->retrieveHashes();
       return true;
    }
@@ -164,8 +164,8 @@ bool FileDownload::pause(bool pause)
 
 void FileDownload::peerSourceBecomesAvailable()
 {
-   if (this->status == UNKNOWN_PEER_SOURCE)
-      this->setStatus(QUEUED);
+   if (this->status == Protos::Common::DownloadStatus::UNKNOWN_PEER_SOURCE)
+      this->setStatus(Protos::Common::DownloadStatus::QUEUED);
 
    for (QListIterator<QSharedPointer<ChunkDownloader>> i(this->chunkDownloaders); i.hasNext();)
    {
@@ -192,7 +192,7 @@ void FileDownload::populateQueueEntry(Protos::Queue::Queue::Entry* entry) const
 
 quint64 FileDownload::getDownloadedBytes() const
 {
-   if (this->status == COMPLETE)
+   if (this->status == Protos::Common::DownloadStatus::COMPLETE)
       return this->remoteEntry.size();
 
    quint64 knownBytes = 0;
@@ -227,7 +227,11 @@ QSet<PM::IPeer*> FileDownload::getPeers() const
   */
 QSharedPointer<ChunkDownloader> FileDownload::getAChunkToDownload()
 {
-   if (this->status == COMPLETE || this->status == DELETED || this->status == PAUSED)
+   if (
+      this->status == Protos::Common::DownloadStatus::COMPLETE ||
+      this->status == Protos::Common::DownloadStatus::DELETED ||
+      this->status == Protos::Common::DownloadStatus::PAUSED
+   )
       return QSharedPointer<ChunkDownloader>();
 
    // Choose a chunk with the less number of peer. (rarest first).
@@ -297,7 +301,11 @@ QSharedPointer<ChunkDownloader> FileDownload::getAChunkToDownload()
   */
 void FileDownload::getUnfinishedChunks(QList<QSharedPointer<IChunkDownloader>>& chunks, int nMax, bool notAlreadyAsked)
 {
-   if (this->status == COMPLETE || this->status == DELETED || this->status == PAUSED)
+   if (
+      this->status == Protos::Common::DownloadStatus::COMPLETE ||
+      this->status == Protos::Common::DownloadStatus::DELETED ||
+      this->status == Protos::Common::DownloadStatus::PAUSED
+   )
       return;
 
    int n = 0;
@@ -329,7 +337,7 @@ void FileDownload::getUnfinishedChunks(QList<QSharedPointer<IChunkDownloader>>& 
   */
 void FileDownload::remove()
 {
-   this->setStatus(DELETED); // To avoid the call to 'stop()' to relaunch a download (via occupiedPeersDownloadingChunk::setPeerAsFree(..) -> DownloadManager::scanTheQueue()).
+   this->setStatus(Protos::Common::DownloadStatus::DELETED); // To avoid the call to 'stop()' to relaunch a download (via occupiedPeersDownloadingChunk::setPeerAsFree(..) -> DownloadManager::scanTheQueue()).
    this->stop();
 
    for (QListIterator<QSharedPointer<ChunkDownloader>> i(this->chunkDownloaders); i.hasNext();)
@@ -351,11 +359,11 @@ bool FileDownload::retrieveHashes()
    // If we've already got all the chunk hashes it's unnecessary to re-ask them.
    if (
       this->nbHashesKnown == this->NB_CHUNK ||
-      this->status == COMPLETE ||
-      this->status == DELETED ||
-      this->status == PAUSED ||
-      this->status == GETTING_THE_HASHES ||
-      this->status == ENTRY_NOT_FOUND
+      this->status == Protos::Common::DownloadStatus::COMPLETE ||
+      this->status == Protos::Common::DownloadStatus::DELETED ||
+      this->status == Protos::Common::DownloadStatus::PAUSED ||
+      this->status == Protos::Common::DownloadStatus::GETTING_THE_HASHES ||
+      this->status == Protos::Common::DownloadStatus::ENTRY_NOT_FOUND
    )
       return false;
 
@@ -363,7 +371,7 @@ bool FileDownload::retrieveHashes()
 
    if (this->getHashesResult.isNull())
    {
-      this->setStatus(UNKNOWN_PEER_SOURCE);
+      this->setStatus(Protos::Common::DownloadStatus::UNKNOWN_PEER_SOURCE);
       return false;
    }
    // If the peer source is already occupied, we can't ask the hashes.
@@ -373,7 +381,7 @@ bool FileDownload::retrieveHashes()
       return false;
    }
 
-   this->setStatus(GETTING_THE_HASHES);
+   this->setStatus(Protos::Common::DownloadStatus::GETTING_THE_HASHES);
    connect(this->getHashesResult.data(), &PM::IGetHashesResult::result, this, &FileDownload::result);
    connect(this->getHashesResult.data(), &PM::IGetHashesResult::nextHash, this, &FileDownload::nextHash);
    connect(this->getHashesResult.data(), &PM::IGetHashesResult::timeout, this, &FileDownload::getHashTimeout);
@@ -396,10 +404,10 @@ bool FileDownload::updateStatus()
    if (Download::updateStatus())
       return true;
 
-   Status newStatus = this->status;
+   Protos::Common::DownloadStatus newStatus = this->status;
 
    if (this->nbHashesKnown == NB_CHUNK)
-      newStatus = COMPLETE;
+      newStatus = Protos::Common::DownloadStatus::COMPLETE;
 
    bool hasAtLeastAPeer = false;
    for (QListIterator<QSharedPointer<ChunkDownloader>> i(this->chunkDownloaders); i.hasNext();)
@@ -410,7 +418,7 @@ bool FileDownload::updateStatus()
 
       if (chunkDownloader->isDownloading())
       {
-         this->setStatus(DOWNLOADING);
+         this->setStatus(Protos::Common::DownloadStatus::DOWNLOADING);
          return false;
       }
       else if (chunkDownloader->getLastTransferStatus() >= 0x20)
@@ -419,7 +427,7 @@ bool FileDownload::updateStatus()
          chunkDownloader->resetLastTransferStatus();
 
          // If the local file disappear we reset the download.
-         if (newStatus == FILE_NON_EXISTENT)
+         if (newStatus == Protos::Common::DownloadStatus::FILE_NON_EXISTENT)
          {
             this->reset();
             this->setStatus(newStatus);
@@ -431,16 +439,16 @@ bool FileDownload::updateStatus()
          if (chunkDownloader->hasAtLeastAPeer())
          {
             hasAtLeastAPeer = true;
-            newStatus = QUEUED;
+            newStatus = Protos::Common::DownloadStatus::QUEUED;
          }
          else
          {
-            newStatus = NO_SOURCE;
+            newStatus = Protos::Common::DownloadStatus::NO_SOURCE;
          }
       }
    }
 
-   if (newStatus == COMPLETE)
+   if (newStatus == Protos::Common::DownloadStatus::COMPLETE)
    {
       const QString sharedDir = this->fileManager->getSharedEntry(this->localEntry.shared_entry().id().hash());
       L_USER(QString(tr("File completed: %1%2%3"))
@@ -451,7 +459,7 @@ bool FileDownload::updateStatus()
    }
    else if(!this->getHashesResult.isNull())
    {
-      newStatus = GETTING_THE_HASHES;
+      newStatus = Protos::Common::DownloadStatus::GETTING_THE_HASHES;
    }
 
    this->setStatus(newStatus);
@@ -476,12 +484,12 @@ void FileDownload::result(const Protos::Core::GetHashesResult& result)
       if (result.status() == Protos::Core::GetHashesResult::DONT_HAVE)
       {
          L_DEBU("Unable to retrieve the hashes: DONT_HAVE");
-         this->setStatus(ENTRY_NOT_FOUND);
+         this->setStatus(Protos::Common::DownloadStatus::ENTRY_NOT_FOUND);
       }
       else
       {
          L_DEBU("Unable to retrieve the hashes: ERROR_UNKNOWN");
-         this->setStatus(UNABLE_TO_RETRIEVE_THE_HASHES);
+         this->setStatus(Protos::Common::DownloadStatus::UNABLE_TO_RETRIEVE_THE_HASHES);
       }
 
       this->getHashesResult.clear();
@@ -562,13 +570,13 @@ void FileDownload::getHashTimeout()
 {
    L_DEBU("Unable to retrieve the hashes: timeout");
    this->getHashesResult.clear();
-   this->setStatus(UNABLE_TO_RETRIEVE_THE_HASHES);
+   this->setStatus(Protos::Common::DownloadStatus::UNABLE_TO_RETRIEVE_THE_HASHES);
    this->occupiedPeersAskingForHashes.setPeerAsFree(this->peerSource);
 }
 
 void FileDownload::chunkDownloaderStarted()
 {
-   this->setStatus(DOWNLOADING);
+   this->setStatus(Protos::Common::DownloadStatus::DOWNLOADING);
 }
 
 void FileDownload::chunkDownloaderFinished()
@@ -657,25 +665,25 @@ bool FileDownload::createFile()
    catch (FM::NoWriteableDirectoryException&)
    {
       L_DEBU(QString("There is no shared directory with writing rights for this download: %1").arg(this->remoteEntry.name()));
-      this->setStatus(NO_SHARED_DIRECTORY_TO_WRITE);
+      this->setStatus(Protos::Common::DownloadStatus::NO_SHARED_DIRECTORY_TO_WRITE);
       return false;
    }
    catch (FM::InsufficientStorageSpaceException&)
    {
       L_DEBU(QString("There is no enough space storage available for this download: %1").arg(this->remoteEntry.name()));
-      this->setStatus(NO_ENOUGH_FREE_SPACE);
+      this->setStatus(Protos::Common::DownloadStatus::NO_ENOUGH_FREE_SPACE);
       return false;
    }
    catch (FM::UnableToCreateNewFileException&)
    {
       L_DEBU(QString("Unable to create the file, download: %1").arg(this->remoteEntry.name()));
-      this->setStatus(UNABLE_TO_CREATE_THE_FILE);
+      this->setStatus(Protos::Common::DownloadStatus::UNABLE_TO_CREATE_THE_FILE);
       return false;
    }
    catch (FM::UnableToCreateNewDirException&)
    {
       L_DEBU(QString("Unable to create the path, download: %1").arg(this->remoteEntry.name()));
-      this->setStatus(UNABLE_TO_CREATE_THE_DIRECTORY);
+      this->setStatus(Protos::Common::DownloadStatus::UNABLE_TO_CREATE_THE_DIRECTORY);
       return false;
    }
 

@@ -13,7 +13,7 @@ package Protos.Queue;
 
 message Queue {
    message Entry {
-      // Values must compatible with 'GUI::State::Download::Status'.
+      // Values must compatible with 'Common.Status'.
       enum Status {
          QUEUED = 0x0;
          COMPLETE = 0x3;

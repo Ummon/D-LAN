@@ -305,7 +305,7 @@ QList<QSharedPointer<IChunkDownloader>> DownloadQueue::getTheOldestUnfinishedChu
    for (QMutableMultiMapIterator<QTime, FileDownload*> i(this->downloadsSortedByTime); i.hasNext() && unfinishedChunks.size() < n;)
    {
       i.next();
-      if (i.value()->getStatus() == COMPLETE || i.value()->getStatus() == DELETED)
+      if (i.value()->getStatus() == Protos::Common::DownloadStatus::COMPLETE || i.value()->getStatus() == Protos::Common::DownloadStatus::DELETED)
          i.remove();
       else
          i.value()->getUnfinishedChunks(unfinishedChunks, n - unfinishedChunks.size());
@@ -326,7 +326,14 @@ Protos::Queue::Queue DownloadQueue::loadFromFile()
       Common::PersistentData::getValue(Common::Constants::FILE_QUEUE, savedQueue, Common::Global::DataFolderType::LOCAL);
       if (static_cast<int>(savedQueue.version()) != FILE_QUEUE_VERSION)
       {
-         L_USER(QString(QObject::tr("The version (%1) of the queue file \"%2\" doesn't match the current version (%3). Queue will be reset.")).arg(savedQueue.version()).arg(Common::Constants::FILE_QUEUE).arg(FILE_QUEUE_VERSION));
+         L_USER(
+            QString(
+               QObject::tr("The version (%1) of the queue file \"%2\" doesn't match the current version (%3). Queue will be reset.")
+            )
+               .arg(savedQueue.version())
+               .arg(Common::Constants::FILE_QUEUE)
+               .arg(FILE_QUEUE_VERSION)
+         );
          Common::PersistentData::rmValue(Common::Constants::FILE_QUEUE, Common::Global::DataFolderType::LOCAL);
          savedQueue.Clear();
       }

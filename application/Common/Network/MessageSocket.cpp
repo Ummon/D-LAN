@@ -139,9 +139,11 @@ void MessageSocket::send(MessageHeader::MessageType type, const google::protobuf
    MESSAGE_SOCKET_LOG_DEBUG(
       QString("Socket[%1]::send: %2 to %3\n%4")
          .arg(this->num)
-         .arg(header.toStr())
-         .arg(this->remoteID.toStrShort())
-         .arg(message ? ProtoHelper::getDebugStr(*message) : "<empty message>")
+         .arg(
+            header.toStr(),
+            this->remoteID.toStrShort(),
+            message ? ProtoHelper::getDebugStr(*message) : "<empty message>"
+         )
    );
 
    Message::writeMessageToDevice(this->socket, header, message);

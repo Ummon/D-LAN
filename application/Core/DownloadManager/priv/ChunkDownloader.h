@@ -24,6 +24,7 @@
 #include <QRecursiveMutex>
 #include <QElapsedTimer>
 
+#include <Protos/common.pb.h>
 #include <Protos/core_protocol.pb.h>
 
 #include <Common/SelfWeakPointer.h>
@@ -88,7 +89,7 @@ namespace DM
       bool isComplete() const;
       bool isPartiallyDownloaded() const;
       bool hasAtLeastAPeer();
-      Status getLastTransferStatus() const;
+      Protos::Common::DownloadStatus getLastTransferStatus() const;
       void resetLastTransferStatus();
 
       int getDownloadedBytes() const;
@@ -135,7 +136,7 @@ namespace DM
 
       bool downloading;
       bool closeTheSocket;
-      Status lastTransferStatus;
+      Protos::Common::DownloadStatus lastTransferStatus;
 
       QThread* mainThread;
 

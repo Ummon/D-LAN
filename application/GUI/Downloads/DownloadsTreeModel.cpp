@@ -74,15 +74,15 @@ bool DownloadsTreeModel::isDownloadPaused(const QModelIndex& index) const
       return true;
 
    if (tree->getItem().local_entry().type() == Protos::Common::Entry::FILE)
-      return tree->getItem().status() == Protos::GUI::State::Download::PAUSED;
+      return tree->getItem().status() == Protos::Common::DownloadStatus::PAUSED;
 
    for (Common::TreeBreadthFirstIterator<Tree> i(tree); i.hasNext();)
    {
       Tree* current = i.next();
       if (
          current->getItem().local_entry().type() == Protos::Common::Entry::FILE &&
-         current->getItem().status() != Protos::GUI::State::Download::PAUSED &&
-         current->getItem().status() != Protos::GUI::State::Download::COMPLETE
+         current->getItem().status() != Protos::Common::DownloadStatus::PAUSED &&
+         current->getItem().status() != Protos::Common::DownloadStatus::COMPLETE
       )
          return false;
    }
@@ -122,14 +122,14 @@ bool DownloadsTreeModel::isFileComplete(const QModelIndex& index) const
          Tree* current = i.next();
          if (
             current->getItem().local_entry().type() == Protos::Common::Entry::FILE &&
-            current->getItem().status() != Protos::GUI::State::Download::COMPLETE
+            current->getItem().status() != Protos::Common::DownloadStatus::COMPLETE
          )
             return false;
       }
       return true;
    }
 
-   return tree->getItem().status() == Protos::GUI::State::Download::COMPLETE;
+   return tree->getItem().status() == Protos::Common::DownloadStatus::COMPLETE;
 }
 
 bool DownloadsTreeModel::isSourceAlive(const QModelIndex& index) const
@@ -624,10 +624,10 @@ DownloadsTreeModel::Tree* DownloadsTreeModel::updateDirectories(
    Tree* entry,
    qint64 entrySizeDelta,
    qint64 entryDownloadedBytesDelta,
-   Protos::GUI::State::Download::Status oldStatus
+   Protos::Common::DownloadStatus oldStatus
 )
 {
-   Protos::GUI::State::Download::Status newStatus = entry->getItem().status();
+   Protos::Common::DownloadStatus newStatus = entry->getItem().status();
 
    if (entrySizeDelta == 0 && entryDownloadedBytesDelta == 0 && newStatus == oldStatus)
       return entry;
@@ -644,42 +644,42 @@ DownloadsTreeModel::Tree* DownloadsTreeModel::updateDirectories(
       );
 
       currentDirectory->nbErrorFiles +=
-         oldStatus >= Protos::GUI::State::Download::UNKNOWN_PEER_SOURCE &&
-         newStatus < Protos::GUI::State::Download::UNKNOWN_PEER_SOURCE ?
+         oldStatus >= Protos::Common::DownloadStatus::UNKNOWN_PEER_SOURCE &&
+         newStatus < Protos::Common::DownloadStatus::UNKNOWN_PEER_SOURCE ?
               -1
             : (
-               oldStatus < Protos::GUI::State::Download::UNKNOWN_PEER_SOURCE &&
-               newStatus >= Protos::GUI::State::Download::UNKNOWN_PEER_SOURCE ? 1 : 0
+               oldStatus < Protos::Common::DownloadStatus::UNKNOWN_PEER_SOURCE &&
+               newStatus >= Protos::Common::DownloadStatus::UNKNOWN_PEER_SOURCE ? 1 : 0
             );
 
       currentDirectory->nbPausedFiles +=
-         oldStatus == Protos::GUI::State::Download::PAUSED &&
-         newStatus != Protos::GUI::State::Download::PAUSED ?
+         oldStatus == Protos::Common::DownloadStatus::PAUSED &&
+         newStatus != Protos::Common::DownloadStatus::PAUSED ?
               -1
             : (
-               oldStatus != Protos::GUI::State::Download::PAUSED &&
-               newStatus == Protos::GUI::State::Download::PAUSED ? 1 : 0
+               oldStatus != Protos::Common::DownloadStatus::PAUSED &&
+               newStatus == Protos::Common::DownloadStatus::PAUSED ? 1 : 0
             );
 
       currentDirectory->nbDownloadingFiles +=
-         oldStatus == Protos::GUI::State::Download::DOWNLOADING &&
-         newStatus != Protos::GUI::State::Download::DOWNLOADING ?
+         oldStatus == Protos::Common::DownloadStatus::DOWNLOADING &&
+         newStatus != Protos::Common::DownloadStatus::DOWNLOADING ?
               -1
             : (
-               oldStatus != Protos::GUI::State::Download::DOWNLOADING &&
-               newStatus == Protos::GUI::State::Download::DOWNLOADING ? 1 : 0
+               oldStatus != Protos::Common::DownloadStatus::DOWNLOADING &&
+               newStatus == Protos::Common::DownloadStatus::DOWNLOADING ? 1 : 0
             );
 
       if (currentDirectory->getItem().local_entry().size() == currentDirectory->getItem().downloaded_bytes())
-         currentDirectory->getItem().set_status(Protos::GUI::State::Download::COMPLETE);
+         currentDirectory->getItem().set_status(Protos::Common::DownloadStatus::COMPLETE);
       else if (currentDirectory->nbErrorFiles == 1)
          currentDirectory->getItem().set_status(newStatus);
       else if (currentDirectory->nbErrorFiles == 0 && currentDirectory->nbPausedFiles > 0)
-         currentDirectory->getItem().set_status(Protos::GUI::State::Download::PAUSED);
+         currentDirectory->getItem().set_status(Protos::Common::DownloadStatus::PAUSED);
       else if (currentDirectory->nbErrorFiles == 0 && currentDirectory->nbDownloadingFiles > 0)
-         currentDirectory->getItem().set_status(Protos::GUI::State::Download::DOWNLOADING);
+         currentDirectory->getItem().set_status(Protos::Common::DownloadStatus::DOWNLOADING);
       else if (currentDirectory->nbErrorFiles == 0)
-         currentDirectory->getItem().set_status(Protos::GUI::State::Download::QUEUED);
+         currentDirectory->getItem().set_status(Protos::Common::DownloadStatus::QUEUED);
 
       const int currentDirectoryPosition = currentDirectory->getOwnPosition();
       emit dataChanged(
@@ -698,7 +698,7 @@ DownloadsTreeModel::Tree* DownloadsTreeModel::updateDirectories(
 DownloadsTreeModel::Tree::Tree() :
    visited(true), nbPausedFiles(0), nbErrorFiles(0), nbDownloadingFiles(0)
 {
-   this->getItem().set_status(Protos::GUI::State::Download::QUEUED);
+   this->getItem().set_status(Protos::Common::DownloadStatus::QUEUED);
 }
 
 DownloadsTreeModel::Tree::Tree(const Protos::GUI::State::Download& download, Tree* parent) :

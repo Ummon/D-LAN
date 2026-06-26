@@ -125,6 +125,9 @@ void RemoteConnection::send(Common::MessageHeader::MessageType type, const googl
    Common::MessageSocket::send(type, message);
 }
 
+/**
+  * Send a new state to the client.
+  */
 void RemoteConnection::refresh()
 {
    if (this->waitForStateResult)
@@ -183,11 +186,12 @@ void RemoteConnection::refresh()
       protoDownload->set_id(download->getID());
       protoDownload->mutable_local_entry()->CopyFrom(download->getLocalEntry());
       protoDownload->mutable_local_entry()->mutable_chunks()->Clear(); // We don't need to send the hashes.
-      protoDownload->set_status(static_cast<Protos::GUI::State::Download::Status>(download->getStatus())); // Warning, enums must be compatible.
+      protoDownload->set_status(download->getStatus());
       protoDownload->set_downloaded_bytes(download->getDownloadedBytes());
 
       PM::IPeer* peerSource = download->getPeerSource();
-      protoDownload->add_peer_ids()->set_hash(peerSource->getID().getData(), Common::Hash::HASH_SIZE); // The first hash must be the source.
+      // The first hash must be the source.
+      protoDownload->add_peer_ids()->set_hash(peerSource->getID().getData(), Common::Hash::HASH_SIZE);
       QSet<PM::IPeer*> peers = download->getPeers();
       peers.remove(peerSource);
       for (QSetIterator<PM::IPeer*> j(peers); j.hasNext();)

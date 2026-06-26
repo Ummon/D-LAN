@@ -48,27 +48,27 @@ void DownloadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
       progressBarOption.maximum = 10000;
       progressBarOption.textAlignment = Qt::AlignHCenter | Qt::AlignVCenter;
       // Complete -> 100%.
-      progressBarOption.progress = progress.status == Protos::GUI::State::Download::COMPLETE ? 10000 : progress.progress;
+      progressBarOption.progress = progress.status == Protos::Common::DownloadStatus::COMPLETE ? 10000 : progress.progress;
 
       switch (progress.status)
       {
-      case Protos::GUI::State::Download::QUEUED:
+      case Protos::Common::DownloadStatus::QUEUED:
          progressBarOption.text = tr("Queued");
          break;
-      case Protos::GUI::State::Download::GETTING_THE_HASHES:
+      case Protos::Common::DownloadStatus::GETTING_THE_HASHES:
          progressBarOption.text = tr("Getting the hashes..");
          break;
-      case Protos::GUI::State::Download::DOWNLOADING:
+      case Protos::Common::DownloadStatus::DOWNLOADING:
          {
             // We avoid to disturb the user and to show "100 %" if the file is downloading.
             const double percentProgress = static_cast<double>(progress.progress) / 100;
             progressBarOption.text = QStringLiteral("%1%").arg(percentProgress > 99.99 ? 99.99 : percentProgress);
             break;
          }
-      case Protos::GUI::State::Download::COMPLETE:
+      case Protos::Common::DownloadStatus::COMPLETE:
          progressBarOption.text = tr("Complete");
          break;
-      case Protos::GUI::State::Download::PAUSED:
+      case Protos::Common::DownloadStatus::PAUSED:
          progressBarOption.text = tr("Paused");
          break;
       default:
@@ -499,6 +499,9 @@ void DownloadsWidget::restoreTreeViewState(const QModelIndex& index, Common::Sim
 
 void DownloadsWidget::openFile(const QModelIndex& index) const
 {
-   if (this->currentDownloadsModel->getType(index) == Protos::Common::Entry::FILE && this->currentDownloadsModel->isFileLocationKnown(index))
+   if (
+      this->currentDownloadsModel->getType(index) == Protos::Common::Entry::FILE &&
+      this->currentDownloadsModel->isFileLocationKnown(index)
+   )
       Utils::openFile(this->currentDownloadsModel->getPath(index));
 }

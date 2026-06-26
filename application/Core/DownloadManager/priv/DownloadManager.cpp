@@ -263,7 +263,7 @@ QList<IDownload*> DownloadManager::getDownloads() const
    for (int i = 0; i < this->downloadQueue.size(); i++)
    {
       Download* download = this->downloadQueue[i];
-      if (download->getStatus() != DELETED)
+      if (download->getStatus() != Protos::Common::DownloadStatus::DELETED)
          listDownloads << download;
    }
 

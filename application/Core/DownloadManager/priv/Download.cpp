@@ -35,7 +35,12 @@ Download::Download(
    const Protos::Common::Entry& remoteEntry,
    const Protos::Common::Entry& localEntry
 ) :
-   fileManager(fileManager), ID(currentID++), peerSource(peerSource), remoteEntry(remoteEntry), localEntry(localEntry), status(QUEUED)
+   fileManager(fileManager),
+   ID(currentID++),
+   peerSource(peerSource),
+   remoteEntry(remoteEntry),
+   localEntry(localEntry),
+   status(Protos::Common::DownloadStatus::QUEUED)
 {
    // Special case when downloading the root of a drive like "C:/". In this case "C:" is the name of the entry and it becomes a part of the local entry path.
    std::replace(this->localEntry.mutable_path()->begin(), this->localEntry.mutable_path()->end(), ':', '_');
@@ -54,7 +59,11 @@ void Download::populateQueueEntry(Protos::Queue::Queue::Entry* entry) const
    entry->mutable_remote_entry()->CopyFrom(this->remoteEntry);
    entry->mutable_local_entry()->CopyFrom(this->localEntry);
 
-   if (this->status == QUEUED || this->status == COMPLETE || this->status == PAUSED)
+   if (
+      this->status == Protos::Common::DownloadStatus::QUEUED ||
+      this->status == Protos::Common::DownloadStatus::COMPLETE ||
+      this->status == Protos::Common::DownloadStatus::PAUSED
+   )
       entry->set_status(static_cast<Protos::Queue::Queue::Entry::Status>(this->status));
 
    entry->mutable_peer_source_id()->set_hash(this->peerSource->getID().getData(), Common::Hash::HASH_SIZE);
@@ -93,7 +102,7 @@ const Protos::Common::Entry& Download::getLocalEntry() const
 
 void Download::setAsDeleted()
 {
-   this->setStatus(DELETED);
+   this->setStatus(Protos::Common::DownloadStatus::DELETED);
 }
 
 void Download::remove()
@@ -107,12 +116,16 @@ void Download::remove()
   */
 bool Download::updateStatus()
 {
-   if (this->status == DELETED || this->status == COMPLETE || this->status == PAUSED)
+   if (
+      this->status == Protos::Common::DownloadStatus::DELETED ||
+      this->status == Protos::Common::DownloadStatus::COMPLETE ||
+      this->status == Protos::Common::DownloadStatus::PAUSED
+   )
       return true;
    return false;
 }
 
-void Download::setStatus(Status newStatus)
+void Download::setStatus(Protos::Common::DownloadStatus newStatus)
 {
    if (this->status == newStatus)
       return;
@@ -120,7 +133,12 @@ void Download::setStatus(Status newStatus)
    if (!this->isStatusErroneous() && newStatus >= 0x20)
       emit becomeErroneous(this);
 
-   L_DEBU(QString("Download (%1) status change from %2 to %3").arg(Common::ProtoHelper::getPath(this->localEntry)).arg(Utils::getStatusStr(this->status)).arg(Utils::getStatusStr(newStatus)));
+   L_DEBU(
+      QString("Download (%1) status change from %2 to %3")
+         .arg(Common::ProtoHelper::getPath(this->localEntry))
+         .arg(Utils::getStatusStr(this->status))
+         .arg(Utils::getStatusStr(newStatus))
+   );
 
    this->status = newStatus;
 }

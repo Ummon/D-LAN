@@ -22,6 +22,7 @@
 #include <QDragEnterEvent>
 #include <QList>
 
+#include <Protos/common.pb.h>
 #include <Protos/gui_protocol.pb.h>
 
 #include <Common/RemoteCoreController/ICoreConnection.h>
@@ -76,15 +77,15 @@ namespace GUI
 
    struct Progress
    {
-      Progress() : progress(0), status(Protos::GUI::State::Download::QUEUED), type(Protos::Common::Entry::FILE) {}
+      Progress() : progress(0), status(Protos::Common::DownloadStatus::QUEUED), type(Protos::Common::Entry::FILE) {}
       Progress(
          quint32 progress,
-         Protos::GUI::State::Download::Status status,
+         Protos::Common::DownloadStatus status,
          Protos::Common::Entry::Type type
       ) : progress(progress), status(status), type(type) {}
 
       quint32 progress; // 0 to 10'000.
-      Protos::GUI::State::Download::Status status;
+      Protos::Common::DownloadStatus status;
       Protos::Common::Entry::Type type;
    };
 

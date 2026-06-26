@@ -53,7 +53,7 @@ DirDownload::DirDownload(
 
 DirDownload::~DirDownload()
 {
-   this->setStatus(DELETED);
+   this->setStatus(Protos::Common::DownloadStatus::DELETED);
 
    this->occupiedPeersAskingForEntries.setPeerAsFree(this->peerSource);
 
@@ -73,7 +73,11 @@ void DirDownload::start()
   */
 bool DirDownload::retrieveEntries()
 {
-   if (this->isStatusErroneous() || this->status == ENTRY_NOT_FOUND || this->status == DELETED)
+   if (
+      this->isStatusErroneous() ||
+      this->status == Protos::Common::DownloadStatus::ENTRY_NOT_FOUND ||
+      this->status == Protos::Common::DownloadStatus::DELETED
+   )
       return false;
 
    Protos::Core::GetEntries getEntries;
@@ -99,16 +103,16 @@ bool DirDownload::updateStatus()
       return true;
 
    if (!this->peerSource->isAvailable())
-      this->setStatus(UNKNOWN_PEER_SOURCE);
+      this->setStatus(Protos::Common::DownloadStatus::UNKNOWN_PEER_SOURCE);
    else
-      this->setStatus(QUEUED);
+      this->setStatus(Protos::Common::DownloadStatus::QUEUED);
 
    return false;
 }
 
 void DirDownload::retryToGetEntries()
 {
-   this->setStatus(QUEUED);
+   this->setStatus(Protos::Common::DownloadStatus::QUEUED);
    this->retrieveEntries();
 }
 
@@ -135,17 +139,17 @@ void DirDownload::result(const Protos::Core::GetEntriesResult& entries)
       if (entries.results_size() == 0 || entries.results(0).status() == Protos::Core::GetEntriesResult::EntryResult::DONT_HAVE)
       {
          L_DEBU("Unable to get the entries: ENTRY_NOT_FOUND");
-         this->setStatus(ENTRY_NOT_FOUND);
+         this->setStatus(Protos::Common::DownloadStatus::ENTRY_NOT_FOUND);
       }
       else if (entries.results(0).status() == Protos::Core::GetEntriesResult::EntryResult::TIMEOUT_SCANNING_IN_PROGRESS)
       {
          L_DEBU("Unable to get the entries: REMOTE_SCANNING_IN_PROGRESS");
-         this->setStatus(REMOTE_SCANNING_IN_PROGRESS);
+         this->setStatus(Protos::Common::DownloadStatus::REMOTE_SCANNING_IN_PROGRESS);
       }
       else
       {
          L_DEBU("Unable to get the entries: UNABLE_TO_GET_ENTRIES");
-         this->setStatus(UNABLE_TO_GET_ENTRIES);
+         this->setStatus(Protos::Common::DownloadStatus::UNABLE_TO_GET_ENTRIES);
       }
 
       this->getEntriesResult.clear();
@@ -157,7 +161,7 @@ void DirDownload::result(const Protos::Core::GetEntriesResult& entries)
 void DirDownload::resultTimeout()
 {
    L_DEBU("Unable to retrieve the entries: timeout");
-   this->setStatus(UNABLE_TO_GET_ENTRIES);
+   this->setStatus(Protos::Common::DownloadStatus::UNABLE_TO_GET_ENTRIES);
 
    this->getEntriesResult.clear();
    this->occupiedPeersAskingForEntries.setPeerAsFree(this->peerSource);
@@ -176,12 +180,12 @@ void DirDownload::createDirectory()
       catch (FM::NoWriteableDirectoryException&)
       {
          L_DEBU(QString("There is no shared directory with writing rights for this download: %1").arg(this->remoteEntry.name()));
-         this->setStatus(NO_SHARED_DIRECTORY_TO_WRITE);
+         this->setStatus(Protos::Common::DownloadStatus::NO_SHARED_DIRECTORY_TO_WRITE);
       }
       catch (FM::UnableToCreateNewDirException&)
       {
          L_DEBU(QString("Unable to create the directory, download: %1").arg(this->remoteEntry.name()));
-         this->setStatus(UNABLE_TO_CREATE_THE_DIRECTORY);
+         this->setStatus(Protos::Common::DownloadStatus::UNABLE_TO_CREATE_THE_DIRECTORY);
       }
    }
 }

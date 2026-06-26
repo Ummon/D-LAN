@@ -29,38 +29,6 @@
 
 namespace DM
 {
-   enum Status
-   {
-      QUEUED = 0x1,
-      GETTING_THE_HASHES = 0x2,
-      DOWNLOADING = 0x3,
-      COMPLETE = 0x4,
-      PAUSED = 0x5,
-      DELETED = 0x6,
-
-      UNKNOWN_PEER_SOURCE = 0x10, // The source peer can't be found.
-      ENTRY_NOT_FOUND = 0x11, // The source peer can't find the entry.
-      NO_SOURCE = 0x12, // Some chunks can't be downloaded. Only when there is no more downloading.
-
-      // Error status:
-      NO_SHARED_DIRECTORY_TO_WRITE = 0x20,
-      NO_ENOUGH_FREE_SPACE = 0x21,
-      UNABLE_TO_CREATE_THE_FILE = 0x22,
-      UNABLE_TO_CREATE_THE_DIRECTORY = 0x30,
-      UNABLE_TO_RETRIEVE_THE_HASHES = 0x23,
-
-      TRANSFER_ERROR = 0x24,
-      UNABLE_TO_OPEN_THE_FILE = 0x25,
-      FILE_IO_ERROR = 0x26,
-      FILE_NON_EXISTENT = 0x27,
-      GOT_TOO_MUCH_DATA = 0x28,
-      HASH_MISMATCH = 0x29,
-
-      REMOTE_SCANNING_IN_PROGRESS = 0x31,
-      LOCAL_SCANNING_IN_PROGRESS = 0x33,
-      UNABLE_TO_GET_ENTRIES = 0x32
-   };
-
    class IDownload
    {
    public:
@@ -71,7 +39,7 @@ namespace DM
         */
       virtual quint64 getID() const = 0;
 
-      virtual Status getStatus() const = 0;
+      virtual Protos::Common::DownloadStatus getStatus() const = 0;
 
       virtual quint64 getDownloadedBytes() const = 0;
 

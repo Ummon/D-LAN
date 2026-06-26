@@ -24,6 +24,7 @@ using namespace GUI;
 
 #include <QPixmap>
 
+#include <Protos/common.pb.h>
 #include <Common/ProtoHelper.h>
 #include <Common/Global.h>
 
@@ -69,7 +70,7 @@ bool DownloadsFlatModel::isDownloadPaused(const QModelIndex& index) const
 {
    if (index.row() >= this->downloads.size())
       return false;
-   return this->downloads[index.row()].status() == Protos::GUI::State::Download::PAUSED;
+   return this->downloads[index.row()].status() == Protos::Common::DownloadStatus::PAUSED;
 }
 
 bool DownloadsFlatModel::isFileLocationKnown(const QModelIndex& index) const
@@ -86,7 +87,7 @@ bool DownloadsFlatModel::isFileComplete(const QModelIndex& index) const
    if (index.row() >= this->downloads.size())
       return false;
 
-   return this->downloads[index.row()].status() == Protos::GUI::State_Download_Status_COMPLETE;
+   return this->downloads[index.row()].status() == Protos::Common::DownloadStatus::COMPLETE;
 }
 
 bool DownloadsFlatModel::isSourceAlive(const QModelIndex& index) const

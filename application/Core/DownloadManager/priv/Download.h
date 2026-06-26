@@ -63,7 +63,7 @@ namespace DM
       virtual void populateQueueEntry(Protos::Queue::Queue::Entry* entry) const;
 
       quint64 getID() const;
-      inline Status getStatus() const { return this->status; }
+      inline Protos::Common::DownloadStatus getStatus() const { return this->status; }
 
       inline bool isStatusErroneous() const { return this->status >= 0x20; }
 
@@ -87,7 +87,7 @@ namespace DM
       /**
         * This method permits to change the behaviour by a subclass when Download change the status.
         */
-      virtual void setStatus(Status newStatus);
+      virtual void setStatus(Protos::Common::DownloadStatus newStatus);
 
       bool hasAValidPeerSource();
 
@@ -101,6 +101,6 @@ namespace DM
       Protos::Common::Entry remoteEntry; ///< From.
       Protos::Common::Entry localEntry; ///< To.
 
-      Status status;
+      Protos::Common::DownloadStatus status;
    };
 }

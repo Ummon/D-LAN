@@ -20,7 +20,7 @@
 
 #include <QString>
 
-#include <Core/DownloadManager/IDownload.h>
+#include <Protos/common.pb.h>
 
 namespace DM
 {
@@ -28,7 +28,7 @@ namespace DM
    {
    public:
 #ifdef DEBUG
-      static QString getStatusStr(Status status);
+      static QString getStatusStr(Protos::Common::DownloadStatus status);
 #endif
    };
 }

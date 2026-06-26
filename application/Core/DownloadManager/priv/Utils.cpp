@@ -20,37 +20,39 @@
 using namespace DM;
 
 #ifdef DEBUG
-   QString Utils::getStatusStr(Status status)
+   QString Utils::getStatusStr(Protos::Common::DownloadStatus status)
    {
       switch (status)
       {
-      case QUEUED: return "QUEUED";
-      case GETTING_THE_HASHES: return "GETTING_THE_HASHES";
-      case DOWNLOADING: return "DOWNLOADING";
-      case COMPLETE: return "COMPLETE";
-      case PAUSED: return "PAUSED";
-      case DELETED: return "DELETED";
+      case Protos::Common::DownloadStatus::QUEUED: return "QUEUED";
+      case Protos::Common::DownloadStatus::GETTING_THE_HASHES: return "GETTING_THE_HASHES";
+      case Protos::Common::DownloadStatus::DOWNLOADING: return "DOWNLOADING";
+      case Protos::Common::DownloadStatus::COMPLETE: return "COMPLETE";
+      case Protos::Common::DownloadStatus::PAUSED: return "PAUSED";
+      case Protos::Common::DownloadStatus::DELETED: return "DELETED";
 
-      case UNKNOWN_PEER_SOURCE: return "UNKNOWN_PEER_SOURCE";
-      case ENTRY_NOT_FOUND: return "ENTRY_NOT_FOUND";
-      case NO_SOURCE: return "NO_SOURCE";
+      case Protos::Common::DownloadStatus::UNKNOWN_PEER_SOURCE: return "UNKNOWN_PEER_SOURCE";
+      case Protos::Common::DownloadStatus::ENTRY_NOT_FOUND: return "ENTRY_NOT_FOUND";
+      case Protos::Common::DownloadStatus::NO_SOURCE: return "NO_SOURCE";
 
-      case NO_SHARED_DIRECTORY_TO_WRITE: return "NO_SHARED_DIRECTORY_TO_WRITE";
-      case NO_ENOUGH_FREE_SPACE: return "NO_ENOUGH_FREE_SPACE";
-      case UNABLE_TO_CREATE_THE_FILE: return "UNABLE_TO_CREATE_THE_FILE";
-      case UNABLE_TO_CREATE_THE_DIRECTORY: return "UNABLE_TO_CREATE_THE_DIRECTORY";
-      case UNABLE_TO_RETRIEVE_THE_HASHES: return "UNABLE_TO_RETRIEVE_THE_HASHES";
+      case Protos::Common::DownloadStatus::NO_SHARED_DIRECTORY_TO_WRITE: return "NO_SHARED_DIRECTORY_TO_WRITE";
+      case Protos::Common::DownloadStatus::NO_ENOUGH_FREE_SPACE: return "NO_ENOUGH_FREE_SPACE";
+      case Protos::Common::DownloadStatus::UNABLE_TO_CREATE_THE_FILE: return "UNABLE_TO_CREATE_THE_FILE";
+      case Protos::Common::DownloadStatus::UNABLE_TO_CREATE_THE_DIRECTORY: return "UNABLE_TO_CREATE_THE_DIRECTORY";
+      case Protos::Common::DownloadStatus::UNABLE_TO_RETRIEVE_THE_HASHES: return "UNABLE_TO_RETRIEVE_THE_HASHES";
 
-      case TRANSFER_ERROR: return "TRANSFER_ERROR";
-      case UNABLE_TO_OPEN_THE_FILE: return "UNABLE_TO_OPEN_THE_FILE";
-      case FILE_IO_ERROR: return "FILE_IO_ERROR";
-      case FILE_NON_EXISTENT: return "FILE_NON_EXISTENT";
-      case GOT_TOO_MUCH_DATA: return "GOT_TOO_MUCH_DATA";
-      case HASH_MISMATCH: return "HASH_MiSMATCH";
+      case Protos::Common::DownloadStatus::TRANSFER_ERROR: return "TRANSFER_ERROR";
+      case Protos::Common::DownloadStatus::UNABLE_TO_OPEN_THE_FILE: return "UNABLE_TO_OPEN_THE_FILE";
+      case Protos::Common::DownloadStatus::FILE_IO_ERROR: return "FILE_IO_ERROR";
+      case Protos::Common::DownloadStatus::FILE_NON_EXISTENT: return "FILE_NON_EXISTENT";
+      case Protos::Common::DownloadStatus::GOT_TOO_MUCH_DATA: return "GOT_TOO_MUCH_DATA";
+      case Protos::Common::DownloadStatus::HASH_MISMATCH: return "HASH_MiSMATCH";
 
-      case REMOTE_SCANNING_IN_PROGRESS: return "REMOTE_SCANNING_IN_PROGRESS";
-      case LOCAL_SCANNING_IN_PROGRESS: return "LOCAL_SCANNING_IN_PROGRESS";
-      case UNABLE_TO_GET_ENTRIES: return "UNABLE_TO_GET_ENTRIES";
+      case Protos::Common::DownloadStatus::REMOTE_SCANNING_IN_PROGRESS: return "REMOTE_SCANNING_IN_PROGRESS";
+      case Protos::Common::DownloadStatus::LOCAL_SCANNING_IN_PROGRESS: return "LOCAL_SCANNING_IN_PROGRESS";
+      case Protos::Common::DownloadStatus::UNABLE_TO_GET_ENTRIES: return "UNABLE_TO_GET_ENTRIES";
+
+      default: return "<UNKOWN STATUS>";
       }
       return QString();
    }

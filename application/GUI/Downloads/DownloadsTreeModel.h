@@ -20,6 +20,8 @@
 
 #include <QDragEnterEvent>
 
+#include <Protos/common.pb.h>
+
 #include <Common/Containers/Tree.h>
 
 #include <Downloads/DownloadsModel.h>
@@ -102,7 +104,7 @@ namespace GUI
          Tree* file,
          qint64 fileSizeDelta,
          qint64 fileDownloadedBytesDelta,
-         Protos::GUI::State::Download::Status oldStatus = Protos::GUI::State::Download::QUEUED
+         Protos::Common::DownloadStatus oldStatus = Protos::Common::DownloadStatus::QUEUED
       );
 
       Tree* root;

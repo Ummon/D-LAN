@@ -27,7 +27,10 @@ using namespace DM;
 bool IsDownloadable::operator() (const Download* download) const
 {
    const FileDownload* fileDownload = dynamic_cast<const FileDownload*>(download);
-   return fileDownload && fileDownload->getStatus() != COMPLETE && fileDownload->getStatus() != DELETED;
+   return
+      fileDownload &&
+      fileDownload->getStatus() != Protos::Common::DownloadStatus::COMPLETE &&
+      fileDownload->getStatus() != Protos::Common::DownloadStatus::DELETED;
 }
 
 bool IsADirectory::operator() (const Download* download) const
@@ -37,7 +40,7 @@ bool IsADirectory::operator() (const Download* download) const
 
 bool IsComplete::operator() (const Download* download) const
 {
-   return download->getStatus() == COMPLETE;
+   return download->getStatus() == Protos::Common::DownloadStatus::COMPLETE;
 }
 
 IsContainedInAList::IsContainedInAList(const QList<quint64>& downloadIDs) :

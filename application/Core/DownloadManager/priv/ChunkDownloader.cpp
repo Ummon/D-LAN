@@ -45,7 +45,7 @@ ChunkDownloader::ChunkDownloader(LinkedPeers& linkedPeers, OccupiedPeers& occupi
    socket(nullptr),
    downloading(false),
    closeTheSocket(false),
-   lastTransferStatus(QUEUED),
+   lastTransferStatus(Protos::Common::DownloadStatus::QUEUED),
    mainThread(QThread::currentThread())
 {
    Q_ASSERT(!chunkHash.isNull());
@@ -128,7 +128,7 @@ void ChunkDownloader::run()
    int deltaRead = 0;
    QElapsedTimer timer;
    timer.start();
-   this->lastTransferStatus = QUEUED;
+   this->lastTransferStatus = Protos::Common::DownloadStatus::QUEUED;
 
    try
    {
@@ -181,7 +181,7 @@ void ChunkDownloader::run()
                      .arg(socket->errorString()).arg(socket->bytesAvailable())
                );
                this->closeTheSocket = true;
-               this->lastTransferStatus = TRANSFER_ERROR;
+               this->lastTransferStatus = Protos::Common::DownloadStatus::TRANSFER_ERROR;
                break;
             }
             continue;
@@ -190,7 +190,7 @@ void ChunkDownloader::run()
          {
             L_WARN(QString("Socket : cannot receive data: %1").arg(this->chunk->toStringLog()));
             this->closeTheSocket = true;
-            this->lastTransferStatus = TRANSFER_ERROR;
+            this->lastTransferStatus = Protos::Common::DownloadStatus::TRANSFER_ERROR;
             break;
          }
 
@@ -246,46 +246,50 @@ void ChunkDownloader::run()
    {
       L_DEBU("FileResetException");
       this->closeTheSocket = true;
-      this->lastTransferStatus = FILE_NON_EXISTENT;
+      this->lastTransferStatus = Protos::Common::DownloadStatus::FILE_NON_EXISTENT;
    }
    catch (FM::ChunkDataUnknownException)
    {
       L_DEBU("ChunkDataUnknownException");
       this->closeTheSocket = true;
-      this->lastTransferStatus = UNABLE_TO_OPEN_THE_FILE;
+      this->lastTransferStatus = Protos::Common::DownloadStatus::UNABLE_TO_OPEN_THE_FILE;
    }
    catch (FM::UnableToOpenFileInWriteModeException)
    {
       L_DEBU("UnableToOpenFileInWriteModeException");
       this->closeTheSocket = true;
-      this->lastTransferStatus = UNABLE_TO_OPEN_THE_FILE;
+      this->lastTransferStatus = Protos::Common::DownloadStatus::UNABLE_TO_OPEN_THE_FILE;
    }
    catch (FM::IOErrorException&)
    {
       L_DEBU("IOErrorException");
       this->closeTheSocket = true;
-      this->lastTransferStatus = FILE_IO_ERROR;
+      this->lastTransferStatus = Protos::Common::DownloadStatus::FILE_IO_ERROR;
    }
    catch (FM::ChunkDeletedException&)
    {
       L_DEBU("ChunkDeletedException");
       this->closeTheSocket = true;
-      this->lastTransferStatus = FILE_NON_EXISTENT;
+      this->lastTransferStatus = Protos::Common::DownloadStatus::FILE_NON_EXISTENT;
    }
    catch (FM::TryToWriteBeyondTheEndOfChunkException&)
    {
       L_DEBU("TryToWriteBeyondTheEndOfChunkException");
       this->closeTheSocket = true;
-      this->lastTransferStatus = GOT_TOO_MUCH_DATA;
+      this->lastTransferStatus = Protos::Common::DownloadStatus::GOT_TOO_MUCH_DATA;
    }
    catch (FM::hashMismatchException)
    {
       static const quint32 BLOCK_DURATION = SETTINGS.get<quint32>("block_duration_corrupted_data");
-      L_USER(QString(tr("Corrupted data received for the file \"%1\" from peer %2. Peer blocked for %3 ms")).arg(this->chunk->getFilePath()).arg(this->currentDownloadingPeer->getNick()).arg(BLOCK_DURATION));
+      L_USER(
+         QString(tr("Corrupted data received for the file \"%1\" from peer %2. Peer blocked for %3 ms"))
+            .arg(this->chunk->getFilePath()).arg(this->currentDownloadingPeer->getNick())
+            .arg(BLOCK_DURATION)
+      );
       /*: A reason why the user has been blocked */
       this->currentDownloadingPeer->block(BLOCK_DURATION, tr("Has sent corrupted data"));
       this->closeTheSocket = true;
-      this->lastTransferStatus = HASH_MISMATCH;
+      this->lastTransferStatus = Protos::Common::DownloadStatus::HASH_MISMATCH;
    }
 
    if (timer.elapsed() > MINIMUM_DELTA_TIME_TO_COMPUTE_SPEED)
@@ -372,14 +376,14 @@ bool ChunkDownloader::hasAtLeastAPeer()
   * GOT_TOO_MUCH_DATA
   * HASH_MISMATCH
   */
-Status ChunkDownloader::getLastTransferStatus() const
+Protos::Common::DownloadStatus ChunkDownloader::getLastTransferStatus() const
 {
    return this->lastTransferStatus;
 }
 
 void ChunkDownloader::resetLastTransferStatus()
 {
-   this->lastTransferStatus = QUEUED;
+   this->lastTransferStatus = Protos::Common::DownloadStatus::QUEUED;
 }
 
 int ChunkDownloader::getDownloadedBytes() const

@@ -80,7 +80,7 @@ QVariant DownloadsModel::getData(const Protos::GUI::State::Download& download, c
       if (index.column() == 0)
          return IconProvider::getIcon(
             download.local_entry(),
-            download.status() >= Protos::GUI::State::Download::UNKNOWN_PEER_SOURCE
+            download.status() >= Protos::Common::DownloadStatus::UNKNOWN_PEER_SOURCE
          );
       return QVariant();
 
@@ -92,63 +92,63 @@ QVariant DownloadsModel::getData(const Protos::GUI::State::Download& download, c
             QString toolTip;
             switch (download.status())
             {
-            case Protos::GUI::State::Download::UNKNOWN_PEER_SOURCE:
+            case Protos::Common::DownloadStatus::UNKNOWN_PEER_SOURCE:
                toolTip +=
                   tr("Source peer offline (%1)")
                      .arg(QString::fromStdString(download.peer_source_nick()));
                break;
-            case Protos::GUI::State::Download::ENTRY_NOT_FOUND:
+            case Protos::Common::DownloadStatus::ENTRY_NOT_FOUND:
                toolTip += tr("The source peer doesn't have the entry");
                break;
-            case Protos::GUI::State::Download::NO_SOURCE:
+            case Protos::Common::DownloadStatus::NO_SOURCE:
                toolTip += tr("There is no source to download from");
                break;
-            case Protos::GUI::State::Download::NO_SHARED_DIRECTORY_TO_WRITE:
+            case Protos::Common::DownloadStatus::NO_SHARED_DIRECTORY_TO_WRITE:
                toolTip += tr("No incoming directory");
                break;
 
-            case Protos::GUI::State::Download::NO_ENOUGH_FREE_SPACE:
+            case Protos::Common::DownloadStatus::NO_ENOUGH_FREE_SPACE:
                toolTip += tr("Not enough free space left");
                break;
-            case Protos::GUI::State::Download::UNABLE_TO_CREATE_THE_FILE:
+            case Protos::Common::DownloadStatus::UNABLE_TO_CREATE_THE_FILE:
                toolTip += tr("Unable to create the file");
                break;
-            case Protos::GUI::State::Download::UNABLE_TO_CREATE_THE_DIRECTORY:
+            case Protos::Common::DownloadStatus::UNABLE_TO_CREATE_THE_DIRECTORY:
                toolTip +=
                   download.local_entry().type() == Protos::Common::Entry::DIR ?
                        tr("Unable to create the directory")
                      : tr("Unable to create the path of the file");
                break;
-            case Protos::GUI::State::Download::UNABLE_TO_RETRIEVE_THE_HASHES:
+            case Protos::Common::DownloadStatus::UNABLE_TO_RETRIEVE_THE_HASHES:
                toolTip += tr("Unable to retrieve the hashes");
                break;
 
-            case Protos::GUI::State::Download::TRANSFER_ERROR:
+            case Protos::Common::DownloadStatus::TRANSFER_ERROR:
                toolTip += tr("Transfer error");
                break;
-            case Protos::GUI::State::Download::UNABLE_TO_OPEN_THE_FILE:
+            case Protos::Common::DownloadStatus::UNABLE_TO_OPEN_THE_FILE:
                toolTip += tr("Unable to open the file");
                break;
-            case Protos::GUI::State::Download::FILE_IO_ERROR:
+            case Protos::Common::DownloadStatus::FILE_IO_ERROR:
                toolTip += tr("Unable to write the file");
                break;
-            case Protos::GUI::State::Download::FILE_NON_EXISTENT:
+            case Protos::Common::DownloadStatus::FILE_NON_EXISTENT:
                toolTip += tr("The local file has been deleted");
                break;
-            case Protos::GUI::State::Download::GOT_TOO_MUCH_DATA:
+            case Protos::Common::DownloadStatus::GOT_TOO_MUCH_DATA:
                toolTip += tr("Too much data received");
                break;
-            case Protos::GUI::State::Download::HASH_MISMATCH:
+            case Protos::Common::DownloadStatus::HASH_MISMATCH:
                toolTip += tr("Data received do not match the hash");
                break;
 
-            case Protos::GUI::State::Download::REMOTE_SCANNING_IN_PROGRESS:
+            case Protos::Common::DownloadStatus::REMOTE_SCANNING_IN_PROGRESS:
                toolTip += tr("The remote entry is currently being scanned");
                break;
-            case Protos::GUI::State::Download::LOCAL_SCANNING_IN_PROGRESS:
+            case Protos::Common::DownloadStatus::LOCAL_SCANNING_IN_PROGRESS:
                toolTip += tr("The local directory is currently being scanned");
                break;
-            case Protos::GUI::State::Download::UNABLE_TO_GET_ENTRIES:
+            case Protos::Common::DownloadStatus::UNABLE_TO_GET_ENTRIES:
                toolTip += tr("Unable to retrieve the entries");
                break;
             default:;
@@ -210,45 +210,45 @@ QList<int> DownloadsModel::getNonFilteredDownloadIndices(const Protos::GUI::Stat
    {
       switch (state.downloads(i).status())
       {
-      case Protos::GUI::State::Download::QUEUED:
+      case Protos::Common::DownloadStatus::QUEUED:
          if (!(statusToFilter & STATUS_QUEUED))
             indices << i;
          break;
 
-      case Protos::GUI::State::Download::GETTING_THE_HASHES:
-      case Protos::GUI::State::Download::DOWNLOADING:
+      case Protos::Common::DownloadStatus::GETTING_THE_HASHES:
+      case Protos::Common::DownloadStatus::DOWNLOADING:
          if (!(statusToFilter & STATUS_DOWNLOADING))
             indices << i;
          break;
 
-      case Protos::GUI::State::Download::COMPLETE:
+      case Protos::Common::DownloadStatus::COMPLETE:
          if (!(statusToFilter & STATUS_COMPLETE))
             indices << i;
          break;
 
-      case Protos::GUI::State::Download::PAUSED:
-      case Protos::GUI::State::Download::UNKNOWN_PEER_SOURCE:
-      case Protos::GUI::State::Download::ENTRY_NOT_FOUND:
-      case Protos::GUI::State::Download::NO_SOURCE:
-      case Protos::GUI::State::Download::NO_SHARED_DIRECTORY_TO_WRITE:
-      case Protos::GUI::State::Download::NO_ENOUGH_FREE_SPACE:
-      case Protos::GUI::State::Download::UNABLE_TO_CREATE_THE_FILE:
-      case Protos::GUI::State::Download::UNABLE_TO_CREATE_THE_DIRECTORY:
-      case Protos::GUI::State::Download::UNABLE_TO_RETRIEVE_THE_HASHES:
-      case Protos::GUI::State::Download::TRANSFER_ERROR:
-      case Protos::GUI::State::Download::UNABLE_TO_OPEN_THE_FILE:
-      case Protos::GUI::State::Download::FILE_IO_ERROR:
-      case Protos::GUI::State::Download::FILE_NON_EXISTENT:
-      case Protos::GUI::State::Download::GOT_TOO_MUCH_DATA:
-      case Protos::GUI::State::Download::HASH_MISMATCH:
-      case Protos::GUI::State::Download::REMOTE_SCANNING_IN_PROGRESS:
-      case Protos::GUI::State::Download::LOCAL_SCANNING_IN_PROGRESS:
-      case Protos::GUI::State::Download::UNABLE_TO_GET_ENTRIES:
+      case Protos::Common::DownloadStatus::PAUSED:
+      case Protos::Common::DownloadStatus::UNKNOWN_PEER_SOURCE:
+      case Protos::Common::DownloadStatus::ENTRY_NOT_FOUND:
+      case Protos::Common::DownloadStatus::NO_SOURCE:
+      case Protos::Common::DownloadStatus::NO_SHARED_DIRECTORY_TO_WRITE:
+      case Protos::Common::DownloadStatus::NO_ENOUGH_FREE_SPACE:
+      case Protos::Common::DownloadStatus::UNABLE_TO_CREATE_THE_FILE:
+      case Protos::Common::DownloadStatus::UNABLE_TO_CREATE_THE_DIRECTORY:
+      case Protos::Common::DownloadStatus::UNABLE_TO_RETRIEVE_THE_HASHES:
+      case Protos::Common::DownloadStatus::TRANSFER_ERROR:
+      case Protos::Common::DownloadStatus::UNABLE_TO_OPEN_THE_FILE:
+      case Protos::Common::DownloadStatus::FILE_IO_ERROR:
+      case Protos::Common::DownloadStatus::FILE_NON_EXISTENT:
+      case Protos::Common::DownloadStatus::GOT_TOO_MUCH_DATA:
+      case Protos::Common::DownloadStatus::HASH_MISMATCH:
+      case Protos::Common::DownloadStatus::REMOTE_SCANNING_IN_PROGRESS:
+      case Protos::Common::DownloadStatus::LOCAL_SCANNING_IN_PROGRESS:
+      case Protos::Common::DownloadStatus::UNABLE_TO_GET_ENTRIES:
          if (!(statusToFilter & STATUS_INACTIVE))
             indices << i;
          break;
 
-      case Protos::GUI::State_Download_Status_DELETED: default:; // We don't care about deleted entries.
+      case Protos::Common::DownloadStatus::DELETED: default:; // We don't care about deleted entries.
       }
    }
 
@@ -310,7 +310,7 @@ QDataStream& GUI::operator>>(QDataStream& in, Progress& progress)
    in >> progress.progress;
    int status;
    in >> status;
-   progress.status = static_cast<Protos::GUI::State_Download_Status>(status);
+   progress.status = static_cast<Protos::Common::DownloadStatus>(status);
    return in;
 }
 
