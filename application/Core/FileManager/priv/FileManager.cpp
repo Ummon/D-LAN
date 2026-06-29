@@ -212,7 +212,8 @@ QList<Protos::Common::FindResult> FileManager::find(
    qint64 maxFileSize,
    Protos::Common::FindPattern_Category category,
    int maxNbResult,
-   int maxSize
+   int maxSize,
+   bool setSharedEntryPath
 )
 {
    bool filterBySizeOn = minFileSize > 0 || maxFileSize != std::numeric_limits<qint64>::max();
@@ -286,6 +287,9 @@ QList<Protos::Common::FindResult> FileManager::find(
          file->populateEntry(entryLevel->mutable_entry(), true, NB_MAX_HASHES_PER_ENTRY_SEARCH);
       else
          entry.value->populateEntry(entryLevel->mutable_entry(), true);
+
+      if (!setSharedEntryPath)
+         entryLevel->mutable_entry()->mutable_shared_entry()->clear_path();
 
       // We wouldn't use 'findResults.last().ByteSizeLong()' because is too slow.
       // Instead we call 'ByteSize()' for each entry and sum it.
@@ -439,49 +443,53 @@ void FileManager::deleteSharedEntry(SharedEntry* sharedEntry)
 
 void FileManager::entryAdded(Entry* entry)
 {
-   if (entry->getName().isEmpty() || Global::isFileUnfinished(entry->getName()))
+   if (Global::isFileUnfinished(entry->getName()))
       return;
 
-   L_DEBU(QString("Adding entry '%1' to the index . . .").arg(entry->getName()));
-   this->wordIndex.addItem(Common::StringUtils::splitInWords(entry->getNameWithoutExtension()), entry);
+   const QString name = entry->getUserName();
+
+   if (name.isEmpty())
+      return;
+
+   L_DEBU(QString("Adding entry '%1' to the index . . .").arg(name));
+
+   this->wordIndex.addItem(Common::StringUtils::splitInWords(name), entry);
 
    if (File* file = dynamic_cast<File*>(entry))
    {
       this->extensionIndex.addItem(file->getExtension(), file);
       this->sizeIndex.addItem(file); // TODO: Nedded?
    }
-
-   L_DEBU("Entry added to the index");
 }
 
 void FileManager::entryRemoved(Entry* entry)
 {
-   if (entry->getName().isEmpty())
+   const QString name = entry->getUserName();
+
+   if (name.isEmpty())
       return;
 
-   L_DEBU(QString("Removing entry '%1' from the index . . .").arg(entry->getName()));
-   if (!this->wordIndex.rmItem(Common::StringUtils::splitInWords(entry->getName()), entry))
-      L_DEBU(QString("The entry '%1' hasn't been found in the index!").arg(entry->getName()));
+   L_DEBU(QString("Removing entry '%1' from the index . . .").arg(name));
+   if (!this->wordIndex.rmItem(Common::StringUtils::splitInWords(name), entry))
+      L_DEBU(QString("The entry '%1' hasn't been found in the index!").arg(name));
 
    if (File* file = dynamic_cast<File*>(entry))
    {
       this->extensionIndex.rmItem(file->getExtension(), file);
       this->sizeIndex.rmItem(file);
    }
-
-   L_DEBU("Entry removed from the index");
 }
 
 void FileManager::entryRenamed(Entry* entry, const QString& oldName)
 {
-   L_DEBU(QString("Renaming entry '%1' to '%2' in the index . . .").arg(entry->getName(), oldName));
+   const QString name = entry->getUserName();
 
-   this->wordIndex.renameItem(Common::StringUtils::splitInWords(oldName), Common::StringUtils::splitInWords(entry->getName()), entry);
+   L_DEBU(QString("Renaming entry '%1' to '%2' in the index . . .").arg(name, oldName));
+
+   this->wordIndex.renameItem(Common::StringUtils::splitInWords(oldName), Common::StringUtils::splitInWords(name), entry);
 
    if (File* file = dynamic_cast<File*>(entry))
       this->extensionIndex.changeItem(Common::KnownExtensions::getExtension(oldName), file->getExtension(), file);
-
-   L_DEBU("Entry renamed in the index");
 }
 
 void FileManager::fileResizing(File* file)

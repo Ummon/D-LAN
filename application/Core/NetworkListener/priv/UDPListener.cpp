@@ -305,7 +305,8 @@ void UDPListener::processPendingMulticastDatagrams()
                         findMessage.pattern().max_size() == 0 ? std::numeric_limits<qint64>::max() : (qint64)findMessage.pattern().max_size(), // According the protocol.
                         findMessage.pattern().category(),
                         SETTINGS.get<quint32>("max_number_of_search_result_to_send"),
-                        this->MAX_UDP_DATAGRAM_PAYLOAD_SIZE - Common::MessageHeader::HEADER_SIZE
+                        this->MAX_UDP_DATAGRAM_PAYLOAD_SIZE - Common::MessageHeader::HEADER_SIZE,
+                        false
                      );
 
                   for (QMutableListIterator<Protos::Common::FindResult> i(results); i.hasNext();)

@@ -134,6 +134,7 @@ message FindPattern {
 
 // A result following a search.
 // Entries may not be sorted in any particular way.
+// Absolute paths (Entry.shared_entry.path) shouldn't be defined for privacy reasons.
 // See 'Core.Find' and 'GUI.Search' for more information.
 message FindResult {
    message EntryLevel {

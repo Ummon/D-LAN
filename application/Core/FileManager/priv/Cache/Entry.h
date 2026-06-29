@@ -73,6 +73,7 @@ namespace FM
       SharedEntry* getRoot() const;
 
       QString getName() const;
+      QString getUserName() const;
       QString getNameWithoutExtension() const;
 
       virtual void rename(const QString& newName);
@@ -94,7 +95,7 @@ namespace FM
 
       QString name;
       SharedEntry* root;
-      Directory* parentDirectory; // Can be null if none.
+      Directory* parentDirectory; // Can be null if root.
 
       qint64 size;
 

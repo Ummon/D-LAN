@@ -97,7 +97,8 @@ namespace FM
                std::numeric_limits<qint64>::max(),
                Protos::Common::FindPattern::FILE_DIR,
                maxNbResult,
-               maxSize
+               maxSize,
+               true
             );
       }
 
@@ -108,7 +109,8 @@ namespace FM
          qint64 maxFileSize,
          Protos::Common::FindPattern_Category category,
          int maxNbResult,
-         int maxSize
+         int maxSize,
+         bool setSharedEntryPath
       ) override;
 
       QBitArray haveChunks(const QList<Common::Hash>& hashes) override;

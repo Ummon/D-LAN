@@ -85,7 +85,7 @@ private slots:
    // /***** Browse the shared directories *****/
    void browseSomeDirectories();
 
-   // /***** Find files and directories by keywords *****/
+   // /***** Find files and directories by keywords *****/   
    void findExistingFilesWithOneWord();
    void findNonExistingFilesWithOneWord();
    void findFilesWithSomeWords1();
@@ -96,6 +96,8 @@ private slots:
    void findFilesByExtensions();
    void findFilesByExtensionsAndSizeRange();
    void findFilesBySizeRange();
+   void findSharedEntry();
+   void findSharedEntryAfterRename();
 
    // /***** Ask if the given hashes are known *****/
    void haveChunks();

@@ -151,6 +151,14 @@ Path ProtoHelper::getPath(const Protos::Common::Entry& entry, bool absolutePath)
    }
 }
 
+QString ProtoHelper::getName(const Protos::Common::Entry& entry)
+{
+   if (entry.name().empty())
+      return QString::fromStdString(entry.shared_entry().shared_name());
+
+   return QString::fromStdString(entry.name());
+}
+
 bool ProtoHelper::isRoot(const Protos::Common::Entry& entry)
 {
    return entry.path().empty();

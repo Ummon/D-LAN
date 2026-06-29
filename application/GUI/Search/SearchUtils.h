@@ -37,7 +37,7 @@ namespace GUI
       static QString getSearchTypeText(SearchType searchType, bool withAllExtensions = true);
       static QString getExtensionText(Common::ExtensionCategory extension, bool withAllExtensions = true);
       static QString getFindPatternSummary(const Protos::Common::FindPattern& findPattern, bool local = false);
-      static QString getFindPatternWindowTitle(const Protos::Common::FindPattern& findPattern);
+      static QString getFindPatternWindowTitle(const Protos::Common::FindPattern& findPattern, bool local = false);
    };
 }
 

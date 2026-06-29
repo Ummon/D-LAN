@@ -126,7 +126,7 @@ void RemoteConnection::send(Common::MessageHeader::MessageType type, const googl
 }
 
 /**
-  * Send a new state to the client.
+  * Send a the current state to the client.
   */
 void RemoteConnection::refresh()
 {
@@ -557,7 +557,8 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
                findPattern.max_size() == 0 ? std::numeric_limits<qint64>::max() : (qint64)findPattern.max_size(),
                findPattern.category(),
                MAX_NUMBER_OF_RESULT_SHOWN,
-               std::numeric_limits<int>::max()
+               std::numeric_limits<int>::max(),
+               true
             );
 
             const quint64 tag = QRandomGenerator64::global()->generate64();

@@ -2,7 +2,6 @@
     <qresource prefix="/icons">
         <file>ressources/emoticon.png</file>
         <file>ressources/plus.png</file>
-        <file>ressources/zoom_monitor.png</file>
         <file>ressources/settings.svg</file>
         <file>ressources/chat.svg</file>
         <file>ressources/chat_new_mess.svg</file>

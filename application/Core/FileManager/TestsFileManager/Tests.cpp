@@ -1030,7 +1030,8 @@ void Tests::findFilesWithSomeWordsAndExtensions()
          std::numeric_limits<qint64>::max(),
          Protos::Common::FindPattern::FILE_DIR,
          10000,
-         65536
+         65536,
+         true
       );
    QVERIFY(!results.isEmpty());
    this->printSearch(terms, results.first());
@@ -1063,7 +1064,8 @@ void Tests::findFilesWithSomeWordsAndExtensionsAndSizeRange()
          17, // <= 16 B.
          Protos::Common::FindPattern::FILE_DIR,
          10000,
-         65536
+         65536,
+         true
       );
    QVERIFY(!results.isEmpty());
    this->printSearch(terms, results.first());
@@ -1085,7 +1087,8 @@ void Tests::findFilesByExtensions()
          std::numeric_limits<qint64>::max(),
          Protos::Common::FindPattern::FILE_DIR,
          10000,
-         65536
+         65536,
+         true
       );
    QVERIFY(!results.isEmpty());
    this->compareExpectedResult(results.first(), expectedResult);
@@ -1106,7 +1109,8 @@ void Tests::findFilesByExtensionsAndSizeRange()
          13,
          Protos::Common::FindPattern::FILE_DIR,
          10000,
-         65536
+         65536,
+         true
       );
    QVERIFY(!results.isEmpty());
    this->compareExpectedResult(results.first(), expectedResult);
@@ -1133,8 +1137,77 @@ void Tests::findFilesBySizeRange()
          17,
          Protos::Common::FindPattern::FILE_DIR,
          10000,
-         65536
+         65536,
+         true
       );
+   QVERIFY(!results.isEmpty());
+   this->printSearch("", results.first());
+   this->compareExpectedResult(results.first(), expectedResult);
+}
+
+void Tests::findSharedEntry()
+{
+   qDebug() << "===== findSharedEntry() =====";
+
+   FindResult expectedResult;
+   expectedResult[0] << "sharedDirs";
+
+   QList<Protos::Common::FindResult> results =
+      this->fileManager->find(
+         "sharedDirs",
+         QList<QString>(),
+         0,
+         std::numeric_limits<qint64>::max(),
+         Protos::Common::FindPattern::FILE_DIR,
+         10000,
+         65536,
+         true
+      );
+
+   QVERIFY(!results.isEmpty());
+   this->printSearch("", results.first());
+   this->compareExpectedResult(results.first(), expectedResult);
+}
+
+void Tests::findSharedEntryAfterRename()
+{
+   qDebug() << "===== findSharedEntryAfterRename() =====";
+
+   this->sharedPaths.last().name = "sharedRenamed";
+   this->fileManager->setSharedPaths(this->sharedPaths);
+
+   // The previous name shouldn't be found.
+   {
+      QList<Protos::Common::FindResult> results =
+         this->fileManager->find(
+            "sharedDirs",
+            QList<QString>(),
+            0,
+            std::numeric_limits<qint64>::max(),
+            Protos::Common::FindPattern::FILE_DIR,
+            10000,
+            65536,
+            true
+         );
+
+      QVERIFY(results.isEmpty());
+   }
+
+   FindResult expectedResult;
+   expectedResult[0] << "sharedRenamed";
+
+   QList<Protos::Common::FindResult> results =
+      this->fileManager->find(
+         "sharedRenamed",
+         QList<QString>(),
+         0,
+         std::numeric_limits<qint64>::max(),
+         Protos::Common::FindPattern::FILE_DIR,
+         10000,
+         65536,
+         true
+      );
+
    QVERIFY(!results.isEmpty());
    this->printSearch("", results.first());
    this->compareExpectedResult(results.first(), expectedResult);

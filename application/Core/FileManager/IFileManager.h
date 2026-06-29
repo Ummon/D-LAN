@@ -149,11 +149,23 @@ namespace FM
         * @param category To keep only files, directories or both.
         * @param maxNbResult The maximum total number of result, sum of all 'FindResult' sizes.
         * @param maxSize This is the size in bytes each 'FindResult' can't exceed. (Because UDP datagrams have a maximum size).
-        * It should not be here but it's far more harder to split the result outside this method.
+        *        It should not be here but it's far more harder to split the result outside this method.
         * @remarks Will not fill the fields 'FindResult.tag' and 'FindResult.peer_id'.
         */
       virtual QList<Protos::Common::FindResult> find(const QString& words, int maxNbResult, int maxSize) = 0;
 
+      /**
+        * @param words
+        * @param extensions
+        * @param minFileSize
+        * @param maxFileSize
+        * @param category
+        * @param maxNbResult
+        * @param maxSize
+        * @param setSharedEntryPath If true Entry.shared_entry.path will be set
+        *        (set to false if you don't want to share absolute path for privacy reasons).
+        * @return
+        */
       virtual QList<Protos::Common::FindResult> find(
          const QString& words,
          const QList<QString>& extensions,
@@ -161,7 +173,8 @@ namespace FM
          qint64 maxFileSize,
          Protos::Common::FindPattern_Category category,
          int maxNbResult,
-         int maxSize
+         int maxSize,
+         bool setSharedEntryPath
       ) = 0;
 
       /**

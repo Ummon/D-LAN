@@ -50,17 +50,6 @@ void SearchDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option
    case 0: // Item name.
       {
          QTextDocument doc;
-         // We have to manually set the text color depending of the selection.
-         doc.setDefaultStyleSheet(
-            QStringLiteral("span { color: %1 }").arg(newOption.state & QStyle::State_Selected ?
-                                        #ifdef Q_OS_WIN32
-                                                 newOption.palette.text().color().name() // FIXME: on Windows 'highlightedText' doesn't return the correct value.
-                                        #else
-                                                 newOption.palette.highlightedText().color().name()
-                                        #endif
-                                               : newOption.palette.text().color().name()
-            )
-         );
          doc.setHtml(this->toHtmlText(newOption.text));
 
          // Painting item without text.
@@ -81,11 +70,7 @@ void SearchDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option
 
    case 2: // Match rate.
       {
-         // To draw the background (including the selection highlight). We don't want to draw the text so we set its color to transparent.
-         QPalette palette(newOption.palette);
-         palette.setColor(QPalette::Active, QPalette::HighlightedText, QColor(0, 0, 0, 0));
-         palette.setColor(QPalette::Active, QPalette::Text, QColor(0, 0, 0, 0));
-         newOption.palette = palette;
+         // To draw the background (including the selection highlight).
          QStyledItemDelegate::paint(painter, newOption, index);
 
          if (index.data().isNull())
@@ -94,20 +79,22 @@ void SearchDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option
          int value = index.data().toInt();
 
          QStyleOptionProgressBar progressBarOption;
-         progressBarOption.QStyleOption::operator=(option);
+         progressBarOption.QStyleOption::operator=(newOption);
+         progressBarOption.state |= QStyle::State_Horizontal;
          progressBarOption.minimum = 0;
          progressBarOption.maximum = 100;
          progressBarOption.textAlignment = Qt::AlignHCenter | Qt::AlignVCenter;
          progressBarOption.progress = value;
          progressBarOption.textVisible = false;
 
+         // Do not use the entire surface to reduce the widget size.
          QRect rect(progressBarOption.rect);
          const int height = rect.height();
          rect.setTop(rect.top() + height / 4);
          rect.setBottom(rect.bottom() - height / 4);
          progressBarOption.rect = rect;
 
-         QApplication::style()->drawControl(QStyle::CE_ProgressBar, &progressBarOption, painter, &this->model);
+         QApplication::style()->drawControl(QStyle::CE_ProgressBar, &progressBarOption, painter, option.widget);
       }
       break;
 
@@ -165,7 +152,7 @@ QString SearchDelegate::toHtmlText(const QString& text) const
          pos += term.size();
       }
    }
-   return "<span>" + htmlText + "</span>";
+   return htmlText;
 }
 
 /////
@@ -205,10 +192,10 @@ SearchWidget::SearchWidget(
    this->ui->treeView->setItemDelegate(&this->searchDelegate);
    this->ui->treeView->header()->setVisible(true);
 
-   QList<quint32> columnSizes = SETTINGS.getRepeated<quint32>("search_column_size");
+   QList<quint32> columnSizes = SETTINGS.getRepeated<quint32>("search_column_sizes");
    if (columnSizes.size() != this->ui->treeView->header()->count())
       columnSizes = QList<quint32>() << 275 << 200 << 60 << 80 << 80;
-   SETTINGS.set("search_column_size", columnSizes);
+   SETTINGS.set("search_column_sizes", columnSizes);
    SETTINGS.save();
    for (int i = 0; i < this->ui->treeView->header()->count(); i++)
       this->ui->treeView->header()->resizeSection(i, columnSizes[i]);
@@ -229,7 +216,7 @@ SearchWidget::SearchWidget(
 
    this->ui->treeView->setSelectionBehavior(QAbstractItemView::SelectRows);
    this->ui->treeView->setSelectionMode(QAbstractItemView::ExtendedSelection);
-   this->ui->treeView->sortByColumn(SearchModel::toColumnNumber(SearchColumn::RELEVANCE), Qt::AscendingOrder);
+   this->ui->treeView->sortByColumn(SearchModel::RELEVANCE, Qt::AscendingOrder);
 
    this->searchModel.search(findPattern, local);
 
@@ -255,10 +242,7 @@ SearchWidget::SearchWidget(
    );
    connect(&this->downloadMenu, &SearchMenu::browse, this, &SearchWidget::browseCurrents);
 
-   this->setWindowTitle(SearchUtils::getFindPatternWindowTitle(findPattern));
-
-   if (local)
-      this->setWindowIcon(QIcon(":/icons/ressources/zoom_monitor.png"));
+   this->setWindowTitle(SearchUtils::getFindPatternWindowTitle(findPattern, local));
 }
 
 SearchWidget::~SearchWidget()
@@ -399,7 +383,7 @@ void SearchWidget::treeviewSelectionChanged(const QItemSelection& selected, cons
 
 void SearchWidget::treeviewSectionResized(int logicalIndex, int oldSize, int newSize)
 {
-   SETTINGS.set("search_column_size", logicalIndex, static_cast<quint32>(newSize));
+   SETTINGS.set("search_column_sizes", logicalIndex, static_cast<quint32>(newSize));
    SETTINGS.save();
 }
 

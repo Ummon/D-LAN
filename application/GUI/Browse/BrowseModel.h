@@ -35,6 +35,12 @@ namespace GUI
 {
    class BrowseModel : public QAbstractItemModel
    {
+      enum Columns
+      {
+         NAME = 0,
+         SIZE = 1
+      };
+
    protected:
       class Tree;
 

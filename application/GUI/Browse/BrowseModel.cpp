@@ -468,7 +468,7 @@ QVariant BrowseModel::Tree::data(int column) const
 {
    switch (column)
    {
-   case 0:
+   case NAME:
       {
          const auto& item = this->getItem();
          if (item.name().empty())
@@ -482,7 +482,7 @@ QVariant BrowseModel::Tree::data(int column) const
          else
             return QString::fromStdString(this->getItem().name());
       }
-   case 1: return Common::Global::formatByteSize(this->getItem().size());
+   case SIZE: return Common::Global::formatByteSize(this->getItem().size());
    default: return QVariant();
    }
 }

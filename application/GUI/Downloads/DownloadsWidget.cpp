@@ -78,7 +78,6 @@ void DownloadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
 
       progressBarOption.textVisible = true;
 
-      // FIXME: The text color of the progress bar is wrong when the row is selected.
       QApplication::style()->drawControl(QStyle::CE_ProgressBar, &progressBarOption, painter, option.widget);
    }
    else

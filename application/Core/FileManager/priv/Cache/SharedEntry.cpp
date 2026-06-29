@@ -169,7 +169,12 @@ QString SharedEntry::getUserName() const
 
 void SharedEntry::setUserName(const QString& name)
 {
+   if (this->userName == name)
+      return;
+
+   const QString oldName = this->userName;
    this->userName = name;
+   this->getCache()->onEntryRenamed(this->getRootEntry(), oldName);
 }
 
 /**

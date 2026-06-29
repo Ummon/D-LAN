@@ -30,16 +30,6 @@ using namespace GUI;
 
 const int SearchModel::NB_SIGNAL_PROGRESS(50);
 
-SearchColumn SearchModel::toSearchColumn(int number)
-{
-   return static_cast<SearchColumn>(number);
-}
-
-int SearchModel::toColumnNumber(SearchColumn column)
-{
-   return static_cast<int>(column);
-}
-
 /**
   * @class GUI::SearchModel
   *
@@ -143,11 +133,11 @@ QVariant SearchModel::headerData(int section, Qt::Orientation orientation, int r
    case Qt::DisplayRole:
       switch (section)
       {
-      case 0: return tr("Name");
-      case 1: return tr("Directory");
-      case 2: return tr("Relevance");
-      case 3: return tr("Peer");
-      case 4: return tr("Size");
+      case NAME: return tr("Name");
+      case DIRECTORY: return tr("Directory");
+      case RELEVANCE: return tr("Relevance");
+      case PEER: return tr("Peer");
+      case SIZE: return tr("Size");
       default: return QAbstractItemModel::headerData(section, orientation, role);
       }
 
@@ -188,8 +178,11 @@ bool SearchModel::isNonTerminalFile(const QModelIndex& index)
 
 void SearchModel::loadChildren(const QPersistentModelIndex &index)
 {
-   this->peerID = static_cast<const SearchTree*>(index.internalPointer())->getPeerID();
-   BrowseModel::loadChildren(index);
+   if (index.isValid())
+   {
+      this->peerID = static_cast<const SearchTree*>(index.internalPointer())->getPeerID();
+      BrowseModel::loadChildren(index);
+   }
 }
 
 bool entryLessThan(
@@ -199,7 +192,7 @@ bool entryLessThan(
    const Protos::Common::Entry& e2,
    int level2,
    const QString& peerNick2,
-   SearchColumn column,
+   SearchModel::Column column,
    Qt::SortOrder order
 )
 {
@@ -215,41 +208,41 @@ bool entryLessThan(
 
    switch (column)
    {
-      case SearchColumn::NAME:
+      case SearchModel::NAME:
          if (name1 != name2)
             return order == Qt::AscendingOrder ? name1 < name2 : name1 > name2;
          break;
 
-      case SearchColumn::DIRECTORY:
+      case SearchModel::DIRECTORY:
          if (path1 != path2)
             return order == Qt::AscendingOrder ? path1 < path2 : path1 > path2;
          break;
 
-      case SearchColumn::RELEVANCE:
+      case SearchModel::RELEVANCE:
          if (level1 != level2)
             return order == Qt::AscendingOrder ? level1 < level2 : level1 > level2;
          break;
 
-      case SearchColumn::PEER:
+      case SearchModel::PEER:
          if (peerNick1 != peerNick2)
             return order == Qt::AscendingOrder ? peerNick1 < peerNick2 : peerNick1 > peerNick2;
          break;
 
-      case SearchColumn::SIZE:
+      case SearchModel::SIZE:
          if (e1.size() != e2.size())
             return order == Qt::AscendingOrder ? e1.size() < e2.size() : e1.size() > e2.size();
    }
 
-   if (column != SearchColumn::RELEVANCE && level1 != level2)
+   if (column != SearchModel::RELEVANCE && level1 != level2)
       return order == Qt::AscendingOrder ? level1 < level2 : level1 > level2;
 
-   if (column != SearchColumn::DIRECTORY && path1 != path2)
+   if (column != SearchModel::DIRECTORY && path1 != path2)
       return order == Qt::AscendingOrder ? path1 < path2 : path1 > path2;
 
-   if (column != SearchColumn::NAME && name1 != name2)
+   if (column != SearchModel::NAME && name1 != name2)
       return order == Qt::AscendingOrder ? name1 < name2 : name1 > name2;
 
-   if (column != SearchColumn::PEER && peerNick1 != peerNick2)
+   if (column != SearchModel::PEER && peerNick1 != peerNick2)
       return order == Qt::AscendingOrder ? peerNick1 < peerNick2 : peerNick1 > peerNick2;
 
    return order == Qt::AscendingOrder ? e1.size() < e2.size() : e1.size() > e2.size();
@@ -260,7 +253,7 @@ bool entryLessThan(
   */
 void SearchModel::sort(int column, Qt::SortOrder order)
 {
-   this->currentSortedColumn = column == -1 ? SearchColumn::RELEVANCE : toSearchColumn(column);
+   this->currentSortedColumn = column == -1 ? RELEVANCE : static_cast<Column>(column);
    this->currentSortOrder = order;
 
    emit layoutAboutToBeChanged(
@@ -371,7 +364,7 @@ void SearchModel::resultFromFindResult(const Protos::Common::FindResult& findRes
                   {
                      const int row = similarTree->getOwnPosition();
                      similarTree->copyFrom(newTree);
-                     emit dataChanged(this->createIndex(row, 0, similarTree), this->createIndex(row, 3, similarTree));
+                     emit dataChanged(this->createIndex(row, NAME, similarTree), this->createIndex(row, PEER, similarTree));
                   }
 
                   break;
@@ -386,7 +379,7 @@ void SearchModel::resultFromFindResult(const Protos::Common::FindResult& findRes
    }
 
    if (maxLevelChange && this->rowCount() > 0)
-      emit dataChanged(this->createIndex(0, 2), this->createIndex(this->rowCount() - 1, 2));
+      emit dataChanged(this->createIndex(0, RELEVANCE), this->createIndex(this->rowCount() - 1, RELEVANCE));
 }
 
 void SearchModel::sendNextProgress()
@@ -531,25 +524,26 @@ QVariant SearchModel::SearchTree::data(int column) const
 {
    switch (column)
    {
-   case 0:
-      return QString::fromStdString(this->getItem().name());
+   case NAME:
+      return Common::ProtoHelper::getName(this->getItem());
 
-   case 1:
+   case DIRECTORY:
+   {
+      const bool isARoot = this->parent->getParent() == nullptr;
       if (
-         this->parent->getParent() != nullptr &&
+         !isARoot &&
          this->parent->getItem().type() == Protos::Common::Entry_Type_DIR ||
-            this->getItem().type() == Protos::Common::Entry_Type_FILE &&
+         this->getItem().type() == Protos::Common::Entry_Type_FILE &&
          this->getNbChildren() > 0
       )
          return QVariant();
 
-      return Common::ProtoHelper::getPath(
-         this->getItem(), !Common::ProtoHelper::isRoot(this->getItem())
-      ).toString(false);
+      return Common::ProtoHelper::getPath(this->getItem(), true).toString(false);
+   }
 
-   // case 2: // See 'SearchModel::data(..)'.
+   // case RELEVANCE: // See 'SearchModel::data(..)'.
 
-   case 3:
+   case PEER:
       if (this->getItem().type() == Protos::Common::Entry_Type_FILE && this->getNbChildren() > 0)
       {
          for (int i = 0; i < this->getNbChildren(); i++)
@@ -558,7 +552,7 @@ QVariant SearchModel::SearchTree::data(int column) const
       }
       return this->peerNick;
 
-   case 4:
+   case SIZE:
       return Common::Global::formatByteSize(this->getItem().size());
 
    default:

@@ -70,6 +70,11 @@ namespace Common
       static QHostAddress getIP(const Protos::Common::IP& ipMess);
 
       /**
+        * Returns the entry name or the shared entry name is entry name is empty.
+        */
+      static QString getName(const Protos::Common::Entry& entry);
+
+      /**
         * Return the path of an entry, for exemple:
         *  - entry is a root: "entry" (with 'absolutePath == false')
         *  - entry is a root: "/root_dir/entry" ('absolutePath == true')

@@ -26,8 +26,10 @@
 /**
   * @class Common::SortedList
   *
-  * A very simple sorted list, not very efficient, implemented as a simple linked list. A more efficient implementation should use a red-black tree or a B-tree.
-  * Don't forget to call 'itemChanged(..)' if the data of one of the items has changed and the sorting function ('lesserThan') depends of this data.
+  * A very simple sorted list, not very efficient, implemented as a simple array.
+  * A more efficient implementation should use a red-black tree or a B-tree.
+  * Don't forget to call 'itemChanged(..)' if the data of one of the items has
+  * changed and the sorting function ('lesserThan') depends of this data.
   * Do not allow multiple same item.
   */
 

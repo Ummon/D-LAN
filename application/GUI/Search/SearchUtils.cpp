@@ -146,29 +146,25 @@ QString SearchUtils::getFindPatternSummary(const Protos::Common::FindPattern& fi
    return result;
 }
 
-QString SearchUtils::getFindPatternWindowTitle(const Protos::Common::FindPattern& findPattern)
+QString SearchUtils::getFindPatternWindowTitle(const Protos::Common::FindPattern& findPattern, bool local)
 {
-   const QString pattern = QString::fromStdString(findPattern.pattern());
-   if (!pattern.isEmpty())
-      return pattern;
+   QString result = QString::fromStdString(findPattern.pattern());
 
-   if (findPattern.extension_filters_size() > 0)
+   if (result.isEmpty() && findPattern.extension_filters_size() > 0)
    {
       try
       {
          Common::ExtensionCategory cat =
             Common::KnownExtensions::getCategoryFrom(QString::fromStdString(findPattern.extension_filters(0)));
-         return getExtensionText(cat, false);
+         result = getExtensionText(cat, false);
       }
       catch (const Common::CategoryNotFoundException&)
       {
       }
    }
 
-   if (findPattern.min_size() > 0 || findPattern.max_size() > 0)
+   if (result.isEmpty() && (findPattern.min_size() > 0 || findPattern.max_size() > 0))
    {
-      QString result;
-
       if (findPattern.min_size() > 0)
          result += Common::Global::formatByteSize(findPattern.min_size());
       else
@@ -180,9 +176,10 @@ QString SearchUtils::getFindPatternWindowTitle(const Protos::Common::FindPattern
          result += Common::Global::formatByteSize(findPattern.max_size());
       else
          result += QString::fromUtf8("∞");
-
-      return result;
    }
 
-   return QString();
+   if (local)
+      result += " (" % QObject::tr("Local") % ")";
+
+   return result;
 }

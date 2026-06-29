@@ -34,15 +34,6 @@
 
 namespace GUI
 {
-   enum class SearchColumn
-   {
-      NAME = 0,
-      DIRECTORY = 1,
-      RELEVANCE = 2,
-      PEER = 3,
-      SIZE = 4
-   };
-
    class SearchModel : public BrowseModel
    {
       class SearchTree;
@@ -51,8 +42,14 @@ namespace GUI
       Q_OBJECT
 
    public:
-      static SearchColumn toSearchColumn(int number);
-      static int toColumnNumber(SearchColumn column);
+      enum Column
+      {
+         NAME = 0,
+         DIRECTORY = 1,
+         RELEVANCE = 2,
+         PEER = 3,
+         SIZE = 4
+      };
 
       SearchModel(
          QSharedPointer<RCC::ICoreConnection> coreConnection,
@@ -104,7 +101,7 @@ namespace GUI
       int nbFolders;
       int nbFiles;
 
-      SearchColumn currentSortedColumn;
+      Column currentSortedColumn;
       Qt::SortOrder currentSortOrder;
 
       QTimer timerProgress;
@@ -149,13 +146,13 @@ namespace GUI
          int getLevel() const;
          Common::Hash getPeerID() const;
          const QString& getPeerNick() const;
-         QVariant data(int column) const;
+         QVariant data(int column) const override;
 
          void copyFrom(const SearchTree* otherNode);
          bool isSameAs(const Protos::Common::Entry& otherEntry) const;
 
       protected:
-         SearchTree* newTree(const Protos::Common::Entry& entry);
+         SearchTree* newTree(const Protos::Common::Entry& entry) override;
 
       private:
          int level;

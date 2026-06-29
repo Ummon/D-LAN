@@ -78,7 +78,8 @@ Cache* Entry::getCache()
 
 bool Entry::isRoot() const
 {
-   return this->root->getRootEntry() == this;
+   return this->parentDirectory == nullptr;
+   // return this->root->getRootEntry() == this;
 }
 
 SharedEntry* Entry::getRoot() const
@@ -89,6 +90,14 @@ SharedEntry* Entry::getRoot() const
 QString Entry::getName() const
 {
    return this->name;
+}
+
+/**
+  * Same as 'getName()' but the name for a root entry is the user name of its shared entry.
+  */
+QString Entry::getUserName() const
+{
+   return this->isRoot() ? this->getRoot()->getUserName() : this->getName();
 }
 
 QString Entry::getNameWithoutExtension() const
@@ -106,9 +115,16 @@ void Entry::rename(const QString& newName)
    if (this->name == newName)
       return;
 
-   const QString oldName = this->name;
-   this->name = newName;
-   this->getCache()->onEntryRenamed(this, oldName);
+   if (!this->isRoot())
+   {
+      const QString oldName = this->name;
+      this->name = newName;
+      this->getCache()->onEntryRenamed(this, oldName);
+   }
+   else
+   {
+      this->name = newName;
+   }
 }
 
 void Entry::setParentDirectory(Directory* dir)

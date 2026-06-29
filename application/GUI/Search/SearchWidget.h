@@ -53,7 +53,6 @@ namespace GUI
    private:
       QString toHtmlText(const QString& text) const;
       QStringList currentTerms;
-      QProgressBar model;
    };
 
    class SearchMenu : public DownloadMenu
