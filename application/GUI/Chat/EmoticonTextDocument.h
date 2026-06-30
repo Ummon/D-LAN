@@ -15,45 +15,24 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #pragma once
 
-#include <QEvent>
-#include <QTextEdit>
-#include <QList>
+#include <QTextDocument>
 
 #include <Emoticons/Emoticons.h>
 
 namespace GUI
 {
-   struct KeyCombination
+   class EmoticonTextDocument : public QTextDocument
    {
-      Qt::KeyboardModifier modifier;
-      int key;
-   };
-
-   class ChatTextEdit : public QTextEdit
-   {
-      Q_OBJECT
    public:
-      explicit ChatTextEdit(QWidget* parent = nullptr);
-
-      void setEmoticons(const Emoticons* emoticons);
-
-      void addIgnoreKeyCombination(KeyCombination keyCombination);
-
-   signals:
-      void wordTyped(int position, const QString&);
+      EmoticonTextDocument(const Emoticons& emoticons, QObject* parent = nullptr);
 
    protected:
-      bool event(QEvent* e) override;
       QVariant loadResource(int type, const QUrl& name) override;
 
-   private slots:
-      void documentContentsChange(int position, int charsRemoved, int charsAdded);
-
    private:
-      const Emoticons* emoticons = nullptr;
-      QList<KeyCombination> keyCombinationIgnored;
+      const Emoticons& emoticons;
    };
 }

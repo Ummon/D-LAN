@@ -24,6 +24,8 @@ using namespace GUI;
 #include <QMenu>
 #include <QMessageBox>
 #include <QTextDocument>
+#include <QTextBlock>
+#include <QTextDocumentFragment>
 #include <QAbstractTextDocumentLayout>
 #include <QPainter>
 #include <QClipboard>
@@ -58,7 +60,7 @@ void PeerListChatDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
   * To be able to select some message text via a QLineEdit and copy it.
   */
 
-ChatDelegate::ChatDelegate(QTextDocument& textDocument)
+ChatDelegate::ChatDelegate(EmoticonTextDocument& textDocument)
    : textDocument(textDocument)
 {
 }
@@ -72,8 +74,22 @@ void ChatDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, 
 
    QStyle* style = newOption.widget ? newOption.widget->style() : QApplication::style();
 
-   this->textDocument.setHtml(newOption.text);
+   this->textDocument.setMarkdown(newOption.text);
    this->textDocument.setTextWidth(newOption.rect.width());
+
+   // Aligne all emoticons at the middle.
+   QTextCursor cur(&this->textDocument);
+   for (QTextBlock b = this->textDocument.begin(); b.isValid(); b = b.next())
+      for (auto it = b.begin(); !it.atEnd(); ++it) {
+         const QTextFragment frag = it.fragment();
+         if (frag.charFormat().isImageFormat()) {
+            QTextCharFormat fmt;
+            fmt.setVerticalAlignment(QTextCharFormat::AlignMiddle);
+            cur.setPosition(frag.position());
+            cur.setPosition(frag.position() + frag.length(), QTextCursor::KeepAnchor);
+            cur.mergeCharFormat(fmt);
+         }
+      }
 
    newOption.text = QString();
    style->drawControl(QStyle::CE_ItemViewItem, &newOption, painter, newOption.widget);
@@ -83,7 +99,7 @@ void ChatDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, 
 
    // Highlighting text if item is selected.
    if (newOption.state & QStyle::State_Selected && newOption.state & QStyle::State_Active)
-       ctx.palette.setColor(QPalette::Text, newOption.palette.color(QPalette::Active, QPalette::HighlightedText));
+      ctx.palette.setColor(QPalette::Text, newOption.palette.color(QPalette::Active, QPalette::HighlightedText));
 
    QRect textRect = style->subElementRect(QStyle::SE_ItemViewItemText, &newOption);
    painter->save();
@@ -112,7 +128,7 @@ QSize	ChatDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelInd
    QStyleOptionViewItem newOption = option;
    initStyleOption(&newOption, index);
 
-   this->textDocument.setHtml(newOption.text);
+   this->textDocument.setMarkdown(newOption.text);
    this->textDocument.setTextWidth(newOption.rect.width());
    QSize size(newOption.rect.width(), this->textDocument.size().height()); // Width should be "doc.idealWidth()".
    model->insertCachedSize(index, size);
@@ -136,15 +152,16 @@ QSize	ChatDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelInd
 
 /////
 
-const int ChatWidget::DEFAULT_FONT_SIZE(8);
+const QChar ChatWidget::EXPLICIT_LINE_RETURN(0x2800);
 
 ChatWidget::ChatWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, Emoticons& emoticons, QWidget* parent) :
    MdiWidget(parent),
    ui(new Ui::ChatWidget),
+   textDocument(emoticons),
    coreConnection(coreConnection),
    emoticons(emoticons),
    peerListModel(coreConnection),
-   chatModel(coreConnection, this->peerListModel, emoticons),
+   chatModel(coreConnection, this->peerListModel),
    chatDelegate(textDocument)
 {
    this->init();
@@ -158,10 +175,11 @@ ChatWidget::ChatWidget(
 ) :
    MdiWidget(parent),
    ui(new Ui::ChatWidget),
+   textDocument(emoticons),
    coreConnection(coreConnection),
    emoticons(emoticons),
    peerListModel(coreConnection),
-   chatModel(coreConnection, this->peerListModel, emoticons, roomName),
+   chatModel(coreConnection, this->peerListModel, roomName),
    chatDelegate(textDocument)
 {
    this->init();
@@ -185,7 +203,10 @@ QString ChatWidget::getRoomName() const
 
 void ChatWidget::sendMessage()
 {
-   this->chatModel.sendMessage(this->ui->txtMessage->toHtml(), this->getPeerAnswers());
+   QString md = this->ui->txtMessage->toMarkdown();
+   md.replace(QChar(10), ' '); // 'toMarkdown' inserts some '\n'.. we remove it.
+   md.replace(EXPLICIT_LINE_RETURN, '\n'); // We replace the explicit line returns (U+2800) by a '\n'.
+   this->chatModel.sendMessage(md, this->getPeerAnswers());
    this->answers.clear();
    this->currentAnswer = {};
 }
@@ -209,8 +230,7 @@ void ChatWidget::sendMessageStatus(ChatModel::SendMessageStatus status)
    switch (status)
    {
    case  ChatModel::OK:
-      // We avoid the 'clear()' method because it removes all ressources (emoticon images).
-      this->ui->txtMessage->document()->setHtml("");
+      this->ui->txtMessage->document()->clear();
       break;
 
    case ChatModel::MESSAGE_TOO_LARGE:
@@ -286,7 +306,7 @@ void ChatWidget::copySelectedLineToClipboard()
    QModelIndexList selection = this->ui->tblChat->selectionModel()->selectedRows();
    for (QListIterator<QModelIndex> i(selection); i.hasNext();)
    {
-      lines.append(this->chatModel.getLineStr(i.next().row(), false)).append('\n');
+      lines.append(this->chatModel.getLineStr(i.next().row())).append('\n');
    }
    QApplication::clipboard()->setText(lines);
 }
@@ -316,8 +336,6 @@ void ChatWidget::currentCharFormatChanged(const QTextCharFormat& charFormat)
    {
       this->disconnectFormatWidgets();
 
-      this->setComboFontSize(charFormat.fontPointSize());
-
       this->ui->butBold->setChecked(charFormat.fontWeight() >= QFont::Bold);
       this->ui->butItalic->setChecked(charFormat.fontItalic());
       this->ui->butUnderline->setChecked(charFormat.fontUnderline());
@@ -344,21 +362,21 @@ void ChatWidget::currentCharFormatChanged(const QTextCharFormat& charFormat)
    }
 }
 
-void ChatWidget::cursorPositionChanged()
-{
-   if (this->ui->txtMessage->textCursor().position() != 0)
-   {
-      this->disconnectFormatWidgets();
-      this->ui->butColorBox->setColor(this->ui->txtMessage->textColor());
-      this->connectFormatWidgets();
-   }
-   else
-   {
-      disconnect(this->ui->txtMessage, &ChatTextEdit::cursorPositionChanged, this, &ChatWidget::cursorPositionChanged);
-      this->ui->txtMessage->setTextColor(this->ui->butColorBox->getCurrentColor());
-      connect(this->ui->txtMessage, &ChatTextEdit::cursorPositionChanged, this, &ChatWidget::cursorPositionChanged);
-   }
-}
+// void ChatWidget::cursorPositionChanged()
+// {
+//    if (this->ui->txtMessage->textCursor().position() != 0)
+//    {
+//       this->disconnectFormatWidgets();
+//       this->ui->butColorBox->setColor(this->ui->txtMessage->textColor());
+//       this->connectFormatWidgets();
+//    }
+//    else
+//    {
+//       disconnect(this->ui->txtMessage, &ChatTextEdit::cursorPositionChanged, this, &ChatWidget::cursorPositionChanged);
+//       this->ui->txtMessage->setTextColor(this->ui->butColorBox->getCurrentColor());
+//       connect(this->ui->txtMessage, &ChatTextEdit::cursorPositionChanged, this, &ChatWidget::cursorPositionChanged);
+//    }
+// }
 
 /**
   * Adjust the text edit size depending of the size of each lines.
@@ -404,11 +422,6 @@ void ChatWidget::setFocusTxtMessage()
    this->ui->txtMessage->setFocus();
 }
 
-void ChatWidget::comboFontSizeChanged(int index)
-{
-   this->ui->txtMessage->setFontPointSize(this->ui->cmbFontSize->itemData(index).toInt());
-}
-
 void ChatWidget::setBold(bool toggled)
 {
    this->ui->txtMessage->setFontWeight(toggled ? QFont::Bold : QFont::Normal);
@@ -424,27 +437,11 @@ void ChatWidget::setUnderline(bool toggled)
    this->ui->txtMessage->setFontUnderline(toggled);
 }
 
-void ChatWidget::setTextColor(QColor color)
-{
-   this->ui->txtMessage->setTextColor(color);
-}
-
 void ChatWidget::resetFormat()
 {
-   for (int i = 0; i < this->ui->cmbFontSize->count(); i++)
-   {
-      if (this->ui->cmbFontSize->itemData(i).toInt() == DEFAULT_FONT_SIZE)
-      {
-         this->ui->cmbFontSize->setCurrentIndex(i);
-         break;
-      }
-   }
-
    this->ui->butBold->setChecked(false);
    this->ui->butItalic->setChecked(false);
    this->ui->butUnderline->setChecked(false);
-
-   this->ui->butColorBox->setColor(QColor(0, 0, 0));
 
    this->applyCurrentFormat();
 }
@@ -467,7 +464,11 @@ void ChatWidget::messageWordTyped(int position, const QString& word)
       cursor.setPosition(position);
       cursor.setPosition(position + word.length(), QTextCursor::KeepAnchor);
       cursor.deleteChar();
-      cursor.insertHtml(htmlEmoticon(this->emoticons.getDefaultTheme(), smile));
+
+      QTextImageFormat format;
+      format.setName(buildUrlEmoticon(this->emoticons.getDefaultTheme(), smile).toString());
+      format.setVerticalAlignment(QTextCharFormat::AlignMiddle);
+      cursor.insertImage(format);
    }
 }
 
@@ -493,7 +494,11 @@ void ChatWidget::insertEmoticon(const QString& theme, const QString& emoticonNam
    )
       this->ui->txtMessage->insertPlainText(" ");
 
-   this->ui->txtMessage->insertHtml(htmlEmoticon(theme, emoticonName));
+   QTextCursor cursor = this->ui->txtMessage->textCursor();
+   QTextImageFormat format;
+   format.setName(buildUrlEmoticon(theme, emoticonName).toString());
+   format.setVerticalAlignment(QTextCharFormat::AlignMiddle);
+   cursor.insertImage(format);
 
    this->ui->txtMessage->insertPlainText(" ");
 }
@@ -615,6 +620,13 @@ bool ChatWidget::eventFilter(QObject* obj, QEvent* event)
             this->sendMessage();
             return true;
          }
+         else
+         {
+            // We add special characters to know where the explicit line returns are put,
+            // they will be replaced in 'sendMessage'.
+            QTextCursor cursor = this->ui->txtMessage->textCursor();
+            cursor.insertText(QString(EXPLICIT_LINE_RETURN));
+         }
          break;
 
       case Qt::Key_Tab: // 'tab' : begins a peer name insertion or in peer name insertion mode step through each peer names.
@@ -642,14 +654,7 @@ void ChatWidget::init()
    this->autoComplete->setWindowFlags(Qt::Popup);
    this->autoComplete->setVisible(false);
 
-   foreach (QString theme, this->emoticons.getThemes())
-      foreach (QString smileName, this->emoticons.getSmileNames(theme))
-      {
-         const QPixmap& image = this->emoticons.getSmileImage(theme, smileName);
-         const QUrl& url = buildUrlEmoticon(theme, smileName);
-         this->textDocument.addResource(QTextDocument::ImageResource, url, image);
-         this->ui->txtMessage->document()->addResource(QTextDocument::ImageResource, url, image);
-      }
+   this->ui->txtMessage->setEmoticons(&this->emoticons);
 
    if (this->chatModel.isMainChat())
    {
@@ -685,18 +690,6 @@ void ChatWidget::init()
       connect(this->ui->tblRoomPeers, &QTableView::doubleClicked, this, &ChatWidget::browseSelectedPeers);
    }
 
-   int defaultFontIndex = 0;
-   for (int fontSize = 6, i = 0; fontSize <= 28; fontSize++, i++)
-   {
-      this->ui->cmbFontSize->addItem(QString::number(fontSize), fontSize);
-      if (fontSize >= 12)
-         fontSize++;
-      if (fontSize == DEFAULT_FONT_SIZE)
-         defaultFontIndex = i;
-   }
-   this->ui->cmbFontSize->setCurrentIndex(defaultFontIndex);
-   this->ui->txtMessage->setFontPointSize(DEFAULT_FONT_SIZE);
-
    this->applyCurrentFormat();
 
    this->ui->tblChat->setModel(&this->chatModel);
@@ -723,15 +716,15 @@ void ChatWidget::init()
    connect(this->ui->tblChat->verticalScrollBar(), &QScrollBar::valueChanged, this, &ChatWidget::scrollChanged);
 
    connect(this->ui->txtMessage, &ChatTextEdit::currentCharFormatChanged, this, &ChatWidget::currentCharFormatChanged);
-   connect(this->ui->txtMessage, &ChatTextEdit::cursorPositionChanged, this, &ChatWidget::cursorPositionChanged);
+   // connect(this->ui->txtMessage, &ChatTextEdit::cursorPositionChanged, this, &ChatWidget::cursorPositionChanged);
    connect(this->ui->txtMessage, &ChatTextEdit::textChanged, this, &ChatWidget::textChanged);
    connect(this->ui->txtMessage->document(), &QTextDocument::contentsChange, this, &ChatWidget::documentChanged);
 
-   connect(this->ui->cmbFontSize, &QComboBox::currentIndexChanged, this, &ChatWidget::setFocusTxtMessage);
+   // connect(this->ui->cmbFontSize, &QComboBox::currentIndexChanged, this, &ChatWidget::setFocusTxtMessage);
    connect(this->ui->butBold, &QPushButton::clicked, this, &ChatWidget::setFocusTxtMessage);
    connect(this->ui->butItalic, &QPushButton::clicked, this, &ChatWidget::setFocusTxtMessage);
    connect(this->ui->butUnderline, &QPushButton::clicked, this, &ChatWidget::setFocusTxtMessage);
-   connect(this->ui->butColorBox, &QPushButton::clicked, this, &ChatWidget::setFocusTxtMessage);
+   // connect(this->ui->butColorBox, &QPushButton::clicked, this, &ChatWidget::setFocusTxtMessage);
 
    connect(this->ui->butResetFormat, &QPushButton::clicked, this, &ChatWidget::setFocusTxtMessage);
    connect(this->ui->butResetFormat, &QPushButton::clicked, this, &ChatWidget::resetFormat);
@@ -759,49 +752,23 @@ void ChatWidget::init()
 
 void ChatWidget::applyCurrentFormat()
 {
-   this->ui->txtMessage->setFontPointSize(this->ui->cmbFontSize->itemData(this->ui->cmbFontSize->currentIndex()).toInt());
    this->ui->txtMessage->setFontWeight(this->ui->butBold->isChecked() ? QFont::Bold : QFont::Normal);
    this->ui->txtMessage->setFontItalic(this->ui->butItalic->isChecked());
    this->ui->txtMessage->setFontUnderline(this->ui->butUnderline->isChecked());
-   this->ui->txtMessage->setTextColor(this->ui->butColorBox->getCurrentColor());
 }
 
 void ChatWidget::connectFormatWidgets()
 {
-   connect(this->ui->cmbFontSize, &QComboBox::currentIndexChanged, this, &ChatWidget::comboFontSizeChanged);
    connect(this->ui->butBold, &QPushButton::toggled, this, &ChatWidget::setBold);
    connect(this->ui->butItalic, &QPushButton::toggled, this, &ChatWidget::setItalic);
    connect(this->ui->butUnderline, &QPushButton::toggled, this, &ChatWidget::setUnderline);
-   connect(this->ui->butColorBox, &ColorBox::colorChanged, this, &ChatWidget::setTextColor);
 }
 
 void ChatWidget::disconnectFormatWidgets()
 {
-   disconnect(this->ui->cmbFontSize, &QComboBox::currentIndexChanged, this, &ChatWidget::comboFontSizeChanged);
    disconnect(this->ui->butBold, &QPushButton::toggled, this, &ChatWidget::setBold);
    disconnect(this->ui->butItalic, &QPushButton::toggled, this, &ChatWidget::setItalic);
    disconnect(this->ui->butUnderline, &QPushButton::toggled, this, &ChatWidget::setUnderline);
-   disconnect(this->ui->butColorBox, &ColorBox::colorChanged, this, &ChatWidget::setTextColor);
-}
-
-void ChatWidget::setComboFontSize(int fontSize)
-{
-   int defaultIndex = 0;
-   for (int i = 0; i < this->ui->cmbFontSize->count(); i++)
-   {
-      const int currentFontSize = this->ui->cmbFontSize->itemData(i).toInt();
-      if (currentFontSize == fontSize)
-      {
-         this->ui->cmbFontSize->setCurrentIndex(i);
-         return;
-      }
-      else if (currentFontSize == DEFAULT_FONT_SIZE)
-      {
-         defaultIndex = i;
-      }
-   }
-
-   this->ui->cmbFontSize->setCurrentIndex(defaultIndex);
 }
 
 void ChatWidget::displayEmoticons(const QPoint& positionSender, const QSize& sizeSender)
@@ -896,12 +863,7 @@ QUrl ChatWidget::buildUrlEmoticon(const QString& theme, const QString& emoticonN
    return QUrl(QString("emoticons://%1/%2").arg(theme, emoticonName));
 }
 
-QString ChatWidget::htmlEmoticon(const QString& theme, const QString& emoticonName)
+QString ChatWidget::mdEmoticon(const QString& theme, const QString& emoticonName)
 {
-   return QString("<img src=\"%1\" />").arg(buildUrlEmoticon(theme, emoticonName).toString());
+   return QString("![%1](%2)").arg(emoticonName, buildUrlEmoticon(theme, emoticonName).toString());
 }
-
-/*bool operator<(const Answer& a1, const Answer& a2)
-{
-
-}*/

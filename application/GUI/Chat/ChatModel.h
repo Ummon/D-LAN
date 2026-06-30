@@ -24,7 +24,7 @@
 #include <QDateTime>
 #include <QList>
 #include <QSize>
-#include <QRegularExpression>
+// #include <QRegularExpression>
 #include <QPair>
 
 #include <Protos/gui_protocol.pb.h>
@@ -34,7 +34,7 @@
 #include <Common/RemoteCoreController/ISendChatMessageResult.h>
 
 #include <Peers/PeerListModel.h>
-#include <Emoticons/Emoticons.h>
+// #include <Emoticons/Emoticons.h>
 
 namespace GUI
 {
@@ -47,7 +47,7 @@ namespace GUI
       ChatModel(
          QSharedPointer<RCC::ICoreConnection> coreConnection,
          PeerListModel& peerListModel,
-         const Emoticons& emoticons,
+         // const Emoticons& emoticons,
          const QString& roomName = QString()
       );
 
@@ -56,13 +56,13 @@ namespace GUI
 
       QList<QPair<Common::Hash, QString>> getSortedOtherPeersByRelevance() const;
 
-      QString getLineStr(int row, bool withHTML = true) const;
+      QString getLineStr(int row) const;
       Common::Hash getPeerID(int row) const;
       bool isMessageIsOurs(int row) const;
 
-      int rowCount(const QModelIndex& parent = QModelIndex()) const;
-      int columnCount(const QModelIndex& parent = QModelIndex()) const;
-      QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
+      int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+      int columnCount(const QModelIndex& parent = QModelIndex()) const override;
+      QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
       //Qt::ItemFlags flags(const QModelIndex& index) const;
 
       inline QSize getCachedSize(const QModelIndex& index) { return this->messages[index.row()].size; }
@@ -108,15 +108,15 @@ namespace GUI
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;
       PeerListModel& peerListModel;
-      const Emoticons& emoticons;
+      // const Emoticons& emoticons;
 
       QString roomName; // Empty for main chat.
       QList<Message> messages; // Always sorted by date-time.
       QList<Common::Hash> peersAnsweringToUs;
 
-      QRegularExpression regexMatchMessageContent;
-      QRegularExpression regexMatchFirstBR;
-      QRegularExpression regexMatchLastBR;
+      // QRegularExpression regexMatchMessageContent;
+      // QRegularExpression regexMatchFirstBR;
+      // QRegularExpression regexMatchLastBR;
    };
 
 }

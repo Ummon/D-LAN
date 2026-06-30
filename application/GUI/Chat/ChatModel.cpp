@@ -36,16 +36,16 @@ using namespace GUI;
 ChatModel::ChatModel(
    QSharedPointer<RCC::ICoreConnection> coreConnection,
    PeerListModel& peerListModel,
-   const Emoticons& emoticons,
+   // const Emoticons& emoticons,
    const QString& roomName
 ) :
    coreConnection(coreConnection),
    peerListModel(peerListModel),
-   emoticons(emoticons),
-   roomName(roomName),
-   regexMatchMessageContent("<p[^>]+>"),
-   regexMatchFirstBR("^\\s*<br[^>]*>"),
-   regexMatchLastBR("<br[^>]*>\\s*$")
+   // emoticons(emoticons),
+   roomName(roomName)
+   // regexMatchMessageContent("<p[^>]+>"),
+   // regexMatchFirstBR("^\\s*<br[^>]*>"),
+   // regexMatchLastBR("<br[^>]*>\\s*$")
 {
    connect(
       this->coreConnection.data(),
@@ -114,47 +114,47 @@ QList<QPair<Common::Hash, QString>> ChatModel::getSortedOtherPeersByRelevance() 
 /**
   * Return a string with all the field: "[<date>] <nick>: <message>".
   */
-QString ChatModel::getLineStr(int row, bool withHTML) const
+QString ChatModel::getLineStr(int row) const
 {
    QString result = this->formatMessage(this->messages[row]);
-   if (!withHTML)
-   {
-      QDomDocument doc;
-      doc.setContent(result);
+   // if (!withHTML)
+   // {
+   //    QDomDocument doc;
+   //    doc.setContent(result);
 
-      QDomElement HTMLElement = doc.firstChildElement("html");
-      QDomElement BodyElement = HTMLElement.firstChildElement("body");
-      QDomElement currentElement = BodyElement.firstChildElement();
+   //    QDomElement HTMLElement = doc.firstChildElement("html");
+   //    QDomElement BodyElement = HTMLElement.firstChildElement("body");
+   //    QDomElement currentElement = BodyElement.firstChildElement();
 
-      while (!currentElement.isNull())
-      {
-         QDomElement nextElement = currentElement.nextSiblingElement();
-         if (currentElement.tagName() == "img")
-         {
-            QStringList srcEmoticon = currentElement.attribute("src").split('/', Qt::SkipEmptyParts);
-            if (srcEmoticon.count() == 3)
-            {
-               QStringList emoticonSymbols = this->emoticons.getSmileSymbols(srcEmoticon[1], srcEmoticon[2]);
-               if (!emoticonSymbols.isEmpty())
-                  currentElement.parentNode().replaceChild(doc.createTextNode(emoticonSymbols.first()), currentElement);
-            }
-         }
-         else if (currentElement.tagName() == "span")
-         {
-            QDomElement innerSpanElement = currentElement.firstChildElement();
-            while (!innerSpanElement.isNull())
-            {
-               QDomElement nextInnerSpanElement = innerSpanElement.nextSiblingElement();
-               if (innerSpanElement.tagName() == "br")
-                  innerSpanElement.parentNode().replaceChild(doc.createTextNode("\n"), innerSpanElement);
-               innerSpanElement = nextInnerSpanElement;
-            }
-         }
-         currentElement = nextElement;
-      }
+   //    while (!currentElement.isNull())
+   //    {
+   //       QDomElement nextElement = currentElement.nextSiblingElement();
+   //       if (currentElement.tagName() == "img")
+   //       {
+   //          QStringList srcEmoticon = currentElement.attribute("src").split('/', Qt::SkipEmptyParts);
+   //          if (srcEmoticon.count() == 3)
+   //          {
+   //             QStringList emoticonSymbols = this->emoticons.getSmileSymbols(srcEmoticon[1], srcEmoticon[2]);
+   //             if (!emoticonSymbols.isEmpty())
+   //                currentElement.parentNode().replaceChild(doc.createTextNode(emoticonSymbols.first()), currentElement);
+   //          }
+   //       }
+   //       else if (currentElement.tagName() == "span")
+   //       {
+   //          QDomElement innerSpanElement = currentElement.firstChildElement();
+   //          while (!innerSpanElement.isNull())
+   //          {
+   //             QDomElement nextInnerSpanElement = innerSpanElement.nextSiblingElement();
+   //             if (innerSpanElement.tagName() == "br")
+   //                innerSpanElement.parentNode().replaceChild(doc.createTextNode("\n"), innerSpanElement);
+   //             innerSpanElement = nextInnerSpanElement;
+   //          }
+   //       }
+   //       currentElement = nextElement;
+   //    }
 
-      return BodyElement.text();
-   }
+   //    return BodyElement.text();
+   // }
 
    return result;
 }
@@ -201,35 +201,39 @@ QVariant ChatModel::data(const QModelIndex& index, int role) const
 
 void ChatModel::sendMessage(const QString& message, const QList<Common::Hash>& peerIDsAnswered)
 {
-   if (message.isEmpty())
+   const QString trimmedMessage = message.trimmed();
+
+   if (trimmedMessage.isEmpty())
       return;
+
+   this->sendRawMessage(trimmedMessage, peerIDsAnswered);
 
    // Remove the HTML header and footer with a regular expression . . . I know: http://stackoverflow.com/a/1732454 . . .
    // TODO: test that and try to remove regexp usage.
-   const auto messageContentMatch = this->regexMatchMessageContent.match(message);
-   const int beginning = messageContentMatch.lastCapturedIndex();
-   const int end = message.lastIndexOf("</p>");
+   // const auto messageContentMatch = this->regexMatchMessageContent.match(message);
+   // const int beginning = messageContentMatch.lastCapturedIndex();
+   // const int end = message.lastIndexOf("</p>");
 
-   if (beginning != -1 && end > beginning + messageContentMatch.captured().length())
-   {
-      QString innerMessage =
-         message.mid(
-            beginning + messageContentMatch.captured().length(),
-            end - beginning - messageContentMatch.captured().length()
-         ).trimmed();
+   // if (beginning != -1 && end > beginning + messageContentMatch.captured().length())
+   // {
+   //    QString innerMessage =
+   //       message.mid(
+   //          beginning + messageContentMatch.captured().length(),
+   //          end - beginning - messageContentMatch.captured().length()
+   //       ).trimmed();
 
-      innerMessage.remove(this->regexMatchFirstBR);
-      innerMessage.remove(this->regexMatchLastBR);
+   //    innerMessage.remove(this->regexMatchFirstBR);
+   //    innerMessage.remove(this->regexMatchLastBR);
 
-      if (!innerMessage.isEmpty())
-         this->sendRawMessage(innerMessage, peerIDsAnswered);
-   }
-   else
-   {
-      const QString trimmedMessage = message.trimmed();
-      if (!trimmedMessage.isEmpty())
-         this->sendRawMessage(trimmedMessage, peerIDsAnswered);
-   }
+   //    if (!innerMessage.isEmpty())
+   //       this->sendRawMessage(innerMessage, peerIDsAnswered);
+   // }
+   // else
+   // {
+   //    const QString trimmedMessage = message.trimmed();
+   //    if (!trimmedMessage.isEmpty())
+   //       this->sendRawMessage(trimmedMessage, peerIDsAnswered);
+   // }
 }
 void ChatModel::sendRawMessage(const QString& message, const QList<Common::Hash>& peerIDsAnswered)
 {
@@ -352,17 +356,17 @@ QString ChatModel::formatMessage(const Message& message) const
    const QDateTime now = QDateTime::currentDateTime();
 
    return
-      QString(
-         "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">"
-         "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">"
-         "p, li { white-space: pre-wrap; }"
-         "</style></head><body style=\" font-family:'Sans'; font-size:8pt; font-weight:400; font-style:normal;\">")
-      .append(
-         now.date() == message.dateTime.date() ?
-           message.dateTime.toString("[HH:mm:ss] ")
-         : message.dateTime.toString("[%1 HH:mm:ss] ")
-            .arg(message.dateTime.date().toString(Qt::TextDate))) // TODO: add date.
-      .append("<b>").append(message.nick).append("</b>: ")
-      .append(message.message)
-      .append("</body></html>");
-}
+      // QString(
+      //    "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">"
+      //    "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">"
+      //    "p, li { white-space: pre-wrap; }"
+      //    "</style></head><body style=\" font-family:'Sans'; font-size:8pt; font-weight:400; font-style:normal;\">")
+      QString()
+         .append(
+            now.date() == message.dateTime.date() ?
+              message.dateTime.toString("[HH:mm:ss] ")
+            : message.dateTime.toString("[%1 HH:mm:ss] ").arg(message.dateTime.date().toString(Qt::TextDate)))
+         .append("*").append(message.nick).append("*: ")
+         .append(message.message);
+         // .append("</body></html>");
+   }

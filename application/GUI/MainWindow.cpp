@@ -98,7 +98,8 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
    this->ui->tblLog->setSelectionBehavior(QAbstractItemView::SelectRows);
    this->ui->tblLog->setSelectionMode(QAbstractItemView::SingleSelection);
    this->ui->tblLog->setShowGrid(false);
-   // If we didn't set auto-scroll to 'false', when the selection is on the first item and it being deleted, the selection automatically change to the next item and the view scroll to it.
+   // If we didn't set auto-scroll to 'false', when the selection is on the first item and it being deleted,
+   // the selection automatically change to the next item and the view scroll to it.
    this->ui->tblLog->setAutoScroll(false);
    this->ui->tblLog->setAlternatingRowColors(true);
 

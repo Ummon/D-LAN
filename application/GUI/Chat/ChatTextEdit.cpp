@@ -34,6 +34,11 @@ ChatTextEdit::ChatTextEdit(QWidget* parent) :
    connect(this->document(), &QTextDocument::contentsChange, this, &ChatTextEdit::documentContentsChange);
 }
 
+void ChatTextEdit::setEmoticons(const Emoticons* emoticons)
+{
+   this->emoticons = emoticons;
+}
+
 void ChatTextEdit::addIgnoreKeyCombination(KeyCombination keyCombination)
 {
    this->keyCombinationIgnored << keyCombination;
@@ -58,6 +63,14 @@ bool ChatTextEdit::event(QEvent* e)
 
    return QTextEdit::event(e);
 }
+
+QVariant ChatTextEdit::loadResource(int type, const QUrl& name)
+{
+   if (this->emoticons && type == QTextDocument::ImageResource && name.scheme() == "emoticons")
+      return this->emoticons->getSmileImage(name.host(), name.path().mid(1)); // Skip the '/' at the beginning.
+   return QTextEdit::loadResource(type, name);
+}
+
 
 void ChatTextEdit::documentContentsChange(int position, int charsRemoved, int charsAdded)
 {

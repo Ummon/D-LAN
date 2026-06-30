@@ -52,6 +52,7 @@ win32 {
 }
 
 SOURCES += main.cpp\
+    Chat/EmoticonTextDocument.cpp \
     MainWindow.cpp \
     ../Protos/gui_protocol.pb.cc \
     ../Protos/common.pb.cc \
@@ -111,6 +112,7 @@ HEADERS  += MainWindow.h \
     ../Protos/common.pb.h \
     ../Protos/gui_settings.pb.h \
     ../Protos/core_settings.pb.h \
+    Chat/EmoticonTextDocument.h \
     Settings/SharedEntryListDelegate.h \
     Settings/SharedEntryListModel.h \
     StatusBar.h \

@@ -194,7 +194,7 @@ SearchWidget::SearchWidget(
 
    QList<quint32> columnSizes = SETTINGS.getRepeated<quint32>("search_column_sizes");
    if (columnSizes.size() != this->ui->treeView->header()->count())
-      columnSizes = QList<quint32>() << 275 << 200 << 60 << 80 << 80;
+      columnSizes = QList<quint32>() << 250 << 250 << 80 << 90 << 80;
    SETTINGS.set("search_column_sizes", columnSizes);
    SETTINGS.save();
    for (int i = 0; i < this->ui->treeView->header()->count(); i++)

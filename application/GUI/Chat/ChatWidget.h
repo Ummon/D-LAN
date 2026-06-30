@@ -29,6 +29,7 @@
 
 #include <Peers/PeerListModel.h>
 #include <Chat/ChatModel.h>
+#include <Chat/EmoticonTextDocument.h>
 #include <MDI/MdiWidget.h>
 #include <Emoticons/Emoticons.h>
 #include <Emoticons/EmoticonsWidget.h>
@@ -50,19 +51,19 @@ namespace GUI
    class ChatDelegate : public QStyledItemDelegate
    {
    public:
-      ChatDelegate(QTextDocument& textDocument);
+      ChatDelegate(EmoticonTextDocument& textDocument);
       void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
       QSize	sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const;
 //      QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const;
 //      void setEditorData(QWidget* editor, const QModelIndex& index) const;
 
    private:
-      QTextDocument& textDocument;
+      EmoticonTextDocument& textDocument;
    };
 
    class ChatWidget : public MdiWidget
    {
-      static const int DEFAULT_FONT_SIZE;
+      static const QChar EXPLICIT_LINE_RETURN;
 
       Q_OBJECT
    public:
@@ -100,17 +101,14 @@ namespace GUI
       void browseSelectedMessages();
 
       void currentCharFormatChanged(const QTextCharFormat& charFormat);
-      void cursorPositionChanged();
       void textChanged();      
       void documentChanged(int position, int charsRemoved, int charsAdded);
 
       void setFocusTxtMessage();
 
-      void comboFontSizeChanged(int index);
       void setBold(bool toggled);
       void setItalic(bool toggled);
       void setUnderline(bool toggled);
-      void setTextColor(QColor color);
 
       void resetFormat();
 
@@ -135,7 +133,6 @@ namespace GUI
       void applyCurrentFormat();
       void connectFormatWidgets();
       void disconnectFormatWidgets();
-      void setComboFontSize(int fontSize);
       void displayEmoticons(const QPoint& positionSender, const QSize& sizeSender);
 
       void activatePeerNameInsertionMode();
@@ -147,11 +144,11 @@ namespace GUI
       void setNewMessageState(bool newMessage);
 
       static QUrl buildUrlEmoticon(const QString& theme, const QString& emoticonName);
-      static QString htmlEmoticon(const QString& theme, const QString& emoticonName);
+      static QString mdEmoticon(const QString& theme, const QString& emoticonName);
 
       Ui::ChatWidget* ui;
       EmoticonsWidget* emoticonsWidget;
-      QTextDocument textDocument;
+      EmoticonTextDocument textDocument;
 
       // Current peers answered.
       struct Answer {

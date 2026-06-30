@@ -1,7 +1,5 @@
 <RCC>
     <qresource prefix="/icons">
-        <file>ressources/emoticon.png</file>
-        <file>ressources/plus.png</file>
         <file>ressources/settings.svg</file>
         <file>ressources/chat.svg</file>
         <file>ressources/chat_new_mess.svg</file>
@@ -43,5 +41,6 @@
         <file>ressources/error.svg</file>
         <file>ressources/download.svg</file>
         <file>ressources/icon.svg</file>
+        <file>ressources/emoticon.svg</file>
     </qresource>
 </RCC>

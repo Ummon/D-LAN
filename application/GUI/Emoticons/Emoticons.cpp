@@ -19,6 +19,8 @@
 #include <Emoticons/Emoticons.h>
 using namespace GUI;
 
+#include <QGuiApplication>
+#include <QScreen>
 #include <QDir>
 #include <QDomDocument>
 #include <QStringBuilder>
@@ -143,6 +145,7 @@ void Emoticons::loadThemes()
       {
          QString imagePath = themePath % '/' % currentSmile.first;
          Smile smile { QPixmap(imagePath), QStringList() };
+         smile.image.setDevicePixelRatio(QGuiApplication::primaryScreen()->devicePixelRatio());
 
          if (!smile.image.isNull())
          {
