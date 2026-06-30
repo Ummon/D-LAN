@@ -87,18 +87,36 @@ QStringList Emoticons::getSmileSymbols(const QString& theme, const QString& name
 }
 
 /**
-  * Returns the smile name from the given symbol depending the current default theme.
-  * May return a empty string if not found.
+  * Returns the (theme, smile name) from the given symbol searching first in the current default theme then the other ones.
+  * Returns empty strings if not found.
   */
-QString Emoticons::getSmileName(const QString& symbol) const
+std::pair<QString, QString> Emoticons::getSmileName(const QString& symbol) const
 {
-   const QMap<QString, Smile>& smilesDefaultTheme = this->smiles.value(this->defaultTheme);
+   const QString name = this->getSmileName(symbol, this->defaultTheme);
+   if (!name.isEmpty())
+      return std::make_pair(this->defaultTheme, name);
+
+   for (const QString& theme : this->smiles.keys())
+   {
+      if (theme != this->defaultTheme)
+      {
+         const QString name = this->getSmileName(symbol, theme);
+         if (!name.isEmpty())
+            return std::make_pair(theme, name);
+      }
+   }
+
+   return std::make_pair(QString(), QString());
+}
+
+QString Emoticons::getSmileName(const QString& symbol, const QString& theme) const
+{
+   const QMap<QString, Smile>& smilesDefaultTheme = this->smiles.value(theme);
    for (QMapIterator<QString, Smile> i(smilesDefaultTheme); i.hasNext();)
    {
       i.next();
-      for (QStringListIterator j(i.value().symbols); j.hasNext();)
+      for (const QString& s : i.value().symbols)
       {
-         const QString& s = j.next();
          if (symbol == s)
             return i.key();
       }

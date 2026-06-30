@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <Chat/ChatWidget.h>
 #include <ui_ChatWidget.h>
 using namespace GUI;
@@ -34,6 +34,7 @@ using namespace GUI;
 #include <QScreen>
 #include <QTimer>
 #include <QIcon>
+#include <QDesktopServices>
 
 #include <Log.h>
 #include <Common/Settings.h>
@@ -135,6 +136,63 @@ QSize	ChatDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelInd
    return size;
 }
 
+bool ChatDelegate::editorEvent(
+   QEvent* event,
+   QAbstractItemModel* model,
+   const QStyleOptionViewItem& option,
+   const QModelIndex& index
+)
+{
+   if (event->type() == QEvent::MouseButtonRelease)
+   {
+      QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
+      if (mouseEvent->button() == Qt::LeftButton)
+      {
+         const QString href = this->anchorAt(option, index, mouseEvent->position().toPoint());
+         if (!href.isEmpty())
+         {
+            QDesktopServices::openUrl(QUrl(href));
+            return true; // Consume so the click doesn't also do anything else.
+         }
+      }
+   }
+   return QStyledItemDelegate::editorEvent(event, model, option, index);
+}
+
+bool ChatDelegate::eventFilter(QObject* watched, QEvent* event)
+{
+   QWidget* viewport = qobject_cast<QWidget*>(watched);
+   QAbstractItemView* view = viewport ? qobject_cast<QAbstractItemView*>(viewport->parent()) : nullptr;
+   if (!view)
+      return QStyledItemDelegate::eventFilter(watched, event);
+
+   if (event->type() == QEvent::MouseMove)
+   {
+      const QPoint pos = static_cast<QMouseEvent*>(event)->position().toPoint();
+      const QModelIndex index = view->indexAt(pos);
+
+      QString href;
+      if (index.isValid())
+      {
+         QStyleOptionViewItem opt;
+         opt.widget = view;
+         opt.rect = view->visualRect(index);
+         href = this->anchorAt(opt, index, pos);
+      }
+
+      if (href.isEmpty())
+         viewport->unsetCursor();
+      else
+         viewport->setCursor(Qt::PointingHandCursor);
+   }
+   else if (event->type() == QEvent::Leave)
+   {
+      viewport->unsetCursor();
+   }
+
+   return QStyledItemDelegate::eventFilter(watched, event);
+}
+
 //QWidget* ChatDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
 //{
 //   QLineEdit* line = new QLineEdit(parent);
@@ -149,6 +207,27 @@ QSize	ChatDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelInd
 //   QLineEdit* line = static_cast<QLineEdit*>(editor);
 //   line->setText(index.model()->data(index, Qt::DisplayRole).toString());
 //}
+
+QString ChatDelegate::anchorAt(
+   const QStyleOptionViewItem& option,
+   const QModelIndex& index,
+   const QPoint& pos
+) const
+{
+   QStyleOptionViewItem opt(option);
+   this->initStyleOption(&opt, index);
+
+   // Lay the document out exactly as paint() does.
+   this->textDocument.setMarkdown(opt.text);
+   this->textDocument.setTextWidth(opt.rect.width());
+
+   QStyle* style = opt.widget ? opt.widget->style() : QApplication::style();
+   const QRect textRect = style->subElementRect(QStyle::SE_ItemViewItemText, &opt, opt.widget);
+
+   // Map the viewport point into document coordinates (paint translates by textRect.topLeft()).
+   return this->textDocument.documentLayout()->anchorAt(QPointF(pos - textRect.topLeft()));
+}
+
 
 /////
 
@@ -222,6 +301,7 @@ void ChatWidget::newRows(const QModelIndex& parent, int start, int end)
 
    if (this->autoScroll)
       this->ui->tblChat->scrollToBottom();
+
    this->setNewMessageState(true);
 }
 
@@ -256,7 +336,7 @@ void ChatWidget::displayContextMenuPeers(const QPoint& point)
    addrVariant.setValue(addr);
 
    QMenu menu;
-   menu.addAction(QIcon(":/icons/ressources/folder.svg"), tr("Browse"), this, &ChatWidget::browseSelectedPeers);
+   menu.addAction(QIcon(":/icons/resources/folder.svg"), tr("Browse"), this, &ChatWidget::browseSelectedPeers);
 
    if (!addr.isNull())
    {
@@ -296,7 +376,7 @@ void ChatWidget::displayContextMenu(const QPoint& point)
 {
    QMenu menu;
    menu.addAction(tr("Copy selected lines"), this, &ChatWidget::copySelectedLineToClipboard);
-   menu.addAction(QIcon(":/icons/ressources/folder.svg"), tr("Browse selected peers"), this, &ChatWidget::browseSelectedMessages);
+   menu.addAction(QIcon(":/icons/resources/folder.svg"), tr("Browse selected peers"), this, &ChatWidget::browseSelectedMessages);
    menu.exec(this->ui->tblChat->mapToGlobal(point));
 }
 
@@ -457,8 +537,8 @@ void ChatWidget::emoticonsButtonToggled(bool checked)
 
 void ChatWidget::messageWordTyped(int position, const QString& word)
 {
-   const QString& smile = this->emoticons.getSmileName(word);
-   if (!smile.isEmpty())
+   std::pair<QString, QString> themeAndSmile = this->emoticons.getSmileName(word);
+   if (!themeAndSmile.second.isEmpty())
    {
       QTextCursor cursor(this->ui->txtMessage->document());
       cursor.setPosition(position);
@@ -466,7 +546,7 @@ void ChatWidget::messageWordTyped(int position, const QString& word)
       cursor.deleteChar();
 
       QTextImageFormat format;
-      format.setName(buildUrlEmoticon(this->emoticons.getDefaultTheme(), smile).toString());
+      format.setName(buildUrlEmoticon(themeAndSmile.first, themeAndSmile.second).toString());
       format.setVerticalAlignment(QTextCharFormat::AlignMiddle);
       cursor.insertImage(format);
    }
@@ -704,6 +784,8 @@ void ChatWidget::init()
    this->ui->tblChat->setSelectionMode(QAbstractItemView::ExtendedSelection);
    this->ui->tblChat->setShowGrid(false);
    this->ui->tblChat->setAutoScroll(false);
+   this->ui->tblChat->viewport()->setMouseTracking(true);
+   this->ui->tblChat->viewport()->installEventFilter(&this->chatDelegate);
 
    this->ui->tblChat->setEditTriggers(QAbstractItemView::AllEditTriggers);
 
@@ -835,25 +917,25 @@ void ChatWidget::onActivate()
 void ChatWidget::setNewMessageState(bool newMessage)
 {
    if (newMessage)
-   {      
+   {
       if (this->chatModel.isMainChat())
       {
-         this->setWindowIcon(QIcon(":/icons/ressources/chat_new_mess.svg"));
+         this->setWindowIcon(QIcon(":/icons/resources/chat_new_mess.svg"));
       }
       else
       {
-         this->setWindowIcon(QIcon(":/icons/ressources/chat_room_new_mess.svg"));
+         this->setWindowIcon(QIcon(":/icons/resources/chat_room_new_mess.svg"));
       }
    }
    else
    {
       if (this->chatModel.isMainChat())
       {
-         this->setWindowIcon(QIcon(":/icons/ressources/chat.svg"));
+         this->setWindowIcon(QIcon(":/icons/resources/chat.svg"));
       }
       else
       {
-         this->setWindowIcon(QIcon(":/icons/ressources/chat_room.svg"));
+         this->setWindowIcon(QIcon(":/icons/resources/chat_room.svg"));
       }
    }
 }

@@ -52,12 +52,21 @@ namespace GUI
    {
    public:
       ChatDelegate(EmoticonTextDocument& textDocument);
-      void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
-      QSize	sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const;
+      void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+      QSize	sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+      bool editorEvent(
+         QEvent* event,
+         QAbstractItemModel* model,
+         const QStyleOptionViewItem& option,
+         const QModelIndex& index
+      ) override;
+      bool eventFilter(QObject* watched, QEvent* event) override;
 //      QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const;
 //      void setEditorData(QWidget* editor, const QModelIndex& index) const;
 
    private:
+      QString anchorAt(const QStyleOptionViewItem& option, const QModelIndex& index, const QPoint& pos) const;
+
       EmoticonTextDocument& textDocument;
    };
 

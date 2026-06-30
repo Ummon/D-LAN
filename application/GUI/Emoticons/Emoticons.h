@@ -47,7 +47,8 @@ namespace GUI
 
       QStringList getSmileSymbols(const QString& theme, const QString& name) const;
 
-      QString getSmileName(const QString& symbol) const;
+      std::pair<QString, QString> getSmileName(const QString& symbol) const;
+      QString getSmileName(const QString& symbol, const QString& theme) const;
 
    private:
       void loadThemes();

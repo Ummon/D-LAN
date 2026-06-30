@@ -86,8 +86,20 @@ ChatSystem::SendStatus ChatSystem::send(
 )
 {
    QSharedPointer<ChatMessage> chatMessage = roomName.isEmpty() ?
-         this->messages.add(message, this->peerManager->getSelf()->getID(), this->peerManager->getSelf()->getNick(), QString(), peerIDsAnswer)
-       : this->rooms[roomName].messages.add(message, this->peerManager->getSelf()->getID(), this->peerManager->getSelf()->getNick(), roomName, peerIDsAnswer);
+         this->messages.add(
+            message,
+            this->peerManager->getSelf()->getID(),
+            this->peerManager->getSelf()->getNick(),
+            QString(),
+            peerIDsAnswer
+         )
+       : this->rooms[roomName].messages.add(
+            message,
+            this->peerManager->getSelf()->getID(),
+            this->peerManager->getSelf()->getNick(),
+            roomName,
+            peerIDsAnswer
+         );
 
    Protos::Common::ChatMessages protoChatMessages;
    Protos::Common::ChatMessage* protochatMessage = protoChatMessages.add_messages();
@@ -97,7 +109,8 @@ ChatSystem::SendStatus ChatSystem::send(
 
    protochatMessage->clear_time(); // We let the receiver set the time.
 
-   NL::INetworkListener::SendStatus status = this->networkListener->send(Common::MessageHeader::CORE_CHAT_MESSAGES, protoChatMessages);
+   NL::INetworkListener::SendStatus status =
+      this->networkListener->send(Common::MessageHeader::CORE_CHAT_MESSAGES, protoChatMessages);
 
    switch (status)
    {
@@ -429,6 +442,9 @@ QString ChatSystem::getChatMessageFilename(const QString& roomName)
       return Common::Constants::DIR_CHAT_MESSAGES % '/' % Common::Constants::FILE_CHAT_ROOM_MESSAGES.arg(Common::Path::sanitizePath(roomName));
 }
 
+/**
+  * Ask a random peer from the given peers their last known messages.
+  */
 void ChatSystem::retrieveLastChatMessagesFromPeers(const QList<PM::IPeer*>& peers, const QString& roomName)
 {
    if (peers.isEmpty())
