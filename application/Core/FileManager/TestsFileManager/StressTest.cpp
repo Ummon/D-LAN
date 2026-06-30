@@ -120,7 +120,7 @@ void FilesAndDirs::createADir()
    PROB_100(30);
 
    QStringList dirs;
-   for (auto path : this->stressTest->getSharedDirs())
+   for (const auto& path : this->stressTest->getSharedDirs())
       dirs << path.path;
    dirs.append(this->directories);
 
@@ -242,8 +242,10 @@ StressTest::StressTest()
    this->hashCache = QSharedPointer<HC::IHashCache>(new MockHashCache());
    this->fileManager = Builder::newFileManager(this->hashCache);
 
-   if (!QDir().mkdir(ROOT_DIR.dirName()))
-      qDebug() << "Unable to create the main directory:" << ROOT_DIR.absolutePath();
+   if (!QDir().exists(ROOT_DIR.dirName()) && !QDir().mkdir(ROOT_DIR.dirName()))
+   {
+      QFAIL(qUtf8Printable(QString("Unable to create the main directory: %1").arg(ROOT_DIR.absolutePath())));
+   }
 
    Common::Global::recursiveDeleteDirectoryContent(ROOT_DIR.dirName());
 
@@ -430,7 +432,7 @@ void StressTest::newFile()
    QString path("/");
    for (int i = 0; i < this->randGen.rand(2); i++)
    {
-      path.append(this->randGen.generateAName()).append("/");
+      path.append(this->randGen.generateAName());
    }
 
    // Size is from 1 B to 100 MB.
@@ -438,7 +440,7 @@ void StressTest::newFile()
    int nbChunk = bytes / Common::Constants::CHUNK_SIZE + (bytes % Common::Constants::CHUNK_SIZE == 0 ? 0 : 1);
 
    Protos::Common::Entry entry;
-   entry.set_type(Protos::Common::Entry_Type_DIR);
+   entry.set_type(Protos::Common::Entry_Type_FILE);
    entry.set_path(path.toStdString());
    entry.set_name(this->randGen.generateAName().toStdString());
    entry.set_size(bytes);
@@ -471,6 +473,10 @@ void StressTest::newFile()
    catch (UnableToCreateNewFileException&)
    {
       qDebug() << "UnableToCreateNewFileException";
+   }
+   catch (UnableToCreateNewDirException)
+   {
+      qDebug() << "UnableToCreateNewDirException";
    }
 }
 

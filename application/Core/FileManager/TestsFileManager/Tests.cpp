@@ -71,7 +71,7 @@ void Tests::initTestCase()
    }
    catch (Common::Global::UnableToSetTempDirException& e)
    {
-      QFAIL(e.errorMessage.toLatin1().constData());
+      QFAIL(qUtf8Printable(e.errorMessage));
    }
 
    this->createInitialFiles();
