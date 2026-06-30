@@ -143,7 +143,7 @@ void BrowseWidget::displayContextMenuDownload(const QPoint& point)
       {
          QMenu menu;
          menu.addAction(
-            QIcon(":/icons/ressources/explore_folder.svg"), tr("Open location"), this, &BrowseWidget::openLocation
+            QIcon(":/icons/resources/explore_folder.svg"), tr("Open location"), this, &BrowseWidget::openLocation
          );
          menu.exec(globalPosition);
       }

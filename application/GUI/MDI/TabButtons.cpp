@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <MDI/TabButtons.h>
 using namespace GUI;
 
@@ -137,9 +137,9 @@ void TabCloseButton::setToolTipTranslate()
 TabRefreshButton::TabRefreshButton(QWidget* parent) :
    TabButton(parent)
 {
-   this->icon.addPixmap(QPixmap(":/icons/ressources/refresh.svg"), QIcon::Normal, QIcon::Off);
-   this->icon.addPixmap(QPixmap(":/icons/ressources/refresh-down.svg"), QIcon::Normal, QIcon::On);
-   this->icon.addPixmap(QPixmap(":/icons/ressources/refresh-hover.svg"), QIcon::Active, QIcon::Off);
+   this->icon.addPixmap(QPixmap(":/icons/resources/refresh.svg"), QIcon::Normal, QIcon::Off);
+   this->icon.addPixmap(QPixmap(":/icons/resources/refresh-down.svg"), QIcon::Normal, QIcon::On);
+   this->icon.addPixmap(QPixmap(":/icons/resources/refresh-hover.svg"), QIcon::Active, QIcon::Off);
    this->setToolTipTranslate();
 }
 

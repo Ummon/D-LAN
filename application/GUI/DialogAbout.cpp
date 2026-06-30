@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <DialogAbout.h>
 #include <ui_DialogAbout.h>
 using namespace GUI;
@@ -34,7 +34,7 @@ DialogAbout::DialogAbout(QWidget *parent) :
 {
    this->ui->setupUi(this);
 
-   this->ui->svgLogo->load(QStringLiteral(":/icons/ressources/logo.svg"));
+   this->ui->svgLogo->load(QStringLiteral(":/icons/resources/logo.svg"));
    this->ui->svgLogo->renderer()->setAspectRatioMode(Qt::KeepAspectRatio);
 
    this->setWindowFlags(this->windowFlags() & (~Qt::WindowContextHelpButtonHint));

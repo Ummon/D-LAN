@@ -186,6 +186,6 @@ FORMS    += MainWindow.ui \
     AutoComplete/AutoComplete.ui
 
 RESOURCES += \
-    ressources.qrc
+    resources.qrc
 
 

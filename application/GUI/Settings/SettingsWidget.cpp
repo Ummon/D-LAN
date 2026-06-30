@@ -303,7 +303,7 @@ void SettingsWidget::updateNetworkInterfaces(const Protos::GUI::State& state)
 
                lblInterface->setText(
                   interfaceName +
-                     QString(" <img src= \":/icons/ressources/error.svg\" height=\"%1\" style=\"vertical-align: middle\" /> <em>")
+                     QString(" <img src= \":/icons/resources/error.svg\" height=\"%1\" style=\"vertical-align: middle\" /> <em>")
                         .arg(h) + tr("Interface not active") + "</em>"
                );
 
@@ -616,7 +616,7 @@ void SettingsWidget::resetPassword()
 
 void SettingsWidget::addShared()
 {
-   QStringList entries = Utils::askForDirectoriesOrFiles(this->coreConnection);   
+   QStringList entries = Utils::askForDirectoriesOrFiles(this->coreConnection);
    if (!entries.isEmpty())
    {
       this->sharedEntryListModel.addEntries(entries);
@@ -671,7 +671,7 @@ void SettingsWidget::displayContextMenuSharedDirs(const QPoint& point)
    QMenu menu;
    QAction* actionDelete =
       menu.addAction(
-         QIcon(":/icons/ressources/remove_file_folder.svg"),
+         QIcon(":/icons/resources/remove_file_folder.svg"),
          tr("Remove the shared directory"),
          this,
          &SettingsWidget::removeShared
@@ -679,7 +679,7 @@ void SettingsWidget::displayContextMenuSharedDirs(const QPoint& point)
 
    QAction* actionUp =
       menu.addAction(
-         QIcon(":/icons/ressources/arrow_up.svg"),
+         QIcon(":/icons/resources/arrow_up.svg"),
          tr("Move up"),
          this,
          &SettingsWidget::moveUpShared
@@ -687,7 +687,7 @@ void SettingsWidget::displayContextMenuSharedDirs(const QPoint& point)
 
    QAction* actionDown =
       menu.addAction(
-         QIcon(":/icons/ressources/arrow_down.svg"),
+         QIcon(":/icons/resources/arrow_down.svg"),
          tr("Move down"),
          this,
          &SettingsWidget::moveDownShared
@@ -695,7 +695,7 @@ void SettingsWidget::displayContextMenuSharedDirs(const QPoint& point)
 
    if (this->coreConnection->isLocal() && this->sharedEntryListModel.rowCount() > 0)
       menu.addAction(
-         QIcon(":/icons/ressources/explore_folder.svg"),
+         QIcon(":/icons/resources/explore_folder.svg"),
          tr("Open location"),
          this,
          &SettingsWidget::openLocation

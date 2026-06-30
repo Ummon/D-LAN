@@ -14,8 +14,8 @@
    <string/>
   </property>
   <property name="windowIcon">
-   <iconset resource="../ressources.qrc">
-    <normaloff>:/icons/ressources/folder.svg</normaloff>:/icons/ressources/folder.svg</iconset>
+   <iconset resource="../resources.qrc">
+    <normaloff>:/icons/resources/folder.svg</normaloff>:/icons/resources/folder.svg</iconset>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="leftMargin">
@@ -55,15 +55,15 @@
       <string>Download selected items</string>
      </property>
      <property name="icon">
-      <iconset resource="../ressources.qrc">
-       <normaloff>:/icons/ressources/download.svg</normaloff>:/icons/ressources/download.svg</iconset>
+      <iconset resource="../resources.qrc">
+       <normaloff>:/icons/resources/download.svg</normaloff>:/icons/resources/download.svg</iconset>
      </property>
     </widget>
    </item>
   </layout>
  </widget>
  <resources>
-  <include location="../ressources.qrc"/>
+  <include location="../resources.qrc"/>
  </resources>
  <connections/>
 </ui>

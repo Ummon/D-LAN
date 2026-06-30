@@ -86,7 +86,7 @@
           </property>
           <property name="icon">
            <iconset resource="resources.qrc">
-            <normaloff>:/icons/ressources/control_pause_blue.png</normaloff>:/icons/ressources/control_pause_blue.png</iconset>
+            <normaloff>:/icons/resources/control_pause_blue.png</normaloff>:/icons/resources/control_pause_blue.png</iconset>
           </property>
           <property name="checkable">
            <bool>true</bool>
@@ -118,7 +118,7 @@
           </property>
           <property name="icon">
            <iconset resource="resources.qrc">
-            <normaloff>:/icons/ressources/arrow_refresh.png</normaloff>:/icons/ressources/arrow_refresh.png</iconset>
+            <normaloff>:/icons/resources/arrow_refresh.png</normaloff>:/icons/resources/arrow_refresh.png</iconset>
           </property>
           <property name="checkable">
            <bool>false</bool>
@@ -231,7 +231,7 @@
            </property>
            <property name="icon">
             <iconset resource="resources.qrc">
-             <normaloff>:/icons/ressources/tick.png</normaloff>:/icons/ressources/tick.png</iconset>
+             <normaloff>:/icons/resources/tick.png</normaloff>:/icons/resources/tick.png</iconset>
            </property>
           </widget>
          </item>

@@ -159,7 +159,7 @@ QString SearchDelegate::toHtmlText(const QString& text) const
 
 void SearchMenu::onShowMenu(QMenu& menu)
 {
-   menu.addAction(QIcon(":/icons/ressources/folder.svg"), tr("Browse"), this, &SearchMenu::browse);
+   menu.addAction(QIcon(":/icons/resources/folder.svg"), tr("Browse"), this, &SearchMenu::browse);
 }
 
 /////
@@ -295,8 +295,8 @@ void SearchWidget::displayContextMenuDownload(const QPoint& point)
       if (!allSelectedEntriesAreTerminalFiles)
       {
          QMenu menu;
-         menu.addAction(QIcon(":/icons/ressources/explore_folder.svg"), tr("Open location"), this, &SearchWidget::openLocation);
-         menu.addAction(QIcon(":/icons/ressources/folder.svg"), tr("Browse"), this, &SearchWidget::browseCurrents);
+         menu.addAction(QIcon(":/icons/resources/explore_folder.svg"), tr("Open location"), this, &SearchWidget::openLocation);
+         menu.addAction(QIcon(":/icons/resources/folder.svg"), tr("Browse"), this, &SearchWidget::browseCurrents);
          menu.exec(globalPosition);
       }
    }

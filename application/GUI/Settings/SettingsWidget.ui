@@ -14,8 +14,8 @@
    <string>Settings</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../ressources.qrc">
-    <normaloff>:/icons/ressources/settings.svg</normaloff>:/icons/ressources/settings.svg</iconset>
+   <iconset resource="../resources.qrc">
+    <normaloff>:/icons/resources/settings.svg</normaloff>:/icons/resources/settings.svg</iconset>
   </property>
   <layout class="QVBoxLayout" name="layMain">
    <property name="leftMargin">
@@ -72,8 +72,8 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="../ressources.qrc">
-             <normaloff>:/icons/ressources/add_file_folder.svg</normaloff>:/icons/ressources/add_file_folder.svg</iconset>
+            <iconset resource="../resources.qrc">
+             <normaloff>:/icons/resources/add_file_folder.svg</normaloff>:/icons/resources/add_file_folder.svg</iconset>
            </property>
            <property name="iconSize">
             <size>
@@ -95,8 +95,8 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="../ressources.qrc">
-             <normaloff>:/icons/ressources/remove_file_folder.svg</normaloff>:/icons/ressources/remove_file_folder.svg</iconset>
+            <iconset resource="../resources.qrc">
+             <normaloff>:/icons/resources/remove_file_folder.svg</normaloff>:/icons/resources/remove_file_folder.svg</iconset>
            </property>
            <property name="iconSize">
             <size>
@@ -115,8 +115,8 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="../ressources.qrc">
-             <normaloff>:/icons/ressources/arrow_down.svg</normaloff>:/icons/ressources/arrow_down.svg</iconset>
+            <iconset resource="../resources.qrc">
+             <normaloff>:/icons/resources/arrow_down.svg</normaloff>:/icons/resources/arrow_down.svg</iconset>
            </property>
            <property name="iconSize">
             <size>
@@ -135,8 +135,8 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="../ressources.qrc">
-             <normaloff>:/icons/ressources/arrow_up.svg</normaloff>:/icons/ressources/arrow_up.svg</iconset>
+            <iconset resource="../resources.qrc">
+             <normaloff>:/icons/resources/arrow_up.svg</normaloff>:/icons/resources/arrow_up.svg</iconset>
            </property>
            <property name="iconSize">
             <size>
@@ -155,8 +155,8 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="../ressources.qrc">
-             <normaloff>:/icons/ressources/explore_folder.svg</normaloff>:/icons/ressources/explore_folder.svg</iconset>
+            <iconset resource="../resources.qrc">
+             <normaloff>:/icons/resources/explore_folder.svg</normaloff>:/icons/resources/explore_folder.svg</iconset>
            </property>
            <property name="iconSize">
             <size>
@@ -373,8 +373,8 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="../ressources.qrc">
-             <normaloff>:/icons/ressources/refresh.svg</normaloff>:/icons/ressources/refresh.svg</iconset>
+            <iconset resource="../resources.qrc">
+             <normaloff>:/icons/resources/refresh.svg</normaloff>:/icons/resources/refresh.svg</iconset>
            </property>
            <property name="iconSize">
             <size>
@@ -449,8 +449,8 @@
                  <string notr="true"/>
                 </property>
                 <property name="icon">
-                 <iconset resource="../ressources.qrc">
-                  <normaloff>:/icons/ressources/connect.svg</normaloff>:/icons/ressources/connect.svg</iconset>
+                 <iconset resource="../resources.qrc">
+                  <normaloff>:/icons/resources/connect.svg</normaloff>:/icons/resources/connect.svg</iconset>
                 </property>
                 <property name="iconSize">
                  <size>
@@ -524,7 +524,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="../ressources.qrc"/>
+  <include location="../resources.qrc"/>
  </resources>
  <connections/>
  <buttongroups>

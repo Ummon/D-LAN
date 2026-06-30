@@ -1,7 +1,7 @@
 <RCC>
     <qresource prefix="/icons">
-        <file>ressources/tick.png</file>
-        <file>ressources/arrow_refresh.png</file>
-        <file>ressources/control_pause_blue.png</file>
+        <file>resources/tick.png</file>
+        <file>resources/arrow_refresh.png</file>
+        <file>resources/control_pause_blue.png</file>
     </qresource>
 </RCC>

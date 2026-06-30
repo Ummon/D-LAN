@@ -14,8 +14,8 @@
    <string>Downloads</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../ressources.qrc">
-    <normaloff>:/icons/ressources/download.svg</normaloff>:/icons/ressources/download.svg</iconset>
+   <iconset resource="../resources.qrc">
+    <normaloff>:/icons/resources/download.svg</normaloff>:/icons/resources/download.svg</iconset>
   </property>
   <layout class="QVBoxLayout" name="layMain">
    <property name="spacing">
@@ -58,8 +58,8 @@
         <string notr="true"/>
        </property>
        <property name="icon">
-        <iconset resource="../ressources.qrc">
-         <normaloff>:/icons/ressources/tree_view.svg</normaloff>:/icons/ressources/tree_view.svg</iconset>
+        <iconset resource="../resources.qrc">
+         <normaloff>:/icons/resources/tree_view.svg</normaloff>:/icons/resources/tree_view.svg</iconset>
        </property>
        <property name="iconSize">
         <size>
@@ -78,8 +78,8 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset resource="../ressources.qrc">
-         <normaloff>:/icons/ressources/eraser.svg</normaloff>:/icons/ressources/eraser.svg</iconset>
+        <iconset resource="../resources.qrc">
+         <normaloff>:/icons/resources/eraser.svg</normaloff>:/icons/resources/eraser.svg</iconset>
        </property>
        <property name="iconSize">
         <size>
@@ -98,8 +98,8 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset resource="../ressources.qrc">
-         <normaloff>:/icons/ressources/bin.svg</normaloff>:/icons/ressources/bin.svg</iconset>
+        <iconset resource="../resources.qrc">
+         <normaloff>:/icons/resources/bin.svg</normaloff>:/icons/resources/bin.svg</iconset>
        </property>
        <property name="iconSize">
         <size>
@@ -118,8 +118,8 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset resource="../ressources.qrc">
-         <normaloff>:/icons/ressources/pause.svg</normaloff>:/icons/ressources/pause.svg</iconset>
+        <iconset resource="../resources.qrc">
+         <normaloff>:/icons/resources/pause.svg</normaloff>:/icons/resources/pause.svg</iconset>
        </property>
        <property name="iconSize">
         <size>
@@ -214,7 +214,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="../ressources.qrc"/>
+  <include location="../resources.qrc"/>
  </resources>
  <connections/>
 </ui>

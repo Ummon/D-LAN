@@ -32,9 +32,9 @@
       <string/>
      </property>
      <property name="icon">
-      <iconset resource="ressources.qrc">
-       <normaloff>:/icons/ressources/log.svg</normaloff>
-       <activeon>:/icons/ressources/log_active.svg</activeon>:/icons/ressources/log.svg</iconset>
+      <iconset resource="resources.qrc">
+       <normaloff>:/icons/resources/log.svg</normaloff>
+       <activeon>:/icons/resources/log_active.svg</activeon>:/icons/resources/log.svg</iconset>
      </property>
      <property name="iconSize">
       <size>
@@ -74,8 +74,8 @@
       <string notr="true"/>
      </property>
      <property name="icon">
-      <iconset resource="ressources.qrc">
-       <normaloff>:/icons/ressources/information.svg</normaloff>:/icons/ressources/information.svg</iconset>
+      <iconset resource="resources.qrc">
+       <normaloff>:/icons/resources/information.svg</normaloff>:/icons/resources/information.svg</iconset>
      </property>
      <property name="iconSize">
       <size>
@@ -122,7 +122,7 @@
       <string/>
      </property>
      <property name="pixmap">
-      <pixmap resource="ressources.qrc">:/icons/ressources/download.svg</pixmap>
+      <pixmap resource="resources.qrc">:/icons/resources/download.svg</pixmap>
      </property>
      <property name="scaledContents">
       <bool>true</bool>
@@ -163,7 +163,7 @@
       <string/>
      </property>
      <property name="pixmap">
-      <pixmap resource="ressources.qrc">:/icons/ressources/upload.svg</pixmap>
+      <pixmap resource="resources.qrc">:/icons/resources/upload.svg</pixmap>
      </property>
      <property name="scaledContents">
       <bool>true</bool>
@@ -198,7 +198,7 @@
       <string/>
      </property>
      <property name="pixmap">
-      <pixmap resource="ressources.qrc">:/icons/ressources/world.svg</pixmap>
+      <pixmap resource="resources.qrc">:/icons/resources/world.svg</pixmap>
      </property>
      <property name="scaledContents">
       <bool>true</bool>
@@ -275,7 +275,7 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="ressources.qrc"/>
+  <include location="resources.qrc"/>
  </resources>
  <connections/>
 </ui>

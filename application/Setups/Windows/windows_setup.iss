@@ -12,7 +12,7 @@
 [Setup]
 AppName={#AppName}
 AppVersion={#Version} {#VersionTag} - {#BuildTime}
-SetupIconFile={#ApplicationDir}/Common/ressources/icon.ico
+SetupIconFile={#ApplicationDir}/Common/resources/icon.ico
 DefaultDirName={pf}/{#AppName}
 DefaultGroupName={#AppName}
 UninstallDisplayIcon={app}/D-LAN.Core.exe
@@ -26,7 +26,7 @@ Source: "{#ApplicationDir}/Core/output/release/D-LAN.Core.exe"; DestDir: "{app}"
 Source: "{#ApplicationDir}/GUI/output/release/D-LAN.GUI.exe"; DestDir: "{app}"; Flags: comparetimestamp
 Source: "{#ApplicationDir}/translations/*.qm"; DestDir: "{app}/languages"; Flags: comparetimestamp
 Source: "{#ApplicationDir}/styles/*"; DestDir: "{app}/styles"; Flags: comparetimestamp recursesubdirs createallsubdirs
-Source: "{#ApplicationDir}/GUI/ressources/emoticons/*"; DestDir: "{app}/Emoticons"; Flags: comparetimestamp recursesubdirs createallsubdirs
+Source: "{#ApplicationDir}/GUI/resources/emoticons/*"; DestDir: "{app}/Emoticons"; Flags: comparetimestamp recursesubdirs createallsubdirs
 Source: "{#QtDir}/bin/Qt5Core.dll"; DestDir: "{app}"; Flags: comparetimestamp
 Source: "{#QtDir}/bin/Qt5Gui.dll"; DestDir: "{app}"; Flags: comparetimestamp
 Source: "{#QtDir}/bin/Qt5Network.dll"; DestDir: "{app}"; Flags: comparetimestamp

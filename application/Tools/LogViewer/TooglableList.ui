@@ -54,7 +54,7 @@
      </property>
      <property name="icon">
       <iconset>
-       <normaloff>:/icons/ressources/tick.png</normaloff>:/icons/ressources/tick.png</iconset>
+       <normaloff>:/icons/resources/tick.png</normaloff>:/icons/resources/tick.png</iconset>
      </property>
     </widget>
    </item>

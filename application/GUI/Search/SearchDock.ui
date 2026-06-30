@@ -81,8 +81,8 @@
          <string/>
         </property>
         <property name="icon">
-         <iconset resource="../ressources.qrc">
-          <normaloff>:/icons/ressources/search.svg</normaloff>:/icons/ressources/search.svg</iconset>
+         <iconset resource="../resources.qrc">
+          <normaloff>:/icons/resources/search.svg</normaloff>:/icons/resources/search.svg</iconset>
         </property>
         <property name="iconSize">
          <size>
@@ -104,8 +104,8 @@
          <string/>
         </property>
         <property name="icon">
-         <iconset resource="../ressources.qrc">
-          <normaloff>:/icons/ressources/clear_fields.svg</normaloff>:/icons/ressources/clear_fields.svg</iconset>
+         <iconset resource="../resources.qrc">
+          <normaloff>:/icons/resources/clear_fields.svg</normaloff>:/icons/resources/clear_fields.svg</iconset>
         </property>
         <property name="iconSize">
          <size>
@@ -127,8 +127,8 @@
          <string/>
         </property>
         <property name="icon">
-         <iconset resource="../ressources.qrc">
-          <normaloff>:/icons/ressources/plus.png</normaloff>:/icons/ressources/plus.png</iconset>
+         <iconset resource="../resources.qrc">
+          <normaloff>:/icons/resources/plus.png</normaloff>:/icons/resources/plus.png</iconset>
         </property>
         <property name="checkable">
          <bool>true</bool>
@@ -264,7 +264,7 @@
   <tabstop>chkOwnFiles</tabstop>
  </tabstops>
  <resources>
-  <include location="../ressources.qrc"/>
+  <include location="../resources.qrc"/>
  </resources>
  <connections/>
 </ui>

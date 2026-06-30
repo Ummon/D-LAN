@@ -1,0 +1,46 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file>resources/settings.svg</file>
+        <file>resources/chat.svg</file>
+        <file>resources/chat_new_mess.svg</file>
+        <file>resources/upload.svg</file>
+        <file>resources/information.svg</file>
+        <file>resources/world.svg</file>
+        <file>resources/log.svg</file>
+        <file>resources/log_active.svg</file>
+        <file>resources/add_file_folder.svg</file>
+        <file>resources/remove_file_folder.svg</file>
+        <file>resources/arrow_up.svg</file>
+        <file>resources/arrow_down.svg</file>
+        <file>resources/explore_folder.svg</file>
+        <file>resources/folder.svg</file>
+        <file>resources/refresh.svg</file>
+        <file>resources/refresh-down.svg</file>
+        <file>resources/refresh-hover.svg</file>
+        <file>resources/connect.svg</file>
+        <file>resources/chat_room.svg</file>
+        <file>resources/chat_room_new_mess.svg</file>
+        <file>resources/join_chat_room.svg</file>
+        <file>resources/search.svg</file>
+        <file>resources/marble_red.svg</file>
+        <file>resources/marble_blue.svg</file>
+        <file>resources/marble_green.svg</file>
+        <file>resources/clear_fields.svg</file>
+        <file>resources/text_underline.svg</file>
+        <file>resources/text_bold.svg</file>
+        <file>resources/text_italic.svg</file>
+        <file>resources/text_bold_selected.svg</file>
+        <file>resources/text_italic_selected.svg</file>
+        <file>resources/text_underline_selected.svg</file>
+        <file>resources/eraser.svg</file>
+        <file>resources/bin.svg</file>
+        <file>resources/pause.svg</file>
+        <file>resources/list_view.svg</file>
+        <file>resources/tree_view.svg</file>
+        <file>resources/logo.svg</file>
+        <file>resources/error.svg</file>
+        <file>resources/download.svg</file>
+        <file>resources/icon.svg</file>
+        <file>resources/emoticon.svg</file>
+    </qresource>
+</RCC>

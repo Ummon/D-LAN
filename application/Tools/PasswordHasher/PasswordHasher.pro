@@ -28,4 +28,4 @@ FORMS    += MainWindow.ui
 RC_FILE = passwordhasher.rc
 
 RESOURCES += \
-    ressources.qrc
+    resources.qrc

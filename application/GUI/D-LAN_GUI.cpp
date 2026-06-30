@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <D-LAN_GUI.h>
 using namespace GUI;
 
@@ -41,7 +41,7 @@ const QString D_LAN_GUI::SHARED_MEMORY_KEYNAME("D-LAN GUI instance");
 D_LAN_GUI::D_LAN_GUI(int& argc, char* argv[]) :
    QApplication(argc, argv),
    mainWindow(0),
-   trayIcon(QIcon(":/icons/ressources/icon.svg")),
+   trayIcon(QIcon(":/icons/resources/icon.svg")),
    coreConnection(RCC::Builder::newCoreConnection(SETTINGS.get<quint32>("socket_timeout")))
 {
    this->installTranslator(&this->translator);

@@ -20,7 +20,7 @@ STYLES_FILES=$DIR/styles/*
 I18N_FILES=$DIR/translations/*.qm
 CORE_FILE=$DIR/Core/output/release/D-LAN.Core
 GUI_FILE=$DIR/GUI/output/release/D-LAN.GUI
-ICON_FILE=$DIR/Common/ressources/icon.ico
+ICON_FILE=$DIR/Common/resources/icon.ico
 
 sudo rm -Rf $DEB_DIR
 
@@ -69,7 +69,7 @@ select arch in "i386" "amd64" "armhf"; do
     sed -i "s/_ARCH_/$arch/g" $CONTROL
     sed -i "s/_DEP_QTCORE_/$DEP_QTCORE/g" $CONTROL
     sed -i "s/_DEP_QTGUI_/$DEP_QTGUI/g" $CONTROL
-    sed -i "s/_DEP_QTNETWORK_/$DEP_QTNETWORK/g" $CONTROL 
+    sed -i "s/_DEP_QTNETWORK_/$DEP_QTNETWORK/g" $CONTROL
     sed -i "s/_DEP_QTWIDGETS_/$DEP_QTWIDGETS/g" $CONTROL
     sed -i "s/_DEP_QTXML_/$DEP_QTXML/g" $CONTROL
     sed -i "s/_DEP_PROTOBUF_/$DEP_PROTOBUF/g" $CONTROL
@@ -81,11 +81,11 @@ done
 
 sed -i "s/_INST_SIZE_/$(du -sx --exclude DEBIAN $DEB_DIR | cut -f 1)/g" $DEB_DIR/DEBIAN/control
 
-version=$($CORE_FILE --version) 
+version=$($CORE_FILE --version)
 vhead=$(echo $version | cut -d' ' -f 1)
 vtag=$(echo $version | cut -d' ' -f 2)
 vdate=$(echo $version | cut -d' ' -f 3)
- 
+
 
 sed -i "s/_VERSION_/$vhead-$vtag/g" $DEB_DIR/DEBIAN/control
 
@@ -97,5 +97,5 @@ sudo chmod 0755 $DEB_DIR/DEBIAN/postinst $DEB_DIR/DEBIAN/prerm
 sudo chmod 0777 $APP_DIR/D-LAN.Core $APP_DIR/D-LAN.GUI
 dpkg-deb --build d-lan
 mv d-lan.deb $INST_DIR/D-LAN-$vhead$vtag-$vdate-$arch.deb
- 
+
 rm -Rf $WORK_DIR/temp

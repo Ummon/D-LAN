@@ -60,8 +60,8 @@
          <string/>
         </property>
         <property name="icon">
-         <iconset resource="../ressources.qrc">
-          <normaloff>:/icons/ressources/join_chat_room.svg</normaloff>:/icons/ressources/join_chat_room.svg</iconset>
+         <iconset resource="../resources.qrc">
+          <normaloff>:/icons/resources/join_chat_room.svg</normaloff>:/icons/resources/join_chat_room.svg</iconset>
         </property>
         <property name="iconSize">
          <size>
@@ -80,7 +80,7 @@
   </widget>
  </widget>
  <resources>
-  <include location="../ressources.qrc"/>
+  <include location="../resources.qrc"/>
  </resources>
  <connections/>
 </ui>

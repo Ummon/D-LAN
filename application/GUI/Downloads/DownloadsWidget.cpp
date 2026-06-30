@@ -209,7 +209,7 @@ void DownloadsWidget::displayContextMenuDownloads(const QPoint& point)
          if (this->currentDownloadsModel->isFileLocationKnown(i.next()))
          {
             menu.addAction(
-               QIcon(":/icons/ressources/explore_folder.svg"),
+               QIcon(":/icons/resources/explore_folder.svg"),
                tr("Open location"),
                this,
                &DownloadsWidget::openLocationSelectedEntries
@@ -218,21 +218,21 @@ void DownloadsWidget::displayContextMenuDownloads(const QPoint& point)
          }
 
    menu.addAction(
-      QIcon(":/icons/ressources/arrow_up.svg"),
+      QIcon(":/icons/resources/arrow_up.svg"),
       tr("Move to top"),
       this,
       &DownloadsWidget::moveSelectedEntriesToTop
    );
 
    menu.addAction(
-      QIcon(":/icons/ressources/eraser.svg"),
+      QIcon(":/icons/resources/eraser.svg"),
       this->ui->butRemoveComplete->toolTip(),
       this,
       &DownloadsWidget::removeCompletedFiles
    );
 
    menu.addAction(
-      QIcon(":/icons/ressources/bin.svg"),
+      QIcon(":/icons/resources/bin.svg"),
       this->ui->butRemoveSelected->toolTip(),
       this,
       &DownloadsWidget::removeSelectedEntries
@@ -241,7 +241,7 @@ void DownloadsWidget::displayContextMenuDownloads(const QPoint& point)
    QPair<QList<quint64>, bool> IDs = this->getDownloadIDsToPause();
    if (!IDs.first.isEmpty())
       menu.addAction(
-         QIcon(":/icons/ressources/pause.svg"),
+         QIcon(":/icons/resources/pause.svg"),
          IDs.second ? tr("Pause selected entries") : tr("Unpause selected entries"),
          this,
          &DownloadsWidget::pauseSelectedEntries
@@ -329,7 +329,7 @@ void DownloadsWidget::removeSelectedEntries()
       if (!allComplete)
       {
          QMessageBox msgBox(this);
-         msgBox.setWindowIcon(QIcon(":/icons/ressources/bin.svg"));
+         msgBox.setWindowIcon(QIcon(":/icons/resources/bin.svg"));
          msgBox.setWindowTitle(tr("Remove selected downloads"));
          msgBox.setText(tr("Are you sure to remove the selected downloads? There is one or more unfinished download."));
          msgBox.setIcon(QMessageBox::Question);
@@ -383,7 +383,7 @@ void DownloadsWidget::switchView(Protos::GUI::Settings::DownloadView view)
 {
    if (view == Protos::GUI::Settings::TREE_VIEW)
    {
-      this->ui->butSwitchView->setIcon(QIcon(":/icons/ressources/list_view.svg"));
+      this->ui->butSwitchView->setIcon(QIcon(":/icons/resources/list_view.svg"));
       this->ui->butSwitchView->setToolTip(tr("Switch to file list view"));
       this->ui->tblDownloads->setIndentation(20);
 
@@ -396,7 +396,7 @@ void DownloadsWidget::switchView(Protos::GUI::Settings::DownloadView view)
    }
    else if (view == Protos::GUI::Settings::LIST_VIEW)
    {
-      this->ui->butSwitchView->setIcon(QIcon(":/icons/ressources/tree_view.svg"));
+      this->ui->butSwitchView->setIcon(QIcon(":/icons/resources/tree_view.svg"));
       this->ui->butSwitchView->setToolTip(tr("Switch to tree view"));
       this->ui->tblDownloads->setIndentation(0);
 

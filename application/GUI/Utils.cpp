@@ -87,7 +87,7 @@ QStringList Utils::askForDirectoriesOrFiles(QSharedPointer<RCC::ICoreConnection>
 
 QStringList Utils::askForDirectoriesToDownloadTo(QSharedPointer<RCC::ICoreConnection> coreConnection)
 {
-   //return Utils::askForDirectories(coreConnection, "<img src=\":/icons/ressources/information.svg\" /> <strong>" + QObject::tr("The downloading file will be shared") + "</strong>");
+   //return Utils::askForDirectories(coreConnection, "<img src=\":/icons/resources/information.svg\" /> <strong>" + QObject::tr("The downloading file will be shared") + "</strong>");
    //return Utils::askForDirectoriesOrFiles(coreConnection); // TODO: take the code from 'askForDirectoriesOrFiles',
    /*
    QGridLayout* layout = fileDialog.findChild<QGridLayout*>();
@@ -103,7 +103,7 @@ QString Utils::emoticonsDirectoryPath()
    QString defaultPath = QCoreApplication::applicationDirPath() % "/" % Constants::EMOTICONS_DIRECTORY;
 #if DEBUG
    if (!QDir(defaultPath).exists())
-      return QCoreApplication::applicationDirPath() % "/../../ressources/emoticons";
+      return QCoreApplication::applicationDirPath() % "/../../resources/emoticons";
 #endif
    return defaultPath;
 }

@@ -14,8 +14,8 @@
    <string>Uploads</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../ressources.qrc">
-    <normaloff>:/icons/ressources/upload.svg</normaloff>:/icons/ressources/upload.svg</iconset>
+   <iconset resource="../resources.qrc">
+    <normaloff>:/icons/resources/upload.svg</normaloff>:/icons/resources/upload.svg</iconset>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="leftMargin">
@@ -33,7 +33,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="../ressources.qrc"/>
+  <include location="../resources.qrc"/>
  </resources>
  <connections/>
 </ui>

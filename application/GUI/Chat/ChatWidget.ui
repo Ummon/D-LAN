@@ -47,9 +47,9 @@
           <string/>
          </property>
          <property name="icon">
-          <iconset resource="../ressources.qrc">
-           <normaloff>:/icons/ressources/text_bold.svg</normaloff>
-           <activeon>:/icons/ressources/text_bold_selected.svg</activeon>:/icons/ressources/text_bold.svg</iconset>
+          <iconset resource="../resources.qrc">
+           <normaloff>:/icons/resources/text_bold.svg</normaloff>
+           <activeon>:/icons/resources/text_bold_selected.svg</activeon>:/icons/resources/text_bold.svg</iconset>
          </property>
          <property name="iconSize">
           <size>
@@ -74,9 +74,9 @@
           <string/>
          </property>
          <property name="icon">
-          <iconset resource="../ressources.qrc">
-           <normaloff>:/icons/ressources/text_italic.svg</normaloff>
-           <activeon>:/icons/ressources/text_italic_selected.svg</activeon>:/icons/ressources/text_italic.svg</iconset>
+          <iconset resource="../resources.qrc">
+           <normaloff>:/icons/resources/text_italic.svg</normaloff>
+           <activeon>:/icons/resources/text_italic_selected.svg</activeon>:/icons/resources/text_italic.svg</iconset>
          </property>
          <property name="iconSize">
           <size>
@@ -98,9 +98,9 @@
           <string/>
          </property>
          <property name="icon">
-          <iconset resource="../ressources.qrc">
-           <normaloff>:/icons/ressources/text_underline.svg</normaloff>
-           <activeon>:/icons/ressources/text_underline_selected.svg</activeon>:/icons/ressources/text_underline.svg</iconset>
+          <iconset resource="../resources.qrc">
+           <normaloff>:/icons/resources/text_underline.svg</normaloff>
+           <activeon>:/icons/resources/text_underline_selected.svg</activeon>:/icons/resources/text_underline.svg</iconset>
          </property>
          <property name="iconSize">
           <size>
@@ -125,8 +125,8 @@
           <string/>
          </property>
          <property name="icon">
-          <iconset resource="../ressources.qrc">
-           <normaloff>:/icons/ressources/eraser.svg</normaloff>:/icons/ressources/eraser.svg</iconset>
+          <iconset resource="../resources.qrc">
+           <normaloff>:/icons/resources/eraser.svg</normaloff>:/icons/resources/eraser.svg</iconset>
          </property>
          <property name="iconSize">
           <size>
@@ -145,8 +145,8 @@
           <string/>
          </property>
          <property name="icon">
-          <iconset resource="../ressources.qrc">
-           <normaloff>:/icons/ressources/emoticon.svg</normaloff>:/icons/ressources/emoticon.svg</iconset>
+          <iconset resource="../resources.qrc">
+           <normaloff>:/icons/resources/emoticon.svg</normaloff>:/icons/resources/emoticon.svg</iconset>
          </property>
          <property name="iconSize">
           <size>
@@ -214,7 +214,7 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../ressources.qrc"/>
+  <include location="../resources.qrc"/>
  </resources>
  <connections/>
 </ui>

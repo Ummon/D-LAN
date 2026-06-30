@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <Chat/RoomsDock.h>
 #include <ui_RoomsDock.h>
 using namespace GUI;
@@ -93,7 +93,7 @@ bool RoomsDock::eventFilter(QObject* obj, QEvent* event)
 void RoomsDock::displayContextMenuRooms(const QPoint& point)
 {
    QMenu menu;
-   menu.addAction(QIcon(":/icons/ressources/join_chat_room.svg"), tr("Join"), this, &RoomsDock::joinSelectedRoom);
+   menu.addAction(QIcon(":/icons/resources/join_chat_room.svg"), tr("Join"), this, &RoomsDock::joinSelectedRoom);
 
    menu.addSeparator();
 

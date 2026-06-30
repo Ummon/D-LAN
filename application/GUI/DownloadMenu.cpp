@@ -46,7 +46,7 @@ void DownloadMenu::show(const QPoint& globalPosition)
    if (!sharedDirs.isEmpty())
    {
       QAction* actionDownload = new QAction(
-         QIcon(":/icons/ressources/download.svg"),
+         QIcon(":/icons/resources/download.svg"),
          tr("Download selected items to the first directory folder with enough free space"),
          &menu
       );
@@ -57,7 +57,7 @@ void DownloadMenu::show(const QPoint& globalPosition)
    for (const auto& sharedDir : sharedDirs)
    {
       QAction* action = new QAction(
-         QIcon(":/icons/ressources/download.svg"),
+         QIcon(":/icons/resources/download.svg"),
          QString(tr("Download selected items to %1")).arg(sharedDir.path.toString()),
          &menu
       );
@@ -67,7 +67,7 @@ void DownloadMenu::show(const QPoint& globalPosition)
    }
 
    QAction* actionChooseAndDownload = new QAction(
-      QIcon(":/icons/ressources/download.svg"),
+      QIcon(":/icons/resources/download.svg"),
       tr("Download selected items to . . ."),
       &menu
    );

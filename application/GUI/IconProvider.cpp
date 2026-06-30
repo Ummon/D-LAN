@@ -131,7 +131,7 @@ QIcon IconProvider::getIconNative(const QString& extension)
       icon = QIcon(QPixmap::fromImage(QImage::fromHICON(psfi.hIcon)));
       DestroyIcon(psfi.hIcon);
    }
-#else   
+#else
    icon = IconProvider::iconProvider.icon(QFileIconProvider::File);
 #endif
    return icon;
@@ -139,7 +139,7 @@ QIcon IconProvider::getIconNative(const QString& extension)
 
 QIcon IconProvider::drawWarning(const QIcon& icon)
 {
-   QPixmap miniError(":/icons/ressources/error.svg");
+   QPixmap miniError(":/icons/resources/error.svg");
    QIcon result;
    foreach (auto size, icon.availableSizes())
    {

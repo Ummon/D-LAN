@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <Peers/PeersDock.h>
 #include <ui_PeersDock.h>
 using namespace GUI;
@@ -94,7 +94,7 @@ void PeersDock::displayContextMenuPeers(const QPoint& point)
 
    QMenu menu;
    if (peerStatus == Protos::GUI::State::Peer::OK)
-      menu.addAction(QIcon(":/icons/ressources/folder.svg"), tr("Browse"), this, &PeersDock::browse);
+      menu.addAction(QIcon(":/icons/resources/folder.svg"), tr("Browse"), this, &PeersDock::browse);
 
    if (!addr.isNull())
    {
@@ -102,7 +102,7 @@ void PeersDock::displayContextMenuPeers(const QPoint& point)
       {
          QAction* takeControlAction =
             menu.addAction(
-               QIcon(":/icons/ressources/connect.svg"),
+               QIcon(":/icons/resources/connect.svg"),
                tr("Take control"),
                this,
                &PeersDock::takeControlOfACore
@@ -135,14 +135,14 @@ void PeersDock::displayContextMenuPeers(const QPoint& point)
    menu.addSeparator();
 
    menu.addAction(
-      QIcon(":/icons/ressources/marble_red.svg"),
+      QIcon(":/icons/resources/marble_red.svg"),
       tr("Colorize in red"),
       this,
       &PeersDock::colorizeSelectedPeer
    )->setData(PeerListModel::COLOR_PEER_RED);
 
    menu.addAction(
-      QIcon(":/icons/ressources/marble_blue.svg"),
+      QIcon(":/icons/resources/marble_blue.svg"),
       tr("Colorize in blue"),
       this,
       &PeersDock::colorizeSelectedPeer
@@ -150,7 +150,7 @@ void PeersDock::displayContextMenuPeers(const QPoint& point)
 
 
    menu.addAction(
-      QIcon(":/icons/ressources/marble_green.svg"),
+      QIcon(":/icons/resources/marble_green.svg"),
       tr("Colorize in green"),
       this,
       &PeersDock::colorizeSelectedPeer
