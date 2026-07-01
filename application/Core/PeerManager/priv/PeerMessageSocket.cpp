@@ -188,7 +188,10 @@ void PeerMessageSocket::finished(bool closeTheSocket)
    if (!this->active)
       return;
 
-   L_DEBU(QString("Socket[%1] set to idle%2<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<").arg(this->num).arg(closeTheSocket ? " (socket forced to close) " : " "));
+   L_DEBU(
+      QString("Socket[%1] set to idle%2<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
+         .arg(this->num).arg(closeTheSocket ? " (socket forced to close) " : " ")
+   );
 
    if (closeTheSocket)
    {
@@ -267,7 +270,9 @@ void PeerMessageSocket::entriesResultTimeout()
    {
       if (this->entriesResultsToReceive[i] == this->sender())
       {
-         this->entriesResultMessage.mutable_results(i)->set_status(Protos::Core::GetEntriesResult::EntryResult::TIMEOUT_SCANNING_IN_PROGRESS);
+         this->entriesResultMessage.mutable_results(i)->set_status(
+            Protos::Core::GetEntriesResult::EntryResult::TIMEOUT_SCANNING_IN_PROGRESS
+         );
          this->entriesResultsToReceive[i].clear();
       }
       else if (!this->entriesResultsToReceive[i].isNull())
@@ -293,9 +298,27 @@ void PeerMessageSocket::onNewMessage(const Common::Message& message)
 
          for (int i = 0; i < getEntries.dirs().entries_size(); i++)
          {
-            QSharedPointer<FM::IGetEntriesResult> result = this->fileManager->getScannedEntries(getEntries.dirs().entries(i), getEntries.nb_max_hashes_per_entry() > 0 ? getEntries.nb_max_hashes_per_entry() : std::numeric_limits<int>::max());
-            connect(result.data(), &FM::IGetEntriesResult::result, this, &PeerMessageSocket::entriesResult, Qt::DirectConnection);
-            connect(result.data(), &FM::IGetEntriesResult::timeout, this, &PeerMessageSocket::entriesResultTimeout, Qt::DirectConnection);
+            QSharedPointer<FM::IGetEntriesResult> result =
+               this->fileManager->getScannedEntries(
+                  getEntries.dirs().entries(i),
+                  getEntries.nb_max_hashes_per_entry() > 0 ?
+                       getEntries.nb_max_hashes_per_entry()
+                     : std::numeric_limits<int>::max()
+               );
+            connect(
+               result.data(),
+               &FM::IGetEntriesResult::result,
+               this,
+               &PeerMessageSocket::entriesResult,
+               Qt::DirectConnection
+            );
+            connect(
+               result.data(),
+               &FM::IGetEntriesResult::timeout,
+               this,
+               &PeerMessageSocket::entriesResultTimeout,
+               Qt::DirectConnection
+            );
             this->entriesResultsToReceive << result;
             this->entriesResultMessage.add_results();
          }
@@ -328,7 +351,13 @@ void PeerMessageSocket::onNewMessage(const Common::Message& message)
          const Protos::Core::GetHashes& getHashes = message.getMessage<Protos::Core::GetHashes>();
 
          this->currentHashesResult = this->fileManager->getHashes(getHashes.file());
-         connect(this->currentHashesResult.data(), &FM::IGetHashesResult::nextHash, this, &PeerMessageSocket::nextAskedHash, Qt::QueuedConnection);
+         connect(
+            this->currentHashesResult.data(),
+            &FM::IGetHashesResult::nextHash,
+            this,
+            &PeerMessageSocket::nextAskedHash,
+            Qt::QueuedConnection
+         );
          Protos::Core::GetHashesResult res = this->currentHashesResult->start();
          this->nbHash = res.nb_hash();
 

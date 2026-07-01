@@ -279,7 +279,7 @@ void Core::checkSettingsIntegrity()
    this->checkSetting("get_hashes_timeout", 1000u, 60u * 1000u);
 
    this->checkSetting("number_of_downloader", 1u, 10u);
-   this->checkSetting("lan_speed", 1024u * 1024u, 1024u * 1024u * 1024u);
+   this->checkSetting("lan_speed", 1024u * 1024u, 10u * 1024u * 1024u * 1024u);
    this->checkSetting("time_recheck_chunk_factor", 1.0, 10.0);
    this->checkSetting("switch_to_another_peer_factor", 1.0, 10.0);
    this->checkSetting("download_rate_valid_time_factor", 100u, 100000u);

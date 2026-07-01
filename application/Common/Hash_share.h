@@ -33,7 +33,7 @@ namespace Common
    class Hash
    {
    public:
-      static const int HASH_SIZE = 20;
+      static const int HASH_SIZE = 28;
 
    private:
       static const char NULL_HASH[HASH_SIZE];

@@ -22,6 +22,7 @@ using namespace DM;
 #include <QElapsedTimer>
 
 #include <Common/Settings.h>
+#include <Common/Constants.h>
 #include <Core/FileManager/Exceptions.h>
 #include <Core/PeerManager/IPeer.h>
 
@@ -137,9 +138,13 @@ void ChunkDownloader::run()
       static const int SOCKET_TIMEOUT = SETTINGS.get<quint32>("socket_timeout");
       static const int TIME_PERIOD_CHOOSE_ANOTHER_PEER =
          1000.0 * SETTINGS.get<double>("time_recheck_chunk_factor") *
-         SETTINGS.get<quint32>("chunk_size") / SETTINGS.get<quint32>("lan_speed");
-
+         Common::Constants::CHUNK_SIZE / SETTINGS.get<quint32>("lan_speed");
       static const int BUFFER_SIZE = SETTINGS.get<quint32>("buffer_size_writing");
+
+      Q_ASSERT(SOCKET_TIMEOUT > 0);
+      Q_ASSERT(TIME_PERIOD_CHOOSE_ANOTHER_PEER > 0);
+      Q_ASSERT(BUFFER_SIZE > 0);
+
       QByteArray buffer(BUFFER_SIZE, Qt::Uninitialized);
 
       const int initialKnownBytes = this->chunk->getKnownBytes();
