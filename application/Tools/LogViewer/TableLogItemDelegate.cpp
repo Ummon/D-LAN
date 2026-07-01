@@ -37,7 +37,7 @@
 const QString TableLogItemDelegate::OPEN_HTML_FOUND_TERM("<span style=\"font-weight: bold;color: #FFFF00;background-color: #21218B;\">");
 const QString TableLogItemDelegate::CLOSE_HTML_FOUND_TERM("</span>");
 
-TableLogItemDelegate::TableLogItemDelegate(QObject *parent) :
+TableLogItemDelegate::TableLogItemDelegate(QObject* parent) :
    QStyledItemDelegate(parent)
 {
 }
@@ -99,15 +99,28 @@ void TableLogItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
    painter->restore();
 }
 
-QSize TableLogItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index ) const
+QSize TableLogItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
+   const auto& i = this->sizesCache.find(index);
+   if (i != this->sizesCache.constEnd())
+      return i.value();
+
    QStyleOptionViewItem opt = option;
    this->initStyleOption(&opt, index);
 
    QTextDocument doc;
    this->configureDoc(doc, option, index);
 
-   return QSize(int(doc.idealWidth()), int(doc.size().height()));
+   QSize size(int(doc.idealWidth()), int(doc.size().height()));
+
+   this->sizesCache.insert(index, size);
+
+   return size;
+}
+
+void TableLogItemDelegate::resetSizesCache()
+{
+   this->sizesCache.clear();
 }
 
 void TableLogItemDelegate::configureDoc(QTextDocument& doc, const QStyleOptionViewItem& option, const QModelIndex& index) const

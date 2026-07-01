@@ -26,8 +26,6 @@
 
 #include <Common/Global.h>
 
-#include <TableLogItemDelegate.h>
-
 LOG_INIT_CPP(MainWindow)
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -52,7 +50,7 @@ MainWindow::MainWindow(QWidget *parent) :
    this->currentDir.setSorting(QDir::Name);
    this->ui->tblLog->setWordWrap(false);
    this->ui->tblLog->setModel(&this->model);
-   this->ui->tblLog->setItemDelegate(new TableLogItemDelegate(this));
+   this->ui->tblLog->setItemDelegate(&this->delegate);
 
    this->ui->tblLog->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
    this->ui->tblLog->horizontalHeader()->resizeSection(TableLogModel::DATE_TIME, 140);
@@ -66,6 +64,7 @@ MainWindow::MainWindow(QWidget *parent) :
    this->ui->tblLog->verticalHeader()->setDefaultSectionSize(17);
    this->ui->tblLog->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
    this->ui->tblLog->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
+   this->ui->tblLog->setAutoScroll(false);
 
    this->severities = new TooglableList(this);
    this->modules = new TooglableList(this);
@@ -121,7 +120,7 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
    }
    else if (event->key() == Qt::Key_F3)
    {
-      this->selectNextSearch();
+      this->selectNextSearch((event->modifiers() & Qt::ShiftModifier) == Qt::ShiftModifier);
    }
 
    QMainWindow::keyPressEvent(event);
@@ -144,6 +143,7 @@ void MainWindow::openDir()
 
 void MainWindow::setShowMultipleLines(bool checked)
 {
+   this->delegate.resetSizesCache();
    this->model.setShowMultipleLines(checked);
 }
 
@@ -257,19 +257,29 @@ void MainWindow::search()
    this->selectNextSearch();
 }
 
-void MainWindow::selectNextSearch()
+void MainWindow::selectNextSearch(bool reverse)
 {
-   const QModelIndex index =
+   const std::pair<int, QModelIndex> index =
       this->model.nextResult(
-         this->ui->tblLog->currentIndex().siblingAtRow(this->ui->tblLog->currentIndex().row() + 1)
+         this->ui->tblLog->currentIndex().siblingAtRow(
+            this->ui->tblLog->currentIndex().row() + (reverse ? -1 : 1)
+         ),
+         reverse
       );
 
-   if (index.isValid() && index != this->ui->tblLog->currentIndex())
+   if (index.second.isValid() && index.second != this->ui->tblLog->currentIndex())
    {
-      this->ui->tblLog->selectRow(index.row());
+      this->ui->lblSearchStats->setText(
+         QString("%1/%2").arg(index.first + 1).arg(this->model.currentNbFoundItems())
+      );
+
+      this->ui->tblLog->selectRow(index.second.row());
+      this->ui->tblLog->scrollTo(index.second);
    }
    else
    {
+      this->ui->lblSearchStats->clear();
+
       QMessageBox msgBox(this);
       msgBox.setText("Not found");
       msgBox.exec();

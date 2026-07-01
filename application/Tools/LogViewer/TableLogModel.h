@@ -63,9 +63,11 @@ public:
    bool isFiltered(int num, const QStringList& severities, const QStringList& modules, const QStringList& threads) const;
 
    void search(const QString& word);
-   QModelIndex nextResult(const QModelIndex& from) const;
+   std::pair<int, QModelIndex> nextResult(const QModelIndex& from, bool reverse = false) const;
+   QModelIndex previousResult(const QModelIndex& from) const;
    bool inSearchResult(const QModelIndex& from) const;
    const QString& currentSearchTerm() const;
+   const int currentNbFoundItems() const;
 
 public slots:
    void setWatchingPause(bool pause);

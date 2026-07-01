@@ -139,6 +139,13 @@
         <item>
          <widget class="QLineEdit" name="txtSearch"/>
         </item>
+        <item>
+         <widget class="QLabel" name="lblSearchStats">
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
        </layout>
       </item>
      </layout>

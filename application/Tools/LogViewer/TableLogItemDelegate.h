@@ -18,6 +18,7 @@
   
 #pragma once
 
+#include <QMap>
 #include <QTextDocument>
 #include <QStyledItemDelegate>
 
@@ -27,11 +28,15 @@ class TableLogItemDelegate : public QStyledItemDelegate
    static const QString CLOSE_HTML_FOUND_TERM;
 
 public:
-   TableLogItemDelegate(QObject *parent = 0);
+   TableLogItemDelegate(QObject* parent = nullptr);
 
    void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
    QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
+   void resetSizesCache();
+
 private:
    void configureDoc(QTextDocument& doc, const QStyleOptionViewItem& option, const QModelIndex& index) const;
+
+   mutable QMap<QModelIndex, QSize> sizesCache;
 };

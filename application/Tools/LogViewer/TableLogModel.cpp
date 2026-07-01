@@ -182,11 +182,11 @@ void TableLogModel::search(const QString& word)
    }
 }
 
-QModelIndex TableLogModel::nextResult(const QModelIndex& from) const
+std::pair<int, QModelIndex> TableLogModel::nextResult(const QModelIndex& from, bool reverse) const
 {
    const int s = this->indexesFound.size();
    if (s == 0)
-      return QModelIndex();
+      return std::make_pair(0, QModelIndex());
 
    const int fromRow = !from.isValid() ? 0 : from.row();
 
@@ -197,27 +197,43 @@ QModelIndex TableLogModel::nextResult(const QModelIndex& from) const
       const int i = (end - start) / 2 + start;
       const int currentRow = this->indexesFound[i];
       if (currentRow == fromRow)
-         return this->createIndex(this->indexesFound[i % s], MESSAGE);
+      {
+         int pos = i % s;
+         return std::make_pair(pos, this->createIndex(this->indexesFound[pos], MESSAGE));
+      }
       else if (currentRow > fromRow)
          end = i;
       else
          start = i + 1;
    }
 
-   if (start < s && this->indexesFound[start] < fromRow)
+   if (!reverse && start < s && this->indexesFound[start] < fromRow)
       start += 1;
 
-   return this->createIndex(this->indexesFound[start % s], MESSAGE);
+   if (reverse && start < s && this->indexesFound[start] > fromRow)
+   {
+      start -= 1;
+      if (start < 0)
+         start = s - 1;
+   }
+
+   int pos = start % s;
+   return std::make_pair(pos, this->createIndex(this->indexesFound[start % s], MESSAGE));
 }
 
 bool TableLogModel::inSearchResult(const QModelIndex& index) const
 {
-   return this->nextResult(index).row() == index.row();
+   return this->nextResult(index).second.row() == index.row();
 }
 
 const QString& TableLogModel::currentSearchTerm() const
 {
    return this->currentSearch;
+}
+
+const int TableLogModel::currentNbFoundItems() const
+{
+   return this->indexesFound.size();
 }
 
 void TableLogModel::setWatchingPause(bool pause)

@@ -28,6 +28,7 @@
 #include <Common/LogManager/LogMacros.h>
 
 #include <TableLogModel.h>
+#include <TableLogItemDelegate.h>
 #include <TooglableList/TooglableList.h>
 
 namespace Ui { class MainWindow; }
@@ -58,7 +59,7 @@ private slots:
    void directoryChanged();
 
    void search();
-   void selectNextSearch();
+   void selectNextSearch(bool reverse = false);
 
 private:
    LOG_INIT_H("LogViewer")
@@ -80,6 +81,7 @@ private:
    Ui::MainWindow* ui;
 
    TableLogModel model;
+   TableLogItemDelegate delegate;
 
    QDir currentDir;
    QFile* currentFile;
