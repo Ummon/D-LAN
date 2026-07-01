@@ -178,10 +178,10 @@ void MdiArea::newState(const Protos::GUI::State& state)
 
    if (this->downloadsBusyIndicator)
    {
-      if (state.stats().cache_status() == Protos::GUI::State::Stats::LOADING_CACHE_IN_PROGRESS)
-         this->downloadsBusyIndicator->show();
-      else
-         this->downloadsBusyIndicator->hide();
+      // if (state.stats().cache_status() == Protos::GUI::State::Stats::LOADING_CACHE_IN_PROGRESS)
+      //    this->downloadsBusyIndicator->show();
+      // else
+      this->downloadsBusyIndicator->hide();
    }
 }
 

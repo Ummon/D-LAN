@@ -284,6 +284,7 @@ void ChatSystem::received(const Common::Message& message)
             i != this->rooms.end() ?
                  i.value().messages.getUnknownMessages(getLastChatMessages)
                : this->messages.getUnknownMessages(getLastChatMessages);
+
          if (messages.isEmpty())
             break;
 

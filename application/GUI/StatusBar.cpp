@@ -135,11 +135,6 @@ void StatusBar::updateCoreStatus(Protos::GUI::State_Stats_CacheStatus status, in
 
       switch (status)
       {
-      case Protos::GUI::State_Stats_CacheStatus_LOADING_CACHE_IN_PROGRESS:
-         statusMess.append(" - ").append(tr("loading cache . . ."));
-         this->ui->prgCurrentAction->setVisible(true);
-         this->ui->prgCurrentAction->setValue(progress);
-         break;
       case Protos::GUI::State_Stats_CacheStatus_SCANNING_IN_PROGRESS:
          statusMess.append(" - ").append(tr("scanning in progress . . ."));
          this->ui->prgCurrentAction->setVisible(false);

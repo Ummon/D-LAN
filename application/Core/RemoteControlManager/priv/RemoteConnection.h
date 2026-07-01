@@ -77,7 +77,7 @@ namespace RCM
       void send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);
 
    signals:
-      void deleted(RemoteConnection*);
+      void deleted(RCM::RemoteConnection*);
       void languageDefined(QLocale);
 
    private slots:

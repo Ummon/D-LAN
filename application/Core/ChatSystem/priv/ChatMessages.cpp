@@ -123,7 +123,7 @@ QList<QSharedPointer<ChatMessage>> ChatMessages::fillProtoChatMessages(
    for (QMutableListIterator<QSharedPointer<ChatMessage>> i(result); i.hasNext();)
    {
       i.next()->fillProtoChatMessage(*chatMessages.add_messages());
-      if (maxByteSize != std::numeric_limits<int>::max() && int(chatMessages.ByteSizeLong()) > maxByteSize)
+      if (maxByteSize != std::numeric_limits<int>::max() && static_cast<int>(chatMessages.ByteSizeLong()) > maxByteSize)
       {
          chatMessages.mutable_messages()->RemoveLast();
          return result;

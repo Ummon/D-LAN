@@ -70,7 +70,7 @@ message ChunksOwned {
 // id : 0x18
 message GetLastChatMessages {
    uint32 number = 1;
-   repeated uint64 message_ids = 2 [packed=true];
+   repeated uint64 message_ids = 2 [packed=true]; // Messages already known.
    string chat_room = 3;
 }
 
