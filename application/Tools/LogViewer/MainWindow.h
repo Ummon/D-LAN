@@ -68,7 +68,6 @@ private:
    void readCurrentDir();
    void closeCurrentFile();
    void refreshFilters();
-   void filterRow(int r);
 
    bool disableRefreshFilters;
 

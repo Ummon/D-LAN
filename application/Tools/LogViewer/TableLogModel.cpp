@@ -39,7 +39,7 @@ TableLogModel::TableLogModel() :
 
 int TableLogModel::rowCount(const QModelIndex& parent) const
 {
-   return this->entries.count();
+   return this->filteredEntries.count();
 }
 
 int TableLogModel::columnCount(const QModelIndex& parent) const
@@ -49,14 +49,14 @@ int TableLogModel::columnCount(const QModelIndex& parent) const
 
 QVariant TableLogModel::data(const QModelIndex& index, int role) const
 {
-   if (index.row() >= this->entries.count())
+   if (index.row() >= this->filteredEntries.count())
       return QVariant();
 
    switch (role)
    {
    case Qt::DisplayRole:
       {
-         QSharedPointer<LM::IEntry> entry = this->entries[index.row()];
+         QSharedPointer<LM::IEntry> entry = this->filteredEntries[index.row()];
 
          switch (index.column())
          {
@@ -85,7 +85,7 @@ QVariant TableLogModel::data(const QModelIndex& index, int role) const
       {
          if (index.column() == MESSAGE)
          {
-            QSharedPointer<LM::IEntry> entry = this->entries[index.row()];
+            QSharedPointer<LM::IEntry> entry = this->filteredEntries[index.row()];
             // Force HTML detection with <qt> tag.
             return QVariant("<qt>" + entry->getMessageWithLF() + "</qt>");
          }
@@ -128,7 +128,7 @@ void TableLogModel::setShowMultipleLines(bool enabled)
       return;
 
    this->showMultipleLines = enabled;
-   emit(dataChanged(this->index(0, 5), this->index(this->entries.size()-1, 5)));
+   emit(dataChanged(this->index(0, 5), this->index(this->filteredEntries.size()-1, 5)));
 }
 
 void TableLogModel::removeDataSource()
@@ -139,9 +139,9 @@ void TableLogModel::removeDataSource()
 
 LM::Severity TableLogModel::getSeverity(int row) const
 {
-   if (row >= this->entries.count())
+   if (row >= this->filteredEntries.count())
       return LM::SV_UNKNOWN;
-   return this->entries[row]->getSeverity();
+   return this->filteredEntries[row]->getSeverity();
 }
 
 const QStringList& TableLogModel::getSeverities() const
@@ -159,15 +159,31 @@ const QStringList& TableLogModel::getThreads() const
    return this->threads;
 }
 
-bool TableLogModel::isFiltered(int num, const QStringList& severities, const QStringList& modules, const QStringList& threads) const
+void TableLogModel::setFilter(const QStringList& severities, const QStringList& modules, const QStringList& threads)
 {
-   if (num >= this->entries.count())
-      return false;
-   return !(
-      severities.contains(this->entries[num]->getSeverityStr()) &&
-      modules.contains(this->entries[num]->getName()) &&
-      threads.contains(this->entries[num]->getThread())
-   );
+   this->beginResetModel();
+
+   this->severitiesFilter = severities;
+   this->modulesFilter = modules;
+   this->threadsFilter = threads;
+
+   this->filteredEntries.clear();
+
+   for (const auto& entry : std::as_const(this->entries))
+   {
+      if (!this->isFiltered(entry))
+         this->filteredEntries << entry;
+   }
+
+   if (!this->currentSearch.isEmpty())
+      this->search(this->currentSearch);
+
+   this->endResetModel();
+}
+
+void TableLogModel::resetFilter()
+{
+   this->setFilter(this->severities, this->modules, this->threads);
 }
 
 void TableLogModel::search(const QString& word)
@@ -175,9 +191,9 @@ void TableLogModel::search(const QString& word)
    this->indexesFound.clear();
    this->currentSearch = word.toLower();
 
-   for (int row = 0; row < this->entries.size(); ++row)
+   for (int row = 0; row < this->filteredEntries.size(); ++row)
    {
-      if (this->entries[row]->getMessage().toLower().contains(this->currentSearch))
+      if (this->filteredEntries[row]->getMessage().toLower().contains(this->currentSearch))
          this->indexesFound.append(row);
    }
 }
@@ -231,9 +247,24 @@ const QString& TableLogModel::currentSearchTerm() const
    return this->currentSearch;
 }
 
-const int TableLogModel::currentNbFoundItems() const
+int TableLogModel::currentNbFoundItems() const
 {
    return this->indexesFound.size();
+}
+
+QString TableLogModel::rowAsText(int row) const
+{
+   if (row < 0 || row >= this->entries.size())
+      return QString();
+
+   const auto& entry = this->entries[row];
+
+   return
+      entry->getDateStr() % " | " %
+      entry->getName() % " | " %
+      entry->getThread() % " | " %
+      entry->getSource() % " | " %
+      entry->getMessageWithLF();
 }
 
 void TableLogModel::setWatchingPause(bool pause)
@@ -249,6 +280,16 @@ void TableLogModel::fileChanged()
    this->readLines();
 }
 
+bool TableLogModel::isFiltered(const QSharedPointer<LM::IEntry>& entry) const
+{
+   return
+      !(
+         this->severitiesFilter.contains(entry->getSeverityStr()) &&
+         this->modulesFilter.contains(entry->getName()) &&
+         this->threadsFilter.contains(entry->getThread())
+      );
+}
+
 void TableLogModel::readLines()
 {
    if (!this->source)
@@ -257,7 +298,7 @@ void TableLogModel::readLines()
    QTextStream stream(this->source);
    stream.setEncoding(QStringConverter::Utf8);
 
-   const int count = this->entries.count();
+   const int count = this->filteredEntries.count();
 
    QString line;
    while (line = stream.readLine(), !line.isNull())
@@ -270,22 +311,30 @@ void TableLogModel::readLines()
       {
          QSharedPointer<LM::IEntry> entry = LM::Builder::decode(line);
          this->entries << entry;
+         if (!this->isFiltered(entry))
+            this->filteredEntries << entry;
 
          if (!this->severities.contains(entry->getSeverityStr()))
          {
             this->severities << entry->getSeverityStr();
+            this->severitiesFilter << this->severities.constLast();
+
             emit newSeverity(entry->getSeverityStr());
          }
 
          if (!this->modules.contains(entry->getName()))
          {
             this->modules << entry->getName();
+            this->modulesFilter << this->modules.constLast();
+
             emit newModule(entry->getName());
          }
 
          if (!this->threads.contains(entry->getThread()))
          {
             this->threads << entry->getThread();
+            this->threadsFilter << this->threads.constLast();
+
             emit newThread(entry->getThread());
          }
       }
@@ -295,13 +344,13 @@ void TableLogModel::readLines()
       }
    }
 
-   if (this->entries.count() - count <= 0)
+   if (this->filteredEntries.count() - count <= 0)
       return;
 
-   this->beginInsertRows(QModelIndex(), count, this->entries.count() - 1);
+   this->beginInsertRows(QModelIndex(), count, this->filteredEntries.count() - 1);
    this->endInsertRows();
 
-   emit(newLogEntries(this->entries.count() - count));
+   emit(newLogEntries(this->filteredEntries.count() - count));
 }
 
 void TableLogModel::clear()
@@ -309,10 +358,16 @@ void TableLogModel::clear()
    if (this->entries.empty())
       return;
 
-   this->beginRemoveRows(QModelIndex(), 0, this->entries.count() - 1);
+   this->beginRemoveRows(QModelIndex(), 0, this->filteredEntries.count() - 1);
    this->severities.clear();
    this->modules.clear();
    this->threads.clear();
+
+   this->severitiesFilter.clear();
+   this->modulesFilter.clear();
+   this->threadsFilter.clear();
+
    this->entries.clear();
+   this->filteredEntries.clear();
    this->endRemoveRows();
 }

@@ -22,6 +22,7 @@
 #include <QKeyEvent>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QClipboard>
 #include <QMessageBox>
 
 #include <Common/Global.h>
@@ -116,6 +117,12 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
          this->ui->txtSearch->setFocus();
          this->ui->txtSearch->selectAll();
          return;
+
+      case 'c':
+      case 'C':
+         QApplication::clipboard()->setText(
+            this->model.rowAsText(this->ui->tblLog->selectionModel()->currentIndex().row())
+         );
       }
    }
    else if (event->key() == Qt::Key_F3)
@@ -179,11 +186,7 @@ void MainWindow::filtersChange()
    if (this->disableRefreshFilters)
       return;
 
-   // TODO: find a better way to avoid slowing down.
-   this->ui->tblLog->verticalHeader()->setSectionResizeMode(QHeaderView::Custom);
-   for (int i = 0; i < this->model.rowCount(); i++)
-      this->filterRow(i);
-   this->ui->tblLog->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+   this->model.setFilter(this->severities->getList(), this->modules->getList(), this->threads->getList());
 }
 
 /**
@@ -207,6 +210,8 @@ void MainWindow::reloadAll()
    if (!this->currentFile || !this->currentDir.exists())
       return;
 
+   this->delegate.resetSizesCache();
+
    this->readCurrentDir();
 
    this->ui->cmbFile->setCurrentIndex(this->ui->cmbFile->findText(QFileInfo(this->currentFile->fileName()).fileName()));
@@ -218,8 +223,6 @@ void MainWindow::reloadAll()
 
 void MainWindow::newLogEntries(int n)
 {
-   for (int i = this->model.rowCount() - n; i < this->model.rowCount(); i++)
-      this->filterRow(i);
    this->ui->tblLog->scrollToBottom();
 }
 
@@ -356,15 +359,4 @@ void MainWindow::refreshFilters()
    this->severities->setList(this->model.getSeverities());
    this->modules->setList(this->model.getModules());
    this->threads->setList(this->model.getThreads());
-}
-
-/**
-  * Hide or show the given row depending the current filters.
-  */
-void MainWindow::filterRow(int r)
-{
-   if (this->model.isFiltered(r, this->severities->getList(), this->modules->getList(), this->threads->getList()))
-      this->ui->tblLog->hideRow(r);
-   else
-      this->ui->tblLog->showRow(r);
 }

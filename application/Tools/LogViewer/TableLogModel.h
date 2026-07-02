@@ -60,14 +60,18 @@ public:
    const QStringList& getModules() const;
    const QStringList& getThreads() const;
 
-   bool isFiltered(int num, const QStringList& severities, const QStringList& modules, const QStringList& threads) const;
+   void setFilter(const QStringList& severities, const QStringList& modules, const QStringList& threads);
+   void resetFilter();
+   // bool isFiltered(int num, const QStringList& severities, const QStringList& modules, const QStringList& threads) const;
 
    void search(const QString& word);
    std::pair<int, QModelIndex> nextResult(const QModelIndex& from, bool reverse = false) const;
    QModelIndex previousResult(const QModelIndex& from) const;
    bool inSearchResult(const QModelIndex& from) const;
    const QString& currentSearchTerm() const;
-   const int currentNbFoundItems() const;
+   int currentNbFoundItems() const;
+
+   QString rowAsText(int row) const;
 
 public slots:
    void setWatchingPause(bool pause);
@@ -86,6 +90,7 @@ private slots:
    void fileChanged();
 
 private:
+   bool isFiltered(const QSharedPointer<LM::IEntry>& entry) const;
    void readLines();
 
    void clear();
@@ -94,8 +99,13 @@ private:
    QTimer timer;
 
    QVector<QSharedPointer<LM::IEntry>> entries;
+   QVector<QSharedPointer<LM::IEntry>> filteredEntries;
 
    bool showMultipleLines;
+
+   QStringList severitiesFilter;
+   QStringList modulesFilter;
+   QStringList threadsFilter;
 
    QStringList severities;
    QStringList modules;
