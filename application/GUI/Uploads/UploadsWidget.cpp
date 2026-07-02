@@ -27,9 +27,10 @@ void UploadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& optio
 
    if (index.column() == 2)
    {
-      QStyleOptionProgressBar progressBarOption;
+      QStyleOptionProgressBar progressBarOption;      
       progressBarOption.QStyleOption::operator=(option);
 
+      progressBarOption.state |= QStyle::State_Horizontal;
       progressBarOption.minimum = 0;
       progressBarOption.maximum = 10000;
       progressBarOption.textAlignment = Qt::AlignHCenter;

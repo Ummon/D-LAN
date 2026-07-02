@@ -54,6 +54,12 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
    logAutoScroll(true),
    logModel(coreConnection)
 {
+   // Set inactive style as active one to avoid some widgets to become grey when the window doesn't have the focus.
+   QPalette pal = this->palette();
+   pal.setColor(QPalette::Inactive, QPalette::Highlight, pal.color(QPalette::Active, QPalette::Highlight));
+   pal.setColor(QPalette::Inactive, QPalette::HighlightedText, pal.color(QPalette::Active, QPalette::HighlightedText));
+   this->setPalette(pal);
+
    this->ui->setupUi(this);
 
    this->setTabPosition(Qt::AllDockWidgetAreas, QTabWidget::North);

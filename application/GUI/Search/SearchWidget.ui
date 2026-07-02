@@ -88,7 +88,7 @@
       <bool>true</bool>
      </property>
      <property name="format">
-      <string/>
+      <string notr="true"/>
      </property>
     </widget>
    </item>
