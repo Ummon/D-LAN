@@ -276,8 +276,10 @@ void MainWindow::selectNextSearch(bool reverse)
          QString("%1/%2").arg(index.first + 1).arg(this->model.currentNbFoundItems())
       );
 
+      int col = this->ui->tblLog->selectionModel()->currentIndex().column();
+
       this->ui->tblLog->selectRow(index.second.row());
-      this->ui->tblLog->scrollTo(index.second);
+      this->ui->tblLog->scrollTo(index.second.siblingAtColumn(col));
    }
    else
    {
