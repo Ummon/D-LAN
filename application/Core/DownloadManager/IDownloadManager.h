@@ -40,14 +40,7 @@ namespace DM
       virtual ~IDownloadManager() {}
 
       /**
-        * The entry will be put in the root of the first shared directory with enough space.
-        * This shared directory is defined when the download starts.
-        * @remarks 'remoteEntry.path' is not taken into account when creating the local file.
-        */
-      virtual void addDownload(const Protos::Common::Entry& remoteEntry, PM::IPeer* peerSource) = 0;
-
-      /**
-        * The entry will be put in the given path relatively to the given directory.
+        * The entry will be put in the given path relatively to the given shared directory.
         * The path directories are created if they don't exist.
         */
       virtual void addDownload(
@@ -59,13 +52,14 @@ namespace DM
 
       /**
         * The entry is put in the given absolute path.
+        * If the absolute path isn't given then the first shared directory with enough space will be choosen.
         * @param absolutePath Path to a local directory where to put the entry (file or directory).
         *        It can be a shared or not shared.
         */
       virtual void addDownload(
          const Protos::Common::Entry& remoteEntry,
          PM::IPeer* peerSource,
-         const QString& absolutePath
+         const QString& absolutePath = QString()
       ) = 0;
 
       /**

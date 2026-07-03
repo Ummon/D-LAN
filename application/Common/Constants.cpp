@@ -38,7 +38,7 @@ const quint16 Constants::DEFAULT_CORE_REMOTE_CONTROL_PORT { 59485 };
 
 const QString Constants::HASH_CACHE_INDEX_FILENAME("hash_cache_index.sqlite");
 
-const QString Constants::FILE_QUEUE("queue." + FILE_EXTENSION); ///< This file contains the current downloads.
+const QString Constants::FILE_QUEUE("download_queue." + FILE_EXTENSION); ///< This file contains the current downloads.
 const QString Constants::DIR_CHAT_MESSAGES("chat");
 const QString Constants::FILE_CHAT_MESSAGES("messages." + FILE_EXTENSION); ///< This file contains the last chat messages.
 const QString Constants::FILE_CHAT_ROOM_MESSAGES("messages_room_%1." + FILE_EXTENSION); ///< This file contains the last chat messages for a room.

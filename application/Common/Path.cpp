@@ -11,8 +11,10 @@ using namespace Common;
 
 /**
   * @param path Considered as directory if ended with a slash '/' otherwise it's a file.
+  * Special case: an empty path is considered as a relative directory.
   * If 'path' begins with "/", "_:\" or "_:/" it's considered as an absolute path otherwise it's a relative path
   * ('_') can by any letter.
+  * .
   */
 Path::Path(const QString& path)
 {

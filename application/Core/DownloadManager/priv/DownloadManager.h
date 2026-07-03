@@ -54,18 +54,19 @@ namespace DM
       DownloadManager(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager> peerManager);
       ~DownloadManager();
 
-      void addDownload(const Protos::Common::Entry& remoteEntry, PM::IPeer* peerSource);
+      // void addDownload(const Protos::Common::Entry& remoteEntry, PM::IPeer* peerSource);
       void addDownload(
          const Protos::Common::Entry& remoteEntry,
          PM::IPeer* peerSource,
          const Common::Hash& destinationDirectoryID,
          const QString& relativePath
-      );
+      ) override;
+
       void addDownload(
          const Protos::Common::Entry& remoteEntry,
          PM::IPeer* peerSource,
-         const QString& absolutePath
-      );
+         const QString& absolutePath = QString()
+      ) override;
 
       Download* addDownload(
          const Protos::Common::Entry& remoteEntry,
@@ -74,6 +75,7 @@ namespace DM
          const QString& localRelativePath,
          Protos::Queue::Queue::Entry::Status status
       );
+
       Download* addDownload(
          const Protos::Common::Entry& remoteEntry,
          PM::IPeer* peerSource,
@@ -88,6 +90,7 @@ namespace DM
          PM::IPeer* peerSource,
          Protos::Queue::Queue::Entry::Status status
       );
+
       Download* addDownload(
          const Protos::Common::Entry& remoteEntry,
          const Protos::Common::Entry& localEntry,
@@ -96,22 +99,22 @@ namespace DM
          int position
       );
 
-      QList<IDownload*> getDownloads() const;
+      QList<IDownload*> getDownloads() const override;
       void moveDownloads(
          const QList<quint64>& downloadIDRefs,
          const QList<quint64>& downloadIDs,
          Protos::GUI::MoveDownloads::Position position
-      );
+      ) override;
 
-      void removeAllCompleteDownloads();
-      void removeDownloads(QList<quint64> IDs);
+      void removeAllCompleteDownloads() override;
+      void removeDownloads(QList<quint64> IDs) override;
 
-      void pauseDownloads(QList<quint64> IDs, bool pause = true);
+      void pauseDownloads(QList<quint64> IDs, bool pause = true) override;
 
-      QList<QSharedPointer<IChunkDownloader>> getTheFirstUnfinishedChunks(int n);
-      QList<QSharedPointer<IChunkDownloader>> getTheOldestUnfinishedChunks(int n);
+      QList<QSharedPointer<IChunkDownloader>> getTheFirstUnfinishedChunks(int n) override;
+      QList<QSharedPointer<IChunkDownloader>> getTheOldestUnfinishedChunks(int n) override;
 
-      int getDownloadRate();
+      int getDownloadRate() override;
 
    private slots:
       void peerBecomesAvailable(PM::IPeer* peer);

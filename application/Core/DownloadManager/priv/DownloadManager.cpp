@@ -74,21 +74,6 @@ DownloadManager::~DownloadManager()
    L_DEBU("DownloadManager deleted");
 }
 
-/**
-  * Insert a new download at the end of the queue.
-  */
-void DownloadManager::addDownload(const Protos::Common::Entry& remoteEntry, PM::IPeer* peerSource)
-{
-   this->addDownload(
-      remoteEntry,
-      peerSource,
-      Common::Hash(),
-      "/",
-      Protos::Queue::Queue::Entry::QUEUED,
-      this->downloadQueue.size()
-   );
-}
-
 void DownloadManager::addDownload(
    const Protos::Common::Entry& remoteEntry,
    PM::IPeer* peerSource,
@@ -111,25 +96,39 @@ void DownloadManager::addDownload(
    const QString& absolutePath
 )
 {
-   try
+   if (absolutePath.isEmpty())
    {
-      QPair<Common::SharedEntry, QString> result = this->fileManager->addASharedPath(absolutePath);
       this->addDownload(
          remoteEntry,
          peerSource,
-         result.first.ID,
-         result.second,
+         Common::Hash(),
+         "",
          Protos::Queue::Queue::Entry::QUEUED,
          this->downloadQueue.size()
       );
    }
-   catch (FM::EntriesNotFoundException& e)
+   else
    {
-      L_WARN(QString("The following item isn't found: %1").arg(absolutePath));
-   }
-   catch (FM::UnableToCreateSharedEntry& e)
-   {
-      L_WARN(QString("Unable to share the following directory: %1").arg(absolutePath));
+      try
+      {
+         QPair<Common::SharedEntry, QString> result = this->fileManager->addASharedPath(absolutePath);
+         this->addDownload(
+            remoteEntry,
+            peerSource,
+            result.first.ID,
+            result.second,
+            Protos::Queue::Queue::Entry::QUEUED,
+            this->downloadQueue.size()
+         );
+      }
+      catch (FM::EntriesNotFoundException& e)
+      {
+         L_WARN(QString("The following item isn't found: %1").arg(absolutePath));
+      }
+      catch (FM::UnableToCreateSharedEntry& e)
+      {
+         L_WARN(QString("Unable to share the following directory: %1").arg(absolutePath));
+      }
    }
 }
 
@@ -199,8 +198,6 @@ Download* DownloadManager::addDownload(
    if (this->downloadQueue.isEntryAlreadyQueued(localEntry))
    {
       QString sharedDir = this->fileManager->getSharedEntry(localEntry.shared_entry().id().hash());
-      if (!sharedDir.isEmpty())
-         sharedDir.remove(sharedDir.size() - 1, 1); // Remove the ending '/'.
 
       L_USER(tr("The file '%1' is already in queue").arg(sharedDir + Common::ProtoHelper::getPath(localEntry).toString()));
       return newDownload;

@@ -62,17 +62,17 @@ namespace DM
 
       virtual void populateQueueEntry(Protos::Queue::Queue::Entry* entry) const;
 
-      quint64 getID() const;
-      inline Protos::Common::DownloadStatus getStatus() const { return this->status; }
+      quint64 getID() const override;
+      inline Protos::Common::DownloadStatus getStatus() const override { return this->status; }
 
       inline bool isStatusErroneous() const { return this->status >= 0x20; }
 
-      virtual quint64 getDownloadedBytes() const;
-      PM::IPeer* getPeerSource() const;
-      QSet<PM::IPeer*> getPeers() const;
+      virtual quint64 getDownloadedBytes() const override;
+      PM::IPeer* getPeerSource() const override;
+      QSet<PM::IPeer*> getPeers() const override;
 
       const Protos::Common::Entry& getRemoteEntry() const;
-      const Protos::Common::Entry& getLocalEntry() const;
+      const Protos::Common::Entry& getLocalEntry() const override;
 
       void setAsDeleted();
       virtual void remove();

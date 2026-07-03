@@ -107,7 +107,7 @@ QFile* FilePool::open(const QString& path, QIODevice::OpenMode mode, bool* fileC
    int fd = _open_osfhandle(reinterpret_cast<intptr_t>(h), _O_RDWR);
    QFile* file = new QFile();
 
-   if (fileCreated && mode.testFlag(QIODevice::WriteOnly) && !file->exists())
+   if (fileCreated && mode.testFlag(QIODevice::WriteOnly) && !QFile::exists(path))
       *fileCreated = true;
 
    if (!file->open(fd, mode, QFileDevice::AutoCloseHandle))

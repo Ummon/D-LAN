@@ -429,7 +429,7 @@ QList<PM::IPeer*> ChunkDownloader::getPeers()
 
 /**
   * Tell the ChunkDownloader to download the chunk from one of its peer.
-  * @return the chosen peer if the downloading has been started else return 0.
+  * @return the chosen peer if the downloading has been started else return 'nullptr'.
   */
 PM::IPeer* ChunkDownloader::startDownloading()
 {

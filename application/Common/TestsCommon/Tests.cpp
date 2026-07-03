@@ -177,6 +177,8 @@ void Tests::path()
 {
    Path p1;
    QCOMPARE(p1.toString(), QString());
+   QCOMPARE(p1.isFile(), false);
+   QCOMPARE(p1.isAbsolute(), false);
    QCOMPARE(p1.getRoot(), QString());
    QCOMPARE(p1.getDirs(), QStringList());
    QCOMPARE(p1.getFilename(), QString());
@@ -186,6 +188,8 @@ void Tests::path()
 
    Path p2(QString(""));
    QCOMPARE(p2.toString(), QString());
+   QCOMPARE(p2.isFile(), false);
+   QCOMPARE(p2.isAbsolute(), false);
    QCOMPARE(p2.getRoot(), QString());
    QCOMPARE(p2.getDirs(), QStringList());
    QCOMPARE(p2.getFilename(), QString());

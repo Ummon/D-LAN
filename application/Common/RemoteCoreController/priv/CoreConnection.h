@@ -94,7 +94,7 @@ namespace RCC
          const Common::Hash& peerID,
          const Protos::Common::Entry& entry,
          const Common::Hash& sharedFolderID,
-         const Common::Path& path = Common::Path("/")
+         const Common::Path& path = Common::Path()
       ) override;
       void download(
          const Common::Hash& peerID,

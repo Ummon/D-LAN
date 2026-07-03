@@ -257,7 +257,7 @@ QList<QSharedPointer<IChunk>> Cache::newFile(Protos::Common::Entry& fileEntry)
 
    QMutexLocker locker(&this->mutex);
 
-   const QString& dirPath = QDir::cleanPath(QString::fromStdString(fileEntry.path()));
+   const Common::Path dirPath(QString::fromStdString(fileEntry.path()));
    const qint64 spaceNeeded = fileEntry.size() + this->MINIMUM_FREE_SPACE;
 
    // If we know where to put the file.
@@ -265,14 +265,14 @@ QList<QSharedPointer<IChunk>> Cache::newFile(Protos::Common::Entry& fileEntry)
    if (fileEntry.has_shared_entry())
    {
       SharedDirectory* sharedDirectory =
-            dynamic_cast<SharedDirectory*>(this->getSharedEntry(fileEntry.shared_entry().id().hash()));
+         dynamic_cast<SharedDirectory*>(this->getSharedEntry(fileEntry.shared_entry().id().hash()));
 
       if (sharedDirectory)
       {
          if (Common::Global::availableDiskSpace(sharedDirectory->getPath()) < spaceNeeded)
             throw InsufficientStorageSpaceException();
 
-         dir = sharedDirectory->createSubDirs(dirPath.split('/', Qt::SkipEmptyParts), true);
+         dir = sharedDirectory->createSubDirs(dirPath.getDirs(), true);
       }
       else
          fileEntry.clear_shared_entry(); // The shared directory is invalid.
@@ -817,7 +817,7 @@ void Cache::saveSharedEntries() const
    for (auto sharedEntry : this->sharedEntries)
    {
       auto protoSharedEntry = Protos::Common::SharedEntry();
-      protoSharedEntry.mutable_id()->set_hash(sharedEntry->getId().getData());
+      protoSharedEntry.mutable_id()->set_hash(sharedEntry->getId().getData(), Common::Hash::HASH_SIZE);
       protoSharedEntry.set_shared_name(sharedEntry->getUserName().toStdString());
       protoSharedEntry.set_path(sharedEntry->getPath().toString().toStdString());
 

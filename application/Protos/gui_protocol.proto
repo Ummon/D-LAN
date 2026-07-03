@@ -305,8 +305,8 @@ message Download {
    // If this directory is not set, the first directory with enough free space will be taken.
    Common.Hash destination_directory_id = 3;
 
-   // [default="/"]. Must ended with an '/'.
-   // If 'destination_directory_id' isn't set then a new shred directory will be created (if needed).
+   // If 'destination_directory_id' isn't set then a new shared directory will be created (if needed) and
+   // 'destination_path' must be absolute, else it is relative to the shared directory.
    string destination_path = 4;
 }
 

@@ -106,7 +106,7 @@ namespace RCC
          const Common::Hash& peerID,
          const Protos::Common::Entry& entry,
          const Common::Hash& sharedFolderID,
-         const Common::Path& path = Common::Path("/")
+         const Common::Path& path = Common::Path()
       );
       void cancelDownloads(const QList<quint64>& downloadIDs, bool complete = false);
       void pauseDownloads(const QList<quint64>& downloadIDs, bool pause = true);

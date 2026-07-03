@@ -504,7 +504,7 @@ void FileManager::fileResized(File* file, qint64 oldSize)
 
 void FileManager::chunkHashKnown(const QSharedPointer<Chunk>& chunk)
 {
-   L_DEBU(QString("Adding chunk '%1' to the index . . .").arg(chunk->getHash().toStr()));
+   L_DEBU(QString("Adding chunk '%1' to the index . . .").arg(chunk->getHash().toStrShort()));
    this->chunks.add(chunk);
    L_DEBU("Chunk added to the index");
    this->setCacheChanged();
@@ -512,7 +512,7 @@ void FileManager::chunkHashKnown(const QSharedPointer<Chunk>& chunk)
 
 void FileManager::chunkRemoved(const QSharedPointer<Chunk>& chunk)
 {
-   L_DEBU(QString("Removing chunk '%1' from the index . . .").arg(chunk->getHash().toStr()));
+   L_DEBU(QString("Removing chunk '%1' from the index . . .").arg(chunk->getHash().toStrShort()));
    this->chunks.rm(chunk);
    L_DEBU("Chunk removed from the index");
    this->setCacheChanged();

@@ -706,14 +706,12 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
                   downloadMessage.destination_directory_id().hash(),
                   QString::fromStdString(downloadMessage.destination_path())
                );
-            else if (downloadMessage.destination_path().size() > 0)
+            else
                this->downloadManager->addDownload(
                   downloadMessage.entry(),
                   peer,
                   QString::fromStdString(downloadMessage.destination_path())
-                  );
-            else
-               this->downloadManager->addDownload(downloadMessage.entry(), peer);
+               );
          }
 
          this->refresh();

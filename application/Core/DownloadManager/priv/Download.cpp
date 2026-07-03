@@ -42,16 +42,15 @@ Download::Download(
    localEntry(localEntry),
    status(Protos::Common::DownloadStatus::QUEUED)
 {
-   // Special case when downloading the root of a drive like "C:/". In this case "C:" is the name of the entry and it becomes a part of the local entry path.
+   // Special case when downloading the root of a drive like "C:/".
+   // In this case "C:" is the name of the entry and it becomes a part of the local entry path.
+   // TODO: Check if still relevant.
    std::replace(this->localEntry.mutable_path()->begin(), this->localEntry.mutable_path()->end(), ':', '_');
 }
 
 Download::~Download()
 {
-   L_DEBU(QString("Download deleted: %1%2")
-      .arg(this->localEntry.path())
-      .arg(this->localEntry.name())
-   );
+   L_DEBU(QString("Download deleted: %1").arg(Common::ProtoHelper::getPath(this->localEntry)));
 }
 
 void Download::populateQueueEntry(Protos::Queue::Queue::Entry* entry) const

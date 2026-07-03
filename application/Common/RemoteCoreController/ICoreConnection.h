@@ -194,13 +194,12 @@ namespace RCC
       virtual void download(const Common::Hash& peerID, const Protos::Common::Entry& entry) = 0;
 
       /**
-        * @param relativePath Must ended with a slash ('/').
         */
       virtual void download(
          const Common::Hash& peerID,
          const Protos::Common::Entry& entry,
          const Common::Hash& sharedFolderID,
-         const Common::Path& relativePath = Common::Path("/")
+         const Common::Path& relativePath = Common::Path()
       ) = 0;
 
       /**
