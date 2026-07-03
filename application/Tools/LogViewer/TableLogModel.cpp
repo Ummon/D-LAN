@@ -254,10 +254,10 @@ int TableLogModel::currentNbFoundItems() const
 
 QString TableLogModel::rowAsText(int row) const
 {
-   if (row < 0 || row >= this->entries.size())
+   if (row < 0 || row >= this->filteredEntries.size())
       return QString();
 
-   const auto& entry = this->entries[row];
+   const auto& entry = this->filteredEntries[row];
 
    return
       entry->getDateStr() % " | " %
