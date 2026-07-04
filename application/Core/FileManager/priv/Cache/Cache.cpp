@@ -107,6 +107,8 @@ Protos::Common::Entries Cache::getProtoSharedEntries() const
 
 Protos::Common::Entries Cache::getProtoEntries(const Protos::Common::Entry& dir, int maxNbHashesPerEntry) const
 {
+   QMutexLocker locker(&this->mutex);
+
    Protos::Common::Entries result;
 
    if (Directory* directory = this->getDirectory(dir))

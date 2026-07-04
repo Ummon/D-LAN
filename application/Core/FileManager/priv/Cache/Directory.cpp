@@ -254,7 +254,7 @@ void Directory::subDirDeleted(Directory* dir)
 
 Common::Path Directory::getRelativePath() const
 {
-   QMutexLocker locker(&this->mutex);
+   // QMutexLocker locker(&this->mutex);
 
    if (!this->parentDirectory)
       return Common::Path();
@@ -268,7 +268,7 @@ Common::Path Directory::getRelativePath() const
   */
 Common::Path Directory::getAbsolutePath() const
 {
-   QMutexLocker locker(&this->mutex);
+   // QMutexLocker locker(&this->mutex);
 
    if (!this->parentDirectory)
       return this->getRoot()->path.appendDir(this->name);
