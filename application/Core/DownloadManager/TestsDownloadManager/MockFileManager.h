@@ -23,7 +23,7 @@ public:
    Protos::Common::Entries getEntries(const Protos::Common::Entry& dir, int maxNbHashesPerEntry = std::numeric_limits<int>::max()) override;
    Protos::Common::Entries getEntries() override;
    QList<Protos::Common::FindResult> find(const QString& words, int maxNbResult, int maxSize) override;
-   QList<Protos::Common::FindResult> find(const QString& words, const QList<QString>& extensions, qint64 minFileSize, qint64 maxFileSize, Protos::Common::FindPattern_Category category, int maxNbResult, int maxSize) override;
+   QList<Protos::Common::FindResult> find(const QString& words, const QList<QString>& extensions, qint64 minFileSize, qint64 maxFileSize, Protos::Common::FindPattern_Category category, int maxNbResult, int maxSize, bool setSharedEntryPath) override;
    QBitArray haveChunks(const QList<Common::Hash>& hashes) override;
    quint64 getAmount() override;
    CacheStatus getCacheStatus() const override;

@@ -453,7 +453,7 @@ void DownloadManager::scanTheQueue()
    {
       if (chunkDownloader.isNull()) // We can ask many chunks to download from the same file.
          if (!(fileDownload = static_cast<FileDownload*>(i.next())))
-             break;
+            break;
 
       if (fileDownload->isStatusErroneous())
          continue;
@@ -470,7 +470,7 @@ void DownloadManager::scanTheQueue()
             &ChunkDownloader::downloadFinished,
             this,
             &DownloadManager::chunkDownloaderFinished,
-            Qt::DirectConnection
+            Qt::ConnectionType(Qt::DirectConnection | Qt::SingleShotConnection)
          );
 
          linkedPeersNotOccupied -= currentPeer;

@@ -54,7 +54,6 @@ namespace DM
       DownloadManager(QSharedPointer<FM::IFileManager> fileManager, QSharedPointer<PM::IPeerManager> peerManager);
       ~DownloadManager();
 
-      // void addDownload(const Protos::Common::Entry& remoteEntry, PM::IPeer* peerSource);
       void addDownload(
          const Protos::Common::Entry& remoteEntry,
          PM::IPeer* peerSource,

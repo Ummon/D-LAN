@@ -75,7 +75,7 @@ QList<Protos::Common::FindResult> MockFileManager::find(const QString& words, in
    return QList<Protos::Common::FindResult>();
 }
 
-QList<Protos::Common::FindResult> MockFileManager::find(const QString& words, const QList<QString>& extensions, qint64 minFileSize, qint64 maxFileSize, Protos::Common::FindPattern_Category category, int maxNbResult, int maxSize)
+QList<Protos::Common::FindResult> MockFileManager::find(const QString& words, const QList<QString>& extensions, qint64 minFileSize, qint64 maxFileSize, Protos::Common::FindPattern_Category category, int maxNbResult, int maxSize, bool setSharedEntryPath)
 {
    return QList<Protos::Common::FindResult>();
 }

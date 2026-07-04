@@ -276,9 +276,9 @@ QSharedPointer<ChunkDownloader> FileDownload::getAChunkToDownload()
 
    // If there is many chunk with the same number of peer we choose randomly one of them.
    QSharedPointer<ChunkDownloader> chunkDownloader =
-         chunksReadyToDownload.size() == 1
-            ? chunksReadyToDownload.first()
-            : chunksReadyToDownload[QRandomGenerator64::global()->bounded(chunksReadyToDownload.size())];
+      chunksReadyToDownload.size() == 1
+         ? chunksReadyToDownload.first()
+         : chunksReadyToDownload[QRandomGenerator64::global()->bounded(chunksReadyToDownload.size())];
 
    if (!this->localEntry.exists())
    {
