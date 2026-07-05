@@ -311,8 +311,6 @@ void TableLogModel::readLines()
       {
          QSharedPointer<LM::IEntry> entry = LM::Builder::decode(line);
          this->entries << entry;
-         if (!this->isFiltered(entry))
-            this->filteredEntries << entry;
 
          if (!this->severities.contains(entry->getSeverityStr()))
          {
@@ -337,6 +335,9 @@ void TableLogModel::readLines()
 
             emit newThread(entry->getThread());
          }
+
+         if (!this->isFiltered(entry))
+            this->filteredEntries << entry;
       }
       catch (LM::MalformedEntryLog&)
       {
