@@ -36,6 +36,7 @@
 #include <Containers/SortedArray.h>
 #include <Containers/MapArray.h>
 #include <Network/MessageHeader.h>
+#include <Constants.h>
 #include <PersistentData.h>
 #include <Settings.h>
 #include <Global.h>
@@ -98,6 +99,15 @@ void Tests::nCombinations()
    QCOMPARE(Global::nCombinations(4, 2), 6);
    QCOMPARE(Global::nCombinations(4, 4), 1);
    QCOMPARE(Global::nCombinations(42, 6), 5245786);
+}
+
+void Tests::nbChunks()
+{
+   QCOMPARE(Global::nbChunks(0), 0);
+   QCOMPARE(Global::nbChunks(1), 1);
+   QCOMPARE(Global::nbChunks(Constants::CHUNK_SIZE - 1), 1);
+   QCOMPARE(Global::nbChunks(Constants::CHUNK_SIZE), 1);
+   QCOMPARE(Global::nbChunks(Constants::CHUNK_SIZE + 2), 2);
 }
 
 void Tests::formatByteSize()

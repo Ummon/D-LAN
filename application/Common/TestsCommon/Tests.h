@@ -35,6 +35,7 @@ private slots:
    void getVersion();
    void commonPrefix();
    void nCombinations();
+   void nbChunks();
    void formatByteSize();
    void formatTime();
    void availableDiskSpace();

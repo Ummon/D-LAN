@@ -193,6 +193,11 @@ QString Global::formatByteSize(qint64 bytes, int precision)
    return QString();
 }
 
+int Global::nbChunks(qint64 fileSize)
+{
+   return (fileSize + Common::Constants::CHUNK_SIZE - 1) / Common::Constants::CHUNK_SIZE;
+}
+
 /**
   * Format the given time in a years / months / weeks / days / hours / minutes / seconds format.
   * Examples:
