@@ -75,6 +75,7 @@ MdiArea::MdiArea(
 
 MdiArea::~MdiArea()
 {
+   this->coreConnection->disconnect(this);
    this->removeSettingsWindow();
 }
 
@@ -295,11 +296,14 @@ void MdiArea::removeWidget(QWidget* widget)
             }
    }
 
+   QMdiSubWindow* subWindow = qobject_cast<QMdiSubWindow*>(widget->parentWidget());
+   Q_ASSERT(subWindow);
    // We ask to remove the 'MdiSubWindow' as well.
    // The associated tab widget added with 'setTabButton' is automatically removed and deleted.
-   this->removeSubWindow(static_cast<QWidget*>(widget->parent()));
+   this->removeSubWindow(subWindow);
 
    delete widget;
+   delete subWindow;
 }
 
 void MdiArea::leaveRoom(QWidget* widget)
@@ -390,8 +394,8 @@ void MdiArea::removeDownloadsWindow()
    if (this->downloadsWidget)
    {
       this->removeWidget(this->downloadsWidget);
-      this->downloadsWidget = 0;
-      this->downloadsBusyIndicator = 0;
+      this->downloadsWidget = nullptr;
+      this->downloadsBusyIndicator = nullptr;
    }
 }
 
@@ -411,7 +415,7 @@ void MdiArea::removeUploadsWindow()
    if (this->uploadsWidget)
    {
       this->removeWidget(this->uploadsWidget);
-      this->uploadsWidget = 0;
+      this->uploadsWidget = nullptr;
    }
 }
 

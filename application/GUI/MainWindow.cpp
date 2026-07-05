@@ -348,7 +348,9 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
-   delete this;
+   event->accept();
+   this->hide();
+   this->deleteLater();
 }
 
 void MainWindow::changeEvent(QEvent* event)
