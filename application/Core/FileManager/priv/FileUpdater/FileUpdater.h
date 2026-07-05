@@ -58,7 +58,7 @@ namespace FM
       void rmRoot(SharedEntry* sharedEntry, Directory* dir = nullptr);
 
    signals:
-      // void fileCacheLoaded();
+      void scanFinished();
       void deleteSharedEntry(FM::SharedEntry* sharedEntry);
 
    protected:

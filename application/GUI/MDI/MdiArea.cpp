@@ -178,10 +178,10 @@ void MdiArea::newState(const Protos::GUI::State& state)
 
    if (this->downloadsBusyIndicator)
    {
-      // if (state.stats().cache_status() == Protos::GUI::State::Stats::LOADING_CACHE_IN_PROGRESS)
-      //    this->downloadsBusyIndicator->show();
-      // else
-      this->downloadsBusyIndicator->hide();
+      if (state.stats().cache_status() == Protos::GUI::State::Stats::INITIAL_SCANNING_IN_PROGRESS)
+         this->downloadsBusyIndicator->show();
+      else
+         this->downloadsBusyIndicator->hide();
    }
 }
 
@@ -324,7 +324,7 @@ void MdiArea::onGlobalProgressChanged(quint64 completed, quint64 total)
 
 QString MdiArea::getBusyIndicatorToolTip() const
 {
-   return tr("Waiting the cache loading process is finished before loading the download queue");
+   return tr("Waiting the initial scanning process is finished before loading the download queue");
 }
 
 void MdiArea::addSettingsWindow()

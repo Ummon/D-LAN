@@ -60,6 +60,17 @@ int DownloadQueue::size() const
 
 void DownloadQueue::insert(int position, Download* download)
 {
+   if (position < 0 || position > this->downloads.size())
+   {
+      L_DEBU(
+         QString("Unable to insert download %1, invalid position: %2")
+            .arg(Common::ProtoHelper::getDebugStr(download->getLocalEntry()))
+            .arg(position)
+      );
+
+      return;
+   }
+
    this->updateMarkersInsert(position, download);
 
    this->downloads.insert(position, download);

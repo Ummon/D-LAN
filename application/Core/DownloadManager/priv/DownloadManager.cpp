@@ -51,8 +51,13 @@ DownloadManager::DownloadManager(QSharedPointer<FM::IFileManager> fileManager, Q
    connect(&this->occupiedPeersAskingForEntries, &OccupiedPeers::newFreePeer, this, &DownloadManager::peerNoLongerAskingForEntries);
    connect(&this->occupiedPeersDownloadingChunk, &OccupiedPeers::newFreePeer, this, &DownloadManager::peerNoLongerDownloadingChunk);
 
-   // We wait the cache is loaded before loading the downloads queue.
-   // connect(this->fileManager.data(), &FM::IFileManager::fileCacheLoaded, this, &DownloadManager::fileCacheLoaded);
+   // We wait the shared entries are scanned before loading the downloads queue.
+   connect(
+      this->fileManager.data(),
+      &FM::IFileManager::fileCacheScanningComplete,
+      this,
+      &DownloadManager::fileCacheScanningComplete
+   );
 
    this->startErroneousDownloadTimer.setInterval(RESTART_DOWNLOADS_PERIOD_IF_ERROR);
    this->startErroneousDownloadTimer.setSingleShot(true);
@@ -62,8 +67,6 @@ DownloadManager::DownloadManager(QSharedPointer<FM::IFileManager> fileManager, Q
    connect(&this->saveTimer, &QTimer::timeout, this, &DownloadManager::saveQueueToFile);
 
    connect(this->peerManager.data(), &PM::IPeerManager::peerBecomesAvailable, this, &DownloadManager::peerBecomesAvailable);
-
-   this->loadQueueFromFile(); // TODO: Check if correct.
 }
 
 DownloadManager::~DownloadManager()
@@ -347,10 +350,10 @@ void DownloadManager::peerBecomesAvailable(PM::IPeer* peer)
    this->occupiedPeersDownloadingChunk.newPeer(peer);
 }
 
-// void DownloadManager::fileCacheLoaded()
-// {
-//    this->loadQueueFromFile();
-// }
+void DownloadManager::fileCacheScanningComplete()
+{
+   this->loadQueueFromFile();
+}
 
 /**
   * Called when a directory knows its children. The children replace the directory.
@@ -373,14 +376,17 @@ void DownloadManager::newEntries(const Protos::Common::Entries& remoteEntries)
       for (int n = 0; n < remoteEntries.entries_size(); n++)
          if (remoteEntries.entries(n).type() == type)
          {
-            this->addDownload(
-               remoteEntries.entries(n),
-               dirDownload->getPeerSource(),
-               localEntry.has_shared_entry() ? localEntry.shared_entry().id().hash() : Common::Hash(),
-               relativePath,
-               Protos::Queue::Queue::Entry::QUEUED,
-               position++
-            );
+            if (
+               this->addDownload(
+                  remoteEntries.entries(n),
+                  dirDownload->getPeerSource(),
+                  localEntry.has_shared_entry() ? localEntry.shared_entry().id().hash() : Common::Hash(),
+                  relativePath,
+                  Protos::Queue::Queue::Entry::QUEUED,
+                  position
+               )
+            )
+               position += 1;
          }
    }
 

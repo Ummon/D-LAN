@@ -43,10 +43,11 @@ message State {
    }
    message Stats {
       enum CacheStatus {
-         SCANNING_IN_PROGRESS = 0; // 1st pass: grab all file/dir names and their size and index it.
-         HASHING_IN_PROGRESS = 1; // 2nd pass: compute the hashes of all files.
-         UP_TO_DATE = 2;
-         UNKNOWN = 3;
+         INITIAL_SCANNING_IN_PROGRESS = 0;
+         SCANNING_IN_PROGRESS = 1; // 1st pass: grab all file/dir names and their size and index it.
+         HASHING_IN_PROGRESS = 2; // 2nd pass: compute the hashes of all files.
+         UP_TO_DATE = 3;
+         UNKNOWN = 4;
       }
       CacheStatus cache_status = 1;
       uint32 progress = 2; // 0 to 10000.
@@ -245,6 +246,30 @@ message Browse {
 message BrowseResult {
    uint64 tag = 1;
    repeated Common.Entries entries = 2;
+}
+
+
+// GUI -> Core
+// id: 0x10F1
+message LocalBrowse {
+   string path = 1; // If empty, the roots (drives) are returned.
+}
+
+// Core -> GUI (directly)
+// id: 0x10F2
+message LocalBrowseResult {
+   message Directory {
+      string name = 1;
+      int64 date_modified = 2; // [ms] since epoch.
+   }
+   message File {
+      string name = 1;
+      int64 date_modified = 2; // [ms] since epoch.
+      int64 size = 3; // [byte].
+   }
+
+   repeated Directory directories = 1;
+   repeated File files = 2;
 }
 
 

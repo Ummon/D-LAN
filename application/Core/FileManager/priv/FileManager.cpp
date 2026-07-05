@@ -70,7 +70,13 @@ FileManager::FileManager(QSharedPointer<HC::IHashCache> hashCache) :
    connect(&this->cache, &Cache::newSharedEntry, this, &FileManager::newSharedEntry, Qt::DirectConnection);
    connect(&this->cache, &Cache::sharedEntryRemoved, this, &FileManager::sharedEntryRemoved, Qt::DirectConnection);
 
-   // connect(&this->fileUpdater, &FileUpdater::fileCacheLoaded, this, &FileManager::fileCacheLoadingComplete, Qt::QueuedConnection);
+   connect(
+      &this->fileUpdater,
+      &FileUpdater::scanFinished,
+      this,
+      &FileManager::setInitialFileCacheScanningComplete,
+      Qt::ConnectionType(Qt::SingleShotConnection | Qt::QueuedConnection)
+   );
 
    // If the 'FileUpdater' wants to delete a shared directory.
    connect(&this->fileUpdater, &FileUpdater::deleteSharedEntry, this, &FileManager::deleteSharedEntry, Qt::QueuedConnection);
@@ -340,6 +346,9 @@ quint64 FileManager::getAmount()
 
 FileManager::CacheStatus FileManager::getCacheStatus() const
 {
+   if (!this->initialFileCacheScanningComplete)
+      return INITIAL_SCANNING_IN_PROGRESS;
+
    if (this->fileUpdater.isScanning())
       return SCANNING_IN_PROGRESS;
 
@@ -407,11 +416,6 @@ Directory* FileManager::getFittestDirectory(const QString& path)
    return this->cache.getFittestDirectory(path);
 }
 
-// Entry* FileManager::getEntry(const QString& path) const
-// {
-//    return this->cache.getEntry(path);
-// }
-
 /**
   * Used to retrieve a file or a directory by the fileUpdater when a filesystem event occurs.
   */
@@ -433,7 +437,6 @@ void FileManager::newSharedEntry(SharedEntry* sharedEntry)
 void FileManager::sharedEntryRemoved(SharedEntry* sharedEntry, Directory* dir)
 {
    this->fileUpdater.rmRoot(sharedEntry, dir);
-   //this->forcePersistCacheToFile();
 }
 
 void FileManager::deleteSharedEntry(SharedEntry* sharedEntry)
@@ -519,113 +522,8 @@ void FileManager::chunkRemoved(const QSharedPointer<Chunk>& chunk)
    // this->setCacheChanged();
 }
 
-/**
-  * Load the cache from a file. Called at start, by the constructor.
-  * It will give the file cache to the fileUpdater and ask it
-  * to load the cache.
-  * It will also start the timer to persist the cache.
-  */
-//void FileManager::loadCacheFromFile()
-//{
-   // TODO : move old shared dir from cache file to settings.
-
-   // This hashes will be unallocated by the fileUpdater.
-//   Protos::FileCache::Hashes* savedCache = new Protos::FileCache::Hashes();
-
-//   try
-//   {
-//      Common::PersistentData::getValue(Common::Constants::FILE_CACHE, *savedCache, Common::Global::DataFolderType::LOCAL);
-//      if (static_cast<int>(savedCache->version()) != FILE_CACHE_VERSION)
-//      {
-//         L_ERRO(QString("The version (%1) of the file cache \"%2\" doesn't match the current version (%3)").arg(savedCache->version()).arg(Common::Constants::FILE_CACHE).arg(FILE_CACHE_VERSION));
-//         Common::PersistentData::rmValue(Common::Constants::FILE_CACHE, Common::Global::DataFolderType::LOCAL);
-//         delete savedCache;
-//         return;
-//      }
-
-//      // Scan the shared directories and try to match the files against the saved cache.
-//      try
-//      {
-//         this->cache.createSharedDirs(*savedCache);
-//      }
-//      catch (EntriesNotFoundException& e)
-//      {
-//         foreach (QString path, e.paths)
-//            L_WARN(QString("During the file cache loading, this directory hasn't been found: %1").arg(path));
-//      }
-//   }
-//   catch (Common::UnknownValueException& e)
-//   {
-//      L_WARN(QString("The persisted file cache cannot be retrieved (the file doesn't exist): %1").arg(Common::Constants::FILE_CACHE));
-//   }
-//   catch (...)
-//   {
-//      L_WARN(QString("The persisted file cache cannot be retrieved (Unknown exception): %1").arg(Common::Constants::FILE_CACHE));
-//   }
-
-//   this->fileUpdater.setFileCache(savedCache);
-//}
-
-/**
-  * Save the cache to a file.
-  * Restart the timer at the end of the operation.
-  * Called by the fileUpdater when it needs to persist the cache.
-  */
-/*
-void FileManager::persistCacheToFile()
+void FileManager::setInitialFileCacheScanningComplete()
 {
-   QMutexLocker locker(&this->mutexPersistCache);
-
-   QMutexLocker lockerCacheChanged(&this->mutexCacheChanged);
-   if (this->cacheChanged && !this->cacheLoading)
-   {
-      lockerCacheChanged.unlock();
-
-      L_DEBU("Persisting cache . . .");
-
-      Protos::FileCache::Hashes hashes;
-      this->cache.populateHashes(hashes);
-
-      try
-      {
-         Common::PersistentData::setValue(Common::Constants::FILE_CACHE, hashes, Common::Global::DataFolderType::LOCAL);
-      }
-      catch (Common::PersistentDataIOException& err)
-      {
-         L_ERRO(err.message);
-      }
-
-      lockerCacheChanged.relock();
-      this->cacheChanged = false;
-
-      L_DEBU("Persisting cache finished");
-   }
-
-   this->timerPersistCache.start();
+   this->initialFileCacheScanningComplete = true;
+   emit fileCacheScanningComplete();
 }
-*/
-
-/*
-void FileManager::forcePersistCacheToFile()
-{
-   this->mutexCacheChanged.lock();
-   this->cacheChanged = true;
-   this->mutexCacheChanged.unlock();
-
-   QMutexLocker locker(&this->mutexPersistCache);
-   this->persistCacheToFile();
-}
-*/
-
-/**
-  * @warning Can be called from different threads like a 'Downloader' or the 'FileUpdater'.
-  */
-// void FileManager::setCacheChanged()
-// {
-//    QMutexLocker locker(&this->mutexCacheChanged);
-//    this->cacheChanged = true;
-// }
-
-// void FileManager::fileCacheLoadingComplete()
-// {
-// }

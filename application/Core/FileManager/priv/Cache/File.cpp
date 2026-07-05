@@ -332,7 +332,7 @@ bool File::matchesEntry(const Protos::Common::Entry& entry) const
 
    return
       this->getRoot()->getId() == entry.shared_entry().id().hash() &&
-      this->getRelativePath() == Common::Path(QString::fromStdString(entry.path())) &&
+      this->getRelativePath() == Common::ProtoHelper::getPath(entry) &&
       this->getSize() == static_cast<qint64>(entry.size()) &&
       Global::removeUnfinishedSuffix(this->getName()) ==
          Global::removeUnfinishedSuffix(QString::fromStdString(entry.name()));

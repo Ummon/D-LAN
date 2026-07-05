@@ -189,9 +189,10 @@ namespace FM
       virtual quint64 getAmount() = 0;
 
       enum CacheStatus {
-         SCANNING_IN_PROGRESS = 0,
-         HASHING_IN_PROGRESS = 1,
-         UP_TO_DATE = 2
+         INITIAL_SCANNING_IN_PROGRESS = 0,
+         SCANNING_IN_PROGRESS = 1,
+         HASHING_IN_PROGRESS = 2,
+         UP_TO_DATE = 3
       };
 
       virtual CacheStatus getCacheStatus() const = 0;
@@ -216,10 +217,10 @@ namespace FM
 
       virtual QString getCacheTree_debug() const = 0;
 
-   // signals:
+   signals:
       /**
-        * Emitted when the file cache has been loaded: all files and directories from shared entries has been scanned and added to the cache. Guaranteed to be emitted once.
+        * Emitted when the scanning of the shared entries: all files and directories from shared entries has been scanned and added to the cache. Guaranteed to be emitted once.
         */
-      // void fileCacheLoaded();
+      void fileCacheScanningComplete();
    };
 }

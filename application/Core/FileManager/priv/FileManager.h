@@ -123,7 +123,6 @@ namespace FM
       QString getCacheTree_debug() const override;
 
       Directory* getFittestDirectory(const QString& path);
-      // Entry* getEntry(const QString& path) const;
       Entry* getEntry(const Common::Path& path) const;
       SharedEntry* getSharedEntry(const QString& path) const;
 
@@ -141,9 +140,7 @@ namespace FM
       void chunkHashKnown(const QSharedPointer<FM::Chunk>& chunk);
       void chunkRemoved(const QSharedPointer<FM::Chunk>& chunk);
 
-   // private slots:
-      // void setCacheChanged();
-      // void fileCacheLoadingComplete();
+      void setInitialFileCacheScanningComplete();
 
    private:
       LOG_INIT_H("FileManager")
@@ -158,7 +155,7 @@ namespace FM
       SizeIndex sizeIndex;
 
       QMutex mutexCacheChanged;
-      // bool cacheLoading;
-      // bool cacheChanged;
+
+      bool initialFileCacheScanningComplete = false;
    };
 }

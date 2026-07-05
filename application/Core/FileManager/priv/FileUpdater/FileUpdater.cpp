@@ -288,6 +288,9 @@ void FileUpdater::run()
          )
          {
             this->mutex.unlock();
+
+            emit scanFinished();
+
             this->processEvents(
                // Wait for filesystem modifications.
                this->dirWatcher->waitEvent(
