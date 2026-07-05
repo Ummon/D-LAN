@@ -2,7 +2,6 @@
 using namespace HC;
 
 #include <QDir>
-#include <QSqlQuery>
 #include <QSqlError>
 
 #include <Common/Global.h>
@@ -15,7 +14,11 @@ using namespace HC;
 LOG_INIT_CPP(HashCache)
 
 HashCache::HashCache(const QString& databaseFolder) :
-   db { QSqlDatabase::addDatabase("QSQLITE") }
+   db { QSqlDatabase::addDatabase("QSQLITE") },
+   queryGetHashesWithDate(this->db),
+   queryGetHashes(this->db),
+   querySetHashes(this->db),
+   queryRemoveHashes(this->db)
 {
    const QString DATABASE_FILEPATH = QString("%1/%2").arg(databaseFolder, Common::Constants::HASH_CACHE_INDEX_FILENAME);
    L_DEBU(QString("HashCashe database: %1").arg(DATABASE_FILEPATH));
@@ -31,32 +34,49 @@ HashCache::HashCache(const QString& databaseFolder) :
    query.exec("PRAGMA journal_mode = WAL");
    query.exec("PRAGMA synchronous = NORMAL");
 
+
+   this->queryGetHashesWithDate.prepare(
+      "SELECT [hashes], [size] FROM [File] WHERE [path] = $1 AND [date_last_modified] = $2"
+   );
+
+   this->queryGetHashes.prepare("SELECT [hashes], [size] FROM [File] WHERE [path] = $1");
+
+   this->querySetHashes.prepare(
+      R"(
+INSERT INTO [File] ([path], [size], [date_last_modified], [hashes])
+VALUES ($1, $2, $3, $4)
+ON CONFLICT([path]) DO
+UPDATE SET [hashes] = $1, [size] = $2, [date_last_modified] = $3, [hashes] = $4
+      )"
+   );
+
+   this->queryRemoveHashes.prepare("DELETE FROM [File] WHERE [path] = $1");
+
    this->updateDatabaseScheme();
+}
+
+HashCache::~HashCache()
+{
+   L_DEBU("HashCache deleted");
 }
 
 QList<Common::Hash> HashCache::getHashes(const QString& filePath, QDateTime timeLastModified)
 {
+   QMutexLocker locker(&this->mutex);
    L_DEBU(QString("[getHashes] filePath: %1").arg(filePath));
 
-   QSqlQuery query(this->db);
+   QSqlQuery& query = timeLastModified.isNull() ? this->queryGetHashes : this->queryGetHashesWithDate;
+   query.bindValue(0, filePath);
 
    if (!timeLastModified.isNull())
-   {
-      query.prepare("SELECT [hashes], [size] FROM [File] WHERE [path] = $1 AND [date_last_modified] = $2");
-      query.bindValue(0, filePath);
       query.bindValue(1, timeLastModified.toMSecsSinceEpoch());
-   }
-   else
-   {
-      query.prepare("SELECT [hashes], [size] FROM [File] WHERE [path] = $1");
-      query.bindValue(0, filePath);
-   }
 
    query.exec();
 
    if (!query.isActive())
    {
       L_ERRO(QString("[getHashes] SQL Error: %1").arg(query.lastError().text()));
+      query.finish();
       return QList<Common::Hash>();
    }
 
@@ -67,21 +87,27 @@ QList<Common::Hash> HashCache::getHashes(const QString& filePath, QDateTime time
       const int nbHashes = Common::Global::nbChunks(size);
 
       if (hashes.size() % Common::Hash::HASH_SIZE != 0 || hashes.size() / Common::Hash::HASH_SIZE != nbHashes)
+      {
+         query.finish();
          return QList<Common::Hash>();
+      }
 
       QList<Common::Hash> result(nbHashes, Qt::Uninitialized);
 
       for (int i = 0; i < nbHashes; ++i)
          result[i] = Common::Hash(hashes.constData() + i * Common::Hash::HASH_SIZE);
 
+      query.finish();
       return result;
    }
 
+   query.finish();
    return QList<Common::Hash>();
 }
 
 void HashCache::setHashes(const QString& filePath, const QList<Common::Hash>& hashes, qint64 size, QDateTime dateTime)
 {
+   QMutexLocker locker(&this->mutex);
    L_DEBU(QString("[setHashes] filePath: %1").arg(filePath));
 
    QByteArray hashesBlob;
@@ -91,15 +117,7 @@ void HashCache::setHashes(const QString& filePath, const QList<Common::Hash>& ha
       hashesBlob.append(hashes[i].getData(), Common::Hash::HASH_SIZE);
    }
 
-   QSqlQuery query(this->db);
-   query.prepare(
-      R"(
-INSERT INTO [File] ([path], [size], [date_last_modified], [hashes])
-VALUES ($1, $2, $3, $4)
-ON CONFLICT([path]) DO
-UPDATE SET [hashes] = $1, [size] = $2, [date_last_modified] = $3, [hashes] = $4
-      )"
-   );
+   QSqlQuery& query = this->querySetHashes;
 
    query.bindValue(0, filePath);
    query.bindValue(1, size);
@@ -109,31 +127,24 @@ UPDATE SET [hashes] = $1, [size] = $2, [date_last_modified] = $3, [hashes] = $4
 
    if (!query.isActive())
       L_ERRO(QString("[setHashes] SQL Error: %1").arg(query.lastError().text()));
+
+   query.finish();
 }
-
-// void HashCache::setSizeAndDateTime(QString& filePath, qint64 size, QDateTime dateTime)
-// {
-//    QSqlQuery query(this->db);
-//    query.prepare("UPDATE [File] SET [path] = $1, [date_last_modified] = $2 WHERE [path] = $2");
-//    query.bindValue(0, hashesBlob);
-//    query.bindValue(1, filePath);
-//    query.exec();
-
-//    if (!query.isActive())
-//       L_ERRO(QString("SQL Error: %1").arg(query.lastError().text()));
-// }
 
 void HashCache::rmHashes(const QString& filePath)
 {
+   QMutexLocker locker(&this->mutex);
    L_DEBU(QString("[rmHashes] filePath: %1").arg(filePath));
 
-   QSqlQuery query(this->db);
-   query.prepare("DELETE FROM [File] WHERE [path] = $1");
+   QSqlQuery& query = this->queryRemoveHashes;
+
    query.bindValue(0, filePath);
    query.exec();
 
    if (!query.isActive())
       L_ERRO(QString("[rmHashes] SQL Error: %1").arg(query.lastError().text()));
+
+   query.finish();
 }
 
 void HashCache::updateDatabaseScheme()

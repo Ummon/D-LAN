@@ -210,6 +210,9 @@ void File::saveHashes()
 {
    QMutexLocker locker(&this->mutex);
 
+   if (!this->complete)
+      return;
+
    for (const auto& chunk : std::as_const(this->chunks))
       if (!chunk->hasHash())
          return;

@@ -36,8 +36,7 @@ namespace HC
       virtual ~IHashCache() {}
 
       /**
-        * Try to retrieve hashes from a file path.
-        * Some hashes may be null if unknown.
+        * Try to retrieve all hashes from a file path.
         * If the file path is unknown a empty list is returned.
         */
       virtual QList<Common::Hash> getHashes(
@@ -45,14 +44,16 @@ namespace HC
          QDateTime timeLastModified = QDateTime()
       ) = 0;
 
+      /**
+        * Set all hashes for the given file path.
+        * If the number of hased doesn't match the file size, the request is rejected.
+        */
       virtual void setHashes(
          const QString& filePath,
          const QList<Common::Hash>& hashes,
          qint64 size,
          QDateTime dateTime = QDateTime()
       ) = 0;
-
-      // virtual void setSizeAndDateTime(QString& filePath, qint64 size, QDateTime timeLastModified) = 0;
 
       virtual void rmHashes(const QString& filePath) = 0;
    };
