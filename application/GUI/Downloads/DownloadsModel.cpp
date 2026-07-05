@@ -57,18 +57,18 @@ QVariant DownloadsModel::getData(const Protos::GUI::State::Download& download, c
    case Qt::DisplayRole:
       switch (index.column())
       {
-      case 0: return QString::fromStdString(download.local_entry().name());
-      case 1: return Common::Global::formatByteSize(download.local_entry().size());
-      case 2:
+      case NAME: return QString::fromStdString(download.local_entry().name());
+      case SIZE: return Common::Global::formatByteSize(download.local_entry().size());
+      case PROGRESS:
          return QVariant::fromValue(Progress(
             download.local_entry().size() == 0 ? 0 : 10000 * download.downloaded_bytes() / download.local_entry().size(),
             download.status(),
             download.local_entry().type()
          ));
-      case 3:
+      case PEER_SOURCE:
          return QString::fromStdString(download.peer_source_nick());
 
-      case 4:
+      case OTHER_PEERS:
          if (download.peer_ids_size() > 1)
             return QStringLiteral("+").append(QString::number(download.peer_ids_size() - 1));
          return QString();
@@ -87,7 +87,7 @@ QVariant DownloadsModel::getData(const Protos::GUI::State::Download& download, c
    case Qt::ToolTipRole:
       switch (index.column())
       {
-      case 0:
+      case NAME:
          {
             QString toolTip;
             switch (download.status())
@@ -164,7 +164,7 @@ QVariant DownloadsModel::getData(const Protos::GUI::State::Download& download, c
          }
          break;
 
-      case 4:
+      case OTHER_PEERS:
          {
             QString peersStr;
             for (int i = 1; i < download.peer_ids_size(); i++)
@@ -184,12 +184,12 @@ QVariant DownloadsModel::getData(const Protos::GUI::State::Download& download, c
       break;
 
    case Qt::TextAlignmentRole:
-      return static_cast<int>(index.column() == 1 ? Qt::AlignRight : Qt::AlignLeft) | Qt::AlignVCenter;
+      return static_cast<int>(index.column() == SIZE ? Qt::AlignRight : Qt::AlignLeft) | Qt::AlignVCenter;
 
    case Qt::SizeHintRole:
-      if (index.column() == 2)
+      if (index.column() == PROGRESS)
          return QSize(120, 0);
-      else if (index.column() == 4 && download.peer_ids_size() <= 1)
+      else if (index.column() == OTHER_PEERS && download.peer_ids_size() <= 1)
          return QSize(0, 0);
       else
          return QVariant();

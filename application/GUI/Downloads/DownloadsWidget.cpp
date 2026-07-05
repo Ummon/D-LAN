@@ -35,7 +35,7 @@ void DownloadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
    if (!index.isValid())
       return;
 
-   if (index.column() == 2)
+   if (index.column() == DownloadsModel::PROGRESS)
    {
       QStyledItemDelegate::paint(painter, option, QModelIndex()); // To draw the background (including the selection highlight).
 
@@ -86,11 +86,25 @@ void DownloadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
       QStyleOptionViewItem newOption(option);
       newOption.state = option.state & (~QStyle::State_HasFocus);
 
-      if (index.column() == 3 && !static_cast<const DownloadsModel*>(index.model())->isSourceAlive(index))
+      if (
+         index.column() == DownloadsModel::PEER_SOURCE &&
+         !static_cast<const DownloadsModel*>(index.model())->isSourceAlive(index)
+      )
          newOption.font.setStrikeOut(true);
 
       QStyledItemDelegate::paint(painter, newOption, index);
    }
+}
+
+QSize DownloadsDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+   auto size = QStyledItemDelegate::sizeHint(option, index);
+
+   // An hack to avoid truncating the size field, don't know why it happens (Qt add "..." at the end of some sizes).
+   if (index.column() == DownloadsModel::SIZE)
+      size.rwidth() += 2 * option.fontMetrics.averageCharWidth();
+
+   return size;
 }
 
 /////
@@ -121,11 +135,11 @@ DownloadsWidget::DownloadsWidget(
    this->ui->tblDownloads->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
    this->ui->tblDownloads->header()->setStretchLastSection(false);
    this->ui->tblDownloads->header()->setVisible(false);
-   this->ui->tblDownloads->header()->setSectionResizeMode(0, QHeaderView::Stretch);
-   this->ui->tblDownloads->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
-   this->ui->tblDownloads->header()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
-   this->ui->tblDownloads->header()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
-   this->ui->tblDownloads->header()->setSectionResizeMode(4, QHeaderView::ResizeToContents);
+   this->ui->tblDownloads->header()->setSectionResizeMode(DownloadsModel::NAME, QHeaderView::Stretch);
+   this->ui->tblDownloads->header()->setSectionResizeMode(DownloadsModel::SIZE, QHeaderView::ResizeToContents);
+   this->ui->tblDownloads->header()->setSectionResizeMode(DownloadsModel::PROGRESS, QHeaderView::ResizeToContents);
+   this->ui->tblDownloads->header()->setSectionResizeMode(DownloadsModel::PEER_SOURCE, QHeaderView::ResizeToContents);
+   this->ui->tblDownloads->header()->setSectionResizeMode(DownloadsModel::OTHER_PEERS, QHeaderView::ResizeToContents);
    this->ui->tblDownloads->header()->setMinimumSectionSize(0);
 
    this->ui->tblDownloads->setSelectionBehavior(QAbstractItemView::SelectRows);

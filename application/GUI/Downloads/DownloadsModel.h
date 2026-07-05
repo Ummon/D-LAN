@@ -37,7 +37,17 @@ namespace GUI
    class DownloadsModel : public QAbstractTableModel
    {
       Q_OBJECT
+
    public:
+      enum Columns
+      {
+         NAME = 0,
+         SIZE = 1,
+         PROGRESS = 2,
+         PEER_SOURCE = 3,
+         OTHER_PEERS = 4,
+      };
+
       DownloadsModel(
          QSharedPointer<RCC::ICoreConnection> coreConnection,
          const PeerListModel& peerListModel,
