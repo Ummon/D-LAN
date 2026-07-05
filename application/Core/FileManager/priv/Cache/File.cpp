@@ -119,7 +119,7 @@ File::File(
          throw;
       }
 
-   if (!hashes.empty())
+   if (this->chunks.isEmpty())
       this->setHashes(hashes);
 
    if (this->parentDirectory)
