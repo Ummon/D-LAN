@@ -278,7 +278,7 @@ void DownloadsWidget::openLocationSelectedEntries()
    {
       const QModelIndex& index = i.next();
       if (this->currentDownloadsModel->isFileLocationKnown(index))
-         locations.insert(this->currentDownloadsModel->getPath(index, false));
+         locations.insert(this->currentDownloadsModel->getPath(index, true));
    }
 
    Utils::openLocations(locations.values());

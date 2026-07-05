@@ -129,11 +129,6 @@ QString DownloadsFlatModel::getPath(const QModelIndex& index, bool appendFilenam
    else
    {
       QString path = sharedEntry.path.toString();
-
-      // TODO: Needed?
-      if (!path.isEmpty())
-         path.remove(path.size() - 1, 1); // Remove the '/' at the end because path given by 'Common::ProtoHelper::getPath(..)' already begins with a '/'.
-
       return path.append(
          Common::ProtoHelper::getPath(this->downloads[index.row()].local_entry()).toString(appendFilename)
       );

@@ -182,7 +182,7 @@ QString DownloadsTreeModel::getPath(const QModelIndex& index, bool appendFilenam
       }
       else
       {
-         path = sharedPath.left(sharedPath.size() - 1);
+         path = sharedPath;
          path.append(
             Common::ProtoHelper::getPath(tree->getItem().local_entry()).toString(appendFilename)
          );
