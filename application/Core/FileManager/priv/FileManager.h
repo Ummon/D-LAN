@@ -141,9 +141,9 @@ namespace FM
       void chunkHashKnown(const QSharedPointer<FM::Chunk>& chunk);
       void chunkRemoved(const QSharedPointer<FM::Chunk>& chunk);
 
-   private slots:
-      void setCacheChanged();
-      void fileCacheLoadingComplete();
+   // private slots:
+      // void setCacheChanged();
+      // void fileCacheLoadingComplete();
 
    private:
       LOG_INIT_H("FileManager")
@@ -159,6 +159,6 @@ namespace FM
 
       QMutex mutexCacheChanged;
       // bool cacheLoading;
-      bool cacheChanged;
+      // bool cacheChanged;
    };
 }

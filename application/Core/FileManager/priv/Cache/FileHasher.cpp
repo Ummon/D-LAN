@@ -103,7 +103,7 @@ bool FileHasher::start(FileForHasher* fileCache, int n, int* amountHashed)
       throw IOErrorException();
    }
 
-   const QVector<QSharedPointer<Chunk>>& chunks = this->currentFileCache->getChunks();
+   const QList<QSharedPointer<Chunk>>& chunks = this->currentFileCache->getChunks();
 
    // Skip the already known full hashes.
    qint64 bytesSkipped = 0;
@@ -183,7 +183,7 @@ bool FileHasher::start(FileForHasher* fileCache, int n, int* amountHashed)
          if (chunks[chunkNum]->getHash() != hash)
          {
             if (chunks[chunkNum]->hasHash())
-                // To remove the chunk from the chunk index (TODO: find a more elegant way).
+               // To remove the chunk from the chunk index (TODO: find a more elegant way).
                this->currentFileCache->getCache()->onChunkRemoved(chunks[chunkNum]);
 
             chunks[chunkNum]->setHash(hash);

@@ -24,7 +24,6 @@
 #include <QWaitCondition>
 #include <QFile>
 #include <QFileInfo>
-#include <QVector>
 #include <QSharedPointer>
 #include <QDateTime>
 
@@ -63,8 +62,10 @@ namespace FM
 
       void setToUnfinished(qint64 size, const QList<Common::Hash>& hashes = QList<Common::Hash>());
 
-      Directory* createSubDirs(const QStringList& names, bool physically = false);
+      // Directory* createSubDirs(const QStringList& names, bool physically = false);
 
+      void saveHashes();
+      void loadHashes();
       // bool restoreFromFileCache(const Protos::FileCache::Hashes::File& file);
       // void populateHashesFile(Protos::FileCache::Hashes_File& fileToFill) const;
 
@@ -93,7 +94,7 @@ namespace FM
       qint64 write(const char* buffer, int nbBytes, qint64 offset);
       qint64 read(char* buffer, qint64 offset, int maxBytesToRead);
 
-      QVector<QSharedPointer<Chunk>> getChunks() const;
+      QList<QSharedPointer<Chunk>> getChunks() const;
       bool hasAllHashes() const;
       bool hasOneOrMoreHashes() const;
 
@@ -122,7 +123,7 @@ namespace FM
    protected:
       void setRootRecursively(SharedEntry* sharedEntry) override;
 
-      QVector<QSharedPointer<Chunk>> chunks;
+      QList<QSharedPointer<Chunk>> chunks;
       QDateTime dateLastModified;
 
    private:
@@ -144,8 +145,8 @@ namespace FM
    {
    public:
       void updateDateLastModified(const QDateTime& date);
-      void addChunk(const QSharedPointer<Chunk>& chunk);
-      QSharedPointer<Chunk> removeLastChunk();
+      // void addChunk(const QSharedPointer<Chunk>& chunk);
+      // QSharedPointer<Chunk> removeLastChunk();
    };
 
    class FileIterator

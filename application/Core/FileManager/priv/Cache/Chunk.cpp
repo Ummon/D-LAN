@@ -188,6 +188,11 @@ Common::Hash Chunk::getHash() const
 
 void Chunk::setHash(const Common::Hash& hash)
 {
+   this->setHash(hash, true);
+}
+
+void Chunk::setHash(const Common::Hash& hash, bool saveHashes)
+{
    #ifdef DEBUG
       L_DEBU(QString("Chunk[%1] setHash(..): %2").arg(this->num).arg(hash.toStrShort()));
       if (!this->hash.isNull() && this->hash != hash)
@@ -202,6 +207,9 @@ void Chunk::setHash(const Common::Hash& hash)
    #endif
 
    this->hash = hash;
+
+   if (saveHashes)
+      this->file->saveHashes();
 }
 
 int Chunk::getKnownBytes() const

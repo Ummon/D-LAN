@@ -25,6 +25,7 @@ using namespace DM;
 
 #include <limits>
 
+#include <Common/Global.h>
 #include <Common/Settings.h>
 #include <Common/ProtoHelper.h>
 #include <Common/Hash.h>
@@ -49,10 +50,7 @@ FileDownload::FileDownload(
 ) :
    Download(fileManager, peerSource, remoteEntry, localEntry),
    linkedPeers(linkedPeers),
-   NB_CHUNK(
-      this->remoteEntry.size() / Common::Constants::CHUNK_SIZE +
-      (this->remoteEntry.size() % Common::Constants::CHUNK_SIZE == 0 ? 0 : 1)
-   ),
+   NB_CHUNK(Common::Global::nbChunks(this->remoteEntry.size())),
    nbChunkAsked(0),
    occupiedPeersAskingForHashes(occupiedPeersAskingForHashes),
    occupiedPeersDownloadingChunk(occupiedPeersDownloadingChunk),

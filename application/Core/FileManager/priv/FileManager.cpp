@@ -507,7 +507,8 @@ void FileManager::chunkHashKnown(const QSharedPointer<Chunk>& chunk)
    L_DEBU(QString("Adding chunk '%1' to the index . . .").arg(chunk->getHash().toStrShort()));
    this->chunks.add(chunk);
    L_DEBU("Chunk added to the index");
-   this->setCacheChanged();
+
+   // this->setCacheChanged();
 }
 
 void FileManager::chunkRemoved(const QSharedPointer<Chunk>& chunk)
@@ -515,7 +516,7 @@ void FileManager::chunkRemoved(const QSharedPointer<Chunk>& chunk)
    L_DEBU(QString("Removing chunk '%1' from the index . . .").arg(chunk->getHash().toStrShort()));
    this->chunks.rm(chunk);
    L_DEBU("Chunk removed from the index");
-   this->setCacheChanged();
+   // this->setCacheChanged();
 }
 
 /**
@@ -619,12 +620,12 @@ void FileManager::forcePersistCacheToFile()
 /**
   * @warning Can be called from different threads like a 'Downloader' or the 'FileUpdater'.
   */
-void FileManager::setCacheChanged()
-{
-   QMutexLocker locker(&this->mutexCacheChanged);
-   this->cacheChanged = true;
-}
+// void FileManager::setCacheChanged()
+// {
+//    QMutexLocker locker(&this->mutexCacheChanged);
+//    this->cacheChanged = true;
+// }
 
-void FileManager::fileCacheLoadingComplete()
-{
-}
+// void FileManager::fileCacheLoadingComplete()
+// {
+// }

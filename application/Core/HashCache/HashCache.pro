@@ -20,6 +20,7 @@ SOURCES += ../../Protos/common.pb.cc \
 HEADERS += IHashCache.h \
     Builder.h \
     priv/Constants.h \
+    priv/Exceptions.h \
     priv/Log.h \
     ../../Protos/common.pb.h \
     priv/HashCache.h

@@ -333,7 +333,7 @@ QList<QSharedPointer<IChunk>> Cache::newFile(Protos::Common::Entry& fileEntry)
    QList<QSharedPointer<IChunk>> ichunks;
    const QVector<QSharedPointer<Chunk>>& chunks = file->getChunks();
    ichunks.reserve(chunks.size());
-   for (QVectorIterator<QSharedPointer<Chunk>> i(chunks); i.hasNext();)
+   for (QListIterator<QSharedPointer<Chunk>> i(chunks); i.hasNext();)
       ichunks << i.next();
    return ichunks;
 

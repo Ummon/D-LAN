@@ -16,14 +16,22 @@ namespace HC
    public:
       HashCache(const QString& databaseFolder);
 
-      QList<Common::Hash> getHashes(const QString& filePath) override;
-      void setHashes(QString& filePath, const QList<QString>& filePaths) override;
-      void setSizeAndDateTime(QString& filePath, qint64 size, QDateTime dateTime) override;
-      void rmHashes(QString& filePath) override;
+      QList<Common::Hash> getHashes(const QString& filePath, QDateTime timeLastModified = QDateTime()) override;
+
+      void setHashes(const QString& filePath, const QList<Common::Hash>& hashes, qint64 size, QDateTime dateTime = QDateTime()) override;
+
+      // void setSizeAndDateTime(QString& filePath, qint64 size, QDateTime dateTime) override;
+
+      void rmHashes(const QString& filePath) override;
 
    private:
       LOG_INIT_H("HashCache")
 
+      void updateDatabaseScheme();
+      bool updateToNextVersion(int currentVersion);
+
       QSqlDatabase db;
+
+      static const QStringList VERSION_1;
    };
 }

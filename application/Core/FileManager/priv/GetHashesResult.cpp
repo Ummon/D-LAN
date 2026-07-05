@@ -79,7 +79,7 @@ Protos::Core::GetHashesResult GetHashesResult::start()
 
       int nbOfHashToSend = 0;
       int j = 0;
-      for (QVectorIterator<QSharedPointer<Chunk>> i(chunks); i.hasNext();)
+      for (QListIterator<QSharedPointer<Chunk>> i(chunks); i.hasNext();)
       {
          auto chunk = i.next();
          const Protos::Common::Hash& protoChunk = this->fileEntry.chunks(j++);

@@ -86,6 +86,7 @@ namespace FM
       quint64 getAmount() const;
 
       FilePool& getFilePool() { return this->filePool; }
+      QSharedPointer<HC::IHashCache> getHashCache() { return this->hashCache; }
 
       QString getTree_debug() const;
 

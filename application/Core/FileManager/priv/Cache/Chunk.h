@@ -49,15 +49,15 @@ namespace FM
 
       ~Chunk();
 
-      QString toStringLog() const;
+      QString toStringLog() const override;
 
-      void removeItsIncompleteFile();
-      bool populateEntry(Protos::Common::Entry* entry) const;
+      void removeItsIncompleteFile() override;
+      bool populateEntry(Protos::Common::Entry* entry) const override;
 
-      Common::Path getFilePath() const;
+      Common::Path getFilePath() const override;
 
-      QSharedPointer<IDataReader> getDataReader();
-      QSharedPointer<IDataWriter> getDataWriter();
+      QSharedPointer<IDataReader> getDataReader() override;
+      QSharedPointer<IDataWriter> getDataWriter() override;
 
       void newDataWriterCreated();
       void newDataReaderCreated();
@@ -70,19 +70,20 @@ namespace FM
       inline int read(char* buffer, int offset);
       inline bool write(const char* buffer, int nbBytes);
 
-      int getNum() const;
-      int getNbTotalChunk() const;
+      int getNum() const override;
+      int getNbTotalChunk() const override;
       QVector<QSharedPointer<Chunk>> getOtherChunks() const;
 
       bool hasHash() const;
-      Common::Hash getHash() const;
-      void setHash(const Common::Hash& hash);
+      Common::Hash getHash() const override;
+      void setHash(const Common::Hash& hash) override;
+      void setHash(const Common::Hash& hash, bool saveHashes);
 
-      int getKnownBytes() const;
+      int getKnownBytes() const override;
       void setKnownBytes(int bytes);
 
-      int getChunkSize() const;
-      bool isComplete() const;
+      int getChunkSize() const override;
+      bool isComplete() const override;
 
       bool isOwnedBy(File* file) const;
 

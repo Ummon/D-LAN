@@ -19,6 +19,7 @@
 #pragma once
 
 #include <QSharedPointer>
+#include <QDateTime>
 #include <QList>
 #include <QString>
 
@@ -39,15 +40,20 @@ namespace HC
         * Some hashes may be null if unknown.
         * If the file path is unknown a empty list is returned.
         */
-      virtual QList<Common::Hash> getHashes(const QString& filePath) = 0;
+      virtual QList<Common::Hash> getHashes(
+         const QString& filePath,
+         QDateTime timeLastModified = QDateTime()
+      ) = 0;
 
-      virtual void setHashes(QString& filePath, const QList<QString>& filePaths) = 0;
-      virtual void setSizeAndDateTime(QString& filePath, qint64 size, QDateTime dateTime) = 0;
+      virtual void setHashes(
+         const QString& filePath,
+         const QList<Common::Hash>& hashes,
+         qint64 size,
+         QDateTime dateTime = QDateTime()
+      ) = 0;
 
-      virtual void rmHashes(QString& filePath) = 0;
+      // virtual void setSizeAndDateTime(QString& filePath, qint64 size, QDateTime timeLastModified) = 0;
 
-      // virtual QList<Common::Hashes> getHashes(const QList<QString>& filePaths);
-      // virtual void setHashes(const QList<QString>& filePaths, const QList<Common::Hashes>& hashes);
-      // virtual void rmHashes(const QList<QString>& filePaths);
+      virtual void rmHashes(const QString& filePath) = 0;
    };
 }
