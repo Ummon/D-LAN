@@ -524,7 +524,7 @@
                        </base-DRelation>
                        <a>
                         <DAssociationEnd>
-                         <cradinality>1</cradinality>
+                         <cradinality>n</cradinality>
                          <kind>2</kind>
                         </DAssociationEnd>
                        </a>
@@ -1148,7 +1148,7 @@
                                       </base-MRelation>
                                       <a>
                                        <MAssociationEnd>
-                                        <cardinality>1</cardinality>
+                                        <cardinality>n</cardinality>
                                         <kind>2</kind>
                                        </MAssociationEnd>
                                       </a>
