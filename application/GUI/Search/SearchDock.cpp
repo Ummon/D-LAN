@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <Search/SearchDock.h>
 #include <ui_SearchDock.h>
 using namespace GUI;
@@ -24,6 +24,7 @@ using namespace GUI;
 #include <QIntValidator>
 #include <QStringBuilder>
 #include <QModelIndex>
+#include <QMainWindow>
 
 #include <Common/ProtoHelper.h>
 #include <Common/Settings.h>
@@ -33,7 +34,7 @@ using namespace GUI;
 
 // To activate the possibility to hide the advanced fields.
 // There is actually some difficulties to hide these controls.
-#define HIDE_BUTTON false
+#define HIDE_BUTTON true
 
 SearchDock::SearchDock(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidget* parent) :
    QDockWidget(parent),
@@ -78,11 +79,20 @@ SearchDock::SearchDock(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
    connect(this->coreConnection.data(), &RCC::ICoreConnection::connected, this, &SearchDock::coreConnected);
    connect(this->coreConnection.data(), &RCC::ICoreConnection::disconnected, this, &SearchDock::coreDisconnected);
 
+   // When re-docked after having been floating, the QMainWindow restores the floating height
+   // (a bit too tall). Deferred call: the dock geometry isn't final yet when the signal is emitted.
+   connect(this, &QDockWidget::topLevelChanged, this, [this](bool floating) {
+      if (!floating)
+         QMetaObject::invokeMethod(this, [this]() { this->adjustHeight(); }, Qt::QueuedConnection);
+   });
+
 #if not HIDE_BUTTON
    this->ui->butAdvanced->hide();
 #else
    connect(this->ui->butAdvanced, &QPushButton::clicked, this, &SearchDock::advancedOptionsVisibility);
 #endif
+
+   this->adjustHeight(); // Match the initial visibility state loaded by 'loadSettings()'.
 
    this->coreDisconnected(false); // Initial state.
 }
@@ -130,13 +140,25 @@ void SearchDock::coreDisconnected(bool force)
 void SearchDock::advancedOptionsVisibility(bool shown)
 {
    this->ui->advancedOptions->setVisible(shown);
-   this->ui->dockWidgetContents->setMinimumHeight(10);
-   this->ui->advancedOptions->setMinimumHeight(10);
+   this->adjustHeight();
+}
 
-   if (shown)
-      this->ui->dockWidgetContents->resize(this->ui->dockWidgetContents->width(), 200);
-   else
-      this->ui->dockWidgetContents->resize(this->ui->dockWidgetContents->width(), 100);
+/**
+  * Pin the dock content to the height of its layout. A docked QDockWidget is sized by the
+  * QMainWindow dock layout, so 'resize()' has no effect: the only reliable way to change its
+  * height is to constrain it.
+  */
+void SearchDock::adjustHeight()
+{
+   QWidget* contents = this->ui->dockWidgetContents;
+   contents->layout()->activate(); // Take the new visibility into account right now, otherwise 'sizeHint()' is stale.
+   contents->setFixedHeight(contents->sizeHint().height());
+
+   // The QMainWindow may have memorized another height for the dock (for example the one it had
+   // while floating, native frame included): explicitly ask to re-apply the constraint.
+   if (!this->isFloating())
+      if (QMainWindow* mainWindow = qobject_cast<QMainWindow*>(this->parentWidget()))
+         mainWindow->resizeDocks({ this }, { contents->height() }, Qt::Vertical);
 }
 
 void SearchDock::search()

@@ -13,12 +13,6 @@
     <height>124</height>
    </rect>
   </property>
-  <property name="maximumSize">
-   <size>
-    <width>524287</width>
-    <height>124</height>
-   </size>
-  </property>
   <property name="features">
    <set>QDockWidget::DockWidgetFeature::DockWidgetFloatable|QDockWidget::DockWidgetFeature::DockWidgetMovable|QDockWidget::DockWidgetFeature::DockWidgetVerticalTitleBar</set>
   </property>
