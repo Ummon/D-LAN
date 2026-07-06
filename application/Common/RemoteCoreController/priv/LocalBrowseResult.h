@@ -15,28 +15,34 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #pragma once
 
-#ifdef Q_OS_WIN32
-   #include <windows.h>
-#endif
+#include <QtCore>
 
-#include <QCoreApplication>
+#include <Protos/common.pb.h>
+#include <Protos/gui_protocol.pb.h>
 
-class CoreApplication : public QCoreApplication
+#include <Common/Hash.h>
+
+#include <ILocalBrowseResult.h>
+
+namespace RCC
 {
-   Q_OBJECT
+   class InternalCoreConnection;
 
-public:
-   CoreApplication(int& argc, char** argv);
+   class LocalBrowseResult : public ILocalBrowseResult
+   {
+      Q_OBJECT
+   public:
+      LocalBrowseResult(InternalCoreConnection* coreConnection, const QString& path, int socketTimeout);
+      void start();
 
-   bool notify(QObject* receiver, QEvent* event) override;
+   private slots:
+      void browseResult(const Protos::GUI::LocalBrowseResult& browseResult);
 
-/*#ifdef Q_OS_WIN32
-   bool winEventFilter(MSG* msg, long* result);
-#endif*/
-
-/*signals:
-   void resumeFromLowPowerState();*/
-};
+   private:
+      InternalCoreConnection* coreConnection;
+      Protos::GUI::LocalBrowse browseMessage;
+   };
+}

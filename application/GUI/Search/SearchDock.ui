@@ -62,12 +62,6 @@
       </item>
       <item>
        <widget class="QPushButton" name="butSearch">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
         <property name="toolTip">
          <string>Search among other peers &lt;ENTER&gt;</string>
         </property>

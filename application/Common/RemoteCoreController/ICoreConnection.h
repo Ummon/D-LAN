@@ -35,6 +35,7 @@ namespace RCC
 {
    class ISendChatMessageResult;
    class IBrowseResult;
+   class ILocalBrowseResult;
    class ISearchResult;
 
    /**
@@ -181,6 +182,11 @@ namespace RCC
          const Protos::Common::Entries& entries,
          bool withRoots = true
       ) = 0;
+
+      /**
+        * Get files and directories from the remote path, if 'path' is empty then the roots (drives) are returned.
+        */
+      virtual QSharedPointer<ILocalBrowseResult> localBrowse(const QString& path) = 0;
 
       /**
         * Search some files and folders to the entire network, do not search in our own folders.

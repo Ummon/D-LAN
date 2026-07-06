@@ -46,7 +46,6 @@ FileUpdater::FileUpdater(FileManager* fileManager) :
    IO_ERROR_WAITING_BEFORE_RETRY(3000),
    fileManager(fileManager),
    dirWatcher(DirWatcher::getNewWatcher()),
-   // fileCacheInformation(nullptr),
    toStop(false),
    progress(0),
    currentScanningEntry(nullptr),
@@ -208,23 +207,11 @@ void FileUpdater::run()
 #endif
    QThread::currentThread()->setObjectName(threadName);
 
-   // First: retrieve the directories and file from the file cache and
-   // synchronize it with the file system.
-   //if (this->fileCacheInformation)
-   //{
    while (!this->entriesToScan.isEmpty())
    {
       Entry* entry = this->entriesToScan.takeFirst();
       this->scan(entry, true);
-      //this->restoreFromFileCache(static_cast<SharedDirectory*>(dir));
    }
-
-   /*
-      delete this->fileCacheInformation;
-      this->fileCacheInformation = nullptr;
-   }
-   emit fileCacheLoaded();
-   */
 
    this->progress = 0;
 
@@ -260,6 +247,9 @@ void FileUpdater::run()
          {
             L_DEBU("Waiting for a new entry added..");
             this->mutex.unlock();
+
+            emit scanFinished();
+
             this->dirEvent->wait(this->unwatchableEntries.isEmpty() ? -1 : SCAN_PERIOD_UNWATCHABLE_DIRS);
          }
          else
@@ -690,45 +680,6 @@ void FileUpdater::removeFromFilesWithoutHashes(Entry* entry)
 }
 
 /**
-  * Try to restore the chunk hashes from 'fileCache'.
-  * 'fileCache' is set by 'retrieveFromFile(..)'.
-  */
-/*void FileUpdater::restoreFromFileCache(SharedDirectory* dir)
-{
-   //TODO
-
-   L_DEBU("Start restoring hashes of a shared directory : " + dir->getFullPath());
-
-   if (!this->fileCacheInformation)
-   {
-      L_ERRO("FileUpdater::restoreFromFileCache(..) : 'this->fileCache' must be previously set. Unable to restore from the file cache.");
-      return;
-   }
-
-   for (int i = 0; i < this->fileCacheInformation->getFileCache()->shareddir_size(); i++)
-      if (this->fileCacheInformation->getFileCache()->shareddir(i).id().hash() == dir->getId())
-      {
-         auto filesWithHashesList = dir->restoreFromFileCache(this->fileCacheInformation->getFileCache()->shareddir(i).root());
-         QSet<File*> filesWithHashes(filesWithHashesList.begin(), filesWithHashesList.end());
-
-         for (QMutableListIterator<File*> i(this->filesWithoutHashes); i.hasNext();)
-         {
-            File* f = i.next();
-            if (filesWithHashes.contains(f))
-            {
-               this->remainingSizeToHash -= f->getSize();
-               i.remove();
-            }
-         }
-
-         break;
-      }
-
-   L_DEBU("Restoring terminated: " + dir->getFullPath());
-}
-*/
-
-/**
   * Event from the filesystem like a file created or renamed.
   * return true is at least one event is a timeout.
   */
@@ -837,47 +788,3 @@ bool FileUpdater::processEvents(const QList<WatcherEvent>& events)
 
    return false;
 }
-
-/////
-
-// FileUpdater::FileCacheInformation::FileCacheInformation(const Protos::FileCache::Hashes* fileCache) :
-//    fileCache(fileCache), fileCacheNbFiles(0), fileCacheNbFilesLoaded(0)
-// {
-//    for (int i = 0; i < this->fileCache->shareddir_size(); i++)
-//       this->computeFileCacheNbFiles(this->fileCache->shareddir(i).root());
-// }
-
-// FileUpdater::FileCacheInformation::~FileCacheInformation()
-// {
-//    delete this->fileCache;
-// }
-
-// void FileUpdater::FileCacheInformation::newFile()
-// {
-//    if (this->fileCacheNbFilesLoaded == this->fileCacheNbFiles)
-//       return;
-//    this->fileCacheNbFilesLoaded++;
-// }
-
-// const Protos::FileCache::Hashes* FileUpdater::FileCacheInformation::getFileCache()
-// {
-//    return this->fileCache;
-// }
-
-// /**
-//   * return a value between 0 and 10000 (basis point).
-//   */
-// int FileUpdater::FileCacheInformation::getProgress() const
-// {
-//    if (this->fileCacheNbFiles == 0)
-//       return 0;
-//    return 10000LL * this->fileCacheNbFilesLoaded / this->fileCacheNbFiles;
-// }
-
-// void FileUpdater::FileCacheInformation::computeFileCacheNbFiles(const Protos::FileCache::Hashes::Dir& dir)
-// {
-//    for (int i = 0; i < dir.dir_size(); i++)
-//       this->computeFileCacheNbFiles(dir.dir(i));
-
-//    this->fileCacheNbFiles += dir.file_size();
-// }

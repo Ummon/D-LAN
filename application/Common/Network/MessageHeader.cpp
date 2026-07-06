@@ -116,6 +116,8 @@ QString MessageHeader::messToStr(MessageType type)
    case GUI_BROWSE: return "BROWSE";
    case GUI_BROWSE_TAG: return "BROWSE_TAG";
    case GUI_BROWSE_RESULT: return "BROWSE_RESULT";
+   case GUI_LOCAL_BROWSE: return "LOCAL_BROWSE";
+   case GUI_LOCAL_BROWSE_RESULT: return "LOCAL_BROWSE_RESULT";
    case GUI_CANCEL_DOWNLOADS: return "CANCEL_DOWNLOADS";
    case GUI_PAUSE_DOWNLOADS: return "PAUSE_DOWNLOADS";
    case GUI_MOVE_DOWNLOADS: return "MOVE_DOWNLOADS";

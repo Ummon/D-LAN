@@ -40,15 +40,6 @@ using namespace GUI;
 #include <Log.h>
 #include <Utils.h>
 
-void DirListDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
-{
-   QStyleOptionViewItem newOption(option);
-   newOption.state = option.state & (~QStyle::State_HasFocus);
-   QStyledItemDelegate::paint(painter, newOption, index);
-}
-
-/////
-
 SettingsWidget::SettingsWidget(
    QSharedPointer<RCC::ICoreConnection> coreConnection,
    SharedEntryListModel& sharedEntryListModel,
@@ -63,7 +54,6 @@ SettingsWidget::SettingsWidget(
 {
    this->ui->setupUi(this);
 
-   this->ui->tblShareDirs->setItemDelegate(&this->dirListDelegate); // TODO: Still needed?
    this->ui->tblShareDirs->setModel(&this->sharedEntryListModel);
    this->ui->tblShareDirs->setItemDelegate(&this->sharedEntryListDelegate);
    this->ui->tblShareDirs->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
@@ -616,7 +606,13 @@ void SettingsWidget::resetPassword()
 
 void SettingsWidget::addShared()
 {
-   QStringList entries = Utils::askForDirectoriesOrFiles(this->coreConnection);
+   QStringList entries =
+      Utils::askForDirectoriesOrFiles(
+         this,
+         this->coreConnection,
+         tr("Select one or more directories and/or files to share")
+      );
+
    if (!entries.isEmpty())
    {
       this->sharedEntryListModel.addEntries(entries);

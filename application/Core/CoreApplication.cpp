@@ -18,9 +18,38 @@
   
 #include <CoreApplication.h>
 
+#include <QDebug>
+
 CoreApplication::CoreApplication(int& argc, char** argv) :
    QCoreApplication(argc, argv)
 {
+}
+
+bool CoreApplication::notify(QObject* receiver, QEvent* event)
+{
+   try
+   {
+      return QCoreApplication::notify(receiver, event);
+   }
+   catch (const std::exception& e)
+   {
+      qCritical()
+         << "Exception in event handler:" << e.what()
+         << "| receiver:" << receiver->objectName()
+         << receiver->metaObject()->className()
+         << "| event type:" << event->type();
+   }
+   catch (...)
+   {
+      qCritical()
+         << "Unknown exception in event handler"
+         << "| receiver:" << receiver->objectName()
+         << receiver->metaObject()->className()
+         << "| event type:" << event->type();
+   }
+   // Decide policy here: swallow, or terminate cleanly.
+   // std::abort();
+   return false;
 }
 
 /*#ifdef Q_OS_WIN32

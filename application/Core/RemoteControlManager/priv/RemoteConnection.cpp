@@ -25,6 +25,7 @@ using namespace RCM;
 #include <QDateTime>
 #include <QNetworkInterface>
 #include <QRandomGenerator64>
+#include <QFileInfo>
 #include <QSet>
 
 #include <Common/Settings.h>
@@ -639,6 +640,49 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
             result.set_tag(tag);
             this->send(Common::MessageHeader::GUI_BROWSE_RESULT, result);
          }
+      }
+      break;
+
+   case Common::MessageHeader::GUI_LOCAL_BROWSE:
+      {
+         static QDir::Filters ENTRY_LIST_FILTER = QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot | QDir::Hidden;
+         const Protos::GUI::LocalBrowse& browseMessage = message.getMessage<Protos::GUI::LocalBrowse>();
+
+         Protos::GUI::LocalBrowseResult result;
+
+         const QString& path = QString::fromStdString(browseMessage.path());
+
+         QFileInfoList content;
+
+         if (path.isEmpty())
+         {
+            content = QDir::drives();
+         }
+         else
+         {
+            QDir dir(path);
+            if (dir.exists())
+               content = dir.entryInfoList(ENTRY_LIST_FILTER);
+         }
+
+         for (const auto& entry : std::as_const(content))
+         {
+            const bool isDir = entry.isDir();
+            const auto path = Common::Path(entry.absoluteFilePath() + (isDir ? "/" : ""));
+
+            auto entryResult = result.mutable_entries()->Add();
+
+            entryResult->set_name(path.getLastElement(true).toStdString());
+            entryResult->set_type(isDir ? Protos::GUI::LocalBrowseResult::DIR : Protos::GUI::LocalBrowseResult::FILE);
+            entryResult->set_date_modified(entry.lastModified().toMSecsSinceEpoch());
+
+            if (isDir)
+               entryResult->set_size(QDir(entry.absoluteFilePath()).entryList(ENTRY_LIST_FILTER).size());
+            else
+               entryResult->set_size(entry.size());
+         }
+
+         this->send(Common::MessageHeader::GUI_LOCAL_BROWSE_RESULT, result);
       }
       break;
 

@@ -310,22 +310,17 @@ void SearchWidget::entryDoubleClicked(const QModelIndex& index)
 void SearchWidget::download()
 {
    if (this->searchModel.nbSharedDirs() == 0)
-   {
-      QStringList dirs = Utils::askForDirectoriesToDownloadTo(this->coreConnection);
-      if (!dirs.isEmpty())
-         this->downloadTo(dirs.first());
-      return;
-   }
-
-   for (const auto& index : this->ui->treeView->selectionModel()->selectedRows())
-      this->coreConnection->download(this->searchModel.getPeerID(index), this->searchModel.getEntry(index));
+      this->downloadTo();
+   else
+      for (const auto& index : this->ui->treeView->selectionModel()->selectedRows())
+         this->coreConnection->download(this->searchModel.getPeerID(index), this->searchModel.getEntry(index));
 }
 
 void SearchWidget::downloadTo()
 {
-   QStringList dirs = Utils::askForDirectoriesToDownloadTo(this->coreConnection);
-   if (!dirs.isEmpty())
-      this->downloadTo(dirs.first());
+   const QString dir = Utils::askForADirectoryToDownloadTo(this, this->coreConnection);
+   if (!dir.isEmpty())
+      this->downloadTo(dir);
 }
 /**
   * Download all selected items to 'path'.

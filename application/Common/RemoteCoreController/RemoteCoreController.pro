@@ -14,6 +14,7 @@ include(../../Libs/qtservice/src/qtservice.pri)
 DEFINES += REMOTECORECONTROLLER_LIBRARY
 
 SOURCES += priv/Builder.cpp \
+    priv/LocalBrowseResult.cpp \
     priv/SearchResult.cpp \
     priv/CoreConnection.cpp \
     priv/BrowseResult.cpp \
@@ -25,6 +26,8 @@ SOURCES += priv/Builder.cpp \
     priv/SendChatMessageResult.cpp
 HEADERS += \
     Builder.h \
+    ILocalBrowseResult.h \
+    priv/LocalBrowseResult.h \
     priv/SearchResult.h \
     priv/CoreConnection.h \
     priv/BrowseResult.h \

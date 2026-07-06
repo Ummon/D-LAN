@@ -33,6 +33,9 @@ namespace GUI
             const QModelIndex &index
          ) const override;
 
+      void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+      QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+
       signals:
          void editingStarted(const QModelIndex &index) const;
    };

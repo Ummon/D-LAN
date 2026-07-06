@@ -40,8 +40,10 @@ namespace GUI
 
       D_LAN_GUI(int& argc, char* argv[]);
 
+      bool notify(QObject* receiver, QEvent* event) override;
+
    protected:
-      bool event(QEvent* event);
+      bool event(QEvent* event) override;
 
    private slots:
       void trayIconActivated(QSystemTrayIcon::ActivationReason reason);

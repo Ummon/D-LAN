@@ -16,27 +16,27 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
   
-#pragma once
+#include <priv/LocalBrowseResult.h>
+using namespace RCC;
 
-#ifdef Q_OS_WIN32
-   #include <windows.h>
-#endif
+#include <priv/Log.h>
+#include <priv/InternalCoreConnection.h>
 
-#include <QCoreApplication>
-
-class CoreApplication : public QCoreApplication
+LocalBrowseResult::LocalBrowseResult(InternalCoreConnection* coreConnection, const QString& path, int socketTimeout) :
+   ILocalBrowseResult(socketTimeout), coreConnection(coreConnection)
 {
-   Q_OBJECT
+   this->browseMessage.set_path(path.toStdString());
+   connect(this->coreConnection, &InternalCoreConnection::localBrowseResult, this, &LocalBrowseResult::browseResult);
+}
 
-public:
-   CoreApplication(int& argc, char** argv);
+void LocalBrowseResult::start()
+{
+   this->coreConnection->send(Common::MessageHeader::GUI_LOCAL_BROWSE, this->browseMessage);
+   this->startTimer();
+}
 
-   bool notify(QObject* receiver, QEvent* event) override;
-
-/*#ifdef Q_OS_WIN32
-   bool winEventFilter(MSG* msg, long* result);
-#endif*/
-
-/*signals:
-   void resumeFromLowPowerState();*/
-};
+void LocalBrowseResult::browseResult(const Protos::GUI::LocalBrowseResult& browseResult)
+{
+   this->stopTimer();
+   emit result(browseResult.entries());
+}

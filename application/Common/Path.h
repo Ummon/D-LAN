@@ -38,7 +38,7 @@ namespace Common
       QString getRoot() const;
       QStringList getDirs() const;
       QString getLastDir() const;
-      QString getLastElement() const;
+      QString getLastElement(bool includeRoot = false) const;
       QString getFilename() const;
       QString getExtension() const;
 

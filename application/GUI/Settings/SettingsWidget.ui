@@ -33,7 +33,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tabBasicSettings">
       <attribute name="title">
@@ -66,7 +66,7 @@
          <item>
           <widget class="QPushButton" name="butAddShared">
            <property name="toolTip">
-            <string>Add a new shared directory</string>
+            <string>Add new shared directories and/or files</string>
            </property>
            <property name="text">
             <string/>
@@ -89,7 +89,7 @@
          <item>
           <widget class="QPushButton" name="butRemoveShared">
            <property name="toolTip">
-            <string>Remove the selected shared directory</string>
+            <string>Remove the selected shared directory or file</string>
            </property>
            <property name="text">
             <string/>
@@ -109,7 +109,7 @@
          <item>
           <widget class="QPushButton" name="butMoveDownShared">
            <property name="toolTip">
-            <string>Move down the selected shared directory</string>
+            <string>Move down the selected shared directory or file</string>
            </property>
            <property name="text">
             <string/>
@@ -129,7 +129,7 @@
          <item>
           <widget class="QPushButton" name="butMoveUpShared">
            <property name="toolTip">
-            <string>Move up the selected shared directory</string>
+            <string>Move up the selected shared directory or file</string>
            </property>
            <property name="text">
             <string/>
@@ -149,7 +149,7 @@
          <item>
           <widget class="QPushButton" name="butOpenFolder">
            <property name="toolTip">
-            <string>Open location of the selected shared directory</string>
+            <string>Open location of the selected shared directory or file</string>
            </property>
            <property name="text">
             <string/>

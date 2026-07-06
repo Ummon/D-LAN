@@ -70,26 +70,27 @@ void SharedEntryListModel::setEntries(const QList<Common::SharedEntry>& entries)
    }
 }
 
-void SharedEntryListModel::addEntry(const Common::SharedEntry& entry)
-{
-   if (this->sharedEntries.contains(entry))
-      return;
-
-   this->beginInsertRows(QModelIndex(), this->sharedEntries.size(), this->sharedEntries.size());
-   this->sharedEntries << entry;
-   this->endInsertRows();
-}
-
 void SharedEntryListModel::addEntries(const QStringList& entries)
 {
+   QList<Common::SharedEntry> sharedEntries;
+
    for (const auto& entry : entries)
    {
       QString cleaned = QDir::cleanPath(entry);
       if (QFileInfo(cleaned).isDir() && (cleaned.isEmpty() || !cleaned.endsWith('/')))
          cleaned += '/';
 
-      this->addEntry(Common::SharedEntry { Common::Hash(), cleaned, QString(), 0 ,0 });
+      const auto sharedEntry = Common::SharedEntry { Common::Hash(), cleaned, QString(), 0, 0 };
+      if (!this->sharedEntries.contains(sharedEntry))
+         sharedEntries << sharedEntry;
    }
+
+   if (sharedEntries.isEmpty())
+      return;
+
+   this->beginInsertRows(QModelIndex(), this->sharedEntries.size(), this->sharedEntries.size() + sharedEntries.size() - 1);
+   this->sharedEntries.append(sharedEntries);
+   this->endInsertRows();
 }
 
 void SharedEntryListModel::rmEntry(int row)

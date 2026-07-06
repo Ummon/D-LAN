@@ -42,7 +42,6 @@ namespace GUI
       static QIcon getIcon(const Common::Path& path);
 
    private:
-
       static QIcon getIconCache(const QString& filename, bool withWarning);
       static QIcon getIconCacheByExtension(const QString& extension, bool withWarning);
       static QIcon getIconNative(const QString& icon);

@@ -258,18 +258,18 @@ message LocalBrowse {
 // Core -> GUI (directly)
 // id: 0x10F2
 message LocalBrowseResult {
-   message Directory {
-      string name = 1;
-      int64 date_modified = 2; // [ms] since epoch.
+   enum EntryType {
+      FILE = 0;
+      DIR = 1;
    }
-   message File {
+   message Entry {
       string name = 1;
       int64 date_modified = 2; // [ms] since epoch.
-      int64 size = 3; // [byte].
+      int64 size = 3; // Bytes for file, number of sub-entries for directory.
+      EntryType type = 4;
    }
 
-   repeated Directory directories = 1;
-   repeated File files = 2;
+   repeated Entry entries = 1;
 }
 
 

@@ -42,5 +42,8 @@
         <file>resources/download.svg</file>
         <file>resources/icon.svg</file>
         <file>resources/emoticon.svg</file>
+        <file>resources/plus.svg</file>
+        <file>resources/arrow_left.svg</file>
+        <file>resources/arrow_right.svg</file>
     </qresource>
 </RCC>

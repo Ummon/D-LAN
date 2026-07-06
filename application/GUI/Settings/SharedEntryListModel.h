@@ -30,6 +30,7 @@ namespace GUI
    {
       Q_OBJECT
 
+   public:
       enum Column
       {
          NAME = 0,
@@ -38,9 +39,7 @@ namespace GUI
          FREE_SPACE = 3,
       };
 
-   public:
       void setEntries(const QList<Common::SharedEntry>& entries);
-      void addEntry(const Common::SharedEntry& entry);
       void addEntries(const QStringList& entries);
 
       void rmEntry(int row);

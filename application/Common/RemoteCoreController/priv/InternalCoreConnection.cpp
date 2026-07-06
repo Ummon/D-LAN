@@ -32,6 +32,7 @@ using namespace RCC;
 #include <priv/Log.h>
 #include <priv/SendChatMessageResult.h>
 #include <priv/BrowseResult.h>
+#include <priv/LocalBrowseResult.h>
 #include <priv/SearchResult.h>
 
 // The behavior under Windows and Linux are not the same when connecting a socket to a port.
@@ -221,6 +222,13 @@ QSharedPointer<IBrowseResult> InternalCoreConnection::browse(const Common::Hash&
 {
    QSharedPointer<BrowseResult> browseResult = QSharedPointer<BrowseResult>(new BrowseResult(this, peerID, entries, withRoots, socketTimeout));
    this->browseResultsWithoutTag << browseResult.toWeakRef();
+   return browseResult;
+}
+
+QSharedPointer<ILocalBrowseResult> InternalCoreConnection::localBrowse(const QString& path, int socketTimeout)
+{
+   QSharedPointer<LocalBrowseResult> browseResult = QSharedPointer<LocalBrowseResult>(new LocalBrowseResult(this, path, socketTimeout));
+   this->localBrowseResults << browseResult.toWeakRef();
    return browseResult;
 }
 
@@ -567,10 +575,15 @@ void InternalCoreConnection::onNewMessage(const Common::Message& message)
    case Common::MessageHeader::GUI_BROWSE_RESULT:
       {
          const Protos::GUI::BrowseResult& browseResultMessage = message.getMessage<Protos::GUI::BrowseResult>();
-
          emit browseResult(browseResultMessage);
       }
       break;
+
+   case Common::MessageHeader::GUI_LOCAL_BROWSE_RESULT:
+      {
+         const Protos::GUI::LocalBrowseResult& browseResultMessage = message.getMessage<Protos::GUI::LocalBrowseResult>();
+         emit localBrowseResult(browseResultMessage);
+      }
 
    default:;
    }

@@ -1,0 +1,102 @@
+/**
+  * D-LAN - A decentralized LAN file sharing software.
+  * Copyright (C) 2010-2012 Greg Burri <greg.burri@gmail.com>
+  *
+  * This program is free software: you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+  * the Free Software Foundation, either version 3 of the License, or
+  * (at your option) any later version.
+  *
+  * This program is distributed in the hope that it will be useful,
+  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  * GNU General Public License for more details.
+  *
+  * You should have received a copy of the GNU General Public License
+  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  */
+
+#include <RemoteBrowseDialog/RemoteBrowseDialog.h>
+#include <ui_RemoteBrowseDialog.h>
+using namespace GUI;
+
+#include <Common/Global.h>
+#include <Common/Settings.h>
+
+void RemoteBrowseDialogDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+   QStyleOptionViewItem newOption(option);
+   newOption.state = option.state & (~QStyle::State_HasFocus);
+   QStyledItemDelegate::paint(painter, newOption, index);
+}
+
+/////
+
+RemoteBrowseDialog::RemoteBrowseDialog(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidget *parent) :
+   QDialog(parent),
+   ui(new Ui::RemoteBrowseDialog),
+   model(coreConnection)
+{
+   this->ui->setupUi(this);
+
+   this->ui->butNext->hide();
+   this->ui->butPrevious->hide();
+   this->ui->butUp->hide();
+   this->ui->txtPath->hide();
+
+   this->ui->treeView->setModel(&this->model);
+   this->ui->treeView->setItemDelegate(&this->delegate);
+
+   this->ui->treeView->header()->setStretchLastSection(false);
+   this->ui->treeView->header()->setVisible(false);
+   this->ui->treeView->header()->setSectionResizeMode(0, QHeaderView::Stretch);
+   this->ui->treeView->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+   this->ui->treeView->header()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
+   this->ui->treeView->header()->setMinimumSectionSize(0);
+
+   this->ui->treeView->setSelectionBehavior(QAbstractItemView::SelectRows);
+   this->ui->treeView->setSelectionMode(QAbstractItemView::ExtendedSelection);
+
+   connect(coreConnection.data(), &RCC::ICoreConnection::disconnected, this, [this]() { this->reject(); });
+
+   this->setModes(FILE | DIR | SELECT_MULTIPLE);
+}
+
+RemoteBrowseDialog::~RemoteBrowseDialog()
+{
+   delete this->ui;
+}
+
+void RemoteBrowseDialog::setModes(Modes modes)
+{
+   if (modes.testAnyFlag(SELECT_MULTIPLE))
+      this->ui->treeView->setSelectionMode(QAbstractItemView::ExtendedSelection);
+   else
+      this->ui->treeView->setSelectionMode(QAbstractItemView::SingleSelection);
+
+   RemoteBrowseModel::Filters filters;
+   if (modes.testAnyFlag(FILE))
+      filters |= RemoteBrowseModel::FILE;
+   if (modes.testAnyFlag(DIR))
+      filters |= RemoteBrowseModel::DIR;
+   this->model.setFilters(filters);
+}
+
+QStringList RemoteBrowseDialog::getSelectedPaths() const
+{
+   QStringList result;
+   for (const auto& index : this->ui->treeView->selectionModel()->selectedRows())
+      result << this->model.getPath(index);
+   return result;
+
+}
+
+void RemoteBrowseDialog::accept()
+{
+   QDialog::accept();
+}
+
+void RemoteBrowseDialog::reject()
+{
+   QDialog::reject();
+}

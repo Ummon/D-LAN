@@ -37,13 +37,6 @@ namespace Ui {
 
 namespace GUI
 {
-   class DirListDelegate : public QStyledItemDelegate
-   {
-      Q_OBJECT
-   public:
-      void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
-   };
-
    class SettingsWidget : public MdiWidget
    {
       Q_OBJECT
@@ -122,8 +115,6 @@ namespace GUI
 
       SharedEntryListModel& sharedEntryListModel;      
       SharedEntryListDelegate sharedEntryListDelegate;
-
-      DirListDelegate dirListDelegate;
 
       bool corePasswordDefined;
    };

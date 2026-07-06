@@ -100,6 +100,33 @@ D_LAN_GUI::D_LAN_GUI(int& argc, char* argv[]) :
    this->trayIcon.show();
 }
 
+bool D_LAN_GUI::notify(QObject* receiver, QEvent* event)
+{
+   try
+   {
+      return QApplication::notify(receiver, event);
+   }
+   catch (const std::exception& e)
+   {
+      qCritical()
+         << "Exception in event handler:" << e.what()
+         << "| receiver:" << receiver->objectName()
+         << receiver->metaObject()->className()
+         << "| event type:" << event->type();
+   }
+   catch (...)
+   {
+      qCritical()
+         << "Unknown exception in event handler"
+         << "| receiver:" << receiver->objectName()
+         << receiver->metaObject()->className()
+         << "| event type:" << event->type();
+   }
+   // Decide policy here: swallow, or terminate cleanly.
+   // std::abort();
+   return false;
+}
+
 bool D_LAN_GUI::event(QEvent* event)
 {
    if (event->type() == QEvent::LanguageChange)

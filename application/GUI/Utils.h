@@ -28,8 +28,16 @@ namespace GUI
    class Utils
    {
    public:
-      static QStringList askForDirectoriesOrFiles(QSharedPointer<RCC::ICoreConnection> coreConnection);
-      static QStringList askForDirectoriesToDownloadTo(QSharedPointer<RCC::ICoreConnection> coreConnection);
+      static QStringList askForDirectoriesOrFiles(
+         QWidget* parent,
+         QSharedPointer<RCC::ICoreConnection> coreConnection,
+         const QString& title = QString()
+      );
+
+      static QString askForADirectoryToDownloadTo(
+         QWidget* parent,
+         QSharedPointer<RCC::ICoreConnection> coreConnection
+      );
 
       static QString emoticonsDirectoryPath();
 

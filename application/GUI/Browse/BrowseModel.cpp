@@ -288,7 +288,7 @@ void BrowseModel::result(const google::protobuf::RepeatedPtrField<Protos::Common
 
 void BrowseModel::resultTimeout()
 {
-   L_WARN("Asking for entries message timedout");
+   L_WARN("Asking for entries message timed out");
    this->currentBrowseIndex = QModelIndex();
    this->browseResult.clear();
    emit loadingResultFinished();

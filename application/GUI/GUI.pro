@@ -53,6 +53,8 @@ win32 {
 
 SOURCES += main.cpp\
     Chat/EmoticonTextDocument.cpp \
+    RemoteBrowseDialog/RemoteBrowseDialog.cpp \
+    RemoteBrowseDialog/RemoteBrowseModel.cpp \
     MainWindow.cpp \
     ../Protos/gui_protocol.pb.cc \
     ../Protos/common.pb.cc \
@@ -113,6 +115,8 @@ HEADERS  += MainWindow.h \
     ../Protos/gui_settings.pb.h \
     ../Protos/core_settings.pb.h \
     Chat/EmoticonTextDocument.h \
+    RemoteBrowseDialog/RemoteBrowseDialog.h \
+    RemoteBrowseDialog/RemoteBrowseModel.h \
     Settings/SharedEntryListDelegate.h \
     Settings/SharedEntryListModel.h \
     StatusBar.h \
@@ -169,6 +173,7 @@ HEADERS  += MainWindow.h \
     Search/SearchUtils.h
 
 FORMS    += MainWindow.ui \
+    RemoteBrowseDialog.ui \
     StatusBar.ui \
     DialogAbout.ui \
     Settings/RemoteFileDialog.ui \

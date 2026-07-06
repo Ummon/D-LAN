@@ -107,10 +107,13 @@ QString Path::getLastDir() const
       return this->dirs.constLast();
 }
 
-QString Path::getLastElement() const
+QString Path::getLastElement(bool includeRoot) const
 {
    if (this->isFile())
       return this->filename;
+
+   if (this->dirs.isEmpty() && includeRoot)
+      return this->root;
 
    return this->getLastDir();
 }

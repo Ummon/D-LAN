@@ -195,6 +195,7 @@ void Tests::path()
    QCOMPARE(p1.getExtension(), QString());
    QCOMPARE(p1.getLastDir(), QString());
    QCOMPARE(p1.getLastElement(), QString());
+   QCOMPARE(p1.getLastElement(true), QString());
 
    Path p2(QString(""));
    QCOMPARE(p2.toString(), QString());
@@ -206,6 +207,7 @@ void Tests::path()
    QCOMPARE(p2.getExtension(), QString());
    QCOMPARE(p2.getLastDir(), QString());
    QCOMPARE(p2.getLastElement(), QString());
+   QCOMPARE(p2.getLastElement(true), QString());
 
    Path p3(QString("/"));
    QCOMPARE(p3.toString(), QString("/"));
@@ -217,6 +219,7 @@ void Tests::path()
    QCOMPARE(p3.getExtension(), QString(""));
    QCOMPARE(p3.getLastDir(), QString());
    QCOMPARE(p3.getLastElement(), QString());
+   QCOMPARE(p3.getLastElement(true), QString("/"));
 
    Path p4(QString("/tmp/dir/"));
    QCOMPARE(p4.toString(), QString("/tmp/dir/"));
@@ -228,6 +231,7 @@ void Tests::path()
    QCOMPARE(p4.getExtension(), QString(""));
    QCOMPARE(p4.getLastDir(), QString("dir"));
    QCOMPARE(p4.getLastElement(), QString("dir"));
+   QCOMPARE(p4.getLastElement(true), QString("dir"));
 
    Path p5(QString("/tmp/dir/file.txt"));
    QCOMPARE(p5.toString(), QString("/tmp/dir/file.txt"));
@@ -239,6 +243,7 @@ void Tests::path()
    QCOMPARE(p5.getExtension(), QString("txt"));
    QCOMPARE(p5.getLastDir(), QString("dir"));
    QCOMPARE(p5.getLastElement(), QString("file.txt"));
+   QCOMPARE(p5.getLastElement(true), QString("file.txt"));
 
    Path p6(QString("C:/tmp/dir/file.txt"));
    QCOMPARE(p6.toString(), QString("C:/tmp/dir/file.txt"));
@@ -250,6 +255,7 @@ void Tests::path()
    QCOMPARE(p6.getExtension(), QString("txt"));
    QCOMPARE(p6.getLastDir(), QString("dir"));
    QCOMPARE(p6.getLastElement(), QString("file.txt"));
+   QCOMPARE(p6.getLastElement(true), QString("file.txt"));
 
    Path p7(QString("dir/.file.txt")); // (Hidden file).
    QCOMPARE(p7.toString(), QString("dir/.file.txt"));
@@ -261,6 +267,19 @@ void Tests::path()
    QCOMPARE(p7.getExtension(), QString("txt"));
    QCOMPARE(p7.getLastDir(), QString("dir"));
    QCOMPARE(p7.getLastElement(), QString(".file.txt"));
+   QCOMPARE(p7.getLastElement(true), QString(".file.txt"));
+
+   Path p7b(QString("file.txt")); // (simple file).
+   QCOMPARE(p7b.toString(), QString("file.txt"));
+   QCOMPARE(p7b.isFile(), true);
+   QCOMPARE(p7b.isAbsolute(), false);
+   QCOMPARE(p7b.getRoot(), QString());
+   QCOMPARE(p7b.getDirs(), (QStringList()));
+   QCOMPARE(p7b.getFilename(), QString("file.txt"));
+   QCOMPARE(p7b.getExtension(), QString("txt"));
+   QCOMPARE(p7b.getLastDir(), QString());
+   QCOMPARE(p7b.getLastElement(), QString("file.txt"));
+   QCOMPARE(p7b.getLastElement(true), QString("file.txt"));
 
    Path p8 = p4;
    Path p9 = p6;

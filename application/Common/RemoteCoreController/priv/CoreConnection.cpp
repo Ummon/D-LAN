@@ -179,6 +179,11 @@ QSharedPointer<IBrowseResult> CoreConnection::browse(const Common::Hash& peerID,
    return this->current().browse(peerID, entries, withRoots, this->SOCKET_TIMEOUT);
 }
 
+QSharedPointer<ILocalBrowseResult> CoreConnection::localBrowse(const QString& path)
+{
+   return this->current().localBrowse(path, this->SOCKET_TIMEOUT);
+}
+
 QSharedPointer<ISearchResult> CoreConnection::search(const Protos::Common::FindPattern& findPattern, bool local)
 {
    return this->current().search(findPattern, local, this->SOCKET_TIMEOUT);

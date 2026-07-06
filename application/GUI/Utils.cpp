@@ -32,70 +32,40 @@ using namespace GUI;
 #include <QLabel>
 
 #include <Settings/RemoteFileDialog.h>
+#include <RemoteBrowseDialog/RemoteBrowseDialog.h>
 #include <Constants.h>
 
 /**
   * Ask the user to choose one or more directories/files.
   * TODO: browse the remotes directories (Core) not the local ones.
   */
-QStringList Utils::askForDirectoriesOrFiles(QSharedPointer<RCC::ICoreConnection> coreConnection)
+QStringList Utils::askForDirectoriesOrFiles(
+   QWidget* parent,
+   QSharedPointer<RCC::ICoreConnection> coreConnection,
+   const QString& title
+)
 {
-   // if (coreConnection->isLocal())
-   // {
-
-   QFileDialog fileDialog(0, QObject::tr("Choose directories or files"));
-   fileDialog.setOption(QFileDialog::DontUseNativeDialog);
-   fileDialog.setViewMode(QFileDialog::Detail);
-   fileDialog.setFileMode(QFileDialog::ExistingFiles);
-
-   QObject::connect(
-      &fileDialog,
-      &QFileDialog::currentChanged,
-      &fileDialog,
-      [&fileDialog](const QString& path)
-      {
-         QFileInfo info(path);
-         fileDialog.setFileMode(info.isDir() ? QFileDialog::Directory : QFileDialog::ExistingFile);
-      }
-   );
-
-   if (auto* list = fileDialog.findChild<QListView*>("listView"))
-       list->setSelectionMode(QAbstractItemView::ExtendedSelection);
-   if (auto* tree = fileDialog.findChild<QTreeView*>())
-       tree->setSelectionMode(QAbstractItemView::ExtendedSelection);
-
-   if (fileDialog.exec())
-   {
-      return fileDialog.selectedFiles();
-   }
-
-   return QStringList();
-
-   // }
-   // else
-   // {
-   //    RemoteFileDialog fileDialog;
-   //    fileDialog.setWindowTitle("Remote directory");
-   //    fileDialog.setText("Remote directory to share: ");
-   //    if (fileDialog.exec())
-   //    {
-   //       return QStringList() << fileDialog.getFolder();
-   //    }
-   //    return QStringList();
-   // }
+   RemoteBrowseDialog dialog(coreConnection, parent);
+   dialog.setWindowTitle(title.isEmpty() ? QObject::tr("Select one or more directories and/or files") : title);
+   if (dialog.exec() == QDialog::Accepted)
+      return dialog.getSelectedPaths();
+   else
+      return QStringList();
 }
 
-QStringList Utils::askForDirectoriesToDownloadTo(QSharedPointer<RCC::ICoreConnection> coreConnection)
+QString Utils::askForADirectoryToDownloadTo(QWidget* parent, QSharedPointer<RCC::ICoreConnection> coreConnection)
 {
-   //return Utils::askForDirectories(coreConnection, "<img src=\":/icons/resources/information.svg\" /> <strong>" + QObject::tr("The downloading file will be shared") + "</strong>");
-   //return Utils::askForDirectoriesOrFiles(coreConnection); // TODO: take the code from 'askForDirectoriesOrFiles',
-   /*
-   QGridLayout* layout = fileDialog.findChild<QGridLayout*>();
-   QLabel* label = new QLabel(message, &fileDialog);
-   layout->addWidget(label, layout->rowCount(), 0, 1, -1, Qt::AlignLeft | Qt::AlignVCenter);
-   */
+   RemoteBrowseDialog dialog(coreConnection, parent);
+   dialog.setWindowTitle(QObject::tr("Select a directory where to download to"));
+   dialog.setModes(RemoteBrowseDialog::DIR);
+   if (dialog.exec() == QDialog::Accepted)
+   {
+      const auto& selectedPath = dialog.getSelectedPaths();
+      if (!selectedPath.isEmpty())
+         return selectedPath.constFirst();
+   }
 
-   return QStringList();
+   return QString();
 }
 
 QString Utils::emoticonsDirectoryPath()

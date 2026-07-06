@@ -18,25 +18,25 @@
   
 #pragma once
 
-#ifdef Q_OS_WIN32
-   #include <windows.h>
-#endif
+#include <google/protobuf/repeated_field.h>
 
-#include <QCoreApplication>
+#include <Protos/gui_protocol.pb.h>
 
-class CoreApplication : public QCoreApplication
+#include <Common/Timeoutable.h>
+
+namespace RCC
 {
-   Q_OBJECT
+   class ILocalBrowseResult : public Common::Timeoutable
+   {
+      Q_OBJECT
+   protected:
+      ILocalBrowseResult(int time) : Common::Timeoutable(time) {}
 
-public:
-   CoreApplication(int& argc, char** argv);
+   public:
+      virtual ~ILocalBrowseResult() {}
+      virtual void start() = 0;
 
-   bool notify(QObject* receiver, QEvent* event) override;
-
-/*#ifdef Q_OS_WIN32
-   bool winEventFilter(MSG* msg, long* result);
-#endif*/
-
-/*signals:
-   void resumeFromLowPowerState();*/
-};
+   signals:
+      void result(const google::protobuf::RepeatedPtrField<Protos::GUI::LocalBrowseResult::Entry>&);
+   };
+}

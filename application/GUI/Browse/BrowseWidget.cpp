@@ -166,15 +166,10 @@ void BrowseWidget::entryDoubleClicked(const QModelIndex& index)
 void BrowseWidget::download()
 {
    if (this->browseModel.nbSharedDirs() == 0)
-   {
-      QStringList dirs = Utils::askForDirectoriesToDownloadTo(this->coreConnection);
-      if (!dirs.isEmpty())
-         this->downloadTo(dirs.first());
-      return;
-   }
-
-   for (const auto& index : this->ui->treeView->selectionModel()->selectedRows())
-      this->coreConnection->download(this->peerID, this->browseModel.getEntry(index));
+      this->downloadTo();
+   else
+      for (const auto& index : this->ui->treeView->selectionModel()->selectedRows())
+         this->coreConnection->download(this->peerID, this->browseModel.getEntry(index));
 }
 
 /**
@@ -182,9 +177,9 @@ void BrowseWidget::download()
   */
 void BrowseWidget::downloadTo()
 {
-   QStringList dirs = Utils::askForDirectoriesToDownloadTo(this->coreConnection);
-   if (!dirs.isEmpty())
-      this->downloadTo(dirs.first());
+   QString dir = Utils::askForADirectoryToDownloadTo(this, this->coreConnection);
+   if (!dir.isEmpty())
+      this->downloadTo(dir);
 }
 
 /**
