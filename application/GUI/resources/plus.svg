@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 64 64" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g transform="matrix(1,0,0,1,-158,-232)">
+        <g id="plus" transform="matrix(1,0,0,1,-222,74)">
+            <g transform="matrix(0.177329,0,0,0.205729,330.258148,85.999996)">
+                <rect x="280.506" y="349.975" width="360.911" height="311.089" style="fill:none;"/>
+            </g>
+            <g id="Icon-Set-Filled" transform="matrix(1.766685,0,0,1.766685,-255.806876,-1670.319154)">
+                <path id="plus1" serif:id="plus" d="M390,1049L382,1049L382,1041C382,1038.79 380.209,1037 378,1037C375.791,1037 374,1038.79 374,1041L374,1049L366,1049C363.791,1049 362,1050.79 362,1053C362,1055.21 363.791,1057 366,1057L374,1057L374,1065C374,1067.21 375.791,1069 378,1069C380.209,1069 382,1067.21 382,1065L382,1057L390,1057C392.209,1057 394,1055.21 394,1053C394,1050.79 392.209,1049 390,1049" style="fill:white;stroke:black;stroke-width:1.7px;"/>
+            </g>
+        </g>
+    </g>
+</svg>
