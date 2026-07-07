@@ -26,6 +26,7 @@ message Queue {
       string peer_source_nick = 4;
 
       Status status = 5; // [default = QUEUED] Only valid for Common.Entry.type == FILE.
+      repeated int32 known_bytes = 6; // Known bytes per chunk. Only for file.
    }
 
    uint32 version = 1;

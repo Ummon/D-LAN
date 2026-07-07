@@ -180,12 +180,18 @@ void FileDownload::populateQueueEntry(Protos::Queue::Queue::Entry* entry) const
 {
    Download::populateQueueEntry(entry);
 
+   entry->clear_known_bytes();
+
    for (int i = 0; i < this->chunkDownloaders.size() && i < entry->remote_entry().chunks_size(); i++)
+   {
       if (entry->remote_entry().chunks(i).hash().size() == 0 && !this->chunkDownloaders[i].isNull())
          entry->mutable_remote_entry()->mutable_chunks(i)->set_hash(
             this->chunkDownloaders[i]->getHash().getData(),
             Common::Hash::HASH_SIZE
          );
+
+      entry->add_known_bytes(this->chunkDownloaders[i]->getDownloadedBytes());
+   }
 }
 
 quint64 FileDownload::getDownloadedBytes() const

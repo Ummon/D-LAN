@@ -72,6 +72,12 @@ namespace FM
          const QList<Common::Hash>& hashes
       ) const override;
 
+      void setHashesAndKnownBytesToUnfinishedFile(
+         const Protos::Common::Entry& localEntry,
+         const QList<Common::Hash>& hashes,
+         const QList<int> knownBytes
+      ) override;
+
       QList<QSharedPointer<IChunk>> newFile(Protos::Common::Entry& entry) override;
       void newDirectory(Protos::Common::Entry& entry) override;
       QSharedPointer<IGetHashesResult> getHashes(const Protos::Common::Entry& file) override;

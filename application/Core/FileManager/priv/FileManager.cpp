@@ -179,6 +179,40 @@ QList<QSharedPointer<IChunk>> FileManager::getAllChunks(
    return QList<QSharedPointer<IChunk>>();
 }
 
+void FileManager::setHashesAndKnownBytesToUnfinishedFile(
+   const Protos::Common::Entry& localEntry,
+   const QList<Common::Hash>& hashes,
+   const QList<int> knownBytes
+)
+{
+   Protos::Common::Entry localEntryCopy(localEntry);
+
+   const QString entryName = QString::fromStdString(localEntryCopy.name());
+   if (!Global::isFileUnfinished(entryName))
+   {
+      const QString entryNameUnfinished = entryName + Global::getUnfinishedSuffix();
+      localEntryCopy.set_name(entryNameUnfinished.toStdString());
+   }
+
+   File* file = this->cache.getFile(localEntryCopy);
+   if (file)
+   {
+      auto chunks = file->getChunks();
+      for (int i = 0; i < chunks.size() && i < hashes.size() && i < knownBytes.size(); ++i)
+      {
+         if (!hashes[i].isNull())
+            chunks[i]->setHash(hashes[i], false);
+
+         if (knownBytes[i] > 0)
+         {
+            chunks[i]->setKnownBytes(knownBytes[i]);
+            if (chunks[i]->isComplete())
+               file->chunkComplete(chunks[i].data());
+         }
+      }
+   }
+}
+
 QList<QSharedPointer<IChunk>> FileManager::newFile(Protos::Common::Entry& entry)
 {
    return this->cache.newFile(entry);
@@ -507,17 +541,12 @@ void FileManager::chunkHashKnown(const QSharedPointer<Chunk>& chunk)
 {
    L_DEBU(QString("Adding chunk '%1' to the index . . .").arg(chunk->getHash().toStrShort()));
    this->chunks.add(chunk);
-   L_DEBU("Chunk added to the index");
-
-   // this->setCacheChanged();
 }
 
 void FileManager::chunkRemoved(const QSharedPointer<Chunk>& chunk)
 {
    L_DEBU(QString("Removing chunk '%1' from the index . . .").arg(chunk->getHash().toStrShort()));
    this->chunks.rm(chunk);
-   L_DEBU("Chunk removed from the index");
-   // this->setCacheChanged();
 }
 
 void FileManager::setInitialFileCacheScanningComplete()

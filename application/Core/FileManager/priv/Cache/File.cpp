@@ -198,13 +198,8 @@ void File::setToUnfinished(qint64 size, const QList<Common::Hash>& hashes)
    this->createPhysicalFile();
 }
 
-// Directory* File::createSubDirs(const QStringList& names, bool physically)
-// {
-//    return this->parentDirectory->createSubDirs(names, physically);
-// }
-
 /**
-  * If all hashes are known, save them to the hash cache.
+  * If all hashes are known, save them to the hash cache. Only completed files hashes are saved.
   */
 void File::saveHashes()
 {
@@ -212,10 +207,6 @@ void File::saveHashes()
 
    if (!this->complete)
       return;
-
-   for (const auto& chunk : std::as_const(this->chunks))
-      if (!chunk->hasHash())
-         return;
 
    QList<Common::Hash> hashes;
    for (const auto& chunk : std::as_const(this->chunks))
@@ -229,75 +220,15 @@ void File::loadHashes()
    QMutexLocker locker(&this->mutex);
 
    const QList<Common::Hash> hashes =
-      this->getCache()->getHashCache()->getHashes(this->getAbsolutePath(), this->dateLastModified);
+      this->getCache()->getHashCache()->getHashes(
+         this->getAbsolutePath(),
+         this->dateLastModified
+      );
 
    this->setHashes(hashes);
-
-   // if (hashes.size() != this->chunks.size())
-   // {
-   //    L_DEBU(
-   //       QString("[loadHashes] Number of hashes in cache (%1) doesn't match the one (%2) in file %3")
-   //          .arg(hashes.size())
-   //          .arg(this->chunks.size())
-   //          .arg(this->getAbsolutePath())
-   //    );
-   //    return;
-   // }
-
-   // for (int i = 0; i < hashes.size(); ++i)
-   //    this->chunks[i]->setHash(hashes[i], false);
 }
 
 /**
-  * Restore the data stored in a protocol buffer structure.
-  * @return 'true' if the file match the given data or 'false' otherwise.
-  */
-// bool File::restoreFromFileCache(const Protos::FileCache::Hashes::File& file)
-// {
-//    if (
-//       static_cast<qint64>(file.size()) == this->getSize() &&
-//       Common::ProtoHelper::getStr(file, &Protos::FileCache::Hashes_File::filename) == this->getName() &&
-//          (
-//             Global::isFileUnfinished(this->getName()) ||
-//             (qint64)file.date_last_modified() == this->getDateLastModified().toMSecsSinceEpoch() // We test the date only for finished files.
-//           ) &&
-//       this->chunks.size() == file.chunk_size()
-//    )
-//    {
-//       L_DEBU(QString("Restoring file '%1' from the file cache").arg(this->getFullPath()));
-
-//       for (int i = 0; i < file.chunk_size(); i++)
-//       {
-//          this->chunks[i]->restoreFromFileCache(file.chunk(i));
-//          if (this->chunks[i]->hasHash())
-//          {
-//             if (this->chunks[i]->getKnownBytes() > 0)
-//                this->cache->onChunkHashKnown(this->chunks[i]);
-//          }
-//       }
-
-//       return true;
-//    }
-//    return false;
-// }
-
-/*
-void File::populateHashesFile(Protos::FileCache::Hashes_File& fileToFill) const
-{
-   QMutexLocker locker(&this->mutex);
-
-   Common::ProtoHelper::setStr(fileToFill, &Protos::FileCache::Hashes_File::set_filename, this->name);
-   fileToFill.set_size(this->getSize());
-   fileToFill.set_date_last_modified(this->getDateLastModified().toMSecsSinceEpoch());
-
-   for (QListIterator<QSharedPointer<Chunk>> i(this->chunks); i.hasNext();)
-   {
-      Protos::FileCache::Hashes_Chunk* chunk = fileToFill.add_chunk();
-      i.next()->populateHashesChunk(*chunk);
-   }
-}*/
-
- /*
   * Will add the hashes to the entry.
   */
 void File::populateEntry(Protos::Common::Entry* entry, bool setSharedDir) const
@@ -332,7 +263,7 @@ bool File::matchesEntry(const Protos::Common::Entry& entry) const
 
    return
       this->getRoot()->getId() == entry.shared_entry().id().hash() &&
-      this->getRelativePath() == Common::ProtoHelper::getPath(entry) &&
+      this->getRelativePath().getDirs() == Common::ProtoHelper::getPath(entry).getDirs() &&
       this->getSize() == static_cast<qint64>(entry.size()) &&
       Global::removeUnfinishedSuffix(this->getName()) ==
          Global::removeUnfinishedSuffix(QString::fromStdString(entry.name()));
@@ -680,6 +611,8 @@ void File::removeUnfinishedFiles()
       this->fileInReadMode = nullptr;
       this->fileInWriteMode = nullptr;
 
+      // this->getCache()->getHashCache()->rmHashes(this->getAbsolutePath());
+
       if (!QFile::remove(this->getAbsolutePath()))
          L_WARN(QString("File::removeUnfinishedFiles(): unable to delete an unfinished file: %1").arg(this->getAbsolutePath()));
    }
@@ -752,7 +685,8 @@ void File::setAsComplete()
       {
          this->complete.store(true, std::memory_order_release);
          this->dateLastModified = QFileInfo(newPath).lastModified();
-         this->name = Global::removeUnfinishedSuffix(this->name);         
+         this->name = Global::removeUnfinishedSuffix(this->name);
+         // this->getCache()->getHashCache()->rmHashes(oldPath);
          this->saveHashes();
          this->getCache()->onEntryAdded(this); // To add the name to the index. (a bit tricky).
       }
@@ -848,23 +782,6 @@ void FileForHasher::updateDateLastModified(const QDateTime& date)
    QMutexLocker locker(&this->mutex);
    this->dateLastModified = date;
 }
-
-// void FileForHasher::addChunk(const QSharedPointer<Chunk>& chunk)
-// {
-//    QMutexLocker locker(&this->mutex);
-//    this->chunks << chunk;
-// }
-
-// QSharedPointer<Chunk> FileForHasher::removeLastChunk()
-// {
-//    QMutexLocker locker(&this->mutex);
-//    if (this->chunks.isEmpty())
-//       return QSharedPointer<Chunk>();
-
-//    QSharedPointer<Chunk> chunk = this->chunks.last();
-//    this->chunks.remove(this->chunks.size() - 1);
-//    return chunk;
-// }
 
 /////
 

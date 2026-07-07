@@ -100,6 +100,8 @@ namespace FM
 
       virtual int getKnownBytes() const = 0;
 
+      virtual void setKnownBytes(int bytes) = 0;
+
       virtual int getChunkSize() const = 0;
 
       /**

@@ -62,12 +62,8 @@ namespace FM
 
       void setToUnfinished(qint64 size, const QList<Common::Hash>& hashes = QList<Common::Hash>());
 
-      // Directory* createSubDirs(const QStringList& names, bool physically = false);
-
       void saveHashes();
       void loadHashes();
-      // bool restoreFromFileCache(const Protos::FileCache::Hashes::File& file);
-      // void populateHashesFile(Protos::FileCache::Hashes_File& fileToFill) const;
 
       void populateEntry(Protos::Common::Entry* entry, bool setSharedDir = false) const override;
       void populateEntry(Protos::Common::Entry* entry, bool setSharedDir, int maxHashes) const;
@@ -110,7 +106,6 @@ namespace FM
 
       void moveInto(Directory* directory) override;
 
-      // void changeDirectory(Directory* dir);
       bool hasAParentDir(Directory* dir);
 
    private:
@@ -127,7 +122,7 @@ namespace FM
       QDateTime dateLastModified;
 
    private:
-      // 'atomic' to avoid using the mutext in 'isComplete()', it can cause deadlocks when called by 'FileUpdater'.
+      // 'atomic' to avoid using the mutex in 'isComplete()', it can cause deadlocks when called by 'FileUpdater'.
       std::atomic<bool> complete;
 
       quint16 numDataWriter;
@@ -146,8 +141,6 @@ namespace FM
    {
    public:
       void updateDateLastModified(const QDateTime& date);
-      // void addChunk(const QSharedPointer<Chunk>& chunk);
-      // QSharedPointer<Chunk> removeLastChunk();
    };
 
    class FileIterator

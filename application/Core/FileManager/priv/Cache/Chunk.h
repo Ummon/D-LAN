@@ -79,8 +79,8 @@ namespace FM
       void setHash(const Common::Hash& hash) override;
       void setHash(const Common::Hash& hash, bool saveHashes);
 
-      int getKnownBytes() const override;
-      void setKnownBytes(int bytes);
+      int getKnownBytes() const override;      
+      void setKnownBytes(int bytes) override;
 
       int getChunkSize() const override;
       bool isComplete() const override;

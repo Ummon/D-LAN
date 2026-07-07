@@ -95,6 +95,12 @@ namespace FM
          const QList<Common::Hash>& hashes
       ) const = 0;
 
+      virtual void setHashesAndKnownBytesToUnfinishedFile(
+         const Protos::Common::Entry& localEntry,
+         const QList<Common::Hash>& hashes,
+         const QList<int> knownBytes
+      ) = 0;
+
       /**
         * Create a new empty file.
         * If 'entry.shared_dir' isn't defined it will take the shared directory which has enough storage space and
