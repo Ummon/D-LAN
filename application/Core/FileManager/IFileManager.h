@@ -186,7 +186,7 @@ namespace FM
       /**
         * Return the amount of shared data.
         */
-      virtual quint64 getAmount() = 0;
+      virtual qint64 getAmount() = 0;
 
       enum CacheStatus {
          INITIAL_SCANNING_IN_PROGRESS = 0,

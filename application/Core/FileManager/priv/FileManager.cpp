@@ -102,8 +102,6 @@ FileManager::FileManager(QSharedPointer<HC::IHashCache> hashCache) :
 
 FileManager::~FileManager()
 {
-   L_DEBU("~FileManager: Stopping the file updater . . .");
-   this->fileUpdater.stop();
    this->cache.disconnect(this);
    L_DEBU("FileManager deleted");
 }
@@ -339,7 +337,7 @@ QBitArray FileManager::haveChunks(const QList<Common::Hash>& hashes)
    return result;
 }
 
-quint64 FileManager::getAmount()
+qint64 FileManager::getAmount()
 {
    return this->cache.getAmount();
 }

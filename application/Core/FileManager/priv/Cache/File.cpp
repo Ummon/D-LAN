@@ -187,7 +187,7 @@ void File::setToUnfinished(qint64 size, const QList<Common::Hash>& hashes)
 
    this->getCache()->getHashCache()->rmHashes(this->getAbsolutePath());
 
-   this->complete = false;
+   this->complete.store(false, std::memory_order_release);
    this->getCache()->onEntryRemoved(this);
    this->name.append(Global::getUnfinishedSuffix());
    this->setSize(size);
@@ -572,6 +572,7 @@ qint64 File::read(char* buffer, qint64 offset, int maxBytesToRead)
 
 QList<QSharedPointer<Chunk>> File::getChunks() const
 {
+   QMutexLocker locker(&this->mutex);
    return this->chunks;
 }
 
@@ -602,9 +603,7 @@ bool File::hasOneOrMoreHashes() const
   */
 bool File::isComplete() const
 {
-   QMutexLocker locker(&this->mutex);
-
-   return this->complete;
+   return this->complete.load(std::memory_order_acquire);
 }
 
 void File::chunkComplete(const Chunk* chunk)
@@ -751,7 +750,7 @@ void File::setAsComplete()
       }
       else
       {
-         this->complete = true;
+         this->complete.store(true, std::memory_order_release);
          this->dateLastModified = QFileInfo(newPath).lastModified();
          this->name = Global::removeUnfinishedSuffix(this->name);         
          this->saveHashes();

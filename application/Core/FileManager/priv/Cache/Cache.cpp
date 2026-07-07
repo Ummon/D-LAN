@@ -664,11 +664,11 @@ void Cache::populateHashes(Protos::FileCache::Hashes& hashes) const
 }
 */
 
-quint64 Cache::getAmount() const
+qint64 Cache::getAmount() const
 {
    QMutexLocker locker(&this->mutex);
 
-   quint64 amount = 0;
+   qint64 amount = 0;
    for (auto sharedEntry : this->sharedEntries)
       amount += sharedEntry->getRootEntry()->getSize();
    return amount;

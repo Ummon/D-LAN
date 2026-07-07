@@ -127,7 +127,8 @@ namespace FM
       QDateTime dateLastModified;
 
    private:
-      bool complete;
+      // 'atomic' to avoid using the mutext in 'isComplete()', it can cause deadlocks when called by 'FileUpdater'.
+      std::atomic<bool> complete;
 
       quint16 numDataWriter;
       quint16 numDataReader;

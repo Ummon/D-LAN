@@ -83,7 +83,7 @@ namespace FM
 
       Directory* getFittestDirectory(const Common::Path& path) const;
 
-      quint64 getAmount() const;
+      qint64 getAmount() const;
 
       FilePool& getFilePool() { return this->filePool; }
       QSharedPointer<HC::IHashCache> getHashCache() { return this->hashCache; }

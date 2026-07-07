@@ -156,7 +156,7 @@ bool FileHasher::start(FileForHasher* fileCache, int n, int* amountHashed)
                this->toStopHashing = false;
                this->hashing = false;
                this->currentFileCache = 0;
-               L_ERRO(QString("Error during reading the file %1").arg(filePath));
+               L_ERRO(QString("Error when reading the file %1").arg(filePath));
                throw IOErrorException();
             case 0:
                endOfFile = true;

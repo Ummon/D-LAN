@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include <atomic>
+
 #include <QThread>
 #include <QWaitCondition>
 #include <QMutex>
@@ -88,7 +90,7 @@ namespace FM
       FileManager* fileManager;
       DirWatcher* dirWatcher;
 
-      bool toStop; ///< Set to true when the service must be stopped.
+      std::atomic<bool> toStop; ///< Set to true when the service must be stopped.
 
       int progress;
 
@@ -101,11 +103,12 @@ namespace FM
       QList<Entry*> entriesToScan; ///< When something change in a directory or in a file we put it in this list until it is scanned.
       Entry* currentScanningEntry;
 
-      QWaitCondition scanningStopped;
+      QWaitCondition scanningStopped;      
       mutable QMutex scanningMutex;
+      std::atomic<bool> scanAbortRequested { false };
 
       mutable QMutex hashingMutex;
-      bool toStopHashing;
+      std::atomic<bool> toStopHashing;
       FileHasher fileHasher;
 
       QList<Entry*> rootEntriesToRemove;

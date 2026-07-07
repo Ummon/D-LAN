@@ -57,6 +57,8 @@ FileUpdater::FileUpdater(FileManager* fileManager) :
 
 FileUpdater::~FileUpdater()
 {
+   this->stop();
+
    if (this->dirEvent)
       delete this->dirEvent;
 
@@ -120,8 +122,10 @@ void FileUpdater::addRoot(SharedEntry* sharedEntry)
   */
 void FileUpdater::rmRoot(SharedEntry* sharedEntry, Directory* dir)
 {
+   Entry* root = sharedEntry->getRootEntry();
+
    // If there is a scan for this directory stop it.
-   this->stopScanning(sharedEntry->getRootEntry());
+   this->stopScanning(root);
 
    QMutexLocker locker(&this->mutex);
 
@@ -133,14 +137,14 @@ void FileUpdater::rmRoot(SharedEntry* sharedEntry, Directory* dir)
       this->toStopHashing = true;
 
       // TODO: Find a more elegant way!
-      Directory* rootDirectory = dynamic_cast<Directory*>(sharedEntry->getRootEntry());
+      Directory* rootDirectory = dynamic_cast<Directory*>(root);
       if (dir && rootDirectory)
          dir->stealContent(rootDirectory);
 
-      this->removeFromFilesWithoutHashes(sharedEntry->getRootEntry());
-      this->removeFromEntriesToScan(dir);
-      this->unwatchableEntries.removeOne(dir);
-      this->rootEntriesToRemove << sharedEntry->getRootEntry();
+      this->removeFromFilesWithoutHashes(root);
+      this->removeFromEntriesToScan(root);
+      this->unwatchableEntries.removeOne(root);
+      this->rootEntriesToRemove << root;
    }
 
    this->dirEvent->release();
@@ -187,7 +191,7 @@ bool FileUpdater::isScanning() const
 
 bool FileUpdater::isHashing() const
 {
-   QMutexLocker locker(&this->mutex);
+   QMutexLocker locker(&this->hashingMutex);
    return !this->filesWithoutHashes.isEmpty() || !this->filesWithoutHashesPrioritized.isEmpty();
 }
 
@@ -237,7 +241,7 @@ void FileUpdater::run()
 
       // If there is no watcher capability or no directory to watch then
       // we wait for an added directory.
-      if (!this->dirWatcher || this->dirWatcher->nbWatchedPath() == 0 || !this->entriesToScan.empty())
+      if (!this->dirWatcher || this->dirWatcher->nbWatchedPath() == 0 || !this->entriesToScan.isEmpty())
       {
          if (
             this->entriesToScan.isEmpty() &&
@@ -260,7 +264,10 @@ void FileUpdater::run()
          Entry* nextEntryToScan = nullptr;
          this->mutex.lock();
          if (!this->entriesToScan.isEmpty())
+         {
             nextEntryToScan = this->entriesToScan.takeLast();
+            this->currentScanningEntry = nextEntryToScan;
+         }
          this->mutex.unlock();
 
          // Synchronize the new directory.
@@ -371,7 +378,12 @@ void FileUpdater::computeSomeHashes()
                // Be careful of methods 'prioritizeAFileToHash(..)' and 'rmRoot(..)' called concurrently here.
                // We ask to compute the next unknown chunk (only one).
                gotAllHashes = this->fileHasher.start(nextFileToHash->asFileForHasher(), 1, &hashedAmount);
-               this->remainingSizeToHash -= hashedAmount;
+
+               {
+                  QMutexLocker locker(&this->mutex);
+                  this->remainingSizeToHash -= hashedAmount;
+               }
+
                this->updateHashingProgress();
             }
             catch (IOErrorException&)
@@ -395,6 +407,7 @@ void FileUpdater::computeSomeHashes()
          }
          else
          {
+            QMutexLocker locker(&this->mutex);
             this->remainingSizeToHash -= fileList->first()->getSize();
             fileList->removeFirst();
          }
@@ -420,16 +433,20 @@ end:
       .arg(this->filesWithoutHashesPrioritized.size())
    );
 
-   if (this->filesWithoutHashes.isEmpty() && this->filesWithoutHashesPrioritized.isEmpty())
    {
-      this->remainingSizeToHash = 0;
-      this->progress = 0;
+      QMutexLocker locker(&this->mutex);
+      if (this->filesWithoutHashes.isEmpty() && this->filesWithoutHashesPrioritized.isEmpty())
+      {
+         this->remainingSizeToHash = 0;
+         this->progress = 0;
+      }
    }
 }
 
 void FileUpdater::updateHashingProgress()
 {
-   const quint64 totalAmountOfData = this->fileManager->getAmount();
+   const qint64 totalAmountOfData = this->fileManager->getAmount();
+
    QMutexLocker locker(&this->mutex);
    this->progress = totalAmountOfData == 0 ? 0 : 10000LL * (totalAmountOfData - this->remainingSizeToHash) / totalAmountOfData;
 }
@@ -480,20 +497,20 @@ void FileUpdater::scan(Entry* entry, bool addUnfinished)
          QList<Directory*> currentSubDirs = currentDir->getSubDirs();
          QList<File*> currentFiles = currentDir->getCompleteFiles(); // We don't care about the unfinished files.
 
-          // TODO: Add an option to follow or not symlinks.
-         foreach (
-            QFileInfo fileInfo,
+         // TODO: Add an option to follow or not symlinks.
+         for (
+            const QFileInfo& fileInfo :
             QDir(currentDir->getAbsolutePath()).entryInfoList(
                QDir::AllEntries | QDir::NoDotAndDotDot | QDir::NoSymLinks | QDir::Hidden
             )
          )
          {
-            QMutexLocker locker(&this->scanningMutex);
-
-            if (!this->currentScanningEntry || this->toStop)
+            if (this->scanAbortRequested.load(std::memory_order_relaxed) || this->toStop)
             {
+               QMutexLocker locker(&this->scanningMutex);
                L_DEBU(QString("Scanning aborted: %1").arg(currentDir->getAbsolutePath()));
                this->currentScanningEntry = nullptr;
+               this->scanAbortRequested.store(false, std::memory_order_relaxed);
                this->scanningStopped.wakeOne();
                return;
             }
@@ -525,6 +542,7 @@ void FileUpdater::scan(Entry* entry, bool addUnfinished)
 
    this->scanningMutex.lock();
    this->currentScanningEntry = nullptr;
+   this->scanAbortRequested.store(false, std::memory_order_relaxed);
    this->scanningStopped.wakeOne();
    this->scanningMutex.unlock();
 
@@ -588,16 +606,18 @@ File* FileUpdater::addScannedFile(const QFileInfo& fileInfo, File* file, Directo
 }
 
 /**
-  * If you omit 'sharedEntry' then all scanning will be removed
+  * If you omit 'entry' then all scanning will be removed
   * from the queue.
   */
 void FileUpdater::stopScanning(Entry* entry)
 {
    QMutexLocker scanningLocker(&this->scanningMutex);
+
    if (!entry && this->currentScanningEntry || entry && this->currentScanningEntry == entry)
    {
-      this->currentScanningEntry = nullptr;
-      this->scanningStopped.wait(&this->scanningMutex);
+      this->scanAbortRequested.store(true, std::memory_order_relaxed);
+      while (this->currentScanningEntry != nullptr)
+         this->scanningStopped.wait(&this->scanningMutex);
    }
    else
    {
@@ -647,6 +667,8 @@ void FileUpdater::removeFromEntriesToScan(Entry* entry)
   */
 void FileUpdater::removeFromFilesWithoutHashes(Entry* entry)
 {
+   QMutexLocker locker(&this->mutex);
+
    if (Directory* dir = dynamic_cast<Directory*>(entry))
    {
       for (QMutableListIterator<File*> i(this->filesWithoutHashes); i.hasNext();)
@@ -668,11 +690,22 @@ void FileUpdater::removeFromFilesWithoutHashes(Entry* entry)
             i.remove();
          }
       }
+
+      for (QMutableListIterator<File*> i(this->filesWithoutHashesIOError); i.hasNext();)
+      {
+         File* f = i.next();
+         if (f->hasAParentDir(dir))
+         {
+            this->remainingSizeToHash -= f->getSize();
+            i.remove();
+         }
+      }
    }
    else if (File* file = dynamic_cast<File*>(entry))
    {
       bool fileInAList = this->filesWithoutHashes.removeOne(file);
       fileInAList |= this->filesWithoutHashesPrioritized.removeOne(file);
+      fileInAList |= this->filesWithoutHashesIOError.removeOne(file);
 
       if (fileInAList)
          this->remainingSizeToHash -= file->getSize();
@@ -688,10 +721,14 @@ bool FileUpdater::processEvents(const QList<WatcherEvent>& events)
    if (events.isEmpty())
       return false;
 
-   foreach (WatcherEvent event, events)
+   bool timeout = false;
+   for (const WatcherEvent& event : events)
    {
       if (event.type == WatcherEvent::TIMEOUT)
-         return true;
+      {
+         timeout = true;
+         continue;
+      }
 
       // Unfinished files are ignored.
       if (Global::isFileUnfinished(event.path1))
@@ -768,12 +805,15 @@ bool FileUpdater::processEvents(const QList<WatcherEvent>& events)
             File* file = dynamic_cast<File*>(this->fileManager->getEntry(event.path1));
             if (file)
             {
+               QMutexLocker locker(&this->mutex);
                if (!this->entriesToScan.contains(file))
                   this->entriesToScan << file;
             }
             else
             {
                Directory* dir = this->fileManager->getFittestDirectory(event.path1);
+
+               QMutexLocker locker(&this->mutex);
                if (dir && !this->entriesToScan.contains(dir))
                   this->entriesToScan << dir;
             }
@@ -786,5 +826,5 @@ bool FileUpdater::processEvents(const QList<WatcherEvent>& events)
       }
    }
 
-   return false;
+   return timeout;
 }

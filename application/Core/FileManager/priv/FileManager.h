@@ -114,7 +114,7 @@ namespace FM
       ) override;
 
       QBitArray haveChunks(const QList<Common::Hash>& hashes) override;
-      quint64 getAmount() override;
+      qint64 getAmount() override;
       CacheStatus getCacheStatus() const override;
       int getProgress() const override;
 
