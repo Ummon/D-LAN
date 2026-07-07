@@ -209,6 +209,9 @@ void RemoteBrowseModel::resultTimeout()
 
 void RemoteBrowseModel::browse(Tree* tree)
 {
+   if (!this->localBrowseResult.isNull())
+      this->localBrowseResult->disconnect();
+
    this->localBrowseResult = this->coreConnection->localBrowse(tree->path());
    connect(this->localBrowseResult.data(), &RCC::ILocalBrowseResult::result, this, &RemoteBrowseModel::result);
    connect(this->localBrowseResult.data(), &Common::Timeoutable::timeout, this, &RemoteBrowseModel::resultTimeout);

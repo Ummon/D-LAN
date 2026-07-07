@@ -649,6 +649,7 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
          const Protos::GUI::LocalBrowse& browseMessage = message.getMessage<Protos::GUI::LocalBrowse>();
 
          Protos::GUI::LocalBrowseResult result;
+         result.set_tag(browseMessage.tag());
 
          const QString& path = QString::fromStdString(browseMessage.path());
 
