@@ -27,7 +27,8 @@ using namespace CoreSpace;
 CoreService::CoreService(bool resetSettings, QLocale locale, int argc, char** argv) :
    QtService<CoreApplication>(argc, argv, Common::Constants::SERVICE_NAME),
    core(new Core(resetSettings, locale)),
-   consoleSupport(false)
+   consoleSupport(false),
+   consoleReader(nullptr)
 {
    this->setServiceDescription(tr("A LAN file sharing system"));
    this->setStartupType(QtServiceController::ManualStartup);
@@ -50,6 +51,8 @@ CoreService::CoreService(bool resetSettings, QLocale locale, int argc, char** ar
 
 CoreService::~CoreService()
 {
+   delete this->consoleReader; // 'delete nullptr' is a no-op.
+
    delete this->core;
    this->core = nullptr;
 }
@@ -72,7 +75,7 @@ void CoreService::start()
 void CoreService::stop()
 {
    delete this->core;
-   this->core = 0;
+   this->core = nullptr;
 
    this->application()->quit();
 }

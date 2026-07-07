@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #pragma once
 
 #include <QObject>
@@ -57,6 +57,7 @@ namespace Common
       Q_OBJECT
    public:
       explicit ConsoleReader(QObject* parent = nullptr);
+      ~ConsoleReader();
 
    signals:
       void newLine(QString line);
@@ -80,10 +81,10 @@ namespace Common
       void readLine();
 
    signals:
-       void lineRead(const QString& line);
+      void lineRead(const QString& line);
 
    private:
-       QTextStream inputStream;
+      QTextStream inputStream;
    };
 }
 

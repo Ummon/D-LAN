@@ -14,7 +14,7 @@
   *
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
-  */  
+  */
 
 #include <Common/ConsoleReader.h>
 using namespace Common;
@@ -45,6 +45,8 @@ void ConsoleReader::inputAvailable()
 
 #elif defined Q_OS_WIN32
 
+#include <qt_windows.h>
+
 ConsoleReader::ConsoleReader(QObject* parent) :
    QObject(parent)
 {
@@ -56,6 +58,28 @@ ConsoleReader::ConsoleReader(QObject* parent) :
    this->readerThread.start();
 
    emit readNextLine();
+}
+
+ConsoleReader::~ConsoleReader()
+{
+   this->readerThread.quit();
+
+   // The reader thread is most likely blocked in a synchronous 'ReadFile'/'ReadConsole'
+   // call on stdin (inside 'QTextStream::readLine()'). 'quit()' only takes effect once
+   // the thread returns to its event loop, so we cancel the pending read to unblock it.
+   // Retried in a loop because a queued 'readNextLine' event may put the thread right
+   // back into a blocking read before the exit flag is honored.
+   for (int i = 0; !this->readerThread.wait(100); i++)
+   {
+      CancelIoEx(GetStdHandle(STD_INPUT_HANDLE), nullptr);
+
+      if (i >= 20) // ~2 s: give up and kill the thread, we are shutting down anyway.
+      {
+         this->readerThread.terminate();
+         this->readerThread.wait(500);
+         break;
+      }
+   }
 }
 
 void ConsoleReader::nextLine(QString line)
