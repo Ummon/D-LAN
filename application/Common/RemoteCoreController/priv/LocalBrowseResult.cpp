@@ -24,8 +24,9 @@ using namespace RCC;
 
 LocalBrowseResult::LocalBrowseResult(InternalCoreConnection* coreConnection, const QString& path, int socketTimeout) :
    ILocalBrowseResult(socketTimeout), coreConnection(coreConnection)
-{
+{   
    this->browseMessage.set_path(path.toStdString());
+   this->browseMessage.set_tag(QRandomGenerator64::global()->generate64());
    connect(this->coreConnection, &InternalCoreConnection::localBrowseResult, this, &LocalBrowseResult::browseResult);
 }
 
@@ -37,6 +38,9 @@ void LocalBrowseResult::start()
 
 void LocalBrowseResult::browseResult(const Protos::GUI::LocalBrowseResult& browseResult)
 {
+   if (browseResult.tag() != this->browseMessage.tag())
+      return;
+
    this->stopTimer();
    emit result(browseResult.entries());
 }

@@ -253,6 +253,7 @@ message BrowseResult {
 // id: 0x10F1
 message LocalBrowse {
    string path = 1; // If empty, the roots (drives) are returned.
+   uint64 tag = 2;
 }
 
 // Core -> GUI (directly)
@@ -270,6 +271,7 @@ message LocalBrowseResult {
    }
 
    repeated Entry entries = 1;
+   uint64 tag = 2;
 }
 
 
