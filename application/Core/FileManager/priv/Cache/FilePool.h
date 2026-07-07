@@ -23,10 +23,8 @@
 #include <QObject>
 #include <QMutex>
 #include <QFile>
-#include <QTime>
 #include <QTimer>
 #include <QElapsedTimer>
-#include <QScopedPointer>
 
 #include <Common/Uncopyable.h>
 
@@ -35,8 +33,8 @@ namespace FM
    class FilePool : public QObject, Common::Uncopyable
    {
       Q_OBJECT
-      static const int TIME_KEEP_FILE_OPEN_MIN = 1800; // [ms].
-      static const int TIME_RECHECK_TO_RELEASE = 1000; // [ms].
+      static constexpr int TIME_KEEP_FILE_OPEN_MIN = 1800; // [ms].
+      static constexpr int TIME_RECHECK_TO_RELEASE = 1000; // [ms].
 
    public:
       explicit FilePool(QObject* parent = nullptr);
@@ -59,7 +57,8 @@ namespace FM
       };
 
       static DWORD toCreateFileDesiredAccess(QIODevice::OpenMode mode);
-      static DWORD toCreateFileCreationDisposition(QIODevice::OpenMode mode);
+      static DWORD toCreateFileCreationDisposition(QIODevice::OpenMode mode);      
+      static int toCreateFileOpenHandleFlag(QIODevice::OpenMode mode);
 
       QList<OpenedFile> files;
       QMutex mutex;
@@ -73,7 +72,7 @@ namespace FM
      * if (!f)
      *    [..]
      */
-   class AutoReleasedFile
+   class AutoReleasedFile : Common::Uncopyable
    {
    public:
       AutoReleasedFile(

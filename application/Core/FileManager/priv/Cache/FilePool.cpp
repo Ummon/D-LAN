@@ -71,11 +71,21 @@ QFile* FilePool::open(const QString& path, QIODevice::OpenMode mode, bool* fileC
    {
       OpenedFile& file = i.next();
 
-      if (file.path == path && file.mode == mode && file.releasedTime.isValid())
+      if (file.path == path && file.releasedTime.isValid())
       {
-         L_DEBU(QString("FilePool::open(%1, %2): file already in pool").arg(path).arg(mode.toInt()));
-         file.releasedTime.invalidate();
-         return file.file;
+         if (file.mode != mode)
+         {
+            L_DEBU(QString("FilePool::open(%1, %2): file opened with different mode: closing existing").arg(path).arg(mode.toInt()));
+            delete file.file;
+            i.remove();
+            break;
+         }
+         else
+         {
+            L_DEBU(QString("FilePool::open(%1, %2): file already in pool").arg(path).arg(mode.toInt()));
+            file.releasedTime.invalidate();
+            return file.file;
+         }
       }
    }
 
@@ -92,6 +102,7 @@ QFile* FilePool::open(const QString& path, QIODevice::OpenMode mode, bool* fileC
          FILE_ATTRIBUTE_NORMAL,
          nullptr
       );
+   const DWORD lastError = GetLastError();
 
    if (h == INVALID_HANDLE_VALUE)
    {
@@ -99,22 +110,29 @@ QFile* FilePool::open(const QString& path, QIODevice::OpenMode mode, bool* fileC
          QString("FilePool::open(%1, %2): invalid handle, error: %3")
             .arg(path)
             .arg(mode.toInt())
-            .arg(GetLastError())
+            .arg(lastError)
       );
       return nullptr;
    }
 
-   int fd = _open_osfhandle(reinterpret_cast<intptr_t>(h), _O_RDWR);
+   int fd = _open_osfhandle(reinterpret_cast<intptr_t>(h), toCreateFileOpenHandleFlag(mode));
+   if (fd == -1)
+   {
+      CloseHandle(h);
+      return nullptr;
+   }
+
    QFile* file = new QFile();
 
-   if (fileCreated && mode.testFlag(QIODevice::WriteOnly) && !QFile::exists(path))
-      *fileCreated = true;
+   if (fileCreated && mode.testFlag(QIODevice::WriteOnly))
+      *fileCreated = lastError != ERROR_ALREADY_EXISTS;
 
    if (!file->open(fd, mode, QFileDevice::AutoCloseHandle))
    {
       if (fileCreated)
          *fileCreated = false;
       delete file;
+      _close(fd);
       return nullptr;
    }
 
@@ -242,11 +260,18 @@ DWORD FilePool::toCreateFileDesiredAccess(QIODevice::OpenMode mode)
       return GENERIC_READ;
 }
 
-
 DWORD FilePool::toCreateFileCreationDisposition(QIODevice::OpenMode mode)
 {
    if (mode.testFlag(QIODevice::ReadWrite))
       return OPEN_ALWAYS;
    else
       return OPEN_EXISTING;
+}
+
+int FilePool::toCreateFileOpenHandleFlag(QIODevice::OpenMode mode)
+{
+   if (mode.testFlag(QIODevice::ReadWrite))
+      return _O_RDWR;
+   else
+      return _O_RDONLY;
 }
