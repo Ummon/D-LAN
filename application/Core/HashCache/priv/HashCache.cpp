@@ -20,6 +20,8 @@ HashCache::HashCache(const QString& databaseFolder) :
    querySetHashes(this->db),
    queryRemoveHashes(this->db)
 {
+   QMutexLocker locker(&this->mutex);
+
    const QString DATABASE_FILEPATH = QString("%1/%2").arg(databaseFolder, Common::Constants::HASH_CACHE_INDEX_FILENAME);
    L_DEBU(QString("HashCashe database: %1").arg(DATABASE_FILEPATH));
 
@@ -34,6 +36,7 @@ HashCache::HashCache(const QString& databaseFolder) :
    query.exec("PRAGMA journal_mode = WAL");
    query.exec("PRAGMA synchronous = NORMAL");
 
+   this->updateDatabaseScheme();
 
    this->queryGetHashesWithDate.prepare(
       "SELECT [hashes], [size] FROM [File] WHERE [path] = $1 AND [date_last_modified] = $2"
@@ -46,13 +49,11 @@ HashCache::HashCache(const QString& databaseFolder) :
 INSERT INTO [File] ([path], [size], [date_last_modified], [hashes])
 VALUES ($1, $2, $3, $4)
 ON CONFLICT([path]) DO
-UPDATE SET [hashes] = $1, [size] = $2, [date_last_modified] = $3, [hashes] = $4
+UPDATE SET [path] = $1, [size] = $2, [date_last_modified] = $3, [hashes] = $4
       )"
    );
 
    this->queryRemoveHashes.prepare("DELETE FROM [File] WHERE [path] = $1");
-
-   this->updateDatabaseScheme();
 }
 
 HashCache::~HashCache()
