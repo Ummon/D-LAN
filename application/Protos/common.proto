@@ -67,6 +67,7 @@ message Entry {
 
    string name = 3; // Directory name or filename. For example: "MyLOLCat.avi". A shared dir/file has an empty name.
    uint64 size = 4; // [bytes]. For the directory it's the sum of all sub-items.
+   bool hidden = 10;
 
    // The shared entry of the entry. If the entry is a shared file the shared_entry must be the same file.
    SharedEntry shared_entry = 5;

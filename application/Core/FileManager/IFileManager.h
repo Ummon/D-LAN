@@ -30,6 +30,7 @@
 
 #include <Protos/common.pb.h>
 #include <Protos/core_protocol.pb.h>
+#include <Protos/queue.pb.h>
 
 namespace FM
 {
@@ -95,11 +96,7 @@ namespace FM
          const QList<Common::Hash>& hashes
       ) const = 0;
 
-      virtual void setHashesAndKnownBytesToUnfinishedFile(
-         const Protos::Common::Entry& localEntry,
-         const QList<Common::Hash>& hashes,
-         const QList<int> knownBytes
-      ) = 0;
+      virtual void updateFromQueueEntry(const Protos::Queue::Queue_Entry& entry) = 0;
 
       /**
         * Create a new empty file.

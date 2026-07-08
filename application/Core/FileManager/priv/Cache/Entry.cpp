@@ -29,8 +29,8 @@ using namespace FM;
 #include <priv/Cache/SharedEntry.h>
 #include <priv/Cache/Directory.h>
 
-Entry::Entry(SharedEntry* root, const QString& name, Directory* parentDirectory, qint64 size) :
-   name(name), root(root), parentDirectory(parentDirectory), size(size)
+Entry::Entry(SharedEntry* root, const QString& name, Directory* parentDirectory, qint64 size, bool hidden) :
+   name(name), root(root), parentDirectory(parentDirectory), size(size), hidden(hidden)
 {
 }
 
@@ -61,6 +61,7 @@ void Entry::populateEntry(Protos::Common::Entry* entry, bool setSharedEntry) con
    }
 
    entry->set_size(this->getSize());
+   entry->set_hidden(this->hidden);
 
    if (setSharedEntry)
       this->populateSharedEntry(entry);
@@ -79,7 +80,6 @@ Cache* Entry::getCache()
 bool Entry::isRoot() const
 {
    return this->parentDirectory == nullptr;
-   // return this->root->getRootEntry() == this;
 }
 
 SharedEntry* Entry::getRoot() const
@@ -147,6 +147,11 @@ qint64 Entry::getSize() const
 void Entry::setSize(qint64 newSize)
 {
    this->size = newSize;
+}
+
+void Entry::setHidden(bool hidden)
+{
+   this->hidden = hidden;
 }
 
 int Entry::getDepth() const

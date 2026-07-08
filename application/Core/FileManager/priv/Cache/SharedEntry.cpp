@@ -285,7 +285,7 @@ SharedFile::SharedFile(
    )
 {
    auto fileInfo = QFileInfo(path.toString());
-   this->file = new File(this, path.getFilename(), fileInfo.size(), fileInfo.lastModified());
+   this->file = new File(this, path.getFilename(), fileInfo.size(), fileInfo.isHidden(), fileInfo.lastModified());
 }
 
 SharedFile::~SharedFile()

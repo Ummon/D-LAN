@@ -179,14 +179,9 @@ QList<QSharedPointer<IChunk>> FileManager::getAllChunks(
    return QList<QSharedPointer<IChunk>>();
 }
 
-void FileManager::setHashesAndKnownBytesToUnfinishedFile(
-   const Protos::Common::Entry& localEntry,
-   const QList<Common::Hash>& hashes,
-   const QList<int> knownBytes
-)
+void FileManager::updateFromQueueEntry(const Protos::Queue::Queue_Entry& entry)
 {
-   Protos::Common::Entry localEntryCopy(localEntry);
-
+   Protos::Common::Entry localEntryCopy(entry.local_entry());
    const QString entryName = QString::fromStdString(localEntryCopy.name());
    if (!Global::isFileUnfinished(entryName))
    {
@@ -195,17 +190,21 @@ void FileManager::setHashesAndKnownBytesToUnfinishedFile(
    }
 
    File* file = this->cache.getFile(localEntryCopy);
+
    if (file)
    {
-      auto chunks = file->getChunks();
-      for (int i = 0; i < chunks.size() && i < hashes.size() && i < knownBytes.size(); ++i)
-      {
-         if (!hashes[i].isNull())
-            chunks[i]->setHash(hashes[i], false);
+      file->setHidden(entry.remote_entry().hidden());
 
-         if (knownBytes[i] > 0)
+      auto chunks = file->getChunks();
+      for (int i = 0; i < chunks.size() && i < entry.remote_entry().chunks_size() && i < entry.known_bytes_size(); ++i)
+      {
+         const Common::Hash hash(entry.remote_entry().chunks(i).hash());
+         if (!hash.isNull())
+            chunks[i]->setHash(hash, false);
+
+         if (entry.known_bytes(i) > 0)
          {
-            chunks[i]->setKnownBytes(knownBytes[i]);
+            chunks[i]->setKnownBytes(entry.known_bytes(i));
             if (chunks[i]->isComplete())
                file->chunkComplete(chunks[i].data());
          }

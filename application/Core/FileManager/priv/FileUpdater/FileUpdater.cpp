@@ -70,15 +70,15 @@ FileUpdater::~FileUpdater()
 
 void FileUpdater::stop()
 {
-   L_DEBU("Stopping FileUpdater ..");
+   L_DEBU("Stopping FileUpdater...");
 
    this->toStop = true;
 
-   L_DEBU("Stopping hashing ..");
+   L_DEBU("Stopping hashing...");
    this->stopHashing();
    L_DEBU("Hashing stopped");
 
-   L_DEBU("Stopping scanning ..");
+   L_DEBU("Stopping scanning...");
    this->stopScanning();
    L_DEBU("Scanning stopped");
 
@@ -504,7 +504,7 @@ void FileUpdater::scan(Entry* entry, bool addUnfinished)
                QDir::AllEntries | QDir::NoDotAndDotDot | QDir::NoSymLinks | QDir::Hidden
             )
          )
-         {
+         {            
             if (this->scanAbortRequested.load(std::memory_order_relaxed) || this->toStop)
             {
                QMutexLocker locker(&this->scanningMutex);
@@ -517,7 +517,7 @@ void FileUpdater::scan(Entry* entry, bool addUnfinished)
 
             if (fileInfo.isDir())
             {
-               Directory* subDir = currentDir->createSubDir(fileInfo.fileName());
+               Directory* subDir = currentDir->createSubDir(fileInfo.fileName(), false, fileInfo.isHidden());
                subDir->setScanned(false);
                dirsToVisit << subDir;
                currentSubDirs.removeOne(subDir);
@@ -583,6 +583,7 @@ File* FileUpdater::addScannedFile(const QFileInfo& fileInfo, File* file, Directo
                parentDirectory->getRoot(),
                fileInfo.fileName(),
                fileInfo.size(),
+               fileInfo.isHidden(),
                fileInfo.lastModified(),
                parentDirectory
          );

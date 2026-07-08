@@ -37,7 +37,13 @@ namespace FM
    class Entry : public ISizeItem, Common::Uncopyable
    {
    protected:
-      Entry(SharedEntry* root, const QString& name, Directory* parentDirectory = nullptr, qint64 size = 0);
+      Entry(
+         SharedEntry* root,
+         const QString& name,
+         Directory* parentDirectory = nullptr,
+         qint64 size = 0,
+         bool hidden = false
+      );
 
    public:
       virtual ~Entry();
@@ -85,6 +91,8 @@ namespace FM
 
       virtual void setSize(qint64 newSize);
 
+      void setHidden(bool hidden);
+
       int getDepth() const;
 
    private:
@@ -98,6 +106,7 @@ namespace FM
       Directory* parentDirectory; // Can be null if root.
 
       qint64 size;
+      bool hidden = false;
 
       mutable QRecursiveMutex mutex;
    };

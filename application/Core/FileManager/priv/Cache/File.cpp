@@ -73,6 +73,7 @@ File::File(
    SharedEntry* root,
    const QString& name,
    qint64 size,
+   bool hidden,
    const QDateTime& dateLastModified,
    Directory* parentDirectory,
    const QList<Common::Hash>& hashes,
@@ -82,7 +83,8 @@ File::File(
       root,
       name + (createPhysically && size > 0 ? Global::getUnfinishedSuffix() : ""),
       parentDirectory,
-      size
+      size,
+      hidden
    ),
    dateLastModified(dateLastModified),
    complete(!Global::isFileUnfinished(Entry::getName())),
@@ -684,9 +686,10 @@ void File::setAsComplete()
       else
       {
          this->complete.store(true, std::memory_order_release);
+         if (this->hidden)
+            this->setFileAsHidden(newPath);
          this->dateLastModified = QFileInfo(newPath).lastModified();
          this->name = Global::removeUnfinishedSuffix(this->name);
-         // this->getCache()->getHashCache()->rmHashes(oldPath);
          this->saveHashes();
          this->getCache()->onEntryAdded(this); // To add the name to the index. (a bit tricky).
       }
@@ -708,9 +711,8 @@ void File::createPhysicalFile()
 {
    if (this->getSize() > 0 && !Global::isFileUnfinished(this->name))
       L_ERRO(
-         QString("File::createPhysicalFile(..): Cannot create a file (%1) without the 'unfinished' suffix")
-            .arg(this->File::getRelativePath()
-         )
+         QString("File::createPhysicalFile(..): Cannot create a file (%1) without the '%2' suffix")
+            .arg(this->File::getRelativePath(), Global::getUnfinishedSuffix())
       );
    else
    {
@@ -727,16 +729,30 @@ void File::createPhysicalFile()
 
 void File::setFileAsSparse(const QFile& file)
 {
-   // TODO: Do we need that on linux? see 'fallocate(..)',
-   #ifdef Q_OS_WIN32
-      DWORD bytesWritten;
-      HANDLE hdl = (HANDLE)_get_osfhandle(file.handle());
-      // To avoid to initialize and write all data.
-      // File initialization can take several minutes for a large file (> 5 GiB).
-      // See : http://msdn.microsoft.com/en-us/library/aa364596%28v=vs.85%29.aspx
-      if (!DeviceIoControl(hdl, FSCTL_SET_SPARSE, NULL, 0, NULL, 0, &bytesWritten, NULL))
-         L_WARN("DeviceIoControl(..) failed");
-   #endif
+// TODO: Do we need that on linux? see 'fallocate(..)',
+#ifdef Q_OS_WIN32
+   DWORD bytesWritten;
+   HANDLE hdl = (HANDLE)_get_osfhandle(file.handle());
+   // To avoid to initialize and write all data.
+   // File initialization can take several minutes for a large file (> 5 GiB).
+   // See : http://msdn.microsoft.com/en-us/library/aa364596%28v=vs.85%29.aspx
+   if (!DeviceIoControl(hdl, FSCTL_SET_SPARSE, NULL, 0, NULL, 0, &bytesWritten, NULL))
+      L_WARN("DeviceIoControl(...) failed");
+#endif
+}
+
+void File::setFileAsHidden(const QString& filepath)
+{
+#ifdef Q_OS_WIN32
+   const DWORD attrs = GetFileAttributesW((LPCWSTR)filepath.utf16());
+   if (
+      attrs == INVALID_FILE_ATTRIBUTES ||
+      !SetFileAttributesW((LPCWSTR)filepath.utf16(), attrs | FILE_ATTRIBUTE_HIDDEN)
+   )
+      L_WARN(QString("Unable to set the hidden attribute on %1").arg(filepath));
+#else
+   Q_UNUSED(file)
+#endif
 }
 
 /**

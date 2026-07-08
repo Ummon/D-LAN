@@ -45,7 +45,8 @@ namespace FM
          SharedEntry* root,
          const QString& name,
          Directory* parentDirectory = nullptr,
-         bool createPhysically = false
+         bool createPhysically = false,
+         bool hidden = false
       );
 
       ~Directory() override;
@@ -79,7 +80,7 @@ namespace FM
       QList<File*> getFiles() const;
       QList<File*> getCompleteFiles() const;
 
-      Directory* createSubDir(const QString& name, bool physically = false);
+      Directory* createSubDir(const QString& name, bool physically = false, bool isHidden = false);
       Directory* createSubDirs(const QStringList& names, bool physically = false);
 
       File* getFile(const QString& name) const;

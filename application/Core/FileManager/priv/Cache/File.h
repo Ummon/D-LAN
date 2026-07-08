@@ -48,6 +48,7 @@ namespace FM
          SharedEntry* root,
          const QString& name,
          qint64 size,
+         bool hidden,
          const QDateTime& dateLastModified,
          Directory* parentDirectory = nullptr,
          const QList<Common::Hash>& hashes = QList<Common::Hash>(),
@@ -113,6 +114,7 @@ namespace FM
       void deleteAllChunks();
       void createPhysicalFile();
       static void setFileAsSparse(const QFile& file);
+      static void setFileAsHidden(const QString& filepath);
       void setHashes(const QList<Common::Hash>& hashes);
 
    protected:

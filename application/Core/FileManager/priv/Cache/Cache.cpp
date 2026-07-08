@@ -317,6 +317,7 @@ QList<QSharedPointer<IChunk>> Cache::newFile(Protos::Common::Entry& fileEntry)
          dir->getRoot(),
          name,
          fileEntry.size(),
+         fileEntry.hidden(),
          QDateTime::currentDateTime(),
          dir,
          hashes,

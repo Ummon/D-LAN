@@ -38,9 +38,10 @@ Directory::Directory(
    SharedEntry* root,
    const QString& name,
    Directory* parentDirectory,
-   bool createPhysically
+   bool createPhysically,
+   bool hidden
 ) :
-   Entry(root, name, parentDirectory),
+   Entry(root, name, parentDirectory, 0, hidden),
    subDirs(&Directory::entrySortingFun),
    files(&Directory::entrySortingFun),
    scanned(true)
@@ -366,13 +367,13 @@ QList<File*> Directory::getCompleteFiles() const
   * returns an already existing.
   * @exception UnableToCreateNewDirException
   */
-Directory* Directory::createSubDir(const QString& name, bool physically)
+Directory* Directory::createSubDir(const QString& name, bool physically, bool isHidden)
 {
    QMutexLocker locker(&this->mutex);
 
    if (Directory* subDir = this->getSubDir(name))
       return subDir;
-   return new Directory(this->getRoot(), name, this, physically);
+   return new Directory(this->getRoot(), name, this, physically, isHidden);
 }
 
 /**

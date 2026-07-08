@@ -544,15 +544,8 @@ void DownloadManager::loadQueueFromFile()
    {
       const Protos::Queue::Queue_Entry& entry = savedQueue.entries(i);
 
-      // Give the chunk hashes and known bytes to the file.
-      QList<Common::Hash> hashes;
-      hashes.reserve(entry.remote_entry().chunks_size());
-      for (int i = 0; i < entry.remote_entry().chunks_size(); ++i)
-         hashes << Common::Hash(entry.remote_entry().chunks(i).hash());
-
-      QList<int> knownBytes(entry.known_bytes().begin(), entry.known_bytes().end());
-
-      this->fileManager->setHashesAndKnownBytesToUnfinishedFile(entry.local_entry(), hashes, knownBytes);
+      // Give the chunk hashes, known bytes and remote entry attributes to the cache file.
+      this->fileManager->updateFromQueueEntry(entry);
 
       this->addDownload(
          entry.remote_entry(),
