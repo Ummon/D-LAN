@@ -20,6 +20,7 @@
 
 #include <qmath.h>
 
+#include <Common/Uncopyable.h>
 #include <Common/Hash.h>
 
 /**
@@ -41,7 +42,7 @@
 
 namespace Common
 {
-   class BloomFilter
+   class BloomFilter : Common::Uncopyable
    {
    public:
       BloomFilter(int w = 20, int n = 100000) :
@@ -107,6 +108,6 @@ inline quint32 Common::BloomFilter::position(const Hash& hash, int i) const
 {
    const char* hashData = hash.getData();
    const quint32 pPos = i * this->w; // Position in 'hashData' of 'p'.
-   const quint32* p = reinterpret_cast<const quint32*>(hashData + (pPos >> 3));   
+   const quint32* p = reinterpret_cast<const quint32*>(hashData + (pPos >> 3));
    return *p >> (32 - this->w - pPos % 8) & this->wMask;
 }
