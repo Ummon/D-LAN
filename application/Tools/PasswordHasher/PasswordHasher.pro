@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core network gui widgets
+QT       += widgets
 
 TARGET = PasswordHasher
 TEMPLATE = app
@@ -12,7 +12,9 @@ TEMPLATE = app
 INCLUDEPATH += . ../..
 
 include(../../Common/common.pri)
+include(../../Libs/blake3.pri)
 include(../../Libs/protobuf.pri)
+include(../../Protos/Protos.pri)
 
 LIBS += -L../../Common/output/$$FOLDER -lCommon
 PRE_TARGETDEPS += ../../Common/output/$$FOLDER/libCommon.a

@@ -1,10 +1,9 @@
 [code]
-#define QtDir "H:/Qt/5.14.1/mingw73_64"
-#define MingwDir "H:/Qt/Tools/mingw730_64"
-#define ApplicationDir "../.."
+
+#define BundleDir "setup_bundle"
 
 #define AppName "D-LAN"
-#define ExePath ApplicationDir + "/Core/output/release/D-LAN.Core.exe"
+#define ExePath BundleDir + "/D-LAN.Core.exe"
 #define Version GetStringFileInfo(ExePath, 'ProductVersion')
 #define VersionTag GetStringFileInfo(ExePath, 'VersionTag')
 #define BuildTime GetStringFileInfo(ExePath, 'BuildTime')
@@ -12,42 +11,27 @@
 [Setup]
 AppName={#AppName}
 AppVersion={#Version} {#VersionTag} - {#BuildTime}
-SetupIconFile={#ApplicationDir}/Common/resources/icon.ico
-DefaultDirName={pf}/{#AppName}
+SetupIconFile=../../Common/resources/icon.ico
+DefaultDirName={commonpf}/{#AppName}
 DefaultGroupName={#AppName}
 UninstallDisplayIcon={app}/D-LAN.Core.exe
 Compression=lzma2
 SolidCompression=yes
 OutputDir=Installations
 OutputBaseFilename={#AppName}-{#Version}{#VersionTag}-{#BuildTime}-Setup
+ArchitecturesInstallIn64BitMode=x64compatible
+ArchitecturesAllowed=x64compatible
 
 [Files]
-Source: "{#ApplicationDir}/Core/output/release/D-LAN.Core.exe"; DestDir: "{app}"; Flags: comparetimestamp
-Source: "{#ApplicationDir}/GUI/output/release/D-LAN.GUI.exe"; DestDir: "{app}"; Flags: comparetimestamp
-Source: "{#ApplicationDir}/translations/*.qm"; DestDir: "{app}/languages"; Flags: comparetimestamp
-Source: "{#ApplicationDir}/styles/*"; DestDir: "{app}/styles"; Flags: comparetimestamp recursesubdirs createallsubdirs
-Source: "{#ApplicationDir}/GUI/resources/emoticons/*"; DestDir: "{app}/Emoticons"; Flags: comparetimestamp recursesubdirs createallsubdirs
-Source: "{#QtDir}/bin/Qt5Core.dll"; DestDir: "{app}"; Flags: comparetimestamp
-Source: "{#QtDir}/bin/Qt5Gui.dll"; DestDir: "{app}"; Flags: comparetimestamp
-Source: "{#QtDir}/bin/Qt5Network.dll"; DestDir: "{app}"; Flags: comparetimestamp
-Source: "{#QtDir}/bin/Qt5Widgets.dll"; DestDir: "{app}"; Flags: comparetimestamp
-Source: "{#QtDir}/bin/Qt5WinExtras.dll"; DestDir: "{app}"; Flags: comparetimestamp
-Source: "{#QtDir}/bin/Qt5Xml.dll"; DestDir: "{app}"; Flags: comparetimestamp
-Source: "{#QtDir}/bin/icuin53.dll"; DestDir: "{app}"; Flags: comparetimestamp
-Source: "{#QtDir}/bin/icuuc53.dll"; DestDir: "{app}"; Flags: comparetimestamp
-;Source: "{#QtDir}/bin/icudt53.dll"; DestDir: "{app}"; Flags: comparetimestamp
-Source: "{#QtDir}/bin/libgcc_s_seh-1.dll"; DestDir: "{app}"; Flags: comparetimestamp
-Source: "{#QtDir}/bin/libwinpthread-1.dll"; DestDir: "{app}"; Flags: comparetimestamp
-Source: "{#QtDir}/bin/libstdc++-6.dll"; DestDir: "{app}"; Flags: comparetimestamp
-Source: "{#QtDir}/plugins/platforms/qwindows.dll"; DestDir: "{app}/platforms"; Flags: comparetimestamp
+Source: "{#BundleDir}/*"; DestDir: "{app}"; Flags: comparetimestamp recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{group}\D-LAN"; Filename: "{app}/D-LAN.GUI.exe"; WorkingDir: "{app}"
 
 [Languages]
 ; Name has to be coded as ISO-639 (two letters).
-Name: "en"; MessagesFile: "compiler:Default.isl,{#ApplicationDir}/translations/d_lan.en.isl"
-Name: "fr"; MessagesFile: "compiler:Languages/French.isl,{#ApplicationDir}/translations/d_lan.fr.isl"
+Name: "en"; MessagesFile: "compiler:Default.isl,../../translations/d_lan.en.isl"
+Name: "fr"; MessagesFile: "compiler:Languages/French.isl,../../translations/d_lan.fr.isl"
 
 [Tasks]
 Name: "Firewall"; Description: {cm:firewallException}; MinVersion: 0,5.01.2600sp2;
@@ -61,8 +45,9 @@ Filename: "{app}/D-LAN.GUI.exe"; Parameters: "--lang {language}"; Flags: RunHidd
 Filename: "{app}/D-LAN.GUI.exe"; Flags: nowait postinstall runasoriginaluser; Description: "{cm:launchDLAN}"
 
 [UninstallRun]
-Filename: {app}/D-LAN.Core.exe; Parameters: -u;
-Filename: {sys}/netsh.exe; Parameters: "firewall delete allowedprogram program=""{app}/D-LAN.Core.exe"""; Flags: runhidden; MinVersion: 0,5.01.2600sp2; Tasks: Firewall;
+Filename: {app}/D-LAN.Core.exe; Parameters: -u; RunOnceId: "DLANUninstall";
+Filename: {sys}/netsh.exe; Parameters: "firewall delete allowedprogram program=""{app}/D-LAN.Core.exe"""; Flags: runhidden; MinVersion: 0,5.01.2600sp2; Tasks: Firewall; RunOnceId: "DLANFirewallUninstall";
+
 
 [code]
 // Will stop the Core service.
