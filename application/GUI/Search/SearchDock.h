@@ -49,6 +49,8 @@ namespace GUI
       void search(const Protos::Common::FindPattern&, bool local);
 
    protected:
+      bool eventFilter(QObject* object, QEvent* event) override;
+
       void changeEvent(QEvent* event) override;
       void keyPressEvent(QKeyEvent* event) override;
 

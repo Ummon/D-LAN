@@ -39,7 +39,12 @@ const MessageHeader& Message::getHeader() const
    return this->header;
 }
 
-int Message::writeMessageToBuffer(char* buffer, quint32 bufferSize, const MessageHeader& header, const google::protobuf::Message* message)
+int Message::writeMessageToBuffer(
+   char* buffer,
+   quint32 bufferSize,
+   const MessageHeader& header,
+   const google::protobuf::Message* message
+)
 {
    if (MessageHeader::HEADER_SIZE + header.getSize() > bufferSize)
       return 0;

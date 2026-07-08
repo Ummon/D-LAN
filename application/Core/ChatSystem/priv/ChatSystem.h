@@ -50,15 +50,17 @@ namespace CS
          const QString& message,
          const QString& roomName = QString(),
          const QList<Common::Hash>& peerIDsAnswer = QList<Common::Hash>()
-      );
+      ) override;
+
       void getLastChatMessages(
          Protos::Common::ChatMessages& chatMessages,
          int number = std::numeric_limits<int>::max(),
          const QString& roomName = QString()
-      ) const;
-      QList<ChatRoom> getRooms() const;
-      void joinRoom(const QString& roomName);
-      void leaveRoom(const QString& roomName);
+      ) const override;
+
+      QList<ChatRoom> getRooms() const override;
+      void joinRoom(const QString& roomName) override;
+      void leaveRoom(const QString& roomName) override;
 
    private slots:
       void received(const Common::Message& message);

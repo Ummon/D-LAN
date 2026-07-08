@@ -26,7 +26,7 @@
 
 namespace Common
 {
-   class notEnoughDataException {};
+   class NotEnoughDataException {};
 
    class MessageHeader
    {
@@ -104,7 +104,7 @@ namespace Common
       };
 
       MessageHeader();
-      MessageHeader(MessageType type, quint32 size, const Hash senderID);
+      MessageHeader(MessageType type, quint32 size, const Hash& senderID);
 
       const Hash& getSenderID() const;
       quint32 getSize() const;
@@ -117,7 +117,7 @@ namespace Common
 
       static QString messToStr(MessageType type);
 
-      static MessageHeader readHeader(QIODevice& device, bool skipReadData = true);
+      static MessageHeader readHeader(QIODevice& device, bool consumeData = true);
       static MessageHeader readHeader(const QByteArray& data);
       static MessageHeader readHeader(const char* data);
 
@@ -132,6 +132,6 @@ namespace Common
       Hash senderID;
 
    public:
-      static const int HEADER_SIZE;
+      static constexpr int HEADER_SIZE = sizeof(MessageHeader::type) + sizeof(MessageHeader::size) + Hash::HASH_SIZE;
    };
 }

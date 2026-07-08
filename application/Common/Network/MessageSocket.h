@@ -22,7 +22,6 @@
 #include <QTcpSocket>
 #include <QAbstractSocket>
 #include <QHostAddress>
-#include <QTimer>
 
 #include <google/protobuf/message.h>
 
@@ -43,6 +42,9 @@ namespace Common
    class MessageSocket : public QObject, Uncopyable
    {
       Q_OBJECT
+
+      static constexpr quint32 MAX_MESSAGE_PAYLOAD_SIZE = 100 * 1024 * 1024; // 100 MB.
+
    protected:
       class ILogger
       {

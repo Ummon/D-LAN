@@ -31,12 +31,12 @@ namespace GUI
    public:
       explicit CheckBoxList(QWidget* parent = nullptr);
 
-      bool eventFilter(QObject* object, QEvent* event);
-      void paintEvent(QPaintEvent* );
-      QSize sizeHint() const;
-
    protected:
-      void mousePressEvent(QMouseEvent* e);
+      bool eventFilter(QObject* object, QEvent* event) override;
+      void paintEvent(QPaintEvent* ) override;
+      QSize sizeHint() const override;
+
+      void mousePressEvent(QMouseEvent* e) override;
    };
 
 /////

@@ -19,8 +19,6 @@
 #include <Common/Network/MessageSocket.h>
 using namespace Common;
 
-#include <QNetworkInterface>
-
 #include <Protos/common.pb.h>
 #include <Protos/core_protocol.pb.h>
 #include <Protos/gui_protocol.pb.h>
@@ -234,7 +232,19 @@ void MessageSocket::dataReceivedSlot()
             MESSAGE_SOCKET_LOG_DEBUG(
                QString("Socket[%1]: Peer ID from message (%2) doesn't match the known peer ID (%3)")
                   .arg(this->num)
-                  .arg(this->currentHeader.getSenderID().toStrShort(), this->localID.toStrShort())
+                  .arg(this->currentHeader.getSenderID().toStrShort(), this->remoteID.toStrShort())
+            );
+            this->currentHeader.setNull();
+            this->socket->close();
+            return;
+         }
+
+         if (this->currentHeader.getSize() > MAX_MESSAGE_PAYLOAD_SIZE)
+         {
+            MESSAGE_SOCKET_LOG_DEBUG(
+               QString("Socket[%1]: Message size too big (%2), size limit is (%3) bytes")
+                  .arg(this->num)
+                  .arg(this->currentHeader.getSize(), MAX_MESSAGE_PAYLOAD_SIZE)
             );
             this->currentHeader.setNull();
             this->socket->close();
@@ -293,7 +303,7 @@ bool MessageSocket::readMessage()
       emit newMessage(message);
       return true;
    }
-   catch (ReadErrorException& e)
+   catch (ReadErrorException&)
    {
       return false;
    }

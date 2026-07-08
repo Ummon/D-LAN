@@ -208,7 +208,7 @@ void Chunk::setHash(const Common::Hash& hash, bool saveHashes)
 
    this->hash = hash;
 
-   if (saveHashes)
+   if (saveHashes && this->file)
       this->file->saveHashes();
 }
 

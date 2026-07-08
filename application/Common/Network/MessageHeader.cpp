@@ -38,7 +38,7 @@ MessageHeader::MessageHeader() :
    type(NULL_MESS), size(0)
 {}
 
-MessageHeader::MessageHeader(MessageType type, quint32 size, const Hash senderID) :
+MessageHeader::MessageHeader(MessageType type, quint32 size, const Hash& senderID) :
    type(type), size(size), senderID(senderID)
 {}
 
@@ -133,16 +133,16 @@ QString MessageHeader::messToStr(MessageType type)
 }
 
 /**
-  * @exception notEnoughDataException
+  * @exception NotEnoughDataException
   */
-MessageHeader MessageHeader::readHeader(QIODevice& device, bool skipReadData)
+MessageHeader MessageHeader::readHeader(QIODevice& device, bool consumeData)
 {
    if (device.bytesAvailable() < HEADER_SIZE)
-      throw notEnoughDataException();
+      throw NotEnoughDataException();
 
    QByteArray data(HEADER_SIZE, Qt::Uninitialized);
 
-   if (skipReadData)
+   if (consumeData)
       device.read(data.data(), HEADER_SIZE);
    else
       device.peek(data.data(), HEADER_SIZE);
@@ -192,5 +192,3 @@ void MessageHeader::writeHeader(QDataStream& stream, const MessageHeader& header
    stream << header.size;
    stream << header.senderID;
 }
-
-const int MessageHeader::HEADER_SIZE(sizeof(MessageHeader::type) + sizeof(MessageHeader::size) + Hash::HASH_SIZE);

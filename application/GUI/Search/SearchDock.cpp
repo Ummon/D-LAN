@@ -76,6 +76,8 @@ SearchDock::SearchDock(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
 
    connect(this->ui->chkOwnFiles, &QCheckBox::checkStateChanged, this, &SearchDock::saveSettings);
 
+   this->ui->advancedOptions->installEventFilter(this);
+
    connect(this->coreConnection.data(), &RCC::ICoreConnection::connected, this, &SearchDock::coreConnected);
    connect(this->coreConnection.data(), &RCC::ICoreConnection::disconnected, this, &SearchDock::coreDisconnected);
 
@@ -106,6 +108,14 @@ void SearchDock::setFocusToLineEdit()
 {
    this->ui->txtSearch->setFocus();
    this->ui->txtSearch->selectAll();
+}
+
+bool SearchDock::eventFilter(QObject* object, QEvent* event)
+{
+   if (object == this->ui->advancedOptions && event->type() == QEvent::Show || event->type() == QEvent::Hide)
+      this->saveSettings();
+
+   return QDockWidget::eventFilter(object, event);
 }
 
 void SearchDock::changeEvent(QEvent* event)
@@ -253,6 +263,7 @@ void SearchDock::loadSettings()
 
 #if HIDE_BUTTON
    const bool SHOW_ADVANCED_OPTIONS = SETTINGS.get<bool>("search_advanced_visible");
+
    this->ui->advancedOptions->setVisible(SHOW_ADVANCED_OPTIONS);
    this->ui->butAdvanced->setChecked(SHOW_ADVANCED_OPTIONS);
 #endif
