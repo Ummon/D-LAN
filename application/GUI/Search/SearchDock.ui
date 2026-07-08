@@ -111,7 +111,7 @@
       </item>
       <item>
        <widget class="QPushButton" name="butAdvanced">
-        <property name="statusTip">
+        <property name="toolTip">
          <string>View advanced options</string>
         </property>
         <property name="text">
