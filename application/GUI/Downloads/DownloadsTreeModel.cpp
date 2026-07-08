@@ -252,6 +252,20 @@ QModelIndex DownloadsTreeModel::parent(const QModelIndex& index) const
    return this->createIndex(parentItem->getOwnPosition(), 0, parentItem);
 }
 
+/**
+  * Must be overridden because 'QAbstractTableModel::sibling(..)' assumes a flat model and drops the
+  * parent ('return index(row, column);'), which corrupts the selection ranges built by
+  * 'QTreeViewPrivate::select(..)' (shift-click, rubber band, shift+arrows). Same bug family as
+  * 'hasChildren(..)' and 'parent(..)'.
+  */
+QModelIndex DownloadsTreeModel::sibling(int row, int column, const QModelIndex& index) const
+{
+   if (!index.isValid())
+      return QModelIndex();
+
+   return this->index(row, column, this->parent(index));
+}
+
 Qt::DropActions DownloadsTreeModel::supportedDropActions() const
 {
    return Qt::MoveAction;
@@ -574,7 +588,7 @@ DownloadsTreeModel::Tree* DownloadsTreeModel::update(Tree* entry, const Protos::
       entry->setItem(download);
       this->updateDirectoriesEntryModified(entry, oldDownload);
       const int treePosition = entry->getOwnPosition();
-      emit dataChanged(this->createIndex(treePosition, 0, entry), this->createIndex(treePosition, 3, entry));
+      emit dataChanged(this->createIndex(treePosition, 0, entry), this->createIndex(treePosition, this->columnCount() - 1, entry));
    }
 
    return entry;
