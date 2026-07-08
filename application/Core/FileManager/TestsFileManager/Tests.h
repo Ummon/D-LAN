@@ -45,6 +45,7 @@ private slots:
    /***** Adding shared directories and files *****/
    void addASharedDirectoryIncoming();
    void addASharedDirectory();
+   void addTwoSameSharedDirectories();
    void addASharedFile();
    void addSomeAlreadySharedEntries();
    void swapTwoDirectories();

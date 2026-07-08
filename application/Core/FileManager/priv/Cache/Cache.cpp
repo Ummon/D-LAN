@@ -407,16 +407,27 @@ SharedEntry* Cache::getSharedEntry(const Common::Hash& ID) const
   */
 void Cache::setSharedPaths(const QList<std::pair<QString, Common::Path>>& paths)
 {
+   QList<std::pair<QString, Common::Path>> pathsWithoutDuplicates;
+   // Remove duplicates in paths (O(n^2)).
+   for (const auto& path : paths)
+   {
+      for (const auto& path2 : pathsWithoutDuplicates)
+         if (path.second == path2.second)
+            goto nextPath;
+      pathsWithoutDuplicates << path;
+   nextPath:;
+   }
+
    QMutexLocker locker(&this->mutex);
 
    QStringList pathsNotFound;
 
    int j = 0;
-   for (int i = 0; i < paths.size(); i++) {
+   for (int i = 0; i < pathsWithoutDuplicates.size(); i++) {
       for (int j2 = j; j2 < this->sharedEntries.size(); j2++) {
-         if (paths[i].second == this->sharedEntries[j2]->getPath())
+         if (pathsWithoutDuplicates[i].second == this->sharedEntries[j2]->getPath())
          {
-            const QString trimmedName = paths[i].first.trimmed();
+            const QString trimmedName = pathsWithoutDuplicates[i].first.trimmed();
             this->sharedEntries[j2]->setUserName(trimmedName);
             this->sharedEntries.move(j2, j++);
             goto nextEntry;
@@ -425,7 +436,7 @@ void Cache::setSharedPaths(const QList<std::pair<QString, Common::Path>>& paths)
       try
       {
          // dirs[i] not found -> we create a new one.
-         if (this->createSharedEntry(paths[i].second, Common::Hash(), j, paths[i].first))
+         if (this->createSharedEntry(pathsWithoutDuplicates[i].second, Common::Hash(), j, paths[i].first))
             j++;
       }
       catch (PathNotFoundException& e)

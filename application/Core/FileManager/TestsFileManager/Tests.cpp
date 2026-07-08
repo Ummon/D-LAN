@@ -111,6 +111,20 @@ void Tests::addASharedDirectory()
    QCOMPARE(paths.at(1).path.toString(), this->sharedPaths.at(1).path);
 }
 
+void Tests::addTwoSameSharedDirectories()
+{
+   qDebug() << "===== addTwoSameSharedDirectories() =====";
+
+   // "share1" already exists in sharedPaths.
+   this->sharedPaths << IFileManager::SharedPath{ QString("share1 with another user name"), QDir::currentPath().append("/sharedDirs/share1/") };
+   this->fileManager->setSharedPaths(this->sharedPaths);
+   QList<Common::SharedEntry> paths = this->fileManager->getSharedEntries();
+   QVERIFY(paths.size() == 2);
+
+   this->sharedPaths.removeLast();
+   QCOMPARE(paths.at(1).path.toString(), this->sharedPaths.at(1).path);
+}
+
 void Tests::addASharedFile()
 {
    qDebug() << "===== addASharedFile() =====";

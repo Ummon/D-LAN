@@ -217,6 +217,8 @@ void FileUpdater::run()
       this->scan(entry, true);
    }
 
+   emit initialScanFinished();
+
    this->progress = 0;
 
    forever
@@ -252,8 +254,6 @@ void FileUpdater::run()
             L_DEBU("Waiting for a new entry added..");
             this->mutex.unlock();
 
-            emit scanFinished();
-
             this->dirEvent->wait(this->unwatchableEntries.isEmpty() ? -1 : SCAN_PERIOD_UNWATCHABLE_DIRS);
          }
          else
@@ -285,8 +285,6 @@ void FileUpdater::run()
          )
          {
             this->mutex.unlock();
-
-            emit scanFinished();
 
             this->processEvents(
                // Wait for filesystem modifications.

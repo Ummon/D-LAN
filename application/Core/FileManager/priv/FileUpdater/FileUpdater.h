@@ -60,7 +60,7 @@ namespace FM
       void rmRoot(SharedEntry* sharedEntry, Directory* dir = nullptr);
 
    signals:
-      void scanFinished();
+      void initialScanFinished();
       void deleteSharedEntry(FM::SharedEntry* sharedEntry);
 
    protected:

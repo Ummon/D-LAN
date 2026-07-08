@@ -72,7 +72,7 @@ FileManager::FileManager(QSharedPointer<HC::IHashCache> hashCache) :
 
    connect(
       &this->fileUpdater,
-      &FileUpdater::scanFinished,
+      &FileUpdater::initialScanFinished,
       this,
       &FileManager::setInitialFileCacheScanningComplete,
       Qt::ConnectionType(Qt::SingleShotConnection | Qt::QueuedConnection)
