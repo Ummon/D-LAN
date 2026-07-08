@@ -28,3 +28,4 @@ build-*
 
 .qtc_clangd
 application/.qmake.stash
+application/Setups/Windows/setup_bundle
