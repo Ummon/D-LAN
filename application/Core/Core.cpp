@@ -158,7 +158,7 @@ void Core::setLanguage(QLocale locale, bool load)
       SETTINGS.set("language", lang.locale);
       SETTINGS.save();
       const QString directory = QCoreApplication::applicationDirPath() + "/" + Common::Constants::LANGUAGE_DIRECTORY;
-      if (!this->translator.load(lang.filename, directory))
+      if (!this->translator.load(lang.filename, directory) && !lang.filename.isEmpty())
       {
          L_WARN(QString("Can't load translation file '%1' from directory '%2'").arg(lang.filename, directory));
       }

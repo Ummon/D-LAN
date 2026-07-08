@@ -160,7 +160,7 @@ void D_LAN_GUI::updateTrayIconMenu()
 void D_LAN_GUI::loadLanguage(const QString& filename)
 {
    const QString directory = QCoreApplication::applicationDirPath() + "/" + Common::Constants::LANGUAGE_DIRECTORY;
-   if (!this->translator.load(filename, directory))
+   if (!this->translator.load(filename, directory) && !filename.isEmpty())
    {
       L_WARN(QString("Can't load translation file '%1' from directory '%2").arg(filename, directory));
    }
