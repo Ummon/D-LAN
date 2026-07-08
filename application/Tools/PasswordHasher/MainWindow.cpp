@@ -21,6 +21,7 @@ using namespace PasswordHasher;
 
 #include <QMessageBox>
 #include <QStringBuilder>
+#include <QRegularExpression>
 
 #include <google/protobuf/text_format.h>
 
@@ -133,11 +134,13 @@ void MainWindow::setButtonText()
   */
 QString MainWindow::checkPasswords() const
 {
+   QRegularExpression spaces("\\s");
+
    if (this->ui->txtPass1->text() != this->ui->txtPass2->text())
       return QString("Error: passwords aren't the same");
    else if (this->ui->txtPass1->text().isEmpty())
       return QString("Error: password is empty");
-   else if (this->ui->txtPass1->text().contains(QRegExp("\\s")))
+   else if (spaces.match(this->ui->txtPass1->text()).hasMatch())
       return QString("Error: password contains one or more whitespace");
    else
       return QString();

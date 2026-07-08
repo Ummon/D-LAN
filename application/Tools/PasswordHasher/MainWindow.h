@@ -21,8 +21,6 @@
 
 #include <QMainWindow>
 
-#include <Libs/MersenneTwister.h>
-
 namespace Ui {
    class MainWindow;
 }
@@ -51,7 +49,6 @@ namespace PasswordHasher
       const QString CORE_SETTINGS_PATH_SYSTEM_USER;
 
       Ui::MainWindow* ui;
-      MTRand mtrand;
       quint64 salt;
    };
 }
