@@ -31,6 +31,7 @@ namespace RCC
    {
       static const QString CORE_EXE_NAME;
       static const int TIMEOUT_SUBPROCESS_WAIT_FOR_STARTED; // [ms];
+      static const int TIMEOUT_SUBPROCESS_WAIT_FOR_STOPPED; // [ms];
 
       Q_OBJECT
 

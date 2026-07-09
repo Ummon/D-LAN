@@ -29,7 +29,8 @@ using namespace RCC;
    const QString CoreController::CORE_EXE_NAME("D-LAN.Core");
 #endif
 
-const int CoreController::TIMEOUT_SUBPROCESS_WAIT_FOR_STARTED(2000); // 2s.
+const int CoreController::TIMEOUT_SUBPROCESS_WAIT_FOR_STARTED(3000); // 3s.
+const int CoreController::TIMEOUT_SUBPROCESS_WAIT_FOR_STOPPED(5000); // 5s.
 
 CoreController::CoreController() :
    controller(Common::Constants::SERVICE_NAME)
@@ -99,7 +100,8 @@ void CoreController::stopCore()
    if (this->coreProcess.state() == QProcess::Running)
    {
       this->coreProcess.write("quit\n");
-      this->coreProcess.waitForFinished(2000);
+      if (!this->coreProcess.waitForFinished(TIMEOUT_SUBPROCESS_WAIT_FOR_STOPPED))
+         L_WARN("Core doesn't stopped properly");
    }
 
    this->coreProcess.kill();
