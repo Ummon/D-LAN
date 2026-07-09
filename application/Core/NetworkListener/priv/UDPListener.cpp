@@ -67,7 +67,6 @@ UDPListener::UDPListener(
    bodyBuffer(UDPListener::buffer + Common::MessageHeader::HEADER_SIZE),
    UNICAST_PORT(unicastPort),
    MULTICAST_PORT(SETTINGS.get<quint32>("multicast_port")),
-   multicastGroup(Utils::getMulticastGroup()),
    fileManager(fileManager),
    peerManager(peerManager),
    uploadManager(uploadManager),
@@ -144,7 +143,7 @@ INetworkListener::SendStatus UDPListener::send(
 
    if (this->multicastSocket.writeDatagram(this->buffer, messageSize, this->multicastGroup, MULTICAST_PORT) == -1)
    {
-      L_WARN(QString("Unable to send datagram (multicast): error: %1").arg(this->unicastSocket.errorString()));
+      L_WARN(QString("Unable to send datagram (multicast): error: %1").arg(this->multicastSocket.errorString()));
       return INetworkListener::SendStatus::UNABLE_TO_SEND;
    }
 
