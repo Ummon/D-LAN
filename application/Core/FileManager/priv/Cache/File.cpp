@@ -141,7 +141,7 @@ File::~File()
    QMutexLocker lockerRead(&this->readLock);
    this->getCache()->getFilePool().release(this->fileInReadMode, true);
 
-   L_DEBU(QString("File deleted : %1").arg(this->File::getAbsolutePath()));
+   // L_DEBU(QString("File deleted : %1").arg(this->File::getAbsolutePath()));
 
    QMutexLocker locker(&this->mutex); // We wait that all the current access to this file are finished.
 }
