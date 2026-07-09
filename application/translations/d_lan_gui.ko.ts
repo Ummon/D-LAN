@@ -223,8 +223,12 @@
         <translation>대기열에 있음</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="59"/>
         <source>Getting the hashes..</source>
+        <translation type="vanished">해시 가져오는 중..</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="59"/>
+        <source>Getting hashes..</source>
         <translation>해시 가져오는 중..</translation>
     </message>
     <message>
@@ -658,59 +662,64 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="242"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="244"/>
         <source>Default</source>
         <translation>기본값</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="297"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="302"/>
         <source>Interface not active</source>
         <translation>인터페이스가 비활성 상태입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="425"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="430"/>
         <source>Change the password</source>
         <translation>비밀번호 변경</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="431"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="434"/>
+        <source>No password defined</source>
+        <translation>비밀번호가 설정되어 있지 않습니다</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="436"/>
         <source>Define a password</source>
         <translation>비밀번호 설정</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="477"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="482"/>
         <source>Connecting . . .</source>
         <translation>연결하는 중 . . .</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="485"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="501"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="520"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="490"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="506"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="525"/>
         <source>Connect</source>
         <translation>연결</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="613"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="620"/>
         <source>Select one or more directories and/or files to share</source>
         <translation>공유할 폴더 및/또는 파일을 하나 이상 선택하십시오</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="671"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="678"/>
         <source>Remove the shared directory</source>
         <translation>공유 폴더 제거</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="679"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="686"/>
         <source>Move up</source>
         <translation>위로 이동</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="687"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="694"/>
         <source>Move down</source>
         <translation>아래로 이동</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="695"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="702"/>
         <source>Open location</source>
         <translation>위치 열기</translation>
     </message>
@@ -829,22 +838,22 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="62"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="63"/>
         <source>D-LAN Core cannot be installed as a service</source>
         <translation>D-LAN 코어를 서비스로 설치할 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="81"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="82"/>
         <source>Core launched as subprocess</source>
         <translation>코어가 하위 프로세스로 시작되었습니다</translation>
     </message>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="83"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="84"/>
         <source>Unable to launch the Core as subprocess</source>
         <translation>코어를 하위 프로세스로 시작할 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="88"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="89"/>
         <source>Core service launched</source>
         <translation>코어 서비스가 시작되었습니다</translation>
     </message>

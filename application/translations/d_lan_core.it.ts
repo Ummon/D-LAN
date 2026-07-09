@@ -34,7 +34,7 @@
 <context>
     <name>DM::FileDownload</name>
     <message>
-        <location filename="../Core/DownloadManager/priv/FileDownload.cpp" line="458"/>
+        <location filename="../Core/DownloadManager/priv/FileDownload.cpp" line="465"/>
         <source>File completed: %1%2%3</source>
         <translation>File completato: %1%2%3</translation>
     </message>
@@ -58,12 +58,12 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../Core/Core.cpp" line="105"/>
+        <location filename="../Core/Core.cpp" line="107"/>
         <source>D-LAN Core version %1 is starting . . .</source>
         <translation>D-LAN Core versione %1 in avvio . . .</translation>
     </message>
     <message>
-        <location filename="../Core/Core.cpp" line="123"/>
+        <location filename="../Core/Core.cpp" line="125"/>
         <source>Ready to serve</source>
         <translation>Pronto</translation>
     </message>

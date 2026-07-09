@@ -223,8 +223,12 @@
         <translation>En cola</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Getting the hashes..</source>
+        <translation type="vanished">Obteniendo los hashes..</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Getting hashes..</source>
         <translation>Obteniendo los hashes..</translation>
     </message>
     <message>
@@ -323,12 +327,12 @@
     <message>
         <location line="+4"/>
         <source>The remote entry is currently being scanned</source>
-        <translation type="unfinished"></translation>
+        <translation>La entrada remota está siendo escaneada actualmente</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>The local directory is currently being scanned</source>
-        <translation type="unfinished"></translation>
+        <translation>El directorio local está siendo escaneado actualmente</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -427,7 +431,7 @@
     <message>
         <location line="+3"/>
         <source>The host is unknown</source>
-        <translation type="unfinished"></translation>
+        <translation>El host es desconocido</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -486,7 +490,7 @@
     <message>
         <location filename="../GUI/MDI/MdiArea.cpp" line="+331"/>
         <source>Waiting the initial scanning process is finished before loading the download queue</source>
-        <translation type="unfinished"></translation>
+        <translation>Esperando a que termine el escaneo inicial antes de cargar la cola de descargas</translation>
     </message>
     <message>
         <location line="+181"/>
@@ -499,12 +503,12 @@
     <message>
         <location filename="../GUI/Peers/PeerListModel.cpp" line="+258"/>
         <source>Their protocol version is more recent and incompatible with ours. Upgrade you version!</source>
-        <translation type="unfinished"></translation>
+        <translation>La versión del protocolo de este peer es más reciente e incompatible con la nuestra. ¡Actualice su versión!</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Their protocol version is outdated and incompatible with ours. They should upgrade their version!</source>
-        <translation type="unfinished"></translation>
+        <translation>La versión del protocolo de este peer está obsoleta y es incompatible con la nuestra. ¡Ese peer debería actualizar su versión!</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -657,12 +661,12 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+242"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+244"/>
         <source>Default</source>
         <translation>Por defecto</translation>
     </message>
     <message>
-        <location line="+55"/>
+        <location line="+58"/>
         <source>Interface not active</source>
         <translation>Interfaz desactivada</translation>
     </message>
@@ -672,7 +676,12 @@
         <translation>Cambiar la contraseña</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+4"/>
+        <source>No password defined</source>
+        <translation>No se ha establecido ninguna contraseña</translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>Define a password</source>
         <translation>Definir una contraseña</translation>
     </message>
@@ -689,9 +698,9 @@
         <translation>Conectar</translation>
     </message>
     <message>
-        <location line="+93"/>
+        <location line="+95"/>
         <source>Select one or more directories and/or files to share</source>
-        <translation type="unfinished"></translation>
+        <translation>Seleccione uno o más directorios y/o archivos para compartir</translation>
     </message>
     <message>
         <location line="+58"/>
@@ -719,22 +728,22 @@
     <message>
         <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="+276"/>
         <source>Name</source>
-        <translation type="unfinished">Nombre</translation>
+        <translation>Nombre</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Path</source>
-        <translation type="unfinished"></translation>
+        <translation>Ruta</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Size</source>
-        <translation type="unfinished">Tamaño</translation>
+        <translation>Tamaño</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Free space</source>
-        <translation type="unfinished">Espacio libre</translation>
+        <translation>Espacio libre</translation>
     </message>
 </context>
 <context>
@@ -914,7 +923,7 @@
         <translation>Local</translation>
     </message>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="+62"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="+63"/>
         <source>D-LAN Core cannot be installed as a service</source>
         <translation>El núcleo de D-LAN no puede instalarse como servicio</translation>
     </message>
@@ -936,12 +945,12 @@
     <message>
         <location filename="../GUI/Utils.cpp" line="+49"/>
         <source>Select one or more directories and/or files</source>
-        <translation type="unfinished"></translation>
+        <translation>Seleccione uno o más directorios y/o archivos</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Select a directory where to download to</source>
-        <translation type="unfinished"></translation>
+        <translation>Seleccione un directorio de destino para la descarga</translation>
     </message>
 </context>
 <context>
@@ -949,7 +958,7 @@
     <message>
         <location filename="../GUI/RemoteBrowseDialog.ui" line="+14"/>
         <source>Select some directories and/or files</source>
-        <translation type="unfinished"></translation>
+        <translation>Seleccione directorios y/o archivos</translation>
     </message>
 </context>
 <context>
@@ -962,12 +971,12 @@
     <message>
         <location line="+40"/>
         <source>Join the room</source>
-        <translation>unirse a la habitación</translation>
+        <translation>Unirse a la habitación</translation>
     </message>
     <message>
         <location line="-7"/>
         <source>Room name</source>
-        <translation type="unfinished"></translation>
+        <translation>Nombre de la habitación</translation>
     </message>
 </context>
 <context>
@@ -991,7 +1000,7 @@
     <message>
         <location line="+26"/>
         <source>View advanced options</source>
-        <translation type="unfinished"></translation>
+        <translation>Ver opciones avanzadas</translation>
     </message>
     <message>
         <location line="+72"/>
@@ -1052,32 +1061,32 @@
     <message>
         <location line="+14"/>
         <source>Shared folders and files</source>
-        <translation type="unfinished"></translation>
+        <translation>Directorios y archivos compartidos</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Add new shared directories and/or files</source>
-        <translation type="unfinished"></translation>
+        <translation>Agregar nuevos directorios y/o archivos compartidos</translation>
     </message>
     <message>
         <location line="+23"/>
         <source>Remove the selected shared directory or file</source>
-        <translation type="unfinished"></translation>
+        <translation>Remover el directorio o archivo compartido seleccionado</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>Move down the selected shared directory or file</source>
-        <translation type="unfinished"></translation>
+        <translation>Mover hacia abajo el directorio o archivo compartido seleccionado</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>Move up the selected shared directory or file</source>
-        <translation type="unfinished"></translation>
+        <translation>Mover hacia arriba el directorio o archivo compartido seleccionado</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>Open location of the selected shared directory or file</source>
-        <translation type="unfinished"></translation>
+        <translation>Abrir la ubicación del directorio o archivo compartido seleccionado</translation>
     </message>
     <message>
         <location line="+50"/>

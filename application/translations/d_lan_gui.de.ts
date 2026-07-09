@@ -223,8 +223,12 @@
         <translation>Eingereiht</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Getting the hashes..</source>
+        <translation type="vanished">Lade Prüfsummen..</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Getting hashes..</source>
         <translation>Lade Prüfsummen..</translation>
     </message>
     <message>
@@ -658,12 +662,12 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+242"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+244"/>
         <source>Default</source>
         <translation>Standard</translation>
     </message>
     <message>
-        <location line="+55"/>
+        <location line="+58"/>
         <source>Interface not active</source>
         <translation>Schnittstelle inaktiv</translation>
     </message>
@@ -673,7 +677,12 @@
         <translation>Passwort ändern</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+4"/>
+        <source>No password defined</source>
+        <translation>Kein Passwort festgelegt</translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>Define a password</source>
         <translation>Passwort festlegen</translation>
     </message>
@@ -690,7 +699,7 @@
         <translation>Verbinden</translation>
     </message>
     <message>
-        <location line="+93"/>
+        <location line="+95"/>
         <source>Select one or more directories and/or files to share</source>
         <translation>Wählen Sie einen oder mehrere Ordner und/oder Dateien zum Freigeben aus</translation>
     </message>
@@ -829,7 +838,7 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="+62"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="+63"/>
         <source>D-LAN Core cannot be installed as a service</source>
         <translation>D-LAN kann nicht als Dienst installiert werden</translation>
     </message>

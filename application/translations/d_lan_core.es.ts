@@ -34,7 +34,7 @@
 <context>
     <name>DM::FileDownload</name>
     <message>
-        <location filename="../Core/DownloadManager/priv/FileDownload.cpp" line="458"/>
+        <location filename="../Core/DownloadManager/priv/FileDownload.cpp" line="465"/>
         <source>File completed: %1%2%3</source>
         <translation>Archivo completado: %1%2%3</translation>
     </message>
@@ -44,7 +44,7 @@
     <message>
         <location filename="../Core/FileManager/priv/Cache/FileHasher.cpp" line="87"/>
         <source>Computing hashes of %1 . . .</source>
-        <translation>Calculando hashes de %1</translation>
+        <translation>Calculando hashes de %1 . . .</translation>
     </message>
 </context>
 <context>
@@ -58,12 +58,12 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../Core/Core.cpp" line="105"/>
+        <location filename="../Core/Core.cpp" line="107"/>
         <source>D-LAN Core version %1 is starting . . .</source>
-        <translation>D-LAN Core versión %1 esta iniciando . . .</translation>
+        <translation>D-LAN Core versión %1 se está iniciando . . .</translation>
     </message>
     <message>
-        <location filename="../Core/Core.cpp" line="123"/>
+        <location filename="../Core/Core.cpp" line="125"/>
         <source>Ready to serve</source>
         <translation>Listo para servir</translation>
     </message>
@@ -75,8 +75,7 @@
     <message>
         <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="342"/>
         <source>The version (%1) of the queue file &quot;%2&quot; doesn&apos;t match the current version (%3). Queue will be reset.</source>
-        <translatorcomment>La versión (%1) del archivo de cola &quot;%2&quot; no concuerda la versión actual (%3). La cola será restablecida</translatorcomment>
-        <translation></translation>
+        <translation>La versión (%1) del archivo de cola &quot;%2&quot; no concuerda con la versión actual (%3). La cola será restablecida.</translation>
     </message>
 </context>
 </TS>

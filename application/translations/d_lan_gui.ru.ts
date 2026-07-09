@@ -223,8 +223,12 @@
         <translation>В очереди</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Getting the hashes..</source>
+        <translation type="vanished">Подсчёт контрольных сумм..</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Getting hashes..</source>
         <translation>Подсчёт контрольных сумм..</translation>
     </message>
     <message>
@@ -658,12 +662,12 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+242"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+244"/>
         <source>Default</source>
         <translation>Стандартный</translation>
     </message>
     <message>
-        <location line="+55"/>
+        <location line="+58"/>
         <source>Interface not active</source>
         <translation>Интерфейс не активен</translation>
     </message>
@@ -673,7 +677,12 @@
         <translation>Сменить пароль</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+4"/>
+        <source>No password defined</source>
+        <translation>Пароль не установлен</translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>Define a password</source>
         <translation>Установить пароль</translation>
     </message>
@@ -690,7 +699,7 @@
         <translation>Подключиться</translation>
     </message>
     <message>
-        <location line="+93"/>
+        <location line="+95"/>
         <source>Select one or more directories and/or files to share</source>
         <translation>Выберите одну или несколько папок и/или файлов для общего доступа</translation>
     </message>
@@ -829,7 +838,7 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="+62"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="+63"/>
         <source>D-LAN Core cannot be installed as a service</source>
         <translation>D-LAN не может быть установлен как служба</translation>
     </message>

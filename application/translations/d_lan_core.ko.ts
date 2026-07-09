@@ -34,7 +34,7 @@
 <context>
     <name>DM::FileDownload</name>
     <message>
-        <location filename="../Core/DownloadManager/priv/FileDownload.cpp" line="458"/>
+        <location filename="../Core/DownloadManager/priv/FileDownload.cpp" line="465"/>
         <source>File completed: %1%2%3</source>
         <translation>파일 완료: %1%2%3</translation>
     </message>
@@ -63,12 +63,12 @@
         <translation>대기열 파일 &quot;%2&quot;의 버전(%1)이 현재 버전(%3)과 일치하지 않습니다. 대기열이 초기화됩니다.</translation>
     </message>
     <message>
-        <location filename="../Core/Core.cpp" line="105"/>
+        <location filename="../Core/Core.cpp" line="107"/>
         <source>D-LAN Core version %1 is starting . . .</source>
         <translation>D-LAN 코어 버전 %1을(를) 시작하는 중 . . .</translation>
     </message>
     <message>
-        <location filename="../Core/Core.cpp" line="123"/>
+        <location filename="../Core/Core.cpp" line="125"/>
         <source>Ready to serve</source>
         <translation>준비 완료</translation>
     </message>

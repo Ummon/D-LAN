@@ -223,8 +223,12 @@
         <translation>En queue</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Getting the hashes..</source>
+        <translation type="vanished">Obtention des empreintes..</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Getting hashes..</source>
         <translation>Obtention des empreintes..</translation>
     </message>
     <message>
@@ -658,12 +662,12 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+242"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+244"/>
         <source>Default</source>
         <translation>Défaut</translation>
     </message>
     <message>
-        <location line="+55"/>
+        <location line="+58"/>
         <source>Interface not active</source>
         <translation>Interface inactive</translation>
     </message>
@@ -673,7 +677,12 @@
         <translation>Changer le mot de passe</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+4"/>
+        <source>No password defined</source>
+        <translation>Aucun mot de passe défini</translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>Define a password</source>
         <translation>Définir un mot de passe</translation>
     </message>
@@ -690,7 +699,7 @@
         <translation>Connecter</translation>
     </message>
     <message>
-        <location line="+93"/>
+        <location line="+95"/>
         <source>Select one or more directories and/or files to share</source>
         <translation>Sélectionnez un ou plusieurs dossiers et/ou fichiers à partager</translation>
     </message>
@@ -829,7 +838,7 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="+62"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="+63"/>
         <source>D-LAN Core cannot be installed as a service</source>
         <translation>D-LAN ne peut pas être installé comme service</translation>
     </message>
