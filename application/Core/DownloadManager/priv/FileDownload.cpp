@@ -184,13 +184,20 @@ void FileDownload::populateQueueEntry(Protos::Queue::Queue::Entry* entry) const
 
    for (int i = 0; i < this->chunkDownloaders.size() && i < entry->remote_entry().chunks_size(); i++)
    {
-      if (entry->remote_entry().chunks(i).hash().size() == 0 && !this->chunkDownloaders[i].isNull())
-         entry->mutable_remote_entry()->mutable_chunks(i)->set_hash(
-            this->chunkDownloaders[i]->getHash().getData(),
-            Common::Hash::HASH_SIZE
-         );
+      if (!this->chunkDownloaders[i].isNull())
+      {
+         if (entry->remote_entry().chunks(i).hash().size() == 0)
+            entry->mutable_remote_entry()->mutable_chunks(i)->set_hash(
+               this->chunkDownloaders[i]->getHash().getData(),
+               Common::Hash::HASH_SIZE
+            );
 
-      entry->add_known_bytes(this->chunkDownloaders[i]->getDownloadedBytes());
+         entry->add_known_bytes(this->chunkDownloaders[i]->getDownloadedBytes());
+      }
+      else
+      {
+         entry->add_known_bytes(0);
+      }
    }
 }
 

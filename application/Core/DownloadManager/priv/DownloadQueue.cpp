@@ -366,10 +366,9 @@ void DownloadQueue::saveToFile() const
    Protos::Queue::Queue savedQueue;
    savedQueue.set_version(FILE_QUEUE_VERSION);
 
-   for (QListIterator<Download*> i(this->downloads); i.hasNext();)
+   for (const auto& download : this->downloads)
    {
       Protos::Queue::Queue::Entry* queueEntry = savedQueue.add_entries();
-      Download* download = i.next();
       download->populateQueueEntry(queueEntry);
    }
 
