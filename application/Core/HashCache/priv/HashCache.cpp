@@ -58,6 +58,7 @@ UPDATE SET [path] = $1, [size] = $2, [date_last_modified] = $3, [hashes] = $4
 
 HashCache::~HashCache()
 {
+   this->db.close();
    L_DEBU("HashCache deleted");
 }
 
