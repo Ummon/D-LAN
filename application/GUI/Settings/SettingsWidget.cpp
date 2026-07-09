@@ -431,7 +431,7 @@ void SettingsWidget::newState(const Protos::GUI::State& state)
    }
    else
    {
-      this->ui->txtPassword->setPlaceholderText("No password defined");
+      this->ui->txtPassword->setPlaceholderText(tr("No password defined"));
       this->ui->butResetPassword->setEnabled(false);
       this->ui->butChangePassword->setText(tr("Define a password"));
    }
