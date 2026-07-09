@@ -235,7 +235,8 @@ Protos::Core::Settings* Core::createDefaultValuesSettings()
    settings->set_save_chat_messages_period(90000);
 
    ///// RemoteControlManager /////
-   settings->set_remote_control_port(59485);
+   settings->set_remote_control_port(59485);   
+   settings->set_salt(42);
    settings->set_remote_refresh_rate(1000);
    settings->set_remote_max_nb_connection(5);
    settings->set_search_lifetime(5000);
