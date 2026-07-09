@@ -22,6 +22,7 @@ using namespace RCM;
 #include <limits>
 
 #include <QCoreApplication>
+#include <QStorageInfo>
 #include <QDateTime>
 #include <QNetworkInterface>
 #include <QRandomGenerator64>
@@ -653,34 +654,41 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
 
          const QString& path = QString::fromStdString(browseMessage.path());
 
-         QFileInfoList content;
-
          if (path.isEmpty())
          {
-            content = QDir::drives();
+            for (const QStorageInfo& storage : QStorageInfo::mountedVolumes())
+            {
+               if (!storage.isValid() || !storage.isReady())
+                  continue;
+
+               auto entryResult = result.mutable_entries()->Add();
+
+               entryResult->set_name(storage.rootPath().toStdString());
+               entryResult->set_type(Protos::GUI::LocalBrowseResult::DIR);
+               entryResult->set_size(storage.bytesTotal() - storage.bytesAvailable());
+
+               entryResult->set_volume_label(storage.name().toStdString());
+               entryResult->set_capacity(storage.bytesTotal());
+            }
          }
          else
          {
-            QDir dir(path);
-            if (dir.exists())
-               content = dir.entryInfoList(ENTRY_LIST_FILTER);
-         }
+            for (const auto& entry : QDir(path).entryInfoList(ENTRY_LIST_FILTER))
+            {
+               const bool isDir = entry.isDir();
+               const auto path = Common::Path(entry.absoluteFilePath() + (isDir ? "/" : ""));
 
-         for (const auto& entry : std::as_const(content))
-         {
-            const bool isDir = entry.isDir();
-            const auto path = Common::Path(entry.absoluteFilePath() + (isDir ? "/" : ""));
+               auto entryResult = result.mutable_entries()->Add();
 
-            auto entryResult = result.mutable_entries()->Add();
+               entryResult->set_name(path.getLastElement(true).toStdString());
+               entryResult->set_type(isDir ? Protos::GUI::LocalBrowseResult::DIR : Protos::GUI::LocalBrowseResult::FILE);
+               entryResult->set_date_modified(entry.lastModified().toMSecsSinceEpoch());
 
-            entryResult->set_name(path.getLastElement(true).toStdString());
-            entryResult->set_type(isDir ? Protos::GUI::LocalBrowseResult::DIR : Protos::GUI::LocalBrowseResult::FILE);
-            entryResult->set_date_modified(entry.lastModified().toMSecsSinceEpoch());
-
-            if (isDir)
-               entryResult->set_size(QDir(entry.absoluteFilePath()).entryList(ENTRY_LIST_FILTER).size());
-            else
-               entryResult->set_size(entry.size());
+               if (isDir)
+                  entryResult->set_size(QDir(entry.absoluteFilePath()).entryList(ENTRY_LIST_FILTER).size());
+               else
+                  entryResult->set_size(entry.size());
+            }
          }
 
          this->send(Common::MessageHeader::GUI_LOCAL_BROWSE_RESULT, result);

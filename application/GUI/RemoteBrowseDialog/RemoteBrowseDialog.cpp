@@ -57,6 +57,9 @@ RemoteBrowseDialog::RemoteBrowseDialog(QSharedPointer<RCC::ICoreConnection> core
    this->ui->treeView->setSelectionBehavior(QAbstractItemView::SelectRows);
    this->ui->treeView->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
+   this->ui->buttonBox->button(QDialogButtonBox::Ok)->setText(tr("Ok"));
+   this->ui->buttonBox->button(QDialogButtonBox::Cancel)->setText(tr("Cancel"));
+
    connect(coreConnection.data(), &RCC::ICoreConnection::disconnected, this, [this]() { this->reject(); });
 
    this->setModes(FILE | DIR | SELECT_MULTIPLE);

@@ -272,13 +272,24 @@ QVariant RemoteBrowseModel::Tree::data(int column) const
    case NAME:
       {
          const auto& item = this->getItem();
-         return QString::fromStdString(item.name());
+         if (item.volume_label().empty())
+            return QString::fromStdString(item.name());
+         else
+         {
+            QString name = QString::fromStdString(item.name());
+            if (name.size() >= 3 && name[name.size() - 1] == '/' || name[name.size() - 1] == '\\')
+               name.removeLast();
+            return QString(QString::fromStdString(item.volume_label()) + " (" + name + ")");
+         }
       }
 
    case DATE_MODIFIED:
       {
-         QDateTime dateTime = QDateTime::fromMSecsSinceEpoch(this->getItem().date_modified());
-         return dateTime;
+         const auto& item = this->getItem();
+         if (item.volume_label().empty() && item.date_modified() != 0)
+            return QDateTime::fromMSecsSinceEpoch(this->getItem().date_modified());
+         else
+            return QVariant();
       }
 
    case SIZE:
@@ -286,6 +297,12 @@ QVariant RemoteBrowseModel::Tree::data(int column) const
          const auto& item = this->getItem();
          if (item.type() == Protos::GUI::LocalBrowseResult::FILE)
             return Common::Global::formatByteSize(this->getItem().size());
+         else if (this->getItem().capacity() != 0)
+            return
+               QString(
+                  Common::Global::formatByteSize(this->getItem().capacity() - this->getItem().size()) + " " +
+                  tr("free")
+               );
          else
             return QVariant();
       }

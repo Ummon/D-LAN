@@ -266,8 +266,12 @@ message LocalBrowseResult {
    message Entry {
       string name = 1;
       int64 date_modified = 2; // [ms] since epoch.
-      int64 size = 3; // Bytes for file, number of sub-entries for directory.
-      EntryType type = 4;
+      int64 size = 3; // Bytes for file and root, number of sub-entries for directory.
+      EntryType type = 4;      
+
+      // Only used for top roots.
+      string volume_label = 5;
+      int64 capacity = 6;
    }
 
    repeated Entry entries = 1;
