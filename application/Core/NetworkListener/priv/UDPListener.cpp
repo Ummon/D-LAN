@@ -209,7 +209,7 @@ void UDPListener::sendIMAliveMessage()
       QSharedPointer<DM::IChunkDownloader> chunkDownloader = i.next();
       IMAliveMessage.add_chunks()->set_hash(chunkDownloader->getHash().getData(), Common::Hash::HASH_SIZE);
 
-      // Commented out because there are some issues when downloading its own chunks.
+      // Commented out because there are some issues when downloading our own chunks.
       // If we already have the chunk . . .
       // QSharedPointer<FM::IChunk> chunk = this->fileManager->getChunk(chunkDownloader->getHash());
       // if (!chunk.isNull() && chunk->isComplete())

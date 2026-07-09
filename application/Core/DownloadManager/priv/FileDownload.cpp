@@ -572,7 +572,10 @@ void FileDownload::nextHash(const Protos::Core::HashResult& hashResult)
    chunkDownloader->setPeerSource(this->peerSource); // May start a download.
 
    if (num < static_cast<quint32>(this->remoteEntry.chunks_size()))
-      this->remoteEntry.mutable_chunks(num)->set_hash(hash.getData(), Common::Hash::HASH_SIZE); // Used during the saving of the queue, see Download::populateEntry(..).
+      this->remoteEntry.mutable_chunks(num)->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
+
+   if (num < static_cast<quint32>(this->localEntry.chunks_size()))
+      this->localEntry.mutable_chunks(num)->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
 
    emit newHashKnown();
 }

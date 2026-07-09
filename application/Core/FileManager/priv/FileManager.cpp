@@ -168,8 +168,14 @@ QList<QSharedPointer<IChunk>> FileManager::getAllChunks(
             QList<QSharedPointer<IChunk>> ret;
             for (int j = 0; j < allChunks.size(); j++)
             {
-               if (allChunks[j]->getHash() != hashes[j]) // Only one hashes doesn't match -> all the file doesn't match.
+               // Only one hashes doesn't match -> all the file doesn't match.
+               if (
+                  !allChunks[j]->getHash().isNull() &&
+                  !hashes[j].isNull() &&
+                  allChunks[j]->getHash() != hashes[j]
+               )
                   return QList<QSharedPointer<IChunk>>();
+
                ret << allChunks[j];
             }
             return ret;
