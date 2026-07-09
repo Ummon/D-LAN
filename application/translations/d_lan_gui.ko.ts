@@ -950,7 +950,7 @@
     <message>
         <location filename="../GUI/RemoteBrowseDialog.ui" line="14"/>
         <source>Select some directories and/or files</source>
-        <translation type="unfinished"></translation>
+        <translation>폴더 및/또는 파일을 선택하십시오</translation>
     </message>
 </context>
 <context>

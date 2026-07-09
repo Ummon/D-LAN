@@ -237,8 +237,10 @@ void SettingsWidget::fillComboBoxLanguages()
 
 void SettingsWidget::fillComboBoxStyles()
 {
+   const int currentIndex = this->ui->cmbStyles->currentIndex();
    const QString& currentStyleFilename = SETTINGS.get<QString>("style");
 
+   this->ui->cmbStyles->clear();
    this->ui->cmbStyles->addItem(tr("Default"));
 
    const QDir styleDir(QCoreApplication::applicationDirPath() + "/" + Common::Constants::STYLE_DIRECTORY);
@@ -249,6 +251,9 @@ void SettingsWidget::fillComboBoxStyles()
       if (currentStyleFilename == dirname)
          this->ui->cmbStyles->setCurrentIndex(this->ui->cmbStyles->count() - 1);
    }
+
+   if (currentIndex != -1)
+      this->ui->cmbStyles->setCurrentIndex(currentIndex);
 }
 
 void SettingsWidget::connectAllAddressButtons()
@@ -570,11 +575,13 @@ void SettingsWidget::saveCoreSettings()
 
 void SettingsWidget::cmbLanguageChanged(int cmbIndex)
 {
-   const Common::Language& lang = this->ui->cmbLanguages->itemData(cmbIndex).value<Common::Language>();
+   const Common::Language& lang = this->ui->cmbLanguages->itemData(cmbIndex).value<Common::Language>();   
    emit languageChanged(lang.filename);
    this->coreConnection->setCoreLanguage(lang.locale);
    SETTINGS.set("language", this->ui->cmbLanguages->itemData(this->ui->cmbLanguages->currentIndex()).value<Common::Language>().locale);
    SETTINGS.save();
+
+   this->fillComboBoxStyles(); // To translate the default style name.
 }
 
 void SettingsWidget::cmbStyleChanged(int cmbIndex)
