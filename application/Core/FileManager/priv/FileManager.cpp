@@ -102,6 +102,7 @@ FileManager::FileManager(QSharedPointer<HC::IHashCache> hashCache) :
 
 FileManager::~FileManager()
 {
+   this->fileUpdater.stop();
    this->cache.disconnect(this);
    L_DEBU("FileManager deleted");
 }
