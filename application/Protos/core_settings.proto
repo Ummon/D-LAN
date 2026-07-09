@@ -56,7 +56,7 @@ message Settings {
    uint32 peer_imalive_period = 60; // [default = 5000] [ms]. Send an IMAlive message each 5 s.
    uint32 unicast_base_port = 61; // [default = 59487] If it's already taken we will look further to a free port. (UDP + TCP).
    uint32 multicast_port = 62; // [default = 59486] (UDP)
-   uint32 multicast_group = 63; // [default = 3960285976] IPv4: 236.13.43.24 / IPv6: ff0e:ec0d:2b18::
+   uint32 multicast_group = 63; // [default = 3960285976] IPv4: 236.13.43.24 / IPv6: ff1e:<10 hash bytes>:ec0d:2b18
    string channel = 89; // [default = "main"] Used with 'multicast_group' to define the IPv6 multicast group.
    uint32 multicast_ttl = 64; // [default = 31].
    uint32 max_udp_datagram_size = 65; // [default = 16356] (~16 KiB). It doesn't include the IP+UDP header (28 bytes). It's an arbitrary limit and will not prevent IP fragmentation.
@@ -88,7 +88,6 @@ message Settings {
    ///// RemoteControlManager /////
    uint32 remote_control_port = 80; // [default = 59485].
    Common.Hash remote_password = 81; // Hashed + salted. Only used for non-local connection. If defined salt field must be set.
-   uint64 salt = 90; // [default = 42]
    uint32 remote_refresh_rate = 82; // [default = 1000] [ms].
    uint32 remote_max_nb_connection = 83; // [default = 5].
    uint32 search_lifetime = 84; // [default = 5000] [ms]. (5s)
