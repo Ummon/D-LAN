@@ -68,12 +68,14 @@ Core::Core(bool resetSettings, QLocale locale)
             const QString nick = SETTINGS.get<QString>("nick");
             const Common::Hash peerID = SETTINGS.get<Common::Hash>("peer_id");
             const Protos::Common::Interface::Address::Protocol listen_any = static_cast<Protos::Common::Interface::Address::Protocol>(SETTINGS.get<quint32>("listen_any"));
+            const QList<Protos::Common::SharedEntry> sharedEntries = SETTINGS.getRepeated<Protos::Common::SharedEntry>("shared_entries");
 
             SETTINGS.saveTo(Common::Constants::CORE_SETTINGS_FILENAME + ".backup");
             SETTINGS.setSettingsMessage(createDefaultValuesSettings());
             SETTINGS.set("nick", nick);
             SETTINGS.set("peer_id", peerID);
             SETTINGS.set("listen_any", static_cast<quint32>(listen_any));
+            SETTINGS.set("shared_entries", sharedEntries);
             SETTINGS.save();
          }
 
