@@ -151,7 +151,7 @@ void D_LAN_GUI::updateTrayIconMenu()
       this->trayIconMenu.addAction(tr("Stop the user interface"), this, &D_LAN_GUI::exitGUI);
 
    this->trayIconMenu.addSeparator();
-   this->trayIconMenu.addAction(tr("Exit"), this, &D_LAN_GUI::exit);
+   this->trayIconMenu.addAction(tr("Exit"), this, [this]() { this->D_LAN_GUI::exit(true); });
 }
 
 /**
