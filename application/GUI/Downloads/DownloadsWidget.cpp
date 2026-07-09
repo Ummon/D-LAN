@@ -56,7 +56,7 @@ void DownloadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
          progressBarOption.text = tr("Queued");
          break;
       case Protos::Common::DownloadStatus::GETTING_THE_HASHES:
-         progressBarOption.text = tr("Getting the hashes..");
+         progressBarOption.text = tr("Getting hashes..");
          break;
       case Protos::Common::DownloadStatus::DOWNLOADING:
          {
