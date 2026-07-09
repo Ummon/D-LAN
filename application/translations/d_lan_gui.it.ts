@@ -587,6 +587,27 @@
     </message>
 </context>
 <context>
+    <name>GUI::RemoteBrowseDialog</name>
+    <message>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="60"/>
+        <source>Ok</source>
+        <translation>OK</translation>
+    </message>
+    <message>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="61"/>
+        <source>Cancel</source>
+        <translation>Annulla</translation>
+    </message>
+</context>
+<context>
+    <name>GUI::RemoteBrowseModel</name>
+    <message>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseModel.cpp" line="304"/>
+        <source>free</source>
+        <translation>liberi</translation>
+    </message>
+</context>
+<context>
     <name>GUI::RoomsDock</name>
     <message>
         <location filename="../GUI/Chat/RoomsDock.cpp" line="96"/>

@@ -587,6 +587,27 @@
     </message>
 </context>
 <context>
+    <name>GUI::RemoteBrowseDialog</name>
+    <message>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="60"/>
+        <source>Ok</source>
+        <translation>확인</translation>
+    </message>
+    <message>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="61"/>
+        <source>Cancel</source>
+        <translation>취소</translation>
+    </message>
+</context>
+<context>
+    <name>GUI::RemoteBrowseModel</name>
+    <message>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseModel.cpp" line="304"/>
+        <source>free</source>
+        <translation>사용 가능</translation>
+    </message>
+</context>
+<context>
     <name>GUI::RoomsDock</name>
     <message>
         <location filename="../GUI/Chat/RoomsDock.cpp" line="96"/>

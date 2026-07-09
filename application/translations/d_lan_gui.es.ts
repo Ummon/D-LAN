@@ -229,7 +229,7 @@
     <message>
         <location line="+3"/>
         <source>Getting hashes..</source>
-        <translation>Obteniendo los hashes..</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+10"/>
@@ -586,6 +586,27 @@
     </message>
 </context>
 <context>
+    <name>GUI::RemoteBrowseDialog</name>
+    <message>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="+60"/>
+        <source>Ok</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>GUI::RemoteBrowseModel</name>
+    <message>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseModel.cpp" line="+304"/>
+        <source>free</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>GUI::RoomsDock</name>
     <message>
         <location filename="../GUI/Chat/RoomsDock.cpp" line="+96"/>
@@ -678,7 +699,7 @@
     <message>
         <location line="+4"/>
         <source>No password defined</source>
-        <translation>No se ha establecido ninguna contraseña</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+2"/>
