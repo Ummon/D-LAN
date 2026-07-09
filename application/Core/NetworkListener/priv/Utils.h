@@ -28,6 +28,6 @@ namespace NL
    public:
       static QNetworkInterface getCurrentInterfaceToListenTo();
       static QHostAddress getCurrentAddressToListenTo();
-      static QHostAddress getMulticastGroup();
+      static QHostAddress getMulticastGroup(QAbstractSocket::NetworkLayerProtocol protocol);
    };
 }

@@ -413,12 +413,14 @@ void UDPListener::initMulticastUDPSocket()
    this->multicastSocket.close();
    this->multicastSocket.disconnect(this);
 
-   this->multicastGroup = Utils::getMulticastGroup();
+   QHostAddress currentAddressToListenTo = Utils::getCurrentAddressToListenTo();
+
+   this->multicastGroup = Utils::getMulticastGroup(currentAddressToListenTo.protocol());
 
    if (
       !this->multicastSocket.bind(
          // Always bind to any, it seems there are some issue on Windows to bind multicast address to specific interface.
-         Utils::getCurrentAddressToListenTo().protocol() == QAbstractSocket::IPv4Protocol ?
+         currentAddressToListenTo.protocol() == QAbstractSocket::IPv4Protocol ?
               QHostAddress::AnyIPv4
             : QHostAddress::AnyIPv6,
          MULTICAST_PORT,

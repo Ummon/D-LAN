@@ -21,6 +21,7 @@ using namespace NL;
 
 #include <QString>
 #include <QNetworkInterface>
+#include <QAbstractSocket>
 
 #include <Protos/common.pb.h>
 #include <Protos/core_settings.pb.h>
@@ -33,7 +34,7 @@ using namespace NL;
 QNetworkInterface Utils::getCurrentInterfaceToListenTo()
 {
    const QString addressToListen = SETTINGS.get<QString>("listen_address");
-   auto interfaces = QNetworkInterface::allInterfaces();
+   const auto interfaces = QNetworkInterface::allInterfaces();
 
    if (interfaces.isEmpty() || addressToListen.isEmpty())
       return QNetworkInterface();
@@ -50,6 +51,15 @@ QNetworkInterface Utils::getCurrentInterfaceToListenTo()
             return *i;
       }
    }
+
+   // Fall back if 'addressToListen' isn't found.
+   for (const auto& interface : interfaces)
+      if (
+         interface.isValid() &&
+         interface.flags().testFlags(QNetworkInterface::IsUp | QNetworkInterface::IsRunning | QNetworkInterface::CanMulticast) &&
+         !interface.flags().testFlags(QNetworkInterface::IsLoopBack)
+      )
+         return interface;
 
    return interfaces.first();
 }
@@ -90,22 +100,24 @@ QHostAddress Utils::getCurrentAddressToListenTo()
   * Return the multicast group. It can be an IPv6 or an IPv4 group, depending of the current address.
   * The group is stored in the setting variable 'multicast_group'.
   */
-QHostAddress Utils::getMulticastGroup()
+QHostAddress Utils::getMulticastGroup(QAbstractSocket::NetworkLayerProtocol protocol)
 {
-   const quint32 group = SETTINGS.get<quint32>("multicast_group");
-   QHostAddress currentAddressToListenTo = Utils::getCurrentAddressToListenTo();
+   static const quint32 group = SETTINGS.get<quint32>("multicast_group");
 
-   QByteArray channelHash = Common::Hasher::hash(SETTINGS.get<QString>("channel")).getByteArray();
-
-   if (currentAddressToListenTo.protocol() == QAbstractSocket::IPv4Protocol)
-      return QHostAddress(group);
-   else // IPv6.
+   if (protocol == QAbstractSocket::IPv4Protocol)
    {
-      Q_IPV6ADDR groupIPv6;
-      groupIPv6[0] = 0xFF;
-      groupIPv6[1] = 0x0E;
+      return QHostAddress(group);
+   }
+   else // Default is IPv6.
+   {
+      QByteArray channelHash = Common::Hasher::hash(SETTINGS.get<QString>("channel")).getByteArray();
 
-      for (int i = 0; i < 10; i++)
+      Q_IPV6ADDR groupIPv6;
+      // Scope: link-local, transient.
+      groupIPv6[0] = 0xFF;
+      groupIPv6[1] = 0x12;
+
+      for (int i = 0; i < 10 && i < channelHash.size(); ++i)
          groupIPv6[i+2] = channelHash[i];
 
       groupIPv6[12] = (group & 0xFF000000) >> 24;

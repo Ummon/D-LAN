@@ -575,7 +575,7 @@ void SettingsWidget::saveCoreSettings()
 
 void SettingsWidget::cmbLanguageChanged(int cmbIndex)
 {
-   const Common::Language& lang = this->ui->cmbLanguages->itemData(cmbIndex).value<Common::Language>();   
+   const Common::Language& lang = this->ui->cmbLanguages->itemData(cmbIndex).value<Common::Language>();
    emit languageChanged(lang.filename);
    this->coreConnection->setCoreLanguage(lang.locale);
    SETTINGS.set("language", this->ui->cmbLanguages->itemData(this->ui->cmbLanguages->currentIndex()).value<Common::Language>().locale);
