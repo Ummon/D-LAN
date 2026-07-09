@@ -610,11 +610,12 @@ bool FileDownload::tryToLinkToAnExistingFile()
    if (this->nbHashesKnown > 0)
    {
       QList<Common::Hash> hashes;
-      for (QListIterator<QSharedPointer<ChunkDownloader>> i(this->chunkDownloaders); i.hasNext();)
+      for (const auto& chunkDownloader : std::as_const(this->chunkDownloaders))
       {
-         auto chunkDownloader = i.next();
          if (!chunkDownloader.isNull())
             hashes << chunkDownloader->getHash();
+         else
+            hashes << Common::Hash();
       }
 
       for (QListIterator<QSharedPointer<FM::IChunk>> i(this->fileManager->getAllChunks(this->localEntry, hashes)); i.hasNext();)
