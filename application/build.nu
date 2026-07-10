@@ -1,10 +1,16 @@
 #!/usr/bin/env nu
 
-def main [--clean] {
-    main build-all --clean=$clean
+# By default will build everything and clean all previous build.
+#
+# See the build-all subcommand.
+def main [] {
+    main build-all --clean
 }
 
-def "main build-all" [--clean] {
+# Build everything, it will not clean by default.
+def "main build-all" [
+    --clean # Clean all previous compiled files.
+] {
     print "=== BUILD ALL ==="
     main translations
     main compile --clean=$clean
@@ -12,10 +18,14 @@ def "main build-all" [--clean] {
     main make-setup
 }
 
+# Update .ts translation files which can be updated with Qt Linguist.
+#
+# It will then generate the compiled files .qm.
+# If you have edited the ts file, re-run this subcommand to update the .qm files.
 def "main translations" [] {
     print "=== TRANSLATIONS ==="
 
-    let langs = [fr es ru de]
+    let langs = [fr es ru de ko it]
     for $lang in $langs {
         lupdate-pro.exe Core.pro -ts translations\d_lan_core.($lang).ts
         lupdate-pro.exe Common\RemoteCoreController\RemoteCoreController.pro GUI.pro -ts translations\d_lan_gui.($lang).ts
@@ -33,9 +43,15 @@ def "main translations" [] {
 
     cp *gui*.qm ../GUI/output/debug/languages
     cp *core*.qm ../Core/output/debug/languages
+
+    mkdir ../Setups/Windows/setup_bundle/languages
+    cp *gui*.qm ../Setups/Windows/setup_bundle/languages
+    cp *core*.qm ../Setups/Windows/setup_bundle/languages
 }
 
-def "main compile" [--clean] {
+def "main compile" [
+    --clean # Clean all previous compiled files.
+] {
     print "=== COMPILATION ==="
 
     update_version
@@ -80,8 +96,6 @@ def "main compile" [--clean] {
             qmake $"($project_name).pro" -r -spec win32-clang-g++ "CONFIG+=release"
             mingw32-make.exe -f Makefile.Release -w -j($nb_proc)
         }
-
-        # qmake -makefile Common.pro -r "CONFIG+=release"
     }
 }
 
@@ -113,7 +127,7 @@ def "main run-tests" [] {
 }
 
 def "main make-setup" [] {
-    print "make setup"
+    print "=== MAKE SETUP ==="
 
     cd Setups/Windows
     mkdir setup_bundle
@@ -134,7 +148,4 @@ def "main make-setup" [] {
     cd ..
 
     iscc windows_setup.iss
-
-    # cd ../temp_setup
-    # windeployqt.exe --no-translations  PasswordHasher.exe D-LAN.Core.exe D-LAN.GUI.exe
 }
