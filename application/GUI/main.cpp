@@ -91,8 +91,8 @@ Protos::GUI::Settings* createDefaultValuesSettings()
    settings->set_search_time(3000);
    settings->set_socket_timeout(7000);
 
-   settings->set_main_window_width(1200);
-   settings->set_main_window_height(620);
+   settings->set_main_window_width(1300);
+   settings->set_main_window_height(700);
    settings->set_main_window_maximized(false);
 
    settings->set_download_view(Protos::GUI::Settings::TREE_VIEW);

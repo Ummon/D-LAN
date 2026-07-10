@@ -62,6 +62,12 @@
       </item>
       <item>
        <widget class="QPushButton" name="butSearch">
+        <property name="maximumSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
         <property name="toolTip">
          <string>Search among other peers &lt;ENTER&gt;</string>
         </property>
@@ -85,6 +91,12 @@
       </item>
       <item>
        <widget class="QPushButton" name="butClear">
+        <property name="maximumSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
         <property name="toolTip">
          <string>Clear fields</string>
         </property>
@@ -111,6 +123,18 @@
       </item>
       <item>
        <widget class="QPushButton" name="butAdvanced">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
         <property name="toolTip">
          <string>View advanced options</string>
         </property>
