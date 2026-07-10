@@ -2,8 +2,8 @@
 -export([langs/0, plain_lang/1, current_lang/1, tr/3, tr/4]).
 
 -import(d_lan_common, [t/1]).
- 
--include("/usr/lib/yaws/include/yaws_api.hrl"). 
+
+-include("/usr/lib/yaws/include/yaws_api.hrl").
 -include("../include/d_lan_defines.hrl").
 
 -spec langs() -> atom().
@@ -16,10 +16,10 @@
 % Return a list of all accepted languages.
 langs() ->
    [en, fr].
-   
+
 plain_lang(en) -> t("English");
 plain_lang(fr) -> t("Français").
-   
+
 %%%%%%%%%%
 
 translate(en, global, title) -> "D-LAN - A LAN file sharing software";
@@ -81,7 +81,7 @@ translate(fr, features, feat_6) -> "Gestion d'une liste des transferts. Il est p
 translate(en, features, feat_7) -> "Global chatting.";
 translate(fr, features, feat_7) -> "Chat global";
 
-translate(en, features, feat_8) -> "D-LAN can run without graphic interface (GUI) and be controlled remotely."; 
+translate(en, features, feat_8) -> "D-LAN can run without graphic interface (GUI) and be controlled remotely.";
 translate(fr, features, feat_8) -> "D-LAN peut être lancé sans interface graphique (<i>GUI</i>) et être piloté à distance.";
 
 translate(en, features, feat_9) -> "<a href=\"https://github.com/Ummon/D-LAN\">Open source</a>. Code source distributed under GPLv3 license.";
@@ -119,7 +119,7 @@ translate(fr, faq, a2) ->
    "<li>S'assurer que l'UDP multicast est autorisé sur le réseau. L'adresse utilisée est la suivante : 236.13.43.24.</li>"
    "<li>Tous les pairs doivent utiliser le même protocole : IPv4 ou IPv6, voir <i>Paramètres &gt; Réseau</i>.</li>"
    "</ul>";
-   
+
 translate(en, faq, q3) -> "D-LAN slows down my computer when hashing, what's that and why it's needed?";
 translate(fr, faq, q3) -> "D-LAN ralentit mon ordinateur lors du calcul des empreintes, qu'est ce que c'est et pourquoi est-ce nécessaire?";
 
@@ -171,59 +171,51 @@ translate(en, about, tech_used_d_lan_title) -> "D-LAN";
 translate(fr, about, tech_used_d_lan_title) -> "D-LAN";
 
 translate(en, about, tech_used_d_lan) ->
-   "<li>Programming language : <a href=\"http://en.wikipedia.org/wiki/C%2B%2B\">C++</a></li>"
-   "<li>Framework and libraries : <a href=\"http://qt.nokia.com/\">Qt 4</a></li>"
-   "<li>Compiler : <a href=\"http://gcc.gnu.org/\">GCC</a> + <a href=\"http://www.mingw.org/\">MinGW</a></li>"
-   "<li>Message serializer : <a href=\"http://code.google.com/p/protobuf/\">Protocol Buffers</a></li>"
-   "<li>Random number generator : <a href=\"http://www-personal.umich.edu/~~wagnerr/MersenneTwister.html\">Mersenne Twister</a></li>"
-   "<li>Cryptographic hash function : <a href=\"http://en.wikipedia.org/wiki/SHA-1\">SHA-1</a></li>"
-   "<li>Icons library : <a href=\"http://www.fatcow.com/free-icons\">FatCow</a></li>";
+   "<li>Programming language: <a href=\"http://en.wikipedia.org/wiki/C%2B%2B\">C++</a></li>"
+   "<li>Framework and libraries: <a href=\"https://www.qt.io/development/qt-framework\">Qt 6</a></li>"
+   "<li>Compiler: <a href=\"https://clang.llvm.org/\">Clang</a></li>"
+   "<li>Message serializer: <a href=\"http://code.google.com/p/protobuf\">Protocol Buffers</a></li>"
+   "<li>Cryptographic hash function: <a href=\"https://github.com/BLAKE3-team/BLAKE3\">BLAKE3</a></li>"
+   "<li>Database: <a href=\"https://www.sqlite.org/\">SQLite</a></li>";
 translate(fr, about, tech_used_d_lan) ->
    "<li>Language de programmation : <a href=\"http://en.wikipedia.org/wiki/C%2B%2B\">C++</a></li>"
-   "<li>Bibliothèque logicielle principale  : <a href=\"http://qt.nokia.com/\">Qt 4</a></li>"
-   "<li>Compilateur : <a href=\"http://gcc.gnu.org/\">GCC</a> + <a href=\"http://www.mingw.org/\">MinGW</a></li>"
-   "<li>Sérialisation des messages : <a href=\"http://code.google.com/p/protobuf/\">Protocol Buffers</a></li>"
-   "<li>Générateur de nombres aléatoire : <a href=\"http://www-personal.umich.edu/~~wagnerr/MersenneTwister.html\">Mersenne Twister</a></li>"
-   "<li>Fonction de hashage: <a href=\"http://fr.wikipedia.org/wiki/SHA-1\">SHA-1</a></li>"
-   "<li>Bibliothèque d'icones : <a href=\"http://www.fatcow.com/free-icons\">FatCow</a></li>";
-   
-   
+   "<li>Bibliothèque logicielle principale  : <a href=\"https://www.qt.io/development/qt-framework\">Qt 6</a></li>"
+   "<li>Compilateur : <a href=\"https://clang.llvm.org/\">Clang</a></li>"
+   "<li>Sérialisation des messages : <a href=\"http://code.google.com/p/protobuf\">Protocol Buffers</a></li>"
+   "<li>Fonction de hashage : <a href=\"https://github.com/BLAKE3-team/BLAKE3\">BLAKE3</a></li>"
+   "<li>Base de données : <a href=\"https://www.sqlite.org/\">SQLite</a></li>";
+
+
 translate(en, about, tech_used_tools_title) -> "Developpment tools";
 translate(fr, about, tech_used_tools_title) -> "Outils de développement";
 
 translate(en, about, tech_used_tools) ->
-   "<li>Development environment : <a href=\"http://qt.nokia.com/products/developer-tools/\">Qt Creator</a></li>"
-   "<li>Version control system : <a href=\"http://git-scm.com/\">git</a> + <a href=\"http://code.google.com/p/msysgit/\">msysgit</a> + <a href=\"http://code.google.com/p/tortoisegit/\">Tortoise Git</a></li>"
-   "<li>Scripting : <a href=\"http://www.gnu.org/software/bash/bash.html\">Bash</a></li>"
-   "<li>Lightweight editor : <a href=\"http://www.scintilla.org/SciTE.html\">SciTE</a></li>"
-   "<li>Project management : <a href=\"http://www.redmine.org/\">Redmine</a></li>"
-   "<li>Documentation generator : <a href=\"http://www.doxygen.org/\">Doxygen</a></li>"
-   "<li>UML editor : <a href=\"http://www.bouml.fr/\">Bouml</a></li>"
-   "<li>Setup builder : <a href=\"http://www.jrsoftware.org/isinfo.php\">Inno Setup</a></li>"
-   "<li>Vector graphics editor : <a href=\"http://inkscape.org/\">Inkscape</a></li>"
-   "<li>Bitmap graphics editor : <a href=\"http://www.gimp.org/\">GIMP</a></li>";
+   "<li>Development environment: <a href=\"http://qt.nokia.com/products/developer-tools/\">Qt Creator</a></li>"
+   "<li>Version control system: <a href=\"http://git-scm.com/\">git</li>"
+   "<li>Scripting: <a href=\"https://www.nushell.sh/\">Nushell</a></li>"
+   "<li>Project management: <a href=\"http://www.redmine.org/\">Redmine</a></li>"
+   "<li>Documentation generator: <a href=\"http://www.doxygen.org/\">Doxygen</a></li>"
+   "<li>Setup builder: <a href=\"http://www.jrsoftware.org/isinfo.php\">Inno Setup</a></li>"
+   "<li>Vector and bitmap graphics editor: <a href=\"https://www.affinity.studio/\">Affinity</a></li>";
 translate(fr, about, tech_used_tools) ->
    "<li>Environnement de développement : <a href=\"http://qt.nokia.com/products/developer-tools/\">Qt Creator</a></li>"
-   "<li>Système de gestion de versions : <a href=\"http://git-scm.com/\">git</a> + <a href=\"http://code.google.com/p/msysgit/\">msysgit</a> + <a href=\"http://code.google.com/p/tortoisegit/\">Tortoise Git</a></li>"
-   "<li>Scripting : <a href=\"http://www.gnu.org/software/bash/bash.html\">Bash</a></li>"
-   "<li>Éditeur léger : <a href=\"http://www.scintilla.org/SciTE.html\">SciTE</a></li>"
+   "<li>Système de gestion de versions : <a href=\"http://git-scm.com/\">git</a></li>"
+   "<li>Scripting : <a href=\"https://www.nushell.sh/\">Nushell</a></li>"
    "<li>Gestion de projet : <a href=\"http://www.redmine.org/\">Redmine</a></li>"
    "<li>Génération de la documentation : <a href=\"http://www.doxygen.org/\">Doxygen</a></li>"
-   "<li>Éditeur UML : <a href=\"http://bouml.free.fr/\">Bouml</a></li>"
    "<li>Système d'installation : <a href=\"http://www.jrsoftware.org/isinfo.php\">Inno Setup</a></li>"
-   "<li>Éditeur vectoriel : <a href=\"http://inkscape.org/\">Inkscape</a></li>"
-   "<li>Éditeur bitmap : <a href=\"http://www.gimp.org/\">GIMP</a></li>";
-   
+   "<li>Éditeur vectoriel et bitmap : <a href=\"https://www.affinity.studio/\">Affinity</a></li>";
+
 translate(en, about, tech_used_website_title) -> "Web site";
 translate(fr, about, tech_used_website_title) -> "Site web";
 
 translate(en, about, tech_used_website) ->
-   "<li>Document structure : <a href=\"http://www.w3.org/TR/html5/\">HTML5</a></li>"
-   "<li>Document presentation : <a href=\"http://www.w3.org/Style/CSS/current-work\">CSS 3</a> + <a href=\"http://sass-lang.com\">Sass</a></li>"
-   "<li>Client side dynamic language : <a href=\"http://fr.wikipedia.org/wiki/JavaScript\">JavaScript</a></li>"
-   "<li>JavaScript libraries : <a href=\"http://jquery.com/\">JQuery</a> + <a href=\"http://colorpowered.com/colorbox/\">ColorBox</a></li>"
-   "<li>Server side language : <a href=\"http://www.erlang.org/\">Erlang</a></li>"
-   "<li>Web server : <a href=\"http://yaws.hyber.org/\">Yaws</a></li>";
+   "<li>Document structure: <a href=\"http://www.w3.org/TR/html5/\">HTML5</a></li>"
+   "<li>Document presentation: <a href=\"http://www.w3.org/Style/CSS/current-work\">CSS 3</a> + <a href=\"http://sass-lang.com\">Sass</a></li>"
+   "<li>Client side dynamic language: <a href=\"http://fr.wikipedia.org/wiki/JavaScript\">JavaScript</a></li>"
+   "<li>JavaScript libraries: <a href=\"http://jquery.com/\">JQuery</a> + <a href=\"http://colorpowered.com/colorbox/\">ColorBox</a></li>"
+   "<li>Server side language: <a href=\"http://www.erlang.org/\">Erlang</a></li>"
+   "<li>Web server: <a href=\"http://yaws.hyber.org/\">Yaws</a></li>";
 translate(fr, about, tech_used_website) ->
    "<li>Structure : <a href=\"http://dev.w3.org/html5/spec/Overview.html\">HTML 5</a></li>"
    "<li>Présentation : <a href=\"http://www.w3.org/TR/css3-roadmap/\">CSS3</a> + <a href=\"http://sass-lang.com\">Sass</a></li>"
@@ -314,7 +306,7 @@ current_lang(A) ->
          C -> list_to_lang(C)
       end
    end.
-   
+
 % Returns a known atom language from a string().
 % Returns the first known language if the given string is unknown.
 % See 'langs()'.
@@ -346,11 +338,11 @@ accepted_langs_by_user_agent(A) ->
                      end,
                      [Lang_str | _] = string:tokens(Lang_str_with_subtag, "-"), % We don't care about the subtags.
                      try list_to_existing_atom(Lang_str) of
-                        Lang -> 
+                        Lang ->
                            case lists:member(Lang, langs()) of
                               true -> [{Lang, Quality} | Acc]; % We keep only known languages.
                               _ -> Acc
-                           end 
+                           end
                      catch
                         error:_ -> Acc
                      end
