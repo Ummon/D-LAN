@@ -69,8 +69,11 @@ message ChunksOwned {
 // a -> b
 // id : 0x18
 message GetLastChatMessages {
-   uint32 number = 1;
-   repeated uint64 message_ids = 2 [packed=true]; // Messages already known.
+   uint32 number = 1; // Number of desired messages.
+
+   // Messages already known (only in the asked chat room if 'chat_room' is not empty).
+   repeated uint64 message_ids = 2 [packed=true];
+
    string chat_room = 3;
 }
 

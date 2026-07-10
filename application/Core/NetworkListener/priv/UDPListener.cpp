@@ -48,7 +48,8 @@ using namespace NL;
   * @class NL::UDPListener
   *
   * The goals of this class are:
-  *  - Listen for incoming unicast and multicast datagrams, process them and dispatch the information the correct manager: 'FileManager', 'DownloadManager' or 'PeerManager'.
+  *  - Listen for incoming unicast and multicast datagrams,
+  *    process them and dispatch the information the correct manager: 'FileManager', 'DownloadManager' or 'PeerManager'.
   *  - Offer methods to send unicast or multicast datagrams.
   *  - Periodically send a 'IMAlive' multicast datagrams.
   *
@@ -86,7 +87,6 @@ UDPListener::UDPListener(
 
 /**
   * Send an UDP unicast datagram to the given peer.
-  * @return 'false' if the datagram can't be sent.
   */
 INetworkListener::SendStatus UDPListener::send(
    Common::MessageHeader::MessageType type,

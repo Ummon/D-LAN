@@ -202,7 +202,8 @@ QList<QSharedPointer<ChatMessage>> ChatMessages::insert(const QList<QSharedPoint
       while (j > 0 && this->d->messages[j-1]->getTime() > mess->getTime())
          j--;
 
-      if (this->d->messages.size() != MAX_NUMBER_OF_STORED_CHAT_MESSAGES || j != 0) // We avoid to insert a message which will ne deleted right after.
+      // We avoid to insert a message that will be deleted right after.
+      if (this->d->messages.size() != MAX_NUMBER_OF_STORED_CHAT_MESSAGES || j != 0)
       {
          insertedMessages.prepend(mess);
          this->d->messageIDs.insert(mess->getID());

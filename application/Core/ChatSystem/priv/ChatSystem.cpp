@@ -453,11 +453,17 @@ void ChatSystem::retrieveLastChatMessagesFromPeers(const QList<PM::IPeer*>& peer
 
    static const quint32 N = SETTINGS.get<quint32>("number_of_chat_messages_to_retrieve");
 
-   const QList<quint64>& messageIDs = this->messages.getLastMessageIDs(N);
+   QList<quint64> messageIDs;
+   if (roomName.isEmpty())
+      messageIDs = this->messages.getLastMessageIDs(N);
+   else
+      messageIDs = this->rooms.value(roomName).messages.getLastMessageIDs(N);
+
    Protos::Core::GetLastChatMessages getLastChatMessages;
    getLastChatMessages.set_number(N);
-   for (QListIterator<quint64> i(messageIDs); i.hasNext();)
-      getLastChatMessages.add_message_ids(i.next());
+   for (quint64 id : std::as_const(messageIDs))
+      getLastChatMessages.add_message_ids(id);
+
    if (!roomName.isEmpty())
       getLastChatMessages.set_chat_room(roomName.toStdString());
 
