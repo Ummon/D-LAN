@@ -2,7 +2,7 @@
    -import(d_lan_lang, [tr/3, tr/4]).
 
    bitcoin_address() -> "1Hw2RGLAfhnbXhYPPPR4auSAv9pxVvzwCP".
-   
+
    out(A) ->
       {ehtml,
          [
@@ -13,7 +13,7 @@
                {a, [{href, "http://blockchain.info/address/" ++ bitcoin_address()}], tr(donate, bitcoin_address, A)},
                {input, [{class, "bitcoin-address-field"}, {type, "text"}, {spellcheck, "false"}, {size, 45}, {value, bitcoin_address()}]},
                {img, [{src, "img/d_lan_bitcoin_qr_code.png"}, {class, "bitcoin-qr-code"}]}
-            ]} 
+            ]}
          ]
       }.
 

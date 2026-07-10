@@ -563,7 +563,7 @@ translate(de, _, _) -> "Keine Übersetzung.";
 translate(it, _, _) -> "Nessuna traduzione.";
 translate(ko, _, _) -> "번역이 없습니다.";
 
-translate(_, _, _) -> "".
+translate(_, _, _) -> "<<translation mising>>".
 
 %%%%%%%%%%
 

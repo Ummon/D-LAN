@@ -157,8 +157,9 @@ send_stream(Filename, IoDevice) ->
    spawn(
       fun() -> send_stream_loop(Filename, IoDevice, YawsPid) end
    ).
+
 send_stream_loop(Filename, IoDevice, YawsPid) ->
-   case file:read(IoDevice, 4 * 1024) of
+   case file:read(IoDevice, ?BUFFER_SIZE) of
       {ok, Data} ->
          yaws_api:stream_chunk_deliver(YawsPid, Data),
          send_stream_loop(Filename, IoDevice, YawsPid);

@@ -1,5 +1,5 @@
 % This module will persist some information about the D-LAN website.
-% Data are persisted as DETS table in the directory defined in "d_lan_defines.hrl". 
+% Data are persisted as DETS table in the directory defined in "d_lan_defines.hrl".
 % The tables are described below, this first tuple element is the key.
 %
 % Downloads count:
@@ -25,7 +25,7 @@
    all_files/0
 ]).
 
--include("/usr/lib/yaws/include/yaws.hrl"). 
+-include("/usr/lib/yaws/include/yaws.hrl").
 -include("../include/d_lan_defines.hrl").
 
 -define(DB_DOWNLOADS_COUNT, "d_lan_downloads_count.dets").
@@ -43,7 +43,7 @@ start(Conf) ->
          Filepath = Conf#sconf.docroot ++ "/" ++ ?DOWNLOAD_DB_FILEPATH ++ "/" ++ ?DB_DOWNLOADS_COUNT,
          io:format("Opening dets table :~p~n", [Filepath]),
          case dets:open_file(?DB_DOWNLOADS_COUNT, [{file, Filepath}]) of
-            {ok, ?DB_DOWNLOADS_COUNT} -> 
+            {ok, ?DB_DOWNLOADS_COUNT} ->
                register(d_lan_db_process, self()),
                loop();
             {error, _Reason} ->
@@ -65,20 +65,20 @@ nb_downloads_per_day(_Nb_months) ->
    %~ {Y, M, _} = now_utc(),
    %~ Now = {Y, M, 1},
    %~ map(
-      %~ fun({Y, M, _}) -> 
+      %~ fun({Y, M, _}) ->
          %~ format_result(dets:select(?DB_DOWNLOADS_COUNT, [{{{'$1', {Y, M,'$2'}}, '$3'}, [], [{{'$2', '$3'}}]}]), Y, M)
-      %~ end,   
+      %~ end,
       %~ months_seq(Now, Nb_months - 1)
-   %~ )   
-   %~ foldl(fun(_, Acc) lists:seq(1, Nb_months)   
-   
+   %~ )
+   %~ foldl(fun(_, Acc) lists:seq(1, Nb_months)
+
 % [{d, n}] -> [{{y, m, d}, n}]
 %~ format_result(Result, Year, Month) ->
    %~ foldl(
       %~ fun(Day, Acc) ->  seq(1, calendar:last_day_of_the_month(Year, Month)))
 
 %~ format_result(Result, Year, Month, Day)
-   
+
 %~ months_seq(Month, 0) -> [];
 %~ months_seq(Month, N) -> [Month | build_month_list(prev_date_by_one_month(Month), N - 1)].
 
@@ -95,14 +95,14 @@ stats(Filename) ->
          R -> R
       end
    )).
-   
+
 % Returns a list of all the files.
 all_files() ->
    lists:reverse(lists:sort(dets:foldl(fun({{Filename, _}, _}, Acc) -> case lists:member(Filename, Acc) of true -> Acc; _ -> [Filename | Acc] end end, [], ?DB_DOWNLOADS_COUNT))).
 
 loop() ->
    receive
-      {new_download, Filename} ->        
+      {new_download, Filename} ->
          Date = now_utc(),
          case dets:lookup(?DB_DOWNLOADS_COUNT, {Filename, Date}) of
             [] ->
@@ -116,8 +116,8 @@ loop() ->
       _ ->
          loop()
    end.
-   
+
 now_utc() ->
-   {Date, _} = calendar:now_to_universal_time(now()),
+   {Date, _} = calendar:now_to_universal_time(erlang:timestamp()),
    Date.
-   
+
