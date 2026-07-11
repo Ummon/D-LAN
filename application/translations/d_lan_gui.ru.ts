@@ -1010,17 +1010,17 @@
         <translation>Поиск</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+13"/>
         <source>Search among other peers &lt;ENTER&gt;</source>
         <translation>Поиск среди пиров &lt;ENTER&gt;</translation>
     </message>
     <message>
-        <location line="+23"/>
+        <location line="+29"/>
         <source>Clear fields</source>
         <translation>Очистить поля</translation>
     </message>
     <message>
-        <location line="+26"/>
+        <location line="+38"/>
         <source>View advanced options</source>
         <translation>Показать дополнительные параметры</translation>
     </message>

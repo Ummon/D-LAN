@@ -1010,37 +1010,37 @@
         <translation>Cerca</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchDock.ui" line="66"/>
+        <location filename="../GUI/Search/SearchDock.ui" line="72"/>
         <source>Search among other peers &lt;ENTER&gt;</source>
         <translation>Cerca tra i file degli altri peer &lt;INVIO&gt;</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchDock.ui" line="89"/>
+        <location filename="../GUI/Search/SearchDock.ui" line="101"/>
         <source>Clear fields</source>
         <translation>Svuota i campi</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchDock.ui" line="115"/>
+        <location filename="../GUI/Search/SearchDock.ui" line="139"/>
         <source>View advanced options</source>
         <translation>Mostra opzioni avanzate</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchDock.ui" line="187"/>
+        <location filename="../GUI/Search/SearchDock.ui" line="211"/>
         <source>Own files</source>
         <translation>File personali</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchDock.ui" line="194"/>
+        <location filename="../GUI/Search/SearchDock.ui" line="218"/>
         <source>Type</source>
         <translation>Tipo</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchDock.ui" line="201"/>
+        <location filename="../GUI/Search/SearchDock.ui" line="225"/>
         <source>Min size</source>
         <translation>Dimensione minima</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchDock.ui" line="208"/>
+        <location filename="../GUI/Search/SearchDock.ui" line="232"/>
         <source>Max size</source>
         <translation>Dimensione massima</translation>
     </message>

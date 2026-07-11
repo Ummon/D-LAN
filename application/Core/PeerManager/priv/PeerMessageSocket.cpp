@@ -392,7 +392,10 @@ void PeerMessageSocket::onNewMessage(const Common::Message& message)
          QList<std::pair<QSharedPointer<FM::IChunk>, int>> chunksAndOffsets;
          Protos::Core::GetChunksResult chunksResult;
 
-         // TODO: implements 'GetChunkResult.ALREADY_DOWNLOADING', 'GetChunkResult.TOO_MANY_CONNECTIONS' and 'GetChunkResult.DONT_HAVE_DATA_FROM_OFFSET'
+         // TODO: implements:
+         // - 'GetChunkResult.ALREADY_DOWNLOADING'
+         // - 'GetChunkResult.TOO_MANY_CONNECTIONS'
+         // - 'GetChunkResult.DONT_HAVE_DATA_FROM_OFFSET'
 
          for (int i = 0; i < getChunksMessage.chunks_size(); i++)
          {

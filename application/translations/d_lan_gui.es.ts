@@ -1009,17 +1009,17 @@
         <translation>Buscar</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+13"/>
         <source>Search among other peers &lt;ENTER&gt;</source>
         <translation>Buscar entre otros peers &lt;Enter&gt;</translation>
     </message>
     <message>
-        <location line="+23"/>
+        <location line="+29"/>
         <source>Clear fields</source>
         <translation>Borrar campos</translation>
     </message>
     <message>
-        <location line="+26"/>
+        <location line="+38"/>
         <source>View advanced options</source>
         <translation>Ver opciones avanzadas</translation>
     </message>

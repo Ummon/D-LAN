@@ -1010,37 +1010,37 @@
         <translation>검색</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchDock.ui" line="66"/>
+        <location filename="../GUI/Search/SearchDock.ui" line="72"/>
         <source>Search among other peers &lt;ENTER&gt;</source>
         <translation>다른 피어의 파일 검색 &lt;ENTER&gt;</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchDock.ui" line="89"/>
+        <location filename="../GUI/Search/SearchDock.ui" line="101"/>
         <source>Clear fields</source>
         <translation>입력 지우기</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchDock.ui" line="115"/>
+        <location filename="../GUI/Search/SearchDock.ui" line="139"/>
         <source>View advanced options</source>
         <translation>고급 옵션 보기</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchDock.ui" line="187"/>
+        <location filename="../GUI/Search/SearchDock.ui" line="211"/>
         <source>Own files</source>
         <translation>내 파일</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchDock.ui" line="194"/>
+        <location filename="../GUI/Search/SearchDock.ui" line="218"/>
         <source>Type</source>
         <translation>유형</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchDock.ui" line="201"/>
+        <location filename="../GUI/Search/SearchDock.ui" line="225"/>
         <source>Min size</source>
         <translation>최소 크기</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchDock.ui" line="208"/>
+        <location filename="../GUI/Search/SearchDock.ui" line="232"/>
         <source>Max size</source>
         <translation>최대 크기</translation>
     </message>
