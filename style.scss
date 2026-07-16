@@ -1,0 +1,402 @@
+$blue-dark: #182430;
+$blue-light: #6596c9;
+
+$red-dark: #6e0404;
+$red-light: #fd2435;
+
+$opacity1: 0.48;
+$opacity2: 0.62;
+
+// Flat colors. Used for browser which do not support gradient and/or opacity.
+$color-bg-body: mix($blue-dark, $blue-light);
+$color-bg-content: desaturate(lighten(mix($blue-dark, $blue-light), 20%), 15%);
+$color-bg-box: desaturate(lighten(mix($blue-dark, $blue-light), 50%), 15%); // For download and gallery
+
+@mixin border-radius($r_top_left, $r_top_right, $r_bot_right, $r_bot_left) {
+   border-top-left-radius: $r_top_left;
+   border-top-right-radius: $r_top_right;
+   border-bottom-right-radius: $r_bot_right;
+   border-bottom-left-radius: $r_bot_left;
+}
+
+@mixin vertical-list {
+   list-style-type: none;
+
+   li {
+      display: inline;
+   }
+}
+
+@mixin central-part {
+   width: 600px;
+   margin-left: auto;
+   margin-right: auto;
+}
+
+* {
+   margin: 0px;
+   padding: 0px;
+}
+
+html {
+   height: 100%;
+}
+
+body {
+   font-family: verdana, sans-serif;
+   font-size: 14px;
+   line-height: 18px;
+   color: black;
+   margin: 0px;
+
+   background: -webkit-linear-gradient(left top,
+         $blue-dark 0%,
+         $blue-light 100%) fixed;
+   background: -moz-linear-gradient(left top,
+         $blue-dark 0%,
+         $blue-light 100%) fixed;
+   background: -ms-linear-gradient(left top,
+         $blue-dark 0%,
+         $blue-light 100%) fixed;
+   background: -o-linear-gradient(left top,
+         $blue-dark 0%,
+         $blue-light 100%) fixed;
+   background-color: $color-bg-body;
+}
+
+img {
+   border: 0px
+}
+
+em {
+   font-weight: bold;
+}
+
+a {
+   color: desaturate(lighten($blue-dark, 20%), 20%);
+   text-decoration: none;
+
+   &:hover {
+      color: lighten($blue-dark, 30%);
+   }
+}
+
+h1 {
+   font-style: italic;
+   font-size: 16px;
+   margin-top: 7px;
+   margin-bottom: 10px;
+}
+
+h2 {
+   font-style: italic;
+   font-size: 14px;
+   margin-top: 3px;
+   margin-bottom: 10px;
+}
+
+h3 {
+   font-style: italic;
+   font-size: 12px;
+   margin-top: 1px;
+   margin-bottom: 8px;
+}
+
+p {
+   margin-bottom: 10px;
+}
+
+.spacer {
+   clear: both;
+}
+
+.box {
+   margin: 10px;
+   padding: 12px;
+   background-color: rgba(255, 255, 255, $opacity2);
+   border-radius: 16px;
+}
+
+.ie .box {
+   background-color: $color-bg-box;
+}
+
+.gallery {
+   p {
+      font-style: italic;
+      font-size: 11px;
+      margin-left: 6px;
+      margin-bottom: 0px;
+   }
+}
+
+@mixin highlight-link-header {
+   color: white;
+   background-color: $red-light;
+   border-radius: 10px;
+}
+
+#canvas-menu {
+   /*display: block;*/
+   left: 0px;
+   top: 18px;
+   position: absolute;
+   margin: 0px;
+   padding: 0px;
+   z-index: -1;
+}
+
+#header {
+   font-style: italic;
+   font-size: 13px;
+   line-height: normal;
+   background-image: url("img/bg.png");
+   background-attachment: fixed;
+   background-color: rgba(255, 255, 255, $opacity1);
+   padding-top: 1px;
+
+   ul {
+      a {
+         vertical-align: top;
+         padding: 0px 10px 0px 10px;
+         color: $red-dark;
+
+         &:hover {
+            @include highlight-link-header;
+         }
+      }
+
+      a.current-lang {
+         font-weight: bold;
+         @include highlight-link-header;
+      }
+
+      &#langs {
+         @include vertical-list;
+         margin-left: 10px;
+         height: 18px;
+      }
+
+      &#external-links {
+         float: right;
+         height: 18px;
+         margin-right: 5px;
+
+         li a {
+            margin-right: 10px;
+         }
+
+         @include vertical-list;
+      }
+   }
+}
+
+.ie #header {
+   background-color: $color-bg-content;
+}
+
+#menu {
+   #logo {
+      display: block;
+      margin-top: 20px;
+      margin-bottom: 10px;
+   }
+
+   ul {
+      @include vertical-list;
+      float: right;
+      margin-top: 75px;
+
+      a {
+         color: white;
+         font-style: italic;
+         font-size: 14px;
+         margin-right: 18px;
+
+         &:hover,
+         &.current-page {
+            color: $red-light;
+         }
+      }
+   }
+
+   @include central-part;
+}
+
+#content-bg {
+   background-image: url("img/bg.png");
+   background-attachment: fixed;
+   background-color: rgba(255, 255, 255, $opacity1);
+
+   #content {
+      @include central-part;
+      padding-top: 15px;
+      padding-bottom: 15px;
+
+      a {
+         font-weight: bold;
+      }
+
+      .download {
+         border: 3px solid white;
+
+         &:hover {
+            border-color: $red-light;
+         }
+
+         border-radius: 40px;
+         width: 300px;
+         background-color: rgba(255, 255, 255, $opacity2);
+         margin: 15px 15px 0px 15px;
+
+         &.win32 {
+            background-image: url("img/download_for_windows.png");
+         }
+
+         &.dmg {
+            background-image: url("img/download_for_mac.png");
+         }
+
+         &.amd64 {
+            background-image: url("img/download_for_linux.png");
+         }
+
+         &.i386 {
+            background-image: url("img/download_for_linux.png");
+         }
+
+         &.armhf {
+            background-image: url("img/download_for_raspberry.png");
+         }
+
+         background-repeat: no-repeat;
+         background-position: 12px 18px;
+
+         a {
+            color: $red-dark;
+            display: block;
+            font-weight: normal;
+            font-size: 11px;
+
+            &:hover {
+               color: lighten($red-dark, 20%);
+            }
+         }
+
+         a.installer {
+            height: 56px;
+            padding: 3px 10px 3px 60px;
+
+            em {
+               font-size: 13px;
+               font-weight: bold;
+            }
+         }
+
+         a.torrent {
+            @include border-radius(10px, 10px, 0px, 0px);
+            width: 200px;
+            margin: 0px 10px 0px 50px;
+            padding: 1px 0px 1px 10px;
+            background-color: rgba(255, 255, 255, $opacity2);
+
+            &:hover {
+               color: white;
+               background-color: $red-light;
+            }
+         }
+      }
+
+      .ie .download {
+         background-color: $color-bg-box;
+      }
+
+      &.home .gallery {
+         float: right;
+         margin-right: 0px;
+      }
+
+      &.features .gallery {
+         display: inline-block;
+      }
+
+      &.faq {
+         div.qa {
+            margin-bottom: 25px;
+         }
+
+         div.question,
+         div.answer {
+            margin-bottom: 10px;
+         }
+
+         .answer {
+            margin-left: 15px;
+         }
+      }
+
+      &.donate {
+         .bitcoin {
+            vertical-align: -10px;
+            margin-right: 10px;
+         }
+
+         .bitcoin-qr-code {
+            display: block;
+            margin: 20px auto 10px auto;
+         }
+
+         input {
+            font-family: Monaco, "Courier New", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", monospace;
+            text-align: center;
+         }
+      }
+
+      &.about {
+         a.logo {
+            display: block;
+            float: right;
+            margin: 10px;
+         }
+      }
+
+      &.stats {
+         .filename {
+            vertical-align: top;
+         }
+
+         .nb {
+            padding-left: 10px;
+            text-align: right;
+         }
+      }
+
+      ul {
+         margin-bottom: 10px;
+         margin-left: 40px;
+      }
+   }
+}
+
+.ie #content-bg {
+   background-color: $color-bg-content;
+}
+
+#footer {
+   @include central-part;
+   text-align: right;
+
+   .copyright {
+      margin-right: 20px;
+      color: white;
+      font-size: 11px;
+   }
+
+   a {
+      color: desaturate(lighten($blue-dark, 60%), 20%);
+
+      &:hover {
+         color: lighten($blue-dark, 80%);
+      }
+   }
+}

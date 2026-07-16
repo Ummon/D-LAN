@@ -1,0 +1,5 @@
+/build
+/.lustre
+/priv/static/style.css
+/priv/static/style.css.map
+*.exe
