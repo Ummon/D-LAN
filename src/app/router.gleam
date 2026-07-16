@@ -61,45 +61,52 @@ fn main_page(content: element.Element(a), lang: tr.Lang, page: String) {
     ]),
     html.body([], [
       html.canvas([attr.id("canvas-menu")]),
-      html.div([attr.id("header")], [
-        html.ul([attr.id("external-links")], [
-          html.li([], [
-            html.a(
-              [
-                attr.href("http://dev.d-lan.net/projects/pmp/wiki"),
-                attr.target("_blank"),
-              ],
-              [html.text("wiki")],
-            ),
-          ]),
-          html.li([], [
-            html.a(
-              [
-                attr.href("http://dev.d-lan.net/projects/pmp/boards"),
-                attr.target("_blank"),
-              ],
-              [html.text("forums")],
-            ),
-          ]),
-          html.li([], [
-            html.a(
-              [
-                attr.href("https://github.com/Ummon/D-LAN"),
-                attr.target("_blank"),
-              ],
-              [html.text("github")],
-            ),
-          ]),
-          html.li([], [
-            html.a([attr.href("donate.html")], [
-              tr.header_support_us(lang),
-            ]),
-          ]),
-        ]),
-        language_ul(lang, page),
-      ]),
+      header(lang, page),
+      menu(lang, page),
       html.div([attr.id("content-bg")], [content]),
+      footer(lang),
     ]),
+  ])
+}
+
+fn header(lang: tr.Lang, page: String) {
+  html.div([attr.id("header")], [
+    html.ul([attr.id("external-links")], [
+      html.li([], [
+        html.a(
+          [
+            attr.href("http://dev.d-lan.net/projects/pmp/wiki"),
+            attr.target("_blank"),
+          ],
+          [html.text("wiki")],
+        ),
+      ]),
+      html.li([], [
+        html.a(
+          [
+            attr.href("http://dev.d-lan.net/projects/pmp/boards"),
+            attr.target("_blank"),
+          ],
+          [html.text("forums")],
+        ),
+      ]),
+      html.li([], [
+        html.a(
+          [
+            attr.href("https://github.com/Ummon/D-LAN"),
+            attr.target("_blank"),
+          ],
+          [html.text("github")],
+        ),
+      ]),
+      html.li([], [
+        html.a([attr.href("donate.html")], [
+          tr.header_support_us(lang),
+        ]),
+      ]),
+    ]),
+    language_ul(lang, page),
+    html.div([attr.class("spacer")], []),
   ])
 }
 
@@ -124,6 +131,23 @@ fn language_ul(current_lang: tr.Lang, page: String) -> element.Element(a) {
         ])
       }),
   )
+}
+
+fn menu(lang: tr.Lang, current_page: String) -> element.Element(a) {
+  html.div([attr.id("menu")], [
+    html.ul(
+      [],
+      ["home", "features", "faq", "about"]
+        |> list.map(fn(p) {
+          let link = p <> ".html"
+          html.li([], [html.a([attr.href(link)], [html.text(p)])])
+        }),
+    ),
+  ])
+}
+
+fn footer(lang: tr.Lang) -> element.Element(a) {
+  html.text("todo")
 }
 
 fn home_page(lang: tr.Lang, page: String) -> element.Element(a) {
