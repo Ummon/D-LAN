@@ -1,4 +1,9 @@
+import gleam/float
+import gleam/http/request
+import gleam/int
 import gleam/list
+import gleam/result
+import gleam/string
 import lustre/element
 import lustre/element/html
 import wisp
@@ -74,7 +79,7 @@ fn raw_ul(html_string: String) -> element.Element(a) {
 //   Title
 // }
 
-pub fn title(l: Lang) -> element.Element(a) {
+pub fn title(l: Lang) -> String {
   case l {
     En -> "D-LAN - A LAN file sharing software"
     Fr -> "D-LAN - Un logiciel de partage de fichiers en LAN"
@@ -84,7 +89,6 @@ pub fn title(l: Lang) -> element.Element(a) {
     Ru -> "D-LAN - Программа для обмена файлами в локальной сети"
     Ko -> "D-LAN - LAN 파일 공유 소프트웨어"
   }
-  |> html.text
 }
 
 pub fn header_support_us(l: Lang) -> element.Element(a) {
@@ -1057,7 +1061,7 @@ pub fn donate_bitcoin_address(l: Lang) -> element.Element(a) {
   |> html.text
 }
 
-pub fn gallery_browse(l: Lang) -> element.Element(a) {
+pub fn gallery_browse(l: Lang) -> String {
   case l {
     En -> "Browsing"
     Fr -> "Navigation"
@@ -1067,10 +1071,9 @@ pub fn gallery_browse(l: Lang) -> element.Element(a) {
     Ru -> "Просмотр"
     Ko -> "탐색"
   }
-  |> html.text
 }
 
-pub fn gallery_browse_comment(l: Lang) -> element.Element(a) {
+pub fn gallery_browse_comment(l: Lang) -> String {
   case l {
     En -> "Browsing files and folders of a peer"
     Fr -> "Navigation dans les fichiers et dossiers d'un pair"
@@ -1080,10 +1083,9 @@ pub fn gallery_browse_comment(l: Lang) -> element.Element(a) {
     Ru -> "Просмотр файлов и папок пира"
     Ko -> "피어의 파일과 폴더 탐색"
   }
-  |> html.text
 }
 
-pub fn gallery_search(l: Lang) -> element.Element(a) {
+pub fn gallery_search(l: Lang) -> String {
   case l {
     En -> "Search result"
     Fr -> "Résultat de la recherche"
@@ -1093,10 +1095,9 @@ pub fn gallery_search(l: Lang) -> element.Element(a) {
     Ru -> "Результаты поиска"
     Ko -> "검색 결과"
   }
-  |> html.text
 }
 
-pub fn gallery_search_comment(l: Lang) -> element.Element(a) {
+pub fn gallery_search_comment(l: Lang) -> String {
   case l {
     En -> "The results are sorted by relevance. Folders are put on top."
     Fr ->
@@ -1110,10 +1111,9 @@ pub fn gallery_search_comment(l: Lang) -> element.Element(a) {
       "Результаты отсортированы по релевантности. Папки отображаются сверху."
     Ko -> "결과는 관련도 순으로 정렬되며, 폴더가 위에 표시됩니다."
   }
-  |> html.text
 }
 
-pub fn gallery_download_folders(l: Lang) -> element.Element(a) {
+pub fn gallery_download_folders(l: Lang) -> String {
   case l {
     En -> "Downloads - Folders"
     Fr -> "Transferts - Dossier"
@@ -1123,10 +1123,9 @@ pub fn gallery_download_folders(l: Lang) -> element.Element(a) {
     Ru -> "Загрузки - Папки"
     Ko -> "다운로드 - 폴더"
   }
-  |> html.text
 }
 
-pub fn gallery_download_folders_comment(l: Lang) -> element.Element(a) {
+pub fn gallery_download_folders_comment(l: Lang) -> String {
   case l {
     En ->
       "This view shows the files with their folders, they are both sorted alphabetically."
@@ -1142,10 +1141,9 @@ pub fn gallery_download_folders_comment(l: Lang) -> element.Element(a) {
       "В этом представлении файлы показаны вместе с папками, и те и другие отсортированы по алфавиту."
     Ko -> "이 화면은 파일을 폴더와 함께 보여 주며, 모두 이름순으로 정렬됩니다."
   }
-  |> html.text
 }
 
-pub fn gallery_download_files(l: Lang) -> element.Element(a) {
+pub fn gallery_download_files(l: Lang) -> String {
   case l {
     En -> "Downloads - Files"
     Fr -> "Transferts - Fichiers"
@@ -1155,10 +1153,9 @@ pub fn gallery_download_files(l: Lang) -> element.Element(a) {
     Ru -> "Загрузки - Файлы"
     Ko -> "다운로드 - 파일"
   }
-  |> html.text
 }
 
-pub fn gallery_download_files_comment(l: Lang) -> element.Element(a) {
+pub fn gallery_download_files_comment(l: Lang) -> String {
   case l {
     En ->
       "This view shows only the files, they can be rearranged, the top files are downloaded first."
@@ -1174,10 +1171,9 @@ pub fn gallery_download_files_comment(l: Lang) -> element.Element(a) {
       "В этом представлении показаны только файлы; их порядок можно менять, верхние файлы загружаются первыми."
     Ko -> "이 화면은 파일만 보여 주며, 순서를 변경할 수 있고 위쪽 파일이 먼저 다운로드됩니다."
   }
-  |> html.text
 }
 
-pub fn gallery_upload(l: Lang) -> element.Element(a) {
+pub fn gallery_upload(l: Lang) -> String {
   case l {
     En -> "Upload view"
     Fr -> "Vue des envoies"
@@ -1187,10 +1183,9 @@ pub fn gallery_upload(l: Lang) -> element.Element(a) {
     Ru -> "Представление отдач"
     Ko -> "업로드 화면"
   }
-  |> html.text
 }
 
-pub fn gallery_skin(l: Lang) -> element.Element(a) {
+pub fn gallery_skin(l: Lang) -> String {
   case l {
     En -> "Skin"
     Fr -> "Skin"
@@ -1200,7 +1195,6 @@ pub fn gallery_skin(l: Lang) -> element.Element(a) {
     Ru -> "Скин"
     Ko -> "스킨"
   }
-  |> html.text
 }
 
 pub fn download_button_download(l: Lang) -> element.Element(a) {
@@ -1260,11 +1254,62 @@ pub fn download_button_torrent(l: Lang) -> element.Element(a) {
 }
 
 pub fn current_lang(req: wisp.Request) -> Lang {
-  case req |> wisp.get_query |> list.key_find("lang") {
-    // 1) Looks if a GET variable 'lang' is defined.
-    Ok(l) -> parse_lang(l)
-    _ ->
-      // 2) Looks if a 'lang' value exist in a cookie.
-      En
+  // 1) Looks if a GET variable 'lang' is defined.
+  use <- result.lazy_unwrap(
+    req |> wisp.get_query |> list.key_find("lang") |> result.map(parse_lang),
+  )
+  // 2) Looks if a 'lang' value exist in a cookie.
+  use <- result.lazy_unwrap(
+    req |> wisp.get_cookie("lang", wisp.PlainText) |> result.map(parse_lang),
+  )
+  // 3) Looks in the "Accept-Language" HTTP header field.
+  use <- result.lazy_unwrap(
+    req
+    |> accepted_langs_by_user_agent
+    |> list.first
+    |> result.map(parse_lang),
+  )
+  En
+}
+
+// Return a list of accepted languages by the user agent, sorted by quality,
+// best first. Return only known languages.
+// Read the HTTP field 'Accept-Language'.
+fn accepted_langs_by_user_agent(req: wisp.Request) -> List(String) {
+  let known_langs = all_langs() |> list.map(to_str)
+
+  request.get_header(req, "accept-language")
+  |> result.unwrap("")
+  |> string.split(",")
+  |> list.filter_map(fn(value) {
+    // Extract the language and its quality: "fr-CH;q=0.8" -> #("fr-CH", 0.8).
+    let #(lang_with_subtag, quality) = case
+      string.split(string.trim(value), ";")
+    {
+      [lang, "q=" <> q] -> #(lang, parse_quality(q))
+      [lang, ..] -> #(lang, 1.0)
+      [] -> #("", 0.0)
+    }
+    // We don't care about the subtags: "fr-CH" -> "fr".
+    let lang_str =
+      lang_with_subtag |> string.split("-") |> list.first |> result.unwrap("")
+    // We keep only known languages.
+    case list.contains(known_langs, lang_str) {
+      True -> Ok(#(lang_str, quality))
+      False -> Error(Nil)
+    }
+  })
+  // Sort by quality, bigger first.
+  |> list.sort(fn(a, b) { float.compare(b.1, a.1) })
+  // Remove the quality information.
+  |> list.map(fn(lang_quality) { lang_quality.0 })
+}
+
+fn parse_quality(q: String) -> Float {
+  case float.parse(q) {
+    Ok(quality) -> quality
+    // A quality like "q=1" isn't a valid float, try to parse it as an integer.
+    Error(Nil) ->
+      q |> int.parse |> result.map(int.to_float) |> result.unwrap(1.0)
   }
 }
