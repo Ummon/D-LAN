@@ -13,7 +13,8 @@ gleam_crypto = ">= 1.5.0 and < 2.0.0"
 tom = ">= 2.1.0 and < 3.0.0"
 simplifile = ">= 2.5.0 and < 3.0.0"
 lustre = ">= 5.7.1 and < 6.0.0"
-radiate = ">= 1.0.0 and < 2.0.0"
+gleam_time = ">= 1.8.0 and < 2.0.0"
 
 [dev-dependencies]
 gleeunit = "~> 1.0"
+radiate = ">= 1.0.0 and < 2.0.0"

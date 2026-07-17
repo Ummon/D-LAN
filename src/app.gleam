@@ -3,18 +3,11 @@ import app/web
 import config
 import gleam/erlang/process
 import mist
-import radiate
 import wisp
 import wisp/wisp_mist
 
 pub fn main() {
   wisp.configure_logger()
-
-  // Watch 'src' and hot-reload modules when files change.
-  let _ =
-    radiate.new()
-    |> radiate.add_dir("src")
-    |> radiate.start()
 
   let conf = config.load_config()
 

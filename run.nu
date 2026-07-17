@@ -1,6 +1,6 @@
 def main [] {
     build_css
-    gleam run -m app
+    gleam dev
 }
 
 const style_output = "priv/static/style.css"

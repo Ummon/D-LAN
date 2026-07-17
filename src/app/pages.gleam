@@ -1,0 +1,141 @@
+import gleam/int
+import gleam/list
+import gleam/time/calendar
+import gleam/time/timestamp
+import lustre/attribute as attr
+import lustre/element
+import lustre/element/html
+import translations as tr
+
+fn main_page(content: element.Element(a), lang: tr.Lang, page: String) {
+  html.html([], [
+    html.head([], [
+      html.title([], "D-LAN"),
+      html.link([attr.rel("shortcut icon"), attr.href("static/favicon.ico")]),
+      html.link([attr.rel("stylesheet"), attr.href("static/style.css")]),
+      html.link([
+        attr.rel("stylesheet"),
+        attr.href("colorbox/colorbox.css"),
+      ]),
+      html.script([attr.src("static/js/jquery-3.5.0.min.js")], ""),
+      html.script([attr.src("static/colorbox/jquery.colorbox-min.js")], ""),
+      html.script([attr.src("static/js/snow.js")], ""),
+      html.script([attr.src("static/js/d_lan.js")], ""),
+    ]),
+    html.body([], [
+      html.canvas([attr.id("canvas-menu")]),
+      header(lang, page),
+      menu(lang, page),
+      html.div([attr.id("content-bg")], [content]),
+      footer(),
+    ]),
+  ])
+}
+
+fn header(lang: tr.Lang, page: String) {
+  html.div([attr.id("header")], [
+    html.ul([attr.id("external-links")], [
+      html.li([], [
+        html.a(
+          [
+            attr.href("http://dev.d-lan.net/projects/pmp/wiki"),
+            attr.target("_blank"),
+          ],
+          [html.text("wiki")],
+        ),
+      ]),
+      html.li([], [
+        html.a(
+          [
+            attr.href("http://dev.d-lan.net/projects/pmp/boards"),
+            attr.target("_blank"),
+          ],
+          [html.text("forums")],
+        ),
+      ]),
+      html.li([], [
+        html.a(
+          [
+            attr.href("https://github.com/Ummon/D-LAN"),
+            attr.target("_blank"),
+          ],
+          [html.text("github")],
+        ),
+      ]),
+      html.li([], [
+        html.a([attr.href("donate.html")], [
+          tr.header_support_us(lang),
+        ]),
+      ]),
+    ]),
+    languages(lang, page),
+    html.div([attr.class("spacer")], []),
+  ])
+}
+
+fn languages(current_lang: tr.Lang, page: String) -> element.Element(a) {
+  html.ul(
+    [attr.id("langs")],
+    tr.all_langs()
+      |> list.map(fn(l) {
+        html.li([], [
+          html.a(
+            [
+              attr.href(page <> "?lang=" <> tr.to_str(l)),
+              attr.classes([#("current-lang", l == current_lang)]),
+            ],
+            [
+              html.text(tr.plain_lang(l)),
+            ],
+          ),
+        ])
+      }),
+  )
+}
+
+fn menu(lang: tr.Lang, current_page: String) -> element.Element(a) {
+  html.div([attr.id("menu")], [
+    html.ul(
+      [],
+      [
+        #("home.html", tr.menu_home(lang)),
+        #("features.html", tr.menu_features(lang)),
+        #("faq.html", tr.menu_faq(lang)),
+        #("about.html", tr.menu_about(lang)),
+      ]
+        |> list.map(fn(entry) {
+          let #(p, t) = entry
+          html.li([], [
+            html.a(
+              [
+                attr.href(p),
+                attr.classes([#("current-page", current_page == p)]),
+              ],
+              [t],
+            ),
+          ])
+        }),
+    ),
+    html.a([attr.id("logo"), attr.href("/")], [
+      html.img([attr.src("static/img/logo.svg"), attr.alt("logo")]),
+    ]),
+  ])
+}
+
+fn footer() -> element.Element(a) {
+  let #(date, _time) =
+    timestamp.system_time() |> timestamp.to_calendar(calendar.utc_offset)
+  html.div([attr.id("footer")], [
+    html.span([attr.class("copyright")], [
+      html.text("copyright 2010-" <> int.to_string(date.year)),
+      html.a([attr.href("http://www.gburri.org")], [html.text(" Greg Burri")]),
+    ]),
+  ])
+}
+
+pub fn home_page(lang: tr.Lang, page: String) -> element.Element(a) {
+  html.div([attr.id("content"), attr.class("home")], [
+    html.h1([], [html.em([], [tr.title(lang)])]),
+  ])
+  |> main_page(lang, page)
+}
