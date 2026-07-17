@@ -1,11 +1,10 @@
-import app/pages
+import app/pages/home
 import app/web
 import lustre/element
 import translations as tr
 import wisp.{type Request, type Response}
 
 /// The HTTP request handler- your application!
-///
 pub fn handle_request(req: Request, ctx: web.Context) -> Response {
   // Apply the middleware stack for this request/response.
   use req <- web.middleware(req, ctx)
@@ -23,7 +22,7 @@ pub fn handle_request(req: Request, ctx: web.Context) -> Response {
   }
 
   case page {
-    "home.html" -> pages.home_page(lang, page) |> element_to_response
+    "home.html" -> home.page(lang, page) |> element_to_response
     _ -> wisp.not_found()
   }
 }

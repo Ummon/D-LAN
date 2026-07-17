@@ -7,15 +7,15 @@ import lustre/element
 import lustre/element/html
 import translations as tr
 
-fn main_page(content: element.Element(a), lang: tr.Lang, page: String) {
+pub fn main_page(content: element.Element(a), lang: tr.Lang, page: String) {
   html.html([], [
     html.head([], [
-      html.title([], "D-LAN"),
+      html.title([], tr.title(lang)),
       html.link([attr.rel("shortcut icon"), attr.href("static/favicon.ico")]),
       html.link([attr.rel("stylesheet"), attr.href("static/style.css")]),
       html.link([
         attr.rel("stylesheet"),
-        attr.href("colorbox/colorbox.css"),
+        attr.href("static/colorbox/colorbox.css"),
       ]),
       html.script([attr.src("static/js/jquery-3.5.0.min.js")], ""),
       html.script([attr.src("static/colorbox/jquery.colorbox-min.js")], ""),
@@ -131,11 +131,4 @@ fn footer() -> element.Element(a) {
       html.a([attr.href("http://www.gburri.org")], [html.text(" Greg Burri")]),
     ]),
   ])
-}
-
-pub fn home_page(lang: tr.Lang, page: String) -> element.Element(a) {
-  html.div([attr.id("content"), attr.class("home")], [
-    html.h1([], [html.em([], [tr.title(lang)])]),
-  ])
-  |> main_page(lang, page)
 }
