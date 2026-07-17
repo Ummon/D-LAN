@@ -1,6 +1,11 @@
+import app/pages
+import app/pages/about
+import app/pages/faq
+import app/pages/features
 import app/pages/home
 import app/web
 import lustre/element
+import translations as tr
 import wisp.{type Request, type Response}
 
 /// The HTTP request handler- your application!
@@ -14,9 +19,30 @@ pub fn handle_request(req: Request, app_ctx: web.AppContext) -> Response {
   }
 
   case page {
-    "home.html" -> home.page(ctx.lang, page) |> element_to_response
+    "home.html" ->
+      home.page(ctx, page)
+      |> to_main_page_response(ctx.lang, page)
+    "features.html" ->
+      features.page(ctx, page)
+      |> to_main_page_response(ctx.lang, page)
+    "faq.html" ->
+      faq.page(ctx, page)
+      |> to_main_page_response(ctx.lang, page)
+    "about.html" ->
+      about.page(ctx, page)
+      |> to_main_page_response(ctx.lang, page)
     _ -> wisp.not_found()
   }
+}
+
+fn to_main_page_response(
+  element: element.Element(a),
+  lang: tr.Lang,
+  page: String,
+) -> Response {
+  element
+  |> pages.main_page(lang, page)
+  |> element_to_response
 }
 
 fn element_to_response(element: element.Element(a)) -> Response {

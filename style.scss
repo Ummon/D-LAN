@@ -177,6 +177,10 @@ p {
          @include vertical-list;
          margin-left: 10px;
          height: 18px;
+
+         li {
+            margin-right: 10px;
+         }
       }
 
       &#external-links {

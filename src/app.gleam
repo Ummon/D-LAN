@@ -3,7 +3,6 @@ import app/web
 import config
 import gleam/erlang/process
 import mist
-import translations as tr
 import wisp
 import wisp/wisp_mist
 

@@ -5,6 +5,10 @@ def main [] {
 
 const style_output = "priv/static/style.css"
 
+def "main watch-css" [] {
+    watch_css
+}
+
 def build_css [] {
     dart-sass style.scss $style_output
 }

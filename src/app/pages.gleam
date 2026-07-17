@@ -7,7 +7,11 @@ import lustre/element
 import lustre/element/html
 import translations as tr
 
-pub fn main_page(content: element.Element(a), lang: tr.Lang, page: String) {
+pub fn main_page(
+  content: element.Element(a),
+  lang: tr.Lang,
+  page: String,
+) -> element.Element(a) {
   html.html([], [
     html.head([], [
       html.title([], tr.title(lang)),

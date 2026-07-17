@@ -1,12 +1,23 @@
 import app/pages
 import app/pages/screenshots
+import app/utils
+import app/web
 import gleam/time/calendar
 import gleam/time/timestamp
 import lustre/attribute as attr
 import lustre/element
 import lustre/element/html
 import translations as tr
-import utils
+
+pub fn page(ctx: web.Context, page: String) -> element.Element(a) {
+  html.div([attr.id("content"), attr.class("home")], [
+    image_of_the_week(ctx.lang),
+    html.h1([], [html.em([], [tr.home_title(ctx.lang)])]),
+    html.p([], [tr.home_description(ctx.lang, "features.html")]),
+    utils.download_button(ctx, "windows"),
+    html.div([attr.class("spacer")], []),
+  ])
+}
 
 fn image_of_the_week(lang: tr.Lang) -> element.Element(a) {
   let #(date, _time) =
@@ -51,13 +62,4 @@ fn image_of_the_week(lang: tr.Lang) -> element.Element(a) {
         tr.gallery_download_files_comment(lang),
       )
   }
-}
-
-pub fn page(lang: tr.Lang, page: String) -> element.Element(a) {
-  html.div([attr.id("content"), attr.class("home")], [
-    image_of_the_week(lang),
-    html.h1([], [html.em([], [tr.home_title(lang)])]),
-    html.p([], [tr.home_description(lang, "features.html")]),
-  ])
-  |> pages.main_page(lang, page)
 }
