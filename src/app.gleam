@@ -3,6 +3,7 @@ import app/web
 import config
 import gleam/erlang/process
 import mist
+import translations as tr
 import wisp
 import wisp/wisp_mist
 
@@ -15,7 +16,7 @@ pub fn main() {
   // load this from somewhere so that it is not regenerated on every restart.
   let secret_key_base = wisp.random_string(64)
 
-  let ctx = web.Context(static_directory: static_directory())
+  let ctx = web.Context(static_directory: static_directory(), lang: tr.En)
 
   let handler = router.handle_request(_, ctx)
 

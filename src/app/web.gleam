@@ -1,7 +1,9 @@
+import gleam/list
+import translations as tr
 import wisp
 
 pub type Context {
-  Context(static_directory: String)
+  Context(static_directory: String, lang: tr.Lang)
 }
 
 /// The middleware stack that the request handler uses. The stack is itself a
@@ -17,7 +19,7 @@ pub type Context {
 pub fn middleware(
   req: wisp.Request,
   ctx: Context,
-  handle_request: fn(wisp.Request) -> wisp.Response,
+  handle_request: fn(wisp.Request, Context) -> wisp.Response,
 ) -> wisp.Response {
   // Permit browsers to simulate methods other than GET and POST using the
   // `_method` query parameter.
@@ -37,6 +39,23 @@ pub fn middleware(
 
   use <- wisp.serve_static(req, under: "/static", from: ctx.static_directory)
 
+  // Set the current language.
+  let ctx = Context(..ctx, lang: tr.current_lang(req))
+
   // Handle the request!
-  handle_request(req)
+  let response = handle_request(req, ctx)
+
+  // Set 'lang' cookie only if set by client.
+  case req |> wisp.get_query |> list.key_find("lang") {
+    Ok(_) ->
+      response
+      |> wisp.set_cookie(
+        req,
+        "lang",
+        tr.to_str(ctx.lang),
+        wisp.PlainText,
+        365 * 24 * 60 * 60,
+      )
+    _ -> response
+  }
 }
