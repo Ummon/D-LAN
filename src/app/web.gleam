@@ -2,8 +2,12 @@ import gleam/list
 import translations as tr
 import wisp
 
+pub type AppContext {
+  AppContext(static_directory: String)
+}
+
 pub type Context {
-  Context(static_directory: String, lang: tr.Lang)
+  Context(app: AppContext, lang: tr.Lang)
 }
 
 /// The middleware stack that the request handler uses. The stack is itself a
@@ -18,7 +22,7 @@ pub type Context {
 ///
 pub fn middleware(
   req: wisp.Request,
-  ctx: Context,
+  app: AppContext,
   handle_request: fn(wisp.Request, Context) -> wisp.Response,
 ) -> wisp.Response {
   // Permit browsers to simulate methods other than GET and POST using the
@@ -37,10 +41,10 @@ pub fn middleware(
   // Known-header based CSRF protection for non-HEAD/GET requests
   use req <- wisp.csrf_known_header_protection(req)
 
-  use <- wisp.serve_static(req, under: "/static", from: ctx.static_directory)
+  use <- wisp.serve_static(req, under: "/static", from: app.static_directory)
 
   // Set the current language.
-  let ctx = Context(..ctx, lang: tr.current_lang(req))
+  let ctx = Context(app:, lang: tr.current_lang(req))
 
   // Handle the request!
   let response = handle_request(req, ctx)

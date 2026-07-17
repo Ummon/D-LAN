@@ -16,9 +16,9 @@ pub fn main() {
   // load this from somewhere so that it is not regenerated on every restart.
   let secret_key_base = wisp.random_string(64)
 
-  let ctx = web.Context(static_directory: static_directory(), lang: tr.En)
+  let app_ctx = web.AppContext(static_directory: static_directory())
 
-  let handler = router.handle_request(_, ctx)
+  let handler = router.handle_request(_, app_ctx)
 
   let assert Ok(_) =
     wisp_mist.handler(handler, secret_key_base)

@@ -4,9 +4,9 @@ import lustre/element
 import wisp.{type Request, type Response}
 
 /// The HTTP request handler- your application!
-pub fn handle_request(req: Request, ctx: web.Context) -> Response {
+pub fn handle_request(req: Request, app_ctx: web.AppContext) -> Response {
   // Apply the middleware stack for this request/response.
-  use req, ctx <- web.middleware(req, ctx)
+  use req, ctx <- web.middleware(req, app_ctx)
 
   let page = case wisp.path_segments(req) {
     [p] -> p
