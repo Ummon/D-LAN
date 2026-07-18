@@ -13,9 +13,12 @@ pub fn connect() -> Result(Connection, sqlight.Error) {
   use db <- result.try(sqlight.open("file:" <> db_filename))
   use _ <- result.try(sqlight.exec(
     "CREATE TABLE IF NOT EXISTS downloads (
-       file TEXT PRIMARY KEY,
-       count INTEGER NOT NULL
-     ) STRICT",
+      file TEXT,
+      date TEXT, -- format: 'YYYY-MM-DD'.
+      count INTEGER NOT NULL,
+      UNIQUE(file, date)
+    ) STRICT;
+    ",
     db,
   ))
   Ok(db)
@@ -24,8 +27,8 @@ pub fn connect() -> Result(Connection, sqlight.Error) {
 pub fn increment(db: Connection, file: String) -> Nil {
   let result =
     sqlight.query(
-      "INSERT INTO downloads (file, count) VALUES (?, 1)
-       ON CONFLICT (file) DO UPDATE SET count = count + 1",
+      "INSERT INTO downloads (file, date, count) VALUES (?, date(), 1)
+       ON CONFLICT (file, date) DO UPDATE SET count = count + 1",
       db,
       [sqlight.text(file)],
       decode.success(Nil),
