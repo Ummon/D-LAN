@@ -9,7 +9,7 @@ import wisp/wisp_mist
 pub fn main() {
   wisp.configure_logger()
 
-  let conf = config.load_config()
+  let assert Ok(conf) = config.load_config()
 
   // Here we generate a secret key, but in a real application you would want to
   // load this from somewhere so that it is not regenerated on every restart.
