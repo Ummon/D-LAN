@@ -9,6 +9,10 @@ def "main watch-css" [] {
     watch_css
 }
 
+def "main build-css" [] {
+    build_css
+}
+
 def build_css [] {
     dart-sass style.scss $style_output
 }
