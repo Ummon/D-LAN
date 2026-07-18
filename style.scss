@@ -11,8 +11,8 @@ $opacity2: 0.62;
 
 // Flat colors. Used for browser which do not support gradient and/or opacity.
 $color-bg-body: color.mix($blue-dark, $blue-light);
-$color-bg-content: desaturate(lighten(color.mix($blue-dark, $blue-light), 20%), 15%);
-$color-bg-box: desaturate(lighten(color.mix($blue-dark, $blue-light), 50%), 15%); // For download and gallery
+$color-bg-content: color.adjust(color.mix($blue-dark, $blue-light), $lightness: 20%, $saturation: -15%);
+$color-bg-box: color.adjust(color.mix($blue-dark, $blue-light), $lightness: 50%, $saturation: -15%); // For download and gallery
 
 @mixin border-radius($r_top_left, $r_top_right, $r_bot_right, $r_bot_left) {
    border-top-left-radius: $r_top_left;
@@ -75,11 +75,11 @@ em {
 }
 
 a {
-   color: desaturate(lighten($blue-dark, 20%), 20%);
+   color: color.adjust($blue-dark, $lightness: 20%, $saturation: -20%);
    text-decoration: none;
 
    &:hover {
-      color: lighten($blue-dark, 30%);
+      color: color.adjust($blue-dark, $lightness: 30%);
    }
 }
 
@@ -285,7 +285,7 @@ p {
             font-size: 11px;
 
             &:hover {
-               color: lighten($red-dark, 20%);
+               color: color.adjust($red-dark, $lightness: 20%);
             }
          }
 
@@ -399,10 +399,10 @@ p {
    }
 
    a {
-      color: desaturate(lighten($blue-dark, 60%), 20%);
+      color: color.adjust($blue-dark, $lightness: 60%, $saturation: -20%);
 
       &:hover {
-         color: lighten($blue-dark, 80%);
+         color: color.adjust($blue-dark, $lightness: 80%);
       }
    }
 }
