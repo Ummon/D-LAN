@@ -1,7 +1,7 @@
-import app/pages
 import app/pages/screenshots
 import app/utils
 import app/web
+import gleam/result
 import gleam/time/calendar
 import gleam/time/timestamp
 import lustre/attribute as attr
@@ -9,12 +9,12 @@ import lustre/element
 import lustre/element/html
 import translations as tr
 
-pub fn page(ctx: web.Context, page: String) -> element.Element(a) {
+pub fn page(ctx: web.Context) -> element.Element(a) {
   html.div([attr.id("content"), attr.class("home")], [
     image_of_the_week(ctx.lang),
     html.h1([], [html.em([], [tr.home_title(ctx.lang)])]),
     html.p([], [tr.home_description(ctx.lang, "features.html")]),
-    utils.download_button(ctx, "windows"),
+    utils.download_button(ctx, "windows") |> result.unwrap(element.none()),
     html.div([attr.class("spacer")], []),
   ])
 }

@@ -20,16 +20,16 @@ pub fn handle_request(req: Request, app_ctx: web.AppContext) -> Response {
 
   case page {
     "home.html" ->
-      home.page(ctx, page)
+      home.page(ctx)
       |> to_main_page_response(ctx.lang, page)
     "features.html" ->
-      features.page(ctx, page)
+      features.page(ctx)
       |> to_main_page_response(ctx.lang, page)
     "faq.html" ->
-      faq.page(ctx, page)
+      faq.page(ctx)
       |> to_main_page_response(ctx.lang, page)
     "about.html" ->
-      about.page(ctx, page)
+      about.page(ctx)
       |> to_main_page_response(ctx.lang, page)
     _ -> wisp.not_found()
   }

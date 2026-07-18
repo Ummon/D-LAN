@@ -4,6 +4,7 @@ import gleam/int
 import gleam/list
 import gleam/option.{None, Some}
 import gleam/regexp
+import gleam/result
 import gleam/string
 import gleam/time/calendar.{type Date}
 import lustre/attribute as attr
@@ -61,18 +62,23 @@ pub fn weekday(date: Date) -> Weekday {
 pub fn download_button(
   ctx: web.Context,
   platform: String,
-) -> element.Element(a) {
+) -> Result(element.Element(a), Nil) {
   let platform_formatted = string.capitalise(platform)
   let release_platform_folder =
     ctx.app.static_directory <> "/" <> releases_folder <> "/" <> platform
-  let assert Ok(filenames) = simplifile.read_directory(release_platform_folder)
-  let assert Ok(filename) =
+  use filenames <- result.try(
+    simplifile.read_directory(release_platform_folder)
+    |> result.map_error(fn(_) { Nil }),
+  )
+
+  use filename <- result.try(
     filenames
     |> list.filter(fn(f) {
       list.any([".exe", ".dmg", ".deb"], string.ends_with(f, _))
     })
     |> list.sort(string.compare)
-    |> list.last
+    |> list.last,
+  )
 
   let extension = string.slice(filename, string.length(filename) - 3, 3)
 
@@ -142,6 +148,7 @@ pub fn download_button(
     ),
     ..torrent_link
   ])
+  |> Ok
 }
 
 // Returns the url to download a given file for the given platform.
