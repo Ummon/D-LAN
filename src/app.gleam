@@ -1,3 +1,4 @@
+import app/download_counter
 import app/router
 import app/web
 import config
@@ -15,7 +16,14 @@ pub fn main() {
   // load this from somewhere so that it is not regenerated on every restart.
   let secret_key_base = wisp.random_string(64)
 
-  let app_ctx = web.AppContext(static_directory: static_directory())
+  let assert Ok(db) = download_counter.connect()
+
+  let app_ctx =
+    web.AppContext(
+      static_directory: priv_directory() <> "/static",
+      releases_directory: priv_directory() <> "/releases",
+      db:,
+    )
 
   let handler = router.handle_request(_, app_ctx)
 
@@ -30,8 +38,7 @@ pub fn main() {
   process.sleep_forever()
 }
 
-pub fn static_directory() -> String {
+fn priv_directory() -> String {
   let assert Ok(priv_directory) = wisp.priv_directory("d_lan_website")
-  // io.println("PRIV DIR: " <> priv_directory)
-  priv_directory <> "/static"
+  priv_directory
 }

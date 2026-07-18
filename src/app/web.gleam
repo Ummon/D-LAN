@@ -1,9 +1,14 @@
 import gleam/list
+import sqlight
 import translations as tr
 import wisp
 
 pub type AppContext {
-  AppContext(static_directory: String)
+  AppContext(
+    static_directory: String,
+    releases_directory: String,
+    db: sqlight.Connection,
+  )
 }
 
 pub type Context {

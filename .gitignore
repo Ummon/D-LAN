@@ -4,3 +4,4 @@
 /priv/static/style.css.map
 *.exe
 /config.toml
+/downloads.sqlite3

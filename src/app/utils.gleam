@@ -7,13 +7,12 @@ import gleam/regexp
 import gleam/result
 import gleam/string
 import gleam/time/calendar.{type Date}
+import gleam/uri
 import lustre/attribute as attr
 import lustre/element
 import lustre/element/html
 import simplifile
 import translations as tr
-
-const releases_folder = "releases"
 
 pub type Weekday {
   Monday
@@ -64,8 +63,7 @@ pub fn download_button(
   platform: String,
 ) -> Result(element.Element(a), Nil) {
   let platform_formatted = string.capitalise(platform)
-  let release_platform_folder =
-    ctx.app.static_directory <> "/" <> releases_folder <> "/" <> platform
+  let release_platform_folder = ctx.app.releases_directory <> "/" <> platform
   use filenames <- result.try(
     simplifile.read_directory(release_platform_folder)
     |> result.map_error(fn(_) { Nil }),
@@ -153,7 +151,9 @@ pub fn download_button(
 
 // Returns the url to download a given file for the given platform.
 fn file_to_url(filename: String, platform: String) -> String {
-  "static/" <> releases_folder <> "/" <> platform <> "/" <> filename
+  "download/" <> uri.percent_encode(platform) <> "/" <> uri.percent_encode(
+    filename,
+  )
 }
 
 // Formats a size in bytes as MiB with two decimals, e.g. "24.53".
