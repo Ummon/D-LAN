@@ -1,6 +1,7 @@
 import app/download_counter
 import app/pages
 import app/pages/about
+import app/pages/donate
 import app/pages/faq
 import app/pages/features
 import app/pages/home
@@ -45,6 +46,9 @@ fn serve_page(segments: List(String), ctx: web.Context) -> Response {
       |> to_main_page_response(ctx.lang, page)
     "about.html" ->
       about.page(ctx)
+      |> to_main_page_response(ctx.lang, page)
+    "donate.html" ->
+      donate.page(ctx)
       |> to_main_page_response(ctx.lang, page)
     _ -> wisp.not_found()
   }
