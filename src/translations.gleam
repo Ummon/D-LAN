@@ -751,48 +751,95 @@ pub fn faq_a6(l: Lang) -> element.Element(a) {
   |> raw_span
 }
 
-pub fn about_author(l: Lang, name: String) -> element.Element(a) {
-  case l {
-    En -> "Author : " <> name
-    Fr -> "Auteur : " <> name
-    De -> "Autor: " <> name
-    Es -> "Autor: " <> name
-    It -> "Autore: " <> name
-    Ru -> "Автор: " <> name
-    Ko -> "제작자 : " <> name
-  }
-  |> html.text
+pub fn about_author(l: Lang, name: element.Element(a)) -> element.Element(a) {
+  element.fragment([
+    case l {
+      En -> "Author : "
+      Fr -> "Auteur : "
+      De -> "Autor: "
+      Es -> "Autor: "
+      It -> "Autore: "
+      Ru -> "Автор: "
+      Ko -> "제작자 : "
+    }
+      |> html.text,
+    name,
+  ])
 }
 
-pub fn about_linux(l: Lang, name: String) -> element.Element(a) {
-  case l {
-    En -> "Linux maintainer : " <> name
-    Fr -> "Responsable Linux : " <> name
-    De -> "Linux-Betreuer: " <> name
-    Es -> "Responsable de Linux: " <> name
-    It -> "Responsabile Linux: " <> name
-    Ru -> "Сопровождающий Linux: " <> name
-    Ko -> "Linux 담당자 : " <> name
-  }
-  |> html.text
+pub fn about_linux(l: Lang, name: element.Element(a)) -> element.Element(a) {
+  element.fragment([
+    case l {
+      En -> "Linux maintainer : "
+      Fr -> "Responsable Linux : "
+      De -> "Linux-Betreuer: "
+      Es -> "Responsable de Linux: "
+      It -> "Responsabile Linux: "
+      Ru -> "Сопровождающий Linux: "
+      Ko -> "Linux 담당자 : "
+    }
+      |> html.text,
+    name,
+  ])
 }
 
 pub fn about_thanks(
   l: Lang,
-  name_1: String,
-  name_2: String,
+  name_1: element.Element(a),
+  name_2: element.Element(a),
 ) -> element.Element(a) {
   case l {
-    En -> "Thanks to " <> name_1 <> " and " <> name_2 <> " for their support."
-    Fr -> "Merci à " <> name_1 <> " et " <> name_2 <> " pour leur support."
-    De ->
-      "Dank an " <> name_1 <> " und " <> name_2 <> " für ihre Unterstützung."
-    Es -> "Gracias a " <> name_1 <> " y " <> name_2 <> " por su apoyo."
-    It -> "Grazie a " <> name_1 <> " e " <> name_2 <> " per il loro supporto."
-    Ru -> "Спасибо " <> name_1 <> " и " <> name_2 <> " за их поддержку."
-    Ko -> "지원해 주신 " <> name_1 <> "님과 " <> name_2 <> "님께 감사드립니다."
+    En -> [
+      html.text("Thanks to "),
+      name_1,
+      html.text(" and "),
+      name_2,
+      html.text(" for their support."),
+    ]
+    Fr -> [
+      html.text("Merci à "),
+      name_1,
+      html.text(" et "),
+      name_2,
+      html.text(" pour leur support."),
+    ]
+    De -> [
+      html.text("Dank an "),
+      name_1,
+      html.text(" und "),
+      name_2,
+      html.text(" für ihre Unterstützung."),
+    ]
+    Es -> [
+      html.text("Gracias a "),
+      name_1,
+      html.text(" y "),
+      name_2,
+      html.text(" por su apoyo."),
+    ]
+    It -> [
+      html.text("Grazie a "),
+      name_1,
+      html.text(" e "),
+      name_2,
+      html.text(" per il loro supporto."),
+    ]
+    Ru -> [
+      html.text("Спасибо "),
+      name_1,
+      html.text(" и "),
+      name_2,
+      html.text(" за их поддержку."),
+    ]
+    Ko -> [
+      html.text("지원해 주신 "),
+      name_1,
+      html.text("님과 "),
+      name_2,
+      html.text("님께 감사드립니다."),
+    ]
   }
-  |> html.text
+  |> element.fragment
 }
 
 pub fn about_tech(l: Lang) -> element.Element(a) {
@@ -978,43 +1025,43 @@ pub fn about_tech_used_website(l: Lang) -> element.Element(a) {
       <> "<li>Présentation : <a href=\"http://www.w3.org/TR/css3-roadmap/\">CSS3</a> + <a href=\"http://sass-lang.com\">Sass</a></li>"
       <> "<li>Langage dynamque coté client : <a href=\"http://fr.wikipedia.org/wiki/JavaScript\">JavaScript</a></li>"
       <> "<li>Bibliothèques JavaScript : <a href=\"http://jquery.com/\">JQuery</a> + <a href=\"http://colorpowered.com/colorbox/\">ColorBox</a></li>"
-      <> "<li>Langage coté serveur : <a href=\"http://www.erlang.org/\">Erlang</a></li>"
-      <> "<li>Serveur web : <a href=\"http://yaws.hyber.org/\">Yaws</a></li>"
+      <> "<li>Langage coté serveur : <a href=\"https://gleam.run/\">Gleam</a></li>"
+      <> "<li>Serveur web : <a href=\"https://gleam-wisp.github.io/wisp/\">Wisp</a> + <a href=\"https://hexdocs.pm/mist/\">Mist</a></li>"
     De ->
       "<li>Dokumentstruktur: <a href=\"http://www.w3.org/TR/html5/\">HTML5</a></li>"
       <> "<li>Dokumentdarstellung: <a href=\"http://www.w3.org/Style/CSS/current-work\">CSS 3</a> + <a href=\"http://sass-lang.com\">Sass</a></li>"
       <> "<li>Clientseitige dynamische Sprache: <a href=\"http://de.wikipedia.org/wiki/JavaScript\">JavaScript</a></li>"
       <> "<li>JavaScript-Bibliotheken: <a href=\"http://jquery.com/\">JQuery</a> + <a href=\"http://colorpowered.com/colorbox/\">ColorBox</a></li>"
-      <> "<li>Serverseitige Sprache: <a href=\"http://www.erlang.org/\">Erlang</a></li>"
-      <> "<li>Webserver: <a href=\"http://yaws.hyber.org/\">Yaws</a></li>"
+      <> "<li>Serverseitige Sprache: <a href=\"https://gleam.run/\">Gleam</a></li>"
+      <> "<li>Webserver: <a href=\"https://gleam-wisp.github.io/wisp/\">Wisp</a> + <a href=\"https://hexdocs.pm/mist/\">Mist</a></li>"
     Es ->
       "<li>Estructura del documento: <a href=\"http://www.w3.org/TR/html5/\">HTML5</a></li>"
       <> "<li>Presentación del documento: <a href=\"http://www.w3.org/Style/CSS/current-work\">CSS 3</a> + <a href=\"http://sass-lang.com\">Sass</a></li>"
       <> "<li>Lenguaje dinámico del lado del cliente: <a href=\"http://es.wikipedia.org/wiki/JavaScript\">JavaScript</a></li>"
       <> "<li>Bibliotecas JavaScript: <a href=\"http://jquery.com/\">JQuery</a> + <a href=\"http://colorpowered.com/colorbox/\">ColorBox</a></li>"
-      <> "<li>Lenguaje del lado del servidor: <a href=\"http://www.erlang.org/\">Erlang</a></li>"
-      <> "<li>Servidor web: <a href=\"http://yaws.hyber.org/\">Yaws</a></li>"
+      <> "<li>Lenguaje del lado del servidor: <a href=\"https://gleam.run/\">Gleam</a></li>"
+      <> "<li>Servidor web: <a href=\"https://gleam-wisp.github.io/wisp/\">Wisp</a> + <a href=\"https://hexdocs.pm/mist/\">Mist</a></li>"
     It ->
       "<li>Struttura del documento: <a href=\"http://www.w3.org/TR/html5/\">HTML5</a></li>"
       <> "<li>Presentazione del documento: <a href=\"http://www.w3.org/Style/CSS/current-work\">CSS 3</a> + <a href=\"http://sass-lang.com\">Sass</a></li>"
       <> "<li>Linguaggio dinamico lato client: <a href=\"http://it.wikipedia.org/wiki/JavaScript\">JavaScript</a></li>"
       <> "<li>Librerie JavaScript: <a href=\"http://jquery.com/\">JQuery</a> + <a href=\"http://colorpowered.com/colorbox/\">ColorBox</a></li>"
-      <> "<li>Linguaggio lato server: <a href=\"http://www.erlang.org/\">Erlang</a></li>"
-      <> "<li>Server web: <a href=\"http://yaws.hyber.org/\">Yaws</a></li>"
+      <> "<li>Linguaggio lato server: <a href=\"https://gleam.run/\">Gleam</a></li>"
+      <> "<li>Server web: <a href=\"https://gleam-wisp.github.io/wisp/\">Wisp</a> + <a href=\"https://hexdocs.pm/mist/\">Mist</a></li>"
     Ru ->
       "<li>Структура документа: <a href=\"http://www.w3.org/TR/html5/\">HTML5</a></li>"
       <> "<li>Оформление документа: <a href=\"http://www.w3.org/Style/CSS/current-work\">CSS 3</a> + <a href=\"http://sass-lang.com\">Sass</a></li>"
       <> "<li>Динамический язык на стороне клиента: <a href=\"http://ru.wikipedia.org/wiki/JavaScript\">JavaScript</a></li>"
       <> "<li>Библиотеки JavaScript: <a href=\"http://jquery.com/\">JQuery</a> + <a href=\"http://colorpowered.com/colorbox/\">ColorBox</a></li>"
-      <> "<li>Язык на стороне сервера: <a href=\"http://www.erlang.org/\">Erlang</a></li>"
-      <> "<li>Веб-сервер: <a href=\"http://yaws.hyber.org/\">Yaws</a></li>"
+      <> "<li>Язык на стороне сервера: <a href=\"https://gleam.run/\">Gleam</a></li>"
+      <> "<li>Веб-сервер: <a href=\"https://gleam-wisp.github.io/wisp/\">Wisp</a> + <a href=\"https://hexdocs.pm/mist/\">Mist</a></li>"
     Ko ->
       "<li>문서 구조 : <a href=\"http://www.w3.org/TR/html5/\">HTML5</a></li>"
       <> "<li>문서 표현 : <a href=\"http://www.w3.org/Style/CSS/current-work\">CSS 3</a> + <a href=\"http://sass-lang.com\">Sass</a></li>"
       <> "<li>클라이언트 측 동적 언어 : <a href=\"http://ko.wikipedia.org/wiki/자바스크립트\">JavaScript</a></li>"
       <> "<li>JavaScript 라이브러리 : <a href=\"http://jquery.com/\">JQuery</a> + <a href=\"http://colorpowered.com/colorbox/\">ColorBox</a></li>"
-      <> "<li>서버 측 언어 : <a href=\"http://www.erlang.org/\">Erlang</a></li>"
-      <> "<li>웹 서버 : <a href=\"http://yaws.hyber.org/\">Yaws</a></li>"
+      <> "<li>서버 측 언어 : <a href=\"https://gleam.run/\">Gleam</a></li>"
+      <> "<li>웹 서버 : <a href=\"https://gleam-wisp.github.io/wisp/\">Wisp</a> + <a href=\"https://hexdocs.pm/mist/\">Mist</a></li>"
   }
   |> raw_ul
 }
