@@ -3,3 +3,4 @@
 /priv/static/style.css
 /priv/static/style.css.map
 *.exe
+/config.toml
