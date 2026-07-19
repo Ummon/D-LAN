@@ -11,11 +11,6 @@ pub fn main() {
   wisp.configure_logger()
 
   let assert Ok(conf) = config.load_config()
-
-  // Here we generate a secret key, but in a real application you would want to
-  // load this from somewhere so that it is not regenerated on every restart.
-  let secret_key_base = wisp.random_string(64)
-
   let assert Ok(db) = download_counter.connect()
 
   let app_ctx =
@@ -28,7 +23,7 @@ pub fn main() {
   let handler = router.handle_request(_, app_ctx)
 
   let assert Ok(_) =
-    wisp_mist.handler(handler, secret_key_base)
+    wisp_mist.handler(handler, conf.secret)
     |> mist.new
     |> mist.port(conf.port)
     |> mist.start
