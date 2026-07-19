@@ -1,4 +1,4 @@
-import app
+import d_lan_website
 import radiate
 
 pub fn main() {
@@ -8,5 +8,5 @@ pub fn main() {
     |> radiate.add_dir("src")
     |> radiate.start()
 
-  app.main()
+  d_lan_website.main()
 }
