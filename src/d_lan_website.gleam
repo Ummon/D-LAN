@@ -1,4 +1,4 @@
-import app/download_counter
+import app/db
 import app/router
 import app/web
 import config
@@ -11,7 +11,7 @@ pub fn main() {
   wisp.configure_logger()
 
   let assert Ok(conf) = config.load_config()
-  let assert Ok(db) = download_counter.connect()
+  let assert Ok(db) = db.connect()
 
   let app_ctx =
     web.AppContext(

@@ -1,4 +1,4 @@
-import app/download_counter
+import app/db
 import app/pages
 import app/pages/about
 import app/pages/donate
@@ -81,7 +81,7 @@ fn serve_release(
           case request.get_header(req, "x-original-method") {
             Ok("HEAD") -> Nil
             _ ->
-              download_counter.increment(
+              db.increment_download_count(
                 ctx.app.db,
                 platform <> "/" <> filename,
               )
