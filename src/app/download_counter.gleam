@@ -13,6 +13,7 @@ pub fn connect() -> Result(Connection, sqlight.Error) {
   use db <- result.try(sqlight.open("file:" <> db_filename))
   use _ <- result.try(sqlight.exec(
     "CREATE TABLE IF NOT EXISTS downloads (
+      id INTEGER PRIMARY KEY,
       file TEXT,
       date TEXT, -- format: 'YYYY-MM-DD'.
       count INTEGER NOT NULL,
