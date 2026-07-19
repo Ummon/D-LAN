@@ -9,7 +9,7 @@ $(function () {
    $(".gallery a").colorbox();
 
    var canvas = $("#canvas-menu")[0];
-   canvas.height = 125;
+   canvas.height = 120;
    var setCanvasSize = function () { canvas.width = window.innerWidth; };
    $(window).resize(setCanvasSize);
    setCanvasSize();

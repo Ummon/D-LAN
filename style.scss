@@ -141,7 +141,7 @@ p {
 #canvas-menu {
    /*display: block;*/
    left: 0px;
-   top: 18px;
+   top: 20px;
    position: absolute;
    margin: 0px;
    padding: 0px;
@@ -156,6 +156,7 @@ p {
    background-attachment: fixed;
    background-color: rgba(255, 255, 255, $opacity1);
    padding-top: 1px;
+   padding-bottom: 1px;
 
    ul {
       a {
