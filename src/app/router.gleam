@@ -117,7 +117,7 @@ fn to_main_page_response(
 }
 
 fn element_to_response(element: element.Element(a)) -> Response {
-  element
-  |> element.to_document_string
-  |> wisp.html_response(200)
+  wisp.response(200)
+  |> wisp.set_header("content-type", "text/html; charset=utf-8")
+  |> wisp.string_tree_body(element.to_document_string_tree(element))
 }
