@@ -1,4 +1,5 @@
 import gleam/list
+import gleam/string
 import sqlight
 import translations as tr
 import wisp
@@ -46,7 +47,7 @@ pub fn middleware(
   // Known-header based CSRF protection for non-HEAD/GET requests
   use req <- wisp.csrf_known_header_protection(req)
 
-  use <- wisp.serve_static(req, under: "/static", from: app.static_directory)
+  use <- serve_static_cached(req, from: app.static_directory)
 
   // Set the current language.
   let ctx = Context(app:, lang: tr.current_lang(req))
@@ -66,5 +67,22 @@ pub fn middleware(
         365 * 24 * 60 * 60,
       )
     _ -> response
+  }
+}
+
+// Serves the files under "/static" with a 'cache-control' header so browsers
+// don't re-validate the render-blocking CSS/JS on every navigation, which
+// causes a white flash between pages.
+fn serve_static_cached(
+  req: wisp.Request,
+  from directory: String,
+  next handler: fn() -> wisp.Response,
+) -> wisp.Response {
+  let response =
+    wisp.serve_static(req, under: "/static", from: directory, next: handler)
+  case string.starts_with(req.path, "/static"), response.status {
+    True, 200 | True, 304 ->
+      wisp.set_header(response, "cache-control", "public, max-age=86400")
+    _, _ -> response
   }
 }
