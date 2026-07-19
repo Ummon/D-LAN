@@ -1,6 +1,6 @@
 # D-LAN Website
 
-This is the website of the [D-LAN software](http://www.d-lan.net) .
+This is the website of the [D-LAN software](http://www.d-lan.net).
 
 It's built with [Wisp](https://gleam-wisp.github.io/wisp/) and [Mist](https://mist.hexdocs.pm/).
 
