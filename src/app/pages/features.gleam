@@ -1,4 +1,4 @@
-import app/pages/screenshots
+import app/screenshots
 import app/web
 import gleam/list
 import lustre/attribute as attr

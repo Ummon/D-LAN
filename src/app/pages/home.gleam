@@ -1,4 +1,4 @@
-import app/pages/screenshots
+import app/screenshots
 import app/utils
 import app/web
 import gleam/result
