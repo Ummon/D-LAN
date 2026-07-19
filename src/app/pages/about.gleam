@@ -1,4 +1,5 @@
 import app/web
+import gleam/uri
 import lustre/attribute as attr
 import lustre/element
 import lustre/element/html
@@ -6,9 +7,16 @@ import translations as tr
 
 pub fn page(ctx: web.Context) -> element.Element(a) {
   html.div([attr.id("content"), attr.class("about")], [
-    html.a([attr.href("static/D-LAN logo.svg"), attr.class("logo")], [
-      html.img([attr.src("static/img/logo_icon.svg")]),
-    ]),
+    html.a(
+      [
+        attr.href(uri.percent_encode("static/D-LAN logo.svg")),
+        attr.class("logo"),
+        attr.alt("D-LAN logo icon"),
+      ],
+      [
+        html.img([attr.src("static/img/logo_icon.svg")]),
+      ],
+    ),
     html.p([], [
       tr.about_author(
         ctx.lang,

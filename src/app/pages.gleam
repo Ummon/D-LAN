@@ -12,7 +12,7 @@ pub fn main_page(
   lang: tr.Lang,
   page: String,
 ) -> element.Element(a) {
-  html.html([], [
+  html.html([attr.lang(tr.to_str(lang))], [
     html.head([], [
       html.title([], tr.title(lang)),
       html.link([attr.rel("shortcut icon"), attr.href("static/favicon.ico")]),
