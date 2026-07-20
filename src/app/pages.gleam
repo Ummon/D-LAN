@@ -14,6 +14,10 @@ pub fn main_page(
 ) -> element.Element(a) {
   html.html([attr.lang(tr.to_str(lang))], [
     html.head([], [
+      html.meta([
+        attr.name("viewport"),
+        attr.attribute("content", "width=device-width, initial-scale=1"),
+      ]),
       html.title([], tr.title(lang)),
       html.link([attr.rel("shortcut icon"), attr.href("static/favicon.ico")]),
       html.link([attr.rel("stylesheet"), attr.href("static/style.css")]),

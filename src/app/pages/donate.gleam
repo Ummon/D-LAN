@@ -25,6 +25,7 @@ pub fn page(ctx: web.Context) -> element.Element(a) {
         attr.type_("text"),
         attr.spellcheck(False),
         attr.size("45"),
+        attr.readonly(True),
         attr.value(bitcoin_address()),
       ]),
       html.img([

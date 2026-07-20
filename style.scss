@@ -30,14 +30,18 @@ $color-bg-box: color.adjust(color.mix($blue-dark, $blue-light), $lightness: 50%,
 }
 
 @mixin central-part {
-   width: 600px;
-   margin-left: auto;
-   margin-right: auto;
+   width: 100%;
+   max-width: 600px;
+   margin: 0 auto;
+   box-sizing: border-box;
+   padding-left: 12px;
+   padding-right: 12px;
 }
 
 * {
    margin: 0px;
    padding: 0px;
+   box-sizing: border-box;
 }
 
 html {
@@ -67,7 +71,9 @@ body {
 }
 
 img {
-   border: 0px
+   border: 0px;
+   max-width: 100%;
+   height: auto;
 }
 
 em {
@@ -159,6 +165,9 @@ p {
    padding-bottom: 1px;
 
    ul {
+      display: flex;
+      flex-wrap: wrap;
+
       a {
          vertical-align: top;
          padding: 0px 10px 0px 10px;
@@ -212,6 +221,8 @@ p {
    ul {
       @include vertical-list;
       float: right;
+      display: flex;
+      flex-wrap: wrap;
       margin-top: 75px;
 
       a {
@@ -406,4 +417,17 @@ p {
          color: color.adjust($blue-dark, $lightness: 80%);
       }
    }
+}
+
+@media (max-width: 640px) {
+   #menu ul {
+      float: none;
+      margin-top: 20px;
+   }
+
+   #content-bg #content .download {
+      width: auto;
+   }
+
+   // TODO: stack the gallery, unfloat things...
 }
