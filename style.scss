@@ -307,8 +307,9 @@ p {
          }
 
          a.installer {
-            height: 56px;
-            padding: 3px 10px 3px 60px;
+            min-height: 58px;
+            padding: 6px 17px 6px 50px;
+            text-align: center;
 
             em {
                font-size: 13px;
