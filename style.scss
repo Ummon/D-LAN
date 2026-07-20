@@ -164,6 +164,21 @@ p {
    padding-top: 1px;
    padding-bottom: 1px;
 
+   #langs {
+      margin-left: 10px;
+      background-color: rgba(255, 255, 255, $opacity2);
+      color: $red-dark;
+      border: 0;
+      border-radius: 10px;
+      padding: 1px 6px;
+      font: italic 13px verdana, sans-serif;
+
+      option {
+         background-color: white; // must be opaque
+         color: $red-dark;
+      }
+   }
+
    ul {
       display: flex;
       flex-wrap: wrap;
@@ -181,16 +196,6 @@ p {
       a.current-lang {
          font-weight: bold;
          @include highlight-link-header;
-      }
-
-      &#langs {
-         @include vertical-list;
-         margin-left: 10px;
-         height: 18px;
-
-         li {
-            margin-right: 5px;
-         }
       }
 
       &#external-links {
@@ -427,6 +432,16 @@ p {
 
    #content-bg #content .download {
       width: auto;
+   }
+
+   #header ul#external-links {
+      margin-right: 1px;
+
+      li a {
+         margin-right: 2px;
+         padding-left: 2px;
+         padding-right: 2px;
+      }
    }
 
    // TODO: stack the gallery, unfloat things...

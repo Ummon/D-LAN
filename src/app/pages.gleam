@@ -32,7 +32,7 @@ pub fn main_page(
     ]),
     html.body([], [
       html.canvas([attr.id("canvas-menu")]),
-      header(lang, page),
+      header(lang),
       menu(lang, page),
       html.div([attr.id("content-bg")], [content]),
       footer(),
@@ -40,7 +40,7 @@ pub fn main_page(
   ])
 }
 
-fn header(lang: tr.Lang, page: String) {
+fn header(lang: tr.Lang) {
   html.div([attr.id("header")], [
     html.ul([attr.id("external-links")], [
       html.li([], [
@@ -76,27 +76,20 @@ fn header(lang: tr.Lang, page: String) {
         ]),
       ]),
     ]),
-    languages(lang, page),
+    languages(lang),
     html.div([attr.class("spacer")], []),
   ])
 }
 
-fn languages(current_lang: tr.Lang, page: String) -> element.Element(a) {
-  html.ul(
+fn languages(current_lang: tr.Lang) -> element.Element(a) {
+  html.select(
     [attr.id("langs")],
     tr.all_langs()
       |> list.map(fn(l) {
-        html.li([], [
-          html.a(
-            [
-              attr.href(page <> "?lang=" <> tr.to_str(l)),
-              attr.classes([#("current-lang", l == current_lang)]),
-            ],
-            [
-              html.text(tr.plain_lang(l)),
-            ],
-          ),
-        ])
+        html.option(
+          [attr.value(tr.to_str(l)), attr.selected(l == current_lang)],
+          tr.plain_lang(l),
+        )
       }),
   )
 }

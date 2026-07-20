@@ -8,6 +8,14 @@ dlan.isMobile = function () {
 $(function () {
    $(".gallery a").colorbox();
 
+   // Reload the current page with the chosen language. The server then sets a
+   // one year 'lang' cookie, so the choice persists on the next pages.
+   $("#langs").on("change", function () {
+      var url = new URL(window.location.href);
+      url.searchParams.set("lang", this.value);
+      window.location.href = url.href;
+   });
+
    var canvas = $("#canvas-menu")[0];
    canvas.height = 120;
    var setCanvasSize = function () { canvas.width = window.innerWidth; };
