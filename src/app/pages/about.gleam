@@ -11,10 +11,12 @@ pub fn page(ctx: web.Context) -> element.Element(a) {
       [
         attr.href(uri.percent_encode("static/D-LAN logo.svg")),
         attr.class("logo"),
-        attr.alt("D-LAN logo icon"),
       ],
       [
-        html.img([attr.src("static/img/logo_icon.svg")]),
+        html.img([
+          attr.src("static/img/logo_icon.svg"),
+          attr.alt("D-LAN logo icon"),
+        ]),
       ],
     ),
     html.p([], [
