@@ -151,9 +151,10 @@ pub fn download_button(
 
 // Returns the url to download a given file for the given platform.
 fn file_to_url(filename: String, platform: String) -> String {
-  "download/" <> uri.percent_encode(platform) <> "/" <> uri.percent_encode(
-    filename,
-  )
+  "download/"
+  <> uri.percent_encode(platform)
+  <> "/"
+  <> uri.percent_encode(filename)
 }
 
 // Formats a size in bytes as MiB with two decimals, e.g. "24.53".
