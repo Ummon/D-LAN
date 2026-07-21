@@ -1,4 +1,3 @@
-import app/db
 import app/pages
 import app/pages/about
 import app/pages/donate
@@ -81,10 +80,7 @@ fn serve_release(
           case request.get_header(req, "x-original-method") {
             Ok("HEAD") -> Nil
             _ ->
-              db.increment_download_count(
-                ctx.app.db,
-                platform <> "/" <> filename,
-              )
+              ctx.app.db.increment_download_count(platform <> "/" <> filename)
           }
           wisp.ok()
           |> response.set_header("content-type", "application/octet-stream")

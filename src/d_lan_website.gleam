@@ -12,13 +12,12 @@ pub fn main() {
 
   let assert Ok(conf) = config.load_config()
   let assert Ok(db) = db.connect()
+  let assert Ok(priv_directory) = wisp.priv_directory("d_lan_website")
 
-  let app_ctx =
-    web.AppContext(
-      static_directory: priv_directory() <> "/static",
-      releases_directory: priv_directory() <> "/releases",
-      db:,
-    )
+  let static_directory = priv_directory <> "/static"
+  let releases_directory = priv_directory <> "/releases"
+
+  let app_ctx = web.AppContext(static_directory, releases_directory, db)
 
   let handler = router.handle_request(_, app_ctx)
 
@@ -31,9 +30,4 @@ pub fn main() {
   // The web server runs in new Erlang process, so put this one to sleep while
   // it works concurrently.
   process.sleep_forever()
-}
-
-fn priv_directory() -> String {
-  let assert Ok(priv_directory) = wisp.priv_directory("d_lan_website")
-  priv_directory
 }

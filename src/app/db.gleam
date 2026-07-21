@@ -3,15 +3,29 @@
 
 import gleam/dynamic/decode
 import gleam/result
-import sqlight.{type Connection}
+import sqlight
 import wisp
 
 const db_filename = "d_lan_website.sqlite3"
 
-pub fn connect() -> Result(Connection, sqlight.Error) {
-  use db <- result.try(sqlight.open("file:" <> db_filename))
-  use _ <- result.try(sqlight.exec(
-    "CREATE TABLE IF NOT EXISTS downloads (
+pub type Db {
+  Db(increment_download_count: fn(String) -> Nil)
+}
+
+pub type Error {
+  CantOpenDbFile(String)
+  CantCreateDatabase
+}
+
+pub fn connect() -> Result(Db, Error) {
+  // Result(sqlight.Connection, sqlight.Error) {
+  use db <- result.try(
+    sqlight.open("file:" <> db_filename)
+    |> result.replace_error(CantOpenDbFile(db_filename)),
+  )
+  use _ <- result.try(
+    sqlight.exec(
+      "CREATE TABLE IF NOT EXISTS downloads (
       id INTEGER PRIMARY KEY,
       file TEXT,
       date TEXT, -- format: 'YYYY-MM-DD'.
@@ -19,12 +33,14 @@ pub fn connect() -> Result(Connection, sqlight.Error) {
       UNIQUE(file, date)
     ) STRICT;
     ",
-    db,
-  ))
-  Ok(db)
+      db,
+    )
+    |> result.replace_error(CantCreateDatabase),
+  )
+  Ok(Db(increment_download_count: increment_download_count(db, _)))
 }
 
-pub fn increment_download_count(db: Connection, file: String) -> Nil {
+fn increment_download_count(db: sqlight.Connection, file: String) -> Nil {
   let result =
     sqlight.query(
       "INSERT INTO downloads (file, date, count) VALUES (?, date(), 1)
@@ -39,7 +55,7 @@ pub fn increment_download_count(db: Connection, file: String) -> Nil {
       wisp.log_error("Unable to count download: " <> error.message)
   }
 }
-// pub fn count(db: Connection, file: String) -> Int {
+// fn count(db: Connection, file: String) -> Int {
 //   sqlight.query(
 //     "SELECT count FROM downloads WHERE file = ?",
 //     db,
