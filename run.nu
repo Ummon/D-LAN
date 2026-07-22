@@ -14,6 +14,7 @@ def "main build-css" [] {
 }
 
 def "main deploy" [port, host, path, chown_user = ""] {
+    gleam test
     gleam export erlang-shipment
     rsync -rvz --delete -e $'ssh -p ($port)' build/erlang-shipment/* ($host):($path)
     if $chown_user != "" {
