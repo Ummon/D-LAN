@@ -22,6 +22,10 @@ def "main deploy" [port, host, path, chown_user = ""] {
     }
 }
 
+def "main password-hash" [password] {
+    gleam run -m password $password
+}
+
 def build_css [] {
     dart-sass style.scss $style_output
 }

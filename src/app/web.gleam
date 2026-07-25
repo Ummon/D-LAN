@@ -1,15 +1,23 @@
 import app/db
+import gleam/http
 import gleam/list
+import gleam/result
 import gleam/string
+import password
 import translations as tr
 import wisp
 
 pub type AppContext {
-  AppContext(static_directory: String, releases_directory: String, db: db.Db)
+  AppContext(
+    static_directory: String,
+    releases_directory: String,
+    db: db.Db,
+    admin_password: String,
+  )
 }
 
 pub type Context {
-  Context(app: AppContext, lang: tr.Lang)
+  Context(app: AppContext, lang: tr.Lang, is_admin: Bool)
 }
 
 /// The middleware stack that the request handler uses. The stack is itself a
@@ -45,8 +53,11 @@ pub fn middleware(
 
   use <- serve_static_cached(req, from: app.static_directory)
 
+  use user_status <- handle_auth(req, app)
+
   // Set the current language.
-  let ctx = Context(app:, lang: tr.current_lang(req))
+  let ctx =
+    Context(app:, lang: tr.current_lang(req), is_admin: user_status == IsAdmin)
 
   // Handle the request!
   let response = handle_request(req, ctx)
@@ -60,9 +71,59 @@ pub fn middleware(
         "lang",
         tr.to_str(ctx.lang),
         wisp.PlainText,
-        365 * 24 * 60 * 60,
+        cookie_max_age,
       )
     _ -> response
+  }
+}
+
+type UserStatus {
+  IsAdmin
+  IsNormalUser
+}
+
+const auth_cookie_name = "auth"
+
+// One year.
+const cookie_max_age = 31_536_000
+
+/// Check if hashed password is given via POST else try to find it in cookie.
+/// Then match the hashed password with the stored hashed password.
+fn handle_auth(
+  req: wisp.Request,
+  app_ctx: AppContext,
+  cont: fn(UserStatus) -> wisp.Response,
+) -> wisp.Response {
+  case wisp.get_cookie(req, auth_cookie_name, wisp.Signed), req.method {
+    Ok(cookie), _ if cookie != "" && cookie == app_ctx.admin_password ->
+      cont(IsAdmin)
+
+    _, http.Post -> {
+      // Parses the body; short-circuits with 400/415 on bad/oversized input.
+      use form <- wisp.require_form(req)
+      let given_password_is_valid =
+        list.key_find(form.values, "password")
+        |> result.map(password.verify(_, app_ctx.admin_password))
+
+      case given_password_is_valid {
+        Ok(True) ->
+          cont(IsAdmin)
+          |> wisp.set_cookie(
+            req,
+            auth_cookie_name,
+            app_ctx.admin_password,
+            wisp.Signed,
+            cookie_max_age,
+          )
+        Ok(False) -> {
+          wisp.log_info("Trying login as admin failed: password doesn't match")
+          cont(IsNormalUser)
+        }
+        Error(Nil) -> cont(IsNormalUser)
+      }
+    }
+
+    _, _ -> cont(IsNormalUser)
   }
 }
 

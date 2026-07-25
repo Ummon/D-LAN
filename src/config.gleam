@@ -9,7 +9,7 @@ const default_port = 8089
 const config_filename = "config.toml"
 
 pub type Config {
-  Config(port: Int, secret: String)
+  Config(port: Int, secret: String, admin_password: String)
 }
 
 pub fn load_config() -> Result(Config, String) {
@@ -34,7 +34,11 @@ fn read_config() -> Result(Config, String) {
     tomlet.get_string(doc, ["secret"])
     |> result.replace_error("Unable to read secret"),
   )
-  Ok(Config(port:, secret:))
+  use admin_password <- result.try(
+    tomlet.get_string(doc, ["admin_password"])
+    |> result.replace_error("Unable to read admin_password"),
+  )
+  Ok(Config(port:, secret:, admin_password:))
 }
 
 fn create_default_config() -> Result(Config, String) {
@@ -49,11 +53,16 @@ fn create_default_config() -> Result(Config, String) {
     |> result.replace_error("Unable to set secret"),
   )
 
+  use doc <- result.try(
+    tomlet.set_string(doc, ["admin_password"], "")
+    |> result.replace_error("Unable to set admin password"),
+  )
+
   use _ <- result.try(
     tomlet.to_string(doc)
     |> simplifile.write(config_filename, _)
     |> result.replace_error("Unable to write config file"),
   )
 
-  Ok(Config(port: default_port, secret:))
+  Ok(Config(port: default_port, secret:, admin_password: ""))
 }

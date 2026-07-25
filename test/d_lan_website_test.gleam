@@ -13,7 +13,7 @@ pub fn main() {
 }
 
 pub fn index_test() {
-  let app_ctx = web.AppContext("static", "release", db.Db(fn(_) { Nil }))
+  let app_ctx = web.AppContext("static", "release", db.Db(fn(_) { Nil }), "")
 
   let response =
     router.handle_request(simulate.browser_request(http.Get, "/"), app_ctx)

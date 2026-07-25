@@ -17,7 +17,13 @@ pub fn main() {
   let static_directory = priv_directory <> "/static"
   let releases_directory = priv_directory <> "/releases"
 
-  let app_ctx = web.AppContext(static_directory, releases_directory, db)
+  let app_ctx =
+    web.AppContext(
+      static_directory,
+      releases_directory,
+      db,
+      conf.admin_password,
+    )
 
   let handler = router.handle_request(_, app_ctx)
 
