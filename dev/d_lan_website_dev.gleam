@@ -8,5 +8,5 @@ pub fn main() {
     |> radiate.add_dir("src")
     |> radiate.start()
 
-  d_lan_website.main()
+  d_lan_website.start(dev_mode: True)
 }

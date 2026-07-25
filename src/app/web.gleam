@@ -13,6 +13,7 @@ pub type AppContext {
     releases_directory: String,
     db: db.Db,
     admin_password: String,
+    dev_mode: Bool,
   )
 }
 
@@ -39,8 +40,8 @@ pub fn middleware(
   // `_method` query parameter.
   let req = wisp.method_override(req)
 
-  // Log information about the request and response.
-  use <- wisp.log_request(req)
+  // Log information about the request and response, in dev mode only.
+  use <- log_request_in_dev(req, app.dev_mode)
 
   // Return a default 500 response if the request handler crashes.
   use <- wisp.rescue_crashes
@@ -124,6 +125,19 @@ fn handle_auth(
     }
 
     _, _ -> cont(IsNormalUser)
+  }
+}
+
+// Logs the request and its response only when running in dev mode, to keep the
+// production logs free of one entry per request.
+fn log_request_in_dev(
+  req: wisp.Request,
+  dev_mode: Bool,
+  next handler: fn() -> wisp.Response,
+) -> wisp.Response {
+  case dev_mode {
+    True -> wisp.log_request(req, handler)
+    False -> handler()
   }
 }
 

@@ -8,6 +8,12 @@ import wisp
 import wisp/wisp_mist
 
 pub fn main() {
+  start(dev_mode: False)
+}
+
+/// Starts the web server. `dev_mode` is only set by the 'dev' entry point, see
+/// 'dev/d_lan_website_dev.gleam'.
+pub fn start(dev_mode dev_mode: Bool) {
   wisp.configure_logger()
 
   let assert Ok(conf) = config.load_config()
@@ -23,6 +29,7 @@ pub fn main() {
       releases_directory,
       db,
       conf.admin_password,
+      dev_mode,
     )
 
   let handler = router.handle_request(_, app_ctx)
