@@ -35,7 +35,7 @@ pub fn main_page(
       header(lang),
       menu(lang, page),
       html.div([attr.id("content-bg")], [content]),
-      footer(),
+      footer(page),
     ]),
   ])
 }
@@ -122,7 +122,7 @@ fn menu(lang: tr.Lang, current_page: String) -> element.Element(a) {
   ])
 }
 
-fn footer() -> element.Element(a) {
+fn footer(current_page: String) -> element.Element(a) {
   let #(date, _time) =
     timestamp.system_time() |> timestamp.to_calendar(calendar.utc_offset)
   html.div([attr.id("footer")], [
@@ -131,6 +131,13 @@ fn footer() -> element.Element(a) {
       html.a([attr.href("http://www.gburri.org")], [html.text(" Greg Burri")]),
     ]),
     html.text(" • "),
-    html.a([attr.class("admin"), attr.href("/admin.html")], [html.text("admin")]),
+    html.a(
+      [
+        attr.class("admin"),
+        attr.classes([#("current-page", current_page == "admin.html")]),
+        attr.href("/admin.html"),
+      ],
+      [html.text("admin")],
+    ),
   ])
 }

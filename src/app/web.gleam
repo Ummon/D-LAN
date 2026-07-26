@@ -4,6 +4,7 @@ import gleam/crypto
 import gleam/http
 import gleam/int
 import gleam/list
+import gleam/option.{type Option}
 import gleam/result
 import gleam/string
 import password
@@ -12,7 +13,7 @@ import wisp
 
 pub type Params {
   NoParams
-  AdminParams(file: String, month: Int, year: Int)
+  AdminParams(file: String, month: Option(Int), year: Option(Int))
 }
 
 pub type AppContext {
@@ -163,10 +164,10 @@ fn extract_params(req: wisp.Request) -> Params {
   let find = list.key_find(wisp.get_query(req), _)
   case
     find("file"),
-    find("month") |> result.try(int.parse),
-    find("year") |> result.try(int.parse)
+    find("month") |> result.try(int.parse) |> option.from_result,
+    find("year") |> result.try(int.parse) |> option.from_result
   {
-    Ok(file), Ok(month), Ok(year) -> AdminParams(file:, month:, year:)
+    Ok(file), month, year -> AdminParams(file:, month:, year:)
     _, _, _ -> NoParams
   }
 }

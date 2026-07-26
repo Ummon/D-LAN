@@ -2,6 +2,7 @@ import app/utils
 import app/web
 import gleam/int
 import gleam/list
+import gleam/option
 import gleam/result
 import gleam/time/calendar
 import gleam/time/timestamp
@@ -30,19 +31,37 @@ pub fn page(ctx: web.Context) -> element.Element(a) {
 fn calendar(ctx: web.Context) -> element.Element(a) {
   let files = ctx.app.db.get_files()
 
-  let #(file, year, month, day) = case ctx.params {
-    web.AdminParams(file, month, year) -> #(file, year, month, 0)
-    _ -> {
-      let #(current_date, _) =
-        timestamp.system_time()
-        |> timestamp.to_calendar(calendar.local_offset())
-      #(
-        files |> list.first |> result.unwrap(""),
-        current_date.year,
-        current_date.month |> calendar.month_to_int,
-        current_date.day,
+  let #(file, year, month, day) = {
+    let #(current_date, _) =
+      timestamp.system_time()
+      |> timestamp.to_calendar(calendar.local_offset())
+
+    case ctx.params {
+      web.AdminParams(file, month, year) -> #(
+        file,
+        year |> option.unwrap(current_date.year),
+        month |> option.unwrap(current_date.month |> calendar.month_to_int),
+        0,
       )
+      _ -> {
+        #(
+          files |> list.first |> result.unwrap(""),
+          current_date.year,
+          current_date.month |> calendar.month_to_int,
+          current_date.day,
+        )
+      }
     }
+  }
+
+  let #(next_month, next_year) = case month {
+    12 -> #(1, year + 1)
+    m -> #(m + 1, year)
+  }
+
+  let #(prev_month, prev_year) = case month {
+    1 -> #(12, year - 1)
+    m -> #(m - 1, year)
   }
 
   let first_day =
@@ -53,17 +72,11 @@ fn calendar(ctx: web.Context) -> element.Element(a) {
     ))
   let last_day =
     calendar.Date(
-      // Next month.
       day: 1,
-      month: {
-        month
-        |> int.modulo(12)
-        |> result.unwrap(0)
-      }
-      + 1
+      month: next_month
         |> calendar.month_from_int
         |> result.unwrap(calendar.January),
-      year:,
+      year: next_year,
     )
     |> utils.previous_day
     |> last_grid_day
@@ -77,19 +90,46 @@ fn calendar(ctx: web.Context) -> element.Element(a) {
       utils.date_to_str(last_day),
     )
 
+  let url_params = fn(month, year) {
+    "/admin.html?file="
+    <> file
+    <> "&month="
+    <> int.to_string(month)
+    <> "&year="
+    <> int.to_string(year)
+  }
+
   [
     html.select(
-      [],
+      [attr.id("file")],
       files
-        |> list.map(fn(f) { html.option([], f) }),
+        |> list.map(fn(f) {
+          html.option([attr.selected(f == file), attr.value(f)], f)
+        }),
     ),
     html.div([attr.class("calendar")], [
       html.div([attr.class("month-selector")], [
-        html.a([attr.class("prev")], [html.text("<")]),
+        html.a(
+          [
+            attr.class("prev"),
+            attr.href(url_params(prev_month, prev_year)),
+          ],
+          [
+            html.text("🡄"),
+          ],
+        ),
         html.div([], [
-          html.text(int.to_string(year) <> " " <> utils.month_name(month)),
+          html.a([attr.href("/admin.html?file=" <> file)], [
+            html.text(int.to_string(year) <> " " <> utils.month_name(month)),
+          ]),
         ]),
-        html.a([attr.class("next")], [html.text(">")]),
+        html.a(
+          [
+            attr.class("next"),
+            attr.href(url_params(next_month, next_year)),
+          ],
+          [html.text("🡆")],
+        ),
       ]),
       html.ul(
         [attr.class("days")],
@@ -105,14 +145,13 @@ fn calendar(ctx: web.Context) -> element.Element(a) {
               let day_element =
                 html.li(
                   [
-                    case date.month |> calendar.month_to_int {
-                      m if m == month -> attr.class("current-month")
-                      _ -> attr.none()
-                    },
-                    case date.day {
-                      d if d == day -> attr.class("today")
-                      _ -> attr.none()
-                    },
+                    attr.classes([
+                      #(
+                        "current-month",
+                        date.month |> calendar.month_to_int == month,
+                      ),
+                      #("today", date.day == day),
+                    ]),
                   ],
                   [
                     html.p([attr.class("day-num")], [

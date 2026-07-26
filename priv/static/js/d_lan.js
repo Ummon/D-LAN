@@ -16,6 +16,13 @@ $(function () {
       window.location.href = url.href;
    });
 
+   $("#file").on("change", function () {
+      var url = new URL(window.location.href);
+      url.searchParams.set("file", this.value);
+      window.location.href = url.href;
+   });
+
+
    var canvas = $("#canvas-menu")[0];
    canvas.height = 120;
    var setCanvasSize = function () { canvas.width = window.innerWidth; };

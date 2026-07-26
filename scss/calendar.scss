@@ -1,13 +1,20 @@
 @use 'constants' as consts;
 
-.calendar {
+#content-bg #content .calendar {
     .month-selector {
         display: flex;
         justify-content: space-between;
         align-items: center;
-
         width: 100%;
         font-weight: bold;
+
+        margin: 10px 0px 10px 0px;
+
+        .prev,
+        .next {
+            font-size: 120%;
+            font-weight: bold;
+        }
 
         .prev {
             float: left;
@@ -17,7 +24,7 @@
             float: right;
         }
 
-        .year {
+        .prev .year {
             margin: 3px;
         }
     }
@@ -28,7 +35,7 @@
 
         li {
             display: inline-block;
-            width: 14%;
+            width: 14.25%;
             text-align: center;
             margin: 0;
 
