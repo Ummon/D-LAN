@@ -1,11 +1,17 @@
 import app/db
 import gleam/http
+import gleam/int
 import gleam/list
 import gleam/result
 import gleam/string
 import password
 import translations as tr
 import wisp
+
+pub type Params {
+  NoParams
+  AdminParams(file: String, month: Int, year: Int)
+}
 
 pub type AppContext {
   AppContext(
@@ -18,7 +24,7 @@ pub type AppContext {
 }
 
 pub type Context {
-  Context(app: AppContext, lang: tr.Lang, is_admin: Bool)
+  Context(app: AppContext, lang: tr.Lang, is_admin: Bool, params: Params)
 }
 
 /// The middleware stack that the request handler uses. The stack is itself a
@@ -56,9 +62,16 @@ pub fn middleware(
 
   use user_status <- handle_auth(req, app)
 
+  let params = extract_params(req)
+
   // Set the current language.
   let ctx =
-    Context(app:, lang: tr.current_lang(req), is_admin: user_status == IsAdmin)
+    Context(
+      app:,
+      lang: tr.current_lang(req),
+      is_admin: user_status == IsAdmin,
+      params:,
+    )
 
   // Handle the request!
   let response = handle_request(req, ctx)
@@ -125,6 +138,18 @@ fn handle_auth(
     }
 
     _, _ -> cont(IsNormalUser)
+  }
+}
+
+fn extract_params(req: wisp.Request) -> Params {
+  let find = list.key_find(wisp.get_query(req), _)
+  case
+    find("file"),
+    find("month") |> result.try(int.parse),
+    find("year") |> result.try(int.parse)
+  {
+    Ok(file), Ok(month), Ok(year) -> AdminParams(file:, month:, year:)
+    _, _, _ -> NoParams
   }
 }
 

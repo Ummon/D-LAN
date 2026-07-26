@@ -1,18 +1,10 @@
-import app/web
 import gleam/float
 import gleam/int
-import gleam/list
-import gleam/option.{None, Some}
-import gleam/regexp
 import gleam/result
 import gleam/string
 import gleam/time/calendar.{type Date}
-import gleam/uri
-import lustre/attribute as attr
-import lustre/element
-import lustre/element/html
-import simplifile
-import translations as tr
+import gleam/time/duration
+import gleam/time/timestamp
 
 pub type Weekday {
   Monday
@@ -56,116 +48,72 @@ pub fn weekday(date: Date) -> Weekday {
   }
 }
 
-// 'platform' is a folder where the releases are put.
-// For example: "windows".
-pub fn download_button(
-  ctx: web.Context,
-  platform: String,
-) -> Result(element.Element(a), Nil) {
-  let platform_formatted = string.capitalise(platform)
-  let release_platform_folder = ctx.app.releases_directory <> "/" <> platform
-  use filenames <- result.try(
-    simplifile.read_directory(release_platform_folder)
-    |> result.map_error(fn(_) { Nil }),
+pub fn previous_day(date: calendar.Date) -> calendar.Date {
+  add_days(date, -1)
+}
+
+pub fn next_day(date: calendar.Date) -> calendar.Date {
+  add_days(date, 1)
+}
+
+pub fn add_days(date: calendar.Date, days: Int) -> calendar.Date {
+  let #(date, _) =
+    date
+    |> to_timestamp
+    |> timestamp.add(duration.hours(24 * days))
+    |> timestamp.to_calendar(calendar.utc_offset)
+  date
+}
+
+pub fn nb_days(d1: calendar.Date, d2: calendar.Date) -> Int {
+  let #(seconds, _) =
+    timestamp.difference(to_timestamp(d1), to_timestamp(d2))
+    |> duration.to_seconds_and_nanoseconds
+  seconds / 86_400
+}
+
+fn to_timestamp(date: calendar.Date) -> timestamp.Timestamp {
+  timestamp.from_calendar(
+    date,
+    calendar.TimeOfDay(12, 0, 0, 0),
+    calendar.utc_offset,
   )
-
-  use filename <- result.try(
-    filenames
-    |> list.filter(fn(f) {
-      list.any([".exe", ".dmg", ".deb"], string.ends_with(f, _))
-    })
-    |> list.sort(string.compare)
-    |> list.last,
-  )
-
-  let extension = string.slice(filename, string.length(filename) - 3, 3)
-
-  let assert Ok(re) =
-    regexp.from_string(case extension {
-      "deb" -> "D-LAN-((?:\\d|\\.)+)([^-]*)-(\\d+)-(\\d+)-(\\d+)_.*-(\\w+)\\..*"
-      _ -> "D-LAN-((?:\\d|\\.)+)([^-]*)-(\\d+)-(\\d+)-(\\d+).*\\..*"
-    })
-  let assert [
-    regexp.Match(
-      submatches: [
-        Some(version),
-        version_tag,
-        Some(year),
-        Some(month),
-        Some(day),
-        ..rest
-      ],
-      ..,
-    ),
-  ] = regexp.scan(re, filename)
-  // 'archi' isn't used for the moment.
-  let archi = case rest {
-    [Some(archi)] -> archi
-    _ -> "win32"
-  }
-  let version_full = case version_tag {
-    Some(tag) -> version <> " " <> tag
-    None -> version
-  }
-
-  let assert Ok(file_info) =
-    simplifile.file_info(release_platform_folder <> "/" <> filename)
-
-  let assert Ok(month_int) = int.parse(month)
-  let released_date = month_name(month_int) <> " " <> day <> " " <> year
-
-  // Add a link to the torrent file if it exists.
-  let torrent_link = case
-    filenames
-    |> list.filter(string.ends_with(_, ".torrent"))
-    |> list.sort(string.compare)
-    |> list.last
-  {
-    Ok(torrent_file) -> [
-      html.a(
-        [attr.class("torrent"), attr.href(file_to_url(torrent_file, platform))],
-        [tr.download_button_torrent(ctx.lang)],
-      ),
-    ]
-    Error(Nil) -> []
-  }
-
-  html.div([attr.class("download " <> extension <> " " <> archi)], [
-    html.a(
-      [attr.class("installer"), attr.href(file_to_url(filename, platform))],
-      [
-        html.em([], [
-          tr.download_button_download(ctx.lang),
-          html.text(" (" <> file_size_mib(file_info.size) <> " MiB)"),
-        ]),
-        html.br([]),
-        tr.download_button_version(ctx.lang, version_full, platform_formatted),
-        html.br([]),
-        tr.download_button_released(ctx.lang, released_date),
-      ],
-    ),
-    ..torrent_link
-  ])
-  |> Ok
 }
 
-// Returns the url to download a given file for the given platform.
-fn file_to_url(filename: String, platform: String) -> String {
-  "download/"
-  <> uri.percent_encode(platform)
-  <> "/"
-  <> uri.percent_encode(filename)
+pub fn parse_date(date: String) -> Result(Date, Nil) {
+  case date |> string.split("-") {
+    [y, m, d] -> {
+      use y <- result.try(int.parse(y))
+      use m <- result.try(int.parse(m))
+      use d <- result.try(int.parse(d))
+      use m <- result.map(calendar.month_from_int(m))
+      calendar.Date(y, m, d)
+    }
+    _ -> Error(Nil)
+  }
 }
 
-// Formats a size in bytes as MiB with two decimals, e.g. "24.53".
-fn file_size_mib(bytes: Int) -> String {
-  let hundredths = float.round(int.to_float(bytes) *. 100.0 /. 1_048_576.0)
-  int.to_string(hundredths / 100)
-  <> "."
-  <> string.pad_start(int.to_string(hundredths % 100), 2, "0")
+pub fn date_to_str(date: Date) -> String {
+  ymd_to_str(date.year, date.month |> calendar.month_to_int, date.day)
 }
 
-fn month_name(month: Int) -> String {
+pub fn ymd_to_str(y: Int, m: Int, d: Int) -> String {
+  y |> int.to_string()
+  <> "-"
+  <> case m < 10 {
+    True -> "0"
+    False -> ""
+  }
+  <> m |> int.to_string()
+  <> "-"
+  <> case d < 10 {
+    True -> "0"
+    False -> ""
+  }
+  <> d |> int.to_string()
+}
+
+pub fn month_name(month: Int) -> String {
   case month {
     1 -> "Jan"
     2 -> "Feb"
@@ -180,4 +128,12 @@ fn month_name(month: Int) -> String {
     11 -> "Nov"
     _ -> "Dec"
   }
+}
+
+// Formats a size in bytes as MiB with two decimals, e.g. "24.53".
+pub fn file_size_mib(bytes: Int) -> String {
+  let hundredths = float.round(int.to_float(bytes) *. 100.0 /. 1_048_576.0)
+  int.to_string(hundredths / 100)
+  <> "."
+  <> string.pad_start(int.to_string(hundredths % 100), 2, "0")
 }

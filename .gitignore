@@ -6,3 +6,4 @@
 /config.toml
 /d_lan_website.sqlite3
 /deploy.nu
+*.dets

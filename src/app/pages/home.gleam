@@ -1,3 +1,4 @@
+import app/download_button
 import app/screenshots
 import app/utils
 import app/web
@@ -14,7 +15,7 @@ pub fn page(ctx: web.Context) -> element.Element(a) {
     image_of_the_week(ctx.lang),
     html.h1([], [html.em([], [tr.home_title(ctx.lang)])]),
     html.p([], [tr.home_description(ctx.lang, "features.html")]),
-    utils.download_button(ctx, "windows") |> result.unwrap(element.none()),
+    download_button.element(ctx, "windows") |> result.unwrap(element.none()),
     html.div([attr.class("spacer")], []),
   ])
 }
