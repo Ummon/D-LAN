@@ -16,7 +16,6 @@ pub fn page(ctx: web.Context) -> element.Element(a) {
     html.h1([], [html.em([], [tr.home_title(ctx.lang)])]),
     html.p([], [tr.home_description(ctx.lang, "features.html")]),
     download_button.element(ctx, "windows") |> result.unwrap(element.none()),
-    html.div([attr.class("spacer")], []),
   ])
 }
 

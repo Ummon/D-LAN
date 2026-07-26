@@ -42,6 +42,7 @@ pub fn main_page(
 
 fn header(lang: tr.Lang) {
   html.div([attr.id("header")], [
+    languages(lang),
     html.ul([attr.id("external-links")], [
       html.li([], [
         html.a(
@@ -76,8 +77,6 @@ fn header(lang: tr.Lang) {
         ]),
       ]),
     ]),
-    languages(lang),
-    html.div([attr.class("spacer")], []),
   ])
 }
 
@@ -96,6 +95,9 @@ fn languages(current_lang: tr.Lang) -> element.Element(a) {
 
 fn menu(lang: tr.Lang, current_page: String) -> element.Element(a) {
   html.div([attr.id("menu")], [
+    html.a([attr.id("logo"), attr.href("/")], [
+      html.img([attr.src("static/img/logo.svg"), attr.alt("logo")]),
+    ]),
     html.ul(
       [],
       [
@@ -117,9 +119,6 @@ fn menu(lang: tr.Lang, current_page: String) -> element.Element(a) {
           ])
         }),
     ),
-    html.a([attr.id("logo"), attr.href("/")], [
-      html.img([attr.src("static/img/logo.svg"), attr.alt("logo")]),
-    ]),
   ])
 }
 
