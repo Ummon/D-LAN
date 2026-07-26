@@ -1,0 +1,15 @@
+@use "sass:color";
+
+$blue-dark: #182430;
+$blue-light: #6596c9;
+
+$red-dark: #6e0404;
+$red-light: #fd2435;
+
+$opacity1: 0.48;
+$opacity2: 0.62;
+
+// Flat colors. Used for browser which do not support gradient and/or opacity.
+$color-bg-body: color.mix($blue-dark, $blue-light);
+$color-bg-content: color.adjust(color.mix($blue-dark, $blue-light), $lightness: 20%, $saturation: -15%);
+$color-bg-box: color.adjust(color.mix($blue-dark, $blue-light), $lightness: 50%, $saturation: -15%); // For download and gallery

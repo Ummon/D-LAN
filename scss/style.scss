@@ -1,18 +1,7 @@
 @use "sass:color";
 
-$blue-dark: #182430;
-$blue-light: #6596c9;
-
-$red-dark: #6e0404;
-$red-light: #fd2435;
-
-$opacity1: 0.48;
-$opacity2: 0.62;
-
-// Flat colors. Used for browser which do not support gradient and/or opacity.
-$color-bg-body: color.mix($blue-dark, $blue-light);
-$color-bg-content: color.adjust(color.mix($blue-dark, $blue-light), $lightness: 20%, $saturation: -15%);
-$color-bg-box: color.adjust(color.mix($blue-dark, $blue-light), $lightness: 50%, $saturation: -15%); // For download and gallery
+@use 'constants' as consts;
+@use 'calendar';
 
 @mixin border-radius($r_top_left, $r_top_right, $r_bot_right, $r_bot_left) {
    border-top-left-radius: $r_top_left;
@@ -55,19 +44,10 @@ body {
    color: black;
    margin: 0px;
 
-   background: -webkit-linear-gradient(left top,
-         $blue-dark 0%,
-         $blue-light 100%) fixed;
-   background: -moz-linear-gradient(left top,
-         $blue-dark 0%,
-         $blue-light 100%) fixed;
-   background: -ms-linear-gradient(left top,
-         $blue-dark 0%,
-         $blue-light 100%) fixed;
-   background: -o-linear-gradient(left top,
-         $blue-dark 0%,
-         $blue-light 100%) fixed;
-   background-color: $color-bg-body;
+   background: linear-gradient(left top,
+         consts.$blue-dark 0%,
+         consts.$blue-light 100%) fixed;
+   background-color: consts.$color-bg-body;
 }
 
 img {
@@ -81,11 +61,11 @@ em {
 }
 
 a {
-   color: color.adjust($blue-dark, $lightness: 20%, $saturation: -20%);
+   color: color.adjust(consts.$blue-dark, $lightness: 20%, $saturation: -20%);
    text-decoration: none;
 
    &:hover {
-      color: color.adjust($blue-dark, $lightness: 30%);
+      color: color.adjust(consts.$blue-dark, $lightness: 30%);
    }
 }
 
@@ -121,12 +101,12 @@ p {
 .box {
    margin: 10px;
    padding: 12px;
-   background-color: rgba(255, 255, 255, $opacity2);
+   background-color: rgba(255, 255, 255, consts.$opacity2);
    border-radius: 16px;
 }
 
-.ie .box {
-   background-color: $color-bg-box;
+.box {
+   background-color: consts.$color-bg-box;
 }
 
 .gallery {
@@ -140,7 +120,7 @@ p {
 
 @mixin highlight-link-header {
    color: white;
-   background-color: $red-light;
+   background-color: consts.$red-light;
    border-radius: 10px;
 }
 
@@ -160,14 +140,14 @@ p {
    line-height: normal;
    background-image: url("img/bg.png");
    background-attachment: fixed;
-   background-color: rgba(255, 255, 255, $opacity1);
+   background-color: rgba(255, 255, 255, consts.$opacity1);
    padding-top: 1px;
    padding-bottom: 1px;
 
    #langs {
       margin-left: 10px;
-      background-color: rgba(255, 255, 255, $opacity2);
-      color: $red-dark;
+      background-color: rgba(255, 255, 255, consts.$opacity2);
+      color: consts.$red-dark;
       border: 0;
       border-radius: 10px;
       padding: 1px 6px;
@@ -175,7 +155,7 @@ p {
 
       option {
          background-color: white; // must be opaque
-         color: $red-dark;
+         color: consts.$red-dark;
       }
    }
 
@@ -186,7 +166,7 @@ p {
       a {
          vertical-align: top;
          padding: 0px 10px 0px 10px;
-         color: $red-dark;
+         color: consts.$red-dark;
 
          &:hover {
             @include highlight-link-header;
@@ -212,8 +192,8 @@ p {
    }
 }
 
-.ie #header {
-   background-color: $color-bg-content;
+#header {
+   background-color: consts.$color-bg-content;
 }
 
 #menu {
@@ -238,7 +218,7 @@ p {
 
          &:hover,
          &.current-page {
-            color: $red-light;
+            color: consts.$red-light;
          }
       }
    }
@@ -249,7 +229,7 @@ p {
 #content-bg {
    background-image: url("img/bg.png");
    background-attachment: fixed;
-   background-color: rgba(255, 255, 255, $opacity1);
+   background-color: rgba(255, 255, 255, consts.$opacity1);
 
    #content {
       @include central-part;
@@ -264,12 +244,12 @@ p {
          border: 3px solid white;
 
          &:hover {
-            border-color: $red-light;
+            border-color: consts.$red-light;
          }
 
          border-radius: 40px;
          width: 300px;
-         background-color: rgba(255, 255, 255, $opacity2);
+         background-color: rgba(255, 255, 255, consts.$opacity2);
          margin: 15px 15px 0px 15px;
 
          &.win32 {
@@ -296,13 +276,13 @@ p {
          background-position: 12px 18px;
 
          a {
-            color: $red-dark;
+            color: consts.$red-dark;
             display: block;
             font-weight: normal;
             font-size: 11px;
 
             &:hover {
-               color: color.adjust($red-dark, $lightness: 20%);
+               color: color.adjust(consts.$red-dark, $lightness: 20%);
             }
          }
 
@@ -322,17 +302,17 @@ p {
             width: 200px;
             margin: 0px 10px 0px 50px;
             padding: 1px 0px 1px 10px;
-            background-color: rgba(255, 255, 255, $opacity2);
+            background-color: rgba(255, 255, 255, consts.$opacity2);
 
             &:hover {
                color: white;
-               background-color: $red-light;
+               background-color: consts.$red-light;
             }
          }
       }
 
-      .ie .download {
-         background-color: $color-bg-box;
+      .download {
+         background-color: consts.$color-bg-box;
       }
 
       &.home .gallery {
@@ -402,25 +382,27 @@ p {
    }
 }
 
-.ie #content-bg {
-   background-color: $color-bg-content;
+
+#content-bg {
+   background-color: consts.$color-bg-content;
 }
 
 #footer {
    @include central-part;
    text-align: right;
 
-   .copyright {
+   font-size: 11px;
+   color: white;
+
+   .admin {
       margin-right: 20px;
-      color: white;
-      font-size: 11px;
    }
 
    a {
-      color: color.adjust($blue-dark, $lightness: 60%, $saturation: -20%);
+      color: color.adjust(consts.$blue-dark, $lightness: 60%, $saturation: -20%);
 
       &:hover {
-         color: color.adjust($blue-dark, $lightness: 80%);
+         color: color.adjust(consts.$blue-dark, $lightness: 80%);
       }
    }
 }

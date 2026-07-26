@@ -27,9 +27,9 @@ def "main password-hash" [password] {
 }
 
 def build_css [] {
-    dart-sass style.scss $style_output
+    dart-sass scss/style.scss $style_output
 }
 
 def watch_css [] {
-    dart-sass --watch style.scss $style_output
+    dart-sass --watch scss/style.scss $style_output
 }

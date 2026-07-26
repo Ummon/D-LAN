@@ -1,0 +1,67 @@
+@use 'constants' as consts;
+
+.calendar {
+    .month-selector {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        width: 100%;
+        font-weight: bold;
+
+        .prev {
+            float: left;
+        }
+
+        .next {
+            float: right;
+        }
+
+        .year {
+            margin: 3px;
+        }
+    }
+
+    ul.weekdays {
+        margin: 0;
+        padding: 0px 0;
+        font-style: italic;
+
+        li {
+            display: inline-block;
+            width: 14%;
+            text-align: center;
+            margin: 0;
+        }
+    }
+
+    ul.days {
+        margin: 0;
+        padding: 0;
+
+        li {
+            display: inline-block;
+            width: 14%;
+            text-align: center;
+            margin: 0;
+
+            &.current-month {
+                background-color: rgba(255, 255, 255, consts.$opacity1);
+            }
+
+            &.today {
+                font-weight: bold;
+                background-color: rgba(255, 255, 255, consts.$opacity2);
+            }
+
+            .day-num {
+                color: consts.$blue-light;
+                background-color: consts.$red-dark;
+            }
+
+            .download-count {
+                font-size: 150%;
+            }
+        }
+    }
+}

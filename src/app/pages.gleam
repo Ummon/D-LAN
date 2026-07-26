@@ -131,5 +131,7 @@ fn footer() -> element.Element(a) {
       html.text("copyright 2010-" <> int.to_string(date.year)),
       html.a([attr.href("http://www.gburri.org")], [html.text(" Greg Burri")]),
     ]),
+    html.text(" | "),
+    html.a([attr.class("admin"), attr.href("/admin.html")], [html.text("admin")]),
   ])
 }
