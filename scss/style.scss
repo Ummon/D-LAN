@@ -76,10 +76,6 @@ p {
    margin-bottom: 10px;
 }
 
-.spacer {
-   clear: both;
-}
-
 .box {
    margin: 10px;
    padding: 12px;
@@ -110,6 +106,11 @@ p {
 }
 
 #header {
+   display: flex;
+   flex-wrap: wrap;
+   align-items: center;
+   justify-content: space-between;
+
    font-style: italic;
    font-size: 90%;
    line-height: normal;
@@ -149,8 +150,6 @@ p {
       }
 
       &#external-links {
-         float: right;
-         height: 18px;
          margin-right: 5px;
          list-style: none;
 
@@ -162,6 +161,13 @@ p {
 }
 
 #menu {
+   @include central-part;
+
+   display: flex;
+   flex-wrap: wrap;
+   align-items: flex-end;
+   justify-content: space-between;
+
    #logo {
       display: block;
       margin-top: 20px;
@@ -169,10 +175,9 @@ p {
    }
 
    ul {
-      float: right;
       display: flex;
       flex-wrap: wrap;
-      margin-top: 75px;
+      margin-bottom: 10px;
       list-style: none;
 
       a {
@@ -187,8 +192,6 @@ p {
          }
       }
    }
-
-   @include central-part;
 }
 
 #content-bg {
@@ -200,6 +203,7 @@ p {
       @include central-part;
       padding-top: 15px;
       padding-bottom: 15px;
+      display: flow-root; // Contains the floated elements (gallery, logo).
 
       a {
          font-weight: bold;
@@ -353,11 +357,6 @@ p {
 }
 
 @media (max-width: 640px) {
-   #menu ul {
-      float: none;
-      margin-top: 20px;
-   }
-
    #content-bg #content .download {
       width: auto;
    }
