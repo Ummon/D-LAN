@@ -1,4 +1,6 @@
 import app/db
+import gleam/bit_array
+import gleam/crypto
 import gleam/http
 import gleam/int
 import gleam/list
@@ -101,17 +103,23 @@ const auth_cookie_name = "auth"
 // One year.
 const cookie_max_age = 31_536_000
 
-/// Check if hashed password is given via POST else try to find it in cookie.
-/// Then match the hashed password with the stored hashed password.
+/// Grants admin status when the cookie holds a valid authentication token, or
+/// when the correct password is given via POST, in which case the token is set
+/// as a cookie.
 fn handle_auth(
   req: wisp.Request,
   app_ctx: AppContext,
   cont: fn(UserStatus) -> wisp.Response,
 ) -> wisp.Response {
-  case wisp.get_cookie(req, auth_cookie_name, wisp.Signed), req.method {
-    Ok(cookie), _ if cookie != "" && cookie == app_ctx.admin_password ->
-      cont(IsAdmin)
-
+  case
+    wisp.get_cookie(req, auth_cookie_name, wisp.Signed)
+    |> result.map(fn(cookie) {
+      let token = auth_token(app_ctx, wisp.get_secret_key_base(req))
+      crypto.secure_compare(<<cookie:utf8>>, <<token:utf8>>)
+    }),
+    req.method
+  {
+    Ok(True), _ -> cont(IsAdmin)
     _, http.Post -> {
       // Parses the body; short-circuits with 400/415 on bad/oversized input.
       use form <- wisp.require_form(req)
@@ -125,7 +133,7 @@ fn handle_auth(
           |> wisp.set_cookie(
             req,
             auth_cookie_name,
-            app_ctx.admin_password,
+            auth_token(app_ctx, wisp.get_secret_key_base(req)),
             wisp.Signed,
             cookie_max_age,
           )
@@ -139,6 +147,16 @@ fn handle_auth(
 
     _, _ -> cont(IsNormalUser)
   }
+}
+
+/// Derives the authentication token stored in the cookie. It's a one-way
+/// function of the stored hash, so the cookie reveals nothing about the
+/// password and is invalidated as soon as the password changes.
+fn auth_token(app_ctx: AppContext, secret: String) -> String {
+  crypto.hmac(<<app_ctx.admin_password:utf8>>, crypto.Sha256, <<
+    secret:utf8,
+  >>)
+  |> bit_array.base64_encode(False)
 }
 
 fn extract_params(req: wisp.Request) -> Params {

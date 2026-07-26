@@ -68,7 +68,7 @@ fn calendar(ctx: web.Context) -> element.Element(a) {
     |> utils.previous_day
     |> last_grid_day
 
-  let nb_days = utils.nb_days(first_day, last_day) |> echo
+  let nb_days = utils.nb_days(first_day, last_day)
 
   let counts =
     ctx.app.db.get_download_counts(

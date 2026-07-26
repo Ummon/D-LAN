@@ -1,13 +1,12 @@
 import argus
 import argv
-import config
 import gleam/io
 import gleam/string
 
-pub fn hash(password: String, salt: String) -> String {
+pub fn hash(password: String) -> String {
   let assert Ok(hashes) =
     argus.hasher()
-    |> argus.hash(password, salt)
+    |> argus.hash(password, argus.gen_salt())
 
   hashes.encoded_hash
 }
@@ -24,10 +23,9 @@ pub fn main() {
   case argv.load().arguments {
     ["--help"] | ["-h"] -> print_usage()
     [password] -> {
-      let assert Ok(conf) = config.load_config()
       let password =
         password |> string.remove_prefix("\"") |> string.remove_suffix("\"")
-      let h = hash(password, conf.secret)
+      let h = hash(password)
       io.println("Hash: " <> h)
     }
     _ -> {

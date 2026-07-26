@@ -44,10 +44,9 @@ body {
    color: black;
    margin: 0px;
 
-   background: linear-gradient(left top,
+   background: linear-gradient(to bottom right,
          consts.$blue-dark 0%,
          consts.$blue-light 100%) fixed;
-   background-color: consts.$color-bg-body;
 }
 
 img {
@@ -103,10 +102,6 @@ p {
    padding: 12px;
    background-color: rgba(255, 255, 255, consts.$opacity2);
    border-radius: 16px;
-}
-
-.box {
-   background-color: consts.$color-bg-box;
 }
 
 .gallery {
@@ -190,10 +185,6 @@ p {
          @include vertical-list;
       }
    }
-}
-
-#header {
-   background-color: consts.$color-bg-content;
 }
 
 #menu {
@@ -311,10 +302,6 @@ p {
          }
       }
 
-      .download {
-         background-color: consts.$color-bg-box;
-      }
-
       &.home .gallery {
          float: right;
          margin-right: 0px;
@@ -380,11 +367,6 @@ p {
          margin-left: 40px;
       }
    }
-}
-
-
-#content-bg {
-   background-color: consts.$color-bg-content;
 }
 
 #footer {
