@@ -22,19 +22,6 @@
         }
     }
 
-    ul.weekdays {
-        margin: 0;
-        padding: 0px 0;
-        font-style: italic;
-
-        li {
-            display: inline-block;
-            width: 14%;
-            text-align: center;
-            margin: 0;
-        }
-    }
-
     ul.days {
         margin: 0;
         padding: 0;
@@ -44,6 +31,10 @@
             width: 14%;
             text-align: center;
             margin: 0;
+
+            &.weekday {
+                font-style: italic;
+            }
 
             &.current-month {
                 background-color: rgba(255, 255, 255, consts.$opacity1);

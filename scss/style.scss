@@ -3,26 +3,10 @@
 @use 'constants' as consts;
 @use 'calendar';
 
-@mixin border-radius($r_top_left, $r_top_right, $r_bot_right, $r_bot_left) {
-   border-top-left-radius: $r_top_left;
-   border-top-right-radius: $r_top_right;
-   border-bottom-right-radius: $r_bot_right;
-   border-bottom-left-radius: $r_bot_left;
-}
-
-@mixin vertical-list {
-   list-style-type: none;
-
-   li {
-      display: inline;
-   }
-}
-
 @mixin central-part {
    width: 100%;
    max-width: 600px;
    margin: 0 auto;
-   box-sizing: border-box;
    padding-left: 12px;
    padding-right: 12px;
 }
@@ -39,10 +23,9 @@ html {
 
 body {
    font-family: verdana, sans-serif;
-   font-size: 14px;
-   line-height: 18px;
+   font-size: .875rem;
+   line-height: 1.3;
    color: black;
-   margin: 0px;
 
    background: linear-gradient(to bottom right,
          consts.$blue-dark 0%,
@@ -70,21 +53,21 @@ a {
 
 h1 {
    font-style: italic;
-   font-size: 16px;
+   font-size: 120%;
    margin-top: 7px;
    margin-bottom: 10px;
 }
 
 h2 {
    font-style: italic;
-   font-size: 14px;
+   font-size: 112%;
    margin-top: 3px;
    margin-bottom: 10px;
 }
 
 h3 {
    font-style: italic;
-   font-size: 12px;
+   font-size: 104%;
    margin-top: 1px;
    margin-bottom: 8px;
 }
@@ -107,7 +90,7 @@ p {
 .gallery {
    p {
       font-style: italic;
-      font-size: 11px;
+      font-size: 90%;
       margin-left: 6px;
       margin-bottom: 0px;
    }
@@ -120,18 +103,15 @@ p {
 }
 
 #canvas-menu {
-   /*display: block;*/
    left: 0px;
    top: 20px;
    position: absolute;
-   margin: 0px;
-   padding: 0px;
    z-index: -1;
 }
 
 #header {
    font-style: italic;
-   font-size: 13px;
+   font-size: 90%;
    line-height: normal;
    background-image: url("img/bg.png");
    background-attachment: fixed;
@@ -168,21 +148,15 @@ p {
          }
       }
 
-      a.current-lang {
-         font-weight: bold;
-         @include highlight-link-header;
-      }
-
       &#external-links {
          float: right;
          height: 18px;
          margin-right: 5px;
+         list-style: none;
 
          li a {
             margin-right: 10px;
          }
-
-         @include vertical-list;
       }
    }
 }
@@ -195,16 +169,16 @@ p {
    }
 
    ul {
-      @include vertical-list;
       float: right;
       display: flex;
       flex-wrap: wrap;
       margin-top: 75px;
+      list-style: none;
 
       a {
          color: white;
          font-style: italic;
-         font-size: 14px;
+         font-size: 110%;
          margin-right: 18px;
 
          &:hover,
@@ -270,7 +244,7 @@ p {
             color: consts.$red-dark;
             display: block;
             font-weight: normal;
-            font-size: 11px;
+            font-size: 90%;
 
             &:hover {
                color: color.adjust(consts.$red-dark, $lightness: 20%);
@@ -283,14 +257,13 @@ p {
             text-align: center;
 
             em {
-               font-size: 13px;
-               font-weight: bold;
+               font-size: 110%;
             }
          }
 
          a.torrent {
-            @include border-radius(10px, 10px, 0px, 0px);
             width: 200px;
+            border-radius: 10px 10px 0 0;
             margin: 0px 10px 0px 50px;
             padding: 1px 0px 1px 10px;
             background-color: rgba(255, 255, 255, consts.$opacity2);
@@ -351,17 +324,6 @@ p {
          }
       }
 
-      &.stats {
-         .filename {
-            vertical-align: top;
-         }
-
-         .nb {
-            padding-left: 10px;
-            text-align: right;
-         }
-      }
-
       ul {
          margin-bottom: 10px;
          margin-left: 40px;
@@ -372,8 +334,9 @@ p {
 #footer {
    @include central-part;
    text-align: right;
+   margin-top: 2px;
 
-   font-size: 11px;
+   font-size: 85%;
    color: white;
 
    .admin {
@@ -408,6 +371,4 @@ p {
          padding-right: 2px;
       }
    }
-
-   // TODO: stack the gallery, unfloat things...
 }
