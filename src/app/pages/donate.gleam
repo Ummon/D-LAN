@@ -24,7 +24,7 @@ pub fn page(ctx: web.Context) -> element.Element(a) {
         attr.class("bitcoin-address-field"),
         attr.type_("text"),
         attr.spellcheck(False),
-        attr.size("45"),
+        attr.size("42"),
         attr.readonly(True),
         attr.value(bitcoin_address()),
       ]),
