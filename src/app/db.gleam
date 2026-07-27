@@ -22,6 +22,7 @@ pub type Db {
 
 pub type Error {
   CantOpenDbFile(String)
+  CantSetJournalMode
   CantCreateDatabase
 }
 
@@ -29,6 +30,12 @@ pub fn connect() -> Result(Db, Error) {
   use db <- result.try(
     sqlight.open("file:" <> db_filename)
     |> result.replace_error(CantOpenDbFile(db_filename)),
+  )
+  // Write-ahead logging lets readers and writers work at the same time. This
+  // setting is persistent, it's stored in the database file itself.
+  use _ <- result.try(
+    sqlight.exec("PRAGMA journal_mode = WAL;", db)
+    |> result.replace_error(CantSetJournalMode),
   )
   use _ <- result.try(
     sqlight.exec(
@@ -61,6 +68,16 @@ CREATE INDEX IF NOT EXISTS downloads_file_index ON downloads(file);
 
 import slate/set
 
+/// Number of rows inserted per SQL statement when importing the dets file. Each
+/// row binds three parameters, which keeps a statement far below the SQLite
+/// limits on both the number of parameters and the number of rows in a 'VALUES'
+/// clause.
+const import_batch_size = 100
+
+/// Try to find the dets file from the old website and import it to the new database.
+/// All the tuples are inserted by batches of 'import_batch_size' rows within a
+/// single transaction, thus the import either fully succeeds or leaves the
+/// database untouched.
 fn try_import_dets(db: sqlight.Connection) -> Nil {
   let date_decoder = {
     use y <- decode.field(0, decode.int)
@@ -82,34 +99,58 @@ fn try_import_dets(db: sqlight.Connection) -> Nil {
     )
   {
     Ok(downloads) -> {
-      let assert Ok(n) =
+      wisp.log_info("DETS to import found, importing...")
+      let assert Ok(rows) =
         downloads
-        |> set.fold(0, fn(acc, k, v) {
+        |> set.fold([], fn(acc, k, v) {
           let #(file, date) = k
           case file |> string.ends_with("torrent") {
             True -> {
               wisp.log_info("Ignored: " <> file)
               acc
             }
-            False -> {
-              let assert Ok(_) =
-                sqlight.query(
-                  "
-INSERT INTO downloads (file, date, count) VALUES (?, ?, ?)",
-                  db,
-                  [sqlight.text(file), sqlight.text(date), sqlight.int(v)],
-                  decode.success(Nil),
-                )
-              acc + 1
-            }
+            False -> [#(file, date, v), ..acc]
           }
         })
-      wisp.log_info(int.to_string(n) <> " rows imported")
+
+      let assert Ok(Nil) = sqlight.exec("BEGIN", db)
+      rows
+      |> list.sized_chunk(import_batch_size)
+      |> list.each(insert_downloads(db, _))
+      let assert Ok(Nil) = sqlight.exec("COMMIT", db)
+
       let assert Ok(Nil) = set.close(downloads)
+      wisp.log_info("DETS import finished")
+      wisp.log_info(int.to_string(list.length(rows)) <> " rows imported")
       Nil
     }
     _ -> wisp.log_info("No DETS file to import")
   }
+  Nil
+}
+
+/// Insert a batch of '#(file, date, count)' rows with a single statement. Rows
+/// already present in the database are skipped.
+fn insert_downloads(
+  db: sqlight.Connection,
+  rows: List(#(String, String, Int)),
+) -> Nil {
+  let placeholders =
+    list.repeat("(?, ?, ?)", list.length(rows)) |> string.join(", ")
+  let values =
+    rows
+    |> list.flat_map(fn(row) {
+      let #(file, date, count) = row
+      [sqlight.text(file), sqlight.text(date), sqlight.int(count)]
+    })
+  let assert Ok(_) =
+    sqlight.query(
+      "INSERT OR IGNORE INTO downloads (file, date, count) VALUES "
+        <> placeholders,
+      db,
+      values,
+      decode.success(Nil),
+    )
   Nil
 }
 

@@ -35,20 +35,18 @@ fn calendar(ctx: web.Context) -> element.Element(a) {
     timestamp.system_time()
     |> timestamp.to_calendar(calendar.local_offset())
 
-  let #(file, year, month, day) = {
+  let #(file, year, month) = {
     case ctx.params {
       web.AdminParams(file, month, year) -> #(
         file,
         year |> option.unwrap(current_date.year),
         month |> option.unwrap(current_date.month |> calendar.month_to_int),
-        current_date.day,
       )
       _ -> {
         #(
           files |> list.first |> result.unwrap(""),
           current_date.year,
           current_date.month |> calendar.month_to_int,
-          current_date.day,
         )
       }
     }

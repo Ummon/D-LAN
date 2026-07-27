@@ -4,6 +4,6 @@
 /priv/static/style.css.map
 *.exe
 /config.toml
-/d_lan_website.sqlite3
+/d_lan_website.sqlite3*
 /deploy.nu
 *.dets
