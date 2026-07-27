@@ -31,17 +31,17 @@ pub fn page(ctx: web.Context) -> element.Element(a) {
 fn calendar(ctx: web.Context) -> element.Element(a) {
   let files = ctx.app.db.get_files()
 
-  let #(file, year, month, day) = {
-    let #(current_date, _) =
-      timestamp.system_time()
-      |> timestamp.to_calendar(calendar.local_offset())
+  let #(current_date, _) =
+    timestamp.system_time()
+    |> timestamp.to_calendar(calendar.local_offset())
 
+  let #(file, year, month, day) = {
     case ctx.params {
       web.AdminParams(file, month, year) -> #(
         file,
         year |> option.unwrap(current_date.year),
         month |> option.unwrap(current_date.month |> calendar.month_to_int),
-        0,
+        current_date.day,
       )
       _ -> {
         #(
@@ -150,7 +150,7 @@ fn calendar(ctx: web.Context) -> element.Element(a) {
                         "current-month",
                         date.month |> calendar.month_to_int == month,
                       ),
-                      #("today", date.day == day),
+                      #("today", date == current_date),
                     ]),
                   ],
                   [
