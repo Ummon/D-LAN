@@ -11,6 +11,7 @@ import sqlight
 import wisp
 
 // To read DETS files.
+import slate
 import slate/set
 
 const db_filename = "d_lan_website.sqlite3"
@@ -88,8 +89,10 @@ fn try_import_dets(db: sqlight.Connection) -> Nil {
   }
 
   case
-    set.open(
+    set.open_with_access(
       "d_lan_downloads_count.dets",
+      repair: slate.AutoRepair,
+      access: slate.ReadOnly,
       key_decoder: {
         use file <- decode.field(0, decode.list(decode.int))
         use date <- decode.field(1, date_decoder)
