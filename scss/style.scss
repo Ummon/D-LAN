@@ -19,11 +19,12 @@
 
 html {
    height: 100%;
+   font-size: 87.5%;
 }
 
 body {
    font-family: verdana, sans-serif;
-   font-size: .875rem;
+   font-size: 1rem;
    line-height: 1.3;
    color: black;
 
@@ -53,21 +54,21 @@ a {
 
 h1 {
    font-style: italic;
-   font-size: 120%;
+   font-size: 1.2rem;
    margin-top: 7px;
    margin-bottom: 10px;
 }
 
 h2 {
    font-style: italic;
-   font-size: 112%;
+   font-size: 1.15rem;
    margin-top: 3px;
    margin-bottom: 10px;
 }
 
 h3 {
    font-style: italic;
-   font-size: 104%;
+   font-size: 1.1rem;
    margin-top: 1px;
    margin-bottom: 8px;
 }
@@ -86,7 +87,7 @@ p {
 .gallery {
    p {
       font-style: italic;
-      font-size: 90%;
+      font-size: 0.9rem;
       margin-left: 6px;
       margin-bottom: 0px;
    }
@@ -122,7 +123,7 @@ select {
    align-items: center;
    justify-content: space-between;
 
-   font: italic 90% verdana, sans-serif;
+   font: italic 0.9rem verdana, sans-serif;
    line-height: normal;
    background-image: url("img/bg.png");
    background-attachment: fixed;
@@ -187,8 +188,8 @@ select {
       a {
          color: white;
          font-style: italic;
-         font-size: 110%;
-         margin-right: 18px;
+         font-size: 1.05rem;
+         margin-right: 16px;
 
          &:hover,
          &.current-page {
@@ -221,7 +222,7 @@ select {
          }
 
          border-radius: 40px;
-         width: 300px;
+         width: 340px;
          background-color: rgba(255, 255, 255, consts.$opacity2);
          margin: 15px 15px 0px 15px;
 
@@ -252,7 +253,7 @@ select {
             color: consts.$red-dark;
             display: block;
             font-weight: normal;
-            font-size: 90%;
+            font-size: 0.9rem;
 
             &:hover {
                color: color.adjust(consts.$red-dark, $lightness: 20%);
@@ -265,7 +266,7 @@ select {
             text-align: center;
 
             em {
-               font-size: 110%;
+               font-size: 1.05rem;
             }
          }
 
@@ -344,7 +345,7 @@ select {
    text-align: right;
    margin-top: 2px;
 
-   font-size: 85%;
+   font-size: 0.85rem;
    color: white;
 
    .admin {
