@@ -10,6 +10,9 @@ import gleam/string
 import sqlight
 import wisp
 
+// To read DETS files.
+import slate/set
+
 const db_filename = "d_lan_website.sqlite3"
 
 pub type Db {
@@ -66,8 +69,6 @@ CREATE INDEX IF NOT EXISTS downloads_file_index ON downloads(file);
   )
 }
 
-import slate/set
-
 /// Number of rows inserted per SQL statement when importing the dets file. Each
 /// row binds three parameters, which keeps a statement far below the SQLite
 /// limits on both the number of parameters and the number of rows in a 'VALUES'
@@ -106,7 +107,7 @@ fn try_import_dets(db: sqlight.Connection) -> Nil {
           let #(file, date) = k
           case file |> string.ends_with("torrent") {
             True -> {
-              wisp.log_info("Ignored: " <> file)
+              // wisp.log_info("Ignored: " <> file)
               acc
             }
             False -> [#(file, date, v), ..acc]
@@ -121,7 +122,9 @@ fn try_import_dets(db: sqlight.Connection) -> Nil {
 
       let assert Ok(Nil) = set.close(downloads)
       wisp.log_info("DETS import finished")
-      wisp.log_info(int.to_string(list.length(rows)) <> " rows imported")
+      wisp.log_info(
+        int.to_string(list.length(rows)) <> " rows imported or updated",
+      )
       Nil
     }
     _ -> wisp.log_info("No DETS file to import")
@@ -129,8 +132,9 @@ fn try_import_dets(db: sqlight.Connection) -> Nil {
   Nil
 }
 
-/// Insert a batch of '#(file, date, count)' rows with a single statement. Rows
-/// already present in the database are skipped.
+/// Insert a batch of '#(file, date, count)' rows with a single statement. The
+/// count of a row already present in the database is overwritten by the
+/// imported one.
 fn insert_downloads(
   db: sqlight.Connection,
   rows: List(#(String, String, Int)),
@@ -145,8 +149,9 @@ fn insert_downloads(
     })
   let assert Ok(_) =
     sqlight.query(
-      "INSERT OR IGNORE INTO downloads (file, date, count) VALUES "
-        <> placeholders,
+      "INSERT INTO downloads (file, date, count) VALUES "
+        <> placeholders
+        <> " ON CONFLICT (file, date) DO UPDATE SET count = excluded.count",
       db,
       values,
       decode.success(Nil),
