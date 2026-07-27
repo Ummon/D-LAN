@@ -1,4 +1,4 @@
-import app/pages
+import app/index
 import app/pages/about
 import app/pages/admin
 import app/pages/donate
@@ -112,7 +112,7 @@ fn to_main_page_response(
   page: String,
 ) -> Response {
   element
-  |> pages.main_page(lang, page)
+  |> index.main_page(lang, page)
   |> element_to_response
 }
 
