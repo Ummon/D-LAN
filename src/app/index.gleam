@@ -127,7 +127,7 @@ fn footer(current_page: String) -> element.Element(a) {
     timestamp.system_time() |> timestamp.to_calendar(calendar.utc_offset)
   html.div([attr.id("footer")], [
     html.span([attr.class("copyright")], [
-      html.text("copyright 2010-" <> int.to_string(date.year)),
+      html.text("© 2010-" <> int.to_string(date.year)),
       html.a([attr.href("http://www.gburri.org")], [html.text(" Greg Burri")]),
     ]),
     html.text(" • "),

@@ -26,9 +26,5 @@ pub fn page(ctx: web.Context) -> element.Element(a) {
       html.div([attr.class("question")], [html.em([], [tr.faq_q5(ctx.lang)])]),
       html.div([attr.class("answer")], [tr.faq_a5(ctx.lang)]),
     ]),
-    html.div([attr.class("qa")], [
-      html.div([attr.class("question")], [html.em([], [tr.faq_q6(ctx.lang)])]),
-      html.div([attr.class("answer")], [tr.faq_a6(ctx.lang)]),
-    ]),
   ])
 }
