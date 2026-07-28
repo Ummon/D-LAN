@@ -408,14 +408,14 @@ pub fn features_feat_6(l: Lang) -> element.Element(a) {
 
 pub fn features_feat_7(l: Lang) -> element.Element(a) {
   case l {
-    En -> "Global chatting."
-    Fr -> "Chat global."
-    De -> "Globaler Chat."
-    Es -> "Chat global."
-    It -> "Chat globale."
-    Ru -> "Общий чат."
-    Ko -> "전체 채팅."
-    Ja -> "全体チャット。"
+    En -> "Global chat and discussion channels."
+    Fr -> "Chat global et canaux de discussion."
+    De -> "Globaler Chat und Diskussionskanäle."
+    Es -> "Chat global y canales de conversación."
+    It -> "Chat globale e canali di discussione."
+    Ru -> "Общий чат и каналы общения."
+    Ko -> "전체 채팅 및 대화 채널."
+    Ja -> "全体チャットとチャットチャンネル。"
   }
   |> html.text
 }
