@@ -1,6 +1,6 @@
+import app/calendar as app_cal
 import app/download_button
 import app/screenshots
-import app/utils
 import app/web
 import gleam/result
 import gleam/time/calendar
@@ -23,36 +23,36 @@ fn image_of_the_week(lang: tr.Lang) -> element.Element(a) {
   let #(date, _time) =
     timestamp.system_time() |> timestamp.to_calendar(calendar.utc_offset)
 
-  case utils.weekday(date) {
-    utils.Monday ->
+  case app_cal.weekday(date) {
+    app_cal.Monday ->
       screenshots.image(
         "browse",
         tr.gallery_browse(lang),
         tr.gallery_browse_comment(lang),
       )
 
-    utils.Tuesday ->
+    app_cal.Tuesday ->
       screenshots.image(
         "search",
         tr.gallery_search(lang),
         tr.gallery_search_comment(lang),
       )
 
-    utils.Wednesday ->
+    app_cal.Wednesday ->
       screenshots.image(
         "download_folders",
         tr.gallery_download_folders(lang),
         tr.gallery_download_folders_comment(lang),
       )
 
-    utils.Thursday ->
+    app_cal.Thursday ->
       screenshots.image(
         "download_files",
         tr.gallery_download_files(lang),
         tr.gallery_download_files_comment(lang),
       )
 
-    utils.Friday -> screenshots.image("upload", tr.gallery_upload(lang), "")
+    app_cal.Friday -> screenshots.image("upload", tr.gallery_upload(lang), "")
 
     // Week-end.
     _ ->

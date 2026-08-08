@@ -1,3 +1,4 @@
+import app/calendar
 import app/utils
 import app/web
 import gleam/int
@@ -69,7 +70,8 @@ pub fn element(
     simplifile.file_info(release_platform_folder <> "/" <> filename)
 
   let assert Ok(month_int) = int.parse(month)
-  let released_date = utils.month_name(month_int) <> " " <> day <> " " <> year
+  let released_date =
+    calendar.month_name(month_int) <> " " <> day <> " " <> year
 
   // Add a link to the torrent file if it exists.
   let torrent_link = case

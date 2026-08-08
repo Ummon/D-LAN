@@ -1,4 +1,4 @@
-import app/utils
+import app/calendar as app_cal
 import app/web
 import gleam/int
 import gleam/list
@@ -76,16 +76,16 @@ fn calendar(ctx: web.Context) -> element.Element(a) {
         |> result.unwrap(calendar.January),
       year: next_year,
     )
-    |> utils.previous_day
+    |> app_cal.previous_day
     |> last_grid_day
 
-  let nb_days = utils.nb_days(first_day, last_day)
+  let nb_days = app_cal.nb_days(first_day, last_day)
 
   let counts =
     ctx.app.db.get_download_counts(
       file,
-      utils.date_to_str(first_day),
-      utils.date_to_str(last_day),
+      app_cal.date_to_str(first_day),
+      app_cal.date_to_str(last_day),
     )
 
   let url_params = fn(month, year) {
@@ -118,7 +118,7 @@ fn calendar(ctx: web.Context) -> element.Element(a) {
         ),
         html.div([], [
           html.a([attr.href("/admin.html?file=" <> file)], [
-            html.text(int.to_string(year) <> " " <> utils.month_name(month)),
+            html.text(int.to_string(year) <> " " <> app_cal.month_name(month)),
           ]),
         ]),
         html.a(
@@ -135,10 +135,10 @@ fn calendar(ctx: web.Context) -> element.Element(a) {
           |> list.map(fn(d) { html.li([attr.class("weekday")], [html.text(d)]) })
           |> list.append(
             int.range(0, nb_days + 1, [], fn(acc, d) {
-              let date = first_day |> utils.add_days(d)
+              let date = first_day |> app_cal.add_days(d)
               let nb_downloads =
                 counts
-                |> list.key_find(utils.date_to_str(date))
+                |> list.key_find(app_cal.date_to_str(date))
                 |> result.unwrap(0)
               let day_element =
                 html.li(
@@ -171,15 +171,15 @@ fn calendar(ctx: web.Context) -> element.Element(a) {
 }
 
 fn first_grid_day(date: calendar.Date) -> calendar.Date {
-  case utils.weekday(date) {
-    utils.Monday -> date
-    _ -> first_grid_day(utils.previous_day(date))
+  case app_cal.weekday(date) {
+    app_cal.Monday -> date
+    _ -> first_grid_day(app_cal.previous_day(date))
   }
 }
 
 fn last_grid_day(date: calendar.Date) -> calendar.Date {
-  case utils.weekday(date) {
-    utils.Sunday -> date
-    _ -> last_grid_day(utils.next_day(date))
+  case app_cal.weekday(date) {
+    app_cal.Sunday -> date
+    _ -> last_grid_day(app_cal.next_day(date))
   }
 }
