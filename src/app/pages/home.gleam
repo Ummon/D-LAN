@@ -1,4 +1,4 @@
-import app/calendar as app_cal
+import app/date
 import app/download_button
 import app/screenshots
 import app/web
@@ -23,36 +23,36 @@ fn image_of_the_week(lang: tr.Lang) -> element.Element(a) {
   let #(date, _time) =
     timestamp.system_time() |> timestamp.to_calendar(calendar.utc_offset)
 
-  case app_cal.weekday(date) {
-    app_cal.Monday ->
+  case date.weekday(date) {
+    date.Monday ->
       screenshots.image(
         "browse",
         tr.gallery_browse(lang),
         tr.gallery_browse_comment(lang),
       )
 
-    app_cal.Tuesday ->
+    date.Tuesday ->
       screenshots.image(
         "search",
         tr.gallery_search(lang),
         tr.gallery_search_comment(lang),
       )
 
-    app_cal.Wednesday ->
+    date.Wednesday ->
       screenshots.image(
         "download_folders",
         tr.gallery_download_folders(lang),
         tr.gallery_download_folders_comment(lang),
       )
 
-    app_cal.Thursday ->
+    date.Thursday ->
       screenshots.image(
         "download_files",
         tr.gallery_download_files(lang),
         tr.gallery_download_files_comment(lang),
       )
 
-    app_cal.Friday -> screenshots.image("upload", tr.gallery_upload(lang), "")
+    date.Friday -> screenshots.image("upload", tr.gallery_upload(lang), "")
 
     // Week-end.
     _ ->

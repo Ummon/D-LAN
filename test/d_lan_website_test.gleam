@@ -1,4 +1,4 @@
-import app/calendar as app_cal
+import app/date
 import app/db
 import app/router
 import app/web
@@ -32,25 +32,25 @@ pub fn index_test() {
 }
 
 pub fn date_to_str_test() {
-  assert app_cal.date_to_str(calendar.Date(2026, calendar.January, 5))
+  assert date.date_to_str(calendar.Date(2026, calendar.January, 5))
     == "2026-01-05"
-  assert app_cal.date_to_str(calendar.Date(2026, calendar.October, 9))
+  assert date.date_to_str(calendar.Date(2026, calendar.October, 9))
     == "2026-10-09"
-  assert app_cal.date_to_str(calendar.Date(2026, calendar.December, 25))
+  assert date.date_to_str(calendar.Date(2026, calendar.December, 25))
     == "2026-12-25"
 }
 
 pub fn parse_date_test() {
-  assert app_cal.parse_date("2026-02-03")
+  assert date.parse_date("2026-02-03")
     == Ok(calendar.Date(2026, calendar.February, 3))
 
-  assert app_cal.parse_date("2026-13-01") == Error(Nil)
-  assert app_cal.parse_date("2026-02") == Error(Nil)
-  assert app_cal.parse_date("2026-ab-01") == Error(Nil)
-  assert app_cal.parse_date("") == Error(Nil)
+  assert date.parse_date("2026-13-01") == Error(Nil)
+  assert date.parse_date("2026-02") == Error(Nil)
+  assert date.parse_date("2026-ab-01") == Error(Nil)
+  assert date.parse_date("") == Error(Nil)
 }
 
 pub fn date_round_trip_test() {
   let date = calendar.Date(2026, calendar.February, 3)
-  assert app_cal.parse_date(app_cal.date_to_str(date)) == Ok(date)
+  assert date.parse_date(date.date_to_str(date)) == Ok(date)
 }

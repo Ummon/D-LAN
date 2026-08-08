@@ -1,7 +1,7 @@
 //// All persistent data are stored in a SQLite database.
 //// - Counts file downloads keyed by ("<platform>/<filename>", date).
 
-import app/calendar
+import app/date
 import gleam/dynamic/decode
 import gleam/int
 import gleam/list
@@ -85,7 +85,7 @@ fn try_import_dets(db: sqlight.Connection) -> Nil {
     use y <- decode.field(0, decode.int)
     use m <- decode.field(1, decode.int)
     use d <- decode.field(2, decode.int)
-    decode.success(calendar.ymd_to_str(y, m, d))
+    decode.success(date.ymd_to_str(y, m, d))
   }
 
   case
