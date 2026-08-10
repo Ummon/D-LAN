@@ -16,7 +16,8 @@ import simplifile
 import translations as tr
 import wisp.{type Request, type Response}
 
-/// The HTTP request handler- your application!
+/// Handle HTTP request: apply middleware then call 'server_page' for pages or 'server_release'
+/// to download a release file.
 pub fn handle_request(req: Request, app_ctx: web.AppContext) -> Response {
   // Apply the middleware stack for this request/response.
   use req, ctx <- web.middleware(req, app_ctx)
