@@ -27,5 +27,6 @@ build-*
 *.af~lock~
 
 .qtc_clangd
+application/build/
 application/.qmake.stash
 application/Setups/Windows/setup_bundle
