@@ -20,20 +20,10 @@
 #include <QTest>
 
 #include <Tests.h>
-#include <StressTests.h>
 
 int main(int argc, char *argv[])
 {
    QCoreApplication a(argc, argv);
-
-   if (a.arguments().contains("-stress"))
-   {
-      StressTests tests;
-      return QTest::qExec(&tests);
-   }
-   else
-   {
-      Tests tests;
-      return QTest::qExec(&tests, argc, argv);
-   }
+   Tests tests;
+   return QTest::qExec(&tests, argc, argv);
 }

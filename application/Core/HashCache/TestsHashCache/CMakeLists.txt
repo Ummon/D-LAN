@@ -22,7 +22,6 @@ target_include_directories(TestsHashCache PRIVATE
 
 target_link_libraries(TestsHashCache PRIVATE
    HashCache
-   FileManager
    Common
    LogManager
    Qt6::Test
