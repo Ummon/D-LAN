@@ -40,6 +40,10 @@ QList<QSharedPointer<FM::IChunk>> MockFileManager::getAllChunks(const Protos::Co
    return QList<QSharedPointer<FM::IChunk>>();
 }
 
+void MockFileManager::updateFromQueueEntry(const Protos::Queue::Queue_Entry& entry)
+{
+}
+
 QList<QSharedPointer<FM::IChunk>> MockFileManager::newFile(Protos::Common::Entry& entry)
 {
    return QList<QSharedPointer<FM::IChunk>>();
@@ -85,7 +89,7 @@ QBitArray MockFileManager::haveChunks(const QList<Common::Hash>& hashes)
    return QBitArray();
 }
 
-quint64 MockFileManager::getAmount()
+qint64 MockFileManager::getAmount()
 {
    return 0;
 }
