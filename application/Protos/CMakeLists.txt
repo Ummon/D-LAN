@@ -51,7 +51,17 @@ foreach(_name IN LISTS DLAN_PROTO_NAMES)
    list(APPEND DLAN_PROTO_GENERATED_SOURCES "${DLAN_PROTO_GEN_DIR}/${_name}.pb.cc")
 endforeach()
 
-add_library(dlan_protos STATIC ${DLAN_PROTO_GENERATED_SOURCES})
+# The .proto files are listed as sources so they show up in the IDE project
+# tree (this is what OTHER_FILES did in Protos.pri). HEADER_FILE_ONLY keeps
+# them out of the compile step.
+set_source_files_properties(${DLAN_ALL_PROTO_FILES} PROPERTIES HEADER_FILE_ONLY ON)
+
+add_library(dlan_protos STATIC
+   ${DLAN_PROTO_GENERATED_SOURCES}
+   ${DLAN_ALL_PROTO_FILES}
+)
+
+source_group("Proto Files" FILES ${DLAN_ALL_PROTO_FILES})
 
 set_target_properties(dlan_protos PROPERTIES AUTOMOC OFF)
 
