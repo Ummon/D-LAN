@@ -139,7 +139,7 @@ add_subdirectory(Core/RemoteControlManager)
 
 add_subdirectory(Core)   # D-LAN.Core executable.
 add_subdirectory(GUI)    # D-LAN.GUI executable.
-add_subdirectory(Client) # D-LAN.Client executable.
+# add_subdirectory(Client) # D-LAN.Client executable. # Disabled for now.
 
 if(DLAN_BUILD_TOOLS)
    add_subdirectory(Tools/FileIndexer)
