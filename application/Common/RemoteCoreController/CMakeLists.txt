@@ -29,6 +29,9 @@ add_library(RemoteCoreController STATIC
    priv/InternalCoreConnection.h
    ISendChatMessageResult.h
    priv/SendChatMessageResult.h
+   ILocalBrowseQuickAccessResult.h
+   priv/LocalBrowseQuickAccessResult.h
+   priv/LocalBrowseQuickAccessResult.cpp
 )
 
 target_compile_definitions(RemoteCoreController PRIVATE REMOTECORECONTROLLER_LIBRARY)

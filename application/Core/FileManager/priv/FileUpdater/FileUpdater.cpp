@@ -502,7 +502,7 @@ void FileUpdater::scan(Entry* entry, bool addUnfinished)
                QDir::AllEntries | QDir::NoDotAndDotDot | QDir::NoSymLinks | QDir::Hidden
             )
          )
-         {            
+         {
             if (this->scanAbortRequested.load(std::memory_order_relaxed) || this->toStop)
             {
                QMutexLocker locker(&this->scanningMutex);

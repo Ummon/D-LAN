@@ -143,6 +143,7 @@ add_executable(DLanGUI WIN32
 
    # RESOURCES
    resources.qrc
+   RemoteBrowseDialog/RemoteBrowseQuickAccessModel.h RemoteBrowseDialog/RemoteBrowseQuickAccessModel.cpp
 )
 
 set_target_properties(DLanGUI PROPERTIES

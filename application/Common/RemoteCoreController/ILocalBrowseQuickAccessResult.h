@@ -18,40 +18,25 @@
   
 #pragma once
 
-#include <QtServiceController>
-#include <QProcess>
+#include <google/protobuf/repeated_field.h>
 
-#include <Common/Constants.h>
+#include <Protos/gui_protocol.pb.h>
 
-#include <Types.h>
+#include <Common/Timeoutable.h>
 
 namespace RCC
 {
-   class CoreController : public QObject
+   class ILocalBrowseQuickAccessResult : public Common::Timeoutable
    {
-      static const QString CORE_EXE_NAME;
-      static const int TIMEOUT_SUBPROCESS_WAIT_FOR_STARTED; // [ms];
-      static const int TIMEOUT_SUBPROCESS_WAIT_FOR_STOPPED; // [ms];
-
       Q_OBJECT
+   protected:
+      ILocalBrowseQuickAccessResult(int time) : Common::Timeoutable(time) {}
 
    public:
-      CoreController();
-
-      void setCoreExecutableDirectory(const QString& dir);
-      void startCore(int port = -1);
-      void stopCore();
-
-      CoreStatus getStatus() const;
+      virtual ~ILocalBrowseQuickAccessResult() {}
+      virtual void start() = 0;
 
    signals:
-      void statusChanged();
-
-   private:
-      void setProgramPath();
-
-      QProcess coreProcess; ///< Only used when unable to launch the core as a service.
-      QtServiceController controller;
-      QString coreDirectory;
+      void result(const google::protobuf::RepeatedPtrField<Protos::GUI::LocalBrowseQuickAccessResult::QuickAccess>&);
    };
 }

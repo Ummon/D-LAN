@@ -695,6 +695,26 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
       }
       break;
 
+   case Common::MessageHeader::GUI_LOCAL_BROWSE_QUICK_ACCESS:
+      {
+         const Protos::GUI::LocalBrowseQuickAccess& browseMessage =
+            message.getMessage<Protos::GUI::LocalBrowseQuickAccess>();
+
+         Protos::GUI::LocalBrowseQuickAccessResult result;
+         result.set_tag(browseMessage.tag());
+
+         for (const auto& folder : Common::Global::getQuickAccessFolders())
+         {
+            auto quickAccessResult = result.mutable_quick_access()->Add();
+
+            quickAccessResult->set_name(folder.name.toStdString());
+            quickAccessResult->set_path(folder.path.toStdString());
+         }
+
+         this->send(Common::MessageHeader::GUI_LOCAL_BROWSE_QUICK_ACCESS_RESULT, result);
+      }
+      break;
+
    case Common::MessageHeader::GUI_CANCEL_DOWNLOADS:
       {
          const Protos::GUI::CancelDownloads& cancelDownloadsMessage = message.getMessage<Protos::GUI::CancelDownloads>();

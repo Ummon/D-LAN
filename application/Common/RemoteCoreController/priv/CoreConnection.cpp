@@ -184,6 +184,11 @@ QSharedPointer<ILocalBrowseResult> CoreConnection::localBrowse(const QString& pa
    return this->current().localBrowse(path, this->SOCKET_TIMEOUT);
 }
 
+QSharedPointer<ILocalBrowseQuickAccessResult> CoreConnection::localBrowseQuickAccess()
+{
+   return this->current().localBrowseQuickAccess(this->SOCKET_TIMEOUT);
+}
+
 QSharedPointer<ISearchResult> CoreConnection::search(const Protos::Common::FindPattern& findPattern, bool local)
 {
    return this->current().search(findPattern, local, this->SOCKET_TIMEOUT);

@@ -263,11 +263,12 @@ message LocalBrowseResult {
       FILE = 0;
       DIR = 1;
    }
+
    message Entry {
       string name = 1;
       int64 date_modified = 2; // [ms] since epoch.
       int64 size = 3; // Bytes for file and root, number of sub-entries for directory.
-      EntryType type = 4;      
+      EntryType type = 4;
 
       // Only used for top roots.
       string volume_label = 5;
@@ -275,6 +276,27 @@ message LocalBrowseResult {
    }
 
    repeated Entry entries = 1;
+
+   uint64 tag = 2;   
+}
+
+
+// GUI -> Core
+// id: 0x1101
+message LocalBrowseQuickAccess {
+   uint64 tag = 1;
+}
+
+// Core -> GUI (directly)
+// id: 0x1102
+message LocalBrowseQuickAccessResult {
+   message QuickAccess {
+      string name = 1;
+      string path = 2;
+   }
+
+   repeated QuickAccess quick_access = 1;
+
    uint64 tag = 2;
 }
 

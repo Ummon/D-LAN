@@ -87,6 +87,9 @@ namespace Common
          GUI_LOCAL_BROWSE =               0x10F1,
          GUI_LOCAL_BROWSE_RESULT =        0x10F2,
 
+         GUI_LOCAL_BROWSE_QUICK_ACCESS =  0x1101,
+         GUI_LOCAL_BROWSE_QUICK_ACCESS_RESULT = 0x1102,
+
          GUI_CANCEL_DOWNLOADS =           0x1061,
          GUI_PAUSE_DOWNLOADS =            0x10C1,
          GUI_MOVE_DOWNLOADS =             0x1071,

@@ -35,7 +35,8 @@ void RemoteBrowseDialogDelegate::paint(QPainter* painter, const QStyleOptionView
 RemoteBrowseDialog::RemoteBrowseDialog(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidget *parent) :
    QDialog(parent),
    ui(new Ui::RemoteBrowseDialog),
-   model(coreConnection)
+   model(coreConnection),
+   modelQuickAccess(coreConnection)
 {
    this->ui->setupUi(this);
 
@@ -56,6 +57,9 @@ RemoteBrowseDialog::RemoteBrowseDialog(QSharedPointer<RCC::ICoreConnection> core
 
    this->ui->treeView->setSelectionBehavior(QAbstractItemView::SelectRows);
    this->ui->treeView->setSelectionMode(QAbstractItemView::ExtendedSelection);
+
+   this->ui->quickAccessListView->setModel(&this->modelQuickAccess);
+   this->ui->quickAccessListView->setSelectionBehavior(QAbstractItemView::SelectRows);
 
    this->ui->buttonBox->button(QDialogButtonBox::Ok)->setText(tr("Ok"));
    this->ui->buttonBox->button(QDialogButtonBox::Cancel)->setText(tr("Cancel"));

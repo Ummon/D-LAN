@@ -15,43 +15,34 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #pragma once
 
-#include <QtServiceController>
-#include <QProcess>
+#include <QtCore>
 
-#include <Common/Constants.h>
+#include <Protos/common.pb.h>
+#include <Protos/gui_protocol.pb.h>
 
-#include <Types.h>
+#include <Common/Hash.h>
+
+#include <ILocalBrowseQuickAccessResult.h>
 
 namespace RCC
 {
-   class CoreController : public QObject
+   class InternalCoreConnection;
+
+   class LocalBrowseQuickAccessResult : public ILocalBrowseQuickAccessResult
    {
-      static const QString CORE_EXE_NAME;
-      static const int TIMEOUT_SUBPROCESS_WAIT_FOR_STARTED; // [ms];
-      static const int TIMEOUT_SUBPROCESS_WAIT_FOR_STOPPED; // [ms];
-
       Q_OBJECT
-
    public:
-      CoreController();
+      LocalBrowseQuickAccessResult(InternalCoreConnection* coreConnection, int socketTimeout);
+      void start();
 
-      void setCoreExecutableDirectory(const QString& dir);
-      void startCore(int port = -1);
-      void stopCore();
-
-      CoreStatus getStatus() const;
-
-   signals:
-      void statusChanged();
+   private slots:
+      void browseResult(const Protos::GUI::LocalBrowseQuickAccessResult& browseResult);
 
    private:
-      void setProgramPath();
-
-      QProcess coreProcess; ///< Only used when unable to launch the core as a service.
-      QtServiceController controller;
-      QString coreDirectory;
+      InternalCoreConnection* coreConnection;
+      Protos::GUI::LocalBrowseQuickAccess browseMessage;
    };
 }

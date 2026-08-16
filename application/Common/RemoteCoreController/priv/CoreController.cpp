@@ -35,12 +35,15 @@ const int CoreController::TIMEOUT_SUBPROCESS_WAIT_FOR_STOPPED(5000); // 5s.
 CoreController::CoreController() :
    controller(Common::Constants::SERVICE_NAME)
 {
+   this->setProgramPath();
+
    connect(&this->coreProcess, &QProcess::stateChanged, this, &CoreController::statusChanged);
 }
 
 void CoreController::setCoreExecutableDirectory(const QString& dir)
 {
    this->coreDirectory = dir;
+   this->setProgramPath();
 }
 
 /**
@@ -73,11 +76,10 @@ void CoreController::startCore(int port)
       {
          if (this->coreProcess.state() == QProcess::NotRunning)
          {
-            this->coreProcess.start(
-               QString("\"%1/%2\" -e%3")
-                     .arg(this->coreDirectory.isNull() ? QCoreApplication::applicationDirPath() : this->coreDirectory)
-                     .arg(CORE_EXE_NAME)
-                     .arg(port != -1 ? QString("") : QString(" --port %1").arg(port)));
+            arguments.prepend("-e");
+            this->coreProcess.setArguments(arguments);
+            this->coreProcess.start();
+
             if (this->coreProcess.waitForStarted(TIMEOUT_SUBPROCESS_WAIT_FOR_STARTED))
                L_USER(QObject::tr("Core launched as subprocess"));
             else
@@ -110,4 +112,14 @@ void CoreController::stopCore()
 CoreStatus CoreController::getStatus() const
 {
    return this->controller.isRunning() ? RUNNING_AS_SERVICE : (this->coreProcess.state() == QProcess::Running || this->coreProcess.state() == QProcess::Starting ? RUNNING_AS_SUB_PROCESS : NOT_RUNNING);
+}
+
+void CoreController::setProgramPath()
+{
+   this->coreProcess.setProgram(
+      QString("%1/%2").arg(
+         this->coreDirectory.isNull() ? QCoreApplication::applicationDirPath() : this->coreDirectory,
+         CORE_EXE_NAME
+      )
+   );
 }

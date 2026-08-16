@@ -33,6 +33,7 @@ using namespace RCC;
 #include <priv/SendChatMessageResult.h>
 #include <priv/BrowseResult.h>
 #include <priv/LocalBrowseResult.h>
+#include <priv/LocalBrowseQuickAccessResult.h>
 #include <priv/SearchResult.h>
 
 // The behavior under Windows and Linux are not the same when connecting a socket to a port.
@@ -232,6 +233,14 @@ QSharedPointer<ILocalBrowseResult> InternalCoreConnection::localBrowse(const QSt
    return browseResult;
 }
 
+QSharedPointer<ILocalBrowseQuickAccessResult> InternalCoreConnection::localBrowseQuickAccess(int socketTimeout)
+{
+   QSharedPointer<LocalBrowseQuickAccessResult> browseResult =
+      QSharedPointer<LocalBrowseQuickAccessResult>(new LocalBrowseQuickAccessResult(this, socketTimeout));
+   this->localBrowseQuickAccessResults << browseResult.toWeakRef();
+   return browseResult;
+}
+
 QSharedPointer<ISearchResult> InternalCoreConnection::search(const Protos::Common::FindPattern& findPattern, bool local, int socketTimeout)
 {
    QSharedPointer<SearchResult> searchResult = QSharedPointer<SearchResult>(new SearchResult(this, findPattern, local, socketTimeout));
@@ -363,12 +372,15 @@ void InternalCoreConnection::tryToConnectToTheNextAddress()
 
    L_DEBU(QString("Trying to connect to %1 (nb retry: %2) ...").arg(address.toString()).arg(this->nbRetries));
 
+   // The core is launched manually in debug mode.
+#if !defined(DEBUG)
    // If the address is local then check if the core is launched, if not try to launch it.
    if (Common::Global::isLocal(address))
    {
       this->coreController.startCore(this->connectionInfo.port);
       L_DEBU(QString("Core controller status: %1").arg(this->coreController.getStatus()));
    }
+#endif
 
    connect(this->socket, &QAbstractSocket::stateChanged, this, &InternalCoreConnection::stateChanged);
    this->socket->connectToHost(address, this->connectionInfo.port);
@@ -584,6 +596,15 @@ void InternalCoreConnection::onNewMessage(const Common::Message& message)
          const Protos::GUI::LocalBrowseResult& browseResultMessage = message.getMessage<Protos::GUI::LocalBrowseResult>();
          emit localBrowseResult(browseResultMessage);
       }
+      break;
+
+   case Common::MessageHeader::GUI_LOCAL_BROWSE_QUICK_ACCESS_RESULT:
+      {
+         const Protos::GUI::LocalBrowseQuickAccessResult& browseResultMessage =
+            message.getMessage<Protos::GUI::LocalBrowseQuickAccessResult>();
+         emit localBrowseQuickAccessResult(browseResultMessage);
+      }
+      break;
 
    default:;
    }

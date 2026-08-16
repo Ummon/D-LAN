@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>675</width>
-    <height>497</height>
+    <width>750</width>
+    <height>430</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -76,14 +76,21 @@
     </layout>
    </item>
    <item>
-    <widget class="QTreeView" name="treeView">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-    </widget>
+    <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,4">
+     <item>
+      <widget class="QListView" name="quickAccessListView"/>
+     </item>
+     <item>
+      <widget class="QTreeView" name="treeView">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">

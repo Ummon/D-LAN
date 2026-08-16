@@ -39,6 +39,7 @@
 #include <ISendChatMessageResult.h>
 #include <IBrowseResult.h>
 #include <ILocalBrowseResult.h>
+#include <ILocalBrowseQuickAccessResult.h>
 #include <ISearchResult.h>
 #include <Types.h>
 #include <priv/CoreController.h>
@@ -48,6 +49,7 @@ namespace RCC
    class SendChatMessageResult;
    class BrowseResult;
    class LocalBrowseResult;
+   class LocalBrowseQuickAccessResult;
    class SearchResult;
 
    class InternalCoreConnection : public Common::MessageSocket
@@ -102,6 +104,7 @@ namespace RCC
       );
 
       QSharedPointer<ILocalBrowseResult> localBrowse(const QString& path, int socketTimeout);
+      QSharedPointer<ILocalBrowseQuickAccessResult> localBrowseQuickAccess(int socketTimeout);
 
       QSharedPointer<ISearchResult> search(const Protos::Common::FindPattern& findPattern, bool local, int socketTimeout);
 
@@ -137,6 +140,7 @@ namespace RCC
 
       void browseResult(const Protos::GUI::BrowseResult& browseResult);
       void localBrowseResult(const Protos::GUI::LocalBrowseResult& browseResult);
+      void localBrowseQuickAccessResult(const Protos::GUI::LocalBrowseQuickAccessResult& browseResult);
       void searchResult(const Protos::Common::FindResult& findResult);
 
    private slots:
@@ -174,6 +178,7 @@ namespace RCC
       QList<QWeakPointer<SearchResult>> searchResultsWithoutTag;
 
       QList<QWeakPointer<LocalBrowseResult>> localBrowseResults;
+      QList<QWeakPointer<LocalBrowseQuickAccessResult>> localBrowseQuickAccessResults;
 
       bool authenticated;
       bool forcedToClose;

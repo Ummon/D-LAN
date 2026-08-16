@@ -81,6 +81,14 @@ namespace Common
       static QString getCurrentUserName();
       static QString getCurrentMachineName();
 
+      struct QuickAccessFolder
+      {
+         QString name; // Localized display name, for example "Téléchargements".
+         QString path; // Absolute path with '/' as separator and without trailing slash.
+      };
+
+      static QList<QuickAccessFolder> getQuickAccessFolders();
+
       static bool createFile(const QString& path);
       static bool recursiveDeleteDirectoryContent(const QString& dir);
       static bool recursiveDeleteDirectory(const QString& dir);

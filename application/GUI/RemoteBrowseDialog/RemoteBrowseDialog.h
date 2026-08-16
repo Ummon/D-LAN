@@ -24,6 +24,7 @@
 #include <Common/RemoteCoreController/ICoreConnection.h>
 
 #include <RemoteBrowseDialog/RemoteBrowseModel.h>
+#include <RemoteBrowseDialog/RemoteBrowseQuickAccessModel.h>
 
 namespace Ui {
    class RemoteBrowseDialog;
@@ -63,6 +64,7 @@ namespace GUI
       Ui::RemoteBrowseDialog *ui;
 
       RemoteBrowseModel model;
+      RemoteBrowseQuickAccessModel modelQuickAccess;
       RemoteBrowseDialogDelegate delegate;
    };
 

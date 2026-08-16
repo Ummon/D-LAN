@@ -25,6 +25,8 @@ using namespace Common;
 #include <QDirIterator>
 #include <QStringBuilder>
 #include <QByteArray>
+#include <QFileInfo>
+#include <QSet>
 #include <QtGlobal>
 #include <QHostAddress>
 #include <QNetworkInterface>
@@ -455,6 +457,93 @@ QString Global::getCurrentMachineName()
 #else
    return "Bob";
 #endif
+}
+
+/**
+  * Returns the folders which may be shown as shortcuts by a file browser: the home folder of the current
+  * user followed by the folders of the Windows Explorer "Quick Access" ("Home" since Windows 11), the
+  * pinned ones as well as the frequently used ones. The duplicates are removed, the home folder is always
+  * the first element.
+  * @remarks Only implemented for Windows, the other platforms only get the home folder.
+  * @remarks When the core runs as a service the quick access folders are the ones of the service account,
+  *          thus there is usually none and only the home folder is returned.
+  */
+QList<Global::QuickAccessFolder> Global::getQuickAccessFolders()
+{
+   QList<QuickAccessFolder> folders;
+   QSet<QString> knownPaths; // Lower case paths, to avoid duplicates.
+
+   auto append = [&folders, &knownPaths](const QString& name, const QString& path)
+   {
+      if (name.isEmpty() || path.isEmpty())
+         return;
+
+      const QString cleanedPath = QDir::cleanPath(QDir::fromNativeSeparators(path));
+
+      // Also discards the pinned folders which don't exist anymore.
+      if (!QFileInfo(cleanedPath).isDir())
+         return;
+
+      if (knownPaths.contains(cleanedPath.toLower()))
+         return;
+
+      knownPaths.insert(cleanedPath.toLower());
+      folders << QuickAccessFolder { name, cleanedPath };
+   };
+
+   const QString homePath = QDir::homePath();
+   append(QDir(homePath).dirName(), homePath);
+
+#ifdef Q_OS_WIN32
+   // 'CoInitializeEx' returns 'S_FALSE' if COM has already been initialized for this thread, 'CoUninitialize' must be
+   // called anyway to balance the calls. It returns 'RPC_E_CHANGED_MODE' if COM has already been initialized with
+   // another threading model, in this case COM can be used but must not be uninitialized here.
+   const HRESULT COMResult = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+   if (FAILED(COMResult) && COMResult != RPC_E_CHANGED_MODE)
+      return folders;
+
+   IShellItem* quickAccess = nullptr;
+   if (SUCCEEDED(SHCreateItemFromParsingName(L"shell:::{679F85CB-0220-4080-B29B-5540CC05AAB6}", nullptr, IID_PPV_ARGS(&quickAccess))))
+   {
+      IEnumShellItems* shellItems = nullptr;
+      if (SUCCEEDED(quickAccess->BindToHandler(nullptr, BHID_EnumItems, IID_PPV_ARGS(&shellItems))))
+      {
+         IShellItem* shellItem = nullptr;
+         while (shellItems->Next(1, &shellItem, nullptr) == S_OK)
+         {
+            wchar_t* path = nullptr;
+            wchar_t* name = nullptr;
+
+            // The quick access also contains the recent files, only the folders are kept.
+            // 'GetAttributes' returns 'S_FALSE' when the asked attributes aren't all set, thus the mask must be tested.
+            SFGAOF attributes = 0;
+            shellItem->GetAttributes(SFGAO_FOLDER, &attributes);
+
+            // 'SIGDN_FILESYSPATH' fails for the items which aren't real folders, for example the recycle bin, they are skipped.
+            if (attributes & SFGAO_FOLDER && SUCCEEDED(shellItem->GetDisplayName(SIGDN_FILESYSPATH, &path)))
+            {
+               if (SUCCEEDED(shellItem->GetDisplayName(SIGDN_NORMALDISPLAY, &name)))
+               {
+                  append(QString::fromWCharArray(name), QString::fromWCharArray(path));
+                  CoTaskMemFree(name);
+               }
+               CoTaskMemFree(path);
+            }
+
+            shellItem->Release();
+         }
+
+         shellItems->Release();
+      }
+
+      quickAccess->Release();
+   }
+
+   if (COMResult != RPC_E_CHANGED_MODE)
+      CoUninitialize();
+#endif
+
+   return folders;
 }
 
 /**

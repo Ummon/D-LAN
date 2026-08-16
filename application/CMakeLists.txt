@@ -36,6 +36,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_AUTOMOC ON)
 
+set(CMAKE_BUILD_PARALLEL_LEVEL 32)
+
 # All executables end up in one place, similar to DESTDIR = output/$$FOLDER.
 # (Multi-config generators automatically append the configuration name.)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/output")

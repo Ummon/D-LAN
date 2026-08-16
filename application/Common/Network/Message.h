@@ -122,6 +122,8 @@ Common::Message Common::Message::readMessageBody(const Common::MessageHeader& he
    case MessageHeader::GUI_BROWSE_RESULT:                return readMessageBody<Protos::GUI::BrowseResult>           (header, source);
    case MessageHeader::GUI_LOCAL_BROWSE:                 return readMessageBody<Protos::GUI::LocalBrowse>            (header, source);
    case MessageHeader::GUI_LOCAL_BROWSE_RESULT:          return readMessageBody<Protos::GUI::LocalBrowseResult>      (header, source);
+   case MessageHeader::GUI_LOCAL_BROWSE_QUICK_ACCESS:    return readMessageBody<Protos::GUI::LocalBrowseQuickAccess> (header, source);
+   case MessageHeader::GUI_LOCAL_BROWSE_QUICK_ACCESS_RESULT: return readMessageBody<Protos::GUI::LocalBrowseQuickAccessResult> (header, source);
    case MessageHeader::GUI_CANCEL_DOWNLOADS:             return readMessageBody<Protos::GUI::CancelDownloads>        (header, source);
    case MessageHeader::GUI_PAUSE_DOWNLOADS:              return readMessageBody<Protos::GUI::PauseDownloads>         (header, source);
    case MessageHeader::GUI_MOVE_DOWNLOADS:               return readMessageBody<Protos::GUI::MoveDownloads>          (header, source);
