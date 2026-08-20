@@ -9,7 +9,9 @@ add_library(LogManager STATIC
    priv/QtLogger.cpp
    priv/StdLogger.cpp
    priv/LoggerHook.cpp
+   priv/CrashHandler.cpp
 
+   CrashHandler.h
    ILogger.h
    ILoggable.h
    IEntry.h
@@ -33,6 +35,11 @@ target_include_directories(LogManager PUBLIC
 )
 
 target_link_libraries(LogManager PUBLIC Qt6::Core)
+
+if(WIN32)
+   # 'StackWalk64', 'SymFromAddr', 'MiniDumpWriteDump' (priv/CrashHandler.cpp).
+   target_link_libraries(LogManager PUBLIC dbghelp)
+endif()
 
 if(DLAN_BUILD_TESTS)
    add_subdirectory(TestsLogManager)

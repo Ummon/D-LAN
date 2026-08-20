@@ -175,7 +175,7 @@ namespace Common
 
 template <typename ItemType, typename TreeType>
 Common::Tree<ItemType, TreeType>::Tree() :
-   parent(0)
+   parent(nullptr)
 {
 }
 

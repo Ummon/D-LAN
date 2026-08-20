@@ -22,6 +22,7 @@ endif()
 option(DLAN_BUILD_TESTS "Build the unit/stress test executables" ON)
 option(DLAN_BUILD_TOOLS "Build the tools (LogViewer, FileIndexer, PasswordHasher)" ON)
 option(DLAN_PROFILING   "Build with gprof instrumentation (-pg), was 'CONFIG += prof'" OFF)
+option(DLAN_PDB         "Emit CodeView debug info and a .pdb so LM::CrashHandler can print function names and line numbers" ON)
 
 # Third-party locations (were hardcoded in blake3.pri / protobuf.pri).
 set(DLAN_BLAKE3_ROOT   "C:/BLAKE3-1.8.5/c" CACHE PATH "Root of the BLAKE3 C library (contains blake3.h and lib/)")
@@ -63,6 +64,23 @@ endif()
 if(DLAN_PROFILING)
    add_compile_options(-pg -g)
    add_link_options(-pg)
+endif()
+
+# ------------------------------------------------------------------------------
+# Debug information for the crash handler (Common/LogManager/CrashHandler.h).
+#
+# DbgHelp ('StackWalk64' / 'SymFromAddr') only understands CodeView/PDB, not the DWARF
+# llvm-mingw emits by default. Without this, crash reports degrade gracefully to
+# 'module+0xRVA' lines, which can still be resolved after the fact with:
+#    llvm-addr2line -e output/D-LAN.Core.exe -f -C -i 0x<RVA>
+#
+# '-gcodeview' costs nothing at runtime and the .pdb is a separate file, so it is kept
+# on in release builds too. Configure with -DDLAN_PDB=OFF to opt out.
+# ------------------------------------------------------------------------------
+if(DLAN_PDB AND WIN32 AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+   add_compile_options(-gcodeview -g)
+   # An empty '--pdb=' tells lld to derive the .pdb name from the output binary.
+   add_link_options(-g -Wl,--pdb=)
 endif()
 
 # ------------------------------------------------------------------------------

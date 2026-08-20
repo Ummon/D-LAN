@@ -57,6 +57,7 @@ namespace LM
 
    public:
       static void setLogDirName(const QString& logDirName);
+      static QString getLogDirName();
       static void addALoggerHook(QSharedPointer<LoggerHook> loggerHook);
 
       Logger(const QString& name);

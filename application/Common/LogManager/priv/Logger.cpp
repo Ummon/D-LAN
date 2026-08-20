@@ -71,6 +71,16 @@ void Logger::setLogDirName(const QString& logDirName)
    Logger::logDirName = logDirName;
 }
 
+/**
+  * The name of the folder, relative to the local data folder, where the log files are written.
+  * Mirrors the default applied lazily by 'createFileLog()'.
+  */
+QString Logger::getLogDirName()
+{
+   QMutexLocker locker(&Logger::mutex);
+   return Logger::logDirName.isEmpty() ? DEFAULT_LOG_FOLDER_NAME : Logger::logDirName;
+}
+
 void Logger::addALoggerHook(QSharedPointer<LoggerHook> loggerHook)
 {
    QMutexLocker locker(&Logger::mutex);

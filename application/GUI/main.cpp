@@ -25,6 +25,7 @@
 #include <Common/Global.h>
 #include <Common/Constants.h>
 #include <Common/LogManager/Builder.h>
+#include <Common/LogManager/CrashHandler.h>
 
 #include <D-LAN_GUI.h>
 
@@ -65,6 +66,9 @@ int main(int argc, char *argv[])
       return 0;
 
    LM::Builder::setLogDirName("log_gui");
+
+   // Must come after 'setLogDirName(..)': the crash reports are written next to the log files.
+   LM::CrashHandler::install();
 
    LM::Builder::newLogger("Main")->log(QObject::tr("D-LAN GUI version %1").arg(Common::Global::getVersionFull()), LM::SV_END_USER);
 

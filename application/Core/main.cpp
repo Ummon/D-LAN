@@ -25,6 +25,7 @@
 
 #include <Common/Global.h>
 #include <Common/LogManager/Builder.h>
+#include <Common/LogManager/CrashHandler.h>
 
 #include <CoreService.h>
 
@@ -105,6 +106,9 @@ try
    }
 
    LM::Builder::setLogDirName("log_core");
+
+   // Must come after 'setLogDirName(..)': the crash reports are written next to the log files.
+   LM::CrashHandler::install();
 
    CoreSpace::CoreService core(resetSettings, locale, argc, argv);
 
