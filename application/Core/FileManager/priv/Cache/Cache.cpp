@@ -171,6 +171,9 @@ Directory* Cache::getDirectory(const Protos::Common::Entry& dir) const
   */
 Entry* Cache::getEntry(const Common::Path& path) const
 {
+   if (path.isNull())
+      return nullptr;
+
    Q_ASSERT(path.isAbsolute());
 
    QMutexLocker locker(&this->mutex);
