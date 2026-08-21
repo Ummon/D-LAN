@@ -76,11 +76,17 @@ endif()
 #
 # '-gcodeview' costs nothing at runtime and the .pdb is a separate file, so it is kept
 # on in release builds too. Configure with -DDLAN_PDB=OFF to opt out.
+#
+# IMPORTANT: '-gcodeview' *replaces* DWARF, it does not complement it. GDB reads only
+# DWARF, so applying it to Debug builds leaves the debugger with no line table and
+# breakpoints silently fail to bind (they vanish as soon as the process starts).
+# CodeView is therefore restricted to the non-Debug configurations, which are the ones
+# where CrashHandler actually has to symbolize a stack in the field.
 # ------------------------------------------------------------------------------
 if(DLAN_PDB AND WIN32 AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-   add_compile_options(-gcodeview -g)
+   add_compile_options($<$<NOT:$<CONFIG:Debug>>:-gcodeview> -g)
    # An empty '--pdb=' tells lld to derive the .pdb name from the output binary.
-   add_link_options(-g -Wl,--pdb=)
+   add_link_options($<$<NOT:$<CONFIG:Debug>>:-Wl,--pdb=> -g)
 endif()
 
 # ------------------------------------------------------------------------------
