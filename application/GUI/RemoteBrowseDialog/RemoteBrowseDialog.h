@@ -57,6 +57,10 @@ namespace GUI
       QStringList getSelectedPaths() const;      
 
    private slots:
+      void quickAccessSelectionChanged(const QModelIndex &current, const QModelIndex &previous);
+      void quickAccessClicked(const QModelIndex &index);
+      void selectIndex(const QModelIndex &index);
+
       void accept() override;
       void reject() override;
 

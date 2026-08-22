@@ -70,6 +70,11 @@ QIcon IconProvider::getIcon(const Common::Path& path)
       return IconProvider::iconProvider.icon(QFileIconProvider::Folder);
 }
 
+QIcon IconProvider::getDirectoryIcon()
+{
+   return IconProvider::iconProvider.icon(QFileIconProvider::Folder);
+}
+
 QIcon IconProvider::getIconCache(const QString& filename, bool withWarning)
 {
    const int index = filename.lastIndexOf(".");

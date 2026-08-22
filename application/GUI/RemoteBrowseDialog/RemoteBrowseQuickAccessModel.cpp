@@ -21,6 +21,8 @@ using namespace GUI;
 
 #include <Common/Global.h>
 
+#include <IconProvider.h>
+
 #include <Log.h>
 
 RemoteBrowseQuickAccessModel::RemoteBrowseQuickAccessModel(QSharedPointer<RCC::ICoreConnection> coreConnection) :
@@ -53,18 +55,21 @@ QVariant RemoteBrowseQuickAccessModel::data(const QModelIndex& index, int role) 
    case Qt::DisplayRole:
       return QString::fromStdString(this->quickAccess[index.row()].name());
 
-   // case Qt::DecorationRole:
-   //    // Icon: file or directory.
-   //    if (index.column() == 0)
-   //       return IconProvider::getIcon(this->sharedEntries[index.row()].path);
-
-   //    return QVariant();
-
-   // case Qt::TextAlignmentRole:
-   //    return QVariant((index.column() == 0 || index.column() == 1 ? Qt::AlignLeft : Qt::AlignRight) | Qt::AlignVCenter);
+   case Qt::DecorationRole:
+      // Directory icon.
+      return IconProvider::getDirectoryIcon();
 
    default: return QVariant();
    }
+}
+
+QString RemoteBrowseQuickAccessModel::getPath(const QModelIndex& index) const
+{
+   if (index.isValid() && index.row() >= 0 && index.row() < this->quickAccess.size())
+      return QString::fromStdString(this->quickAccess[index.row()].path());
+
+   return QString();
+
 }
 
 void RemoteBrowseQuickAccessModel::result(const google::protobuf::RepeatedPtrField<Protos::GUI::LocalBrowseQuickAccessResult::QuickAccess>& entries)

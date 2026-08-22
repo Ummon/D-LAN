@@ -63,6 +63,10 @@ namespace GUI
 
       void setFilters(Filters filters);
       QString getPath(const QModelIndex& index, bool appendFilename = true) const;
+      void getIndexFromPath(const QString& path);
+
+   signals:
+      void indexFromPath(const QModelIndex& index);
 
    private slots:
       void result(const google::protobuf::RepeatedPtrField<Protos::GUI::LocalBrowseResult::Entry>& entries);
@@ -71,6 +75,9 @@ namespace GUI
    private:
       void browse(Tree* tree);
       void loadChildren(const QPersistentModelIndex &index);
+
+      void exploreDirectories();
+      QModelIndex indexFromTree(Tree* tree) const;
 
       class Tree : public Common::Tree<Protos::GUI::LocalBrowseResult::Entry, Tree>
       {
@@ -93,6 +100,10 @@ namespace GUI
       // When we receive some entries after a browse query, they will be added as children to this index.
       QPersistentModelIndex currentBrowseIndex;
       QSharedPointer<RCC::ILocalBrowseResult> localBrowseResult;
+
+      // Used when we want to display a specific path with the method 'getIndexFromPath'.
+      QList<QString> directoriesToExplore;
+      Tree* currentTreeExploring;
 
       Tree* root; // The corresponding index is null: QModelIndex().
    };

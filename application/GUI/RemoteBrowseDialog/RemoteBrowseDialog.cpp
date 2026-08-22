@@ -65,6 +65,23 @@ RemoteBrowseDialog::RemoteBrowseDialog(QSharedPointer<RCC::ICoreConnection> core
    this->ui->buttonBox->button(QDialogButtonBox::Cancel)->setText(tr("Cancel"));
 
    connect(coreConnection.data(), &RCC::ICoreConnection::disconnected, this, [this]() { this->reject(); });
+   connect(
+      this->ui->quickAccessListView->selectionModel(),
+      &QItemSelectionModel::currentRowChanged,
+      this,
+      &RemoteBrowseDialog::quickAccessSelectionChanged
+   );
+   connect(
+      this->ui->quickAccessListView,
+      &QAbstractItemView::clicked,
+      this,
+      [this](const QModelIndex& index) {
+         // otherwise currentRowChanged handles it
+         if (index == this->ui->quickAccessListView->currentIndex())
+            this->quickAccessClicked(index);
+      }
+   );
+   connect(&this->model, &RemoteBrowseModel::indexFromPath, this, &RemoteBrowseDialog::selectIndex);
 
    this->setModes(FILE | DIR | SELECT_MULTIPLE);
 }
@@ -106,4 +123,32 @@ void RemoteBrowseDialog::accept()
 void RemoteBrowseDialog::reject()
 {
    QDialog::reject();
+}
+
+void RemoteBrowseDialog::quickAccessSelectionChanged(const QModelIndex &current, const QModelIndex &previous)
+{
+   this->quickAccessClicked(current);
+}
+
+void RemoteBrowseDialog::quickAccessClicked(const QModelIndex &index)
+{
+   if (index.isValid())
+   {
+      const auto path = this->modelQuickAccess.getPath(index);
+      if (!path.isEmpty())
+      {
+         this->model.getIndexFromPath(path);
+      }
+   }
+}
+
+void RemoteBrowseDialog::selectIndex(const QModelIndex &index)
+{
+   for (QModelIndex parent = index.parent(); parent.isValid(); parent = parent.parent())
+      this->ui->treeView->expand(parent);
+
+   this->ui->treeView->expand(index);
+
+   this->ui->treeView->setCurrentIndex(index);
+   this->ui->treeView->scrollTo(index, QAbstractItemView::PositionAtCenter);
 }
