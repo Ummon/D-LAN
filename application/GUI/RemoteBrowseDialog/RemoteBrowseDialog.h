@@ -61,6 +61,9 @@ namespace GUI
       void quickAccessClicked(const QModelIndex &index);
       void selectIndex(const QModelIndex &index);
 
+      void displayContextMenuDownload(const QPoint& point);
+      void openLocation();
+
       void accept() override;
       void reject() override;
 

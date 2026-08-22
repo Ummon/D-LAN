@@ -55,6 +55,8 @@ namespace GUI
       RemoteBrowseModel(QSharedPointer<RCC::ICoreConnection> coreConnection);
       virtual ~RemoteBrowseModel();
 
+      bool isLocal() const;
+
       virtual QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
       virtual QModelIndex parent(const QModelIndex& child) const override;
       virtual int rowCount(const QModelIndex& parent = QModelIndex()) const override;

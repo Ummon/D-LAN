@@ -17,11 +17,14 @@
   */
 
 #include <RemoteBrowseDialog/RemoteBrowseDialog.h>
+#include <qmenu.h>
 #include <ui_RemoteBrowseDialog.h>
 using namespace GUI;
 
 #include <Common/Global.h>
 #include <Common/Settings.h>
+
+#include <Utils.h>
 
 void RemoteBrowseDialogDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
@@ -58,6 +61,8 @@ RemoteBrowseDialog::RemoteBrowseDialog(QSharedPointer<RCC::ICoreConnection> core
    this->ui->treeView->setSelectionBehavior(QAbstractItemView::SelectRows);
    this->ui->treeView->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
+   this->ui->treeView->setContextMenuPolicy(Qt::CustomContextMenu);
+
    this->ui->quickAccessListView->setModel(&this->modelQuickAccess);
    this->ui->quickAccessListView->setSelectionBehavior(QAbstractItemView::SelectRows);
 
@@ -82,6 +87,13 @@ RemoteBrowseDialog::RemoteBrowseDialog(QSharedPointer<RCC::ICoreConnection> core
       }
    );
    connect(&this->model, &RemoteBrowseModel::indexFromPath, this, &RemoteBrowseDialog::selectIndex);
+
+   connect(
+      this->ui->treeView,
+      &QTreeView::customContextMenuRequested,
+      this,
+      &RemoteBrowseDialog::displayContextMenuDownload
+   );
 
    this->setModes(FILE | DIR | SELECT_MULTIPLE);
 }
@@ -151,4 +163,29 @@ void RemoteBrowseDialog::selectIndex(const QModelIndex &index)
 
    this->ui->treeView->setCurrentIndex(index);
    this->ui->treeView->scrollTo(index, QAbstractItemView::PositionAtCenter);
+}
+
+void RemoteBrowseDialog::displayContextMenuDownload(const QPoint& point)
+{
+   QPoint globalPosition = this->ui->treeView->mapToGlobal(point);
+
+   if (this->model.isLocal())
+   {
+      QMenu menu;
+      menu.addAction(
+         QIcon(":/icons/resources/explore_folder.svg"), tr("Open location"), this, &RemoteBrowseDialog::openLocation
+      );
+      menu.exec(globalPosition);
+   }
+}
+
+void RemoteBrowseDialog::openLocation()
+{
+   QModelIndexList selectedRows = this->ui->treeView->selectionModel()->selectedRows();
+
+   QSet<QString> locations;
+   for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
+      locations.insert(this->model.getPath(i.next(), true));
+
+   Utils::openLocations(locations.values());
 }

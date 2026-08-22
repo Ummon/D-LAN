@@ -51,6 +51,11 @@ RemoteBrowseModel::~RemoteBrowseModel()
    delete this->root;
 }
 
+bool RemoteBrowseModel::isLocal() const
+{
+   return this->coreConnection->isLocal();
+}
+
 QModelIndex RemoteBrowseModel::index(int row, int column, const QModelIndex& parent) const
 {
    if (!this->hasIndex(row, column, parent))
