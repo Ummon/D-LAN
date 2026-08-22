@@ -76,7 +76,7 @@ bool FileHasher::start(FileForHasher* fileCache, int n, int* amountHashed)
    if (this->toStopHashing)
    {
       this->toStopHashing = false;
-      this->currentFileCache = 0;
+      this->currentFileCache = nullptr;
       return false;
    }
 
