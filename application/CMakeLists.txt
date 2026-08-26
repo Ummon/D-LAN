@@ -12,6 +12,9 @@ cmake_minimum_required(VERSION 3.21)
 
 project(D-LAN LANGUAGES CXX)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_COLOR_DIAGNOSTICS ON)
+
 if(WIN32)
    enable_language(RC) # For version.rc / passwordhasher.rc.
 endif()
