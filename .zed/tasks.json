@@ -1,0 +1,18 @@
+[
+  {
+    "label": "Build",
+    "command": "cd ./application && nu build.nu",
+    "use_new_terminal": true,
+    "env": { "QT_SELECT": "qt6" },
+  },
+  {
+    "label": "Test",
+    "command": "cd ./application && ./4.run_all_tests.sh",
+    "use_new_terminal": true,
+  },
+  {
+    "label": "Run",
+    "command": "application/GUI/output/release/D-LAN.GUI",
+    "use_new_terminal": true,
+  },
+]
