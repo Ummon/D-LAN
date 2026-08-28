@@ -1,3 +1,5 @@
+//// Some utilities functions around date and calendar.
+
 import gleam/int
 import gleam/result
 import gleam/string
@@ -79,6 +81,7 @@ fn to_timestamp(date: calendar.Date) -> timestamp.Timestamp {
   )
 }
 
+/// Parse a date as "yyyy-mm-dd".
 pub fn parse_date(date: String) -> Result(Date, Nil) {
   case date |> string.split("-") {
     [y, m, d] -> {
@@ -92,10 +95,12 @@ pub fn parse_date(date: String) -> Result(Date, Nil) {
   }
 }
 
+/// Returns a date as "yyyy-mm-dd".
 pub fn date_to_str(date: Date) -> String {
   ymd_to_str(date.year, date.month |> calendar.month_to_int, date.day)
 }
 
+/// Builds a date as "yyyy-mm-dd".
 pub fn ymd_to_str(y: Int, m: Int, d: Int) -> String {
   y |> int.to_string()
   <> "-"

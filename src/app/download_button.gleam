@@ -14,8 +14,10 @@ import lustre/element/html
 import simplifile
 import translations as tr
 
-// 'platform' is a folder where the releases are put.
-// For example: "windows".
+/// Returns a release download button as a div element or Nil
+/// if no release is found.
+/// 'platform' is a folder where the releases are put.
+/// For example: "windows".
 pub fn element(
   ctx: web.Context,
   platform: String,

@@ -162,7 +162,7 @@ fn insert_downloads(
   Nil
 }
 
-pub fn codepoints_to_string(chars: List(Int)) -> Result(String, Nil) {
+fn codepoints_to_string(chars: List(Int)) -> Result(String, Nil) {
   chars
   |> list.map(string.utf_codepoint)
   |> result.all

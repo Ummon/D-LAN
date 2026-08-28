@@ -12,6 +12,8 @@ pub type Config {
   Config(port: Int, secret: String, admin_password: String)
 }
 
+/// Load the config from the current directory, if it doesn't exists
+/// create a new one with default values.
 pub fn load_config() -> Result(Config, String) {
   use error <- result.try_recover(read_config())
   io.println("Error: " <> error <> ", creating default config file..")
