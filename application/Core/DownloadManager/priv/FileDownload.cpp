@@ -640,7 +640,7 @@ void FileDownload::connectChunkDownloaderSignals(const QSharedPointer<ChunkDownl
       &ChunkDownloader::downloadStarted,
       this,
       &FileDownload::chunkDownloaderStarted,
-      Qt::ConnectionType(Qt::DirectConnection | Qt::SingleShotConnection)
+      Qt::DirectConnection
    );
 
    connect(
@@ -648,7 +648,7 @@ void FileDownload::connectChunkDownloaderSignals(const QSharedPointer<ChunkDownl
       &ChunkDownloader::downloadFinished,
       this,
       &FileDownload::chunkDownloaderFinished,
-      Qt::ConnectionType(Qt::DirectConnection | Qt::SingleShotConnection)
+      Qt::DirectConnection
    );
 
    connect(

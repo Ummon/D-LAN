@@ -551,7 +551,7 @@ void ChunkDownloader::downloadingEnded()
 
    // occupiedPeersDownloadingChunk can relaunch the download, so we have to set this->currentDownloadingPeer to 0 before.
    PM::IPeer* currentPeer = this->currentDownloadingPeer;
-   this->currentDownloadingPeer = 0;
+   this->currentDownloadingPeer = nullptr;
 
    // When a chunk is finished we don't care to know the associated peers.
    if (this->isComplete())
