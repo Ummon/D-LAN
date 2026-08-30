@@ -725,7 +725,11 @@ void FileDownload::reset()
 {
    this->chunksWithoutDownloader.clear();
    for (QListIterator<QSharedPointer<ChunkDownloader>> i(this->chunkDownloaders); i.hasNext();)
-      i.next()->reset();
+   {
+      auto chunk = i.next();
+      if (!chunk.isNull())
+         chunk->reset();
+   }
    this->localEntry.set_exists(false);
    this->localEntry.clear_shared_entry();
 }
