@@ -15,44 +15,28 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #pragma once
 
-#include <QSharedPointer>
+#include  <Core/FileManager/IChunk.h>
 
-#include <Core/FileManager/IChunk.h>
-#include <Core/PeerManager/GetChunkParams.h>
-
-#include <Common/Hash.h>
-
-namespace UM
+namespace PM
 {
-   class IPeer;
-   class IChunk;
-
-   class IChunksUploader
+   class GetChunkParams
    {
    public:
-      virtual ~IChunksUploader() {}
+      GetChunkParams(QSharedPointer<FM::IChunk> chunk, int offset, qint64 fileBytesOwnedByPeer);
 
-      /**
-        * Returns the upload ID, it can be use later to retrieve an upload.
-        */
-      virtual quint64 getID() const = 0;
+      QSharedPointer<FM::IChunk> getChunk() const;
 
-      /**
-        * Returns the ID of the remote peer.
-        */
-      virtual Common::Hash getPeerID() const = 0;
+      int getOffset() const;
+      void setOffset(int offset);
 
-      /**
-        * Returns a value between 0 and 10000.
-        */
-      // virtual int getProgress() const = 0;
+      qint64 getFileBytesOwnedByPeer() const;
 
-      /**
-        * Returns the chunk being uploaded.
-        */
-      virtual QList<PM::GetChunkParams> getChunks() const = 0;
+   private:
+      QSharedPointer<FM::IChunk> chunk;
+      int offset;
+      qint64 fileBytesOwnedByPeer;
    };
 }

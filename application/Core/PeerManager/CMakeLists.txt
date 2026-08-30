@@ -31,6 +31,9 @@ add_library(PeerManager STATIC
    priv/GetEntriesResult.h
    priv/GetHashesResult.h
    priv/PeerSelf.h
+
+   GetChunkParams.h
+   GetChunkParams.cpp
 )
 
 target_compile_definitions(PeerManager PRIVATE PEERMANAGER_LIBRARY)

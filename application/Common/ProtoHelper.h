@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include <QHash.h>
 #include <QString>
 #include <QLocale>
 #include <QHostAddress>
@@ -96,6 +97,42 @@ namespace Common
    };
 }
 
+namespace Protos::Common
+{
+   /**
+     * Two entries are considered equal if they denote the same file or directory.
+     * The chunks and the volatile flags ('exists', 'is_empty', ...) are not taken into account.
+     */
+   inline bool operator==(const Entry& e1, const Entry& e2)
+   {
+      return
+         e1.type() == e2.type() &&
+         e1.name() == e2.name() &&
+         e1.path() == e2.path() &&
+         e1.size() == e2.size() &&
+         e1.shared_entry().id().hash() == e2.shared_entry().id().hash();
+   }
+
+   /**
+     * Must be defined in the namespace of 'Entry' to be found by ADL from 'QHash'/'QSet'.
+     * Must hash exactly the same fields as 'operator=='.
+     */
+   inline size_t qHash(const Entry& entry, size_t seed = 0)
+   {
+      const std::string& name = entry.name();
+      const std::string& path = entry.path();
+      const std::string& sharedEntryID = entry.shared_entry().id().hash();
+
+      return qHashMulti(
+         seed,
+         static_cast<int>(entry.type()),
+         QByteArrayView(name.data(), static_cast<qsizetype>(name.size())),
+         QByteArrayView(path.data(), static_cast<qsizetype>(path.size())),
+         static_cast<quint64>(entry.size()),
+         QByteArrayView(sharedEntryID.data(), static_cast<qsizetype>(sharedEntryID.size()))
+      );
+   }
+}
 
 /* Obsolete, we just use 'QString::toStdString' and 'QString::fromStd
 template <typename T>

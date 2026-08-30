@@ -95,7 +95,7 @@ namespace DM
       int getDownloadedBytes() const;
       QList<PM::IPeer*> getPeers();
 
-      PM::IPeer* startDownloading();
+      PM::IPeer* startDownloading(quint64 downloadedBytes = 0);
       void tryToRemoveItsIncompleteFile();
       void reset();
 

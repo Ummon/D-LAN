@@ -29,10 +29,12 @@
 #include <Common/Hash.h>
 #include <Common/Uncopyable.h>
 
+#include <Common/LogManager/ILogger.h>
+
 #include <Core/FileManager/IFileManager.h>
 
 #include <IPeerManager.h>
-#include <Common/LogManager/ILogger.h>
+#include <GetChunkParams.h>
 #include <priv/Peer.h>
 #include <priv/PeerSelf.h>
 #include <priv/Log.h>
@@ -86,7 +88,7 @@ namespace PM
       void newConnection(QTcpSocket* tcpSocket);
 
       void onGetChunks(
-         QList<std::pair<QSharedPointer<FM::IChunk>, int>> chunksAndOffsets,
+         QList<GetChunkParams> chunksParams,
          QSharedPointer<PeerMessageSocket> socket
       );
 

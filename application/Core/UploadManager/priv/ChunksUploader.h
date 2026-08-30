@@ -28,6 +28,7 @@
 #include <Core/FileManager/IChunk.h>
 #include <Core/FileManager/IDataReader.h>
 #include <Core/PeerManager/ISocket.h>
+#include <Core/PeerManager/GetChunkParams.h>
 
 #include <IChunksUploader.h>
 
@@ -39,7 +40,7 @@ namespace UM
 
    public:
       ChunksUploader(
-         QList<std::pair<QSharedPointer<FM::IChunk>, int>> chunksAndOffsets,
+         QList<PM::GetChunkParams> chunksParams,
          const QSharedPointer<PM::ISocket>& socket,
          Common::TransferRateCalculator& transferRateCalculator
       );
@@ -48,8 +49,7 @@ namespace UM
 
       quint64 getID() const override;
       Common::Hash getPeerID() const override;
-      int getProgress() const override;
-      QList<QSharedPointer<FM::IChunk>> getChunks() const override;
+      QList<PM::GetChunkParams> getChunks() const override;
 
       void init(QThread* thread) override;
       void run() override;
@@ -63,8 +63,7 @@ namespace UM
       QThread* mainThread;
 
       const quint64 ID; ///< Each uploader has an ID to identified it.
-      QList<std::pair<QSharedPointer<FM::IChunk>, int>> chunks; ///< The chunks uploaded.
-      // int offset; ///< The current offset into the chunk.
+      QList<PM::GetChunkParams> chunks; ///< The chunks uploaded.
       QSharedPointer<PM::ISocket> socket;
 
       Common::TransferRateCalculator& transferRateCalculator;

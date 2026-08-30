@@ -25,19 +25,25 @@ void UploadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& optio
    if (!index.isValid())
       return;
 
-   if (index.column() == 2)
+   if (index.column() == UploadsModel::PROGRESS)
    {
-      QStyleOptionProgressBar progressBarOption;      
-      progressBarOption.QStyleOption::operator=(option);
+      QStyledItemDelegate::paint(painter, option, QModelIndex());
 
+      const int progress = index.data().toInt();
+
+      QStyleOptionProgressBar progressBarOption;
+      progressBarOption.QStyleOption::operator=(option);
       progressBarOption.state |= QStyle::State_Horizontal;
       progressBarOption.minimum = 0;
       progressBarOption.maximum = 10000;
-      progressBarOption.textAlignment = Qt::AlignHCenter;
-      progressBarOption.progress = index.data().toInt();
-      progressBarOption.textVisible = false;
+      progressBarOption.textAlignment = Qt::AlignHCenter | Qt::AlignVCenter;
+      progressBarOption.progress = progress;
+      progressBarOption.textVisible = true;
 
-      QApplication::style()->drawControl(QStyle::CE_ProgressBar, &progressBarOption, painter, &this->model);
+      const double percentProgress = static_cast<double>(progress) / 100;
+      progressBarOption.text = QStringLiteral("%1%").arg(percentProgress > 100 ? 100 : percentProgress);
+
+      QApplication::style()->drawControl(QStyle::CE_ProgressBar, &progressBarOption, painter, option.widget);
    }
    else
    {
@@ -52,7 +58,7 @@ QSize UploadsDelegate::sizeHint(const QStyleOptionViewItem& option, const QModel
 {
    QSize size = QStyledItemDelegate::sizeHint(option, index);
 
-   if (index.column() == 2)
+   if (index.column() == UploadsModel::PROGRESS)
       size.setWidth(100);
    return size;
 }
@@ -69,17 +75,19 @@ UploadsWidget::UploadsWidget(QSharedPointer<RCC::ICoreConnection> coreConnection
    this->ui->tblUploads->setModel(&this->uploadsModel);
    this->ui->tblUploads->setItemDelegate(&this->uploadsDelegate);
    this->ui->tblUploads->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+
+   this->ui->tblUploads->horizontalHeader()->setStretchLastSection(false);
    this->ui->tblUploads->horizontalHeader()->setVisible(false);
-   this->ui->tblUploads->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
-   this->ui->tblUploads->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
-   this->ui->tblUploads->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
-   this->ui->tblUploads->horizontalHeader()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
+   this->ui->tblUploads->horizontalHeader()->setSectionResizeMode(UploadsModel::FILENAME, QHeaderView::Stretch);
+   this->ui->tblUploads->horizontalHeader()->setSectionResizeMode(UploadsModel::PROGRESS, QHeaderView::ResizeToContents);
+   this->ui->tblUploads->horizontalHeader()->setSectionResizeMode(UploadsModel::PEER, QHeaderView::ResizeToContents);
+   this->ui->tblUploads->horizontalHeader()->setMinimumSectionSize(0);
 
    //this->ui->tblChat->verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
    this->ui->tblUploads->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
    this->ui->tblUploads->verticalHeader()->setDefaultSectionSize(QFontMetrics(QApplication::font()).height() + 2);
-
    this->ui->tblUploads->verticalHeader()->setVisible(false);
+
    this->ui->tblUploads->setSelectionBehavior(QAbstractItemView::SelectRows);
    this->ui->tblUploads->setSelectionMode(QAbstractItemView::SingleSelection);
    this->ui->tblUploads->setShowGrid(false);

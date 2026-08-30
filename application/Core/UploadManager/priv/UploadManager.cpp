@@ -81,11 +81,11 @@ int UploadManager::getUploadRate()
 }
 
 void UploadManager::getChunks(
-   const QList<std::pair<QSharedPointer<FM::IChunk>, int>>& chunksAndOffsets,
+   const QList<PM::GetChunkParams>& chunksParams,
    const QSharedPointer<PM::ISocket>& socket
 )
 {
-   QSharedPointer<ChunksUploader> upload(new ChunksUploader(chunksAndOffsets, socket, this->transferRateCalculator));
+   QSharedPointer<ChunksUploader> upload(new ChunksUploader(chunksParams, socket, this->transferRateCalculator));
    connect(upload.data(), &Common::Timeoutable::timeout, this, &UploadManager::uploadTimeout);
    this->uploads << upload;
    this->threadPool.run(upload.toWeakRef());

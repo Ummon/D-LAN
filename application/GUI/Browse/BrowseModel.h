@@ -119,6 +119,9 @@ namespace GUI
 
    bool operator>(const Protos::Common::Entry& e1, const Protos::Common::Entry& e2);
    bool operator<(const Protos::Common::Entry& e1, const Protos::Common::Entry& e2);
-   bool operator==(const Protos::Common::Entry& e1, const Protos::Common::Entry& e2);
-   bool operator!=(const Protos::Common::Entry& e1, const Protos::Common::Entry& e2);
+   /**
+     * Returns true if the two entries carry the same information from the point of view of the browse view.
+     * This is not an equality test, see 'Protos::Common::operator==' in <Common/ProtoHelper.h> for that.
+     */
+   bool sameDisplayedContent(const Protos::Common::Entry& e1, const Protos::Common::Entry& e2);
 }

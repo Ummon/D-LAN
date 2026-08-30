@@ -37,7 +37,7 @@ int UploadsModel::rowCount(const QModelIndex& parent) const
 
 int UploadsModel::columnCount(const QModelIndex& parent) const
 {
-   return 4;
+   return 3;
 }
 
 QVariant UploadsModel::data(const QModelIndex& index, int role) const
@@ -52,16 +52,15 @@ QVariant UploadsModel::data(const QModelIndex& index, int role) const
          const Protos::GUI::State_Upload& currentUpload = this->uploads[index.row()];
          switch (index.column())
          {
-         case 0: return QString::fromStdString(currentUpload.file().name());
-         case 1: return QStringLiteral("%1/%2").arg(currentUpload.current_part()).arg(currentUpload.nb_part());
-         case 2: return currentUpload.progress();
-         case 3: return this->peerListModel.getNick(currentUpload.peer_id().hash(), tr("<unknown>"));
+         case FILENAME: return QString::fromStdString(currentUpload.file().name());
+         case PROGRESS: return currentUpload.progress();
+         case PEER: return this->peerListModel.getNick(currentUpload.peer_id().hash(), tr("<unknown>"));
          default: return QVariant();
          }
       }
 
    case Qt::TextAlignmentRole:
-      return index.column() == 1 ? Qt::AlignRight : Qt::AlignLeft;
+      return static_cast<int>(Qt::AlignLeft) | Qt::AlignVCenter;
 
    default: return QVariant();
    }
@@ -75,7 +74,7 @@ void UploadsModel::newState(const Protos::GUI::State& state)
       if (state.uploads(i) != this->uploads[i])
       {
          this->uploads[i].CopyFrom(state.uploads(i));
-         emit dataChanged(this->createIndex(i, 0), this->createIndex(i, 3));
+         emit dataChanged(this->createIndex(i, 0), this->createIndex(i, 2));
       }
    }
 
@@ -106,10 +105,7 @@ bool GUI::operator==(const Protos::GUI::State_Upload& u1, const Protos::GUI::Sta
 {
    return
       u1.id() == u2.id() &&
-      u1.file().type() == u2.file().type() &&
-      u1.file().path() == u2.file().path() &&
-      u1.file().name() == u2.file().name() &&
-      u1.file().size() == u2.file().size() &&
+      u1.file() == u2.file() &&
       u1.progress() == u2.progress() &&
       u1.peer_id().hash() == u2.peer_id().hash();
 }

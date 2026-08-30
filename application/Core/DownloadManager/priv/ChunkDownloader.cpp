@@ -37,7 +37,13 @@ using namespace DM;
 
 const int ChunkDownloader::MINIMUM_DELTA_TIME_TO_COMPUTE_SPEED(100); // [ms]
 
-ChunkDownloader::ChunkDownloader(LinkedPeers& linkedPeers, OccupiedPeers& occupiedPeersDownloadingChunk, Common::TransferRateCalculator& transferRateCalculator, Common::ThreadPool& threadPool, Common::Hash chunkHash) :
+ChunkDownloader::ChunkDownloader(
+   LinkedPeers& linkedPeers,
+   OccupiedPeers& occupiedPeersDownloadingChunk,
+   Common::TransferRateCalculator& transferRateCalculator,
+   Common::ThreadPool& threadPool,
+   Common::Hash chunkHash
+) :
    linkedPeers(linkedPeers),
    occupiedPeersDownloadingChunk(occupiedPeersDownloadingChunk),
    transferRateCalculator(transferRateCalculator),
@@ -431,7 +437,7 @@ QList<PM::IPeer*> ChunkDownloader::getPeers()
   * Tell the ChunkDownloader to download the chunk from one of its peer.
   * @return the chosen peer if the downloading has been started else return 'nullptr'.
   */
-PM::IPeer* ChunkDownloader::startDownloading()
+PM::IPeer* ChunkDownloader::startDownloading(quint64 downloadedBytes)
 {
    if (this->chunk.isNull())
    {
@@ -444,7 +450,12 @@ PM::IPeer* ChunkDownloader::startDownloading()
       return nullptr;
 
    Protos::Core::GetChunks getChunksMess;
+
    Protos::Core::GetChunks::Chunk* chunk = getChunksMess.add_chunks();
+
+   if (downloadedBytes > 0)
+      chunk->set_file_bytes_owned(downloadedBytes);
+
    chunk->mutable_hash()->set_hash(this->chunkHash.getData(), Common::Hash::HASH_SIZE);
    chunk->set_offset(this->chunk->getKnownBytes());
    this->getChunksResult = this->currentDownloadingPeer->getChunks(getChunksMess);

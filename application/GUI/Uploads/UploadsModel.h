@@ -31,7 +31,15 @@ namespace GUI
    class UploadsModel : public QAbstractTableModel
    {
       Q_OBJECT
+
    public:
+      enum Columns
+      {
+         FILENAME = 0,
+         PROGRESS = 1,
+         PEER = 2,
+      };
+
       UploadsModel(QSharedPointer<RCC::ICoreConnection> coreConnection, PeerListModel& peerListModel);
 
       int rowCount(const QModelIndex& parent = QModelIndex()) const;

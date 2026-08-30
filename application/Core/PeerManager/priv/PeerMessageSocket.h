@@ -36,6 +36,7 @@
 #include <Core/FileManager/IChunk.h>
 
 #include <ISocket.h>
+#include <GetChunkParams.h>
 
 namespace PM
 {
@@ -99,7 +100,7 @@ namespace PM
       void close() override;
 
    signals:
-      void getChunks(QList<std::pair<QSharedPointer<FM::IChunk>, int>>, PM::PeerMessageSocket*);
+      void getChunks(QList<GetChunkParams>, PM::PeerMessageSocket*);
       void becomeIdle(PM::PeerMessageSocket*);
 
       /**

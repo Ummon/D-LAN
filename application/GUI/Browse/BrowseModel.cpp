@@ -344,7 +344,7 @@ void BrowseModel::synchronize(BrowseModel::Tree* tree, const Protos::Common::Ent
       }
       else // Entry paths are equal.
       {
-         if (tree->getChild(i)->getItem() != entries.entries(j))
+         if (!sameDisplayedContent(tree->getChild(i)->getItem(), entries.entries(j)))
          {
             tree->getChild(i)->setItem(entries.entries(j));
             emit dataChanged(this->createIndex(i, 0, tree->getChild(i)), this->createIndex(i, 1, tree->getChild(i)));
@@ -510,16 +510,11 @@ bool GUI::operator<(const Protos::Common::Entry& e1, const Protos::Common::Entry
    return e1.name() < e2.name();
 }
 
-bool GUI::operator==(const Protos::Common::Entry& e1, const Protos::Common::Entry& e2)
+bool GUI::sameDisplayedContent(const Protos::Common::Entry& e1, const Protos::Common::Entry& e2)
 {
    return
       e1.name() == e2.name() &&
       e1.type() == e2.type() &&
       e1.size() == e2.size() &&
       e1.is_empty() == e2.is_empty();
-}
-
-bool GUI::operator!=(const Protos::Common::Entry& e1, const Protos::Common::Entry& e2)
-{
-   return !(e1 == e2);
 }

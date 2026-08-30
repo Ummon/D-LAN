@@ -183,6 +183,7 @@ message GetChunks {
    message Chunk {
       Common.Hash hash = 1;
       uint32 offset = 2; // [byte] Relative to the beginning of the chunk.
+      uint64 file_bytes_owned = 3; // Not mendatory, only to display a global file progression in the upload list.
    }
 
    repeated Chunk chunks = 1; // Must contain a least one chunk.

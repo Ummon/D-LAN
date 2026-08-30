@@ -33,14 +33,14 @@ using namespace UM;
 quint64 ChunksUploader::currentID(1);
 
 ChunksUploader::ChunksUploader(
-   QList<std::pair<QSharedPointer<FM::IChunk>, int>> chunksAndOffsets,
+   QList<PM::GetChunkParams> chunksParams,
    const QSharedPointer<PM::ISocket>& socket,
    Common::TransferRateCalculator& transferRateCalculator
 ) :
    Common::Timeoutable(SETTINGS.get<quint32>("upload_lifetime")),
    mainThread(QThread::currentThread()),
    ID(currentID++),
-   chunks(chunksAndOffsets),
+   chunks(chunksParams),
    socket(socket),
    transferRateCalculator(transferRateCalculator),
    closeTheSocket(false),
@@ -64,36 +64,9 @@ Common::Hash ChunksUploader::getPeerID() const
    return this->socket->getRemotePeerID();
 }
 
-int ChunksUploader::getProgress() const
+QList<PM::GetChunkParams> ChunksUploader::getChunks() const
 {
-   QMutexLocker locker(&this->mutex);
-
-   Q_ASSERT(!this->chunks.isEmpty());
-
-   int totalOffset = 0;
-   for (const auto& chunk : this->chunks)
-   {
-      const int chunkSize = chunk.first->getChunkSize();
-      if (chunkSize > 0)
-         totalOffset += 10000LL * chunk.second / chunkSize;
-   }
-
-   return totalOffset / this->chunks.size();
-
-   // const int chunkSize = this->chunk->getChunkSize();
-   // if (chunkSize != 0)
-   //    return 10000LL * this->offset / chunkSize;
-   // else
-   //    return 0;
-}
-
-QList<QSharedPointer<FM::IChunk>> ChunksUploader::getChunks() const
-{
-   // TODO: Offsets needed?
-   QList<QSharedPointer<FM::IChunk>> result;
-   for (auto chunk : this->chunks)
-      result << chunk.first;
-   return result;
+   return this->chunks;
 }
 
 void ChunksUploader::init(QThread* thread)
@@ -116,23 +89,23 @@ void ChunksUploader::run()
       {
          L_DEBU(
             QString("Starting uploading a chunk from offset %1: %2")
-               .arg(chunk.second)
-               .arg(chunk.first->toStringLog()
+               .arg(chunk.getOffset())
+               .arg(chunk.getChunk()->toStringLog()
             )
          );
 
-         QSharedPointer<FM::IDataReader> reader = chunk.first->getDataReader();
+         QSharedPointer<FM::IDataReader> reader = chunk.getChunk()->getDataReader();
 
          QByteArray buffer(BUFFER_SIZE, Qt::Uninitialized);
          int bytesRead = 0;
 
-         while (bytesRead = reader->read(buffer.data(), chunk.second))
+         while (bytesRead = reader->read(buffer.data(), chunk.getOffset()))
          {
             const int bytesSent = this->socket->write(buffer.constData(), bytesRead);
 
             if (bytesSent == -1)
             {
-               L_WARN(QString("Socket: cannot send data: %1").arg(chunk.first->toStringLog()));
+               L_WARN(QString("Socket: cannot send data: %1").arg(chunk.getChunk()->toStringLog()));
                this->closeTheSocket = true;
                goto end;
             }
@@ -144,7 +117,7 @@ void ChunksUploader::run()
                goto end;
             }
 
-            chunk.second += bytesSent;
+            chunk.setOffset(chunk.getOffset() + bytesSent);
             this->mutex.unlock();
 
             while (socket->bytesToWrite() > SOCKET_BUFFER_SIZE)
@@ -153,7 +126,7 @@ void ChunksUploader::run()
                {
                   L_WARN(
                      QString("Socket: cannot write data, error: \"%1\", chunk: %2")
-                        .arg(socket->errorString(), chunk.first->toStringLog()
+                        .arg(socket->errorString(), chunk.getChunk()->toStringLog()
                      )
                   );
                   this->closeTheSocket = true;

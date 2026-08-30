@@ -26,6 +26,7 @@
 #include <Common/ThreadPool.h>
 #include <Common/TransferRateCalculator.h>
 #include <Core/PeerManager/IPeerManager.h>
+#include <Core/PeerManager/GetChunkParams.h>
 
 #include <IUploadManager.h>
 #include <IChunksUploader.h>
@@ -48,7 +49,7 @@ namespace UM
 
    private slots:
       void getChunks(
-         const QList<std::pair<QSharedPointer<FM::IChunk>, int>>& chunksAndOffsets,
+         const QList<PM::GetChunkParams>& chunksParams,
          const QSharedPointer<PM::ISocket>& socket
       );
 

@@ -28,6 +28,7 @@
 
 #include <Core/FileManager/IChunk.h>
 
+#include <GetChunkParams.h>
 #include <ISocket.h>
 using namespace PM;
 
@@ -54,7 +55,7 @@ public slots:
 
    void chunksResult(const Protos::Core::GetChunksResult& result);
    void stream(QSharedPointer<PM::ISocket> socket);
-   void getChunks(QList<std::pair<QSharedPointer<FM::IChunk>, int>> chunksAndOffsets, const QSharedPointer<PM::ISocket>& socket);
+   void getChunks(QList<PM::GetChunkParams> chunksParams, const QSharedPointer<PM::ISocket>& socket);
 
 private:
    QList<Protos::Core::GetEntriesResult> entriesResultList;

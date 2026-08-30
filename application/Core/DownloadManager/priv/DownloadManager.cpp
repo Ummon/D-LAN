@@ -469,7 +469,7 @@ void DownloadManager::scanTheQueue()
       if (chunkDownloader.isNull())
          continue;
 
-      if (PM::IPeer* currentPeer = chunkDownloader->startDownloading())
+      if (PM::IPeer* currentPeer = chunkDownloader->startDownloading(fileDownload->getDownloadedBytes()))
       {
          connect(
             chunkDownloader.data(),

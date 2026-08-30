@@ -143,7 +143,7 @@ void ConnectionPool::socketClosed(PeerMessageSocket* socket)
 }
 
 void ConnectionPool::socketGetChunks(
-   QList<std::pair<QSharedPointer<FM::IChunk>, int>> chunksAndOffsets,
+   QList<GetChunkParams> chunksParams,
    PeerMessageSocket* socket
 )
 {
@@ -152,7 +152,7 @@ void ConnectionPool::socketGetChunks(
       QSharedPointer<PeerMessageSocket> socketShared = i.next();
       if (socketShared.data() == socket)
       {
-         this->peerManager->onGetChunks(chunksAndOffsets, socketShared);
+         this->peerManager->onGetChunks(chunksParams, socketShared);
          break;
       }
    }

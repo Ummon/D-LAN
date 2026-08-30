@@ -29,6 +29,7 @@
 #include <Core/FileManager/IFileManager.h>
 #include <Core/FileManager/IChunk.h>
 
+#include <GetChunkParams.h>
 #include <priv/PeerMessageSocket.h>
 
 namespace PM
@@ -54,7 +55,7 @@ namespace PM
       void socketBecomeIdle(PM::PeerMessageSocket* socket);
       void socketClosed(PM::PeerMessageSocket* socket);
       void socketGetChunks(
-         QList<std::pair<QSharedPointer<FM::IChunk>, int>> chunksAndOffsets,
+         QList<GetChunkParams> chunksParams,
          PM::PeerMessageSocket* socket
       );
 

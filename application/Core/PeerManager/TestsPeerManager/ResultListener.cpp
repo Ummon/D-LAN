@@ -105,7 +105,7 @@ void ResultListener::stream(QSharedPointer<PM::ISocket> socket)
    this->streamReceived = true;
 }
 
-void ResultListener::getChunks(QList<std::pair<QSharedPointer<FM::IChunk>, int>> chunksAndOffsets, const QSharedPointer<PM::ISocket>& socket)
+void ResultListener::getChunks(QList<PM::GetChunkParams> chunksParams, const QSharedPointer<PM::ISocket>& socket)
 {
    socket->write(CHUNK_DATA);
    socket->finished();

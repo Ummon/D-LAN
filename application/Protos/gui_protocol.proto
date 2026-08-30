@@ -35,11 +35,9 @@ message State {
    }
    message Upload {
       uint64 id = 1;
-      Common.Entry file = 2; // As the download, the hashes aren't sent to save bandwidth.
-      uint32 current_part = 3;
-      uint32 nb_part = 4;
-      uint32 progress = 5; // 0 to 10000.
-      Common.Hash peer_id = 6;
+      Common.Entry file = 2; // As for downloads, the hashes aren't sent to save bandwidth.
+      uint32 progress = 3; // 0 to 10000. Total progress of the file.
+      Common.Hash peer_id = 4;
    }
    message Stats {
       enum CacheStatus {

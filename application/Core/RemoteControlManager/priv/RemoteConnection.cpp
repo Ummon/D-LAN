@@ -19,6 +19,7 @@
 #include <priv/RemoteConnection.h>
 using namespace RCM;
 
+#include <algorithm>
 #include <limits>
 
 #include <QCoreApplication>
@@ -204,26 +205,40 @@ void RemoteConnection::refresh()
    }
 
    // Uploads.
-   QList<UM::IChunksUploader*> chunksUploaders = this->uploadManager->getChunksUploaders();
-   for (QListIterator<UM::IChunksUploader*> i(chunksUploaders); i.hasNext();)
+   QSet<std::pair<Common::Hash, Protos::Common::Entry>> addedFiles;
+   for (UM::IChunksUploader* chunksUploader : this->uploadManager->getChunksUploaders())
    {
-      UM::IChunksUploader* chunksUploader = i.next();
-      Protos::GUI::State_Upload* protoUpload = state.add_uploads();
-      // TODO: TEST
       for (const auto& chunk : chunksUploader->getChunks())
       {
-         if (chunk->populateEntry(protoUpload->mutable_file()))
-         {
-            protoUpload->mutable_file()->mutable_chunks()->Clear();
-            protoUpload->set_id(chunksUploader->getID());
-            protoUpload->set_current_part(chunk->getNum() + 1); // "+ 1" to begin at 1 and not 0.
-            protoUpload->set_nb_part(chunk->getNbTotalChunk());
-            protoUpload->set_progress(chunksUploader->getProgress());
-            protoUpload->mutable_peer_id()->set_hash(chunksUploader->getPeerID().getData(), Common::Hash::HASH_SIZE);
-         }
-         else
+         Protos::Common::Entry entry;
+         if (!chunk.getChunk()->populateEntry(&entry))
          {
             state.mutable_uploads()->RemoveLast();
+            continue;
+         }
+         entry.mutable_chunks()->Clear();
+
+         const auto key = std::make_pair(chunksUploader->getPeerID(), entry);
+
+         if (!addedFiles.contains(key))
+         {
+            addedFiles.insert(key);
+
+            Protos::GUI::State_Upload* protoUpload = state.add_uploads();
+            protoUpload->mutable_file()->CopyFrom(entry);
+
+            int progress = 0;
+            if (entry.size() > 0)
+               progress =
+                  std::clamp(
+                     int(10000LL * (chunk.getFileBytesOwnedByPeer() + chunk.getOffset()) / entry.size()),
+                     0,
+                     10000
+                  );
+
+            protoUpload->set_id(chunksUploader->getID());
+            protoUpload->set_progress(progress);
+            protoUpload->mutable_peer_id()->set_hash(key.first.getData(), Common::Hash::HASH_SIZE);
          }
       }
    }
@@ -241,7 +256,7 @@ void RemoteConnection::refresh()
    }
 
    // Stats.
-   Protos::GUI::State_Stats* stats = state.mutable_stats();   
+   Protos::GUI::State_Stats* stats = state.mutable_stats();
    // Warning: IFileManager::CacheStatus and Protos::GUI::State_Stats_CacheStatus must be compatible.
    stats->set_cache_status(static_cast<Protos::GUI::State::Stats::CacheStatus>(this->fileManager->getCacheStatus()));
    stats->set_progress(this->fileManager->getProgress());

@@ -23,10 +23,11 @@
 #include <QSharedPointer>
 
 #include <Core/FileManager/IChunk.h>
+#include <Protos/common.pb.h>
+#include <Common/Hash.h>
 
 #include <Core/PeerManager/ISocket.h>
-#include <Common/Hash.h>
-#include <Protos/common.pb.h>
+#include <Core/PeerManager/GetChunkParams.h>
 
 namespace PM
 {
@@ -106,10 +107,11 @@ namespace PM
    signals:
       /**
         * When a remote peer want one or more chunks, this signal is emitted.
-        * The chunks will be sent using the socket object. Once the data is finished to send the method 'ISocket::finished()' must be called.
+        * The chunks will be sent using the given socket.
+        * Once the data is finished sending the method 'ISocket::finished()' must be called.
         */
       void getChunks(
-         QList<std::pair<QSharedPointer<FM::IChunk>, int>> chunksAndOffsets,
+         QList<PM::GetChunkParams> getChunksParams,
          const QSharedPointer<PM::ISocket>& socket
       );
 

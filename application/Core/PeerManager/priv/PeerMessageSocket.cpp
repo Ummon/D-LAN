@@ -389,7 +389,7 @@ void PeerMessageSocket::onNewMessage(const Common::Message& message)
       {
          const Protos::Core::GetChunks& getChunksMessage = message.getMessage<Protos::Core::GetChunks>();
 
-         QList<std::pair<QSharedPointer<FM::IChunk>, int>> chunksAndOffsets;
+         QList<GetChunkParams> chunksParams;
          Protos::Core::GetChunksResult chunksResult;
 
          // TODO: implements:
@@ -417,22 +417,22 @@ void PeerMessageSocket::onNewMessage(const Common::Message& message)
                {
                   result->set_status(Protos::Core::GetChunksResult::ChunkResult::OK);
                   result->set_chunk_size(chunk->getKnownBytes());
-                  chunksAndOffsets += std::make_pair(chunk, chunkNeeded.offset());
+                  chunksParams << GetChunkParams(chunk, chunkNeeded.offset(), chunkNeeded.file_bytes_owned());
                }
             }
          }
 
-         if (!chunksAndOffsets.empty())
+         if (!chunksParams.empty())
             chunksResult.set_status(Protos::Core::GetChunksResult::OK);
          else
             chunksResult.set_status(Protos::Core::GetChunksResult::ERROR_UNKNOWN);
 
          this->send(Common::MessageHeader::CORE_GET_CHUNKS_RESULT, chunksResult);
 
-         if (!chunksAndOffsets.empty())
+         if (!chunksParams.empty())
          {
             this->stopListening();
-            emit getChunks(chunksAndOffsets, this);
+            emit getChunks(chunksParams, this);
          }
          else
          {
