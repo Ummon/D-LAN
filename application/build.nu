@@ -26,9 +26,15 @@ def "main translations" [] {
     print "=== TRANSLATIONS ==="
 
     let langs = [fr es ru de ko it]
+    let lupdate_cmd = match $nu.os-info.name {
+        "linux" => "lupdate-pro",
+        _ => "lupdate-pro.exe"
+    }
+
+    let langs = [fr es ru de]
     for $lang in $langs {
-        lupdate-pro.exe Core.pro -ts translations\d_lan_core.($lang).ts
-        lupdate-pro.exe Common\RemoteCoreController\RemoteCoreController.pro GUI.pro -ts translations\d_lan_gui.($lang).ts
+        ^$lupdate_cmd Core.pro -ts translations\d_lan_core.($lang).ts
+        ^$lupdate_cmd Common/RemoteCoreController/RemoteCoreController.pro GUI.pro -ts translations\d_lan_gui.($lang).ts
     }
 
     for $project in [GUI Core] {
@@ -83,6 +89,21 @@ def "main compile" [
 
     let nb_proc = sys cpu | length
 
+    let os_config = (match $nu.os-info.name {
+        "linux" => {
+            {qmake_cmd: "qmake6",
+                make_cmd: "make",
+                spec: "linux-g++",
+                makefile: "Makefile"}
+        },
+        _ => {
+            {qmake_cmd: "qmake",
+                make_cmd: "mingw32-make.exe",
+                spec: "win32-clang-g++",
+                makefile: "Makefile.Release"}
+        }
+    })
+
     for $project in $projects {
         let project_name = $project | split row '/' | last
         print "----------"
@@ -90,11 +111,14 @@ def "main compile" [
 
         do {
             cd $project
+            print $"Generating make file..."
+            ^$os_config.qmake_cmd $"($project_name).pro" -r -spec $os_config.spec "CONFIG+=release"
             if $clean {
-                mingw32-make.exe -f Makefile.Release clean -j($nb_proc)
+                print $"Cleaning..."
+                ^$os_config.make_cmd -f $os_config.makefile clean -j($nb_proc)
             }
-            qmake $"($project_name).pro" -r -spec win32-clang-g++ "CONFIG+=release"
-            mingw32-make.exe -f Makefile.Release -w -j($nb_proc)
+            print $"Compiling..."
+            ^$os_config.make_cmd -f $os_config.makefile -w -j($nb_proc)
         }
     }
 }
