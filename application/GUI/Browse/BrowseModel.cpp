@@ -189,9 +189,7 @@ QString BrowseModel::getPath(const QModelIndex& index, bool appendFilename) cons
 void BrowseModel::refresh()
 {
    if (!this->browseResult.isNull())
-   {
       return;
-   }
 
    Protos::Common::Entries entries;
 
@@ -296,6 +294,9 @@ void BrowseModel::resultTimeout()
 
 void BrowseModel::browse(Tree* tree)
 {
+   if (!this->browseResult.isNull())
+      return;
+
    this->browseResult = tree ?
         this->coreConnection->browse(this->peerID, tree->getItem())
       : this->coreConnection->browse(this->peerID);
