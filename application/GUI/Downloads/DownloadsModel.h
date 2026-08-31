@@ -21,6 +21,7 @@
 #include <QAbstractTableModel>
 #include <QDragEnterEvent>
 #include <QList>
+#include <QFile>
 
 #include <Protos/common.pb.h>
 #include <Protos/gui_protocol.pb.h>
@@ -78,6 +79,8 @@ namespace GUI
       QVariant getData(const Protos::GUI::State::Download& download, const QModelIndex& index, int role) const;
       QList<int> getNonFilteredDownloadIndices(const Protos::GUI::State& state) const;
       QList<int> getDraggedRows(const QMimeData* data);
+
+      static QString getExistingPathOrParentDirectory(const Common::Path& filePath, bool appendFilename);
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;
       const PeerListModel& peerListModel;

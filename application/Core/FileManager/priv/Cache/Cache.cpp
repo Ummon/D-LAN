@@ -288,6 +288,8 @@ QList<QSharedPointer<IChunk>> Cache::newFile(Protos::Common::Entry& fileEntry)
 
    if (!dir)
       throw UnableToCreateNewFileException();
+   else
+      dir->populateSharedEntry(&fileEntry);
 
    QList<Common::Hash> hashes;
    for (int i = 0; i < fileEntry.chunks_size(); i++)

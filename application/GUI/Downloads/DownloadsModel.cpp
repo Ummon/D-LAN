@@ -291,6 +291,15 @@ QList<int> DownloadsModel::getDraggedRows(const QMimeData* data)
    return rows;
 }
 
+QString DownloadsModel::getExistingPathOrParentDirectory(const Common::Path& path, bool appendFilename)
+{
+   QString pathStr = path.toString(appendFilename);
+   if (QFile::exists(pathStr))
+      return pathStr;
+   else
+      return path.removeLastElement().toString(appendFilename);
+}
+
 
 /**
   * Used when drag'n dropping some downloads.

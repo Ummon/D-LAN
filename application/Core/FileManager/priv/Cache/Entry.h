@@ -95,7 +95,6 @@ namespace FM
 
       int getDepth() const;
 
-   private:
       void populateSharedEntry(Protos::Common::Entry* entry) const;
 
    protected:

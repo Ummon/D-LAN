@@ -128,9 +128,9 @@ QString DownloadsFlatModel::getPath(const QModelIndex& index, bool appendFilenam
    }
    else
    {
-      QString path = sharedEntry.path.toString();
-      return path.append(
-         Common::ProtoHelper::getPath(this->downloads[index.row()].local_entry()).toString(appendFilename)
+      return DownloadsModel::getExistingPathOrParentDirectory(
+         sharedEntry.path.append(Common::ProtoHelper::getPath(this->downloads[index.row()].local_entry())),
+         appendFilename
       );
    }
 }
