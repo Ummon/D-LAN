@@ -90,7 +90,7 @@ bool DownloadsTreeModel::isDownloadPaused(const QModelIndex& index) const
    return true;
 }
 
-bool DownloadsTreeModel::isFileLocationKnown(const QModelIndex& index) const
+bool DownloadsTreeModel::isEntryLocationKnown(const QModelIndex& index) const
 {
    Tree* tree = static_cast<Tree*>(index.internalPointer());
    if (!tree)
@@ -99,10 +99,7 @@ bool DownloadsTreeModel::isFileLocationKnown(const QModelIndex& index) const
    for (Common::TreeBreadthFirstIterator<Tree> i(tree, true); i.hasNext();)
    {
       Tree* current = i.next();
-      if (
-         current->getItem().local_entry().type() == Protos::Common::Entry::FILE &&
-         current->getItem().local_entry().exists()
-      )
+      if (current->getItem().local_entry().exists())
          return true;
    }
 
@@ -157,37 +154,37 @@ QString DownloadsTreeModel::getPath(const QModelIndex& index, bool appendFilenam
       return QString();
 
    const Common::SharedEntry& sharedEntry =
-      this->sharedEntryListModel.getSharedEntry(tree->getItem().local_entry().shared_entry().id().hash());
+      this->sharedEntryListModel.getSharedEntry(tree->getSharedEntryId());
+
    if (sharedEntry.isNull())
       return QString();
 
    if (sharedEntry.path.isFile())
-   {
+   {      
       return sharedEntry.path.toString(appendFilename);
    }
    else
    {
-      const QString& sharedPath = sharedEntry.path.toString();
-      QString path;
-
       if (tree->getItem().local_entry().type() == Protos::Common::Entry::DIR)
       {
+         QString path;
          Tree* superTree = tree;
          while (superTree != this->root)
          {
             path.prepend(QString::fromStdString(superTree->getItem().local_entry().name())).prepend('/');
             superTree = superTree->getParent();
          }
+         const QString& sharedPath = sharedEntry.path.toString();
          path.prepend(sharedPath.left(sharedPath.size() - 1));
+         return path;
       }
       else
       {
-         path = sharedPath;
-         path.append(
-            Common::ProtoHelper::getPath(tree->getItem().local_entry()).toString(appendFilename)
+         return DownloadsModel::getExistingPathOrParentDirectory(
+            sharedEntry.path.append(Common::ProtoHelper::getPath(tree->getItem().local_entry())),
+            appendFilename
          );
       }
-      return path;
    }
 }
 
@@ -722,6 +719,33 @@ DownloadsTreeModel::Tree::Tree(const Protos::GUI::State::Download& download, Tre
    nbErrorFiles(0),
    nbDownloadingFiles(0)
 {
+}
+
+/**
+  * Search for a shared entry id among the child files if the current entry doesn't have one.
+  */
+Common::Hash DownloadsTreeModel::Tree::getSharedEntryId() const
+{
+   const Tree* current = this;
+
+   forever
+   {
+      const Common::Hash id = Common::Hash(current->getItem().local_entry().shared_entry().id().hash());
+      if (!id.isNull())
+         return id;
+
+      for (auto type : QList<Protos::Common::Entry::Type> { Protos::Common::Entry::FILE, Protos::Common::Entry::DIR })
+         for (int i = 0; i < current->getNbChildren(); ++i)
+            if (current->getChild(i)->getItem().local_entry().type() == type)
+            {
+               current = current->getChild(i);
+               goto next;
+            }
+
+      next:;
+   }
+
+   return Common::Hash();
 }
 
 /////

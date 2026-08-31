@@ -60,7 +60,7 @@ namespace GUI
       virtual QList<quint64> getDownloadIDs(const QModelIndex& index) const = 0;
 
       virtual bool isDownloadPaused(const QModelIndex& index) const = 0;
-      virtual bool isFileLocationKnown(const QModelIndex& index) const = 0;
+      virtual bool isEntryLocationKnown(const QModelIndex& index) const = 0;
       virtual bool isFileComplete(const QModelIndex& index) const = 0;
       virtual bool isSourceAlive(const QModelIndex& index) const = 0;
       virtual Protos::Common::Entry::Type getType(const QModelIndex& index) const = 0;

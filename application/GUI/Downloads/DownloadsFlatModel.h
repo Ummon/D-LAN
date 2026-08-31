@@ -44,7 +44,7 @@ namespace GUI
       QList<quint64> getDownloadIDs(const QModelIndex& index) const;
 
       bool isDownloadPaused(const QModelIndex& index) const;
-      bool isFileLocationKnown(const QModelIndex& index) const;
+      bool isEntryLocationKnown(const QModelIndex& index) const;
       bool isFileComplete(const QModelIndex& index) const;
       bool isSourceAlive(const QModelIndex& index) const;
       Protos::Common::Entry::Type getType(const QModelIndex& index) const;

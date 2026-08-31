@@ -44,7 +44,7 @@ namespace GUI
       QList<quint64> getDownloadIDs(const QModelIndex& index) const override;
 
       bool isDownloadPaused(const QModelIndex& index) const override;
-      bool isFileLocationKnown(const QModelIndex& index) const override;
+      bool isEntryLocationKnown(const QModelIndex& index) const override;
       bool isFileComplete(const QModelIndex& index) const override;
       bool isSourceAlive(const QModelIndex& index) const override;
       Protos::Common::Entry::Type getType(const QModelIndex& index) const override;
@@ -78,6 +78,8 @@ namespace GUI
       public:
          Tree();
          Tree(const Protos::GUI::State::Download& download, Tree* parent);
+
+         Common::Hash getSharedEntryId() const;
 
          bool visited;
          int nbPausedFiles;

@@ -73,7 +73,7 @@ bool DownloadsFlatModel::isDownloadPaused(const QModelIndex& index) const
    return this->downloads[index.row()].status() == Protos::Common::DownloadStatus::PAUSED;
 }
 
-bool DownloadsFlatModel::isFileLocationKnown(const QModelIndex& index) const
+bool DownloadsFlatModel::isEntryLocationKnown(const QModelIndex& index) const
 {
    if (index.row() >= this->downloads.size())
       return false;

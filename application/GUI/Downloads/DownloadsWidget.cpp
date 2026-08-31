@@ -220,7 +220,7 @@ void DownloadsWidget::displayContextMenuDownloads(const QPoint& point)
    // to open the file location.
    if (this->coreConnection->isLocal())
       for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
-         if (this->currentDownloadsModel->isFileLocationKnown(i.next()))
+         if (this->currentDownloadsModel->isEntryLocationKnown(i.next()))
          {
             menu.addAction(
                QIcon(":/icons/resources/explore_folder.svg"),
@@ -277,7 +277,7 @@ void DownloadsWidget::openLocationSelectedEntries()
    for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
    {
       const QModelIndex& index = i.next();
-      if (this->currentDownloadsModel->isFileLocationKnown(index))
+      if (this->currentDownloadsModel->isEntryLocationKnown(index))
          locations.insert(this->currentDownloadsModel->getPath(index, true));
    }
 
@@ -514,7 +514,7 @@ void DownloadsWidget::openFile(const QModelIndex& index) const
 {
    if (
       this->currentDownloadsModel->getType(index) == Protos::Common::Entry::FILE &&
-      this->currentDownloadsModel->isFileLocationKnown(index)
+      this->currentDownloadsModel->isEntryLocationKnown(index)
    )
       Utils::openFile(this->currentDownloadsModel->getPath(index));
 }
