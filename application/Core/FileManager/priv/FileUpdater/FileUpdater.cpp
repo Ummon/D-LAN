@@ -127,25 +127,21 @@ void FileUpdater::rmRoot(SharedEntry* sharedEntry, Directory* dir)
    // If there is a scan for this directory stop it.
    this->stopScanning(root);
 
+   QMutexLocker lockerHashing(&this->hashingMutex);
    QMutexLocker locker(&this->mutex);
 
-   // Stop the hashing to modify 'this->fileWithoutHashes'.
-   {
-      QMutexLocker locker(&this->hashingMutex);
+   this->fileHasher.stop();
+   this->toStopHashing = true;
 
-      this->fileHasher.stop();
-      this->toStopHashing = true;
+   // TODO: Find a more elegant way!
+   Directory* rootDirectory = dynamic_cast<Directory*>(root);
+   if (dir && rootDirectory)
+      dir->stealContent(rootDirectory);
 
-      // TODO: Find a more elegant way!
-      Directory* rootDirectory = dynamic_cast<Directory*>(root);
-      if (dir && rootDirectory)
-         dir->stealContent(rootDirectory);
-
-      this->removeFromFilesWithoutHashes(root);
-      this->removeFromEntriesToScan(root);
-      this->unwatchableEntries.removeOne(root);
-      this->rootEntriesToRemove << root;
-   }
+   this->removeFromFilesWithoutHashes(root);
+   this->removeFromEntriesToScan(root);
+   this->unwatchableEntries.removeOne(root);
+   this->rootEntriesToRemove << root;
 
    this->dirEvent->release();
 }
@@ -262,13 +258,14 @@ void FileUpdater::run()
          }
 
          Entry* nextEntryToScan = nullptr;
-         this->mutex.lock();
-         if (!this->entriesToScan.isEmpty())
          {
-            nextEntryToScan = this->entriesToScan.takeLast();
-            this->currentScanningEntry = nextEntryToScan;
+            QMutexLocker locker(&this->scanningMutex);
+            if (!this->entriesToScan.isEmpty())
+            {
+               nextEntryToScan = this->entriesToScan.takeLast();
+               this->currentScanningEntry = nextEntryToScan;
+            }
          }
-         this->mutex.unlock();
 
          // Synchronize the new directory.
          if (nextEntryToScan)
@@ -647,17 +644,19 @@ void FileUpdater::deleteEntry(Entry* entry)
 }
 
 /**
-  * Remove a directory and its sub directories from 'this->entriesToScan'.
+  * Remove a directory and its sub entries from 'this->entriesToScan'.
   */
 void FileUpdater::removeFromEntriesToScan(Entry* entry)
 {
+   QMutexLocker locker(&this->mutex);
+
    this->entriesToScan.removeOne(entry);
 
    if (Directory* dir = dynamic_cast<Directory*>(entry))
    {
       DirIterator i(dir);
-      while (Directory* subDir = i.next())
-         this->entriesToScan.removeOne(subDir);
+      while (Entry* entry = i.next())
+         this->entriesToScan.removeOne(entry);
    }
 }
 
