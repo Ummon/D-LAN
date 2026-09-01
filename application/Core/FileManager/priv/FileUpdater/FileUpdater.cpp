@@ -747,6 +747,26 @@ void FileUpdater::removeFromFilesWithoutHashes(Entry* entry)
   */
 bool FileUpdater::processEvents(const QList<WatcherEvent>& events)
 {
+   const auto newOrContentChanged =
+      [this](const QString& path)
+      {
+         File* file = dynamic_cast<File*>(this->fileManager->getEntry(path));
+         if (file)
+         {
+            QMutexLocker locker(&this->mutex);
+            if (!this->entriesToScan.contains(file))
+               this->entriesToScan << file;
+         }
+         else
+         {
+            Directory* dir = this->fileManager->getFittestDirectory(path);
+
+            QMutexLocker locker(&this->mutex);
+            if (dir && !this->entriesToScan.contains(dir))
+               this->entriesToScan << dir;
+         }
+      };
+
    if (events.isEmpty())
       return false;
 
@@ -779,6 +799,7 @@ bool FileUpdater::processEvents(const QList<WatcherEvent>& events)
 
             Directory* destination =
                dynamic_cast<Directory*>(this->fileManager->getEntry(pathDestination.removeLastElement()));
+
             Entry* entryToMove = this->fileManager->getEntry(pathOrigin);
 
             if (entryToMove)
@@ -801,6 +822,12 @@ bool FileUpdater::processEvents(const QList<WatcherEvent>& events)
             else
             {
                L_DEBU(QString("Can't find the entry to move: %1").arg(event.path1));
+
+               // When a file is renamed by changing only it case in explorer there are three events triggered:
+               // REMOVED, RENAMED_OLD_NAME, RENAMED_NEW_NAME.
+               // In this case the entry to move do not exist anymore (REMOVED) and we treat RENAMED_NEW_NAME as
+               // a new file event.
+               newOrContentChanged(event.path2);
             }
 
             break;
@@ -830,24 +857,8 @@ bool FileUpdater::processEvents(const QList<WatcherEvent>& events)
       // directory tree.
       case WatcherEvent::NEW:
       case WatcherEvent::CONTENT_CHANGED:
-         {
-            File* file = dynamic_cast<File*>(this->fileManager->getEntry(event.path1));
-            if (file)
-            {
-               QMutexLocker locker(&this->mutex);
-               if (!this->entriesToScan.contains(file))
-                  this->entriesToScan << file;
-            }
-            else
-            {
-               Directory* dir = this->fileManager->getFittestDirectory(event.path1);
-
-               QMutexLocker locker(&this->mutex);
-               if (dir && !this->entriesToScan.contains(dir))
-                  this->entriesToScan << dir;
-            }
-            break;
-         }
+         newOrContentChanged(event.path1);
+         break;
 
       case WatcherEvent::UNKNOWN:
       case WatcherEvent::TIMEOUT:
