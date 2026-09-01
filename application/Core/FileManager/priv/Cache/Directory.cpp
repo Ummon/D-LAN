@@ -71,12 +71,22 @@ Directory::Directory(
 
 Directory::~Directory()
 {
-   this->deleteSubDirs();
-
    QMutexLocker locker(&this->mutex);
 
+   // Entries still attached here were added after 'del()' (a scan may have been running concurrently).
+   // They are destroyed synchronously: the whole subtree must be gone before '~Entry()' deletes the shared entry
+   // they all refer to.
+   foreach (Directory* d, this->subDirs.getList())
+   {
+      d->del(false);
+      delete d;
+   }
+
    foreach (File* f, this->files.getList())
+   {
+      f->del(false);
       delete f;
+   }
 
    L_DEBU(QString("Directory deleted: %1").arg(this->getName()));
 }
@@ -85,6 +95,9 @@ void Directory::del(bool invokeDelete)
 {
    {
       QMutexLocker locker(&this->mutex);
+
+      if (this->deletePending)
+         return;
 
       this->deleteSubDirs();
 

@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include <atomic>
+
 #include <QString>
 #include <QRecursiveMutex>
 
@@ -47,6 +49,11 @@ namespace FM
 
    public:
       virtual ~Entry();
+
+      /**
+        * Detaches the entry from the cache and schedules its deletion.
+        * Calling it more than once is harmless: only the first call has an effect.
+        */
       virtual void del(bool invokeDelete = true);
 
       virtual void populateEntry(Protos::Common::Entry* entry, bool setSharedEntry = false) const;
@@ -106,6 +113,8 @@ namespace FM
 
       qint64 size;
       bool hidden = false;
+
+      std::atomic<bool> deletePending { false }; ///< Set by 'del()', the deletion may be queued in another thread.
 
       mutable QRecursiveMutex mutex;
    };

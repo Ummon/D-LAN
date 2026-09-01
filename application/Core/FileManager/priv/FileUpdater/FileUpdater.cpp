@@ -259,7 +259,9 @@ void FileUpdater::run()
 
          Entry* nextEntryToScan = nullptr;
          {
-            QMutexLocker locker(&this->scanningMutex);
+            // Same locking order as 'stopScanning(..)'.
+            QMutexLocker scanningLocker(&this->scanningMutex);
+            QMutexLocker locker(&this->mutex);
             if (!this->entriesToScan.isEmpty())
             {
                nextEntryToScan = this->entriesToScan.takeLast();
@@ -476,6 +478,20 @@ void FileUpdater::scan(Entry* entry, bool addUnfinished)
    this->currentScanningEntry = entry;
    this->scanningMutex.unlock();
 
+   const auto abortIfRequested =
+      [this](Directory* currentDir)
+      {
+         if (!this->scanAbortRequested.load(std::memory_order_relaxed) && !this->toStop)
+            return false;
+
+         QMutexLocker locker(&this->scanningMutex);
+         L_DEBU(QString("Scanning aborted: %1").arg(currentDir->getAbsolutePath()));
+         this->currentScanningEntry = nullptr;
+         this->scanAbortRequested.store(false, std::memory_order_relaxed);
+         this->scanningStopped.wakeOne();
+         return true;
+      };
+
    if (File* file = dynamic_cast<File*>(entry))
    {
       this->addScannedFile(QFileInfo(file->getAbsolutePath()), file);
@@ -489,6 +505,9 @@ void FileUpdater::scan(Entry* entry, bool addUnfinished)
       {
          Directory* currentDir = dirsToVisit.takeFirst();
 
+         if (abortIfRequested(currentDir))
+            return;
+
          QList<Directory*> currentSubDirs = currentDir->getSubDirs();
          QList<File*> currentFiles = currentDir->getCompleteFiles(); // We don't care about the unfinished files.
 
@@ -500,15 +519,8 @@ void FileUpdater::scan(Entry* entry, bool addUnfinished)
             )
          )
          {
-            if (this->scanAbortRequested.load(std::memory_order_relaxed) || this->toStop)
-            {
-               QMutexLocker locker(&this->scanningMutex);
-               L_DEBU(QString("Scanning aborted: %1").arg(currentDir->getAbsolutePath()));
-               this->currentScanningEntry = nullptr;
-               this->scanAbortRequested.store(false, std::memory_order_relaxed);
-               this->scanningStopped.wakeOne();
+            if (abortIfRequested(currentDir))
                return;
-            }
 
             if (fileInfo.isDir())
             {
@@ -602,27 +614,46 @@ File* FileUpdater::addScannedFile(const QFileInfo& fileInfo, File* file, Directo
 }
 
 /**
-  * If you omit 'entry' then all scanning will be removed
-  * from the queue.
+  * Returns true if 'entry' is 'root' or is located somewhere under 'root'.
+  */
+static bool isEntryUnder(Entry* entry, Entry* root)
+{
+   if (entry == root)
+      return true;
+
+   Directory* rootDir = dynamic_cast<Directory*>(root);
+   if (!rootDir)
+      return false;
+
+   if (Directory* dir = dynamic_cast<Directory*>(entry))
+      return dir->isAChildOf(rootDir);
+
+   if (File* file = dynamic_cast<File*>(entry))
+      return file->hasAParentDir(rootDir);
+
+   return false;
+}
+
+/**
+  * Stops the current scan if it concerns 'entry' or one of its sub entries and remove 'entry' from the queue.
+  * If you omit 'entry' then all scanning will be stopped and removed from the queue.
   */
 void FileUpdater::stopScanning(Entry* entry)
 {
    QMutexLocker scanningLocker(&this->scanningMutex);
 
-   if (!entry && this->currentScanningEntry || entry && this->currentScanningEntry == entry)
+   // A new scan of another entry under 'entry' may start right after the current one is aborted, hence the loop.
+   while (this->currentScanningEntry && (!entry || isEntryUnder(this->currentScanningEntry, entry)))
    {
       this->scanAbortRequested.store(true, std::memory_order_relaxed);
-      while (this->currentScanningEntry != nullptr)
-         this->scanningStopped.wait(&this->scanningMutex);
+      this->scanningStopped.wait(&this->scanningMutex);
    }
+
+   QMutexLocker locker(&this->mutex);
+   if (entry)
+      this->entriesToScan.removeOne(entry);
    else
-   {
-      QMutexLocker locker(&this->mutex);
-      if (entry)
-         this->entriesToScan.removeOne(entry);
-      else
-         this->entriesToScan.clear();
-   }
+      this->entriesToScan.clear();
 }
 
 /**

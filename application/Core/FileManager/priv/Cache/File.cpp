@@ -148,6 +148,9 @@ File::~File()
 
 void File::del(bool invokeDelete)
 {
+   if (this->deletePending)
+      return;
+
    if (this->parentDirectory)
       this->parentDirectory->fileDeleted(this);
 

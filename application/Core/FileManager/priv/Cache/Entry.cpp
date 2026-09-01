@@ -42,6 +42,9 @@ Entry::~Entry()
 
 void Entry::del(bool invokeDelete)
 {
+   if (this->deletePending.exchange(true))
+      return;
+
    Cache* cache = this->getCache();
 
    cache->onEntryRemoved(this);
