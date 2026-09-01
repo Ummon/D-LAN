@@ -3,7 +3,7 @@ using namespace Common;
 
 bool KnownExtensions::exists(const QString& extension)
 {
-   return extensions.find(extension) != extensions.constEnd();
+   return extensions.find(extension.toLower()) != extensions.constEnd();
 }
 
 int KnownExtensions::nbCategory()
@@ -21,7 +21,7 @@ QList<QString> KnownExtensions::getExtensions(ExtensionCategory cat)
 
 ExtensionCategory KnownExtensions::getCategoryFrom(const QString& extension)
 {
-   auto i = extensions.find(extension);
+   auto i = extensions.find(extension.toLower());
    if (i == extensions.end())
       throw CategoryNotFoundException();
    else
@@ -52,6 +52,9 @@ QString KnownExtensions::removeExtension(const QString& filename)
       return filename;
 }
 
+/**
+  * Returns an existing extension with the same case a the filename.
+  */
 QString KnownExtensions::getExtension(const QString& filename)
 {
    int i = getBeginningExtension(filename);

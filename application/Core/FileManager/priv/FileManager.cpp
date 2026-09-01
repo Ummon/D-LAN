@@ -277,7 +277,7 @@ QList<Protos::Common::FindResult> FileManager::find(
             [&](const Entry* entry) {
                const File* file = dynamic_cast<const File*>(entry);
                return (!filterBySizeOn || entry->getSize() >= minFileSize && entry->getSize() <= maxFileSize) &&
-                      (!filterByExtensionsOn || file && extensions.contains(file->getExtension())) &&
+                      (!filterByExtensionsOn || file && extensions.contains(file->getExtension().toLower())) &&
                       (!filterByCategoryOn || (category == Protos::Common::FindPattern::FILE && dynamic_cast<const File*>(entry) || category == Protos::Common::FindPattern::DIR && dynamic_cast<const Directory*>(entry)));
             }
          );

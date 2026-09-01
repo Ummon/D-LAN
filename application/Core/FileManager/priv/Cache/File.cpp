@@ -333,6 +333,9 @@ Entry* File::getEntry(const Common::Path& path)
    return nullptr;
 }
 
+/**
+  * Returns the extension of the file only if it is a known extension, see 'KnownExtensions'.
+  */
 QString File::getExtension() const
 {
    return Common::KnownExtensions::getExtension(this->name);

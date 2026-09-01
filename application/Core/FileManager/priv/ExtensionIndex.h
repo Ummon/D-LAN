@@ -54,7 +54,7 @@ void FM::ExtensionIndex<T>::rmItem(const QString& extension, const T& item)
 
    QMutexLocker locker(&this->mutex);
 
-   auto setIterator = this->index.find(extension);
+   auto setIterator = this->index.find(extension.toLower());
    if (setIterator != this->index.end())
    {
       setIterator->remove(item);
@@ -68,8 +68,8 @@ void FM::ExtensionIndex<T>::changeItem(const QString& oldExtension, const QStrin
 {
    QMutexLocker locker(&this->mutex);
 
-   this->rmItem(oldExtension, item);
-   this->addItem(newExtension, item);
+   this->rmItem(oldExtension.toLower(), item);
+   this->addItem(newExtension.toLower(), item);
 }
 
 template<typename T>
