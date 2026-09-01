@@ -225,12 +225,12 @@ void Directory::moveInto(Directory* directory)
 
    if (this->parentDirectory)
    {
-      this->parentDirectory -= this->getSize();
+      (*this->parentDirectory) -= this->getSize();
       this->parentDirectory->subDirDeleted(this);
    }
 
    directory->add(this);   
-   directory += this->getSize();
+   (*directory) += this->getSize();
 
    this->parentDirectory = directory;
 }
@@ -578,18 +578,27 @@ DirIterator::DirIterator(Directory* dir, bool includeRoot)
       this->dirsToVisit << dir;
    else
       this->dirsToVisit = dir->subDirs.getList();
+
+   this->files << dir->files.getList();
 }
 
 /**
-  * Return the next directory, 0 if there is no more directory.
+  * Return the next entry (directory of file), nullptr if there is no more entry.
   */
-Directory* DirIterator::next()
+Entry* DirIterator::next()
 {
-   if (this->dirsToVisit.isEmpty())
-      return nullptr;
+   if (!this->files.isEmpty())
+   {
+      return this->files.takeLast();
+   }
 
-   Directory* dir = this->dirsToVisit.front();
-   this->dirsToVisit.removeFirst();
-   this->dirsToVisit << dir->subDirs.getList();
-   return dir;
+   if (!this->dirsToVisit.isEmpty())
+   {
+      Directory* dir = this->dirsToVisit.takeFirst();
+      this->dirsToVisit << dir->subDirs.getList();
+      this->files << dir->files.getList();
+      return dir;
+   }
+
+   return nullptr;
 }
