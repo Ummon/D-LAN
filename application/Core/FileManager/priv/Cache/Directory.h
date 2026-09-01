@@ -118,9 +118,10 @@ namespace FM
    public:
       DirIterator(Directory* dir, bool includeRoot = false);
       virtual ~DirIterator() {}
-      Directory* next();
+      Entry* next();
 
    private:
       QList<Directory*> dirsToVisit;
+      QList<File*> files;
    };
 }

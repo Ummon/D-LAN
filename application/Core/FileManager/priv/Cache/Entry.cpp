@@ -36,6 +36,8 @@ Entry::Entry(SharedEntry* root, const QString& name, Directory* parentDirectory,
 
 Entry::~Entry()
 {
+   if (this->isRoot())
+      delete this->getRoot();
 }
 
 void Entry::del(bool invokeDelete)

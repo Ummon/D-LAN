@@ -225,7 +225,6 @@ SharedDirectory::SharedDirectory(
 
 SharedDirectory::~SharedDirectory()
 {
-   delete this->directory;
 }
 
 /**
@@ -290,7 +289,6 @@ SharedFile::SharedFile(
 
 SharedFile::~SharedFile()
 {
-   delete this->file;
 }
 
 void SharedFile::mergeSubSharedEntries()

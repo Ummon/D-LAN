@@ -49,9 +49,9 @@ namespace FM
          const QString& userName = QString()
       );
 
+   public:
       virtual ~SharedEntry();
 
-   public:
       static SharedEntry* create(
          Cache* cache,
          const QString& pathStr,
