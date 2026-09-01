@@ -35,6 +35,9 @@ Name: "fr"; MessagesFile: "compiler:Languages/French.isl,../../translations/d_la
 Name: "de"; MessagesFile: "compiler:Languages/German.isl,../../translations/d_lan.de.isl"
 Name: "it"; MessagesFile: "compiler:Languages/Italian.isl,../../translations/d_lan.it.isl"
 Name: "ru"; MessagesFile: "compiler:Languages/Russian.isl,../../translations/d_lan.ru.isl"
+Name: "ja"; MessagesFile: "compiler:Languages/Japanese.isl,../../translations/d_lan.ja.isl"
+Name: "es"; MessagesFile: "compiler:Languages/Spanish.isl,../../translations/d_lan.es.isl"
+Name: "ko"; MessagesFile: "compiler:Languages/Korean.isl,../../translations/d_lan.ko.isl"
 
 [Tasks]
 Name: "Firewall"; Description: {cm:firewallException}; MinVersion: 0,5.01.2600sp2;

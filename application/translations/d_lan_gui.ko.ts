@@ -589,20 +589,25 @@
 <context>
     <name>GUI::RemoteBrowseDialog</name>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="60"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="69"/>
         <source>Ok</source>
         <translation>확인</translation>
     </message>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="61"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="70"/>
         <source>Cancel</source>
         <translation>취소</translation>
+    </message>
+    <message>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="176"/>
+        <source>Open location</source>
+        <translation type="unfinished">위치 열기</translation>
     </message>
 </context>
 <context>
     <name>GUI::RemoteBrowseModel</name>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseModel.cpp" line="304"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseModel.cpp" line="392"/>
         <source>free</source>
         <translation>사용 가능</translation>
     </message>
@@ -830,7 +835,7 @@
 <context>
     <name>GUI::UploadsModel</name>
     <message>
-        <location filename="../GUI/Uploads/UploadsModel.cpp" line="58"/>
+        <location filename="../GUI/Uploads/UploadsModel.cpp" line="57"/>
         <source>&lt;unknown&gt;</source>
         <translation>&lt;알 수 없음&gt;</translation>
     </message>
@@ -859,22 +864,22 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="63"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="66"/>
         <source>D-LAN Core cannot be installed as a service</source>
         <translation>D-LAN 코어를 서비스로 설치할 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="82"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="84"/>
         <source>Core launched as subprocess</source>
         <translation>코어가 하위 프로세스로 시작되었습니다</translation>
     </message>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="84"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="86"/>
         <source>Unable to launch the Core as subprocess</source>
         <translation>코어를 하위 프로세스로 시작할 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="89"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="91"/>
         <source>Core service launched</source>
         <translation>코어 서비스가 시작되었습니다</translation>
     </message>
@@ -970,7 +975,7 @@
         <translation>다운로드할 폴더를 선택하십시오</translation>
     </message>
     <message>
-        <location filename="../GUI/main.cpp" line="69"/>
+        <location filename="../GUI/main.cpp" line="73"/>
         <source>D-LAN GUI version %1</source>
         <translation>D-LAN GUI 버전 %1</translation>
     </message>

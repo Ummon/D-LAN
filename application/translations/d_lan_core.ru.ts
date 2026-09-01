@@ -12,13 +12,13 @@
 <context>
     <name>DM::ChunkDownloader</name>
     <message>
-        <location filename="../Core/DownloadManager/priv/ChunkDownloader.cpp" line="295"/>
+        <location filename="../Core/DownloadManager/priv/ChunkDownloader.cpp" line="301"/>
         <source>Has sent corrupted data</source>
         <extracomment>A reason why the user has been blocked</extracomment>
         <translation>Отправил поврежденные данные</translation>
     </message>
     <message>
-        <location filename="../Core/DownloadManager/priv/ChunkDownloader.cpp" line="290"/>
+        <location filename="../Core/DownloadManager/priv/ChunkDownloader.cpp" line="296"/>
         <source>Corrupted data received for the file &quot;%1&quot; from peer %2. Peer blocked for %3 ms</source>
         <translation>Полученный от пира %2 файл &quot;%1&quot; поврежден. Пир заблокирован на %3 мсек</translation>
     </message>

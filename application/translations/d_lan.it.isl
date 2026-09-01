@@ -1,4 +1,4 @@
 [CustomMessages]
-firewallException=Add an exception to the Windows Firewall
-ResetSettings=Reset the core settings (keep the nick and the ID)
-launchDLAN=Launch D-LAN
+firewallException=Aggiungi un'eccezione al Firewall di Windows
+ResetSettings=Ripristina le impostazioni del core (mantiene il nickname e l'ID)
+launchDLAN=Avvia D-LAN

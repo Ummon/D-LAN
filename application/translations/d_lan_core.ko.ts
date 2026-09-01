@@ -12,12 +12,12 @@
 <context>
     <name>DM::ChunkDownloader</name>
     <message>
-        <location filename="../Core/DownloadManager/priv/ChunkDownloader.cpp" line="290"/>
+        <location filename="../Core/DownloadManager/priv/ChunkDownloader.cpp" line="296"/>
         <source>Corrupted data received for the file &quot;%1&quot; from peer %2. Peer blocked for %3 ms</source>
         <translation>피어 %2(으)로부터 파일 &quot;%1&quot;에 대한 손상된 데이터를 수신했습니다. 피어가 %3 ms 동안 차단됩니다</translation>
     </message>
     <message>
-        <location filename="../Core/DownloadManager/priv/ChunkDownloader.cpp" line="295"/>
+        <location filename="../Core/DownloadManager/priv/ChunkDownloader.cpp" line="301"/>
         <source>Has sent corrupted data</source>
         <extracomment>A reason why the user has been blocked</extracomment>
         <translation>손상된 데이터를 보냈습니다</translation>

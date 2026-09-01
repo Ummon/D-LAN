@@ -18,35 +18,31 @@ def "main build-all" [
     main make-setup
 }
 
-# Update .ts translation files which can be updated with Qt Linguist.
+# Update the .ts translation files which can be edited with Qt Linguist.
 #
 # It will then generate the compiled files .qm.
-# If you have edited the ts file, re-run this subcommand to update the .qm files.
+# If you have edited a ts file, re-run this subcommand to update the .qm files.
 def "main translations" [] {
     print "=== TRANSLATIONS ==="
 
-    let langs = [fr es ru de ko it]
-    for $lang in $langs {
-        lupdate-pro.exe Core.pro -ts translations\d_lan_core.($lang).ts
-        lupdate-pro.exe Common\RemoteCoreController\RemoteCoreController.pro GUI.pro -ts translations\d_lan_gui.($lang).ts
-    }
+    configure
+
+    # Extracts the strings from the sources into the .ts files ('update_translations' is
+    # the global target created by the 'qt_add_lupdate' calls in CMakeLists.txt) then
+    # compiles them into .qm files (built in 'build/release').
+    cmake --build build/release --target update_translations
+    cmake --build build/release --target dlan_translations
 
     for $project in [GUI Core] {
         mkdir ($project)/output/debug/languages
     }
 
-    cd translations
+    cp build/release/*gui*.qm GUI/output/debug/languages
+    cp build/release/*core*.qm Core/output/debug/languages
 
-    rm --force *.qm
-
-    lrelease *.ts
-
-    cp *gui*.qm ../GUI/output/debug/languages
-    cp *core*.qm ../Core/output/debug/languages
-
-    mkdir ../Setups/Windows/setup_bundle/languages
-    cp *gui*.qm ../Setups/Windows/setup_bundle/languages
-    cp *core*.qm ../Setups/Windows/setup_bundle/languages
+    mkdir Setups/Windows/setup_bundle/languages
+    cp build/release/*gui*.qm Setups/Windows/setup_bundle/languages
+    cp build/release/*core*.qm Setups/Windows/setup_bundle/languages
 }
 
 def "main compile" [
@@ -57,46 +53,16 @@ def "main compile" [
     update_version
 
     # To force to recompile the Common/Version.rs and DialogAbout.
-    rm -f Core/.tmp/release/version_res.o
-    rm -f GUI/.tmp/release/version_res.o
-    rm -f GUI/.tmp/release/DialogAbout.o
+    # rm -f build/release/GUI/CMakeFiles/DLanGUI.dir/__/Common/version.rc.obj
+    # rm -f build/release/Core/CMakeFiles/DLanCore.dir/__/Common/version.rc.obj
+    # rm -f build/release/GUI/CMakeFiles/DLanGUI.dir/DialogAbout.cpp.obj
 
-    let projects = [
-        Common
-        Common/TestsCommon
-        Common/LogManager
-        Common/RemoteCoreController
-        Core/HashCache
-        Core/FileManager
-        Core/FileManager/TestsFileManager
-        Core/PeerManager
-        Core/PeerManager/TestsPeerManager
-        Core/UploadManager
-        Core/DownloadManager
-        Core/NetworkListener
-        Core/ChatSystem
-        Core/RemoteControlManager
-        Core
-        GUI
-        Tools/PasswordHasher
-    ]
+    configure
+    cmake --build build/release
+}
 
-    let nb_proc = sys cpu | length
-
-    for $project in $projects {
-        let project_name = $project | split row '/' | last
-        print "----------"
-        print $"Compiling ($project)..."
-
-        do {
-            cd $project
-            if $clean {
-                mingw32-make.exe -f Makefile.Release clean -j($nb_proc)
-            }
-            qmake $"($project_name).pro" -r -spec win32-clang-g++ "CONFIG+=release"
-            mingw32-make.exe -f Makefile.Release -w -j($nb_proc)
-        }
-    }
+def configure [] {
+    cmake -S . -B build/release -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DCMAKE_RC_COMPILER=llvm-rc
 }
 
 def update_version [] {
@@ -110,9 +76,9 @@ def "main run-tests" [] {
     let exe_extension = ".exe" # No extension on Linux.
 
     let tests = [
-        Common/TestsCommon/output/release/TestsCommon
-        Core/FileManager/TestsFileManager/output/release/TestsFileManager
-        Core/PeerManager/TestsPeerManager/output/release/TestsPeerManager
+        build/release/output/TestsCommon
+        build/release/output/TestsFileManager
+        build/release/output/TestsPeerManager
     ]
 
     for $test in $tests {
@@ -132,9 +98,9 @@ def "main make-setup" [] {
     cd Setups/Windows
     mkdir setup_bundle
 
-    cp ../../Core/output/release/D-LAN.Core.exe setup_bundle
-    cp ../../GUI/output/release/D-LAN.GUI.exe setup_bundle
-    cp ../../Tools/PasswordHasher/output/release/PasswordHasher.exe setup_bundle
+    cp ../../build/release/output/D-LAN.Core.exe setup_bundle
+    cp ../../build/release/output/D-LAN.GUI.exe setup_bundle
+    cp ../../build/release/output/PasswordHasher.exe setup_bundle
 
     cd setup_bundle
     cp C:/Qt/Tools/llvm-mingw1706_64/bin/libwinpthread-1.dll .

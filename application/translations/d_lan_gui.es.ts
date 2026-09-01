@@ -588,7 +588,7 @@
 <context>
     <name>GUI::RemoteBrowseDialog</name>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="+60"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="+69"/>
         <source>Ok</source>
         <translation type="unfinished"></translation>
     </message>
@@ -597,11 +597,16 @@
         <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location line="+106"/>
+        <source>Open location</source>
+        <translation type="unfinished">Abrir ubicación</translation>
+    </message>
 </context>
 <context>
     <name>GUI::RemoteBrowseModel</name>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseModel.cpp" line="+304"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseModel.cpp" line="+392"/>
         <source>free</source>
         <translation type="unfinished"></translation>
     </message>
@@ -829,7 +834,7 @@
 <context>
     <name>GUI::UploadsModel</name>
     <message>
-        <location filename="../GUI/Uploads/UploadsModel.cpp" line="+58"/>
+        <location filename="../GUI/Uploads/UploadsModel.cpp" line="+57"/>
         <source>&lt;unknown&gt;</source>
         <translation>&lt;desconocido&gt;</translation>
     </message>
@@ -878,7 +883,7 @@
         <translation>Ejecutar de todas formas</translation>
     </message>
     <message>
-        <location filename="../GUI/main.cpp" line="+69"/>
+        <location filename="../GUI/main.cpp" line="+73"/>
         <source>D-LAN GUI version %1</source>
         <translation>D-LAN GUI version %1</translation>
     </message>
@@ -944,12 +949,12 @@
         <translation>Local</translation>
     </message>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="+63"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="+66"/>
         <source>D-LAN Core cannot be installed as a service</source>
         <translation>El núcleo de D-LAN no puede instalarse como servicio</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location line="+18"/>
         <source>Core launched as subprocess</source>
         <translation>Núcleo ejecutado como subproceso</translation>
     </message>

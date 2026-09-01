@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1" language="it_IT">
+<TS version="2.1" language="ja_JP">
 <context>
     <name>CoreSpace::CoreService</name>
     <message>
         <location filename="../Core/CoreService.cpp" line="33"/>
         <source>A LAN file sharing system</source>
-        <translation>Un sistema di condivisione file su rete locale</translation>
+        <translation type="unfinished">LAN ファイル共有システム</translation>
     </message>
 </context>
 <context>
@@ -14,13 +14,13 @@
     <message>
         <location filename="../Core/DownloadManager/priv/ChunkDownloader.cpp" line="296"/>
         <source>Corrupted data received for the file &quot;%1&quot; from peer %2. Peer blocked for %3 ms</source>
-        <translation>Ricevuti dati danneggiati per il file &quot;%1&quot; dal peer %2. Peer bloccato per %3 ms</translation>
+        <translation type="unfinished">ピア %2 からファイル &quot;%1&quot; の破損したデータを受信しました。ピアを %3 ms ブロックします</translation>
     </message>
     <message>
         <location filename="../Core/DownloadManager/priv/ChunkDownloader.cpp" line="301"/>
         <source>Has sent corrupted data</source>
         <extracomment>A reason why the user has been blocked</extracomment>
-        <translation>Ha inviato dati danneggiati</translation>
+        <translation type="unfinished">破損したデータを送信しました</translation>
     </message>
 </context>
 <context>
@@ -28,7 +28,7 @@
     <message>
         <location filename="../Core/DownloadManager/priv/DownloadManager.cpp" line="205"/>
         <source>The file &apos;%1&apos; is already in queue</source>
-        <translation>Il file &apos;%1&apos; è già in coda</translation>
+        <translation type="unfinished">ファイル &apos;%1&apos; はすでにキューにあります</translation>
     </message>
 </context>
 <context>
@@ -36,7 +36,7 @@
     <message>
         <location filename="../Core/DownloadManager/priv/FileDownload.cpp" line="465"/>
         <source>File completed: %1%2%3</source>
-        <translation>File completato: %1%2%3</translation>
+        <translation type="unfinished">ファイルが完了しました: %1%2%3</translation>
     </message>
 </context>
 <context>
@@ -44,7 +44,7 @@
     <message>
         <location filename="../Core/FileManager/priv/Cache/FileHasher.cpp" line="87"/>
         <source>Computing hashes of %1 . . .</source>
-        <translation>Calcolo degli hash di %1 . . .</translation>
+        <translation type="unfinished">%1 のハッシュを計算しています . . .</translation>
     </message>
 </context>
 <context>
@@ -52,30 +52,30 @@
     <message>
         <location filename="../Core/PeerManager/priv/PeerSelf.cpp" line="38"/>
         <source>Our current ID: %1</source>
-        <translation>ID attuale: %1</translation>
+        <translation type="unfinished">現在の ID: %1</translation>
     </message>
 </context>
 <context>
     <name>QObject</name>
     <message>
+        <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="342"/>
+        <source>The version (%1) of the queue file &quot;%2&quot; doesn&apos;t match the current version (%3). Queue will be reset.</source>
+        <translation type="unfinished">キューファイル &quot;%2&quot; のバージョン (%1) が現在のバージョン (%3) と一致しません。キューをリセットします。</translation>
+    </message>
+    <message>
         <location filename="../Core/Core.cpp" line="107"/>
         <source>D-LAN Core version %1 is starting . . .</source>
-        <translation>D-LAN Core versione %1 in avvio . . .</translation>
+        <translation type="unfinished">D-LAN Core バージョン %1 を起動しています . . .</translation>
     </message>
     <message>
         <location filename="../Core/Core.cpp" line="125"/>
         <source>Ready to serve</source>
-        <translation>Pronto</translation>
+        <translation type="unfinished">準備完了</translation>
     </message>
     <message>
         <location filename="../Core/Core.h" line="78"/>
         <source>Shutdown</source>
-        <translation>Arresto</translation>
-    </message>
-    <message>
-        <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="342"/>
-        <source>The version (%1) of the queue file &quot;%2&quot; doesn&apos;t match the current version (%3). Queue will be reset.</source>
-        <translation>La versione (%1) del file di coda &quot;%2&quot; non corrisponde alla versione attuale (%3). La coda verrà reimpostata.</translation>
+        <translation type="unfinished">シャットダウン</translation>
     </message>
 </context>
 </TS>

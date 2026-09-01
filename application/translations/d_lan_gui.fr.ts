@@ -589,7 +589,7 @@
 <context>
     <name>GUI::RemoteBrowseDialog</name>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="+60"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="+69"/>
         <source>Ok</source>
         <translation>Ok</translation>
     </message>
@@ -598,11 +598,16 @@
         <source>Cancel</source>
         <translation>Annuler</translation>
     </message>
+    <message>
+        <location line="+106"/>
+        <source>Open location</source>
+        <translation type="unfinished">Ouvrir le dossier</translation>
+    </message>
 </context>
 <context>
     <name>GUI::RemoteBrowseModel</name>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseModel.cpp" line="+304"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseModel.cpp" line="+392"/>
         <source>free</source>
         <translation>libre</translation>
     </message>
@@ -830,7 +835,7 @@
 <context>
     <name>GUI::UploadsModel</name>
     <message>
-        <location filename="../GUI/Uploads/UploadsModel.cpp" line="+58"/>
+        <location filename="../GUI/Uploads/UploadsModel.cpp" line="+57"/>
         <source>&lt;unknown&gt;</source>
         <translation>&lt;inconnu&gt;</translation>
     </message>
@@ -859,12 +864,12 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="+63"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="+66"/>
         <source>D-LAN Core cannot be installed as a service</source>
         <translation>D-LAN ne peut pas être installé comme service</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location line="+18"/>
         <source>Core launched as subprocess</source>
         <translation>Core lancé comme sous-processus</translation>
     </message>
@@ -899,7 +904,7 @@
         <translation>Lancer quand même</translation>
     </message>
     <message>
-        <location filename="../GUI/main.cpp" line="+69"/>
+        <location filename="../GUI/main.cpp" line="+73"/>
         <source>D-LAN GUI version %1</source>
         <translation>D-LAN GUI version %1</translation>
     </message>

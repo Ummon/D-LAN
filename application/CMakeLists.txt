@@ -175,14 +175,53 @@ endif()
 
 # ------------------------------------------------------------------------------
 # Translations (TRANSLATIONS in Core.pro / GUI.pro).
-# Uses the standalone qt_add_lrelease() signature (Qt >= 6.7).
+# Uses the standalone qt_add_lupdate() / qt_add_lrelease() signatures (Qt >= 6.7).
+#
+#  * 'cmake --build <dir> --target update_translations' refreshes the .ts files from
+#    the sources, it replaces the 'lupdate-pro Core.pro / GUI.pro' calls of the qmake
+#    era. The source files are taken from the targets themselves, so the two sets
+#    below only have to mirror the SUBDIRS of the old Core.pro and GUI.pro.
+#  * The .qm files are built as part of 'all', in ${CMAKE_BINARY_DIR}.
 # ------------------------------------------------------------------------------
 find_package(Qt6 QUIET COMPONENTS LinguistTools)
 if(Qt6LinguistTools_FOUND AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/translations")
-   file(GLOB DLAN_TS_FILES "${CMAKE_CURRENT_SOURCE_DIR}/translations/*.ts")
-   if(DLAN_TS_FILES)
+   file(GLOB DLAN_CORE_TS_FILES "${CMAKE_CURRENT_SOURCE_DIR}/translations/d_lan_core.*.ts")
+   file(GLOB DLAN_GUI_TS_FILES  "${CMAKE_CURRENT_SOURCE_DIR}/translations/d_lan_gui.*.ts")
+
+   if(DLAN_CORE_TS_FILES)
+      qt_add_lupdate(
+         SOURCE_TARGETS
+            Common
+            LogManager
+            HashCache
+            FileManager
+            PeerManager
+            UploadManager
+            DownloadManager
+            NetworkListener
+            ChatSystem
+            RemoteControlManager
+            DLanCore
+         TS_FILES ${DLAN_CORE_TS_FILES}
+         LUPDATE_TARGET dlan_lupdate_core
+      )
+   endif()
+
+   if(DLAN_GUI_TS_FILES)
+      qt_add_lupdate(
+         SOURCE_TARGETS
+            Common
+            LogManager
+            RemoteCoreController
+            DLanGUI
+         TS_FILES ${DLAN_GUI_TS_FILES}
+         LUPDATE_TARGET dlan_lupdate_gui
+      )
+   endif()
+
+   if(DLAN_CORE_TS_FILES OR DLAN_GUI_TS_FILES)
       qt_add_lrelease(
-         TS_FILES ${DLAN_TS_FILES}
+         TS_FILES ${DLAN_CORE_TS_FILES} ${DLAN_GUI_TS_FILES}
          QM_FILES_OUTPUT_VARIABLE DLAN_QM_FILES
       )
       add_custom_target(dlan_translations ALL DEPENDS ${DLAN_QM_FILES})

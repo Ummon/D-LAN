@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1" language="it_IT">
+<TS version="2.1" language="ja_JP">
 <context>
     <name>AskNewPasswordDialog</name>
     <message>
         <location filename="../GUI/Settings/AskNewPasswordDialog.ui" line="14"/>
         <source>Change password</source>
-        <translation>Cambia password</translation>
+        <translation type="unfinished">パスワードの変更</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/AskNewPasswordDialog.ui" line="20"/>
         <source>Old password</source>
-        <translation>Vecchia password</translation>
+        <translation type="unfinished">現在のパスワード</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/AskNewPasswordDialog.ui" line="43"/>
         <source>New password</source>
-        <translation>Nuova password</translation>
+        <translation type="unfinished">新しいパスワード</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/AskNewPasswordDialog.ui" line="57"/>
         <source>Repeat new password</source>
-        <translation>Ripeti la nuova password</translation>
+        <translation type="unfinished">新しいパスワード（確認）</translation>
     </message>
 </context>
 <context>
@@ -29,7 +29,7 @@
     <message>
         <location filename="../GUI/AutoComplete/AutoComplete.ui" line="17"/>
         <source>Form</source>
-        <translation></translation>
+        <translation type="unfinished">フォーム</translation>
     </message>
 </context>
 <context>
@@ -37,12 +37,12 @@
     <message>
         <location filename="../GUI/Browse/BrowseWidget.ui" line="52"/>
         <source>Download selected items to the first shared directory with enough free space</source>
-        <translation>Scarica gli elementi selezionati nella prima cartella condivisa con spazio libero sufficiente</translation>
+        <translation type="unfinished">選択した項目を、十分な空き容量がある最初の共有ディレクトリにダウンロード</translation>
     </message>
     <message>
         <location filename="../GUI/Browse/BrowseWidget.ui" line="55"/>
         <source>Download selected items</source>
-        <translation>Scarica gli elementi selezionati</translation>
+        <translation type="unfinished">選択した項目をダウンロード</translation>
     </message>
 </context>
 <context>
@@ -50,7 +50,7 @@
     <message>
         <location filename="../GUI/Chat/ChatWidget.ui" line="122"/>
         <source>Reset current format</source>
-        <translation>Ripristina il formato corrente</translation>
+        <translation type="unfinished">現在の書式をリセット</translation>
     </message>
 </context>
 <context>
@@ -58,37 +58,37 @@
     <message>
         <location filename="../GUI/DialogAbout.ui" line="60"/>
         <source>About</source>
-        <translation>Informazioni</translation>
+        <translation type="unfinished">バージョン情報</translation>
     </message>
     <message>
         <location filename="../GUI/DialogAbout.ui" line="87"/>
         <source>D-LAN</source>
-        <translation>D-LAN</translation>
+        <translation type="unfinished">D-LAN</translation>
     </message>
     <message>
         <location filename="../GUI/DialogAbout.ui" line="110"/>
         <source>Built on</source>
-        <translation>Compilato il</translation>
+        <translation type="unfinished">ビルド日時</translation>
     </message>
     <message>
         <location filename="../GUI/DialogAbout.ui" line="120"/>
         <source>From revision</source>
-        <translation>Dalla revisione</translation>
+        <translation type="unfinished">リビジョン</translation>
     </message>
     <message>
         <location filename="../GUI/DialogAbout.ui" line="136"/>
         <source>With</source>
-        <translation>Con</translation>
+        <translation type="unfinished">使用ライブラリ</translation>
     </message>
     <message>
         <location filename="../GUI/DialogAbout.ui" line="149"/>
         <source>Copyright 2010-%1 Greg Burri. All rights reserved.</source>
-        <translation>Copyright 2010-%1 Greg Burri. Tutti i diritti riservati.</translation>
+        <translation type="unfinished">Copyright 2010-%1 Greg Burri. 無断複写・転載を禁じます。</translation>
     </message>
     <message>
         <location filename="../GUI/DialogAbout.ui" line="202"/>
         <source>Close</source>
-        <translation>Chiudi</translation>
+        <translation type="unfinished">閉じる</translation>
     </message>
 </context>
 <context>
@@ -96,27 +96,27 @@
     <message>
         <location filename="../GUI/Downloads/DownloadsWidget.ui" line="14"/>
         <source>Downloads</source>
-        <translation>Download</translation>
+        <translation type="unfinished">ダウンロード</translation>
     </message>
     <message>
         <location filename="../GUI/Downloads/DownloadsWidget.ui" line="48"/>
         <source>Item shown :</source>
-        <translation>Elementi visualizzati :</translation>
+        <translation type="unfinished">表示する項目 :</translation>
     </message>
     <message>
         <location filename="../GUI/Downloads/DownloadsWidget.ui" line="75"/>
         <source>Remove completed files from the queue</source>
-        <translation>Rimuovi i file completati dalla coda</translation>
+        <translation type="unfinished">完了したファイルをキューから削除</translation>
     </message>
     <message>
         <location filename="../GUI/Downloads/DownloadsWidget.ui" line="95"/>
         <source>Removed selected downloads from the queue</source>
-        <translation>Rimuovi i download selezionati dalla coda</translation>
+        <translation type="unfinished">選択したダウンロードをキューから削除</translation>
     </message>
     <message>
         <location filename="../GUI/Downloads/DownloadsWidget.ui" line="115"/>
         <source>Pause or unpause selected downloads</source>
-        <translation>Metti in pausa o riprendi i download selezionati</translation>
+        <translation type="unfinished">選択したダウンロードを一時停止／再開</translation>
     </message>
 </context>
 <context>
@@ -124,7 +124,7 @@
     <message>
         <location filename="../GUI/Browse/BrowseWidget.cpp" line="146"/>
         <source>Open location</source>
-        <translation>Apri percorso</translation>
+        <translation type="unfinished">場所を開く</translation>
     </message>
 </context>
 <context>
@@ -133,42 +133,42 @@
         <location filename="../GUI/Chat/ChatWidget.cpp" line="317"/>
         <location filename="../GUI/Chat/ChatWidget.cpp" line="321"/>
         <source>Unable to send message</source>
-        <translation>Impossibile inviare il messaggio</translation>
+        <translation type="unfinished">メッセージを送信できません</translation>
     </message>
     <message>
         <location filename="../GUI/Chat/ChatWidget.cpp" line="317"/>
         <source>The message is too long</source>
-        <translation>Il messaggio è troppo lungo</translation>
+        <translation type="unfinished">メッセージが長すぎます</translation>
     </message>
     <message>
         <location filename="../GUI/Chat/ChatWidget.cpp" line="321"/>
         <source>The message can&apos;t be send, unknown error</source>
-        <translation>Impossibile inviare il messaggio, errore sconosciuto</translation>
+        <translation type="unfinished">メッセージを送信できません。原因不明のエラーです</translation>
     </message>
     <message>
         <location filename="../GUI/Chat/ChatWidget.cpp" line="339"/>
         <source>Browse</source>
-        <translation>Sfoglia</translation>
+        <translation type="unfinished">閲覧</translation>
     </message>
     <message>
         <location filename="../GUI/Chat/ChatWidget.cpp" line="343"/>
         <source>Copy IP: %1</source>
-        <translation>Copia IP: %1</translation>
+        <translation type="unfinished">IP をコピー: %1</translation>
     </message>
     <message>
         <location filename="../GUI/Chat/ChatWidget.cpp" line="378"/>
         <source>Copy selected lines</source>
-        <translation>Copia le righe selezionate</translation>
+        <translation type="unfinished">選択した行をコピー</translation>
     </message>
     <message>
         <location filename="../GUI/Chat/ChatWidget.cpp" line="379"/>
         <source>Browse selected peers</source>
-        <translation>Sfoglia i peer selezionati</translation>
+        <translation type="unfinished">選択したピアを閲覧</translation>
     </message>
     <message>
         <location filename="../GUI/Chat/ChatWidget.cpp" line="741"/>
         <source>Chat</source>
-        <translation>Chat</translation>
+        <translation type="unfinished">チャット</translation>
     </message>
 </context>
 <context>
@@ -176,7 +176,7 @@
     <message>
         <location filename="../GUI/CheckBoxList.cpp" line="100"/>
         <source>&lt;Nothing&gt;</source>
-        <translation>&lt;Niente&gt;</translation>
+        <translation type="unfinished">&lt;なし&gt;</translation>
     </message>
 </context>
 <context>
@@ -184,17 +184,17 @@
     <message>
         <location filename="../GUI/D-LAN_GUI.cpp" line="147"/>
         <source>Show the user interface</source>
-        <translation>Mostra l&apos;interfaccia utente</translation>
+        <translation type="unfinished">ユーザーインターフェースを表示</translation>
     </message>
     <message>
         <location filename="../GUI/D-LAN_GUI.cpp" line="151"/>
         <source>Stop the user interface</source>
-        <translation>Chiudi l&apos;interfaccia utente</translation>
+        <translation type="unfinished">ユーザーインターフェースを終了</translation>
     </message>
     <message>
         <location filename="../GUI/D-LAN_GUI.cpp" line="154"/>
         <source>Exit</source>
-        <translation>Esci</translation>
+        <translation type="unfinished">終了</translation>
     </message>
 </context>
 <context>
@@ -202,17 +202,17 @@
     <message>
         <location filename="../GUI/DownloadMenu.cpp" line="50"/>
         <source>Download selected items to the first directory folder with enough free space</source>
-        <translation>Scarica gli elementi selezionati nella prima cartella condivisa con spazio libero sufficiente</translation>
+        <translation type="unfinished">選択した項目を、十分な空き容量がある最初のディレクトリにダウンロード</translation>
     </message>
     <message>
         <location filename="../GUI/DownloadMenu.cpp" line="61"/>
         <source>Download selected items to %1</source>
-        <translation>Scarica gli elementi selezionati in %1</translation>
+        <translation type="unfinished">選択した項目を %1 にダウンロード</translation>
     </message>
     <message>
         <location filename="../GUI/DownloadMenu.cpp" line="71"/>
         <source>Download selected items to . . .</source>
-        <translation>Scarica gli elementi selezionati in . . .</translation>
+        <translation type="unfinished">選択した項目を . . . にダウンロード</translation>
     </message>
 </context>
 <context>
@@ -220,31 +220,27 @@
     <message>
         <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="56"/>
         <source>Queued</source>
-        <translation>In coda</translation>
-    </message>
-    <message>
-        <source>Getting the hashes..</source>
-        <translation type="vanished">Recupero degli hash..</translation>
+        <translation type="unfinished">キュー待ち</translation>
     </message>
     <message>
         <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="59"/>
         <source>Getting hashes..</source>
-        <translation>Recupero degli hash..</translation>
+        <translation type="unfinished">ハッシュを取得中..</translation>
     </message>
     <message>
         <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="69"/>
         <source>Complete</source>
-        <translation>Completato</translation>
+        <translation type="unfinished">完了</translation>
     </message>
     <message>
         <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="72"/>
         <source>Paused</source>
-        <translation>In pausa</translation>
+        <translation type="unfinished">一時停止</translation>
     </message>
     <message>
         <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="75"/>
         <source>Waiting..</source>
-        <translation>In attesa..</translation>
+        <translation type="unfinished">待機中..</translation>
     </message>
 </context>
 <context>
@@ -252,92 +248,92 @@
     <message>
         <location filename="../GUI/Downloads/DownloadsModel.cpp" line="97"/>
         <source>Source peer offline (%1)</source>
-        <translation>Peer sorgente offline (%1)</translation>
+        <translation type="unfinished">送信元のピアがオフラインです (%1)</translation>
     </message>
     <message>
         <location filename="../GUI/Downloads/DownloadsModel.cpp" line="101"/>
         <source>The source peer doesn&apos;t have the entry</source>
-        <translation>Il peer sorgente non possiede l&apos;elemento</translation>
+        <translation type="unfinished">送信元のピアにこの項目がありません</translation>
     </message>
     <message>
         <location filename="../GUI/Downloads/DownloadsModel.cpp" line="104"/>
         <source>There is no source to download from</source>
-        <translation>Nessuna sorgente da cui scaricare</translation>
+        <translation type="unfinished">ダウンロード元がありません</translation>
     </message>
     <message>
         <location filename="../GUI/Downloads/DownloadsModel.cpp" line="107"/>
         <source>No incoming directory</source>
-        <translation>Nessuna cartella di destinazione</translation>
+        <translation type="unfinished">受信ディレクトリが設定されていません</translation>
     </message>
     <message>
         <location filename="../GUI/Downloads/DownloadsModel.cpp" line="111"/>
         <source>Not enough free space left</source>
-        <translation>Spazio libero insufficiente</translation>
+        <translation type="unfinished">空き容量が不足しています</translation>
     </message>
     <message>
         <location filename="../GUI/Downloads/DownloadsModel.cpp" line="114"/>
         <source>Unable to create the file</source>
-        <translation>Impossibile creare il file</translation>
+        <translation type="unfinished">ファイルを作成できません</translation>
     </message>
     <message>
         <location filename="../GUI/Downloads/DownloadsModel.cpp" line="119"/>
         <source>Unable to create the directory</source>
-        <translation>Impossibile creare la cartella</translation>
+        <translation type="unfinished">ディレクトリを作成できません</translation>
     </message>
     <message>
         <location filename="../GUI/Downloads/DownloadsModel.cpp" line="120"/>
         <source>Unable to create the path of the file</source>
-        <translation>Impossibile creare il percorso del file</translation>
+        <translation type="unfinished">ファイルのパスを作成できません</translation>
     </message>
     <message>
         <location filename="../GUI/Downloads/DownloadsModel.cpp" line="123"/>
         <source>Unable to retrieve the hashes</source>
-        <translation>Impossibile recuperare gli hash</translation>
+        <translation type="unfinished">ハッシュを取得できません</translation>
     </message>
     <message>
         <location filename="../GUI/Downloads/DownloadsModel.cpp" line="127"/>
         <source>Transfer error</source>
-        <translation>Errore di trasferimento</translation>
+        <translation type="unfinished">転送エラー</translation>
     </message>
     <message>
         <location filename="../GUI/Downloads/DownloadsModel.cpp" line="130"/>
         <source>Unable to open the file</source>
-        <translation>Impossibile aprire il file</translation>
+        <translation type="unfinished">ファイルを開けません</translation>
     </message>
     <message>
         <location filename="../GUI/Downloads/DownloadsModel.cpp" line="133"/>
         <source>Unable to write the file</source>
-        <translation>Impossibile scrivere il file</translation>
+        <translation type="unfinished">ファイルに書き込めません</translation>
     </message>
     <message>
         <location filename="../GUI/Downloads/DownloadsModel.cpp" line="136"/>
         <source>The local file has been deleted</source>
-        <translation>Il file locale è stato eliminato</translation>
+        <translation type="unfinished">ローカルファイルが削除されました</translation>
     </message>
     <message>
         <location filename="../GUI/Downloads/DownloadsModel.cpp" line="139"/>
         <source>Too much data received</source>
-        <translation>Ricevuti troppi dati</translation>
+        <translation type="unfinished">受信したデータが多すぎます</translation>
     </message>
     <message>
         <location filename="../GUI/Downloads/DownloadsModel.cpp" line="142"/>
         <source>Data received do not match the hash</source>
-        <translation>I dati ricevuti non corrispondono all&apos;hash</translation>
+        <translation type="unfinished">受信したデータがハッシュと一致しません</translation>
     </message>
     <message>
         <location filename="../GUI/Downloads/DownloadsModel.cpp" line="146"/>
         <source>The remote entry is currently being scanned</source>
-        <translation>L&apos;elemento remoto è attualmente in fase di scansione</translation>
+        <translation type="unfinished">リモートの項目は現在スキャン中です</translation>
     </message>
     <message>
         <location filename="../GUI/Downloads/DownloadsModel.cpp" line="149"/>
         <source>The local directory is currently being scanned</source>
-        <translation>La cartella locale è attualmente in fase di scansione</translation>
+        <translation type="unfinished">ローカルディレクトリは現在スキャン中です</translation>
     </message>
     <message>
         <location filename="../GUI/Downloads/DownloadsModel.cpp" line="152"/>
         <source>Unable to retrieve the entries</source>
-        <translation>Impossibile recuperare gli elementi</translation>
+        <translation type="unfinished">項目を取得できません</translation>
     </message>
 </context>
 <context>
@@ -345,67 +341,67 @@
     <message>
         <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="227"/>
         <source>Open location</source>
-        <translation>Apri percorso</translation>
+        <translation type="unfinished">場所を開く</translation>
     </message>
     <message>
         <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="236"/>
         <source>Move to top</source>
-        <translation>Sposta in cima</translation>
+        <translation type="unfinished">先頭に移動</translation>
     </message>
     <message>
         <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="259"/>
         <source>Pause selected entries</source>
-        <translation>Metti in pausa gli elementi selezionati</translation>
+        <translation type="unfinished">選択した項目を一時停止</translation>
     </message>
     <message>
         <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="259"/>
         <source>Unpause selected entries</source>
-        <translation>Riprendi gli elementi selezionati</translation>
+        <translation type="unfinished">選択した項目を再開</translation>
     </message>
     <message>
         <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="347"/>
         <source>Remove selected downloads</source>
-        <translation>Rimuovi i download selezionati</translation>
+        <translation type="unfinished">選択したダウンロードを削除</translation>
     </message>
     <message>
         <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="348"/>
         <source>Are you sure to remove the selected downloads? There is one or more unfinished download.</source>
-        <translation>Rimuovere i download selezionati? Uno o più download non sono ancora completati.</translation>
+        <translation type="unfinished">選択したダウンロードを削除してもよろしいですか？未完了のダウンロードが含まれています。</translation>
     </message>
     <message>
         <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="401"/>
         <source>Switch to file list view</source>
-        <translation>Passa alla vista elenco file</translation>
+        <translation type="unfinished">ファイル一覧表示に切り替え</translation>
     </message>
     <message>
         <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="414"/>
         <source>Switch to tree view</source>
-        <translation>Passa alla vista ad albero</translation>
+        <translation type="unfinished">ツリー表示に切り替え</translation>
     </message>
     <message>
         <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="431"/>
         <source>&lt;All&gt;</source>
-        <translation>&lt;Tutti&gt;</translation>
+        <translation type="unfinished">&lt;すべて&gt;</translation>
     </message>
     <message>
         <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="432"/>
         <source>Complete</source>
-        <translation>Completato</translation>
+        <translation type="unfinished">完了</translation>
     </message>
     <message>
         <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="433"/>
         <source>Downloading</source>
-        <translation>In scaricamento</translation>
+        <translation type="unfinished">ダウンロード中</translation>
     </message>
     <message>
         <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="434"/>
         <source>Queued</source>
-        <translation>In coda</translation>
+        <translation type="unfinished">キュー待ち</translation>
     </message>
     <message>
         <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="435"/>
         <source>Inactive</source>
-        <translation>Inattivo</translation>
+        <translation type="unfinished">停止中</translation>
     </message>
 </context>
 <context>
@@ -413,7 +409,7 @@
     <message>
         <location filename="../GUI/Emoticons/EmoticonsWidget.cpp" line="44"/>
         <source>Set as the default theme</source>
-        <translation>Imposta come tema predefinito</translation>
+        <translation type="unfinished">既定のテーマに設定</translation>
     </message>
 </context>
 <context>
@@ -421,68 +417,68 @@
     <message>
         <location filename="../GUI/MainWindow.cpp" line="163"/>
         <source>Already connected to this address</source>
-        <translation>Già connesso a questo indirizzo</translation>
+        <translation type="unfinished">このアドレスにはすでに接続しています</translation>
     </message>
     <message>
         <location filename="../GUI/MainWindow.cpp" line="166"/>
         <source>There is already a connection process in progress</source>
-        <translation>Un tentativo di connessione è già in corso</translation>
+        <translation type="unfinished">すでに接続処理が進行中です</translation>
     </message>
     <message>
         <location filename="../GUI/MainWindow.cpp" line="169"/>
         <source>The host is unknown</source>
-        <translation>Host sconosciuto</translation>
+        <translation type="unfinished">ホストが見つかりません</translation>
     </message>
     <message>
         <location filename="../GUI/MainWindow.cpp" line="172"/>
         <source>Host has timed out</source>
-        <translation>L&apos;host non risponde</translation>
+        <translation type="unfinished">ホストがタイムアウトしました</translation>
     </message>
     <message>
         <location filename="../GUI/MainWindow.cpp" line="175"/>
         <source>The host hasn&apos;t defined any password</source>
-        <translation>L&apos;host non ha impostato alcuna password</translation>
+        <translation type="unfinished">ホストにパスワードが設定されていません</translation>
     </message>
     <message>
         <location filename="../GUI/MainWindow.cpp" line="178"/>
         <source>Wrong password</source>
-        <translation>Password errata</translation>
+        <translation type="unfinished">パスワードが違います</translation>
     </message>
     <message>
         <location filename="../GUI/MainWindow.cpp" line="181"/>
         <source>Invalid address</source>
-        <translation>Indirizzo non valido</translation>
+        <translation type="unfinished">無効なアドレスです</translation>
     </message>
     <message>
         <location filename="../GUI/MainWindow.cpp" line="184"/>
         <source>Error unknown</source>
-        <translation>Errore sconosciuto</translation>
+        <translation type="unfinished">原因不明のエラー</translation>
     </message>
     <message>
         <location filename="../GUI/MainWindow.cpp" line="188"/>
         <source>Unable to connect to the core</source>
-        <translation>Impossibile connettersi al Core</translation>
+        <translation type="unfinished">Core に接続できません</translation>
     </message>
     <message>
         <location filename="../GUI/MainWindow.cpp" line="191"/>
         <location filename="../GUI/MainWindow.cpp" line="214"/>
         <source>Core address:</source>
-        <translation>Indirizzo del Core:</translation>
+        <translation type="unfinished">Core のアドレス:</translation>
     </message>
     <message>
         <location filename="../GUI/MainWindow.cpp" line="201"/>
         <source>Connected to the core</source>
-        <translation>Connesso al Core</translation>
+        <translation type="unfinished">Core に接続しました</translation>
     </message>
     <message>
         <location filename="../GUI/MainWindow.cpp" line="209"/>
         <source>Connection lost</source>
-        <translation>Connessione persa</translation>
+        <translation type="unfinished">接続が切断されました</translation>
     </message>
     <message>
         <location filename="../GUI/MainWindow.cpp" line="213"/>
         <source>The connection to the core has been lost</source>
-        <translation>La connessione al Core è stata persa</translation>
+        <translation type="unfinished">Core との接続が切断されました</translation>
     </message>
 </context>
 <context>
@@ -490,12 +486,12 @@
     <message>
         <location filename="../GUI/MDI/MdiArea.cpp" line="331"/>
         <source>Waiting the initial scanning process is finished before loading the download queue</source>
-        <translation>In attesa del completamento della scansione iniziale prima di caricare la coda dei download</translation>
+        <translation type="unfinished">ダウンロードキューを読み込む前に、初回スキャンの完了を待っています</translation>
     </message>
     <message>
         <location filename="../GUI/MDI/MdiArea.cpp" line="512"/>
         <source>Leave room</source>
-        <translation>Esci dalla stanza</translation>
+        <translation type="unfinished">ルームを退出</translation>
     </message>
 </context>
 <context>
@@ -503,29 +499,29 @@
     <message>
         <location filename="../GUI/Peers/PeerListModel.cpp" line="258"/>
         <source>Their protocol version is more recent and incompatible with ours. Upgrade you version!</source>
-        <translation>La versione del protocollo di questo peer è più recente e incompatibile con la nostra. Aggiorna la tua versione!</translation>
+        <translation type="unfinished">相手のプロトコルバージョンが新しく、こちらと互換性がありません。バージョンを更新してください！</translation>
     </message>
     <message>
         <location filename="../GUI/Peers/PeerListModel.cpp" line="260"/>
         <source>Their protocol version is outdated and incompatible with ours. They should upgrade their version!</source>
-        <translation>La versione del protocollo di questo peer è obsoleta e incompatibile con la nostra. Il peer dovrebbe aggiornare la propria versione!</translation>
+        <translation type="unfinished">相手のプロトコルバージョンが古く、こちらと互換性がありません。相手にバージョンの更新を依頼してください！</translation>
     </message>
     <message>
         <location filename="../GUI/Peers/PeerListModel.cpp" line="263"/>
         <source>Version %1
 </source>
-        <translation>Versione %1
+        <translation type="unfinished">バージョン %1
 </translation>
     </message>
     <message>
         <location filename="../GUI/Peers/PeerListModel.cpp" line="265"/>
         <source>Download rate: </source>
-        <translation>Velocità di download: </translation>
+        <translation type="unfinished">ダウンロード速度: </translation>
     </message>
     <message>
         <location filename="../GUI/Peers/PeerListModel.cpp" line="266"/>
         <source>Upload rate: </source>
-        <translation>Velocità di upload: </translation>
+        <translation type="unfinished">アップロード速度: </translation>
     </message>
 </context>
 <context>
@@ -533,57 +529,57 @@
     <message>
         <location filename="../GUI/Peers/PeersDock.cpp" line="97"/>
         <source>Browse</source>
-        <translation>Sfoglia</translation>
+        <translation type="unfinished">閲覧</translation>
     </message>
     <message>
         <location filename="../GUI/Peers/PeersDock.cpp" line="106"/>
         <source>Take control</source>
-        <translation>Prendi il controllo</translation>
+        <translation type="unfinished">遠隔操作</translation>
     </message>
     <message>
         <location filename="../GUI/Peers/PeersDock.cpp" line="114"/>
         <source>Copy IP: %1</source>
-        <translation>Copia IP: %1</translation>
+        <translation type="unfinished">IP をコピー: %1</translation>
     </message>
     <message>
         <location filename="../GUI/Peers/PeersDock.cpp" line="121"/>
         <source>Sort by the amount of sharing</source>
-        <translation>Ordina per dimensione della condivisione</translation>
+        <translation type="unfinished">共有容量で並べ替え</translation>
     </message>
     <message>
         <location filename="../GUI/Peers/PeersDock.cpp" line="124"/>
         <source>Sort alphabetically</source>
-        <translation>Ordina alfabeticamente</translation>
+        <translation type="unfinished">アルファベット順で並べ替え</translation>
     </message>
     <message>
         <location filename="../GUI/Peers/PeersDock.cpp" line="139"/>
         <source>Colorize in red</source>
-        <translation>Colora di rosso</translation>
+        <translation type="unfinished">赤で色付け</translation>
     </message>
     <message>
         <location filename="../GUI/Peers/PeersDock.cpp" line="146"/>
         <source>Colorize in blue</source>
-        <translation>Colora di blu</translation>
+        <translation type="unfinished">青で色付け</translation>
     </message>
     <message>
         <location filename="../GUI/Peers/PeersDock.cpp" line="154"/>
         <source>Colorize in green</source>
-        <translation>Colora di verde</translation>
+        <translation type="unfinished">緑で色付け</translation>
     </message>
     <message>
         <location filename="../GUI/Peers/PeersDock.cpp" line="159"/>
         <source>Uncolorize</source>
-        <translation>Rimuovi il colore</translation>
+        <translation type="unfinished">色付けを解除</translation>
     </message>
     <message>
         <location filename="../GUI/Peers/PeersDock.cpp" line="195"/>
         <source>Take control of %1</source>
-        <translation>Prendi il controllo di %1</translation>
+        <translation type="unfinished">%1 を遠隔操作</translation>
     </message>
     <message>
         <location filename="../GUI/Peers/PeersDock.cpp" line="197"/>
         <source>Enter a password</source>
-        <translation>Inserisci una password</translation>
+        <translation type="unfinished">パスワードを入力してください</translation>
     </message>
 </context>
 <context>
@@ -591,17 +587,17 @@
     <message>
         <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="69"/>
         <source>Ok</source>
-        <translation>OK</translation>
+        <translation type="unfinished">OK</translation>
     </message>
     <message>
         <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="70"/>
         <source>Cancel</source>
-        <translation>Annulla</translation>
+        <translation type="unfinished">キャンセル</translation>
     </message>
     <message>
         <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="176"/>
         <source>Open location</source>
-        <translation type="unfinished">Apri percorso</translation>
+        <translation type="unfinished">場所を開く</translation>
     </message>
 </context>
 <context>
@@ -609,7 +605,7 @@
     <message>
         <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseModel.cpp" line="392"/>
         <source>free</source>
-        <translation>liberi</translation>
+        <translation type="unfinished">空き</translation>
     </message>
 </context>
 <context>
@@ -617,17 +613,17 @@
     <message>
         <location filename="../GUI/Chat/RoomsDock.cpp" line="96"/>
         <source>Join</source>
-        <translation>Entra</translation>
+        <translation type="unfinished">参加</translation>
     </message>
     <message>
         <location filename="../GUI/Chat/RoomsDock.cpp" line="100"/>
         <source>Sort by number of peers</source>
-        <translation>Ordina per numero di peer</translation>
+        <translation type="unfinished">ピア数で並べ替え</translation>
     </message>
     <message>
         <location filename="../GUI/Chat/RoomsDock.cpp" line="101"/>
         <source>Sort alphabetically</source>
-        <translation>Ordina alfabeticamente</translation>
+        <translation type="unfinished">アルファベット順で並べ替え</translation>
     </message>
 </context>
 <context>
@@ -635,7 +631,7 @@
     <message>
         <location filename="../GUI/Search/SearchWidget.cpp" line="162"/>
         <source>Browse</source>
-        <translation>Sfoglia</translation>
+        <translation type="unfinished">閲覧</translation>
     </message>
 </context>
 <context>
@@ -643,33 +639,33 @@
     <message>
         <location filename="../GUI/Search/SearchModel.cpp" line="136"/>
         <source>Name</source>
-        <translation>Nome</translation>
+        <translation type="unfinished">名前</translation>
     </message>
     <message>
         <location filename="../GUI/Search/SearchModel.cpp" line="137"/>
         <source>Directory</source>
-        <translation>Cartella</translation>
+        <translation type="unfinished">ディレクトリ</translation>
     </message>
     <message>
         <location filename="../GUI/Search/SearchModel.cpp" line="138"/>
         <source>Relevance</source>
-        <translation>Rilevanza</translation>
+        <translation type="unfinished">関連度</translation>
     </message>
     <message>
         <location filename="../GUI/Search/SearchModel.cpp" line="139"/>
         <source>Peer</source>
-        <translation>Peer</translation>
+        <translation type="unfinished">ピア</translation>
     </message>
     <message>
         <location filename="../GUI/Search/SearchModel.cpp" line="140"/>
         <source>Size</source>
-        <translation>Dimensione</translation>
+        <translation type="unfinished">サイズ</translation>
     </message>
     <message>
         <location filename="../GUI/Search/SearchModel.cpp" line="360"/>
         <location filename="../GUI/Search/SearchModel.cpp" line="414"/>
         <source>&lt;unknown&gt;</source>
-        <translation>&lt;sconosciuto&gt;</translation>
+        <translation type="unfinished">&lt;不明&gt;</translation>
     </message>
 </context>
 <context>
@@ -677,12 +673,12 @@
     <message>
         <location filename="../GUI/Search/SearchWidget.cpp" line="298"/>
         <source>Open location</source>
-        <translation>Apri percorso</translation>
+        <translation type="unfinished">場所を開く</translation>
     </message>
     <message>
         <location filename="../GUI/Search/SearchWidget.cpp" line="299"/>
         <source>Browse</source>
-        <translation>Sfoglia</translation>
+        <translation type="unfinished">閲覧</translation>
     </message>
 </context>
 <context>
@@ -690,64 +686,64 @@
     <message>
         <location filename="../GUI/Settings/SettingsWidget.cpp" line="244"/>
         <source>Default</source>
-        <translation>Predefinito</translation>
+        <translation type="unfinished">既定</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.cpp" line="302"/>
         <source>Interface not active</source>
-        <translation>Interfaccia non attiva</translation>
+        <translation type="unfinished">インターフェースが有効ではありません</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.cpp" line="430"/>
         <source>Change the password</source>
-        <translation>Cambia la password</translation>
+        <translation type="unfinished">パスワードを変更</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.cpp" line="434"/>
         <source>No password defined</source>
-        <translation>Non è stata impostata alcuna password</translation>
+        <translation type="unfinished">パスワードが設定されていません</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.cpp" line="436"/>
         <source>Define a password</source>
-        <translation>Imposta una password</translation>
+        <translation type="unfinished">パスワードを設定</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.cpp" line="482"/>
         <source>Connecting . . .</source>
-        <translation>Connessione in corso . . .</translation>
+        <translation type="unfinished">接続中 . . .</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.cpp" line="490"/>
         <location filename="../GUI/Settings/SettingsWidget.cpp" line="506"/>
         <location filename="../GUI/Settings/SettingsWidget.cpp" line="525"/>
         <source>Connect</source>
-        <translation>Connetti</translation>
+        <translation type="unfinished">接続</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.cpp" line="620"/>
         <source>Select one or more directories and/or files to share</source>
-        <translation>Seleziona una o più cartelle e/o file da condividere</translation>
+        <translation type="unfinished">共有するディレクトリまたはファイルを選択してください</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.cpp" line="678"/>
         <source>Remove the shared directory</source>
-        <translation>Rimuovi la cartella condivisa</translation>
+        <translation type="unfinished">共有ディレクトリを削除</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.cpp" line="686"/>
         <source>Move up</source>
-        <translation>Sposta su</translation>
+        <translation type="unfinished">上へ移動</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.cpp" line="694"/>
         <source>Move down</source>
-        <translation>Sposta giù</translation>
+        <translation type="unfinished">下へ移動</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.cpp" line="702"/>
         <source>Open location</source>
-        <translation>Apri percorso</translation>
+        <translation type="unfinished">場所を開く</translation>
     </message>
 </context>
 <context>
@@ -755,22 +751,22 @@
     <message>
         <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="276"/>
         <source>Name</source>
-        <translation>Nome</translation>
+        <translation type="unfinished">名前</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="277"/>
         <source>Path</source>
-        <translation>Percorso</translation>
+        <translation type="unfinished">パス</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="278"/>
         <source>Size</source>
-        <translation>Dimensione</translation>
+        <translation type="unfinished">サイズ</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="279"/>
         <source>Free space</source>
-        <translation>Spazio libero</translation>
+        <translation type="unfinished">空き容量</translation>
     </message>
 </context>
 <context>
@@ -778,42 +774,42 @@
     <message>
         <location filename="../GUI/StatusBar.cpp" line="119"/>
         <source>peers</source>
-        <translation>peer</translation>
+        <translation type="unfinished">ピア</translation>
     </message>
     <message>
         <location filename="../GUI/StatusBar.cpp" line="119"/>
         <source>peer</source>
-        <translation>peer</translation>
+        <translation type="unfinished">ピア</translation>
     </message>
     <message>
         <location filename="../GUI/StatusBar.cpp" line="132"/>
         <source>connected to %1</source>
-        <translation>connesso a %1</translation>
+        <translation type="unfinished">%1 に接続中</translation>
     </message>
     <message>
         <location filename="../GUI/StatusBar.cpp" line="134"/>
         <source>connected</source>
-        <translation>connesso</translation>
+        <translation type="unfinished">接続済み</translation>
     </message>
     <message>
         <location filename="../GUI/StatusBar.cpp" line="140"/>
         <source>scanning in progress . . .</source>
-        <translation>scansione in corso . . .</translation>
+        <translation type="unfinished">スキャン中 . . .</translation>
     </message>
     <message>
         <location filename="../GUI/StatusBar.cpp" line="144"/>
         <source>hashing in progress . . .</source>
-        <translation>calcolo degli hash in corso . . .</translation>
+        <translation type="unfinished">ハッシュ計算中 . . .</translation>
     </message>
     <message>
         <location filename="../GUI/StatusBar.cpp" line="149"/>
         <source>cache is up to date</source>
-        <translation>la cache è aggiornata</translation>
+        <translation type="unfinished">キャッシュは最新です</translation>
     </message>
     <message>
         <location filename="../GUI/StatusBar.cpp" line="160"/>
         <source>disconnected</source>
-        <translation>disconnesso</translation>
+        <translation type="unfinished">切断されました</translation>
     </message>
 </context>
 <context>
@@ -821,7 +817,7 @@
     <message>
         <location filename="../GUI/MDI/TabButtons.cpp" line="132"/>
         <source>Close tab</source>
-        <translation>Chiudi scheda</translation>
+        <translation type="unfinished">タブを閉じる</translation>
     </message>
 </context>
 <context>
@@ -829,7 +825,7 @@
     <message>
         <location filename="../GUI/MDI/TabButtons.cpp" line="169"/>
         <source>Refresh</source>
-        <translation>Aggiorna</translation>
+        <translation type="unfinished">更新</translation>
     </message>
 </context>
 <context>
@@ -837,7 +833,7 @@
     <message>
         <location filename="../GUI/Uploads/UploadsModel.cpp" line="57"/>
         <source>&lt;unknown&gt;</source>
-        <translation>&lt;sconosciuto&gt;</translation>
+        <translation type="unfinished">&lt;不明&gt;</translation>
     </message>
 </context>
 <context>
@@ -845,12 +841,12 @@
     <message>
         <location filename="../GUI/MainWindow.ui" line="14"/>
         <source>D-LAN</source>
-        <translation>D-LAN</translation>
+        <translation type="unfinished">D-LAN</translation>
     </message>
     <message>
         <location filename="../GUI/MainWindow.ui" line="124"/>
         <source>Log</source>
-        <translation>Log</translation>
+        <translation type="unfinished">ログ</translation>
     </message>
 </context>
 <context>
@@ -858,126 +854,126 @@
     <message>
         <location filename="../GUI/Peers/PeersDock.ui" line="17"/>
         <source>Peers</source>
-        <translation>Peer</translation>
+        <translation type="unfinished">ピア</translation>
     </message>
 </context>
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="67"/>
-        <source>D-LAN already launched</source>
-        <translation>D-LAN è già in esecuzione</translation>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="66"/>
+        <source>D-LAN Core cannot be installed as a service</source>
+        <translation type="unfinished">D-LAN Core をサービスとしてインストールできません</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="68"/>
-        <source>An instance of D-LAN is already launched</source>
-        <translation>Un&apos;istanza di D-LAN è già in esecuzione</translation>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="84"/>
+        <source>Core launched as subprocess</source>
+        <translation type="unfinished">Core をサブプロセスとして起動しました</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="70"/>
-        <source>Quit</source>
-        <translation>Esci</translation>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="86"/>
+        <source>Unable to launch the Core as subprocess</source>
+        <translation type="unfinished">Core をサブプロセスとして起動できません</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="71"/>
-        <source>Launch anyway</source>
-        <translation>Avvia comunque</translation>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="91"/>
+        <source>Core service launched</source>
+        <translation type="unfinished">Core サービスを起動しました</translation>
     </message>
     <message>
         <location filename="../GUI/main.cpp" line="73"/>
         <source>D-LAN GUI version %1</source>
-        <translation>D-LAN GUI versione %1</translation>
+        <translation type="unfinished">D-LAN GUI バージョン %1</translation>
+    </message>
+    <message>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="67"/>
+        <source>D-LAN already launched</source>
+        <translation type="unfinished">D-LAN はすでに起動しています</translation>
+    </message>
+    <message>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="68"/>
+        <source>An instance of D-LAN is already launched</source>
+        <translation type="unfinished">D-LAN のインスタンスがすでに起動しています</translation>
+    </message>
+    <message>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="70"/>
+        <source>Quit</source>
+        <translation type="unfinished">終了</translation>
+    </message>
+    <message>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="71"/>
+        <source>Launch anyway</source>
+        <translation type="unfinished">それでも起動する</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Utils.cpp" line="49"/>
+        <source>Select one or more directories and/or files</source>
+        <translation type="unfinished">ディレクトリまたはファイルを選択してください</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Utils.cpp" line="59"/>
+        <source>Select a directory where to download to</source>
+        <translation type="unfinished">ダウンロード先のディレクトリを選択してください</translation>
     </message>
     <message>
         <location filename="../GUI/Search/SearchUtils.cpp" line="15"/>
         <source>All</source>
-        <translation>Tutti</translation>
+        <translation type="unfinished">すべて</translation>
     </message>
     <message>
         <location filename="../GUI/Search/SearchUtils.cpp" line="18"/>
         <source>Directories</source>
-        <translation>Cartelle</translation>
+        <translation type="unfinished">ディレクトリ</translation>
     </message>
     <message>
         <location filename="../GUI/Search/SearchUtils.cpp" line="21"/>
         <source>Files</source>
-        <translation>File</translation>
+        <translation type="unfinished">ファイル</translation>
     </message>
     <message>
         <location filename="../GUI/Search/SearchUtils.cpp" line="36"/>
         <source>Audio</source>
-        <translation>Audio</translation>
+        <translation type="unfinished">音声</translation>
     </message>
     <message>
         <location filename="../GUI/Search/SearchUtils.cpp" line="40"/>
         <source>Video</source>
-        <translation>Video</translation>
+        <translation type="unfinished">動画</translation>
     </message>
     <message>
         <location filename="../GUI/Search/SearchUtils.cpp" line="44"/>
         <source>Compressed</source>
-        <translation>Compresso</translation>
+        <translation type="unfinished">圧縮ファイル</translation>
     </message>
     <message>
         <location filename="../GUI/Search/SearchUtils.cpp" line="48"/>
         <source>Document</source>
-        <translation>Documento</translation>
+        <translation type="unfinished">ドキュメント</translation>
     </message>
     <message>
         <location filename="../GUI/Search/SearchUtils.cpp" line="52"/>
         <source>Picture</source>
-        <translation>Immagine</translation>
+        <translation type="unfinished">画像</translation>
     </message>
     <message>
         <location filename="../GUI/Search/SearchUtils.cpp" line="56"/>
         <source>Subtitle</source>
-        <translation>Sottotitolo</translation>
+        <translation type="unfinished">字幕</translation>
     </message>
     <message>
         <location filename="../GUI/Search/SearchUtils.cpp" line="60"/>
         <source>Executable</source>
-        <translation>Eseguibile</translation>
+        <translation type="unfinished">実行ファイル</translation>
     </message>
     <message>
         <location filename="../GUI/Search/SearchUtils.cpp" line="64"/>
         <source>Media archive</source>
-        <translation>Archivio multimediale</translation>
+        <translation type="unfinished">メディアアーカイブ</translation>
     </message>
     <message>
         <location filename="../GUI/Search/SearchUtils.cpp" line="143"/>
         <location filename="../GUI/Search/SearchUtils.cpp" line="182"/>
         <source>Local</source>
-        <translation>Locale</translation>
-    </message>
-    <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="66"/>
-        <source>D-LAN Core cannot be installed as a service</source>
-        <translation>Impossibile installare D-LAN Core come servizio</translation>
-    </message>
-    <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="84"/>
-        <source>Core launched as subprocess</source>
-        <translation>Core avviato come sottoprocesso</translation>
-    </message>
-    <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="86"/>
-        <source>Unable to launch the Core as subprocess</source>
-        <translation>Impossibile avviare il Core come sottoprocesso</translation>
-    </message>
-    <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="91"/>
-        <source>Core service launched</source>
-        <translation>Servizio Core avviato</translation>
-    </message>
-    <message>
-        <location filename="../GUI/Utils.cpp" line="49"/>
-        <source>Select one or more directories and/or files</source>
-        <translation>Seleziona una o più cartelle e/o file</translation>
-    </message>
-    <message>
-        <location filename="../GUI/Utils.cpp" line="59"/>
-        <source>Select a directory where to download to</source>
-        <translation>Seleziona una cartella di destinazione per il download</translation>
+        <translation type="unfinished">ローカル</translation>
     </message>
 </context>
 <context>
@@ -985,7 +981,7 @@
     <message>
         <location filename="../GUI/RemoteBrowseDialog.ui" line="14"/>
         <source>Select some directories and/or files</source>
-        <translation>Seleziona cartelle e/o file</translation>
+        <translation type="unfinished">ディレクトリまたはファイルを選択してください</translation>
     </message>
 </context>
 <context>
@@ -993,17 +989,17 @@
     <message>
         <location filename="../GUI/Chat/RoomsDock.ui" line="17"/>
         <source>Chat rooms</source>
-        <translation>Stanze</translation>
+        <translation type="unfinished">チャットルーム</translation>
     </message>
     <message>
         <location filename="../GUI/Chat/RoomsDock.ui" line="50"/>
         <source>Room name</source>
-        <translation>Nome della stanza</translation>
+        <translation type="unfinished">ルーム名</translation>
     </message>
     <message>
         <location filename="../GUI/Chat/RoomsDock.ui" line="57"/>
         <source>Join the room</source>
-        <translation>Entra nella stanza</translation>
+        <translation type="unfinished">ルームに参加</translation>
     </message>
 </context>
 <context>
@@ -1012,42 +1008,42 @@
         <location filename="../GUI/Search/SearchDock.ui" line="20"/>
         <location filename="../GUI/Search/SearchDock.ui" line="59"/>
         <source>Search</source>
-        <translation>Cerca</translation>
+        <translation type="unfinished">検索</translation>
     </message>
     <message>
         <location filename="../GUI/Search/SearchDock.ui" line="72"/>
         <source>Search among other peers &lt;ENTER&gt;</source>
-        <translation>Cerca tra i file degli altri peer &lt;INVIO&gt;</translation>
+        <translation type="unfinished">他のピアの中から検索 &lt;ENTER&gt;</translation>
     </message>
     <message>
         <location filename="../GUI/Search/SearchDock.ui" line="101"/>
         <source>Clear fields</source>
-        <translation>Svuota i campi</translation>
+        <translation type="unfinished">入力欄をクリア</translation>
     </message>
     <message>
         <location filename="../GUI/Search/SearchDock.ui" line="139"/>
         <source>View advanced options</source>
-        <translation>Mostra opzioni avanzate</translation>
+        <translation type="unfinished">詳細オプションを表示</translation>
     </message>
     <message>
         <location filename="../GUI/Search/SearchDock.ui" line="211"/>
         <source>Own files</source>
-        <translation>File personali</translation>
+        <translation type="unfinished">自分のファイル</translation>
     </message>
     <message>
         <location filename="../GUI/Search/SearchDock.ui" line="218"/>
         <source>Type</source>
-        <translation>Tipo</translation>
+        <translation type="unfinished">種類</translation>
     </message>
     <message>
         <location filename="../GUI/Search/SearchDock.ui" line="225"/>
         <source>Min size</source>
-        <translation>Dimensione minima</translation>
+        <translation type="unfinished">最小サイズ</translation>
     </message>
     <message>
         <location filename="../GUI/Search/SearchDock.ui" line="232"/>
         <source>Max size</source>
-        <translation>Dimensione massima</translation>
+        <translation type="unfinished">最大サイズ</translation>
     </message>
 </context>
 <context>
@@ -1055,17 +1051,17 @@
     <message>
         <location filename="../GUI/Search/SearchWidget.ui" line="14"/>
         <source>Search</source>
-        <translation>Cerca</translation>
+        <translation type="unfinished">検索</translation>
     </message>
     <message>
         <location filename="../GUI/Search/SearchWidget.ui" line="62"/>
         <source>Download selected items to the first shared directory with enough free space</source>
-        <translation>Scarica gli elementi selezionati nella prima cartella condivisa con spazio libero sufficiente</translation>
+        <translation type="unfinished">選択した項目を、十分な空き容量がある最初の共有ディレクトリにダウンロード</translation>
     </message>
     <message>
         <location filename="../GUI/Search/SearchWidget.ui" line="65"/>
         <source>Download selected items</source>
-        <translation>Scarica gli elementi selezionati</translation>
+        <translation type="unfinished">選択した項目をダウンロード</translation>
     </message>
 </context>
 <context>
@@ -1073,147 +1069,147 @@
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="14"/>
         <source>Settings</source>
-        <translation>Impostazioni</translation>
+        <translation type="unfinished">設定</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="40"/>
         <source>Basic</source>
-        <translation>Generale</translation>
+        <translation type="unfinished">基本</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="46"/>
         <source>Nick</source>
-        <translation>Nickname</translation>
+        <translation type="unfinished">ニックネーム</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="60"/>
         <source>Shared folders and files</source>
-        <translation>Cartelle e file condivisi</translation>
+        <translation type="unfinished">共有フォルダーとファイル</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="69"/>
         <source>Add new shared directories and/or files</source>
-        <translation>Aggiungi nuove cartelle e/o file da condividere</translation>
+        <translation type="unfinished">共有するディレクトリまたはファイルを追加</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="92"/>
         <source>Remove the selected shared directory or file</source>
-        <translation>Rimuovi la cartella o il file condiviso selezionato</translation>
+        <translation type="unfinished">選択した共有ディレクトリまたはファイルを削除</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="112"/>
         <source>Move down the selected shared directory or file</source>
-        <translation>Sposta giù la cartella o il file condiviso selezionato</translation>
+        <translation type="unfinished">選択した共有ディレクトリまたはファイルを下へ移動</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="132"/>
         <source>Move up the selected shared directory or file</source>
-        <translation>Sposta su la cartella o il file condiviso selezionato</translation>
+        <translation type="unfinished">選択した共有ディレクトリまたはファイルを上へ移動</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="152"/>
         <source>Open location of the selected shared directory or file</source>
-        <translation>Apri il percorso della cartella o del file condiviso selezionato</translation>
+        <translation type="unfinished">選択した共有ディレクトリまたはファイルの場所を開く</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="202"/>
         <source>Network</source>
-        <translation>Rete</translation>
+        <translation type="unfinished">ネットワーク</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="214"/>
         <source>Interface to listen</source>
-        <translation>Interfaccia di ascolto</translation>
+        <translation type="unfinished">待ち受けるインターフェース</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="250"/>
         <source>Any</source>
-        <translation>Qualsiasi</translation>
+        <translation type="unfinished">すべて</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="263"/>
         <source>IPv6</source>
-        <translation>IPv6</translation>
+        <translation type="unfinished">IPv6</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="276"/>
         <source>IPv4</source>
-        <translation>IPv4</translation>
+        <translation type="unfinished">IPv4</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="293"/>
         <source>Refresh interfaces</source>
-        <translation>Aggiorna le interfacce</translation>
+        <translation type="unfinished">インターフェースを更新</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="303"/>
         <source>When activated all received data will be verified against their hashes.  It may consume CPU resources.</source>
-        <translation>Se attivato, tutti i dati ricevuti verranno verificati tramite i loro hash. Può consumare risorse della CPU.</translation>
+        <translation type="unfinished">有効にすると、受信したすべてのデータをハッシュと照合して検証します。CPU リソースを消費する場合があります。</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="306"/>
         <source>Data integrity check</source>
-        <translation>Verifica dell&apos;integrità dei dati</translation>
+        <translation type="unfinished">データ整合性チェック</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="330"/>
         <source>User interface</source>
-        <translation>Interfaccia utente</translation>
+        <translation type="unfinished">ユーザーインターフェース</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="333"/>
         <source>Graphic User Interface</source>
-        <translation>Interfaccia grafica</translation>
+        <translation type="unfinished">グラフィカルユーザーインターフェース</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="339"/>
         <source>Language</source>
-        <translation>Lingua</translation>
+        <translation type="unfinished">言語</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="349"/>
         <source>Style</source>
-        <translation>Stile</translation>
+        <translation type="unfinished">スタイル</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="370"/>
         <source>Reload the current style</source>
-        <translation>Ricarica lo stile corrente</translation>
+        <translation type="unfinished">現在のスタイルを再読み込み</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="392"/>
         <source>Core connection</source>
-        <translation>Connessione al Core</translation>
+        <translation type="unfinished">Core への接続</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="400"/>
         <source>Address</source>
-        <translation>Indirizzo</translation>
+        <translation type="unfinished">アドレス</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="410"/>
         <source>Reset to local</source>
-        <translation>Ripristina connessione locale</translation>
+        <translation type="unfinished">ローカルにリセット</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="417"/>
         <source>Password</source>
-        <translation>Password</translation>
+        <translation type="unfinished">パスワード</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="475"/>
         <source>Disconnect</source>
-        <translation>Disconnetti</translation>
+        <translation type="unfinished">切断</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="489"/>
         <source>Change the password</source>
-        <translation>Cambia la password</translation>
+        <translation type="unfinished">パスワードを変更</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="496"/>
         <source>Reset the password</source>
-        <translation>Reimposta la password</translation>
+        <translation type="unfinished">パスワードをリセット</translation>
     </message>
 </context>
 <context>
@@ -1221,7 +1217,7 @@
     <message>
         <location filename="../GUI/Emoticons/SingleEmoticonWidget.ui" line="14"/>
         <source>Form</source>
-        <translation></translation>
+        <translation type="unfinished">フォーム</translation>
     </message>
 </context>
 <context>
@@ -1229,27 +1225,27 @@
     <message>
         <location filename="../GUI/StatusBar.ui" line="29"/>
         <source>Show the log window</source>
-        <translation>Mostra la finestra di log</translation>
+        <translation type="unfinished">ログウィンドウを表示</translation>
     </message>
     <message>
         <location filename="../GUI/StatusBar.ui" line="71"/>
         <source>About</source>
-        <translation>Informazioni</translation>
+        <translation type="unfinished">バージョン情報</translation>
     </message>
     <message>
         <location filename="../GUI/StatusBar.ui" line="119"/>
         <source>Download rate</source>
-        <translation>Velocità di download</translation>
+        <translation type="unfinished">ダウンロード速度</translation>
     </message>
     <message>
         <location filename="../GUI/StatusBar.ui" line="160"/>
         <source>Upload rate</source>
-        <translation>Velocità di upload</translation>
+        <translation type="unfinished">アップロード速度</translation>
     </message>
     <message>
         <location filename="../GUI/StatusBar.ui" line="195"/>
         <source>Total sharing</source>
-        <translation>Condivisione totale</translation>
+        <translation type="unfinished">共有容量の合計</translation>
     </message>
 </context>
 <context>
@@ -1257,7 +1253,7 @@
     <message>
         <location filename="../GUI/Uploads/UploadsWidget.ui" line="14"/>
         <source>Uploads</source>
-        <translation>Upload</translation>
+        <translation type="unfinished">アップロード</translation>
     </message>
 </context>
 </TS>
