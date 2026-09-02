@@ -136,6 +136,12 @@ void RemoteConnection::refresh()
    if (this->waitForStateResult)
       return;
 
+   // A state message is silently dropped by 'send(..)' if the connection isn't authenticated or no
+   // longer listened. Building it would be a waste and, above all, 'waitForStateResult' would stay
+   // set forever: the acknowledgment of a message which has never been sent would never come.
+   if (!this->authenticated || !this->isListening())
+      return;
+
    const int downloadRate = this->downloadManager->getDownloadRate();
    const int uploadRate = this->uploadManager->getUploadRate();
 
