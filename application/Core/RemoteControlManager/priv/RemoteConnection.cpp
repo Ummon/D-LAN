@@ -29,6 +29,7 @@ using namespace RCM;
 #include <QRandomGenerator64>
 #include <QFileInfo>
 #include <QSet>
+#include <QHash>
 
 #include <Common/Settings.h>
 #include <Common/ProtoHelper.h>
@@ -208,8 +209,9 @@ void RemoteConnection::refresh()
          protoDownload->set_peer_source_nick(peerSource->getNick().toStdString());
    }
 
-   // Uploads.
-   QSet<std::pair<Common::Hash, Protos::Common::Entry>> addedFiles;
+   // Uploads. A peer may download several chunks of the same file at the same time, only one upload
+   // is shown for them, its progress is the one of the most advanced chunk.
+   QHash<std::pair<Common::Hash, Protos::Common::Entry>, int> addedFiles; // The value is the index in 'state.uploads()'.
    for (UM::IChunksUploader* chunksUploader : this->uploadManager->getChunksUploaders())
    {
       for (const auto& chunk : chunksUploader->getChunks())
@@ -220,27 +222,34 @@ void RemoteConnection::refresh()
 
          entry.mutable_chunks()->Clear();
 
+         int progress = 0;
+         if (entry.size() > 0)
+            progress =
+               std::clamp(
+                  int(10000LL * (chunk.getFileBytesOwnedByPeer() + chunk.getOffset()) / entry.size()),
+                  0,
+                  10000
+               );
+
          const auto key = std::make_pair(chunksUploader->getPeerID(), entry);
+         const auto i = addedFiles.constFind(key);
 
-         if (!addedFiles.contains(key))
+         if (i == addedFiles.constEnd())
          {
-            addedFiles.insert(key);
-
             Protos::GUI::State_Upload* protoUpload = state.add_uploads();
             protoUpload->mutable_file()->CopyFrom(entry);
-
-            int progress = 0;
-            if (entry.size() > 0)
-               progress =
-                  std::clamp(
-                     int(10000LL * (chunk.getFileBytesOwnedByPeer() + chunk.getOffset()) / entry.size()),
-                     0,
-                     10000
-                  );
-
             protoUpload->set_id(chunksUploader->getID());
             protoUpload->set_progress(progress);
             protoUpload->mutable_peer_id()->set_hash(key.first.getData(), Common::Hash::HASH_SIZE);
+
+            addedFiles.insert(key, state.uploads_size() - 1);
+         }
+         else
+         {
+            // 'add_uploads()' may move the previously added elements, thus the index and not a pointer.
+            Protos::GUI::State_Upload* protoUpload = state.mutable_uploads(*i);
+            if (progress > protoUpload->progress())
+               protoUpload->set_progress(progress);
          }
       }
    }
