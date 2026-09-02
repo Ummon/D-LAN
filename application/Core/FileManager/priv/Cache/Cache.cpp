@@ -770,6 +770,17 @@ void Cache::onScanned(Directory* dir)
    emit directoryScanned(dir);
 }
 
+/**
+  * The location of a shared entry has changed (moved or renamed on the file system): persist the new one.
+  */
+void Cache::onSharedEntryPathChanged(SharedEntry* entry)
+{
+   QMutexLocker locker(&this->mutex);
+
+   if (this->sharedEntries.contains(entry))
+      this->saveSharedEntries();
+}
+
 void Cache::deleteEntry(Entry* entry)
 {
    delete entry;

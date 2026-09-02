@@ -808,11 +808,55 @@ bool FileUpdater::processEvents(const QList<WatcherEvent>& events)
 
                if (destination)
                {
-                  entryToMove->moveInto(destination);
+                  // A shared root moved into another shared directory is merged into it, its shared entry is removed.
+                  if (entryToMove->isRoot())
+                  {
+                     entryToMove->getRoot()->moveInto(destination);
+
+                     // The entry of a shared file isn't transferred, the destination is rescanned to find the file.
+                     if (dynamic_cast<File*>(entryToMove))
+                     {
+                        QMutexLocker locker(&this->mutex);
+                        if (!this->entriesToScan.contains(destination))
+                           this->entriesToScan << destination;
+                     }
+                  }
+                  else
+                  {
+                     entryToMove->moveInto(destination);
+                  }
                }
                else if (entryToMove->isRoot())
                {
-                  entryToMove->getRoot()->setPath(pathDestination);
+                  // A shared root moved outside any other shared directory: only its location changes.
+                  // 'SharedEntry::path' is the directory containing the shared entry, the last element is its name (already renamed above).
+                  SharedEntry* sharedEntry = entryToMove->getRoot();
+                  sharedEntry->setPath(pathDestination.removeLastElement());
+
+                  if (this->dirWatcher)
+                  {
+                     this->dirWatcher->rmPath(pathOrigin.toString(false), pathOrigin.getFilename());
+
+                     const Common::Path newPath = sharedEntry->getPath();
+                     bool watchable = false;
+                     try
+                     {
+                        watchable = this->dirWatcher->addPath(newPath.toString(false), newPath.getFilename());
+                     }
+                     catch (FileSystemEntryNotFoundException&)
+                     {
+                     }
+
+                     QMutexLocker locker(&this->mutex);
+                     if (watchable)
+                        this->unwatchableEntries.removeOne(entryToMove);
+                     else
+                     {
+                        L_WARN(QString("This entry is not watchable: %1").arg(newPath.toString()));
+                        if (!this->unwatchableEntries.contains(entryToMove))
+                           this->unwatchableEntries << entryToMove;
+                     }
+                  }
                }
                else
                {

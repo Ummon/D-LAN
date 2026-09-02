@@ -126,16 +126,23 @@ void SharedEntry::del(bool invokeDelete)
 }
 
 /**
-  * Moves the content of this shared entry (file or directory) into the given directory.
+  * Moves the content of this shared entry into the given directory and removes the shared entry from the cache.
+  * For a shared directory, a sub directory with the same name is created in 'directory' and receives the content.
+  * For a shared file, the file entry is only removed: the caller must rescan 'directory' to pick it up.
+  * The shared entry and its root entry are deleted later by the 'FileUpdater'.
   */
-// void SharedEntry::moveInto(Directory* directory)
-// {
-//    // A directory can't be move in its own tree.
-//    if (this->getRootEntry()->getRoot() == this)
-//       return;
+void SharedEntry::moveInto(Directory* directory)
+{
+   // A shared entry can't be moved into its own tree.
+   if (directory->getRoot() == this)
+      return;
 
-//    this->getCache()->removeSharedEntry(this, directory->createSubDir(this->getRootEntry()->getName()));
-// }
+   Directory* rootDirectory = dynamic_cast<Directory*>(this->getRootEntry());
+   this->getCache()->removeSharedEntry(
+      this,
+      rootDirectory ? directory->createSubDir(rootDirectory->getName()) : nullptr
+   );
+}
 
 // void SharedEntry::moveInto(const QString& path)
 // {
@@ -145,6 +152,7 @@ void SharedEntry::del(bool invokeDelete)
 void SharedEntry::setPath(const Common::Path& path)
 {
    this->path = path;
+   this->getCache()->onSharedEntryPathChanged(this);
 }
 
 Cache* SharedEntry::getCache() const

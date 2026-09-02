@@ -636,6 +636,10 @@ void File::moveInto(Directory* directory)
    if (this->parentDirectory)
       this->parentDirectory->fileDeleted(this);
 
+   // A shared root must not be moved with this method, see 'SharedEntry::moveInto(..)'.
+   if (this->getRoot() != directory->getRoot())
+      this->setRootRecursively(directory->getRoot());
+
    directory->add(this);
    this->parentDirectory = directory;
 }

@@ -100,6 +100,7 @@ namespace FM
       void onChunkRemoved(const QSharedPointer<Chunk>& chunk);
 
       void onScanned(Directory* dir);
+      void onSharedEntryPathChanged(SharedEntry* entry);
 
    public slots:
       void deleteEntry(FM::Entry* entry);

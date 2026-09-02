@@ -92,7 +92,7 @@ namespace FM
 
       void del(bool invokeDelete = true);
 
-      // void moveInto(Directory* directory);
+      void moveInto(Directory* directory);
 
       // TODO: Common::Path should be used instead of QString.
       void setPath(const Common::Path& path);

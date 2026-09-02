@@ -242,7 +242,11 @@ void Directory::moveInto(Directory* directory)
       this->parentDirectory->subDirDeleted(this);
    }
 
-   directory->add(this);   
+   // A shared root must not be moved with this method, see 'SharedEntry::moveInto(..)'.
+   if (this->getRoot() != directory->getRoot())
+      this->setRootRecursively(directory->getRoot());
+
+   directory->add(this);
    (*directory) += this->getSize();
 
    this->parentDirectory = directory;
