@@ -411,7 +411,7 @@ void DownloadsTreeModel::onNewState(const Protos::GUI::State& state)
             last++;
 
          for (int j = i; j <= last; j++)
-            this->updateDirectoriesEntryDeleted(currentTree->getChild(j), currentTree->getChild(j)->getItem());
+            this->updateDirectoriesEntryDeleted(currentTree->getChild(j));
 
          this->beginRemoveRows(
             currentTree == this->root ?
@@ -625,23 +625,52 @@ DownloadsTreeModel::Tree* DownloadsTreeModel::update(Tree* entry, const Protos::
    return entry;
 }
 
-DownloadsTreeModel::Tree* DownloadsTreeModel::updateDirectoriesEntryDeleted(
-   Tree* entry,
-   const Protos::GUI::State::Download& oldDownload
-)
+bool DownloadsTreeModel::isErroneous(Protos::Common::DownloadStatus status)
+{
+   return status >= Protos::Common::DownloadStatus::UNKNOWN_PEER_SOURCE;
+}
+
+/**
+  * The counters for a single entry (a file or a directory from the core) which has the given status.
+  */
+DownloadsTreeModel::StatusCounters DownloadsTreeModel::countersOf(Protos::Common::DownloadStatus status)
+{
+   return {
+      isErroneous(status) ? 1 : 0,
+      status == Protos::Common::DownloadStatus::PAUSED ? 1 : 0,
+      status == Protos::Common::DownloadStatus::DOWNLOADING ? 1 : 0
+   };
+}
+
+/**
+  * The given entry is about to be deleted with all its content: the sizes and the counters of its ancestors are decreased.
+  */
+DownloadsTreeModel::Tree* DownloadsTreeModel::updateDirectoriesEntryDeleted(Tree* entry)
 {
    const qint64 size = entry->getItem().local_entry().size();
    const qint64 downloadedBytes = entry->getItem().downloaded_bytes();
 
-   return this->updateDirectories(entry, -size, -downloadedBytes, oldDownload.status());
+   // A directory node (id == 0) aggregates the counters of all the files it contains, an entry from the core counts for itself.
+   const StatusCounters counters =
+      entry->getItem().id() == 0 ?
+           StatusCounters { entry->nbErrorFiles, entry->nbPausedFiles, entry->nbDownloadingFiles }
+         : countersOf(entry->getItem().status());
+
+   return this->updateDirectories(
+      entry,
+      -size,
+      -downloadedBytes,
+      { -counters.nbErrorFiles, -counters.nbPausedFiles, -counters.nbDownloadingFiles }
+   );
 }
 
 DownloadsTreeModel::Tree* DownloadsTreeModel::updateDirectoriesNewEntry(Tree* entry)
 {
    const qint64 size = entry->getItem().local_entry().size();
    const qint64 downloadedBytes = entry->getItem().downloaded_bytes();
+   const Protos::Common::DownloadStatus status = entry->getItem().status();
 
-   return this->updateDirectories(entry, size, downloadedBytes);
+   return this->updateDirectories(entry, size, downloadedBytes, countersOf(status), status);
 }
 
 DownloadsTreeModel::Tree* DownloadsTreeModel::updateDirectoriesEntryModified(
@@ -655,26 +684,51 @@ DownloadsTreeModel::Tree* DownloadsTreeModel::updateDirectoriesEntryModified(
    const qint64 itemDownloadedBytesDelta =
       static_cast<qint64>(entry->getItem().downloaded_bytes()) - static_cast<qint64>(oldDownload.downloaded_bytes());
 
-   return this->updateDirectories(entry, itemSizeDelta, itemDownloadedBytesDelta, oldDownload.status());
+   const Protos::Common::DownloadStatus newStatus = entry->getItem().status();
+   const StatusCounters oldCounters = countersOf(oldDownload.status());
+   const StatusCounters newCounters = countersOf(newStatus);
+
+   return this->updateDirectories(
+      entry,
+      itemSizeDelta,
+      itemDownloadedBytesDelta,
+      {
+         newCounters.nbErrorFiles - oldCounters.nbErrorFiles,
+         newCounters.nbPausedFiles - oldCounters.nbPausedFiles,
+         newCounters.nbDownloadingFiles - oldCounters.nbDownloadingFiles
+      },
+      newStatus
+   );
 }
 
 /**
-  * Update all parent directories of the given item.
+  * Update all parent directories of the given entry.
   * The following data are updated:
   *  - Size
   *  - Bytes downloaded
+  *  - Number of erroneous, paused and downloading files
   *  - Status
+  * @param countersDelta Applied to the counters of each ancestor.
+  * @param errorStatus The new status of the entry when it's erroneous, it becomes the status of the ancestors
+  *        when they contain only this erroneous file. Give a non-erroneous status (default) if the entry isn't erroneous
+  *        or if it's unknown (deletion).
   */
 DownloadsTreeModel::Tree* DownloadsTreeModel::updateDirectories(
    Tree* entry,
    qint64 entrySizeDelta,
    qint64 entryDownloadedBytesDelta,
-   Protos::Common::DownloadStatus oldStatus
+   const StatusCounters& countersDelta,
+   Protos::Common::DownloadStatus errorStatus
 )
 {
-   Protos::Common::DownloadStatus newStatus = entry->getItem().status();
-
-   if (entrySizeDelta == 0 && entryDownloadedBytesDelta == 0 && newStatus == oldStatus)
+   if (
+      entrySizeDelta == 0 &&
+      entryDownloadedBytesDelta == 0 &&
+      countersDelta.nbErrorFiles == 0 &&
+      countersDelta.nbPausedFiles == 0 &&
+      countersDelta.nbDownloadingFiles == 0 &&
+      !isErroneous(errorStatus) // An erroneous entry may have switched to another kind of error.
+   )
       return entry;
 
    Tree* currentDirectory = entry->getParent();
@@ -688,48 +742,30 @@ DownloadsTreeModel::Tree* DownloadsTreeModel::updateDirectories(
          static_cast<qint64>(currentDirectory->getItem().downloaded_bytes()) + entryDownloadedBytesDelta
       );
 
-      currentDirectory->nbErrorFiles +=
-         oldStatus >= Protos::Common::DownloadStatus::UNKNOWN_PEER_SOURCE &&
-         newStatus < Protos::Common::DownloadStatus::UNKNOWN_PEER_SOURCE ?
-              -1
-            : (
-               oldStatus < Protos::Common::DownloadStatus::UNKNOWN_PEER_SOURCE &&
-               newStatus >= Protos::Common::DownloadStatus::UNKNOWN_PEER_SOURCE ? 1 : 0
-            );
-
-      currentDirectory->nbPausedFiles +=
-         oldStatus == Protos::Common::DownloadStatus::PAUSED &&
-         newStatus != Protos::Common::DownloadStatus::PAUSED ?
-              -1
-            : (
-               oldStatus != Protos::Common::DownloadStatus::PAUSED &&
-               newStatus == Protos::Common::DownloadStatus::PAUSED ? 1 : 0
-            );
-
-      currentDirectory->nbDownloadingFiles +=
-         oldStatus == Protos::Common::DownloadStatus::DOWNLOADING &&
-         newStatus != Protos::Common::DownloadStatus::DOWNLOADING ?
-              -1
-            : (
-               oldStatus != Protos::Common::DownloadStatus::DOWNLOADING &&
-               newStatus == Protos::Common::DownloadStatus::DOWNLOADING ? 1 : 0
-            );
+      currentDirectory->nbErrorFiles += countersDelta.nbErrorFiles;
+      currentDirectory->nbPausedFiles += countersDelta.nbPausedFiles;
+      currentDirectory->nbDownloadingFiles += countersDelta.nbDownloadingFiles;
 
       if (currentDirectory->getItem().local_entry().size() == currentDirectory->getItem().downloaded_bytes())
          currentDirectory->getItem().set_status(Protos::Common::DownloadStatus::COMPLETE);
-      else if (currentDirectory->nbErrorFiles == 1)
-         currentDirectory->getItem().set_status(newStatus);
-      else if (currentDirectory->nbErrorFiles == 0 && currentDirectory->nbPausedFiles > 0)
+      else if (currentDirectory->nbErrorFiles > 0)
+      {
+         // The status of the erroneous entry is shown if it's the only one or if the directory doesn't show an error yet.
+         // Otherwise the error currently shown is kept: we don't know the status of the other erroneous files.
+         if (isErroneous(errorStatus) && (currentDirectory->nbErrorFiles == 1 || !isErroneous(currentDirectory->getItem().status())))
+            currentDirectory->getItem().set_status(errorStatus);
+      }
+      else if (currentDirectory->nbPausedFiles > 0)
          currentDirectory->getItem().set_status(Protos::Common::DownloadStatus::PAUSED);
-      else if (currentDirectory->nbErrorFiles == 0 && currentDirectory->nbDownloadingFiles > 0)
+      else if (currentDirectory->nbDownloadingFiles > 0)
          currentDirectory->getItem().set_status(Protos::Common::DownloadStatus::DOWNLOADING);
-      else if (currentDirectory->nbErrorFiles == 0)
+      else
          currentDirectory->getItem().set_status(Protos::Common::DownloadStatus::QUEUED);
 
       const int currentDirectoryPosition = currentDirectory->getOwnPosition();
       emit dataChanged(
          this->createIndex(currentDirectoryPosition, 0, currentDirectory),
-         this->createIndex(currentDirectoryPosition, 3, currentDirectory)
+         this->createIndex(currentDirectoryPosition, this->columnCount() - 1, currentDirectory)
       );
 
       currentDirectory = currentDirectory->getParent();

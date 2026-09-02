@@ -100,14 +100,29 @@ namespace GUI
 
       Tree* moveUp(Tree* tree);
       Tree* update(Tree* tree, const Protos::GUI::State::Download& download);
-      Tree* updateDirectoriesEntryDeleted(Tree* entry, const Protos::GUI::State::Download& oldDownload);
+      /**
+        * Number of files per kind of status, see 'Tree::nbErrorFiles', 'Tree::nbPausedFiles' and 'Tree::nbDownloadingFiles'.
+        * Also used as a delta to apply to these counters.
+        */
+      struct StatusCounters
+      {
+         int nbErrorFiles = 0;
+         int nbPausedFiles = 0;
+         int nbDownloadingFiles = 0;
+      };
+
+      static bool isErroneous(Protos::Common::DownloadStatus status);
+      static StatusCounters countersOf(Protos::Common::DownloadStatus status);
+
+      Tree* updateDirectoriesEntryDeleted(Tree* entry);
       Tree* updateDirectoriesNewEntry(Tree* entry);
-      Tree* updateDirectoriesEntryModified(Tree* file, const Protos::GUI::State::Download& oldDownload);
+      Tree* updateDirectoriesEntryModified(Tree* entry, const Protos::GUI::State::Download& oldDownload);
       Tree* updateDirectories(
-         Tree* file,
-         qint64 fileSizeDelta,
-         qint64 fileDownloadedBytesDelta,
-         Protos::Common::DownloadStatus oldStatus = Protos::Common::DownloadStatus::QUEUED
+         Tree* entry,
+         qint64 entrySizeDelta,
+         qint64 entryDownloadedBytesDelta,
+         const StatusCounters& countersDelta,
+         Protos::Common::DownloadStatus errorStatus = Protos::Common::DownloadStatus::QUEUED
       );
 
       Tree* root;
