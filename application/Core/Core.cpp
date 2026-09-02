@@ -127,12 +127,12 @@ void Core::start()
 
 void Core::dumpWordIndex() const
 {
-   L_WARN(this->fileManager->getWordIndex_debug());
+   L_WARN(QString("Word index: %1").arg(this->fileManager->getWordIndex_debug()));
 }
 
 void Core::printSimilarFiles() const
 {
-   L_WARN(this->fileManager->getSimilarFiles_debug());
+   L_WARN(QString("Similar files: %1").arg(this->fileManager->getSimilarFiles_debug()));
 }
 
 void Core::changePassword(const QString& newPassword)

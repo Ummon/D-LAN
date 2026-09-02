@@ -73,6 +73,8 @@ Directory::~Directory()
 {
    QMutexLocker locker(&this->mutex);
 
+   L_DEBU(QString("Directory deleted: %1").arg(this->getAbsolutePath()));
+
    // A directory deleted without a prior call to 'del()' (by its parent directory or at shutdown) must still leave the indexes.
    if (!this->deletePending.exchange(true))
       this->getCache()->onEntryRemoved(this);

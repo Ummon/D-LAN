@@ -130,6 +130,8 @@ File::File(
 
 File::~File()
 {
+   L_DEBU(QString("File deleted: %1").arg(this->getAbsolutePath()));
+
    // A file deleted without a prior call to 'del()' (by its parent directory or at shutdown) must still leave the indexes.
    if (!this->deletePending.exchange(true))
       this->getCache()->onEntryRemoved(this);
@@ -140,8 +142,6 @@ File::~File()
    this->deleteAllChunks();
 
    this->closePhysicalFiles();
-
-   // L_DEBU(QString("File deleted : %1").arg(this->File::getAbsolutePath()));
 
    QMutexLocker locker(&this->mutex); // We wait that all the current access to this file are finished.
 }
