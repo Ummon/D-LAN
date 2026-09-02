@@ -508,14 +508,25 @@ int UDPListener::writeMessageToBuffer(Common::MessageHeader::MessageType type, c
   */
 Common::MessageHeader UDPListener::readDatagramToBuffer(QUdpSocket& socket, QHostAddress& peerAddress)
 {
-   quint16 port;
+   quint16 port = 0;
    const qint64 datagramSize = socket.readDatagram(this->buffer, BUFFER_SIZE, &peerAddress, &port);
    if (datagramSize == -1)
    {
       L_WARN(
-         QString("UDPListener::readDatagramToBuffer(..): Unable to read multicast datagram from address:port: %1:%2")
+         QString("UDPListener::readDatagramToBuffer(..): Unable to read a datagram (%1): %2")
+            .arg(&socket == &this->multicastSocket ? "multicast" : "unicast", socket.errorString())
+      );
+      return Common::MessageHeader();
+   }
+
+   // The header must be entirely checked before being parsed, otherwise stale bytes from a previous datagram would be read.
+   if (datagramSize < Common::MessageHeader::HEADER_SIZE)
+   {
+      L_WARN(
+         QString("The datagram received from %1:%2 is too small (%3 bytes) to contain a header")
             .arg(peerAddress.toString())
             .arg(port)
+            .arg(datagramSize)
       );
       return Common::MessageHeader();
    }
