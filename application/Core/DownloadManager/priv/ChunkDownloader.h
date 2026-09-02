@@ -115,7 +115,7 @@ namespace DM
       void downloadingEnded();
 
    private:
-      PM::IPeer* getTheFastestFreePeer();
+      PM::IPeer* getTheFastestFreePeer(bool removeDeadPeers = true);
       int getNumberOfFreePeer();
 
       LinkedPeers& linkedPeers;

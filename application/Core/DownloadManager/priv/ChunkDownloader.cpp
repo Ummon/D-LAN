@@ -221,7 +221,9 @@ void ChunkDownloader::run()
             // If a another peer exists and its speed is greater than our by a factor 'switch_to_another_peer_factor'
             // then we will try to switch to this peer.
             static const double SWITCH_TO_ANOTHER_PEER_FACTOR = SETTINGS.get<double>("switch_to_another_peer_factor");
-            PM::IPeer* peer = this->getTheFastestFreePeer();
+            // 'false': we are in the download thread, we must not alter 'linkedPeers' nor emit 'numberOfPeersChanged()' from here.
+            // Dead peers will be removed later by the main thread.
+            PM::IPeer* peer = this->getTheFastestFreePeer(false);
             if (
                peer &&
                peer != this->currentDownloadingPeer &&
@@ -561,9 +563,11 @@ void ChunkDownloader::downloadingEnded()
 }
 
 /**
-  * Get the fastest free peer, may remove dead peers.
+  * Get the fastest free peer.
+  * @param removeDeadPeers If true the dead peers are removed from the list and 'numberOfPeersChanged()' may be emitted.
+  *        Must be false when called from another thread than the main one, see 'run()'.
   */
-PM::IPeer* ChunkDownloader::getTheFastestFreePeer()
+PM::IPeer* ChunkDownloader::getTheFastestFreePeer(bool removeDeadPeers)
 {
    QMutexLocker locker(&this->mutex);
 
@@ -574,9 +578,12 @@ PM::IPeer* ChunkDownloader::getTheFastestFreePeer()
       PM::IPeer* peer = i.next();
       if (!peer->isAvailable())
       {
-         i.remove();
-         this->linkedPeers.rmLink(peer);
-         isTheNumberOfPeersHasChanged = true;
+         if (removeDeadPeers)
+         {
+            i.remove();
+            this->linkedPeers.rmLink(peer);
+            isTheNumberOfPeersHasChanged = true;
+         }
       }
       else if (this->occupiedPeersDownloadingChunk.isPeerFree(peer) && (!current || peer->getSpeed() > current->getSpeed()))
          current = peer;
