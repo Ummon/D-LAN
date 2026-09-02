@@ -212,10 +212,8 @@ void RemoteConnection::refresh()
       {
          Protos::Common::Entry entry;
          if (!chunk.getChunk()->populateEntry(&entry))
-         {
-            state.mutable_uploads()->RemoveLast();
             continue;
-         }
+
          entry.mutable_chunks()->Clear();
 
          const auto key = std::make_pair(chunksUploader->getPeerID(), entry);
