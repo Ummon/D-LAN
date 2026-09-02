@@ -50,7 +50,9 @@ ChunkDownloader::ChunkDownloader(
    transferRateCalculator(transferRateCalculator),
    threadPool(threadPool),
    chunkHash(chunkHash),
+   currentDownloadingPeer(nullptr),
    socket(nullptr),
+   chunkSize(0),
    offsetRequested(0),
    downloading(false),
    closeTheSocket(false),
@@ -228,9 +230,12 @@ void ChunkDownloader::run()
             deltaRead += bytesRead;
             bytesToWrite += bytesRead;
 
-            if (timer.elapsed() > TIME_PERIOD_CHOOSE_ANOTHER_PEER)
+            const qint64 elapsed = timer.elapsed();
+            if (elapsed > TIME_PERIOD_CHOOSE_ANOTHER_PEER)
             {
-               this->currentDownloadingPeer->setSpeed(deltaRead / timer.elapsed() * 1000);
+               // '1000' multiplies the dividend: dividing first would truncate the speed to a multiple of
+               // 1000 B/s and anything slower than 1 KB/s would be measured as 0.
+               this->currentDownloadingPeer->setSpeed(1000LL * deltaRead / elapsed);
                L_DEBU(
                   QString("Check for a better peer for the chunk: %1, current peer: %2 . . .")
                      .arg(this->chunk->toStringLog(), this->currentDownloadingPeer->toStringLog())
@@ -337,8 +342,9 @@ void ChunkDownloader::run()
       this->lastTransferStatus = Protos::Common::DownloadStatus::HASH_MISMATCH;
    }
 
-   if (timer.elapsed() > MINIMUM_DELTA_TIME_TO_COMPUTE_SPEED)
-      this->currentDownloadingPeer->setSpeed(deltaRead / timer.elapsed() * 1000);
+   const qint64 elapsed = timer.elapsed();
+   if (elapsed > MINIMUM_DELTA_TIME_TO_COMPUTE_SPEED)
+      this->currentDownloadingPeer->setSpeed(1000LL * deltaRead / elapsed);
 
    this->socket->setReadBufferSize(0);
    this->socket->moveToThread(this->mainThread);
