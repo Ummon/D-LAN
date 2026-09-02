@@ -285,8 +285,14 @@ DirWatcherWin::Dir::Dir(const HANDLE handle, const HANDLE event, const QString& 
 
 DirWatcherWin::Dir::~Dir()
 {
-   // Should we wait with GetOverlappedResult or do a test with HasOverlappedIoCompleted ?
-   CancelIo(this->handle);
+   // The pending 'ReadDirectoryChangesW' writes asynchronously into 'overlapped' and 'buffer' which are part of this
+   // object: the cancellation must be complete before the memory is freed, otherwise the heap gets corrupted.
+   // 'CancelIoEx' is used because 'CancelIo' only cancels the requests issued by the calling thread.
+   if (CancelIoEx(this->handle, &this->overlapped) || GetLastError() != ERROR_NOT_FOUND)
+   {
+      DWORD bytesTransferred;
+      GetOverlappedResult(this->handle, &this->overlapped, &bytesTransferred, TRUE);
+   }
 
    if (!CloseHandle(this->handle))
       L_ERRO(QString("CloseHandle(dir.file) return an error: %1").arg(GetLastError()));
