@@ -42,7 +42,8 @@ DirDownload::DirDownload(
    const Protos::Common::Entry& localEntry
 ) :
    Download(fileManager, peerSource, remoteEntry, localEntry),
-   occupiedPeersAskingForEntries(occupiedPeersAskingForEntries)
+   occupiedPeersAskingForEntries(occupiedPeersAskingForEntries),
+   peerOccupied(false)
 {
    L_DEBU(QString("New DirDownload: source = %1, remoteEntry : \n%2\nlocalEntry : \n%3").
       arg(this->peerSource->toStringLog()).
@@ -55,9 +56,8 @@ DirDownload::~DirDownload()
 {
    this->setStatus(Protos::Common::DownloadStatus::DELETED);
 
-   this->occupiedPeersAskingForEntries.setPeerAsFree(this->peerSource);
-
    this->getEntriesResult.clear();
+   this->freePeer();
 }
 
 void DirDownload::start()
@@ -76,8 +76,13 @@ bool DirDownload::retrieveEntries()
    if (
       this->isStatusErroneous() ||
       this->status == Protos::Common::DownloadStatus::ENTRY_NOT_FOUND ||
-      this->status == Protos::Common::DownloadStatus::DELETED
+      this->status == Protos::Common::DownloadStatus::DELETED ||
+      !this->getEntriesResult.isNull() // A request is already in progress, we must not cancel it.
    )
+      return false;
+
+   // Checked before asking the peer to avoid creating a socket for nothing.
+   if (!this->occupiedPeersAskingForEntries.isPeerFree(this->peerSource))
       return false;
 
    Protos::Core::GetEntries getEntries;
@@ -89,6 +94,8 @@ bool DirDownload::retrieveEntries()
       this->getEntriesResult.clear();
       return false;
    }
+
+   this->peerOccupied = true;
 
    connect(this->getEntriesResult.data(), &PM::IGetEntriesResult::result, this, &DirDownload::result);
    connect(this->getEntriesResult.data(), &PM::IGetEntriesResult::timeout, this, &DirDownload::resultTimeout);
@@ -153,7 +160,7 @@ void DirDownload::result(const Protos::Core::GetEntriesResult& entries)
       }
 
       this->getEntriesResult.clear();
-      this->occupiedPeersAskingForEntries.setPeerAsFree(this->peerSource);
+      this->freePeer();
       QTimer::singleShot(RETRY_GET_ENTRIES_PERIOD, this, &DirDownload::retryToGetEntries);
    }
 }
@@ -164,8 +171,22 @@ void DirDownload::resultTimeout()
    this->setStatus(Protos::Common::DownloadStatus::UNABLE_TO_GET_ENTRIES);
 
    this->getEntriesResult.clear();
-   this->occupiedPeersAskingForEntries.setPeerAsFree(this->peerSource);
+   this->freePeer();
    QTimer::singleShot(RETRY_GET_ENTRIES_PERIOD, this, &DirDownload::retryToGetEntries);
+}
+
+/**
+  * Release the peer source from 'occupiedPeersAskingForEntries' only if this download is the one occupying it.
+  * Other 'DirDownload' with the same peer source may be asking for entries.
+  */
+void DirDownload::freePeer()
+{
+   if (!this->peerOccupied)
+      return;
+
+   // Reset before 'setPeerAsFree(..)' because it may synchronously trigger 'retrieveEntries()'.
+   this->peerOccupied = false;
+   this->occupiedPeersAskingForEntries.setPeerAsFree(this->peerSource);
 }
 
 void DirDownload::createDirectory()

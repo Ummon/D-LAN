@@ -64,9 +64,11 @@ namespace DM
       void resultTimeout();
 
    private:
+      void freePeer();
       void createDirectory();
 
       OccupiedPeers& occupiedPeersAskingForEntries;
       QSharedPointer<PM::IGetEntriesResult> getEntriesResult;
+      bool peerOccupied; // True if this download currently occupies its peer source in 'occupiedPeersAskingForEntries'.
    };
 }
