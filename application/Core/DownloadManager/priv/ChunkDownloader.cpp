@@ -539,7 +539,11 @@ void ChunkDownloader::getChunkTimeout()
 
 void ChunkDownloader::downloadingEnded()
 {
-   L_DEBU(QString("Downloading ended, chunk: %1%2").arg(this->chunk->toStringLog()).arg(this->chunk->isComplete() ? "" : " Not complete!"));
+   L_DEBU(
+      QString("Downloading ended, chunk: %1%2")
+         .arg(this->chunk.isNull() ? this->chunkHash.toStrShort() : this->chunk->toStringLog())
+         .arg(this->isComplete() ? "" : " Not complete!")
+   );
 
    if (!this->socket.isNull())
       this->socket.clear();

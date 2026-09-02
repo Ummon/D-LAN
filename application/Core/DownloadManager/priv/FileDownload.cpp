@@ -422,6 +422,18 @@ bool FileDownload::updateStatus()
    if (Download::updateStatus())
       return true;
 
+   // If at least one chunk is downloading, the status is DOWNLOADING whatever the states of the other chunks.
+   // This must be checked first: 'reset()' below must never be called while a 'ChunkDownloader' thread is using its chunk.
+   // The transfer errors of the other chunks are kept and will be handled when the last download ends.
+   for (const auto& chunkDownloader : std::as_const(this->chunkDownloaders))
+   {
+      if (!chunkDownloader.isNull() && chunkDownloader->isDownloading())
+      {
+         this->setStatus(Protos::Common::DownloadStatus::DOWNLOADING);
+         return false;
+      }
+   }
+
    Protos::Common::DownloadStatus newStatus = this->status;
 
    if (this->nbHashesKnown == NB_CHUNK)
@@ -434,12 +446,7 @@ bool FileDownload::updateStatus()
       if (chunkDownloader.isNull())
          continue;
 
-      if (chunkDownloader->isDownloading())
-      {
-         this->setStatus(Protos::Common::DownloadStatus::DOWNLOADING);
-         return false;
-      }
-      else if (chunkDownloader->getLastTransferStatus() >= 0x20)
+      if (chunkDownloader->getLastTransferStatus() >= 0x20)
       {
          newStatus = chunkDownloader->getLastTransferStatus();
          chunkDownloader->resetLastTransferStatus();
@@ -712,12 +719,20 @@ bool FileDownload::createFile()
    return true;
 }
 
+/**
+  * A chunk isn't given to a 'ChunkDownloader' currently downloading (may happen when restarting an erroneous download):
+  * its chunk is in use by the download thread and must not be replaced. The chunk stays in 'chunksWithoutDownloader'.
+  */
 void FileDownload::giveChunksToDownloaders()
 {
    for (QMutableMapIterator<int, QSharedPointer<FM::IChunk>> i(this->chunksWithoutDownloader); i.hasNext();)
    {
       auto chunk = i.next();
-      if (chunk.key() < this->chunkDownloaders.size() && !this->chunkDownloaders[chunk.key()].isNull())
+      if (
+         chunk.key() < this->chunkDownloaders.size() &&
+         !this->chunkDownloaders[chunk.key()].isNull() &&
+         !this->chunkDownloaders[chunk.key()]->isDownloading()
+      )
       {
          this->chunkDownloaders[chunk.key()]->setChunk(chunk.value());
          i.remove();
