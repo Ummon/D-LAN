@@ -86,11 +86,19 @@ void UploadManager::getChunks(
 )
 {
    QSharedPointer<ChunksUploader> upload(new ChunksUploader(chunksParams, socket, this->transferRateCalculator));
-   connect(upload.data(), &Common::Timeoutable::timeout, this, &UploadManager::uploadTimeout);
+
+   // The connection must be queued: 'uploadTimeout()' releases the last reference to the uploader and thus
+   // deletes it. A direct call would run from 'Common::Timeoutable::timeoutSlot()', that is from within the
+   // timer event of the very 'QTimer' emitting the signal, and would delete it under its own event handler.
+   connect(upload.data(), &Common::Timeoutable::timeout, this, &UploadManager::uploadTimeout, Qt::QueuedConnection);
+
    this->uploads << upload;
    this->threadPool.run(upload.toWeakRef());
 }
 
+/**
+  * Called by the event loop, see the queued connection in 'getChunks(..)'.
+  */
 // TODO: test timeout.
 void UploadManager::uploadTimeout()
 {
