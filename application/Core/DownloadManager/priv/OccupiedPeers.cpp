@@ -77,7 +77,10 @@ int OccupiedPeers::nbOccupiedPeers() const
    return this->occupiedPeers.size();
 }
 
-const QSet<PM::IPeer*>& OccupiedPeers::getOccupiedPeers() const
+/**
+  * Returns a copy: the internal set may change as soon as the mutex is released.
+  */
+QSet<PM::IPeer*> OccupiedPeers::getOccupiedPeers() const
 {
    QMutexLocker locker(&this->mutex);
    return this->occupiedPeers;
