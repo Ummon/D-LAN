@@ -186,29 +186,35 @@ void FilePool::release(QFile* file, bool forceToClose)
 
 void FilePool::forceReleaseAll(const QString& path)
 {
+   // The 'delete' below can take a while (because of flushing data),
+   // we avoid to block the access to the 'FilePool' by not holding the mutex.
+   for (QFile* file : this->takeAll(path))
+   {
+      L_DEBU(QString("FilePool::forceReleaseAll(%1): file forced to release and close").arg(path));
+      delete file;
+   }
+}
+
+/**
+  * Remove all the opened files matching the given path from the pool without closing them.
+  * The caller owns the returned files and must delete them, ideally without holding any lock because
+  * closing a file may block for a while (flushing data).
+  */
+QList<QFile*> FilePool::takeAll(const QString& path)
+{
    QMutexLocker locker(&this->mutex);
 
-   QList<QFile*> filesToDelete;
-
+   QList<QFile*> files;
    for (QMutableListIterator<OpenedFile> i(this->files); i.hasNext();)
    {
       OpenedFile& openedFile = i.next();
       if (openedFile.path == path)
       {
-         L_DEBU(QString("FilePool::forceReleaseAll(%1): file forced to release and close").arg(path));
-         filesToDelete << openedFile.file;
+         files << openedFile.file;
          i.remove();
       }
    }
-
-   if (!filesToDelete.isEmpty())
-   {
-      locker.unlock();
-      // The 'delete' below can take a while (because of flushing data),
-      // we avoid to block the access to the 'FilePool' by unlocking the mutex.
-      for (QListIterator<QFile*> i(filesToDelete); i.hasNext();)
-         delete i.next();
-   }
+   return files;
 }
 
 void FilePool::tryToDeleteReleasedFiles()

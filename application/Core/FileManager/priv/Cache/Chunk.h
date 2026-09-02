@@ -154,7 +154,10 @@ inline bool FM::Chunk::write(const char* buffer, int nbBytes)
    const bool COMPLETE = this->knownBytes == CURRENT_CHUNK_SIZE;
 
    if (COMPLETE)
+   {
+      this->file->flushWrittenData(); // To avoid a long flush when the file is closed.
       this->file->chunkComplete(this);
+   }
 
    return COMPLETE;
 }

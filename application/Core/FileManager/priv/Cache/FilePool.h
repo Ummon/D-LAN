@@ -43,6 +43,7 @@ namespace FM
       QFile* open(const QString& path, QIODevice::OpenMode mode, bool* fileCreated = nullptr);
       void release(QFile* file, bool forceToClose = false);
       void forceReleaseAll(const QString& path);
+      QList<QFile*> takeAll(const QString& path);
 
    private slots:
       void tryToDeleteReleasedFiles();

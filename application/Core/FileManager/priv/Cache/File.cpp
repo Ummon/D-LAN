@@ -23,6 +23,8 @@ using namespace FM;
    #include <io.h>
    #include <windows.h>
    #include <WinIoCtl.h>
+#else
+   #include <unistd.h>
 #endif
 
 #include <QString>
@@ -495,6 +497,31 @@ qint64 File::write(const char* buffer, int nbBytes, qint64 offset)
 }
 
 /**
+  * Ask the OS to write the cached data of the file to the disk.
+  * Called by 'Chunk::write(..)' each time a chunk is complete: without this the whole cached data would be flushed
+  * in one go when the file is closed in 'setAsComplete()', it can take several seconds for a big file and during
+  * this time the peer is unable to answer to the other peers.
+  * Only the calling thread (a downloader) waits for the disk.
+  */
+void File::flushWrittenData()
+{
+   QMutexLocker locker(&this->writeLock);
+
+   if (!this->fileInWriteMode)
+      return;
+
+   const int fd = this->fileInWriteMode->handle();
+   if (fd == -1)
+      return;
+
+#ifdef Q_OS_WIN32
+   _commit(fd);
+#else
+   fsync(fd);
+#endif
+}
+
+/**
   * Fill the buffer with the read bytes from the given offset.
   * If the end of file is reached the buffer will be partially filled.
   * @param buffer The buffer where my data will be put after the reading.
@@ -682,23 +709,26 @@ void File::setAsComplete()
 
    if (Global::isFileUnfinished(this->name))
    {
-      if (this->numDataReader > 0 || this->numDataWriter > 0)
+      const QString oldPath = this->getAbsolutePath();
+      const QString newPath = Global::removeUnfinishedSuffix(oldPath);
+
+      // The opened handles are taken from the pool while holding the read and write locks but they are closed
+      // once all the locks are released: on Windows 'CloseHandle(..)' flushes all the cached data and can block
+      // for several seconds with a big file (see 'flushWrittenData()' which limits the amount of data to flush here).
+      // Nothing else must wait for us during this time.
+      QList<QFile*> filesToClose;
       {
          QMutexLocker lockerWrite(&this->writeLock);
          QMutexLocker lockerRead(&this->readLock);
-         // On Windows with some kinds of device like external hard drive this call can suspend the execution
-         // for a long time like 10 seconds ('CloseHandle(..)' will flush all data and wait).
-         // Some actions will be also blocks by the mutex like browsing the parent directory.
-         // The workaround is to temporary unlock the mutex during this operation.
-         this->mutex.unlock();
-         this->getCache()->getFilePool().forceReleaseAll(this->getAbsolutePath());
-         this->mutex.lock();
+         filesToClose = this->getCache()->getFilePool().takeAll(oldPath);
          this->fileInReadMode = nullptr;
          this->fileInWriteMode = nullptr;
       }
 
-      const QString oldPath = this->getAbsolutePath();
-      const QString newPath = Global::removeUnfinishedSuffix(oldPath);
+      this->mutex.unlock();
+      for (QFile* file : std::as_const(filesToClose))
+         delete file;
+      this->mutex.lock();
 
       if (!Common::Global::rename(oldPath, newPath))
       {
