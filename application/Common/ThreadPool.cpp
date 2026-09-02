@@ -95,9 +95,13 @@ void Thread::run()
       }
       this->mutex.unlock();
 
-      QSharedPointer<IRunnable> runnableSharedPointer = this->runnable.toStrongRef();
-      if (runnableSharedPointer)
-         runnableSharedPointer->run();
+      {
+         // The strong reference must be released before 'active' is set to false: once 'waitRunnableFinished()' returns,
+         // the owner may drop its own reference and if ours was still alive the runnable object would be destroyed from this thread.
+         QSharedPointer<IRunnable> runnableSharedPointer = this->runnable.toStrongRef();
+         if (runnableSharedPointer)
+            runnableSharedPointer->run();
+      }
 
       this->mutex.lock();
       this->active = false;
