@@ -450,9 +450,13 @@ void PeerMessageSocket::onNewMessage(const Common::Message& message)
                }
                else
                {
+                  // A single snapshot for both the answer and the uploader: 'getKnownBytes()' may grow while
+                  // the chunk is being uploaded (it may be downloaded at the same time) but the peer reads
+                  // exactly the announced amount, no more may be sent. See 'UM::ChunksUploader::run()'.
+                  const int knownBytes = chunk->getKnownBytes();
                   result->set_status(Protos::Core::GetChunksResult::ChunkResult::OK);
-                  result->set_chunk_size(chunk->getKnownBytes());
-                  chunksParams << GetChunkParams(chunk, chunkNeeded.offset(), chunkNeeded.file_bytes_owned());
+                  result->set_chunk_size(knownBytes);
+                  chunksParams << GetChunkParams(chunk, chunkNeeded.offset(), knownBytes, chunkNeeded.file_bytes_owned());
                }
             }
          }

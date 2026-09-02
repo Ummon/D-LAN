@@ -111,6 +111,16 @@ void ChunksUploader::run()
 
          while (bytesRead = reader->read(buffer.data(), chunk.getOffset()))
          {
+            // 'IChunk::getKnownBytes()', which bounds the reader, may have grown since the size was announced
+            // to the peer: a chunk may be uploaded while being downloaded. Only the announced amount may be
+            // sent, the peer reads exactly this many bytes and would take the next ones for a message header.
+            const int bytesRemaining = chunk.getEndOffset() - chunk.getOffset();
+            if (bytesRead > bytesRemaining)
+               bytesRead = bytesRemaining;
+
+            if (bytesRead <= 0)
+               break;
+
             const int bytesSent = this->socket->write(buffer.constData(), bytesRead);
 
             if (bytesSent == -1)
@@ -145,6 +155,20 @@ void ChunksUploader::run()
             }
 
             this->transferRateCalculator.addData(bytesSent);
+         }
+
+         if (chunk.getOffset() < chunk.getEndOffset())
+         {
+            // The peer is waiting for the remaining bytes and there is no way to tell it the upload has been
+            // truncated: closing the socket is the only way to avoid it reading the next messages as data.
+            L_WARN(
+               QString("Only %1 of the %2 announced bytes could be read, closing the socket. Chunk: %3")
+                  .arg(chunk.getOffset())
+                  .arg(chunk.getEndOffset())
+                  .arg(chunk.getChunk()->toStringLog())
+            );
+            this->closeTheSocket = true;
+            goto end;
          }
       }
    }
