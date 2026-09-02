@@ -64,8 +64,12 @@ Common::Hash ChunksUploader::getPeerID() const
    return this->socket->getRemotePeerID();
 }
 
+/**
+  * May be called from another thread than the one running 'run()', see 'UploadManager::getChunksUploaders()'.
+  */
 QList<PM::GetChunkParams> ChunksUploader::getChunks() const
 {
+   QMutexLocker locker(&this->mutex);
    return this->chunks;
 }
 
@@ -85,8 +89,14 @@ void ChunksUploader::run()
 
    try
    {
-      for (auto& chunk : this->chunks)
+      // 'this->chunks' is never iterated by reference: 'getChunks()' may copy it from another thread at any
+      // moment, the detach occurring at the next write would then invalidate any reference into it. Only the
+      // current element is kept as a local copy, the shared list is written under the mutex.
+      for (int i = 0; i < this->chunks.size(); i++)
       {
+         // Only this thread writes the elements, reading one without the mutex is safe.
+         PM::GetChunkParams chunk = this->chunks.at(i);
+
          L_DEBU(
             QString("Starting uploading a chunk from offset %1: %2")
                .arg(chunk.getOffset())
@@ -110,15 +120,15 @@ void ChunksUploader::run()
                goto end;
             }
 
-            this->mutex.lock();
-            if (this->toStop)
-            {
-               this->mutex.unlock();
-               goto end;
-            }
-
             chunk.setOffset(chunk.getOffset() + bytesSent);
-            this->mutex.unlock();
+
+            {
+               QMutexLocker locker(&this->mutex);
+               if (this->toStop)
+                  goto end;
+
+               this->chunks[i].setOffset(chunk.getOffset());
+            }
 
             while (socket->bytesToWrite() > SOCKET_BUFFER_SIZE)
             {
