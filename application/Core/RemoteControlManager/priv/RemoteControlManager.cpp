@@ -78,10 +78,18 @@ void RemoteControlManager::newConnection()
       return;
    }
 
-   if (static_cast<quint32>(this->connections.size()) > SETTINGS.get<quint32>("remote_max_nb_connection"))
+   // A connection which has just been closed can still be in the list, it is waiting to be deleted,
+   // see 'RemoteConnection::onDisconnected()'. Such a connection doesn't take a slot anymore.
+   quint32 nbCurrentConnections = 0;
+   for (QListIterator<RemoteConnection*> i(this->connections); i.hasNext();)
+      if (i.next()->isConnected())
+         nbCurrentConnections++;
+
+   if (nbCurrentConnections >= SETTINGS.get<quint32>("remote_max_nb_connection"))
    {
       L_WARN("Cannot handle new connection, too many connection");
-      delete socket;
+      socket->close();
+      socket->deleteLater();
       return;
    }
 
