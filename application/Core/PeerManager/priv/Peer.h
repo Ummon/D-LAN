@@ -102,13 +102,29 @@ namespace PM
       void unblock();
 
    protected:
+      /**
+        * Both must be called with 'mutex' held.
+        */
       bool isVersionCompatible() const { return this->protocolVersion == Common::Constants::PROTOCOL_VERSION; }
+      quint32 getSpeedUnlocked() const;
 
+      /**
+        * A peer is updated from the main thread ('update(..)', 'consideredDead()', ...) but it is also read and
+        * written from the downloading threads, see 'DM::ChunkDownloader::run()' which calls 'getNick()',
+        * 'toStringLog()', 'getSpeed()', 'setSpeed(..)', 'isAvailable()' and 'block(..)'.
+        * Every field below is therefore guarded by 'mutex', 'ID' excepted because it never changes after
+        * the construction.
+        * No signal must be emitted nor any other object called while holding 'mutex':
+        * 'PeerManager::peerUnblocked()' calls 'isAvailable()' back and 'DM::ChunkDownloader' takes its own
+        * mutex before asking a peer if it's available.
+        */
       mutable QMutex mutex;
 
+      // Only accessed from the main thread, not guarded by 'mutex'.
       ConnectionPool connectionPool;
 
-      Common::Hash ID;
+      const Common::Hash ID;
+
       QHostAddress IP;
       quint16 port;
       QString nick;
@@ -118,10 +134,10 @@ namespace PM
       quint32 uploadRate;
 
       QElapsedTimer speedTimer;
-      quint32 speed; // [bytes/s]
+      mutable quint32 speed; // [bytes/s]. Reset to 'MAX_SPEED' by 'getSpeedUnlocked()' when outdated.
 
       bool alive;
-      QTimer aliveTimer;
+      QTimer aliveTimer; // Main thread only.
 
       bool blocked;
       QString blockedReason;

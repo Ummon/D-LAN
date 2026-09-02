@@ -28,24 +28,33 @@ using namespace PM;
 PM::PeerSelf::PeerSelf(PM::PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager) :
    Peer(peerManager, fileManager, loadID(), SETTINGS.get<QString>("nick"))
 {
-   this->IP = QHostAddress::LocalHost;
-   this->port = SETTINGS.get<quint32>("unicast_base_port");
-   this->alive = true;
-   this->protocolVersion = Common::Constants::PROTOCOL_VERSION;
+   const QHostAddress IP(QHostAddress::LocalHost);
+   const quint16 port = SETTINGS.get<quint32>("unicast_base_port");
 
-   this->connectionPool.setIP(this->IP, this->port);
+   {
+      QMutexLocker locker(&this->mutex);
+      this->IP = IP;
+      this->port = port;
+      this->alive = true;
+      this->protocolVersion = Common::Constants::PROTOCOL_VERSION;
+   }
+
+   this->connectionPool.setIP(IP, port);
 
    L_USER(QString(tr("Our current ID: %1")).arg(this->ID.toStr()));
 }
 
 void PeerSelf::setNick(const QString& nick)
 {
-   if (nick.length() > MAX_NICK_LENGTH)
-      this->nick = nick.left(MAX_NICK_LENGTH);
-   else
-      this->nick = nick;
+   const QString newNick = nick.length() > MAX_NICK_LENGTH ? nick.left(MAX_NICK_LENGTH) : nick;
 
-   SETTINGS.set("nick", this->nick);
+   {
+      QMutexLocker locker(&this->mutex);
+      this->nick = newNick;
+   }
+
+   // The settings are saved without holding 'mutex'.
+   SETTINGS.set("nick", newNick);
 
    if (!SETTINGS.save())
       L_ERRO("Unable to save settings");

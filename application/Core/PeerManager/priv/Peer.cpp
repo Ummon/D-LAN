@@ -63,6 +63,8 @@ Peer::Peer(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManage
   */
 QString Peer::toStringLog() const
 {
+   QMutexLocker locker(&this->mutex);
+
    return
       QString("%1 %2 %3:%4 %5 %6/s")
          .arg(
@@ -72,9 +74,12 @@ QString Peer::toStringLog() const
          )
          .arg(this->port)
          .arg(this->alive ? "<alive>" : "<dead>")
-         .arg(Common::Global::formatByteSize(const_cast<Peer*>(this)->getSpeed(), 4));
+         .arg(Common::Global::formatByteSize(this->getSpeedUnlocked(), 4));
 }
 
+/**
+  * 'ID' never changes after the construction, no need to lock.
+  */
 Common::Hash Peer::getID() const
 {
    return this->ID;
@@ -82,43 +87,54 @@ Common::Hash Peer::getID() const
 
 QHostAddress Peer::getIP() const
 {
+   QMutexLocker locker(&this->mutex);
    return this->IP;
 }
 
 quint16 Peer::getPort() const
 {
+   QMutexLocker locker(&this->mutex);
    return this->port;
 }
 
 QString Peer::getNick() const
 {
+   QMutexLocker locker(&this->mutex);
    return this->nick;
 }
 
 QString Peer::getCoreVersion() const
 {
+   QMutexLocker locker(&this->mutex);
    return this->coreVersion;
 }
 
 quint64 Peer::getSharingAmount() const
 {
+   QMutexLocker locker(&this->mutex);
    return this->sharingAmount;
 }
 
 quint32 Peer::getDownloadRate() const
 {
+   QMutexLocker locker(&this->mutex);
    return this->downloadRate;
 }
 
 quint32 Peer::getUploadRate() const
 {
+   QMutexLocker locker(&this->mutex);
    return this->uploadRate;
 }
 
 quint32 Peer::getSpeed()
 {
    QMutexLocker locker(&this->mutex);
+   return this->getSpeedUnlocked();
+}
 
+quint32 Peer::getSpeedUnlocked() const
+{
    static const quint32 lanSpeed = SETTINGS.get<quint32>("lan_speed");
 
    // In [ms].
@@ -146,12 +162,13 @@ void Peer::setSpeed(quint32 newSpeed)
 
 void Peer::block(int duration, const QString& reason)
 {
-   QMutexLocker locker(&this->mutex);
+   {
+      QMutexLocker locker(&this->mutex);
+      this->blocked = true;
+      this->blockedReason = reason;
+   }
 
-   this->blocked = true;
-   this->blockedReason = reason;
    this->blockedTimer.setInterval(duration);
-
    QMetaObject::invokeMethod(&this->blockedTimer, "start");
 }
 
@@ -184,19 +201,23 @@ void Peer::update(
    quint32 protocolVersion
 )
 {
-   this->alive = true;
+   {
+      QMutexLocker locker(&this->mutex);
+
+      this->alive = true;
+      this->IP = IP;
+      this->port = port;
+      this->nick = nick;
+      this->coreVersion = coreVersion;
+      this->sharingAmount = sharingAmount;
+      this->downloadRate = downloadRate;
+      this->uploadRate = uploadRate;
+      this->protocolVersion = protocolVersion;
+   }
+
+   // Both are owned by the main thread, they must not be touched while holding 'mutex'.
    this->aliveTimer.start();
-
-   this->IP = IP;
-   this->port = port;
-   this->nick = nick;
-   this->coreVersion = coreVersion;
-   this->sharingAmount = sharingAmount;
-   this->downloadRate = downloadRate;
-   this->uploadRate = uploadRate;
-   this->protocolVersion = protocolVersion;
-
-   this->connectionPool.setIP(this->IP, this->port);
+   this->connectionPool.setIP(IP, port);
 }
 
 void Peer::setAsDead()
@@ -246,13 +267,21 @@ void Peer::newConnexion(QTcpSocket* tcpSocket)
 
 void Peer::consideredDead()
 {
+   // 'toStringLog()' takes 'mutex' itself, it must be called before locking below.
    L_DEBU(QString("Peer is dead: %1").arg(this->toStringLog()));
    this->connectionPool.closeAllSocket();
+
+   QMutexLocker locker(&this->mutex);
    this->alive = false;
 }
 
 void Peer::unblock()
 {
-   this->blocked = false;
+   {
+      QMutexLocker locker(&this->mutex);
+      this->blocked = false;
+   }
+
+   // Emitted without holding 'mutex': 'PeerManager::peerUnblocked()' calls 'isAvailable()' back.
    emit unblocked();
 }
