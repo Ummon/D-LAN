@@ -21,7 +21,6 @@ using namespace CS;
 
 #include <QDateTime>
 #include <QRandomGenerator64>
-#include <QRegularExpression>
 
 #include <Protos/common.pb.h>
 #include <Protos/core_protocol.pb.h>
@@ -54,7 +53,7 @@ ChatSystem::ChatSystem(
    if (!QDir(Common::Global::getDataFolder(ChatMessages::FOLDER_TYPE_MESSAGES_SAVED)).exists(Common::Constants::DIR_CHAT_MESSAGES))
       QDir(Common::Global::getDataFolder(ChatMessages::FOLDER_TYPE_MESSAGES_SAVED)).mkdir(Common::Constants::DIR_CHAT_MESSAGES);
 
-   this->loadChatMessagesFromAllFiles();
+   this->loadChatMessages(); // The room messages are loaded when joining the rooms, see 'loadRoomListFromSettings()'.
 
    connect(this->networkListener.data(), &NL::INetworkListener::received, this, &ChatSystem::received);
    connect(this->networkListener.data(), &NL::INetworkListener::IMAliveMessageToBeSend, this, &ChatSystem::IMAliveMessageToBeSend);
@@ -162,15 +161,25 @@ QList<IChatSystem::ChatRoom> ChatSystem::getRooms() const
 
 void ChatSystem::joinRoom(const QString& roomName)
 {
+   if (this->join(roomName))
+      this->saveRoomListToSettings();
+}
+
+/**
+  * Join the given room without saving the room list to the settings.
+  * @return 'true' if the room has been joined, 'false' if it was already joined.
+  */
+bool ChatSystem::join(const QString& roomName)
+{
    Room& room = this->rooms[roomName];
 
-   if (!room.joined)
-   {
-      room.joined = true;
-      this->saveRoomListToSettings();
-      this->loadChatMessages(roomName);
-      this->retrieveLastChatMessagesFromPeers(room.peers.values(), roomName);
-   }
+   if (room.joined)
+      return false;
+
+   room.joined = true;
+   this->loadChatMessages(roomName);
+   this->retrieveLastChatMessagesFromPeers(room.peers.values(), roomName);
+   return true;
 }
 
 void ChatSystem::leaveRoom(const QString& roomName)
@@ -367,12 +376,12 @@ void ChatSystem::removeDeadPeersFromRooms()
 }
 
 /**
-  * Join all the room listed in the settings.
+  * Join all the rooms listed in the settings.
   */
 void ChatSystem::loadRoomListFromSettings()
 {
    foreach (QString roomName, SETTINGS.getRepeated<QString>("joined_chat_rooms"))
-      this->joinRoom(roomName);
+      this->join(roomName);
 }
 
 /**
@@ -410,32 +419,6 @@ void ChatSystem::saveChatMessages(const QString& roomName)
       this->messages.saveToFile(getChatMessageFilename());
    else if (this->rooms.contains(roomName))
       this->rooms[roomName].messages.saveToFile(getChatMessageFilename(roomName));
-}
-
-/**
-  * Load all messages (main + rooms) and emit the signal 'newMessages'.
-  */
-void ChatSystem::loadChatMessagesFromAllFiles()
-{
-   this->loadChatMessages();
-
-   QRegularExpression filenameRegExp(Common::Constants::FILE_CHAT_ROOM_MESSAGES.arg("(.*)"));
-
-   QDir dir(
-      Common::Global::getDataFolder(ChatMessages::FOLDER_TYPE_MESSAGES_SAVED)
-         .append('/').append(Common::Constants::DIR_CHAT_MESSAGES)
-   );
-
-   foreach (QString filename, dir.entryList(QDir::Files))
-   {
-      auto matchResult = filenameRegExp.match(filename);
-      auto capturedTexts = matchResult.capturedTexts();
-      if (matchResult.hasMatch() && capturedTexts.length() >= 2)
-      {
-         const QString& roomName = Common::Path::unSanitizePath(capturedTexts[1]);
-         this->loadChatMessages(roomName);
-      }
-   }
 }
 
 /**

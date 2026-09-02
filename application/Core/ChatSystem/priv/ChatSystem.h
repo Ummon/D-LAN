@@ -72,7 +72,6 @@ namespace CS
    private:
       void saveChatMessages(const QString& roomName = QString());
 
-      void loadChatMessagesFromAllFiles();
       void loadChatMessages(const QString& roomName = QString());
       void emitNewMessages(const ChatMessages& messages);
 
@@ -84,7 +83,7 @@ namespace CS
          bool joined = false;
       };
 
-      Room& getRoom(const QString& name);
+      bool join(const QString& roomName);
 
       void retrieveLastChatMessagesFromPeers(const QList<PM::IPeer*>& peers, const QString& roomName = QString());
 
