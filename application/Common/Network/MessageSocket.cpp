@@ -19,6 +19,8 @@
 #include <Common/Network/MessageSocket.h>
 using namespace Common;
 
+#include <QPointer>
+
 #include <Protos/common.pb.h>
 #include <Protos/core_protocol.pb.h>
 #include <Protos/gui_protocol.pb.h>
@@ -215,9 +217,16 @@ bool MessageSocket::isListening() const
   */
 void MessageSocket::dataReceivedSlot()
 {
+   // 'onNewDataReceived()', 'onNewMessage(..)' and the signal 'newMessage' may delete this object,
+   // for instance by closing the connection. Once it happens no member may be accessed anymore.
+   const QPointer<MessageSocket> self(this);
+
    while (!this->socket->atEnd() && this->listening)
    {
       this->onNewDataReceived();
+      if (self.isNull())
+         return;
+
       if (this->currentHeader.isNull() && this->socket->bytesAvailable() >= MessageHeader::HEADER_SIZE)
       {
          this->currentHeader = MessageHeader::readHeader(*this->socket);
@@ -264,6 +273,10 @@ void MessageSocket::dataReceivedSlot()
             this->socket->close();
             return;
          }
+
+         if (self.isNull())
+            return;
+
          this->currentHeader.setNull();
       }
       else
@@ -299,7 +312,12 @@ bool MessageSocket::readMessage()
          Common::ProtoHelper::getDebugStr(message.getMessage())
       ));
 
+      // 'onNewMessage(..)' may delete this object, see 'dataReceivedSlot()'.
+      const QPointer<MessageSocket> self(this);
       this->onNewMessage(message);
+      if (self.isNull())
+         return true;
+
       emit newMessage(message);
       return true;
    }

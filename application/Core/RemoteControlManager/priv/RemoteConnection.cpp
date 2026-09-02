@@ -106,7 +106,11 @@ RemoteConnection::RemoteConnection(
    // We start to listen only once every member is set up: 'onNewMessage(..)' can be called
    // synchronously by 'startListening()' if some data has already been received.
    this->startListening();
-   this->askForAuthentication();
+
+   // Already received data may be invalid and thus close the connection, in this case there is
+   // nothing left to ask, 'this' is already waiting to be deleted.
+   if (this->isListening())
+      this->askForAuthentication();
 }
 
 RemoteConnection::~RemoteConnection()
