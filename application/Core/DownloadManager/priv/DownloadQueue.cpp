@@ -79,7 +79,7 @@ void DownloadQueue::insert(int position, Download* download)
    if (FileDownload* fileDownload = dynamic_cast<FileDownload*>(download))
    {
       this->downloadsIndexedByName.insert(download->getLocalEntry().name(), download);
-      this->downloadsSortedByTime.insert(QTime(), fileDownload);
+      this->downloadsSortedByTime.insert(0, fileDownload);
       connect(fileDownload, &FileDownload::lastTimeGetAllUnfinishedChunksChanged, this, &DownloadQueue::fileDownloadTimeChanged, Qt::QueuedConnection);
    }
 }
@@ -313,7 +313,7 @@ QList<QSharedPointer<IChunkDownloader>> DownloadQueue::getTheOldestUnfinishedChu
 {
    QList<QSharedPointer<IChunkDownloader>> unfinishedChunks;
 
-   for (QMutableMultiMapIterator<QTime, FileDownload*> i(this->downloadsSortedByTime); i.hasNext() && unfinishedChunks.size() < n;)
+   for (QMutableMultiMapIterator<qint64, FileDownload*> i(this->downloadsSortedByTime); i.hasNext() && unfinishedChunks.size() < n;)
    {
       i.next();
       if (i.value()->getStatus() == Protos::Common::DownloadStatus::COMPLETE || i.value()->getStatus() == Protos::Common::DownloadStatus::DELETED)
@@ -382,7 +382,7 @@ void DownloadQueue::saveToFile() const
    }
 }
 
-void DownloadQueue::fileDownloadTimeChanged(QTime oldTime)
+void DownloadQueue::fileDownloadTimeChanged(qint64 oldTime)
 {
    FileDownload* fileDownload = static_cast<FileDownload*>(this->sender());
    this->downloadsSortedByTime.remove(oldTime, fileDownload);

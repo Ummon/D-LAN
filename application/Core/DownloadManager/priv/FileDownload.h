@@ -21,7 +21,6 @@
 #include <QList>
 #include <QMap>
 #include <QSharedPointer>
-#include <QTime>
 
 #include <Common/ThreadPool.h>
 
@@ -73,7 +72,7 @@ namespace DM
 
       void getUnfinishedChunks(QList<QSharedPointer<IChunkDownloader>>& chunks, int nMax, bool notAlreadyAsked = true);
 
-      inline QTime getLastTimeGetAllUnfinishedChunks() const;
+      inline qint64 getLastTimeGetAllUnfinishedChunks() const;
 
       void remove();
 
@@ -82,7 +81,7 @@ namespace DM
 
    signals:
       void newHashKnown();
-      void lastTimeGetAllUnfinishedChunksChanged(QTime oldTime);
+      void lastTimeGetAllUnfinishedChunksChanged(qint64 oldTime);
 
    private slots:
       bool updateStatus();
@@ -108,7 +107,7 @@ namespace DM
       QMap<int, QSharedPointer<FM::IChunk>> chunksWithoutDownloader;
       QList<QSharedPointer<ChunkDownloader>> chunkDownloaders;
 
-      int nbChunkAsked;
+      int nbChunkAsked; // Position in 'chunkDownloaders' of the next chunk to give in 'getUnfinishedChunks(..)'.
 
       OccupiedPeers& occupiedPeersAskingForHashes;
       OccupiedPeers& occupiedPeersDownloadingChunk;
@@ -120,11 +119,11 @@ namespace DM
 
       Common::TransferRateCalculator& transferRateCalculator;
 
-      QTime lastTimeGetAllUnfinishedChunks; // Updated when ALL hashes are send via the method 'getTheFirstUnfinishedChunks(..)'. Null if never.
+      qint64 lastTimeGetAllUnfinishedChunks; // [ms] since epoch. Updated when ALL hashes are send via the method 'getUnfinishedChunks(..)'. 0 if never.
    };
 }
 
-inline QTime DM::FileDownload::getLastTimeGetAllUnfinishedChunks() const
+inline qint64 DM::FileDownload::getLastTimeGetAllUnfinishedChunks() const
 {
    return this->lastTimeGetAllUnfinishedChunks;
 }

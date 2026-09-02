@@ -23,7 +23,6 @@
 #include <QList>
 #include <QMultiHash>
 #include <QMultiMap>
-#include <QTime>
 
 #include <Protos/common.pb.h>
 #include <Protos/gui_protocol.pb.h>
@@ -72,7 +71,7 @@ namespace DM
       void saveToFile() const;
 
    private slots:
-      void fileDownloadTimeChanged(QTime oldTime);
+      void fileDownloadTimeChanged(qint64 oldTime);
 
    private:
       struct Marker;
@@ -101,7 +100,7 @@ namespace DM
 
       QList<Download*> downloads; ///< All downloads, it also includes erroneous downloads.
       QList<Download*> erroneousDownloads;
-      QMultiMap<QTime, FileDownload*> downloadsSortedByTime; // See 'FileDownload::lastTimeGetAllUnfinishedChunks'.
+      QMultiMap<qint64, FileDownload*> downloadsSortedByTime; // Key: [ms] since epoch, 0 if never. See 'FileDownload::lastTimeGetAllUnfinishedChunks'.
       QMultiHash<PM::IPeer*, Download*> downloadsIndexedBySourcePeer;
       QMultiMap<std::string, Download*> downloadsIndexedByName;
    };

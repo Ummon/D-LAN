@@ -20,6 +20,7 @@
 using namespace DM;
 
 #include <QTimer>
+#include <QDateTime>
 #include <QSet>
 #include <QRandomGenerator64>
 
@@ -56,7 +57,8 @@ FileDownload::FileDownload(
    occupiedPeersDownloadingChunk(occupiedPeersDownloadingChunk),
    threadPool(threadPool),
    nbHashesKnown(0),
-   transferRateCalculator(transferRateCalculator)
+   transferRateCalculator(transferRateCalculator),
+   lastTimeGetAllUnfinishedChunks(0)
 {
    L_DEBU(QString("New FileDownload: peer source = %1, remoteEntry: \n%2\nlocalEntry: \n%3").
       arg(
@@ -94,13 +96,8 @@ FileDownload::FileDownload(
 
 FileDownload::~FileDownload()
 {
-   this->setStatus(Protos::Common::DownloadStatus::DELETED);
-
-   if (!this->getHashesResult.isNull())
-   {
-      this->getHashesResult.clear();
-      this->occupiedPeersAskingForHashes.setPeerAsFree(this->peerSource);
-   }
+   this->setStatus(Protos::Common::DownloadStatus::DELETED); // Must be set before 'stop()', see 'remove()'.
+   this->stop();
 
    this->chunksWithoutDownloader.clear();
    this->chunkDownloaders.clear();
@@ -326,25 +323,32 @@ void FileDownload::getUnfinishedChunks(QList<QSharedPointer<IChunkDownloader>>& 
    )
       return;
 
-   int n = 0;
-   for (int i = notAlreadyAsked ? this->nbChunkAsked : 0; i < this->chunkDownloaders.size() && n < nMax; i++)
-   {
-      if (this->chunkDownloaders[i].isNull())
-         continue;
+   auto isUnfinished = [this](int i) { return !this->chunkDownloaders[i].isNull() && !this->chunkDownloaders[i]->isComplete(); };
 
-      if (!this->chunkDownloaders[i]->isComplete())
+   int n = 0;
+   int i = notAlreadyAsked ? this->nbChunkAsked : 0;
+   for (; i < this->chunkDownloaders.size() && n < nMax; i++)
+   {
+      if (isUnfinished(i))
       {
          chunks << this->chunkDownloaders[i];
          n++;
       }
-      if (i >= this->nbChunkAsked)
-         this->nbChunkAsked++;
    }
 
-   if (this->nbChunkAsked == this->nbHashesKnown)
+   // Skip the chunks which would be ignored anyway, to know if we reached the end of the list.
+   while (i < this->chunkDownloaders.size() && !isUnfinished(i))
+      i++;
+
+   // 'i' is the position of the next chunk to give, the position only moves forward.
+   if (i > this->nbChunkAsked)
+      this->nbChunkAsked = i;
+
+   // All the chunks have been given, we restart from the beginning.
+   if (this->nbChunkAsked >= this->chunkDownloaders.size())
    {
-      const QTime oldTime = this->lastTimeGetAllUnfinishedChunks;
-      this->lastTimeGetAllUnfinishedChunks = QTime::currentTime();
+      const qint64 oldTime = this->lastTimeGetAllUnfinishedChunks;
+      this->lastTimeGetAllUnfinishedChunks = QDateTime::currentMSecsSinceEpoch();
       this->nbChunkAsked = 0;
       emit lastTimeGetAllUnfinishedChunksChanged(oldTime);
    }
