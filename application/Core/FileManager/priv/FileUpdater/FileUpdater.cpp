@@ -90,7 +90,7 @@ void FileUpdater::stop()
 
 /**
   * Called by another thread.
-  * @exception DirNotFoundException
+  * An entry which can't be watched (no watcher, too many watched entries, access denied, ...) is periodically rescanned.
   */
 void FileUpdater::addRoot(SharedEntry* sharedEntry)
 {
@@ -102,7 +102,16 @@ void FileUpdater::addRoot(SharedEntry* sharedEntry)
 
    bool watchable = false;
    if (this->dirWatcher)
-      watchable = this->dirWatcher->addPath(entryPath.toString(false), entryPath.getFilename());
+   {
+      try
+      {
+         watchable = this->dirWatcher->addPath(entryPath.toString(false), entryPath.getFilename());
+      }
+      catch (FileSystemEntryNotFoundException& e)
+      {
+         L_WARN(QString("Unable to watch this path: %1").arg(e.path));
+      }
+   }
 
    this->entriesToScan << sharedEntry->getRootEntry();
 
