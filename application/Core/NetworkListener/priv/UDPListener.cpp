@@ -66,7 +66,7 @@ UDPListener::UDPListener(
 ) :
    MAX_UDP_DATAGRAM_PAYLOAD_SIZE(static_cast<int>(SETTINGS.get<quint32>("max_udp_datagram_size"))),
    bodyBuffer(UDPListener::buffer + Common::MessageHeader::HEADER_SIZE),
-   UNICAST_PORT(unicastPort),
+   unicastPort(unicastPort),
    MULTICAST_PORT(SETTINGS.get<quint32>("multicast_port")),
    fileManager(fileManager),
    peerManager(peerManager),
@@ -155,7 +155,7 @@ void UDPListener::sendIMAliveMessage()
    Protos::Core::IMAlive IMAliveMessage;
    IMAliveMessage.set_version(Common::Constants::PROTOCOL_VERSION);
    IMAliveMessage.set_core_version(Common::Global::getVersionFull().toStdString());
-   IMAliveMessage.set_port(this->UNICAST_PORT);
+   IMAliveMessage.set_port(this->unicastPort);
 
    const QString& nick = this->peerManager->getSelf()->getNick();
    IMAliveMessage.set_nick((nick.length() > MAX_NICK_LENGTH ? nick.left(MAX_NICK_LENGTH) : nick).toStdString());
@@ -222,8 +222,9 @@ void UDPListener::sendIMAliveMessage()
    this->send(Common::MessageHeader::CORE_IM_ALIVE, IMAliveMessage);
 }
 
-void UDPListener::rebindSockets()
+void UDPListener::rebindSockets(quint16 unicastPort)
 {
+   this->unicastPort = unicastPort;
    this->initMulticastUDPSocket();
    this->initUnicastUDPSocket();
 }
@@ -466,7 +467,7 @@ void UDPListener::initUnicastUDPSocket()
    this->unicastSocket.close();
    this->unicastSocket.disconnect(this);
 
-   if (!this->unicastSocket.bind(Utils::getCurrentAddressToListenTo(), UNICAST_PORT, QUdpSocket::ReuseAddressHint))
+   if (!this->unicastSocket.bind(Utils::getCurrentAddressToListenTo(), this->unicastPort, QUdpSocket::ReuseAddressHint))
       L_ERRO("Can't bind the unicast socket");
 
    // This settings cannot change dynamically -> static.

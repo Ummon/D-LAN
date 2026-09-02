@@ -60,8 +60,9 @@ QSharedPointer<ISearch> NetworkListener::newSearch()
 void NetworkListener::rebindSockets()
 {
    this->peerManager->removeAllPeers();
-   this->uDPListener.rebindSockets();
+   // The TCP listener is rebound first because its port may change, the UDP unicast socket must use the same port.
    this->tCPListener.rebindSockets();
+   this->uDPListener.rebindSockets(this->tCPListener.getCurrentPort());
 }
 
 NetworkListener::SendStatus NetworkListener::send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message, const Common::Hash& peerID)

@@ -64,7 +64,10 @@ namespace NL
       INetworkListener::SendStatus send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message, const Common::Hash& peerID);
       INetworkListener::SendStatus send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message = Protos::Common::Null());
 
-      void rebindSockets();
+      /**
+        * @param unicastPort The port to bind the unicast socket to, it must be the same as the TCP port.
+        */
+      void rebindSockets(quint16 unicastPort);
 
    signals:
       /**
@@ -93,7 +96,7 @@ namespace NL
       char buffer[BUFFER_SIZE]; // Buffer used when sending or receiving datagram.
       char* const bodyBuffer;
 
-      const quint16 UNICAST_PORT;
+      quint16 unicastPort; // Same as the TCP port, it may change when the sockets are rebound.
       const quint16 MULTICAST_PORT;
       QHostAddress multicastGroup;
 
