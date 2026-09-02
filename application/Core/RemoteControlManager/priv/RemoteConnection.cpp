@@ -75,9 +75,6 @@ RemoteConnection::RemoteConnection(
    authenticated(false),
    authenticationRefused(false),
    saltChallenge(0)
- #if DEBUG
-   ,loggerRefreshState(LM::Builder::newLogger("RemoteConnection (State)"))
- #endif
 {
    L_DEBU(QString("New RemoteConnection from %1").arg(socket->peerAddress().toString()));
 
