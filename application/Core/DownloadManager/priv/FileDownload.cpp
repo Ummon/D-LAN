@@ -108,6 +108,13 @@ FileDownload::~FileDownload()
 
 void FileDownload::start()
 {
+   // 'start()' is also called to restart an erroneous download (see 'DownloadManager::restartErroneousDownloads()').
+   // The erroneous status must be cleared here: 'updateStatus()' can't compute a new one when no chunk hash is known,
+   // and if 'retrieveHashes()' fails below (peer source busy) the download would otherwise stay erroneous forever
+   // because 'DownloadManager::peerNoLongerAskingForHashes()' skips erroneous downloads.
+   if (this->isStatusErroneous())
+      this->setStatus(Protos::Common::DownloadStatus::QUEUED);
+
    this->tryToLinkToAnExistingFile();
 
    if (this->hasAValidPeerSource())
