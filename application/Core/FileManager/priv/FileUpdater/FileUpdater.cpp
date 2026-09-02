@@ -148,14 +148,15 @@ void FileUpdater::rmRoot(SharedEntry* sharedEntry, Directory* dir)
 
 void FileUpdater::prioritizeAFileToHash(File* file)
 {
+   // Same locking order as 'computeSomeHashes()' and 'rmRoot(..)': 'hashingMutex' then 'mutex'.
+   QMutexLocker lockerHashing(&this->hashingMutex);
    QMutexLocker locker(&this->mutex);
+
    L_DEBU(QString("FileUpdater::prioritizeAFileToHash: %1").arg(file->getAbsolutePath()));
 
    // If a file is incomplete (unfinished) we can't compute its hashes because we don't have all data.
    if (!file->hasAllHashes() && file->isComplete())
    {
-      QMutexLocker lockerHashing(&this->hashingMutex);
-
       if (this->filesWithoutHashes.removeOne(file))
       {
          this->remainingSizeToHash -= file->getSize();
