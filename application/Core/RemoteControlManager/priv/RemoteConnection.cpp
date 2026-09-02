@@ -82,13 +82,6 @@ RemoteConnection::RemoteConnection(
 
    this->authenticated = this->isLocal();
 
-   this->startListening();
-   if (!socket->isValid())
-   {
-      delete this;
-      return;
-   }
-
    this->refreshAllInterfaces();
 
    this->sendLogMessagesTimer.setInterval(SETTINGS.get<quint32>("delay_before_sending_log_messages"));
@@ -110,6 +103,9 @@ RemoteConnection::RemoteConnection(
    qRegisterMetaType<QSharedPointer<LM::IEntry>>("QSharedPointer<LM::IEntry>");
    connect(this->loggerHook.data(), &LM::ILoggerHook::newLogEntry, this, &RemoteConnection::newLogEntry, Qt::QueuedConnection);
 
+   // We start to listen only once every member is set up: 'onNewMessage(..)' can be called
+   // synchronously by 'startListening()' if some data has already been received.
+   this->startListening();
    this->askForAuthentication();
 }
 
@@ -852,5 +848,8 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
 
 void RemoteConnection::onDisconnected()
 {
-   delete this;
+   // 'deleteLater()' and not 'delete this': this method is called synchronously from the socket
+   // signals and can thus be reached while the constructor is still running.
+   this->stopListening();
+   this->deleteLater();
 }

@@ -68,6 +68,16 @@ void RemoteControlManager::newConnection()
 {
    QTcpSocket* socket = static_cast<QTcpServer*>(this->sender())->nextPendingConnection();
 
+   if (!socket)
+      return;
+
+   if (socket->state() != QAbstractSocket::ConnectedState)
+   {
+      L_DEBU("New connection already closed, it is discarded");
+      socket->deleteLater();
+      return;
+   }
+
    if (static_cast<quint32>(this->connections.size()) > SETTINGS.get<quint32>("remote_max_nb_connection"))
    {
       L_WARN("Cannot handle new connection, too many connection");
