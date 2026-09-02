@@ -168,24 +168,28 @@ void UDPListener::sendIMAliveMessage()
    IMAliveMessage.set_tag(this->currentIMAliveTag);
 
    // We fill the rest of the message with a maximum of needed hashes.
-   static const quint32 MAX_IMALIVE_THROUGHPUT = SETTINGS.get<quint32>("max_imalive_throughput");
-   static const int AVERAGE_FIXED_SIZE = 100; // [Byte]. Header size + information in the 'IMAlive' message without the hashes.
-   static const quint32 IMALIVE_PERIOD = SETTINGS.get<quint32>("peer_imalive_period") / 1000; // [s]
-   static const int FIXED_RATE_PER_PEER = AVERAGE_FIXED_SIZE / IMALIVE_PERIOD; // [Byte/s]
-   static const int HASH_SIZE = Common::Hash::HASH_SIZE + 4; // "4" is the overhead added by protobuff for each hash.
+   // Everything is computed with signed 64 bits integers to avoid any division by zero, overflow or unsigned wrap around.
+   static const qint64 MAX_IMALIVE_THROUGHPUT = SETTINGS.get<quint32>("max_imalive_throughput"); // [Byte/s]
+   static const qint64 AVERAGE_FIXED_SIZE = 100; // [Byte]. Header size + information in the 'IMAlive' message without the hashes.
+   static const qint64 IMALIVE_PERIOD = qMax<qint64>(1, SETTINGS.get<quint32>("peer_imalive_period")); // [ms]
+   static const qint64 HASH_SIZE = Common::Hash::HASH_SIZE + 4; // "4" is the overhead added by protobuff for each hash.
 
-   const int numberOfPeers = this->peerManager->getNbOfPeers();
-   const int maxNumberOfHashesToSend =
-      numberOfPeers == 0 ?
-           std::numeric_limits<int>::max()
-         : IMALIVE_PERIOD * (MAX_IMALIVE_THROUGHPUT - numberOfPeers * FIXED_RATE_PER_PEER) / (numberOfPeers * HASH_SIZE);
+   const qint64 numberOfPeers = this->peerManager->getNbOfPeers();
 
-   int numberOfHashesToSend =
-      (this->MAX_UDP_DATAGRAM_PAYLOAD_SIZE - IMAliveMessage.ByteSizeLong() - Common::MessageHeader::HEADER_SIZE) /
-      HASH_SIZE;
+   // Throughput constraint: n * s / period <= 'max_imalive_throughput', where n is the number of peers and s the size of the message.
+   qint64 maxNumberOfHashesToSend = std::numeric_limits<int>::max();
+   if (numberOfPeers > 0)
+   {
+      // Number of bytes available for the hashes during one period once the fixed part of the message is deducted for each peer.
+      const qint64 bytesAvailableForHashes = MAX_IMALIVE_THROUGHPUT * IMALIVE_PERIOD / 1000 - numberOfPeers * AVERAGE_FIXED_SIZE;
+      maxNumberOfHashesToSend = qMax<qint64>(0, bytesAvailableForHashes / (numberOfPeers * HASH_SIZE));
+   }
 
-   if (numberOfHashesToSend > maxNumberOfHashesToSend)
-      numberOfHashesToSend = maxNumberOfHashesToSend;
+   // Datagram constraint: the hashes must fit in the remaining space of the datagram.
+   const qint64 bytesRemainingInDatagram =
+      static_cast<qint64>(this->MAX_UDP_DATAGRAM_PAYLOAD_SIZE) - Common::MessageHeader::HEADER_SIZE - static_cast<qint64>(IMAliveMessage.ByteSizeLong());
+
+   const int numberOfHashesToSend = static_cast<int>(qBound<qint64>(0, bytesRemainingInDatagram / HASH_SIZE, maxNumberOfHashesToSend));
 
    // The requested hashes method alternates from the first hashes and the oldest hashes.
    // We are trying to have the knowledge about who has which chunk for the whole download queue (IDownloadManager::getTheOldestUnfinishedChunks(..))
