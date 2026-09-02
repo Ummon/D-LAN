@@ -74,7 +74,8 @@ namespace RCM
       );
       ~RemoteConnection();
 
-      void send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);
+      void send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message) override;
+      void send(Common::MessageHeader::MessageType type) override;
 
    signals:
       void deleted(RCM::RemoteConnection*);
@@ -97,14 +98,16 @@ namespace RCM
       void sendBadPasswordResult();
 
    private:
+      bool canBeSent(Common::MessageHeader::MessageType type) const;
+
       void askForAuthentication();
       void removeGetEntriesResult(const PM::IGetEntriesResult* getEntriesResult);
       void sendLastChatMessages();
 
       void refreshAllInterfaces();
 
-      void onNewMessage(const Common::Message& message);
-      void onDisconnected();
+      void onNewMessage(const Common::Message& message) override;
+      void onDisconnected() override;
 
       QSharedPointer<FM::IFileManager> fileManager;
       QSharedPointer<PM::IPeerManager> peerManager;

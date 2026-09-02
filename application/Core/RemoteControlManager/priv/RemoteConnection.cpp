@@ -120,11 +120,29 @@ RemoteConnection::~RemoteConnection()
 
 void RemoteConnection::send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message)
 {
-   // When not authenticated we can only send messages of type 'GUI_AUTHENTICATION_RESULT' or 'GUI_ASK_FOR_AUTHENTICATION'.
-   if (!this->authenticated && type != Common::MessageHeader::GUI_ASK_FOR_AUTHENTICATION && type != Common::MessageHeader::GUI_AUTHENTICATION_RESULT)
+   if (!this->canBeSent(type))
       return;
 
    Common::MessageSocket::send(type, message);
+}
+
+void RemoteConnection::send(Common::MessageHeader::MessageType type)
+{
+   if (!this->canBeSent(type))
+      return;
+
+   Common::MessageSocket::send(type);
+}
+
+/**
+  * When not authenticated we can only send messages of type 'GUI_AUTHENTICATION_RESULT' or 'GUI_ASK_FOR_AUTHENTICATION'.
+  */
+bool RemoteConnection::canBeSent(Common::MessageHeader::MessageType type) const
+{
+   return
+      this->authenticated ||
+      type == Common::MessageHeader::GUI_ASK_FOR_AUTHENTICATION ||
+      type == Common::MessageHeader::GUI_AUTHENTICATION_RESULT;
 }
 
 /**
