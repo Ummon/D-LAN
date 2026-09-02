@@ -58,7 +58,8 @@ namespace CS
       ) = 0;
 
       /**
-        * Retrieve the last 'number' known message.
+        * Retrieve the last 'number' known messages.
+        * @param room The room to get the messages from, the messages come from the main chat if empty.
         */
       virtual void getLastChatMessages(
          Protos::Common::ChatMessages& chatMessages,

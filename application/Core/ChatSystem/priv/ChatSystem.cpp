@@ -140,7 +140,7 @@ void ChatSystem::getLastChatMessages(
    const QString& roomName
 ) const
 {
-   if (roomName.isNull())
+   if (roomName.isEmpty())
       this->messages.fillProtoChatMessages(chatMessages, number);
    else
       // If the room doesn't exist then 'room.messages' will be empty.
