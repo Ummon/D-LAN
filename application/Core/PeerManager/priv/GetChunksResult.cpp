@@ -30,8 +30,12 @@ GetChunksResult::GetChunksResult(const Protos::Core::GetChunks& chunks, QSharedP
 
 void GetChunksResult::start()
 {
-   connect(this->socket.data(), &PeerMessageSocket::newMessage, this, &GetChunksResult::newMessage, Qt::DirectConnection);
-   socket->send(Common::MessageHeader::CORE_GET_CHUNKS, this->chunks);
+   // The socket may be null if the connection pool was unable to give one, in this case the request will simply time out.
+   if (!this->socket.isNull())
+   {
+      connect(this->socket.data(), &PeerMessageSocket::newMessage, this, &GetChunksResult::newMessage, Qt::DirectConnection);
+      socket->send(Common::MessageHeader::CORE_GET_CHUNKS, this->chunks);
+   }
    this->startTimer();
 }
 
@@ -42,10 +46,13 @@ void GetChunksResult::setStatus(bool closeTheSocket)
 
 void GetChunksResult::doDeleteLater()
 {
-   // We must disconnect because 'this->socket->finished' can read some data and emit 'newMessage'.
-   disconnect(this->socket.data(), &PeerMessageSocket::newMessage, this, &GetChunksResult::newMessage);
-   this->socket->finished(this->isTimedout() ? true : this->closeTheSocket);
-   this->socket.clear();
+   if (!this->socket.isNull())
+   {
+      // We must disconnect because 'this->socket->finished' can read some data and emit 'newMessage'.
+      disconnect(this->socket.data(), &PeerMessageSocket::newMessage, this, &GetChunksResult::newMessage);
+      this->socket->finished(this->isTimedout() ? true : this->closeTheSocket);
+      this->socket.clear();
+   }
    this->deleteLater();
 }
 

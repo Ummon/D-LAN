@@ -30,18 +30,25 @@ GetHashesResult::GetHashesResult(const Protos::Common::Entry& file, QSharedPoint
 
 void GetHashesResult::start()
 {
-   Protos::Core::GetHashes message;
-   message.mutable_file()->CopyFrom(this->file);
-   connect(this->socket.data(), &PeerMessageSocket::newMessage, this, &GetHashesResult::newMessage, Qt::DirectConnection);
-   socket->send(Common::MessageHeader::CORE_GET_HASHES, message);
+   // The socket may be null if the connection pool was unable to give one, in this case the request will simply time out.
+   if (!this->socket.isNull())
+   {
+      Protos::Core::GetHashes message;
+      message.mutable_file()->CopyFrom(this->file);
+      connect(this->socket.data(), &PeerMessageSocket::newMessage, this, &GetHashesResult::newMessage, Qt::DirectConnection);
+      socket->send(Common::MessageHeader::CORE_GET_HASHES, message);
+   }
    this->startTimer();
 }
 
 void GetHashesResult::doDeleteLater()
 {
-   disconnect(this->socket.data(), &PeerMessageSocket::newMessage, this, &GetHashesResult::newMessage);
-   this->socket->finished();
-   this->socket.clear();
+   if (!this->socket.isNull())
+   {
+      disconnect(this->socket.data(), &PeerMessageSocket::newMessage, this, &GetHashesResult::newMessage);
+      this->socket->finished();
+      this->socket.clear();
+   }
    this->deleteLater();
 }
 
