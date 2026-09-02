@@ -230,21 +230,24 @@ void ChatSystem::received(const Common::Message& message)
          if (chatMessages.messages_size() == 0)
             break;
 
-         // Test if all messages belongs to the same chat room and set the peer ID of each message if not already set.
-         for (int i = 0; i < chatMessages.messages_size(); i++)
-         {
-            if (i != 0 && chatMessages.messages(i).chat_room() != chatMessages.messages(0).chat_room())
-            {
-               L_ERRO(QString("The 'CORE_CHAT_MESSAGES' message received from %1 contains messages from different chat rooms").arg(message.getHeader().toStr()));
-               break;
-            }
+         // All messages must belong to the same chat room, otherwise the whole batch is dropped.
+         bool sameChatRoom = true;
+         for (int i = 1; i < chatMessages.messages_size() && sameChatRoom; i++)
+            sameChatRoom = chatMessages.messages(i).chat_room() == chatMessages.messages(0).chat_room();
 
+         if (!sameChatRoom)
+         {
+            L_ERRO(QString("The 'CORE_CHAT_MESSAGES' message received from %1 contains messages from different chat rooms, it's ignored").arg(message.getHeader().toStr()));
+            break;
+         }
+
+         // Set the peer ID of each message if not already set.
+         for (int i = 0; i < chatMessages.messages_size(); i++)
             if (!chatMessages.messages(i).has_peer_id())
                chatMessages.mutable_messages(i)->mutable_peer_id()->set_hash(
                   message.getHeader().getSenderID().getData(),
                   Common::Hash::HASH_SIZE
                );
-         }
 
          bool hasChatRoom = chatMessages.messages(0).chat_room().size() > 0;
          QString chatRoomName =
