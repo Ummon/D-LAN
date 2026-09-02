@@ -352,7 +352,7 @@ void RemoteConnection::getEntriesTimeout()
 void RemoteConnection::newLogEntry(QSharedPointer<LM::IEntry> entry)
 {
    Protos::GUI::EventLogMessages::EventLogMessage* eventLogMessage = this->eventLogMessages.add_messages();
-   eventLogMessage->set_time(entry->getDate().currentMSecsSinceEpoch());
+   eventLogMessage->set_time(entry->getDate().toMSecsSinceEpoch());
    eventLogMessage->set_message(entry->getMessage().toStdString());
    eventLogMessage->set_severity(static_cast<Protos::GUI::EventLogMessages::EventLogMessage::Severity>(entry->getSeverity()));
 
