@@ -127,6 +127,7 @@ namespace RCM
       QList<QSharedPointer<PM::IGetEntriesResult>> getEntriesResults;
 
       bool authenticated;
+      bool authenticationRefused; // Set when an authentication has failed, the connection is then about to be closed.
       quint64 saltChallenge;
 
       QList<QNetworkInterface> interfaces; // We are caching the interfaces because the call of 'QNetworkInterface::allInterfaces()' for each refresh is too heavy.

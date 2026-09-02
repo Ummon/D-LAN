@@ -73,6 +73,7 @@ RemoteConnection::RemoteConnection(
    chatSystem(chatSystem),
    waitForStateResult(false),
    authenticated(false),
+   authenticationRefused(false),
    saltChallenge(0)
  #if DEBUG
    ,loggerRefreshState(LM::Builder::newLogger("RemoteConnection (State)"))
@@ -434,6 +435,11 @@ void RemoteConnection::refreshAllInterfaces()
 
 void RemoteConnection::onNewMessage(const Common::Message& message)
 {
+   // The answer to a refused authentication is delayed, until it is sent the connection must stay mute.
+   // Otherwise a client may pipeline as many password attempts as it wants during this delay.
+   if (this->authenticationRefused)
+      return;
+
    if (!this->authenticated && message.getHeader().getType() != Common::MessageHeader::GUI_AUTHENTICATION)
       return;
 
@@ -458,11 +464,13 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
 
             if (currentPassword.isNull())
             {
+               this->authenticationRefused = true;
                QTimer::singleShot(delayGuiConnectionFail, this, &RemoteConnection::sendNoPasswordDefinedResult);
                break;
             }
             else if (passwordReceived != Common::Hasher::hashWithSalt(currentPassword, this->saltChallenge))
             {
+               this->authenticationRefused = true;
                QTimer::singleShot(delayGuiConnectionFail, this, &RemoteConnection::sendBadPasswordResult);
                break;
             }
