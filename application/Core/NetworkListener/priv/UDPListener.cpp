@@ -64,7 +64,7 @@ UDPListener::UDPListener(
    QSharedPointer<DM::IDownloadManager> downloadManager,
    quint16 unicastPort
 ) :
-   MAX_UDP_DATAGRAM_PAYLOAD_SIZE(static_cast<int>(SETTINGS.get<quint32>("max_udp_datagram_size"))),
+   MAX_UDP_DATAGRAM_PAYLOAD_SIZE(UDPListener::getMaxUDPDatagramPayloadSize()),
    bodyBuffer(UDPListener::buffer + Common::MessageHeader::HEADER_SIZE),
    unicastPort(unicastPort),
    MULTICAST_PORT(SETTINGS.get<quint32>("multicast_port")),
@@ -565,4 +565,19 @@ Common::MessageHeader UDPListener::readDatagramToBuffer(QUdpSocket& socket, QHos
 Common::Hash UDPListener::getOwnID() const
 {
    return this->peerManager->getSelf()->getID();
+}
+
+/**
+  * @return The value of the setting 'max_udp_datagram_size' clamped to the size of the internal buffer.
+  *         The value must be at least the size of a header and cannot exceed 'BUFFER_SIZE', otherwise 'writeMessageToBuffer(..)' could overflow the buffer.
+  */
+int UDPListener::getMaxUDPDatagramPayloadSize()
+{
+   const quint32 configuredSize = SETTINGS.get<quint32>("max_udp_datagram_size");
+   const int clampedSize = static_cast<int>(qBound<quint32>(Common::MessageHeader::HEADER_SIZE, configuredSize, BUFFER_SIZE));
+
+   if (static_cast<quint32>(clampedSize) != configuredSize)
+      L_WARN(QString("The setting 'max_udp_datagram_size' (%1) is out of range, it has been clamped to %2").arg(configuredSize).arg(clampedSize));
+
+   return clampedSize;
 }

@@ -90,8 +90,9 @@ namespace NL
       Common::MessageHeader readDatagramToBuffer(QUdpSocket& socket, QHostAddress& peerAddress);
 
       Common::Hash getOwnID() const;
+      static int getMaxUDPDatagramPayloadSize();
 
-      const int MAX_UDP_DATAGRAM_PAYLOAD_SIZE;
+      const int MAX_UDP_DATAGRAM_PAYLOAD_SIZE; // Always between HEADER_SIZE and BUFFER_SIZE.
 
       char buffer[BUFFER_SIZE]; // Buffer used when sending or receiving datagram.
       char* const bodyBuffer;
