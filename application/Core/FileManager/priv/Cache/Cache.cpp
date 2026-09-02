@@ -57,8 +57,11 @@ Cache::Cache(QSharedPointer<HC::IHashCache> hashCache) :
 
 Cache::~Cache()
 {
-   for (auto i = this->sharedEntries.begin(); i != this->sharedEntries.end(); ++i)
-      (*i)->del();
+   // The event loop won't run anymore for this object: the trees are deleted synchronously, each root entry
+   // deletes its shared entry.
+   for (SharedEntry* sharedEntry : this->sharedEntries)
+      delete sharedEntry->getRootEntry();
+   this->sharedEntries.clear();
 }
 
 /**

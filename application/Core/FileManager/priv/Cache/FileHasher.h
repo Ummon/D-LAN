@@ -53,6 +53,6 @@ namespace FM
       QWaitCondition hashingStopped;
       QMutex hashingMutex;
 
-      static FilePool filePool;
+      FilePool filePool;
    };
 }

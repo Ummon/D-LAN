@@ -96,7 +96,7 @@ bool FileHasher::start(FileForHasher* fileCache, int n, int* amountHashed)
 
    // Same performance with or without "QIODevice::Unbuffered".
    AutoReleasedFile file(
-      FileHasher::filePool,
+      this->filePool,
       filePath,
       QIODevice::ReadOnly | QIODevice::Unbuffered,
       this->currentFileCache->getSize() <= Chunk::CHUNK_SIZE
@@ -272,5 +272,3 @@ void FileHasher::internalStop()
       L_DEBU("File hashing stopped");
    }
 }
-
-FilePool FileHasher::filePool;

@@ -130,6 +130,10 @@ File::File(
 
 File::~File()
 {
+   // A file deleted without a prior call to 'del()' (by its parent directory or at shutdown) must still leave the indexes.
+   if (!this->deletePending.exchange(true))
+      this->getCache()->onEntryRemoved(this);
+
    for (QListIterator<QSharedPointer<Chunk>> i(this->chunks); i.hasNext();)
       i.next()->fileDeleted();
 
@@ -200,6 +204,8 @@ void File::setToUnfinished(qint64 size, const QList<Common::Hash>& hashes)
    this->complete.store(false, std::memory_order_release);
    this->getCache()->onEntryRemoved(this);
    this->name.append(Global::getUnfinishedSuffix());
+   if (this->parentDirectory)
+      this->parentDirectory->fileNameChanged(this);
    this->setSize(size);
    this->dateLastModified = QDateTime::currentDateTime();
    this->deleteAllChunks();
@@ -705,6 +711,8 @@ void File::setAsComplete()
             this->setFileAsHidden(newPath);
          this->dateLastModified = QFileInfo(newPath).lastModified();
          this->name = Global::removeUnfinishedSuffix(this->name);
+         if (this->parentDirectory)
+            this->parentDirectory->fileNameChanged(this);
          this->saveHashes();
          this->getCache()->onEntryAdded(this); // To add the name to the index. (a bit tricky).
       }

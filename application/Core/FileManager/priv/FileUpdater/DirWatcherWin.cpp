@@ -73,7 +73,10 @@ bool DirWatcherWin::addPath(const QString& path, const QString& filename)
 
    HANDLE eventHandle = CreateEvent(NULL, FALSE, FALSE, NULL);
    if (eventHandle == NULL)
+   {
+      CloseHandle(fileHandle);
       throw DirNotFoundException(path);
+   }
 
    Dir* dir = new Dir(fileHandle, eventHandle, path, filename);
 
@@ -271,9 +274,7 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
       L_ERRO(QString("WaitForMultipleObjects(..), status: %1").arg(waitStatus));
    }
 
-   QList<WatcherEvent> events;
-   events << WatcherEvent(WatcherEvent::UNKNOWN, false);
-   return QList<WatcherEvent>();
+   return QList<WatcherEvent> { WatcherEvent(WatcherEvent::UNKNOWN, false) };
 }
 
 DirWatcherWin::Dir::Dir(const HANDLE handle, const HANDLE event, const QString& fullPath, const QString& filename)
