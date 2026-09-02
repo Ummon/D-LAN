@@ -545,12 +545,16 @@ void ChunkDownloader::downloadingEnded()
          .arg(this->isComplete() ? "" : " Not complete!")
    );
 
-   if (!this->socket.isNull())
-      this->socket.clear();
+   this->socket.clear();
 
-   this->getChunksResult->setStatus(this->closeTheSocket);
+   if (!this->getChunksResult.isNull())
+   {
+      // The result object is deleted later ('deleteLater()'), its timer may still fire in between: we don't want to be called again.
+      disconnect(this->getChunksResult.data(), nullptr, this, nullptr);
+      this->getChunksResult->setStatus(this->closeTheSocket);
+      this->getChunksResult.clear();
+   }
    this->closeTheSocket = false;
-   this->getChunksResult.clear();
 
    this->downloading = false;
    emit downloadFinished();
@@ -561,7 +565,12 @@ void ChunkDownloader::downloadingEnded()
 
    // When a chunk is finished we don't care to know the associated peers.
    if (this->isComplete())
+   {
+      QMutexLocker locker(&this->mutex);
+      for (QListIterator<PM::IPeer*> i(this->peers); i.hasNext();)
+         this->linkedPeers.rmLink(i.next());
       this->peers.clear();
+   }
 
    this->occupiedPeersDownloadingChunk.setPeerAsFree(currentPeer);
 }
