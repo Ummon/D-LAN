@@ -35,20 +35,12 @@ ChatMessages::ChatMessages(const ChatMessages& other)
 {
 }
 
-QSharedPointer<ChatMessage> ChatMessages::add(
-   const QString& message,
-   const Common::Hash& ownerID,
-   const QString& ownerNick,
-   const QString& roomName,
-   const QList<Common::Hash>& peerIDsAnswer
-)
+/**
+  * @return 'true' if the message has been inserted.
+  */
+bool ChatMessages::add(const QSharedPointer<ChatMessage>& message)
 {
-   QSharedPointer<ChatMessage> mess =
-      QSharedPointer<ChatMessage>(new ChatMessage(message, ownerID, ownerNick, roomName, peerIDsAnswer));
-
-   this->insert(QList<QSharedPointer<ChatMessage>> { mess });
-
-   return mess;
+   return !this->insert(QList<QSharedPointer<ChatMessage>> { message }).isEmpty();
 }
 
 QList<QSharedPointer<ChatMessage>> ChatMessages::add(const Protos::Common::ChatMessages& chatMessages)
@@ -111,6 +103,9 @@ void ChatMessages::fillProtoChatMessages(Protos::Common::ChatMessages& chatMessa
 
 /**
   * Fill 'chatMessages' with the given messages. 'chatMessages' must not exceed 'maxByteSize'.
+  * 'chatMessages' is expected to be empty when this method is called.
+  * A message which doesn't fit alone in 'maxByteSize' is dropped (and never returned), this guarantees the caller
+  * always makes progress when calling this method repeatedly with the returned list.
   * @return The messages which aren't put in 'chatMessages'.
   */
 QList<QSharedPointer<ChatMessage>> ChatMessages::fillProtoChatMessages(
@@ -122,10 +117,20 @@ QList<QSharedPointer<ChatMessage>> ChatMessages::fillProtoChatMessages(
    QList<QSharedPointer<ChatMessage>> result(messages);
    for (QMutableListIterator<QSharedPointer<ChatMessage>> i(result); i.hasNext();)
    {
-      i.next()->fillProtoChatMessage(*chatMessages.add_messages());
+      const QSharedPointer<ChatMessage>& message = i.next();
+      message->fillProtoChatMessage(*chatMessages.add_messages());
       if (maxByteSize != std::numeric_limits<int>::max() && static_cast<int>(chatMessages.ByteSizeLong()) > maxByteSize)
       {
          chatMessages.mutable_messages()->RemoveLast();
+
+         // The message alone is too large: we drop it, otherwise the caller could loop forever on it.
+         if (chatMessages.messages_size() == 0)
+         {
+            L_WARN(QString("Chat message %1 dropped: too large to fit in %2 bytes").arg(message->getID()).arg(maxByteSize));
+            i.remove();
+            continue;
+         }
+
          return result;
       }
       i.remove();

@@ -78,6 +78,8 @@ ChatSystem::~ChatSystem()
 
 /**
   * Send a message to all other peers and save it into our list of messages.
+  * The message is saved only if it has been successfully sent, otherwise a too large message
+  * would stay in our list and be offered to the peers asking for the last messages.
   */
 ChatSystem::SendStatus ChatSystem::send(
    const QString& message,
@@ -85,21 +87,15 @@ ChatSystem::SendStatus ChatSystem::send(
    const QList<Common::Hash>& peerIDsAnswer
 )
 {
-   QSharedPointer<ChatMessage> chatMessage = roomName.isEmpty() ?
-         this->messages.add(
-            message,
-            this->peerManager->getSelf()->getID(),
-            this->peerManager->getSelf()->getNick(),
-            QString(),
-            peerIDsAnswer
-         )
-       : this->rooms[roomName].messages.add(
-            message,
-            this->peerManager->getSelf()->getID(),
-            this->peerManager->getSelf()->getNick(),
-            roomName,
-            peerIDsAnswer
-         );
+   QSharedPointer<ChatMessage> chatMessage(
+      new ChatMessage(
+         message,
+         this->peerManager->getSelf()->getID(),
+         this->peerManager->getSelf()->getNick(),
+         roomName,
+         peerIDsAnswer
+      )
+   );
 
    Protos::Common::ChatMessages protoChatMessages;
    Protos::Common::ChatMessage* protochatMessage = protoChatMessages.add_messages();
@@ -115,6 +111,11 @@ ChatSystem::SendStatus ChatSystem::send(
    switch (status)
    {
    case NL::INetworkListener::SendStatus::OK:
+      if (roomName.isEmpty())
+         this->messages.add(chatMessage);
+      else
+         this->rooms[roomName].messages.add(chatMessage);
+
       protochatMessage->set_time(time);
       emit newMessages(protoChatMessages);
       return SendStatus::OK;
@@ -288,12 +289,14 @@ void ChatSystem::received(const Common::Message& message)
          if (messages.isEmpty())
             break;
 
-         static int MAX_SIZE = int(SETTINGS.get<quint32>("max_udp_datagram_size")) - Common::MessageHeader::HEADER_SIZE; // [Byte].
+         static const int MAX_SIZE = int(SETTINGS.get<quint32>("max_udp_datagram_size")) - Common::MessageHeader::HEADER_SIZE; // [Byte].
          Protos::Common::ChatMessages chatMessages;
          do
          {
+            // 'fillProtoChatMessages' always consumes at least one message (a message too large to be sent alone is dropped), so this loop terminates.
             messages = ChatMessages::fillProtoChatMessages(chatMessages, messages, MAX_SIZE);
-            this->networkListener->send(Common::MessageHeader::CORE_CHAT_MESSAGES, chatMessages, message.getHeader().getSenderID());
+            if (chatMessages.messages_size() > 0)
+               this->networkListener->send(Common::MessageHeader::CORE_CHAT_MESSAGES, chatMessages, message.getHeader().getSenderID());
             chatMessages.Clear();
 
          } while (!messages.isEmpty());
