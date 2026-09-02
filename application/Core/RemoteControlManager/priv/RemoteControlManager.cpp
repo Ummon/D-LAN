@@ -43,13 +43,19 @@ RemoteControlManager::RemoteControlManager(
    const bool okIPv4 = this->tcpServerIPv4.listen(QHostAddress::AnyIPv4, PORT);
    const bool okIPv6 = this->tcpServerIPv6.listen(QHostAddress::AnyIPv6, PORT);
 
-   if (!okIPv4 && !okIPv6)
-      L_ERRO(QString("Unable to listen on port %1").arg(PORT));
-
    connect(&this->tcpServerIPv4, &QTcpServer::newConnection, this, &RemoteControlManager::newConnection);
    connect(&this->tcpServerIPv6, &QTcpServer::newConnection, this, &RemoteControlManager::newConnection);
 
-   L_DEBU(QString("Listen new remoteConnection on port %1").arg(PORT));
+   if (!okIPv4)
+      L_WARN(QString("Unable to listen on port %1 (IPv4): %2").arg(PORT).arg(this->tcpServerIPv4.errorString()));
+
+   if (!okIPv6)
+      L_WARN(QString("Unable to listen on port %1 (IPv6): %2").arg(PORT).arg(this->tcpServerIPv6.errorString()));
+
+   if (!okIPv4 && !okIPv6)
+      L_ERRO(QString("Unable to listen on port %1, no remote control will be possible").arg(PORT));
+   else
+      L_DEBU(QString("Listen new remoteConnection on port %1").arg(PORT));
 }
 
 RemoteControlManager::~RemoteControlManager()

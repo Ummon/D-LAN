@@ -52,7 +52,7 @@ namespace RCM
    {
       Q_OBJECT
 
-      static const int MAX_DELAY_WAITING_AUTH_RES = 5000; // [s]. We close the socket if we don't receive a response after this delay when sending the message 'Protos.GUI.AskForAuthentication'.
+      static const int MAX_DELAY_WAITING_AUTH_RES = 5000; // [ms]. We close the socket if we don't receive a response after this delay when sending the message 'Protos.GUI.AskForAuthentication'.
 
    protected:
       class Logger : public ILogger

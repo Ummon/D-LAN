@@ -99,7 +99,10 @@ RemoteConnection::RemoteConnection(
 
    this->loggerHook = LM::Builder::newLoggerHook(LM::SV_FATAL_ERROR | LM::SV_ERROR | LM::SV_END_USER | LM::SV_WARNING);
 
-   qRegisterMetaType<QSharedPointer<LM::IEntry>>("QSharedPointer<LM::IEntry>");
+   // A meta type only has to be registered once for the whole application.
+   static const int entryMetaType = qRegisterMetaType<QSharedPointer<LM::IEntry>>("QSharedPointer<LM::IEntry>");
+   Q_UNUSED(entryMetaType)
+
    connect(this->loggerHook.data(), &LM::ILoggerHook::newLogEntry, this, &RemoteConnection::newLogEntry, Qt::QueuedConnection);
 
    // We start to listen only once every member is set up: 'onNewMessage(..)' can be called
