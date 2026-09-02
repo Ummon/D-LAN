@@ -208,5 +208,10 @@ void DirDownload::createDirectory()
          L_DEBU(QString("Unable to create the directory, download: %1").arg(this->remoteEntry.name()));
          this->setStatus(Protos::Common::DownloadStatus::UNABLE_TO_CREATE_THE_DIRECTORY);
       }
+      catch (FM::ScanningException&)
+      {
+         L_DEBU(QString("The local directory is being scanned, unable to create the directory for now, download: %1").arg(this->remoteEntry.name()));
+         this->setStatus(Protos::Common::DownloadStatus::LOCAL_SCANNING_IN_PROGRESS);
+      }
    }
 }
