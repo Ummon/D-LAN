@@ -29,6 +29,7 @@ using namespace FM;
 
 /**
   * @remarks The setting "check_received_data_integrity" can be changed at runtime.
+  * @exception UnableToOpenFileInReadModeException If the data already known of the chunk can't be read to check its integrity.
   * @exception IOErrorException
   * @exception ChunkDeletedException
   * @exception ChunkDataUnknownException
@@ -62,30 +63,25 @@ bool DataWriter::write(const char* buffer, int nbBytes)
 
 /**
   * Compute the hash of the first known data of the current chunk ('this->chunk'), the result is held by 'this->hasher'.
+  * If the data can't be read the exception is propagated: without it the final hash could never match and the
+  * peer sending the rest of the chunk would be wrongly blamed for corrupted data.
+  * @exception UnableToOpenFileInReadModeException
   */
 void DataWriter::computeChunkHash()
 {
    if (this->CHECK_DATA_INTEGRITY && this->chunk.getKnownBytes() > 0)
    {
-      try
-      {
-         static const quint32 BUFFER_SIZE = SETTINGS.get<quint32>("buffer_size_reading");
-         QByteArray buffer(BUFFER_SIZE, Qt::Uninitialized);
+      static const quint32 BUFFER_SIZE = SETTINGS.get<quint32>("buffer_size_reading");
+      QByteArray buffer(BUFFER_SIZE, Qt::Uninitialized);
 
-         DataReader reader(this->chunk);
-         int offset = 0;
-         int bytesRead = 0;
+      DataReader reader(this->chunk);
+      int offset = 0;
+      int bytesRead = 0;
 
-         while (bytesRead = reader.read(buffer.data(), offset))
-         {
-            this->hasher.addData(buffer.constData(), bytesRead);
-            offset += bytesRead;
-         }
-      }
-      // If the file can't be read it may be created later.
-      catch (UnableToOpenFileInReadModeException&)
+      while ((bytesRead = reader.read(buffer.data(), offset)))
       {
-         L_WARN("UnableToOpenFileInReadModeException");
+         this->hasher.addData(buffer.constData(), bytesRead);
+         offset += bytesRead;
       }
    }
 }

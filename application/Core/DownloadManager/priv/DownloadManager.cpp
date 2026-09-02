@@ -246,6 +246,9 @@ Download* DownloadManager::addDownload(
    }
 
    connect(newDownload, &Download::becomeErroneous, this, &DownloadManager::downloadStatusBecomeErroneous);
+   // A download may leave its erroneous state by itself (for example when its peers change), the queue must be rescanned
+   // otherwise it may wait until the next free peer. Queued: the status may change from within a scan or a mutex.
+   connect(newDownload, &Download::noLongerErroneous, this, &DownloadManager::scanTheQueue, Qt::QueuedConnection);
    this->downloadQueue.insert(position, newDownload);
    newDownload->start();
 

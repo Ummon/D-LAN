@@ -80,6 +80,11 @@ namespace DM
    signals:
       void becomeErroneous(DM::Download*);
 
+      /**
+        * Emitted when the status goes from an erroneous one to a non-erroneous one, except when deleted.
+        */
+      void noLongerErroneous();
+
    public slots:
       virtual bool updateStatus();
 

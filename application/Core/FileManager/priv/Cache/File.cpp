@@ -391,14 +391,22 @@ void File::newDataWriterCreated()
          );
 
       if (!this->fileInWriteMode)
+      {
+         this->numDataWriter--; // The 'DataWriter' isn't created, 'dataWriterDeleted()' will never be called.
          throw UnableToOpenFileInWriteModeException();
+      }
 
       // If the file is created then we reset all the chunks.
       bool fileReset = false;
       if (fileCreated)
       {
          if (!this->fileInWriteMode->resize(this->getSize()))
+         {
+            this->getCache()->getFilePool().release(this->fileInWriteMode, true);
+            this->fileInWriteMode = nullptr;
+            this->numDataWriter--;
             throw UnableToOpenFileInWriteModeException();
+         }
 
          this->setFileAsSparse(*this->fileInWriteMode);
 
@@ -439,7 +447,10 @@ void File::newDataReaderCreated()
          this->getCache()->getFilePool().open(this->getAbsolutePath(), QIODevice::ReadOnly | QIODevice::Unbuffered);
 
       if (!this->fileInReadMode)
+      {
+         this->numDataReader--; // The 'DataReader' isn't created, 'dataReaderDeleted()' will never be called.
          throw UnableToOpenFileInReadModeException();
+      }
    }
 }
 

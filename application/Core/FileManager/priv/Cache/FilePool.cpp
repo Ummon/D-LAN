@@ -91,12 +91,12 @@ QFile* FilePool::open(const QString& path, QIODevice::OpenMode mode, bool* fileC
 
    // TODO: Linux.
    // TODO: Is there some option about buffering?
-   // We use the 'CreateFileW' function to get an exclusive access to the file.
+   // We use the 'CreateFileW' function to control the sharing mode of the file.
    HANDLE h =
       CreateFileW(
          reinterpret_cast<LPCWSTR>(path.utf16()),
          toCreateFileDesiredAccess(mode),
-         FILE_SHARE_READ, // We permit to read the file.
+         FILE_SHARE_READ | FILE_SHARE_WRITE, // A file being downloaded (opened in write mode) must also be readable by us: to upload it and to check the integrity of a resumed chunk.
          nullptr,
          toCreateFileCreationDisposition(mode),
          FILE_ATTRIBUTE_NORMAL,

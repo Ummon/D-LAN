@@ -140,9 +140,23 @@ QString FileManager::getSharedEntry(const Common::Hash& ID) const
       return QString();
 }
 
+/**
+  * Several files may own a chunk with the same hash, for example a complete file and an unfinished copy of it
+  * whose known bytes come from the persisted download queue and have never been verified.
+  * A chunk from a complete file is preferred, then a complete chunk.
+  */
 QSharedPointer<IChunk> FileManager::getChunk(const Common::Hash& hash) const
 {
-   return this->chunks.value(hash);
+   QSharedPointer<Chunk> result;
+   for (const auto& chunk : this->chunks.values(hash))
+   {
+      if (chunk->isFileComplete())
+         return chunk;
+
+      if (result.isNull() || (chunk->isComplete() && !result->isComplete()))
+         result = chunk;
+   }
+   return result;
 }
 
 QList<QSharedPointer<IChunk>> FileManager::getAllChunks(

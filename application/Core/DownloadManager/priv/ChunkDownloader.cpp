@@ -36,6 +36,7 @@ using namespace DM;
   */
 
 const int ChunkDownloader::MINIMUM_DELTA_TIME_TO_COMPUTE_SPEED(100); // [ms]
+const int ChunkDownloader::MINIMUM_TIME_SAVED_TO_SWITCH_PEER(1000); // [ms]. Switching has a cost (new request, partial buffer flushed), it must be worth it.
 
 ChunkDownloader::ChunkDownloader(
    LinkedPeers& linkedPeers,
@@ -224,20 +225,25 @@ void ChunkDownloader::run()
             // 'false': we are in the download thread, we must not alter 'linkedPeers' nor emit 'numberOfPeersChanged()' from here.
             // Dead peers will be removed later by the main thread.
             PM::IPeer* peer = this->getTheFastestFreePeer(false);
-            if (
-               peer &&
-               peer != this->currentDownloadingPeer &&
-               peer->getSpeed() / SWITCH_TO_ANOTHER_PEER_FACTOR > this->currentDownloadingPeer->getSpeed()
-            )
+            if (peer && peer != this->currentDownloadingPeer)
             {
-               L_DEBU(QString("Switch to a better peer: %1").arg(peer->toStringLog()));
+               const double currentSpeed = qMax<quint32>(1, this->currentDownloadingPeer->getSpeed()); // [B/s].
+               const double otherSpeed = qMax<quint32>(1, peer->getSpeed()); // [B/s].
 
-               // Flush the buffer
-               if (bytesToWrite > 0)
-                  writer->write(buffer, bytesToWrite);
+               // Estimated time saved by switching for the remaining bytes of the chunk. Not worth it when the chunk is almost finished.
+               const double timeSaved = 1000.0 * bytesToRead * (1.0 / currentSpeed - 1.0 / otherSpeed); // [ms].
 
-               this->closeTheSocket = true; // We ask to close the socket to avoid to get garbage data.
-               break;
+               if (otherSpeed / SWITCH_TO_ANOTHER_PEER_FACTOR > currentSpeed && timeSaved > MINIMUM_TIME_SAVED_TO_SWITCH_PEER)
+               {
+                  L_DEBU(QString("Switch to a better peer: %1").arg(peer->toStringLog()));
+
+                  // Flush the buffer
+                  if (bytesToWrite > 0)
+                     writer->write(buffer, bytesToWrite);
+
+                  this->closeTheSocket = true; // We ask to close the socket to avoid to get garbage data.
+                  break;
+               }
             }
          }
 
@@ -270,6 +276,12 @@ void ChunkDownloader::run()
    catch (FM::UnableToOpenFileInWriteModeException)
    {
       L_DEBU("UnableToOpenFileInWriteModeException");
+      this->closeTheSocket = true;
+      this->lastTransferStatus = Protos::Common::DownloadStatus::UNABLE_TO_OPEN_THE_FILE;
+   }
+   catch (FM::UnableToOpenFileInReadModeException&)
+   {
+      L_DEBU("UnableToOpenFileInReadModeException");
       this->closeTheSocket = true;
       this->lastTransferStatus = Protos::Common::DownloadStatus::UNABLE_TO_OPEN_THE_FILE;
    }

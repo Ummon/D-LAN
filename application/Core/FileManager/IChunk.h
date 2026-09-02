@@ -71,6 +71,7 @@ namespace FM
         * 'check_received_data_integrity' is true.
         * @exception FileResetException Occurs when the file has been created and we already got some known bytes.
         * @exception UnableToOpenFileInWriteMode
+        * @exception UnableToOpenFileInReadMode When resuming a chunk, the data already known must be read to check the integrity.
         * @exception IOErrorException
         * @exception ChunkDeletedException
         * @exception ChunkDataUnknownException

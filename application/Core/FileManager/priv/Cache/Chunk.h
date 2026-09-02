@@ -84,6 +84,7 @@ namespace FM
 
       int getChunkSize() const override;
       bool isComplete() const override;
+      bool isFileComplete() const;
 
       bool isOwnedBy(File* file) const;
 
@@ -106,7 +107,7 @@ namespace FM
   * @exception ChunkDataUnknownException
   * @param buffer The buffer.
   * @param offset The offset relative to the chunk.
-  * @return The number of read bytes. If lesser than 'buffer.size' the end of file has been reached
+  * @return The number of read bytes. If lesser than 'buffer.size' the end of the known data has been reached
   *         and the buffer will be partially filled.
   */
 inline int FM::Chunk::read(char* buffer, int offset)
@@ -122,7 +123,10 @@ inline int FM::Chunk::read(char* buffer, int offset)
    if (offset >= this->knownBytes)
       return 0;
 
-   const int bytesRemaining = this->getChunkSize() - offset;
+   // Bounded by the known bytes, not by the chunk size: the data beyond 'knownBytes' isn't written yet.
+   // Reading it would corrupt the hash computed by 'DataWriter::computeChunkHash()' when a chunk is resumed
+   // from an unaligned offset (for example after switching to another peer).
+   const int bytesRemaining = this->knownBytes - offset;
    return this->file->read(buffer, offset + static_cast<qint64>(this->num) * CHUNK_SIZE, bytesRemaining >= BUFFER_SIZE_READING ? BUFFER_SIZE_READING : bytesRemaining);
 }
 

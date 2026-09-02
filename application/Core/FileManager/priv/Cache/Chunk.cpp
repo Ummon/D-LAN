@@ -242,6 +242,14 @@ bool Chunk::isComplete() const
    return this->file && this->knownBytes >= this->getChunkSize(); // Should be '==' but we are never 100% sure ;).
 }
 
+/**
+  * @return 'true' if the file owning the chunk is complete (not an unfinished file).
+  */
+bool Chunk::isFileComplete() const
+{
+   return this->file && this->file->isComplete();
+}
+
 bool Chunk::isOwnedBy(File* file) const
 {
    return this->file == file;

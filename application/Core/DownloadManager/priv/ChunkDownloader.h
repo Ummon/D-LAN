@@ -56,6 +56,7 @@ namespace DM
       Common::Uncopyable
    {
       static const int MINIMUM_DELTA_TIME_TO_COMPUTE_SPEED;
+      static const int MINIMUM_TIME_SAVED_TO_SWITCH_PEER;
 
       Q_OBJECT
    public:

@@ -131,6 +131,8 @@ void Download::setStatus(Protos::Common::DownloadStatus newStatus)
 
    if (!this->isStatusErroneous() && newStatus >= 0x20)
       emit becomeErroneous(this);
+   else if (this->isStatusErroneous() && newStatus < 0x20 && newStatus != Protos::Common::DownloadStatus::DELETED)
+      emit noLongerErroneous();
 
    L_DEBU(
       QString("Download (%1) status change from %2 to %3")
