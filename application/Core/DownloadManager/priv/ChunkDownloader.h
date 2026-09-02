@@ -133,6 +133,7 @@ namespace DM
       QSharedPointer<PM::ISocket> socket;
 
       int chunkSize;
+      int offsetRequested; ///< The offset the data has been asked from, the peer streams from it.
       QSharedPointer<PM::IGetChunksResult> getChunksResult;
 
       bool downloading;

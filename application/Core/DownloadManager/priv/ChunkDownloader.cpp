@@ -51,6 +51,7 @@ ChunkDownloader::ChunkDownloader(
    threadPool(threadPool),
    chunkHash(chunkHash),
    socket(nullptr),
+   offsetRequested(0),
    downloading(false),
    closeTheSocket(false),
    lastTransferStatus(Protos::Common::DownloadStatus::QUEUED),
@@ -154,111 +155,130 @@ void ChunkDownloader::run()
 
       QByteArray buffer(BUFFER_SIZE, Qt::Uninitialized);
 
-      const int initialKnownBytes = this->chunk->getKnownBytes();
-      int bytesToRead = this->chunkSize - initialKnownBytes;
-      int bytesToWrite = 0;
-      int bytesWritten = 0;
-
-      forever
+      // The peer streams the data from the offset it has been asked for. The chunk may have been reset in
+      // between by another chunk of the same file, see 'FM::File::newDataWriterCreated()'. Writing the
+      // received data would then misalign the chunk, 'FM::Chunk::write(..)' appending it after
+      // 'getKnownBytes()', and the resulting hash mismatch would be wrongly blamed on the peer.
+      // 'writer' now exists, the chunk can't be reset anymore: this check is definitive.
+      const int knownBytes = this->chunk->getKnownBytes();
+      if (knownBytes != this->offsetRequested)
       {
-         this->mutex.lock();
-         if (!this->downloading)
+         L_WARN(
+            QString("The chunk has changed since its data has been asked (asked from offset %1, known bytes: %2), download aborted. Chunk: %3")
+               .arg(this->offsetRequested).arg(knownBytes).arg(this->chunk->toStringLog())
+         );
+         this->closeTheSocket = true;
+         this->lastTransferStatus = Protos::Common::DownloadStatus::TRANSFER_ERROR;
+      }
+      else
+      {
+         // Bound to the offset asked and not to 'getKnownBytes()': the peer sends exactly
+         // 'chunkSize - offsetRequested' bytes, see 'UM::ChunksUploader::run()'.
+         int bytesToRead = this->chunkSize - this->offsetRequested;
+         int bytesToWrite = 0;
+         int bytesWritten = 0;
+
+         forever
          {
-            L_DEBU(
-               QString("Downloading aborted, chunk: %1%2")
-                  .arg(this->chunk->toStringLog())
-                  .arg(this->chunk->isComplete() ? "" : " Not complete!")
-            );
-            // Because some garbage from the remote uploader will continue to come in this socket.
-            this->closeTheSocket = true;
-            this->mutex.unlock();
-            break;
-         }
-         this->mutex.unlock();
-
-         int bytesRead =
-            this->socket->read(
-               buffer.data() + bytesToWrite,
-               bytesToRead < BUFFER_SIZE - bytesToWrite ? bytesToRead : BUFFER_SIZE - bytesToWrite
-            );
-
-         bytesToRead -= bytesRead;
-
-         if (bytesRead == 0)
-         {
-            if (!this->socket->waitForReadyRead(SOCKET_TIMEOUT))
+            this->mutex.lock();
+            if (!this->downloading)
             {
-               L_WARN(
-                  QString("Connection dropped, error = %1, bytesAvailable = %2")
-                     .arg(socket->errorString()).arg(socket->bytesAvailable())
+               L_DEBU(
+                  QString("Downloading aborted, chunk: %1%2")
+                     .arg(this->chunk->toStringLog())
+                     .arg(this->chunk->isComplete() ? "" : " Not complete!")
                );
+               // Because some garbage from the remote uploader will continue to come in this socket.
+               this->closeTheSocket = true;
+               this->mutex.unlock();
+               break;
+            }
+            this->mutex.unlock();
+
+            int bytesRead =
+               this->socket->read(
+                  buffer.data() + bytesToWrite,
+                  bytesToRead < BUFFER_SIZE - bytesToWrite ? bytesToRead : BUFFER_SIZE - bytesToWrite
+               );
+
+            bytesToRead -= bytesRead;
+
+            if (bytesRead == 0)
+            {
+               if (!this->socket->waitForReadyRead(SOCKET_TIMEOUT))
+               {
+                  L_WARN(
+                     QString("Connection dropped, error = %1, bytesAvailable = %2")
+                        .arg(socket->errorString()).arg(socket->bytesAvailable())
+                  );
+                  this->closeTheSocket = true;
+                  this->lastTransferStatus = Protos::Common::DownloadStatus::TRANSFER_ERROR;
+                  break;
+               }
+               continue;
+            }
+            else if (bytesRead == -1)
+            {
+               L_WARN(QString("Socket : cannot receive data: %1").arg(this->chunk->toStringLog()));
                this->closeTheSocket = true;
                this->lastTransferStatus = Protos::Common::DownloadStatus::TRANSFER_ERROR;
                break;
             }
-            continue;
-         }
-         else if (bytesRead == -1)
-         {
-            L_WARN(QString("Socket : cannot receive data: %1").arg(this->chunk->toStringLog()));
-            this->closeTheSocket = true;
-            this->lastTransferStatus = Protos::Common::DownloadStatus::TRANSFER_ERROR;
-            break;
-         }
 
-         deltaRead += bytesRead;
-         bytesToWrite += bytesRead;
+            deltaRead += bytesRead;
+            bytesToWrite += bytesRead;
 
-         if (timer.elapsed() > TIME_PERIOD_CHOOSE_ANOTHER_PEER)
-         {
-            this->currentDownloadingPeer->setSpeed(deltaRead / timer.elapsed() * 1000);
-            L_DEBU(
-               QString("Check for a better peer for the chunk: %1, current peer: %2 . . .")
-                  .arg(this->chunk->toStringLog(), this->currentDownloadingPeer->toStringLog())
-            );
-            timer.start();
-            deltaRead = 0;
-
-            // If a another peer exists and its speed is greater than our by a factor 'switch_to_another_peer_factor'
-            // then we will try to switch to this peer.
-            static const double SWITCH_TO_ANOTHER_PEER_FACTOR = SETTINGS.get<double>("switch_to_another_peer_factor");
-            // 'false': we are in the download thread, we must not alter 'linkedPeers' nor emit 'numberOfPeersChanged()' from here.
-            // Dead peers will be removed later by the main thread.
-            PM::IPeer* peer = this->getTheFastestFreePeer(false);
-            if (peer && peer != this->currentDownloadingPeer)
+            if (timer.elapsed() > TIME_PERIOD_CHOOSE_ANOTHER_PEER)
             {
-               const double currentSpeed = qMax<quint32>(1, this->currentDownloadingPeer->getSpeed()); // [B/s].
-               const double otherSpeed = qMax<quint32>(1, peer->getSpeed()); // [B/s].
+               this->currentDownloadingPeer->setSpeed(deltaRead / timer.elapsed() * 1000);
+               L_DEBU(
+                  QString("Check for a better peer for the chunk: %1, current peer: %2 . . .")
+                     .arg(this->chunk->toStringLog(), this->currentDownloadingPeer->toStringLog())
+               );
+               timer.start();
+               deltaRead = 0;
 
-               // Estimated time saved by switching for the remaining bytes of the chunk. Not worth it when the chunk is almost finished.
-               const double timeSaved = 1000.0 * bytesToRead * (1.0 / currentSpeed - 1.0 / otherSpeed); // [ms].
-
-               if (otherSpeed / SWITCH_TO_ANOTHER_PEER_FACTOR > currentSpeed && timeSaved > MINIMUM_TIME_SAVED_TO_SWITCH_PEER)
+               // If a another peer exists and its speed is greater than our by a factor 'switch_to_another_peer_factor'
+               // then we will try to switch to this peer.
+               static const double SWITCH_TO_ANOTHER_PEER_FACTOR = SETTINGS.get<double>("switch_to_another_peer_factor");
+               // 'false': we are in the download thread, we must not alter 'linkedPeers' nor emit 'numberOfPeersChanged()' from here.
+               // Dead peers will be removed later by the main thread.
+               PM::IPeer* peer = this->getTheFastestFreePeer(false);
+               if (peer && peer != this->currentDownloadingPeer)
                {
-                  L_DEBU(QString("Switch to a better peer: %1").arg(peer->toStringLog()));
+                  const double currentSpeed = qMax<quint32>(1, this->currentDownloadingPeer->getSpeed()); // [B/s].
+                  const double otherSpeed = qMax<quint32>(1, peer->getSpeed()); // [B/s].
 
-                  // Flush the buffer
-                  if (bytesToWrite > 0)
-                     writer->write(buffer, bytesToWrite);
+                  // Estimated time saved by switching for the remaining bytes of the chunk. Not worth it when the chunk is almost finished.
+                  const double timeSaved = 1000.0 * bytesToRead * (1.0 / currentSpeed - 1.0 / otherSpeed); // [ms].
 
-                  this->closeTheSocket = true; // We ask to close the socket to avoid to get garbage data.
-                  break;
+                  if (otherSpeed / SWITCH_TO_ANOTHER_PEER_FACTOR > currentSpeed && timeSaved > MINIMUM_TIME_SAVED_TO_SWITCH_PEER)
+                  {
+                     L_DEBU(QString("Switch to a better peer: %1").arg(peer->toStringLog()));
+
+                     // Flush the buffer
+                     if (bytesToWrite > 0)
+                        writer->write(buffer, bytesToWrite);
+
+                     this->closeTheSocket = true; // We ask to close the socket to avoid to get garbage data.
+                     break;
+                  }
                }
             }
+
+            // If the buffer is full or there is no more byte to read.
+            if (bytesToWrite == BUFFER_SIZE || bytesToRead == 0)
+            {
+               writer->write(buffer, bytesToWrite);
+               bytesWritten += bytesToWrite;
+               bytesToWrite = 0;
+            }
+
+            this->transferRateCalculator.addData(bytesRead);
+
+            if (this->offsetRequested + bytesWritten >= this->chunkSize)
+               break;
          }
-
-         // If the buffer is full or there is no more byte to read.
-         if (bytesToWrite == BUFFER_SIZE || bytesToRead == 0)
-         {
-            writer->write(buffer, bytesToWrite);
-            bytesWritten += bytesToWrite;
-            bytesToWrite = 0;
-         }
-
-         this->transferRateCalculator.addData(bytesRead);
-
-         if (initialKnownBytes + bytesWritten >= this->chunkSize)
-            break;
       }
    }
    catch (FM::FileResetException)
@@ -470,8 +490,12 @@ PM::IPeer* ChunkDownloader::startDownloading(quint64 downloadedBytes)
    if (downloadedBytes > 0)
       chunk->set_file_bytes_owned(downloadedBytes);
 
+   // A single snapshot: 'run()' must read exactly the number of bytes the peer sends, both values have to be
+   // derived from the same offset. 'getKnownBytes()' may change in between, see 'run()'.
+   this->offsetRequested = this->chunk->getKnownBytes();
+
    chunk->mutable_hash()->set_hash(this->chunkHash.getData(), Common::Hash::HASH_SIZE);
-   chunk->set_offset(this->chunk->getKnownBytes());
+   chunk->set_offset(this->offsetRequested);
    this->getChunksResult = this->currentDownloadingPeer->getChunks(getChunksMess);
    if (this->getChunksResult.isNull())
       return nullptr;
