@@ -1,3 +1,21 @@
+/**
+  * D-LAN - A decentralized LAN file sharing software.
+  * Copyright (C) 2010-2012 Greg Burri <greg.burri@gmail.com>
+  *
+  * This program is free software: you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+  * the Free Software Foundation, either version 3 of the License, or
+  * (at your option) any later version.
+  *
+  * This program is distributed in the hope that it will be useful,
+  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  * GNU General Public License for more details.
+  *
+  * You should have received a copy of the GNU General Public License
+  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  */
+
 #include <priv/HashCache.h>
 using namespace HC;
 
@@ -20,10 +38,8 @@ HashCache::HashCache(const QString& databaseFolder) :
    querySetHashes(this->db),
    queryRemoveHashes(this->db)
 {
-   QMutexLocker locker(&this->mutex);
-
    const QString DATABASE_FILEPATH = QString("%1/%2").arg(databaseFolder, Common::Constants::HASH_CACHE_INDEX_FILENAME);
-   L_DEBU(QString("HashCashe database: %1").arg(DATABASE_FILEPATH));
+   L_DEBU(QString("HashCache database: %1").arg(DATABASE_FILEPATH));
 
    this->db.setDatabaseName(DATABASE_FILEPATH);
 
@@ -176,19 +192,36 @@ WHERE [type] = 'table' AND [name] = 'Version'
    {
       forever
       {
-         if (updateToNextVersion(currentVersion))
+         if (!this->db.transaction())
+            throw DatabaseException(this->db.lastError());
+
+         try
          {
-            currentVersion += 1;
-            L_DEBU(QString("HashCache database updated to version: %1").arg(currentVersion));
+            if (!this->updateToNextVersion(currentVersion))
+            {
+               this->db.rollback();
+               break;
+            }
+
+            // The version row is written in the same transaction as the migration itself,
+            // otherwise a crash between the two would leave the schema updated but the version not.
             QSqlQuery queryUpdateVersion(this->db);
-            queryUpdateVersion.prepare("INSERT INTO [Version] ([version]) VALUES ($1)");
-            queryUpdateVersion.bindValue(0, currentVersion);
-            queryUpdateVersion.exec();
+            queryUpdateVersion.prepare("INSERT INTO [Version] ([version]) VALUES (?)");
+            queryUpdateVersion.bindValue(0, currentVersion + 1);
+            if (!queryUpdateVersion.exec())
+               throw DatabaseException(queryUpdateVersion.lastError());
+
+            if (!this->db.commit())
+               throw DatabaseException(this->db.lastError());
          }
-         else
+         catch (DatabaseException&)
          {
-            break;
+            this->db.rollback();
+            throw;
          }
+
+         currentVersion += 1;
+         L_DEBU(QString("HashCache database updated to version: %1").arg(currentVersion));
       }
    }
    catch (DatabaseException& e)
@@ -197,30 +230,34 @@ WHERE [type] = 'table' AND [name] = 'Version'
    }
 }
 
+/**
+  * Applies the migration from 'currentVersion' to 'currentVersion + 1'.
+  * Must be called inside a transaction, the caller is responsible to commit or rollback.
+  * Returns false if there is no migration from the given version (the database is up to date).
+  * @exception DatabaseException
+  */
 bool HashCache::updateToNextVersion(int currentVersion)
 {
+   const QStringList* statements = nullptr;
+
    switch (currentVersion)
    {
    case 0: // Version 0 to 1.
-      {
-         QSqlQuery queryInitialDatabase(this->db);
-         this->db.transaction();
-         for (const QString& statement : HashCache::VERSION_1)
-         {
-            queryInitialDatabase.exec(statement);
-            if (!queryInitialDatabase.isActive())
-            {
-               this->db.rollback();
-               throw DatabaseException(queryInitialDatabase.lastError());
-            }
-         }
-         this->db.commit();
+      statements = &HashCache::VERSION_1;
+      break;
 
-         return true;
-      }
+   default:
+      return false;
    }
 
-   return false;
+   QSqlQuery query(this->db);
+   for (const QString& statement : *statements)
+   {
+      if (!query.exec(statement))
+         throw DatabaseException(query.lastError());
+   }
+
+   return true;
 }
 
 const QStringList HashCache::VERSION_1 =

@@ -23,8 +23,6 @@
 #include <QList>
 #include <QString>
 
-#include <Protos/common.pb.h>
-
 #include <Common/Hash.h>
 #include <Common/Path.h>
 
@@ -46,7 +44,7 @@ namespace HC
 
       /**
         * Set all hashes for the given file path.
-        * If the number of hased doesn't match the file size, the request is rejected.
+        * If the number of hashes doesn't match the file size, the request is rejected.
         */
       virtual void setHashes(
          const QString& filePath,

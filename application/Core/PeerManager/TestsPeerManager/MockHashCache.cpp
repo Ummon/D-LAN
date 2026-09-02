@@ -14,7 +14,7 @@ QList<Common::Hash> MockHashCache::getHashes(
 
 /**
   * Set all hashes for the given file path.
-  * If the number of hased doesn't match the file size, the request is rejected.
+  * If the number of hashes doesn't match the file size, the request is rejected.
   */
 void MockHashCache::setHashes(
    const QString& filePath,
