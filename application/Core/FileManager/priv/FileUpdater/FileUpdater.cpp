@@ -320,10 +320,15 @@ void FileUpdater::run()
          }
       }
 
-      if (!this->filesWithoutHashesIOError.isEmpty())
       {
-         this->filesWithoutHashes.append(this->filesWithoutHashesIOError);
-         this->filesWithoutHashesIOError.clear();
+         // The lists are also modified by 'rmRoot(..)' and 'prioritizeAFileToHash(..)' from other threads.
+         QMutexLocker lockerHashing(&this->hashingMutex);
+         QMutexLocker locker(&this->mutex);
+         if (!this->filesWithoutHashesIOError.isEmpty())
+         {
+            this->filesWithoutHashes.append(this->filesWithoutHashesIOError);
+            this->filesWithoutHashesIOError.clear();
+         }
       }
 
       if (this->toStop)
@@ -369,7 +374,8 @@ void FileUpdater::computeSomeHashes()
          if (nextFileToHash->isComplete())
          {
             locker.unlock();
-            bool gotAllHashes;
+            bool gotAllHashes = false;
+            bool ioError = false;
             try
             {
                int hashedAmount = 0;
@@ -386,22 +392,26 @@ void FileUpdater::computeSomeHashes()
             }
             catch (IOErrorException&)
             {
-               fileList->removeFirst();
-               this->filesWithoutHashesIOError << nextFileToHash;
+               ioError = true;
             }
             locker.relock();
 
             // The current hashing file may have been removed from 'filesWithoutHashes' or
-            // 'filesWithoutHashesPrioritized' by 'rmRoot(..)'.
-            if (gotAllHashes && !fileList->isEmpty() && fileList->first() == nextFileToHash)
-               fileList->removeFirst();
-            // Special case for the prioritized list, we put the file at the end after the computation of a hash.
-            else if (
-               fileList == &this->filesWithoutHashesPrioritized &&
-               fileList->size() > 1 &&
-               fileList->first() == nextFileToHash
-            )
-               fileList->move(0, fileList->size() - 1);
+            // 'filesWithoutHashesPrioritized' by 'rmRoot(..)' while the mutex was unlocked: it is about to be
+            // deleted and must not be requeued.
+            if (!fileList->isEmpty() && fileList->first() == nextFileToHash)
+            {
+               if (ioError)
+               {
+                  fileList->removeFirst();
+                  this->filesWithoutHashesIOError << nextFileToHash;
+               }
+               else if (gotAllHashes)
+                  fileList->removeFirst();
+               // Special case for the prioritized list, we put the file at the end after the computation of a hash.
+               else if (fileList == &this->filesWithoutHashesPrioritized && fileList->size() > 1)
+                  fileList->move(0, fileList->size() - 1);
+            }
          }
          else
          {
