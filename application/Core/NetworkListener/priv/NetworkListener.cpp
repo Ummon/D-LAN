@@ -41,8 +41,7 @@ NetworkListener::NetworkListener(
    tCPListener(peerManager),
    uDPListener(fileManager, peerManager, uploadManager, downloadManager)
 {
-   // TODO: use 'QNetworkInformation' to know when the network configuration has changed.
-   // connect(&this->configManager, &QNetworkConfigurationManager::configurationChanged, this, &NetworkListener::rebindSockets);
+   // TODO: rebind the sockets automatically when the network configuration changes ('QNetworkConfigurationManager' no longer exists in Qt 6).
    connect(&this->uDPListener, &UDPListener::received, this, &NetworkListener::received);
    connect(&this->uDPListener, &UDPListener::IMAliveMessageToBeSend, this, &NetworkListener::IMAliveMessageToBeSend);
 

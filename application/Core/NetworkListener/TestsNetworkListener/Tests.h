@@ -15,44 +15,71 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
-#ifndef TESTS_H
-#define TESTS_H
+
+#pragma once
 
 #include <QObject>
+#include <QList>
 #include <QSharedPointer>
+#include <QString>
 
-#include <INetworkListener.h>
+#include <Common/Hash.h>
+#include <Common/Network/Message.h>
 
-#include <Common/LogManager/ILogger.h>
-#include <FileManager/IFileManager.h>
-#include <NetworkListener/INetworkListener.h>
-#include <PeerManager/IPeerManager.h>
+#include <Core/HashCache/IHashCache.h>
+#include <Core/FileManager/IFileManager.h>
+#include <Core/PeerManager/IPeerManager.h>
+#include <Core/UploadManager/IUploadManager.h>
+#include <Core/DownloadManager/IDownloadManager.h>
+#include <Core/NetworkListener/INetworkListener.h>
 
-using namespace NL;
-
-namespace DM { class IDownloadManager; }
-namespace UM { class IUploadManager; }
-
+/**
+  * Two complete core instances are created in the same process, each one with its own ID.
+  * They discover each other with the 'IMAlive' multicast messages (the multicast loopback is only enabled in debug),
+  * then the unicast and the search paths are tested between them.
+  */
 class Tests : public QObject
 {
-Q_OBJECT
+   Q_OBJECT
 public:
    Tests();
 
 private slots:
    void initTestCase();
-   void testSending();
-   void testReception();
-   void messageRecevied(const Common::Message& message);
 
+   // Utils.
+   void multicastGroupIPv4();
+   void multicastGroupIPv6();
+   void addressToListenTo();
 
-private :
-   QSharedPointer<LM::ILogger> logger;
-   QSharedPointer<FM::IFileManager> fileManager;
-   QSharedPointer<NL::INetworkListener> networkListener;
-   QSharedPointer<PM::IPeerManager> peerManager;
-   bool isMessageRecevied;
+   // Sending without any known peer.
+   void sendToUnknownPeer();
+   void sendMessageTooLarge();
+   void sendMulticast();
+
+   // Between the two instances.
+   void peerDiscovery();
+   void unicastReception();
+   void search();
+
+   void cleanupTestCase();
+
+private:
+   struct Instance
+   {
+      QSharedPointer<HC::IHashCache> hashCache;
+      QSharedPointer<FM::IFileManager> fileManager;
+      QSharedPointer<PM::IPeerManager> peerManager;
+      QSharedPointer<UM::IUploadManager> uploadManager;
+      QSharedPointer<DM::IDownloadManager> downloadManager;
+      QSharedPointer<NL::INetworkListener> networkListener; // Must be the last one to be destroyed first.
+   };
+
+   Instance createInstance(const Common::Hash& ID, const QString& nick);
+   bool peersDiscovered() const;
+
+   QList<Common::Hash> peerIDs;
+   QList<Instance> instances;
+
+   QList<Common::Message> receivedMessages; // Messages received by the first instance.
 };
-
-#endif

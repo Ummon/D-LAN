@@ -15,39 +15,18 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #pragma once
 
-#include <QElapsedTimer>
+#include <Core/HashCache/IHashCache.h>
 
-#include <Protos/common.pb.h>
-#include <Protos/core_protocol.pb.h>
-
-#include <Common/Uncopyable.h>
-
-#include <ISearch.h>
-#include <priv/UDPListener.h>
-
-namespace NL
+/**
+  * A hash cache which doesn't store anything, the file manager needs one but no file is shared during the tests.
+  */
+class MockHashCache : public HC::IHashCache
 {
-   class Search : public ISearch, Common::Uncopyable
-   {
-      Q_OBJECT
-   public:
-      Search(UDPListener& uDPListener);
-      quint64 search(const Protos::Common::FindPattern& findPattern);
-      qint64 elapsed();
-
-   private slots:
-      void newFindResult(const Protos::Common::FindResult& result);
-
-   private:
-      UDPListener& uDPListener;
-
-      int nbResult;
-
-      quint64 tag;
-
-      QElapsedTimer timer;
-   };
-}
+public:
+   QList<Common::Hash> getHashes(const QString&, QDateTime = QDateTime()) override { return QList<Common::Hash>(); }
+   void setHashes(const QString&, const QList<Common::Hash>&, qint64, QDateTime = QDateTime()) override {}
+   void rmHashes(const QString&) override {}
+};

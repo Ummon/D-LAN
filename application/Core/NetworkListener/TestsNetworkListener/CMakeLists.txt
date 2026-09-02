@@ -5,7 +5,9 @@
 add_executable(TestsNetworkListener
    main.cpp
    Tests.cpp
+
    Tests.h
+   MockHashCache.h
 )
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -15,13 +17,14 @@ endif()
 target_include_directories(TestsNetworkListener PRIVATE
    "${CMAKE_CURRENT_SOURCE_DIR}"
    "${CMAKE_CURRENT_SOURCE_DIR}/.."
-   "${CMAKE_CURRENT_SOURCE_DIR}/../.."
 )
 
 target_link_libraries(TestsNetworkListener PRIVATE
    NetworkListener
-   FileManager
+   DownloadManager
+   UploadManager
    PeerManager
+   FileManager
    LogManager
    Common
    Qt6::Test

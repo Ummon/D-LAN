@@ -23,7 +23,6 @@
 #include <QTimer>
 #include <QSharedPointer>
 #include <QNetworkInterface>
-#include <QUdpSocket>
 
 #include <google/protobuf/message.h>
 
