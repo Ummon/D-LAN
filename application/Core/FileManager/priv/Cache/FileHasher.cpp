@@ -132,6 +132,20 @@ bool FileHasher::start(FileForHasher* fileCache, int n, int* amountHashed)
    bool endOfFile = false;
    qint64 bytesReadTotal = 0;
 
+   // The chunk list was built from the file size known at scan time. If the file has grown or shrunk enough
+   // to change the number of chunks (typically a file still being copied), the list is rebuilt from the current
+   // size and the file will be hashed again later.
+   const auto restartWithNewChunks =
+      [&]()
+      {
+         L_WARN(QString("The size of the file has changed during hashing, its chunks are reset: %1").arg(filePath));
+         this->currentFileCache->fileHasChangedOnDisk(QFileInfo(filePath));
+         this->toStopHashing = false;
+         this->hashing = false;
+         this->currentFileCache = nullptr;
+         return false;
+      };
+
    while (!endOfFile)
    {
       int bytesReadChunk = 0;
@@ -163,6 +177,8 @@ bool FileHasher::start(FileForHasher* fileCache, int n, int* amountHashed)
             case 0:
                endOfFile = true;
                this->currentFileCache->setSize(bytesReadChunk + bytesReadTotal + bytesSkipped);
+               if (this->currentFileCache->getNbChunks() != chunks.size())
+                  return restartWithNewChunks();
                goto endReading;
             }
          }
@@ -177,6 +193,9 @@ bool FileHasher::start(FileForHasher* fileCache, int n, int* amountHashed)
 
       if (bytesReadChunk > 0)
       {
+         if (chunkNum >= chunks.size())
+            return restartWithNewChunks();
+
          if (amountHashed)
             *amountHashed += bytesReadChunk;
 
