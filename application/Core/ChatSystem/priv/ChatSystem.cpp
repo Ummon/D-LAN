@@ -87,6 +87,12 @@ ChatSystem::SendStatus ChatSystem::send(
    const QList<Common::Hash>& peerIDsAnswer
 )
 {
+   if (!roomName.isEmpty() && !this->rooms.value(roomName).joined)
+   {
+      L_WARN(QString("Unable to send a message to the room '%1': we haven't joined it").arg(roomName));
+      return SendStatus::UNABLE_TO_SEND;
+   }
+
    QSharedPointer<ChatMessage> chatMessage(
       new ChatMessage(
          message,
@@ -253,12 +259,15 @@ void ChatSystem::received(const Common::Message& message)
                  QString::fromStdString(chatMessages.messages(0).chat_room())
                : QString();
 
-         if (hasChatRoom && !this->rooms[chatRoomName].joined)
+         // We don't use 'operator[]' here to avoid creating an empty room as a side effect.
+         QHash<QString, Room>::Iterator room = hasChatRoom ? this->rooms.find(chatRoomName) : this->rooms.end();
+
+         if (hasChatRoom && (room == this->rooms.end() || !room.value().joined))
             break;
 
          const QList<QSharedPointer<ChatMessage>>& messages =
                hasChatRoom ?
-                  this->rooms[chatRoomName].messages.add(chatMessages)
+                  room.value().messages.add(chatMessages)
                 : this->messages.add(chatMessages);
 
          Protos::Common::ChatMessages filteredChatMessages;

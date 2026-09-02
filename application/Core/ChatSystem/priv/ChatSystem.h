@@ -81,7 +81,7 @@ namespace CS
       struct Room {
          ChatMessages messages; // We may not know the messages of not joined rooms.
          QSet<PM::IPeer*> peers; // Do not include our ID. Only alive peers, see 'removeDeadPeersFromRooms()'.
-         bool joined;
+         bool joined = false;
       };
 
       Room& getRoom(const QString& name);

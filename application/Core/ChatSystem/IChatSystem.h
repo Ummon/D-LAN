@@ -46,8 +46,10 @@ namespace CS
 
       /**
         * Send a message to everyone.
-        * This will emit a 'newMessages' signal.
-        * @param roomName The
+        * This will emit a 'newMessages' signal if the message has been sent.
+        * @param roomName The room to send the message to, the message goes to the main chat if empty.
+        *                 The room must have been joined, otherwise 'UNABLE_TO_SEND' is returned.
+        * @param peerIDsAnswer The peers the message is addressed to (may be empty).
         */
       virtual SendStatus send(
          const QString& message,
