@@ -45,10 +45,12 @@ namespace CS
       void fillProtoChatMessage(Protos::Common::ChatMessage& protoChatMessage) const;
 
    private:
+      static QList<Common::Hash> getPeerIDsAnswer(const Protos::Common::ChatMessage& chatMessage);
+
       const quint64 ID;
       const QString message;
       const Common::Hash ownerID;
-      QList<Common::Hash> peerIDsAnswer;
+      const QList<Common::Hash> peerIDsAnswer;
       const QDateTime time; // UTC.
       const QString ownerNick;
       const QString room; // Empty if the message belongs to the main chat.

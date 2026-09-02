@@ -44,10 +44,20 @@ ChatMessage::ChatMessage(const Protos::Common::ChatMessage& chatMessage) :
    ID(chatMessage.id()),
    message(QString::fromStdString(chatMessage.message())),
    ownerID(chatMessage.peer_id().hash()),
+   peerIDsAnswer(ChatMessage::getPeerIDsAnswer(chatMessage)),
    time(chatMessage.time() > 0 ? QDateTime::fromMSecsSinceEpoch(chatMessage.time()) : QDateTime::currentDateTimeUtc()),
    ownerNick(QString::fromStdString(chatMessage.peer_nick())),
    room(QString::fromStdString(chatMessage.chat_room()))
 {
+}
+
+QList<Common::Hash> ChatMessage::getPeerIDsAnswer(const Protos::Common::ChatMessage& chatMessage)
+{
+   QList<Common::Hash> result;
+   result.reserve(chatMessage.peer_ids_answer_size());
+   for (int i = 0; i < chatMessage.peer_ids_answer_size(); i++)
+      result << Common::Hash(chatMessage.peer_ids_answer(i).hash());
+   return result;
 }
 
 quint64 ChatMessage::getID() const
