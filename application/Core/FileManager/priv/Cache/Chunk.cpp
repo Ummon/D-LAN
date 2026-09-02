@@ -201,7 +201,7 @@ void Chunk::setHash(const Common::Hash& hash, bool saveHashes)
                .arg(
                   this->hash.toStr(),
                   hash.toStr(),
-                  this->file->getAbsolutePath()
+                  this->file ? this->file->getAbsolutePath() : QString()
                )
          );
    #endif
@@ -249,5 +249,8 @@ bool Chunk::isOwnedBy(File* file) const
 
 bool Chunk::matchesEntry(const Protos::Common::Entry& entry) const
 {
-   return this->file->matchesEntry(entry);
+   if (this->file)
+      return this->file->matchesEntry(entry);
+   else
+      return false;
 }
