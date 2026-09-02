@@ -358,30 +358,101 @@ bool DownloadsTreeModel::dropMimeData(
    return true;
 }
 
+/**
+  * Three passes are done:
+  *  1) The existing entries are updated and marked as visited with their ancestors.
+  *  2) The entries not visited are deleted, contiguous siblings are removed in one 'beginRemoveRows(..)' / 'endRemoveRows()'.
+  *  3) The top level entries are reordered to follow the queue order and the new entries are created.
+  * The deletion must happen before the reordering: when a block of entries is removed (for example the completed downloads)
+  * every remaining top level entry would otherwise be moved above the removed ones, one 'beginMoveRows(..)' at a time, which
+  * is very slow for the view.
+  */
 void DownloadsTreeModel::onNewState(const Protos::GUI::State& state)
 {
-   QList<int> activeDownloadIndices = this->getNonFilteredDownloadIndices(state);
+   const QList<int> activeDownloadIndices = this->getNonFilteredDownloadIndices(state);
 
    // All nodes set as unvisited.
    for (Common::TreeBreadthFirstIterator<Tree> i(this->root); i.hasNext();)
       i.next()->visited = false;
 
+   // First pass: update the existing entries and mark them and their ancestors as visited.
    for (int i = 0; i < activeDownloadIndices.size(); i++)
    {
       const Protos::GUI::State::Download& download = state.downloads(activeDownloadIndices[i]);
 
-      Tree* itemTree = this->indexedEntries.value(download.id(), 0);
-      if (itemTree) // The item already exists in the tree, we will update its information and all parent directories.
+      if (Tree* itemTree = this->indexedEntries.value(download.id(), 0))
       {
-         Tree* parentTree = itemTree;
-         do
-         {
-            parentTree->visited = true;
-            if (parentTree->getParent() == this->root)
-               this->moveUp(parentTree);
-         } while ((parentTree = parentTree->getParent()));
+         for (Tree* tree = itemTree; tree; tree = tree->getParent())
+            tree->visited = true;
 
          this->update(itemTree, download);
+      }
+   }
+
+   // Second pass: delete the entries which no longer exist.
+   // We can't use the iterator 'TreeBreadthIterator' because the structure is altered during the loop.
+   QList<Tree*> trees;
+   trees << this->root;
+   while (!trees.isEmpty())
+   {
+      Tree* currentTree = trees.takeLast();
+      for (int i = 0; i < currentTree->getNbChildren(); i++)
+      {
+         if (currentTree->getChild(i)->visited)
+         {
+            if (currentTree->getChild(i)->getNbChildren() > 0)
+               trees << currentTree->getChild(i);
+            continue;
+         }
+
+         // Contiguous unvisited siblings are removed together.
+         int last = i;
+         while (last + 1 < currentTree->getNbChildren() && !currentTree->getChild(last + 1)->visited)
+            last++;
+
+         for (int j = i; j <= last; j++)
+            this->updateDirectoriesEntryDeleted(currentTree->getChild(j), currentTree->getChild(j)->getItem());
+
+         this->beginRemoveRows(
+            currentTree == this->root ?
+                 QModelIndex()
+               : this->createIndex(currentTree->getOwnPosition(), 0, currentTree),
+            i,
+            last
+         );
+         for (int j = i; j <= last; j++)
+         {
+            Tree* treeToDelete = currentTree->getChild(i); // Always 'i': a deleted tree removes itself from its parent.
+            for (Common::TreeBreadthFirstIterator<Tree> k(treeToDelete, true); k.hasNext();)
+            {
+               Tree* treeChild = k.next();
+               if (treeChild->getItem().id() != 0)
+                  this->indexedEntries.remove(treeChild->getItem().id());
+            }
+            delete treeToDelete;
+         }
+         this->endRemoveRows();
+         i--; // The next child to examine is now at the position 'i'.
+      }
+   }
+
+   // Third pass: the top level entries are reordered and the new entries are created.
+   // 'visited' is reused here to know which top level entries have already been processed, see 'moveUp(..)' and 'insert(..)'.
+   for (int i = 0; i < this->root->getNbChildren(); i++)
+      this->root->getChild(i)->visited = false;
+
+   for (int i = 0; i < activeDownloadIndices.size(); i++)
+   {
+      const Protos::GUI::State::Download& download = state.downloads(activeDownloadIndices[i]);
+
+      if (Tree* itemTree = this->indexedEntries.value(download.id(), 0)) // The item already exists, its top level ancestor may have to be moved.
+      {
+         Tree* topTree = itemTree;
+         while (topTree->getParent() != this->root)
+            topTree = topTree->getParent();
+
+         topTree->visited = true;
+         this->moveUp(topTree);
       }
       else // We have to create a new entry in the tree.
       {
@@ -400,43 +471,6 @@ void DownloadsTreeModel::onNewState(const Protos::GUI::State& state)
             );
 
          this->insert(currentTree, download);
-      }
-   }
-
-   // Delete unknown items, we can't use the iterator 'TreeBreadthIterator' because the structure is altered during the loop.
-   QList<Tree*> trees;
-   trees << this->root;
-   while (!trees.isEmpty())
-   {
-      Tree* currentTree = trees.takeLast();
-      for (int i = 0; i < currentTree->getNbChildren(); i++)
-      {
-         Tree* currentChildTree = currentTree->getChild(i);
-         if (!currentChildTree->visited)
-         {
-            this->updateDirectoriesEntryDeleted(currentChildTree, currentChildTree->getItem());
-
-            this->beginRemoveRows(
-               currentTree == this->root ?
-                    QModelIndex()
-                  : this->createIndex(currentTree->getOwnPosition(), 0, currentTree),
-               i,
-               i
-            );
-            for (Common::TreeBreadthFirstIterator<Tree> j(currentChildTree, true); j.hasNext();)
-            {
-               Tree* treeChild = j.next();
-               if (treeChild->getItem().id() != 0)
-                  this->indexedEntries.remove(treeChild->getItem().id());
-            }
-            delete currentChildTree;
-            this->endRemoveRows();
-            i--;
-         }
-         else if(currentChildTree->getNbChildren() > 0)
-         {
-            trees << currentChildTree;
-         }
       }
    }
 }

@@ -23,6 +23,7 @@ using namespace GUI;
 #include <algorithm>
 
 #include <QPixmap>
+#include <QSet>
 
 #include <Protos/common.pb.h>
 #include <Common/ProtoHelper.h>
@@ -242,37 +243,112 @@ void DownloadsFlatModel::onNewState(const Protos::GUI::State& state)
       this->totalBytesDownloadedInQueue += state.downloads(i).downloaded_bytes();
    }
 
-   const QList<int>& activeDownloadIndices = this->getNonFilteredDownloadIndices(state);
+   const QList<int> activeDownloadIndices = this->getNonFilteredDownloadIndices(state);
 
-   int i = 0;
-   for (; i < activeDownloadIndices.size() && i < this->downloads.size(); i++)
+   QSet<quint64> newIDs;
+   newIDs.reserve(activeDownloadIndices.size());
+   for (int i = 0; i < activeDownloadIndices.size(); i++)
+      newIDs.insert(state.downloads(activeDownloadIndices[i]).id());
+
+   // 1) Remove the rows which no longer exist, by contiguous ranges. Done from the end to keep the positions valid.
+   //    For example when the completed downloads are removed by the user.
+   for (int i = this->downloads.size() - 1; i >= 0; i--)
    {
-      if (state.downloads(activeDownloadIndices[i]) != this->downloads[i])
-      {
-         this->downloads[i].CopyFrom(state.downloads(activeDownloadIndices[i]));
-         emit dataChanged(this->createIndex(i, 0), this->createIndex(i, 3));
-      }
+      if (newIDs.contains(this->downloads[i].id()))
+         continue;
+
+      const int last = i;
+      while (i > 0 && !newIDs.contains(this->downloads[i - 1].id()))
+         i--;
+
+      this->beginRemoveRows(QModelIndex(), i, last);
+      this->downloads.remove(i, last - i + 1);
+      this->endRemoveRows();
    }
 
-   // Insert new elements.
-   if (i < activeDownloadIndices.size())
-   {
-      this->beginInsertRows(QModelIndex(), i, activeDownloadIndices.size() - 1);
-      while (i < activeDownloadIndices.size())
-      {
-         const Protos::GUI::State_Download& download = state.downloads(activeDownloadIndices[i++]);
-         this->downloads << download;
-      }
-      this->endInsertRows();
-   }
+   QSet<quint64> oldIDs;
+   oldIDs.reserve(this->downloads.size());
+   for (int i = 0; i < this->downloads.size(); i++)
+      oldIDs.insert(this->downloads[i].id());
 
-   // Delete some elements.
+   // 2) Walk both lists together: the existing rows are updated and the new rows are inserted by contiguous ranges.
+   //    The consecutive modified rows are notified with a single 'dataChanged(..)'.
+   //    If the order of the existing rows has changed (some downloads have been moved) the rows are simply rewritten
+   //    from that point.
+   int firstModified = -1; // First row of the current range of modified rows, -1 if none.
+   auto flushModified = [&](int lastModified)
+   {
+      if (firstModified != -1)
+      {
+         emit dataChanged(this->createIndex(firstModified, 0), this->createIndex(lastModified, this->columnCount() - 1));
+         firstModified = -1;
+      }
+   };
+   auto overwriteRow = [&](int i, const Protos::GUI::State::Download& download)
+   {
+      if (this->downloads[i] != download)
+      {
+         this->downloads[i].CopyFrom(download);
+         if (firstModified == -1)
+            firstModified = i;
+      }
+      else
+         flushModified(i - 1);
+   };
+
+   bool orderChanged = false;
+   int i = 0; // Current position, 'this->downloads' and 'activeDownloadIndices' are kept synchronized below 'i'.
+   while (i < activeDownloadIndices.size())
+   {
+      const Protos::GUI::State::Download& download = state.downloads(activeDownloadIndices[i]);
+
+      if (!orderChanged && i < this->downloads.size() && this->downloads[i].id() == download.id())
+      {
+         overwriteRow(i, download);
+         i++;
+      }
+      else if (!orderChanged && !oldIDs.contains(download.id()))
+      {
+         flushModified(i - 1);
+
+         int last = i;
+         while (last + 1 < activeDownloadIndices.size() && !oldIDs.contains(state.downloads(activeDownloadIndices[last + 1]).id()))
+            last++;
+
+         this->beginInsertRows(QModelIndex(), i, last);
+         for (int j = i; j <= last; j++)
+            this->downloads.insert(j, state.downloads(activeDownloadIndices[j]));
+         this->endInsertRows();
+
+         i = last + 1;
+      }
+      else
+      {
+         orderChanged = true;
+
+         if (i < this->downloads.size())
+         {
+            overwriteRow(i, download);
+            i++;
+         }
+         else // Append all the remaining rows.
+         {
+            flushModified(i - 1);
+
+            this->beginInsertRows(QModelIndex(), i, activeDownloadIndices.size() - 1);
+            for (; i < activeDownloadIndices.size(); i++)
+               this->downloads << state.downloads(activeDownloadIndices[i]);
+            this->endInsertRows();
+         }
+      }
+   }
+   flushModified(i - 1);
+
+   // 3) Remove the extra rows at the end, only possible if the order has changed.
    if (i < this->downloads.size())
    {
       this->beginRemoveRows(QModelIndex(), i, this->downloads.size() - 1);
-      const int nbDownloads = this->downloads.size();
-      while (i++ < nbDownloads)
-         this->downloads.removeLast();
+      this->downloads.remove(i, this->downloads.size() - i);
       this->endRemoveRows();
    }
 
