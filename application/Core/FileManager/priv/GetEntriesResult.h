@@ -15,10 +15,11 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #pragma once
 
 #include <QObject>
+#include <QMutex>
 
 #include <Common/Uncopyable.h>
 
@@ -33,17 +34,24 @@ namespace FM
       Q_OBJECT
    public:
       GetEntriesResult(Directory* dir, int maxNbHashesPerEntry);
+      ~GetEntriesResult();
       void start();
 
    private slots:
-      void directoryScanned(Directory* dir);
+      void directoryScanned(FM::Directory* dir);
+      void entryRemoved(FM::Entry* entry);
       void sendResult();
 
    private:
       void buildResult();
+      void disconnectFromCache();
 
       Protos::Core::GetEntriesResult::EntryResult res;
-      Directory* dir;
+      Directory* dir; ///< Set to 'nullptr' when the directory is removed from the cache.
+      Cache* cache;
       const int maxNbHashesPerEntry;
+
+      QMutex mutex; ///< Protects 'dir', 'res' and 'resultBuilt' from concurrent slot calls.
+      bool resultBuilt; ///< Once set the result is final and cannot be built or invalidated anymore.
    };
 }
