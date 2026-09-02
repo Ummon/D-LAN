@@ -208,17 +208,15 @@ void ChatSystem::received(const Common::Message& message)
                room.peers.insert(peer);
             }
 
-            // We remove the peer from the rooms he is not. If a room becomes empty, we remove it from the list.
+            // We remove the peer from the rooms he is not.
             for (QMutableHashIterator<QString, Room> i(this->rooms); i.hasNext();)
             {
                auto room = i.next();
                if (!roomsWithPeer.remove(room.key()))
-               {
                   room.value().peers.remove(peer);
-                  if (room.value().peers.isEmpty() && !room.value().joined)
-                     i.remove();
-               }
             }
+
+            this->removeDeadPeersFromRooms();
          }
       }
       break;
@@ -328,6 +326,9 @@ void ChatSystem::IMAliveMessageToBeSend(Protos::Core::IMAlive& IMAliveMessage)
   */
 void ChatSystem::retrieveLastChatMessages()
 {
+   // A peer doesn't announce when it dies, so we periodically remove the dead peers from the rooms here.
+   this->removeDeadPeersFromRooms();
+
    this->retrieveLastChatMessagesFromPeers(this->peerManager->getPeers());
 
    for (QHashIterator<QString, Room> i(this->rooms); i.hasNext();)
@@ -335,6 +336,24 @@ void ChatSystem::retrieveLastChatMessages()
       auto room = i.next();
       if (room.value().joined)
          this->retrieveLastChatMessagesFromPeers(room.value().peers.values(), room.key());
+   }
+}
+
+/**
+  * Remove the dead peers from all rooms. A room without any peer which is not joined is removed.
+  */
+void ChatSystem::removeDeadPeersFromRooms()
+{
+   for (QMutableHashIterator<QString, Room> i(this->rooms); i.hasNext();)
+   {
+      Room& room = i.next().value();
+
+      for (QMutableSetIterator<PM::IPeer*> j(room.peers); j.hasNext();)
+         if (!j.next()->isAlive())
+            j.remove();
+
+      if (room.peers.isEmpty() && !room.joined)
+         i.remove();
    }
 }
 
