@@ -201,7 +201,7 @@ void Chunk::setHash(const Common::Hash& hash, bool saveHashes)
                .arg(
                   this->hash.toStr(),
                   hash.toStr(),
-                  this->file ? this->file->getAbsolutePath() : QString()
+                  this->file ? this->file->getAbsolutePath().toString() : QString()
                )
          );
    #endif
