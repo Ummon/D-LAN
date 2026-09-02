@@ -24,6 +24,7 @@ using namespace NL;
 #include <Common/LogManager/Builder.h>
 
 #include <priv/Search.h>
+#include <priv/Utils.h>
 
 LOG_INIT_CPP(NetworkListener)
 
@@ -38,12 +39,14 @@ NetworkListener::NetworkListener(
    uploadManager(uploadManager),
    downloadManager(downloadManager),
    tCPListener(peerManager),
-   uDPListener(fileManager, peerManager, uploadManager, downloadManager, tCPListener.getCurrentPort())
+   uDPListener(fileManager, peerManager, uploadManager, downloadManager)
 {
    // TODO: use 'QNetworkInformation' to know when the network configuration has changed.
    // connect(&this->configManager, &QNetworkConfigurationManager::configurationChanged, this, &NetworkListener::rebindSockets);
    connect(&this->uDPListener, &UDPListener::received, this, &NetworkListener::received);
    connect(&this->uDPListener, &UDPListener::IMAliveMessageToBeSend, this, &NetworkListener::IMAliveMessageToBeSend);
+
+   this->rebindSockets();
 }
 
 NetworkListener::~NetworkListener()
@@ -60,6 +63,7 @@ QSharedPointer<ISearch> NetworkListener::newSearch()
 void NetworkListener::rebindSockets()
 {
    this->peerManager->removeAllPeers();
+   Utils::sanitizeListenSettings();
    // The TCP listener is rebound first because its port may change, the UDP unicast socket must use the same port.
    this->tCPListener.rebindSockets();
    this->uDPListener.rebindSockets(this->tCPListener.getCurrentPort());

@@ -57,14 +57,14 @@ namespace NL
          QSharedPointer<FM::IFileManager> fileManager,
          QSharedPointer<PM::IPeerManager> peerManager,
          QSharedPointer<UM::IUploadManager> uploadManager,
-         QSharedPointer<DM::IDownloadManager> downloadManager,
-         quint16 unicastPort
+         QSharedPointer<DM::IDownloadManager> downloadManager
       );
 
       INetworkListener::SendStatus send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message, const Common::Hash& peerID);
       INetworkListener::SendStatus send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message = Protos::Common::Null());
 
       /**
+        * The sockets aren't bound until this method is called.
         * @param unicastPort The port to bind the unicast socket to, it must be the same as the TCP port.
         */
       void rebindSockets(quint16 unicastPort);

@@ -35,6 +35,9 @@ namespace NL
       static const int MAX_LISTEN_ATTEMPT;
 
    public:
+      /**
+        * The server doesn't listen until 'rebindSockets()' is called.
+        */
       TCPListener(QSharedPointer<PM::IPeerManager> peerManager);
       quint16 getCurrentPort();
       void rebindSockets();

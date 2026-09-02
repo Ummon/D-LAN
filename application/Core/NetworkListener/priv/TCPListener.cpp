@@ -19,6 +19,8 @@
 #include <priv/TCPListener.h>
 using namespace NL;
 
+#include <limits>
+
 #include <Common/Settings.h>
 
 #include <priv/Log.h>
@@ -33,33 +35,47 @@ using namespace NL;
 const int TCPListener::MAX_LISTEN_ATTEMPT(10);
 
 TCPListener::TCPListener(QSharedPointer<PM::IPeerManager> peerManager) :
-   peerManager(peerManager)
+   peerManager(peerManager), currentPort(0)
 {
-   this->rebindSockets();
 }
 
+/**
+  * @return The port currently listened to, 0 if the server isn't listening.
+  */
 quint16 TCPListener::getCurrentPort()
 {
    return this->currentPort;
 }
 
+/**
+  * Try to listen to 'unicast_base_port', if it's already taken the next ports are tried.
+  * If none of them is available a port chosen by the OS is used, this port is transmitted to the peers by the 'IMAlive' message.
+  */
 void TCPListener::rebindSockets()
 {
    this->tcpServer.close();
    this->tcpServer.disconnect(this);
 
-   this->currentPort = SETTINGS.get<quint32>("unicast_base_port");
+   const QHostAddress address = Utils::getCurrentAddressToListenTo();
+   const quint32 basePort = SETTINGS.get<quint32>("unicast_base_port");
 
-   int n = 0;
-   while(!this->tcpServer.listen(Utils::getCurrentAddressToListenTo(), this->currentPort))
-   {
-      if (++n == MAX_LISTEN_ATTEMPT)
-      {
-         L_ERRO("Can't find a port to listen");
+   for (int n = 0; n < MAX_LISTEN_ATTEMPT && basePort + n <= std::numeric_limits<quint16>::max(); n++)
+      if (this->tcpServer.listen(address, static_cast<quint16>(basePort + n)))
          break;
-      }
-      this->currentPort++;
+
+   if (!this->tcpServer.isListening())
+   {
+      if (this->tcpServer.listen(address, 0))
+         L_WARN(
+            QString("Unable to listen to the ports %1 to %2, listening to the port %3 instead")
+               .arg(basePort).arg(basePort + MAX_LISTEN_ATTEMPT - 1).arg(this->tcpServer.serverPort())
+         );
+      else
+         L_ERRO(QString("Unable to listen to any port on %1: %2").arg(address.toString(), this->tcpServer.errorString()));
    }
+
+   this->currentPort = this->tcpServer.serverPort();
+
    connect(&this->tcpServer, &QTcpServer::newConnection, this, &TCPListener::newConnection);
 }
 

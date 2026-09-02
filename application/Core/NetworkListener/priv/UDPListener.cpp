@@ -61,12 +61,11 @@ UDPListener::UDPListener(
    QSharedPointer<FM::IFileManager> fileManager,
    QSharedPointer<PM::IPeerManager> peerManager,
    QSharedPointer<UM::IUploadManager> uploadManager,
-   QSharedPointer<DM::IDownloadManager> downloadManager,
-   quint16 unicastPort
+   QSharedPointer<DM::IDownloadManager> downloadManager
 ) :
    MAX_UDP_DATAGRAM_PAYLOAD_SIZE(UDPListener::getMaxUDPDatagramPayloadSize()),
    bodyBuffer(UDPListener::buffer + Common::MessageHeader::HEADER_SIZE),
-   unicastPort(unicastPort),
+   unicastPort(0),
    MULTICAST_PORT(SETTINGS.get<quint32>("multicast_port")),
    fileManager(fileManager),
    peerManager(peerManager),
@@ -76,13 +75,12 @@ UDPListener::UDPListener(
    nextHashRequestType(FIRST_HASHES),
    loggerIMAlive(LM::Builder::newLogger("NetworkListener (IMAlive)"))
 {
-   this->initMulticastUDPSocket();
-   this->initUnicastUDPSocket();
-
    connect(&this->timerIMAlive, &QTimer::timeout, this, &UDPListener::sendIMAliveMessage);
    this->timerIMAlive.start(static_cast<int>(SETTINGS.get<quint32>("peer_imalive_period")));
 
-   this->sendIMAliveMessage();
+   // The first 'IMAlive' message is deferred to the event loop: the sockets must be bound (see 'rebindSockets(..)') and
+   // the other components must be connected to 'IMAliveMessageToBeSend' to be able to complete the message.
+   QTimer::singleShot(0, this, &UDPListener::sendIMAliveMessage);
 }
 
 /**
@@ -264,7 +262,9 @@ void UDPListener::processPendingMulticastDatagrams()
                   IMAliveMessage.version()
                );
 
-               if (IMAliveMessage.chunks_size() > 0)
+               // We reply only to the peers we can collaborate with (alive, not blocked and with a compatible protocol version).
+               PM::IPeer* peer = this->peerManager->getPeer(header.getSenderID());
+               if (peer && peer->isAvailable() && IMAliveMessage.chunks_size() > 0)
                {
                   QList<Common::Hash> hashes;
                   hashes.reserve(IMAliveMessage.chunks_size());

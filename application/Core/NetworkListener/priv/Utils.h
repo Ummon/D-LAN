@@ -27,7 +27,12 @@ namespace NL
    {
    public:
       static QNetworkInterface getCurrentInterfaceToListenTo();
+      static void sanitizeListenSettings();
       static QHostAddress getCurrentAddressToListenTo();
       static QHostAddress getMulticastGroup(QAbstractSocket::NetworkLayerProtocol protocol);
+
+   private:
+      static bool addressExists(const QString& address);
+      static bool hasIPv6();
    };
 }

@@ -64,34 +64,61 @@ QNetworkInterface Utils::getCurrentInterfaceToListenTo()
    return interfaces.first();
 }
 
+/**
+  * @return true if the given address is currently assigned to one of the network interfaces.
+  */
+bool Utils::addressExists(const QString& address)
+{
+   for (const QHostAddress& existingAddress : QNetworkInterface::allAddresses())
+      if (existingAddress.toString() == address)
+         return true;
+   return false;
+}
+
+/**
+  * @return true if at least one network interface has an IPv6 address.
+  */
+bool Utils::hasIPv6()
+{
+   for (const QHostAddress& address : QNetworkInterface::allAddresses())
+      if (address.protocol() == QAbstractSocket::IPv6Protocol)
+         return true;
+   return false;
+}
+
+/**
+  * Check the settings 'listen_address' and 'listen_any' against the current network configuration and correct them if needed.
+  * It should be called once before (re)binding the sockets.
+  * 'getCurrentAddressToListenTo()' doesn't depend on this function, it will always return a valid address.
+  */
+void Utils::sanitizeListenSettings()
+{
+   const QString addressToListen = SETTINGS.get<QString>("listen_address");
+   if (!addressToListen.isEmpty() && !Utils::addressExists(addressToListen))
+   {
+      L_WARN(QString("The address to listen to (%1) doesn't exist anymore, listening to any address instead").arg(addressToListen));
+      SETTINGS.set("listen_address", QString(""));
+   }
+
+   if (SETTINGS.get<quint32>("listen_any") == Protos::Common::Interface::Address::IPv6 && !Utils::hasIPv6())
+   {
+      L_WARN("IPv6 isn't available, listening to any IPv4 address instead");
+      SETTINGS.set("listen_any", static_cast<quint32>(Protos::Common::Interface::Address::IPv4));
+   }
+}
+
+/**
+  * @return The address to bind the sockets to. This function has no side effect on the settings, see 'sanitizeListenSettings()'.
+  */
 QHostAddress Utils::getCurrentAddressToListenTo()
 {
    const QString addressToListen = SETTINGS.get<QString>("listen_address");
 
-   if (!addressToListen.isEmpty())
-   {
-      // Check if the address exists.
-      foreach (QHostAddress address, QNetworkInterface::allAddresses())
-         if (address.toString() == addressToListen)
-            return QHostAddress(addressToListen);
-
-      SETTINGS.set("listen_address", QString(""));
-   }
-
-   // Check if IPv6 is available.
-   bool hasAnyIPv6 = false;
-   foreach (QHostAddress address, QNetworkInterface::allAddresses())
-      if (address == QHostAddress::AnyIPv6 || address == QHostAddress::LocalHostIPv6)
-      {
-         hasAnyIPv6 = true;
-         break;
-      }
-
-   if (!hasAnyIPv6 && SETTINGS.get<quint32>("listen_any") == Protos::Common::Interface::Address::IPv6)
-      SETTINGS.set("listen_any", static_cast<quint32>(Protos::Common::Interface::Address::IPv4));
+   if (!addressToListen.isEmpty() && Utils::addressExists(addressToListen))
+      return QHostAddress(addressToListen);
 
    return
-      SETTINGS.get<quint32>("listen_any") == Protos::Common::Interface::Address::IPv4 ?
+      SETTINGS.get<quint32>("listen_any") == Protos::Common::Interface::Address::IPv4 || !Utils::hasIPv6() ?
            QHostAddress::AnyIPv4
          : QHostAddress::AnyIPv6;
 }
