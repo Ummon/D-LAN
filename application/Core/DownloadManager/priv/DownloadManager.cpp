@@ -462,7 +462,10 @@ void DownloadManager::scanTheQueue()
             break;
 
       if (fileDownload->isStatusErroneous())
+      {
+         chunkDownloader.clear();
          continue;
+      }
 
       chunkDownloader = fileDownload->getAChunkToDownload();
 
@@ -482,6 +485,11 @@ void DownloadManager::scanTheQueue()
          linkedPeersNotOccupied -= currentPeer;
          this->numberOfDownloadThreadRunning++;
          numberOfDownloadThreadRunningCopy = this->numberOfDownloadThreadRunning;
+      }
+      else
+      {
+         // Unable to start this chunk, we go to the next file otherwise we would retry the same chunk endlessly.
+         chunkDownloader.clear();
       }
    }
 
