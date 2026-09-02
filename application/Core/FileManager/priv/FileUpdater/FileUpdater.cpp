@@ -208,9 +208,19 @@ void FileUpdater::run()
 #endif
    QThread::currentThread()->setObjectName(threadName);
 
-   while (!this->entriesToScan.isEmpty())
+   // Initial scan. 'entriesToScan' may be modified concurrently by 'addRoot(..)' or 'rmRoot(..)'.
+   forever
    {
-      Entry* entry = this->entriesToScan.takeFirst();
+      Entry* entry = nullptr;
+      {
+         // Same locking order as 'stopScanning(..)'.
+         QMutexLocker scanningLocker(&this->scanningMutex);
+         QMutexLocker locker(&this->mutex);
+         if (this->entriesToScan.isEmpty())
+            break;
+         entry = this->entriesToScan.takeFirst();
+         this->currentScanningEntry = entry;
+      }
       this->scan(entry, true);
    }
 
