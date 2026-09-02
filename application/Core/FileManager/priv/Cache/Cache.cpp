@@ -398,6 +398,8 @@ QList<Common::SharedEntry> Cache::getSharedEntries() const
 
 SharedEntry* Cache::getSharedEntry(const Common::Hash& ID) const
 {
+   QMutexLocker locker(&this->mutex);
+
    for (QListIterator<SharedEntry*> i(this->sharedEntries); i.hasNext();)
    {
       SharedEntry* entry = i.next();
@@ -441,7 +443,7 @@ void Cache::setSharedPaths(const QList<std::pair<QString, Common::Path>>& paths)
       try
       {
          // dirs[i] not found -> we create a new one.
-         if (this->createSharedEntry(pathsWithoutDuplicates[i].second, Common::Hash(), j, paths[i].first))
+         if (this->createSharedEntry(pathsWithoutDuplicates[i].second, Common::Hash(), j, pathsWithoutDuplicates[i].first))
             j++;
       }
       catch (PathNotFoundException& e)
@@ -480,9 +482,9 @@ QPair<Common::SharedEntry, QString> Cache::addASharedPath(const QString& absolut
          return qMakePair(makeSharedEntry(current), QString("/"));
    }
 
-   // If the given entry is a sub item to an existing shared directory.
-   SharedDirectory* superDir = this->getSuperSharedDirectory(absolutePathCleaned);
-   if (superDir && absolutePathCleaned.isSubOf(superDir->getPath()) == 0)
+   // If the given entry is a sub item to an existing shared directory ('getSuperSharedDirectory(..)' only
+   // returns a directory which strictly contains the given path).
+   if (SharedDirectory* superDir = this->getSuperSharedDirectory(absolutePathCleaned))
    {
       QString relativePath(absolutePathCleaned);
       // TODO: Does it work in all cases?

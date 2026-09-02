@@ -44,7 +44,7 @@ namespace FM
    protected:
       SharedEntry(
          Cache* cache,
-         const Common::Path& path,
+         const Common::Path& fullPath,
          const Common::Hash& id = Common::Hash(),
          const QString& userName = QString()
       );

@@ -39,36 +39,35 @@ using namespace FM;
   * @exception FileNotFoundException
   * @exception DirNotFoundException
   */
+/**
+  * @param fullPath The path of the shared entry itself (file or directory), it's checked against the cache and the
+  *                 file system. Only the path of its parent directory is kept, see 'SharedEntry::path'.
+  */
 SharedEntry::SharedEntry(
    Cache* cache,
-   const Common::Path& path,
+   const Common::Path& fullPath,
    const Common::Hash& id,
    const QString& userName
 ) :
    cache(cache),
-   path(path),
+   path(fullPath.removeLastElement()),
    id(id.isNull() ? Common::Hash::rand() : id),
    userName(userName)
 {
-   const QString& pathStr = path.toString();
+   const QString& pathStr = fullPath.toString();
 
-   // if (userName.isNull())
-   //    this->userName = entryName(path);
-   // else
-   //    this->userName = userName;
-
-   // Avoid two same directories.
-   if (this->getCache()->isShared(pathStr))
+   // Avoid two same entries.
+   if (this->getCache()->isShared(fullPath))
       throw SharedEntryAlreadySharedException();
 
-   // First of all check is the directory physically exists.
-   if (path.isFile() && !QFile(pathStr).exists())
+   // First of all check is the entry physically exists.
+   if (fullPath.isFile() && !QFile(pathStr).exists())
       throw FileNotFoundException(pathStr);
 
-   if (!path.isFile() && !QDir(pathStr).exists())
+   if (!fullPath.isFile() && !QDir(pathStr).exists())
       throw DirNotFoundException(pathStr);
 
-   if (SharedDirectory* dir = this->cache->getSuperSharedDirectory(pathStr))
+   if (SharedDirectory* dir = this->cache->getSuperSharedDirectory(fullPath))
       throw SuperDirectoryExistsException(dir->getPath().toString(), pathStr);
 }
 
@@ -221,7 +220,7 @@ SharedDirectory::SharedDirectory(
 ) :
    SharedEntry(
       cache,
-      path.removeLastDir(),
+      path,
       id,
       userName.isEmpty()
          ? (path.getDirs().isEmpty() ? path.getRoot() : path.getDirs().constLast())
@@ -286,7 +285,7 @@ SharedFile::SharedFile(
 ) :
    SharedEntry(
       cache,
-      path.removeFilename(),
+      path,
       id,
       userName.isNull() ? path.getFilename() : userName
    )
