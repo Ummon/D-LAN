@@ -48,10 +48,12 @@ namespace DM
 
       inline void rmLink(PM::IPeer* peer)
       {
-         quint32& n = (*this)[peer];
-         n--;
-         if (n == 0)
-            this->remove(peer);
+         auto i = this->find(peer);
+         if (i == this->end())
+            return;
+
+         if (--i.value() == 0)
+            this->erase(i);
          // L_DEBU(QString("rmLink(..): peer: %1, n = %2").arg(peer->toStringLog()).arg(n));
       }
    };
