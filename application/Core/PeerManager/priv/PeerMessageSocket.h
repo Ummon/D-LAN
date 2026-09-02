@@ -96,6 +96,9 @@ namespace PM
 
       void finished(bool closeTheSocket = false) override;
 
+      void startListening() override;
+      void stopListening() override;
+
    public slots:
       void close() override;
 

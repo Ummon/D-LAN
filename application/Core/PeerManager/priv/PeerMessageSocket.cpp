@@ -214,6 +214,31 @@ void PeerMessageSocket::finished(bool closeTheSocket)
 }
 
 /**
+  * The idle timer watches the socket only while it is listening for messages.
+  * 'stopListening()' means a raw data stream is about to be exchanged (see 'onNewMessage(..)' for
+  * 'CORE_GET_CHUNKS' and 'GetChunksResult::newMessage(..)'): the socket is then given to another thread
+  * which may legitimately use it for a long time. A chunk is 'Common::Constants::CHUNK_SIZE' bytes so a
+  * transfer easily outlives 'idle_socket_timeout'. The timer must not fire during this period, first
+  * because the socket isn't idle at all and second because 'close()' would touch a QTcpSocket owned by
+  * another thread. The transfer itself is guarded by 'socket_timeout', see 'UM::ChunksUploader::run()'
+  * and 'DM::ChunkDownloader::run()'.
+  */
+void PeerMessageSocket::startListening()
+{
+   // Started before the base method: the latter may read a pending message and stop the timer again.
+   this->inactiveTimer.start();
+
+   this->MessageSocket::startListening();
+}
+
+void PeerMessageSocket::stopListening()
+{
+   this->inactiveTimer.stop();
+
+   this->MessageSocket::stopListening();
+}
+
+/**
   * Only emit the 'closed(..)' signal, do not close the socket.
   */
 void PeerMessageSocket::close()
@@ -492,7 +517,8 @@ void PeerMessageSocket::initUnactiveTimer()
    this->inactiveTimer.setSingleShot(true);
    this->inactiveTimer.setInterval(SETTINGS.get<quint32>("idle_socket_timeout"));
    connect(&this->inactiveTimer, &QTimer::timeout, this, &PeerMessageSocket::close);
-   this->inactiveTimer.start();
+   // Not started here: 'startListening()' owns the timer and is called right after the socket is built,
+   // see 'ConnectionPool::addNewSocket(..)'.
 }
 
 void PeerMessageSocket::sendEntriesResultMessage()
