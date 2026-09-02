@@ -80,6 +80,14 @@ bool FileHasher::start(FileForHasher* fileCache, int n, int* amountHashed)
       return false;
    }
 
+   // An empty file has no chunk: there is nothing to hash and no file to open.
+   const QList<QSharedPointer<Chunk>> chunks = this->currentFileCache->getChunks();
+   if (chunks.isEmpty())
+   {
+      this->currentFileCache = nullptr;
+      return true;
+   }
+
    this->hashing = true;
 
    const QString& filePath = this->currentFileCache->getAbsolutePath();
@@ -102,10 +110,6 @@ bool FileHasher::start(FileForHasher* fileCache, int n, int* amountHashed)
       L_WARN(QString("Unable to open this file: %1").arg(filePath));
       throw IOErrorException();
    }
-
-   const QList<QSharedPointer<Chunk>>& chunks = this->currentFileCache->getChunks();
-   if (chunks.isEmpty())
-      return true;
 
    // Skip the already known full hashes.
    qint64 bytesSkipped = 0;
