@@ -17,6 +17,7 @@
   */
 
 #include <QRandomGenerator64>
+#include <QTimeZone>
 
 #include <priv/ChatMessage.h>
 using namespace CS;
@@ -45,7 +46,7 @@ ChatMessage::ChatMessage(const Protos::Common::ChatMessage& chatMessage) :
    message(QString::fromStdString(chatMessage.message())),
    ownerID(chatMessage.peer_id().hash()),
    peerIDsAnswer(ChatMessage::getPeerIDsAnswer(chatMessage)),
-   time(chatMessage.time() > 0 ? QDateTime::fromMSecsSinceEpoch(chatMessage.time()) : QDateTime::currentDateTimeUtc()),
+   time(chatMessage.time() > 0 ? QDateTime::fromMSecsSinceEpoch(chatMessage.time(), QTimeZone::UTC) : QDateTime::currentDateTimeUtc()),
    ownerNick(QString::fromStdString(chatMessage.peer_nick())),
    room(QString::fromStdString(chatMessage.chat_room()))
 {

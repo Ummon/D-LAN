@@ -23,7 +23,6 @@
 #include <QSharedPointer>
 #include <QList>
 #include <QTimer>
-#include <QList>
 #include <QSet>
 #include <QHash>
 

@@ -76,6 +76,9 @@ namespace CS
 
       virtual QList<ChatRoom> getRooms() const = 0;
 
+      /**
+        * Join the given room, nothing happens if the room is already joined or if the name is empty.
+        */
       virtual void joinRoom(const QString& room) = 0;
 
       virtual void leaveRoom(const QString& room) = 0;

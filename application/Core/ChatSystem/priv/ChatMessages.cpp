@@ -19,6 +19,8 @@
 #include <priv/ChatMessages.h>
 using namespace CS;
 
+#include <algorithm>
+
 #include <QSet>
 
 #include <Common/PersistentData.h>
@@ -29,11 +31,6 @@ using namespace CS;
 ChatMessages::ChatMessages() :
    d(new ChatMessagesData)
 {}
-
-ChatMessages::ChatMessages(const ChatMessages& other)
-   : d(other.d)
-{
-}
 
 /**
   * @return 'true' if the message has been inserted.
@@ -183,17 +180,27 @@ void ChatMessages::saveToFile(const QString& filename) const
 }
 
 /**
-  * We return the inserted messages. A message will not be inserted if:
-  *  - The messages size is equal to 'MAX_NUMBER_OF_STORED_CHAT_MESSAGES' and the message to insert is older than the oldest message in the list.
+  * We return the inserted messages, sorted from oldest to youngest. A message will not be inserted (or returned) if:
+  *  - The list is full ('MAX_NUMBER_OF_STORED_CHAT_MESSAGES') and the message is older than the oldest message in the list.
   *  - The message is already in the list.
+  * The given messages don't need to be sorted, they come from untrusted peers.
   */
 QList<QSharedPointer<ChatMessage>> ChatMessages::insert(const QList<QSharedPointer<ChatMessage>>& messages)
 {
    static const int MAX_NUMBER_OF_STORED_CHAT_MESSAGES = SETTINGS.get<quint32>("max_number_of_stored_chat_messages");
 
+   // Sorted from oldest to youngest. The sort is stable to keep the given order for the messages having the same time.
+   QList<QSharedPointer<ChatMessage>> sortedMessages(messages);
+   std::stable_sort(
+      sortedMessages.begin(),
+      sortedMessages.end(),
+      [](const QSharedPointer<ChatMessage>& m1, const QSharedPointer<ChatMessage>& m2) { return m1->getTime() < m2->getTime(); }
+   );
+
    QList<QSharedPointer<ChatMessage>> insertedMessages;
 
-   QListIterator<QSharedPointer<ChatMessage>> i(messages);
+   // We insert the messages from the youngest to the oldest, so the insertion position ('j') only moves backward.
+   QListIterator<QSharedPointer<ChatMessage>> i(sortedMessages);
    i.toBack();
 
    int j = this->d->messages.size();
@@ -207,22 +214,29 @@ QList<QSharedPointer<ChatMessage>> ChatMessages::insert(const QList<QSharedPoint
       while (j > 0 && this->d->messages[j-1]->getTime() > mess->getTime())
          j--;
 
-      // We avoid to insert a message that will be deleted right after.
-      if (this->d->messages.size() != MAX_NUMBER_OF_STORED_CHAT_MESSAGES || j != 0)
-      {
-         insertedMessages.prepend(mess);
-         this->d->messageIDs.insert(mess->getID());
-         this->d->messages.insert(j, mess);
-      }
+      // The list is full and the message is older than all the others: it would be removed right after.
+      // The remaining messages are even older so we can stop here.
+      if (this->d->messages.size() >= MAX_NUMBER_OF_STORED_CHAT_MESSAGES && j == 0)
+         break;
+
+      insertedMessages.prepend(mess);
+      this->d->messageIDs.insert(mess->getID());
+      this->d->messages.insert(j, mess);
    }
 
    if (this->d->messages.size() > MAX_NUMBER_OF_STORED_CHAT_MESSAGES)
    {
+      QSet<quint64> removedIDs;
       const auto begin = this->d->messages.begin();
       const auto end = this->d->messages.begin() + (this->d->messages.size() - MAX_NUMBER_OF_STORED_CHAT_MESSAGES);
       for (auto m = begin; m != end; m++)
-         this->d->messageIDs.remove((*m)->getID());
+         removedIDs.insert((*m)->getID());
       this->d->messages.erase(begin, end);
+
+      this->d->messageIDs.subtract(removedIDs);
+
+      // A message inserted and removed right after isn't reported as inserted.
+      insertedMessages.removeIf([&](const QSharedPointer<ChatMessage>& m) { return removedIDs.contains(m->getID()); });
    }
 
    if (!this->d->changed)

@@ -37,7 +37,7 @@ using namespace CS;
 #include <Core/NetworkListener/INetworkListener.h>
 
 /**
-  * @class CM::ChatSystem
+  * @class CS::ChatSystem
   *
   */
 
@@ -171,6 +171,9 @@ void ChatSystem::joinRoom(const QString& roomName)
   */
 bool ChatSystem::join(const QString& roomName)
 {
+   if (roomName.isEmpty())
+      return false;
+
    Room& room = this->rooms[roomName];
 
    if (room.joined)
@@ -218,6 +221,8 @@ void ChatSystem::received(const Common::Message& message)
             for (int i = 0; i < IMAliveMessage.chat_rooms_size(); i++)
             {
                const QString& roomName = QString::fromStdString(IMAliveMessage.chat_rooms(i));
+               if (roomName.isEmpty())
+                  continue;
                roomsWithPeer.insert(roomName);
                Room& room = this->rooms[roomName];
                room.peers.insert(peer);

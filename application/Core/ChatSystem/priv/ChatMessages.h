@@ -43,7 +43,6 @@ namespace CS
       const static Common::Global::DataFolderType FOLDER_TYPE_MESSAGES_SAVED = Common::Global::DataFolderType::LOCAL;
 
       ChatMessages();
-      ChatMessages(const ChatMessages& other);
 
       bool add(const QSharedPointer<ChatMessage>& message);
       QList<QSharedPointer<ChatMessage>> add(const Protos::Common::ChatMessages& chatMessages);
