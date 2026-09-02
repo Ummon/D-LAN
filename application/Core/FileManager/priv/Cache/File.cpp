@@ -135,11 +135,7 @@ File::~File()
 
    this->deleteAllChunks();
 
-   QMutexLocker lockerWrite(&this->writeLock);
-   this->getCache()->getFilePool().release(this->fileInWriteMode, true);
-
-   QMutexLocker lockerRead(&this->readLock);
-   this->getCache()->getFilePool().release(this->fileInReadMode, true);
+   this->closePhysicalFiles();
 
    // L_DEBU(QString("File deleted : %1").arg(this->File::getAbsolutePath()));
 
@@ -159,19 +155,28 @@ void File::del(bool invokeDelete)
 
    this->deleteAllChunks();
 
-   {
-      QMutexLocker lockerWrite(&this->writeLock);
-      this->getCache()->getFilePool().release(this->fileInWriteMode, true);
-
-      QMutexLocker lockerRead(&this->readLock);
-      this->getCache()->getFilePool().release(this->fileInReadMode, true);
-   }
+   this->closePhysicalFiles();
 
    // We wait that all the current access to this file are finished.
    this->mutex.lock();
    this->mutex.unlock();
 
    Entry::del(invokeDelete);
+}
+
+/**
+  * Closes the files opened in read and write mode, if any.
+  * The pool matches files by pointer, so the pointers are reset to avoid releasing a file reopened at the same address.
+  */
+void File::closePhysicalFiles()
+{
+   QMutexLocker lockerWrite(&this->writeLock);
+   this->getCache()->getFilePool().release(this->fileInWriteMode, true);
+   this->fileInWriteMode = nullptr;
+
+   QMutexLocker lockerRead(&this->readLock);
+   this->getCache()->getFilePool().release(this->fileInReadMode, true);
+   this->fileInReadMode = nullptr;
 }
 
 FileForHasher* File::asFileForHasher()

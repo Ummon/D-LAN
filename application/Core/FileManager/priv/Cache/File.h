@@ -112,6 +112,7 @@ namespace FM
    private:
       void setAsComplete();
       void deleteAllChunks();
+      void closePhysicalFiles();
       void createPhysicalFile();
       static void setFileAsSparse(const QFile& file);
       static void setFileAsHidden(const QString& filepath);
