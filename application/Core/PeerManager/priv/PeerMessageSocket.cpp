@@ -53,9 +53,11 @@ PeerMessageSocket::PeerMessageSocket(
       peerManager->getSelf()->getID(),
       remotePeerID
    ),
+   peerManager(peerManager),
    fileManager(fileManager),
    active(true),
-   nbError(0)
+   nbError(0),
+   nbHash(0)
 {
    this->initUnactiveTimer();
 }
@@ -74,9 +76,11 @@ PeerMessageSocket::PeerMessageSocket(
       peerManager->getSelf()->getID(),
       remotePeerID
    ),
+   peerManager(peerManager),
    fileManager(fileManager),
    active(true),
-   nbError(0)
+   nbError(0),
+   nbHash(0)
 {
    this->initUnactiveTimer();
 }
@@ -388,7 +392,9 @@ void PeerMessageSocket::onNewMessage(const Common::Message& message)
 
          this->send(Common::MessageHeader::CORE_GET_HASHES_RESULT, res);
 
-         if (res.status() != Protos::Core::GetHashesResult_Status_OK)
+         // 'nbHash' can be zero even with a status OK, when the remote peer already knows every hash of the
+         // file. 'nextAskedHash(..)' is then never called and would leave the socket active forever.
+         if (res.status() != Protos::Core::GetHashesResult_Status_OK || this->nbHash == 0)
          {
             this->currentHashesResult.clear();
             this->finished();
@@ -400,6 +406,10 @@ void PeerMessageSocket::onNewMessage(const Common::Message& message)
       {
          const Protos::Core::GetHashesResult& getHashesResult = message.getMessage<Protos::Core::GetHashesResult>();
          this->nbHash = getHashesResult.nb_hash();
+
+         // No 'CORE_HASH_RESULT' will follow, the transaction is already over.
+         if (getHashesResult.status() != Protos::Core::GetHashesResult_Status_OK || this->nbHash == 0)
+            this->finished();
       }
       break;
 
@@ -445,6 +455,14 @@ void PeerMessageSocket::onNewMessage(const Common::Message& message)
                   chunksParams << GetChunkParams(chunk, chunkNeeded.offset(), chunkNeeded.file_bytes_owned());
                }
             }
+         }
+
+         // The answer can't be a status OK if nothing is able to send the data: the remote peer would read
+         // everything following it as chunk data and no error message could be sent anymore.
+         if (!chunksParams.empty() && !this->peerManager->isReadyToSendChunks())
+         {
+            L_ERRO("PeerMessageSocket::onNewMessage(..): no slot connected to the signal 'PeerManager::getChunks(..)'");
+            chunksParams.clear();
          }
 
          if (!chunksParams.empty())

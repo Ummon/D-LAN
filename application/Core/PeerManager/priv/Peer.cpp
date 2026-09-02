@@ -40,6 +40,8 @@ Peer::Peer(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManage
    port(0),
    nick(nick),
    sharingAmount(0),
+   downloadRate(0),
+   uploadRate(0),
    speed(MAX_SPEED),
    alive(false),
    blocked(false),
@@ -168,8 +170,9 @@ void Peer::block(int duration, const QString& reason)
       this->blockedReason = reason;
    }
 
-   this->blockedTimer.setInterval(duration);
-   QMetaObject::invokeMethod(&this->blockedTimer, "start");
+   // 'blockedTimer' belongs to the thread owning this peer, it must not be modified from the calling one:
+   // 'QTimer::start(int)' is a slot so the interval and the start are both applied in the right thread.
+   QMetaObject::invokeMethod(&this->blockedTimer, "start", Q_ARG(int, duration));
 }
 
 bool Peer::isAlive() const

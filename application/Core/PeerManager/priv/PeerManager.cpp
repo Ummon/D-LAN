@@ -194,21 +194,20 @@ void PeerManager::newConnection(QTcpSocket* tcpSocket)
    }
 }
 
+bool PeerManager::isReadyToSendChunks() const
+{
+   return this->receivers(SIGNAL(getChunks(QList<PM::GetChunkParams>, QSharedPointer<PM::ISocket>))) > 0;
+}
+
+/**
+  * @remarks 'PeerMessageSocket::onNewMessage(..)' has checked 'isReadyToSendChunks()' before answering, there
+  *          is necessarily someone to send the chunks.
+  */
 void PeerManager::onGetChunks(
    QList<GetChunkParams> chunksParams,
    QSharedPointer<PeerMessageSocket> socket
 )
 {
-   if (this->receivers(SIGNAL(getChunks(QList<PM::GetChunkParams>, QSharedPointer<PM::ISocket>))) < 1)
-   {
-      Protos::Core::GetChunksResult mess;
-      mess.set_status(Protos::Core::GetChunksResult::ERROR_UNKNOWN);
-      socket->send(Common::MessageHeader::CORE_GET_CHUNKS_RESULT, mess);
-      socket->finished();
-      L_ERRO("PeerManager::onGetChunks(..): no slot connected to the signal 'getChunks(..)'");
-      return;
-   }
-
    emit getChunks(chunksParams, socket);
 }
 

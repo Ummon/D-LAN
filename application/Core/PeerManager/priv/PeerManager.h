@@ -87,6 +87,14 @@ namespace PM
       void removeAllPeers();
       void newConnection(QTcpSocket* tcpSocket);
 
+      /**
+        * Return true if a component is connected to the signal 'getChunks(..)' and is thus able to send the
+        * data of the chunks to a remote peer.
+        * It must be known by 'PeerMessageSocket' before answering a 'GetChunks' message: once a status OK is
+        * sent, everything written on the socket is read as chunk data by the remote peer.
+        */
+      bool isReadyToSendChunks() const;
+
       void onGetChunks(
          QList<GetChunkParams> chunksParams,
          QSharedPointer<PeerMessageSocket> socket

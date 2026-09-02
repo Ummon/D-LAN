@@ -127,6 +127,7 @@ namespace PM
       QList<QSharedPointer<FM::IGetEntriesResult>> entriesResultsToReceive;
       Protos::Core::GetEntriesResult entriesResultMessage;
 
+      PeerManager* peerManager;
       QSharedPointer<FM::IFileManager> fileManager;
 
       bool active;

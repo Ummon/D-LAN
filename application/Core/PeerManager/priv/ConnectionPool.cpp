@@ -153,9 +153,18 @@ void ConnectionPool::socketGetChunks(
       if (socketShared.data() == socket)
       {
          this->peerManager->onGetChunks(chunksParams, socketShared);
-         break;
+         return;
       }
    }
+
+   // Shouldn't happen: only the sockets put in 'socketsFromPeer' are connected to 'PeerMessageSocket::getChunks'.
+   // A status OK has already been sent and the socket isn't listening anymore, closing it is the only way left
+   // to tell the remote peer that no data will come.
+   L_ERRO(
+      QString("ConnectionPool::socketGetChunks(..): unknown socket, it's closed. Peer: %1")
+         .arg(this->peerID.toStr())
+   );
+   socket->close();
 }
 
 /**
