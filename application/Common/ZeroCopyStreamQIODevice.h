@@ -56,6 +56,8 @@ namespace Common
       google::protobuf::int64 ByteCount() const override;
 
    private:
+      void consumeCurrentPeek();
+
       QIODevice* device;
 
       int nbLastRead;

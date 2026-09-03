@@ -49,12 +49,17 @@ bool ZeroCopyOutputStreamQIODevice::Next(void** data, int* size)
       if (nBytes == -1)
          return false;
 
-      // We assume that all the buffer is written.
-      if (nBytes != this->pos - this->buffer)
-         throw 1;
-
-      this->pos -= nBytes;
       this->bytesWritten += nBytes;
+
+      // The whole buffer is expected to be written. If not the stream can't be used any further,
+      // 'false' tells the caller the serialization has failed.
+      if (nBytes != this->pos - this->buffer)
+      {
+         this->pos = this->buffer;
+         return false;
+      }
+
+      this->pos = this->buffer;
    }
 
    *data = this->buffer;
@@ -106,16 +111,16 @@ bool ZeroCopyInputStreamQIODevice::Next(const void** data, int* size)
       return true;
    }
 
-   if (this->nbLastRead != 0)
-      this->device->read(this->nbLastRead);
+   // Everything peeked has been given to the consumer, it can now be taken out of the device.
+   this->consumeCurrentPeek();
 
    this->nbLastRead = this->device->peek(this->buffer, Constants::PROTOBUF_STREAMING_BUFFER_SIZE);
    if (this->nbLastRead <= 0)
    {
+      this->nbLastRead = 0;
       this->pos = this->buffer;
       return false;
    }
-   this->bytesRead += this->nbLastRead;
 
    *data = this->buffer;
    *size = this->nbLastRead;
@@ -127,39 +132,59 @@ bool ZeroCopyInputStreamQIODevice::Next(const void** data, int* size)
 
 void ZeroCopyInputStreamQIODevice::BackUp(int count)
 {
+   Q_ASSERT(count >= 0);
+
    this->pos -= count;
+
+   if (this->pos < this->buffer)
+      this->pos = this->buffer;
 }
 
 bool ZeroCopyInputStreamQIODevice::Skip(int count)
 {
-   if (this->pos != this->buffer + this->nbLastRead) // There is still some data into the buffer. See 'BackUp(..)'.
-   {
-      if (this->pos + count > this->buffer + this->nbLastRead)
-      {
-         count -= (this->buffer + this->nbLastRead) - this->pos;
-         this->pos = this->buffer + this->nbLastRead;
-      }
-      else
-      {
-         this->pos += count;
-         count = 0;
-      }
-   }
-
-   if (this->device->bytesAvailable() == 0)
+   if (count < 0)
       return false;
+
+   // First the data still in the buffer. See 'BackUp(..)'.
+   const int nbBytesInBuffer = this->nbLastRead - static_cast<int>(this->pos - this->buffer);
+   if (nbBytesInBuffer > 0)
+   {
+      const int nbBytesSkipped = qMin(count, nbBytesInBuffer);
+      this->pos += nbBytesSkipped; // Counted by 'ByteCount()' via 'pos'.
+      count -= nbBytesSkipped;
+   }
 
    if (count == 0)
       return true;
 
-   QByteArray data = this->device->read(count);
-   if (data.isNull())
-      return false;
+   // The peeked data is still in the device, it must be taken out before skipping the bytes which follow it.
+   this->consumeCurrentPeek();
+
+   const QByteArray data = this->device->read(count);
    this->bytesRead += data.size();
-   return this->device->bytesAvailable() > 0;
+   return data.size() == count;
 }
 
+/**
+  * Takes out of the device the data of the current peek, it must all have been given to the consumer.
+  */
+void ZeroCopyInputStreamQIODevice::consumeCurrentPeek()
+{
+   if (this->nbLastRead != 0)
+   {
+      this->device->read(this->nbLastRead);
+      this->bytesRead += this->nbLastRead;
+      this->nbLastRead = 0;
+   }
+
+   this->pos = this->buffer;
+}
+
+/**
+  * @return The number of bytes given to the consumer: the ones already taken out of the device plus the
+  *         consumed part of the current peek. 'BackUp(..)' moves 'pos' back, thus it's taken into account.
+  */
 google::protobuf::int64 ZeroCopyInputStreamQIODevice::ByteCount() const
 {
-   return this->bytesRead;
+   return this->bytesRead + (this->pos - this->buffer);
 }
