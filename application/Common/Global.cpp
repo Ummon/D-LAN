@@ -270,7 +270,7 @@ qint64 Global::availableDiskSpace(const QString& path)
    return space.QuadPart;
 #elif defined(Q_OS_LINUX)
    struct statvfs info;
-   if (statvfs(path.toUtf8().constData(), &info) == 0)
+   if (statvfs(pathToDir.toUtf8().constData(), &info) == 0)
       return static_cast<qint64>(info.f_bsize) * info.f_bavail;
 #endif
 
@@ -428,9 +428,16 @@ QString Global::getCurrentUserName()
 {
 #if defined(Q_OS_WIN32)
    wchar_t userName[UNLEN + 1]; // UNLEN is from Lmcons.h
-   DWORD userNameSize = sizeof(userName);
-   GetUserName(userName, &userNameSize);
-   return QString::fromWCharArray(userName);
+
+   // The size is expected in characters and not in bytes.
+   DWORD userNameSize = sizeof(userName) / sizeof(userName[0]);
+
+   // On failure the buffer is left untouched, it must not be read.
+   if (!GetUserName(userName, &userNameSize))
+      return QString();
+
+   // 'userNameSize' receives the number of characters copied, terminating null character included.
+   return QString::fromWCharArray(userName, userNameSize > 0 ? userNameSize - 1 : 0);
 #elif defined(Q_OS_LINUX)
    char* login = getlogin();
    if (login)
@@ -446,13 +453,22 @@ QString Global::getCurrentMachineName()
 {
 #if defined(Q_OS_WIN32)
    wchar_t machineName[MAX_COMPUTERNAME_LENGTH + 1];
-   DWORD machineNameSize = sizeof(machineName);
-   GetComputerName(machineName, &machineNameSize);
-   return QString::fromWCharArray(machineName);
+
+   // The size is expected in characters and not in bytes.
+   DWORD machineNameSize = sizeof(machineName) / sizeof(machineName[0]);
+
+   // On failure the buffer is left untouched, it must not be read.
+   if (!GetComputerName(machineName, &machineNameSize))
+      return QString();
+
+   // 'machineNameSize' receives the number of characters copied, terminating null character excluded.
+   return QString::fromWCharArray(machineName, machineNameSize);
 #elif defined(Q_OS_LINUX)
    char machineName[256];
-   size_t machineNameSize = sizeof(machineName);
-   gethostname(machineName, machineNameSize);
+   if (gethostname(machineName, sizeof(machineName)) != 0)
+      return QString();
+
+   machineName[sizeof(machineName) - 1] = ' '; // 'gethostname' may not null terminate a truncated name.
    return QString::fromUtf8(machineName);
 #else
    return "Bob";
