@@ -199,7 +199,7 @@ void RemoteBrowseModel::result(const google::protobuf::RepeatedPtrField<Protos::
 
    if (sortedEntries.size() > 0)
    {
-      this->beginInsertRows(this->currentBrowseIndex, 0, entries.size() - 1);
+      this->beginInsertRows(this->currentBrowseIndex, 0, sortedEntries.size() - 1);
 
       if (this->currentBrowseIndex.internalPointer())
          static_cast<Tree*>(this->currentBrowseIndex.internalPointer())->insertChildren(sortedEntries);
