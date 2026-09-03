@@ -477,7 +477,7 @@ void DownloadsTreeModel::onNewState(const Protos::GUI::State& state)
 
 QList<quint64> DownloadsTreeModel::getDownloadIDs(Tree* tree) const
 {
-   int id;
+   quint64 id; // 'Protos::GUI::State::Download::id' is an 'uint64', it must not be narrowed.
    QList<quint64> IDs;
 
    if ((id = tree->getItem().id()) != 0)
