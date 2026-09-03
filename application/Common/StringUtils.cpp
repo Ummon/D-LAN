@@ -19,6 +19,8 @@
 #include <Common/StringUtils.h>
 using namespace Common;
 
+#include <cctype>
+
 #include <QRegularExpression>
 
 QString StringUtils::toLowerAndRemoveAccents(const QString& str)
@@ -115,8 +117,9 @@ int StringUtils::strcmpi(const std::string& s1, const std::string& s2)
 {
    for (unsigned int i = 0; i < s1.length() && i < s2.length(); i++)
    {
-      const int c1 = tolower(s1[i]);
-      const int c2 = tolower(s2[i]);
+      // Cast to 'unsigned char': giving a negative value to 'tolower' is undefined behaviour.
+      const int c1 = std::tolower(static_cast<unsigned char>(s1[i]));
+      const int c2 = std::tolower(static_cast<unsigned char>(s2[i]));
       if (c1 > c2) return 1;
       else if (c1 < c2) return -1;
    }
