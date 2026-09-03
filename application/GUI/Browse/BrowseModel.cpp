@@ -436,13 +436,17 @@ BrowseModel::Tree::Tree(const Protos::Common::Entry& entry, Tree* parent) :
       this->getItem().mutable_shared_entry()->set_shared_name(this->getItem().name()); // For the root.
 }
 
+/**
+  * When the last child of a directory is removed the directory becomes known to be empty, otherwise
+  * 'hasUnloadedChildren()' would keep returning 'true' and the view would show a child which never comes,
+  * asking to browse the directory again each time it's expanded.
+  */
 BrowseModel::Tree::~Tree()
 {
-   if (this->getParent())
-   {
-      if (this->getParent()->getNbChildren() == 0)
-         this->getParent()->getItem().set_is_empty(true);
-   }
+   // 1 and not 0: it's the base 'Common::Tree::~Tree()', which runs after this destructor, that removes this
+   // node from its parent. This node is therefore still counted here and 1 means it's the last one.
+   if (this->getParent() && this->getParent()->getNbChildren() == 1)
+      this->getParent()->getItem().set_is_empty(true);
 }
 
 void BrowseModel::Tree::insertChildren(const Protos::Common::Entries& entries)
