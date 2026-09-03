@@ -33,6 +33,28 @@ using namespace GUI;
 
 #include <Log.h>
 
+/**
+  * Escape the characters CommonMark gives a meaning to, so a string can be inserted into a message without
+  * being interpreted. The nicks come from remote peers, a nick like "[x](http://...)" would otherwise put a
+  * clickable link into the messages shown to every user, see 'ChatDelegate::paint(..)'.
+  */
+static QString escapeMarkdown(const QString& str)
+{
+   QString result;
+   result.reserve(str.size());
+
+   for (const QChar c : str)
+   {
+      // CommonMark: a backslash escapes any ASCII punctuation character, which Qt splits between the
+      // punctuation and the symbol categories.
+      if (c.unicode() < 0x80 && (c.isPunct() || c.isSymbol()))
+         result += '\\';
+      result += c;
+   }
+
+   return result;
+}
+
 ChatModel::ChatModel(
    QSharedPointer<RCC::ICoreConnection> coreConnection,
    PeerListModel& peerListModel,
@@ -397,7 +419,7 @@ QString ChatModel::formatMessage(const Message& message) const
             now.date() == message.dateTime.date() ?
               message.dateTime.toString("[HH:mm:ss] ")
             : message.dateTime.toString("[%1 HH:mm:ss] ").arg(message.dateTime.date().toString(Qt::TextDate)))
-         .append("*").append(message.nick).append("*: ")
+         .append("*").append(escapeMarkdown(message.nick)).append("*: ")
          .append(message.message);
          // .append("</body></html>");
    }
