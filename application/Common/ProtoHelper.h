@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include <QHash.h>
+#include <QHash>
 #include <QString>
 #include <QLocale>
 #include <QHostAddress>
