@@ -304,19 +304,21 @@ bool CoreConnection::connectToCorePrepare(const QString& address)
 {
    emit connecting();
 
+   // Both rejections below only report an error: calling 'tempConnectingError(..)' would reset
+   // 'connectingInProgress' and drop the signals of the attempt already running, leaving it orphaned.
    if (this->connectingInProgress)
    {
-      this->tempConnectingError(RCC_ERROR_CONNECTING_IN_PROGRESS);
+      emit connectingError(RCC_ERROR_CONNECTING_IN_PROGRESS);
+      return false;
+   }
+
+   if (address.isNull() || address.isEmpty())
+   {
+      emit connectingError(RCC_ERROR_INVALID_ADDRESS);
       return false;
    }
 
    this->connectingInProgress = true;
-
-   if (address.isNull() || address.isEmpty())
-   {
-      this->tempConnectingError(RCC_ERROR_INVALID_ADDRESS);
-      return false;
-   }
 
    connect(&this->temp(), &InternalCoreConnection::connectingError, this, &CoreConnection::tempConnectingError);
    connect(&this->temp(), &InternalCoreConnection::connected, this, &CoreConnection::tempConnected);
