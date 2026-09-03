@@ -365,7 +365,7 @@ QVariant RemoteBrowseModel::Tree::data(int column) const
          else
          {
             QString name = QString::fromStdString(item.name());
-            if (name.size() >= 3 && name[name.size() - 1] == '/' || name[name.size() - 1] == '\\')
+            if (name.size() >= 3 && (name.endsWith('/') || name.endsWith('\\')))
                name.removeLast();
             return QString(QString::fromStdString(item.volume_label()) + " (" + name + ")");
          }

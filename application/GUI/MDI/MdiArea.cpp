@@ -154,8 +154,10 @@ bool MdiArea::eventFilter(QObject* obj, QEvent* event)
    (
       obj == this->mdiAreaTabBar &&
       (
-         (event->type() == QEvent::MouseButtonPress || event->type() == QEvent::MouseButtonDblClick) &&
-         static_cast<QMouseEvent*>(event)->button() == Qt::MiddleButton ||
+         (
+            (event->type() == QEvent::MouseButtonPress || event->type() == QEvent::MouseButtonDblClick) &&
+            static_cast<QMouseEvent*>(event)->button() == Qt::MiddleButton
+         ) ||
          event->type() == QEvent::ContextMenu
       )
    )

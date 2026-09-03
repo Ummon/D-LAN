@@ -361,8 +361,8 @@ void PeerListModel::updatePeers(
 
       // We ignore some peers depending 'peersToDisplay' and 'this->displayOnlyPeersWithStatusOK'.
       if (
-         !peersToDisplay.isEmpty() && !peersToDisplay.contains(peerID) ||
-         this->displayOnlyPeersWithStatusOK && peers.Get(i).status() != Protos::GUI::State::Peer::OK
+         (!peersToDisplay.isEmpty() && !peersToDisplay.contains(peerID)) ||
+         (this->displayOnlyPeersWithStatusOK && peers.Get(i).status() != Protos::GUI::State::Peer::OK)
       )
          continue;
 

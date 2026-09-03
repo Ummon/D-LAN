@@ -530,10 +530,8 @@ QVariant SearchModel::SearchTree::data(int column) const
    {
       const bool isARoot = this->parent->getParent() == nullptr;
       if (
-         !isARoot &&
-         this->parent->getItem().type() == Protos::Common::Entry_Type_DIR ||
-         this->getItem().type() == Protos::Common::Entry_Type_FILE &&
-         this->getNbChildren() > 0
+         (!isARoot && this->parent->getItem().type() == Protos::Common::Entry_Type_DIR) ||
+         (this->getItem().type() == Protos::Common::Entry_Type_FILE && this->getNbChildren() > 0)
       )
          return QVariant();
 
