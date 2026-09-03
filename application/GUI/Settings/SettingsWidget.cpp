@@ -304,7 +304,12 @@ void SettingsWidget::updateNetworkInterfaces(const Protos::GUI::State& state)
 
             }
 
-            addressIslistenedTo |= this->updateAddresses(state.interfaces(i), static_cast<QWidget*>(j.next()));
+            // The addresses container is always added right after its interface label, see below, so it's
+            // the next child. 'next()' is unchecked and 'children()' also holds the layout, hence the guards.
+            QWidget* addressesContainer = j.hasNext() ? qobject_cast<QWidget*>(j.next()) : nullptr;
+            if (addressesContainer)
+               addressIslistenedTo |= this->updateAddresses(state.interfaces(i), addressesContainer);
+
             goto nextInterface;
          }
       }
@@ -328,11 +333,17 @@ void SettingsWidget::updateNetworkInterfaces(const Protos::GUI::State& state)
       QLabel* current = dynamic_cast<QLabel*>(i.next());
       if (current && interfaceNotUpdated.contains(current))
       {
+         // Same pairing as above: the addresses container follows its label.
+         QWidget* addressesContainer = i.hasNext() ? qobject_cast<QWidget*>(i.next()) : nullptr;
+
          this->ui->layInterfaces->removeWidget(current);
-         QWidget* addressesContainer = dynamic_cast<QWidget*>(i.next());
-         this->ui->layInterfaces->removeWidget(addressesContainer);
          delete current;
-         delete addressesContainer;
+
+         if (addressesContainer)
+         {
+            this->ui->layInterfaces->removeWidget(addressesContainer);
+            delete addressesContainer;
+         }
       }
    }
 
