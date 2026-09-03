@@ -34,9 +34,14 @@ namespace LM
    class LoggerHooks
    {
    public:
-      int size() const;
       QWeakPointer<LoggerHook> operator<< (const QWeakPointer<LoggerHook> hook);
-      QWeakPointer<LoggerHook> operator[] (int i);
+
+      /**
+        * Returns a strong reference to each hook still alive and forgets the deleted ones.
+        * Only way to access the hooks: an index can't be trusted because a hook may expire between two calls
+        * and the returned references keep the hooks alive while they are being used.
+        */
+      QList<QSharedPointer<LoggerHook>> takeAliveHooks();
 
    private:
       void removeDeletedHooks();

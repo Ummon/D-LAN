@@ -32,22 +32,26 @@ using namespace LM;
 
 #include <priv/Entry.h>
 
-int LoggerHooks::size() const
-{
-   const_cast<LoggerHooks*>(this)->removeDeletedHooks();
-   return this->loggerHooks.size();
-}
-
 QWeakPointer<LoggerHook> LoggerHooks::operator<< (const QWeakPointer<LoggerHook> hook)
 {
    this->loggerHooks << hook;
    return hook;
 }
 
-QWeakPointer<LoggerHook> LoggerHooks::operator[] (int i)
+QList<QSharedPointer<LoggerHook>> LoggerHooks::takeAliveHooks()
 {
    this->removeDeletedHooks();
-   return this->loggerHooks[i];
+
+   QList<QSharedPointer<LoggerHook>> aliveHooks;
+   aliveHooks.reserve(this->loggerHooks.size());
+
+   // A hook may expire right after 'removeDeletedHooks()', its owner isn't protected by 'Logger::mutex',
+   // thus each strong reference must be tested.
+   for (const QWeakPointer<LoggerHook>& hook : this->loggerHooks)
+      if (const QSharedPointer<LoggerHook> hookStrongRef = hook.toStrongRef())
+         aliveHooks << hookStrongRef;
+
+   return aliveHooks;
 }
 
 void LoggerHooks::removeDeletedHooks()
@@ -114,8 +118,8 @@ bool Logger::log(const QString& message, Severity severity, const char* filename
    QSharedPointer<Entry> entry(new Entry(QDateTime::currentDateTime(), severity, this->name, threadName, filenameLine, message));
 
    // Say to all hooks there is a new message.
-   for (int i = 0; i < this->loggerHooks.size(); i++)
-      this->loggerHooks[i].toStrongRef()->newMessage(entry);
+   for (const QSharedPointer<LoggerHook>& hook : Logger::loggerHooks.takeAliveHooks())
+      hook->newMessage(entry);
 
    if (!Logger::createFileLog())
       return false;
