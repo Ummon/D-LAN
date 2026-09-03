@@ -50,9 +50,15 @@ void PeerListDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
 
    if (index.column() == 0)
    {
-      static quint32 LAN_SPEED = SETTINGS.get<quint32>("lan_speed");
+      // Kept in a static: 'Settings::get(..)' locks a mutex and looks the field up by name, too much for a
+      // method called for every cell of every repaint. The setting isn't editable from the GUI anyway.
+      static const quint32 LAN_SPEED = SETTINGS.get<quint32>("lan_speed");
 
       PeerListModel::TransferInformation transferInformation = index.data().value<PeerListModel::TransferInformation>();
+
+      // The same painter is used for all the cells, the render hint, the pen and the brush set below must
+      // not leak into the next one.
+      painter->save();
       painter->setRenderHint(QPainter::Antialiasing, true);
       const QPoint center = option.rect.center();
       const int radius = qMin(option.rect.height(), option.rect.width()) / 2 - 2;
@@ -85,6 +91,8 @@ void PeerListDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
       painter->setPen(QPen(QBrush(transferInformation.isDownloadingOurData ? QColor(220, 220, 0) : QColor(150, 150, 150)), transferInformation.isDownloadingOurData ? 1.5 : 1.2));
       painter->setBrush(Qt::NoBrush);
       painter->drawEllipse(rect);
+
+      painter->restore();
    }
 }
 
