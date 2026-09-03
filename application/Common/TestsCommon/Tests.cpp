@@ -553,6 +553,15 @@ void Tests::mapArray()
    QCOMPARE(array.size(), 3);
    QCOMPARE(array.getKeyFromIndex(0), h2);
 
+   // The 'const' accessors have their own implementation, they must be instantiated as well.
+   const MapArray<Common::Hash, QString>& constArray = array;
+   QCOMPARE(constArray.getValueFromIndex(0), v2);
+   QCOMPARE(constArray.getKeyFromIndex(0), h2);
+
+   array.removeFromIndex(0);
+   QCOMPARE(array.size(), 2);
+   QCOMPARE(array.getKeyFromIndex(0), h3);
+
    try
    {
       array.getValueFromIndex(10);
@@ -941,4 +950,53 @@ void Tests::protoHelper()
    // QVERIFY(debugStr.indexOf("a80fed48162bd24b6807a2b15f4bd52f3f1fda94") != -1);
    // QVERIFY(debugStr.indexOf("6a98f983b8c80015fd93ca6bf9a98a9577a6e094") != -1);
    // QVERIFY(debugStr.indexOf("7aaeb7c5816857c832893afc676d5e37b73968a4") != -1);
+
+   // 'readUInt(..)' and 'readString(..)'. The first byte of a field is its protobuf tag, it's skipped.
+   {
+      const quint8 data[] = { 0x08, 0x96, 0x01 }; // Tag then the varint 150.
+      const quint8* p = data;
+      QCOMPARE(ProtoHelper::readUInt<quint32>(p, data + sizeof(data)), 150u);
+      QCOMPARE(p, data + sizeof(data));
+   }
+
+   {
+      const quint8 data[] = { 0x08, 0x80, 0x80, 0x80, 0x80, 0x20 }; // Tag then the varint 2^33.
+      const quint8* p = data;
+      QCOMPARE(ProtoHelper::readUInt<quint64>(p, data + sizeof(data)), Q_UINT64_C(8589934592));
+      QCOMPARE(p, data + sizeof(data));
+   }
+
+   {
+      const quint8 data[] = { 0x0A, 0x03, 'a', 'b', 'c' }; // Tag, length then the characters.
+      const quint8* p = data;
+      QCOMPARE(ProtoHelper::readString(p, data + sizeof(data)), QString("abc"));
+      QCOMPARE(p, data + sizeof(data));
+   }
+
+   // Truncated data must be detected instead of being read past its end.
+   {
+      const quint8 data[] = { 0x08, 0x96 }; // The continuation bit is set but there is no next byte.
+      const quint8* p = data;
+      try
+      {
+         ProtoHelper::readUInt<quint32>(p, data + sizeof(data));
+         QFAIL("readUInt(..) should throw an exception on a truncated varint");
+      }
+      catch (MalformedDataException&)
+      {
+      }
+   }
+
+   {
+      const quint8 data[] = { 0x0A, 0x05, 'a', 'b' }; // Announces five characters but only two are given.
+      const quint8* p = data;
+      try
+      {
+         ProtoHelper::readString(p, data + sizeof(data));
+         QFAIL("readString(..) should throw an exception on a truncated string");
+      }
+      catch (MalformedDataException&)
+      {
+      }
+   }
 }

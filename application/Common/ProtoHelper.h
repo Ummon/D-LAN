@@ -30,6 +30,8 @@
 
 namespace Common
 {
+   class MalformedDataException {};
+
    enum class EntriesToAppend
    {
       NONE = 0,
@@ -86,14 +88,19 @@ namespace Common
 
       static QString getDebugStr(const google::protobuf::Message& mess);
 
+      /**
+        * Reads a protobuf field: the tag byte is skipped then the varint is decoded.
+        * 'p' is advanced past the value, 'end' points just after the last readable byte.
+        * @exception MalformedDataException If the field goes past 'end' or doesn't fit in 'T'.
+        */
       template<typename T>
-      static T readUInt(const quint8*& p);
+      static T readUInt(const quint8*& p, const quint8* end);
 
-      static QString readString(const quint8*& p);
-
-   private:
-      static void readUInt(const quint8*& p, quint32 res, quint32& result);
-      static void readUInt(const quint8*& p, quint32 res, quint64& result);
+      /**
+        * Reads a protobuf length delimited field: tag byte, length then the bytes of the string.
+        * @exception MalformedDataException If the field goes past 'end'.
+        */
+      static QString readString(const quint8*& p, const quint8* end);
    };
 }
 
@@ -165,26 +172,33 @@ QString Common::ProtoHelper::getRepeatedStr(const T& mess, const std::string& (T
 */
 
 template<typename T>
-T Common::ProtoHelper::readUInt(const quint8*& p)
+T Common::ProtoHelper::readUInt(const quint8*& p, const quint8* end)
 {
-   p += 1; // Skip the first byte (type + field n°)
+   // The data may come from the network: every byte read is checked against 'end'.
+   if (p >= end)
+      throw MalformedDataException();
 
-   quint32 res = p[0];
-   if (!(res & 0x80))
+   p += 1; // Skip the first byte (type + field n°).
+
+   // A varint holds 7 bits per byte, thus this is the maximum number of bytes 'T' can be built from.
+   const int MAX_NB_BYTES = static_cast<int>(sizeof(T)) * 8 / 7 + 1;
+
+   T result = 0;
+   int shift = 0;
+
+   for (int i = 0; i < MAX_NB_BYTES; i++)
    {
-      p += 1;
-      return res;
+      if (p >= end)
+         throw MalformedDataException();
+
+      const quint8 currentByte = *p++;
+      result |= static_cast<T>(currentByte & 0x7F) << shift;
+
+      if (!(currentByte & 0x80)) // No continuation bit: this was the last byte.
+         return result;
+
+      shift += 7;
    }
 
-   quint32 byte = p[1];
-   res += (byte - 1) << 7;
-   if (!(byte & 0x80))
-   {
-      p += 2;
-      return res;
-   }
-
-   T result;
-   readUInt(p, res, result);
-   return result;
+   throw MalformedDataException(); // The varint doesn't fit in 'T'.
 }

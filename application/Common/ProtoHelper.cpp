@@ -244,56 +244,15 @@ QString ProtoHelper::getDebugStr(const google::protobuf::Message& mess)
    // return str;
 }
 
-void ProtoHelper::readUInt(const quint8*& p, quint32 res, quint32& result)
+QString ProtoHelper::readString(const quint8*& p, const quint8* end)
 {
-   for (quint32 i = 2; i < 5; i++)
-   {
-      quint32 byte = static_cast<quint8>(p[i]);
-      res += (byte - 1) << (7 * i);
-      if (byte < 128)
-      {
-         p += (size_t)i + 1;
-         result = res;
-         return;
-      }
-   }
+   const quint32 length = ProtoHelper::readUInt<quint32>(p, end);
 
-   for (quint32 i = 5; i < 10; i++)
-   {
-      quint32 byte = static_cast<quint8>(p[i]);
-      if (byte < 128)
-      {
-         p += (size_t)i + 1;
-         result = res;
-         return;
-      }
-   }
+   // The announced length can't be trusted, it may come from the network.
+   if (length > static_cast<quint32>(end - p))
+      throw MalformedDataException();
 
-   result = res;
-}
-
-void ProtoHelper::readUInt(const quint8*& p, quint32 res32, quint64& result)
-{
-   quint64 res = res32;
-   for (quint32 i = 2; i < 10; i++)
-   {
-      quint64 byte = static_cast<quint8>(p[i]);
-      res += (byte - 1) << (7 * i);
-      if (byte < 128)
-      {
-         p += (size_t)i + 1;
-         result = res;
-         return;
-      }
-   }
-
-   result = 0;
-}
-
-QString ProtoHelper::readString(const quint8*& p)
-{
-   quint32 length = ProtoHelper::readUInt<quint32>(p);
-   QString str = QString::fromUtf8(reinterpret_cast<const char*>(p), length);
+   const QString str = QString::fromUtf8(reinterpret_cast<const char*>(p), length);
    p += length;
    return str;
 }
