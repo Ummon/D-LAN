@@ -81,7 +81,8 @@ bool RoomsDock::eventFilter(QObject* obj, QEvent* event)
    if (
       obj == this->ui->txtRoomName &&
       event->type() == QEvent::KeyPress &&
-      static_cast<QKeyEvent*>(event)->key() == Qt::Key_Return
+      (static_cast<QKeyEvent*>(event)->key() == Qt::Key_Return ||
+       static_cast<QKeyEvent*>(event)->key() == Qt::Key_Enter)
    )
    {
       this->joinRoom();
