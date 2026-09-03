@@ -47,7 +47,7 @@ namespace Common
       Common::Hash ID; ///< The unique identifier of the shared entry.
       Path path; ///< The absolute path of the shared entry (file or directory).
       QString name; ///< Can be null if any special name has been given, in this case the name of the file or directory is returned by 'getName()'.
-      qint64 size;
-      qint64 freeSpace;
+      qint64 size = 0;
+      qint64 freeSpace = 0;
    };
 }
