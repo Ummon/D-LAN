@@ -92,24 +92,31 @@ template <typename T>
 template <typename Container>
 void Common::SortedList<T>::insert(const Container& items)
 {   
-   QMutableListIterator<T> j(list);
+   QMutableListIterator<T> j(this->list);
 
    for (typename Container::const_iterator i = items.begin(); i != items.end(); i++)
    {
-      T ei = *i;
+      const T& ei = *i;
+      bool alreadyExists = false;
 
       while (j.hasNext())
       {
-         T ej = j.peekNext();
-         if (this->lesserThan ? this->lesserThan(ei, ej) : ei < ej)
+         const T& ej = j.peekNext();
+
+         if (ej == ei) // Do not allow multiple same item, like the single item 'insert(..)'.
          {
-            j.insert(ei);
-            goto nextEi;
+            alreadyExists = true;
+            break;
          }
+
+         if (this->lesserThan ? this->lesserThan(ei, ej) : ei < ej)
+            break;
+
          j.next();
       }
-      j.insert(ei);
-      nextEi:;
+
+      if (!alreadyExists)
+         j.insert(ei);
    }
 }
 
