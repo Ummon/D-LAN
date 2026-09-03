@@ -48,12 +48,14 @@ SearchModel::SearchModel(
    maxLevel(0),
    nbFolders(0),
    nbFiles(0),
+   currentSortedColumn(RELEVANCE), // The view sorts by relevance, see 'SearchWidget::SearchWidget(..)'.
+   currentSortOrder(Qt::AscendingOrder),
    currentProgress(0)
 {
    delete this->root;
    this->root = new SearchTree();
 
-   static const quint32 searchTime = SETTINGS.get<quint32>("search_time");
+   const quint32 searchTime = SETTINGS.get<quint32>("search_time");
 
    this->timerProgress.setInterval(searchTime / NB_SIGNAL_PROGRESS);
    connect(&this->timerProgress, &QTimer::timeout, this, &SearchModel::sendNextProgress);
