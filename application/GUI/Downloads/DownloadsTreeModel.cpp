@@ -792,28 +792,26 @@ DownloadsTreeModel::Tree::Tree(const Protos::GUI::State::Download& download, Tre
 }
 
 /**
-  * Search for a shared entry id among the child files if the current entry doesn't have one.
+  * Search for a shared entry id among the descendants if the current entry doesn't have one.
+  * The file children are examined before the directory ones: a directory node only owns an id
+  * when the entries it contains already have one, so a file gives the answer without descending.
+  * @return A null hash if neither this entry nor any of its descendants has an id, which happens
+  *         as long as the core hasn't chosen a destination for the download.
   */
 Common::Hash DownloadsTreeModel::Tree::getSharedEntryId() const
 {
-   const Tree* current = this;
+   const Common::Hash id(this->getItem().local_entry().shared_entry().id().hash());
+   if (!id.isNull())
+      return id;
 
-   forever
-   {
-      const Common::Hash id = Common::Hash(current->getItem().local_entry().shared_entry().id().hash());
-      if (!id.isNull())
-         return id;
-
-      for (auto type : QList<Protos::Common::Entry::Type> { Protos::Common::Entry::FILE, Protos::Common::Entry::DIR })
-         for (int i = 0; i < current->getNbChildren(); ++i)
-            if (current->getChild(i)->getItem().local_entry().type() == type)
-            {
-               current = current->getChild(i);
-               goto next;
-            }
-
-      next:;
-   }
+   for (auto type : { Protos::Common::Entry::FILE, Protos::Common::Entry::DIR })
+      for (int i = 0; i < this->getNbChildren(); ++i)
+         if (this->getChild(i)->getItem().local_entry().type() == type)
+         {
+            const Common::Hash childId = this->getChild(i)->getSharedEntryId();
+            if (!childId.isNull())
+               return childId;
+         }
 
    return Common::Hash();
 }
