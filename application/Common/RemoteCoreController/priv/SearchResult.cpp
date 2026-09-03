@@ -26,7 +26,7 @@ using namespace RCC;
 #include <priv/InternalCoreConnection.h>
 
 SearchResult::SearchResult(InternalCoreConnection* coreConnection, const Protos::Common::FindPattern& findPattern, bool local, int socketTimeout) :
-   ISearchResult(socketTimeout), coreConnection(coreConnection), findPattern(findPattern), local(local)
+   ISearchResult(socketTimeout), coreConnection(coreConnection), findPattern(findPattern), local(local), tag(0), tagSet(false)
 {
    connect(this->coreConnection, &InternalCoreConnection::searchResult, this, &SearchResult::searchResult);
 }
@@ -43,11 +43,12 @@ void SearchResult::start()
 void SearchResult::setTag(quint64 tag)
 {
    this->tag = tag;
+   this->tagSet = true;
 }
 
 void SearchResult::searchResult(const Protos::Common::FindResult& findResult)
 {
-   if (findResult.tag() == this->tag) // Is this message for us?
+   if (this->tagSet && findResult.tag() == this->tag) // Is this message for us?
    {
       this->stopTimer();
       emit result(findResult);

@@ -50,6 +50,13 @@ namespace RCC
       InternalCoreConnection* coreConnection;
       const Common::Hash peerID;
       Protos::GUI::Browse browseMessage;
+
       quint64 tag;
+
+      /**
+        * 'tag' alone can't say whether a message is ours: 0 is both its initial value and a tag the core
+        * may legitimately send. Set by 'setTag(..)' and cleared once the result has been emitted.
+        */
+      bool waitingForResult;
    };
 }

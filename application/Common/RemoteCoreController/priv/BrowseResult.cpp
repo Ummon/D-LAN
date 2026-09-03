@@ -23,7 +23,7 @@ using namespace RCC;
 #include <priv/InternalCoreConnection.h>
 
 BrowseResult::BrowseResult(InternalCoreConnection* coreConnection, const Common::Hash& peerID, int socketTimeout) :
-   IBrowseResult(socketTimeout), peerID(peerID), tag(0)
+   IBrowseResult(socketTimeout), peerID(peerID), tag(0), waitingForResult(false)
 {
    this->init(coreConnection);
 }
@@ -34,7 +34,7 @@ BrowseResult::BrowseResult(
    const Protos::Common::Entry& entry,
    int socketTimeout
 ) :
-   IBrowseResult(socketTimeout), peerID(peerID), tag(0)
+   IBrowseResult(socketTimeout), peerID(peerID), tag(0), waitingForResult(false)
 {
    this->browseMessage.mutable_dirs()->add_entries()->CopyFrom(entry);
    this->init(coreConnection);
@@ -47,7 +47,7 @@ BrowseResult::BrowseResult(
    bool withRoots,
    int socketTimeout
 ) :
-   IBrowseResult(socketTimeout), peerID(peerID), tag(0)
+   IBrowseResult(socketTimeout), peerID(peerID), tag(0), waitingForResult(false)
 {
    this->browseMessage.mutable_dirs()->CopyFrom(entries);
    this->browseMessage.set_get_roots(withRoots);
@@ -64,13 +64,14 @@ void BrowseResult::start()
 void BrowseResult::setTag(quint64 tag)
 {
    this->tag = tag;
+   this->waitingForResult = true;
 }
 
 void BrowseResult::browseResult(const Protos::GUI::BrowseResult& browseResult)
 {
-   if (browseResult.tag() == this->tag) // Is this message for us?
+   if (this->waitingForResult && browseResult.tag() == this->tag) // Is this message for us?
    {
-      this->tag = 0; // To avoid multi emit (should not occurs).
+      this->waitingForResult = false; // To avoid multi emit (should not occurs).
       this->stopTimer();
       emit result(browseResult.entries());
    }

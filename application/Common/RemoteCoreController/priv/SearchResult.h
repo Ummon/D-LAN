@@ -43,6 +43,13 @@ namespace RCC
       InternalCoreConnection* coreConnection;
       const Protos::Common::FindPattern findPattern;
       bool local;
+
       quint64 tag;
+
+      /**
+        * 'tag' alone can't say whether a message is ours: 0 is both its initial value and a tag the core
+        * may legitimately send. Unlike a browse, a search keeps emitting, thus it's never cleared.
+        */
+      bool tagSet;
    };
 }
