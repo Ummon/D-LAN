@@ -200,7 +200,7 @@ void DownloadsWidget::keyPressEvent(QKeyEvent* event)
 {
    if (event->key() == Qt::Key_Delete || event->key() == Qt::Key_Backspace)
       this->removeSelectedEntries();
-   else if (event->key() == Qt::Key_Return)
+   else if (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter)
    {
       const QModelIndexList& selectedRows = this->ui->tblDownloads->selectionModel()->selectedRows();
       for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
