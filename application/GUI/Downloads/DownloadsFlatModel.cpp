@@ -32,6 +32,13 @@ using namespace GUI;
 #include <Log.h>
 #include <Settings/SharedEntryListModel.h>
 
+/**
+  * Value of 'eta' when no ETA can be computed, for example when nothing is being downloaded.
+  * It's deliberately huge so 'DownloadsWidget::updateGlobalProgressBar()', which hides any ETA longer than a
+  * week, doesn't display it.
+  */
+static const quint64 ETA_UNKNOWN = std::numeric_limits<quint64>::max();
+
 DownloadsFlatModel::DownloadsFlatModel(
    QSharedPointer<RCC::ICoreConnection> coreConnection,
    const PeerListModel& peerListModel,
@@ -55,6 +62,10 @@ quint64 DownloadsFlatModel::getTotalBytesDownloadedInQueue() const
    return this->totalBytesDownloadedInQueue;
 }
 
+/**
+  * @return The estimated remaining time [s], smoothed over the last states. It may be 0 (nothing left to
+  *         download) or 'ETA_UNKNOWN' when it can't be computed, both meaning "nothing to display".
+  */
 quint64 DownloadsFlatModel::getEta() const
 {
    return this->eta;
@@ -352,17 +363,24 @@ void DownloadsFlatModel::onNewState(const Protos::GUI::State& state)
       this->endRemoveRows();
    }
 
-   quint64 oldEta = this->eta;
+   const quint64 oldEta = this->eta;
    if (state.stats().download_rate() == 0)
-      this->eta = std::numeric_limits<quint64>::max();
+   {
+      this->eta = ETA_UNKNOWN;
+   }
    else
    {
-      const int weightLastEta = this->eta == 0 ? 1 : WEIGHT_LAST_ETA;
+      const quint64 currentEta =
+         (this->totalBytesInQueue - this->totalBytesDownloadedInQueue) / state.stats().download_rate();
+
+      // Neither 'ETA_UNKNOWN' nor 0 is a real ETA, they must not be given to the weighted mean: multiplying
+      // 'ETA_UNKNOWN' by 'WEIGHT_LAST_ETA' overflows and gives a huge value which then needs hundreds of states
+      // to fade away. The download rate is 0 right before the first bytes arrive, so this happens at the
+      // beginning of nearly every download.
       this->eta =
-         (
-            weightLastEta * this->eta +
-            (this->totalBytesInQueue - this->totalBytesDownloadedInQueue) / state.stats().download_rate()
-         ) / (weightLastEta + 1);
+         this->eta == 0 || this->eta == ETA_UNKNOWN ?
+              currentEta
+            : (WEIGHT_LAST_ETA * this->eta + currentEta) / (WEIGHT_LAST_ETA + 1);
    }
 
    if (
