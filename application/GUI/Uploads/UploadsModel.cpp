@@ -52,7 +52,7 @@ QVariant UploadsModel::data(const QModelIndex& index, int role) const
          const Protos::GUI::State_Upload& currentUpload = this->uploads[index.row()];
          switch (index.column())
          {
-         case FILENAME: return QString::fromStdString(currentUpload.file().name());
+         case FILENAME: return Common::ProtoHelper::getPath(currentUpload.file()).toString();
          case PROGRESS: return currentUpload.progress();
          case PEER: return this->peerListModel.getNick(currentUpload.peer_id().hash(), tr("<unknown>"));
          default: return QVariant();
