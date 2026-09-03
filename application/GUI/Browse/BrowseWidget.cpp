@@ -124,7 +124,7 @@ void BrowseWidget::changeEvent(QEvent* event)
 void BrowseWidget::keyPressEvent(QKeyEvent* event)
 {
    // Return key -> open all selected files.
-   if (event->key() == Qt::Key_Return)
+   if (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter)
    {
       const QModelIndexList& selectedRows = this->ui->treeView->selectionModel()->selectedRows();
       for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
