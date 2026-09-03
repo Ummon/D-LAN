@@ -63,16 +63,19 @@ void LoggerHooks::removeDeletedHooks()
 
 /////
 
-QTextStream Logger::out;
-QFile Logger::file;
-QRecursiveMutex Logger::mutex;
-QString Logger::logDirName;
-
-LoggerHooks Logger::loggerHooks;
+Logger::State& Logger::getState()
+{
+   // Built on the first use: no dependency on the initialization order of the static objects of the other
+   // compilation units. Never deleted, see the declaration.
+   static State* const state = new State();
+   return *state;
+}
 
 void Logger::setLogDirName(const QString& logDirName)
 {
-   Logger::logDirName = logDirName;
+   State& state = Logger::getState();
+   QMutexLocker locker(&state.mutex);
+   state.logDirName = logDirName;
 }
 
 /**
@@ -81,20 +84,18 @@ void Logger::setLogDirName(const QString& logDirName)
   */
 QString Logger::getLogDirName()
 {
-   QMutexLocker locker(&Logger::mutex);
-   return Logger::logDirName.isEmpty() ? DEFAULT_LOG_FOLDER_NAME : Logger::logDirName;
+   State& state = Logger::getState();
+   QMutexLocker locker(&state.mutex);
+   return state.logDirName.isEmpty() ? DEFAULT_LOG_FOLDER_NAME : state.logDirName;
 }
 
 void Logger::addALoggerHook(QSharedPointer<LoggerHook> loggerHook)
 {
-   QMutexLocker locker(&Logger::mutex);
-   Logger::loggerHooks << loggerHook.toWeakRef();
+   State& state = Logger::getState();
+   QMutexLocker locker(&state.mutex);
+   state.loggerHooks << loggerHook.toWeakRef();
 }
 
-/**
-  * We can't use 'Logger::mutex' in constructor and destructor because we don't know if the object already exist (constructor) or
-  * if it has been already deleted (destructor).
-  */
 Logger::Logger(const QString& name) :
    name(name)
 {
@@ -106,7 +107,8 @@ Logger::~Logger()
 
 bool Logger::log(const QString& message, Severity severity, const char* filename, int line) const
 {
-   QMutexLocker locker(&Logger::mutex);
+   State& state = Logger::getState();
+   QMutexLocker locker(&state.mutex);
 
    QString threadName = QThread::currentThread()->objectName();
    threadName = threadName.isEmpty() ? QString::number((intptr_t)QThread::currentThreadId()) : threadName;
@@ -118,13 +120,13 @@ bool Logger::log(const QString& message, Severity severity, const char* filename
    QSharedPointer<Entry> entry(new Entry(QDateTime::currentDateTime(), severity, this->name, threadName, filenameLine, message));
 
    // Say to all hooks there is a new message.
-   for (const QSharedPointer<LoggerHook>& hook : Logger::loggerHooks.takeAliveHooks())
+   for (const QSharedPointer<LoggerHook>& hook : state.loggerHooks.takeAliveHooks())
       hook->newMessage(entry);
 
    if (!Logger::createFileLog())
       return false;
 
-   Logger::out << entry->toStrLine() << Qt::endl;
+   state.out << entry->toStrLine() << Qt::endl;
 
    return true;
 }
@@ -134,13 +136,16 @@ bool Logger::log(const ILoggable& object, Severity severity, const char* filenam
    return this->log(object.toStringLog(), severity, filename, line);
 }
 
-/**
-  * To sort a 'QList<QFileInfo>' by its last modified date.
-  * See 'Logger::deleteOldestLog(..)'.
-  */
-bool fileInfoLessThan(const QFileInfo& f1, const QFileInfo& f2)
+namespace
 {
-   return f1.lastModified() < f2.lastModified();
+   /**
+     * To sort a 'QList<QFileInfo>' by its last modified date.
+     * See 'Logger::deleteOldestLog(..)'.
+     */
+   bool fileInfoLessThan(const QFileInfo& f1, const QFileInfo& f2)
+   {
+      return f1.lastModified() < f2.lastModified();
+   }
 }
 
 /**
@@ -149,10 +154,12 @@ bool fileInfoLessThan(const QFileInfo& f1, const QFileInfo& f2)
   */
 bool Logger::createFileLog()
 {
-   if (!Logger::file.isOpen())
+   State& state = Logger::getState();
+
+   if (!state.file.isOpen())
    {
-      if (logDirName.isEmpty())
-         logDirName = DEFAULT_LOG_FOLDER_NAME;
+      if (state.logDirName.isEmpty())
+         state.logDirName = DEFAULT_LOG_FOLDER_NAME;
 
       QTextStream outErr(stderr);
 
@@ -160,19 +167,19 @@ bool Logger::createFileLog()
       {
          QDir appDir(Common::Global::getDataFolder(Common::Global::DataFolderType::LOCAL));
 
-         if (!appDir.exists(logDirName) && !appDir.mkdir(logDirName))
+         if (!appDir.exists(state.logDirName) && !appDir.mkdir(state.logDirName))
          {
-            outErr << "Error, cannot create log directory: " << appDir.absoluteFilePath(logDirName) << Qt::endl;
+            outErr << "Error, cannot create log directory: " << appDir.absoluteFilePath(state.logDirName) << Qt::endl;
             return false;
          }
          else
          {
-            QDir logDir(appDir.absoluteFilePath(logDirName));
+            QDir logDir(appDir.absoluteFilePath(state.logDirName));
 
             QString filename = QDateTime::currentDateTime().toString("yyyy_MM_dd-hh_mm_ss") + ".log";
 
-            Logger::file.setFileName(logDir.absoluteFilePath(filename));
-            if (!Logger::file.open(QIODevice::WriteOnly))
+            state.file.setFileName(logDir.absoluteFilePath(filename));
+            if (!state.file.open(QIODevice::WriteOnly))
             {
                outErr << "Error, cannot create log file: " << logDir.absoluteFilePath(filename) << Qt::endl;
                return false;
@@ -180,8 +187,8 @@ bool Logger::createFileLog()
             else
             {
                Logger::deleteOldestLog(logDir);
-               Logger::out.setDevice(&Logger::file);
-               Logger::out.setEncoding(QStringConverter::Utf8);
+               state.out.setDevice(&state.file);
+               state.out.setEncoding(QStringConverter::Utf8);
             }
          }
       }

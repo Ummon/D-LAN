@@ -33,18 +33,44 @@ using namespace LM;
   * will create its own handle and discard the current one.
   */
 
-void handler(QtMsgType type, const QMessageLogContext&, const QString& msg)
+namespace
 {
-   Severity s =
-      type == QtDebugMsg ? SV_DEBUG :
-      type == QtWarningMsg ? SV_WARNING :
-      type == QtCriticalMsg ? SV_ERROR :
-      type == QtFatalMsg ? SV_FATAL_ERROR : SV_UNKNOWN;
+   // Internal linkage: nothing outside this compilation unit has any use of it.
+   void handler(QtMsgType type, const QMessageLogContext&, const QString& msg)
+   {
+      Severity s =
+         type == QtDebugMsg ? SV_DEBUG :
+         type == QtWarningMsg ? SV_WARNING :
+         type == QtCriticalMsg ? SV_ERROR :
+         type == QtFatalMsg ? SV_FATAL_ERROR : SV_UNKNOWN;
 
-   QtLogger::me.log(msg, s);
+      QtLogger::getInstance().log(msg, s);
+   }
+
+   /**
+     * Installs the handler as soon as this compilation unit is loaded, like the former 'QtLogger::me' object
+     * did through its constructor. Only the tests call 'Builder::initMsgHandler()', the core and the GUI rely
+     * on this to have the Qt messages logged.
+     * Nothing but a function pointer is installed here, no other static object is used.
+     */
+   struct MsgHandlerInstaller
+   {
+      MsgHandlerInstaller() { QtLogger::initMsgHandler(); }
+   };
+
+   const MsgHandlerInstaller msgHandlerInstaller;
 }
 
-const QtLogger QtLogger::me;
+/**
+  * Built on the first handled message, thus it can't be used before being initialized whatever the
+  * initialization order of the static objects. Never deleted: the handler stays installed until the process
+  * ends and Qt can emit messages while the static objects are being destroyed.
+  */
+const QtLogger& QtLogger::getInstance()
+{
+   static const QtLogger* const instance = new QtLogger();
+   return *instance;
+}
 
 /**
   * Fake class method to avoid the case where this compilation unit (.o)
@@ -58,5 +84,4 @@ void QtLogger::initMsgHandler()
 QtLogger::QtLogger() :
    Logger("Qt")
 {
-   QtLogger::initMsgHandler();
 }

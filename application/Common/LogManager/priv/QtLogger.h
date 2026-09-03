@@ -25,8 +25,13 @@ namespace LM
    class QtLogger : public Logger
    {
    public:
-      static const QtLogger me;
       static void initMsgHandler();
+
+      /**
+        * The logger used by the Qt message handler.
+        * Built on the first use and never deleted, see 'Logger::getState()'.
+        */
+      static const QtLogger& getInstance();
 
    private:
       QtLogger();

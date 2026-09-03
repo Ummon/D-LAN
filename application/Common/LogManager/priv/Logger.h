@@ -51,14 +51,22 @@ namespace LM
 
    class Logger : public ILogger
    {
-      static QTextStream out;
-      static QFile file;
+      struct State
+      {
+         QTextStream out;
+         QFile file;
+         QRecursiveMutex mutex;
+         QString logDirName;
+         LoggerHooks loggerHooks;
+      };
 
-      static QRecursiveMutex mutex;
-
-      static QString logDirName;
-
-      static LoggerHooks loggerHooks;
+      /**
+        * The shared state of all the loggers.
+        * Deliberately allocated and never deleted: the Qt message handler installed by 'QtLogger' stays in
+        * place until the process ends and can be called while the static objects are being destroyed. A
+        * plain static would already be destroyed by then and the stream, the file and the mutex would be dangling.
+        */
+      static State& getState();
 
    public:
       static void setLogDirName(const QString& logDirName);
