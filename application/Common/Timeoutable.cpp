@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <Common/Timeoutable.h>
 using namespace Common;
 
@@ -27,6 +27,8 @@ Timeoutable::Timeoutable(int time) :
 {
    this->timer.setInterval(time);
    this->timer.setSingleShot(true);
+
+   connect(&this->timer, &QTimer::timeout, this, &Timeoutable::timeoutSlot);
 }
 
 bool Timeoutable::isTimedout() const
@@ -34,17 +36,17 @@ bool Timeoutable::isTimedout() const
    return this->timeouted;
 }
 
+/**
+  * Starts or restarts the timer, the object isn't timed out anymore.
+  */
 void Timeoutable::startTimer()
 {
-   if (!this->timer.isActive())
-      connect(&this->timer, &QTimer::timeout, this, &Timeoutable::timeoutSlot);
-
+   this->timeouted = false;
    this->timer.start();
 }
 
 void Timeoutable::stopTimer()
 {
-   disconnect(&this->timer, &QTimer::timeout, this, &Timeoutable::timeoutSlot);
    this->timer.stop();
 }
 
