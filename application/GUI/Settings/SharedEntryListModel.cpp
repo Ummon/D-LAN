@@ -19,6 +19,8 @@
 #include <Settings/SharedEntryListModel.h>
 using namespace GUI;
 
+#include <algorithm>
+
 #include <QFileInfo>
 #include <QDir>
 
@@ -81,7 +83,19 @@ void SharedEntryListModel::addEntries(const QStringList& entries)
          cleaned += '/';
 
       const auto sharedEntry = Common::SharedEntry { Common::Hash(), cleaned, QString(), 0, 0 };
-      if (!this->sharedEntries.contains(sharedEntry))
+
+      // The paths are compared and not the entries themselves: 'SharedEntry::operator==', which 'contains(..)'
+      // would use, only compares the IDs and a new entry doesn't have one yet, the core assigns it. It would
+      // both let an already shared entry be added again and, as soon as one entry is waiting for its ID, make
+      // every following one look like a duplicate.
+      const bool alreadyShared =
+         std::any_of(
+            this->sharedEntries.constBegin(),
+            this->sharedEntries.constEnd(),
+            [&sharedEntry](const Common::SharedEntry& e) { return e.path == sharedEntry.path; }
+         );
+
+      if (!alreadyShared)
          sharedEntries << sharedEntry;
    }
 
