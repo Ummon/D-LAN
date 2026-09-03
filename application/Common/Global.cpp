@@ -126,17 +126,28 @@ QString Global::getCompilerVersion()
   * http://en.wikipedia.org/wiki/Combination
   */
 int Global::nCombinations(int n, int k)
-{   
+{
    Q_ASSERT(n >= 0);
    Q_ASSERT(k >= 0);
 
-   if (n < 0 || k < 0)
+   if (n < 0 || k < 0 || k > n)
       return 0;
 
-   int c = 1;
-   for(int i = 1; i <= k; i++)
+   // C(n, k) == C(n, n - k), taking the smallest one needs fewer steps and grows less.
+   if (k > n - k)
+      k = n - k;
+
+   qint64 c = 1;
+   for (int i = 1; i <= k; i++)
+   {
+      // 'c' is at most INT_MAX here and (n - k + i) at most n, thus the product can't overflow a 'qint64'.
       c = c * (n - k + i) / i;
-   return c;
+
+      // The result is saturated rather than silently wrapped around.
+      if (c > std::numeric_limits<int>::max())
+         return std::numeric_limits<int>::max();
+   }
+   return static_cast<int>(c);
 }
 
 /**
