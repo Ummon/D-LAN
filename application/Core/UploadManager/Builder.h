@@ -20,7 +20,6 @@
 
 #include <QSharedPointer>
 
-namespace FM { class IFileManager; }
 namespace PM { class IPeerManager; }
 
 namespace UM

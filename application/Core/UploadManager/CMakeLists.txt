@@ -13,7 +13,6 @@ add_library(UploadManager STATIC
    priv/ChunksUploader.h
    priv/UploadManager.h
    Builder.h
-   priv/Constants.h
    priv/Log.h
 )
 
@@ -24,4 +23,5 @@ target_include_directories(UploadManager PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 target_link_libraries(UploadManager PUBLIC
    Common
    LogManager
+   dlan_protos
 )

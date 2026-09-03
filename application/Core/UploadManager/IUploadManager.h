@@ -29,6 +29,10 @@ namespace UM
    public:
       virtual ~IUploadManager() {}
 
+      /**
+        * The returned uploaders belong to the upload manager, the pointers are only valid until the control
+        * returns to the event loop: a finished upload is deleted once it times out.
+        */
       virtual QList<IChunksUploader*> getChunksUploaders() const = 0;
 
       /**

@@ -19,7 +19,6 @@
 #include <Builder.h>
 using namespace UM;
 
-#include <Core/FileManager/IFileManager.h>
 #include <Core/PeerManager/IPeerManager.h>
 
 #include <priv/UploadManager.h>

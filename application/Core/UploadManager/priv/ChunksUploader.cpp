@@ -20,6 +20,7 @@
 using namespace UM;
 
 #include <typeinfo>
+#include <utility>
 
 #include <QCoreApplication>
 
@@ -42,7 +43,7 @@ ChunksUploader::ChunksUploader(
    Common::Timeoutable(SETTINGS.get<quint32>("upload_lifetime")),
    mainThread(QThread::currentThread()),
    ID(currentID++),
-   chunks(chunksParams),
+   chunks(std::move(chunksParams)),
    socket(socket),
    transferRateCalculator(transferRateCalculator),
    closeTheSocket(false),
@@ -91,6 +92,9 @@ void ChunksUploader::run()
 
    try
    {
+      // Allocated once for all the chunks, 'buffer_size_reading' may be large.
+      QByteArray buffer(BUFFER_SIZE, Qt::Uninitialized);
+
       // 'this->chunks' is never iterated by reference: 'getChunks()' may copy it from another thread at any
       // moment, the detach occurring at the next write would then invalidate any reference into it. Only the
       // current element is kept as a local copy, the shared list is written under the mutex.
@@ -108,7 +112,6 @@ void ChunksUploader::run()
 
          QSharedPointer<FM::IDataReader> reader = chunk.getChunk()->getDataReader();
 
-         QByteArray buffer(BUFFER_SIZE, Qt::Uninitialized);
          int bytesRead = 0;
 
          while (bytesRead = reader->read(buffer.data(), chunk.getOffset()))

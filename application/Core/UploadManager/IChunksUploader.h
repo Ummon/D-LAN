@@ -27,9 +27,6 @@
 
 namespace UM
 {
-   class IPeer;
-   class IChunk;
-
    class IChunksUploader
    {
    public:
@@ -46,12 +43,7 @@ namespace UM
       virtual Common::Hash getPeerID() const = 0;
 
       /**
-        * Returns a value between 0 and 10000.
-        */
-      // virtual int getProgress() const = 0;
-
-      /**
-        * Returns the chunk being uploaded.
+        * Returns the chunks being uploaded and their current offset.
         */
       virtual QList<PM::GetChunkParams> getChunks() const = 0;
    };
