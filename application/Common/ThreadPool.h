@@ -77,7 +77,8 @@ namespace Common
       QWeakPointer<IRunnable> runnable;
       QTimer timer;
 
-      mutable QWaitCondition waitCondition;
+      mutable QWaitCondition waitCondition; ///< Signals a runnable object to run or the end of the thread.
+      mutable QWaitCondition runnableFinishedCondition; ///< Signals the end of the current runnable object.
       mutable QMutex mutex;
 
       bool toStop;
