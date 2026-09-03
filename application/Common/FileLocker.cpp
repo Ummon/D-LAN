@@ -15,9 +15,11 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <Common/FileLocker.h>
 using namespace Common;
+
+#include <cstring>
 
 #ifdef Q_OS_WIN32
    #include <io.h>
@@ -40,7 +42,7 @@ FileLocker::FileLocker(const QFile& file, qint64 nbBytesToLock, LockType type) :
  #endif
 {
 #ifdef Q_OS_WIN32
-   this->overlapped.hEvent = 0;
+   memset(&this->overlapped, 0, sizeof(this->overlapped));
 
    this->overlapped.Offset = static_cast<DWORD>(file.pos() & 0x00000000FFFFFFFFLL);
    this->overlapped.OffsetHigh = static_cast<DWORD>(file.pos() >> 32 & 0x00000000FFFFFFFFLL);
@@ -61,6 +63,9 @@ FileLocker::FileLocker(const QFile& file, qint64 nbBytesToLock, LockType type) :
 FileLocker::~FileLocker()
 {
 #ifdef Q_OS_WIN32
+   if (!this->lockAcquired)
+      return;
+
    UnlockFileEx(
       this->fileHandle,
       0,
