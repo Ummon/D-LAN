@@ -18,7 +18,16 @@ using namespace Common;
   */
 Path::Path(const QString& path)
 {
-   QString cleanedPath = QDir::cleanPath(path).trimmed();
+   // Must be known before 'QDir::cleanPath(..)': it removes the trailing slash and normalizes the separators.
+   // Read from the trimmed path and not from 'path', a trailing white space would hide the slash.
+   // The separators are normalized first so that a Windows path is handled the same way.
+   const QString trimmedPath = QDir::fromNativeSeparators(path.trimmed());
+   const bool isDir =
+      trimmedPath.endsWith('/') ||
+      trimmedPath == "." || trimmedPath == ".." ||
+      trimmedPath.endsWith("/.") || trimmedPath.endsWith("/..");
+
+   QString cleanedPath = QDir::cleanPath(trimmedPath);
 
    if (cleanedPath.isEmpty())
       return;
@@ -35,8 +44,6 @@ Path::Path(const QString& path)
       cleanedPath.remove(0, 3);
    }
    // Else case: an relative path (no root).
-
-   const bool isDir = path.endsWith('/');
 
    const QStringList names = cleanedPath.split('/', Qt::SkipEmptyParts);
    for (int i = 0; i < names.size(); i++)
@@ -61,7 +68,9 @@ Path::Path(const QString& root, const QStringList& dirs, const QString& filename
 {
 }
 
-Path::Path(const QString&& root, const QStringList&& dirs, const QString&& filename)
+// The references must not be 'const': 'std::move(..)' on a 'const' rvalue reference can't bind to the move
+// constructors of 'QString'/'QStringList', every '&&' overload below would silently copy.
+Path::Path(QString&& root, QStringList&& dirs, QString&& filename)
    : root(std::move(root)), dirs(std::move(dirs)), filename(std::move(filename))
 {
 }
@@ -70,7 +79,7 @@ QString Path::toString(bool withFilename) const
 {
    return this->root +
       this->dirs.join('/') +
-      (this->isAbsolute() && !this->dirs.isEmpty() || !this->dirs.isEmpty() ? "/" : "") +
+      (this->dirs.isEmpty() ? "" : "/") + // The root already ends with a slash.
       (withFilename ? this->filename : QString());
 }
 
@@ -323,6 +332,10 @@ const QList<QChar> Path::FORBIDDEN_CHARS_IN_PATH { '?', '/', '\\','*', ':', '"',
   */
 QString Path::sanitizePath(QString path)
 {
+   // '&' opens an entity, it must be escaped first: without this a path already containing the text "&#47;"
+   // would be turned into a real '/' by 'unSanitizePath(..)'.
+   path.replace('&', "&#38;");
+
    for (QListIterator<QChar> i(FORBIDDEN_CHARS_IN_PATH); i.hasNext();)
    {
       const QChar& currentChar = i.next();
@@ -343,6 +356,10 @@ QString Path::unSanitizePath(QString path)
       const QString entity = QString("&#").append(QString::number(currentChar.cell())).append(';');
       path.replace(entity, currentChar);
    }
+
+   // Last, in the reverse order of 'sanitizePath(..)'.
+   path.replace("&#38;", "&");
+
    return path;
 }
 
