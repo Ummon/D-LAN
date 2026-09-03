@@ -76,6 +76,11 @@ int Message::writeMessageToDevice(QIODevice* ioDevice, const MessageHeader& head
   */
 Message Message::readMessage(const char* buffer, quint32 bufferSize)
 {
+   // The header is read from the buffer, it must entirely be there. Tested first to avoid
+   // an unsigned underflow in the test of the body size below.
+   if (bufferSize < static_cast<quint32>(MessageHeader::HEADER_SIZE))
+      throw ReadErrorException();
+
    MessageHeader header = MessageHeader::readHeader(buffer);
 
    if (header.getSize() > bufferSize - MessageHeader::HEADER_SIZE)
