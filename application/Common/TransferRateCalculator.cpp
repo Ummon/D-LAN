@@ -20,6 +20,7 @@
 using namespace Common;
 
 #include <cstring>
+#include <limits>
 
 #include <QMutexLocker>
 
@@ -54,7 +55,13 @@ int TransferRateCalculator::getTransferRate()
    QMutexLocker locker(&this->mutex);
 
    this->update(0);
-   return this->total / PERIOD_S;
+
+   const quint64 rate = this->total / PERIOD_S;
+
+   // The returned type is signed and 32 bits, the rate is saturated instead of being wrapped.
+   return rate > static_cast<quint64>(std::numeric_limits<int>::max()) ?
+      std::numeric_limits<int>::max() :
+      static_cast<int>(rate);
 }
 
 void TransferRateCalculator::reset()
@@ -65,7 +72,7 @@ void TransferRateCalculator::reset()
    this->currentValuePos = 0;
    this->total = 0;
    this->t1 = 0;
-   memset(this->values, 0, NB_VALUE * sizeof(quint32));
+   memset(this->values, 0, sizeof(this->values));
    this->timer.start();
 }
 
@@ -92,7 +99,7 @@ void TransferRateCalculator::update(int value)
             this->currentValuePos = 0;
             this->t1 = 0;
             this->total = 0;
-            const quint32 v = value / NB_VALUE;
+            const quint64 v = quint64(value) / NB_VALUE;
             for (quint32 i = 0; i < NB_VALUE; i++)
             {
                this->values[i] = v;
@@ -107,7 +114,7 @@ void TransferRateCalculator::update(int value)
       }
       else
       {
-         const quint32 v1 = qint64(value) * (D - t1_) / dt;
+         const quint64 v1 = quint64(qint64(value) * (D - t1_) / dt);
 
          this->total -= this->values[this->currentValuePos];
          this->values[this->currentValuePos++] = this->currentValue + v1;
@@ -115,7 +122,7 @@ void TransferRateCalculator::update(int value)
          if (this->currentValuePos == NB_VALUE)
             this->currentValuePos = 0;
 
-         value -= v1;
+         value -= static_cast<int>(v1); // 'v1' is a part of 'value', it always fits.
          this->t1 += (D - t1_);
          this->currentValue = 0;
       }

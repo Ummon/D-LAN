@@ -46,10 +46,12 @@ namespace Common
       QElapsedTimer timer;
       qint64 t1;
 
-      quint32 currentValue;
+      // 64 bits: a 'quint32' total overflows from ~1.4 GB/s over the period, which a loopback or a
+      // fast local link can reach.
+      quint64 currentValue;
       quint32 currentValuePos;
-      quint32 values[NB_VALUE]; // Previous values during the current period.
+      quint64 values[NB_VALUE]; // Previous values during the current period.
 
-      quint32 total; // Sum of all values.
+      quint64 total; // Sum of all values.
    };
 }
