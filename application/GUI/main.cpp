@@ -46,23 +46,29 @@ int main(int argc, char *argv[])
    new_progname = argv[0];
 #endif
 
+   // A flag and not a comparison against the system locale: '--lang <system language>' is a valid request
+   // and must be honoured like any other.
    QLocale locale;
+   bool languageGiven = false;
    for (int i = 1; i < argc; i++)
    {
       const QString arg = QString::fromLatin1(argv[i]);
       if (arg == "--lang" && i < argc - 1)
+      {
          locale = QLocale(QString::fromLatin1(argv[++i]));
+         languageGiven = true;
+      }
    }
 
    SETTINGS.setFilename(Common::Constants::GUI_SETTINGS_FILENAME);
    SETTINGS.setSettingsMessage(createDefaultValuesSettings());
    SETTINGS.load();
-   if (locale != QLocale::system())
+   if (languageGiven)
       SETTINGS.set("language", locale);
    SETTINGS.save(); // To automatically create the file if it doesn't exist.
 
-   // 'locale' has been set with "--lang".
-   if (locale != QLocale::system())
+   // 'locale' has been set with "--lang", the GUI isn't started in this case.
+   if (languageGiven)
       return 0;
 
    LM::Builder::setLogDirName("log_gui");
