@@ -81,7 +81,8 @@ inline const T& Common::MapArray<K, T>::getValueFromIndex(int index) const
 {
    try
    {
-      return this->array[index].value;
+      // 'SortedArray::operator[]' looks a value up, it doesn't take an index.
+      return this->array.getFromIndex(index).value;
    }
    catch (typename SortedArray<Element>::NotFoundException&)
    {
@@ -135,7 +136,8 @@ inline void Common::MapArray<K, T>::removeFromIndex(int index)
 {
    try
    {
-      this->array.remove(index);
+      // 'SortedArray::remove(..)' takes a value, the index overload is 'removeFromIndex(..)'.
+      this->array.removeFromIndex(index);
    }
    catch (typename SortedArray<Element>::NotFoundException&)
    {
