@@ -93,9 +93,13 @@ QVariant RoomsModel::data(const QModelIndex& index, int role) const
    return QVariant();
 }
 
+/**
+  * Returns an empty name if the index doesn't correspond to a room, an invalid index for example: the row of
+  * such an index is -1, which passes the upper bound check and makes 'getFromIndex(..)' throw.
+  */
 QString RoomsModel::getRoomName(const QModelIndex& index)
 {
-   if (index.row() < this->orderedRooms.size())
+   if (index.row() >= 0 && index.row() < this->orderedRooms.size())
       return this->orderedRooms.getFromIndex(index.row())->name;
 
    return QString();

@@ -88,35 +88,35 @@ QString PeerListModel::getNick(const Common::Hash& peerID, const QString& defaul
 
 QString PeerListModel::getNick(int rowNum) const
 {
-   if (rowNum >= this->orderedPeers.size())
+   if (rowNum < 0 || rowNum >= this->orderedPeers.size())
       return QString();
    return this->orderedPeers.getFromIndex(rowNum)->nick;
 }
 
 bool PeerListModel::isOurself(int rowNum) const
 {
-   if (rowNum >= this->orderedPeers.size())
+   if (rowNum < 0 || rowNum >= this->orderedPeers.size())
       return false;
    return this->orderedPeers.getFromIndex(rowNum)->peerID == this->coreConnection->getRemoteID();
 }
 
 Common::Hash PeerListModel::getPeerID(int rowNum) const
 {
-   if (rowNum >= this->orderedPeers.size())
+   if (rowNum < 0 || rowNum >= this->orderedPeers.size())
       return Common::Hash();
    return this->orderedPeers.getFromIndex(rowNum)->peerID;
 }
 
 QHostAddress PeerListModel::getPeerIP(int rowNum) const
 {
-   if (rowNum >= this->orderedPeers.size())
+   if (rowNum < 0 || rowNum >= this->orderedPeers.size())
       return QHostAddress();
    return this->orderedPeers.getFromIndex(rowNum)->ip;
 }
 
 Protos::GUI::State::Peer::PeerStatus PeerListModel::getStatus(int rowNum) const
 {
-   if (rowNum >= this->orderedPeers.size() || rowNum < 0)
+   if (rowNum < 0 || rowNum >= this->orderedPeers.size())
       return Protos::GUI::State::Peer::OK;
    return this->orderedPeers.getFromIndex(rowNum)->status;
 }
