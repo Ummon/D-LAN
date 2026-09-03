@@ -321,15 +321,13 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
       switch (event->key())
       {
       // Search.
-      case 'f':
-      case 'F':
+      case Qt::Key_F:
          this->searchDock->setFocusToLineEdit();
          event->accept();
          return;
 
       // Close the current window.
-      case 'w':
-      case 'W':
+      case Qt::Key_W:
          this->mdiArea->closeCurrentWindow();
          event->accept();
          return;
