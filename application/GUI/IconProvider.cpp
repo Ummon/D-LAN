@@ -98,22 +98,21 @@ QIcon IconProvider::getIconCache(const QString& filename, bool withWarning)
 
 QIcon IconProvider::getIconCacheByExtension(const QString& extension, bool withWarning)
 {
-   if (withWarning)
-   {
-      QIcon icon = cachedIconsWithWarning.value(extension);
-      if (icon.isNull())
-         icon = IconProvider::drawWarning(IconProvider::getIconNative(extension));
-      cachedIconsWithWarning.insert(extension, icon);
-      return icon;
-   }
-   else
-   {
-      QIcon icon = cachedIcons.value(extension);
-      if (icon.isNull())
-         icon = IconProvider::getIconNative(extension);
-      cachedIcons.insert(extension, icon);
-      return icon;
-   }
+   QMap<QString, QIcon>& cache = withWarning ? IconProvider::cachedIconsWithWarning : IconProvider::cachedIcons;
+
+   // 'getIconNative(..)' may legitimately return a null icon and the
+   // result has to be recognised as cached, otherwise the native lookup is redone at each call.
+   const auto i = cache.constFind(extension);
+   if (i != cache.constEnd())
+      return *i;
+
+   const QIcon icon =
+      withWarning ?
+           IconProvider::drawWarning(IconProvider::getIconNative(extension))
+         : IconProvider::getIconNative(extension);
+
+   cache.insert(extension, icon);
+   return icon;
 }
 
 /**
