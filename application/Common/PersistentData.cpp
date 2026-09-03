@@ -71,7 +71,7 @@ void PersistentData::getValue(const QString& name, google::protobuf::Message& da
    PersistentData::getValueFilepath(Global::getDataFolder(dataFolderType) + '/' + name, data, humanReadable);
 }
 
-void PersistentData::getValue(const QString& name, const QString& directory, google::protobuf::Message& data, Global::DataFolderType dataFolderType, bool humanReadable)
+void PersistentData::getValue(const QString& directory, const QString& name, google::protobuf::Message& data, Global::DataFolderType dataFolderType, bool humanReadable)
 {
    Q_ASSERT(!name.isEmpty());
    PersistentData::getValueFilepath(directory + '/' + name, data, humanReadable);
