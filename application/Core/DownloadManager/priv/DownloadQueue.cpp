@@ -80,7 +80,12 @@ void DownloadQueue::insert(int position, Download* download)
    {
       this->downloadsIndexedByName.insert(download->getLocalEntry().name(), download);
       this->downloadsSortedByTime.insert(0, fileDownload);
-      connect(fileDownload, &FileDownload::lastTimeGetAllUnfinishedChunksChanged, this, &DownloadQueue::fileDownloadTimeChanged, Qt::QueuedConnection);
+
+      // The connection must be direct: a queued one would be delivered after the download has possibly been removed
+      // and deleted, 'sender()' would then return a null pointer and 'downloadsSortedByTime' would keep a dangling
+      // entry indexed by the old time. 'getTheOldestUnfinishedChunks(..)' takes care to not iterate
+      // 'downloadsSortedByTime' while the signal may be emitted.
+      connect(fileDownload, &FileDownload::lastTimeGetAllUnfinishedChunksChanged, this, &DownloadQueue::fileDownloadTimeChanged, Qt::DirectConnection);
    }
 }
 
@@ -311,16 +316,21 @@ Download* DownloadQueue::getAnErroneousDownload()
 
 QList<QSharedPointer<IChunkDownloader>> DownloadQueue::getTheOldestUnfinishedChunks(int n)
 {
-   QList<QSharedPointer<IChunkDownloader>> unfinishedChunks;
-
-   for (QMutableMultiMapIterator<qint64, FileDownload*> i(this->downloadsSortedByTime); i.hasNext() && unfinishedChunks.size() < n;)
+   // First pass: 'getUnfinishedChunks(..)' re-indexes the downloads in 'downloadsSortedByTime' (see
+   // 'fileDownloadTimeChanged(..)'), it can't be called while iterating it.
+   QList<FileDownload*> oldestDownloads;
+   for (QMutableMultiMapIterator<qint64, FileDownload*> i(this->downloadsSortedByTime); i.hasNext() && oldestDownloads.size() < n;)
    {
       i.next();
       if (i.value()->getStatus() == Protos::Common::DownloadStatus::COMPLETE || i.value()->getStatus() == Protos::Common::DownloadStatus::DELETED)
          i.remove();
       else
-         i.value()->getUnfinishedChunks(unfinishedChunks, n - unfinishedChunks.size());
+         oldestDownloads << i.value();
    }
+
+   QList<QSharedPointer<IChunkDownloader>> unfinishedChunks;
+   for (QListIterator<FileDownload*> i(oldestDownloads); i.hasNext() && unfinishedChunks.size() < n;)
+      i.next()->getUnfinishedChunks(unfinishedChunks, n - unfinishedChunks.size());
 
    return unfinishedChunks;
 }
@@ -382,6 +392,9 @@ void DownloadQueue::saveToFile() const
    }
 }
 
+/**
+  * Called by 'FileDownload::getUnfinishedChunks(..)' via a direct connection, see 'insert(..)'.
+  */
 void DownloadQueue::fileDownloadTimeChanged(qint64 oldTime)
 {
    FileDownload* fileDownload = static_cast<FileDownload*>(this->sender());
