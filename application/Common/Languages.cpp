@@ -37,10 +37,13 @@ QList<Language> Languages::getAvailableLanguages(ExeType exeType)
 {
    QList<Language> languages;
    QDir dir(this->path);
+
+   // Built once: it doesn't depend on the file and compiling a regular expression isn't free.
+   const QRegularExpression reg(QString("d_lan_").append(exeType == ExeType::GUI ? "gui" : "core").append("\\.(\\w+)\\.qm"));
+
    for (QStringListIterator i(dir.entryList(QStringList() << "*.qm", QDir::Files, QDir::Name)); i.hasNext();)
    {
       QString filename(i.next());
-      QRegularExpression reg(QString("d_lan_").append(exeType == ExeType::GUI ? "gui" : "core").append("\\.(\\w+)\\.qm"));
       QRegularExpressionMatch regMatch = reg.match(filename);
 
       if (regMatch.hasMatch())
