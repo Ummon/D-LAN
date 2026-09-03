@@ -52,20 +52,34 @@ QStringList StringUtils::splitInWords(const QString& words)
 QStringList StringUtils::splitArguments(const QString& str)
 {
    QStringList args;
-   int start = 0;
+   QString currentArg;
    bool inQuotes = false;
+   bool quoted = false; // 'true' if the current argument has a quoted part, it's kept even if empty.
+
    for (int i = 0; i < str.length(); i++)
    {
-      if (str[i] == ' ' && !inQuotes || i == str.length() - 1)
+      const QChar c = str[i];
+
+      if (c == '"')
       {
-         QString arg = str.mid(start, i - start + 1).trimmed();
-         start = i + 1;
-         if (!arg.isEmpty())
-            args << arg;
-      }
-      else if (str[i] == '"')
          inQuotes = !inQuotes;
+         quoted = true;
+      }
+      else if (c.isSpace() && !inQuotes)
+      {
+         if (quoted || !currentArg.isEmpty())
+            args << currentArg;
+         currentArg.clear();
+         quoted = false;
+      }
+      else
+      {
+         currentArg.append(c);
+      }
    }
+
+   if (quoted || !currentArg.isEmpty())
+      args << currentArg;
 
    return args;
 }
