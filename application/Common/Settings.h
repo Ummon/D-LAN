@@ -19,6 +19,7 @@
 #pragma once
 
 #include <QString>
+#include <QMutex>
 #include <QRecursiveMutex>
 #include <QLocale>
 
@@ -35,6 +36,8 @@ namespace Common
    class Settings
    {
       static Settings* instance;
+      static QMutex instanceMutex; ///< Guards the creation and the deletion of 'instance'.
+
       Settings();
 
    public:
@@ -105,7 +108,7 @@ namespace Common
       google::protobuf::Message* settings;
       mutable QRecursiveMutex mutex;
 
-      const google::protobuf::Descriptor* descriptor;
+      const google::protobuf::Descriptor* descriptor; ///< Set together with 'settings', both are null or both are set.
    };
 }
 

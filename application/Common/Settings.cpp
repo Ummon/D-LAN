@@ -36,9 +36,13 @@ using namespace Common;
   */
 
 Settings* Settings::instance(nullptr);
+QMutex Settings::instanceMutex;
 
 Settings& Settings::getInstance()
 {
+   // Locked: 'SETTINGS' can be reached from several threads and two of them could otherwise build two instances.
+   QMutexLocker locker(&Settings::instanceMutex);
+
    if (!Settings::instance)
       Settings::instance = new Settings();
    return *Settings::instance;
@@ -46,7 +50,8 @@ Settings& Settings::getInstance()
 
 Settings::Settings() :
    filename("settings.json"), // The default name.
-   settings(nullptr)
+   settings(nullptr),
+   descriptor(nullptr)
 {
 }
 
@@ -54,10 +59,13 @@ Settings::~Settings()
 {
    if (this->settings)
       delete this->settings;
+   this->descriptor = nullptr;
 }
 
 void Settings::setFilename(const QString& filename)
 {
+   QMutexLocker locker(&this->mutex);
+
    Q_ASSERT(!filename.isEmpty());
 
    this->filename = filename;
@@ -70,6 +78,8 @@ void Settings::setFilename(const QString& filename)
   */
 void Settings::setSettingsMessage(google::protobuf::Message* settings)
 {
+   QMutexLocker locker(&this->mutex);
+
    Q_ASSERT(settings);
 
    if (this->settings)
@@ -180,8 +190,13 @@ bool Settings::loadFromACustomDirectory(const QString& directory)
    }
 }
 
+/**
+  * @remarks Must only be called during the shutdown, when no other thread uses the settings anymore.
+  */
 void Settings::free()
 {
+   QMutexLocker locker(&Settings::instanceMutex);
+
    delete Settings::instance;
    Settings::instance = nullptr;
 }
