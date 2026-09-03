@@ -134,7 +134,8 @@ QList<T> GUI::CheckBoxModel<T>::getFilteredValues() const
 {
    QList<T> values;
    QListIterator<Item> i(this->items);
-   i.next(); // We don't care about "<All>".
+   if (i.hasNext())
+      i.next(); // We don't care about "<All>". The list is empty until 'clear(..)' is called.
    while (i.hasNext())
    {
       const Item& item = i.next();
@@ -155,9 +156,12 @@ void GUI::CheckBoxModel<T>::addElement(const QString& text, bool checked, T valu
 template <typename T>
 void GUI::CheckBoxModel<T>::clear(const QString& firstElementName)
 {
-   this->beginRemoveRows(QModelIndex(), 0, this->items.size());
-   this->items.clear();
-   this->endRemoveRows();
+   if (!this->items.isEmpty())
+   {
+      this->beginRemoveRows(QModelIndex(), 0, this->items.size() - 1);
+      this->items.clear();
+      this->endRemoveRows();
+   }
 
    this->beginInsertRows(QModelIndex(), 0, 0);
    this->items << Item(firstElementName, true);
