@@ -644,8 +644,8 @@ void SettingsWidget::removeShared()
    if (index.isValid())
    {
       QMessageBox msgBox(this);
-      msgBox.setWindowTitle("Remove selected shared directory");
-      msgBox.setText("Are you sure to remove the selected shared directory?");
+      msgBox.setWindowTitle(tr("Remove selected shared directory"));
+      msgBox.setText(tr("Are you sure to remove the selected shared directory?"));
       msgBox.setIcon(QMessageBox::Question);
       msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
       msgBox.setDefaultButton(QMessageBox::Ok);
