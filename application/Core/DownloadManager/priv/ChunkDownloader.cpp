@@ -19,6 +19,8 @@
 #include <priv/ChunkDownloader.h>
 using namespace DM;
 
+#include <typeinfo>
+
 #include <QElapsedTimer>
 
 #include <Common/Settings.h>
@@ -286,19 +288,19 @@ void ChunkDownloader::run()
          }
       }
    }
-   catch (FM::FileResetException)
+   catch (FM::FileResetException&)
    {
       L_DEBU("FileResetException");
       this->closeTheSocket = true;
       this->lastTransferStatus = Protos::Common::DownloadStatus::FILE_NON_EXISTENT;
    }
-   catch (FM::ChunkDataUnknownException)
+   catch (FM::ChunkDataUnknownException&)
    {
       L_DEBU("ChunkDataUnknownException");
       this->closeTheSocket = true;
       this->lastTransferStatus = Protos::Common::DownloadStatus::UNABLE_TO_OPEN_THE_FILE;
    }
-   catch (FM::UnableToOpenFileInWriteModeException)
+   catch (FM::UnableToOpenFileInWriteModeException&)
    {
       L_DEBU("UnableToOpenFileInWriteModeException");
       this->closeTheSocket = true;
@@ -328,7 +330,7 @@ void ChunkDownloader::run()
       this->closeTheSocket = true;
       this->lastTransferStatus = Protos::Common::DownloadStatus::GOT_TOO_MUCH_DATA;
    }
-   catch (FM::hashMismatchException)
+   catch (FM::hashMismatchException&)
    {
       static const quint32 BLOCK_DURATION = SETTINGS.get<quint32>("block_duration_corrupted_data");
       L_USER(
@@ -340,6 +342,20 @@ void ChunkDownloader::run()
       this->currentDownloadingPeer->block(BLOCK_DURATION, tr("Has sent corrupted data"));
       this->closeTheSocket = true;
       this->lastTransferStatus = Protos::Common::DownloadStatus::HASH_MISMATCH;
+   }
+   // Nothing may leave this method: it is called from 'QThread::run()' by the thread pool, an escaping
+   // exception would terminate the process and the socket would never be given back to the main thread.
+   catch (const std::exception& e)
+   {
+      L_ERRO(QString("Unexpected exception, type: %1, what: %2").arg(typeid(e).name(), e.what()));
+      this->closeTheSocket = true;
+      this->lastTransferStatus = Protos::Common::DownloadStatus::TRANSFER_ERROR;
+   }
+   catch (...)
+   {
+      L_ERRO("Unknown exception");
+      this->closeTheSocket = true;
+      this->lastTransferStatus = Protos::Common::DownloadStatus::TRANSFER_ERROR;
    }
 
    const qint64 elapsed = timer.elapsed();
