@@ -166,7 +166,7 @@
         <translation>Ausgewählte Peers durchsuchen</translation>
     </message>
     <message>
-        <location line="+362"/>
+        <location line="+361"/>
         <source>Chat</source>
         <translation>Chat</translation>
     </message>
@@ -488,7 +488,7 @@
 <context>
     <name>GUI::MdiArea</name>
     <message>
-        <location filename="../GUI/MDI/MdiArea.cpp" line="+331"/>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="+340"/>
         <source>Waiting the initial scanning process is finished before loading the download queue</source>
         <translation>Warte auf den Abschluss des ersten Einlesevorgangs, bevor die Warteschlange geladen wird</translation>
     </message>
@@ -615,7 +615,7 @@
 <context>
     <name>GUI::RoomsDock</name>
     <message>
-        <location filename="../GUI/Chat/RoomsDock.cpp" line="+96"/>
+        <location filename="../GUI/Chat/RoomsDock.cpp" line="+97"/>
         <source>Join</source>
         <translation>Beitreten</translation>
     </message>
@@ -633,7 +633,7 @@
 <context>
     <name>GUI::SearchMenu</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="+162"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="+233"/>
         <source>Browse</source>
         <translation>Durchsuchen</translation>
     </message>
@@ -641,7 +641,7 @@
 <context>
     <name>GUI::SearchModel</name>
     <message>
-        <location filename="../GUI/Search/SearchModel.cpp" line="+136"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="+139"/>
         <source>Name</source>
         <translation>Name</translation>
     </message>
@@ -666,7 +666,7 @@
         <translation>Größe</translation>
     </message>
     <message>
-        <location line="+220"/>
+        <location line="+218"/>
         <location line="+54"/>
         <source>&lt;unknown&gt;</source>
         <translation>&lt;unbekannt&gt;</translation>
@@ -684,6 +684,26 @@
         <source>Browse</source>
         <translation>Durchsuchen</translation>
     </message>
+    <message>
+        <location line="+76"/>
+        <source>1 directory</source>
+        <translation>1 Ordner</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>%1 directories</source>
+        <translation>%1 Ordner</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>1 file</source>
+        <translation>1 Datei</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>%1 files</source>
+        <translation>%1 Dateien</translation>
+    </message>
 </context>
 <context>
     <name>GUI::SettingsWidget</name>
@@ -698,7 +718,7 @@
         <translation>Schnittstelle inaktiv</translation>
     </message>
     <message>
-        <location line="+128"/>
+        <location line="+139"/>
         <source>Change the password</source>
         <translation>Passwort ändern</translation>
     </message>
@@ -730,7 +750,17 @@
         <translation>Wählen Sie einen oder mehrere Ordner und/oder Dateien zum Freigeben aus</translation>
     </message>
     <message>
-        <location line="+58"/>
+        <location line="+16"/>
+        <source>Remove selected shared directory</source>
+        <translation>Ausgewählten freigegebenen Ordner entfernen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Are you sure to remove the selected shared directory?</source>
+        <translation>Möchten Sie den ausgewählten freigegebenen Ordner wirklich entfernen?</translation>
+    </message>
+    <message>
+        <location line="+41"/>
         <source>Remove the shared directory</source>
         <translation>Freigegebenen Ordner entfernen</translation>
     </message>
@@ -753,7 +783,7 @@
 <context>
     <name>GUI::SharedEntryListModel</name>
     <message>
-        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="+276"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="+290"/>
         <source>Name</source>
         <translation>Name</translation>
     </message>
@@ -904,7 +934,7 @@
         <translation>Trotzdem starten</translation>
     </message>
     <message>
-        <location filename="../GUI/main.cpp" line="+73"/>
+        <location filename="../GUI/main.cpp" line="+79"/>
         <source>D-LAN GUI version %1</source>
         <translation>D-LAN GUI version %1</translation>
     </message>
@@ -1237,17 +1267,17 @@
         <translation>Über</translation>
     </message>
     <message>
-        <location line="+48"/>
+        <location line="+51"/>
         <source>Download rate</source>
         <translation>Eingehender Datenverkehr</translation>
     </message>
     <message>
-        <location line="+41"/>
+        <location line="+47"/>
         <source>Upload rate</source>
         <translation>Ausgehender Datenverkehr</translation>
     </message>
     <message>
-        <location line="+35"/>
+        <location line="+38"/>
         <source>Total sharing</source>
         <translation>Gesamte Freigaben</translation>
     </message>

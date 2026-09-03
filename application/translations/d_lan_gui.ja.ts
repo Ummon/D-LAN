@@ -166,7 +166,7 @@
         <translation type="unfinished">選択したピアを閲覧</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="741"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="740"/>
         <source>Chat</source>
         <translation type="unfinished">チャット</translation>
     </message>
@@ -484,12 +484,12 @@
 <context>
     <name>GUI::MdiArea</name>
     <message>
-        <location filename="../GUI/MDI/MdiArea.cpp" line="331"/>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="340"/>
         <source>Waiting the initial scanning process is finished before loading the download queue</source>
         <translation type="unfinished">ダウンロードキューを読み込む前に、初回スキャンの完了を待っています</translation>
     </message>
     <message>
-        <location filename="../GUI/MDI/MdiArea.cpp" line="512"/>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="521"/>
         <source>Leave room</source>
         <translation type="unfinished">ルームを退出</translation>
     </message>
@@ -611,17 +611,17 @@
 <context>
     <name>GUI::RoomsDock</name>
     <message>
-        <location filename="../GUI/Chat/RoomsDock.cpp" line="96"/>
+        <location filename="../GUI/Chat/RoomsDock.cpp" line="97"/>
         <source>Join</source>
         <translation type="unfinished">参加</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/RoomsDock.cpp" line="100"/>
+        <location filename="../GUI/Chat/RoomsDock.cpp" line="101"/>
         <source>Sort by number of peers</source>
         <translation type="unfinished">ピア数で並べ替え</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/RoomsDock.cpp" line="101"/>
+        <location filename="../GUI/Chat/RoomsDock.cpp" line="102"/>
         <source>Sort alphabetically</source>
         <translation type="unfinished">アルファベット順で並べ替え</translation>
     </message>
@@ -629,7 +629,7 @@
 <context>
     <name>GUI::SearchMenu</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="162"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="233"/>
         <source>Browse</source>
         <translation type="unfinished">閲覧</translation>
     </message>
@@ -637,33 +637,33 @@
 <context>
     <name>GUI::SearchModel</name>
     <message>
-        <location filename="../GUI/Search/SearchModel.cpp" line="136"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="139"/>
         <source>Name</source>
         <translation type="unfinished">名前</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchModel.cpp" line="137"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="140"/>
         <source>Directory</source>
         <translation type="unfinished">ディレクトリ</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchModel.cpp" line="138"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="141"/>
         <source>Relevance</source>
         <translation type="unfinished">関連度</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchModel.cpp" line="139"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="142"/>
         <source>Peer</source>
         <translation type="unfinished">ピア</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchModel.cpp" line="140"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="143"/>
         <source>Size</source>
         <translation type="unfinished">サイズ</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchModel.cpp" line="360"/>
-        <location filename="../GUI/Search/SearchModel.cpp" line="414"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="361"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="415"/>
         <source>&lt;unknown&gt;</source>
         <translation type="unfinished">&lt;不明&gt;</translation>
     </message>
@@ -671,14 +671,34 @@
 <context>
     <name>GUI::SearchWidget</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="298"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="369"/>
         <source>Open location</source>
         <translation type="unfinished">場所を開く</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="299"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="370"/>
         <source>Browse</source>
         <translation type="unfinished">閲覧</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="446"/>
+        <source>1 directory</source>
+        <translation>1 ディレクトリ</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="446"/>
+        <source>%1 directories</source>
+        <translation>%1 ディレクトリ</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="447"/>
+        <source>1 file</source>
+        <translation>1 ファイル</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="447"/>
+        <source>%1 files</source>
+        <translation>%1 ファイル</translation>
     </message>
 </context>
 <context>
@@ -694,54 +714,64 @@
         <translation type="unfinished">インターフェースが有効ではありません</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="430"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="441"/>
         <source>Change the password</source>
         <translation type="unfinished">パスワードを変更</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="434"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="445"/>
         <source>No password defined</source>
         <translation type="unfinished">パスワードが設定されていません</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="436"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="447"/>
         <source>Define a password</source>
         <translation type="unfinished">パスワードを設定</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="482"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="493"/>
         <source>Connecting . . .</source>
         <translation type="unfinished">接続中 . . .</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="490"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="506"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="525"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="501"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="517"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="536"/>
         <source>Connect</source>
         <translation type="unfinished">接続</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="620"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="631"/>
         <source>Select one or more directories and/or files to share</source>
         <translation type="unfinished">共有するディレクトリまたはファイルを選択してください</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="678"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="647"/>
+        <source>Remove selected shared directory</source>
+        <translation>選択した共有ディレクトリを削除</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="648"/>
+        <source>Are you sure to remove the selected shared directory?</source>
+        <translation>選択した共有ディレクトリを削除してもよろしいですか？</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="689"/>
         <source>Remove the shared directory</source>
         <translation type="unfinished">共有ディレクトリを削除</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="686"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="697"/>
         <source>Move up</source>
         <translation type="unfinished">上へ移動</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="694"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="705"/>
         <source>Move down</source>
         <translation type="unfinished">下へ移動</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="702"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="713"/>
         <source>Open location</source>
         <translation type="unfinished">場所を開く</translation>
     </message>
@@ -749,22 +779,22 @@
 <context>
     <name>GUI::SharedEntryListModel</name>
     <message>
-        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="276"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="290"/>
         <source>Name</source>
         <translation type="unfinished">名前</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="277"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="291"/>
         <source>Path</source>
         <translation type="unfinished">パス</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="278"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="292"/>
         <source>Size</source>
         <translation type="unfinished">サイズ</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="279"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="293"/>
         <source>Free space</source>
         <translation type="unfinished">空き容量</translation>
     </message>
@@ -880,7 +910,7 @@
         <translation type="unfinished">Core サービスを起動しました</translation>
     </message>
     <message>
-        <location filename="../GUI/main.cpp" line="73"/>
+        <location filename="../GUI/main.cpp" line="79"/>
         <source>D-LAN GUI version %1</source>
         <translation type="unfinished">D-LAN GUI バージョン %1</translation>
     </message>
@@ -1233,17 +1263,17 @@
         <translation type="unfinished">バージョン情報</translation>
     </message>
     <message>
-        <location filename="../GUI/StatusBar.ui" line="119"/>
+        <location filename="../GUI/StatusBar.ui" line="122"/>
         <source>Download rate</source>
         <translation type="unfinished">ダウンロード速度</translation>
     </message>
     <message>
-        <location filename="../GUI/StatusBar.ui" line="160"/>
+        <location filename="../GUI/StatusBar.ui" line="169"/>
         <source>Upload rate</source>
         <translation type="unfinished">アップロード速度</translation>
     </message>
     <message>
-        <location filename="../GUI/StatusBar.ui" line="195"/>
+        <location filename="../GUI/StatusBar.ui" line="207"/>
         <source>Total sharing</source>
         <translation type="unfinished">共有容量の合計</translation>
     </message>

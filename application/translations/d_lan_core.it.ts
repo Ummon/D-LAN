@@ -12,12 +12,12 @@
 <context>
     <name>DM::ChunkDownloader</name>
     <message>
-        <location filename="../Core/DownloadManager/priv/ChunkDownloader.cpp" line="296"/>
+        <location filename="../Core/DownloadManager/priv/ChunkDownloader.cpp" line="337"/>
         <source>Corrupted data received for the file &quot;%1&quot; from peer %2. Peer blocked for %3 ms</source>
         <translation>Ricevuti dati danneggiati per il file &quot;%1&quot; dal peer %2. Peer bloccato per %3 ms</translation>
     </message>
     <message>
-        <location filename="../Core/DownloadManager/priv/ChunkDownloader.cpp" line="301"/>
+        <location filename="../Core/DownloadManager/priv/ChunkDownloader.cpp" line="342"/>
         <source>Has sent corrupted data</source>
         <extracomment>A reason why the user has been blocked</extracomment>
         <translation>Ha inviato dati danneggiati</translation>
@@ -34,7 +34,7 @@
 <context>
     <name>DM::FileDownload</name>
     <message>
-        <location filename="../Core/DownloadManager/priv/FileDownload.cpp" line="465"/>
+        <location filename="../Core/DownloadManager/priv/FileDownload.cpp" line="483"/>
         <source>File completed: %1%2%3</source>
         <translation>File completato: %1%2%3</translation>
     </message>
@@ -42,7 +42,7 @@
 <context>
     <name>FM::FileHasher</name>
     <message>
-        <location filename="../Core/FileManager/priv/Cache/FileHasher.cpp" line="87"/>
+        <location filename="../Core/FileManager/priv/Cache/FileHasher.cpp" line="95"/>
         <source>Computing hashes of %1 . . .</source>
         <translation>Calcolo degli hash di %1 . . .</translation>
     </message>
@@ -50,7 +50,7 @@
 <context>
     <name>PM::PeerSelf</name>
     <message>
-        <location filename="../Core/PeerManager/priv/PeerSelf.cpp" line="38"/>
+        <location filename="../Core/PeerManager/priv/PeerSelf.cpp" line="44"/>
         <source>Our current ID: %1</source>
         <translation>ID attuale: %1</translation>
     </message>
@@ -73,7 +73,7 @@
         <translation>Arresto</translation>
     </message>
     <message>
-        <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="342"/>
+        <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="352"/>
         <source>The version (%1) of the queue file &quot;%2&quot; doesn&apos;t match the current version (%3). Queue will be reset.</source>
         <translation>La versione (%1) del file di coda &quot;%2&quot; non corrisponde alla versione attuale (%3). La coda verrà reimpostata.</translation>
     </message>

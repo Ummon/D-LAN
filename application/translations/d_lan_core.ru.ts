@@ -12,13 +12,13 @@
 <context>
     <name>DM::ChunkDownloader</name>
     <message>
-        <location filename="../Core/DownloadManager/priv/ChunkDownloader.cpp" line="301"/>
+        <location filename="../Core/DownloadManager/priv/ChunkDownloader.cpp" line="342"/>
         <source>Has sent corrupted data</source>
         <extracomment>A reason why the user has been blocked</extracomment>
         <translation>Отправил поврежденные данные</translation>
     </message>
     <message>
-        <location filename="../Core/DownloadManager/priv/ChunkDownloader.cpp" line="296"/>
+        <location filename="../Core/DownloadManager/priv/ChunkDownloader.cpp" line="337"/>
         <source>Corrupted data received for the file &quot;%1&quot; from peer %2. Peer blocked for %3 ms</source>
         <translation>Полученный от пира %2 файл &quot;%1&quot; поврежден. Пир заблокирован на %3 мсек</translation>
     </message>
@@ -34,7 +34,7 @@
 <context>
     <name>DM::FileDownload</name>
     <message>
-        <location filename="../Core/DownloadManager/priv/FileDownload.cpp" line="465"/>
+        <location filename="../Core/DownloadManager/priv/FileDownload.cpp" line="483"/>
         <source>File completed: %1%2%3</source>
         <translation>Файл завершён: %1%2%3</translation>
     </message>
@@ -42,7 +42,7 @@
 <context>
     <name>FM::FileHasher</name>
     <message>
-        <location filename="../Core/FileManager/priv/Cache/FileHasher.cpp" line="87"/>
+        <location filename="../Core/FileManager/priv/Cache/FileHasher.cpp" line="95"/>
         <source>Computing hashes of %1 . . .</source>
         <translation>Подсчет контрольных сумм %1...</translation>
     </message>
@@ -50,7 +50,7 @@
 <context>
     <name>PM::PeerSelf</name>
     <message>
-        <location filename="../Core/PeerManager/priv/PeerSelf.cpp" line="38"/>
+        <location filename="../Core/PeerManager/priv/PeerSelf.cpp" line="44"/>
         <source>Our current ID: %1</source>
         <translation>Наш текущий ID: %1</translation>
     </message>
@@ -63,7 +63,7 @@
         <translation>Готов</translation>
     </message>
     <message>
-        <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="342"/>
+        <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="352"/>
         <source>The version (%1) of the queue file &quot;%2&quot; doesn&apos;t match the current version (%3). Queue will be reset.</source>
         <translation>Версия (%1) файла в очереди &quot;%2&quot; не соответствует текущей версии (%3). Очередь сброшена.</translation>
     </message>

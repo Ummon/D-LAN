@@ -166,7 +166,7 @@
         <translation>선택한 피어 탐색</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="741"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="740"/>
         <source>Chat</source>
         <translation>채팅</translation>
     </message>
@@ -488,12 +488,12 @@
 <context>
     <name>GUI::MdiArea</name>
     <message>
-        <location filename="../GUI/MDI/MdiArea.cpp" line="331"/>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="340"/>
         <source>Waiting the initial scanning process is finished before loading the download queue</source>
         <translation>초기 스캔이 완료될 때까지 기다린 후 다운로드 대기열을 불러옵니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MDI/MdiArea.cpp" line="512"/>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="521"/>
         <source>Leave room</source>
         <translation>대화방 나가기</translation>
     </message>
@@ -615,17 +615,17 @@
 <context>
     <name>GUI::RoomsDock</name>
     <message>
-        <location filename="../GUI/Chat/RoomsDock.cpp" line="96"/>
+        <location filename="../GUI/Chat/RoomsDock.cpp" line="97"/>
         <source>Join</source>
         <translation>참여</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/RoomsDock.cpp" line="100"/>
+        <location filename="../GUI/Chat/RoomsDock.cpp" line="101"/>
         <source>Sort by number of peers</source>
         <translation>피어 수로 정렬</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/RoomsDock.cpp" line="101"/>
+        <location filename="../GUI/Chat/RoomsDock.cpp" line="102"/>
         <source>Sort alphabetically</source>
         <translation>이름순 정렬</translation>
     </message>
@@ -633,7 +633,7 @@
 <context>
     <name>GUI::SearchMenu</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="162"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="233"/>
         <source>Browse</source>
         <translation>탐색</translation>
     </message>
@@ -641,33 +641,33 @@
 <context>
     <name>GUI::SearchModel</name>
     <message>
-        <location filename="../GUI/Search/SearchModel.cpp" line="136"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="139"/>
         <source>Name</source>
         <translation>이름</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchModel.cpp" line="137"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="140"/>
         <source>Directory</source>
         <translation>폴더</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchModel.cpp" line="138"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="141"/>
         <source>Relevance</source>
         <translation>관련성</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchModel.cpp" line="139"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="142"/>
         <source>Peer</source>
         <translation>피어</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchModel.cpp" line="140"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="143"/>
         <source>Size</source>
         <translation>크기</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchModel.cpp" line="360"/>
-        <location filename="../GUI/Search/SearchModel.cpp" line="414"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="361"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="415"/>
         <source>&lt;unknown&gt;</source>
         <translation>&lt;알 수 없음&gt;</translation>
     </message>
@@ -675,14 +675,34 @@
 <context>
     <name>GUI::SearchWidget</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="298"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="369"/>
         <source>Open location</source>
         <translation>위치 열기</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="299"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="370"/>
         <source>Browse</source>
         <translation>탐색</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="446"/>
+        <source>1 directory</source>
+        <translation>폴더 1개</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="446"/>
+        <source>%1 directories</source>
+        <translation>폴더 %1개</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="447"/>
+        <source>1 file</source>
+        <translation>파일 1개</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="447"/>
+        <source>%1 files</source>
+        <translation>파일 %1개</translation>
     </message>
 </context>
 <context>
@@ -698,54 +718,64 @@
         <translation>인터페이스가 비활성 상태입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="430"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="441"/>
         <source>Change the password</source>
         <translation>비밀번호 변경</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="434"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="445"/>
         <source>No password defined</source>
         <translation>비밀번호가 설정되어 있지 않습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="436"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="447"/>
         <source>Define a password</source>
         <translation>비밀번호 설정</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="482"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="493"/>
         <source>Connecting . . .</source>
         <translation>연결하는 중 . . .</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="490"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="506"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="525"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="501"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="517"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="536"/>
         <source>Connect</source>
         <translation>연결</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="620"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="631"/>
         <source>Select one or more directories and/or files to share</source>
         <translation>공유할 폴더 및/또는 파일을 하나 이상 선택하십시오</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="678"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="647"/>
+        <source>Remove selected shared directory</source>
+        <translation>선택한 공유 폴더 제거</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="648"/>
+        <source>Are you sure to remove the selected shared directory?</source>
+        <translation>선택한 공유 폴더를 제거하시겠습니까?</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="689"/>
         <source>Remove the shared directory</source>
         <translation>공유 폴더 제거</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="686"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="697"/>
         <source>Move up</source>
         <translation>위로 이동</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="694"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="705"/>
         <source>Move down</source>
         <translation>아래로 이동</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="702"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="713"/>
         <source>Open location</source>
         <translation>위치 열기</translation>
     </message>
@@ -753,22 +783,22 @@
 <context>
     <name>GUI::SharedEntryListModel</name>
     <message>
-        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="276"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="290"/>
         <source>Name</source>
         <translation>이름</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="277"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="291"/>
         <source>Path</source>
         <translation>경로</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="278"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="292"/>
         <source>Size</source>
         <translation>크기</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="279"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="293"/>
         <source>Free space</source>
         <translation>여유 공간</translation>
     </message>
@@ -975,7 +1005,7 @@
         <translation>다운로드할 폴더를 선택하십시오</translation>
     </message>
     <message>
-        <location filename="../GUI/main.cpp" line="73"/>
+        <location filename="../GUI/main.cpp" line="79"/>
         <source>D-LAN GUI version %1</source>
         <translation>D-LAN GUI 버전 %1</translation>
     </message>
@@ -1237,17 +1267,17 @@
         <translation>정보</translation>
     </message>
     <message>
-        <location filename="../GUI/StatusBar.ui" line="119"/>
+        <location filename="../GUI/StatusBar.ui" line="122"/>
         <source>Download rate</source>
         <translation>다운로드 속도</translation>
     </message>
     <message>
-        <location filename="../GUI/StatusBar.ui" line="160"/>
+        <location filename="../GUI/StatusBar.ui" line="169"/>
         <source>Upload rate</source>
         <translation>업로드 속도</translation>
     </message>
     <message>
-        <location filename="../GUI/StatusBar.ui" line="195"/>
+        <location filename="../GUI/StatusBar.ui" line="207"/>
         <source>Total sharing</source>
         <translation>전체 공유 크기</translation>
     </message>

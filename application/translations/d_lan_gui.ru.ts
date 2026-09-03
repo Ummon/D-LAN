@@ -166,7 +166,7 @@
         <translation>Открыть выделенных пиров</translation>
     </message>
     <message>
-        <location line="+362"/>
+        <location line="+361"/>
         <source>Chat</source>
         <translation>Чат</translation>
     </message>
@@ -488,7 +488,7 @@
 <context>
     <name>GUI::MdiArea</name>
     <message>
-        <location filename="../GUI/MDI/MdiArea.cpp" line="+331"/>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="+340"/>
         <source>Waiting the initial scanning process is finished before loading the download queue</source>
         <translation>Ожидание завершения первоначального сканирования перед загрузкой очереди загрузок</translation>
     </message>
@@ -615,7 +615,7 @@
 <context>
     <name>GUI::RoomsDock</name>
     <message>
-        <location filename="../GUI/Chat/RoomsDock.cpp" line="+96"/>
+        <location filename="../GUI/Chat/RoomsDock.cpp" line="+97"/>
         <source>Join</source>
         <translation>Присоединиться</translation>
     </message>
@@ -633,7 +633,7 @@
 <context>
     <name>GUI::SearchMenu</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="+162"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="+233"/>
         <source>Browse</source>
         <translation>Открыть</translation>
     </message>
@@ -641,7 +641,7 @@
 <context>
     <name>GUI::SearchModel</name>
     <message>
-        <location filename="../GUI/Search/SearchModel.cpp" line="+136"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="+139"/>
         <source>Name</source>
         <translation>Имя</translation>
     </message>
@@ -666,7 +666,7 @@
         <translation>Размер</translation>
     </message>
     <message>
-        <location line="+220"/>
+        <location line="+218"/>
         <location line="+54"/>
         <source>&lt;unknown&gt;</source>
         <translation>&lt;неизвестно&gt;</translation>
@@ -684,6 +684,26 @@
         <source>Browse</source>
         <translation>Открыть</translation>
     </message>
+    <message>
+        <location line="+76"/>
+        <source>1 directory</source>
+        <translation>папок: 1</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>%1 directories</source>
+        <translation>папок: %1</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>1 file</source>
+        <translation>файлов: 1</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>%1 files</source>
+        <translation>файлов: %1</translation>
+    </message>
 </context>
 <context>
     <name>GUI::SettingsWidget</name>
@@ -698,7 +718,7 @@
         <translation>Интерфейс не активен</translation>
     </message>
     <message>
-        <location line="+128"/>
+        <location line="+139"/>
         <source>Change the password</source>
         <translation>Сменить пароль</translation>
     </message>
@@ -730,7 +750,17 @@
         <translation>Выберите одну или несколько папок и/или файлов для общего доступа</translation>
     </message>
     <message>
-        <location line="+58"/>
+        <location line="+16"/>
+        <source>Remove selected shared directory</source>
+        <translation>Удалить выбранную общую папку</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Are you sure to remove the selected shared directory?</source>
+        <translation>Вы уверены, что хотите удалить выбранную общую папку?</translation>
+    </message>
+    <message>
+        <location line="+41"/>
         <source>Remove the shared directory</source>
         <translation>Удалить общую папку</translation>
     </message>
@@ -753,7 +783,7 @@
 <context>
     <name>GUI::SharedEntryListModel</name>
     <message>
-        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="+276"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="+290"/>
         <source>Name</source>
         <translation>Имя</translation>
     </message>
@@ -904,7 +934,7 @@
         <translation>Все равно запустить</translation>
     </message>
     <message>
-        <location filename="../GUI/main.cpp" line="+73"/>
+        <location filename="../GUI/main.cpp" line="+79"/>
         <source>D-LAN GUI version %1</source>
         <translation>D-LAN GUI версия %1</translation>
     </message>
@@ -1237,17 +1267,17 @@
         <translation>О программе</translation>
     </message>
     <message>
-        <location line="+48"/>
+        <location line="+51"/>
         <source>Download rate</source>
         <translation>Скорость скачивания</translation>
     </message>
     <message>
-        <location line="+41"/>
+        <location line="+47"/>
         <source>Upload rate</source>
         <translation>Скорость отдачи</translation>
     </message>
     <message>
-        <location line="+35"/>
+        <location line="+38"/>
         <source>Total sharing</source>
         <translation>Всего общее</translation>
     </message>

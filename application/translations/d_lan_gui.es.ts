@@ -166,7 +166,7 @@
         <translation>Navegar los peers seleccionados</translation>
     </message>
     <message>
-        <location line="+362"/>
+        <location line="+361"/>
         <source>Chat</source>
         <translation>Chat</translation>
     </message>
@@ -229,7 +229,7 @@
     <message>
         <location line="+3"/>
         <source>Getting hashes..</source>
-        <translation type="unfinished"></translation>
+        <translation>Obteniendo las huellas..</translation>
     </message>
     <message>
         <location line="+10"/>
@@ -488,7 +488,7 @@
 <context>
     <name>GUI::MdiArea</name>
     <message>
-        <location filename="../GUI/MDI/MdiArea.cpp" line="+331"/>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="+340"/>
         <source>Waiting the initial scanning process is finished before loading the download queue</source>
         <translation>Esperando a que termine el escaneo inicial antes de cargar la cola de descargas</translation>
     </message>
@@ -590,12 +590,12 @@
     <message>
         <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="+69"/>
         <source>Ok</source>
-        <translation type="unfinished"></translation>
+        <translation>Aceptar</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>Cancelar</translation>
     </message>
     <message>
         <location line="+106"/>
@@ -608,13 +608,13 @@
     <message>
         <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseModel.cpp" line="+392"/>
         <source>free</source>
-        <translation type="unfinished"></translation>
+        <translation>libre</translation>
     </message>
 </context>
 <context>
     <name>GUI::RoomsDock</name>
     <message>
-        <location filename="../GUI/Chat/RoomsDock.cpp" line="+96"/>
+        <location filename="../GUI/Chat/RoomsDock.cpp" line="+97"/>
         <source>Join</source>
         <translation>Unirse</translation>
     </message>
@@ -632,7 +632,7 @@
 <context>
     <name>GUI::SearchMenu</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="+162"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="+233"/>
         <source>Browse</source>
         <translation>Navegar</translation>
     </message>
@@ -640,7 +640,7 @@
 <context>
     <name>GUI::SearchModel</name>
     <message>
-        <location filename="../GUI/Search/SearchModel.cpp" line="+136"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="+139"/>
         <source>Name</source>
         <translation>Nombre</translation>
     </message>
@@ -665,7 +665,7 @@
         <translation>Tamaño</translation>
     </message>
     <message>
-        <location line="+220"/>
+        <location line="+218"/>
         <location line="+54"/>
         <source>&lt;unknown&gt;</source>
         <translation>&lt;desconocido&gt;</translation>
@@ -683,6 +683,26 @@
         <source>Browse</source>
         <translation>Navegar</translation>
     </message>
+    <message>
+        <location line="+76"/>
+        <source>1 directory</source>
+        <translation>1 directorio</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>%1 directories</source>
+        <translation>%1 directorios</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>1 file</source>
+        <translation>1 archivo</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>%1 files</source>
+        <translation>%1 archivos</translation>
+    </message>
 </context>
 <context>
     <name>GUI::SettingsWidget</name>
@@ -697,14 +717,14 @@
         <translation>Interfaz desactivada</translation>
     </message>
     <message>
-        <location line="+128"/>
+        <location line="+139"/>
         <source>Change the password</source>
         <translation>Cambiar la contraseña</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>No password defined</source>
-        <translation type="unfinished"></translation>
+        <translation>No hay contraseña definida</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -729,7 +749,17 @@
         <translation>Seleccione uno o más directorios y/o archivos para compartir</translation>
     </message>
     <message>
-        <location line="+58"/>
+        <location line="+16"/>
+        <source>Remove selected shared directory</source>
+        <translation>Remover el directorio compartido seleccionado</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Are you sure to remove the selected shared directory?</source>
+        <translation>¿Está seguro que desea remover el directorio compartido seleccionado?</translation>
+    </message>
+    <message>
+        <location line="+41"/>
         <source>Remove the shared directory</source>
         <translation>Remover el directorio compartido</translation>
     </message>
@@ -752,7 +782,7 @@
 <context>
     <name>GUI::SharedEntryListModel</name>
     <message>
-        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="+276"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="+290"/>
         <source>Name</source>
         <translation>Nombre</translation>
     </message>
@@ -883,7 +913,7 @@
         <translation>Ejecutar de todas formas</translation>
     </message>
     <message>
-        <location filename="../GUI/main.cpp" line="+73"/>
+        <location filename="../GUI/main.cpp" line="+79"/>
         <source>D-LAN GUI version %1</source>
         <translation>D-LAN GUI version %1</translation>
     </message>
@@ -1236,17 +1266,17 @@
         <translation>Acerca de</translation>
     </message>
     <message>
-        <location line="+48"/>
+        <location line="+51"/>
         <source>Download rate</source>
         <translation>Velocidad de descarga</translation>
     </message>
     <message>
-        <location line="+41"/>
+        <location line="+47"/>
         <source>Upload rate</source>
         <translation>Velocidad de subida</translation>
     </message>
     <message>
-        <location line="+35"/>
+        <location line="+38"/>
         <source>Total sharing</source>
         <translation>Total compartido</translation>
     </message>

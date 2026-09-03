@@ -166,7 +166,7 @@
         <translation>Sfoglia i peer selezionati</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="741"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="740"/>
         <source>Chat</source>
         <translation>Chat</translation>
     </message>
@@ -488,12 +488,12 @@
 <context>
     <name>GUI::MdiArea</name>
     <message>
-        <location filename="../GUI/MDI/MdiArea.cpp" line="331"/>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="340"/>
         <source>Waiting the initial scanning process is finished before loading the download queue</source>
         <translation>In attesa del completamento della scansione iniziale prima di caricare la coda dei download</translation>
     </message>
     <message>
-        <location filename="../GUI/MDI/MdiArea.cpp" line="512"/>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="521"/>
         <source>Leave room</source>
         <translation>Esci dalla stanza</translation>
     </message>
@@ -615,17 +615,17 @@
 <context>
     <name>GUI::RoomsDock</name>
     <message>
-        <location filename="../GUI/Chat/RoomsDock.cpp" line="96"/>
+        <location filename="../GUI/Chat/RoomsDock.cpp" line="97"/>
         <source>Join</source>
         <translation>Entra</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/RoomsDock.cpp" line="100"/>
+        <location filename="../GUI/Chat/RoomsDock.cpp" line="101"/>
         <source>Sort by number of peers</source>
         <translation>Ordina per numero di peer</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/RoomsDock.cpp" line="101"/>
+        <location filename="../GUI/Chat/RoomsDock.cpp" line="102"/>
         <source>Sort alphabetically</source>
         <translation>Ordina alfabeticamente</translation>
     </message>
@@ -633,7 +633,7 @@
 <context>
     <name>GUI::SearchMenu</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="162"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="233"/>
         <source>Browse</source>
         <translation>Sfoglia</translation>
     </message>
@@ -641,33 +641,33 @@
 <context>
     <name>GUI::SearchModel</name>
     <message>
-        <location filename="../GUI/Search/SearchModel.cpp" line="136"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="139"/>
         <source>Name</source>
         <translation>Nome</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchModel.cpp" line="137"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="140"/>
         <source>Directory</source>
         <translation>Cartella</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchModel.cpp" line="138"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="141"/>
         <source>Relevance</source>
         <translation>Rilevanza</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchModel.cpp" line="139"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="142"/>
         <source>Peer</source>
         <translation>Peer</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchModel.cpp" line="140"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="143"/>
         <source>Size</source>
         <translation>Dimensione</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchModel.cpp" line="360"/>
-        <location filename="../GUI/Search/SearchModel.cpp" line="414"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="361"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="415"/>
         <source>&lt;unknown&gt;</source>
         <translation>&lt;sconosciuto&gt;</translation>
     </message>
@@ -675,14 +675,34 @@
 <context>
     <name>GUI::SearchWidget</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="298"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="369"/>
         <source>Open location</source>
         <translation>Apri percorso</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="299"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="370"/>
         <source>Browse</source>
         <translation>Sfoglia</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="446"/>
+        <source>1 directory</source>
+        <translation>1 cartella</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="446"/>
+        <source>%1 directories</source>
+        <translation>%1 cartelle</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="447"/>
+        <source>1 file</source>
+        <translation>1 file</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="447"/>
+        <source>%1 files</source>
+        <translation>%1 file</translation>
     </message>
 </context>
 <context>
@@ -698,54 +718,64 @@
         <translation>Interfaccia non attiva</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="430"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="441"/>
         <source>Change the password</source>
         <translation>Cambia la password</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="434"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="445"/>
         <source>No password defined</source>
         <translation>Non è stata impostata alcuna password</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="436"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="447"/>
         <source>Define a password</source>
         <translation>Imposta una password</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="482"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="493"/>
         <source>Connecting . . .</source>
         <translation>Connessione in corso . . .</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="490"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="506"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="525"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="501"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="517"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="536"/>
         <source>Connect</source>
         <translation>Connetti</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="620"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="631"/>
         <source>Select one or more directories and/or files to share</source>
         <translation>Seleziona una o più cartelle e/o file da condividere</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="678"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="647"/>
+        <source>Remove selected shared directory</source>
+        <translation>Rimuovi la cartella condivisa selezionata</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="648"/>
+        <source>Are you sure to remove the selected shared directory?</source>
+        <translation>Rimuovere la cartella condivisa selezionata?</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="689"/>
         <source>Remove the shared directory</source>
         <translation>Rimuovi la cartella condivisa</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="686"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="697"/>
         <source>Move up</source>
         <translation>Sposta su</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="694"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="705"/>
         <source>Move down</source>
         <translation>Sposta giù</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="702"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="713"/>
         <source>Open location</source>
         <translation>Apri percorso</translation>
     </message>
@@ -753,22 +783,22 @@
 <context>
     <name>GUI::SharedEntryListModel</name>
     <message>
-        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="276"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="290"/>
         <source>Name</source>
         <translation>Nome</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="277"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="291"/>
         <source>Path</source>
         <translation>Percorso</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="278"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="292"/>
         <source>Size</source>
         <translation>Dimensione</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="279"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="293"/>
         <source>Free space</source>
         <translation>Spazio libero</translation>
     </message>
@@ -884,7 +914,7 @@
         <translation>Avvia comunque</translation>
     </message>
     <message>
-        <location filename="../GUI/main.cpp" line="73"/>
+        <location filename="../GUI/main.cpp" line="79"/>
         <source>D-LAN GUI version %1</source>
         <translation>D-LAN GUI versione %1</translation>
     </message>
@@ -1237,17 +1267,17 @@
         <translation>Informazioni</translation>
     </message>
     <message>
-        <location filename="../GUI/StatusBar.ui" line="119"/>
+        <location filename="../GUI/StatusBar.ui" line="122"/>
         <source>Download rate</source>
         <translation>Velocità di download</translation>
     </message>
     <message>
-        <location filename="../GUI/StatusBar.ui" line="160"/>
+        <location filename="../GUI/StatusBar.ui" line="169"/>
         <source>Upload rate</source>
         <translation>Velocità di upload</translation>
     </message>
     <message>
-        <location filename="../GUI/StatusBar.ui" line="195"/>
+        <location filename="../GUI/StatusBar.ui" line="207"/>
         <source>Total sharing</source>
         <translation>Condivisione totale</translation>
     </message>
