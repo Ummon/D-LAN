@@ -224,6 +224,11 @@ void Settings::set(const QString& name, quint32 value)
    {
       const google::protobuf::EnumDescriptor* enumDescriptor = fieldDescriptor->enum_type();
       const google::protobuf::EnumValueDescriptor* enumValue = enumDescriptor->FindValueByNumber(value);
+      if (!enumValue)
+      {
+         printError(QString("Settings: the value %1 doesn't belong to the enumeration of the field \"%2\"").arg(value).arg(name));
+         return;
+      }
       this->settings->GetReflection()->SetEnum(this->settings, fieldDescriptor, enumValue);
    }
    else if (fieldDescriptor->type() == google::protobuf::FieldDescriptor::TYPE_UINT32)
