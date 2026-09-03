@@ -318,7 +318,7 @@ SearchWidget::SearchWidget(
 
 SearchWidget::~SearchWidget()
 {
-   disconnect(&this->searchModel, &SearchModel::progress, this->ui->prgSearch, &QProgressBar::setValue);
+   disconnect(&this->searchModel, &SearchModel::progress, this, &SearchWidget::progress);
    delete this->ui;
 }
 
