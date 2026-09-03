@@ -92,21 +92,27 @@ QHostAddress ProtoHelper::getIP(const Protos::Common::IP& ipMess)
    {
    case Protos::Common::IP::IPv4:
       {
-         const char* ip = ipMess.ip().data();
-         quint32 ipInt =
-            static_cast<quint32>(ip[0]) << 24 & 0xFF000000 |
-            static_cast<quint32>(ip[1]) << 16 & 0x00FF0000 |
-            static_cast<quint32>(ip[2]) << 8 & 0x0000FF00 |
-            static_cast<quint32>(ip[3]) & 0x000000FF;
+         const std::string& ip = ipMess.ip();
+         if (ip.size() < 4)
+            return QHostAddress();
+
+         const quint32 ipInt =
+            static_cast<quint32>(static_cast<quint8>(ip[0])) << 24 |
+            static_cast<quint32>(static_cast<quint8>(ip[1])) << 16 |
+            static_cast<quint32>(static_cast<quint8>(ip[2])) << 8 |
+            static_cast<quint32>(static_cast<quint8>(ip[3]));
          return QHostAddress(ipInt);
       }
       break;
    case Protos::Common::IP::IPv6:
       {
-         const char* ip = ipMess.ip().data();
+         const std::string& ip = ipMess.ip();
+         if (ip.size() < 16)
+            return QHostAddress();
+
          Q_IPV6ADDR qipv6addr;
          for (int i = 0; i < 16; i++)
-            qipv6addr[i] = ip[i];
+            qipv6addr[i] = static_cast<quint8>(ip[i]);
          return QHostAddress(qipv6addr);
       }
       break;
