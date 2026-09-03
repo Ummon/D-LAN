@@ -120,14 +120,21 @@ void MdiArea::openChatWindow(const QString& roomName)
    }
 }
 
+/**
+  * The downloads and uploads windows only exist while a core is connected, see 'coreConnected()' and
+  * 'coreDisconnected(..)'. The status bar stays clickable in between, so both slots may be called
+  * when there is no window to activate.
+  */
 void MdiArea::showDownloads()
 {
-   this->setActiveSubWindow(static_cast<QMdiSubWindow*>(this->downloadsWidget->parent()));
+   if (this->downloadsWidget)
+      this->setActiveSubWindow(static_cast<QMdiSubWindow*>(this->downloadsWidget->parent()));
 }
 
 void MdiArea::showUploads()
 {
-   this->setActiveSubWindow(static_cast<QMdiSubWindow*>(this->uploadsWidget->parent()));
+   if (this->uploadsWidget)
+      this->setActiveSubWindow(static_cast<QMdiSubWindow*>(this->uploadsWidget->parent()));
 }
 
 void MdiArea::changeEvent(QEvent* event)
