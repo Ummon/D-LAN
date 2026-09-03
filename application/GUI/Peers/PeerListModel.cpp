@@ -384,19 +384,34 @@ void PeerListModel::updatePeers(
       {
          peersToRemove.remove(peerID);
 
-         if (peer->nick != nick || peer->sharingAmount != sharingAmount || peer->transferInformation != transferInformation)
-         {
+         // 'nick' and 'sharingAmount' are the only fields the order depends on, see 'setSortType(..)'.
+         const bool orderChanged = peer->nick != nick || peer->sharingAmount != sharingAmount;
+
+         // Every field shown by 'data(..)', in a column or in the tool tip. Without 'status' and 'coreVersion'
+         // here a peer going out of date keeps its normal colour and its old version until something else
+         // changes. 'ip' is absent on purpose: it's never displayed, only read by 'getPeerIP(..)'.
+         const bool displayChanged =
+            orderChanged ||
+            peer->transferInformation != transferInformation ||
+            peer->status != status ||
+            peer->coreVersion != coreVersion;
+
+         if (displayChanged)
             setDataChanged();
+
+         if (orderChanged)
+         {
+            // The peer has to be removed before its sorting fields are modified, otherwise it can't be found.
             this->orderedPeers.remove(peer);
             peer->nick = nick;
             peer->sharingAmount = sharingAmount;
-            peer->transferInformation = transferInformation;
             this->orderedPeers.insert(peer);
          }
 
-         peer->ip = ip;
-         peer->coreVersion = coreVersion;
+         peer->transferInformation = transferInformation;
          peer->status = status;
+         peer->coreVersion = coreVersion;
+         peer->ip = ip;
       }
       else
       {
