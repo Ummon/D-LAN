@@ -15,7 +15,7 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #pragma once
 
 #include <qmath.h>
@@ -48,6 +48,10 @@ namespace Common
       BloomFilter(int w = 20, int n = 100000) :
          w(w), m(qPow(2, w)), k(qLn(2) * m / n), wMask((1 << this->w) - 1)
       {
+         // 'position(..)' reads four bytes at the offset of the last position, they must all lie in the hash data.
+         Q_ASSERT(this->w > 0 && this->w <= 32);
+         Q_ASSERT(this->k > 0 && ((((this->k - 1) * this->w) >> 3) + 4 <= Hash::HASH_SIZE));
+
          this->bitArray = new uchar[this->m >> 3]();
       }
 
@@ -106,8 +110,15 @@ inline void Common::BloomFilter::reset()
 
 inline quint32 Common::BloomFilter::position(const Hash& hash, int i) const
 {
-   const char* hashData = hash.getData();
+   const uchar* hashData = reinterpret_cast<const uchar*>(hash.getData());
    const quint32 pPos = i * this->w; // Position in 'hashData' of 'p'.
-   const quint32* p = reinterpret_cast<const quint32*>(hashData + (pPos >> 3));
-   return *p >> (32 - this->w - pPos % 8) & this->wMask;
+   const quint32 byteOffset = pPos >> 3;
+
+   const quint32 p =
+      static_cast<quint32>(hashData[byteOffset]) << 24 |
+      static_cast<quint32>(hashData[byteOffset + 1]) << 16 |
+      static_cast<quint32>(hashData[byteOffset + 2]) << 8 |
+      static_cast<quint32>(hashData[byteOffset + 3]);
+
+   return p >> (32 - this->w - pPos % 8) & this->wMask;
 }
