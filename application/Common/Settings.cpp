@@ -353,8 +353,7 @@ void Settings::set(const QString& name, const QString& value)
       printErrorBadType(fieldDescriptor, "string");
       return;
    }
-   QByteArray array = value.toUtf8();
-   this->settings->GetReflection()->SetString(this->settings, fieldDescriptor, array.data());
+   this->settings->GetReflection()->SetString(this->settings, fieldDescriptor, value.toStdString());
 }
 
 void Settings::set(const QString& name, const QByteArray& value)
@@ -546,10 +545,7 @@ void Settings::set(const QString& name, const QList<QString>& values)
    }
 
    for (QListIterator<QString> i(values); i.hasNext();)
-   {
-      QByteArray array = i.next().toUtf8();
-      this->settings->GetReflection()->AddString(this->settings, fieldDescriptor, array.data());
-   }
+      this->settings->GetReflection()->AddString(this->settings, fieldDescriptor, i.next().toStdString());
 }
 
 void Settings::set(const QString& name, int index, quint32 value)
@@ -626,7 +622,8 @@ void Settings::get(const google::protobuf::FieldDescriptor* fieldDescriptor, dou
 void Settings::get(const google::protobuf::FieldDescriptor* fieldDescriptor, QString& value) const
 {
    Q_ASSERT(fieldDescriptor);
-   value = QString::fromUtf8(this->settings->GetReflection()->GetString(*this->settings, fieldDescriptor).data());
+   // 'fromStdString(..)' and not 'fromUtf8(data())': the latter stops at the first null character.
+   value = QString::fromStdString(this->settings->GetReflection()->GetString(*this->settings, fieldDescriptor));
 }
 
 void Settings::get(const google::protobuf::FieldDescriptor* fieldDescriptor, QByteArray& value) const
@@ -679,7 +676,7 @@ void Settings::getRepeated(const google::protobuf::FieldDescriptor* fieldDescrip
    Q_ASSERT(fieldDescriptor);
 
    for (int i = 0; i < this->settings->GetReflection()->FieldSize(*this->settings, fieldDescriptor); i++)
-      values << QString::fromUtf8(this->settings->GetReflection()->GetRepeatedString(*this->settings, fieldDescriptor, i).data());
+      values << QString::fromStdString(this->settings->GetReflection()->GetRepeatedString(*this->settings, fieldDescriptor, i));
 }
 
 void Settings::getRepeated(const google::protobuf::FieldDescriptor* fieldDescriptor, QList<Protos::Common::SharedEntry>& values) const
