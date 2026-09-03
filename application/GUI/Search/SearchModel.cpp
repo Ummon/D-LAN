@@ -27,6 +27,7 @@ using namespace GUI;
 
 #include <Common/Settings.h>
 #include <Common/Global.h>
+#include <Common/StringUtils.h>
 
 const int SearchModel::NB_SIGNAL_PROGRESS(50);
 
@@ -200,17 +201,15 @@ bool entryLessThan(
    const QString& path1 = Common::ProtoHelper::getPath(e1, !Common::ProtoHelper::isRoot(e1)).toString(false).toLower();
    const QString& path2 = Common::ProtoHelper::getPath(e2, !Common::ProtoHelper::isRoot(e2)).toString(false).toLower();
 
-   // It's not necessary to transform them to 'QString'.
-   std::string name1 = e1.name();
-   std::transform(name1.begin(), name1.end(), name1.begin(), tolower);
-   std::string name2 = e2.name();
-   std::transform(name2.begin(), name2.end(), name2.begin(), tolower);
+   // The names aren't transformed to 'QString', 'strcmpi(..)' compares the UTF-8 bytes directly and without
+   // copying them. It's the same comparison as the one used to sort the downloads, see 'GUI::operator<(..)'.
+   const int nameComparison = Common::StringUtils::strcmpi(e1.name(), e2.name());
 
    switch (column)
    {
       case SearchModel::NAME:
-         if (name1 != name2)
-            return order == Qt::AscendingOrder ? name1 < name2 : name1 > name2;
+         if (nameComparison != 0)
+            return order == Qt::AscendingOrder ? nameComparison < 0 : nameComparison > 0;
          break;
 
       case SearchModel::DIRECTORY:
@@ -239,8 +238,8 @@ bool entryLessThan(
    if (column != SearchModel::DIRECTORY && path1 != path2)
       return order == Qt::AscendingOrder ? path1 < path2 : path1 > path2;
 
-   if (column != SearchModel::NAME && name1 != name2)
-      return order == Qt::AscendingOrder ? name1 < name2 : name1 > name2;
+   if (column != SearchModel::NAME && nameComparison != 0)
+      return order == Qt::AscendingOrder ? nameComparison < 0 : nameComparison > 0;
 
    if (column != SearchModel::PEER && peerNick1 != peerNick2)
       return order == Qt::AscendingOrder ? peerNick1 < peerNick2 : peerNick1 > peerNick2;
