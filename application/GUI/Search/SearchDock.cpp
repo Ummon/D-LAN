@@ -130,7 +130,7 @@ void SearchDock::changeEvent(QEvent* event)
 
 void SearchDock::keyPressEvent(QKeyEvent* event)
 {
-   if (event->key() == Qt::Key_Return)
+   if (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter)
       this->search();
    else
       QDockWidget::keyPressEvent(event);
