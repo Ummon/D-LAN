@@ -253,7 +253,8 @@ void MessageSocket::dataReceivedSlot()
             MESSAGE_SOCKET_LOG_DEBUG(
                QString("Socket[%1]: Message size too big (%2), size limit is (%3) bytes")
                   .arg(this->num)
-                  .arg(this->currentHeader.getSize(), MAX_MESSAGE_PAYLOAD_SIZE)
+                  .arg(this->currentHeader.getSize())
+                  .arg(MAX_MESSAGE_PAYLOAD_SIZE)
             );
             this->currentHeader.setNull();
             this->socket->close();
