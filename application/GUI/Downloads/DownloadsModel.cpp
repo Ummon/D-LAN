@@ -158,7 +158,7 @@ QVariant DownloadsModel::getData(const Protos::GUI::State::Download& download, c
             {
                if (!toolTip.isEmpty())
                   toolTip += " - ";
-               toolTip += this->getPath(index);
+               toolTip += path;
             }
             return toolTip;
          }
