@@ -24,7 +24,6 @@
 #include <QEvent>
 
 #include <functional>
-using namespace std;
 
 namespace GUI
 {
@@ -52,8 +51,7 @@ namespace GUI
       TabCloseButton(
          QWidget* widget,
          QWidget* parent = nullptr,
-         bool autoDelete = true,
-         function<QString()> tooltipFun = nullptr
+         std::function<QString()> tooltipFun = nullptr
       );
 
    protected:
@@ -69,8 +67,7 @@ namespace GUI
    private:
       void setToolTipTranslate();
       QWidget* widget;
-      bool autoDelete;
-      function<QString()> tooltipFun;
+      std::function<QString()> tooltipFun;
    };
 
 /////
