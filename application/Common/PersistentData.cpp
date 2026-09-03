@@ -101,7 +101,9 @@ try
 
    // To avoid ::Print(..) to crash, see defect #153.
    if (Global::availableDiskSpace(filepath) < 20 * 1024 * 1024)
-      return;
+      throw PersistentDataIOException(
+         QString("Not enough disk space left to write the file: %1").arg(filepath)
+      );
 
    {
       QFile file(TEMP_FILEPATH);
@@ -133,12 +135,16 @@ try
       }
       else
       {
-         data.SerializeToFileDescriptor(file.handle());
+         if (!data.SerializeToFileDescriptor(file.handle()))
+            throw PersistentDataIOException(QString("Unable to serialize the message into the file: %1").arg(TEMP_FILEPATH));
       }
 #endif
    }
 
-   Global::rename(TEMP_FILEPATH, filepath);
+   if (!Global::rename(TEMP_FILEPATH, filepath))
+      throw PersistentDataIOException(
+         QString("Unable to replace the file %1 by %2").arg(filepath, TEMP_FILEPATH)
+      );
 }
 catch (Global::UnableToGetFolder& e)
 {
@@ -170,7 +176,8 @@ try
    }
    else
    {
-      data.ParsePartialFromFileDescriptor(file.handle());
+      if (!data.ParsePartialFromFileDescriptor(file.handle()))
+         throw PersistentDataIOException(QString("Unable to read the message from the file: %1").arg(filepath));
    }
 #endif
 }
