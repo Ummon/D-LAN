@@ -333,7 +333,7 @@ void SearchWidget::changeEvent(QEvent* event)
 void SearchWidget::keyPressEvent(QKeyEvent* event)
 {
    // Return key -> open all selected files.
-   if (event->key() == Qt::Key_Return)
+   if (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter)
    {
       const QModelIndexList& selectedRows = this->ui->treeView->selectionModel()->selectedRows();
       for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
@@ -439,7 +439,14 @@ void SearchWidget::progress(int value)
    this->ui->prgSearch->setValue(value);
    const int nbFolders = this->searchModel.getNbFolders();
    const int nbFiles = this->searchModel.getNbFiles();
-   this->ui->prgSearch->setFormat(QString("%1 director%2 / %3 file%4").arg(nbFolders).arg(nbFolders > 1 ? "ies" : "y").arg(nbFiles).arg(nbFiles > 1 ? "s" : ""));
+   // Separate singular/plural strings rather than '%n ...': English is the source language and has no
+   // translation file, so a '%n file(s)' source text would be shown as-is to English users.
+   this->ui->prgSearch->setFormat(
+      QString("%1 / %2").arg(
+         nbFolders == 1 ? tr("1 directory") : tr("%1 directories").arg(nbFolders),
+         nbFiles   == 1 ? tr("1 file")      : tr("%1 files").arg(nbFiles)
+      )
+   );
 }
 
 void SearchWidget::treeviewSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
