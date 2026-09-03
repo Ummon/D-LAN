@@ -19,6 +19,8 @@
 #include <priv/ChunksUploader.h>
 using namespace UM;
 
+#include <typeinfo>
+
 #include <QCoreApplication>
 
 #include <Common/Settings.h>
@@ -130,6 +132,8 @@ void ChunksUploader::run()
                goto end;
             }
 
+            this->transferRateCalculator.addData(bytesSent);
+
             chunk.setOffset(chunk.getOffset() + bytesSent);
 
             {
@@ -142,6 +146,11 @@ void ChunksUploader::run()
 
             while (socket->bytesToWrite() > SOCKET_BUFFER_SIZE)
             {
+               // Checked here too: this loop may last as long as the whole chunk and 'stop()' expects the
+               // upload to end quickly, see 'UploadManager::~UploadManager()'.
+               if (this->mustStop())
+                  goto end;
+
                if (!socket->waitForBytesWritten(SOCKET_TIMEOUT))
                {
                   L_WARN(
@@ -153,8 +162,6 @@ void ChunksUploader::run()
                   goto end;
                }
             }
-
-            this->transferRateCalculator.addData(bytesSent);
          }
 
          if (chunk.getOffset() < chunk.getEndOffset())
@@ -182,14 +189,26 @@ void ChunksUploader::run()
       L_WARN("IOErrorException");
       this->closeTheSocket = true;
    }
-   catch (FM::ChunkDeletedException)
+   catch (FM::ChunkDeletedException&)
    {
       L_WARN("ChunkDeletedException");
       this->closeTheSocket = true;
    }
-   catch (FM::ChunkDataUnknownException)
+   catch (FM::ChunkDataUnknownException&)
    {
       L_WARN("ChunkDataUnknownException");
+      this->closeTheSocket = true;
+   }
+   // Nothing may leave this method: it is called from 'QThread::run()' by the thread pool, an escaping
+   // exception would terminate the process and the socket would never be given back to the main thread.
+   catch (const std::exception& e)
+   {
+      L_ERRO(QString("Unexpected exception, type: %1, what: %2").arg(typeid(e).name(), e.what()));
+      this->closeTheSocket = true;
+   }
+   catch (...)
+   {
+      L_ERRO("Unknown exception");
       this->closeTheSocket = true;
    }
 
@@ -201,6 +220,15 @@ void ChunksUploader::finished()
 {
    this->socket->finished(this->closeTheSocket);
    this->startTimer();
+}
+
+/**
+  * Returns 'true' if 'stop()' has been called, the upload must then be aborted.
+  */
+bool ChunksUploader::mustStop() const
+{
+   QMutexLocker locker(&this->mutex);
+   return this->toStop;
 }
 
 /**

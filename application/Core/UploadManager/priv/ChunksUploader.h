@@ -58,6 +58,8 @@ namespace UM
       void stop();
 
    private:
+      bool mustStop() const;
+
       mutable QMutex mutex;
 
       QThread* mainThread;
