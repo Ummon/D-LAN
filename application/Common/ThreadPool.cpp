@@ -36,7 +36,7 @@ Thread::~Thread()
 {
    this->mutex.lock();
    this->toStop = true;
-   this->waitCondition.wakeOne();
+   this->waitCondition.wakeAll();
    this->mutex.unlock();
 
    this->wait();
@@ -77,8 +77,10 @@ void Thread::setRunnable(QWeakPointer<IRunnable> runnable)
 void Thread::waitRunnableFinished()
 {
    QMutexLocker locker(&this->mutex);
-   if (this->active)
-      this->waitCondition.wait(&this->mutex);
+
+   // A 'while' and not an 'if': a wait can return spuriously, only 'active' tells whether the runnable object is done.
+   while (this->active)
+      this->runnableFinishedCondition.wait(&this->mutex);
 }
 
 void Thread::run()
@@ -93,19 +95,20 @@ void Thread::run()
          this->mutex.unlock();
          return;
       }
+      const QWeakPointer<IRunnable> currentRunnable = this->runnable;
       this->mutex.unlock();
 
       {
          // The strong reference must be released before 'active' is set to false: once 'waitRunnableFinished()' returns,
          // the owner may drop its own reference and if ours was still alive the runnable object would be destroyed from this thread.
-         QSharedPointer<IRunnable> runnableSharedPointer = this->runnable.toStrongRef();
+         QSharedPointer<IRunnable> runnableSharedPointer = currentRunnable.toStrongRef();
          if (runnableSharedPointer)
             runnableSharedPointer->run();
       }
 
       this->mutex.lock();
       this->active = false;
-      this->waitCondition.wakeAll();
+      this->runnableFinishedCondition.wakeAll();
       this->mutex.unlock();
 
       emit runnableFinished();
@@ -114,12 +117,16 @@ void Thread::run()
 
 void Thread::startTimer()
 {
-   this->timer.start();
+   this->mutex.lock();
    this->runnable.clear();
+   this->mutex.unlock();
+
+   this->timer.start();
 }
 
 QWeakPointer<IRunnable> Thread::getRunnable() const
 {
+   QMutexLocker locker(&this->mutex);
    return this->runnable;
 }
 
