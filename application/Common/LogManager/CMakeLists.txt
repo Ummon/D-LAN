@@ -7,7 +7,6 @@ add_library(LogManager STATIC
    priv/Entry.cpp
    priv/Builder.cpp
    priv/QtLogger.cpp
-   priv/StdLogger.cpp
    priv/LoggerHook.cpp
    priv/CrashHandler.cpp
 
@@ -20,7 +19,6 @@ add_library(LogManager STATIC
    priv/Logger.h
    priv/Entry.h
    priv/QtLogger.h
-   priv/StdLogger.h
    priv/LoggerHook.h
    ILoggerHook.h
    LogMacros.h

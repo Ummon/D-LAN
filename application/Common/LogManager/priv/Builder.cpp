@@ -27,7 +27,6 @@ using namespace LM;
 #include <priv/LoggerHook.h>
 
 #include <priv/QtLogger.h>
-#include <priv/StdLogger.h>
 
 void Builder::setLogDirName(const QString& logDirName)
 {
@@ -74,6 +73,5 @@ QSharedPointer<IEntry> Builder::newEntry(const QDateTime& dateTime, Severity sev
   */
 void Builder::initMsgHandler()
 {
-   StdLogger::init();
    QtLogger::initMsgHandler();
 }
