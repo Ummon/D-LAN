@@ -20,6 +20,8 @@
 #include <ui_SearchWidget.h>
 using namespace GUI;
 
+#include <algorithm>
+
 #include <QTextDocument>
 #include <QAbstractTextDocumentLayout>
 #include <QMenu>
@@ -129,29 +131,98 @@ void SearchDelegate::setTerms(const QString& terms)
    this->currentTerms = Common::StringUtils::splitInWords(terms);
 }
 
+/**
+  * Folds 'text' the same way 'Common::StringUtils::splitInWords(..)' folds the search terms and fills 'positions'
+  * with, for each character of the folded text, the position in 'text' of the character it comes from.
+  * A character may fold to zero characters (a combining mark), to one, or to several ('½' gives "1/2",
+  * a ligature gives its letters, ...), so the folded text and 'text' do NOT share their indices: 'positions' is
+  * the only way to map a position in one back to the other.
+  * 'positions' gets one extra element at the end, equal to the size of 'text', so the end of a match maps as well.
+  */
+static QString foldAndMapPositions(const QString& text, QList<int>& positions)
+{
+   QString foldedText;
+   foldedText.reserve(text.size());
+   positions.clear();
+   positions.reserve(text.size() + 1);
+
+   for (int i = 0; i < text.size();)
+   {
+      // A non-BMP character is stored as two 'QChar', they must be folded together.
+      const int nbChars =
+         text.at(i).isHighSurrogate() && i + 1 < text.size() && text.at(i + 1).isLowSurrogate() ? 2 : 1;
+
+      if (nbChars == 1 && text.at(i).unicode() < 0x80) // ASCII is never expanded nor removed, no need to fold it.
+      {
+         foldedText += text.at(i).toLower();
+         positions << i;
+      }
+      else
+      {
+         const QString foldedChars = Common::StringUtils::toLowerAndRemoveAccents(text.mid(i, nbChars));
+         foldedText += foldedChars;
+         for (int j = 0; j < foldedChars.size(); j++)
+            positions << i;
+      }
+
+      i += nbChars;
+   }
+
+   positions << text.size();
+   return foldedText;
+}
+
+/**
+  * Put in bold each part of 'text' matching one of the current search terms.
+  * The terms are searched in the folded text but the markup is inserted in 'text', at the positions given by
+  * 'foldAndMapPositions(..)'.
+  * 'text' is an entry name or path coming from a remote peer, every part of it is escaped so it cannot inject
+  * any markup of its own into the document built by 'SearchDelegate::paint(..)' and 'sizeHint(..)'.
+  */
 QString SearchDelegate::toHtmlText(const QString& text) const
 {
-   QString textWithoutAccent = Common::StringUtils::toLowerAndRemoveAccents(text);
+   QList<int> positions;
+   const QString foldedText = foldAndMapPositions(text, positions);
 
-   QString htmlText(text);
+   QList<QPair<int, int>> partsToHighlight; // Parts of 'text' to put in bold, as [begin, end[ positions.
 
    for (QStringListIterator i(this->currentTerms); i.hasNext();)
    {
       const QString& term = i.next();
-      int pos = 0;
-      while(-1 != (pos = textWithoutAccent.indexOf(term, pos)))
-      {
-         if (pos == 0 || !htmlText.at(pos-1).isLetter())
-         {
-            htmlText.insert(pos + term.size(), MARKUP_SECOND_PART);
-            htmlText.insert(pos, MARKUP_FIRST_PART);
-            textWithoutAccent.insert(pos + term.size(), MARKUP_SECOND_PART);
-            textWithoutAccent.insert(pos, MARKUP_FIRST_PART);
-            pos += MARKUP_FIRST_PART.size() + MARKUP_SECOND_PART.size();
-         }
-         pos += term.size();
-      }
+      if (term.isEmpty()) // Would match at every position without ever advancing.
+         continue;
+
+      for (int pos = 0; (pos = foldedText.indexOf(term, pos)) != -1; pos += term.size())
+         if (pos == 0 || !foldedText.at(pos - 1).isLetter()) // Only the terms beginning a word are highlighted.
+            partsToHighlight << qMakePair(positions[pos], positions[pos + term.size()]);
    }
+
+   if (partsToHighlight.isEmpty())
+      return text.toHtmlEscaped();
+
+   std::sort(partsToHighlight.begin(), partsToHighlight.end());
+
+   QString htmlText;
+   int current = 0; // Position in 'text' up to which 'htmlText' has been built.
+
+   for (int i = 0; i < partsToHighlight.size(); i++)
+   {
+      const int begin = partsToHighlight[i].first;
+      int end = partsToHighlight[i].second;
+
+      // Two terms may match the same part of the text, the overlapping and contiguous parts are merged.
+      while (i + 1 < partsToHighlight.size() && partsToHighlight[i + 1].first <= end)
+         end = qMax(end, partsToHighlight[++i].second);
+
+      htmlText += text.mid(current, begin - current).toHtmlEscaped();
+      htmlText += MARKUP_FIRST_PART;
+      htmlText += text.mid(begin, end - begin).toHtmlEscaped();
+      htmlText += MARKUP_SECOND_PART;
+      current = end;
+   }
+
+   htmlText += text.mid(current).toHtmlEscaped();
+
    return htmlText;
 }
 
