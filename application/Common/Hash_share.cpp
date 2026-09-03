@@ -24,7 +24,8 @@
 using namespace Common;
 
 #include <QtGlobal>
-#include <QTime>
+#include <QStringBuilder>
+#include <QRandomGenerator64>
 
 /**
   * @class Common::Hash
@@ -67,8 +68,6 @@ Hash::Hash(Hash&& h) noexcept
   */
 Hash::Hash(const char* h)
 {
-   Q_ASSERT(h);
-
    if (h == nullptr || memcmp(h, NULL_HASH, Hash::HASH_SIZE) == 0)
       this->data = nullptr;
    else
@@ -90,7 +89,7 @@ Hash::Hash(const char* h)
   */
 Hash::Hash(const std::string& str)
 {
-   if (str.size() == 0 || static_cast<int>(str.size()) != HASH_SIZE || memcmp(str.data(), NULL_HASH, Hash::HASH_SIZE) == 0)
+   if (static_cast<int>(str.size()) != HASH_SIZE || memcmp(str.data(), NULL_HASH, Hash::HASH_SIZE) == 0)
       this->data = nullptr;
    else
    {
@@ -150,22 +149,41 @@ Hash& Hash::operator=(Hash&& h) noexcept
 
 /**
   * Return a human readable string.
-  * For example : "16bd4b1e656129eb9ddaa2ce0f0705f1cc161f77".
+  * For example : "7b6f7f3309179b97b88de3c178274b7e38343267bcdfe653c819593e".
   * @see fromStr to decode a such string.
   */
 QString Hash::toStr() const
 {
-   QString ret(2 * HASH_SIZE);
-   const char* hashData = this->data ? this->data->hash : NULL_HASH;
+   QString ret(2 * HASH_SIZE, QChar());
+   const char* hashData = this->getData();
 
    for (int i = 0; i < HASH_SIZE; i++)
    {
       char p1 = (hashData[i] & 0xF0) >> 4;
       char p2 = hashData[i] & 0x0F;
-      ret[i*2] = p1 <= 9 ? '0' + p1 : 'a' + (p1-10);
-      ret[i*2 + 1] = p2 <= 9 ? '0' + p2 : 'a' + (p2-10);
+      ret[i*2] = p1 <= 9 ? char('0' + p1) : char('a' + (p1-10));
+      ret[i*2 + 1] = p2 <= 9 ? char('0' + p2) : char('a' + (p2-10));
    }
    return ret;
+}
+
+/**
+  * Return a human readable partial string, only the first 3 bytes.
+  * For example : "#16bd4b".
+  */
+QString Hash::toStrShort() const
+{
+   QString ret(2 * NB_BYTES_SHORT_STR, QChar());
+   const char* hashData = this->getData();
+
+   for (int i = 0; i < NB_BYTES_SHORT_STR; ++i)
+   {
+      char p1 = (hashData[i] & 0xF0) >> 4;
+      char p2 = hashData[i] & 0x0F;
+      ret[i*2] = p1 <= 9 ? char('0' + p1) : char('a' + (p1-10));
+      ret[i*2 + 1] = p2 <= 9 ? char('0' + p2) : char('a' + (p2-10));
+   }
+   return "#" % ret;
 }
 
 /**
@@ -182,7 +200,7 @@ QString Hash::toStr() const
   */
 QString Hash::toStrCArray() const
 {
-   const char* hashData = this->data ? this->data->hash : NULL_HASH;
+   const char* hashData = this->getData();
 
    QString str("{");
    for (int i = 0; i < HASH_SIZE; i++)
@@ -211,17 +229,19 @@ Hash Hash::rand()
    Hash hash;
    hash.newData();
    for (int i = 0; i < HASH_SIZE; i++)
-      hash.data->hash[i] = static_cast<char>(Hash::mtrand.randInt(255));
+      hash.data->hash[i] = static_cast<char>(QRandomGenerator64::global()->bounded(256));
+   hash.releaseDataIfNull();
    return hash;
 }
 
 Hash Hash::rand(quint32 seed)
 {
-   MTRand mtrand(seed);
+   QRandomGenerator64 rng(seed);
    Hash hash;
    hash.newData();
    for (int i = 0; i < HASH_SIZE; i++)
-      hash.data->hash[i] = static_cast<char>(mtrand.randInt(255));
+      hash.data->hash[i] = static_cast<char>(rng.bounded(256));
+   hash.releaseDataIfNull();
    return hash;
 }
 
@@ -231,6 +251,7 @@ Hash Hash::fromStr(const QString& str)
 
    Hash hash;
    hash.newData();
+   memcpy(hash.data->hash, NULL_HASH, HASH_SIZE);
    const QString strLower = str.toLower();
 
    for (int i = 0; i < HASH_SIZE && 2*i + 1 < strLower.size(); i++)
@@ -244,6 +265,7 @@ Hash Hash::fromStr(const QString& str)
       hash.data->hash[i] = (p1 << 4 & 0xF0) | (p2 & 0x0F);
    }
 
+   hash.releaseDataIfNull();
    return hash;
 }
 
@@ -255,40 +277,20 @@ Hash Hash::fromStr(const QString& str)
   * To create hash from row data.
   */
 
-Hasher::Hasher() :
-   cryptographicHash(QCryptographicHash::Sha3_224)
+Hasher::Hasher()
 {
-   this->reset();
+   blake3_hasher_init(&this->hasher);
 }
 
 /**
-  * Deprecated, it's useless to have a hardcoded salt.
-  *
   * May be called right after the constructor or the 'reset()' method.
-  * @param salt Must be Hash::HASH_SIZE bytes length.
   */
-/*void Hasher::addPredefinedSalt()
-{
-   static const char salt[] = {
-      -0x46, -0x1B,  0x4D, -0x0E,
-      -0x55, -0x7C, -0x4B, -0x32,
-      -0x07, -0x66,  0x6C,  0x78,
-      -0x7a,  0x7f,  0x6d,  0x7B,
-      -0x35, -0x24, -0x3F,  0x6A,
-      -0x1A,  0x03, -0x66,  0x3c,
-       0x75, -0x36,  0x4d, -0x24,
-      -0x70,  0x6A,  0x10,  0x11
-   };
-
-   this->cryptographicHash.addData(salt, sizeof(salt));
-}*/
-
 void Hasher::addSalt(quint64 salt)
 {
    QByteArray saltArray(8, 0);
    for (int i = 0; i < 8; i++)
       saltArray[i] = salt >> (8*i) & 0xFF;
-   this->cryptographicHash.addData(saltArray);
+   blake3_hasher_update(&this->hasher, saltArray.constData(), saltArray.length());
 }
 
 /**
@@ -300,20 +302,21 @@ void Hasher::addData(const char* data, int size)
    Q_ASSERT(data);
    Q_ASSERT(size >= 0);
 
-   this->cryptographicHash.addData(data, size);
+   blake3_hasher_update(&this->hasher, data, size);
 }
 
 Hash Hasher::getResult()
 {
    Hash result;
    result.newData();
-   memcpy(result.data->hash, this->cryptographicHash.result().constData(), Hash::HASH_SIZE);
+   blake3_hasher_finalize(&this->hasher, (uint8_t*)result.data->hash, Hash::HASH_SIZE);
+   result.releaseDataIfNull();
    return result;
 }
 
 void Hasher::reset()
 {
-   this->cryptographicHash.reset();
+   blake3_hasher_reset(&this->hasher);
 }
 
 Common::Hash Hasher::hash(const QString& str)
@@ -354,13 +357,13 @@ Common::Hash Hasher::hashWithSalt(const Common::Hash& hash, quint64 salt)
 
 Hash Hasher::hashWithRandomSalt(const QString& str, quint64& salt)
 {
-   salt = Hash::mtrand.randInt64();
+   salt = QRandomGenerator64::global()->generate64();
    return Hasher::hashWithSalt(str, salt);
 }
 
 Hash Hasher::hashWithRandomSalt(const Common::Hash& hash, quint64& salt)
 {
-   salt = Hash::mtrand.randInt64();
+   salt = QRandomGenerator64::global()->generate64();
    return Hasher::hashWithSalt(hash, salt);
 }
 

@@ -18,22 +18,37 @@
 
 #pragma once
 
+#include <cstring>
 #include <string>
 
+#include <QHash>
 #include <QString>
 #include <QByteArray>
 #include <QDataStream>
-#include <QCryptographicHash>
+
+#include <blake3.h>
 
 #include <Common/Uncopyable.h>
 
 namespace Common
 {
    class Hasher;
+
+   /**
+     * The alternative implementation of 'Hash', selected with 'SHARED_DATA' in "Hash.h".
+     * The hash data is shared between the copies instead of being embedded in each object.
+     *
+     * @remarks The reference counter isn't atomic: unlike 'Hash_noShare', an object of this implementation
+     *          must not be copied from two threads at the same time.
+     * @remarks Its observable behaviour must stay identical to the one of 'Hash_noShare', both are the same
+     *          type for the rest of the application. In particular the hash values must be the same, thus
+     *          the same hash function is used.
+     */
    class Hash
    {
    public:
       static const int HASH_SIZE = 28;
+      static const int NB_BYTES_SHORT_STR = 3;
 
    private:
       static const char NULL_HASH[HASH_SIZE];
@@ -60,6 +75,7 @@ namespace Common
       inline QByteArray getByteArray() const { return QByteArray(this->data ? this->data->hash : NULL_HASH, HASH_SIZE); }
 
       QString toStr() const;
+      QString toStrShort() const;
       QString toStrCArray() const;
       bool isNull() const noexcept;
 
@@ -70,6 +86,12 @@ namespace Common
    private:
       inline void dereference();
       inline void newData();
+
+      /**
+        * A hash whose bytes are all zero is a null hash, it must be represented by an absence of data,
+        * otherwise 'isNull()' wouldn't agree with the other implementation.
+        */
+      inline void releaseDataIfNull();
 
       friend QDataStream& operator>>(QDataStream&, Hash&);
       friend QDataStream& operator<<(QDataStream& stream, const Hash& hash);
@@ -99,7 +121,7 @@ namespace Common
          if (hash.data)
          {
             hash.dereference();
-            hash.data = 0;
+            hash.data = nullptr;
          }
       }
       else if (!hash.data || memcmp(hash.data->hash, data, Hash::HASH_SIZE) != 0)
@@ -143,20 +165,15 @@ namespace Common
    /**
      * Used by QHash.
      */
-   inline uint qHash(const Hash& h)
+   inline size_t qHash(const Hash& h, size_t seed = 0)
    {
-      // Take the first sizeof(uint) bytes of the hash data.
-      if (h.isNull())
-         return 0;
-      else
-         return *(const uint*)(h.getData());
+      return qHashBits(h.getData(), Hash::HASH_SIZE, seed);
    }
 
    class Hasher : Uncopyable
    {
    public:
       Hasher();
-      // void addPredefinedSalt(); Deprecated.
       void addSalt(quint64 salt);
       void addData(const char*, int size);
       Hash getResult();
@@ -170,7 +187,7 @@ namespace Common
       static Common::Hash hashWithRandomSalt(const Common::Hash& hash, quint64& salt);
 
    private:
-      QCryptographicHash cryptographicHash;
+      blake3_hasher hasher;
    };
 }
 
@@ -191,4 +208,13 @@ inline void Common::Hash::newData()
 {
    this->data = new SharedData;
    this->data->nbRef = 1;
+}
+
+inline void Common::Hash::releaseDataIfNull()
+{
+   if (this->data && memcmp(this->data->hash, NULL_HASH, HASH_SIZE) == 0)
+   {
+      this->dereference();
+      this->data = nullptr;
+   }
 }
