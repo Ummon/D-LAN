@@ -647,26 +647,22 @@ void ChatWidget::keyPressEvent(QKeyEvent* keyEvent)
    {
       switch (keyEvent->key())
       {
-      case 'c':
-      case 'C':
+      case Qt::Key_C:
          this->copySelectedLineToClipboard();
          keyEvent->accept();
          break;
 
-      case 'b':
-      case 'B':
+      case Qt::Key_B:
          this->ui->butBold->toggle();
          keyEvent->accept();
          break;
 
-      case 'i':
-      case 'I':
+      case Qt::Key_I:
          this->ui->butItalic->toggle();
          keyEvent->accept();
          break;
 
-      case 'u':
-      case 'U':
+      case Qt::Key_U:
          this->ui->butUnderline->toggle();
          keyEvent->accept();
          break;
@@ -694,7 +690,10 @@ bool ChatWidget::eventFilter(QObject* obj, QEvent* event)
       QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
       switch (keyEvent->key())
       {
-      case Qt::Key_Return: // 'return' : It sends the current message or validate the current peer name in peer name insertion.
+      // 'return' (and the one of the numeric keypad): sends the current message or validates the current
+      // peer name in peer name insertion.
+      case Qt::Key_Enter:
+      case Qt::Key_Return:
          if (!(keyEvent->modifiers() & Qt::ShiftModifier))
          {
             this->sendMessage();
@@ -862,12 +861,14 @@ void ChatWidget::displayEmoticons(const QPoint& positionSender, const QSize& siz
       positionSender.y() + sizeSender.height() - this->emoticonsWidget->height()
    );
 
-   // TODO: Check if correct.
-   QRect desktopGeom = qGuiApp->primaryScreen()->availableGeometry();
-   if (this->emoticonsWidget->pos().y() < 0)
-      this->emoticonsWidget->move(this->emoticonsWidget->pos().x(), 0);
+   // The geometry of the screen showing this widget, its origin isn't (0, 0) when it isn't the primary one.
+   const QScreen* screen = this->screen() ? this->screen() : qGuiApp->primaryScreen();
+   const QRect desktopGeom = screen ? screen->availableGeometry() : QRect();
 
-   if (this->emoticonsWidget->pos().x() + this->emoticonsWidget->width() > desktopGeom.width())
+   if (this->emoticonsWidget->pos().y() < desktopGeom.top())
+      this->emoticonsWidget->move(this->emoticonsWidget->pos().x(), desktopGeom.top());
+
+   if (this->emoticonsWidget->pos().x() + this->emoticonsWidget->width() > desktopGeom.right())
       this->emoticonsWidget->move(positionSender.x() - this->emoticonsWidget->width(), this->emoticonsWidget->pos().y());
 }
 
