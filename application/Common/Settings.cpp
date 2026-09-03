@@ -612,8 +612,8 @@ void Settings::get(const google::protobuf::FieldDescriptor* fieldDescriptor, QSt
 void Settings::get(const google::protobuf::FieldDescriptor* fieldDescriptor, QByteArray& value) const
 {
    Q_ASSERT(fieldDescriptor);
-   std::string valueStr = this->settings->GetReflection()->GetString(*this->settings, fieldDescriptor);
-   value = QByteArray::fromRawData(valueStr.data(), valueStr.size());
+   const std::string valueStr = this->settings->GetReflection()->GetString(*this->settings, fieldDescriptor);
+   value = QByteArray(valueStr.data(), static_cast<qsizetype>(valueStr.size()));
 }
 
 void Settings::get(const google::protobuf::FieldDescriptor* fieldDescriptor, Hash& hash) const
