@@ -342,13 +342,44 @@ void ChatModel::result(const Protos::GUI::ChatMessageResult& result)
       break;
    }
 
-   this->results.removeFirst();
+   this->removeResult(qobject_cast<RCC::ISendChatMessageResult*>(this->sender()));
 }
 
 void ChatModel::resultTimeout()
 {
    emit sendMessageStatus(TIMEOUT);
-   this->results.removeFirst();
+   this->removeResult(qobject_cast<RCC::ISendChatMessageResult*>(this->sender()));
+}
+
+/**
+  * Forget the given result, it has been answered or has timed out.
+  *
+  * The removal is deferred for two reasons:
+  *  - Both callers are slots called synchronously from a signal emitted by 'result' itself, so dropping the
+  *    last reference here would destroy it, and its timer, while that timer is being dispatched. Qt then
+  *    silently drops the pending timers of other objects: with two messages in flight, the timeout of the
+  *    second one never fires. Same reason as the 'deleteLater()' of the commit 9476210f.
+  *  - The results aren't necessarily answered in the order they were sent, so the one to remove has to be
+  *    looked up: 'removeFirst()' used to drop whichever was at the front, and to be undefined on an empty list.
+  */
+void ChatModel::removeResult(const RCC::ISendChatMessageResult* result)
+{
+   if (!result)
+      return;
+
+   QMetaObject::invokeMethod(
+      this,
+      [this, result]()
+      {
+         for (int i = 0; i < this->results.size(); i++)
+            if (this->results[i].data() == result)
+            {
+               this->results.removeAt(i);
+               return;
+            }
+      },
+      Qt::QueuedConnection
+   );
 }
 
 QString ChatModel::formatMessage(const Message& message) const

@@ -91,6 +91,8 @@ namespace GUI
       void resultTimeout();
 
    private:
+      void removeResult(const RCC::ISendChatMessageResult* result);
+
       QList<QSharedPointer<RCC::ISendChatMessageResult>> results;
 
       struct Message
