@@ -5,6 +5,7 @@ import app/router
 import app/web
 import gleam/http
 import gleam/time/calendar
+import translations as tr
 import wisp
 import wisp/simulate
 
@@ -87,4 +88,33 @@ pub fn latest_release_test() {
 
   assert download_button.latest_release(["D-LAN.exe"]) == Error(Nil)
   assert download_button.latest_release([]) == Error(Nil)
+}
+
+pub fn current_lang_test() {
+  let lang = fn(accept_language) {
+    simulate.request(http.Get, "/")
+    |> simulate.header("accept-language", accept_language)
+    |> tr.current_lang
+  }
+
+  // The qualities are compared, not the order of the entries.
+  assert lang("fr;q=0.1,de;q=0.9") == tr.De
+
+  // A parameter may be surrounded by whitespaces and its name is case
+  // insensitive.
+  assert lang("fr; q=0.1, de; Q=0.9") == tr.De
+  assert lang("fr;charset=utf-8;q=0.1, de;q=0.9") == tr.De
+
+  // Language tags are case insensitive and their subtags are ignored.
+  assert lang("FR-CH") == tr.Fr
+
+  // Without a quality an entry has the best one, ties keep the header order.
+  assert lang("de,fr") == tr.De
+  assert lang("fr,de;q=0.9") == tr.Fr
+
+  // Unknown languages are ignored, English is the default.
+  assert lang("zz-ZZ,it") == tr.It
+  assert lang("zz") == tr.En
+  assert lang("") == tr.En
+  assert simulate.request(http.Get, "/") |> tr.current_lang == tr.En
 }

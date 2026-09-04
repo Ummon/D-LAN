@@ -1409,17 +1409,21 @@ fn accepted_langs_by_user_agent(req: wisp.Request) -> List(String) {
   |> result.unwrap("")
   |> string.split(",")
   |> list.filter_map(fn(value) {
-    // Extract the language and its quality: "fr-CH;q=0.8" -> #("fr-CH", 0.8).
+    // Extract the language and its parameters: "fr-CH;q=0.8" -> #("fr-CH", 0.8).
     let #(lang_with_subtag, quality) = case
-      string.split(string.trim(value), ";")
+      string.split(value, ";") |> list.map(string.trim)
     {
-      [lang, "q=" <> q] -> #(lang, parse_quality(q))
-      [lang, ..] -> #(lang, 1.0)
+      [lang, ..parameters] -> #(lang, quality(parameters))
       [] -> #("", 0.0)
     }
-    // We don't care about the subtags: "fr-CH" -> "fr".
+    // We don't care about the subtags: "fr-CH" -> "fr". Language tags are case
+    // insensitive, they are lowercased to be compared to 'known_langs'.
     let lang_str =
-      lang_with_subtag |> string.split("-") |> list.first |> result.unwrap("")
+      lang_with_subtag
+      |> string.lowercase
+      |> string.split("-")
+      |> list.first
+      |> result.unwrap("")
     // We keep only known languages.
     case list.contains(known_langs, lang_str) {
       True -> Ok(#(lang_str, quality))
@@ -1430,6 +1434,21 @@ fn accepted_langs_by_user_agent(req: wisp.Request) -> List(String) {
   |> list.sort(fn(a, b) { float.compare(b.1, a.1) })
   // Remove the quality information.
   |> list.map(fn(lang_quality) { lang_quality.0 })
+}
+
+// Reads the quality among the parameters of an 'Accept-Language' entry, for
+// example ["q=0.8"] -> 0.8. Parameters may be surrounded by whitespaces and
+// their name is case insensitive, so "fr-CH; Q=0.8" is a valid entry. An entry
+// without a quality has a quality of 1.0, as stated by RFC 9110.
+fn quality(parameters: List(String)) -> Float {
+  parameters
+  |> list.find_map(fn(parameter) {
+    case string.lowercase(parameter) {
+      "q=" <> q -> Ok(parse_quality(q))
+      _ -> Error(Nil)
+    }
+  })
+  |> result.unwrap(1.0)
 }
 
 fn parse_quality(q: String) -> Float {
