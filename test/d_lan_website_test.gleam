@@ -1,5 +1,6 @@
 import app/date
 import app/db
+import app/download_button
 import app/router
 import app/web
 import gleam/http
@@ -53,4 +54,37 @@ pub fn parse_date_test() {
 pub fn date_round_trip_test() {
   let date = calendar.Date(2026, calendar.February, 3)
   assert date.parse_date(date.date_to_str(date)) == Ok(date)
+}
+
+pub fn latest_release_test() {
+  // A newer minor version has a lower lexicographical order than an older one.
+  assert download_button.latest_release([
+      "D-LAN-1.9.0-2027-01-01_10-00-Setup.exe",
+      "D-LAN-1.10.0-2027-06-01_10-00-Setup.exe",
+    ])
+    == Ok("D-LAN-1.10.0-2027-06-01_10-00-Setup.exe")
+
+  // A beta has a higher lexicographical order than its final release.
+  assert download_button.latest_release([
+      "D-LAN-1.2.0Beta1-2026-07-10_19-21-Setup.exe",
+      "D-LAN-1.2.0-2026-08-01_10-00-Setup.exe",
+    ])
+    == Ok("D-LAN-1.2.0-2026-08-01_10-00-Setup.exe")
+
+  // Two builds of the same version are told apart by their time.
+  assert download_button.latest_release([
+      "D-LAN-1.1.0Beta15-2012-12-16_16-45-amd64.deb",
+      "D-LAN-1.1.0Beta15-2012-12-16_16-22-amd64.deb",
+    ])
+    == Ok("D-LAN-1.1.0Beta15-2012-12-16_16-45-amd64.deb")
+
+  // Files not following the release naming scheme are ignored.
+  assert download_button.latest_release([
+      "D-LAN.exe",
+      "D-LAN-1.2.0-2026-08-01_10-00-Setup.exe",
+    ])
+    == Ok("D-LAN-1.2.0-2026-08-01_10-00-Setup.exe")
+
+  assert download_button.latest_release(["D-LAN.exe"]) == Error(Nil)
+  assert download_button.latest_release([]) == Error(Nil)
 }

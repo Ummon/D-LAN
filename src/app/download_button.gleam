@@ -34,8 +34,7 @@ pub fn element(
     |> list.filter(fn(f) {
       list.any([".exe", ".dmg", ".deb"], string.ends_with(f, _))
     })
-    |> list.sort(string.compare)
-    |> list.last,
+    |> latest_release,
   )
 
   let extension = string.slice(filename, string.length(filename) - 3, 3)
@@ -78,8 +77,7 @@ pub fn element(
   let torrent_link = case
     filenames
     |> list.filter(string.ends_with(_, ".torrent"))
-    |> list.sort(string.compare)
-    |> list.last
+    |> latest_release
   {
     Ok(torrent_file) -> [
       html.a(
@@ -107,6 +105,47 @@ pub fn element(
     ..torrent_link
   ])
   |> Ok
+}
+
+/// Returns the most recently built release among 'filenames', or an error if
+/// none of them follows the release naming scheme.
+///
+/// The releases are ordered by the build date embedded in their name and not by
+/// the name itself: compared as plain strings, "D-LAN-1.9.0-..." comes after
+/// "D-LAN-1.10.0-..." and "D-LAN-1.2.0Beta1-..." after the final release
+/// "D-LAN-1.2.0-...".
+pub fn latest_release(filenames: List(String)) -> Result(String, Nil) {
+  filenames
+  |> list.filter_map(fn(f) {
+    build_datetime(f) |> result.map(fn(datetime) { #(datetime, f) })
+  })
+  |> list.max(fn(a, b) { int.compare(a.0, b.0) })
+  |> result.map(fn(release) { release.1 })
+}
+
+/// Extracts the build date and time embedded in a release filename as a
+/// sortable number, for example "D-LAN-1.2.0Beta1-2026-07-10_19-21-Setup.exe"
+/// gives 202_607_101_921. Returns an error if the filename doesn't follow the
+/// release naming scheme.
+fn build_datetime(filename: String) -> Result(Int, Nil) {
+  let assert Ok(re) = regexp.from_string("-(\\d+)-(\\d+)-(\\d+)_(\\d+)-(\\d+)")
+
+  use match <- result.try(case regexp.scan(re, filename) {
+    [match, ..] -> Ok(match)
+    [] -> Error(Nil)
+  })
+  use parts <- result.try(
+    match.submatches
+    |> list.try_map(fn(part) {
+      part |> option.to_result(Nil) |> result.try(int.parse)
+    }),
+  )
+
+  case parts {
+    [year, month, day, hour, minute] ->
+      Ok({ { { year * 100 + month } * 100 + day } * 100 + hour } * 100 + minute)
+    _ -> Error(Nil)
+  }
 }
 
 // Returns the url to download a given file for the given platform.
