@@ -5,6 +5,8 @@ import lustre/element/html
 import translations as tr
 
 pub fn page(ctx: web.Context) -> element.Element(a) {
+  let href_attr =
+    attr.href("http://blockchain.info/address/" <> bitcoin_address())
   html.div([attr.id("content"), attr.class("donate")], [
     html.h2([], [tr.donate_title(ctx.lang)]),
     html.p([], [tr.donate_intro(ctx.lang)]),
@@ -16,10 +18,7 @@ pub fn page(ctx: web.Context) -> element.Element(a) {
           attr.class("bitcoin"),
         ]),
       ]),
-      html.a(
-        [attr.href("http://blockchain.info/address/" <> bitcoin_address())],
-        [tr.donate_bitcoin_address(ctx.lang)],
-      ),
+      html.a([href_attr], [tr.donate_bitcoin_address(ctx.lang)]),
       html.input([
         attr.class("bitcoin-address-field"),
         attr.type_("text"),
@@ -28,9 +27,11 @@ pub fn page(ctx: web.Context) -> element.Element(a) {
         attr.readonly(True),
         attr.value(bitcoin_address()),
       ]),
-      html.img([
-        attr.src("static/img/d_lan_bitcoin_qr_code.png"),
-        attr.class("bitcoin-qr-code"),
+      html.a([href_attr], [
+        html.img([
+          attr.src("static/img/d_lan_bitcoin_qr_code.png"),
+          attr.class("bitcoin-qr-code"),
+        ]),
       ]),
     ]),
   ])
