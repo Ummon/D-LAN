@@ -4,11 +4,11 @@ import gleam/io
 import gleam/string
 
 pub fn hash(password: String) -> String {
-  let assert Ok(hashes) =
+  let assert Ok(hash_output) =
     argus.hasher()
-    |> argus.hash(password, argus.gen_salt())
+    |> argus.hash(password)
 
-  hashes.encoded_hash
+  hash_output.encoded_hash
 }
 
 pub fn verify(password: String, hashed_password: String) -> Bool {
