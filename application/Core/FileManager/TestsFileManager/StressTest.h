@@ -135,7 +135,7 @@ protected:
 private:
    QSharedPointer<IChunk> chunk;
    QString filePath;
-   RandGenerator randGen;
+   // RandGenerator randGen;
 };
 
 class Uploader : public QThread
@@ -148,7 +148,7 @@ protected:
 
 private:
    QSharedPointer<IChunk> chunk;
-   RandGenerator randGen;
+   // RandGenerator randGen;
 };
 
 #endif
