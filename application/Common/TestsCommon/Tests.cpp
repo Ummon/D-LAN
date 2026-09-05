@@ -801,6 +801,43 @@ void Tests::sortedArrayInsertIndex()
    QCOMPARE(map.getValueFromIndex(1), QString("updated"));
 }
 
+void Tests::sortedArrayToList()
+{
+   SortedArray<int> empty;
+   QVERIFY(empty.toList().isEmpty());
+   empty.insert(42);
+   QCOMPARE(empty.toList(), QList<int> { 42 });
+
+   // Non-default order and enough values to traverse several tree levels.
+   SortedArray<int, 3> array;
+   QList<int> expected;
+   for (int i = 0; i < 80; ++i)
+   {
+      array.insert((i * 37) % 80);
+      expected.append(i);
+   }
+   const auto& constArray = array;
+   QCOMPARE(constArray.toList(), expected);
+   array.setSortedFunction([](int a, int b) { return a > b; });
+   QList<int> descending;
+   for (int i = 79; i >= 0; --i)
+      descending.append(i);
+   QCOMPARE(constArray.toList(), descending);
+
+   // The list owns copies of nontrivial elements and survives clearing the tree.
+   SortedArray<QString> strings;
+   strings.insert(QString("zulu"));
+   strings.insert(QString("alpha"));
+   auto list = strings.toList();
+   const QList<QString> words { "alpha", "zulu" };
+   QCOMPARE(list, words);
+   list[0] = "changed";
+   QCOMPARE(strings.getFromIndex(0), QString("alpha"));
+   strings.clear();
+   QCOMPARE(list[0], QString("changed"));
+   QCOMPARE(list[1], QString("zulu"));
+}
+
 void Tests::mapArray()
 {
    MapArray<Common::Hash, QString> array;

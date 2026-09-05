@@ -476,8 +476,9 @@ template <typename T, int M>
 QList<T> Common::SortedArray<T, M>::toList() const
 {
    QList<T> l;
-   for (typename Common::SortedArray<T>::iterator i(*this); i.hasNext();)
-      l << i.next();
+   l.reserve(this->size());
+   for (const T& value : *this)
+      l.append(value);
    return l;
 }
 
