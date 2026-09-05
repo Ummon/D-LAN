@@ -106,6 +106,13 @@ namespace Common
       virtual void moveChild(int from, int to);
       virtual TreeType* insertChild(const ItemType& item);
       virtual TreeType* insertChild(const ItemType& item, int pos);
+      /**
+        * Deletes descendants from the leaves upward without recursive traversal.
+        * Each descendant's derived destructor runs with no children, while it is
+        * still linked to its parent. Destructors must not change other nodes'
+        * structure. The same descendant deletion order applies when deleting a tree;
+        * the explicitly deleted tree's derived destructor runs before this cleanup.
+        */
       virtual void deleteAllChildren();
 
       virtual int getOwnPosition() const;
@@ -232,8 +239,7 @@ Common::Tree<ItemType, TreeType>::Tree(const ItemType& item, TreeType* parent) :
 template <typename ItemType, typename TreeType>
 Common::Tree<ItemType, TreeType>::~Tree()
 {
-   for (QListIterator<TreeType*> i(this->children); i.hasNext();)
-      delete i.next();
+   Tree<ItemType, TreeType>::deleteAllChildren();
 
    if (this->parent)
       this->parent->children.removeOne(static_cast<TreeType*>(this));
@@ -334,9 +340,28 @@ TreeType* Common::Tree<ItemType, TreeType>::insertChild(const ItemType& item, in
 template <typename ItemType, typename TreeType>
 void Common::Tree<ItemType, TreeType>::deleteAllChildren()
 {
-   for (QListIterator<TreeType*> i(this->children); i.hasNext();)
-      delete i.next();
-   this->children.clear();
+   // Walk down to leaves and back through parent links. Deleting only leaves
+   // keeps nested base-destructor calls bounded, regardless of tree depth.
+   Tree<ItemType, TreeType>* current = this;
+   while (true)
+   {
+      if (!current->children.isEmpty())
+      {
+         current = current->children.first();
+      }
+      else if (current == this)
+      {
+         return;
+      }
+      else
+      {
+         Tree<ItemType, TreeType>* parent = current->parent;
+         // The destructor removes the leaf from its parent after the derived
+         // destructor has had a chance to inspect the parent relationship.
+         delete static_cast<TreeType*>(current);
+         current = parent;
+      }
+   }
 }
 
 /**

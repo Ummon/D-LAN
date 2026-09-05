@@ -22,6 +22,44 @@ using namespace Common;
 #include <QList>
 #include <limits>
 
+namespace
+{
+   struct DestructionState
+   {
+      int count = 0;
+      bool validParentLinks = true;
+      QList<int> lastChildren;
+   };
+
+   class DestructionTree : public Common::Tree<int, DestructionTree>
+   {
+   public:
+      DestructionTree(int item, DestructionTree* parent) :
+         Common::Tree<int, DestructionTree>(item, parent), state(parent->state)
+      {}
+
+      explicit DestructionTree(DestructionState& state) :
+         Common::Tree<int, DestructionTree>(0, nullptr), state(state)
+      {}
+
+      ~DestructionTree() override
+      {
+         ++this->state.count;
+         if (this->parent)
+         {
+            this->state.validParentLinks &= this->getNbChildren() == 0
+               && this->getOwnPosition() >= 0
+               && this->parent->getChild(this->getOwnPosition()) == this;
+            if (this->parent->getNbChildren() == 1)
+               this->state.lastChildren << this->item;
+         }
+      }
+
+   private:
+      DestructionState& state;
+   };
+}
+
 /**
   * Test tree :
   *
@@ -298,6 +336,51 @@ void TreeTests::reverseDepthFirstEmptyTree()
       QVERIFY(iterator.next() == nullptr);
       QVERIFY(iterator.next() == nullptr);
    }
+}
+
+void TreeTests::destroyDeepTree()
+{
+   constexpr int depth = 100000;
+   for (bool clearChildren : { false, true })
+   {
+      DestructionState state;
+      {
+         DestructionTree root(state);
+         DestructionTree* node = &root;
+         for (int i = 1; i <= depth; ++i)
+            node = node->insertChild(i);
+
+         if (clearChildren)
+         {
+            root.deleteAllChildren();
+            QCOMPARE(root.getNbChildren(), 0);
+            QCOMPARE(state.count, depth);
+            root.deleteAllChildren();
+            QCOMPARE(state.count, depth);
+            root.insertChild(1); // A cleared tree remains usable.
+         }
+      }
+      QCOMPARE(state.count, depth + 1 + (clearChildren ? 1 : 0));
+      QVERIFY(state.validParentLinks);
+   }
+}
+
+void TreeTests::destructionParentLinks()
+{
+   DestructionState state;
+   DestructionTree root(state);
+   DestructionTree* first = root.insertChild(1);
+   first->insertChild(2);
+   first->insertChild(3);
+   root.insertChild(4)->insertChild(5);
+
+   root.deleteAllChildren();
+
+   QCOMPARE(state.count, 5);
+   QVERIFY(state.validParentLinks);
+   const QList<int> expectedLastChildren { 3, 5, 4 };
+   QCOMPARE(state.lastChildren, expectedLastChildren);
+   QCOMPARE(root.getNbChildren(), 0);
 }
 
 void TreeTests::removeElements()

@@ -50,6 +50,8 @@ private slots:
    void reverseDepthFirstWideTree();
    void reverseDepthFirstDeepTree();
    void reverseDepthFirstEmptyTree();
+   void destroyDeepTree();
+   void destructionParentLinks();
    void removeElements();
 
 private:
