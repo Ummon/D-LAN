@@ -19,6 +19,7 @@
 #pragma once
 
 #include <cstring>
+#include <optional>
 #include <string>
 
 #include <QHash>
@@ -81,7 +82,9 @@ namespace Common
 
       static Hash rand();
       static Hash rand(quint32 seed);
-      static Hash fromStr(const QString& str);
+      // Accepts exactly 2 * HASH_SIZE ASCII hexadecimal characters (either case).
+      // Returns std::nullopt for invalid input; an all-zero hash is a valid result.
+      [[nodiscard]] static std::optional<Hash> fromStr(const QString& str);
 
    private:
       inline void dereference();

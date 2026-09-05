@@ -67,8 +67,8 @@ void Tests::initTestCase()
    }
 
    this->peerIDs <<
-      Common::Hash::fromStr("11111111111111111111111111111111111111111111111111111111") <<
-      Common::Hash::fromStr("22222222222222222222222222222222222222222222222222222222");
+      Common::Hash::fromStr("11111111111111111111111111111111111111111111111111111111").value() <<
+      Common::Hash::fromStr("22222222222222222222222222222222222222222222222222222222").value();
 
    for (int i = 0; i < this->peerIDs.size(); i++)
       this->instances << this->createInstance(this->peerIDs[i], QString("peer#%1").arg(i + 1));
@@ -179,7 +179,7 @@ void Tests::sendToUnknownPeer()
    Protos::Core::GetLastChatMessages message;
    message.set_number(1);
 
-   const Common::Hash unknownPeer = Common::Hash::fromStr("33333333333333333333333333333333333333333333333333333333");
+   const Common::Hash unknownPeer = Common::Hash::fromStr("33333333333333333333333333333333333333333333333333333333").value();
    QCOMPARE(
       this->instances[0].networkListener->send(Common::MessageHeader::CORE_GET_LAST_CHAT_MESSAGES, message, unknownPeer),
       INetworkListener::SendStatus::PEER_UNKNOWN

@@ -73,8 +73,8 @@ void Tests::initTestCase()
    this->fileManagers << FM::Builder::newFileManager(this->hashCaches[0]) << FM::Builder::newFileManager(this->hashCaches[1]);
 
    this->peerIDs <<
-      Common::Hash::fromStr("11111111111111111111111111111111111111111111111111111111") <<
-      Common::Hash::fromStr("22222222222222222222222222222222222222222222222222222222");
+      Common::Hash::fromStr("11111111111111111111111111111111111111111111111111111111").value() <<
+      Common::Hash::fromStr("22222222222222222222222222222222222222222222222222222222").value();
 
    this->peerSharedDirs << "/sharedDirs/peer1/" << "/sharedDirs/peer2/";
 

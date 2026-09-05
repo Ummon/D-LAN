@@ -84,6 +84,7 @@ private slots:
    // Hash class.
    void generateAHash();
    void buildAnHashFromAString();
+   void rejectInvalidHashStrings();
    void compareTwoHash();
    void hashMoveConstructorAndAssignment();
    void hasher();

@@ -165,25 +165,34 @@ Hash Hash::rand(quint32 seed)
    return hash;
 }
 
-Hash Hash::fromStr(const QString& str)
+std::optional<Hash> Hash::fromStr(const QString& str)
 {
-   Q_ASSERT_X(str.size() == 2 * HASH_SIZE, "Hash::fromStr", "The string representation of an hash must have twice as character as the size (in byte) of the hash.");
+   if (str.size() != 2 * HASH_SIZE)
+      return std::nullopt;
 
-   Hash hash;
-   const QString strLower = str.toLower();
-
-   for (int i = 0; i < HASH_SIZE && 2*i + 1 < strLower.size(); i++)
+   const auto hexValue = [](QChar c) -> int
    {
-      char c1 = strLower[2*i].toLatin1();
-      char c2 = strLower[2*i + 1].toLatin1();
+      const auto value = c.unicode();
+      if (value >= '0' && value <= '9')
+         return value - '0';
+      if (value >= 'a' && value <= 'f')
+         return value - 'a' + 10;
+      if (value >= 'A' && value <= 'F')
+         return value - 'A' + 10;
+      return -1;
+   };
 
-      char p1 = c1 <= '9' ? c1 - '0' : c1 - 'a' + 10;
-      char p2 = c2 <= '9' ? c2 - '0' : c2 - 'a' + 10;
-
-      hash.data[i] = (p1 << 4 & 0xF0) | (p2 & 0x0F);
+   char bytes[HASH_SIZE];
+   for (int i = 0; i < HASH_SIZE; ++i)
+   {
+      const int high = hexValue(str[2 * i]);
+      const int low = hexValue(str[2 * i + 1]);
+      if (high < 0 || low < 0)
+         return std::nullopt;
+      bytes[i] = static_cast<char>((high << 4) | low);
    }
 
-   return hash;
+   return Hash(bytes);
 }
 
 /////

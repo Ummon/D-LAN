@@ -763,7 +763,7 @@ void Tests::createNewFileAndWriteData()
       QCOMPARE(chunks.size(), 1);
       QVERIFY(chunks[0]->getHash().isNull());
 
-      chunks[0]->setHash(Common::Hash::fromStr("a74a542ea1f9957f55bae199f89ab46b90c8b41e940489075ec92449"));
+      chunks[0]->setHash(Common::Hash::fromStr("a74a542ea1f9957f55bae199f89ab46b90c8b41e940489075ec92449").value());
 
       auto writer = chunks[0]->getDataWriter();
       QByteArray data("abcdefghijkl", 12);
@@ -789,7 +789,7 @@ void Tests::getAnExistingChunk()
 
    // From 'sharedDirs/share1/subdir/p.txt'.
    QSharedPointer<IChunk> chunk =
-      this->fileManager->getChunk(Common::Hash::fromStr("629c2ce8f7532e0c5e721157dd938c61f1f6e320043363ac5f243a32"));
+      this->fileManager->getChunk(Common::Hash::fromStr("629c2ce8f7532e0c5e721157dd938c61f1f6e320043363ac5f243a32").value());
 
    if (chunk.isNull())
       QFAIL("Chunk not found");
@@ -833,7 +833,7 @@ void Tests::getHashesFromAFileEntry1()
    QVERIFY(
       hashesReceiver.waitToReceive(
          QList<Common::Hash>()
-            << Common::Hash::fromStr("f4b8657efdd1a9c11379e23004493c4f7bb5eb190f10c696729f169f")
+            << Common::Hash::fromStr("f4b8657efdd1a9c11379e23004493c4f7bb5eb190f10c696729f169f").value()
          ,
          1000
       )
@@ -880,8 +880,8 @@ void Tests::getHashesFromAFileEntry2()
    QVERIFY(
       hashesReceiver.waitToReceive(
          QList<Common::Hash>()
-            << Common::Hash::fromStr("ea7b156fc9a810c181984f9e2da433feeeb2bf88ffa4d1f0dc1a9215")
-            << Common::Hash::fromStr("8bac0e4c2a03b716567e2f5dc33ca8c658dcdfa814f112ada0da4a4f")
+            << Common::Hash::fromStr("ea7b156fc9a810c181984f9e2da433feeeb2bf88ffa4d1f0dc1a9215").value()
+            << Common::Hash::fromStr("8bac0e4c2a03b716567e2f5dc33ca8c658dcdfa814f112ada0da4a4f").value()
          ,
          1000
       )
@@ -1233,10 +1233,10 @@ void Tests::haveChunks()
 
    QList<Common::Hash> hashes;
    hashes
-      << Common::Hash::fromStr("1cb04df35d745c1a5f3e514b5f09c7df5c0d0b8b43e6a3351ab85761") // "/sharedDirs/share3/aaaa bbbb cccc.txt"
-      << Common::Hash::fromStr("7b6f7f3309179b97b88de3c178274b7e38343267bcdfe653c819593e") // "/sharedDirs/share1/v.txt"
-      << Common::Hash::fromStr("6103413cbd2330b103bee4cdf16e18e1e19a9f00365d153ec8c61486") // "/sharedDirs/share1/y.txt" (deleted)
-      << Common::Hash::fromStr("c0a43102ae34f72965ef08f23fd045a44b8ac29cd20031f5c90d9b79"); // Random hash
+      << Common::Hash::fromStr("1cb04df35d745c1a5f3e514b5f09c7df5c0d0b8b43e6a3351ab85761").value() // "/sharedDirs/share3/aaaa bbbb cccc.txt"
+      << Common::Hash::fromStr("7b6f7f3309179b97b88de3c178274b7e38343267bcdfe653c819593e").value() // "/sharedDirs/share1/v.txt"
+      << Common::Hash::fromStr("6103413cbd2330b103bee4cdf16e18e1e19a9f00365d153ec8c61486").value() // "/sharedDirs/share1/y.txt" (deleted)
+      << Common::Hash::fromStr("c0a43102ae34f72965ef08f23fd045a44b8ac29cd20031f5c90d9b79").value(); // Random hash
 
    QBitArray expectedResult(hashes.size());
    expectedResult[0] = true;

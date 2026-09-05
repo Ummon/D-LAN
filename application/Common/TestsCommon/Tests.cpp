@@ -1074,13 +1074,13 @@ void Tests::sortedArrayClearException()
 void Tests::mapArray()
 {
    MapArray<Common::Hash, QString> array;
-   const Hash h1 = Hash::fromStr("02e4a0f0e55a308eb83b00eb13023a42cbaffe770000000000000000");
+   const Hash h1 = Hash::fromStr("02e4a0f0e55a308eb83b00eb13023a42cbaffe770000000000000000").value();
    const QString v1("I'm V1");
 
-   const Hash h2 = Hash::fromStr("2c583d414e4a9eb956228209b367e48f59078a4b0000000000000000");
+   const Hash h2 = Hash::fromStr("2c583d414e4a9eb956228209b367e48f59078a4b0000000000000000").value();
    const QString v2("I'm V2");
 
-   const Hash h3 = Hash::fromStr("db23d79ed24b1c40b1f88294f877fac03f6dd7890000000000000000");
+   const Hash h3 = Hash::fromStr("db23d79ed24b1c40b1f88294f877fac03f6dd7890000000000000000").value();
    const QString v3("I'm V3");
 
    array.insert(h1, v1);
@@ -1093,7 +1093,7 @@ void Tests::mapArray()
    QCOMPARE(array[h2], v2);
    QCOMPARE(array[h3], v3);
 
-   const Hash h4 = Hash::fromStr("e8f98b5a2dd96315dfcf7e490e31b2ba6234887c0000000000000000");
+   const Hash h4 = Hash::fromStr("e8f98b5a2dd96315dfcf7e490e31b2ba6234887c0000000000000000").value();
    const QString v4("I'm V4");
    array[h4] = v4;
 
@@ -1262,13 +1262,38 @@ void Tests::generateAHash()
 
 void Tests::buildAnHashFromAString()
 {
-   Hash h2 = Hash::rand();
-   qDebug() << h2.toStrCArray();
-   qDebug() << h2.toStr();
+   const QString str("c1c7de83bacdc11ba3fcb702facbbdfb435157ceda9a4859ee230359");
+   for (const QString& input : QStringList{str, str.toUpper(), QString("C1c7De83") + str.mid(8)})
+   {
+      const auto hash = Hash::fromStr(input);
+      QVERIFY(hash.has_value());
+      QCOMPARE(hash->toStr(), str);
+   }
 
-   QString str("c1c7de83bacdc11ba3fcb702facbbdfb435157ceda9a4859ee230359");
-   Hash h = Hash::fromStr(str);
-   QCOMPARE(h.toStr(), str);
+   const auto zero = Hash::fromStr(QString(2 * Hash::HASH_SIZE, QLatin1Char('0')));
+   QVERIFY(zero.has_value());
+   QVERIFY(zero->isNull());
+}
+
+void Tests::rejectInvalidHashStrings()
+{
+   const QString valid(2 * Hash::HASH_SIZE, QLatin1Char('a'));
+   for (int length : {0, 1, 2, 54, 55, 57, 58, 112})
+      QVERIFY(!Hash::fromStr(QString(length, QLatin1Char('a'))).has_value());
+
+   // Check both nibbles at every byte, including non-ASCII and embedded NUL.
+   for (QChar invalid : {QChar('g'), QChar('G'), QChar('/'), QChar(':'), QChar('@'),
+                        QChar('`'), QChar(' '), QChar('\n'), QChar(ushort(0)),
+                        QChar(ushort(0xff21)), QChar(ushort(0x0130))})
+   {
+      for (int i = 0; i < valid.size(); ++i)
+      {
+         QString input = valid;
+         input[i] = invalid;
+         QVERIFY(!Hash::fromStr(input).has_value());
+      }
+   }
+   QVERIFY(!Hash::fromStr(QString(2 * Hash::HASH_SIZE, QLatin1Char('g'))).has_value());
 }
 
 void Tests::compareTwoHash()
@@ -1285,7 +1310,7 @@ void Tests::compareTwoHash()
    QByteArray byteArray((char*)array, Hash::HASH_SIZE);
    QString str("f2b295b4494a9f0d33d9214d28254380ce40b075df50d5eba07ab304");
 
-   Hash h1 = Hash::fromStr(str);
+   Hash h1 = Hash::fromStr(str).value();
    Hash h2(byteArray);
    Hash h3 = h1;
    Hash h4;
@@ -1305,11 +1330,11 @@ void Tests::hashMoveConstructorAndAssignment()
 
    // Move constructor.
    // We have to force to rValue reference because of the return optimization (http://en.wikipedia.org/wiki/Return_value_optimization).
-   Hash h = std::move(Hash::fromStr(str));
+   Hash h = std::move(Hash::fromStr(str).value());
    QVERIFY(h.toStr() == str);
 
    // Copy constructor
-   h = std::move(Hash::fromStr(str));
+   h = std::move(Hash::fromStr(str).value());
    QVERIFY(h.toStr() == str);
 }
 
