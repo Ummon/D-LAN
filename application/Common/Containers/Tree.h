@@ -52,6 +52,12 @@ namespace Common
      *
      * If you don't want to inherit from Tree you can use the 'SimpleTree' class.
      *
+     * Traversals do not own the nodes or detect invalidation. The traversal root
+     * must remain alive until traversal finishes. Item values may be changed
+     * during any traversal. Structural changes invalidate traversal unless
+     * explicitly permitted by the iterator's documentation below.
+     * These rules also apply to callbacks passed to the map functions.
+     *
      * @remarks No copy constructor neither no operator assignment are defined for the moment.
      */
 
@@ -67,6 +73,9 @@ namespace Common
         * Applies 'fun' to all subtrees.
         * Scan the subtrees in a breadth first traversal way.
         * Stop the scan if 'fun' returns 'false'.
+        * 'fun' may change items, but must not insert, delete, move or sort nodes
+        * in the traversed tree if traversal will continue. Children are queued
+        * before 'fun' is called; deleting them leaves dangling pointers.
         * @return 'false' if the last call of 'fun' returns 'false'.
         */
       bool mapBreadthFirst(std::function<bool(TreeType*)> fun, bool iterateOnRoot = false);
@@ -75,10 +84,19 @@ namespace Common
         * Applies 'fun' to all subtrees.
         * Scan the subtrees in a depth first traversal way.
         * Stop the scan if 'fun' returns 'false'.
+        * The same mutation restrictions as mapBreadthFirst() apply.
         * @return 'false' if the last call of 'fun' returns 'false'.
         */
       bool mapDepthFirst(std::function<bool(TreeType*)> fun, bool iterateOnRoot = false);
 
+      /**
+        * Applies 'fun' in post-order (children before their parent).
+        * Stop the scan if 'fun' returns 'false'.
+        * 'fun' may delete the current node (except the traversal root), or
+        * modify its descendants, which have already been visited. Newly inserted
+        * descendants are not visited. Other structural changes invalidate traversal.
+        * @return 'false' if a callback stopped the traversal, otherwise 'true'.
+        */
       bool mapReverseDepthFirst(std::function<bool(TreeType*)> fun, bool iterateOnRoot = false);
 
       virtual TreeType* getParent();
@@ -125,6 +143,13 @@ namespace Common
 
    /////
 
+   /**
+     * Breadth-first traversal. The root must remain alive. Items may be changed,
+     * but structural changes invalidate the iterator: do not call next() again
+     * after inserting, deleting, moving or sorting nodes in the traversed tree.
+     * next() queues children before returning their parent, so deleting the
+     * returned node or clearing its children can leave queued dangling pointers.
+     */
    template <typename TreeType>
    class TreeBreadthFirstIterator
    {
@@ -140,6 +165,10 @@ namespace Common
 
    /////
 
+   /**
+     * Pre-order traversal. The same lifetime and mutation restrictions as
+     * TreeBreadthFirstIterator apply; next() also queues children before returning.
+     */
    template <typename TreeType>
    class TreeDepthFirstIterator
    {
@@ -155,6 +184,13 @@ namespace Common
 
    /////
 
+   /**
+     * Post-order traversal. The root must remain alive. Items may be changed.
+     * After next(), the returned node may be deleted (unless it is the root),
+     * or its descendants modified. Those descendants have already been visited;
+     * newly inserted descendants will not be visited. The successor is computed
+     * before next() returns. Other structural changes invalidate the iterator.
+     */
    template <typename TreeType>
    class TreeReverseDepthFirstIterator
    {
@@ -453,6 +489,8 @@ TreeType* Common::TreeReverseDepthFirstIterator<TreeType>::next()
 {
    TreeType* nextTreeCopy = this->nextTree;
 
+   // Find the successor before returning: callers may delete the returned node
+   // or change its already-visited descendants.
    this->nextTree = this->nextTree && this->nextTree != this->root ? this->getDeepestTree(this->nextTree->parent, parentPosition(this->nextTree)) : nullptr;
 
    return nextTreeCopy;

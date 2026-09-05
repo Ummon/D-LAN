@@ -45,6 +45,8 @@ private slots:
    void iterateBreathFirst();
    void iterateDepthFirst();
    void iterateReverseDepthFirst();
+   void deleteDuringReverseDepthFirst();
+   void modifyDescendantsDuringReverseDepthFirst();
    void removeElements();
 
 private:

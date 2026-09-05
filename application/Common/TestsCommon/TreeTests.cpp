@@ -187,6 +187,60 @@ void TreeTests::iterateReverseDepthFirst()
    }
 }
 
+void TreeTests::deleteDuringReverseDepthFirst()
+{
+   for (bool includeRoot : { false, true })
+   {
+      IntTree root(0, nullptr);
+      IntTree* first = root.insertChild(1);
+      first->insertChild(2);
+      first->insertChild(3);
+      root.insertChild(4)->insertChild(5);
+
+      QList<int> actual;
+      QVERIFY(root.mapReverseDepthFirst([&](IntTree* node) {
+         actual << node->getItem();
+         if (node != &root)
+            delete node;
+         return true;
+      }, includeRoot));
+
+      QList<int> expected { 2, 3, 1, 5, 4 };
+      if (includeRoot)
+         expected << 0;
+      QCOMPARE(actual, expected);
+      QCOMPARE(root.getNbChildren(), 0);
+   }
+}
+
+void TreeTests::modifyDescendantsDuringReverseDepthFirst()
+{
+   IntTree root(0, nullptr);
+   IntTree* first = root.insertChild(1);
+   first->insertChild(2);
+   first->insertChild(3);
+   root.insertChild(4)->insertChild(5);
+
+   QList<int> actual;
+   TreeReverseDepthFirstIterator<IntTree> iterator(&root, true);
+   while (iterator.hasNext())
+   {
+      IntTree* node = iterator.next();
+      actual << node->getItem();
+      if (node->getNbChildren() > 0)
+      {
+         node->deleteAllChildren();
+         node->insertChild(99); // Already-visited descendants may be replaced.
+      }
+   }
+
+   const QList<int> expected { 2, 3, 1, 5, 4, 0 };
+   QCOMPARE(actual, expected);
+   QCOMPARE(root.getNbChildren(), 1);
+   QCOMPARE(root[0].getItem(), 99);
+   QVERIFY(iterator.next() == nullptr);
+}
+
 void TreeTests::removeElements()
 {
    delete this->tree[1].getChild(0);
