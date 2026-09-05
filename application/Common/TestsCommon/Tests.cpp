@@ -838,6 +838,86 @@ void Tests::sortedArrayToList()
    QCOMPARE(list[1], QString("zulu"));
 }
 
+void Tests::sortedArrayComparatorCollisions()
+{
+   SortedArray<QString, 3> words;
+   for (const QString& word : QList<QString> { "b", "A", "a", "B" })
+      words.insert(word);
+   const auto original = words;
+   words.setSortedFunction([](const QString& a, const QString& b) {
+      return a.toLower() < b.toLower();
+   });
+   const QList<QString> expectedWords { "a", "b" };
+   QCOMPARE(words.toList(), expectedWords);
+   QCOMPARE(original.size(), 4);
+   QVERIFY(words.contains("A"));
+   bool exists = false;
+   QCOMPARE(words.insert(QString("B"), &exists), 1);
+   QVERIFY(exists);
+   QCOMPARE(words.size(), 2);
+   QCOMPARE(words.getFromIndex(1), QString("B"));
+
+   // Deduplication also works when rebuilding requires multiple tree levels.
+   SortedArray<int, 3> numbers;
+   for (int i = 79; i >= 0; --i)
+      numbers.insert(i);
+   numbers.setSortedFunction([](int a, int b) { return a % 10 < b % 10; });
+   QCOMPARE(numbers.size(), 10);
+   for (int i = 0; i < 10; ++i)
+   {
+      QCOMPARE(numbers.getFromIndex(i), 70 + i);
+      QCOMPARE(numbers.indexOf(i), i);
+   }
+   QVERIFY(numbers.remove(2));
+   QVERIFY(!numbers.contains(72));
+}
+
+void Tests::sortedArrayComparatorException()
+{
+   SortedArray<SortedArrayCopyItem, 3> array;
+   auto copiesBeforeThrow = std::make_shared<int>(-1);
+   std::vector<std::shared_ptr<int>> resources;
+   for (int i = 0; i < 40; ++i)
+   {
+      resources.push_back(std::make_shared<int>(i));
+      array.insert(SortedArrayCopyItem { i, resources.back(), copiesBeforeThrow });
+   }
+   const auto original = array;
+   const auto descending = [](const SortedArrayCopyItem& a, const SortedArrayCopyItem& b) {
+      return a.key > b.key;
+   };
+   const auto throwingComparator = [](const SortedArrayCopyItem& a, const SortedArrayCopyItem& b) {
+      // Fail on the initial lookup of 20, after a multilevel tree was built.
+      if (a.key == 20 || b.key == 20)
+         throw std::runtime_error("Comparison failed");
+      return a.key > b.key;
+   };
+   QVERIFY_THROWS_EXCEPTION(std::runtime_error, array.setSortedFunction(throwingComparator));
+
+   // Also fail while copying an element into the replacement tree.
+   *copiesBeforeThrow = 1;
+   QVERIFY_THROWS_EXCEPTION(std::runtime_error, array.setSortedFunction(descending));
+   *copiesBeforeThrow = -1;
+   QCOMPARE(array.size(), 40);
+   const auto& unchanged = array;
+   for (int i = 0; i < 40; ++i)
+   {
+      const SortedArrayCopyItem key { i, {}, {} };
+      QCOMPARE(array.indexOf(key), i); // The original comparator is still active.
+      QCOMPARE(unchanged.getFromIndex(i).key, i);
+      QCOMPARE(&unchanged.getFromIndex(i), &original.getFromIndex(i));
+      QCOMPARE(resources[i].use_count(), 2L);
+   }
+
+   // A subsequent successful change affects only this copy.
+   array.setSortedFunction(descending);
+   for (int i = 0; i < 40; ++i)
+   {
+      QCOMPARE(unchanged.getFromIndex(i).key, 39 - i);
+      QCOMPARE(original.getFromIndex(i).key, i);
+   }
+}
+
 void Tests::mapArray()
 {
    MapArray<Common::Hash, QString> array;

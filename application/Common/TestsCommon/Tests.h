@@ -58,6 +58,8 @@ private slots:
    void sortedArrayInternalNodeIndices();
    void sortedArrayInsertIndex();
    void sortedArrayToList();
+   void sortedArrayComparatorCollisions();
+   void sortedArrayComparatorException();
 
    // MapArray class.
    void mapArray();

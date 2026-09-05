@@ -190,8 +190,8 @@ namespace Common
       struct SortedArrayData : public QSharedData
       {
          SortedArrayData(const std::function<bool(const T&, const T&)>& lesserThan) :
-            root(new Node()), lesserThanFun(lesserThan)
-         {}
+            root(nullptr), lesserThanFun(lesserThan)
+         { this->root = new Node(); }
          SortedArrayData(const SortedArrayData& other) :
             root(nullptr),
             lesserThanFun(other.lesserThanFun)
@@ -507,25 +507,27 @@ void Common::SortedArray<T, M>::sort()
 /**
   * Defines custom function used to define the order of the values.
   * The array is automatically reordered after calling this method.
+  * If values become equivalent, the last value in the old iteration order wins.
+  * The original tree and comparator are retained if rebuilding throws.
   */
 template <typename T, int M>
 void Common::SortedArray<T, M>::setSortedFunction(const std::function<bool(const T&, const T&)>& lesserThan)
 {
-   this->d->lesserThanFun = lesserThan;
-
    // For the moment we recreate an entire new tree and inserting all the elements in it.
    // A better approach will be to re-sort the tree in place.
    QSharedDataPointer<SortedArrayData> newD(new SortedArrayData(lesserThan));
-   for (iterator i = this->begin(); i != this->end(); ++i)
+   for (const T& value : *this)
    {
       int position;
-      const T& value = *i;
       Node* node = getNode(newD->root, value, position, newD->lesserThanFun);
 
-      Q_ASSERT(position == -1); // The value should never be found.
-
-      if (Node* newRoot = add(node, value, newD->lesserThanFun))
-         newD->root = newRoot;
+      if (position == -1)
+      {
+         if (Node* newRoot = add(node, value, newD->lesserThanFun))
+            newD->root = newRoot;
+      }
+      else
+         node->items[position] = value;
    }
    this->d = newD;
 }
