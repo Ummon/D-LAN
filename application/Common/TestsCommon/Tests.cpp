@@ -20,6 +20,7 @@
 
 #include <memory>
 #include <stdexcept>
+#include <type_traits>
 #include <vector>
 
 #include <QtDebug>
@@ -617,6 +618,61 @@ void Tests::sortedArrayCopyException()
    copy.clear();
    for (const auto& resource : resources)
       QCOMPARE(resource.use_count(), 1L);
+}
+
+void Tests::sortedArrayIndexedCopyOnWrite()
+{
+   SortedArray<SortedArrayCopyItem, 3> original;
+   for (int i = 0; i < 40; ++i)
+      original.insert(SortedArrayCopyItem { i, std::make_shared<int>(i), {} });
+
+   auto copy = original;
+   const auto& constOriginal = original;
+   const auto& constCopy = copy;
+
+   // Const indexed reads preserve sharing, even in a multilevel tree.
+   for (int i = 0; i < original.size(); ++i)
+      QCOMPARE(&constOriginal.getFromIndex(i), &constCopy.getFromIndex(i));
+
+   // Change payloads, preserving the keys used to order the elements.
+   for (int i = 0; i < copy.size(); ++i)
+   {
+      copy.getFromIndex(i).resource = std::make_shared<int>(100 + i);
+      QCOMPARE(*constOriginal.getFromIndex(i).resource, i);
+      QCOMPARE(*constCopy.getFromIndex(i).resource, 100 + i);
+      QCOMPARE(constCopy.getFromIndex(i).key, i);
+      QVERIFY(&constOriginal.getFromIndex(i) != &constCopy.getFromIndex(i));
+   }
+
+   // MapArray exposes the same mutable indexed access for its mapped values.
+   MapArray<int, QString> map;
+   map.insert(1, QString("original"));
+   auto mapCopy = map;
+   mapCopy.getValueFromIndex(0) = "changed";
+   QCOMPARE(map.getValueFromIndex(0), QString("original"));
+   QCOMPARE(mapCopy.getValueFromIndex(0), QString("changed"));
+}
+
+void Tests::sortedArrayConstIterator()
+{
+   SortedArray<SortedArrayCopyItem> original;
+   original.insert(SortedArrayCopyItem { 1, std::make_shared<int>(10), {} });
+   auto copy = original;
+   const auto& constCopy = copy;
+
+   // Both iterator access operators must expose const elements, including
+   // iterators obtained from a non-const array, since iteration never detaches.
+   static_assert(std::is_same<decltype(copy.begin().operator->()), const SortedArrayCopyItem*>::value,
+      "Iterator arrow access must not allow modification of shared elements");
+   static_assert(std::is_same<decltype(constCopy.begin().operator->()), const SortedArrayCopyItem*>::value,
+      "Const array iterators must return pointers to const elements");
+   static_assert(std::is_same<decltype(*constCopy.begin()), const SortedArrayCopyItem&>::value,
+      "Iterator dereference must return a const reference");
+
+   QCOMPARE(constCopy.begin()->key, 1);
+   QCOMPARE(*constCopy.begin()->resource, 10);
+   QCOMPARE(constCopy.begin().operator->(), original.begin().operator->());
+   QCOMPARE(&*constCopy.begin(), constCopy.begin().operator->());
 }
 
 void Tests::mapArray()

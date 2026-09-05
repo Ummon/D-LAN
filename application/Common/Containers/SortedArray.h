@@ -33,6 +33,10 @@
   *  - The elements are kept ordered when a new one is inserted.
   * The type T must have the operator '<' defined.
   * Otherwise a "lesser than" function can be given with the method 'setSortedFunction'.
+  * Mutable references must not be used to change fields involved in ordering.
+  * Remove and reinsert an element when its ordering key changes.
+  * Obtain mutable references after copying an array: references obtained before
+  * a copy cannot trigger copy-on-write when subsequently used to modify an item.
   *
   * 'SortedArray' is implemented as a B-Tree, see here for more information: http://en.wikipedia.org/wiki/B-tree
   * M is the order according Knuth's definition. This is the maximum number of children a node can have.
@@ -74,7 +78,7 @@ namespace Common
          bool operator==(const iterator& other) const;
          bool operator!=(const iterator& other) const;
          const T& operator*() const;
-         T* operator->() const;
+         const T* operator->() const;
          iterator& operator++(); // Pre-increment.
          iterator operator++(int); // Post-increment.
 
@@ -235,7 +239,7 @@ const T& Common::SortedArray<T, M>::iterator::operator*() const
 }
 
 template <typename T, int M>
-T* Common::SortedArray<T, M>::iterator::operator->() const
+const T* Common::SortedArray<T, M>::iterator::operator->() const
 {
    return &this->currentPosition.node->items[this->currentPosition.p];
 }
@@ -427,6 +431,7 @@ const T& Common::SortedArray<T, M>::getFromIndex(int index) const
 template <typename T, int M>
 T& Common::SortedArray<T, M>::getFromIndex(int index)
 {
+   this->d.detach();
    return this->get(index);
 }
 
