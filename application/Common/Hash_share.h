@@ -99,7 +99,7 @@ namespace Common
 
       friend QDataStream& operator>>(QDataStream&, Hash&);
       friend QDataStream& operator<<(QDataStream& stream, const Hash& hash);
-      friend bool operator==(const Hash& h1, const Hash& h2);
+      friend bool operator==(const Hash& h1, const Hash& h2) noexcept;
       friend class Hasher;
 
       struct SharedData
@@ -151,17 +151,17 @@ namespace Common
       return stream;
    }
 
-   inline bool operator==(const Hash& h1, const Hash& h2)
+   inline bool operator==(const Hash& h1, const Hash& h2) noexcept
    {
       return h1.data == h2.data || memcmp(h1.getData(), h2.getData(), Hash::HASH_SIZE) == 0;
    }
 
-   inline bool operator!=(const Hash& h1, const Hash& h2)
+   inline bool operator!=(const Hash& h1, const Hash& h2) noexcept
    {
       return !(h1 == h2);
    }
 
-   inline bool operator<(const Hash& h1, const Hash& h2)
+   inline bool operator<(const Hash& h1, const Hash& h2) noexcept
    {
       return memcmp(h1.getData(), h2.getData(), Hash::HASH_SIZE) < 0;
    }

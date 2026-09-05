@@ -210,10 +210,11 @@ Hasher::Hasher()
 
 void Hasher::addSalt(quint64 salt)
 {
-   QByteArray saltArray(8, 0);
-   for (int i = 0; i < 8; i++)
-      saltArray[i] = salt >> (8*i) & 0xFF;
-   blake3_hasher_update(&this->hasher, saltArray.constData(), saltArray.length());
+   // Keep the salt encoding little-endian on every platform.
+   unsigned char saltArray[8];
+   for (int i = 0; i < 8; ++i)
+      saltArray[i] = static_cast<unsigned char>((salt >> (8 * i)) & 0xFF);
+   blake3_hasher_update(&this->hasher, saltArray, sizeof(saltArray));
 }
 
 void Hasher::addData(std::span<const char> data)
