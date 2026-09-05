@@ -354,6 +354,39 @@ void Tests::path()
    QCOMPARE(Path("/tmp/dir1/file.txt").prependDir("dir2"), Path("/dir2/tmp/dir1/file.txt"));
    QCOMPARE(Path("").prependDir("dir"), Path("dir/"));
    QCOMPARE(Path("dir/").prependDir("dir2"), Path("dir2/dir/"));
+
+   const Path uncRoot("//server/share/");
+   QVERIFY(uncRoot.isAbsolute());
+   QVERIFY(!uncRoot.isFile());
+   QCOMPARE(uncRoot.getRoot(), QString("//server/share/"));
+   QVERIFY(uncRoot.getDirs().isEmpty());
+   QCOMPARE(uncRoot.toString(), QString("//server/share/"));
+   QCOMPARE(Path("//server/share"), uncRoot);
+   QCOMPARE(uncRoot.removeLastDir(), uncRoot);
+   QCOMPARE(Path("//server/share/").removeLastElement(), uncRoot);
+
+   const Path uncFile("//server/share/folder/file.txt");
+   QCOMPARE(uncFile.toString(), QString("//server/share/folder/file.txt"));
+   QCOMPARE(uncFile.getRoot(), uncRoot.getRoot());
+   QCOMPARE(uncFile.getDirs(), QStringList{"folder"});
+   QCOMPARE(uncFile.getFilename(), QString("file.txt"));
+   QCOMPARE(uncFile.removeFilename().removeLastElement(), uncRoot);
+   QVERIFY(uncFile.isSubOf(uncRoot));
+   QVERIFY(uncRoot.isSuperOf(uncFile));
+   QVERIFY(!uncFile.isSubOf(Path("//server/other/")));
+   QVERIFY(!uncFile.isSubOf(Path("//other/share/")));
+   QVERIFY(!uncFile.isSubOf(Path("/server/share/")));
+   QCOMPARE(uncRoot.append(Path("folder/file.txt")), uncFile);
+   QCOMPARE(Path(uncFile.toString()), uncFile);
+   QCOMPARE(Path("//server/share/folder/../"), uncRoot);
+   QCOMPARE(Path("//server/share/../../"), uncRoot);
+   QCOMPARE(Path("//server/share/../file.txt"), uncRoot.setFilename("file.txt"));
+   QCOMPARE(Path("//server/share/./folder//file.txt"), uncFile);
+#ifdef Q_OS_WIN
+   QCOMPARE(Path(QStringLiteral("\\\\server\\share")), uncRoot);
+   QCOMPARE(Path(QStringLiteral("\\\\server\\share\\folder\\file.txt")), uncFile);
+   QCOMPARE(Path(QStringLiteral("\\\\server\\share\\folder\\")).removeLastElement(), uncRoot);
+#endif
 }
 
 void Tests::sortedList()

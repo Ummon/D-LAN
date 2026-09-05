@@ -84,7 +84,7 @@ namespace Common
       static bool isWindowsRootPath(const QString& path);
 
    private:
-      QString root; // For example: Windows: "C:/", Linux: "/".
+      QString root; // For example: Windows: "C:/", UNC: "//server/share/", Linux: "/".
       QStringList dirs; // Can be empty.
       QString filename; // Empty if directory.
    };

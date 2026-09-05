@@ -27,18 +27,41 @@ Path::Path(const QString& path)
       trimmedPath == "." || trimmedPath == ".." ||
       trimmedPath.endsWith("/.") || trimmedPath.endsWith("/..");
 
-   QString cleanedPath = QDir::cleanPath(trimmedPath);
+   QString cleanedPath;
+
+   // Keep the server and share together as an indivisible UNC root. Extract it
+   // before cleaning so that '..' cannot remove either part of the root.
+   if (trimmedPath.startsWith("//") && !trimmedPath.startsWith("///"))
+   {
+      const qsizetype serverEnd = trimmedPath.indexOf('/', 2);
+      const qsizetype shareEnd = serverEnd < 0 ? -1 : trimmedPath.indexOf('/', serverEnd + 1);
+      const QString share = serverEnd < 0 ? QString() :
+         trimmedPath.mid(serverEnd + 1, shareEnd < 0 ? -1 : shareEnd - serverEnd - 1);
+      if (serverEnd > 2 && !share.isEmpty() && share != "." && share != "..")
+      {
+         this->root = trimmedPath.left(shareEnd < 0 ? trimmedPath.size() : shareEnd) + '/';
+         cleanedPath = shareEnd < 0 ? QString() : QDir::cleanPath(trimmedPath.mid(shareEnd)).mid(1);
+         // cleanPath can retain leading '..' components even for rooted paths.
+         while (cleanedPath.startsWith("../"))
+            cleanedPath.remove(0, 3);
+         if (cleanedPath == "..")
+            cleanedPath.clear();
+      }
+   }
+
+   if (this->root.isEmpty())
+      cleanedPath = QDir::cleanPath(trimmedPath);
 
    if (cleanedPath.isEmpty())
       return;
 
    // Absolutes cases:
-   if (cleanedPath[0] == '/') // Linux.
+   if (this->root.isEmpty() && cleanedPath[0] == '/') // Linux.
    {
       this->root = "/";
       cleanedPath.remove(0, 1);
    }
-   else if (isWindowsPath(cleanedPath)) // Windows.
+   else if (this->root.isEmpty() && isWindowsPath(cleanedPath)) // Windows.
    {
       this->root = cleanedPath.left(3);
       cleanedPath.remove(0, 3);
