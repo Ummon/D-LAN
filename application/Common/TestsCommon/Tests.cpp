@@ -675,6 +675,35 @@ void Tests::sortedArrayConstIterator()
    QCOMPARE(&*constCopy.begin(), constCopy.begin().operator->());
 }
 
+void Tests::sortedArraySubscriptCascadingSplit()
+{
+   SortedArray<SortedArrayCopyItem, 3> array;
+   // Inserting 80 promotes it above the original leaf's immediate parent.
+   const int keys[] { 45, 49, 67, 71, 72, 15, 90, 29, 1, 97, 81, 100, 25, 5, 80 };
+   int expectedSize = 0;
+   for (int key : keys)
+   {
+      const SortedArrayCopyItem value { key, {}, {} };
+      auto& inserted = array[value];
+      QCOMPARE(&inserted, &array.getFromValue(value));
+      QCOMPARE(inserted.key, key);
+      QCOMPARE(array.size(), ++expectedSize);
+      inserted.resource = std::make_shared<int>(key * 10);
+   }
+
+   // Existing-key access returns the stored element without inserting again;
+   // payloads written through earlier references survive subsequent splits.
+   for (int key : keys)
+   {
+      const SortedArrayCopyItem value { key, {}, {} };
+      auto& existing = array[value];
+      QCOMPARE(&existing, &array.getFromValue(value));
+      QVERIFY(existing.resource);
+      QCOMPARE(*existing.resource, key * 10);
+      QCOMPARE(array.size(), expectedSize);
+   }
+}
+
 void Tests::mapArray()
 {
    MapArray<Common::Hash, QString> array;

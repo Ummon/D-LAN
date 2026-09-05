@@ -549,7 +549,8 @@ T& Common::SortedArray<T, M>::getValue(const T& value)
       if (Node* newRoot = add(node, value, this->d->lesserThanFun))
          this->d->root = newRoot;
 
-      node = getNode(node->parent ? node->parent : node, value, position, this->d->lesserThanFun);
+      // Cascading splits can promote the value above the original node's parent.
+      node = getNode(this->d->root, value, position, this->d->lesserThanFun);
    }
 
    return node->items[position];
