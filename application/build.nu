@@ -58,6 +58,11 @@ def "main compile" [
     # rm -f build/release/GUI/CMakeFiles/DLanGUI.dir/DialogAbout.cpp.obj
 
     configure
+
+    if $clean {
+        cmake --build build/release --target clean
+    }
+
     cmake --build build/release
 }
 
