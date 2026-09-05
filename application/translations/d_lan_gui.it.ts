@@ -182,17 +182,17 @@
 <context>
     <name>GUI::D_LAN_GUI</name>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="147"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="153"/>
         <source>Show the user interface</source>
         <translation>Mostra l&apos;interfaccia utente</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="151"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="157"/>
         <source>Stop the user interface</source>
         <translation>Chiudi l&apos;interfaccia utente</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="154"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="160"/>
         <source>Exit</source>
         <translation>Esci</translation>
     </message>
@@ -894,22 +894,22 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="67"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="73"/>
         <source>D-LAN already launched</source>
         <translation>D-LAN è già in esecuzione</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="68"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="74"/>
         <source>An instance of D-LAN is already launched</source>
         <translation>Un&apos;istanza di D-LAN è già in esecuzione</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="70"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="76"/>
         <source>Quit</source>
         <translation>Esci</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="71"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="77"/>
         <source>Launch anyway</source>
         <translation>Avvia comunque</translation>
     </message>

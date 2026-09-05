@@ -182,7 +182,7 @@
 <context>
     <name>GUI::D_LAN_GUI</name>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="+147"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="+153"/>
         <source>Show the user interface</source>
         <translation>Открыть пользовательский интерфейс</translation>
     </message>

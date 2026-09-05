@@ -182,17 +182,17 @@
 <context>
     <name>GUI::D_LAN_GUI</name>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="147"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="153"/>
         <source>Show the user interface</source>
         <translation>사용자 인터페이스 표시</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="151"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="157"/>
         <source>Stop the user interface</source>
         <translation>사용자 인터페이스 닫기</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="154"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="160"/>
         <source>Exit</source>
         <translation>종료</translation>
     </message>
@@ -914,22 +914,22 @@
         <translation>코어 서비스가 시작되었습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="67"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="73"/>
         <source>D-LAN already launched</source>
         <translation>D-LAN이 이미 실행 중입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="68"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="74"/>
         <source>An instance of D-LAN is already launched</source>
         <translation>D-LAN 인스턴스가 이미 실행 중입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="70"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="76"/>
         <source>Quit</source>
         <translation>종료</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="71"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="77"/>
         <source>Launch anyway</source>
         <translation>무시하고 실행</translation>
     </message>
