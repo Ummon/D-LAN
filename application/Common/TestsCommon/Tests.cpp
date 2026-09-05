@@ -704,6 +704,55 @@ void Tests::sortedArraySubscriptCascadingSplit()
    }
 }
 
+void Tests::sortedArrayInternalNodeIndices()
+{
+   // The middle value is promoted into the root by the third insertion.
+   SortedArray<int, 3> small;
+   for (int value : { 1, 2, 3 })
+      small.insert(value);
+   QCOMPARE(small.indexOf(2), 1);
+   QCOMPARE(small.indexOfNearest(2), 1);
+
+   for (bool descending : { false, true })
+   {
+      SortedArray<int> array;
+      if (descending)
+         array.setSortedFunction([](int a, int b) { return a > b; });
+
+      // A deterministic permutation creates several levels of internal nodes.
+      // Even keys leave gaps for queries that must descend to a leaf.
+      for (int i = 0; i < 80; ++i)
+         array.insert(2 * ((i * 37) % 80));
+      QList<int> expected;
+      for (int i = 0; i < 80; ++i)
+         expected.append(2 * (descending ? 79 - i : i));
+
+      // Validate ranks again as removals redistribute and merge internal nodes.
+      for (int step = 0; step <= 40; ++step)
+      {
+         if (step > 0)
+         {
+            const int removed = 4 * (step - 1);
+            QVERIFY(array.remove(removed));
+            expected.removeOne(removed);
+         }
+
+         QCOMPARE(array.size(), expected.size());
+         for (int i = 0; i < expected.size(); ++i)
+         {
+            QCOMPARE(array.getFromIndex(i), expected[i]);
+            QCOMPARE(array.indexOf(expected[i]), i);
+            QCOMPARE(array.indexOfNearest(expected[i]), i);
+
+            const int inGap = expected[i] + (descending ? -1 : 1);
+            QCOMPARE(array.indexOf(inGap), -1);
+            QCOMPARE(array.indexOfNearest(inGap), i);
+         }
+         QCOMPARE(array.indexOfNearest(descending ? 160 : -2), 0);
+      }
+   }
+}
+
 void Tests::mapArray()
 {
    MapArray<Common::Hash, QString> array;

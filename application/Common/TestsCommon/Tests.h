@@ -55,6 +55,7 @@ private slots:
    void sortedArrayIndexedCopyOnWrite();
    void sortedArrayConstIterator();
    void sortedArraySubscriptCascadingSplit();
+   void sortedArrayInternalNodeIndices();
 
    // MapArray class.
    void mapArray();

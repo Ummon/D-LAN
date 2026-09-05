@@ -685,6 +685,10 @@ int Common::SortedArray<T, M>::indexOf(Node* node, const T& value, int nbItemsBe
       return -1;
    }
 
+   // An internal item follows every element in its immediately preceding child.
+   if (node->children[position])
+      nbItemsBefore += node->children[position]->size;
+
    return nbItemsBefore;
 }
 
@@ -709,6 +713,9 @@ int Common::SortedArray<T, M>::indexOfNearest(Node* node, const T& value, int nb
       else
          return nbItemsBefore - 1;
    }
+
+   if (node->children[position])
+      nbItemsBefore += node->children[position]->size;
 
    return nbItemsBefore;
 }
