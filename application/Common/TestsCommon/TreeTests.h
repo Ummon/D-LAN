@@ -39,6 +39,8 @@ private slots:
    void initTestCase();
    void insertElements();
    void retrieveElements();
+   void invalidIndices();
+   void clampInsertionPosition();
    void iterateBreathFirst();
    void iterateDepthFirst();
    void iterateReverseDepthFirst();

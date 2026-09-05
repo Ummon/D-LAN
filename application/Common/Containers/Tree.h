@@ -249,7 +249,7 @@ int Common::Tree<ItemType, TreeType>::getNbChildren() const
 template <typename ItemType, typename TreeType>
 TreeType* Common::Tree<ItemType, TreeType>::getChild(int pos) const
 {
-   if (pos >= this->children.size())
+   if (pos < 0 || pos >= this->children.size())
       return 0;
    return this->children[pos];
 }
@@ -257,7 +257,7 @@ TreeType* Common::Tree<ItemType, TreeType>::getChild(int pos) const
 template <typename ItemType, typename TreeType>
 void Common::Tree<ItemType, TreeType>::moveChild(int from, int to)
 {
-   if (from >= this->children.size() || to >= this->children.size())
+   if (from < 0 || to < 0 || from >= this->children.size() || to >= this->children.size())
       return;
    this->children.move(from, to);
 }
@@ -270,14 +270,16 @@ TreeType* Common::Tree<ItemType, TreeType>::insertChild(const ItemType& item)
 }
 
 /**
-  * Insert an item into the tree at the position 'pos', if the position exceed
-  * the children size the new item will be put at the end.
+  * Insert an item into the tree at the position 'pos'. Negative positions are
+  * clamped to the beginning; positions exceeding the children size to the end.
   * @return The new created subtree.
   */
 template <typename ItemType, typename TreeType>
 TreeType* Common::Tree<ItemType, TreeType>::insertChild(const ItemType& item, int pos)
 {
-   if (pos > this->children.size())
+   if (pos < 0)
+      pos = 0;
+   else if (pos > this->children.size())
       pos = this->children.size();
 
    TreeType* tree = this->newTree(item);
@@ -329,7 +331,7 @@ void Common::Tree<ItemType, TreeType>::setItem(const ItemType& item)
 template <typename ItemType, typename TreeType>
 TreeType& Common::Tree<ItemType, TreeType>::operator[](int pos)
 {
-   if (pos >= this->children.size())
+   if (pos < 0 || pos >= this->children.size())
       throw OutOfRangeException();
    return *this->children[pos];
 }
@@ -340,7 +342,7 @@ TreeType& Common::Tree<ItemType, TreeType>::operator[](int pos)
 template <typename ItemType, typename TreeType>
 const TreeType& Common::Tree<ItemType, TreeType>::operator[](int pos) const
 {
-   if (pos >= this->children.size())
+   if (pos < 0 || pos >= this->children.size())
       throw OutOfRangeException();
    return *this->children[pos];
 }

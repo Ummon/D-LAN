@@ -20,6 +20,7 @@
 using namespace Common;
 
 #include <QList>
+#include <limits>
 
 /**
   * Test tree :
@@ -69,6 +70,55 @@ void TreeTests::retrieveElements()
    catch(OutOfRangeException&)
    {
    }
+}
+
+void TreeTests::invalidIndices()
+{
+   IntTree tree;
+   const IntTree& constTree = tree;
+
+   // Exercise both empty and populated trees, including the exact upper bound.
+   for (int childCount : { 0, 2 })
+   {
+      while (tree.getNbChildren() < childCount)
+         tree.insertChild(tree.getNbChildren());
+
+      for (int pos : { std::numeric_limits<int>::min(), -1, childCount, std::numeric_limits<int>::max() })
+      {
+         QVERIFY(tree.getChild(pos) == nullptr);
+         QVERIFY_THROWS_EXCEPTION(OutOfRangeException, tree[pos]);
+         QVERIFY_THROWS_EXCEPTION(OutOfRangeException, constTree[pos]);
+
+         tree.moveChild(pos, 0);
+         tree.moveChild(0, pos);
+         QCOMPARE(tree.getNbChildren(), childCount);
+         for (int i = 0; i < childCount; ++i)
+            QCOMPARE(tree[i].getItem(), i);
+      }
+   }
+
+   tree.moveChild(0, 1);
+   QCOMPARE(tree[0].getItem(), 1);
+   QCOMPARE(constTree[1].getItem(), 0);
+}
+
+void TreeTests::clampInsertionPosition()
+{
+   IntTree tree;
+   IntTree* first = tree.insertChild(2, -1);
+   QCOMPARE(tree.getChild(0), first);
+   IntTree* prepended = tree.insertChild(1, std::numeric_limits<int>::min());
+   QCOMPARE(tree.getChild(0), prepended);
+   QCOMPARE(prepended->getParent(), &tree);
+   IntTree* appended = tree.insertChild(4, std::numeric_limits<int>::max());
+   QCOMPARE(tree.getChild(2), appended);
+   tree.insertChild(3, 2);
+   tree.insertChild(5, tree.getNbChildren());
+   tree.insertChild(0, 0);
+
+   QCOMPARE(tree.getNbChildren(), 6);
+   for (int i = 0; i < tree.getNbChildren(); ++i)
+      QCOMPARE(tree[i].getItem(), i);
 }
 
 void TreeTests::iterateBreathFirst()
