@@ -108,7 +108,7 @@ namespace Common
       friend class TreeDepthFirstIterator<TreeType>;
       friend class TreeReverseDepthFirstIterator<TreeType>;
 
-      ItemType item;
+      ItemType item{};
       TreeType* parent;
       QList<TreeType*> children;
    };

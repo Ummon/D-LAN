@@ -52,6 +52,21 @@ void TreeTests::initTestCase()
    QVERIFY(sub4->insertChild(8, 100)->getItem() == 8); // Should be put at the end.
 }
 
+void TreeTests::defaultInitialization()
+{
+   IntTree tree;
+   QCOMPARE(tree.getItem(), 0);
+
+   SimpleTree<int> integerTree;
+   QCOMPARE(integerTree.getItem(), 0);
+
+   SimpleTree<int*> pointerTree;
+   QVERIFY(pointerTree.getItem() == nullptr);
+
+   SimpleTree<int> initializedTree(42, nullptr);
+   QCOMPARE(initializedTree.getItem(), 42);
+}
+
 void TreeTests::insertElements()
 {
    QVERIFY(this->tree[1][2].insertChild(9)->getItem() == 9);

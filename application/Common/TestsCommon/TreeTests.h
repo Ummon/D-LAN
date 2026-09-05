@@ -37,6 +37,7 @@ public:
 
 private slots:
    void initTestCase();
+   void defaultInitialization();
    void insertElements();
    void retrieveElements();
    void invalidIndices();
