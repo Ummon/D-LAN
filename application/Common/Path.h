@@ -10,6 +10,9 @@ namespace Common
    {
    public:
       Path(const QString& path);
+      // Separators, null characters and drive roots such as 'C:' are rejected
+      // with std::invalid_argument.
+      // Empty components are ignored; '.' and '..' are normalized.
       explicit Path(const QList<QString>& dirs);
 
    private:
@@ -55,15 +58,20 @@ namespace Common
       Path removeLastElement() const&;
       Path removeLastElement() &&;
 
+      // A single filename, or empty to remove it. Separators, null characters, '.' and '..'
+      // are rejected with std::invalid_argument.
       Path setFilename(const QString& filename) const &;
       Path setFilename(QString&& filename) &&;
 
+      // Combine paths and normalize '.' and '..', stopping at an absolute root.
+      // append keeps this root and the other filename; prepend does the reverse.
       Path append(const Common::Path& other) const &;
       Path append(Common::Path&& other) &&;
 
       Path prepend(const Common::Path& other) const &;
       Path prepend(Common::Path&& other) &&;
 
+      // Single directory components, with the same rules as the list constructor.
       Path appendDir(const QString& dir) const &;
       Path appendDir(const QString& dir) &&;
 
@@ -84,6 +92,8 @@ namespace Common
       static bool isWindowsRootPath(const QString& path);
 
    private:
+      void normalizeDirs();
+
       QString root; // For example: Windows: "C:/", UNC: "//server/share/", Linux: "/".
       QStringList dirs; // Can be empty.
       QString filename; // Empty if directory.

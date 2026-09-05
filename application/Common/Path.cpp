@@ -2,6 +2,21 @@
 using namespace Common;
 
 #include <QDir>
+#include <algorithm>
+#include <stdexcept>
+
+namespace
+{
+   void validateComponent(const QString& component, bool directory)
+   {
+      if (QDir::fromNativeSeparators(component).contains('/') || component.contains(QChar::Null))
+         throw std::invalid_argument("Path components must not contain separators or null characters");
+      if (!directory && (component == "." || component == ".."))
+         throw std::invalid_argument("A filename must not be '.' or '..'");
+      if (directory && component.size() == 2 && component[0].isLetter() && component[1] == ':')
+         throw std::invalid_argument("A directory component must not be a drive root");
+   }
+}
 
 /**
   * @class Path
@@ -76,6 +91,7 @@ Path::Path(const QString& path)
       else
          this->dirs.append(names[i]);
    }
+   this->normalizeDirs();
 }
 
 /**
@@ -84,11 +100,15 @@ Path::Path(const QString& path)
 Path::Path(const QList<QString>& dirs) :
    dirs(dirs)
 {
+   for (const QString& dir : dirs)
+      validateComponent(dir, true);
+   this->normalizeDirs();
 }
 
 Path::Path(const QString& root, const QStringList& dirs, const QString& filename)
    : root(root), dirs(dirs), filename(filename)
 {
+   this->normalizeDirs();
 }
 
 // The references must not be 'const': 'std::move(..)' on a 'const' rvalue reference can't bind to the move
@@ -96,6 +116,35 @@ Path::Path(const QString& root, const QStringList& dirs, const QString& filename
 Path::Path(QString&& root, QStringList&& dirs, QString&& filename)
    : root(std::move(root)), dirs(std::move(dirs)), filename(std::move(filename))
 {
+   this->normalizeDirs();
+}
+
+void Path::normalizeDirs()
+{
+   if (!this->dirs.contains(QString()) && !this->dirs.contains(".") && !this->dirs.contains(".."))
+      return;
+
+   QStringList normalized;
+   for (const QString& dir : this->dirs)
+   {
+      if (dir.isEmpty() || dir == ".")
+         continue;
+      if (dir == "..")
+      {
+         if (!normalized.isEmpty() && normalized.constLast() != "..")
+            normalized.removeLast();
+         else if (!this->isAbsolute())
+            normalized.append(dir);
+      }
+      else
+         normalized.append(dir);
+   }
+
+   // Preserve the current-directory representation used by Path(".").
+   if (normalized.isEmpty() && !this->isAbsolute() && !this->isFile() &&
+       std::any_of(this->dirs.cbegin(), this->dirs.cend(), [](const QString& dir) { return !dir.isEmpty(); }))
+      normalized.append(".");
+   this->dirs = std::move(normalized);
 }
 
 QString Path::toString(bool withFilename) const
@@ -272,11 +321,13 @@ Path Path::removeLastElement() &&
 
 Path Path::setFilename(const QString& filename) const &
 {
+   validateComponent(filename, false);
    return Path(this->root, this->dirs, filename);
 }
 
 Path Path::setFilename(QString&& filename) &&
 {
+   validateComponent(filename, false);
    return Path(std::move(this->root), std::move(this->dirs), std::move(filename));
 }
 
@@ -309,6 +360,7 @@ Path Path::prepend(Common::Path&& other) &&
 
 Path Path::appendDir(const QString& dir) const &
 {
+   validateComponent(dir, true);
    QStringList dirs = this->dirs;
    dirs.append(dir);
    return Path(this->root, dirs, this->filename);
@@ -316,12 +368,14 @@ Path Path::appendDir(const QString& dir) const &
 
 Path Path::appendDir(const QString& dir) &&
 {
+   validateComponent(dir, true);
    this->dirs.append(dir);
    return Path(std::move(this->root), std::move(this->dirs), std::move(this->filename));
 }
 
 Path Path::prependDir(const QString& dir) const &
 {
+   validateComponent(dir, true);
    QStringList dirs = this->dirs;
    dirs.prepend(dir);
    return Path(this->root, dirs, this->filename);
@@ -329,6 +383,7 @@ Path Path::prependDir(const QString& dir) const &
 
 Path Path::prependDir(const QString& dir) &&
 {
+   validateComponent(dir, true);
    this->dirs.prepend(dir);
    return Path(std::move(this->root), std::move(this->dirs), std::move(this->filename));
 }

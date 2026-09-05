@@ -387,6 +387,53 @@ void Tests::path()
    QCOMPARE(Path(QStringLiteral("\\\\server\\share\\folder\\file.txt")), uncFile);
    QCOMPARE(Path(QStringLiteral("\\\\server\\share\\folder\\")).removeLastElement(), uncRoot);
 #endif
+
+   // Composed paths must have the same components and containment as parsed paths.
+   const Path shared("C:/shared/");
+   const Path outside("../outside.txt");
+   const Path combined = shared.append(outside);
+   QCOMPARE(combined, Path("C:/outside.txt"));
+   QVERIFY(!combined.isSubOf(shared));
+   QCOMPARE(Path("C:/shared/").append(Path("../outside.txt")), combined);
+   QCOMPARE(outside.prepend(shared), combined);
+   QCOMPARE(Path("../outside.txt").prepend(Path("C:/shared/")), combined);
+   QCOMPARE(Path(combined.toString()), combined);
+   QCOMPARE(shared.appendDir(".."), Path("C:/"));
+   QCOMPARE(Path("C:/shared/").appendDir(".."), Path("C:/"));
+   QCOMPARE(uncRoot.append(Path("../../file.txt")), Path("//server/share/file.txt"));
+   QCOMPARE(Path("/").append(Path("../../file.txt")), Path("/file.txt"));
+   QCOMPARE(Path("dir/").append(Path("../../file.txt")), Path("../file.txt"));
+   QCOMPARE(Path("dir/").appendDir(".."), Path("."));
+   QCOMPARE(Path("./").append(Path("file.txt")), Path("file.txt"));
+   QCOMPARE(shared.appendDir("."), shared);
+   QCOMPARE(shared.appendDir(""), shared);
+   const Path relativeParent("../file.txt");
+   QCOMPARE(relativeParent.prependDir("dir"), Path("file.txt"));
+   QCOMPARE(Path("../file.txt").prependDir("dir"), Path("file.txt"));
+   QCOMPARE(Path(QStringList{"a", "", ".", "b", ".."}), Path("a/"));
+   QCOMPARE(Path(QStringList{"a", "..", ".."}), Path("../"));
+   QCOMPARE(Path(QStringList{"a", ".."}), Path("."));
+   QVERIFY(Path(QStringList{}).isNull());
+   QVERIFY(Path(QStringList{""}).isNull());
+
+   // Single-component APIs reject paths instead of storing embedded separators.
+   QVERIFY_THROWS_EXCEPTION(std::invalid_argument, shared.appendDir("a/b"));
+   QVERIFY_THROWS_EXCEPTION(std::invalid_argument, Path("C:/shared/").appendDir("a/b"));
+   QVERIFY_THROWS_EXCEPTION(std::invalid_argument, shared.prependDir("a/b"));
+   QVERIFY_THROWS_EXCEPTION(std::invalid_argument, Path("C:/shared/").prependDir("a/b"));
+   QVERIFY_THROWS_EXCEPTION(std::invalid_argument, shared.setFilename("../outside.txt"));
+   QVERIFY_THROWS_EXCEPTION(std::invalid_argument, Path("C:/shared/").setFilename("../outside.txt"));
+   QVERIFY_THROWS_EXCEPTION(std::invalid_argument, shared.setFilename("."));
+   QVERIFY_THROWS_EXCEPTION(std::invalid_argument, shared.setFilename(".."));
+   QVERIFY_THROWS_EXCEPTION(std::invalid_argument, Path(QStringList{"a/b"}));
+   QVERIFY_THROWS_EXCEPTION(std::invalid_argument, Path(QStringList{"C:"}));
+   QCOMPARE(shared.setFilename(""), shared);
+#ifdef Q_OS_WIN
+   QVERIFY_THROWS_EXCEPTION(std::invalid_argument, shared.appendDir(QStringLiteral("a\\b")));
+   QVERIFY_THROWS_EXCEPTION(std::invalid_argument, shared.setFilename(QStringLiteral("a\\b")));
+#else
+   QCOMPARE(shared.appendDir(QStringLiteral("a\\b")).getLastDir(), QStringLiteral("a\\b"));
+#endif
 }
 
 void Tests::sortedList()
