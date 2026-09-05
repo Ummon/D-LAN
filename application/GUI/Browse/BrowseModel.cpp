@@ -193,7 +193,7 @@ void BrowseModel::refresh()
 
    Protos::Common::Entries entries;
 
-   this->root->mapReverseDepthFirst(
+   this->root->mapPostOrder(
       [&entries](Tree* tree)
       {
          if (tree->getNbChildren() > 0)
@@ -243,7 +243,7 @@ void BrowseModel::resultRefresh(const google::protobuf::RepeatedPtrField<Protos:
    {
       // Synchronize the content of all directories.
       int j = -1;
-      this->root->mapReverseDepthFirst([&](Tree* tree) {
+      this->root->mapPostOrder([&](Tree* tree) {
          if (tree->getNbChildren() > 0)
          {
             if (++j >= entries.size() - 1)

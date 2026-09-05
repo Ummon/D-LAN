@@ -36,21 +36,24 @@ public:
    TreeTests();
 
 private slots:
-   void initTestCase();
+   void init();
    void defaultInitialization();
    void insertElements();
    void retrieveElements();
    void constChildAccess();
    void invalidIndices();
    void clampInsertionPosition();
-   void iterateBreathFirst();
+   void moveAndSortChildren();
+   void traversalCallbacks_data();
+   void traversalCallbacks();
+   void iterateBreadthFirst();
    void iterateDepthFirst();
-   void iterateReverseDepthFirst();
-   void deleteDuringReverseDepthFirst();
-   void modifyDescendantsDuringReverseDepthFirst();
-   void reverseDepthFirstWideTree();
-   void reverseDepthFirstDeepTree();
-   void reverseDepthFirstEmptyTree();
+   void iteratePostOrder();
+   void deleteDuringPostOrder();
+   void modifyDescendantsDuringPostOrder();
+   void postOrderWideTree();
+   void postOrderDeepTree();
+   void postOrderEmptyTree();
    void destroyDeepTree();
    void destructionParentLinks();
    void removeElements();

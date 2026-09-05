@@ -20,6 +20,7 @@
 
 #include <functional>
 #include <algorithm>
+#include <memory>
 
 #include <QList>
 
@@ -34,7 +35,7 @@ namespace Common
    class TreeDepthFirstIterator;
 
    template <typename TreeType>
-   class TreeReverseDepthFirstIterator;
+   class TreePostOrderIterator;
 
    class OutOfRangeException {};
 
@@ -57,6 +58,8 @@ namespace Common
      * during any traversal. Structural changes invalidate traversal unless
      * explicitly permitted by the iterator's documentation below.
      * These rules also apply to callbacks passed to the map functions.
+     * Map callbacks are invoked by reference and are not copied; move-only
+     * callables are supported. Return false to stop traversal immediately.
      *
      * @remarks No copy constructor neither no operator assignment are defined for the moment.
      */
@@ -78,7 +81,8 @@ namespace Common
         * before 'fun' is called; deleting them leaves dangling pointers.
         * @return 'false' if the last call of 'fun' returns 'false'.
         */
-      bool mapBreadthFirst(std::function<bool(TreeType*)> fun, bool iterateOnRoot = false);
+      template <typename Fun>
+      bool mapBreadthFirst(Fun&& fun, bool iterateOnRoot = false);
 
       /**
         * Applies 'fun' to all subtrees.
@@ -87,7 +91,8 @@ namespace Common
         * The same mutation restrictions as mapBreadthFirst() apply.
         * @return 'false' if the last call of 'fun' returns 'false'.
         */
-      bool mapDepthFirst(std::function<bool(TreeType*)> fun, bool iterateOnRoot = false);
+      template <typename Fun>
+      bool mapDepthFirst(Fun&& fun, bool iterateOnRoot = false);
 
       /**
         * Applies 'fun' in post-order (children before their parent).
@@ -97,7 +102,8 @@ namespace Common
         * descendants are not visited. Other structural changes invalidate traversal.
         * @return 'false' if a callback stopped the traversal, otherwise 'true'.
         */
-      bool mapReverseDepthFirst(std::function<bool(TreeType*)> fun, bool iterateOnRoot = false);
+      template <typename Fun>
+      bool mapPostOrder(Fun&& fun, bool iterateOnRoot = false);
 
       virtual TreeType* getParent();
       virtual const TreeType* getParent() const;
@@ -132,7 +138,7 @@ namespace Common
 
       friend class TreeBreadthFirstIterator<TreeType>;
       friend class TreeDepthFirstIterator<TreeType>;
-      friend class TreeReverseDepthFirstIterator<TreeType>;
+      friend class TreePostOrderIterator<TreeType>;
 
       ItemType item{};
       TreeType* parent;
@@ -202,10 +208,10 @@ namespace Common
      * excluding work performed by the caller.
      */
    template <typename TreeType>
-   class TreeReverseDepthFirstIterator
+   class TreePostOrderIterator
    {
    public:
-      TreeReverseDepthFirstIterator(TreeType* tree, bool iterateOnRoot = false);
+      TreePostOrderIterator(TreeType* tree, bool iterateOnRoot = false);
       bool hasNext() const;
       TreeType* next();
 
@@ -247,34 +253,34 @@ Common::Tree<ItemType, TreeType>::~Tree()
 }
 
 template <typename ItemType, typename TreeType>
-bool Common::Tree<ItemType, TreeType>::mapBreadthFirst(std::function<bool(TreeType*)> fun, bool iterateOnRoot)
+template <typename Fun>
+bool Common::Tree<ItemType, TreeType>::mapBreadthFirst(Fun&& fun, bool iterateOnRoot)
 {
    TreeBreadthFirstIterator<TreeType> i(static_cast<TreeType*>(this), iterateOnRoot);
-   TreeType* currentTree;
-   while (currentTree = i.next())
-      if (!fun(currentTree))
+   while (TreeType* currentTree = i.next())
+      if (!std::invoke(fun, currentTree))
          return false;
    return true;
 }
 
 template <typename ItemType, typename TreeType>
-bool Common::Tree<ItemType, TreeType>::mapDepthFirst(std::function<bool(TreeType*)> fun, bool iterateOnRoot)
+template <typename Fun>
+bool Common::Tree<ItemType, TreeType>::mapDepthFirst(Fun&& fun, bool iterateOnRoot)
 {
    TreeDepthFirstIterator<TreeType> i(static_cast<TreeType*>(this), iterateOnRoot);
-   TreeType* currentTree;
-   while (currentTree = i.next())
-      if (!fun(currentTree))
+   while (TreeType* currentTree = i.next())
+      if (!std::invoke(fun, currentTree))
          return false;
    return true;
 }
 
 template <typename ItemType, typename TreeType>
-bool Common::Tree<ItemType, TreeType>::mapReverseDepthFirst(std::function<bool(TreeType*)> fun, bool iterateOnRoot)
+template <typename Fun>
+bool Common::Tree<ItemType, TreeType>::mapPostOrder(Fun&& fun, bool iterateOnRoot)
 {
-   TreeReverseDepthFirstIterator<TreeType> i(static_cast<TreeType*>(this), iterateOnRoot);
-   TreeType* currentTree;
-   while (currentTree = i.next())
-      if (!fun(currentTree))
+   TreePostOrderIterator<TreeType> i(static_cast<TreeType*>(this), iterateOnRoot);
+   while (TreeType* currentTree = i.next())
+      if (!std::invoke(fun, currentTree))
          return false;
    return true;
 }
@@ -324,8 +330,9 @@ void Common::Tree<ItemType, TreeType>::moveChild(int from, int to)
 template <typename ItemType, typename TreeType>
 TreeType* Common::Tree<ItemType, TreeType>::insertChild(const ItemType& item)
 {
-   this->children << this->newTree(item);
-   return this->children.last();
+   std::unique_ptr<TreeType> tree(this->newTree(item));
+   this->children.append(tree.get());
+   return tree.release();
 }
 
 /**
@@ -341,9 +348,9 @@ TreeType* Common::Tree<ItemType, TreeType>::insertChild(const ItemType& item, in
    else if (pos > this->children.size())
       pos = this->children.size();
 
-   TreeType* tree = this->newTree(item);
-   this->children.insert(pos, tree);
-   return tree;
+   std::unique_ptr<TreeType> tree(this->newTree(item));
+   this->children.insert(pos, tree.get());
+   return tree.release();
 }
 
 template <typename ItemType, typename TreeType>
@@ -512,7 +519,7 @@ void Common::TreeDepthFirstIterator<TreeType>::readChildren(TreeType* parentTree
 /////
 
 template <typename TreeType>
-Common::TreeReverseDepthFirstIterator<TreeType>::TreeReverseDepthFirstIterator(TreeType* tree, bool iterateOnRoot) :
+Common::TreePostOrderIterator<TreeType>::TreePostOrderIterator(TreeType* tree, bool iterateOnRoot) :
    iterateOnRoot(iterateOnRoot),
    root(tree),
    nextTree(nullptr)
@@ -522,13 +529,13 @@ Common::TreeReverseDepthFirstIterator<TreeType>::TreeReverseDepthFirstIterator(T
 }
 
 template <typename TreeType>
-bool Common::TreeReverseDepthFirstIterator<TreeType>::hasNext() const
+bool Common::TreePostOrderIterator<TreeType>::hasNext() const
 {
    return this->nextTree != nullptr;
 }
 
 template <typename TreeType>
-TreeType* Common::TreeReverseDepthFirstIterator<TreeType>::next()
+TreeType* Common::TreePostOrderIterator<TreeType>::next()
 {
    TreeType* nextTreeCopy = this->nextTree;
 
@@ -540,7 +547,7 @@ TreeType* Common::TreeReverseDepthFirstIterator<TreeType>::next()
 }
 
 template <typename TreeType>
-TreeType* Common::TreeReverseDepthFirstIterator<TreeType>::advance()
+TreeType* Common::TreePostOrderIterator<TreeType>::advance()
 {
    while (!this->stack.isEmpty())
    {

@@ -22,9 +22,22 @@ using namespace Common;
 #include <QList>
 #include <limits>
 #include <type_traits>
+#include <memory>
+#include <utility>
 
 namespace
 {
+   template <typename Fun>
+   bool traverse(int order, IntTree& tree, Fun&& fun, bool includeRoot = false)
+   {
+      switch (order)
+      {
+      case 0: return tree.mapBreadthFirst(std::forward<Fun>(fun), includeRoot);
+      case 1: return tree.mapDepthFirst(std::forward<Fun>(fun), includeRoot);
+      default: return tree.mapPostOrder(std::forward<Fun>(fun), includeRoot);
+      }
+   }
+
    struct DestructionState
    {
       int count = 0;
@@ -77,8 +90,9 @@ TreeTests::TreeTests()
 {
 }
 
-void TreeTests::initTestCase()
+void TreeTests::init()
 {
+   this->tree.deleteAllChildren();
    this->tree.setItem(1);
    QVERIFY(this->tree.insertChild(2)->getItem() == 2);
    IntTree* sub3 = this->tree.insertChild(3);
@@ -89,6 +103,7 @@ void TreeTests::initTestCase()
    QVERIFY(sub3->insertChild(5, 1)->getItem() == 5);
    QVERIFY(sub4->insertChild(7)->getItem() == 7);
    QVERIFY(sub4->insertChild(8, 100)->getItem() == 8); // Should be put at the end.
+   sub3->getChild(2)->insertChild(9);
 }
 
 void TreeTests::defaultInitialization()
@@ -108,7 +123,10 @@ void TreeTests::defaultInitialization()
 
 void TreeTests::insertElements()
 {
-   QVERIFY(this->tree[1][2].insertChild(9)->getItem() == 9);
+   IntTree* inserted = this->tree[1][2].insertChild(10);
+   QCOMPARE(inserted->getItem(), 10);
+   QCOMPARE(inserted->getParent(), &this->tree[1][2]);
+   QCOMPARE(this->tree[1][2].getNbChildren(), 2);
 }
 
 void TreeTests::retrieveElements()
@@ -194,7 +212,88 @@ void TreeTests::clampInsertionPosition()
       QCOMPARE(tree[i].getItem(), i);
 }
 
-void TreeTests::iterateBreathFirst()
+void TreeTests::moveAndSortChildren()
+{
+   IntTree root;
+   IntTree* three = root.insertChild(3);
+   IntTree* one = root.insertChild(1);
+   IntTree* two = root.insertChild(2);
+   IntTree* grandchild = three->insertChild(4);
+
+   root.moveChild(0, 2);
+   QCOMPARE(root.getChild(2), three);
+   root.moveChild(2, 0);
+   QCOMPARE(root.getChild(0), three);
+   root.moveChild(1, 1);
+   QCOMPARE(root.getChild(1), one);
+
+   root.sort([](const IntTree* lhs, const IntTree* rhs) {
+      return lhs->getItem() < rhs->getItem();
+   });
+   QCOMPARE(root.getChild(0), one);
+   QCOMPARE(root.getChild(1), two);
+   QCOMPARE(root.getChild(2), three);
+   for (int i = 0; i < root.getNbChildren(); ++i)
+   {
+      QCOMPARE(root[i].getParent(), &root);
+      QCOMPARE(root[i].getOwnPosition(), i);
+   }
+   QCOMPARE(three->getChild(0), grandchild);
+   QCOMPARE(grandchild->getParent(), three);
+}
+
+void TreeTests::traversalCallbacks_data()
+{
+   QTest::addColumn<int>("order");
+   QTest::addColumn<QList<int>>("prefix");
+   QTest::newRow("breadth-first") << 0 << QList<int> { 1, 2, 3 };
+   QTest::newRow("depth-first") << 1 << QList<int> { 1, 2, 3 };
+   QTest::newRow("post-order") << 2 << QList<int> { 2, 7, 8 };
+}
+
+void TreeTests::traversalCallbacks()
+{
+   QFETCH(int, order);
+   QFETCH(QList<int>, prefix);
+
+   IntTree empty;
+   int calls = 0;
+   auto stop = [&](IntTree*) { ++calls; return false; };
+   QVERIFY(traverse(order, empty, stop));
+   QCOMPARE(calls, 0);
+   QVERIFY(!traverse(order, empty, stop, true));
+   QCOMPARE(calls, 1);
+
+   QList<int> visited;
+   QVERIFY(!traverse(order, this->tree, [&](IntTree* node) {
+      visited << node->getItem();
+      return visited.size() < 3;
+   }, true));
+   QCOMPARE(visited, prefix);
+
+   // A move-only lvalue is invoked directly, preserving its state.
+   auto count = std::make_unique<int>(0);
+   int* countPtr = count.get();
+   auto modify = [count = std::move(count)](IntTree* node) {
+      ++*count;
+      node->setItem(node->getItem() + 10);
+      return true;
+   };
+   QVERIFY(traverse(order, this->tree, modify, true));
+   QCOMPARE(*countPtr, 9);
+   QCOMPARE(this->tree.getItem(), 11);
+   QCOMPARE(this->tree[1][0][1].getItem(), 18);
+
+   // Temporary move-only callbacks work as well.
+   calls = 0;
+   QVERIFY(traverse(order, this->tree, [state = std::make_unique<int>(0), &calls](IntTree*) {
+      calls = ++*state;
+      return true;
+   }));
+   QCOMPARE(calls, 8);
+}
+
+void TreeTests::iterateBreadthFirst()
 {
    {
       QList<int> expected { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
@@ -228,24 +327,24 @@ void TreeTests::iterateDepthFirst()
    }
 }
 
-void TreeTests::iterateReverseDepthFirst()
+void TreeTests::iteratePostOrder()
 {
    {
       QList<int> expected { 2, 7, 8, 4, 5, 9, 6, 3, 1 };
       QList<int> actual;
-      this->tree.mapReverseDepthFirst([&](IntTree* tree) { actual << tree->getItem(); return true; }, true);
+      this->tree.mapPostOrder([&](IntTree* tree) { actual << tree->getItem(); return true; }, true);
       QVERIFY(expected == actual);
    }
 
    {
       QList<int> expected { 7, 8, 4, 5, 9, 6 };
       QList<int> actual;
-      this->tree[1].mapReverseDepthFirst([&](IntTree* tree) { actual << tree->getItem(); return true; });
+      this->tree[1].mapPostOrder([&](IntTree* tree) { actual << tree->getItem(); return true; });
       QVERIFY(expected == actual);
    }
 }
 
-void TreeTests::deleteDuringReverseDepthFirst()
+void TreeTests::deleteDuringPostOrder()
 {
    for (bool includeRoot : { false, true })
    {
@@ -256,7 +355,7 @@ void TreeTests::deleteDuringReverseDepthFirst()
       root.insertChild(4)->insertChild(5);
 
       QList<int> actual;
-      QVERIFY(root.mapReverseDepthFirst([&](IntTree* node) {
+      QVERIFY(root.mapPostOrder([&](IntTree* node) {
          actual << node->getItem();
          if (node != &root)
             delete node;
@@ -271,7 +370,7 @@ void TreeTests::deleteDuringReverseDepthFirst()
    }
 }
 
-void TreeTests::modifyDescendantsDuringReverseDepthFirst()
+void TreeTests::modifyDescendantsDuringPostOrder()
 {
    IntTree root(0, nullptr);
    IntTree* first = root.insertChild(1);
@@ -280,7 +379,7 @@ void TreeTests::modifyDescendantsDuringReverseDepthFirst()
    root.insertChild(4)->insertChild(5);
 
    QList<int> actual;
-   TreeReverseDepthFirstIterator<IntTree> iterator(&root, true);
+   TreePostOrderIterator<IntTree> iterator(&root, true);
    while (iterator.hasNext())
    {
       IntTree* node = iterator.next();
@@ -299,14 +398,14 @@ void TreeTests::modifyDescendantsDuringReverseDepthFirst()
    QVERIFY(iterator.next() == nullptr);
 }
 
-void TreeTests::reverseDepthFirstWideTree()
+void TreeTests::postOrderWideTree()
 {
    IntTree root(0, nullptr);
    constexpr int childCount = 4096;
    for (int i = 0; i < childCount; ++i)
       root.insertChild(i);
 
-   TreeReverseDepthFirstIterator<IntTree> iterator(&root);
+   TreePostOrderIterator<IntTree> iterator(&root);
    for (int i = 0; i < childCount; ++i)
    {
       QVERIFY(iterator.hasNext());
@@ -321,7 +420,7 @@ void TreeTests::reverseDepthFirstWideTree()
    QCOMPARE(root.getNbChildren(), childCount / 2);
 }
 
-void TreeTests::reverseDepthFirstDeepTree()
+void TreeTests::postOrderDeepTree()
 {
    IntTree root(0, nullptr);
    constexpr int depth = 4096;
@@ -329,7 +428,7 @@ void TreeTests::reverseDepthFirstDeepTree()
    for (int i = 1; i <= depth; ++i)
       node = node->insertChild(i);
 
-   TreeReverseDepthFirstIterator<IntTree> iterator(&root, true);
+   TreePostOrderIterator<IntTree> iterator(&root, true);
    for (int i = depth; i >= 0; --i)
    {
       QVERIFY(iterator.hasNext());
@@ -343,12 +442,12 @@ void TreeTests::reverseDepthFirstDeepTree()
    QCOMPARE(root.getNbChildren(), 0);
 }
 
-void TreeTests::reverseDepthFirstEmptyTree()
+void TreeTests::postOrderEmptyTree()
 {
    IntTree root(0, nullptr);
    for (bool includeRoot : { false, true })
    {
-      TreeReverseDepthFirstIterator<IntTree> iterator(&root, includeRoot);
+      TreePostOrderIterator<IntTree> iterator(&root, includeRoot);
       QCOMPARE(iterator.hasNext(), includeRoot);
       if (includeRoot)
          QCOMPARE(iterator.next(), &root);
