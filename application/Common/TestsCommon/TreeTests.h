@@ -47,6 +47,9 @@ private slots:
    void iterateReverseDepthFirst();
    void deleteDuringReverseDepthFirst();
    void modifyDescendantsDuringReverseDepthFirst();
+   void reverseDepthFirstWideTree();
+   void reverseDepthFirstDeepTree();
+   void reverseDepthFirstEmptyTree();
    void removeElements();
 
 private:

@@ -241,6 +241,65 @@ void TreeTests::modifyDescendantsDuringReverseDepthFirst()
    QVERIFY(iterator.next() == nullptr);
 }
 
+void TreeTests::reverseDepthFirstWideTree()
+{
+   IntTree root(0, nullptr);
+   constexpr int childCount = 4096;
+   for (int i = 0; i < childCount; ++i)
+      root.insertChild(i);
+
+   TreeReverseDepthFirstIterator<IntTree> iterator(&root);
+   for (int i = 0; i < childCount; ++i)
+   {
+      QVERIFY(iterator.hasNext());
+      IntTree* node = iterator.next();
+      QCOMPARE(node->getItem(), i);
+      // Mix retained and deleted siblings to exercise changing child indices.
+      if (i % 2 == 0)
+         delete node;
+   }
+   QVERIFY(!iterator.hasNext());
+   QVERIFY(iterator.next() == nullptr);
+   QCOMPARE(root.getNbChildren(), childCount / 2);
+}
+
+void TreeTests::reverseDepthFirstDeepTree()
+{
+   IntTree root(0, nullptr);
+   constexpr int depth = 4096;
+   IntTree* node = &root;
+   for (int i = 1; i <= depth; ++i)
+      node = node->insertChild(i);
+
+   TreeReverseDepthFirstIterator<IntTree> iterator(&root, true);
+   for (int i = depth; i >= 0; --i)
+   {
+      QVERIFY(iterator.hasNext());
+      node = iterator.next();
+      QCOMPARE(node->getItem(), i);
+      if (node != &root)
+         delete node;
+   }
+   QVERIFY(!iterator.hasNext());
+   QVERIFY(iterator.next() == nullptr);
+   QCOMPARE(root.getNbChildren(), 0);
+}
+
+void TreeTests::reverseDepthFirstEmptyTree()
+{
+   IntTree root(0, nullptr);
+   for (bool includeRoot : { false, true })
+   {
+      TreeReverseDepthFirstIterator<IntTree> iterator(&root, includeRoot);
+      QCOMPARE(iterator.hasNext(), includeRoot);
+      if (includeRoot)
+         QCOMPARE(iterator.next(), &root);
+      QVERIFY(!iterator.hasNext());
+      QVERIFY(iterator.next() == nullptr);
+      QVERIFY(iterator.next() == nullptr);
+   }
+}
+
 void TreeTests::removeElements()
 {
    delete this->tree[1].getChild(0);

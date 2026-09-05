@@ -190,6 +190,8 @@ namespace Common
      * or its descendants modified. Those descendants have already been visited;
      * newly inserted descendants will not be visited. The successor is computed
      * before next() returns. Other structural changes invalidate the iterator.
+     * Traversal takes O(n) time and O(h) extra space for n nodes of height h,
+     * excluding work performed by the caller.
      */
    template <typename TreeType>
    class TreeReverseDepthFirstIterator
@@ -200,12 +202,18 @@ namespace Common
       TreeType* next();
 
    private:
-      TreeType* getDeepestTree(TreeType* tree, int subTreePosition = -1);
-      static int parentPosition(TreeType* tree);
+      struct Frame
+      {
+         TreeType* tree;
+         qsizetype remainingChildren;
+      };
+
+      TreeType* advance();
 
       bool iterateOnRoot;
       TreeType* const root;
       TreeType* nextTree;
+      QList<Frame> stack;
    };
 }
 
@@ -475,7 +483,8 @@ Common::TreeReverseDepthFirstIterator<TreeType>::TreeReverseDepthFirstIterator(T
    root(tree),
    nextTree(nullptr)
 {
-   this->nextTree = this->getDeepestTree(tree);
+   this->stack.append(Frame { tree, tree->children.size() });
+   this->nextTree = this->advance();
 }
 
 template <typename TreeType>
@@ -491,28 +500,33 @@ TreeType* Common::TreeReverseDepthFirstIterator<TreeType>::next()
 
    // Find the successor before returning: callers may delete the returned node
    // or change its already-visited descendants.
-   this->nextTree = this->nextTree && this->nextTree != this->root ? this->getDeepestTree(this->nextTree->parent, parentPosition(this->nextTree)) : nullptr;
+   this->nextTree = this->advance();
 
    return nextTreeCopy;
 }
 
 template <typename TreeType>
-TreeType* Common::TreeReverseDepthFirstIterator<TreeType>::getDeepestTree(TreeType* tree, int subTreePosition)
+TreeType* Common::TreeReverseDepthFirstIterator<TreeType>::advance()
 {
-   if (tree->children.size() > ++subTreePosition)
-      return getDeepestTree(tree->children[subTreePosition]);
+   while (!this->stack.isEmpty())
+   {
+      Frame& frame = this->stack.last();
+      if (frame.remainingChildren > 0)
+      {
+         // Unvisited children form a suffix. Counting from the end keeps the
+         // next position valid when callers delete an already-visited sibling.
+         TreeType* child = frame.tree->children.at(frame.tree->children.size() - frame.remainingChildren);
+         --frame.remainingChildren;
+         this->stack.append(Frame { child, child->children.size() });
+      }
+      else
+      {
+         TreeType* tree = frame.tree;
+         this->stack.removeLast();
+         if (tree != this->root || this->iterateOnRoot)
+            return tree;
+      }
+   }
 
-   if (tree == this->root && !this->iterateOnRoot)
-      return nullptr;
-
-   return tree;
-}
-
-template <typename TreeType>
-int Common::TreeReverseDepthFirstIterator<TreeType>::parentPosition(TreeType* tree)
-{
-   if (!tree->parent)
-      return -1;
-
-   return tree->parent->children.indexOf(tree);
+   return nullptr;
 }
