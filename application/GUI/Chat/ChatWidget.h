@@ -175,8 +175,10 @@ namespace GUI
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;
       Emoticons& emoticons;
+
       PeerListModel peerListModel;
       PeerListChatDelegate peerListDelegate;
+
       ChatModel chatModel;
       ChatDelegate chatDelegate;
 
