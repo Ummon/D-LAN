@@ -60,6 +60,7 @@ private slots:
    void sortedArrayToList();
    void sortedArrayComparatorCollisions();
    void sortedArrayComparatorException();
+   void sortedArrayEmptyNearestIndex();
 
    // MapArray class.
    void mapArray();

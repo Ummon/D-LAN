@@ -384,6 +384,8 @@ int Common::SortedArray<T, M>::indexOf(const T& value) const
 template <typename T, int M>
 int Common::SortedArray<T, M>::indexOfNearest(const T& value) const
 {
+   if (this->isEmpty())
+      return -1;
    return indexOfNearest(this->d->root, value, 0, this->d->lesserThanFun);
 }
 

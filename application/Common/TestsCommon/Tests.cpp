@@ -918,6 +918,34 @@ void Tests::sortedArrayComparatorException()
    }
 }
 
+void Tests::sortedArrayEmptyNearestIndex()
+{
+   SortedArray<int, 3> array;
+   for (int value : { -1, 0, 1 })
+      QCOMPARE(array.indexOfNearest(value), -1);
+
+   array.insert(10);
+   for (int value : { 9, 10, 11 })
+      QCOMPARE(array.indexOfNearest(value), 0);
+   QVERIFY(array.remove(10));
+   QCOMPARE(array.indexOfNearest(10), -1);
+
+   // Exercise the empty root left after collapsing a multilevel tree.
+   for (int i = 0; i < 40; ++i)
+      array.insert(i);
+   for (int i = 0; i < 40; ++i)
+      QVERIFY(array.remove(i));
+   QVERIFY(array.isEmpty());
+   QCOMPARE(array.indexOfNearest(20), -1);
+
+   array.setSortedFunction([](int a, int b) { return a > b; });
+   QCOMPARE(array.indexOfNearest(20), -1);
+   array.insert(20);
+   QCOMPARE(array.indexOfNearest(20), 0);
+   array.clear();
+   QCOMPARE(array.indexOfNearest(20), -1);
+}
+
 void Tests::mapArray()
 {
    MapArray<Common::Hash, QString> array;
