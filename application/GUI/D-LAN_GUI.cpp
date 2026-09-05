@@ -44,6 +44,12 @@ D_LAN_GUI::D_LAN_GUI(int& argc, char* argv[]) :
    trayIcon(QIcon(":/icons/resources/icon.svg")),
    coreConnection(RCC::Builder::newCoreConnection(SETTINGS.get<quint32>("socket_timeout")))
 {
+   // The style must be set before any widget is created. 'MainWindow::loadCustomStyle(..)' sets it again but
+   // switching the style once the widgets exist makes 'QWindows11Style::unpolish(..)' clear the
+   // 'autoFillBackground' flag of every scroll area viewport (Qt >= 6.11.2), the item views then lose their
+   // 'QPalette::Base' background. See 'MainWindow::loadCustomStyle(..)' about why Fusion is used.
+   this->setStyle("Fusion");
+
    this->installTranslator(&this->translator);
    QLocale current = QLocale::system();
    if (SETTINGS.isSet("language"))
