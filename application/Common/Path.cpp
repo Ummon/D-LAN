@@ -315,11 +315,6 @@ Path Path::prependDir(const QString& dir) &&
 //    return this->toString();
 // }
 
-Path::operator QAnyStringView() const
-{
-   return this->toString();
-}
-
 Path::operator QString() const
 {
    return this->toString();

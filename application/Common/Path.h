@@ -1,6 +1,5 @@
 #pragma once
 
-#include <QAnyStringView>
 #include <QChar>
 #include <QString>
 #include <QStringList>
@@ -71,7 +70,6 @@ namespace Common
       Path prependDir(const QString& dir) const &;
       Path prependDir(const QString& dir) &&;
 
-      operator QAnyStringView() const;
       operator QString() const;
 
       // Helpers.
