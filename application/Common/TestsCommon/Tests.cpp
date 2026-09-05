@@ -753,6 +753,54 @@ void Tests::sortedArrayInternalNodeIndices()
    }
 }
 
+void Tests::sortedArrayInsertIndex()
+{
+   for (bool descending : { false, true })
+   {
+      SortedArray<int, 3> array;
+      const auto less = [descending](int a, int b) { return descending ? a > b : a < b; };
+      array.setSortedFunction(less);
+      QList<int> expected;
+      for (int i = 0; i < 80; ++i)
+      {
+         const int value = (i * 37) % 80;
+         int index = 0;
+         while (index < expected.size() && less(expected[index], value))
+            ++index;
+         expected.insert(index, value);
+         bool exists = true;
+         QCOMPARE(array.insert(value, &exists), index);
+         QVERIFY(!exists);
+         QCOMPARE(array.getFromIndex(index), value);
+      }
+      for (int i = 0; i < expected.size(); ++i)
+      {
+         bool exists = false;
+         QCOMPARE(array.insert(expected[i], &exists), i);
+         QVERIFY(exists);
+         QCOMPARE(array.size(), expected.size());
+      }
+   }
+
+   // Looking up the argument after insertion would use a moved-from value.
+   SortedArray<QString> strings;
+   QCOMPARE(strings.insert(QString("alpha")), 0);
+   QString last("zulu");
+   QCOMPARE(strings.insert(std::move(last)), 1);
+   QCOMPARE(strings.getFromIndex(1), QString("zulu"));
+
+   // MapArray forwards the index and must also return it when replacing payloads.
+   MapArray<QString, QString> map;
+   QCOMPARE(map.insert(QString("alpha"), QString("first")), 0);
+   QCOMPARE(map.insert(QString("zulu"), QString("last")), 1);
+   QCOMPARE(map.insert(QString("middle"), QString("old")), 1);
+   bool exists = false;
+   QCOMPARE(map.insert(QString("middle"), QString("updated"), &exists), 1);
+   QVERIFY(exists);
+   QCOMPARE(map.size(), 3);
+   QCOMPARE(map.getValueFromIndex(1), QString("updated"));
+}
+
 void Tests::mapArray()
 {
    MapArray<Common::Hash, QString> array;

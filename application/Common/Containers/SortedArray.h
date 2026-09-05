@@ -160,7 +160,7 @@ namespace Common
       static int indexOfNearest(Node* node, const T& value, int nbItemsBefore, const std::function<bool(const T&, const T&)>& lesserThan);
       static Position positionOf(Node* node, const T& value, const std::function<bool(const T&, const T&)>& lesserThan);
       static Position positionOfNearest(Node* node, const T& value, const std::function<bool(const T&, const T&)>& lesserThan);
-      static Node* getNode(Node* node, const T& value, int& position, const std::function<bool(const T&, const T&)>& lesserThan);
+      static Node* getNode(Node* node, const T& value, int& position, const std::function<bool(const T&, const T&)>& lesserThan, int* index = nullptr);
       inline static int getPosition(Node* node, const T& value, bool& exists, const std::function<bool(const T&, const T&)>& lesserThan);
 
       static void incrementSize(Node* node);
@@ -294,14 +294,16 @@ int Common::SortedArray<T, M>::size() const
 /**
   * Insert or update the given value. The update is done with assignment operator of T.
   * @param exists Optional, set to 'true' if the value already exists.
-  * @return The position 'value'.
+  * @return The zero-based index of the inserted or updated value.
   */
 template <typename T, int M>
 template <typename U>
 int Common::SortedArray<T, M>::insert(U&& value, bool* exists)
 {
    int position;
-   Node* node = getNode(this->d->root, std::forward<U>(value), position, this->d->lesserThanFun);
+   int index;
+   // Compute the rank before forwarding can move from value. Splits preserve it.
+   Node* node = getNode(this->d->root, value, position, this->d->lesserThanFun, &index);
    if (position == -1)
    {
       if (Node* newRoot = add(node, std::forward<U>(value), this->d->lesserThanFun))
@@ -314,7 +316,7 @@ int Common::SortedArray<T, M>::insert(U&& value, bool* exists)
    if (exists)
       *exists = position != -1;
 
-   return 0;
+   return index;
 }
 
 /**
@@ -767,16 +769,32 @@ typename Common::SortedArray<T, M>::Position Common::SortedArray<T, M>::position
 /**
   * Returns a node corresponding to the given value, this node may or may not contain the value.
   * If the node doesn't contain the value then position is set to -1.
+  * If index is given, receives the value's rank (or insertion rank) in this subtree.
   */
 template<typename T, int M>
-typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::getNode(Node* node, const T& value, int& position, const std::function<bool(const T&, const T&)>& lesserThan)
+typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::getNode(Node* node, const T& value, int& position, const std::function<bool(const T&, const T&)>& lesserThan, int* index)
 {
    bool exists;
    position = getPosition(node, value, exists, lesserThan);
+   int nbItemsBefore = position;
+   if (index)
+   {
+      for (int i = 0; i < position; ++i)
+         if (node->children[i])
+            nbItemsBefore += node->children[i]->size;
+      *index = nbItemsBefore;
+      if (exists && node->children[position])
+         *index += node->children[position]->size;
+   }
    if (!exists)
    {
       if (node->children[position])
-         return getNode(node->children[position], value, position, lesserThan);
+      {
+         Node* found = getNode(node->children[position], value, position, lesserThan, index);
+         if (index)
+            *index += nbItemsBefore;
+         return found;
+      }
       position = -1;
    }
 
