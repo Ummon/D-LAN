@@ -89,6 +89,7 @@ private slots:
    void hashMoveConstructorAndAssignment();
    void hasher();
    void hasherHashValue();
+   void hasherEmptyAndSegmentedData();
 
    // BloomFilter class.
    void bloomFilter();

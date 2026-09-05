@@ -48,9 +48,12 @@ DataWriter::~DataWriter()
 
 bool DataWriter::write(const char* buffer, int nbBytes)
 {
+   if (nbBytes < 0 || (nbBytes > 0 && buffer == nullptr))
+      throw IOErrorException();
+
    if (this->CHECK_DATA_INTEGRITY)
    {
-      this->hasher.addData(buffer, nbBytes);
+      this->hasher.addData(std::span<const char>(buffer, static_cast<size_t>(nbBytes)));
       if (this->chunk.getKnownBytes() + nbBytes == this->chunk.getChunkSize() && this->hasher.getResult() != this->chunk.getHash())
       {
          this->chunk.setKnownBytes(0);
@@ -80,7 +83,9 @@ void DataWriter::computeChunkHash()
 
       while ((bytesRead = reader.read(buffer.data(), offset)))
       {
-         this->hasher.addData(buffer.constData(), bytesRead);
+         if (bytesRead < 0 || bytesRead > buffer.size())
+            throw IOErrorException();
+         this->hasher.addData(std::span<const char>(buffer).first(static_cast<size_t>(bytesRead)));
          offset += bytesRead;
       }
    }

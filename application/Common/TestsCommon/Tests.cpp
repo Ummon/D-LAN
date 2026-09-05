@@ -1345,27 +1345,27 @@ void Tests::hasher()
    char str3[] = "cba";
 
    Hasher hasher;
-   hasher.addData(str1, sizeof(str1));
-   hasher.addData(str3, sizeof(str3));
+   hasher.addData(str1);
+   hasher.addData(str3);
    Hash h1 = hasher.getResult();
 
    hasher.reset();
-   hasher.addData(str2, sizeof(str2));
-   hasher.addData(str3, sizeof(str3));
+   hasher.addData(str2);
+   hasher.addData(str3);
    Hash h2 = hasher.getResult();
 
    hasher.reset();
-   hasher.addData(str3, sizeof(str3));
+   hasher.addData(str3);
    Hash h3 = hasher.getResult();
 
    hasher.reset();
    hasher.addSalt(42);
-   hasher.addData(str1, sizeof(str1));
+   hasher.addData(str1);
    Hash h4 = hasher.getResult();
 
    hasher.reset();
    hasher.addSalt(42);
-   hasher.addData(str2, sizeof(str2));
+   hasher.addData(str2);
    Hash h5 = hasher.getResult();
 
    QVERIFY(h1 == h2);
@@ -1379,9 +1379,48 @@ void Tests::hasherHashValue()
 {
    char str1[] = "abc";
    Hasher hasher;
-   hasher.addData(str1, sizeof(str1) - 1); // -1 to avoid the null termination.
+   hasher.addData(std::span<const char>(str1).first(sizeof(str1) - 1)); // -1 to avoid the null termination.
    Hash h1 = hasher.getResult();
    QCOMPARE(h1.toStr(), "6437b3ac38465133ffb63b75273a8db548c558465d79db03fd359c6c");
+}
+
+void Tests::hasherEmptyAndSegmentedData()
+{
+   Hasher hasher;
+   const Hash empty = hasher.getResult();
+   hasher.addData(std::span<const char>());
+   hasher.addData(QByteArray());
+   QCOMPARE(hasher.getResult(), empty);
+   QCOMPARE(Hasher::hash(QString()), empty);
+
+   // Cross BLAKE3 block and chunk boundaries, with embedded NUL and high-bit bytes.
+   QByteArray data(4097, Qt::Uninitialized);
+   for (qsizetype i = 0; i < data.size(); ++i)
+      data[i] = static_cast<char>(i % 256);
+   hasher.addData(data);
+   const Hash whole = hasher.getResult();
+   hasher.addData(std::span<const char>());
+   QCOMPARE(hasher.getResult(), whole);
+
+   hasher.reset();
+   const std::span<const char> bytes(data);
+   hasher.addData(bytes.first(63));
+   hasher.addData(bytes.subspan(63, 962));
+   hasher.addData(bytes.subspan(1025));
+   QCOMPARE(hasher.getResult(), whole);
+
+   const QString text = QString::fromUtf8("a\0\xc3\xa9", 4);
+   hasher.reset();
+   hasher.addData(text.toUtf8());
+   QCOMPARE(Hasher::hash(text), hasher.getResult());
+   hasher.addSalt(42);
+   QCOMPARE(Hasher::hashWithSalt(text, 42), hasher.getResult());
+
+   hasher.reset();
+   hasher.addData(std::span<const char>(whole.getData(), Hash::HASH_SIZE));
+   QCOMPARE(Hasher::hash(whole), hasher.getResult());
+   hasher.addSalt(42);
+   QCOMPARE(Hasher::hashWithSalt(whole, 42), hasher.getResult());
 }
 
 void Tests::bloomFilter()

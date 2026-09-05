@@ -29,7 +29,7 @@ namespace FM
       virtual ~IDataWriter() {}
 
       /**
-        * @exception IOErrorException
+        * @exception IOErrorException Also thrown for a negative size or a null buffer with a positive size.
         * @exception ChunkDeletedException When trying to write to a deleted chunk.
         * @exception TryToWriteBeyondTheEndOfChunkException
         * @exception hashMismatchException This occurs only when the setting 'check_received_data_integrity' is enabled. When this exception is thrown the chunk data are reset.

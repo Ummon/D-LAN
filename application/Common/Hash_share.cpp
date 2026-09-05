@@ -299,16 +299,12 @@ void Hasher::addSalt(quint64 salt)
    blake3_hasher_update(&this->hasher, saltArray.constData(), saltArray.length());
 }
 
-/**
-  * @param data A pointer to the data.
-  * @param size Size of the given data in bytes.
-  */
-void Hasher::addData(const char* data, int size)
+void Hasher::addData(std::span<const char> data)
 {
-   Q_ASSERT(data);
-   Q_ASSERT(size >= 0);
+   if (data.empty())
+      return;
 
-   blake3_hasher_update(&this->hasher, data, size);
+   blake3_hasher_update(&this->hasher, data.data(), data.size());
 }
 
 Hash Hasher::getResult()
@@ -330,14 +326,14 @@ Common::Hash Hasher::hash(const QString& str)
    const QByteArray data = str.toUtf8();
 
    Hasher hasher;
-   hasher.addData(data.constData(), data.size());
+   hasher.addData(data);
    return hasher.getResult();
 }
 
 Common::Hash Hasher::hash(const Common::Hash& hash)
 {
    Hasher hasher;
-   hasher.addData(hash.getData(), Hash::HASH_SIZE);
+   hasher.addData(std::span<const char>(hash.getData(), Hash::HASH_SIZE));
    return hasher.getResult();
 }
 
@@ -348,7 +344,7 @@ Common::Hash Hasher::hashWithSalt(const QString& str, quint64 salt)
 {
    const QByteArray data = str.toUtf8();
    Hasher hasher;
-   hasher.addData(data.constData(), data.size());
+   hasher.addData(data);
    hasher.addSalt(salt);
    return hasher.getResult();
 }
@@ -356,7 +352,7 @@ Common::Hash Hasher::hashWithSalt(const QString& str, quint64 salt)
 Common::Hash Hasher::hashWithSalt(const Common::Hash& hash, quint64 salt)
 {
    Hasher hasher;
-   hasher.addData(hash.getData(), Hash::HASH_SIZE);
+   hasher.addData(std::span<const char>(hash.getData(), Hash::HASH_SIZE));
    hasher.addSalt(salt);
    return hasher.getResult();
 }

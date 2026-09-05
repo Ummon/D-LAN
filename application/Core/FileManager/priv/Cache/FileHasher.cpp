@@ -187,7 +187,7 @@ bool FileHasher::start(FileForHasher* fileCache, int n, int* amountHashed)
             }
          }
 
-         hasher.addData(buffer, bytesRead);
+         hasher.addData(std::span<const char>(buffer).first(static_cast<size_t>(bytesRead)));
 
          bytesReadChunk += bytesRead;
       }

@@ -20,6 +20,7 @@
 
 #include <cstring>
 #include <optional>
+#include <span>
 
 #include <QHash>
 #include <QString>
@@ -135,7 +136,8 @@ namespace Common
    public:
       Hasher();
       void addSalt(quint64 salt);
-      void addData(const char*, int size);
+      // Hashes a valid byte span. Empty spans are a no-op.
+      void addData(std::span<const char> data);
       Hash getResult();
       void reset();
 

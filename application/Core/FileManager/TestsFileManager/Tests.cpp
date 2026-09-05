@@ -767,6 +767,8 @@ void Tests::createNewFileAndWriteData()
 
       auto writer = chunks[0]->getDataWriter();
       QByteArray data("abcdefghijkl", 12);
+      QVERIFY_EXCEPTION_THROWN(writer->write(data.constData(), -1), IOErrorException);
+      QVERIFY_EXCEPTION_THROWN(writer->write(nullptr, 1), IOErrorException);
       writer->write(data.constData(), data.size());
    }
    catch (NoWriteableDirectoryException&)
