@@ -19,6 +19,7 @@
 #pragma once
 
 #include <functional>
+#include <memory>
 
 #include <QSharedDataPointer>
 #include <QList>
@@ -188,9 +189,9 @@ namespace Common
             root(new Node()), lesserThanFun(lesserThan)
          {}
          SortedArrayData(const SortedArrayData& other) :
-            root(duplicateNode(other.root)),
+            root(nullptr),
             lesserThanFun(other.lesserThanFun)
-         {}
+         { this->root = duplicateNode(other.root); }
          ~SortedArrayData() { deleteNode(this->root); }
 
          Node* root;
@@ -1091,18 +1092,23 @@ typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::getLeftNeig
 template <typename T, int M>
 typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::duplicateNode(Node* node)
 {
-   Node* newNode = new Node();
+   // Own the partially copied subtree so an allocation or element-copy failure
+   // destroys every node already copied, without touching the source tree.
+   std::unique_ptr<Node, decltype(&deleteNode)> newNode(new Node(), &deleteNode);
+   newNode->nbItems = node->nbItems;
+   newNode->size = node->size;
 
-   memcpy(newNode, node, sizeof(Node));
+   for (int i = 0; i < node->nbItems; i++)
+      newNode->items[i] = node->items[i];
 
    for (int i = 0; i <= newNode->nbItems; i++)
-      if (newNode->children[i])
+      if (node->children[i])
       {
-         newNode->children[i] = duplicateNode(newNode->children[i]);
-         newNode->children[i]->parent = newNode;
+         newNode->children[i] = duplicateNode(node->children[i]);
+         newNode->children[i]->parent = newNode.get();
       }
 
-   return newNode;
+   return newNode.release();
 }
 
 template <typename T, int M>
@@ -1274,4 +1280,3 @@ typename Common::SortedArray<T, M>::Position Common::SortedArray<T, M>::partitio
 {
 
 }*/
-

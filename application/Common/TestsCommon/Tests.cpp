@@ -18,6 +18,10 @@
 
 #include <Tests.h>
 
+#include <memory>
+#include <stdexcept>
+#include <vector>
+
 #include <QtDebug>
 #include <QByteArray>
 #include <QFile>
@@ -503,6 +507,116 @@ void Tests::sortedArray()
          result.append(QString::number(a)).append(' ');
       QCOMPARE(result, "2 3 7 9 ");
    }
+}
+
+namespace
+{
+   struct SortedArrayCopyItem
+   {
+      int key = 0;
+      std::shared_ptr<int> resource;
+      std::shared_ptr<int> copiesBeforeThrow;
+
+      bool operator<(const SortedArrayCopyItem& other) const { return key < other.key; }
+
+      SortedArrayCopyItem& operator=(const SortedArrayCopyItem& other)
+      {
+         if (other.copiesBeforeThrow && *other.copiesBeforeThrow >= 0)
+         {
+            if (*other.copiesBeforeThrow == 0)
+               throw std::runtime_error("Element copy failed");
+            --*other.copiesBeforeThrow;
+         }
+         key = other.key;
+         resource = other.resource;
+         copiesBeforeThrow = other.copiesBeforeThrow;
+         return *this;
+      }
+   };
+}
+
+void Tests::sortedArrayCopy()
+{
+   // Small nodes force a tree with several levels and exercise parent links.
+   SortedArray<SortedArrayCopyItem, 3> original;
+   std::vector<std::shared_ptr<int>> resources;
+   for (int i = 0; i < 40; ++i)
+   {
+      resources.push_back(std::make_shared<int>(i));
+      original.insert(SortedArrayCopyItem { i, resources.back(), {} });
+   }
+
+   for (bool useAssignment : { false, true })
+   {
+      auto copy = useAssignment ? SortedArray<SortedArrayCopyItem, 3>() : original;
+      if (useAssignment)
+         copy = original;
+      for (const auto& resource : resources)
+         QCOMPARE(resource.use_count(), 2L); // Copies initially share their tree.
+
+      copy.insert(SortedArrayCopyItem { 40, {}, {} }); // Force detachment.
+      for (const auto& resource : resources)
+         QCOMPARE(resource.use_count(), 3L);
+
+      int expectedKey = 0;
+      for (const auto& item : copy)
+         QCOMPARE(item.key, expectedKey++);
+      QCOMPARE(expectedKey, 41);
+      QCOMPARE(original.size(), 40);
+      QVERIFY(!original.contains(SortedArrayCopyItem { 40, {}, {} }));
+
+      QVERIFY(copy.remove(SortedArrayCopyItem { 0, {}, {} }));
+      QVERIFY(original.contains(SortedArrayCopyItem { 0, {}, {} }));
+      QCOMPARE(resources.front().use_count(), 2L);
+   }
+
+   for (const auto& resource : resources)
+      QCOMPARE(resource.use_count(), 2L);
+   original.clear();
+   for (const auto& resource : resources)
+      QCOMPARE(resource.use_count(), 1L);
+}
+
+void Tests::sortedArrayCopyException()
+{
+   SortedArray<SortedArrayCopyItem, 3> original;
+   auto copiesBeforeThrow = std::make_shared<int>(-1);
+   std::vector<std::shared_ptr<int>> resources;
+   for (int i = 0; i < 40; ++i)
+   {
+      resources.push_back(std::make_shared<int>(i));
+      original.insert(SortedArrayCopyItem { i, resources.back(), copiesBeforeThrow });
+   }
+   auto copy = original;
+   const SortedArrayCopyItem key { 0, {}, {} };
+   const auto initialBudgetOwners = copiesBeforeThrow.use_count();
+
+   // Fail at every element in the recursive copy, including after complete
+   // child subtrees have been copied. No copied resources may survive a failure.
+   for (int successfulCopies = 0; successfulCopies < 40; ++successfulCopies)
+   {
+      *copiesBeforeThrow = successfulCopies;
+      QVERIFY_THROWS_EXCEPTION(std::runtime_error, copy.getFromValue(key));
+      QCOMPARE(copiesBeforeThrow.use_count(), initialBudgetOwners);
+      for (const auto& resource : resources)
+         QCOMPARE(resource.use_count(), 2L);
+      QCOMPARE(copy.size(), original.size());
+      int expectedKey = 0;
+      for (const auto& item : copy)
+         QCOMPARE(item.key, expectedKey++);
+      QCOMPARE(expectedKey, 40);
+   }
+
+   // Both arrays remain usable after a failed detachment.
+   *copiesBeforeThrow = -1;
+   copy.getFromValue(key);
+   for (const auto& resource : resources)
+      QCOMPARE(resource.use_count(), 3L);
+   original.clear();
+   QCOMPARE(*copy.getFromValue(key).resource, 0);
+   copy.clear();
+   for (const auto& resource : resources)
+      QCOMPARE(resource.use_count(), 1L);
 }
 
 void Tests::mapArray()
