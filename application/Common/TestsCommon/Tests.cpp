@@ -18,6 +18,7 @@
 
 #include <Tests.h>
 
+#include <algorithm>
 #include <memory>
 #include <stdexcept>
 #include <type_traits>
@@ -944,6 +945,130 @@ void Tests::sortedArrayEmptyNearestIndex()
    QCOMPARE(array.indexOfNearest(20), 0);
    array.clear();
    QCOMPARE(array.indexOfNearest(20), -1);
+}
+
+void Tests::sortedArrayComparatorConstructor()
+{
+   struct Item
+   {
+      int key = 0;
+      QString payload;
+      // Deliberately no operator<.
+   };
+   SortedArray<Item, 3> array([](const Item& a, const Item& b) { return a.key > b.key; });
+   for (int i = 0; i < 40; ++i)
+      array.insert(Item { i, QString::number(i) });
+   for (int i = 0; i < 40; ++i)
+   {
+      QCOMPARE(array.getFromIndex(i).key, 39 - i);
+      QCOMPARE(array.indexOf(Item { 39 - i, {} }), i);
+   }
+   auto copy = array;
+   copy.clear();
+   copy.insert(Item { 1, "one" });
+   copy.insert(Item { 2, "two" });
+   QCOMPARE(copy.getFromIndex(0).key, 2); // clear() retains the comparator.
+   QCOMPARE(array.size(), 40);
+
+   const std::function<bool(const Item&, const Item&)> emptyComparator;
+   QVERIFY_THROWS_EXCEPTION(std::invalid_argument, (SortedArray<Item, 3>(emptyComparator)));
+   QVERIFY_THROWS_EXCEPTION(std::invalid_argument, array.setSortedFunction(emptyComparator));
+   QCOMPARE(array.getFromIndex(0).key, 39);
+}
+
+void Tests::sortedArrayStandardIterator()
+{
+   using Array = SortedArray<int, 3>;
+   using Iterator = Array::iterator;
+   static_assert(std::forward_iterator<Iterator>);
+   static_assert(std::is_same_v<std::iterator_traits<Iterator>::value_type, int>);
+   static_assert(std::is_same_v<std::iterator_traits<Iterator>::reference, const int&>);
+   static_assert(std::is_same_v<std::iterator_traits<Iterator>::pointer, const int*>);
+   Iterator first;
+   Iterator second;
+   QVERIFY(first == second);
+
+   Array array;
+   QCOMPARE(std::distance(array.begin(), array.end()), 0);
+   std::vector<int> expected;
+   for (int i = 0; i < 40; ++i)
+   {
+      array.insert((i * 17) % 40);
+      expected.push_back(i);
+   }
+   QCOMPARE(std::distance(array.begin(), array.end()), 40);
+   const std::vector<int> actual(array.begin(), array.end());
+   QVERIFY(actual == expected);
+   first = std::find(array.begin(), array.end(), 20);
+   QCOMPARE(*first, 20);
+   second = first;
+   QCOMPARE(*second++, 20);
+   QCOMPARE(*second, 21);
+   QCOMPARE(*first, 20); // Copies can advance independently.
+   first = array.end();
+   QVERIFY(first == array.end());
+
+   Array other;
+   other.insert(99);
+   first = other.begin(); // Assignment can rebind to another container.
+   QCOMPARE(*first, 99);
+}
+
+namespace
+{
+   struct SortedArrayClearItem
+   {
+      inline static int defaultsBeforeThrow = -1;
+      int key = 0;
+      std::shared_ptr<int> resource;
+
+      SortedArrayClearItem()
+      {
+         if (defaultsBeforeThrow == 0)
+            throw std::runtime_error("Default construction failed");
+         if (defaultsBeforeThrow > 0)
+            --defaultsBeforeThrow;
+      }
+      bool operator<(const SortedArrayClearItem& other) const { return key < other.key; }
+   };
+}
+
+void Tests::sortedArrayClearException()
+{
+   SortedArray<SortedArrayClearItem, 3> array;
+   auto resource = std::make_shared<int>(42);
+   SortedArrayClearItem item;
+   item.key = 1;
+   item.resource = resource;
+   array.insert(item);
+   const auto original = array;
+   const auto& constArray = array;
+   const auto owners = resource.use_count();
+
+   // Fail partway through constructing the new empty root, then retry.
+   bool threw = false;
+   SortedArrayClearItem::defaultsBeforeThrow = 1;
+   try { array.clear(); }
+   catch (const std::runtime_error&) { threw = true; }
+   SortedArrayClearItem::defaultsBeforeThrow = -1;
+   QVERIFY(threw);
+   QCOMPARE(array.size(), 1);
+   QCOMPARE(&constArray.getFromIndex(0), &original.getFromIndex(0));
+   QCOMPARE(resource.use_count(), owners);
+   QCOMPARE(*constArray.getFromIndex(0).resource, 42);
+   array.clear();
+   QVERIFY(array.isEmpty());
+   QCOMPARE(original.size(), 1);
+
+   // Clearing shared data must not copy the elements that will be discarded.
+   auto budget = std::make_shared<int>(-1);
+   SortedArray<SortedArrayCopyItem> copying;
+   copying.insert(SortedArrayCopyItem { 1, resource, budget });
+   const auto retained = copying;
+   *budget = 0;
+   copying.clear();
+   QVERIFY(copying.isEmpty());
+   QCOMPARE(retained.size(), 1);
 }
 
 void Tests::mapArray()

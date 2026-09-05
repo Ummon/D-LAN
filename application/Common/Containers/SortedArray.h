@@ -19,7 +19,10 @@
 #pragma once
 
 #include <functional>
+#include <iterator>
 #include <memory>
+#include <stdexcept>
+#include <utility>
 
 #include <QSharedDataPointer>
 #include <QList>
@@ -31,12 +34,20 @@
   *  - Access to element by integer index like an array: 0, 1, 2, . . .
   *  - Found the index of a given value.
   *  - The elements are kept ordered when a new one is inserted.
-  * The type T must have the operator '<' defined.
-  * Otherwise a "lesser than" function can be given with the method 'setSortedFunction'.
+  * T must be default-constructible, copy-constructible and copy-assignable, with a
+  * non-throwing destructor. Insertion forwarding does not support move-only types:
+  * node splitting, rebalancing and copy-on-write still copy elements.
+  * The default constructor requires operator '<'. Types without it must supply
+  * a comparator to the constructor. Comparators must define a strict weak order.
   * Mutable references must not be used to change fields involved in ordering.
   * Remove and reinsert an element when its ordering key changes.
   * Obtain mutable references after copying an array: references obtained before
   * a copy cannot trigger copy-on-write when subsequently used to modify an item.
+  * Iterators are read-only forward iterators. Tree mutations and detachment may
+  * invalidate iterators and references; reacquire them after these operations.
+  * Copying and clear() preserve the original array if allocation or copying fails.
+  * In-place insertion and removal require non-throwing element operations and
+  * comparisons to preserve tree invariants if an operation fails partway through.
   *
   * 'SortedArray' is implemented as a B-Tree, see here for more information: http://en.wikipedia.org/wiki/B-tree
   * M is the order according Knuth's definition. This is the maximum number of children a node can have.
@@ -55,25 +66,34 @@ namespace Common
    template<typename T, int M = 7>
    class SortedArray
    {
+      static_assert(M >= 3 && M % 2 == 1, "SortedArray order M must be odd and at least 3");
+
       struct Node;
       struct Position
       {
          bool operator==(const Position& other) const { return other.node == this->node && other.p == this->p; }
          bool operator!=(const Position& other) const { return !(*this == other); }
-         Node* node; // Should never be 'nullptr'.
-         int p;
+         Node* node = nullptr; // Null only for a value-initialized iterator.
+         int p = 0;
       };
 
    public:
       class NotFoundException {};
-      class InvalidMException {};
 
       class iterator
       {
-         iterator(const SortedArray& array, const Position& position);
+         explicit iterator(const Position& position);
 
       public:
-         iterator(const iterator& other);
+         using iterator_category = std::forward_iterator_tag;
+         using value_type = T;
+         using difference_type = std::ptrdiff_t;
+         using pointer = const T*;
+         using reference = const T&;
+
+         iterator() = default;
+         iterator(const iterator& other) = default;
+         iterator& operator=(const iterator& other) = default;
 
          bool operator==(const iterator& other) const;
          bool operator!=(const iterator& other) const;
@@ -85,11 +105,11 @@ namespace Common
          friend class SortedArray;
 
       private:
-         const SortedArray& array;
          Position currentPosition;
       };
 
       SortedArray();
+      explicit SortedArray(const std::function<bool(const T&, const T&)>& lesserThan);
       SortedArray(const SortedArray& other);
       SortedArray(SortedArray&& other);
 
@@ -191,7 +211,11 @@ namespace Common
       {
          SortedArrayData(const std::function<bool(const T&, const T&)>& lesserThan) :
             root(nullptr), lesserThanFun(lesserThan)
-         { this->root = new Node(); }
+         {
+            if (!this->lesserThanFun)
+               throw std::invalid_argument("SortedArray comparator must not be empty");
+            this->root = new Node();
+         }
          SortedArrayData(const SortedArrayData& other) :
             root(nullptr),
             lesserThanFun(other.lesserThanFun)
@@ -209,14 +233,8 @@ namespace Common
 /////
 
 template <typename T, int M>
-Common::SortedArray<T, M>::iterator::iterator(const SortedArray& array, const Position& position) :
-   array(array), currentPosition(position)
-{
-}
-
-template <typename T, int M>
-Common::SortedArray<T, M>::iterator::iterator(const iterator& other) :
-   array(other.array), currentPosition(other.currentPosition)
+Common::SortedArray<T, M>::iterator::iterator(const Position& position) :
+   currentPosition(position)
 {
 }
 
@@ -261,16 +279,16 @@ typename Common::SortedArray<T, M>::iterator Common::SortedArray<T, M>::iterator
 
 /////
 
-/**
-  * @exception InvalidMException
-  */
 template <typename T, int M>
 Common::SortedArray<T, M>::SortedArray() :
-   d(new SortedArrayData([](const T& e1, const T& e2) { return e1 < e2; }))
+   SortedArray([](const T& e1, const T& e2) { return e1 < e2; })
 {
-   // M must be an odd number.
-   if (M % 2 == 0)
-      throw InvalidMException();
+}
+
+template <typename T, int M>
+Common::SortedArray<T, M>::SortedArray(const std::function<bool(const T&, const T&)>& lesserThan) :
+   d(new SortedArrayData(lesserThan))
+{
 }
 
 template <typename T, int M>
@@ -348,8 +366,9 @@ bool Common::SortedArray<T, M>::remove(const T& value)
 template <typename T, int M>
 void Common::SortedArray<T, M>::clear()
 {
-    deleteNode(this->d->root);
-    this->d->root = new Node();
+   // Allocate before releasing the old tree; do not detach and copy discarded data.
+   QSharedDataPointer<SortedArrayData> empty(new SortedArrayData(this->d.constData()->lesserThanFun));
+   this->d.swap(empty);
 }
 
 template <typename T, int M>
@@ -393,7 +412,7 @@ template <typename T, int M>
 typename Common::SortedArray<T, M>::iterator Common::SortedArray<T, M>::begin() const
 {
    Node* firstNode = getLeftmostNode(this->d->root);
-   return iterator(*this, { firstNode, 0 });
+   return iterator({ firstNode, 0 });
 }
 
 /**
@@ -405,19 +424,19 @@ template <typename T, int M>
 typename Common::SortedArray<T, M>::iterator Common::SortedArray<T, M>::end() const
 {
    Node* lastNode = getRightmostNode(this->d->root);
-   return iterator(*this, { lastNode, lastNode->nbItems });
+   return iterator({ lastNode, lastNode->nbItems });
 }
 
 template <typename T, int M>
 typename Common::SortedArray<T, M>::iterator Common::SortedArray<T, M>::iteratorOf(const T& value) const
 {
-   return iterator(*this, positionOf(this->d->root, value, this->d->lesserThanFun));
+   return iterator(positionOf(this->d->root, value, this->d->lesserThanFun));
 }
 
 template <typename T, int M>
 typename Common::SortedArray<T, M>::iterator Common::SortedArray<T, M>::iteratorOfNearest(const T& value) const
 {
-   return iterator(*this, positionOfNearest(this->d->root, value, this->d->lesserThanFun));
+   return iterator(positionOfNearest(this->d->root, value, this->d->lesserThanFun));
 }
 
 /**
