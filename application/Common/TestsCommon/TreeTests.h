@@ -40,6 +40,7 @@ private slots:
    void defaultInitialization();
    void insertElements();
    void retrieveElements();
+   void constChildAccess();
    void invalidIndices();
    void clampInsertionPosition();
    void iterateBreathFirst();

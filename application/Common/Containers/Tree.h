@@ -102,7 +102,8 @@ namespace Common
       virtual TreeType* getParent();
       virtual const TreeType* getParent() const;
       virtual int getNbChildren() const;
-      virtual TreeType* getChild(int pos) const;
+      virtual TreeType* getChild(int pos);
+      virtual const TreeType* getChild(int pos) const;
       virtual void moveChild(int from, int to);
       virtual TreeType* insertChild(const ItemType& item);
       virtual TreeType* insertChild(const ItemType& item, int pos);
@@ -297,10 +298,18 @@ int Common::Tree<ItemType, TreeType>::getNbChildren() const
 }
 
 template <typename ItemType, typename TreeType>
-TreeType* Common::Tree<ItemType, TreeType>::getChild(int pos) const
+TreeType* Common::Tree<ItemType, TreeType>::getChild(int pos)
 {
    if (pos < 0 || pos >= this->children.size())
-      return 0;
+      return nullptr;
+   return this->children[pos];
+}
+
+template <typename ItemType, typename TreeType>
+const TreeType* Common::Tree<ItemType, TreeType>::getChild(int pos) const
+{
+   if (pos < 0 || pos >= this->children.size())
+      return nullptr;
    return this->children[pos];
 }
 

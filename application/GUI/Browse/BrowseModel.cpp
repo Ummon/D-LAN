@@ -66,7 +66,7 @@ QModelIndex BrowseModel::index(int row, int column, const QModelIndex& parent) c
    else
       parentTree = static_cast<Tree*>(parent.internalPointer());
 
-   Tree* childTree = parentTree->getChild(row);
+   const Tree* childTree = parentTree->getChild(row);
 
    if (childTree)
       return this->createIndex(row, column, childTree);

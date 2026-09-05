@@ -68,7 +68,7 @@ QModelIndex RemoteBrowseModel::index(int row, int column, const QModelIndex& par
    else
       parentTree = static_cast<Tree*>(parent.internalPointer());
 
-   Tree* childTree = parentTree->getChild(row);
+   const Tree* childTree = parentTree->getChild(row);
 
    if (childTree)
       return this->createIndex(row, column, childTree);

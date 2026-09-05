@@ -21,6 +21,7 @@ using namespace Common;
 
 #include <QList>
 #include <limits>
+#include <type_traits>
 
 namespace
 {
@@ -125,6 +126,24 @@ void TreeTests::retrieveElements()
    }
 }
 
+void TreeTests::constChildAccess()
+{
+   IntTree tree;
+   const IntTree& constTree = tree;
+   static_assert(std::is_same_v<decltype(tree.getChild(0)), IntTree*>);
+   static_assert(std::is_same_v<decltype(constTree.getChild(0)), const IntTree*>);
+   static_assert(std::is_same_v<decltype(constTree.getChild(0)->getChild(0)), const IntTree*>);
+   static_assert(std::is_same_v<decltype(constTree.getChild(0)->getItem()), const int&>);
+
+   IntTree* child = tree.insertChild(1);
+   child->insertChild(2);
+   QCOMPARE(constTree.getChild(0), child);
+   QCOMPARE(constTree.getChild(0)->getChild(0)->getItem(), 2);
+
+   tree.getChild(0)->setItem(3);
+   QCOMPARE(constTree.getChild(0)->getItem(), 3);
+}
+
 void TreeTests::invalidIndices()
 {
    IntTree tree;
@@ -139,6 +158,7 @@ void TreeTests::invalidIndices()
       for (int pos : { std::numeric_limits<int>::min(), -1, childCount, std::numeric_limits<int>::max() })
       {
          QVERIFY(tree.getChild(pos) == nullptr);
+         QVERIFY(constTree.getChild(pos) == nullptr);
          QVERIFY_THROWS_EXCEPTION(OutOfRangeException, tree[pos]);
          QVERIFY_THROWS_EXCEPTION(OutOfRangeException, constTree[pos]);
 
