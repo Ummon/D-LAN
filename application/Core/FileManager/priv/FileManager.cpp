@@ -54,6 +54,14 @@ using namespace FM;
 
 LOG_INIT_CPP(FileManager)
 
+namespace
+{
+   bool isSearchableEntry(const Entry* entry)
+   {
+      return !Global::isFileUnfinished(entry->getName()) && !entry->getUserName().isEmpty();
+   }
+}
+
 FileManager::FileManager(QSharedPointer<HC::IHashCache> hashCache) :
    fileUpdater(this),
    cache(hashCache)
@@ -498,13 +506,10 @@ void FileManager::deleteSharedEntry(SharedEntry* sharedEntry)
 
 void FileManager::entryAdded(Entry* entry)
 {
-   if (Global::isFileUnfinished(entry->getName()))
+   if (!isSearchableEntry(entry))
       return;
 
    const QString name = entry->getUserName();
-
-   if (name.isEmpty())
-      return;
 
    L_DEBU(QString("Adding entry '%1' to the index . . .").arg(name));
 
@@ -554,7 +559,9 @@ void FileManager::fileResizing(File* file)
 
 void FileManager::fileResized(File* file, qint64 oldSize)
 {
-   this->sizeIndex.addItem(file);
+   // Re-downloading removes the file from search before resizing it. Completion will add it back.
+   if (isSearchableEntry(file))
+      this->sizeIndex.addItem(file);
 }
 
 void FileManager::chunkHashKnown(const QSharedPointer<Chunk>& chunk)

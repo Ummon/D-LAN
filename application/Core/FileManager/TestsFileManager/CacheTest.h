@@ -17,4 +17,6 @@ private slots:
    void browseDirectoryLifetime();
    void partialWrites_data();
    void partialWrites();
+   void unfinishedFilesStayOutOfSearch_data();
+   void unfinishedFilesStayOutOfSearch();
 };

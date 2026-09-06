@@ -5,6 +5,7 @@
 #include <QSemaphore>
 #include <QThread>
 #include <QSignalSpy>
+#include <QScopeGuard>
 
 #include <atomic>
 #include <exception>
@@ -21,6 +22,7 @@
 #include <priv/Cache/Directory.h>
 #include <priv/Cache/SharedEntry.h>
 #include <priv/GetEntriesResult.h>
+#include <priv/FileManager.h>
 
 /**
   * @class CacheTest
@@ -31,6 +33,80 @@
 CacheTest::CacheTest(QObject *parent) :
    QObject(parent)
 {
+}
+
+void CacheTest::unfinishedFilesStayOutOfSearch_data()
+{
+   QTest::addColumn<int>("replacementSize");
+   QTest::newRow("smaller") << 4;
+   QTest::newRow("same-size") << 8;
+   QTest::newRow("larger") << 12;
+}
+
+void CacheTest::unfinishedFilesStayOutOfSearch()
+{
+   QFETCH(int, replacementSize);
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   const auto savedShares = SETTINGS.getRepeated<Protos::Common::SharedEntry>("shared_entries");
+   const auto restoreShares = qScopeGuard([&] { SETTINGS.set("shared_entries", savedShares); });
+   SETTINGS.rm("shared_entries");
+   FM::FileManager manager(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = manager.addASharedPath(temp.path() + '/');
+   QTRY_COMPARE(manager.getCacheStatus(), FM::IFileManager::UP_TO_DATE);
+
+   const auto makeEntry = [&](const QByteArray& data) {
+      Protos::Common::Entry entry;
+      entry.set_type(Protos::Common::Entry::FILE);
+      entry.set_path("/");
+      entry.set_name("resizedownload.txt");
+      entry.set_size(data.size());
+      entry.mutable_shared_entry()->mutable_id()->set_hash(shared.first.ID.getData(), Common::Hash::HASH_SIZE);
+      Common::Hasher hasher;
+      hasher.addData(std::span<const char>(data));
+      const auto hash = hasher.getResult();
+      entry.add_chunks()->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
+      return entry;
+   };
+   const auto search = [&](qint64 size, const QString& words = QString(), const QList<QString>& extensions = {}) {
+      QStringList names;
+      for (const auto& result : manager.find(words, extensions, size, size,
+         Protos::Common::FindPattern::FILE, 100, 65536, true))
+         for (const auto& entry : result.entries())
+            names << QString::fromStdString(entry.entry().name());
+      return names;
+   };
+
+   const QByteArray original(8, 'a');
+   auto originalEntry = makeEntry(original);
+   auto chunks = manager.newFile(originalEntry);
+   QCOMPARE(chunks.size(), 1);
+   QVERIFY(search(original.size()).isEmpty());
+   {
+      auto writer = chunks.first()->getDataWriter();
+      QVERIFY(writer->write(original.constData(), original.size()));
+   }
+   QCOMPARE(search(original.size()), QStringList { "resizedownload.txt" });
+
+   const QByteArray replacement(replacementSize, 'b');
+   auto replacementEntry = makeEntry(replacement);
+   chunks = manager.newFile(replacementEntry);
+   QCOMPARE(chunks.size(), 1);
+   QVERIFY(search(original.size()).isEmpty());
+   QVERIFY(search(replacementSize).isEmpty());
+   QVERIFY(search(replacementSize, "resizedownload").isEmpty());
+   QVERIFY(search(replacementSize, "", { "txt" }).isEmpty());
+   {
+      auto writer = chunks.first()->getDataWriter();
+      QVERIFY(!writer->write(replacement.constData(), 1));
+      QVERIFY(search(replacementSize).isEmpty());
+      QVERIFY(writer->write(replacement.constData() + 1, replacement.size() - 1));
+   }
+   QCOMPARE(search(replacementSize), QStringList { "resizedownload.txt" });
+   QCOMPARE(search(replacementSize, "resizedownload"), QStringList { "resizedownload.txt" });
+   QCOMPARE(search(replacementSize, "", { "txt" }), QStringList { "resizedownload.txt" });
+   if (replacementSize != original.size())
+      QVERIFY(search(original.size()).isEmpty());
 }
 
 void CacheTest::retainedChunksAreDetached_data()
