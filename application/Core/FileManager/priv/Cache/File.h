@@ -37,13 +37,11 @@ namespace FM
    class Chunk;
    class Directory;
    class SharedEntry;
-   class FileHasher;
 
    class File : public Entry
    {
       friend class Directory;
       friend class Chunk;
-      friend class FileHasher;
 
    public:
       File(
@@ -111,7 +109,6 @@ namespace FM
       bool hasAParentDir(Directory* dir);
 
    private:
-      void updateDateLastModified(const QDateTime& date);
       QSharedPointer<QRecursiveMutex> getChunkMutex() const { return this->mutexStorage; }
       void setAsComplete();
       void deleteAllChunks();

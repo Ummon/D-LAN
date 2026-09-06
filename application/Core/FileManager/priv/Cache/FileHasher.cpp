@@ -114,6 +114,31 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed, bool deferPers
       return false;
    }
 
+   const QString filePath = this->currentFileCache->getAbsolutePath();
+   const QFileInfo initialInfo(filePath);
+   const auto restartWithNewChunks = [&]()
+   {
+      L_WARN(QString("The file changed during hashing, its chunks are reset: %1").arg(filePath));
+      // Re-download may already be waiting for us to stop; it owns that transition.
+      if (this->currentFileCache->isComplete())
+         this->currentFileCache->fileHasChangedOnDisk(QFileInfo(filePath));
+      this->toStopHashing = false;
+      this->hashing = false;
+      this->currentFileCache = nullptr;
+      return false;
+   };
+
+   if (!initialInfo.exists())
+   {
+      this->currentFileCache = nullptr;
+      throw IOErrorException();
+   }
+
+   // Previously computed (or loaded) hashes belong to the cached size and date.
+   // Check before skipping any chunks, including when the chunk count is unchanged.
+   if (!this->currentFileCache->correspondTo(initialInfo))
+      return restartWithNewChunks();
+
    // An empty file has no chunk: there is nothing to hash and no file to open.
    const QList<QSharedPointer<Chunk>> chunks = this->currentFileCache->getChunks();
    if (chunks.isEmpty())
@@ -123,8 +148,6 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed, bool deferPers
    }
 
    this->hashing = true;
-
-   const QString& filePath = this->currentFileCache->getAbsolutePath();
 
    L_USER(tr("Computing hashes of %1 . . .").arg(filePath));
 
@@ -170,20 +193,6 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed, bool deferPers
    bool endOfFile = false;
    qint64 bytesReadTotal = 0;
 
-   // The chunk list was built from the file size known at scan time. If the file has grown or shrunk enough
-   // to change the number of chunks (typically a file still being copied), the list is rebuilt from the current
-   // size and the file will be hashed again later.
-   const auto restartWithNewChunks =
-      [&]()
-      {
-         L_WARN(QString("The size of the file has changed during hashing, its chunks are reset: %1").arg(filePath));
-         this->currentFileCache->fileHasChangedOnDisk(QFileInfo(filePath));
-         this->toStopHashing = false;
-         this->hashing = false;
-         this->currentFileCache = nullptr;
-         return false;
-      };
-
    while (!endOfFile)
    {
       int bytesReadChunk = 0;
@@ -216,8 +225,7 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed, bool deferPers
                throw IOErrorException();
             case 0:
                endOfFile = true;
-               this->currentFileCache->setSize(bytesReadChunk + bytesReadTotal + bytesSkipped);
-               if (this->currentFileCache->getNbChunks() != chunks.size())
+               if (bytesReadChunk + bytesReadTotal + bytesSkipped != initialInfo.size())
                   return restartWithNewChunks();
                goto endReading;
             }
@@ -273,7 +281,12 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed, bool deferPers
    }
 #endif
 
-   this->currentFileCache->updateDateLastModified(QFileInfo(filePath).lastModified());
+   // Never attach a new timestamp to hashes computed from an older file version.
+   // Validate partial passes as well as completion, before allowing persistence.
+   const QFileInfo finalInfo(filePath);
+   if (!finalInfo.exists() || finalInfo.size() != initialInfo.size() ||
+       finalInfo.lastModified() != initialInfo.lastModified())
+      return restartWithNewChunks();
 
    this->toStopHashing = false;
    this->hashing = false;

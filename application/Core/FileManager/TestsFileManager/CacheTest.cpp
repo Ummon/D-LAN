@@ -54,6 +54,95 @@ CacheTest::CacheTest(QObject *parent) :
 {
 }
 
+void CacheTest::hashingInvalidatesChangedFiles_data()
+{
+   QTest::addColumn<bool>("duringCall");
+   QTest::addColumn<int>("sizeDelta");
+   for (bool duringCall : { false, true })
+      for (int sizeDelta : { 0, 1, -1 })
+         QTest::newRow(qPrintable(QString("during=%1,sizeDelta=%2").arg(duringCall).arg(sizeDelta)))
+            << duringCall << sizeDelta;
+}
+
+void CacheTest::hashingInvalidatesChangedFiles()
+{
+   QFETCH(bool, duringCall);
+   QFETCH(int, sizeDelta);
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   const int chunkSize = FM::Chunk::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   const QString path = temp.filePath("changing.bin");
+   QByteArray content(2 * chunkSize + 137, 'a');
+   {
+      QFile physical(path);
+      QVERIFY(physical.open(QIODevice::WriteOnly));
+      QCOMPARE(physical.write(content), content.size());
+   }
+   const QDateTime originalDate = QFileInfo(path).lastModified();
+   auto hashCache = QSharedPointer<RecordingHashCache>::create();
+   FM::Cache cache(hashCache);
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   auto file = new FM::File(root, "changing.bin", content.size(), false, originalDate, root->getRootDir());
+   const auto oldChunks = file->getChunks();
+   QSignalSpy removed(&cache, &FM::Cache::chunkRemoved);
+   FM::FileHasher hasher;
+
+   const auto edit = [&] {
+      content[0] = 'b'; // Change data in the chunk that has already been hashed.
+      content.resize(content.size() + sizeDelta, 'c');
+      QFile physical(path);
+      if (!physical.open(QIODevice::ReadWrite) || physical.write(content) != content.size() ||
+          !physical.resize(content.size()) || !physical.flush())
+         return false;
+      // Avoid timestamp-resolution/timing assumptions. Size-only changes deliberately
+      // retain the original timestamp, and stay within the same number of chunks.
+      return physical.setFileTime(sizeDelta ? originalDate : originalDate.addSecs(10), QFileDevice::FileModificationTime);
+   };
+
+   if (duringCall)
+   {
+      bool edited = false;
+      const auto connection = connect(&cache, &FM::Cache::chunkHashKnown, &cache,
+         [&](const auto& chunk) { if (chunk == oldChunks.first()) edited = edit(); }, Qt::DirectConnection);
+      const auto disconnectCallback = qScopeGuard([&] { disconnect(connection); });
+      QVERIFY(!hasher.start(file, 1, nullptr, true));
+      QVERIFY(edited);
+   }
+   else
+   {
+      QVERIFY(!hasher.start(file, 1, nullptr, true));
+      QVERIFY(oldChunks.first()->hasHash());
+      QVERIFY(edit());
+      QVERIFY(!hasher.start(file, 1, nullptr, true));
+   }
+
+   QCOMPARE(removed.count(), oldChunks.size());
+   for (const auto& chunk : oldChunks)
+      QVERIFY(!chunk->isOwnedBy(file));
+   for (const auto& chunk : file->getChunks())
+      QVERIFY(!chunk->hasHash());
+   hasher.flushHashes();
+   QVERIFY(hashCache->writes.isEmpty()); // Retired progress must not be persisted.
+   QCOMPARE(file->getSize(), content.size());
+   QCOMPARE(file->getDateLastModified(), QFileInfo(path).lastModified());
+
+   QVERIFY(hasher.start(file));
+   QCOMPARE(hashCache->writes.size(), 1);
+   QCOMPARE(hashCache->savedDate, QFileInfo(path).lastModified());
+   const auto chunks = file->getChunks();
+   for (int i = 0; i < chunks.size(); ++i)
+   {
+      const int length = qMin(chunkSize, int(content.size()) - i * chunkSize);
+      Common::Hasher expected;
+      expected.addData(std::span<const char>(content).subspan(i * chunkSize, length));
+      QCOMPARE(chunks[i]->getHash(), expected.getResult());
+      QCOMPARE(hashCache->writes.first()[i], expected.getResult());
+   }
+}
+
 void CacheTest::redownloadStopsActiveHashing()
 {
    FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;

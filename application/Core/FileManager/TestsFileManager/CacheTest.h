@@ -9,6 +9,8 @@ public:
    explicit CacheTest(QObject* parent = nullptr);
 
 private slots:
+   void hashingInvalidatesChangedFiles_data();
+   void hashingInvalidatesChangedFiles();
    void redownloadStopsActiveHashing();
    void deferredHashPersistence_data();
    void deferredHashPersistence();

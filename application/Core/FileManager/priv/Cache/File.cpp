@@ -874,12 +874,6 @@ void File::setRootRecursively(SharedEntry* sharedEntry)
    this->root = sharedEntry;
 }
 
-void File::updateDateLastModified(const QDateTime& date)
-{
-   QMutexLocker locker(&this->mutex);
-   this->dateLastModified = date;
-}
-
 /////
 
 /**
