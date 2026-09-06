@@ -46,7 +46,7 @@ UploadManager::UploadManager(QSharedPointer<PM::IPeerManager> peerManager) :
    threadPool(static_cast<int>(SETTINGS.get<quint32>("upload_min_nb_thread")),
    SETTINGS.get<quint32>("upload_thread_lifetime"))
 {
-   this->threadPool.setStackSize(MIN_UPLOAD_THREAD_STACK_SIZE + SETTINGS.get<quint32>("buffer_size_reading"));
+   // Keep the platform's default thread stack size: ChunksUploader's read buffer is heap allocated.
    connect(
       this->peerManager.data(),
       &PM::IPeerManager::getChunks,
@@ -111,5 +111,3 @@ void UploadManager::uploadTimeout()
          break;
       }
 }
-
-const quint32 UploadManager::MIN_UPLOAD_THREAD_STACK_SIZE(32 * 1024);
