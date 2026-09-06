@@ -133,7 +133,9 @@ void ChunksUploader::run()
 
          int bytesRead = 0;
 
-         while (true)
+         // The reader's available data may grow beyond the announced endpoint. Once that
+         // endpoint is reached, even an EOF probe is unnecessary and could fail after success.
+         while (chunk.getOffset() < chunk.getEndOffset())
          {
             if (this->mustStop())
                goto cancelled;

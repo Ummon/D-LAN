@@ -18,6 +18,7 @@ namespace
    {
    public:
       int calls = 0;
+      uint availableBytes = 32;
       std::function<void()> onRead;
 
       int read(char* buffer, uint offset) override
@@ -25,10 +26,11 @@ namespace
          ++this->calls;
          if (this->onRead)
             this->onRead();
-         if (offset >= 32)
+         if (offset >= this->availableBytes)
             return 0;
-         std::fill_n(buffer, 32 - offset, 'x');
-         return 32 - offset;
+         const uint size = qMin(uint(32), this->availableBytes - offset);
+         std::fill_n(buffer, size, 'x');
+         return size;
       }
    };
 
@@ -59,6 +61,8 @@ namespace
    public:
       qint64 pending = 0;
       int writes = 0;
+      qint64 pendingAfterWrite = 4096;
+      QByteArray sent;
       QList<int> waits;
       QSemaphore enteredWait;
       bool closed = false;
@@ -72,10 +76,11 @@ namespace
       QByteArray readAll() override { return {}; }
       bool waitForReadyRead(int) override { return false; }
       qint64 bytesToWrite() const override { return this->pending; }
-      qint64 write(const char*, qint64 size) override
+      qint64 write(const char* data, qint64 size) override
       {
          ++this->writes;
-         this->pending = 4096;
+         this->sent.append(data, size);
+         this->pending = this->pendingAfterWrite;
          return size;
       }
       qint64 write(const QByteArray& bytes) override { return this->write(bytes.constData(), bytes.size()); }
@@ -204,6 +209,55 @@ private slots:
       QVERIFY(!socket->closed);
       QCOMPARE(socket->waits.size(), 6);
       QCOMPARE(upload.getChunks().first().getOffset(), 32);
+   }
+
+   void stopsAtAnnouncedEndpoint_data()
+   {
+      QTest::addColumn<int>("offset");
+      QTest::addColumn<int>("endpoint");
+      QTest::newRow("complete chunk") << 0 << 32;
+      QTest::newRow("growing chunk") << 0 << 16;
+      QTest::newRow("resumed growing chunk") << 8 << 16;
+      QTest::newRow("empty range") << 16 << 16;
+   }
+
+   void stopsAtAnnouncedEndpoint()
+   {
+      QFETCH(int, offset);
+      QFETCH(int, endpoint);
+      auto chunk = QSharedPointer<Chunk>::create();
+      // Simulate data becoming available after the announced size was captured. Any second
+      // read would encounter a file error: a completed upload must not perform that read.
+      chunk->reader->onRead = [&] {
+         if (chunk->reader->calls > 1)
+            throw FM::IOErrorException();
+      };
+      auto socket = QSharedPointer<Socket>::create();
+      socket->pendingAfterWrite = 0;
+      Common::TransferRateCalculator rate;
+      UM::ChunksUploader upload({PM::GetChunkParams(chunk, offset, endpoint, 0)}, socket, rate);
+      upload.run();
+      upload.finished();
+      QCOMPARE(chunk->reader->calls, offset == endpoint ? 0 : 1);
+      QCOMPARE(socket->sent, QByteArray(endpoint - offset, 'x'));
+      QCOMPARE(upload.getChunks().first().getOffset(), endpoint);
+      QVERIFY(!socket->closed);
+   }
+
+   void prematureEofStillClosesSocket()
+   {
+      auto chunk = QSharedPointer<Chunk>::create();
+      chunk->reader->availableBytes = 16;
+      auto socket = QSharedPointer<Socket>::create();
+      socket->pendingAfterWrite = 0;
+      Common::TransferRateCalculator rate;
+      UM::ChunksUploader upload({PM::GetChunkParams(chunk, 0, 32, 0)}, socket, rate);
+      upload.run();
+      upload.finished();
+      QCOMPARE(chunk->reader->calls, 2);
+      QCOMPARE(socket->sent.size(), 16);
+      QCOMPARE(upload.getChunks().first().getOffset(), 16);
+      QVERIFY(socket->closed);
    }
 };
 
