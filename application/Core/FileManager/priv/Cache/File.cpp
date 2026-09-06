@@ -832,7 +832,7 @@ void File::setFileAsHidden(const QString& filepath)
    )
       L_WARN(QString("Unable to set the hidden attribute on %1").arg(filepath));
 #else
-   Q_UNUSED(file)
+   Q_UNUSED(filepath)
 #endif
 }
 

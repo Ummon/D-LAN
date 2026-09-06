@@ -18,8 +18,6 @@
   
 #pragma once
 
-#include <minwindef.h>
-
 #include <QObject>
 #include <QMutex>
 #include <QFile>
@@ -57,9 +55,7 @@ namespace FM
          QElapsedTimer releasedTime; // '!isValid()' if not released.
       };
 
-      static DWORD toCreateFileDesiredAccess(QIODevice::OpenMode mode);
-      static DWORD toCreateFileCreationDisposition(QIODevice::OpenMode mode);      
-      static int toCreateFileOpenHandleFlag(QIODevice::OpenMode mode);
+      static QFile* openFile(const QString& path, QIODevice::OpenMode mode, bool* fileCreated);
 
       QList<OpenedFile> files;
       QMutex mutex;

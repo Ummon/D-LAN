@@ -19,10 +19,6 @@
 #include <priv/Cache/FilePool.h>
 using namespace FM;
 
-#include <windows.h>
-#include <io.h>
-#include <fcntl.h>
-
 #include <QMutexLocker>
 
 #include <priv/Log.h>
@@ -89,52 +85,9 @@ QFile* FilePool::open(const QString& path, QIODevice::OpenMode mode, bool* fileC
       }
    }
 
-   // TODO: Linux.
-   // TODO: Is there some option about buffering?
-   // We use the 'CreateFileW' function to control the sharing mode of the file.
-   HANDLE h =
-      CreateFileW(
-         reinterpret_cast<LPCWSTR>(path.utf16()),
-         toCreateFileDesiredAccess(mode),
-         FILE_SHARE_READ | FILE_SHARE_WRITE, // A file being downloaded (opened in write mode) must also be readable by us: to upload it and to check the integrity of a resumed chunk.
-         nullptr,
-         toCreateFileCreationDisposition(mode),
-         FILE_ATTRIBUTE_NORMAL,
-         nullptr
-      );
-   const DWORD lastError = GetLastError();
-
-   if (h == INVALID_HANDLE_VALUE)
-   {
-      L_DEBU(
-         QString("FilePool::open(%1, %2): invalid handle, error: %3")
-            .arg(path)
-            .arg(mode.toInt())
-            .arg(lastError)
-      );
+   QFile* file = openFile(path, mode, fileCreated);
+   if (!file)
       return nullptr;
-   }
-
-   int fd = _open_osfhandle(reinterpret_cast<intptr_t>(h), toCreateFileOpenHandleFlag(mode));
-   if (fd == -1)
-   {
-      CloseHandle(h);
-      return nullptr;
-   }
-
-   QFile* file = new QFile();
-
-   if (fileCreated && mode.testFlag(QIODevice::WriteOnly))
-      *fileCreated = lastError != ERROR_ALREADY_EXISTS;
-
-   if (!file->open(fd, mode, QFileDevice::AutoCloseHandle))
-   {
-      if (fileCreated)
-         *fileCreated = false;
-      delete file;
-      _close(fd);
-      return nullptr;
-   }
 
    L_DEBU(QString("FilePool::open(%1, %2): file added to the pool").arg(path).arg(mode.toInt()));
    this->files << OpenedFile { file, path, mode, QElapsedTimer() };
@@ -256,28 +209,4 @@ void FilePool::tryToDeleteReleasedFiles()
       for (QListIterator<QFile*> i(filesToDelete); i.hasNext();)
          delete i.next();
    }
-}
-
-DWORD FilePool::toCreateFileDesiredAccess(QIODevice::OpenMode mode)
-{
-   if (mode.testFlag(QIODevice::ReadWrite))
-      return GENERIC_READ | GENERIC_WRITE;
-   else
-      return GENERIC_READ;
-}
-
-DWORD FilePool::toCreateFileCreationDisposition(QIODevice::OpenMode mode)
-{
-   if (mode.testFlag(QIODevice::ReadWrite))
-      return OPEN_ALWAYS;
-   else
-      return OPEN_EXISTING;
-}
-
-int FilePool::toCreateFileOpenHandleFlag(QIODevice::OpenMode mode)
-{
-   if (mode.testFlag(QIODevice::ReadWrite))
-      return _O_RDWR;
-   else
-      return _O_RDONLY;
 }

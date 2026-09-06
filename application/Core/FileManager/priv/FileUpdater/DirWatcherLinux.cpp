@@ -28,6 +28,7 @@ using namespace FM;
 
 #include <sys/select.h>
 #include <sys/inotify.h>
+#include <unistd.h>
 #include <errno.h>
 
 /**
@@ -48,8 +49,7 @@ class UnableToWatchException {};
 /**
   * Constructor.
   */
-DirWatcherLinux::DirWatcherLinux() :
-   mutex(QMutex::Recursive)
+DirWatcherLinux::DirWatcherLinux()
 {
    // Initialize inotify
    this->initialized = true;
@@ -88,8 +88,9 @@ DirWatcherLinux::~DirWatcherLinux()
 /**
   * @copydoc FM::DirWatcher::addPath(..)
   */
-bool DirWatcherLinux::addPath(const QString& path)
+bool DirWatcherLinux::addPath(const QString& directory, const QString& filename)
 {
+   const QString path = filename.isEmpty() ? directory : QDir(directory).filePath(filename);
    QMutexLocker locker(&this->mutex);
 
    if (!this->initialized)
@@ -130,8 +131,9 @@ DirWatcherLinux::File* DirWatcherLinux::getFile(int wd) const
 /**
   * @copydoc FM::DirWatcher::rmPath(..)
   */
-void DirWatcherLinux::rmPath(const QString& path)
+void DirWatcherLinux::rmPath(const QString& directory, const QString& filename)
 {
+   const QString path = filename.isEmpty() ? directory : QDir(directory).filePath(filename);
    QMutexLocker locker(&this->mutex);
 
    if (QDir(path).exists())
@@ -254,7 +256,7 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
       // select is released by timeout.
       L_DEBU("DirWatcherLinux::waitEvent: exit select by timeout");
       QList<WatcherEvent> events;
-      events << WatcherEvent(WatcherEvent::TIMEOUT);
+      events << WatcherEvent(WatcherEvent::TIMEOUT, false);
       return events;
    }
 
@@ -319,7 +321,7 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
                if (fromEvent->cookie == event->cookie)
                {
                   // If an IN_MOVES_FROM event is linked, create a MOVE WatcherEvent.
-                  events << WatcherEvent(WatcherEvent::MOVE, this->getEventPath(fromEvent), this->getEventPath(event));
+                  events << WatcherEvent(WatcherEvent::MOVE, this->getEventPath(fromEvent), this->getEventPath(event), false);
 
                   // If moved object is a directory, apply change to the local directory index
                   if (event->mask & IN_ISDIR)
@@ -346,7 +348,7 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
             // if no IN_MOVED_FROM event is linked, create a NEW WatcherEvent.
             // IN_MOVED_FROM event without IN_MOVE_TO event have to be processed at
             // the end of the loop, when every IN_MOVED_TO event is processed.
-            events << WatcherEvent(WatcherEvent::NEW, this->getEventPath(event));
+            events << WatcherEvent(WatcherEvent::NEW, this->getEventPath(event), false);
 
             if (event->mask & IN_ISDIR)
                try
@@ -361,7 +363,7 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
          if (event->mask & IN_DELETE)
          {
             L_DEBU(QString("inotify event (dir): IN_DELETE (path=%1)").arg(this->getEventPath(event)));
-            events << WatcherEvent(WatcherEvent::DELETED, this->getEventPath(event));
+            events << WatcherEvent(WatcherEvent::DELETED, this->getEventPath(event), false);
             if (event->mask & IN_ISDIR)
                delete dir->children.value(event->name);
          }
@@ -369,7 +371,7 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
          if (event->mask & IN_CREATE)
          {
             L_DEBU(QString("inotify event (dir): IN_CREATE (path=%1)").arg(this->getEventPath(event)));
-            events << WatcherEvent(WatcherEvent::NEW, this->getEventPath(event));
+            events << WatcherEvent(WatcherEvent::NEW, this->getEventPath(event), false);
             if (event->mask & IN_ISDIR)
                try
                {
@@ -381,14 +383,14 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
          if (event->mask & IN_CLOSE_WRITE)
          {
             L_DEBU(QString("inotify event (dir): IN_CLOSE_WRITE (path=%1)").arg(this->getEventPath(event)));
-            events << WatcherEvent(WatcherEvent::CONTENT_CHANGED, this->getEventPath(event));
+            events << WatcherEvent(WatcherEvent::CONTENT_CHANGED, this->getEventPath(event), false);
          }
 
          if (event->mask & IN_DELETE_SELF || event->mask & IN_MOVE_SELF)
          {
             L_DEBU(QString("inotify event (dir): IN_DELETE_SELF || IN_MOVE_SELF (path=%1)").arg(this->getEventPath(event)));
             // processed only for ROOT directory
-            events << WatcherEvent(WatcherEvent::DELETED, this->getEventPath(event));
+            events << WatcherEvent(WatcherEvent::DELETED, this->getEventPath(event), false);
             this->rmPath(this->getEventPath(event));
          }
       }
@@ -404,14 +406,14 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
          if (event->mask & IN_MODIFY)
          {
             L_DEBU(QString("inotify event (file): IN_MODIFY (path=%1)").arg(this->getEventPath(event)));
-            events << WatcherEvent(WatcherEvent::CONTENT_CHANGED, this->getEventPath(event));
+            events << WatcherEvent(WatcherEvent::CONTENT_CHANGED, this->getEventPath(event), true);
          }
 
          if (event->mask & IN_DELETE_SELF)
          {
             const QString& path = this->getEventPath(event);
             L_DEBU(QString("inotify event (file): IN_DELETE_SELF (path=%1)").arg(path));
-            events << WatcherEvent(WatcherEvent::DELETED, path);
+            events << WatcherEvent(WatcherEvent::DELETED, path, true);
             this->rmPath(path);
          }
       }
@@ -422,7 +424,7 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
    for (QMutableListIterator<struct inotify_event*> i(movedFromEvents); i.hasNext();)
    {
       struct inotify_event* e = i.next();
-      events << WatcherEvent(WatcherEvent::DELETED, this->getEventPath(e));
+      events << WatcherEvent(WatcherEvent::DELETED, this->getEventPath(e), false);
    }
 
    return events;

@@ -40,3 +40,21 @@ target_link_libraries(TestsFileManager PRIVATE
 )
 
 add_test(NAME TestsFileManager COMMAND TestsFileManager)
+
+add_executable(TestsFilePool FilePoolTests.cpp)
+target_link_libraries(TestsFilePool PRIVATE FileManager Qt6::Test)
+add_test(NAME TestsFilePool COMMAND TestsFilePool)
+
+# Compile and exercise the portable backend even when the application uses Win32 handles.
+if(WIN32)
+   add_executable(TestsFilePoolQt
+      FilePoolTests.cpp
+      ../priv/Cache/FilePool.cpp
+      ../priv/Cache/FilePool.h
+      ../priv/Cache/FilePoolQt.cpp
+      ../priv/Log.cpp
+   )
+   target_include_directories(TestsFilePoolQt PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
+   target_link_libraries(TestsFilePoolQt PRIVATE Common LogManager Qt6::Test)
+   add_test(NAME TestsFilePoolQt COMMAND TestsFilePoolQt)
+endif()

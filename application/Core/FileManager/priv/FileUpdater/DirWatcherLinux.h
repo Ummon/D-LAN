@@ -20,7 +20,7 @@
 
 #include <QHash>
 #include <QList>
-#include <QMutex>
+#include <QRecursiveMutex>
 
 #include <priv/FileUpdater/DirWatcher.h>
 
@@ -34,8 +34,8 @@ namespace FM
       DirWatcherLinux();
       ~DirWatcherLinux();
 
-      bool addPath(const QString& path);
-      void rmPath(const QString& path);
+      bool addPath(const QString& path, const QString& filename = QString()) override;
+      void rmPath(const QString& path, const QString& filename = QString()) override;
       int nbWatchedPath();
       const QList<WatcherEvent> waitEvent(QList<WaitCondition*> ws = QList<WaitCondition*>());
       const QList<WatcherEvent> waitEvent(int timeout, QList<WaitCondition*> ws = QList<WaitCondition*>());
@@ -83,7 +83,7 @@ namespace FM
       void rmWatcher(int watcher);
       QString getEventPath(inotify_event *event);
 
-      QMutex mutex;
+      QRecursiveMutex mutex;
 
       bool initialized;
       int fileDescriptor;

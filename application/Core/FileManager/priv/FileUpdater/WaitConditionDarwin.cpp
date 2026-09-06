@@ -17,6 +17,7 @@
   */
   
 #include <priv/FileUpdater/WaitConditionDarwin.h>
+#include <climits>
 using namespace FM;
 
 WaitConditionDarwin::WaitConditionDarwin() :
@@ -48,4 +49,3 @@ bool WaitConditionDarwin::wait(int timeout)
    this->mutex.unlock();
    return timeouted;
 }
-

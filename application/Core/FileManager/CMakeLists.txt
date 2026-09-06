@@ -62,6 +62,7 @@ add_library(FileManager STATIC
 
 if(WIN32)
    target_sources(FileManager PRIVATE
+      priv/Cache/FilePoolWin.cpp
       priv/FileUpdater/WaitConditionWin.cpp
       priv/FileUpdater/DirWatcherWin.cpp
       priv/FileUpdater/WaitConditionWin.h
@@ -71,7 +72,6 @@ elseif(APPLE)
    target_sources(FileManager PRIVATE
       priv/FileUpdater/WaitConditionDarwin.cpp
       priv/FileUpdater/WaitConditionDarwin.h
-      priv/FileUpdater/DirWatcherDarwin.h
    )
 elseif(UNIX)
    target_sources(FileManager PRIVATE
@@ -80,6 +80,10 @@ elseif(UNIX)
       priv/FileUpdater/WaitConditionLinux.h
       priv/FileUpdater/DirWatcherLinux.h
    )
+endif()
+
+if(NOT WIN32)
+   target_sources(FileManager PRIVATE priv/Cache/FilePoolQt.cpp)
 endif()
 
 target_compile_definitions(FileManager PRIVATE FILEMANAGER_LIBRARY)
