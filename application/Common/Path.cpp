@@ -4,12 +4,14 @@ using namespace Common;
 #include <QDir>
 #include <algorithm>
 #include <stdexcept>
+#include <utility>
 
 namespace
 {
-   void validateComponent(const QString& component, bool directory)
+   void validateComponent(const QString& component, bool directory, bool windowsPath = false)
    {
-      if (QDir::fromNativeSeparators(component).contains('/') || component.contains(QChar::Null))
+      if (QDir::fromNativeSeparators(component).contains('/') ||
+          (windowsPath && component.contains('\\')) || component.contains(QChar::Null))
          throw std::invalid_argument("Path components must not contain separators or null characters");
       if (!directory && (component == "." || component == ".."))
          throw std::invalid_argument("A filename must not be '.' or '..'");
@@ -35,8 +37,11 @@ Path::Path(const QString& path)
 {
    // Must be known before 'QDir::cleanPath(..)': it removes the trailing slash and normalizes the separators.
    // Read from the trimmed path and not from 'path', a trailing white space would hide the slash.
-   // The separators are normalized first so that a Windows path is handled the same way.
-   const QString trimmedPath = QDir::fromNativeSeparators(path.trimmed());
+   // Recognizable Windows paths accept Windows separators on every host.
+   // Other paths follow native rules, preserving literal backslashes on Unix.
+   QString trimmedPath = QDir::fromNativeSeparators(path.trimmed());
+   if (isWindowsPath(trimmedPath) || trimmedPath.startsWith("//") || trimmedPath.startsWith("\\\\"))
+      trimmedPath.replace('\\', '/');
    const bool isDir =
       trimmedPath.endsWith('/') ||
       trimmedPath == "." || trimmedPath == ".." ||
@@ -121,6 +126,14 @@ Path::Path(QString&& root, QStringList&& dirs, QString&& filename)
 
 void Path::normalizeDirs()
 {
+   // A relative path built on Unix may contain literal backslashes. Do not
+   // introduce those as embedded separators when composing a Windows path.
+   if (isWindowsPath(this->root) || this->root.startsWith("//"))
+   {
+      for (const QString& dir : std::as_const(this->dirs))
+         validateComponent(dir, true, true);
+      validateComponent(this->filename, false, true);
+   }
    if (!this->dirs.contains(QString()) && !this->dirs.contains(".") && !this->dirs.contains(".."))
       return;
 
@@ -225,14 +238,14 @@ bool Path::isSubOf(const Path& other) const
    if (!this->isAbsolute() || !other.isAbsolute())
       return false;
 
-   if (this->getRoot() != other.getRoot())
+   if (this->root != other.root)
       return false;
 
    if (other.isFile())
       return false;
 
-   const auto& thisDirs = this->getDirs();
-   const auto& otherDirs = other.getDirs();
+   const auto& thisDirs = this->dirs;
+   const auto& otherDirs = other.dirs;
 
    if (
       this->isFile() && thisDirs.size() < otherDirs.size() ||
@@ -250,7 +263,7 @@ bool Path::isSubOf(const Path& other) const
 }
 
 /**
-  * Both paths can be directory or file.
+  * 'this' must be a directory; other can be a directory or file.
   * Both paths must be absolute.
   */
 bool Path::isSuperOf(const Path& other) const
@@ -267,10 +280,10 @@ bool Path::isSameDir(const Path& other) const
    if (!this->isAbsolute() || !other.isAbsolute())
       return false;
 
-   if (this->getRoot() != other.getRoot())
+   if (this->root != other.root)
       return false;
 
-   return this->getDirs() == other.getDirs();
+   return this->dirs == other.dirs;
 }
 
 bool Path::operator==(const Path& other) const
@@ -314,9 +327,9 @@ Path Path::removeLastElement() const&
 Path Path::removeLastElement() &&
 {
    if (this->isFile())
-      return this->removeFilename();
+      return std::move(*this).removeFilename();
    else
-      return this->removeLastDir();
+      return std::move(*this).removeLastDir();
 }
 
 Path Path::setFilename(const QString& filename) const &

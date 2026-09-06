@@ -9,6 +9,8 @@ namespace Common
    class Path
    {
    public:
+      // Drive-rooted and UNC paths accept '/' and '\\' on every host.
+      // Other paths use native separator rules (backslashes are literal on Unix).
       Path(const QString& path);
       // Separators, null characters and drive roots such as 'C:' are rejected
       // with std::invalid_argument.
@@ -44,6 +46,9 @@ namespace Common
       QString getFilename() const;
       QString getExtension() const;
 
+      // Comparisons are lexical and case-sensitive, including roots, on every host.
+      // They do not resolve symlinks or query filesystem identity/case sensitivity.
+      // Containment is strict and requires absolute paths; isSameDir ignores filenames.
       bool isSubOf(const Path& other) const;
       bool isSuperOf(const Path& other) const;
       bool isSameDir(const Path& other) const;
@@ -72,6 +77,7 @@ namespace Common
       Path prepend(Common::Path&& other) &&;
 
       // Single directory components, with the same rules as the list constructor.
+      // Drive-rooted and UNC paths also reject backslashes in components on Unix.
       Path appendDir(const QString& dir) const &;
       Path appendDir(const QString& dir) &&;
 

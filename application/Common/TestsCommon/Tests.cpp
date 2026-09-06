@@ -389,11 +389,9 @@ void Tests::path()
    QCOMPARE(Path("//server/share/../../"), uncRoot);
    QCOMPARE(Path("//server/share/../file.txt"), uncRoot.setFilename("file.txt"));
    QCOMPARE(Path("//server/share/./folder//file.txt"), uncFile);
-#ifdef Q_OS_WIN
    QCOMPARE(Path(QStringLiteral("\\\\server\\share")), uncRoot);
    QCOMPARE(Path(QStringLiteral("\\\\server\\share\\folder\\file.txt")), uncFile);
    QCOMPARE(Path(QStringLiteral("\\\\server\\share\\folder\\")).removeLastElement(), uncRoot);
-#endif
 
    // Composed paths must have the same components and containment as parsed paths.
    const Path shared("C:/shared/");
@@ -435,12 +433,32 @@ void Tests::path()
    QVERIFY_THROWS_EXCEPTION(std::invalid_argument, Path(QStringList{"a/b"}));
    QVERIFY_THROWS_EXCEPTION(std::invalid_argument, Path(QStringList{"C:"}));
    QCOMPARE(shared.setFilename(""), shared);
-#ifdef Q_OS_WIN
    QVERIFY_THROWS_EXCEPTION(std::invalid_argument, shared.appendDir(QStringLiteral("a\\b")));
    QVERIFY_THROWS_EXCEPTION(std::invalid_argument, shared.setFilename(QStringLiteral("a\\b")));
-#else
-   QCOMPARE(shared.appendDir(QStringLiteral("a\\b")).getLastDir(), QStringLiteral("a\\b"));
+#ifndef Q_OS_WIN
+   QCOMPARE(Path("/shared/").appendDir(QStringLiteral("a\\b")).getLastDir(), QStringLiteral("a\\b"));
+   QCOMPARE(Path(QStringLiteral("relative\\file.txt")).getFilename(), QStringLiteral("relative\\file.txt"));
+   QVERIFY_THROWS_EXCEPTION(std::invalid_argument, shared.append(Path(QStringLiteral("relative\\file.txt"))));
 #endif
+
+   // Windows absolute paths parse independently of the host's native separators.
+   QCOMPARE(Path(QStringLiteral("C:\\folder\\file.txt")), Path("C:/folder/file.txt"));
+   QCOMPARE(Path(QStringLiteral("C:\\folder\\")), Path("C:/folder/"));
+   QCOMPARE(Path(QStringLiteral("C:/folder\\sub/../file.txt")), Path("C:/folder/file.txt"));
+   QCOMPARE(Path(QStringLiteral("//server/share\\folder\\file.txt")), uncFile);
+
+   // Lexical comparisons deliberately distinguish case, even for Windows roots.
+   QVERIFY(!(Path("C:/folder/file.txt") == Path("c:/folder/file.txt")));
+   QVERIFY(!Path("c:/folder/file.txt").isSubOf(Path("C:/folder/")));
+   QVERIFY(!Path("C:/Folder/file.txt").isSubOf(Path("C:/folder/")));
+   QVERIFY(!Path("C:/Folder/a.txt").isSameDir(Path("C:/folder/b.txt")));
+   QVERIFY(Path("C:/folder/a.txt").isSameDir(Path("C:/folder/b.txt")));
+   QVERIFY(!Path("//Server/share/file.txt").isSubOf(uncRoot));
+
+   const Path fileToRemove("C:/folder/file.txt");
+   const Path dirToRemove("C:/folder/sub/");
+   QCOMPARE(Path(fileToRemove).removeLastElement(), fileToRemove.removeLastElement());
+   QCOMPARE(Path(dirToRemove).removeLastElement(), dirToRemove.removeLastElement());
 }
 
 void Tests::sortedList()
