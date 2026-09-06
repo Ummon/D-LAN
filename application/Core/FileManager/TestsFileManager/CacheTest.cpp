@@ -7,6 +7,7 @@
 #include <QSignalSpy>
 #include <QScopeGuard>
 
+#include <algorithm>
 #include <atomic>
 #include <exception>
 #include <functional>
@@ -20,6 +21,7 @@
 #include <IDataWriter.h>
 #include <priv/Cache/Cache.h>
 #include <priv/Cache/Chunk.h>
+#include <priv/Cache/FileHasher.h>
 #include <priv/Cache/Directory.h>
 #include <priv/Cache/SharedEntry.h>
 #include <priv/GetEntriesResult.h>
@@ -34,6 +36,77 @@
 CacheTest::CacheTest(QObject *parent) :
    QObject(parent)
 {
+}
+
+void CacheTest::hashingRespectsChunkBoundaries_data()
+{
+   QTest::addColumn<int>("bufferSize");
+   QTest::addColumn<bool>("partialTail");
+   QTest::addColumn<bool>("resume");
+   for (int bufferSize : { 4 * 1024 * 1024, 3 * 1024 * 1024, 2 * Common::Constants::CHUNK_SIZE })
+      for (bool partialTail : { false, true })
+         for (bool resume : { false, true })
+            QTest::newRow(qPrintable(QString("buffer=%1,partial=%2,resume=%3").arg(bufferSize).arg(partialTail).arg(resume)))
+               << bufferSize << partialTail << resume;
+}
+
+void CacheTest::hashingRespectsChunkBoundaries()
+{
+   QFETCH(int, bufferSize);
+   QFETCH(bool, partialTail);
+   QFETCH(bool, resume);
+   const int savedChunkSize = FM::Chunk::CHUNK_SIZE;
+   const quint32 savedBufferSize = SETTINGS.get<quint32>("buffer_size_reading");
+   const auto restore = qScopeGuard([&] {
+      FM::Chunk::CHUNK_SIZE = savedChunkSize;
+      SETTINGS.set("buffer_size_reading", savedBufferSize);
+   });
+   const int chunkSize = Common::Constants::CHUNK_SIZE;
+   FM::Chunk::CHUNK_SIZE = chunkSize;
+   SETTINGS.set("buffer_size_reading", quint32(bufferSize));
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   QByteArray content(2 * chunkSize + (partialTail ? 137 : 0), Qt::Uninitialized);
+   for (qsizetype offset = 0; offset < content.size(); offset += chunkSize)
+      std::fill_n(content.data() + offset, qMin(qsizetype(chunkSize), content.size() - offset), char('a' + offset / chunkSize));
+   const QString path = temp.filePath("hash.bin");
+   {
+      QFile physical(path);
+      QVERIFY(physical.open(QIODevice::WriteOnly));
+      QCOMPARE(physical.write(content), content.size());
+   }
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   auto file = new FM::File(root, "hash.bin", content.size(), false, QFileInfo(path).lastModified(), root->getRootDir());
+   const auto chunks = file->getChunks();
+   QCOMPARE(chunks.size(), partialTail ? 3 : 2);
+   QList<int> notifiedChunks;
+   connect(&cache, &FM::Cache::chunkHashKnown, &cache,
+      [&](const auto& chunk) { notifiedChunks.append(chunk->getNum()); });
+   FM::FileHasher hasher;
+   int amountHashed = 0;
+   if (resume)
+   {
+      QVERIFY(!hasher.start(file->asFileForHasher(), 1, &amountHashed));
+      QCOMPARE(amountHashed, chunkSize);
+      QVERIFY(chunks.first()->hasHash());
+      QVERIFY(!chunks[1]->hasHash());
+   }
+   QVERIFY(hasher.start(file->asFileForHasher(), 0, &amountHashed));
+   QCOMPARE(amountHashed, content.size()); // Resuming must skip the already hashed full chunk.
+   QCOMPARE(file->getSize(), content.size());
+   QCOMPARE(notifiedChunks.size(), chunks.size());
+   for (int i = 0; i < chunks.size(); ++i)
+   {
+      const int size = qMin(chunkSize, int(content.size()) - i * chunkSize);
+      Common::Hasher expected;
+      expected.addData(std::span<const char>(content).subspan(i * chunkSize, size));
+      QCOMPARE(chunks[i]->getHash(), expected.getResult());
+      QCOMPARE(chunks[i]->getKnownBytes(), size);
+      QCOMPARE(notifiedChunks[i], i);
+   }
 }
 
 void CacheTest::handlesReopenAfterCompletion_data()

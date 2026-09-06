@@ -129,7 +129,7 @@ bool FileHasher::start(FileForHasher* fileCache, int n, int* amountHashed)
    timer.start();
 #endif
 
-   static const int BUFFER_SIZE = SETTINGS.get<quint32>("buffer_size_reading");
+   const int BUFFER_SIZE = SETTINGS.get<quint32>("buffer_size_reading");
    QByteArray buffer(BUFFER_SIZE, Qt::Uninitialized);
 
    Common::Hasher hasher;
@@ -169,7 +169,9 @@ bool FileHasher::start(FileForHasher* fileCache, int n, int* amountHashed)
 
          int bytesRead = 0;
          {
-            bytesRead = file->read(buffer.data(), BUFFER_SIZE);
+            // A buffer need not divide the chunk size (and may even exceed it). Never consume
+            // bytes belonging to the next chunk when calculating this chunk's hash.
+            bytesRead = file->read(buffer.data(), qMin(BUFFER_SIZE, Chunk::CHUNK_SIZE - bytesReadChunk));
             switch (bytesRead)
             {
             case -1:

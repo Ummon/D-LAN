@@ -9,6 +9,8 @@ public:
    explicit CacheTest(QObject* parent = nullptr);
 
 private slots:
+   void hashingRespectsChunkBoundaries_data();
+   void hashingRespectsChunkBoundaries();
    void handlesReopenAfterCompletion_data();
    void handlesReopenAfterCompletion();
    void readerReopenFailureAfterCompletion();
