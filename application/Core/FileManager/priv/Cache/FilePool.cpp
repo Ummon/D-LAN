@@ -27,8 +27,9 @@ using namespace FM;
   * @class FilePool
   *
   * A file pool keeps a list of opened files ('open(..)').
-  * After a file becomes released ('release(..)' and 'forceReleaseAll(..)'), it stays in open state during at least 'TIME_KEEP_FILE_OPEN_MIN' and can be reused via a call to 'open(..)'.
-  * After the 'TIME_KEEP_FILE_OPEN_MIN' delay, the released file is deleted in the main Qt loop.
+  * Released handles are kept until the cleanup timer closes them or a new open replaces them.
+  * The native Windows backend can reuse a released handle; the portable backend reopens the current path.
+  * forceReleaseAll(..) closes both active and released handles immediately.
   */
 
 FilePool::FilePool(QObject* parent) :
@@ -69,9 +70,9 @@ QFile* FilePool::open(const QString& path, QIODevice::OpenMode mode, bool* fileC
 
       if (file.path == path && file.releasedTime.isValid())
       {
-         if (file.mode != mode)
+         if (file.mode != mode || !canReuseReleasedFiles())
          {
-            L_DEBU(QString("FilePool::open(%1, %2): file opened with different mode: closing existing").arg(path).arg(mode.toInt()));
+            L_DEBU(QString("FilePool::open(%1, %2): reopening released file").arg(path).arg(mode.toInt()));
             delete file.file;
             i.remove();
             break;

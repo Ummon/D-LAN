@@ -23,6 +23,12 @@
 #include <fcntl.h>
 using namespace FM;
 
+bool FilePool::canReuseReleasedFiles()
+{
+   // openFile() omits FILE_SHARE_DELETE, preventing replacement while the handle is cached.
+   return true;
+}
+
 namespace
 {
    DWORD toCreateFileDesiredAccess(QIODevice::OpenMode mode)

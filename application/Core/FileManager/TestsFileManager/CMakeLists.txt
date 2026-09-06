@@ -55,6 +55,7 @@ if(WIN32)
       ../priv/Log.cpp
    )
    target_include_directories(TestsFilePoolQt PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
+   target_compile_definitions(TestsFilePoolQt PRIVATE FILEPOOL_QT_BACKEND)
    target_link_libraries(TestsFilePoolQt PRIVATE Common LogManager Qt6::Test)
    add_test(NAME TestsFilePoolQt COMMAND TestsFilePoolQt)
 endif()

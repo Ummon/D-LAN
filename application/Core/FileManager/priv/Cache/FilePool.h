@@ -56,6 +56,7 @@ namespace FM
       };
 
       static QFile* openFile(const QString& path, QIODevice::OpenMode mode, bool* fileCreated);
+      static bool canReuseReleasedFiles();
 
       QList<OpenedFile> files;
       QMutex mutex;
