@@ -54,6 +54,41 @@ CacheTest::CacheTest(QObject *parent) :
 {
 }
 
+void CacheTest::updaterWaitsForEarliestTask_data()
+{
+   QTest::addColumn<bool>("unwatchable");
+   QTest::addColumn<bool>("retry");
+   QTest::addColumn<qint64>("elapsed");
+   QTest::addColumn<int>("expected");
+   QTest::newRow("idle") << false << false << qint64(0) << -1;
+   QTest::newRow("retry-only") << false << true << qint64(0) << 3000;
+   QTest::newRow("rescan-only") << true << false << qint64(0) << 30000;
+   QTest::newRow("retry-before-rescan") << true << true << qint64(0) << 3000;
+   QTest::newRow("rescan-before-retry") << true << true << qint64(29000) << 1000;
+   QTest::newRow("rescan-remaining") << true << false << qint64(29000) << 1000;
+   QTest::newRow("rescan-due") << true << false << qint64(30000) << 0;
+   QTest::newRow("rescan-overdue-with-retry") << true << true << qint64(35000) << 0;
+   QTest::newRow("no-rescan-after-removal") << false << false << qint64(35000) << -1;
+}
+
+void CacheTest::updaterWaitsForEarliestTask()
+{
+   QFETCH(bool, unwatchable);
+   QFETCH(bool, retry);
+   QFETCH(qint64, elapsed);
+   QFETCH(int, expected);
+   const auto previousPeriod = SETTINGS.get<quint32>("scan_period_unwatchable_dirs");
+   const auto restore = qScopeGuard([&] { SETTINGS.set("scan_period_unwatchable_dirs", previousPeriod); });
+   SETTINGS.set("scan_period_unwatchable_dirs", quint32(30000));
+   FM::FileUpdater updater(nullptr);
+   // Only membership matters to the idle timeout; no filesystem or worker is needed.
+   if (unwatchable)
+      updater.unwatchableEntries.append(nullptr);
+   if (retry)
+      updater.filesWithoutHashesIOError.append(nullptr);
+   QCOMPARE(updater.nextWaitTimeout(elapsed), expected);
+}
+
 void CacheTest::failedHashingIsQueuedOnce_data()
 {
    QTest::addColumn<bool>("prioritize");

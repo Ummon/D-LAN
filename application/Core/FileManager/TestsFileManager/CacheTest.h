@@ -9,6 +9,8 @@ public:
    explicit CacheTest(QObject* parent = nullptr);
 
 private slots:
+   void updaterWaitsForEarliestTask_data();
+   void updaterWaitsForEarliestTask();
    void failedHashingIsQueuedOnce_data();
    void failedHashingIsQueuedOnce();
    void directoryTotalsFollowFileResizing();

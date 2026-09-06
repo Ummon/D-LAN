@@ -269,9 +269,10 @@ void FileUpdater::run()
          )
          {
             L_DEBU("Waiting for a new entry added..");
+            const int timeout = this->nextWaitTimeout(this->timerScanUnwatchable.elapsed());
             this->mutex.unlock();
 
-            this->dirEvent->wait(this->unwatchableEntries.isEmpty() ? -1 : SCAN_PERIOD_UNWATCHABLE_DIRS);
+            this->dirEvent->wait(timeout);
          }
          else
          {
@@ -304,17 +305,13 @@ void FileUpdater::run()
             this->filesWithoutHashesPrioritized.isEmpty()
          )
          {
+            const int timeout = this->nextWaitTimeout(this->timerScanUnwatchable.elapsed());
             this->mutex.unlock();
 
             this->processEvents(
                // Wait for filesystem modifications.
                this->dirWatcher->waitEvent(
-                  !this->filesWithoutHashesIOError.isEmpty() ?
-                       IO_ERROR_WAITING_BEFORE_RETRY
-                     : (!this->unwatchableEntries.isEmpty() ?
-                          SCAN_PERIOD_UNWATCHABLE_DIRS
-                        : -1
-                     ),
+                  timeout,
                   QList<WaitCondition*> { this->dirEvent }
                )
             );
@@ -348,6 +345,19 @@ void FileUpdater::run()
          return;
       }
    }
+}
+
+// Both wait backends wake for the earliest pending maintenance task. Calculate
+// this before releasing mutex so concurrent queue changes cannot race the reads.
+int FileUpdater::nextWaitTimeout(qint64 elapsedSinceScan) const
+{
+   QMutexLocker locker(&this->mutex);
+   int timeout = -1;
+   if (!this->unwatchableEntries.isEmpty())
+      timeout = static_cast<int>(qMax<qint64>(0, this->SCAN_PERIOD_UNWATCHABLE_DIRS - elapsedSinceScan));
+   if (!this->filesWithoutHashesIOError.isEmpty())
+      timeout = timeout < 0 ? this->IO_ERROR_WAITING_BEFORE_RETRY : qMin(timeout, this->IO_ERROR_WAITING_BEFORE_RETRY);
+   return timeout;
 }
 
 void FileUpdater::requeueFailedFiles()

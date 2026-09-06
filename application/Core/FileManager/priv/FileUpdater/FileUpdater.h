@@ -72,6 +72,7 @@ namespace FM
       friend class ::CacheTest; // Exercise scheduler transitions without running its event loop.
       void computeSomeHashes();
       void requeueFailedFiles();
+      int nextWaitTimeout(qint64 elapsedSinceScan) const;
       void updateHashingProgress();
 
       void stopHashing();
