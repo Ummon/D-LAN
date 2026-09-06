@@ -32,6 +32,8 @@
 #include <priv/FileUpdater/DirWatcher.h>
 #include <priv/Cache/FileHasher.h>
 
+class CacheTest;
+
 namespace FM
 {
    class FileManager;
@@ -67,7 +69,9 @@ namespace FM
       void run();
 
    private:
+      friend class ::CacheTest; // Exercise scheduler transitions without running its event loop.
       void computeSomeHashes();
+      void requeueFailedFiles();
       void updateHashingProgress();
 
       void stopHashing();
@@ -113,6 +117,8 @@ namespace FM
 
       QList<Entry*> rootEntriesToRemove;
 
+      // Mutually exclusive queues: scans must include retries in their membership
+      // check, and promotion transfers an existing entry without recounting it.
       QList<File*> filesWithoutHashesIOError;
       QList<File*> filesWithoutHashes;
       QList<File*> filesWithoutHashesPrioritized;

@@ -9,6 +9,8 @@ public:
    explicit CacheTest(QObject* parent = nullptr);
 
 private slots:
+   void failedHashingIsQueuedOnce_data();
+   void failedHashingIsQueuedOnce();
    void directoryTotalsFollowFileResizing();
    void directoryLookupAllowsSizePropagation_data();
    void directoryLookupAllowsSizePropagation();

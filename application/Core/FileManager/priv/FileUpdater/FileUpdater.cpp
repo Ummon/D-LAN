@@ -166,15 +166,16 @@ void FileUpdater::prioritizeAFileToHash(File* file)
    // If a file is incomplete (unfinished) we can't compute its hashes because we don't have all data.
    if (!file->hasAllHashes() && file->isComplete())
    {
-      if (this->filesWithoutHashes.removeOne(file))
-      {
-         this->remainingSizeToHash -= file->getSize();
-      }
+      // Promotion transfers existing work, including a pending I/O retry.
+      // A file must belong to only one of the three scheduling lists.
+      bool alreadyQueued = this->filesWithoutHashes.removeAll(file) != 0;
+      alreadyQueued |= this->filesWithoutHashesIOError.removeAll(file) != 0;
 
       if (!this->filesWithoutHashesPrioritized.contains(file))
       {
          this->filesWithoutHashesPrioritized << file;
-         this->remainingSizeToHash += file->getSize();
+         if (!alreadyQueued)
+            this->remainingSizeToHash += file->getSize();
       }
 
       // Commented to avoid this behavior:
@@ -339,16 +340,7 @@ void FileUpdater::run()
          }
       }
 
-      {
-         // The lists are also modified by 'rmRoot(..)' and 'prioritizeAFileToHash(..)' from other threads.
-         QMutexLocker lockerHashing(&this->hashingMutex);
-         QMutexLocker locker(&this->mutex);
-         if (!this->filesWithoutHashesIOError.isEmpty())
-         {
-            this->filesWithoutHashes.append(this->filesWithoutHashesIOError);
-            this->filesWithoutHashesIOError.clear();
-         }
-      }
+      this->requeueFailedFiles();
 
       if (this->toStop)
       {
@@ -356,6 +348,14 @@ void FileUpdater::run()
          return;
       }
    }
+}
+
+void FileUpdater::requeueFailedFiles()
+{
+   QMutexLocker lockerHashing(&this->hashingMutex);
+   QMutexLocker locker(&this->mutex);
+   this->filesWithoutHashes.append(this->filesWithoutHashesIOError);
+   this->filesWithoutHashesIOError.clear();
 }
 
 /**
@@ -466,7 +466,8 @@ end:
 
    {
       QMutexLocker locker(&this->mutex);
-      if (this->filesWithoutHashes.isEmpty() && this->filesWithoutHashesPrioritized.isEmpty())
+      if (this->filesWithoutHashes.isEmpty() && this->filesWithoutHashesPrioritized.isEmpty() &&
+          this->filesWithoutHashesIOError.isEmpty())
       {
          this->remainingSizeToHash = 0;
          this->progress = 0;
@@ -638,7 +639,8 @@ File* FileUpdater::addScannedFile(const QFileInfo& fileInfo, File* file, Directo
       file->isComplete() &&
       (!file->hasAllHashes() || !file->correspondTo(fileInfo)) &&
       !this->filesWithoutHashes.contains(file) &&
-      !this->filesWithoutHashesPrioritized.contains(file))
+      !this->filesWithoutHashesPrioritized.contains(file) &&
+      !this->filesWithoutHashesIOError.contains(file))
    {
       this->filesWithoutHashes << file;
       this->remainingSizeToHash += file->getSize();
@@ -766,9 +768,9 @@ void FileUpdater::removeFromFilesWithoutHashes(Entry* entry)
    }
    else if (File* file = dynamic_cast<File*>(entry))
    {
-      bool fileInAList = this->filesWithoutHashes.removeOne(file);
-      fileInAList |= this->filesWithoutHashesPrioritized.removeOne(file);
-      fileInAList |= this->filesWithoutHashesIOError.removeOne(file);
+      bool fileInAList = this->filesWithoutHashes.removeAll(file) != 0;
+      fileInAList |= this->filesWithoutHashesPrioritized.removeAll(file) != 0;
+      fileInAList |= this->filesWithoutHashesIOError.removeAll(file) != 0;
 
       if (fileInAList)
          this->remainingSizeToHash -= file->getSize();

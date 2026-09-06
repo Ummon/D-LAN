@@ -54,6 +54,70 @@ CacheTest::CacheTest(QObject *parent) :
 {
 }
 
+void CacheTest::failedHashingIsQueuedOnce_data()
+{
+   QTest::addColumn<bool>("prioritize");
+   QTest::addColumn<bool>("removeDirectory");
+   for (bool prioritize : { false, true })
+      for (bool removeDirectory : { false, true })
+         QTest::newRow(qPrintable(QString("priority=%1,directory=%2").arg(prioritize).arg(removeDirectory)))
+            << prioritize << removeDirectory;
+}
+
+void CacheTest::failedHashingIsQueuedOnce()
+{
+   QFETCH(bool, prioritize);
+   QFETCH(bool, removeDirectory);
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   const QString path = temp.filePath("retry.bin");
+   {
+      QFile physical(path);
+      QVERIFY(physical.open(QIODevice::WriteOnly));
+      QVERIFY(physical.resize(100));
+   }
+   const QFileInfo info(path);
+   auto file = new FM::File(root, "retry.bin", info.size(), false, info.lastModified(), root->getRootDir());
+   FM::FileUpdater updater(nullptr); // Drive scheduling synchronously; only failing I/O runs here.
+   updater.addScannedFile(info, file);
+   QVERIFY(QFile::remove(path));
+   updater.computeSomeHashes();
+   QCOMPARE(updater.filesWithoutHashesIOError.count(file), 1);
+   QVERIFY(updater.filesWithoutHashes.isEmpty());
+
+   // A rescan (using the original metadata) must not duplicate a pending retry.
+   updater.addScannedFile(info, file);
+   updater.addScannedFile(info, file);
+   QVERIFY(updater.filesWithoutHashes.isEmpty());
+   if (prioritize)
+   {
+      updater.prioritizeAFileToHash(file);
+      updater.prioritizeAFileToHash(file);
+      QVERIFY(updater.filesWithoutHashesIOError.isEmpty());
+      QCOMPARE(updater.filesWithoutHashesPrioritized.count(file), 1);
+   }
+   QCOMPARE(updater.remainingSizeToHash, qint64(100));
+   updater.requeueFailedFiles();
+   updater.requeueFailedFiles();
+   QCOMPARE(updater.filesWithoutHashes.count(file), prioritize ? 0 : 1);
+   QCOMPARE(updater.filesWithoutHashesPrioritized.count(file), prioritize ? 1 : 0);
+   QVERIFY(updater.filesWithoutHashesIOError.isEmpty());
+
+   updater.removeFromFilesWithoutHashes(removeDirectory ? static_cast<FM::Entry*>(root->getRootDir()) : file);
+   file->del(false);
+   cache.deleteEntry(file);
+   QVERIFY(updater.filesWithoutHashes.isEmpty());
+   QVERIFY(updater.filesWithoutHashesPrioritized.isEmpty());
+   QVERIFY(updater.filesWithoutHashesIOError.isEmpty());
+   QCOMPARE(updater.remainingSizeToHash, qint64(0));
+   updater.computeSomeHashes(); // No retained pointer may be visited after deletion.
+}
+
 void CacheTest::directoryTotalsFollowFileResizing()
 {
    FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
