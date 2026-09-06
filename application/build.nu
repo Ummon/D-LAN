@@ -84,6 +84,7 @@ def "main run-tests" [] {
         build/release/output/TestsCommon
         build/release/output/TestsFileManager
         build/release/output/TestsPeerManager
+        build/release/output/TestsUploadManager
         build/release/output/TestsNetworkListener
     ]
 

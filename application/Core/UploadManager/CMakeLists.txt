@@ -25,3 +25,7 @@ target_link_libraries(UploadManager PUBLIC
    LogManager
    dlan_protos
 )
+
+if(DLAN_BUILD_TESTS)
+   add_subdirectory(TestsUploadManager)
+endif()

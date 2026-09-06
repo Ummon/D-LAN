@@ -23,6 +23,7 @@ using namespace UM;
 #include <utility>
 
 #include <QCoreApplication>
+#include <QElapsedTimer>
 
 #include <Common/Settings.h>
 
@@ -88,10 +89,13 @@ void ChunksUploader::run()
 {
    static const quint32 BUFFER_SIZE = SETTINGS.get<quint32>("buffer_size_reading");
    static const quint32 SOCKET_BUFFER_SIZE = SETTINGS.get<quint32>("socket_buffer_size");
-   static const quint32 SOCKET_TIMEOUT = SETTINGS.get<quint32>("socket_timeout");
+   const int SOCKET_TIMEOUT = SETTINGS.get<quint32>("socket_timeout");
+   const int STOP_POLL_INTERVAL = 100; // Maximum socket wait before checking cancellation again, in ms.
 
    try
    {
+      if (this->mustStop())
+         goto cancelled;
       // Allocated once for all the chunks, 'buffer_size_reading' may be large.
       QByteArray buffer(BUFFER_SIZE, Qt::Uninitialized);
 
@@ -100,6 +104,8 @@ void ChunksUploader::run()
       // current element is kept as a local copy, the shared list is written under the mutex.
       for (int i = 0; i < this->chunks.size(); i++)
       {
+         if (this->mustStop())
+            goto cancelled;
          // Only this thread writes the elements, reading one without the mutex is safe.
          PM::GetChunkParams chunk = this->chunks.at(i);
 
@@ -127,8 +133,17 @@ void ChunksUploader::run()
 
          int bytesRead = 0;
 
-         while (bytesRead = reader->read(buffer.data(), chunk.getOffset()))
+         while (true)
          {
+            if (this->mustStop())
+               goto cancelled;
+
+            bytesRead = reader->read(buffer.data(), chunk.getOffset());
+            // A read may block; do not write its result if stop() was called meanwhile.
+            if (this->mustStop())
+               goto cancelled;
+            if (bytesRead == 0)
+               break;
             // 'IChunk::getKnownBytes()', which bounds the reader, may have grown since the size was announced
             // to the peer: a chunk may be uploaded while being downloaded. Only the announced amount may be
             // sent, the peer reads exactly this many bytes and would take the next ones for a message header.
@@ -155,19 +170,22 @@ void ChunksUploader::run()
             {
                QMutexLocker locker(&this->mutex);
                if (this->toStop)
-                  goto end;
+                  goto cancelled;
 
                this->chunks[i].setOffset(chunk.getOffset());
             }
 
+            QElapsedTimer noProgress;
+            noProgress.start();
             while (socket->bytesToWrite() > SOCKET_BUFFER_SIZE)
             {
                // Checked here too: this loop may last as long as the whole chunk and 'stop()' expects the
                // upload to end quickly, see 'UploadManager::~UploadManager()'.
                if (this->mustStop())
-                  goto end;
+                  goto cancelled;
 
-               if (!socket->waitForBytesWritten(SOCKET_TIMEOUT))
+               const qint64 remaining = SOCKET_TIMEOUT - noProgress.elapsed();
+               if (remaining <= 0)
                {
                   L_WARN(
                      QString("Socket: cannot write data, error: \"%1\", chunk: %2")
@@ -176,6 +194,22 @@ void ChunksUploader::run()
                   );
                   this->closeTheSocket = true;
                   goto end;
+               }
+
+               // A short wait timing out is not an upload failure. Keep the full configured
+               // no-progress budget, restarting it only when bytes have actually been written.
+               const int waitTime = qMin<qint64>(STOP_POLL_INTERVAL, remaining);
+               QElapsedTimer waitDuration;
+               waitDuration.start();
+               if (socket->waitForBytesWritten(waitTime))
+                  noProgress.restart();
+               else
+               {
+                  // Some errors return immediately. Avoid a busy loop while retaining bounded
+                  // cancellation latency and the same no-progress deadline.
+                  const qint64 delay = waitTime - waitDuration.elapsed();
+                  if (delay > 0 && !this->mustStop())
+                     QThread::msleep(static_cast<unsigned long>(delay));
                }
             }
          }
@@ -228,6 +262,12 @@ void ChunksUploader::run()
       this->closeTheSocket = true;
    }
 
+   goto end;
+
+cancelled:
+   // The peer was promised a raw stream; a truncated upload must never return an idle socket.
+   this->closeTheSocket = true;
+
 end:
    this->socket->moveToThread(this->mainThread);
 }
@@ -249,8 +289,8 @@ bool ChunksUploader::mustStop() const
 
 /**
   * Stop the current upload. It returns immediately.
-  * Do nothing if there is no current upload.
-  * See 'Upload::upload()'.
+  * Socket waits check this request every 100 ms. An in-progress synchronous file read must
+  * return before cancellation can be observed; its data will then be discarded.
   */
 void ChunksUploader::stop()
 {
