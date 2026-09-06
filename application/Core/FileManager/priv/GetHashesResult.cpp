@@ -122,13 +122,14 @@ void GetHashesResult::sendNextHash(QSharedPointer<Chunk> chunk, bool direct)
 {
    if (!direct)
    {
-      int i = this->hashesRemaining.indexOf(chunk->getNum());
-      if (i != -1)
-      {
-         this->hashesRemaining.removeAt(i);
-         if (this->hashesRemaining.empty())
-            disconnect(&this->cache, &Cache::chunkHashKnown, this, &GetHashesResult::chunkHashKnown);
-      }
+      const int i = this->hashesRemaining.indexOf(chunk->getNum());
+      // Notifications can repeat or concern hashes already supplied by the requester/sent by start().
+      if (i == -1)
+         return;
+
+      this->hashesRemaining.removeAt(i);
+      if (this->hashesRemaining.empty())
+         disconnect(&this->cache, &Cache::chunkHashKnown, this, &GetHashesResult::chunkHashKnown);
    }
 
    Protos::Core::HashResult hashResult;

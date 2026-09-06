@@ -25,6 +25,7 @@
 #include <priv/Cache/Directory.h>
 #include <priv/Cache/SharedEntry.h>
 #include <priv/GetEntriesResult.h>
+#include <priv/GetHashesResult.h>
 #include <priv/FileManager.h>
 
 /**
@@ -36,6 +37,61 @@
 CacheTest::CacheTest(QObject *parent) :
    QObject(parent)
 {
+}
+
+void CacheTest::hashResultsOnlySendOutstandingChunks()
+{
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   const QList<Common::Hash> hashes { Common::Hash::rand(), Common::Hash::rand(), Common::Hash::rand(), Common::Hash::rand() };
+   auto file = new FM::File(root, "hashes.bin", qint64(4) * FM::Chunk::CHUNK_SIZE, false,
+      QDateTime::currentDateTime(), root->getRootDir(), { hashes[0], hashes[1], Common::Hash(), Common::Hash() });
+   const auto chunks = file->getChunks();
+   Protos::Common::Entry entry;
+   file->populateEntry(&entry, true);
+   entry.mutable_chunks(1)->clear_hash(); // Requester knows chunk 0; chunk 1 can be sent immediately.
+   FM::FileUpdater updater(nullptr); // Keep the worker stopped; deliver hash notifications explicitly.
+   FM::GetHashesResult result(entry, cache, updater);
+   QSignalSpy received(&result, &FM::IGetHashesResult::nextHash);
+   const auto response = result.start();
+   QCOMPARE(response.status(), Protos::Core::GetHashesResult_Status_OK);
+   QCOMPARE(response.nb_hash(), 3);
+   QCOMPARE(received.size(), 1);
+
+   cache.onChunkHashKnown(chunks[0]); // Not requested.
+   cache.onChunkHashKnown(chunks[1]); // Already sent by start(), while others remain pending.
+   QCOMPARE(received.size(), 1);
+
+   auto unrelated = new FM::File(root, "other.bin", FM::Chunk::CHUNK_SIZE, false,
+      QDateTime::currentDateTime(), root->getRootDir(), { hashes[0] });
+   cache.onChunkHashKnown(unrelated->getChunks().first());
+   QCOMPARE(received.size(), 1);
+
+   chunks[3]->setHash(hashes[3]); // Requested hashes may arrive out of order.
+   cache.onChunkHashKnown(chunks[3]);
+   QCOMPARE(received.size(), 2);
+   cache.onChunkHashKnown(chunks[3]); // Duplicate while chunk 2 is still pending.
+   QCOMPARE(received.size(), 2);
+
+   chunks[2]->setHash(hashes[2]);
+   cache.onChunkHashKnown(chunks[2]);
+   QCOMPARE(received.size(), response.nb_hash());
+   for (const auto& chunk : chunks)
+      cache.onChunkHashKnown(chunk); // Late notifications after completion must also be ignored.
+   QCOMPARE(received.size(), response.nb_hash());
+
+   const QList<int> expectedOrder { 1, 3, 2 };
+   for (int i = 0; i < received.size(); ++i)
+   {
+      const auto value = qvariant_cast<Protos::Core::HashResult>(received[i][0]);
+      QCOMPARE(value.num(), expectedOrder[i]);
+      QCOMPARE(QByteArray::fromStdString(value.hash().hash()), QByteArray(hashes[expectedOrder[i]].getData(), Common::Hash::HASH_SIZE));
+   }
 }
 
 void CacheTest::writerRegistrationSurvivesFileReset()
