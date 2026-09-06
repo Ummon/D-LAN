@@ -9,6 +9,9 @@ public:
    explicit CacheTest(QObject* parent = nullptr);
 
 private slots:
+   void directoryLookupAllowsSizePropagation_data();
+   void directoryLookupAllowsSizePropagation();
+   void directoryCreationDefersDeletion();
    void hashingInvalidatesChangedFiles_data();
    void hashingInvalidatesChangedFiles();
    void redownloadStopsActiveHashing();

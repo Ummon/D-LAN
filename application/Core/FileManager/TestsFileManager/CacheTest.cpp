@@ -864,6 +864,98 @@ namespace
    };
 }
 
+void CacheTest::directoryLookupAllowsSizePropagation_data()
+{
+   QTest::addColumn<bool>("create");
+   QTest::newRow("lookup") << false;
+   QTest::newRow("create-path") << true;
+}
+
+void CacheTest::directoryLookupAllowsSizePropagation()
+{
+   QFETCH(bool, create);
+   class LockedDirectory : public InspectableDirectory
+   {
+   public:
+      using InspectableDirectory::InspectableDirectory;
+      void lock() { this->mutex.lock(); }
+      void unlock() { this->mutex.unlock(); }
+   };
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   auto parent = new InspectableDirectory(root, "parent", root->getRootDir());
+   auto child = new LockedDirectory(root, "child", parent);
+   auto leaf = child->createSubDir("leaf");
+   QSemaphore started, done;
+   FM::Entry* result = nullptr;
+   child->lock();
+   std::thread traversal([&] {
+      started.release();
+      result = create ? parent->createSubDirs({ "child", "leaf" }, false)
+                      : parent->getEntry(Common::Path(QStringList { "child", "leaf" }));
+      done.release();
+   });
+   const bool workerStarted = started.tryAcquire(1, 5000);
+   // Keep the descendant locked until the traversal has had time to block there.
+   // An ancestor must remain available for a child-to-parent size update.
+   const bool finishedWhileLocked = done.tryAcquire(1, 100);
+   const bool parentAvailable = parent->canLock();
+   if (parentAvailable)
+      child->fileSizeChanged(0, 7);
+   child->unlock();
+   traversal.join();
+   QVERIFY(workerStarted);
+   QVERIFY(!finishedWhileLocked);
+   QVERIFY(parentAvailable);
+   QCOMPARE(result, leaf);
+   QCOMPARE(parent->getSize(), qint64(7));
+   QCOMPARE(root->getRootDir()->getSize(), qint64(7));
+}
+
+void CacheTest::directoryCreationDefersDeletion()
+{
+   class ProbeFile : public FM::File
+   {
+   public:
+      using FM::File::File;
+      bool* destroyed = nullptr;
+      ~ProbeFile() override { *this->destroyed = true; }
+   };
+   bool destroyed = false;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   auto retired = new ProbeFile(root, "retired.bin", 0, false, QDateTime::currentDateTime(), root->getRootDir());
+   retired->destroyed = &destroyed;
+   retired->del(false);
+   bool callbackRan = false;
+   bool destroyedDuringTraversal = false;
+   const auto connection = connect(&cache, &FM::Cache::entryAdded, &cache, [&](FM::Entry*) {
+      if (!callbackRan)
+      {
+         callbackRan = true;
+         cache.deleteEntry(retired);
+         destroyedDuringTraversal = destroyed;
+      }
+   }, Qt::DirectConnection);
+   const auto disconnectCallback = qScopeGuard([&] { disconnect(connection); });
+   auto leaf = root->getRootDir()->createSubDirs({ "child", "leaf" }, false);
+   QVERIFY(leaf);
+   QVERIFY(callbackRan);
+   QVERIFY(!destroyedDuringTraversal);
+   QCoreApplication::sendPostedEvents(&cache, QEvent::MetaCall);
+   QVERIFY(destroyed);
+   QCOMPARE(root->getRootDir()->getEntry(Common::Path(QStringList { "child", "leaf" })), leaf);
+   QVERIFY(!root->getRootDir()->getEntry(Common::Path(QStringList { "missing", "leaf" })));
+}
+
 void CacheTest::directoryCleanupAllowsCompletion_data()
 {
    QTest::addColumn<bool>("remove");

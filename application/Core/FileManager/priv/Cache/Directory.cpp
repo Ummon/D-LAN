@@ -331,8 +331,13 @@ Common::Path Directory::getAbsolutePath() const
 
 Entry* Directory::getEntry(const Common::Path& path)
 {
-   QMutexLocker locker(&this->mutex);
+   Cache* cache = this->getCache();
+   cache->beginTraversal();
+   const auto traversal = qScopeGuard([cache] { cache->endTraversal(); });
 
+   // Each lookup locks only the current directory. Holding an ancestor here
+   // would invert the child-to-parent lock order used by size propagation.
+   // The traversal guard keeps the returned intermediate pointers alive.
    Directory* currentDirectory = this;
    for (QStringListIterator i(path.getDirs()); i.hasNext();)
    {
@@ -435,8 +440,12 @@ Directory* Directory::createSubDir(const QString& name, bool physically, bool is
   */
 Directory* Directory::createSubDirs(const QStringList& names, bool physically)
 {
-   QMutexLocker locker(&this->mutex);
+   Cache* cache = this->getCache();
+   cache->beginTraversal();
+   const auto traversal = qScopeGuard([cache] { cache->endTraversal(); });
 
+   // createSubDir serializes lookup/insertion in each parent. Release that
+   // parent's lock before descending, while deferring deletion of the path.
    Directory* currentDir = this;
    foreach (QString name, names)
    {
