@@ -42,6 +42,7 @@ namespace FM
    class File : public Entry
    {
       friend class Directory;
+      friend class Chunk;
 
    public:
       File(
@@ -111,6 +112,7 @@ namespace FM
       bool hasAParentDir(Directory* dir);
 
    private:
+      QSharedPointer<QRecursiveMutex> getChunkMutex() const { return this->mutexStorage; }
       void setAsComplete();
       void deleteAllChunks();
       void closePhysicalFiles();

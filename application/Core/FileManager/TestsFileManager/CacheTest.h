@@ -11,6 +11,9 @@ public:
 private slots:
    void retainedChunksAreDetached_data();
    void retainedChunksAreDetached();
+   void chunkAccessExcludesRetirement_data();
+   void chunkAccessExcludesRetirement();
+   void concurrentChunkMetadata();
    void openingHandlesExcludesCompletion_data();
    void openingHandlesExcludesCompletion();
    void browseDirectoryLifetime_data();

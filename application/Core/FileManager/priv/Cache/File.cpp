@@ -138,9 +138,8 @@ File::~File()
    if (!this->deletePending.exchange(true))
       this->getCache()->onEntryRemoved(this);
 
+   QMutexLocker locker(&this->mutex);
    this->deleteAllChunks();
-
-   QMutexLocker locker(&this->mutex); // We wait that all the current access to this file are finished.
 }
 
 void File::del(bool invokeDelete)
@@ -152,10 +151,6 @@ void File::del(bool invokeDelete)
       this->parentDirectory->fileDeleted(this);
 
    this->deleteAllChunks();
-
-   // We wait that all the current access to this file are finished.
-   this->mutex.lock();
-   this->mutex.unlock();
 
    Entry::del(invokeDelete);
 }
@@ -734,9 +729,9 @@ void File::setAsComplete()
       const QString newPath = Global::removeUnfinishedSuffix(oldPath);
 
       // The opened handles are taken from the pool while holding the read and write locks but they are closed
-      // once all the locks are released: on Windows 'CloseHandle(..)' flushes all the cached data and can block
+      // after releasing the I/O locks: on Windows 'CloseHandle(..)' flushes all the cached data and can block
       // for several seconds with a big file (see 'flushWrittenData()' which limits the amount of data to flush here).
-      // Nothing else must wait for us during this time.
+      // Keep the metadata mutex held so chunk retirement cannot destroy the file during completion.
       QList<QFile*> filesToClose;
       {
          QMutexLocker lockerWrite(&this->writeLock);
@@ -746,10 +741,8 @@ void File::setAsComplete()
          this->fileInWriteMode = nullptr;
       }
 
-      this->mutex.unlock();
       for (QFile* file : std::as_const(filesToClose))
          delete file;
-      this->mutex.lock();
 
       if (!Common::Global::rename(oldPath, newPath))
       {
@@ -772,6 +765,7 @@ void File::setAsComplete()
 
 void File::deleteAllChunks()
 {
+   QMutexLocker locker(&this->mutex);
    // Retained chunks must not access a replacement file generation or outlive the owning File.
    for (const auto& chunk : std::as_const(this->chunks))
    {

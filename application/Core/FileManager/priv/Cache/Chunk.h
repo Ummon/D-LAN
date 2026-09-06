@@ -91,9 +91,13 @@ namespace FM
       bool matchesEntry(const Protos::Common::Entry& entry) const;
 
    private:
+      // The same mutex as the owning File's metadata lock; outlives File through this shared reference.
+      const QSharedPointer<QRecursiveMutex> fileMutex;
       File* file;
       const int num; // First is 0.
       int knownBytes; ///< Relative offset, 0 means we don't have any byte and 'getChunkSize()' means we have all the chunk data.
+      // Hash readers may hold index/result locks. Never call into File while holding this mutex.
+      mutable QMutex hashMutex;
       Common::Hash hash;
    };
 }
@@ -112,6 +116,7 @@ namespace FM
   */
 inline int FM::Chunk::read(char* buffer, int offset)
 {
+   QMutexLocker locker(this->fileMutex.data());
    static const int BUFFER_SIZE_READING = SETTINGS.get<quint32>("buffer_size_reading");
 
    if (!this->file)
@@ -139,6 +144,7 @@ inline int FM::Chunk::read(char* buffer, int offset)
   */
 inline bool FM::Chunk::write(const char* buffer, int nbBytes)
 {
+   QMutexLocker locker(this->fileMutex.data());
    if (!this->file)
       throw ChunkDeletedException();
 

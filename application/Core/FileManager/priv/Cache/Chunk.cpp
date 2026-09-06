@@ -37,13 +37,14 @@ using namespace FM;
   * Each chunk of a file has a unique number which begins at 0 and defines the order of data,
   * chunk#1 represents the data right after chunk#0 and so on.
   *
-  * Concurrent accesses are protected by the 'QSharedPointer', see the 'File' class.
+  * File access and byte counts use the owning file's shared mutex. Detachment holds the same lock.
+  * Hash snapshots use a separate mutex, released before calling into the file or emitting notifications.
   */
 
 int Chunk::CHUNK_SIZE(0);
 
 Chunk::Chunk(File* file, int num, quint32 knownBytes) :
-   file(file), num(num), knownBytes(knownBytes)
+   fileMutex(file ? file->getChunkMutex() : QSharedPointer<QRecursiveMutex>::create()), file(file), num(num), knownBytes(knownBytes)
 {
    L_DEBU(
       QString("New chunk[%1]: %2. File: %3")
@@ -56,7 +57,7 @@ Chunk::Chunk(File* file, int num, quint32 knownBytes) :
 }
 
 Chunk::Chunk(File* file, int num, quint32 knownBytes, const Common::Hash& hash) :
-   file(file), num(num), knownBytes(knownBytes), hash(hash)
+   fileMutex(file ? file->getChunkMutex() : QSharedPointer<QRecursiveMutex>::create()), file(file), num(num), knownBytes(knownBytes), hash(hash)
 {
    L_DEBU(
       QString("New chunk[%1]: %2. File: %3")
@@ -70,18 +71,13 @@ Chunk::Chunk(File* file, int num, quint32 knownBytes, const Common::Hash& hash) 
 
 Chunk::~Chunk()
 {
-   L_DEBU(
-      QString("Chunk Deleted[%1]: %2. File: %3")
-         .arg(num)
-         .arg(
-            this->hash.toStrShort(),
-            this->file ? this->file->getAbsolutePath().toString() : "<file deleted>"
-         )
-   );
+   // The last reference may be released under an index lock; do not acquire the file mutex here.
+   L_DEBU(QString("Chunk Deleted[%1]: %2").arg(this->num).arg(this->getHash().toStrShort()));
 }
 
 QString Chunk::toStringLog() const
 {
+   QMutexLocker locker(this->fileMutex.data());
    return
       QString("num = [%1], hash = %2, knownBytes = %3, size = %4")
          .arg(this->num)
@@ -92,12 +88,14 @@ QString Chunk::toStringLog() const
 
 void Chunk::removeItsIncompleteFile()
 {
+   QMutexLocker locker(this->fileMutex.data());
    if (this->file)
       this->file->deleteIfIncomplete();
 }
 
 bool Chunk::populateEntry(Protos::Common::Entry* entry) const
 {
+   QMutexLocker locker(this->fileMutex.data());
    if (this->file)
    {
       this->file->populateEntry(entry);
@@ -108,6 +106,7 @@ bool Chunk::populateEntry(Protos::Common::Entry* entry) const
 
 Common::Path Chunk::getFilePath() const
 {
+   QMutexLocker locker(this->fileMutex.data());
    if (this->file)
       return this->file->getAbsolutePath();
    return QString();
@@ -125,24 +124,28 @@ QSharedPointer<IDataWriter> Chunk::getDataWriter()
 
 void Chunk::newDataWriterCreated()
 {
+   QMutexLocker locker(this->fileMutex.data());
    if (this->file)
       this->file->newDataWriterCreated();
 }
 
 void Chunk::newDataReaderCreated()
 {
+   QMutexLocker locker(this->fileMutex.data());
    if (this->file)
       this->file->newDataReaderCreated();
 }
 
 void Chunk::dataWriterDeleted()
 {
+   QMutexLocker locker(this->fileMutex.data());
    if (this->file)
       this->file->dataWriterDeleted();
 }
 
 void Chunk::dataReaderDeleted()
 {
+   QMutexLocker locker(this->fileMutex.data());
    if (this->file)
       this->file->dataReaderDeleted();
 }
@@ -152,6 +155,7 @@ void Chunk::dataReaderDeleted()
   */
 void Chunk::fileDeleted()
 {
+   QMutexLocker locker(this->fileMutex.data());
    this->file = nullptr;
 }
 
@@ -162,6 +166,7 @@ int Chunk::getNum() const
 
 int Chunk::getNbTotalChunk() const
 {
+   QMutexLocker locker(this->fileMutex.data());
    if (this->file)
       return this->file->getNbChunks();
 
@@ -170,6 +175,7 @@ int Chunk::getNbTotalChunk() const
 
 QVector<QSharedPointer<Chunk>> Chunk::getOtherChunks() const
 {
+   QMutexLocker locker(this->fileMutex.data());
    if (this->file)
       return this->file->getChunks();
    else
@@ -178,11 +184,13 @@ QVector<QSharedPointer<Chunk>> Chunk::getOtherChunks() const
 
 bool Chunk::hasHash() const
 {
+   QMutexLocker locker(&this->hashMutex);
    return !this->hash.isNull();
 }
 
 Common::Hash Chunk::getHash() const
 {
+   QMutexLocker locker(&this->hashMutex);
    return this->hash;
 }
 
@@ -193,6 +201,7 @@ void Chunk::setHash(const Common::Hash& hash)
 
 void Chunk::setHash(const Common::Hash& hash, bool saveHashes)
 {
+   QMutexLocker locker(this->fileMutex.data());
    #ifdef DEBUG
       L_DEBU(QString("Chunk[%1] setHash(..): %2").arg(this->num).arg(hash.toStrShort()));
       if (!this->hash.isNull() && this->hash != hash)
@@ -206,7 +215,10 @@ void Chunk::setHash(const Common::Hash& hash, bool saveHashes)
          );
    #endif
 
-   this->hash = hash;
+   {
+      QMutexLocker hashLocker(&this->hashMutex);
+      this->hash = hash;
+   }
 
    if (saveHashes && this->file)
       this->file->saveHashes();
@@ -214,16 +226,19 @@ void Chunk::setHash(const Common::Hash& hash, bool saveHashes)
 
 int Chunk::getKnownBytes() const
 {
+   QMutexLocker locker(this->fileMutex.data());
    return this->knownBytes;
 }
 
 void Chunk::setKnownBytes(int bytes)
 {
+   QMutexLocker locker(this->fileMutex.data());
    this->knownBytes = bytes;
 }
 
 int Chunk::getChunkSize() const
 {
+   QMutexLocker locker(this->fileMutex.data());
    if (!this->file)
       return 0;
 
@@ -239,6 +254,7 @@ int Chunk::getChunkSize() const
 
 bool Chunk::isComplete() const
 {
+   QMutexLocker locker(this->fileMutex.data());
    return this->file && this->knownBytes >= this->getChunkSize(); // Should be '==' but we are never 100% sure ;).
 }
 
@@ -247,16 +263,19 @@ bool Chunk::isComplete() const
   */
 bool Chunk::isFileComplete() const
 {
+   QMutexLocker locker(this->fileMutex.data());
    return this->file && this->file->isComplete();
 }
 
 bool Chunk::isOwnedBy(File* file) const
 {
+   QMutexLocker locker(this->fileMutex.data());
    return this->file == file;
 }
 
 bool Chunk::matchesEntry(const Protos::Common::Entry& entry) const
 {
+   QMutexLocker locker(this->fileMutex.data());
    if (this->file)
       return this->file->matchesEntry(entry);
    else

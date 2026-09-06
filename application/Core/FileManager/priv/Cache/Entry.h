@@ -22,6 +22,7 @@
 
 #include <QString>
 #include <QRecursiveMutex>
+#include <QSharedPointer>
 
 #include <Common/Uncopyable.h>
 #include <Common/Path.h>
@@ -116,7 +117,10 @@ namespace FM
 
       std::atomic<bool> deletePending { false }; ///< Set by 'del()', the deletion may be queued in another thread.
 
-      mutable QRecursiveMutex mutex;
+      // Chunks retain the file's mutex so it remains valid while they wait for detachment,
+      // even after the owning entry has been destroyed.
+      const QSharedPointer<QRecursiveMutex> mutexStorage = QSharedPointer<QRecursiveMutex>::create();
+      QRecursiveMutex& mutex = *mutexStorage;
    };
 
    inline bool operator<(const Entry& e1, const Entry& e2)

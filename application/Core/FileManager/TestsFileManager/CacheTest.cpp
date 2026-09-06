@@ -247,6 +247,132 @@ namespace
       mutable QSemaphore opening;
       mutable QSemaphore resume;
    };
+
+   class PausedChunkFile : public PausedOpeningFile
+   {
+   public:
+      using PausedOpeningFile::PausedOpeningFile;
+
+   protected:
+      qint64 writePhysicalFile(const char* buffer, qint64 nbBytes) override
+      {
+         this->opening.release();
+         this->resume.acquire();
+         return FM::File::writePhysicalFile(buffer, nbBytes);
+      }
+   };
+}
+
+void CacheTest::chunkAccessExcludesRetirement_data()
+{
+   QTest::addColumn<bool>("writing");
+   QTest::addColumn<bool>("replacing");
+   QTest::newRow("path-delete") << false << false;
+   QTest::newRow("write-delete") << true << false;
+   QTest::newRow("path-replace") << false << true;
+   QTest::newRow("write-replace") << true << true;
+}
+
+void CacheTest::chunkAccessExcludesRetirement()
+{
+   QFETCH(bool, writing);
+   QFETCH(bool, replacing);
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   QSharedPointer<FM::Chunk> chunk;
+   QSharedPointer<FM::IDataWriter> writer;
+   {
+      FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+      const auto shared = cache.addASharedPath(temp.path() + '/');
+      auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+      QVERIFY(root);
+      auto file = new PausedChunkFile(root, "download.bin", 8, false, QDateTime::currentDateTime(),
+         root->getRootDir(), QList<Common::Hash>(), true);
+      chunk = file->getChunks().first();
+      writer = chunk->getDataWriter();
+      const auto path = file->getAbsolutePath();
+      const QFileInfo info(path);
+      file->pauseOpening = !writing;
+      std::exception_ptr accessError;
+      std::exception_ptr retireError;
+      std::thread access([&] {
+         try
+         {
+            if (writing)
+               chunk->write("x", 1); // Leave the file incomplete; no rename or hash notification.
+            else
+               chunk->getFilePath();
+         }
+         catch (...) { accessError = std::current_exception(); }
+      });
+      const bool reachedAccess = file->opening.tryAcquire(1, 5000);
+      const bool retirementCouldEnter = reachedAccess && file->canEnterCompletion();
+      QSemaphore retiring;
+      QSemaphore retired;
+      std::thread retire([&] {
+         retiring.release();
+         try
+         {
+            if (replacing)
+               file->fileHasChangedOnDisk(info);
+            else
+               file->del(false); // Actual QObject-tree destruction stays on the cache thread.
+         }
+         catch (...) { retireError = std::current_exception(); }
+         retired.release();
+      });
+      retiring.acquire();
+      const bool retiredDuringAccess = retired.tryAcquire(1, 100);
+      file->resume.release();
+      access.join();
+      retire.join();
+      if (!replacing)
+         cache.deleteEntry(file);
+
+      QVERIFY(reachedAccess);
+      QVERIFY(!retirementCouldEnter);
+      QVERIFY(!retiredDuringAccess);
+      QVERIFY(!accessError);
+      QVERIFY(!retireError);
+      QVERIFY(chunk->getFilePath().isNull());
+      QCOMPARE(chunk->getKnownBytes(), writing ? 1 : 0);
+      QVERIFY_THROWS_EXCEPTION(FM::ChunkDeletedException, chunk->write("y", 1));
+   }
+   // A waiter/retained chunk owns its mutex independently of the destroyed File.
+   QVERIFY(chunk->getFilePath().isNull());
+   QVERIFY(!chunk->isComplete());
+   char buffer[1];
+   QVERIFY_THROWS_EXCEPTION(FM::ChunkDeletedException, chunk->read(buffer, 0));
+   writer.clear();
+}
+
+void CacheTest::concurrentChunkMetadata()
+{
+   FM::Chunk chunk(nullptr, 0, 0);
+   const Common::Hash first = Common::Hash::rand();
+   const Common::Hash second = Common::Hash::rand();
+   chunk.setHash(first);
+   std::atomic<bool> invalidSnapshot { false };
+   QSemaphore start;
+   std::thread updater([&] {
+      start.acquire();
+      for (int i = 0; i < 10000; ++i)
+      {
+         chunk.setHash(i % 2 ? first : second);
+         chunk.setKnownBytes(i % 2 ? 123 : 456);
+      }
+   });
+   start.release();
+   for (int i = 0; i < 10000; ++i)
+   {
+      const auto hash = chunk.getHash();
+      const int bytes = chunk.getKnownBytes();
+      if ((hash != first && hash != second) || !chunk.hasHash() || (bytes != 0 && bytes != 123 && bytes != 456))
+         invalidSnapshot = true;
+   }
+   updater.join();
+   QVERIFY(!invalidSnapshot);
 }
 
 void CacheTest::partialWrites_data()
