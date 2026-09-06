@@ -148,7 +148,7 @@ void Chunk::dataReaderDeleted()
 }
 
 /**
-  * Called by a deleted file just before dying.
+  * Called when the owning file retires its chunks, including replacement after a disk change or re-download.
   */
 void Chunk::fileDeleted()
 {

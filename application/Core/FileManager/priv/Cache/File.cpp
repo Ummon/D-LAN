@@ -138,12 +138,7 @@ File::~File()
    if (!this->deletePending.exchange(true))
       this->getCache()->onEntryRemoved(this);
 
-   for (QListIterator<QSharedPointer<Chunk>> i(this->chunks); i.hasNext();)
-      i.next()->fileDeleted();
-
    this->deleteAllChunks();
-
-   this->closePhysicalFiles();
 
    QMutexLocker locker(&this->mutex); // We wait that all the current access to this file are finished.
 }
@@ -156,12 +151,7 @@ void File::del(bool invokeDelete)
    if (this->parentDirectory)
       this->parentDirectory->fileDeleted(this);
 
-   for (QListIterator<QSharedPointer<Chunk>> i(this->chunks); i.hasNext();)
-      i.next()->fileDeleted();
-
    this->deleteAllChunks();
-
-   this->closePhysicalFiles();
 
    // We wait that all the current access to this file are finished.
    this->mutex.lock();
@@ -179,10 +169,12 @@ void File::closePhysicalFiles()
    QMutexLocker lockerWrite(&this->writeLock);
    this->getCache()->getFilePool().release(this->fileInWriteMode, true);
    this->fileInWriteMode = nullptr;
+   this->numDataWriter = 0;
 
    QMutexLocker lockerRead(&this->readLock);
    this->getCache()->getFilePool().release(this->fileInReadMode, true);
    this->fileInReadMode = nullptr;
+   this->numDataReader = 0;
 }
 
 FileForHasher* File::asFileForHasher()
@@ -762,9 +754,16 @@ void File::setAsComplete()
 
 void File::deleteAllChunks()
 {
-   for (QListIterator<QSharedPointer<Chunk>> i(this->chunks); i.hasNext();)
-      this->getCache()->onChunkRemoved(i.next());
+   // Retained chunks must not access a replacement file generation or outlive the owning File.
+   for (const auto& chunk : std::as_const(this->chunks))
+   {
+      chunk->fileDeleted();
+      this->getCache()->onChunkRemoved(chunk);
+   }
    this->chunks.clear();
+
+   // Readers and writers of detached chunks no longer call back into this file when destroyed.
+   this->closePhysicalFiles();
 }
 
 /**
