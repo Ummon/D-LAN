@@ -9,6 +9,7 @@ public:
    explicit CacheTest(QObject* parent = nullptr);
 
 private slots:
+   void redownloadStopsActiveHashing();
    void deferredHashPersistence_data();
    void deferredHashPersistence();
    void hashResultsOnlySendOutstandingChunks();

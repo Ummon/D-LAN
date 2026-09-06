@@ -189,10 +189,15 @@ void File::setToUnfinished(qint64 size, const QList<Common::Hash>& hashes)
    QMutexLocker locker(&this->mutex);
    L_DEBU(QString("File::setToUnfinished: %1").arg(this->getAbsolutePath().toString()));
 
-   this->getCache()->getHashCache()->rmHashes(this->getAbsolutePath());
-
+   // Reject new hashing work before stopping the current hasher. Removal callbacks
+   // acquire the hashing mutex and may wait for file access, so release our mutex
+   // until they return. Keep the old name and chunks intact during that wait.
    this->complete.store(false, std::memory_order_release);
+   locker.unlock();
    this->getCache()->onEntryRemoved(this);
+   locker.relock();
+
+   this->getCache()->getHashCache()->rmHashes(this->getAbsolutePath());
    this->name.append(Global::getUnfinishedSuffix());
    if (this->parentDirectory)
       this->parentDirectory->fileNameChanged(this);

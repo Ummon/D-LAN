@@ -54,6 +54,91 @@ CacheTest::CacheTest(QObject *parent) :
 {
 }
 
+void CacheTest::redownloadStopsActiveHashing()
+{
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   const QString path = temp.filePath("redownload.bin");
+   const qint64 size = qint64(2) * FM::Chunk::CHUNK_SIZE;
+   {
+      QFile physical(path);
+      QVERIFY(physical.open(QIODevice::WriteOnly));
+      QVERIFY(physical.resize(size));
+   }
+   auto hashCache = QSharedPointer<RecordingHashCache>::create();
+   FM::Cache cache(hashCache);
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   auto file = new FM::File(root, "redownload.bin", size, false, QFileInfo(path).lastModified(), root->getRootDir());
+   const auto oldChunks = file->getChunks();
+   const QList<Common::Hash> replacementHashes { Common::Hash::rand(), Common::Hash::rand() };
+   FM::FileHasher hasher;
+   QSemaphore hashingReached, removalReached, hashingDone, resetDone;
+   std::exception_ptr hashingError, resetError;
+
+   // Connect before start() installs the hasher's removal callback. The worker then
+   // attempts a file lock while setToUnfinished() is delivering the removal signal.
+   const auto removalConnection = connect(&cache, &FM::Cache::entryRemoved, &cache, [&](FM::Entry* entry) {
+      if (entry == file)
+         removalReached.release();
+   }, Qt::DirectConnection);
+   const auto hashingConnection = connect(&cache, &FM::Cache::chunkHashKnown, &cache, [&](const QSharedPointer<FM::Chunk>& chunk) {
+      if (chunk == oldChunks.first())
+      {
+         hashingReached.release();
+         if (!removalReached.tryAcquire(1, 5000))
+            qFatal("Re-download did not reach the removal notification");
+         file->getChunks();
+      }
+   }, Qt::DirectConnection);
+
+   const auto disconnectCallbacks = qScopeGuard([&] {
+      disconnect(removalConnection);
+      disconnect(hashingConnection);
+   });
+
+   std::thread hashing([&] {
+      try { hasher.start(file, 0, nullptr, true); }
+      catch (...) { hashingError = std::current_exception(); }
+      hashingDone.release();
+   });
+   if (!hashingReached.tryAcquire(1, 5000))
+      qFatal("Hasher did not reach the first chunk");
+   std::thread resetting([&] {
+      try { file->setToUnfinished(size, replacementHashes); }
+      catch (...) { resetError = std::current_exception(); }
+      resetDone.release();
+   });
+   if (!hashingDone.tryAcquire(1, 5000) || !resetDone.tryAcquire(1, 5000))
+      qFatal("Re-download deadlocked with active hashing");
+   hashing.join();
+   resetting.join();
+
+   QVERIFY(!hashingError);
+   QVERIFY(!resetError);
+   QVERIFY(!file->isComplete());
+   QCOMPARE(file->getName(), QString("redownload.bin.unfinished"));
+   QCOMPARE(QFileInfo(file->getAbsolutePath()).size(), size);
+   for (const auto& chunk : oldChunks)
+      QVERIFY(!chunk->isOwnedBy(file));
+
+   // A scheduler may already have selected this file before it became unfinished.
+   // A fresh hasher has no stop flag to mask an incorrect acceptance of that work.
+   FM::FileHasher lateHasher;
+   QVERIFY(!lateHasher.start(file));
+   const auto newChunks = file->getChunks();
+   QCOMPARE(newChunks.size(), replacementHashes.size());
+   for (int i = 0; i < newChunks.size(); ++i)
+   {
+      QCOMPARE(newChunks[i]->getHash(), replacementHashes[i]);
+      QCOMPARE(newChunks[i]->getKnownBytes(), 0);
+   }
+   hasher.flushHashes();
+   QVERIFY(hashCache->writes.isEmpty());
+}
+
 void CacheTest::deferredHashPersistence_data()
 {
    QTest::addColumn<QString>("finish");

@@ -105,6 +105,15 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed, bool deferPers
       return false;
    }
 
+   // A scheduler may have selected this file before re-download began. Connect
+   // removal above before checking: a transition after this check must stop us,
+   // while a transition already in progress must not start another hashing pass.
+   if (!this->currentFileCache->isComplete())
+   {
+      this->currentFileCache = nullptr;
+      return false;
+   }
+
    // An empty file has no chunk: there is nothing to hash and no file to open.
    const QList<QSharedPointer<Chunk>> chunks = this->currentFileCache->getChunks();
    if (chunks.isEmpty())
