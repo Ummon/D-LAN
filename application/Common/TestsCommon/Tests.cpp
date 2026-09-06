@@ -191,6 +191,13 @@ void Tests::hashStringToInt()
 // Test of 'Common::Path' class.
 void Tests::path()
 {
+   QVERIFY(Path::isWindowsRootPath("C:/"));
+   QVERIFY(Path::isWindowsRootPath(QStringLiteral("C:\\")));
+   QVERIFY(Path::isWindowsRootPath("z:/"));
+   for (const QString& invalidRoot : QStringList{"", "C", "C:", "C:x", "C:?", "C:/dir", "1:/", "/", "//server/share/"})
+      QVERIFY2(!Path::isWindowsRootPath(invalidRoot), qPrintable(invalidRoot));
+   QVERIFY(!Path("C:").isAbsolute());
+
    Path p1;
    QCOMPARE(p1.toString(), QString());
    QCOMPARE(p1.isFile(), false);

@@ -474,9 +474,10 @@ bool Path::isWindowsPath(const QString& path)
 }
 
 /**
-  * @return 'true' if path is a Windows root, for example: "C:", "C:\", "C:/"
+  * @return 'true' for a Windows drive root, for example: "C:\" or "C:/".
+  * A bare drive designator such as "C:" is drive-relative, not a root.
   */
 bool Path::isWindowsRootPath(const QString& path)
 {
-   return (path.length() == 3 || path.length() == 2) && path[0].isLetter() && path[1] == ':';
+   return path.size() == 3 && isWindowsPath(path);
 }
