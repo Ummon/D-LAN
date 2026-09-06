@@ -372,7 +372,8 @@ void File::newDataWriterCreated()
    QMutexLocker locker(&this->writeLock);
 
    this->numDataWriter++;
-   if (this->numDataWriter == 1)
+   // Completion closes the handles for the rename while existing adapters remain registered.
+   if (!this->fileInWriteMode)
    {
       // We have the same performance with or without "QIODevice::Unbuffered".
       bool fileCreated;
@@ -431,28 +432,23 @@ void File::newDataReaderCreated()
    QMutexLocker fileLocker(&this->mutex);
    QMutexLocker locker(&this->readLock);
 
+   if (!this->openReadHandle())
+      throw UnableToOpenFileInReadModeException();
    this->numDataReader++;
-   if (this->numDataReader == 1)
-   {
-      // Why a file in readonly need to be buffered?
-      // Without the flag "QIODevice::Unbuffered" a lot of memory is consumed for nothing
-      // and this memory is not freed when the file is closed ('close()') but only when the QFile is deleted.
-      this->fileInReadMode =
-         this->getCache()->getFilePool().open(this->getAbsolutePath(), QIODevice::ReadOnly | QIODevice::Unbuffered);
+}
 
-      if (!this->fileInReadMode)
-      {
-         this->numDataReader--; // The 'DataReader' isn't created, 'dataReaderDeleted()' will never be called.
-         throw UnableToOpenFileInReadModeException();
-      }
-   }
+// Requires the metadata mutex and readLock. A retained reader can reopen the renamed file too.
+bool File::openReadHandle()
+{
+   if (!this->fileInReadMode)
+      this->fileInReadMode = this->getCache()->getFilePool().open(
+         this->getAbsolutePath(), QIODevice::ReadOnly | QIODevice::Unbuffered);
+   return this->fileInReadMode != nullptr;
 }
 
 /**
-  * 'setAsComplete()' must be called before 'dataWriter' and 'dataReader' are deleted.
-  * This is a bit tricky...
-  * We should use a signal 'void fileClosed(QFile* )' in 'FilePool' connected to a slot in the 'File' class.
-  * In this case, 'File' must inherits 'QObject' which is actually too heavy.
+  * Adapter counts survive completion's handle closure. Release the current handle only when the last
+  * adapter is destroyed, whether that adapter was created before or after the rename.
   */
 void File::dataWriterDeleted()
 {
@@ -551,10 +547,16 @@ void File::flushWrittenData()
   */
 qint64 File::read(char* buffer, qint64 offset, int maxBytesToRead)
 {
+   QMutexLocker fileLocker(&this->mutex);
    QMutexLocker locker(&this->readLock);
 
-   if (!this->fileInReadMode || offset >= this->getSize())
+   if (this->numDataReader == 0 || offset >= this->getSize())
       return 0;
+
+   // Completion may have closed this reader's handle. Resolve the current path under the same
+   // metadata lock as the rename, so a missing handle is never mistaken for end-of-file.
+   if (!this->openReadHandle())
+      throw IOErrorException();
 
    if (!this->fileInReadMode->seek(offset))
       throw IOErrorException();
@@ -721,7 +723,7 @@ bool File::hasAParentDir(Directory* dir)
   * Called from a downloading thread.
   * Set the file as complete, change its name from "<name>.unfinished" to "<name>".
   * If a file with the same name already exists it will be deleted.
-  * The rename process can be only made if there is no reader, in a such case we will wait for the current reader finished.
+  * Close the handles while excluding active I/O and new openers. Existing readers reopen lazily after the rename.
   */
 void File::setAsComplete()
 {

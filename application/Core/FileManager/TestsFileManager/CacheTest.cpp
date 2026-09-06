@@ -36,6 +36,108 @@ CacheTest::CacheTest(QObject *parent) :
 {
 }
 
+void CacheTest::handlesReopenAfterCompletion_data()
+{
+   QTest::addColumn<bool>("oldAdaptersFirst");
+   QTest::addColumn<bool>("resumeOldReader");
+   QTest::newRow("old-first-new-reader") << true << false;
+   QTest::newRow("new-first-new-reader") << false << false;
+   QTest::newRow("old-first-retained-reader") << true << true;
+   QTest::newRow("new-first-retained-reader") << false << true;
+}
+
+void CacheTest::handlesReopenAfterCompletion()
+{
+   QFETCH(bool, oldAdaptersFirst);
+   QFETCH(bool, resumeOldReader);
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   const QByteArray content("completed download");
+   Common::Hasher hasher;
+   hasher.addData(std::span<const char>(content));
+   auto file = new FM::File(root, "download.bin", content.size(), false, QDateTime::currentDateTime(),
+      root->getRootDir(), { hasher.getResult() }, true);
+   auto chunk = file->getChunks().first();
+   auto oldReader = chunk->getDataReader();
+   auto oldWriter = chunk->getDataWriter();
+   QVERIFY(!oldWriter->write(content.constData(), 1));
+   QByteArray buffer(SETTINGS.get<quint32>("buffer_size_reading"), Qt::Uninitialized);
+   QCOMPARE(oldReader->read(buffer.data(), 0), 1);
+   QVERIFY(oldWriter->write(content.constData() + 1, content.size() - 1));
+   QVERIFY(file->isComplete());
+   QVERIFY(!QFileInfo::exists(temp.filePath("download.bin.unfinished")));
+
+   if (resumeOldReader)
+   {
+      QCOMPARE(oldReader->read(buffer.data(), 1), content.size() - 1);
+      QCOMPARE(buffer.first(content.size() - 1), content.sliced(1));
+   }
+   auto newReader = chunk->getDataReader();
+   QCOMPARE(newReader->read(buffer.data(), 0), content.size());
+   QCOMPARE(buffer.first(content.size()), content);
+   auto newWriter = chunk->getDataWriter();
+   // The public chunk is already complete; exercise the reopened physical writer without changing its data.
+   QCOMPARE(file->write(content.constData(), content.size(), 0), content.size());
+
+   if (oldAdaptersFirst)
+   {
+      oldReader.clear();
+      oldWriter.clear();
+   }
+   else
+   {
+      newReader.clear();
+      newWriter.clear();
+   }
+   auto& survivingReader = oldAdaptersFirst ? newReader : oldReader;
+   QCOMPARE(survivingReader->read(buffer.data(), 0), content.size());
+   QCOMPARE(buffer.first(content.size()), content);
+   QCOMPARE(file->write(content.constData(), content.size(), 0), content.size());
+   oldReader.clear();
+   oldWriter.clear();
+   newReader.clear();
+   newWriter.clear();
+
+   // Both generations have gone: a fresh pair must still open and close normally.
+   auto reader = chunk->getDataReader();
+   auto writer = chunk->getDataWriter();
+   QCOMPARE(reader->read(buffer.data(), 0), content.size());
+   QCOMPARE(file->write(content.constData(), content.size(), 0), content.size());
+}
+
+void CacheTest::readerReopenFailureAfterCompletion()
+{
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   auto file = new FM::File(root, "download.bin", 1, false, QDateTime::currentDateTime(),
+      root->getRootDir(), QList<Common::Hash>(), true);
+   auto chunk = file->getChunks().first();
+   auto oldReader = chunk->getDataReader();
+   auto writer = chunk->getDataWriter();
+   QVERIFY(chunk->write("x", 1));
+   const QString path = temp.filePath("download.bin");
+   const QString movedPath = temp.filePath("moved.bin");
+   QVERIFY(QFile::rename(path, movedPath)); // Completion closed both handles.
+   QByteArray buffer(SETTINGS.get<quint32>("buffer_size_reading"), Qt::Uninitialized);
+   QVERIFY_THROWS_EXCEPTION(FM::IOErrorException, oldReader->read(buffer.data(), 0));
+   QVERIFY_THROWS_EXCEPTION(FM::UnableToOpenFileInReadModeException, chunk->getDataReader());
+   QVERIFY(QFile::rename(movedPath, path));
+   auto reader = chunk->getDataReader();
+   oldReader.clear(); // The failed constructor must not have changed the adapter count.
+   QCOMPARE(reader->read(buffer.data(), 0), 1);
+   QCOMPARE(buffer[0], 'x');
+}
+
 void CacheTest::unfinishedFilesStayOutOfSearch_data()
 {
    QTest::addColumn<int>("replacementSize");

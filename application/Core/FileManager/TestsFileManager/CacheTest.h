@@ -9,6 +9,9 @@ public:
    explicit CacheTest(QObject* parent = nullptr);
 
 private slots:
+   void handlesReopenAfterCompletion_data();
+   void handlesReopenAfterCompletion();
+   void readerReopenFailureAfterCompletion();
    void directoryCleanupAllowsCompletion_data();
    void directoryCleanupAllowsCompletion();
    void directoryDestructionReleasesParentLocks();
