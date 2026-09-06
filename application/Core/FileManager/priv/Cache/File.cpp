@@ -492,16 +492,29 @@ qint64 File::write(const char* buffer, int nbBytes, qint64 offset)
 {
    QMutexLocker locker(&this->writeLock);
 
-   if (!this->fileInWriteMode || offset >= this->getSize() || !this->fileInWriteMode->seek(offset))
+   if (nbBytes < 0 || (nbBytes > 0 && !buffer) || offset < 0 ||
+       !this->fileInWriteMode || offset >= this->getSize() || !this->fileInWriteMode->seek(offset))
       throw IOErrorException();
 
    const qint64 maxSize = this->getSize() - offset;
-   const qint64 n = this->fileInWriteMode->write(buffer, nbBytes > maxSize ? maxSize : nbBytes);
+   const qint64 sizeToWrite = nbBytes > maxSize ? maxSize : nbBytes;
+   qint64 written = 0;
+   while (written < sizeToWrite)
+   {
+      const qint64 n = this->writePhysicalFile(buffer + written, sizeToWrite - written);
+      if (n <= 0 || n > sizeToWrite - written)
+         throw IOErrorException();
+      written += n;
+   }
 
-   if (n == -1)
-      throw IOErrorException();
+   // Chunk::write advances knownBytes only after the whole request succeeds. On failure a retry
+   // seeks back to the same offset and overwrites any uncommitted partial data.
+   return written;
+}
 
-   return n;
+qint64 File::writePhysicalFile(const char* buffer, qint64 nbBytes)
+{
+   return this->fileInWriteMode->write(buffer, nbBytes);
 }
 
 /**

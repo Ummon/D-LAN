@@ -15,4 +15,6 @@ private slots:
    void openingHandlesExcludesCompletion();
    void browseDirectoryLifetime_data();
    void browseDirectoryLifetime();
+   void partialWrites_data();
+   void partialWrites();
 };

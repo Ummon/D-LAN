@@ -53,15 +53,25 @@ bool DataWriter::write(const char* buffer, int nbBytes)
 
    if (this->CHECK_DATA_INTEGRITY)
    {
+      // A failed write may have hashed bytes that were never committed to knownBytes.
+      // Rebuild lazily so the original I/O exception is preserved, and retries use only accepted data.
+      if (this->hashNeedsRebuild)
+      {
+         this->hasher.reset();
+         this->computeChunkHash();
+      }
+      this->hashNeedsRebuild = true;
       this->hasher.addData(std::span<const char>(buffer, static_cast<size_t>(nbBytes)));
-      if (this->chunk.getKnownBytes() + nbBytes == this->chunk.getChunkSize() && this->hasher.getResult() != this->chunk.getHash())
+      if (qint64(this->chunk.getKnownBytes()) + nbBytes == this->chunk.getChunkSize() && this->hasher.getResult() != this->chunk.getHash())
       {
          this->chunk.setKnownBytes(0);
          throw hashMismatchException();
       }
    }
 
-   return this->chunk.write(buffer, nbBytes);
+   const bool complete = this->chunk.write(buffer, nbBytes);
+   this->hashNeedsRebuild = false;
+   return complete;
 }
 
 /**

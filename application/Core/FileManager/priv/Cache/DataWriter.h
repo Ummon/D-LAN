@@ -40,6 +40,7 @@ namespace FM
       const bool CHECK_DATA_INTEGRITY;
 
       Common::Hasher hasher;
+      bool hashNeedsRebuild = false;
       Chunk& chunk;
    };
 }

@@ -122,6 +122,9 @@ namespace FM
    protected:
       void setRootRecursively(SharedEntry* sharedEntry) override;
 
+      // Called with writeLock held. May return a short write, zero, or -1; must not acquire Entry::mutex.
+      virtual qint64 writePhysicalFile(const char* buffer, qint64 nbBytes);
+
       QList<QSharedPointer<Chunk>> chunks;
       QDateTime dateLastModified;
 

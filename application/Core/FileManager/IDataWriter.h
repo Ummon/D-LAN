@@ -29,6 +29,9 @@ namespace FM
       virtual ~IDataWriter() {}
 
       /**
+        * Writes the entire buffer or throws. A disk-write failure leaves the chunk's known-byte
+        * count unchanged for this request; a retry overwrites any partially written bytes.
+        * @return True if the chunk is complete after accepting the buffer.
         * @exception IOErrorException Also thrown for a negative size or a null buffer with a positive size.
         * @exception ChunkDeletedException When trying to write to a deleted chunk.
         * @exception TryToWriteBeyondTheEndOfChunkException
