@@ -11,4 +11,6 @@ public:
 private slots:
    void retainedChunksAreDetached_data();
    void retainedChunksAreDetached();
+   void openingHandlesExcludesCompletion_data();
+   void openingHandlesExcludesCompletion();
 };

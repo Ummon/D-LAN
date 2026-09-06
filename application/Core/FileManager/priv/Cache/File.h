@@ -133,6 +133,9 @@ namespace FM
       quint16 numDataReader;
       QFile* fileInWriteMode;
       QFile* fileInReadMode;
+      // When combined, acquire Entry::mutex before writeLock, then readLock.
+      // I/O-only methods may take an I/O lock alone, but must not acquire Entry::mutex afterwards
+      // (including indirectly through getCache() or getAbsolutePath()).
       QMutex writeLock; ///< Protect the file from concurrent access from different downloaders.
       QMutex readLock; ///< Protect the file from concurrent access from different uploaders.
    };

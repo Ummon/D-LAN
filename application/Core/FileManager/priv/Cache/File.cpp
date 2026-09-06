@@ -166,6 +166,7 @@ void File::del(bool invokeDelete)
   */
 void File::closePhysicalFiles()
 {
+   QMutexLocker fileLocker(&this->mutex);
    QMutexLocker lockerWrite(&this->writeLock);
    this->getCache()->getFilePool().release(this->fileInWriteMode, true);
    this->fileInWriteMode = nullptr;
@@ -368,6 +369,7 @@ QDateTime File::getDateLastModified() const
   */
 void File::newDataWriterCreated()
 {
+   QMutexLocker fileLocker(&this->mutex);
    QMutexLocker locker(&this->writeLock);
 
    this->numDataWriter++;
@@ -427,6 +429,7 @@ void File::newDataWriterCreated()
   */
 void File::newDataReaderCreated()
 {
+   QMutexLocker fileLocker(&this->mutex);
    QMutexLocker locker(&this->readLock);
 
    this->numDataReader++;
@@ -454,6 +457,7 @@ void File::newDataReaderCreated()
   */
 void File::dataWriterDeleted()
 {
+   QMutexLocker fileLocker(&this->mutex);
    QMutexLocker locker(&this->writeLock);
 
    if (--this->numDataWriter == 0)
@@ -465,6 +469,7 @@ void File::dataWriterDeleted()
 
 void File::dataReaderDeleted()
 {
+   QMutexLocker fileLocker(&this->mutex);
    QMutexLocker locker(&this->readLock);
 
    if (--this->numDataReader == 0)
