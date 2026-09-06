@@ -21,6 +21,8 @@
 #include <QObject>
 #include <QMutex>
 #include <QWaitCondition>
+#include <QSet>
+#include <QSharedPointer>
 
 #include <Common/Uncopyable.h>
 
@@ -29,15 +31,18 @@
 namespace FM
 {
    class Entry;
-   class FileForHasher;
+   class File;
+   class Chunk;
 
    class FileHasher : public QObject, Common::Uncopyable
    {
       Q_OBJECT
    public:
       FileHasher();
+      ~FileHasher() override;
 
-      bool start(FileForHasher* fileCache, int n = 0, int* amountHashed = nullptr);
+      bool start(File* fileCache, int n = 0, int* amountHashed = nullptr, bool deferPersistence = false);
+      void flushHashes();
       void stop();
 
    private slots:
@@ -45,8 +50,11 @@ namespace FM
 
    private:
       void internalStop();
+      void flushPendingHashes();
 
-      FileForHasher* currentFileCache;
+      File* currentFileCache;
+      // One retained chunk per changed file generation; detachment makes deferred saves harmless.
+      QSet<QSharedPointer<Chunk>> pendingHashSaves;
 
       bool hashing;
       bool toStopHashing;

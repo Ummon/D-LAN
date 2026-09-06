@@ -24,6 +24,7 @@ using namespace FM;
 #include <QString>
 #include <QFile>
 #include <QElapsedTimer>
+#include <QScopeGuard>
 
 #include <Common/Global.h>
 #include <Common/Settings.h>
@@ -48,6 +49,24 @@ FileHasher::FileHasher() :
 {
 }
 
+FileHasher::~FileHasher()
+{
+   this->flushHashes();
+}
+
+void FileHasher::flushHashes()
+{
+   QMutexLocker locker(&this->hashingMutex);
+   this->flushPendingHashes();
+}
+
+void FileHasher::flushPendingHashes()
+{
+   for (const auto& chunk : std::as_const(this->pendingHashSaves))
+      chunk->saveFileHashes();
+   this->pendingHashSaves.clear();
+}
+
 /**
   * It will open the file, read it and calculate all theirs chunk hashes.
   * Only the chunk without hashes will be computed.
@@ -57,12 +76,18 @@ FileHasher::FileHasher() :
   * @param fileCache The file to hash.
   * @param n Number of hashes to compute, 0 if we want to compute all the hashes.
   * @param[out] amountHashed Write the number of bytes hashed. It may be a null pointer ('nullptr') if this information isn't needed.
+  * @param deferPersistence Batch partial progress until flushHashes(); completed files and interrupted calls still save immediately.
   * @return true if all the chunk hashes are known.
   * @exception IOErrorException Thrown when the file cannot be opened or read. Some chunk may be computed before this exception is thrown.
   */
-bool FileHasher::start(FileForHasher* fileCache, int n, int* amountHashed)
+bool FileHasher::start(File* fileCache, int n, int* amountHashed, bool deferPersistence)
 {
    QMutexLocker locker(&this->hashingMutex);
+   bool deferSave = false;
+   const auto saveProgress = qScopeGuard([&] {
+      if (!deferSave)
+         this->flushPendingHashes();
+   });
 
    this->currentFileCache = fileCache;
 
@@ -213,8 +238,9 @@ bool FileHasher::start(FileForHasher* fileCache, int n, int* amountHashed)
                // To remove the chunk from the chunk index (TODO: find a more elegant way).
                this->currentFileCache->getCache()->onChunkRemoved(chunks[chunkNum]);
 
-            chunks[chunkNum]->setHash(hash);
+            chunks[chunkNum]->setHash(hash, false);
             chunks[chunkNum]->setKnownBytes(bytesReadChunk);
+            this->pendingHashSaves.insert(chunks.first());
 
             this->currentFileCache->getCache()->onChunkHashKnown(chunks[chunkNum]);
          }
@@ -244,14 +270,19 @@ bool FileHasher::start(FileForHasher* fileCache, int n, int* amountHashed)
    this->hashing = false;
 
    qint64 fileSize = this->currentFileCache->getSize();
+   const bool complete = bytesReadTotal + bytesSkipped == fileSize;
+   if (complete && this->pendingHashSaves.remove(chunks.first()))
+      chunks.first()->saveFileHashes();
+   deferSave = deferPersistence;
    this->currentFileCache = 0;
-   return bytesReadTotal + bytesSkipped == fileSize;
+   return complete;
 }
 
 void FileHasher::stop()
 {
    QMutexLocker locker(&this->hashingMutex);
    this->internalStop();
+   this->flushPendingHashes();
 }
 
 void FileHasher::entryRemoved(Entry* entry)

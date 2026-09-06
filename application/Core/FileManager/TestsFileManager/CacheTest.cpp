@@ -28,6 +28,21 @@
 #include <priv/GetHashesResult.h>
 #include <priv/FileManager.h>
 
+namespace
+{
+   class RecordingHashCache : public MockHashCache
+   {
+   public:
+      QList<QList<Common::Hash>> writes;
+      QDateTime savedDate;
+      void setHashes(const QString&, const QList<Common::Hash>& hashes, qint64, QDateTime date) override
+      {
+         this->writes.append(hashes);
+         this->savedDate = date;
+      }
+   };
+}
+
 /**
   * @class CacheTest
   *
@@ -37,6 +52,84 @@
 CacheTest::CacheTest(QObject *parent) :
    QObject(parent)
 {
+}
+
+void CacheTest::deferredHashPersistence_data()
+{
+   QTest::addColumn<QString>("finish");
+   for (const char* finish : { "flush", "stop", "error", "remove", "replace", "destructor" })
+      QTest::newRow(finish) << QString::fromLatin1(finish);
+}
+
+void CacheTest::deferredHashPersistence()
+{
+   QFETCH(QString, finish);
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   const QString path = temp.filePath("batch.bin");
+   const qint64 size = qint64(2) * FM::Chunk::CHUNK_SIZE + 1;
+   {
+      QFile physical(path);
+      QVERIFY(physical.open(QIODevice::WriteOnly));
+      QVERIFY(physical.resize(size));
+   }
+   auto hashCache = QSharedPointer<RecordingHashCache>::create();
+   FM::Cache cache(hashCache);
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   auto file = new FM::File(root, "batch.bin", size, false, QFileInfo(path).lastModified(), root->getRootDir());
+   auto hasher = std::make_unique<FM::FileHasher>();
+   QSignalSpy notifications(&cache, &FM::Cache::chunkHashKnown);
+   QVERIFY(!hasher->start(file, 1, nullptr, true));
+   QVERIFY(!hasher->start(file, 1, nullptr, true));
+   QCOMPARE(notifications.count(), 2); // Delivery remains immediate even while persistence is deferred.
+   QVERIFY(hashCache->writes.isEmpty());
+
+   if (finish == "remove")
+   {
+      file->del(false);
+      cache.deleteEntry(file);
+      hasher->flushHashes();
+      QVERIFY(hashCache->writes.isEmpty());
+      return;
+   }
+   if (finish == "replace")
+   {
+      file->fileHasChangedOnDisk(QFileInfo(path));
+      hasher->flushHashes();
+      QVERIFY(hashCache->writes.isEmpty());
+      return;
+   }
+   if (finish == "stop")
+   {
+      hasher->stop();
+      QCOMPARE(hashCache->writes.size(), 1);
+      QVERIFY(!hasher->start(file, 1, nullptr, true));
+   }
+   else if (finish == "error")
+   {
+      auto missing = new FM::File(root, "missing.bin", 1, false, QDateTime::currentDateTime(), root->getRootDir());
+      QVERIFY_THROWS_EXCEPTION(FM::IOErrorException, hasher->start(missing, 1, nullptr, true));
+   }
+   else if (finish == "destructor")
+      hasher.reset();
+   else
+      hasher->flushHashes();
+   QCOMPARE(hashCache->writes.size(), 1);
+   QCOMPARE(hashCache->writes.first().size(), 3);
+   QVERIFY(!hashCache->writes.first()[0].isNull());
+   QVERIFY(!hashCache->writes.first()[1].isNull());
+   QVERIFY(hashCache->writes.first()[2].isNull());
+   if (hasher)
+   {
+      hasher->flushHashes();
+      QCOMPARE(hashCache->writes.size(), 1); // No redundant save of unchanged progress.
+      QVERIFY(hasher->start(file, 1, nullptr, true));
+      QCOMPARE(hashCache->writes.size(), 2); // Completion saves immediately, even in deferred mode.
+      QVERIFY(!hashCache->writes.last()[2].isNull());
+   }
 }
 
 void CacheTest::hashResultsOnlySendOutstandingChunks()
@@ -192,7 +285,8 @@ void CacheTest::hashingRespectsChunkBoundaries()
       QVERIFY(physical.open(QIODevice::WriteOnly));
       QCOMPARE(physical.write(content), content.size());
    }
-   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   auto hashCache = QSharedPointer<RecordingHashCache>::create();
+   FM::Cache cache(hashCache);
    const auto shared = cache.addASharedPath(temp.path() + '/');
    auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
    QVERIFY(root);
@@ -206,12 +300,14 @@ void CacheTest::hashingRespectsChunkBoundaries()
    int amountHashed = 0;
    if (resume)
    {
-      QVERIFY(!hasher.start(file->asFileForHasher(), 1, &amountHashed));
+      QVERIFY(!hasher.start(file, 1, &amountHashed));
       QCOMPARE(amountHashed, chunkSize);
       QVERIFY(chunks.first()->hasHash());
       QVERIFY(!chunks[1]->hasHash());
    }
-   QVERIFY(hasher.start(file->asFileForHasher(), 0, &amountHashed));
+   QVERIFY(hasher.start(file, 0, &amountHashed));
+   QCOMPARE(hashCache->writes.size(), resume ? 2 : 1);
+   QCOMPARE(hashCache->savedDate, QFileInfo(path).lastModified());
    QCOMPARE(amountHashed, content.size()); // Resuming must skip the already hashed full chunk.
    QCOMPARE(file->getSize(), content.size());
    QCOMPARE(notifiedChunks.size(), chunks.size());

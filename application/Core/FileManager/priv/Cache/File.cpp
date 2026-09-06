@@ -178,11 +178,6 @@ void File::closePhysicalFiles()
    this->numDataReader = 0;
 }
 
-FileForHasher* File::asFileForHasher()
-{
-   return static_cast<FileForHasher*>(this);
-}
-
 /**
   * Set the file as unfinished, this is use when an existing file is re-downloaded.
   * The file is removed from the index and a new physically file named "<name>.unfinished" is created.
@@ -874,9 +869,7 @@ void File::setRootRecursively(SharedEntry* sharedEntry)
    this->root = sharedEntry;
 }
 
-/////
-
-void FileForHasher::updateDateLastModified(const QDateTime& date)
+void File::updateDateLastModified(const QDateTime& date)
 {
    QMutexLocker locker(&this->mutex);
    this->dateLastModified = date;

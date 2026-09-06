@@ -78,6 +78,7 @@ namespace FM
       Common::Hash getHash() const override;
       void setHash(const Common::Hash& hash) override;
       void setHash(const Common::Hash& hash, bool saveHashes);
+      void saveFileHashes();
 
       int getKnownBytes() const override;      
       void setKnownBytes(int bytes) override;

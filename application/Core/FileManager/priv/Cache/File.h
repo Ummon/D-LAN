@@ -37,12 +37,13 @@ namespace FM
    class Chunk;
    class Directory;
    class SharedEntry;
-   class FileForHasher;
+   class FileHasher;
 
    class File : public Entry
    {
       friend class Directory;
       friend class Chunk;
+      friend class FileHasher;
 
    public:
       File(
@@ -59,8 +60,6 @@ namespace FM
       ~File() override;
 
       void del(bool invokeDelete = true) override;
-
-      FileForHasher* asFileForHasher();
 
       void setToUnfinished(qint64 size, const QList<Common::Hash>& hashes = QList<Common::Hash>());
 
@@ -112,6 +111,7 @@ namespace FM
       bool hasAParentDir(Directory* dir);
 
    private:
+      void updateDateLastModified(const QDateTime& date);
       QSharedPointer<QRecursiveMutex> getChunkMutex() const { return this->mutexStorage; }
       void setAsComplete();
       void deleteAllChunks();
@@ -144,16 +144,6 @@ namespace FM
       // (including indirectly through getCache() or getAbsolutePath()).
       QMutex writeLock; ///< Protect the file from concurrent access from different downloaders.
       QMutex readLock; ///< Protect the file from concurrent access from different uploaders.
-   };
-
-   /**
-     * A class dedicated to the hasher.
-     * It must not add any member data because an allocated 'File' object may be downcasted to a 'FileForHasher' type.
-     */
-   class FileForHasher : public File
-   {
-   public:
-      void updateDateLastModified(const QDateTime& date);
    };
 
    class FileIterator

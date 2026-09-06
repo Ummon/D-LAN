@@ -224,6 +224,13 @@ void Chunk::setHash(const Common::Hash& hash, bool saveHashes)
       this->file->saveHashes();
 }
 
+void Chunk::saveFileHashes()
+{
+   QMutexLocker locker(this->fileMutex.data());
+   if (this->file)
+      this->file->saveHashes();
+}
+
 int Chunk::getKnownBytes() const
 {
    QMutexLocker locker(this->fileMutex.data());

@@ -400,7 +400,7 @@ void FileUpdater::computeSomeHashes()
                int hashedAmount = 0;
                // Be careful of methods 'prioritizeAFileToHash(..)' and 'rmRoot(..)' called concurrently here.
                // We ask to compute the next unknown chunk (only one).
-               gotAllHashes = this->fileHasher.start(nextFileToHash->asFileForHasher(), 1, &hashedAmount);
+               gotAllHashes = this->fileHasher.start(nextFileToHash, 1, &hashedAmount, true);
 
                {
                   QMutexLocker locker(&this->mutex);
@@ -452,6 +452,10 @@ void FileUpdater::computeSomeHashes()
    }
 
 end:
+   // Save each changed file once per scheduling batch, rather than once per chunk.
+   locker.unlock();
+   this->fileHasher.flushHashes();
+   locker.relock();
    L_DEBU(
       QString(
          "Computing some hashes ended. this->filesWithoutHashes.size(): %1, this->filesWithoutHashesPrioritized.size(): %2"
