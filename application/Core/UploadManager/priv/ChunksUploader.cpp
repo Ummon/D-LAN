@@ -156,7 +156,36 @@ void ChunksUploader::run()
             if (bytesRead <= 0)
                break;
 
-            const int bytesSent = this->socket->write(buffer.constData(), bytesRead);
+            int bytesSent = this->socket->write(buffer.constData(), bytesRead);
+            QElapsedTimer writeStalled;
+            writeStalled.start();
+            while (bytesSent == 0)
+            {
+               if (this->mustStop())
+                  goto cancelled;
+
+               const qint64 remaining = SOCKET_TIMEOUT - writeStalled.elapsed();
+               if (remaining <= 0)
+               {
+                  L_WARN(QString("Socket: no data accepted before timeout: %1").arg(chunk.getChunk()->toStringLog()));
+                  this->closeTheSocket = true;
+                  goto end;
+               }
+
+               // Retry the same buffer, without rereading the file or advancing progress. Even if
+               // other queued bytes drain, this write must accept data within its timeout budget.
+               const int waitTime = qMin<qint64>(STOP_POLL_INTERVAL, remaining);
+               QElapsedTimer waitDuration;
+               waitDuration.start();
+               this->socket->waitForBytesWritten(waitTime);
+               const qint64 delay = waitTime - waitDuration.elapsed();
+               if (delay > 0 && !this->mustStop())
+                  QThread::msleep(static_cast<unsigned long>(delay));
+
+               if (this->mustStop())
+                  goto cancelled;
+               bytesSent = this->socket->write(buffer.constData(), bytesRead);
+            }
 
             if (bytesSent == -1)
             {
