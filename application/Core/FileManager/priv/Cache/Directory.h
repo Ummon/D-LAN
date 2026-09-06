@@ -101,8 +101,7 @@ namespace FM
    private:
       void subdirNameChanged(Directory* dir);
 
-      Directory& operator+=(qint64);
-      Directory& operator-=(qint64);
+      void adjustSize(qint64 delta);
 
       static inline bool entrySortingFun(const Entry* const& e1, const Entry* const& e2) { return (*e1) < (*e2); }
 

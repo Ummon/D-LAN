@@ -269,7 +269,7 @@ void Directory::moveInto(Directory* directory)
 
    if (this->parentDirectory)
    {
-      (*this->parentDirectory) -= this->getSize();
+      this->parentDirectory->adjustSize(-this->getSize());
       this->parentDirectory->subDirDeleted(this);
    }
 
@@ -278,7 +278,7 @@ void Directory::moveInto(Directory* directory)
       this->setRootRecursively(directory->getRoot());
 
    directory->add(this);
-   (*directory) += this->getSize();
+   directory->adjustSize(this->getSize());
 
    this->parentDirectory = directory;
 }
@@ -294,7 +294,7 @@ void Directory::fileDeleted(File* file)
 
    if (!this->files.getList().contains(file))
       return;
-   (*this) -= file->getSize();
+   this->adjustSize(-file->getSize());
    this->files.removeOne(file);
 }
 
@@ -475,14 +475,12 @@ void Directory::add(File* file)
    QMutexLocker locker(&this->mutex);
 
    this->files.insert(file);
-   (*this) += file->getSize();
+   this->adjustSize(file->getSize());
 }
 
 void Directory::fileSizeChanged(qint64 oldSize, qint64 newSize)
 {
-   QMutexLocker locker(&this->mutex);
-
-   (*this) += newSize - oldSize;
+   this->adjustSize(newSize - oldSize);
 }
 
 /**
@@ -510,15 +508,15 @@ void Directory::stealContent(Directory* dir)
    foreach (Directory* d, directoriesToSteal)
    {
       d->setParentDirectory(this);
-      (*this) += d->getSize();
-      (*dir) -= d->getSize();
+      this->adjustSize(d->getSize());
+      dir->adjustSize(-d->getSize());
    }
 
    foreach (File* f, filesToSteal)
    {
       f->setParentDirectory(this);
-      (*this) += f->getSize();
-      (*dir) -= f->getSize();
+      this->adjustSize(f->getSize());
+      dir->adjustSize(-f->getSize());
    }
 
    dir->subDirs.clear();
@@ -588,37 +586,18 @@ void Directory::subdirNameChanged(Directory* dir)
 }
 
 /**
-  * When a new file is added to a directory this method is called
-  * to add its size.
+  * Propagate a signed size change through this directory and its ancestors.
+  * Used for insertion, removal, resizing and moves; shrinking must subtract too.
   */
-Directory& Directory::operator+=(qint64 size)
+void Directory::adjustSize(qint64 delta)
 {
-   if (size > 0)
-   {
-      QMutexLocker locker(&this->mutex);
+   if (delta == 0)
+      return;
 
-      this->setSize(this->getSize() + size);
-
-      if (this->parentDirectory)
-         (*this->parentDirectory) += size;
-   }
-
-   return *this;
-}
-
-Directory& Directory::operator-=(qint64 size)
-{
-   if (size > 0)
-   {
-      QMutexLocker locker(&this->mutex);
-
-      this->setSize(this->getSize() - size);
-
-      if (this->parentDirectory)
-         (*this->parentDirectory) -= size;
-   }
-
-   return *this;
+   QMutexLocker locker(&this->mutex);
+   this->setSize(this->getSize() + delta);
+   if (this->parentDirectory)
+      this->parentDirectory->adjustSize(delta);
 }
 
 /////

@@ -9,6 +9,7 @@ public:
    explicit CacheTest(QObject* parent = nullptr);
 
 private slots:
+   void directoryTotalsFollowFileResizing();
    void directoryLookupAllowsSizePropagation_data();
    void directoryLookupAllowsSizePropagation();
    void directoryCreationDefersDeletion();

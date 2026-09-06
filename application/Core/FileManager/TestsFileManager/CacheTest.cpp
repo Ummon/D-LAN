@@ -54,6 +54,58 @@ CacheTest::CacheTest(QObject *parent) :
 {
 }
 
+void CacheTest::directoryTotalsFollowFileResizing()
+{
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   auto rootDir = root->getRootDir();
+   auto parent = rootDir->createSubDir("parent", true);
+   auto leaf = parent->createSubDir("leaf", true);
+   auto destination = rootDir->createSubDir("destination", true);
+   new FM::File(root, "root.bin", 17, false, QDateTime::currentDateTime(), rootDir);
+   new FM::File(root, "parent.bin", 11, false, QDateTime::currentDateTime(), parent);
+   new FM::File(root, "sibling.bin", 23, false, QDateTime::currentDateTime(), leaf);
+   const QString path = leaf->getAbsolutePath().toString() + "changing.bin";
+   {
+      QFile physical(path);
+      QVERIFY(physical.open(QIODevice::WriteOnly));
+      QVERIFY(physical.resize(100));
+   }
+   auto file = new FM::File(root, "changing.bin", 100, false, QFileInfo(path).lastModified(), leaf);
+   QCOMPARE(leaf->getSize(), qint64(123));
+   QCOMPARE(parent->getSize(), qint64(134));
+   QCOMPARE(cache.getAmount(), qint64(151));
+
+   // Exercise the scan's disk-change path: shrink, grow, unchanged size, empty,
+   // and grow again. Unrelated files must keep contributing to every ancestor.
+   for (qint64 size : { 40, 160, 160, 0, 75 })
+   {
+      QFile physical(path);
+      QVERIFY(physical.resize(size));
+      file->fileHasChangedOnDisk(QFileInfo(path));
+      QCOMPARE(file->getSize(), size);
+      QCOMPARE(leaf->getSize(), size + 23);
+      QCOMPARE(parent->getSize(), size + 34);
+      QCOMPARE(rootDir->getSize(), size + 51);
+      QCOMPARE(cache.getAmount(), size + 51);
+   }
+
+   file->moveInto(destination);
+   QCOMPARE(leaf->getSize(), qint64(23));
+   QCOMPARE(parent->getSize(), qint64(34));
+   QCOMPARE(destination->getSize(), qint64(75));
+   QCOMPARE(cache.getAmount(), qint64(126));
+   file->del(false);
+   cache.deleteEntry(file);
+   QCOMPARE(destination->getSize(), qint64(0));
+   QCOMPARE(cache.getAmount(), qint64(51));
+}
+
 void CacheTest::hashingInvalidatesChangedFiles_data()
 {
    QTest::addColumn<bool>("duringCall");
