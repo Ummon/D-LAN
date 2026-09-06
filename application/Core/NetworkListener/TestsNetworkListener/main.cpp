@@ -84,6 +84,8 @@ Protos::Core::Settings* createDefaultValuesSettings()
 
    ///// UploadManager /////
    settings->set_upload_lifetime(5000);
+   settings->set_upload_max_nb_connections(32);
+   settings->set_upload_max_nb_connections_per_peer(4);
    settings->set_upload_min_nb_thread(3);
    settings->set_upload_thread_lifetime(30000);
 

@@ -95,6 +95,11 @@ namespace PM
         */
       bool isReadyToSendChunks() const;
 
+      // Called in the manager's thread. Reserve before replying OK; release only after the
+      // uploader has finished using its worker, or when the socket is destroyed.
+      bool tryReserveUpload(PeerMessageSocket* socket);
+      void releaseUpload(PeerMessageSocket* socket);
+
       void onGetChunks(
          QList<GetChunkParams> chunksParams,
          QSharedPointer<PeerMessageSocket> socket
@@ -118,5 +123,6 @@ namespace PM
 
       QTimer timer; ///< Used to check periodically if some pending sockets have timeouted.
       QList<PendingSocket> pendingSockets;
+      QMap<PeerMessageSocket*, Common::Hash> activeUploads;
    };
 }

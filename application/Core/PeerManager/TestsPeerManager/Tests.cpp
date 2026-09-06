@@ -21,6 +21,7 @@ using namespace PM;
 
 #include <QtDebug>
 #include <QStringList>
+#include <QScopeGuard>
 
 #include <Protos/core_protocol.pb.h>
 #include <Protos/core_settings.pb.h>
@@ -35,6 +36,8 @@ using namespace PM;
 #include <ResultListener.h>
 #include <IGetEntriesResult.h>
 #include <IGetHashesResult.h>
+#include <priv/PeerManager.h>
+#include <priv/PeerMessageSocket.h>
 
 const int Tests::PORT = 59487;
 
@@ -399,6 +402,117 @@ void Tests::validateChunkOffsets()
          QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
          QCoreApplication::processEvents();
       }
+   }
+}
+
+void Tests::uploadReservations()
+{
+   const quint32 globalLimit = SETTINGS.get<quint32>("upload_max_nb_connections");
+   const quint32 peerLimit = SETTINGS.get<quint32>("upload_max_nb_connections_per_peer");
+   const auto restoreSettings = qScopeGuard([&] {
+      SETTINGS.set("upload_max_nb_connections", globalLimit);
+      SETTINGS.set("upload_max_nb_connections_per_peer", peerLimit);
+   });
+   SETTINGS.set("upload_max_nb_connections", quint32(2));
+   SETTINGS.set("upload_max_nb_connections_per_peer", quint32(1));
+
+   auto* manager = static_cast<PM::PeerManager*>(this->peerManagers[1].data());
+   auto makeSocket = [&](const Common::Hash& peerID) {
+      return QSharedPointer<PM::PeerMessageSocket>(
+         new PM::PeerMessageSocket(manager, this->fileManagers[1], peerID, new QTcpSocket()));
+   };
+   auto first = makeSocket(this->peerIDs[0]);
+   auto samePeer = makeSocket(this->peerIDs[0]);
+   auto otherPeer = makeSocket(this->peerIDs[1]);
+   auto thirdPeer = makeSocket(Common::Hash(QByteArray(Common::Hash::HASH_SIZE, '\x33')));
+
+   QVERIFY(manager->tryReserveUpload(first.data()));
+   QVERIFY(!manager->tryReserveUpload(first.data())); // No double reservation.
+   QVERIFY(!manager->tryReserveUpload(samePeer.data())); // Per-peer limit.
+   QVERIFY(manager->tryReserveUpload(otherPeer.data())); // Another peer still has capacity.
+   QVERIFY(!manager->tryReserveUpload(thirdPeer.data())); // Global limit.
+
+   first->close();
+   QVERIFY(!manager->tryReserveUpload(samePeer.data())); // Closing must not free a running worker's slot.
+   first->finished(true);
+   QVERIFY(manager->tryReserveUpload(samePeer.data())); // Completion releases even an inactive socket.
+   samePeer->finished();
+   samePeer->finished(); // Releasing twice must not decrement another upload's count.
+   QVERIFY(!manager->tryReserveUpload(makeSocket(this->peerIDs[1]).data()));
+   QVERIFY(manager->tryReserveUpload(thirdPeer.data()));
+   otherPeer.clear(); // Destruction is a fallback if no uploader calls finished().
+   QVERIFY(manager->tryReserveUpload(first.data()));
+}
+
+void Tests::rejectExcessUploads()
+{
+   const quint32 globalLimit = SETTINGS.get<quint32>("upload_max_nb_connections");
+   const quint32 peerLimit = SETTINGS.get<quint32>("upload_max_nb_connections_per_peer");
+   const auto restoreSettings = qScopeGuard([&] {
+      SETTINGS.set("upload_max_nb_connections", globalLimit);
+      SETTINGS.set("upload_max_nb_connections_per_peer", peerLimit);
+   });
+
+   const Common::Hash hash = this->resultListener.getLastReceivedHash();
+   const auto chunk = this->fileManagers[1]->getChunk(hash);
+   QVERIFY(!chunk.isNull());
+   Protos::Core::GetChunks request;
+   auto* requested = request.add_chunks();
+   requested->mutable_hash()->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
+   requested->set_offset(chunk->getKnownBytes());
+
+   QList<QSharedPointer<PM::ISocket>> heldUploads;
+   QObject context;
+   connect(this->peerManagers[1].data(), &IPeerManager::getChunks, &context,
+      [&](const QList<PM::GetChunkParams>&, const QSharedPointer<PM::ISocket>& socket) {
+         heldUploads << socket;
+      });
+   const auto finishUploads = qScopeGuard([&] {
+      for (const auto& socket : heldUploads)
+         socket->finished(true);
+   });
+
+   // Exercise each limit independently through the wire protocol.
+   for (bool global : {false, true})
+   {
+      SETTINGS.set("upload_max_nb_connections", quint32(global ? 1 : 2));
+      SETTINGS.set("upload_max_nb_connections_per_peer", quint32(global ? 2 : 1));
+      QList<QSharedPointer<IGetChunksResult>> results;
+      for (int attempt = 0; attempt < 3; ++attempt)
+      {
+         bool received = false;
+         bool streamReceived = false;
+         Protos::Core::GetChunksResult response;
+         QObject requestContext;
+         auto result = this->peerManagers[0]->getPeers()[0]->getChunks(request);
+         QVERIFY(!result.isNull());
+         results << result;
+         connect(result.data(), &IGetChunksResult::result, &requestContext,
+            [&](const Protos::Core::GetChunksResult& value) { response = value; received = true; });
+         connect(result.data(), &IGetChunksResult::stream, &requestContext,
+            [&](const QSharedPointer<PM::ISocket>&) { streamReceived = true; });
+         result->start();
+         QTRY_VERIFY_WITH_TIMEOUT(received, 10000);
+         if (attempt == 1)
+         {
+            QCOMPARE(response.status(), Protos::Core::GetChunksResult::TOO_MANY_CONNECTIONS);
+            QVERIFY(!streamReceived);
+            QCOMPARE(heldUploads.size(), 1); // No second uploader was dispatched.
+            heldUploads.takeFirst()->finished(global); // Test normal and error completion.
+         }
+         else
+         {
+            QCOMPARE(response.status(), Protos::Core::GetChunksResult::OK);
+            QVERIFY(streamReceived);
+            QCOMPARE(heldUploads.size(), 1); // Capacity is available again on attempt 2.
+         }
+      }
+      heldUploads.takeFirst()->finished(true);
+      for (const auto& result : results)
+         result->setStatus(true);
+      results.clear();
+      QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
+      QCoreApplication::processEvents();
    }
 }
 

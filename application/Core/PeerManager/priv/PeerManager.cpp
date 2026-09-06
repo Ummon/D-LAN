@@ -199,6 +199,32 @@ bool PeerManager::isReadyToSendChunks() const
    return this->receivers(SIGNAL(getChunks(QList<PM::GetChunkParams>, QSharedPointer<PM::ISocket>))) > 0;
 }
 
+bool PeerManager::tryReserveUpload(PeerMessageSocket* socket)
+{
+   Q_ASSERT(QThread::currentThread() == this->thread());
+   if (this->activeUploads.contains(socket) ||
+       this->activeUploads.size() >= SETTINGS.get<quint32>("upload_max_nb_connections"))
+      return false;
+
+   const Common::Hash peerID = socket->getRemotePeerID();
+   quint32 uploadsFromPeer = 0;
+   for (auto i = this->activeUploads.cbegin(); i != this->activeUploads.cend(); ++i)
+      if (i.value() == peerID)
+         ++uploadsFromPeer;
+
+   if (uploadsFromPeer >= SETTINGS.get<quint32>("upload_max_nb_connections_per_peer"))
+      return false;
+
+   this->activeUploads.insert(socket, peerID);
+   return true;
+}
+
+void PeerManager::releaseUpload(PeerMessageSocket* socket)
+{
+   Q_ASSERT(QThread::currentThread() == this->thread());
+   this->activeUploads.remove(socket);
+}
+
 /**
   * @remarks 'PeerMessageSocket::onNewMessage(..)' has checked 'isReadyToSendChunks()' before answering, there
   *          is necessarily someone to send the chunks.

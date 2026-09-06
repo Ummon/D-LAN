@@ -52,6 +52,8 @@ Protos::Core::Settings* createDefaultValuesSettings()
    settings->set_buffer_size_writing(524288);
    settings->set_socket_buffer_size(131072);
    settings->set_socket_timeout(7000);
+   settings->set_upload_max_nb_connections(32);
+   settings->set_upload_max_nb_connections_per_peer(4);
 
    ///// FileManager /////
    settings->set_minimum_duration_when_hashing(3000);

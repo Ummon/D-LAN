@@ -56,6 +56,8 @@ private slots:
    void askForSomeEntries();
    void askForHashes();
    void validateChunkOffsets();
+   void uploadReservations();
+   void rejectExcessUploads();
    void askForAChunk();
    void cleanupTestCase();
 

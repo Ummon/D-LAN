@@ -87,6 +87,7 @@ PeerMessageSocket::PeerMessageSocket(
 
 PeerMessageSocket::~PeerMessageSocket()
 {
+   this->peerManager->releaseUpload(this);
    L_DEBU(QString("Socket[%1] deleted").arg(this->num));
 }
 
@@ -189,6 +190,9 @@ void PeerMessageSocket::setActive()
   */
 void PeerMessageSocket::finished(bool closeTheSocket)
 {
+   // Release even if close() already marked this socket inactive. Do not release in close():
+   // the uploader may still be running and keeps a strong reference until it finishes.
+   this->peerManager->releaseUpload(this);
    if (!this->active)
       return;
 
@@ -429,7 +433,6 @@ void PeerMessageSocket::onNewMessage(const Common::Message& message)
 
          // TODO: implements:
          // - 'GetChunkResult.ALREADY_DOWNLOADING'
-         // - 'GetChunkResult.TOO_MANY_CONNECTIONS'
 
          for (int i = 0; i < getChunksMessage.chunks_size(); i++)
          {
@@ -476,7 +479,15 @@ void PeerMessageSocket::onNewMessage(const Common::Message& message)
          }
 
          if (!chunksParams.empty())
-            chunksResult.set_status(Protos::Core::GetChunksResult::OK);
+         {
+            if (this->peerManager->tryReserveUpload(this))
+               chunksResult.set_status(Protos::Core::GetChunksResult::OK);
+            else
+            {
+               chunksResult.set_status(Protos::Core::GetChunksResult::TOO_MANY_CONNECTIONS);
+               chunksParams.clear();
+            }
+         }
          else
             chunksResult.set_status(Protos::Core::GetChunksResult::ERROR_UNKNOWN);
 

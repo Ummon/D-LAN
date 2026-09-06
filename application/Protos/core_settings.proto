@@ -51,6 +51,8 @@ message Settings {
    uint32 upload_lifetime = 50; // [default = 5000] [ms].
    uint32 upload_min_nb_thread = 51; // [default = 3] To be efficiant, there is always this number of thread prepared to upload a chunk.
    uint32 upload_thread_lifetime = 52; // [default = 30000] [ms].
+   uint32 upload_max_nb_connections = 53; // [default = 32] Maximum number of active upload requests across all peers.
+   uint32 upload_max_nb_connections_per_peer = 54; // [default = 4] Maximum number of active upload requests from one peer.
 
    ///// NetworkListener /////
    uint32 peer_imalive_period = 60; // [default = 5000] [ms]. Send an IMAlive message each 5 s.

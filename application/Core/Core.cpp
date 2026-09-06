@@ -210,6 +210,8 @@ Protos::Core::Settings* Core::createDefaultValuesSettings()
    settings->set_upload_lifetime(5000);
    settings->set_upload_min_nb_thread(3);
    settings->set_upload_thread_lifetime(30000);
+   settings->set_upload_max_nb_connections(32);
+   settings->set_upload_max_nb_connections_per_peer(4);
 
    ///// NetworkListener /////
    settings->set_unicast_base_port(59487);
@@ -291,6 +293,13 @@ void Core::checkSettingsIntegrity()
    this->checkSetting("upload_lifetime", 0u, 30u * 1000u);
    this->checkSetting("upload_min_nb_thread", 1u, 1000u);
    this->checkSetting("upload_thread_lifetime", 0u, 60u * 60u * 1000u);
+   // Settings saved before upload admission limits were introduced have neither field.
+   if (!SETTINGS.isSet("upload_max_nb_connections"))
+      SETTINGS.set("upload_max_nb_connections", quint32(32));
+   if (!SETTINGS.isSet("upload_max_nb_connections_per_peer"))
+      SETTINGS.set("upload_max_nb_connections_per_peer", quint32(4));
+   this->checkSetting("upload_max_nb_connections", 1u, 1000u);
+   this->checkSetting("upload_max_nb_connections_per_peer", 1u, 1000u);
 
    this->checkSetting("peer_imalive_period", 1000u, 60u * 1000u);
    this->checkSetting("unicast_base_port", 1u, 65535u);
