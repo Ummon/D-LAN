@@ -19,7 +19,7 @@
 #pragma once
 
 #include <QObject>
-#include <QMutex>
+#include <QPointer>
 
 #include <Common/Uncopyable.h>
 
@@ -33,25 +33,20 @@ namespace FM
    {
       Q_OBJECT
    public:
-      GetEntriesResult(Directory* dir, int maxNbHashesPerEntry);
-      ~GetEntriesResult();
-      void start();
+      GetEntriesResult(Cache& cache, const Protos::Common::Entry& directory, int maxNbHashesPerEntry);
+      void start() override;
 
    private slots:
-      void directoryScanned(FM::Directory* dir);
-      void entryRemoved(FM::Entry* entry);
-      void sendResult();
+      void tryBuildResult();
 
    private:
-      void buildResult();
       void disconnectFromCache();
 
-      Protos::Core::GetEntriesResult::EntryResult res;
-      Directory* dir; ///< Set to 'nullptr' when the directory is removed from the cache.
-      Cache* cache;
+      const Protos::Common::Entry directory;
+      QPointer<Cache> cache;
       const int maxNbHashesPerEntry;
 
-      QMutex mutex; ///< Protects 'dir', 'res' and 'resultBuilt' from concurrent slot calls.
-      bool resultBuilt; ///< Once set the result is final and cannot be built or invalidated anymore.
+      bool started = false;
+      bool finished = false;
    };
 }

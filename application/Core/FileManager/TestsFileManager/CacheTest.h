@@ -13,4 +13,6 @@ private slots:
    void retainedChunksAreDetached();
    void openingHandlesExcludesCompletion_data();
    void openingHandlesExcludesCompletion();
+   void browseDirectoryLifetime_data();
+   void browseDirectoryLifetime();
 };

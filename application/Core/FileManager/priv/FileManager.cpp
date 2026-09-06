@@ -250,7 +250,7 @@ QSharedPointer<IGetHashesResult> FileManager::getHashes(const Protos::Common::En
 
 QSharedPointer<IGetEntriesResult> FileManager::getScannedEntries(const Protos::Common::Entry& dir, int maxNbHashesPerEntry)
 {
-   return QSharedPointer<IGetEntriesResult>(new GetEntriesResult(this->cache.getDirectory(dir), maxNbHashesPerEntry));
+   return QSharedPointer<IGetEntriesResult>(new GetEntriesResult(this->cache, dir, maxNbHashesPerEntry));
 }
 
 Protos::Common::Entries FileManager::getEntries(const Protos::Common::Entry& dir, int maxNbHashesPerEntry)

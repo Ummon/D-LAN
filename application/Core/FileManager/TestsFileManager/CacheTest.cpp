@@ -3,10 +3,13 @@
 #include <QTemporaryDir>
 #include <QTest>
 #include <QSemaphore>
+#include <QThread>
+#include <QSignalSpy>
 
 #include <atomic>
 #include <exception>
 #include <thread>
+#include <memory>
 
 #include <Common/Constants.h>
 #include <Common/Settings.h>
@@ -17,6 +20,7 @@
 #include <priv/Cache/Chunk.h>
 #include <priv/Cache/Directory.h>
 #include <priv/Cache/SharedEntry.h>
+#include <priv/GetEntriesResult.h>
 
 /**
   * @class CacheTest
@@ -207,4 +211,119 @@ void CacheTest::openingHandlesExcludesCompletion()
    auto reader = chunk->getDataReader();
    QByteArray buffer(SETTINGS.get<quint32>("buffer_size_reading"), Qt::Uninitialized);
    QCOMPARE(reader->read(buffer.data(), 0), 1);
+}
+
+namespace
+{
+   class BrowseThreadDirectory : public FM::Directory
+   {
+   public:
+      BrowseThreadDirectory(FM::SharedEntry* root, FM::Directory* parent, std::atomic<bool>& wrongThread) :
+         FM::Directory(root, "child", parent), ownerThread(QThread::currentThread()), wrongThread(wrongThread) {}
+
+      void populateEntry(Protos::Common::Entry* entry, bool setSharedDir = false) const override
+      {
+         if (QThread::currentThread() != this->ownerThread)
+            this->wrongThread = true;
+         FM::Directory::populateEntry(entry, setSharedDir);
+      }
+
+   private:
+      QThread* ownerThread;
+      std::atomic<bool>& wrongThread;
+   };
+}
+
+void CacheTest::browseDirectoryLifetime_data()
+{
+   QTest::addColumn<QString>("scenario");
+   for (const auto& scenario : { "scanned", "scan-finishes", "removed-before-start",
+      "removed-while-waiting", "scan-then-remove", "cache-destroyed", "cache-destroyed-while-waiting", "timeout" })
+      QTest::newRow(scenario) << QString(scenario);
+}
+
+void CacheTest::browseDirectoryLifetime()
+{
+   QFETCH(QString, scenario);
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   std::atomic<bool> wrongThread { false };
+   auto cache = std::make_unique<FM::Cache>(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = cache->addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache->getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   auto dir = root->getRootDir()->createSubDir("browsed");
+   new BrowseThreadDirectory(root, dir, wrongThread);
+   new FM::File(root, "complete.bin", 1, false, QDateTime::currentDateTime(), dir,
+      { Common::Hash::rand() });
+   new FM::File(root, "partial.unfinished", 1, false, QDateTime::currentDateTime(), dir);
+   dir->setScanned(scenario == "scanned");
+   Protos::Common::Entry directory;
+   dir->populateEntry(&directory, true);
+
+   const auto oldTimeout = SETTINGS.get<quint32>("get_entries_timeout");
+   SETTINGS.set("get_entries_timeout", quint32(10));
+   FM::GetEntriesResult request(*cache, directory, 0);
+   SETTINGS.set("get_entries_timeout", oldTimeout);
+   int deliveries = 0;
+   Protos::Core::GetEntriesResult::EntryResult response;
+   connect(&request, &FM::IGetEntriesResult::result, &request, [&](const auto& result) {
+      ++deliveries;
+      response = result;
+   });
+   QSignalSpy timeouts(&request, &Common::Timeoutable::timeout);
+
+   if (scenario == "removed-before-start")
+   {
+      dir->del();
+      QCoreApplication::sendPostedEvents(cache.get(), QEvent::MetaCall);
+   }
+   else if (scenario == "cache-destroyed")
+      cache.reset();
+
+   request.start();
+   if (scenario == "cache-destroyed-while-waiting")
+      cache.reset();
+   if (scenario == "timeout")
+      QTRY_COMPARE(timeouts.count(), 1);
+
+   if (scenario == "scan-finishes" || scenario == "scan-then-remove" ||
+      scenario == "removed-while-waiting" || scenario == "timeout")
+   {
+      QCOMPARE(deliveries, 0);
+      std::thread updater([&] {
+         if (scenario != "removed-while-waiting")
+            dir->setScanned(true);
+         if (scenario == "scan-then-remove" || scenario == "removed-while-waiting")
+            dir->del();
+      });
+      updater.join();
+      // Delete the directory and children before delivering their pending browse notifications.
+      QCoreApplication::sendPostedEvents(cache.get(), QEvent::MetaCall);
+   }
+   QCoreApplication::sendPostedEvents(&request, QEvent::MetaCall);
+   QVERIFY(!wrongThread);
+   if (scenario == "timeout")
+      QCOMPARE(deliveries, 0);
+   else
+   {
+      QCOMPARE(deliveries, 1);
+      const bool found = scenario == "scanned" || scenario == "scan-finishes";
+      QCOMPARE(response.status(), found ? Protos::Core::GetEntriesResult::EntryResult::OK
+         : Protos::Core::GetEntriesResult::EntryResult::DONT_HAVE);
+      if (found)
+      {
+         QCOMPARE(response.entries().entries_size(), 2); // Excludes the unfinished file.
+         QCOMPARE(response.entries().entries(0).name(), std::string("child"));
+         const auto& file = response.entries().entries(1);
+         QCOMPARE(file.name(), std::string("complete.bin"));
+         QCOMPARE(file.chunks_size(), 1);
+         QVERIFY(file.chunks(0).hash().empty()); // maxNbHashesPerEntry is preserved.
+      }
+      request.start();
+      QCoreApplication::sendPostedEvents(&request, QEvent::MetaCall);
+      QCOMPARE(deliveries, 1);
+      QCOMPARE(timeouts.count(), 0);
+   }
 }
