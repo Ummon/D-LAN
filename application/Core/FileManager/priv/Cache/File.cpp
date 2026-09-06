@@ -144,14 +144,18 @@ File::~File()
 
 void File::del(bool invokeDelete)
 {
-   if (this->deletePending)
-      return;
+   {
+      QMutexLocker locker(&this->mutex);
+      if (this->deletePending)
+         return;
 
-   if (this->parentDirectory)
-      this->parentDirectory->fileDeleted(this);
+      // Use the same child-to-parent order as completion, including detaching directory membership.
+      if (this->parentDirectory)
+         this->parentDirectory->fileDeleted(this);
 
-   this->deleteAllChunks();
-
+      this->deleteAllChunks();
+   }
+   // Removal notifications may wait for the hasher; do not hold the file mutex here.
    Entry::del(invokeDelete);
 }
 

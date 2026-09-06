@@ -96,7 +96,6 @@ namespace FM
       void fileNameChanged(File* file);
 
    protected:
-      void deleteSubDirs();
       void setRootRecursively(SharedEntry* sharedEntry) override;
 
    private:
@@ -111,6 +110,8 @@ namespace FM
       Common::SortedList<File*> files; ///< Sorted by name.
 
       bool scanned;
+      QRecursiveMutex retirementMutex; ///< Serializes subtree retirement without blocking metadata callbacks.
+      bool deletingChildren = false; ///< Guards reentrant/concurrent del() while children are being retired.
    };
 
    class DirIterator

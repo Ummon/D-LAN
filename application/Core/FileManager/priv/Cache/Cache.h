@@ -123,6 +123,15 @@ namespace FM
       void sharedEntryRemoved(FM::SharedEntry* entry, FM::Directory* dir);
 
    private:
+      friend class Directory;
+      void beginTraversal();
+      void endTraversal();
+      void deleteDeferredEntries();
+
+      QMutex deletionMutex;
+      int activeTraversals = 0;
+      QList<Entry*> deferredDeletions;
+
       static Common::SharedEntry makeSharedEntry(const SharedEntry* entry);
       SharedEntry* createSharedEntry(
          const Common::Path& path,

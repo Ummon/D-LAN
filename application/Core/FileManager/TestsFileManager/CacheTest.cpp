@@ -9,6 +9,7 @@
 
 #include <atomic>
 #include <exception>
+#include <functional>
 #include <thread>
 #include <memory>
 
@@ -252,15 +253,203 @@ namespace
    {
    public:
       using PausedOpeningFile::PausedOpeningFile;
+      bool abortWrite = false;
 
    protected:
       qint64 writePhysicalFile(const char* buffer, qint64 nbBytes) override
       {
          this->opening.release();
          this->resume.acquire();
+         if (this->abortWrite)
+            throw FM::IOErrorException();
          return FM::File::writePhysicalFile(buffer, nbBytes);
       }
    };
+
+   class InspectableDirectory : public FM::Directory
+   {
+   public:
+      using FM::Directory::Directory;
+      bool canLock()
+      {
+         if (!this->mutex.tryLock())
+            return false;
+         this->mutex.unlock();
+         return true;
+      }
+   };
+
+   class RetiringFile : public PausedChunkFile
+   {
+   public:
+      using PausedChunkFile::PausedChunkFile;
+      QSemaphore retiring;
+      QSemaphore continueRetirement;
+
+      void del(bool invokeDelete = true) override
+      {
+         this->retiring.release();
+         this->continueRetirement.acquire();
+         FM::File::del(invokeDelete);
+      }
+
+      void removeUnfinishedFiles() override
+      {
+         this->retiring.release();
+         this->continueRetirement.acquire();
+         FM::File::removeUnfinishedFiles();
+      }
+   };
+}
+
+void CacheTest::directoryCleanupAllowsCompletion_data()
+{
+   QTest::addColumn<bool>("remove");
+   QTest::addColumn<bool>("nested");
+   QTest::newRow("delete-direct") << true << false;
+   QTest::newRow("delete-nested") << true << true;
+   QTest::newRow("unfinished-direct") << false << false;
+   QTest::newRow("unfinished-nested") << false << true;
+}
+
+void CacheTest::directoryCleanupAllowsCompletion()
+{
+   QFETCH(bool, remove);
+   QFETCH(bool, nested);
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   auto parent = new InspectableDirectory(root, "parent", root->getRootDir(), true);
+   auto leaf = nested ? new InspectableDirectory(root, "child", parent, true) : parent;
+   auto file = new RetiringFile(root, "download.bin", 1, false, QDateTime::currentDateTime(),
+      leaf, QList<Common::Hash>(), true);
+   const QString completedPath = leaf->getAbsolutePath().toString() + "download.bin";
+   auto chunk = file->getChunks().first();
+   auto writer = chunk->getDataWriter();
+   std::exception_ptr writeError;
+   std::thread downloading([&] {
+      try { chunk->write("x", 1); }
+      catch (...) { writeError = std::current_exception(); }
+   });
+   const bool reachedWrite = file->opening.tryAcquire(1, 5000);
+   std::thread cleanup([&] {
+      if (remove)
+         parent->del(false);
+      else
+         parent->removeUnfinishedFiles();
+   });
+   const bool reachedRetirement = file->retiring.tryAcquire(1, 5000);
+   const bool parentAvailable = parent->canLock();
+   const bool leafAvailable = leaf->canLock();
+   // On a regression, abort the write instead of completing under an inverted parent lock,
+   // so both workers can finish and the test reports a failure rather than deadlocking.
+   file->abortWrite = !parentAvailable || !leafAvailable;
+   file->continueRetirement.release();
+   file->resume.release();
+   downloading.join();
+   cleanup.join();
+   if (remove)
+   {
+      // Children are queued before their parent; keep the parent alive until they are destroyed.
+      QCoreApplication::sendPostedEvents(&cache, QEvent::MetaCall);
+      cache.deleteEntry(parent);
+   }
+
+   QVERIFY(reachedWrite);
+   QVERIFY(reachedRetirement);
+   QVERIFY(parentAvailable);
+   QVERIFY(leafAvailable);
+   QVERIFY(!writeError);
+   QVERIFY(QFileInfo::exists(completedPath));
+   if (remove)
+      QVERIFY(chunk->getFilePath().isNull());
+   else
+   {
+      QVERIFY(chunk->isFileComplete());
+      QCOMPARE(leaf->getFiles().size(), 1);
+      QCOMPARE(leaf->getSize(), qint64(1));
+   }
+}
+
+void CacheTest::directoryDestructionReleasesParentLocks()
+{
+   class ProbeFile : public FM::File
+   {
+   public:
+      using FM::File::File;
+      std::function<void()> probe;
+      ~ProbeFile() override { this->probe(); }
+   };
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   bool parentAvailable = false;
+   bool leafAvailable = false;
+   bool reinserted = false;
+   {
+      FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+      const auto shared = cache.addASharedPath(temp.path() + '/');
+      auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+      QVERIFY(root);
+      auto parent = new InspectableDirectory(root, "parent", root->getRootDir());
+      auto leaf = new InspectableDirectory(root, "child", parent);
+      auto file = new ProbeFile(root, "file.bin", 0, false, QDateTime::currentDateTime(), leaf);
+      file->probe = [&, parent, leaf, file] {
+         std::thread callback([&] {
+            parentAvailable = parent->canLock();
+            leafAvailable = leaf->canLock();
+            // A completion/rename callback must not reinsert a child detached by the destructor.
+            if (leafAvailable)
+            {
+               leaf->fileNameChanged(file);
+               reinserted = !leaf->getFiles().isEmpty();
+            }
+         });
+         callback.join();
+      };
+      // Cache destruction deletes the attached subtree synchronously, without a prior del().
+   }
+   QVERIFY(parentAvailable);
+   QVERIFY(leafAvailable);
+   QVERIFY(!reinserted);
+}
+
+void CacheTest::directoryTraversalDefersDeletion()
+{
+   class ProbeFile : public FM::File
+   {
+   public:
+      using FM::File::File;
+      std::shared_ptr<bool> destroyed;
+      ~ProbeFile() override { *this->destroyed = true; }
+   };
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   auto file = new RetiringFile(root, "a.bin", 1, false, QDateTime::currentDateTime(),
+      root->getRootDir(), QList<Common::Hash>(), true);
+   auto later = new ProbeFile(root, "z.bin", 0, false, QDateTime::currentDateTime(), root->getRootDir());
+   const auto destroyed = std::make_shared<bool>(false);
+   later->destroyed = destroyed;
+   std::thread cleanup([&] { root->getRootDir()->removeUnfinishedFiles(); });
+   const bool reachedRetirement = file->retiring.tryAcquire(1, 5000);
+   // This file is already in the traversal's snapshot, but has not been visited yet.
+   later->del();
+   QCoreApplication::sendPostedEvents(&cache, QEvent::MetaCall);
+   const bool destroyedDuringTraversal = *destroyed;
+   file->continueRetirement.release();
+   cleanup.join();
+   QCoreApplication::sendPostedEvents(&cache, QEvent::MetaCall);
+   QVERIFY(reachedRetirement);
+   QVERIFY(!destroyedDuringTraversal);
+   QVERIFY(*destroyed);
 }
 
 void CacheTest::chunkAccessExcludesRetirement_data()

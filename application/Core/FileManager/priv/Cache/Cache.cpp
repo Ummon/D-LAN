@@ -57,6 +57,7 @@ Cache::Cache(QSharedPointer<HC::IHashCache> hashCache) :
 
 Cache::~Cache()
 {
+   this->deleteDeferredEntries();
    // The event loop won't run anymore for this object: the trees are deleted synchronously, each root entry
    // deletes its shared entry.
    for (SharedEntry* sharedEntry : this->sharedEntries)
@@ -788,7 +789,45 @@ void Cache::onSharedEntryPathChanged(SharedEntry* entry)
 
 void Cache::deleteEntry(Entry* entry)
 {
+   {
+      QMutexLocker locker(&this->deletionMutex);
+      if (this->activeTraversals != 0 || !this->deferredDeletions.isEmpty())
+      {
+         this->deferredDeletions.append(entry);
+         return;
+      }
+   }
    delete entry;
+}
+
+void Cache::beginTraversal()
+{
+   QMutexLocker locker(&this->deletionMutex);
+   ++this->activeTraversals;
+}
+
+void Cache::endTraversal()
+{
+   QMutexLocker locker(&this->deletionMutex);
+   if (--this->activeTraversals == 0 && !this->deferredDeletions.isEmpty())
+      QMetaObject::invokeMethod(this, &Cache::deleteDeferredEntries, Qt::QueuedConnection);
+}
+
+void Cache::deleteDeferredEntries()
+{
+   // Run on the cache thread, preserving child-before-parent deletion order. Never hold this
+   // mutex during destruction: a child may still be finishing I/O or emitting notifications.
+   for (;;)
+   {
+      Entry* entry;
+      {
+         QMutexLocker locker(&this->deletionMutex);
+         if (this->activeTraversals != 0 || this->deferredDeletions.isEmpty())
+            return;
+         entry = this->deferredDeletions.takeFirst();
+      }
+      delete entry;
+   }
 }
 
 Common::SharedEntry Cache::makeSharedEntry(const SharedEntry* entry)

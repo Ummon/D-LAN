@@ -20,6 +20,7 @@
 using namespace FM;
 
 #include <QDir>
+#include <QScopeGuard>
 
 #include <Common/ProtoHelper.h>
 #include <Common/Global.h>
@@ -71,8 +72,6 @@ Directory::Directory(
 
 Directory::~Directory()
 {
-   QMutexLocker locker(&this->mutex);
-
    L_DEBU(QString("Directory deleted: %1").arg(this->getAbsolutePath()));
 
    // A directory deleted without a prior call to 'del()' (by its parent directory or at shutdown) must still leave the indexes.
@@ -82,10 +81,21 @@ Directory::~Directory()
    // Entries still attached here were added after 'del()' (a scan may have been running concurrently) or the whole
    // tree is deleted synchronously (at shutdown). Each destructor takes care of its own subtree: everything must be
    // gone before '~Entry()' deletes the shared entry they all refer to.
-   foreach (Directory* d, this->subDirs.getList())
+   QList<Directory*> subDirs;
+   QList<File*> files;
+   {
+      QMutexLocker locker(&this->mutex);
+      subDirs = this->subDirs.getList();
+      files = this->files.getList();
+      this->subDirs.clear();
+      this->files.clear();
+   }
+   // Children may still be completing I/O and calling back into this directory. Keep it alive,
+   // but never hold its mutex while waiting for a child. Destruction runs on the cache thread.
+   foreach (Directory* d, subDirs)
       delete d;
 
-   foreach (File* f, this->files.getList())
+   foreach (File* f, files)
       delete f;
 
    L_DEBU(QString("Directory deleted: %1").arg(this->getName()));
@@ -93,20 +103,32 @@ Directory::~Directory()
 
 void Directory::del(bool invokeDelete)
 {
+   Cache* cache = this->getCache();
+   cache->beginTraversal();
+   const auto traversal = qScopeGuard([cache] { cache->endTraversal(); });
+   QMutexLocker retirementLocker(&this->retirementMutex);
+   QList<Directory*> subDirs;
+   QList<File*> files;
    {
       QMutexLocker locker(&this->mutex);
 
-      if (this->deletePending)
+      if (this->deletePending || this->deletingChildren)
          return;
 
-      this->deleteSubDirs();
-
-      foreach (File* f, this->files.getList())
-         f->del();
-
-      if (this->parentDirectory)
-         this->parentDirectory->subDirDeleted(this);
+      this->deletingChildren = true;
+      subDirs = this->subDirs.getList();
+      files = this->files.getList();
    }
+
+   // File operations acquire the file mutex before calling back into their parent.
+   // Snapshot membership under the directory mutex, then release it before descending.
+   foreach (Directory* d, subDirs)
+      d->del();
+   foreach (File* f, files)
+      f->del();
+
+   if (this->parentDirectory)
+      this->parentDirectory->subDirDeleted(this);
 
    Entry::del(invokeDelete);
 }
@@ -211,13 +233,22 @@ void Directory::populateEntry(Protos::Common::Entry* dir, bool setSharedDir) con
   */
 void Directory::removeUnfinishedFiles()
 {
-   QMutexLocker locker(&this->mutex);
+   Cache* cache = this->getCache();
+   cache->beginTraversal();
+   const auto traversal = qScopeGuard([cache] { cache->endTraversal(); });
+   QList<File*> files;
+   QList<Directory*> subDirs;
+   {
+      QMutexLocker locker(&this->mutex);
+      files = this->files.getList();
+      subDirs = this->subDirs.getList();
+   }
 
    // Removes incomplete file we don't know.
-   foreach (File* f, this->files.getList())
+   foreach (File* f, files)
       f->removeUnfinishedFiles();
 
-   foreach (Directory* d, this->subDirs.getList())
+   foreach (Directory* d, subDirs)
       d->removeUnfinishedFiles();
 }
 
@@ -257,10 +288,12 @@ void Directory::moveInto(Directory* directory)
   */
 void Directory::fileDeleted(File* file)
 {
-   QMutexLocker locker(&this->mutex);
-
    L_DEBU(QString("Directory::fileDeleted() remove %1").arg(file->getAbsolutePath()));
 
+   QMutexLocker locker(&this->mutex);
+
+   if (!this->files.getList().contains(file))
+      return;
    (*this) -= file->getSize();
    this->files.removeOne(file);
 }
@@ -516,13 +549,9 @@ void Directory::fileNameChanged(File* file)
 {
    QMutexLocker locker(&this->mutex);
 
-   this->files.itemChanged(file);
-}
-
-void Directory::deleteSubDirs()
-{
-   foreach (Directory* d, this->subDirs.getList())
-      d->del();
+   // Completion can arrive after removal, or while the parent is destroying its detached children.
+   if (this->files.getList().contains(file))
+      this->files.itemChanged(file);
 }
 
 void Directory::setRootRecursively(SharedEntry* sharedEntry)
@@ -545,7 +574,8 @@ void Directory::subdirNameChanged(Directory* dir)
 {
    QMutexLocker locker(&this->mutex);
 
-   this->subDirs.itemChanged(dir);
+   if (this->subDirs.getList().contains(dir))
+      this->subDirs.itemChanged(dir);
 }
 
 /**

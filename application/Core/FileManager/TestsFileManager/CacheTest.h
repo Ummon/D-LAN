@@ -9,6 +9,10 @@ public:
    explicit CacheTest(QObject* parent = nullptr);
 
 private slots:
+   void directoryCleanupAllowsCompletion_data();
+   void directoryCleanupAllowsCompletion();
+   void directoryDestructionReleasesParentLocks();
+   void directoryTraversalDefersDeletion();
    void retainedChunksAreDetached_data();
    void retainedChunksAreDetached();
    void chunkAccessExcludesRetirement_data();
