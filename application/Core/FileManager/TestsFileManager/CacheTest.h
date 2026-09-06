@@ -9,6 +9,7 @@ public:
    explicit CacheTest(QObject* parent = nullptr);
 
 private slots:
+   void writerRegistrationSurvivesFileReset();
    void hashingRespectsChunkBoundaries_data();
    void hashingRespectsChunkBoundaries();
    void handlesReopenAfterCompletion_data();

@@ -38,6 +38,67 @@ CacheTest::CacheTest(QObject *parent) :
 {
 }
 
+void CacheTest::writerRegistrationSurvivesFileReset()
+{
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   const bool savedIntegrity = SETTINGS.get<bool>("check_received_data_integrity");
+   const auto restore = qScopeGuard([&] { SETTINGS.set("check_received_data_integrity", savedIntegrity); });
+   // Reach the write-open reset path rather than failing earlier when rehashing the missing prefix.
+   SETTINGS.set("check_received_data_integrity", false);
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   const QByteArray content("download");
+   auto file = new FM::File(root, "download.bin", content.size(), false, QDateTime::currentDateTime(),
+      root->getRootDir(), QList<Common::Hash>(), true);
+   auto chunk = file->getChunks().first();
+   const QString path = file->getAbsolutePath();
+   QSignalSpy resets(&cache, &FM::Cache::chunkRemoved);
+
+   for (int attempt = 0; attempt < 2; ++attempt)
+   {
+      {
+         auto writer = chunk->getDataWriter();
+         QVERIFY(!writer->write(content.constData(), 1));
+      }
+      // Simulate deletion after the last writer released its pooled handle.
+      cache.getFilePool().forceReleaseAll(path);
+      QVERIFY(QFile::remove(path));
+      QVERIFY_THROWS_EXCEPTION(FM::FileResetException, chunk->getDataWriter());
+      QCOMPARE(chunk->getKnownBytes(), 0);
+      QCOMPARE(resets.count(), attempt + 1);
+      QCOMPARE(QFileInfo(path).size(), content.size());
+      const auto failedHandles = cache.getFilePool().takeAll(path);
+      qDeleteAll(failedHandles);
+      QVERIFY(failedHandles.isEmpty()); // A failed constructor must not retain an acquired handle.
+
+      {
+         auto writer = chunk->getDataWriter();
+         QVERIFY(!writer->write(content.constData(), 1));
+      }
+      // The last successful adapter must release its handle. A leaked registration would make
+      // open() allocate a second handle instead of reusing the released one.
+      QFile* pooled = cache.getFilePool().open(path, QIODevice::ReadWrite | QIODevice::Unbuffered);
+      const auto handles = cache.getFilePool().takeAll(path);
+      const bool opened = pooled != nullptr;
+      qDeleteAll(handles);
+      QVERIFY(opened);
+      QCOMPARE(handles.size(), 1);
+      chunk->setKnownBytes(0);
+   }
+   {
+      auto writer = chunk->getDataWriter();
+      QVERIFY(writer->write(content.constData(), content.size()));
+   }
+   QVERIFY(file->isComplete());
+   QFile downloaded(temp.filePath("download.bin"));
+   QVERIFY(downloaded.open(QIODevice::ReadOnly));
+   QCOMPARE(downloaded.readAll(), content);
+}
+
 void CacheTest::hashingRespectsChunkBoundaries_data()
 {
    QTest::addColumn<int>("bufferSize");

@@ -29,6 +29,7 @@ using namespace FM;
 
 #include <QString>
 #include <QFile>
+#include <QScopeGuard>
 
 #include <Common/KnownExtensions.h>
 #include <Common/Global.h>
@@ -371,7 +372,6 @@ void File::newDataWriterCreated()
    QMutexLocker fileLocker(&this->mutex);
    QMutexLocker locker(&this->writeLock);
 
-   this->numDataWriter++;
    // Completion closes the handles for the rename while existing adapters remain registered.
    if (!this->fileInWriteMode)
    {
@@ -385,22 +385,21 @@ void File::newDataWriterCreated()
          );
 
       if (!this->fileInWriteMode)
-      {
-         this->numDataWriter--; // The 'DataWriter' isn't created, 'dataWriterDeleted()' will never be called.
          throw UnableToOpenFileInWriteModeException();
-      }
+
+      // A failed DataWriter constructor has no matching dataWriterDeleted() call. Close the
+      // newly acquired handle on failure and register the adapter only after setup succeeds.
+      auto rollbackHandle = qScopeGuard([this] {
+         this->getCache()->getFilePool().release(this->fileInWriteMode, true);
+         this->fileInWriteMode = nullptr;
+      });
 
       // If the file is created then we reset all the chunks.
       bool fileReset = false;
       if (fileCreated)
       {
          if (!this->fileInWriteMode->resize(this->getSize()))
-         {
-            this->getCache()->getFilePool().release(this->fileInWriteMode, true);
-            this->fileInWriteMode = nullptr;
-            this->numDataWriter--;
             throw UnableToOpenFileInWriteModeException();
-         }
 
          this->setFileAsSparse(*this->fileInWriteMode);
 
@@ -421,7 +420,10 @@ void File::newDataWriterCreated()
          // For example a user has shut down D-LAN then has removed a previously downloading ".unfinished" file
          // then he has restarted D-LAN.
          throw FileResetException();
+
+      rollbackHandle.dismiss();
    }
+   ++this->numDataWriter;
 }
 
 /**
