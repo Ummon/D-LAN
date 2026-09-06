@@ -103,6 +103,19 @@ void ChunksUploader::run()
          // Only this thread writes the elements, reading one without the mutex is safe.
          PM::GetChunkParams chunk = this->chunks.at(i);
 
+         // Also guard internal callers: no invalid range may reach the reader or offset arithmetic.
+         if (chunk.getOffset() < 0 || chunk.getEndOffset() < chunk.getOffset())
+         {
+            L_WARN(QString("Invalid upload range [%1, %2), closing the socket.")
+               .arg(chunk.getOffset()).arg(chunk.getEndOffset()));
+            this->closeTheSocket = true;
+            goto end;
+         }
+
+         // An offset equal to the announced endpoint is a valid empty range.
+         if (chunk.getOffset() == chunk.getEndOffset())
+            continue;
+
          L_DEBU(
             QString("Starting uploading a chunk from offset %1: %2")
                .arg(chunk.getOffset())

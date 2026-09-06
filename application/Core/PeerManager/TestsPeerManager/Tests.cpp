@@ -335,6 +335,73 @@ void Tests::askForHashes()
    }
 }
 
+void Tests::validateChunkOffsets()
+{
+   const Common::Hash hash = this->resultListener.getLastReceivedHash();
+   const auto chunk = this->fileManagers[1]->getChunk(hash);
+   QVERIFY(!chunk.isNull());
+   const quint32 knownBytes = chunk->getKnownBytes();
+   QVERIFY(knownBytes > 0);
+
+   // A local context disconnects the temporary upload handler even if an assertion fails.
+   QObject context;
+   QList<PM::GetChunkParams> forwarded;
+   connect(this->peerManagers[1].data(), &IPeerManager::getChunks, &context,
+      [&](const QList<PM::GetChunkParams>& params, const QSharedPointer<PM::ISocket>& socket)
+      {
+         forwarded = params;
+         socket->finished();
+      });
+
+   // Cover the data boundary, the signed boundary, and values that used to become negative.
+   for (quint32 offset : {knownBytes + 1, quint32(0x7fffffff), quint32(0x80000000), quint32(0xffffffff)})
+   {
+      for (bool includeValidChunk : {false, true})
+      {
+         forwarded.clear();
+         Protos::Core::GetChunks request;
+         auto* requested = request.add_chunks();
+         requested->mutable_hash()->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
+         requested->set_offset(offset);
+         if (includeValidChunk)
+         {
+            auto* valid = request.add_chunks();
+            valid->mutable_hash()->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
+            valid->set_offset(knownBytes); // A valid empty range needs no raw data.
+         }
+
+         Protos::Core::GetChunksResult response;
+         bool received = false;
+         auto result = this->peerManagers[0]->getPeers()[0]->getChunks(request);
+         QVERIFY(!result.isNull());
+         QObject requestContext;
+         connect(result.data(), &IGetChunksResult::result, &requestContext,
+            [&](const Protos::Core::GetChunksResult& value) { response = value; received = true; });
+         result->start();
+         QTRY_VERIFY_WITH_TIMEOUT(received, 10000);
+         QCOMPARE(response.results_size(), includeValidChunk ? 2 : 1);
+         QCOMPARE(response.results(0).status(), Protos::Core::GetChunksResult::ChunkResult::DONT_HAVE_DATA_FROM_OFFSET);
+         QCOMPARE(forwarded.size(), includeValidChunk ? 1 : 0);
+         if (includeValidChunk)
+         {
+            QCOMPARE(response.status(), Protos::Core::GetChunksResult::OK);
+            QCOMPARE(response.results(1).status(), Protos::Core::GetChunksResult::ChunkResult::OK);
+            QCOMPARE(response.results(1).chunk_size(), knownBytes);
+            QCOMPARE(forwarded.first().getOffset(), static_cast<int>(knownBytes));
+            QCOMPARE(forwarded.first().getEndOffset(), static_cast<int>(knownBytes));
+         }
+         else
+            QVERIFY(response.status() != Protos::Core::GetChunksResult::OK);
+
+         // Results release their socket through deleteLater(). Complete that cleanup before
+         // the next request so it cannot reuse a socket with a pending close notification.
+         result.clear();
+         QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
+         QCoreApplication::processEvents();
+      }
+   }
+}
+
 void Tests::askForAChunk()
 {
    qDebug() << "===== askForAChunk() =====";
@@ -405,4 +472,3 @@ bool Tests::deleteAllFiles()
 {
    return Common::Global::recursiveDeleteDirectory("sharedDirs");
 }
-

@@ -55,6 +55,7 @@ private slots:
    void askForRootEntries();
    void askForSomeEntries();
    void askForHashes();
+   void validateChunkOffsets();
    void askForAChunk();
    void cleanupTestCase();
 

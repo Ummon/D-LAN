@@ -430,7 +430,6 @@ void PeerMessageSocket::onNewMessage(const Common::Message& message)
          // TODO: implements:
          // - 'GetChunkResult.ALREADY_DOWNLOADING'
          // - 'GetChunkResult.TOO_MANY_CONNECTIONS'
-         // - 'GetChunkResult.DONT_HAVE_DATA_FROM_OFFSET'
 
          for (int i = 0; i < getChunksMessage.chunks_size(); i++)
          {
@@ -454,9 +453,16 @@ void PeerMessageSocket::onNewMessage(const Common::Message& message)
                   // the chunk is being uploaded (it may be downloaded at the same time) but the peer reads
                   // exactly the announced amount, no more may be sent. See 'UM::ChunksUploader::run()'.
                   const int knownBytes = chunk->getKnownBytes();
+                  // Validate the wire value before narrowing uint32 to int: an oversized offset could
+                  // otherwise become negative and reach the file reader or overflow offset arithmetic.
+                  if (knownBytes < 0 || chunkNeeded.offset() > static_cast<quint32>(knownBytes))
+                  {
+                     result->set_status(Protos::Core::GetChunksResult::ChunkResult::DONT_HAVE_DATA_FROM_OFFSET);
+                     continue;
+                  }
                   result->set_status(Protos::Core::GetChunksResult::ChunkResult::OK);
                   result->set_chunk_size(knownBytes);
-                  chunksParams << GetChunkParams(chunk, chunkNeeded.offset(), knownBytes, chunkNeeded.file_bytes_owned());
+                  chunksParams << GetChunkParams(chunk, static_cast<int>(chunkNeeded.offset()), knownBytes, chunkNeeded.file_bytes_owned());
                }
             }
          }
