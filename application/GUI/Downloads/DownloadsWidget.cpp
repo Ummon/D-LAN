@@ -513,6 +513,7 @@ void DownloadsWidget::restoreTreeViewState(const QModelIndex& index, Common::Sim
 void DownloadsWidget::openFile(const QModelIndex& index) const
 {
    if (
+      this->coreConnection->isLocal() &&
       this->currentDownloadsModel->getType(index) == Protos::Common::Entry::FILE &&
       this->currentDownloadsModel->isEntryLocationKnown(index)
    )
