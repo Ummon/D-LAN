@@ -74,13 +74,10 @@ RemoteConnection::RemoteConnection(
    networkListener(networkListener),
    chatSystem(chatSystem),
    waitForStateResult(false),
-   authenticated(false),
-   authenticationRefused(false),
+   localTrusted(this->isLocal()),
    saltChallenge(0)
 {
    L_DEBU(QString("New RemoteConnection from %1").arg(socket->peerAddress().toString()));
-
-   this->authenticated = this->isLocal();
 
    this->refreshAllInterfaces();
 
@@ -152,13 +149,18 @@ void RemoteConnection::send(Common::MessageHeader::MessageType type)
    Common::MessageSocket::send(type);
 }
 
-/**
-  * When not authenticated we can only send messages of type 'GUI_AUTHENTICATION_RESULT' or 'GUI_ASK_FOR_AUTHENTICATION'.
-  */
+bool RemoteConnection::isAuthorized() const
+{
+   // Local clients retain their trusted access while completing the handshake.
+   return this->authenticationState != AuthenticationState::Refused &&
+      (this->localTrusted || this->authenticationState == AuthenticationState::Authenticated);
+}
+
+// Without access, only handshake messages may be sent.
 bool RemoteConnection::canBeSent(Common::MessageHeader::MessageType type) const
 {
    return
-      this->authenticated ||
+      this->isAuthorized() ||
       type == Common::MessageHeader::GUI_ASK_FOR_AUTHENTICATION ||
       type == Common::MessageHeader::GUI_AUTHENTICATION_RESULT;
 }
@@ -174,7 +176,7 @@ void RemoteConnection::refresh()
    // A state message is silently dropped by 'send(..)' if the connection isn't authenticated or no
    // longer listened. Building it would be a waste and, above all, 'waitForStateResult' would stay
    // set forever: the acknowledgment of a message which has never been sent would never come.
-   if (!this->authenticated || !this->isListening())
+   if (!this->isAuthorized() || !this->isListening())
       return;
 
    const int downloadRate = this->downloadManager->getDownloadRate();
@@ -474,10 +476,10 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
 {
    // The answer to a refused authentication is delayed, until it is sent the connection must stay mute.
    // Otherwise a client may pipeline as many password attempts as it wants during this delay.
-   if (this->authenticationRefused)
+   if (this->authenticationState == AuthenticationState::Refused)
       return;
 
-   if (!this->authenticated && message.getHeader().getType() != Common::MessageHeader::GUI_AUTHENTICATION)
+   if (!this->isAuthorized() && message.getHeader().getType() != Common::MessageHeader::GUI_AUTHENTICATION)
       return;
 
    switch (message.getHeader().getType())
@@ -489,11 +491,16 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
 
    case Common::MessageHeader::GUI_AUTHENTICATION:
       {
+         // Authentication is a one-time handshake. Ignore retries after success,
+         // including invalid ones, without resending state/history or closing the client.
+         if (this->authenticationState != AuthenticationState::AwaitingResponse)
+            break;
+
          const Protos::GUI::Authentication& authenticationMessage = message.getMessage<Protos::GUI::Authentication>();
 
          this->timerCloseSocket.stop();
 
-         if (!this->isLocal())
+         if (!this->localTrusted)
          {
             Common::Hash passwordReceived(authenticationMessage.password_challenge().hash());
             Common::Hash currentPassword = SETTINGS.get<Common::Hash>("remote_password");
@@ -501,13 +508,13 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
 
             if (currentPassword.isNull())
             {
-               this->authenticationRefused = true;
+               this->authenticationState = AuthenticationState::Refused;
                QTimer::singleShot(delayGuiConnectionFail, this, &RemoteConnection::sendNoPasswordDefinedResult);
                break;
             }
             else if (passwordReceived != Common::Hasher::hashWithSalt(currentPassword, this->saltChallenge))
             {
-               this->authenticationRefused = true;
+               this->authenticationState = AuthenticationState::Refused;
                QTimer::singleShot(delayGuiConnectionFail, this, &RemoteConnection::sendBadPasswordResult);
                break;
             }
@@ -515,8 +522,8 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
 
          Protos::GUI::AuthenticationResult authResultMessage;
          authResultMessage.set_status(Protos::GUI::AuthenticationResult::AUTH_OK);
+         this->authenticationState = AuthenticationState::Authenticated;
          this->send(Common::MessageHeader::GUI_AUTHENTICATION_RESULT, authResultMessage);
-         this->authenticated = true;
          this->refresh();
          this->sendLastChatMessages();
       }

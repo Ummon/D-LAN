@@ -103,6 +103,7 @@ namespace RCM
       void sendBadPasswordResult();
 
    private:
+      bool isAuthorized() const;
       bool canBeSent(Common::MessageHeader::MessageType type) const;
 
       void askForAuthentication();
@@ -137,8 +138,9 @@ namespace RCM
       QList<QFutureWatcher<Protos::GUI::LocalBrowseResult>*> localBrowses;
 
       bool started = false;
-      bool authenticated;
-      bool authenticationRefused; // Set when an authentication has failed, the connection is then about to be closed.
+      const bool localTrusted;
+      enum class AuthenticationState { AwaitingResponse, Authenticated, Refused };
+      AuthenticationState authenticationState = AuthenticationState::AwaitingResponse;
       quint64 saltChallenge;
 
       QList<QNetworkInterface> interfaces; // We are caching the interfaces because the call of 'QNetworkInterface::allInterfaces()' for each refresh is too heavy.

@@ -121,6 +121,62 @@ private slots:
       QTest::newRow("buffered-invalid-header") << true;
    }
 
+   void repeatedAuthentication_data()
+   {
+      QTest::addColumn<bool>("local");
+      QTest::newRow("trusted-local-client") << true;
+      QTest::newRow("remote-client") << false;
+   }
+
+   void repeatedAuthentication()
+   {
+      QFETCH(bool, local);
+      auto* socket = new BufferedSocket(local);
+      QPointer<RCM::RemoteConnection> connection = this->newConnection(socket);
+      connection->startListening();
+      const auto challenge = socket->messages()[0].getMessage<Protos::GUI::AskForAuthentication>().salt_challenge();
+      Protos::GUI::Authentication authentication;
+      const auto hash = Common::Hasher::hashWithSalt(SETTINGS.get<Common::Hash>("remote_password"), challenge);
+      authentication.mutable_password_challenge()->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
+      socket->receive(Common::MessageHeader::GUI_AUTHENTICATION, authentication);
+      QCOMPARE(socket->messages().size(), 4);
+      QCOMPARE(socket->messages()[1].getMessage<Protos::GUI::AuthenticationResult>().status(), Protos::GUI::AuthenticationResult::AUTH_OK);
+      QSignalSpy languageDefined(connection, &RCM::RemoteConnection::languageDefined);
+      socket->output.clear();
+
+      socket->receive(Common::MessageHeader::GUI_AUTHENTICATION, authentication);
+      socket->receive(Common::MessageHeader::GUI_AUTHENTICATION, Protos::GUI::Authentication());
+      socket->receive(Common::MessageHeader::GUI_AUTHENTICATION, authentication);
+      QTest::qWait(50); // Beyond the configured failed-authentication delay.
+      QVERIFY(connection);
+      QVERIFY(connection->isConnected());
+      QVERIFY(socket->output.isEmpty()); // No repeated authentication result, state, or history.
+      socket->receive(Common::MessageHeader::GUI_LANGUAGE, Protos::GUI::Language());
+      QCOMPARE(languageDefined.size(), 1);
+      delete connection;
+   }
+
+   void refusedAuthenticationCannotBeRetried()
+   {
+      auto* socket = new BufferedSocket(false);
+      QPointer<RCM::RemoteConnection> connection = this->newConnection(socket);
+      connection->startListening();
+      const auto challenge = socket->messages()[0].getMessage<Protos::GUI::AskForAuthentication>().salt_challenge();
+      Protos::GUI::Authentication valid;
+      const auto hash = Common::Hasher::hashWithSalt(SETTINGS.get<Common::Hash>("remote_password"), challenge);
+      valid.mutable_password_challenge()->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
+      QSignalSpy languageDefined(connection, &RCM::RemoteConnection::languageDefined);
+      QList<Common::Message> finalMessages;
+      connect(connection, &RCM::RemoteConnection::deleted, this, [&] { finalMessages = socket->messages(); });
+      socket->receive(Common::MessageHeader::GUI_AUTHENTICATION, Protos::GUI::Authentication());
+      socket->receive(Common::MessageHeader::GUI_AUTHENTICATION, valid);
+      socket->receive(Common::MessageHeader::GUI_LANGUAGE, Protos::GUI::Language());
+      QCOMPARE(languageDefined.size(), 0);
+      QTRY_VERIFY(!connection);
+      QCOMPARE(finalMessages.size(), 2);
+      QCOMPARE(finalMessages[1].getMessage<Protos::GUI::AuthenticationResult>().status(), Protos::GUI::AuthenticationResult::AUTH_BAD_PASSWORD);
+   }
+
    void disconnectedDuringStartup()
    {
       QFETCH(bool, malformed);
