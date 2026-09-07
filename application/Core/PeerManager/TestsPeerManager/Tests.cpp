@@ -1093,6 +1093,95 @@ void Tests::incomingTransactions()
    }
 }
 
+void Tests::rejectUnexpectedOutgoingMessages_data()
+{
+   QTest::addColumn<int>("request"); // 0: idle, 1: entries, 2: hashes header, 3: hashes stream, 4: chunks, 5: completed hashes.
+   QTest::addColumn<int>("reply"); // 0: entries response, 1: hashes response, 2: hash, 3: chunk request, 4: hashes request.
+   QTest::newRow("entries-while-waiting-for-hashes") << 2 << 0;
+   QTest::newRow("hashes-while-waiting-for-entries") << 1 << 1;
+   QTest::newRow("entries-while-waiting-for-chunks") << 4 << 0;
+   QTest::newRow("hash-before-header") << 2 << 2;
+   QTest::newRow("duplicate-hashes-header") << 3 << 1;
+   QTest::newRow("hash-after-completion") << 5 << 2;
+   QTest::newRow("unsolicited-response") << 0 << 0;
+   QTest::newRow("reverse-chunk-request") << 0 << 3;
+   QTest::newRow("reverse-hash-request") << 0 << 4;
+}
+
+void Tests::rejectUnexpectedOutgoingMessages()
+{
+   QFETCH(int, request);
+   QFETCH(int, reply);
+   auto* manager = static_cast<PM::PeerManager*>(this->peerManagers[1].data());
+   QTcpServer server;
+   QVERIFY(server.listen(QHostAddress::LocalHost, 0));
+   PM::ConnectionPool pool(manager, this->fileManagers[1], this->peerIDs[0]);
+   pool.setIP(QHostAddress::LocalHost, server.serverPort());
+   auto socket = pool.getASocket();
+   QTRY_VERIFY(server.hasPendingConnections());
+   QScopedPointer<QTcpSocket> remote(server.nextPendingConnection());
+   QSignalSpy messages(socket.data(), &Common::MessageSocket::newMessage);
+   QSignalSpy closed(socket.data(), &PM::PeerMessageSocket::closed);
+   QSignalSpy idle(socket.data(), &PM::PeerMessageSocket::becomeIdle);
+   QObject context;
+   int uploads = 0;
+   connect(manager, &IPeerManager::getChunks, &context,
+      [&](const QList<PM::GetChunkParams>&, const QSharedPointer<PM::ISocket>&) { ++uploads; });
+   connect(socket.data(), &PM::PeerMessageSocket::getChunks, &context,
+      [&](const QList<PM::GetChunkParams>&, PM::PeerMessageSocket*) { ++uploads; });
+   auto send = [&](Common::MessageHeader::MessageType type, const google::protobuf::Message& value) {
+      Common::Message::writeMessageToDevice(remote.data(),
+         Common::MessageHeader(type, value.ByteSizeLong(), this->peerIDs[0]), &value);
+      remote->flush();
+   };
+   if (request == 0)
+      socket->finished();
+   else
+   {
+      if (request == 1)
+         socket->send(Common::MessageHeader::CORE_GET_ENTRIES, Protos::Core::GetEntries());
+      else if (request == 4)
+         socket->send(Common::MessageHeader::CORE_GET_CHUNKS, Protos::Core::GetChunks());
+      else
+         socket->send(Common::MessageHeader::CORE_GET_HASHES, Protos::Core::GetHashes());
+      QTRY_VERIFY(remote->bytesAvailable() >= Common::MessageHeader::HEADER_SIZE);
+      remote->readAll();
+   }
+   if (request == 3 || request == 5)
+   {
+      Protos::Core::GetHashesResult header;
+      header.set_nb_hash(request == 3 ? 2 : 0);
+      send(Common::MessageHeader::CORE_GET_HASHES_RESULT, header);
+      QTRY_COMPARE(messages.count(), 1);
+   }
+   messages.clear();
+   idle.clear();
+   const auto chunk = this->fileManagers[1]->getChunk(this->resultListener.getLastReceivedHash());
+   QVERIFY(chunk);
+   Protos::Core::GetChunks chunks;
+   chunks.add_chunks()->mutable_hash()->set_hash(chunk->getHash().getData(), Common::Hash::HASH_SIZE);
+   chunks.mutable_chunks(0)->set_offset(chunk->getKnownBytes());
+   switch (reply)
+   {
+   case 0: send(Common::MessageHeader::CORE_GET_ENTRIES_RESULT, Protos::Core::GetEntriesResult()); break;
+   case 1: send(Common::MessageHeader::CORE_GET_HASHES_RESULT, Protos::Core::GetHashesResult()); break;
+   case 2: send(Common::MessageHeader::CORE_HASH_RESULT, Protos::Core::HashResult()); break;
+   case 3: send(Common::MessageHeader::CORE_GET_CHUNKS, chunks); break;
+   case 4: send(Common::MessageHeader::CORE_GET_HASHES, Protos::Core::GetHashes()); break;
+   }
+   QTRY_COMPARE(closed.count(), 1);
+   QCOMPARE(messages.count(), 0); // Rejected messages never reach result callbacks.
+   QCOMPARE(idle.count(), 0);
+   QCOMPARE(uploads, 0);
+   QVERIFY(socket->isClosing());
+   // A rejected reverse request must not reserve upload capacity either.
+   const bool reserved = manager->tryReserveUpload(socket.data());
+   manager->releaseUpload(socket.data());
+   QVERIFY(reserved);
+   auto replacement = pool.getASocket();
+   QVERIFY(replacement != socket);
+}
+
 void Tests::validateChunkOffsets()
 {
    const Common::Hash hash = this->resultListener.getLastReceivedHash();

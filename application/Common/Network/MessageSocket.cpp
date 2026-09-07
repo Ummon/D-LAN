@@ -315,6 +315,8 @@ bool MessageSocket::readMessage()
 
       // 'onNewMessage(..)' may delete this object, see 'dataReceivedSlot()'.
       const QPointer<MessageSocket> self(this);
+      if (!this->acceptsMessage(message) || self.isNull())
+         return true;
       this->onNewMessage(message);
       if (self.isNull())
          return true;

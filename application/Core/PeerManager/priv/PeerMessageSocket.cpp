@@ -55,6 +55,7 @@ PeerMessageSocket::PeerMessageSocket(
    ),
    peerManager(peerManager),
    fileManager(fileManager),
+   incoming(true),
    active(true),
    nbHash(0)
 {
@@ -77,6 +78,7 @@ PeerMessageSocket::PeerMessageSocket(
    ),
    peerManager(peerManager),
    fileManager(fileManager),
+   incoming(false),
    active(true),
    nbHash(0)
 {
@@ -153,6 +155,22 @@ void PeerMessageSocket::send(Common::MessageHeader::MessageType type, const goog
 {
    if (!this->isListening())
       return;
+
+   if (!this->incoming)
+   {
+      if (this->outgoingTransaction != OutgoingTransaction::None)
+      {
+         this->close();
+         return;
+      }
+      switch (type)
+      {
+      case Common::MessageHeader::CORE_GET_ENTRIES: this->outgoingTransaction = OutgoingTransaction::Entries; break;
+      case Common::MessageHeader::CORE_GET_HASHES: this->outgoingTransaction = OutgoingTransaction::HashesHeader; break;
+      case Common::MessageHeader::CORE_GET_CHUNKS: this->outgoingTransaction = OutgoingTransaction::Chunks; break;
+      default: this->close(); return;
+      }
+   }
 
    this->setActive();
 
@@ -231,6 +249,7 @@ void PeerMessageSocket::finished(bool closeTheSocket)
    this->socket->flush();
    this->active = false;
    this->incomingTransaction = IncomingTransaction::None;
+   this->outgoingTransaction = OutgoingTransaction::None;
    ++this->transactionGeneration;
 
    this->startListening();
@@ -278,6 +297,7 @@ void PeerMessageSocket::close()
    this->closing = true;
    this->active = false;
    this->incomingTransaction = IncomingTransaction::None;
+   this->outgoingTransaction = OutgoingTransaction::None;
    ++this->transactionGeneration;
    this->stopListening();
    emit closed(this);
@@ -354,19 +374,38 @@ void PeerMessageSocket::entriesResultTimeout()
       this->sendEntriesResultMessage();
 }
 
-void PeerMessageSocket::onNewMessage(const Common::Message& message)
+bool PeerMessageSocket::acceptsMessage(const Common::Message& message)
 {
    if (this->closing)
-      return;
-   // There are no transaction IDs on the wire. Another message cannot safely
-   // interrupt an asynchronous reply, including a forged response that calls finished().
-   if (this->incomingTransaction != IncomingTransaction::None)
+      return false;
+   const auto type = message.getHeader().getType();
+   bool accepted = false;
+   if (this->incoming)
+      accepted = this->incomingTransaction == IncomingTransaction::None &&
+         (type == Common::MessageHeader::CORE_GET_ENTRIES ||
+          type == Common::MessageHeader::CORE_GET_HASHES ||
+          type == Common::MessageHeader::CORE_GET_CHUNKS);
+   else
    {
-      L_WARN("Overlapping message during an incoming transaction, closing socket");
-      this->close();
-      return;
+      switch (this->outgoingTransaction)
+      {
+      case OutgoingTransaction::Entries: accepted = type == Common::MessageHeader::CORE_GET_ENTRIES_RESULT; break;
+      case OutgoingTransaction::HashesHeader: accepted = type == Common::MessageHeader::CORE_GET_HASHES_RESULT; break;
+      case OutgoingTransaction::Hashes: accepted = type == Common::MessageHeader::CORE_HASH_RESULT && this->nbHash > 0; break;
+      case OutgoingTransaction::Chunks: accepted = type == Common::MessageHeader::CORE_GET_CHUNKS_RESULT; break;
+      default: break;
+      }
    }
+   if (!accepted)
+   {
+      L_WARN("Unexpected message for socket direction or transaction, closing socket");
+      this->close();
+   }
+   return accepted;
+}
 
+void PeerMessageSocket::onNewMessage(const Common::Message& message)
+{
    switch (message.getHeader().getType())
    {
    case Common::MessageHeader::CORE_GET_ENTRIES:
@@ -464,6 +503,7 @@ void PeerMessageSocket::onNewMessage(const Common::Message& message)
       {
          const Protos::Core::GetHashesResult& getHashesResult = message.getMessage<Protos::Core::GetHashesResult>();
          this->nbHash = getHashesResult.nb_hash();
+         this->outgoingTransaction = OutgoingTransaction::Hashes;
 
          // No 'CORE_HASH_RESULT' will follow, the transaction is already over.
          if (getHashesResult.status() != Protos::Core::GetHashesResult_Status_OK || this->nbHash == 0)
@@ -476,6 +516,11 @@ void PeerMessageSocket::onNewMessage(const Common::Message& message)
          if (--this->nbHash == 0)
             this->finished();
       }
+      break;
+
+   case Common::MessageHeader::CORE_GET_CHUNKS_RESULT:
+      // The result object owns stream handoff and final socket release.
+      this->outgoingTransaction = OutgoingTransaction::AwaitingCompletion;
       break;
 
    case Common::MessageHeader::CORE_GET_CHUNKS:

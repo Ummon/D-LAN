@@ -120,7 +120,9 @@ namespace PM
 
    private:
       enum class IncomingTransaction { None, Entries, Hashes, Chunks };
+      enum class OutgoingTransaction { None, Entries, HashesHeader, Hashes, Chunks, AwaitingCompletion };
 
+      bool acceptsMessage(const Common::Message& message) override;
       void onNewMessage(const Common::Message& message) override;
       void onNewDataReceived() override;
       void onDisconnected() override;
@@ -133,16 +135,18 @@ namespace PM
 
       PeerManager* peerManager;
       QSharedPointer<FM::IFileManager> fileManager;
+      const bool incoming;
 
       bool active;
       bool closing = false; // Terminal state while queued pool removal/destruction is pending.
       bool retired = false;
       IncomingTransaction incomingTransaction = IncomingTransaction::None;
+      OutgoingTransaction outgoingTransaction = OutgoingTransaction::None;
       quint64 transactionGeneration = 0;
       QTimer inactiveTimer;
 
       // Used when asking hashes to the fileManager.
       QSharedPointer<FM::IGetHashesResult> currentHashesResult;
-      int nbHash;
+      quint32 nbHash;
    };
 }

@@ -93,6 +93,9 @@ namespace Common
       void disconnectedSlot();
 
    private:
+      // Reject a message before either onNewMessage() or newMessage is called.
+      virtual bool acceptsMessage(const Message& message) { return true; }
+
       /**
         * Called when a new message arrives. Do nothing by default.
         * Can be inherited by a subclass of 'MessageSocket'.
