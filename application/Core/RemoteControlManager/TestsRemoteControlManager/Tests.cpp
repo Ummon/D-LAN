@@ -70,6 +70,85 @@ private slots:
       delete connection;
    }
 
+   void malformedPasswordChange_data()
+   {
+      QTest::addColumn<bool>("invalidNew");
+      QTest::addColumn<int>("length");
+      for (bool invalidNew : {true, false})
+         for (int length : {-1, 0, 1, Common::Hash::HASH_SIZE - 1, Common::Hash::HASH_SIZE + 1})
+            QTest::newRow(qPrintable(QString("%1-length-%2").arg(invalidNew ? "new" : "old").arg(length)))
+               << invalidNew << length;
+   }
+
+   void malformedPasswordChange()
+   {
+      QFETCH(bool, invalidNew);
+      QFETCH(int, length);
+      const auto original = Common::Hash::rand();
+      SETTINGS.set("remote_password", original);
+      SETTINGS.set("salt", quint64(123));
+      auto* socket = new BufferedSocket;
+      QScopedPointer<RCM::RemoteConnection> connection(this->newConnection(socket));
+      connection->startListening();
+      socket->output.clear();
+      Protos::GUI::ChangePassword request;
+      request.set_new_salt(456);
+      if (invalidNew)
+      {
+         request.mutable_old_password()->set_hash(original.getData(), Common::Hash::HASH_SIZE);
+         if (length >= 0)
+            request.mutable_new_password()->set_hash(std::string(length, '\0'));
+      }
+      else
+      {
+         const auto replacement = Common::Hash::rand();
+         request.mutable_new_password()->set_hash(replacement.getData(), Common::Hash::HASH_SIZE);
+         if (length >= 0)
+            request.mutable_old_password()->set_hash(std::string(length, '\0'));
+      }
+      socket->receive(Common::MessageHeader::GUI_CHANGE_PASSWORD, request);
+      QCOMPARE(SETTINGS.get<Common::Hash>("remote_password"), original);
+      QCOMPARE(SETTINGS.get<quint64>("salt"), quint64(123));
+      QVERIFY(socket->output.isEmpty());
+   }
+
+   void validPasswordChanges()
+   {
+      const auto restore = qScopeGuard([] {
+         SETTINGS.set("remote_password", Common::Hash::rand());
+         SETTINGS.set("salt", quint64(123));
+      });
+      SETTINGS.set("remote_password", Common::Hash());
+      auto* socket = new BufferedSocket;
+      QScopedPointer<RCM::RemoteConnection> connection(this->newConnection(socket));
+      connection->startListening();
+      Protos::GUI::ChangePassword request;
+      const auto first = Common::Hash::rand();
+      request.mutable_new_password()->set_hash(first.getData(), Common::Hash::HASH_SIZE);
+      request.set_new_salt(456);
+      socket->receive(Common::MessageHeader::GUI_CHANGE_PASSWORD, request);
+      QCOMPARE(SETTINGS.get<Common::Hash>("remote_password"), first);
+      QCOMPARE(SETTINGS.get<quint64>("salt"), quint64(456));
+
+      const auto second = Common::Hash::rand();
+      request.mutable_new_password()->set_hash(second.getData(), Common::Hash::HASH_SIZE);
+      request.mutable_old_password()->set_hash(second.getData(), Common::Hash::HASH_SIZE); // Wrong old password.
+      request.set_new_salt(789);
+      socket->receive(Common::MessageHeader::GUI_CHANGE_PASSWORD, request);
+      QCOMPARE(SETTINGS.get<Common::Hash>("remote_password"), first);
+      QCOMPARE(SETTINGS.get<quint64>("salt"), quint64(456));
+      request.mutable_old_password()->set_hash(first.getData(), Common::Hash::HASH_SIZE);
+      socket->receive(Common::MessageHeader::GUI_CHANGE_PASSWORD, request);
+      QCOMPARE(SETTINGS.get<Common::Hash>("remote_password"), second);
+      QCOMPARE(SETTINGS.get<quint64>("salt"), quint64(789));
+
+      request.clear_old_password(); // Explicit reset does not require the old password.
+      request.mutable_new_password()->set_hash(std::string(Common::Hash::HASH_SIZE, '\0'));
+      socket->receive(Common::MessageHeader::GUI_CHANGE_PASSWORD, request);
+      QVERIFY(SETTINGS.get<Common::Hash>("remote_password").isNull());
+      QCOMPARE(SETTINGS.get<quint64>("salt"), quint64(0));
+   }
+
    void remoteAuthentication_data()
    {
       QTest::addColumn<bool>("early");

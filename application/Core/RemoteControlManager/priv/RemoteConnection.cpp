@@ -540,6 +540,12 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
       {
          const Protos::GUI::ChangePassword& passMessage = message.getMessage<Protos::GUI::ChangePassword>();
 
+         // Hash construction maps malformed byte strings to null. Validate first so
+         // only an explicitly encoded, full-length null hash can request a reset.
+         if (!passMessage.has_new_password() || passMessage.new_password().hash().size() != Common::Hash::HASH_SIZE ||
+             (passMessage.has_old_password() && passMessage.old_password().hash().size() != Common::Hash::HASH_SIZE))
+            break;
+
          Common::Hash newPassword(passMessage.new_password().hash());
          Common::Hash currentPassword = SETTINGS.get<Common::Hash>("remote_password");
 
@@ -550,7 +556,8 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
             SETTINGS.save();
             this->refresh();
          }
-         else if (currentPassword.isNull() || currentPassword == Common::Hash(passMessage.old_password().hash()))
+         else if (currentPassword.isNull() ||
+                  (passMessage.has_old_password() && currentPassword == Common::Hash(passMessage.old_password().hash())))
          {
             SETTINGS.set("remote_password", newPassword);
             SETTINGS.set("salt", static_cast<quint64>(passMessage.new_salt()));
