@@ -26,8 +26,6 @@ using namespace GUI;
 #include <QListView>
 #include <QLabel>
 #include <QMenu>
-#include <QDesktopServices>
-#include <QUrl>
 #include <QStringBuilder>
 
 #include <Common/Languages.h>
@@ -768,7 +766,7 @@ void SettingsWidget::openLocation()
 {
    QModelIndexList selectedRows = this->ui->tblShareDirs->selectionModel()->selectedRows();
    foreach (QModelIndex index, selectedRows)
-      QDesktopServices::openUrl(QUrl::fromLocalFile(this->sharedEntryListModel.getLocationPath(index)));
+      Utils::openLocation(this->sharedEntryListModel.getLocationPath(index));
 }
 
 void SettingsWidget::buttonAddressToggled(bool checked)
