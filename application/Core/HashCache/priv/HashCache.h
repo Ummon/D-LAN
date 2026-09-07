@@ -18,17 +18,15 @@
 
 #pragma once
 
+#include <memory>
+
 #include <QString>
-#include <QSqlQuery>
-#include <QSqlDatabase>
-#include <QTimer>
-#include <QMutex>
+#include <QThread>
 
 #include <Common/Hash.h>
 #include <Common/Path.h>
 
 #include <IHashCache.h>
-#include <priv/Log.h>
 
 namespace HC
 {
@@ -45,20 +43,13 @@ namespace HC
       void rmHashes(const QString& filePath) override;
 
    private:
-      LOG_INIT_H("HashCache")
+      class Database;
 
-      void updateDatabaseScheme();
-      bool updateToNextVersion(int currentVersion);
-
-      QSqlDatabase db;
-
-      QSqlQuery queryGetHashesWithDate;
-      QSqlQuery queryGetHashes;
-      QSqlQuery querySetHashes;
-      QSqlQuery queryRemoveHashes;
-
-      QMutex mutex;
-
-      static const QStringList VERSION_1;
+      // All SQL objects, including their destruction, belong to databaseThread.
+      // Blocking dispatch preserves the synchronous IHashCache API for callers
+      // that may hold FileManager locks or have no event loop of their own.
+      QThread databaseThread;
+      QObject* databaseContext;
+      std::unique_ptr<Database> database;
    };
 }

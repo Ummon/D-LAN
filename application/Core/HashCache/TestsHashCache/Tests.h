@@ -30,6 +30,6 @@ public:
    Tests();
 
 private slots:
-   void initTestCase();
-   void cleanupTestCase();
+   void concurrentAccess();
+   void destructionFromAnotherThread();
 };

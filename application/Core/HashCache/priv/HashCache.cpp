@@ -19,7 +19,11 @@
 #include <priv/HashCache.h>
 using namespace HC;
 
-#include <QDir>
+#include <optional>
+
+#include <QSqlDatabase>
+#include <QSqlQuery>
+#include <QUuid>
 #include <QSqlError>
 
 #include <Common/Global.h>
@@ -29,10 +33,84 @@ using namespace HC;
 #include <priv/Log.h>
 #include <priv/Exceptions.h>
 
-LOG_INIT_CPP(HashCache)
+class HashCache::Database
+{
+public:
+   explicit Database(const QString& databaseFolder);
+   ~Database();
+
+   QList<Common::Hash> getHashes(const QString& filePath, QDateTime timeLastModified);
+   void setHashes(const QString& filePath, const QList<Common::Hash>& hashes, qint64 size, QDateTime dateTime);
+   void rmHashes(const QString& filePath);
+
+private:
+   LOG_INIT_H("HashCache")
+
+   void updateDatabaseScheme();
+   bool updateToNextVersion(int currentVersion);
+
+   QSqlDatabase db;
+   std::optional<QSqlQuery> queryGetHashesWithDate;
+   std::optional<QSqlQuery> queryGetHashes;
+   std::optional<QSqlQuery> querySetHashes;
+   std::optional<QSqlQuery> queryRemoveHashes;
+
+   static const QStringList VERSION_1;
+};
+
+LOG_INIT_CPP(HashCache::Database)
 
 HashCache::HashCache(const QString& databaseFolder) :
-   db { QSqlDatabase::addDatabase("QSQLITE") },
+   databaseContext(new QObject)
+{
+   this->databaseThread.setObjectName("HashCache");
+   this->databaseContext->moveToThread(&this->databaseThread);
+   QObject::connect(&this->databaseThread, &QThread::finished, this->databaseContext, &QObject::deleteLater);
+   this->databaseThread.start();
+   QMetaObject::invokeMethod(this->databaseContext, [this, &databaseFolder]
+   {
+      this->database = std::make_unique<Database>(databaseFolder);
+   }, Qt::BlockingQueuedConnection);
+}
+
+HashCache::~HashCache()
+{
+   QMetaObject::invokeMethod(this->databaseContext, [this]
+   {
+      this->database.reset();
+   }, Qt::BlockingQueuedConnection);
+   this->databaseThread.quit();
+   this->databaseThread.wait();
+}
+
+QList<Common::Hash> HashCache::getHashes(const QString& filePath, QDateTime timeLastModified)
+{
+   QList<Common::Hash> result;
+   QMetaObject::invokeMethod(this->databaseContext, [this, &filePath, timeLastModified, &result]
+   {
+      result = this->database->getHashes(filePath, timeLastModified);
+   }, Qt::BlockingQueuedConnection);
+   return result;
+}
+
+void HashCache::setHashes(const QString& filePath, const QList<Common::Hash>& hashes, qint64 size, QDateTime dateTime)
+{
+   QMetaObject::invokeMethod(this->databaseContext, [this, &filePath, &hashes, size, dateTime]
+   {
+      this->database->setHashes(filePath, hashes, size, dateTime);
+   }, Qt::BlockingQueuedConnection);
+}
+
+void HashCache::rmHashes(const QString& filePath)
+{
+   QMetaObject::invokeMethod(this->databaseContext, [this, &filePath]
+   {
+      this->database->rmHashes(filePath);
+   }, Qt::BlockingQueuedConnection);
+}
+
+HashCache::Database::Database(const QString& databaseFolder) :
+   db { QSqlDatabase::addDatabase("QSQLITE", QUuid::createUuid().toString(QUuid::WithoutBraces)) },
    queryGetHashesWithDate(this->db),
    queryGetHashes(this->db),
    querySetHashes(this->db),
@@ -54,13 +132,13 @@ HashCache::HashCache(const QString& databaseFolder) :
 
    this->updateDatabaseScheme();
 
-   this->queryGetHashesWithDate.prepare(
+   this->queryGetHashesWithDate->prepare(
       "SELECT [hashes], [size] FROM [File] WHERE [path] = $1 AND [date_last_modified] = $2"
    );
 
-   this->queryGetHashes.prepare("SELECT [hashes], [size] FROM [File] WHERE [path] = $1");
+   this->queryGetHashes->prepare("SELECT [hashes], [size] FROM [File] WHERE [path] = $1");
 
-   this->querySetHashes.prepare(
+   this->querySetHashes->prepare(
       R"(
 INSERT INTO [File] ([path], [size], [date_last_modified], [hashes])
 VALUES ($1, $2, $3, $4)
@@ -69,21 +147,28 @@ UPDATE SET [path] = $1, [size] = $2, [date_last_modified] = $3, [hashes] = $4
       )"
    );
 
-   this->queryRemoveHashes.prepare("DELETE FROM [File] WHERE [path] = $1");
+   this->queryRemoveHashes->prepare("DELETE FROM [File] WHERE [path] = $1");
 }
 
-HashCache::~HashCache()
+HashCache::Database::~Database()
 {
+   const QString connectionName = this->db.connectionName();
+   // Release every query and database handle before unregistering the connection.
+   this->queryGetHashesWithDate.reset();
+   this->queryGetHashes.reset();
+   this->querySetHashes.reset();
+   this->queryRemoveHashes.reset();
    this->db.close();
+   this->db = QSqlDatabase();
+   QSqlDatabase::removeDatabase(connectionName);
    L_DEBU("HashCache deleted");
 }
 
-QList<Common::Hash> HashCache::getHashes(const QString& filePath, QDateTime timeLastModified)
+QList<Common::Hash> HashCache::Database::getHashes(const QString& filePath, QDateTime timeLastModified)
 {
-   QMutexLocker locker(&this->mutex);
    L_DEBU(QString("[getHashes] filePath: %1").arg(filePath));
 
-   QSqlQuery& query = timeLastModified.isNull() ? this->queryGetHashes : this->queryGetHashesWithDate;
+   QSqlQuery& query = timeLastModified.isNull() ? *this->queryGetHashes : *this->queryGetHashesWithDate;
    query.bindValue(0, filePath);
 
    if (!timeLastModified.isNull())
@@ -123,9 +208,8 @@ QList<Common::Hash> HashCache::getHashes(const QString& filePath, QDateTime time
    return QList<Common::Hash>();
 }
 
-void HashCache::setHashes(const QString& filePath, const QList<Common::Hash>& hashes, qint64 size, QDateTime dateTime)
+void HashCache::Database::setHashes(const QString& filePath, const QList<Common::Hash>& hashes, qint64 size, QDateTime dateTime)
 {
-   QMutexLocker locker(&this->mutex);
    L_DEBU(QString("[setHashes] filePath: %1").arg(filePath));
 
    QByteArray hashesBlob;
@@ -135,7 +219,7 @@ void HashCache::setHashes(const QString& filePath, const QList<Common::Hash>& ha
       hashesBlob.append(hashes[i].getData(), Common::Hash::HASH_SIZE);
    }
 
-   QSqlQuery& query = this->querySetHashes;
+   QSqlQuery& query = *this->querySetHashes;
 
    query.bindValue(0, filePath);
    query.bindValue(1, size);
@@ -149,12 +233,11 @@ void HashCache::setHashes(const QString& filePath, const QList<Common::Hash>& ha
    query.finish();
 }
 
-void HashCache::rmHashes(const QString& filePath)
+void HashCache::Database::rmHashes(const QString& filePath)
 {
-   QMutexLocker locker(&this->mutex);
    L_DEBU(QString("[rmHashes] filePath: %1").arg(filePath));
 
-   QSqlQuery& query = this->queryRemoveHashes;
+   QSqlQuery& query = *this->queryRemoveHashes;
 
    query.bindValue(0, filePath);
    query.exec();
@@ -165,7 +248,7 @@ void HashCache::rmHashes(const QString& filePath)
    query.finish();
 }
 
-void HashCache::updateDatabaseScheme()
+void HashCache::Database::updateDatabaseScheme()
 {
    QSqlQuery query(this->db);
    query.exec(
@@ -236,14 +319,14 @@ WHERE [type] = 'table' AND [name] = 'Version'
   * Returns false if there is no migration from the given version (the database is up to date).
   * @exception DatabaseException
   */
-bool HashCache::updateToNextVersion(int currentVersion)
+bool HashCache::Database::updateToNextVersion(int currentVersion)
 {
    const QStringList* statements = nullptr;
 
    switch (currentVersion)
    {
    case 0: // Version 0 to 1.
-      statements = &HashCache::VERSION_1;
+      statements = &HashCache::Database::VERSION_1;
       break;
 
    default:
@@ -260,7 +343,7 @@ bool HashCache::updateToNextVersion(int currentVersion)
    return true;
 }
 
-const QStringList HashCache::VERSION_1 =
+const QStringList HashCache::Database::VERSION_1 =
 {
    R"(
 -- Version 1 is the initial structure.
