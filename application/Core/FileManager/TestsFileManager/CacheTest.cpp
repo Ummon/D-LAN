@@ -18,6 +18,7 @@
 #include <Common/Constants.h>
 #include <Common/Settings.h>
 #include <MockHashCache.h>
+#include <Exceptions.h>
 #include <IDataReader.h>
 #include <IDataWriter.h>
 #include <priv/Cache/Cache.h>
@@ -2110,4 +2111,139 @@ void CacheTest::newDirectoryPreservesFinalComponent()
    cache.newDirectory(entry);
    QCOMPARE(cache.getEntry(Common::Path(expected + '/')), static_cast<FM::Entry*>(created));
    QVERIFY(QFileInfo(expected).isDir());
+}
+
+void CacheTest::emptyFileReplacement_data()
+{
+   QTest::addColumn<int>("originalSize");
+   QTest::newRow("new-file") << -1;
+   QTest::newRow("already-empty") << 0;
+   QTest::newRow("replace-nonempty") << 8;
+}
+
+void CacheTest::emptyFileReplacement()
+{
+   QFETCH(int, originalSize);
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   const auto savedShares = SETTINGS.getRepeated<Protos::Common::SharedEntry>("shared_entries");
+   const auto restoreShares = qScopeGuard([&] { SETTINGS.set("shared_entries", savedShares); });
+   SETTINGS.rm("shared_entries");
+   FM::FileManager manager(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = manager.addASharedPath(temp.path() + '/');
+   QTRY_COMPARE(manager.getCacheStatus(), FM::IFileManager::UP_TO_DATE);
+
+   Protos::Common::Entry entry;
+   entry.set_type(Protos::Common::Entry::FILE);
+   entry.set_path("/");
+   entry.set_name("emptyreplacement.txt");
+   entry.mutable_shared_entry()->mutable_id()->set_hash(shared.first.ID.getData(), Common::Hash::HASH_SIZE);
+   QList<QSharedPointer<FM::IChunk>> originalChunks;
+   QSharedPointer<FM::IDataReader> retainedReader;
+   if (originalSize >= 0)
+   {
+      entry.set_size(originalSize);
+      const QByteArray original(originalSize, 'x');
+      if (originalSize > 0)
+      {
+         Common::Hasher hasher;
+         hasher.addData(std::span<const char>(original));
+         const auto hash = hasher.getResult();
+         entry.add_chunks()->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
+      }
+      originalChunks = manager.newFile(entry);
+      if (!originalChunks.isEmpty())
+      {
+         auto writer = originalChunks.first()->getDataWriter();
+         QVERIFY(writer->write(original.constData(), original.size()));
+         retainedReader = originalChunks.first()->getDataReader();
+      }
+   }
+   entry.set_size(0);
+   entry.clear_chunks();
+   entry.set_exists(false);
+   QVERIFY(manager.newFile(entry).isEmpty());
+   QVERIFY(entry.exists());
+
+   const QString path = temp.filePath("emptyreplacement.txt");
+   QVERIFY(QFileInfo(path).isFile());
+   QCOMPARE(QFileInfo(path).size(), qint64(0));
+   QVERIFY(!QFileInfo::exists(path + ".unfinished"));
+   auto file = dynamic_cast<FM::File*>(manager.getEntry(Common::Path(path)));
+   QVERIFY(file);
+   if (originalSize > 0)
+   {
+      // Windows may deliver the old destination's deletion after replacement.
+      FM::FileUpdater updater(&manager);
+      updater.processEvents({ FM::WatcherEvent(FM::WatcherEvent::DELETED, path, false) });
+      QCOMPARE(manager.getEntry(Common::Path(path)), static_cast<FM::Entry*>(file));
+      QCOMPARE(updater.entriesToScan, QList<FM::Entry*> { file });
+   }
+   QVERIFY(file->isComplete());
+   QCOMPARE(file->getSize(), qint64(0));
+   QCOMPARE(manager.getAmount(), qint64(0));
+   QVERIFY(file->getChunks().isEmpty());
+   for (const auto& chunk : originalChunks)
+   {
+      QVERIFY(!chunk->isComplete());
+      QVERIFY(chunk->getFilePath().isNull());
+      QVERIFY(!manager.getChunk(chunk->getHash()));
+   }
+   const auto search = [&](const QString& words, const QList<QString>& extensions, qint64 size) {
+      QStringList names;
+      for (const auto& result : manager.find(words, extensions, size, size,
+         Protos::Common::FindPattern::FILE, 100, 65536, true))
+         for (const auto& hit : result.entries())
+            names << QString::fromStdString(hit.entry().name());
+      return names;
+   };
+   const QStringList expected { "emptyreplacement.txt" };
+   QCOMPARE(search("emptyreplacement", {}, 0), expected);
+   QCOMPARE(search("", { "txt" }, 0), expected);
+   QCOMPARE(search("", {}, 0), expected);
+   if (originalSize > 0)
+      QVERIFY(search("", {}, originalSize).isEmpty());
+
+   // Repeating the empty download must reuse the completed entry.
+   QVERIFY(manager.newFile(entry).isEmpty());
+   QCOMPARE(manager.getEntry(Common::Path(path)), static_cast<FM::Entry*>(file));
+}
+
+void CacheTest::emptyFileReplacementReportsRenameFailure()
+{
+#ifdef Q_OS_WIN32
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   const QString path = temp.filePath("blocked.txt");
+   QFile physical(path);
+   QVERIFY(physical.open(QIODevice::WriteOnly));
+   QCOMPARE(physical.write("original"), qint64(8));
+   physical.close();
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   auto file = new FM::File(root, "blocked.txt", 8, false, QFileInfo(path).lastModified(), root->getRootDir());
+
+   // Simulate another application holding the destination open without delete sharing.
+   HANDLE handle = CreateFileW(reinterpret_cast<LPCWSTR>(path.utf16()), GENERIC_READ,
+      FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, 0, nullptr);
+   QVERIFY(handle != INVALID_HANDLE_VALUE);
+   const auto closeHandle = qScopeGuard([&] { CloseHandle(handle); });
+   Protos::Common::Entry entry;
+   entry.set_type(Protos::Common::Entry::FILE);
+   entry.set_path("/");
+   entry.set_name("blocked.txt");
+   entry.set_size(0);
+   entry.mutable_shared_entry()->mutable_id()->set_hash(shared.first.ID.getData(), Common::Hash::HASH_SIZE);
+   QVERIFY_THROWS_EXCEPTION(FM::UnableToCreateNewFileException, cache.newFile(entry));
+   QVERIFY(!entry.exists());
+   QVERIFY(!file->isComplete());
+   QCOMPARE(file->getName(), QString("blocked.txt.unfinished"));
+   QVERIFY(QFileInfo::exists(path + ".unfinished"));
+   QVERIFY(physical.open(QIODevice::ReadOnly));
+   QCOMPARE(physical.readAll(), QByteArray("original"));
+#else
+   QSKIP("Windows destination sharing regression");
+#endif
 }

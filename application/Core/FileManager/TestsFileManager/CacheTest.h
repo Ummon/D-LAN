@@ -57,6 +57,9 @@ private slots:
    void browseDirectoryLifetime();
    void partialWrites_data();
    void partialWrites();
+   void emptyFileReplacement_data();
+   void emptyFileReplacement();
+   void emptyFileReplacementReportsRenameFailure();
    void unfinishedFilesStayOutOfSearch_data();
    void unfinishedFilesStayOutOfSearch();
 };

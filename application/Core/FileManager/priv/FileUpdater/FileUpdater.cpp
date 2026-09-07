@@ -799,6 +799,15 @@ bool FileUpdater::processEvents(const QList<WatcherEvent>& events)
 
       case WatcherEvent::DELETED:
          {
+            // Replacing a file can report deletion of the previous destination.
+            // If its path exists again, synchronize the replacement instead of
+            // retiring the completed download now stored at that same path.
+            if (QFileInfo::exists(event.path1))
+            {
+               newOrContentChanged(event.path1);
+               break;
+            }
+
             SharedEntry* sharedEntry = this->fileManager->getSharedEntry(event.path1);
             if (!sharedEntry)
                sharedEntry = this->fileManager->getSharedEntry(event.path1 + '/');

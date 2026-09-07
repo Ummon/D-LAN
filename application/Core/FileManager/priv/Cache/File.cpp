@@ -207,6 +207,15 @@ void File::setToUnfinished(qint64 size, const QList<Common::Hash>& hashes)
    this->setHashes(hashes);
 
    this->createPhysicalFile();
+
+   // Empty replacements have no chunks to trigger completion. Use the same
+   // physical rename and index updates as a completed nonempty download.
+   if (size == 0)
+   {
+      this->setAsComplete();
+      if (!this->isComplete())
+         throw UnableToCreateNewFileException();
+   }
 }
 
 /**
