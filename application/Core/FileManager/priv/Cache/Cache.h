@@ -124,6 +124,15 @@ namespace FM
 
    private:
       friend class Directory;
+      class TraversalGuard : Common::Uncopyable
+      {
+      public:
+         explicit TraversalGuard(Cache& cache) : cache(cache) { this->cache.beginTraversal(); }
+         ~TraversalGuard() { this->cache.endTraversal(); }
+      private:
+         Cache& cache;
+      };
+
       void beginTraversal();
       void endTraversal();
       void deleteDeferredEntries();
@@ -141,6 +150,7 @@ namespace FM
       );
       void saveSharedEntries() const;
 
+      Directory* createDownloadDirectories(Protos::Common::Entry& entry, const Common::Path& path, qint64 spaceNeeded = 0);
       Directory* getWriteableDirectory(const Common::Path& path, qint64 spaceNeeded = 0) const;
 
       QSharedPointer<HC::IHashCache> hashCache;

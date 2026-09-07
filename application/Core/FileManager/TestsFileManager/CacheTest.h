@@ -53,6 +53,10 @@ private slots:
    void concurrentChunkMetadata();
    void metadataReadersAvoidStructuralLocks();
    void concurrentEntryMetadata();
+   void invalidDownloadEntries_data();
+   void invalidDownloadEntries();
+   void downloadEntryPathsAndHashes_data();
+   void downloadEntryPathsAndHashes();
    void openingHandlesExcludesCompletion_data();
    void openingHandlesExcludesCompletion();
    void browseDirectoryLifetime_data();

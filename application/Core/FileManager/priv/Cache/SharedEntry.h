@@ -72,7 +72,6 @@ namespace FM
         * Should be called after each new SharedDirectory created.
         */
       virtual void mergeSubSharedEntries() = 0;
-      // virtual Directory* createSubDirs(const QStringList& names, bool physically = false) = 0;
       virtual Entry* getRootEntry() const = 0;
 
       /**
@@ -99,14 +98,11 @@ namespace FM
       Common::Path getParentPath() const;
 
       Cache* getCache() const;
-      // Common::Path getPath() const;
       Common::Hash getId() const;
       QString getUserName() const;
       void setUserName(const QString& name);
 
    protected:
-      // static QString entryName(const Common::Path& path);
-      // static Common::Path pathWithoutEntryName(const Common::Path& path);
 
       Cache* cache; // To announce when an entry, chunk is created or deleted.
       Common::Hash id;
@@ -160,7 +156,6 @@ namespace FM
       ~SharedFile();
 
       void mergeSubSharedEntries() override;
-      // Directory* createSubDirs(const QStringList& names, bool physically = false) ;
       Entry* getRootEntry() const override;
       Common::Path getPath() const override;
 

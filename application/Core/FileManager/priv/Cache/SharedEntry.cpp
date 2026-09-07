@@ -116,11 +116,6 @@ void SharedEntry::populateEntry(Protos::Common::Entry* entry) const
 
 void SharedEntry::del(bool invokeDelete)
 {
-   // The question is: why we don't let 'Directory::del()' destroys its sub directories?
-   // This is because a concurrent access to 'Directory::getRoot()' during a delete of a shared directory must be
-   // able to access the shared director.
-   // this->deleteSubDirs();
-
    this->getRootEntry()->del(invokeDelete);
 }
 
@@ -143,11 +138,6 @@ void SharedEntry::moveInto(Directory* directory)
    );
 }
 
-// void SharedEntry::moveInto(const QString& path)
-// {
-//    this->path = Common::Path(path);
-// }
-
 void SharedEntry::setPath(const Common::Path& path)
 {
    {
@@ -167,11 +157,6 @@ Cache* SharedEntry::getCache() const
 {
    return this->cache;
 }
-
-// Common::Path SharedEntry::getPath() const
-// {
-//    return this->path;
-// }
 
 Common::Hash SharedEntry::getId() const
 {
@@ -196,32 +181,6 @@ void SharedEntry::setUserName(const QString& name)
    }
    this->getCache()->onEntryRenamed(this->getRootEntry(), oldName);
 }
-
-/**
-  * Extract the entry name. The entry name is a user name and will not be used in a real path.
-  * 'C:/User/Paul/Movies/' -> 'Movies'
-  * 'C:/User/Paul/Movies/movie.avi' -> 'movie.avi'
-  * '/' -> '/'
-  * 'C:/' -> 'C:/'
-  */
-// QString SharedEntry::entryName(const Common::Path& path)
-// {
-//    if (path.isFile())
-//       return path.getFilename();
-
-//    if (path.getDirs().isEmpty())
-//       return path.getRoot();
-//    else
-//       return path.getDirs().constLast();
-// }
-
-// Common::Path SharedEntry::pathWithoutEntryName(const Common::Path& path)
-// {
-//    if (path.isFile())
-//       return path.removeFilename();
-//    else
-//       return path.removeLastDir();
-// }
 
 /////
 
@@ -315,11 +274,6 @@ void SharedFile::mergeSubSharedEntries()
 {
    // We can't merge another shared entry into a file.
 }
-
-// Directory* SharedFile::createSubDirs(const QStringList& names, bool physically)
-// {
-//    return this->file->createSubDirs(names, physically);
-// }
 
 Entry* SharedFile::getRootEntry() const
 {

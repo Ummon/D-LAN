@@ -20,7 +20,6 @@
 using namespace FM;
 
 #include <QDir>
-#include <QScopeGuard>
 
 #include <Common/ProtoHelper.h>
 #include <Common/Global.h>
@@ -103,9 +102,7 @@ Directory::~Directory()
 
 void Directory::del(bool invokeDelete)
 {
-   Cache* cache = this->getCache();
-   cache->beginTraversal();
-   const auto traversal = qScopeGuard([cache] { cache->endTraversal(); });
+   const Cache::TraversalGuard traversal(*this->getCache());
    QMutexLocker retirementLocker(&this->retirementMutex);
    QList<Directory*> subDirs;
    QList<File*> files;
@@ -133,82 +130,6 @@ void Directory::del(bool invokeDelete)
    Entry::del(invokeDelete);
 }
 
-/**
-  * Restore the hashes from the cache.
-  * All file which are not complete and not in the cache are physically removed.
-  * Only files ending with the setting "unfinished_suffix_term" will be removed.
-  * @return The files which have all theirs hashes (complete).
-  */
-// QList<File*> Directory::restoreFromFileCache(const Protos::FileCache::Hashes::Dir& dir)
-// {
-//    QMutexLocker locker(&this->mutex);
-
-//    QList<File*> ret;
-
-//    if (Common::ProtoHelper::getStr(dir, &Protos::FileCache::Hashes_Dir::name) == this->getName())
-//    {
-//       // Sub directories . . .
-//       for (int i = 0; i < dir.dir_size(); i++)
-//          for (QListIterator<Directory*> d(this->subDirs.getList()); d.hasNext();)
-//             ret << d.next()->restoreFromFileCache(dir.dir(i));
-
-//       // . . . And files.
-//       QList<File*> filesNotInDir = this->files.getList();
-//       for (int i = 0; i < dir.file_size(); i++)
-//          for (QListIterator<File*> j(this->files.getList()); j.hasNext();)
-//          {
-//             File* f = j.next();
-//             if (f->restoreFromFileCache(dir.file(i)) && f->hasAllHashes())
-//             {
-//                filesNotInDir.removeOne(f);
-//                ret << f;
-//             }
-//          }
-
-//       // Remove unfinished files not in 'dir'.
-//       for (QListIterator<File*> i(filesNotInDir); i.hasNext();)
-//       {
-//          File* file = i.next();
-//          if (!file->isComplete())
-//          {
-//             file->removeUnfinishedFiles();
-//             file->del();
-//          }
-//       }
-//    }
-
-//    return ret;
-// }
-
-// void Directory::populateHashesDir(Protos::FileCache::Hashes::Dir& dirToFill) const
-// {
-//    QList<Directory*> subDirsCopy;
-//    QList<File*> filesCopy;
-
-//    {
-//       QMutexLocker locker(&this->mutex);
-//       dirToFill.set_name(this->getName().toStdString());
-//       subDirsCopy = this->subDirs.getList();
-//       filesCopy = this->files.getList();
-//    }
-
-//    for (QListIterator<File*> i(filesCopy); i.hasNext();)
-//    {
-//       File* f = i.next();
-
-//       if (f->hasOneOrMoreHashes())
-//       {
-//          Protos::FileCache::Hashes_File* file = dirToFill.add_file();
-//          f->populateHashesFile(*file);
-//       }
-//    }
-
-//    for (QListIterator<Directory*> dir(subDirsCopy); dir.hasNext();)
-//    {
-//       dir.next()->populateHashesDir(*dirToFill.add_dir());
-//    }
-// }
-
 void Directory::populateEntry(Protos::Common::Entry* dir, bool setSharedDir) const
 {
    QMutexLocker locker(&this->mutex);
@@ -233,9 +154,7 @@ void Directory::populateEntry(Protos::Common::Entry* dir, bool setSharedDir) con
   */
 void Directory::removeUnfinishedFiles()
 {
-   Cache* cache = this->getCache();
-   cache->beginTraversal();
-   const auto traversal = qScopeGuard([cache] { cache->endTraversal(); });
+   const Cache::TraversalGuard traversal(*this->getCache());
    QList<File*> files;
    QList<Directory*> subDirs;
    {
@@ -254,9 +173,7 @@ void Directory::removeUnfinishedFiles()
 
 void Directory::moveInto(Directory* directory)
 {
-   Cache* cache = this->getCache();
-   cache->beginTraversal();
-   const auto traversal = qScopeGuard([cache] { cache->endTraversal(); });
+   const Cache::TraversalGuard traversal(*this->getCache());
    QMutexLocker retirementLocker(&this->retirementMutex);
    QMutexLocker locker(&this->mutex);
 
@@ -331,9 +248,7 @@ Common::Path Directory::getAbsolutePath() const
 
 Entry* Directory::getEntry(const Common::Path& path)
 {
-   Cache* cache = this->getCache();
-   cache->beginTraversal();
-   const auto traversal = qScopeGuard([cache] { cache->endTraversal(); });
+   const Cache::TraversalGuard traversal(*this->getCache());
 
    // Each lookup locks only the current directory. Holding an ancestor here
    // would invert the child-to-parent lock order used by size propagation.
@@ -440,9 +355,7 @@ Directory* Directory::createSubDir(const QString& name, bool physically, bool is
   */
 Directory* Directory::createSubDirs(const QStringList& names, bool physically)
 {
-   Cache* cache = this->getCache();
-   cache->beginTraversal();
-   const auto traversal = qScopeGuard([cache] { cache->endTraversal(); });
+   const Cache::TraversalGuard traversal(*this->getCache());
 
    // createSubDir serializes lookup/insertion in each parent. Release that
    // parent's lock before descending, while deferring deletion of the path.
@@ -495,9 +408,7 @@ void Directory::stealContent(Directory* dir)
       return;
    }
 
-   Cache* cache = this->getCache();
-   cache->beginTraversal();
-   const auto traversal = qScopeGuard([cache] { cache->endTraversal(); });
+   const Cache::TraversalGuard traversal(*this->getCache());
    const auto directoriesToSteal = dir->getSubDirs();
    const auto filesToSteal = dir->getFiles();
 
@@ -549,9 +460,7 @@ void Directory::fileNameChanged(File* file)
 
 void Directory::setRootRecursively(SharedEntry* sharedEntry)
 {
-   Cache* cache = this->getCache();
-   cache->beginTraversal();
-   const auto traversal = qScopeGuard([cache] { cache->endTraversal(); });
+   const Cache::TraversalGuard traversal(*this->getCache());
    QList<File*> files;
    QList<Directory*> directories;
    {

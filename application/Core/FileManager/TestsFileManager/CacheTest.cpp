@@ -2361,3 +2361,109 @@ void CacheTest::concurrentEntryMetadata()
    QCOMPARE(parent->getFile(names[1]), file);
    QVERIFY(file->getRoot() == root);
 }
+
+void CacheTest::invalidDownloadEntries_data()
+{
+   QTest::addColumn<bool>("directory");
+   QTest::addColumn<QString>("invalid");
+   for (bool directory : { false, true })
+      for (const QString& invalid : { "type", "parent-traversal", "drive-path", "unc-path", "name-separator",
+            "name-backslash", "name-dotdot", "null-path", "chunks", "shared-id" })
+         QTest::newRow(qPrintable(QString::number(directory) + ':' + invalid)) << directory << invalid;
+   for (const QString& invalid : { "empty-name", "size-overflow", "chunk-count-overflow", "hash-length" })
+      QTest::newRow(qPrintable(invalid)) << false << invalid;
+}
+
+void CacheTest::invalidDownloadEntries()
+{
+   QFETCH(bool, directory);
+   QFETCH(QString, invalid);
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   cache.addASharedPath(temp.path() + '/');
+   Protos::Common::Entry entry;
+   entry.set_type(directory ? Protos::Common::Entry::DIR : Protos::Common::Entry::FILE);
+   entry.set_path("newparent/");
+   entry.set_name("child");
+   entry.set_size(directory ? 0 : 1);
+   if (invalid == "type") entry.set_type(directory ? Protos::Common::Entry::FILE : Protos::Common::Entry::DIR);
+   if (invalid == "parent-traversal") entry.set_path("../outside/");
+   if (invalid == "drive-path") entry.set_path("C:/outside/");
+   if (invalid == "unc-path") entry.set_path("//server/share/");
+   if (invalid == "name-separator") entry.set_name("sub/child");
+   if (invalid == "name-backslash") entry.set_name("sub\\child");
+   if (invalid == "name-dotdot") entry.set_name("..");
+   if (invalid == "null-path") entry.set_path(std::string("newparent/\0hidden/", 18));
+   if (invalid == "shared-id") entry.mutable_shared_entry()->mutable_id()->set_hash("bad");
+   if (invalid == "empty-name") entry.clear_name();
+   if (invalid == "size-overflow") entry.set_size(std::numeric_limits<quint64>::max());
+   if (invalid == "chunk-count-overflow")
+      entry.set_size((quint64(std::numeric_limits<int>::max()) + 1) * Common::Constants::CHUNK_SIZE);
+   if (invalid == "chunks")
+   {
+      entry.add_chunks();
+      if (!directory) entry.add_chunks();
+   }
+   if (invalid == "hash-length") entry.add_chunks()->set_hash("bad");
+   const auto original = entry.SerializeAsString();
+   if (directory)
+      QVERIFY_THROWS_EXCEPTION(FM::UnableToCreateNewDirException, cache.newDirectory(entry));
+   else
+      QVERIFY_THROWS_EXCEPTION(FM::UnableToCreateNewFileException, cache.newFile(entry));
+   QCOMPARE(entry.SerializeAsString(), original);
+   QVERIFY(QDir(temp.path()).entryList(QDir::AllEntries | QDir::NoDotAndDotDot | QDir::Hidden).isEmpty());
+   QVERIFY(!cache.getEntry(Common::Path(temp.filePath("newparent/"))));
+}
+
+void CacheTest::downloadEntryPathsAndHashes_data()
+{
+   QTest::addColumn<int>("kind");
+   QTest::newRow("empty-file") << 0;
+   QTest::newRow("unknown-hashes") << 1;
+   QTest::newRow("partial-hashes") << 2;
+   QTest::newRow("directory") << 3;
+}
+
+void CacheTest::downloadEntryPathsAndHashes()
+{
+   QFETCH(int, kind);
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   cache.addASharedPath(temp.path() + '/');
+   Protos::Common::Entry entry;
+   entry.set_type(kind == 3 ? Protos::Common::Entry::DIR : Protos::Common::Entry::FILE);
+   entry.set_path("/parent/deeper"); // Protocol root marker; no trailing slash.
+   entry.set_name("child");
+   entry.set_size(kind == 1 ? 1 : kind == 2 ? Common::Constants::CHUNK_SIZE + 1 : 0);
+   const Common::Hash hash = Common::Hash::rand();
+   if (kind == 2) entry.add_chunks()->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
+   if (kind == 3)
+   {
+      cache.newDirectory(entry);
+      QVERIFY(QFileInfo(temp.filePath("parent/deeper/child")).isDir());
+   }
+   else
+   {
+      if (kind == 1)
+      {
+         auto emptyEntry = entry;
+         emptyEntry.set_size(0);
+         QVERIFY(cache.newFile(emptyEntry).isEmpty());
+      }
+      const auto chunks = cache.newFile(entry);
+      QCOMPARE(chunks.size(), kind);
+      if (kind == 1) QVERIFY(chunks[0]->getHash().isNull());
+      if (kind == 2)
+      {
+         QCOMPARE(chunks[0]->getHash(), hash);
+         QVERIFY(chunks[1]->getHash().isNull());
+      }
+      const QString path = temp.filePath("parent/deeper/child") + (kind ? ".unfinished" : "");
+      QVERIFY(QFileInfo(path).isFile());
+      QCOMPARE(QFileInfo(path).size(), qint64(entry.size()));
+      QVERIFY(cache.getEntry(Common::Path(path)));
+   }
+}

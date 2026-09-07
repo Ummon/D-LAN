@@ -21,6 +21,8 @@ using namespace FM;
 
 #include <QDir>
 #include <QQueue>
+#include <limits>
+#include <stdexcept>
 
 #include <Common/Global.h>
 #include <Common/Settings.h>
@@ -36,6 +38,74 @@ using namespace FM;
 #include <priv/Cache/SharedEntry.h>
 #include <priv/Cache/Directory.h>
 #include <priv/Cache/File.h>
+
+namespace
+{
+   struct DownloadEntry
+   {
+      Common::Path directory;
+      QString name;
+      QList<Common::Hash> hashes;
+      qint64 spaceNeeded = 0;
+   };
+
+   // Validate before creating directories, touching files, or modifying the request.
+   // Partial/unknown hashes are supported while the downloader retrieves the rest.
+   DownloadEntry prepareDownloadEntry(const Protos::Common::Entry& entry, bool directory, quint32 minimumFreeSpace = 0)
+   {
+      try
+      {
+         const auto require = [](bool valid) {
+            if (!valid)
+               throw std::invalid_argument("Invalid download entry");
+         };
+         require(entry.type() == (directory ? Protos::Common::Entry::DIR : Protos::Common::Entry::FILE));
+         if (entry.has_shared_entry())
+            require(entry.shared_entry().id().hash().empty() ||
+               entry.shared_entry().id().hash().size() == Common::Hash::HASH_SIZE);
+         DownloadEntry result;
+         result.name = QString::fromStdString(entry.name());
+         require((directory || !result.name.isEmpty()) && result.name != "." && result.name != ".." &&
+            !result.name.contains('/') && !result.name.contains('\\') && !result.name.contains(QChar::Null));
+
+         // Leading '/' denotes the shared root in the protocol, never a disk root.
+         const QString path = QDir::fromNativeSeparators(QString::fromStdString(entry.path()));
+         require(!path.startsWith("//") && !path.contains(':') && !path.contains(QChar::Null));
+         const QStringList components = path.split('/', Qt::SkipEmptyParts);
+         require(!components.contains(".."));
+         result.directory = Common::Path(components);
+         if (directory)
+         {
+            require(entry.chunks_size() == 0);
+            result.directory = result.directory.appendDir(result.name);
+         }
+         else
+         {
+            // Check the single filename through the same Path rules used by File.
+            result.directory.setFilename(result.name);
+            const quint64 size = entry.size();
+            const quint64 chunkSize = Common::Constants::CHUNK_SIZE;
+            const quint64 chunkCount = size / chunkSize + (size % chunkSize != 0);
+            require(size <= quint64(std::numeric_limits<qint64>::max()) - minimumFreeSpace &&
+               chunkCount <= quint64(std::numeric_limits<int>::max()) &&
+               quint64(entry.chunks_size()) <= chunkCount);
+            result.spaceNeeded = static_cast<qint64>(size) + minimumFreeSpace;
+            for (const auto& chunk : entry.chunks())
+            {
+               require(chunk.hash().empty() || chunk.hash().size() == Common::Hash::HASH_SIZE);
+               result.hashes << Common::Hash(chunk.hash());
+            }
+         }
+         return result;
+      }
+      catch (const std::invalid_argument&)
+      {
+         if (directory)
+            throw UnableToCreateNewDirException();
+         throw UnableToCreateNewFileException();
+      }
+   }
+}
 
 /**
   * @class FM::Cache
@@ -259,59 +329,28 @@ File* Cache::getFile(const Protos::Common::Entry& fileEntry) const
   * @exception UnableToCreateNewFileException
   * @exception UnableToCreateNewDirException
   */
-// TODO: Check the code in details, do we need to check the fileEntry type?
 QList<QSharedPointer<IChunk>> Cache::newFile(Protos::Common::Entry& fileEntry)
 {
-   Q_ASSERT(fileEntry.type() == Protos::Common::Entry_Type_FILE);
-
+   const auto download = prepareDownloadEntry(fileEntry, false, this->MINIMUM_FREE_SPACE);
    QMutexLocker locker(&this->mutex);
-
-   const Common::Path dirPath(QString::fromStdString(fileEntry.path()));
-   const qint64 spaceNeeded = fileEntry.size() + this->MINIMUM_FREE_SPACE;
-
-   // If we know where to put the file.
-   Directory* dir = nullptr;
-   if (fileEntry.has_shared_entry())
-   {
-      SharedDirectory* sharedDirectory =
-         dynamic_cast<SharedDirectory*>(this->getSharedEntry(fileEntry.shared_entry().id().hash()));
-
-      if (sharedDirectory)
-      {
-         if (Common::Global::availableDiskSpace(sharedDirectory->getPath()) < spaceNeeded)
-            throw InsufficientStorageSpaceException();
-
-         dir = sharedDirectory->createSubDirs(dirPath.getDirs(), true);
-      }
-      else
-         fileEntry.clear_shared_entry(); // The shared directory is invalid.
-   }
-
-   if (!dir)
-      dir = this->getWriteableDirectory(dirPath, spaceNeeded);
-
+   Directory* dir = this->createDownloadDirectories(fileEntry, download.directory, download.spaceNeeded);
    if (!dir)
       throw UnableToCreateNewFileException();
-   else
-      dir->populateSharedEntry(&fileEntry);
-
-   QList<Common::Hash> hashes;
-   for (int i = 0; i < fileEntry.chunks_size(); i++)
-      hashes << fileEntry.chunks(i).hash();
-
-   const QString name = QString::fromStdString(fileEntry.name());
+   dir->populateSharedEntry(&fileEntry);
+   const auto& name = download.name;
+   const auto& hashes = download.hashes;
 
    // If a file with the same name already exists we will compare its hashes with the given entry.
    File* file = dir->getFile(name);
    if (file != nullptr)
    {
       bool resetExistingFile = false;
-      const QVector<QSharedPointer<Chunk>>& existingChunks = file->getChunks();
-      if (existingChunks.size() != fileEntry.chunks_size())
+      const auto existingChunks = file->getChunks();
+      if (file->getSize() != static_cast<qint64>(fileEntry.size()) || existingChunks.size() != hashes.size())
          resetExistingFile = true;
       else
          for (int i = 0; i < existingChunks.size(); i++)
-            if (existingChunks[i]->getHash() != Common::Hash(fileEntry.chunks(i).hash()))
+            if (existingChunks[i]->getHash() != hashes[i])
             {
                resetExistingFile = true;
                break;
@@ -336,20 +375,12 @@ QList<QSharedPointer<IChunk>> Cache::newFile(Protos::Common::Entry& fileEntry)
 
    fileEntry.set_exists(true); // File has been physically created.
 
-   // TODO: Old code, remove.
-   // dir->populateEntrySharedDir(&fileEntry); // We set the shared directory.
-
-   // Is there a better way to up cast? An other method is shown below that uses 'reinterpret_cast'.
    QList<QSharedPointer<IChunk>> ichunks;
-   const QVector<QSharedPointer<Chunk>>& chunks = file->getChunks();
+   const auto chunks = file->getChunks();
    ichunks.reserve(chunks.size());
-   for (QListIterator<QSharedPointer<Chunk>> i(chunks); i.hasNext();)
-      ichunks << i.next();
+   for (const auto& chunk : chunks)
+      ichunks << chunk;
    return ichunks;
-
-   // This method works but 'reinterpret_cast' is too dangerous. (only if 'File::getChunks()' return a QList).
-   // QList<QSharedPointer<Chunk>> chunks = file->getChunks();
-   // return *(reinterpret_cast<QList<QSharedPointer<IChunk>>*>(&chunks));
 }
 
 /**
@@ -361,31 +392,9 @@ QList<QSharedPointer<IChunk>> Cache::newFile(Protos::Common::Entry& fileEntry)
   */
 void Cache::newDirectory(Protos::Common::Entry& dirEntry)
 {
+   const auto download = prepareDownloadEntry(dirEntry, true);
    QMutexLocker locker(&this->mutex);
-
-   // Keep the final component as a directory in both destination-selection paths.
-   const Common::Path dirPath(
-      QDir::cleanPath(QString::fromStdString(dirEntry.path())) +
-      '/' +
-      QString::fromStdString(dirEntry.name()) + '/');
-
-   // If we know where to create the directory.
-   Directory* dir = nullptr;
-   if (dirEntry.has_shared_entry())
-   {
-      SharedDirectory* sharedDir =
-         dynamic_cast<SharedDirectory*>(this->getSharedEntry(dirEntry.shared_entry().id().hash()));
-
-      if (sharedDir)
-         dir = sharedDir->createSubDirs(dirPath.getDirs(), true);
-      else
-         dirEntry.clear_shared_entry(); // The shared entry is invalid.
-   }
-
-   if (!dir)
-      dir = this->getWriteableDirectory(dirPath);
-
-   if (!dir)
+   if (!this->createDownloadDirectories(dirEntry, download.directory))
       throw UnableToCreateNewDirException();
 }
 
@@ -664,31 +673,6 @@ Directory* Cache::getFittestDirectory(const Common::Path& path) const
    return nullptr;
 }
 
-/**
-  * Populates the given structure to be persisted later.
-  */
-/*
-void Cache::populateHashes(Protos::FileCache::Hashes& hashes) const
-{
-   // TODO during hash cache implementation.
-
-   QMutexLocker locker(&this->mutex);
-
-   hashes.set_version(FILE_CACHE_VERSION);
-   hashes.set_chunksize(Common::Constants::CHUNK_SIZE);
-
-   for (QListIterator<SharedDirectory*> i(this->sharedDirs); i.hasNext();)
-   {
-      SharedDirectory* sharedDir = i.next();
-      Protos::FileCache::Hashes_SharedDir* sharedDirMess = hashes.add_shareddir();
-      sharedDirMess->mutable_id()->set_hash(sharedDir->getId().getData(), Common::Hash::HASH_SIZE);
-      Common::ProtoHelper::setStr(*sharedDirMess, &Protos::FileCache::Hashes_SharedDir::set_path, sharedDir->getFullPath());
-
-      sharedDir->populateHashesDir(*sharedDirMess->mutable_root());
-   }
-}
-*/
-
 qint64 Cache::getAmount() const
 {
    QMutexLocker locker(&this->mutex);
@@ -902,6 +886,21 @@ void Cache::saveSharedEntries() const
 
    SETTINGS.set("shared_entries", sharedEntries);
    SETTINGS.save();
+}
+
+Directory* Cache::createDownloadDirectories(Protos::Common::Entry& entry, const Common::Path& path, qint64 spaceNeeded)
+{
+   if (entry.has_shared_entry())
+   {
+      if (auto shared = dynamic_cast<SharedDirectory*>(this->getSharedEntry(entry.shared_entry().id().hash())))
+      {
+         if (spaceNeeded > 0 && Common::Global::availableDiskSpace(shared->getPath()) < spaceNeeded)
+            throw InsufficientStorageSpaceException();
+         return shared->createSubDirs(path.getDirs(), true);
+      }
+      entry.clear_shared_entry();
+   }
+   return this->getWriteableDirectory(path, spaceNeeded);
 }
 
 /**
