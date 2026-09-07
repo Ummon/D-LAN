@@ -20,6 +20,7 @@
 
 #include <QNetworkInterface>
 #include <QHostAddress>
+#include <QStringList>
 
 namespace NL
 {
@@ -30,6 +31,8 @@ namespace NL
       static void sanitizeListenSettings();
       static QHostAddress getCurrentAddressToListenTo();
       static QHostAddress getMulticastGroup(QAbstractSocket::NetworkLayerProtocol protocol);
+      // Stable across enumeration order; excludes changing address lifetimes.
+      static QStringList getNetworkConfiguration(const QList<QNetworkInterface>& interfaces = QNetworkInterface::allInterfaces());
 
    private:
       static bool addressExists(const QString& address);

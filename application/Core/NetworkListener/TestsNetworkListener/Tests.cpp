@@ -43,6 +43,8 @@
 #include <priv/Utils.h>
 #include <priv/UDPListener.h>
 #include <priv/Search.h>
+#include <priv/NetworkListener.h>
+#include <algorithm>
 #include <limits>
 
 #include <MockHashCache.h>
@@ -213,6 +215,20 @@ void Tests::addressToListenTo()
    QCOMPARE(SETTINGS.get<QString>("listen_address"), loopback);
 
    SETTINGS.set("listen_address", QString(""));
+}
+
+void Tests::networkConfigurationSnapshot()
+{
+   auto interfaces = QNetworkInterface::allInterfaces();
+   const auto configuration = Utils::getNetworkConfiguration(interfaces);
+   std::reverse(interfaces.begin(), interfaces.end());
+   QCOMPARE(Utils::getNetworkConfiguration(interfaces), configuration);
+   QVERIFY(Utils::getNetworkConfiguration({}).isEmpty());
+   if (!interfaces.isEmpty())
+   {
+      interfaces.removeLast();
+      QVERIFY(Utils::getNetworkConfiguration(interfaces) != configuration);
+   }
 }
 
 void Tests::sendToUnknownPeer()
@@ -744,9 +760,11 @@ void Tests::bindFailureAndRecovery()
    udpProbe.close();
 
    multicastBlocker.close();
+   // Recover even when the interface configuration has not changed.
+   QTRY_COMPARE_WITH_TIMEOUT(heartbeats, 1, 3500);
    listener->rebindSockets();
    listener->rebindSockets(); // Replace, rather than duplicate, the queued startup heartbeat.
-   QTRY_COMPARE(heartbeats, 1);
+   QTRY_COMPARE(heartbeats, 2);
    QCOMPARE(listener->send(Common::MessageHeader::CORE_GOODBYE, Protos::Common::Null()),
       INetworkListener::SendStatus::OK);
 
@@ -773,6 +791,65 @@ void Tests::rejectZeroUnicastPort()
    QVERIFY(!listener.bindUnicastSocket(QHostAddress::AnyIPv4, 0));
    QVERIFY(!listener.startListening());
    QCOMPARE(listener.send(Common::MessageHeader::CORE_GOODBYE), INetworkListener::SendStatus::UNABLE_TO_SEND);
+}
+
+void Tests::automaticRebinding()
+{
+   const Instance& instance = this->instances[1];
+   QStringList configuration { "initial interface configuration" };
+   NL::NetworkListener listener(instance.fileManager, instance.peerManager, instance.uploadManager,
+      instance.downloadManager, [&]() { return configuration; });
+   int heartbeats = 0;
+   quint16 port = 0;
+   connect(&listener, &INetworkListener::IMAliveMessageToBeSend, this,
+      [&](Protos::Core::IMAlive& message) { ++heartbeats; port = message.port(); });
+   QTRY_COMPARE(heartbeats, 1);
+   QVERIFY(port != 0);
+
+   auto check = [&]() { return QMetaObject::invokeMethod(&listener, "checkNetworkConfiguration", Qt::DirectConnection); };
+   QVERIFY(check());
+   QCoreApplication::processEvents();
+   QCOMPARE(heartbeats, 1); // No repeated discovery or peer reset for an unchanged configuration.
+
+   configuration << "changed address or interface flags";
+   // Exercise the actual polling timer, without resetting a physical adapter.
+   QTRY_COMPARE_WITH_TIMEOUT(heartbeats, 2, 3500);
+   QTcpSocket tcp;
+   const auto address = Utils::getCurrentAddressToListenTo();
+   tcp.connectToHost(address == QHostAddress(QHostAddress::AnyIPv4) ? QHostAddress(QHostAddress::LocalHost) :
+      address == QHostAddress(QHostAddress::AnyIPv6) ? QHostAddress(QHostAddress::LocalHostIPv6) : address, port);
+   QVERIFY(tcp.waitForConnected(1000));
+   QVERIFY(check());
+   QCoreApplication::processEvents();
+   QCOMPARE(heartbeats, 2);
+
+   // Manual rebinding also updates the baseline, avoiding an extra automatic rebind.
+   configuration << "another change";
+   listener.rebindSockets();
+   QTRY_COMPARE(heartbeats, 3);
+   QVERIFY(check());
+   QCoreApplication::processEvents();
+   QCOMPARE(heartbeats, 3);
+
+   const QString originalAddress = SETTINGS.get<QString>("listen_address");
+   const auto restore = qScopeGuard([&]() { SETTINGS.set("listen_address", originalAddress); });
+   const QString unavailableAddress("198.51.100.42");
+   SETTINGS.set("listen_address", unavailableAddress);
+   configuration.clear(); // Simulate an adapter disappearing with a selected address.
+   QVERIFY(check());
+   QCOMPARE(SETTINGS.get<QString>("listen_address"), unavailableAddress);
+   QCOMPARE(listener.send(Common::MessageHeader::CORE_GOODBYE, Protos::Common::Null()),
+      INetworkListener::SendStatus::UNABLE_TO_SEND);
+   QVERIFY(check());
+   QCoreApplication::processEvents();
+   QCOMPARE(heartbeats, 3);
+
+   SETTINGS.set("listen_address", originalAddress);
+   configuration << "interface restored";
+   QVERIFY(check());
+   QTRY_COMPARE(heartbeats, 4);
+   QCOMPARE(listener.send(Common::MessageHeader::CORE_GOODBYE, Protos::Common::Null()),
+      INetworkListener::SendStatus::OK);
 }
 
 void Tests::cleanupTestCase()

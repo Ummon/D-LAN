@@ -19,8 +19,6 @@
 #include <priv/NetworkListener.h>
 using namespace NL;
 
-// #include <QNetworkInformation>
-
 #include <Common/LogManager/Builder.h>
 #include <Common/Settings.h>
 #include <limits>
@@ -34,20 +32,24 @@ NetworkListener::NetworkListener(
    QSharedPointer<FM::IFileManager> fileManager,
    QSharedPointer<PM::IPeerManager> peerManager,
    QSharedPointer<UM::IUploadManager> uploadManager,
-   QSharedPointer<DM::IDownloadManager> downloadManager
+   QSharedPointer<DM::IDownloadManager> downloadManager,
+   std::function<QStringList()> networkConfigurationProvider
 ) :
    fileManager(fileManager),
    peerManager(peerManager),
    uploadManager(uploadManager),
    downloadManager(downloadManager),
    tCPListener(peerManager),
-   uDPListener(fileManager, peerManager, uploadManager, downloadManager)
+   uDPListener(fileManager, peerManager, uploadManager, downloadManager),
+   networkConfigurationProvider(networkConfigurationProvider ? networkConfigurationProvider : []() { return Utils::getNetworkConfiguration(); })
 {
-   // TODO: rebind the sockets automatically when the network configuration changes ('QNetworkConfigurationManager' no longer exists in Qt 6).
    connect(&this->uDPListener, &UDPListener::received, this, &NetworkListener::received);
    connect(&this->uDPListener, &UDPListener::IMAliveMessageToBeSend, this, &NetworkListener::IMAliveMessageToBeSend);
 
    this->rebindSockets();
+   // Qt 6 has no portable notification for every interface/address change.
+   connect(&this->timerNetworkConfiguration, &QTimer::timeout, this, &NetworkListener::checkNetworkConfiguration);
+   this->timerNetworkConfiguration.start(2000);
 }
 
 NetworkListener::~NetworkListener()
@@ -63,12 +65,30 @@ QSharedPointer<ISearch> NetworkListener::newSearch()
 
 void NetworkListener::rebindSockets()
 {
+   this->bindSockets(true);
+}
+
+void NetworkListener::checkNetworkConfiguration()
+{
+   if (this->networkConfigurationProvider() != this->networkConfiguration || !this->socketsBound)
+      this->bindSockets(false);
+}
+
+void NetworkListener::bindSockets(bool sanitizeSettings)
+{
+   this->networkConfiguration = this->networkConfigurationProvider();
+   this->socketsBound = false;
    this->uDPListener.closeSockets();
    this->tCPListener.close();
    this->peerManager->removeAllPeers();
-   Utils::sanitizeListenSettings();
+   if (sanitizeSettings)
+      Utils::sanitizeListenSettings();
 
    const QHostAddress address = Utils::getCurrentAddressToListenTo();
+   // An adapter may disappear temporarily. Keep the user's selection and retry when it returns.
+   const QString configuredAddress = SETTINGS.get<QString>("listen_address");
+   if (!configuredAddress.isEmpty() && address != QHostAddress(configuredAddress))
+      return;
    const quint32 basePort = SETTINGS.get<quint32>("unicast_base_port");
    constexpr int MAX_LISTEN_ATTEMPTS = 10;
    auto bindBoth = [&](quint16 port) {
@@ -91,7 +111,8 @@ void NetworkListener::rebindSockets()
       if ((bound = bindBoth(0)))
          L_WARN(QString("Listening to TCP and UDP on OS-selected port %1").arg(this->tCPListener.getCurrentPort()));
 
-   if (!bound || !this->uDPListener.startListening())
+   this->socketsBound = bound && this->uDPListener.startListening();
+   if (!this->socketsBound)
    {
       this->uDPListener.closeSockets();
       this->tCPListener.close();

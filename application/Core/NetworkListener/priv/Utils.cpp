@@ -31,6 +31,22 @@ using namespace NL;
 
 #include <priv/Log.h>
 
+QStringList Utils::getNetworkConfiguration(const QList<QNetworkInterface>& interfaces)
+{
+   QStringList configuration;
+   for (const auto& interface : interfaces)
+   {
+      const QString identity = QString("%1|%2|%3|%4")
+         .arg(interface.index()).arg(interface.name()).arg(static_cast<int>(interface.flags())).arg(interface.hardwareAddress());
+      configuration << identity;
+      for (const auto& entry : interface.addressEntries())
+         configuration << QString("%1|%2|%3|%4")
+            .arg(identity, entry.ip().toString(), entry.netmask().toString(), entry.broadcast().toString());
+   }
+   configuration.sort();
+   return configuration;
+}
+
 QNetworkInterface Utils::getCurrentInterfaceToListenTo()
 {
    const QString addressToListen = SETTINGS.get<QString>("listen_address");

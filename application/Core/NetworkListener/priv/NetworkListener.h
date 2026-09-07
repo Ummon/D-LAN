@@ -20,6 +20,9 @@
 
 #include <QObject>
 #include <QSharedPointer>
+#include <QTimer>
+#include <QStringList>
+#include <functional>
 
 #include <Common/Uncopyable.h>
 #include <Core/FileManager/IFileManager.h>
@@ -42,7 +45,8 @@ namespace NL
          QSharedPointer<FM::IFileManager> fileManager,
          QSharedPointer<PM::IPeerManager> peerManager,
          QSharedPointer<UM::IUploadManager> uploadManager,
-         QSharedPointer<DM::IDownloadManager> downloadManager
+         QSharedPointer<DM::IDownloadManager> downloadManager,
+         std::function<QStringList()> networkConfigurationProvider = {}
       );
 
       ~NetworkListener();
@@ -61,7 +65,12 @@ namespace NL
          const Common::Hash& peerID = Common::Hash()
       ) override;
 
+   private slots:
+      void checkNetworkConfiguration();
+
    private:
+      void bindSockets(bool sanitizeSettings);
+
       LOG_INIT_H("NetworkListener")
 
       QSharedPointer<FM::IFileManager> fileManager;
@@ -71,5 +80,9 @@ namespace NL
 
       TCPListener tCPListener;
       UDPListener uDPListener;
+      std::function<QStringList()> networkConfigurationProvider;
+      QStringList networkConfiguration;
+      QTimer timerNetworkConfiguration;
+      bool socketsBound = false;
    };
 }

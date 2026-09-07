@@ -51,6 +51,7 @@ private slots:
    void multicastGroupIPv4();
    void multicastGroupIPv6();
    void addressToListenTo();
+   void networkConfigurationSnapshot();
 
    // Sending without any known peer.
    void sendToUnknownPeer();
@@ -74,6 +75,7 @@ private slots:
    void sharedUnicastPort();
    void bindFailureAndRecovery();
    void rejectZeroUnicastPort();
+   void automaticRebinding();
 
    void cleanupTestCase();
 

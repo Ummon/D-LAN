@@ -38,8 +38,8 @@ namespace NL
       virtual QSharedPointer<ISearch> newSearch() = 0;
 
       /**
-        * This is needed when sockets have to be rebound.
-        * On Windows after disable/enable the network interface, the sockets have to be rebound.
+        * Rebind immediately after changing the listening settings.
+        * Interface changes and failed bindings are also checked automatically every two seconds.
         */
       virtual void rebindSockets() = 0;
 
