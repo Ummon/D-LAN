@@ -86,10 +86,12 @@ Protos::Core::GetHashesResult GetHashesResult::start()
       connect(this->cache, &Cache::chunkRemoved, this, &GetHashesResult::chunkRemoved);
       connect(this->cache, &QObject::destroyed, this, &GetHashesResult::invalidate);
 
+      this->pendingHashes.resize(this->chunks.size());
       for (int i = 0; i < this->chunks.size(); ++i)
          if (this->fileEntry.chunks(i).hash().empty())
          {
-            this->hashesRemaining << i;
+            this->pendingHashes.setBit(i);
+            ++this->hashesRemaining;
             if (this->chunks[i]->hasHash())
                ready << this->chunks[i];
             else
@@ -97,8 +99,8 @@ Protos::Core::GetHashesResult GetHashesResult::start()
          }
 
       this->startResult.set_status(Protos::Core::GetHashesResult_Status_OK);
-      this->startResult.set_nb_hash(this->hashesRemaining.size());
-      this->state = this->hashesRemaining.isEmpty() ? State::Finished : State::Streaming;
+      this->startResult.set_nb_hash(this->hashesRemaining);
+      this->state = this->hashesRemaining == 0 ? State::Finished : State::Streaming;
       if (this->state == State::Finished)
          this->disconnectFromCache();
    }
@@ -131,9 +133,10 @@ void GetHashesResult::chunkHashKnown(QSharedPointer<Chunk> chunk)
       return;
    }
    const auto hash = chunk->getHash();
-   if (hash.isNull() || !this->hashesRemaining.removeOne(chunk->getNum()))
+   if (hash.isNull() || !this->pendingHashes.testBit(chunk->getNum()))
       return;
-   if (this->hashesRemaining.isEmpty())
+   this->pendingHashes.clearBit(chunk->getNum());
+   if (--this->hashesRemaining == 0)
    {
       this->state = State::Finished;
       this->disconnectFromCache();
@@ -161,7 +164,8 @@ void GetHashesResult::invalidate()
    // The streaming protocol has no cancellation message; the caller's timeout
    // handles an incomplete request. Queued notifications must stay silent.
    this->state = State::Invalidated;
-   this->hashesRemaining.clear();
+   this->pendingHashes.clear();
+   this->hashesRemaining = 0;
    this->disconnectFromCache();
 }
 

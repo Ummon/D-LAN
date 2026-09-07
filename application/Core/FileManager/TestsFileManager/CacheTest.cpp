@@ -944,6 +944,42 @@ void CacheTest::changedHashingPassDoesNotPublish()
    QCOMPARE(hashCache->writes.size(), 1);
 }
 
+void CacheTest::hashingExceptionAllowsStopAndRetry()
+{
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   const QString path = temp.filePath("retry.bin");
+   {
+      QFile physical(path);
+      QVERIFY(physical.open(QIODevice::WriteOnly));
+      QCOMPARE(physical.write("content"), qint64(7));
+   }
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   auto file = new FM::File(root, "retry.bin", 7, false, QFileInfo(path).lastModified(), root->getRootDir());
+   ReadCallbackFileHasher hasher;
+   hasher.afterRead = [] { throw FM::IOErrorException(); };
+   QVERIFY_THROWS_EXCEPTION(FM::IOErrorException, hasher.start(file));
+   QVERIFY(!file->getChunks().first()->hasHash());
+
+   QSemaphore stopped;
+   std::thread stopping([&] {
+      hasher.stop();
+      stopped.release();
+   });
+   if (!stopped.tryAcquire(1, 5000))
+      qFatal("stop() blocked after a hashing exception");
+   stopping.join();
+
+   QVERIFY(!hasher.start(file)); // Consume the stop request before starting another pass.
+   QVERIFY(hasher.start(file));
+   QVERIFY(file->getChunks().first()->hasHash());
+   QVERIFY(hasher.start(file)); // Already-complete passes also leave the hasher idle.
+}
+
 void CacheTest::redownloadStopsActiveHashing()
 {
    FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;

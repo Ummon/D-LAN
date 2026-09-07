@@ -94,6 +94,15 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed, bool deferPers
          this->flushPendingHashes();
    });
 
+   // Every exit, including exceptions, clears the active file and releases stop() waiters.
+   // This guard runs before saving progress and before the hashing mutex is released.
+   const auto finishHashing = qScopeGuard([&] {
+      this->toStopHashing = false;
+      this->hashing = false;
+      this->currentFileCache = nullptr;
+      this->hashingStopped.wakeAll();
+   });
+
    this->currentFileCache = fileCache;
 
    connect(
@@ -104,20 +113,13 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed, bool deferPers
    );
 
    if (this->toStopHashing)
-   {
-      this->toStopHashing = false;
-      this->currentFileCache = nullptr;
       return false;
-   }
 
    // A scheduler may have selected this file before re-download began. Connect
    // removal above before checking: a transition after this check must stop us,
    // while a transition already in progress must not start another hashing pass.
    if (!this->currentFileCache->isComplete())
-   {
-      this->currentFileCache = nullptr;
       return false;
-   }
 
    const QString filePath = this->currentFileCache->getAbsolutePath();
    const QFileInfo initialInfo(filePath);
@@ -127,17 +129,11 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed, bool deferPers
       // Re-download may already be waiting for us to stop; it owns that transition.
       if (this->currentFileCache->isComplete())
          this->currentFileCache->fileHasChangedOnDisk(QFileInfo(filePath));
-      this->toStopHashing = false;
-      this->hashing = false;
-      this->currentFileCache = nullptr;
       return false;
    };
 
    if (!initialInfo.exists())
-   {
-      this->currentFileCache = nullptr;
       throw IOErrorException();
-   }
 
    // Previously computed (or loaded) hashes belong to the cached size and date.
    // Check before skipping any chunks, including when the chunk count is unchanged.
@@ -155,10 +151,7 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed, bool deferPers
    }
    const QList<QSharedPointer<Chunk>> chunks = std::move(chunkSnapshot);
    if (chunkNum == chunks.size())
-   {
-      this->currentFileCache = nullptr;
       return true;
-   }
 
    this->hashing = true;
 
@@ -174,9 +167,6 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed, bool deferPers
 
    if (!file || !file->reset())
    {
-      this->toStopHashing = false;
-      this->hashing = false;
-      this->currentFileCache = 0;
       L_WARN(QString("Unable to open this file: %1").arg(filePath));
       throw IOErrorException();
    }
@@ -184,11 +174,7 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed, bool deferPers
    // The file remembers its first unknown hash across scheduler passes.
    qint64 bytesSkipped = qint64(chunkNum) * Chunk::CHUNK_SIZE;
    if (bytesSkipped && !file->seek(bytesSkipped))
-   {
-      this->hashing = false;
-      this->currentFileCache = nullptr;
       throw IOErrorException();
-   }
 
 #if DEBUG
    QElapsedTimer timer;
@@ -217,11 +203,7 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed, bool deferPers
       {
          const qint64 chunkSize = qMin<qint64>(Chunk::CHUNK_SIZE, initialInfo.size() - qint64(chunkNum) * Chunk::CHUNK_SIZE);
          if (!file->seek(file->pos() + chunkSize))
-         {
-            this->hashing = false;
-            this->currentFileCache = nullptr;
             throw IOErrorException();
-         }
          bytesSkipped += chunkSize;
          ++chunkNum;
          continue;
@@ -233,13 +215,7 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed, bool deferPers
          locker.unlock();
          locker.relock();
          if (this->toStopHashing)
-         {
-            this->hashingStopped.wakeOne();
-            this->toStopHashing = false;
-            this->hashing = false;
-            this->currentFileCache = 0;
             return false;
-         }
 
          int bytesRead = 0;
          {
@@ -249,9 +225,6 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed, bool deferPers
             switch (bytesRead)
             {
             case -1:
-               this->toStopHashing = false;
-               this->hashing = false;
-               this->currentFileCache = 0;
                L_ERRO(QString("Error when reading the file %1").arg(filePath));
                throw IOErrorException();
             case 0:
@@ -315,12 +288,7 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed, bool deferPers
       QMutexLocker fileLocker(fileMutex.data());
       // A re-download or retirement can begin while disk reads are unlocked.
       if (!this->currentFileCache->isComplete() || !chunk->isOwnedBy(this->currentFileCache))
-      {
-         this->toStopHashing = false;
-         this->hashing = false;
-         this->currentFileCache = nullptr;
          return false;
-      }
       if (chunk->getHash() != computed.hash)
       {
          if (chunk->hasHash())
@@ -332,14 +300,10 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed, bool deferPers
       }
    }
 
-   this->toStopHashing = false;
-   this->hashing = false;
-
    const bool complete = this->currentFileCache->getRemainingBytesToHash() == 0;
    if (complete && this->pendingHashSaves.remove(chunks.first()))
       chunks.first()->saveFileHashes();
    deferSave = deferPersistence;
-   this->currentFileCache = 0;
    return complete;
 }
 

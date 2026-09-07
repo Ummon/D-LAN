@@ -42,6 +42,7 @@ private slots:
    void changedHashingPassDoesNotPublish_data();
    void changedHashingPassDoesNotPublish();
    void redownloadStopsActiveHashing();
+   void hashingExceptionAllowsStopAndRetry();
    void deferredHashPersistence_data();
    void deferredHashPersistence();
    void hashResultsOnlySendOutstandingChunks();

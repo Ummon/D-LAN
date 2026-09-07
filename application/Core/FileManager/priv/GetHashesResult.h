@@ -20,6 +20,7 @@
 
 #include <QObject>
 #include <QPointer>
+#include <QBitArray>
 
 #include <Protos/core_protocol.pb.h>
 
@@ -62,6 +63,7 @@ namespace FM
       QPointer<FileUpdater> fileUpdater;
       File* file = nullptr; // Identity only after start(); retained chunks protect against reuse.
 
-      QList<int> hashesRemaining;
+      QBitArray pendingHashes;
+      int hashesRemaining = 0;
    };
 }
