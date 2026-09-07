@@ -222,6 +222,58 @@ namespace
    };
 }
 
+void Tests::persistDirectoryRemoval_data()
+{
+   QTest::addColumn<bool>("duplicateChild");
+   QTest::newRow("empty-listing") << false;
+   QTest::newRow("child-already-queued") << true;
+}
+
+void Tests::persistDirectoryRemoval()
+{
+   QFETCH(bool, duplicateChild);
+   QSharedPointer<MockFileManager> files(new MockFileManager);
+   DirectoryPeer peer(files);
+   // main.cpp isolates persistence in a temporary directory.
+   Common::PersistentData::rmValue(Common::Constants::FILE_QUEUE, Common::Global::DataFolderType::LOCAL);
+   DownloadManager manager(files, this->peerManager);
+   emit files->fileCacheScanningComplete();
+   Protos::Common::Entry directory;
+   directory.set_type(Protos::Common::Entry::DIR);
+   directory.set_name("folder");
+   directory.set_path("/");
+   const auto share = Common::Hash::rand();
+   directory.mutable_shared_entry()->mutable_id()->set_hash(share.getData(), Common::Hash::HASH_SIZE);
+   Protos::Common::Entry child(directory);
+   child.set_type(Protos::Common::Entry::FILE);
+   child.set_name("child.bin");
+   child.set_path("/folder/");
+   child.set_size(100);
+   if (duplicateChild)
+      QVERIFY(manager.addDownload(child, child, &peer, Protos::Queue::Queue::Entry::PAUSED));
+   QVERIFY(manager.addDownload(directory, directory, &peer, Protos::Queue::Queue::Entry::QUEUED));
+   QVERIFY(QMetaObject::invokeMethod(&manager, "saveQueueToFile", Qt::DirectConnection));
+   QCOMPARE(DownloadQueue::loadFromFile().entries_size(), duplicateChild ? 2 : 1);
+
+   Protos::Core::GetEntriesResult response;
+   auto result = response.add_results();
+   result->set_status(Protos::Core::GetEntriesResult::EntryResult::OK);
+   if (duplicateChild)
+      result->mutable_entries()->add_entries()->CopyFrom(child);
+   emit peer.entries->result(response);
+   QCOMPARE(manager.getDownloads().size(), duplicateChild ? 1 : 0);
+
+   // No new downloads or active transfers can cause this checkpoint: removal must mark it dirty.
+   QVERIFY(QMetaObject::invokeMethod(&manager, "saveQueueToFile", Qt::DirectConnection));
+   const auto saved = DownloadQueue::loadFromFile();
+   QCOMPARE(saved.entries_size(), duplicateChild ? 1 : 0);
+   if (duplicateChild)
+   {
+      QCOMPARE(saved.entries(0).local_entry().name(), child.name());
+      QCOMPARE(saved.entries(0).status(), Protos::Queue::Queue::Entry::PAUSED);
+   }
+}
+
 void Tests::directoryBecomesEmpty_data()
 {
    QTest::addColumn<bool>("explicitEntries");

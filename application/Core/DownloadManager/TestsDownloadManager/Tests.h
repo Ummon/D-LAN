@@ -66,6 +66,8 @@ private slots:
    void validateChunkResponse();
    void directoryBecomesEmpty_data();
    void directoryBecomesEmpty();
+   void persistDirectoryRemoval_data();
+   void persistDirectoryRemoval();
 
 
    void cleanupTestCase();

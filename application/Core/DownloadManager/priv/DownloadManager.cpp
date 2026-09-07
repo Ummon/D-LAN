@@ -369,6 +369,8 @@ void DownloadManager::newEntries(const Protos::Common::Entries& remoteEntries)
    if (position == -1)
       return;
    this->downloadQueue.remove(position);
+   // Expansion may add nothing (an empty listing or children already queued).
+   this->setQueueChanged();
 
    const Protos::Common::Entry& localEntry = dirDownload->getLocalEntry();
    const QString relativePath = QString::fromStdString(localEntry.path()).append(localEntry.name()).append("/");
