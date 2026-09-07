@@ -2558,3 +2558,77 @@ void CacheTest::unfinishedDownloadRetry()
    QVERIFY(completed.open(QIODevice::ReadOnly));
    QCOMPARE(completed.readAll(), replacement);
 }
+
+void CacheTest::hashRequestsKeepOriginalGeneration_data()
+{
+   QTest::addColumn<QString>("change");
+   for (const QString& change : { "same-size", "resized", "redownload", "deleted", "wrong-size", "wrong-hash" })
+      QTest::newRow(qPrintable(change)) << change;
+}
+
+void CacheTest::hashRequestsKeepOriginalGeneration()
+{
+   QFETCH(QString, change);
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   const qint64 size = FM::Chunk::CHUNK_SIZE + 4;
+   const auto firstHash = Common::Hash::rand();
+   auto file = new FM::File(root, "generation.bin", size, false, QDateTime::currentDateTime(),
+      root->getRootDir(), { firstHash, Common::Hash() });
+   const auto oldChunks = file->getChunks();
+   Protos::Common::Entry entry;
+   file->populateEntry(&entry, true);
+   entry.mutable_chunks(0)->clear_hash();
+   if (change == "wrong-size") entry.set_size(size + 1); // Same chunk count.
+   if (change == "wrong-hash")
+   {
+      const auto different = Common::Hash::rand();
+      entry.mutable_chunks(0)->set_hash(different.getData(), Common::Hash::HASH_SIZE);
+   }
+   FM::FileUpdater updater(nullptr);
+   FM::GetHashesResult result(entry, cache, updater);
+   QSignalSpy received(&result, &FM::IGetHashesResult::nextHash);
+   const auto response = result.start();
+   if (change.startsWith("wrong-"))
+   {
+      QCOMPARE(response.status(), Protos::Core::GetHashesResult_Status_ERROR_UNKNOWN);
+      QVERIFY(received.isEmpty());
+      return;
+   }
+   QCOMPARE(response.status(), Protos::Core::GetHashesResult_Status_OK);
+   QCOMPARE(response.nb_hash(), 2);
+   QCOMPARE(received.size(), 1); // First original hash has already been sent.
+
+   if (change == "deleted")
+   {
+      file->del(false);
+      cache.deleteEntry(file);
+      file = new FM::File(root, "generation.bin", size, false, QDateTime::currentDateTime(), root->getRootDir());
+   }
+   else if (change == "redownload")
+      file->setToUnfinished(size, { Common::Hash::rand(), Common::Hash::rand() });
+   else
+   {
+      QFile physical(temp.filePath("generation.bin"));
+      QVERIFY(physical.open(QIODevice::WriteOnly));
+      QVERIFY(physical.resize(size + (change == "resized" ? 1 : 0)));
+      physical.close();
+      file->fileHasChangedOnDisk(QFileInfo(physical));
+   }
+   for (const auto& chunk : file->getChunks())
+   {
+      chunk->setHash(Common::Hash::rand(), false);
+      cache.onChunkHashKnown(chunk);
+   }
+   // Even a delayed notification from the retired snapshot must not restart it.
+   oldChunks[1]->setHash(Common::Hash::rand(), false);
+   cache.onChunkHashKnown(oldChunks[1]);
+   QCOMPARE(received.size(), 1);
+   const auto sent = qvariant_cast<Protos::Core::HashResult>(received.first().first());
+   QCOMPARE(sent.hash().hash(), std::string(firstHash.getData(), Common::Hash::HASH_SIZE));
+}

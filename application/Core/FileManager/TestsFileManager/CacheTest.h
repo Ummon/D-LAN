@@ -36,6 +36,8 @@ private slots:
    void deferredHashPersistence_data();
    void deferredHashPersistence();
    void hashResultsOnlySendOutstandingChunks();
+   void hashRequestsKeepOriginalGeneration_data();
+   void hashRequestsKeepOriginalGeneration();
    void writerRegistrationSurvivesFileReset();
    void hashingRespectsChunkBoundaries_data();
    void hashingRespectsChunkBoundaries();

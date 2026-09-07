@@ -45,12 +45,17 @@ namespace FM
 
    private slots:
       void chunkHashKnown(QSharedPointer<FM::Chunk> chunk);
+      void chunkRemoved(QSharedPointer<FM::Chunk> chunk);
 
    private:
       void sendNextHash(QSharedPointer<Chunk> chunk, bool direct);
+      void disconnectFromCache();
+      bool ownsChunk(const QSharedPointer<Chunk>& chunk) const;
 
       const Protos::Common::Entry fileEntry;
-      File* file; // TODO: if the file is deleted how can we know, is it important?
+      // Retain the original generation; pointer identity cannot be reused after retirement.
+      QList<QSharedPointer<Chunk>> chunks;
+      bool invalidated = false;
       Cache& cache;
       FileUpdater& fileUpdater;
 

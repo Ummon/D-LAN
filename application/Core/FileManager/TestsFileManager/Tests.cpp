@@ -822,6 +822,7 @@ void Tests::getHashesFromAFileEntry1()
    Protos::Common::Entry entry;
    entry.set_path("share1/");
    entry.set_name("r.txt");
+   entry.set_size(sharedEntry.size());
    entry.mutable_shared_entry()->mutable_id()->set_hash(sharedDirId);
    entry.add_chunks();
 
@@ -870,6 +871,7 @@ void Tests::getHashesFromAFileEntry2()
    Protos::Common::Entry entry;
    entry.set_path("/");
    entry.set_name("big3.bin");
+   entry.set_size(sharedEntry.size());
    entry.mutable_shared_entry()->mutable_id()->set_hash(sharedDirId);
    for (int i = 0; i < 2; i++) // 128 MiB -> 2 chunks.
       entry.add_chunks();
