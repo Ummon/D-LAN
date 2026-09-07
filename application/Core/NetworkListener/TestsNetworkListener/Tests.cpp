@@ -378,6 +378,76 @@ void Tests::search()
    QVERIFY(search->elapsed() >= 0);
 }
 
+void Tests::searchResultReception()
+{
+#ifndef DEBUG
+   QSKIP("The multicast loopback is only enabled in debug");
+#endif
+   QTRY_VERIFY_WITH_TIMEOUT(this->peersDiscovered(), DISCOVERY_TIMEOUT);
+   const auto receiver = this->instances[0].networkListener;
+   const auto sender = this->instances[1].networkListener;
+   const auto firstSearch = receiver->newSearch();
+   const auto secondSearch = receiver->newSearch();
+   QList<Protos::Common::FindResult> firstResults;
+   QList<Protos::Common::FindResult> secondResults;
+   int receivedDatagrams = 0;
+   QObject context;
+   connect(firstSearch.data(), &ISearch::found, &context,
+      [&](const Protos::Common::FindResult& result) { firstResults << result; });
+   connect(secondSearch.data(), &ISearch::found, &context,
+      [&](const Protos::Common::FindResult& result) { secondResults << result; });
+   connect(receiver.data(), &INetworkListener::received, &context, [&](const Common::Message& message) {
+      if (message.getHeader().getType() == Common::MessageHeader::CORE_FIND_RESULT &&
+          message.getHeader().getSenderID() == this->peerIDs[1])
+         ++receivedDatagrams;
+   });
+
+   Protos::Common::FindPattern pattern;
+   pattern.set_pattern("network-listener-result-reception-test");
+   const quint64 firstTag = firstSearch->search(pattern);
+   const quint64 secondTag = secondSearch->search(pattern);
+   QVERIFY(firstTag != 0);
+   QVERIFY(secondTag != 0);
+   QVERIFY(firstTag != secondTag);
+
+   Protos::Common::FindResult response;
+   response.set_tag(0); // Neither search owns this tag.
+   // The receiver must attribute results to the datagram sender, not this claimed ID.
+   response.mutable_peer_id()->set_hash(this->peerIDs[0].getData(), Common::Hash::HASH_SIZE);
+   auto* entry = response.add_entries();
+   entry->set_level(7);
+   entry->mutable_entry()->set_name("first-result.txt");
+   QCOMPARE(sender->send(Common::MessageHeader::CORE_FIND_RESULT, response, this->peerIDs[0]), INetworkListener::SendStatus::OK);
+   QTRY_COMPARE_WITH_TIMEOUT(receivedDatagrams, 1, DISCOVERY_TIMEOUT);
+   QVERIFY(firstResults.isEmpty());
+   QVERIFY(secondResults.isEmpty());
+
+   response.set_tag(firstTag);
+   QCOMPARE(sender->send(Common::MessageHeader::CORE_FIND_RESULT, response, this->peerIDs[0]), INetworkListener::SendStatus::OK);
+   QTRY_COMPARE_WITH_TIMEOUT(firstResults.size(), 1, DISCOVERY_TIMEOUT);
+   QVERIFY(secondResults.isEmpty());
+   Protos::Common::FindResult expected(response);
+   expected.mutable_peer_id()->set_hash(this->peerIDs[1].getData(), Common::Hash::HASH_SIZE);
+   QCOMPARE(firstResults.first().SerializeAsString(), expected.SerializeAsString());
+
+   response.set_tag(secondTag);
+   response.mutable_entries(0)->mutable_entry()->set_name("second-result.txt");
+   QCOMPARE(sender->send(Common::MessageHeader::CORE_FIND_RESULT, response, this->peerIDs[0]), INetworkListener::SendStatus::OK);
+   QTRY_COMPARE_WITH_TIMEOUT(secondResults.size(), 1, DISCOVERY_TIMEOUT);
+   QCOMPARE(firstResults.size(), 1);
+   expected = response;
+   expected.mutable_peer_id()->set_hash(this->peerIDs[1].getData(), Common::Hash::HASH_SIZE);
+   QCOMPARE(secondResults.first().SerializeAsString(), expected.SerializeAsString());
+
+   response.set_tag(firstTag);
+   QCOMPARE(sender->send(Common::MessageHeader::CORE_FIND_RESULT, response, this->peerIDs[0]), INetworkListener::SendStatus::OK);
+   QTRY_COMPARE_WITH_TIMEOUT(firstResults.size(), 2, DISCOVERY_TIMEOUT);
+   QCOMPARE(secondResults.size(), 1);
+   expected.set_tag(firstTag);
+   QCOMPARE(firstResults.last().SerializeAsString(), expected.SerializeAsString());
+   QCOMPARE(receivedDatagrams, 4);
+}
+
 void Tests::searchSendFailure_data()
 {
    QTest::addColumn<bool>("oversized");
