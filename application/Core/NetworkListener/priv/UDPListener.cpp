@@ -459,6 +459,10 @@ void UDPListener::initMulticastUDPSocket()
    this->multicastSocket.setSocketOption(QAbstractSocket::MulticastTtlOption, SETTINGS.get<quint32>("multicast_ttl"));
 
    QNetworkInterface networkInterface = Utils::getCurrentInterfaceToListenTo();
+   // Group membership does not select the interface used to send multicast datagrams.
+   if (networkInterface.isValid())
+      this->multicastSocket.setMulticastInterface(networkInterface);
+
    if (
       networkInterface.isValid() ?
            !this->multicastSocket.joinMulticastGroup(this->multicastGroup, networkInterface)
