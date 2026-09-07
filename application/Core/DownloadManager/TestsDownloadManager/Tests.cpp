@@ -105,6 +105,41 @@ void Tests::checkpointDownloadProgress_data()
    QTest::newRow("interrupted") << false;
 }
 
+void Tests::retryFailedQueueSave()
+{
+   QSharedPointer<MockFileManager> files(new MockFileManager);
+   ResumePeer peer(files);
+   // Persistence is isolated by main.cpp in a temporary directory.
+   Common::PersistentData::rmValue(Common::Constants::FILE_QUEUE, Common::Global::DataFolderType::LOCAL);
+   DownloadManager manager(files, this->peerManager);
+   emit files->fileCacheScanningComplete();
+   Protos::Common::Entry entry;
+   entry.set_type(Protos::Common::Entry::FILE);
+   entry.set_name("paused.bin");
+   entry.set_size(100);
+   auto download = manager.addDownload(entry, entry, &peer, Protos::Queue::Queue::Entry::PAUSED);
+   QVERIFY(download);
+   QVERIFY(QMetaObject::invokeMethod(&manager, "saveQueueToFile", Qt::DirectConnection));
+   QCOMPARE(DownloadQueue::loadFromFile().entries_size(), 1);
+
+   manager.removeDownloads({ download->getID() });
+   // A directory at the temporary file path reliably prevents writing on all platforms,
+   // without depending on filesystem permissions or exhausting disk space.
+   const auto blockedPath = Common::Global::getDataFolder(Common::Global::DataFolderType::LOCAL)
+      + '/' + Common::Constants::FILE_QUEUE + ".temp";
+   QVERIFY(QDir().mkdir(blockedPath));
+   const bool firstAttempt = QMetaObject::invokeMethod(&manager, "saveQueueToFile", Qt::DirectConnection);
+   const bool secondAttempt = QMetaObject::invokeMethod(&manager, "saveQueueToFile", Qt::DirectConnection);
+   QVERIFY(QDir().rmdir(blockedPath));
+   QVERIFY(firstAttempt);
+   QVERIFY(secondAttempt);
+   QCOMPARE(DownloadQueue::loadFromFile().entries_size(), 1); // The previous checkpoint survived.
+
+   // No new queue edits or active transfers: only the retained dirty flag can trigger this save.
+   QVERIFY(QMetaObject::invokeMethod(&manager, "saveQueueToFile", Qt::DirectConnection));
+   QCOMPARE(DownloadQueue::loadFromFile().entries_size(), 0);
+}
+
 void Tests::checkpointDownloadProgress()
 {
    QFETCH(bool, complete);

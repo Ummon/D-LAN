@@ -379,7 +379,10 @@ Protos::Queue::Queue DownloadQueue::loadFromFile()
    return savedQueue;
 }
 
-void DownloadQueue::saveToFile() const
+/**
+  * Return true only when the queue was successfully persisted.
+  */
+bool DownloadQueue::saveToFile() const
 {
    Protos::Queue::Queue savedQueue;
    savedQueue.set_version(FILE_QUEUE_VERSION);
@@ -397,7 +400,9 @@ void DownloadQueue::saveToFile() const
    catch (Common::PersistentDataIOException& err)
    {
       L_ERRO(err.message);
+      return false;
    }
+   return true;
 }
 
 /**

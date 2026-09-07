@@ -55,6 +55,7 @@ private slots:
    void oldestChunksSkipUnavailableDownloads();
    void checkpointDownloadProgress_data();
    void checkpointDownloadProgress();
+   void retryFailedQueueSave();
 
 
    void cleanupTestCase();

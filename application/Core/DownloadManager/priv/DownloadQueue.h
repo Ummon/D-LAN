@@ -68,7 +68,7 @@ namespace DM
       QList<QSharedPointer<IChunkDownloader>> getTheOldestUnfinishedChunks(int n);
 
       static Protos::Queue::Queue loadFromFile();
-      void saveToFile() const;
+      bool saveToFile() const;
 
    private slots:
       void fileDownloadTimeChanged(qint64 oldTime);

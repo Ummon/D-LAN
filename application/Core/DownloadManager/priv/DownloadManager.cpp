@@ -580,10 +580,11 @@ void DownloadManager::saveQueueToFile()
    {
       L_DEBU("Persisting queue . . .");
 
-      this->downloadQueue.saveToFile();
-      this->queueChanged = false;
+      // Keep failed checkpoints pending, including saves triggered only by active transfers.
+      this->queueChanged = !this->downloadQueue.saveToFile();
 
-      L_DEBU("Persisting queue finished");
+      if (!this->queueChanged)
+         L_DEBU("Persisting queue finished");
    }
 }
 
