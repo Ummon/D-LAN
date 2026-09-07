@@ -639,14 +639,6 @@ void File::rebuildHashingProgress()
          this->remainingBytesToHash += chunk->getChunkSize();
 }
 
-bool File::hasOneOrMoreHashes() const
-{
-   for (QListIterator<QSharedPointer<Chunk>> i(this->chunks); i.hasNext();)
-     if (i.next()->hasHash())
-         return true;
-   return false;
-}
-
 /**
   * A file is complete when all its chunk has been downloaded and the ".unfinished" suffix has been removed.
   */

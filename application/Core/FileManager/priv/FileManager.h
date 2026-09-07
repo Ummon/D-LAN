@@ -24,8 +24,6 @@
 #include <QSharedPointer>
 #include <QList>
 #include <QBitArray>
-#include <QMutex>
-#include <QTimer>
 
 #include <Protos/common.pb.h>
 #include <Protos/core_protocol.pb.h>
@@ -156,8 +154,6 @@ namespace FM
 
       ExtensionIndex<File*> extensionIndex;
       SizeIndex sizeIndex;
-
-      QMutex mutexCacheChanged;
 
       bool initialFileCacheScanningComplete = false;
    };

@@ -93,7 +93,6 @@ namespace FM
       QList<QSharedPointer<Chunk>> getChunks() const;
       bool hasAllHashes() const;
       qint64 getRemainingBytesToHash() const;
-      bool hasOneOrMoreHashes() const;
 
       bool isComplete() const;
       void chunkComplete(const Chunk* chunk);
