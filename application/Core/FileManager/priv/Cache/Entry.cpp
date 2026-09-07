@@ -121,16 +121,10 @@ void Entry::rename(const QString& newName)
    if (this->getName() == newName)
       return;
 
-   if (!this->isRoot())
-   {
-      const QString oldName = this->getName();
-      this->setName(newName);
-      this->getCache()->onEntryRenamed(this, oldName);
-   }
-   else
-   {
-      this->setName(newName);
-   }
+   const QString oldName = this->getName();
+   const QString oldUserName = this->getUserName();
+   this->setName(newName);
+   this->getCache()->onEntryRenamed(this, oldName, oldUserName);
 }
 
 void Entry::setParentDirectory(Directory* dir)

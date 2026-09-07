@@ -59,6 +59,74 @@ CacheTest::CacheTest(QObject *parent) :
 {
 }
 
+void CacheTest::sharedFileRenameUpdatesSearchIndexes()
+{
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   const auto savedShares = SETTINGS.getRepeated<Protos::Common::SharedEntry>("shared_entries");
+   const auto restoreShares = qScopeGuard([&] { SETTINGS.set("shared_entries", savedShares); });
+   SETTINGS.rm("shared_entries");
+   const QString oldPath = temp.filePath("original.txt");
+   const QString newPath = temp.filePath("renamed.pdf");
+   QFile physical(oldPath);
+   QVERIFY(physical.open(QIODevice::WriteOnly));
+   physical.close();
+
+   FM::FileManager manager(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   manager.fileUpdater.stop();
+   manager.addASharedPath(oldPath);
+   auto file = dynamic_cast<FM::File*>(manager.getEntry(Common::Path(oldPath)));
+   QVERIFY(file);
+   const auto count = [&](const QString& words, const QList<QString>& extensions) {
+      int hits = 0;
+      for (const auto& result : manager.find(words, extensions, 0, 0,
+         Protos::Common::FindPattern::FILE, 100, 65536, true))
+         hits += result.entries_size();
+      return hits;
+   };
+   QCOMPARE(count("", { "txt" }), 1);
+
+   // A display alias is independent of the physical filename and extension.
+   file->getRoot()->setUserName("friendly.zip");
+   QCOMPARE(count("friendly", {}), 1);
+   QCOMPARE(count("original", {}), 0);
+   QCOMPARE(count("", { "txt" }), 1);
+   QCOMPARE(count("", { "zip" }), 0);
+
+   QVERIFY(QFile::rename(oldPath, newPath));
+   manager.fileUpdater.processEvents({ FM::WatcherEvent(FM::WatcherEvent::MOVE, oldPath, newPath, true) });
+   QCOMPARE(file->getName(), QString("renamed.pdf"));
+   QCOMPARE(count("", { "txt" }), 0);
+   QCOMPARE(count("", { "pdf" }), 1);
+   QCOMPARE(count("friendly", {}), 1);
+   QCOMPARE(count("renamed", {}), 0);
+
+   file->getRoot()->setUserName("readable.txt");
+   QCOMPARE(count("friendly", {}), 0);
+   QCOMPARE(count("readable", {}), 1);
+   QCOMPARE(count("", { "txt" }), 0);
+   QCOMPARE(count("", { "pdf" }), 1);
+
+   // Clearing/restoring the display name must update all search indexes together.
+   file->getRoot()->setUserName("");
+   QCOMPARE(count("readable", {}), 0);
+   QCOMPARE(count("", { "pdf" }), 0);
+   QCOMPARE(count("", {}), 0);
+   file->getRoot()->setUserName("readable.txt");
+   QCOMPARE(count("readable", {}), 1);
+   QCOMPARE(count("", { "pdf" }), 1);
+   QCOMPARE(count("", {}), 1);
+
+   manager.setSharedPaths({});
+   // The worker is stopped: perform its queued retirement explicitly.
+   QCOMPARE(manager.fileUpdater.rootEntriesToRemove.size(), 1);
+   manager.fileUpdater.rootEntriesToRemove.takeFirst()->del();
+   QCoreApplication::sendPostedEvents(&manager.cache, QEvent::MetaCall);
+   QCOMPARE(count("", { "txt" }), 0);
+   QCOMPARE(count("", { "pdf" }), 0);
+   QCOMPARE(count("readable", {}), 0);
+}
+
 void CacheTest::fittestDirectoryMatchesExistingPaths()
 {
    QTemporaryDir temp;

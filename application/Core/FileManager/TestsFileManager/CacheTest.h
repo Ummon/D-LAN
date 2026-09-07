@@ -74,4 +74,5 @@ private slots:
    void emptyFileReplacementReportsRenameFailure();
    void unfinishedFilesStayOutOfSearch_data();
    void unfinishedFilesStayOutOfSearch();
+   void sharedFileRenameUpdatesSearchIndexes();
 };

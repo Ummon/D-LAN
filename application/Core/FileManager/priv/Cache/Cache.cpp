@@ -745,9 +745,9 @@ void Cache::onEntryRemoved(Entry* entry)
    emit entryRemoved(entry);
 }
 
-void Cache::onEntryRenamed(Entry* entry, const QString& oldName)
+void Cache::onEntryRenamed(Entry* entry, const QString& oldName, const QString& oldUserName)
 {
-   emit entryRenamed(entry, oldName);
+   emit entryRenamed(entry, oldName, oldUserName);
 }
 
 void Cache::onFileResizing(File* file)

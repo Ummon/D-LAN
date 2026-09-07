@@ -92,7 +92,7 @@ namespace FM
 
       void onEntryAdded(Entry* entry);
       void onEntryRemoved(Entry* entry);
-      void onEntryRenamed(Entry* entry, const QString& oldName);
+      void onEntryRenamed(Entry* entry, const QString& oldName, const QString& oldUserName);
       void onFileResizing(File* file);
       void onFileResized(File* file, qint64 oldSize);
 
@@ -108,7 +108,8 @@ namespace FM
    signals:
       void entryAdded(FM::Entry* entry);
       void entryRemoved(FM::Entry* entry);
-      void entryRenamed(FM::Entry* entry, const QString& oldName);
+      // Physical filenames and shared display names have independent search indexes.
+      void entryRenamed(FM::Entry* entry, const QString& oldName, const QString& oldUserName);
       void fileResizing(FM::File* file);
       void fileResized(FM::File* file, qint64 oldSize);
 

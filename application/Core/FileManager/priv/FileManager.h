@@ -135,7 +135,7 @@ namespace FM
       void deleteSharedEntry(FM::SharedEntry* sharedEntry);
       void entryAdded(FM::Entry* entry);
       void entryRemoved(FM::Entry* entry);
-      void entryRenamed(FM::Entry* entry, const QString& oldName);
+      void entryRenamed(FM::Entry* entry, const QString& oldName, const QString& oldUserName);
 
       void fileResizing(FM::File* file);
       void fileResized(FM::File* file, qint64 oldSize);

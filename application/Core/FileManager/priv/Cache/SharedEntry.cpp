@@ -179,7 +179,8 @@ void SharedEntry::setUserName(const QString& name)
       oldName = this->userName;
       this->userName = name;
    }
-   this->getCache()->onEntryRenamed(this->getRootEntry(), oldName);
+   Entry* entry = this->getRootEntry();
+   this->getCache()->onEntryRenamed(entry, entry->getName(), oldName);
 }
 
 /////

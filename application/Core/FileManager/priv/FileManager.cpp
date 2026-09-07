@@ -540,16 +540,28 @@ void FileManager::entryRemoved(Entry* entry)
    }
 }
 
-void FileManager::entryRenamed(Entry* entry, const QString& oldName)
+void FileManager::entryRenamed(Entry* entry, const QString& oldName, const QString& oldUserName)
 {
    const QString name = entry->getUserName();
+   const bool wasSearchable = !Global::isFileUnfinished(oldName) && !oldUserName.isEmpty();
+   const bool searchable = isSearchableEntry(entry);
 
-   L_DEBU(QString("Renaming entry '%1' to '%2' in the index . . .").arg(name, oldName));
+   L_DEBU(QString("Renaming entry '%1' to '%2' in the index . . .").arg(oldUserName, name));
 
-   this->wordIndex.renameItem(Common::StringUtils::splitInWords(oldName), Common::StringUtils::splitInWords(name), entry);
+   this->wordIndex.renameItem(
+      wasSearchable ? Common::StringUtils::splitInWords(oldUserName) : QStringList(),
+      searchable ? Common::StringUtils::splitInWords(name) : QStringList(), entry);
 
    if (File* file = dynamic_cast<File*>(entry))
-      this->extensionIndex.changeItem(Common::KnownExtensions::getExtension(oldName), file->getExtension(), file);
+   {
+      this->extensionIndex.changeItem(
+         wasSearchable ? Common::KnownExtensions::getExtension(oldName) : QString(),
+         searchable ? file->getExtension() : QString(), file);
+      if (wasSearchable && !searchable)
+         this->sizeIndex.rmItem(file);
+      else if (!wasSearchable && searchable)
+         this->sizeIndex.addItem(file);
+   }
 }
 
 void FileManager::fileResizing(File* file)
