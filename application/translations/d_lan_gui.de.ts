@@ -29,7 +29,7 @@
     <message>
         <location filename="../GUI/AutoComplete/AutoComplete.ui" line="+17"/>
         <source>Form</source>
-        <translation></translation>
+        <translation>Formular</translation>
     </message>
 </context>
 <context>
@@ -73,7 +73,7 @@
     <message>
         <location line="+10"/>
         <source>From revision</source>
-        <translation>Aus Version</translation>
+        <translation>Aus Revision</translation>
     </message>
     <message>
         <location line="+29"/>
@@ -189,7 +189,7 @@
     <message>
         <location line="+4"/>
         <source>Stop the user interface</source>
-        <translation>Grafische Oberfläche verstecken</translation>
+        <translation>Grafische Oberfläche beenden</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -267,7 +267,7 @@
     <message>
         <location line="+3"/>
         <source>No incoming directory</source>
-        <translation>Es gibt kein freigegebenes Verzeichnis zum Speichern</translation>
+        <translation>Kein Zielordner</translation>
     </message>
     <message>
         <location line="+4"/>
@@ -343,7 +343,7 @@
 <context>
     <name>GUI::DownloadsWidget</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+152"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+162"/>
         <source>Open location</source>
         <translation>Ordner anzeigen</translation>
     </message>
@@ -383,27 +383,27 @@
         <translation>Zur Baumansicht wechseln</translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location line="+27"/>
         <source>&lt;All&gt;</source>
         <translation>&lt;Alle&gt;</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+0"/>
         <source>Complete</source>
         <translation>Fertig</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+0"/>
         <source>Downloading</source>
         <translation>Wird heruntergeladen</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+0"/>
         <source>Queued</source>
         <translation>Eingereiht</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+0"/>
         <source>Inactive</source>
         <translation>Inaktiv</translation>
     </message>
@@ -419,7 +419,7 @@
 <context>
     <name>GUI::MainWindow</name>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="+163"/>
+        <location filename="../GUI/MainWindow.cpp" line="+164"/>
         <source>Already connected to this address</source>
         <translation>Bereits mit dieser Adresse verbunden</translation>
     </message>
@@ -520,12 +520,12 @@
     <message>
         <location line="+2"/>
         <source>Download rate: </source>
-        <translation>Eingehender Datenverkehr: </translation>
+        <translation>Downloadgeschwindigkeit: </translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Upload rate: </source>
-        <translation>Ausgehender Datenverkehr: </translation>
+        <translation>Uploadgeschwindigkeit: </translation>
     </message>
 </context>
 <context>
@@ -601,7 +601,7 @@
     <message>
         <location line="+106"/>
         <source>Open location</source>
-        <translation type="unfinished">Ordner anzeigen</translation>
+        <translation>Ordner anzeigen</translation>
     </message>
 </context>
 <context>
@@ -666,7 +666,7 @@
         <translation>Größe</translation>
     </message>
     <message>
-        <location line="+218"/>
+        <location line="+222"/>
         <location line="+54"/>
         <source>&lt;unknown&gt;</source>
         <translation>&lt;unbekannt&gt;</translation>
@@ -708,7 +708,7 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+244"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+242"/>
         <source>Default</source>
         <translation>Standard</translation>
     </message>
@@ -734,23 +734,25 @@
     </message>
     <message>
         <location line="+46"/>
+        <location line="+303"/>
         <source>Connecting . . .</source>
         <translation>Verbinde . . .</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="-295"/>
         <location line="+16"/>
         <location line="+19"/>
+        <location line="+260"/>
         <source>Connect</source>
         <translation>Verbinden</translation>
     </message>
     <message>
-        <location line="+95"/>
+        <location line="-165"/>
         <source>Select one or more directories and/or files to share</source>
         <translation>Wählen Sie einen oder mehrere Ordner und/oder Dateien zum Freigeben aus</translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location line="+19"/>
         <source>Remove selected shared directory</source>
         <translation>Ausgewählten freigegebenen Ordner entfernen</translation>
     </message>
@@ -760,7 +762,7 @@
         <translation>Möchten Sie den ausgewählten freigegebenen Ordner wirklich entfernen?</translation>
     </message>
     <message>
-        <location line="+41"/>
+        <location line="+52"/>
         <source>Remove the shared directory</source>
         <translation>Freigegebenen Ordner entfernen</translation>
     </message>
@@ -896,7 +898,7 @@
     <message>
         <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="+66"/>
         <source>D-LAN Core cannot be installed as a service</source>
-        <translation>D-LAN kann nicht als Dienst installiert werden</translation>
+        <translation>D-LAN Core kann nicht als Dienst installiert werden</translation>
     </message>
     <message>
         <location line="+18"/>
@@ -936,7 +938,7 @@
     <message>
         <location filename="../GUI/main.cpp" line="+79"/>
         <source>D-LAN GUI version %1</source>
-        <translation>D-LAN GUI version %1</translation>
+        <translation>D-LAN GUI Version %1</translation>
     </message>
     <message>
         <location filename="../GUI/Search/SearchUtils.cpp" line="+15"/>
@@ -1251,7 +1253,7 @@
     <message>
         <location filename="../GUI/Emoticons/SingleEmoticonWidget.ui" line="+14"/>
         <source>Form</source>
-        <translation></translation>
+        <translation>Formular</translation>
     </message>
 </context>
 <context>
@@ -1269,12 +1271,12 @@
     <message>
         <location line="+51"/>
         <source>Download rate</source>
-        <translation>Eingehender Datenverkehr</translation>
+        <translation>Downloadgeschwindigkeit</translation>
     </message>
     <message>
         <location line="+47"/>
         <source>Upload rate</source>
-        <translation>Ausgehender Datenverkehr</translation>
+        <translation>Uploadgeschwindigkeit</translation>
     </message>
     <message>
         <location line="+38"/>

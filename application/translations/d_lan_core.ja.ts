@@ -6,7 +6,7 @@
     <message>
         <location filename="../Core/CoreService.cpp" line="33"/>
         <source>A LAN file sharing system</source>
-        <translation type="unfinished">LAN ファイル共有システム</translation>
+        <translation>LAN ファイル共有システム</translation>
     </message>
 </context>
 <context>
@@ -14,13 +14,13 @@
     <message>
         <location filename="../Core/DownloadManager/priv/ChunkDownloader.cpp" line="337"/>
         <source>Corrupted data received for the file &quot;%1&quot; from peer %2. Peer blocked for %3 ms</source>
-        <translation type="unfinished">ピア %2 からファイル &quot;%1&quot; の破損したデータを受信しました。ピアを %3 ms ブロックします</translation>
+        <translation>ピア %2 からファイル &quot;%1&quot; の破損したデータを受信しました。ピアを %3 ms ブロックします</translation>
     </message>
     <message>
         <location filename="../Core/DownloadManager/priv/ChunkDownloader.cpp" line="342"/>
         <source>Has sent corrupted data</source>
         <extracomment>A reason why the user has been blocked</extracomment>
-        <translation type="unfinished">破損したデータを送信しました</translation>
+        <translation>破損したデータを送信しました</translation>
     </message>
 </context>
 <context>
@@ -28,23 +28,23 @@
     <message>
         <location filename="../Core/DownloadManager/priv/DownloadManager.cpp" line="205"/>
         <source>The file &apos;%1&apos; is already in queue</source>
-        <translation type="unfinished">ファイル &apos;%1&apos; はすでにキューにあります</translation>
+        <translation>ファイル &apos;%1&apos; はすでにキューにあります</translation>
     </message>
 </context>
 <context>
     <name>DM::FileDownload</name>
     <message>
-        <location filename="../Core/DownloadManager/priv/FileDownload.cpp" line="483"/>
+        <location filename="../Core/DownloadManager/priv/FileDownload.cpp" line="509"/>
         <source>File completed: %1%2%3</source>
-        <translation type="unfinished">ファイルが完了しました: %1%2%3</translation>
+        <translation>ファイルが完了しました: %1%2%3</translation>
     </message>
 </context>
 <context>
     <name>FM::FileHasher</name>
     <message>
-        <location filename="../Core/FileManager/priv/Cache/FileHasher.cpp" line="95"/>
+        <location filename="../Core/FileManager/priv/Cache/FileHasher.cpp" line="158"/>
         <source>Computing hashes of %1 . . .</source>
-        <translation type="unfinished">%1 のハッシュを計算しています . . .</translation>
+        <translation>%1 のハッシュを計算しています . . .</translation>
     </message>
 </context>
 <context>
@@ -52,30 +52,30 @@
     <message>
         <location filename="../Core/PeerManager/priv/PeerSelf.cpp" line="44"/>
         <source>Our current ID: %1</source>
-        <translation type="unfinished">現在の ID: %1</translation>
+        <translation>現在の ID: %1</translation>
     </message>
 </context>
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="352"/>
+        <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="360"/>
         <source>The version (%1) of the queue file &quot;%2&quot; doesn&apos;t match the current version (%3). Queue will be reset.</source>
-        <translation type="unfinished">キューファイル &quot;%2&quot; のバージョン (%1) が現在のバージョン (%3) と一致しません。キューをリセットします。</translation>
+        <translation>キューファイル &quot;%2&quot; のバージョン (%1) が現在のバージョン (%3) と一致しません。キューをリセットします。</translation>
     </message>
     <message>
         <location filename="../Core/Core.cpp" line="107"/>
         <source>D-LAN Core version %1 is starting . . .</source>
-        <translation type="unfinished">D-LAN Core バージョン %1 を起動しています . . .</translation>
+        <translation>D-LAN Core バージョン %1 を起動しています . . .</translation>
     </message>
     <message>
         <location filename="../Core/Core.cpp" line="125"/>
         <source>Ready to serve</source>
-        <translation type="unfinished">準備完了</translation>
+        <translation>準備完了</translation>
     </message>
     <message>
         <location filename="../Core/Core.h" line="78"/>
         <source>Shutdown</source>
-        <translation type="unfinished">シャットダウン</translation>
+        <translation>シャットダウン</translation>
     </message>
 </context>
 </TS>

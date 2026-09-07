@@ -29,7 +29,7 @@
     <message>
         <location filename="../GUI/AutoComplete/AutoComplete.ui" line="+17"/>
         <source>Form</source>
-        <translation></translation>
+        <translation>Форма</translation>
     </message>
 </context>
 <context>
@@ -158,7 +158,7 @@
     <message>
         <location line="+35"/>
         <source>Copy selected lines</source>
-        <translation>Копировать выделенные линии</translation>
+        <translation>Копировать выделенные строки</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -229,7 +229,7 @@
     <message>
         <location line="+3"/>
         <source>Getting hashes..</source>
-        <translation>Подсчёт контрольных сумм..</translation>
+        <translation>Получение контрольных сумм..</translation>
     </message>
     <message>
         <location line="+10"/>
@@ -327,7 +327,7 @@
     <message>
         <location line="+3"/>
         <source>The local file has been deleted</source>
-        <translation>Файл был удален</translation>
+        <translation>Локальный файл был удалён</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -343,29 +343,29 @@
 <context>
     <name>GUI::DownloadsWidget</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+152"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+162"/>
         <source>Open location</source>
         <translation>Открыть расположение</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Move to top</source>
-        <translation>На позицию выше</translation>
+        <translation>Переместить в начало</translation>
     </message>
     <message>
         <location line="+23"/>
         <source>Pause selected entries</source>
-        <translation>Поставить на паузу</translation>
+        <translation>Приостановить выбранные элементы</translation>
     </message>
     <message>
         <location line="+0"/>
         <source>Unpause selected entries</source>
-        <translation>Снять с паузы</translation>
+        <translation>Возобновить выбранные элементы</translation>
     </message>
     <message>
         <location line="+88"/>
         <source>Remove selected downloads</source>
-        <translation>Удалить</translation>
+        <translation>Удалить выбранные загрузки</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -383,27 +383,27 @@
         <translation>Переключиться на дерево файлов</translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location line="+27"/>
         <source>&lt;All&gt;</source>
         <translation>&lt;Все&gt;</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+0"/>
         <source>Complete</source>
         <translation>Завершенные</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+0"/>
         <source>Downloading</source>
         <translation>Скачивающиеся</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+0"/>
         <source>Queued</source>
         <translation>В очереди</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+0"/>
         <source>Inactive</source>
         <translation>Неактивные</translation>
     </message>
@@ -419,7 +419,7 @@
 <context>
     <name>GUI::MainWindow</name>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="+163"/>
+        <location filename="../GUI/MainWindow.cpp" line="+164"/>
         <source>Already connected to this address</source>
         <translation>Уже подключен к этому адресу</translation>
     </message>
@@ -472,7 +472,7 @@
     <message>
         <location line="-13"/>
         <source>Connected to the core</source>
-        <translation>Подключен к Core</translation>
+        <translation>Подключён к ядру</translation>
     </message>
     <message>
         <location line="+8"/>
@@ -482,7 +482,7 @@
     <message>
         <location line="+4"/>
         <source>The connection to the core has been lost</source>
-        <translation>Соединение с Core потеряно</translation>
+        <translation>Соединение с ядром потеряно</translation>
     </message>
 </context>
 <context>
@@ -503,12 +503,12 @@
     <message>
         <location filename="../GUI/Peers/PeerListModel.cpp" line="+258"/>
         <source>Their protocol version is more recent and incompatible with ours. Upgrade you version!</source>
-        <translation>Версия программы этих пиров новее и не совместима с вашей. Обновите D-LAN!</translation>
+        <translation>Версия протокола этого пира новее и несовместима с нашей. Обновите свою версию!</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Their protocol version is outdated and incompatible with ours. They should upgrade their version!</source>
-        <translation>Версия программы этих пиров устарела и не совместима с вашей. Им следует обновить D-LAN!</translation>
+        <translation>Версия протокола этого пира устарела и несовместима с нашей. Ему следует обновить свою версию!</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -601,7 +601,7 @@
     <message>
         <location line="+106"/>
         <source>Open location</source>
-        <translation type="unfinished">Открыть расположение</translation>
+        <translation>Открыть расположение</translation>
     </message>
 </context>
 <context>
@@ -666,7 +666,7 @@
         <translation>Размер</translation>
     </message>
     <message>
-        <location line="+218"/>
+        <location line="+222"/>
         <location line="+54"/>
         <source>&lt;unknown&gt;</source>
         <translation>&lt;неизвестно&gt;</translation>
@@ -708,7 +708,7 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+244"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+242"/>
         <source>Default</source>
         <translation>Стандартный</translation>
     </message>
@@ -734,23 +734,25 @@
     </message>
     <message>
         <location line="+46"/>
+        <location line="+303"/>
         <source>Connecting . . .</source>
         <translation>Подключение...</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="-295"/>
         <location line="+16"/>
         <location line="+19"/>
+        <location line="+260"/>
         <source>Connect</source>
         <translation>Подключиться</translation>
     </message>
     <message>
-        <location line="+95"/>
+        <location line="-165"/>
         <source>Select one or more directories and/or files to share</source>
         <translation>Выберите одну или несколько папок и/или файлов для общего доступа</translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location line="+19"/>
         <source>Remove selected shared directory</source>
         <translation>Удалить выбранную общую папку</translation>
     </message>
@@ -760,7 +762,7 @@
         <translation>Вы уверены, что хотите удалить выбранную общую папку?</translation>
     </message>
     <message>
-        <location line="+41"/>
+        <location line="+52"/>
         <source>Remove the shared directory</source>
         <translation>Удалить общую папку</translation>
     </message>
@@ -896,7 +898,7 @@
     <message>
         <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="+66"/>
         <source>D-LAN Core cannot be installed as a service</source>
-        <translation>D-LAN не может быть установлен как служба</translation>
+        <translation>Не удалось установить D-LAN Core как службу</translation>
     </message>
     <message>
         <location line="+18"/>
@@ -911,7 +913,7 @@
     <message>
         <location line="+5"/>
         <source>Core service launched</source>
-        <translation>Core сервис запущен</translation>
+        <translation>Служба ядра запущена</translation>
     </message>
     <message>
         <location filename="../GUI/D-LAN_GUI.cpp" line="-87"/>
@@ -1251,7 +1253,7 @@
     <message>
         <location filename="../GUI/Emoticons/SingleEmoticonWidget.ui" line="+14"/>
         <source>Form</source>
-        <translation></translation>
+        <translation>Форма</translation>
     </message>
 </context>
 <context>
@@ -1279,7 +1281,7 @@
     <message>
         <location line="+38"/>
         <source>Total sharing</source>
-        <translation>Всего общее</translation>
+        <translation>Общий объём данных в общем доступе</translation>
     </message>
 </context>
 <context>

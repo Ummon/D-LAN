@@ -34,7 +34,7 @@
 <context>
     <name>DM::FileDownload</name>
     <message>
-        <location filename="../Core/DownloadManager/priv/FileDownload.cpp" line="483"/>
+        <location filename="../Core/DownloadManager/priv/FileDownload.cpp" line="509"/>
         <source>File completed: %1%2%3</source>
         <translation>파일 완료: %1%2%3</translation>
     </message>
@@ -42,7 +42,7 @@
 <context>
     <name>FM::FileHasher</name>
     <message>
-        <location filename="../Core/FileManager/priv/Cache/FileHasher.cpp" line="95"/>
+        <location filename="../Core/FileManager/priv/Cache/FileHasher.cpp" line="158"/>
         <source>Computing hashes of %1 . . .</source>
         <translation>%1의 해시를 계산하는 중 . . .</translation>
     </message>
@@ -58,7 +58,7 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="352"/>
+        <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="360"/>
         <source>The version (%1) of the queue file &quot;%2&quot; doesn&apos;t match the current version (%3). Queue will be reset.</source>
         <translation>대기열 파일 &quot;%2&quot;의 버전(%1)이 현재 버전(%3)과 일치하지 않습니다. 대기열이 초기화됩니다.</translation>
     </message>

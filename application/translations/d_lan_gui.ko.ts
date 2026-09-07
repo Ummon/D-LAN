@@ -29,7 +29,7 @@
     <message>
         <location filename="../GUI/AutoComplete/AutoComplete.ui" line="17"/>
         <source>Form</source>
-        <translation></translation>
+        <translation>양식</translation>
     </message>
 </context>
 <context>
@@ -343,67 +343,67 @@
 <context>
     <name>GUI::DownloadsWidget</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="227"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="237"/>
         <source>Open location</source>
         <translation>위치 열기</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="236"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="246"/>
         <source>Move to top</source>
         <translation>맨 위로 이동</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="259"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="269"/>
         <source>Pause selected entries</source>
         <translation>선택한 항목 일시정지</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="259"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="269"/>
         <source>Unpause selected entries</source>
         <translation>선택한 항목 재개</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="347"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="357"/>
         <source>Remove selected downloads</source>
         <translation>선택한 다운로드 제거</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="348"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="358"/>
         <source>Are you sure to remove the selected downloads? There is one or more unfinished download.</source>
         <translation>선택한 다운로드를 제거하시겠습니까? 완료되지 않은 다운로드가 하나 이상 있습니다.</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="401"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="411"/>
         <source>Switch to file list view</source>
         <translation>파일 목록 보기로 전환</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="414"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="424"/>
         <source>Switch to tree view</source>
         <translation>트리 보기로 전환</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="431"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="451"/>
         <source>&lt;All&gt;</source>
         <translation>&lt;전체&gt;</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="432"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="451"/>
         <source>Complete</source>
         <translation>완료</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="433"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="451"/>
         <source>Downloading</source>
         <translation>다운로드 중</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="434"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="451"/>
         <source>Queued</source>
         <translation>대기열에 있음</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="435"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="451"/>
         <source>Inactive</source>
         <translation>비활성</translation>
     </message>
@@ -419,68 +419,68 @@
 <context>
     <name>GUI::MainWindow</name>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="163"/>
+        <location filename="../GUI/MainWindow.cpp" line="164"/>
         <source>Already connected to this address</source>
         <translation>이미 이 주소에 연결되어 있습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="166"/>
+        <location filename="../GUI/MainWindow.cpp" line="167"/>
         <source>There is already a connection process in progress</source>
         <translation>이미 연결을 시도하는 중입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="169"/>
+        <location filename="../GUI/MainWindow.cpp" line="170"/>
         <source>The host is unknown</source>
         <translation>알 수 없는 호스트입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="172"/>
+        <location filename="../GUI/MainWindow.cpp" line="173"/>
         <source>Host has timed out</source>
         <translation>호스트가 응답하지 않습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="175"/>
+        <location filename="../GUI/MainWindow.cpp" line="176"/>
         <source>The host hasn&apos;t defined any password</source>
         <translation>호스트에 비밀번호가 설정되어 있지 않습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="178"/>
+        <location filename="../GUI/MainWindow.cpp" line="179"/>
         <source>Wrong password</source>
         <translation>잘못된 비밀번호입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="181"/>
+        <location filename="../GUI/MainWindow.cpp" line="182"/>
         <source>Invalid address</source>
         <translation>잘못된 주소입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="184"/>
+        <location filename="../GUI/MainWindow.cpp" line="185"/>
         <source>Error unknown</source>
         <translation>알 수 없는 오류</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="188"/>
+        <location filename="../GUI/MainWindow.cpp" line="189"/>
         <source>Unable to connect to the core</source>
         <translation>코어에 연결할 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="191"/>
-        <location filename="../GUI/MainWindow.cpp" line="214"/>
+        <location filename="../GUI/MainWindow.cpp" line="192"/>
+        <location filename="../GUI/MainWindow.cpp" line="215"/>
         <source>Core address:</source>
         <translation>코어 주소:</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="201"/>
+        <location filename="../GUI/MainWindow.cpp" line="202"/>
         <source>Connected to the core</source>
         <translation>코어에 연결되었습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="209"/>
+        <location filename="../GUI/MainWindow.cpp" line="210"/>
         <source>Connection lost</source>
         <translation>연결이 끊어졌습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="213"/>
+        <location filename="../GUI/MainWindow.cpp" line="214"/>
         <source>The connection to the core has been lost</source>
         <translation>코어와의 연결이 끊어졌습니다</translation>
     </message>
@@ -601,7 +601,7 @@
     <message>
         <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="176"/>
         <source>Open location</source>
-        <translation type="unfinished">위치 열기</translation>
+        <translation>위치 열기</translation>
     </message>
 </context>
 <context>
@@ -666,8 +666,8 @@
         <translation>크기</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchModel.cpp" line="361"/>
-        <location filename="../GUI/Search/SearchModel.cpp" line="415"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="365"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="419"/>
         <source>&lt;unknown&gt;</source>
         <translation>&lt;알 수 없음&gt;</translation>
     </message>
@@ -708,74 +708,76 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="244"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="242"/>
         <source>Default</source>
         <translation>기본값</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="302"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="300"/>
         <source>Interface not active</source>
         <translation>인터페이스가 비활성 상태입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="441"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="439"/>
         <source>Change the password</source>
         <translation>비밀번호 변경</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="445"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="443"/>
         <source>No password defined</source>
         <translation>비밀번호가 설정되어 있지 않습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="447"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="445"/>
         <source>Define a password</source>
         <translation>비밀번호 설정</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="493"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="491"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="794"/>
         <source>Connecting . . .</source>
         <translation>연결하는 중 . . .</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="501"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="517"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="536"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="499"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="515"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="534"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="794"/>
         <source>Connect</source>
         <translation>연결</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="631"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="629"/>
         <source>Select one or more directories and/or files to share</source>
         <translation>공유할 폴더 및/또는 파일을 하나 이상 선택하십시오</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="647"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="648"/>
         <source>Remove selected shared directory</source>
         <translation>선택한 공유 폴더 제거</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="648"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="649"/>
         <source>Are you sure to remove the selected shared directory?</source>
         <translation>선택한 공유 폴더를 제거하시겠습니까?</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="689"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="701"/>
         <source>Remove the shared directory</source>
         <translation>공유 폴더 제거</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="697"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="709"/>
         <source>Move up</source>
         <translation>위로 이동</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="705"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="717"/>
         <source>Move down</source>
         <translation>아래로 이동</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="713"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="725"/>
         <source>Open location</source>
         <translation>위치 열기</translation>
     </message>
@@ -1251,7 +1253,7 @@
     <message>
         <location filename="../GUI/Emoticons/SingleEmoticonWidget.ui" line="14"/>
         <source>Form</source>
-        <translation></translation>
+        <translation>양식</translation>
     </message>
 </context>
 <context>

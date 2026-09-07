@@ -29,7 +29,7 @@
     <message>
         <location filename="../GUI/AutoComplete/AutoComplete.ui" line="17"/>
         <source>Form</source>
-        <translation></translation>
+        <translation>Modulo</translation>
     </message>
 </context>
 <context>
@@ -343,67 +343,67 @@
 <context>
     <name>GUI::DownloadsWidget</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="227"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="237"/>
         <source>Open location</source>
         <translation>Apri percorso</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="236"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="246"/>
         <source>Move to top</source>
         <translation>Sposta in cima</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="259"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="269"/>
         <source>Pause selected entries</source>
         <translation>Metti in pausa gli elementi selezionati</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="259"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="269"/>
         <source>Unpause selected entries</source>
         <translation>Riprendi gli elementi selezionati</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="347"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="357"/>
         <source>Remove selected downloads</source>
         <translation>Rimuovi i download selezionati</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="348"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="358"/>
         <source>Are you sure to remove the selected downloads? There is one or more unfinished download.</source>
         <translation>Rimuovere i download selezionati? Uno o più download non sono ancora completati.</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="401"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="411"/>
         <source>Switch to file list view</source>
         <translation>Passa alla vista elenco file</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="414"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="424"/>
         <source>Switch to tree view</source>
         <translation>Passa alla vista ad albero</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="431"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="451"/>
         <source>&lt;All&gt;</source>
         <translation>&lt;Tutti&gt;</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="432"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="451"/>
         <source>Complete</source>
         <translation>Completato</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="433"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="451"/>
         <source>Downloading</source>
         <translation>In scaricamento</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="434"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="451"/>
         <source>Queued</source>
         <translation>In coda</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="435"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="451"/>
         <source>Inactive</source>
         <translation>Inattivo</translation>
     </message>
@@ -419,68 +419,68 @@
 <context>
     <name>GUI::MainWindow</name>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="163"/>
+        <location filename="../GUI/MainWindow.cpp" line="164"/>
         <source>Already connected to this address</source>
         <translation>Già connesso a questo indirizzo</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="166"/>
+        <location filename="../GUI/MainWindow.cpp" line="167"/>
         <source>There is already a connection process in progress</source>
         <translation>Un tentativo di connessione è già in corso</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="169"/>
+        <location filename="../GUI/MainWindow.cpp" line="170"/>
         <source>The host is unknown</source>
         <translation>Host sconosciuto</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="172"/>
+        <location filename="../GUI/MainWindow.cpp" line="173"/>
         <source>Host has timed out</source>
         <translation>L&apos;host non risponde</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="175"/>
+        <location filename="../GUI/MainWindow.cpp" line="176"/>
         <source>The host hasn&apos;t defined any password</source>
         <translation>L&apos;host non ha impostato alcuna password</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="178"/>
+        <location filename="../GUI/MainWindow.cpp" line="179"/>
         <source>Wrong password</source>
         <translation>Password errata</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="181"/>
+        <location filename="../GUI/MainWindow.cpp" line="182"/>
         <source>Invalid address</source>
         <translation>Indirizzo non valido</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="184"/>
+        <location filename="../GUI/MainWindow.cpp" line="185"/>
         <source>Error unknown</source>
         <translation>Errore sconosciuto</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="188"/>
+        <location filename="../GUI/MainWindow.cpp" line="189"/>
         <source>Unable to connect to the core</source>
         <translation>Impossibile connettersi al Core</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="191"/>
-        <location filename="../GUI/MainWindow.cpp" line="214"/>
+        <location filename="../GUI/MainWindow.cpp" line="192"/>
+        <location filename="../GUI/MainWindow.cpp" line="215"/>
         <source>Core address:</source>
         <translation>Indirizzo del Core:</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="201"/>
+        <location filename="../GUI/MainWindow.cpp" line="202"/>
         <source>Connected to the core</source>
         <translation>Connesso al Core</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="209"/>
+        <location filename="../GUI/MainWindow.cpp" line="210"/>
         <source>Connection lost</source>
         <translation>Connessione persa</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="213"/>
+        <location filename="../GUI/MainWindow.cpp" line="214"/>
         <source>The connection to the core has been lost</source>
         <translation>La connessione al Core è stata persa</translation>
     </message>
@@ -601,7 +601,7 @@
     <message>
         <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="176"/>
         <source>Open location</source>
-        <translation type="unfinished">Apri percorso</translation>
+        <translation>Apri percorso</translation>
     </message>
 </context>
 <context>
@@ -666,8 +666,8 @@
         <translation>Dimensione</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchModel.cpp" line="361"/>
-        <location filename="../GUI/Search/SearchModel.cpp" line="415"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="365"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="419"/>
         <source>&lt;unknown&gt;</source>
         <translation>&lt;sconosciuto&gt;</translation>
     </message>
@@ -708,74 +708,76 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="244"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="242"/>
         <source>Default</source>
         <translation>Predefinito</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="302"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="300"/>
         <source>Interface not active</source>
         <translation>Interfaccia non attiva</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="441"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="439"/>
         <source>Change the password</source>
         <translation>Cambia la password</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="445"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="443"/>
         <source>No password defined</source>
         <translation>Non è stata impostata alcuna password</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="447"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="445"/>
         <source>Define a password</source>
         <translation>Imposta una password</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="493"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="491"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="794"/>
         <source>Connecting . . .</source>
         <translation>Connessione in corso . . .</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="501"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="517"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="536"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="499"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="515"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="534"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="794"/>
         <source>Connect</source>
         <translation>Connetti</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="631"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="629"/>
         <source>Select one or more directories and/or files to share</source>
         <translation>Seleziona una o più cartelle e/o file da condividere</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="647"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="648"/>
         <source>Remove selected shared directory</source>
         <translation>Rimuovi la cartella condivisa selezionata</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="648"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="649"/>
         <source>Are you sure to remove the selected shared directory?</source>
         <translation>Rimuovere la cartella condivisa selezionata?</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="689"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="701"/>
         <source>Remove the shared directory</source>
         <translation>Rimuovi la cartella condivisa</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="697"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="709"/>
         <source>Move up</source>
         <translation>Sposta su</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="705"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="717"/>
         <source>Move down</source>
         <translation>Sposta giù</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="713"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="725"/>
         <source>Open location</source>
         <translation>Apri percorso</translation>
     </message>
@@ -1251,7 +1253,7 @@
     <message>
         <location filename="../GUI/Emoticons/SingleEmoticonWidget.ui" line="14"/>
         <source>Form</source>
-        <translation></translation>
+        <translation>Modulo</translation>
     </message>
 </context>
 <context>

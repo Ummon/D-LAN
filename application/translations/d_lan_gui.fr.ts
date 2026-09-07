@@ -29,7 +29,7 @@
     <message>
         <location filename="../GUI/AutoComplete/AutoComplete.ui" line="+17"/>
         <source>Form</source>
-        <translation></translation>
+        <translation>Formulaire</translation>
     </message>
 </context>
 <context>
@@ -37,7 +37,7 @@
     <message>
         <location filename="../GUI/Browse/BrowseWidget.ui" line="+52"/>
         <source>Download selected items to the first shared directory with enough free space</source>
-        <translation>Télécharger les éléments dans le premier dossier partagé avec assez de place</translation>
+        <translation>Télécharger les éléments sélectionnés dans le premier dossier partagé avec assez d’espace libre</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -106,17 +106,17 @@
     <message>
         <location line="+27"/>
         <source>Remove completed files from the queue</source>
-        <translation>Enlever les fichiers complets de la queue</translation>
+        <translation>Enlever les fichiers terminés de la file d'attente</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>Removed selected downloads from the queue</source>
-        <translation>Enlever les éléments sélectionnés de la queue</translation>
+        <translation>Enlever les téléchargements sélectionnés de la file d'attente</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>Pause or unpause selected downloads</source>
-        <translation>Mettre ou enlever la pause des éléments sélectionnés</translation>
+        <translation>Mettre en pause ou reprendre les téléchargements sélectionnés</translation>
     </message>
 </context>
 <context>
@@ -158,7 +158,7 @@
     <message>
         <location line="+35"/>
         <source>Copy selected lines</source>
-        <translation>Copier les lignes sélectionnés</translation>
+        <translation>Copier les lignes sélectionnées</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -184,7 +184,7 @@
     <message>
         <location filename="../GUI/D-LAN_GUI.cpp" line="+153"/>
         <source>Show the user interface</source>
-        <translation>Voir l&apos; interface graphique</translation>
+        <translation>Afficher l'interface graphique</translation>
     </message>
     <message>
         <location line="+4"/>
@@ -207,12 +207,12 @@
     <message>
         <location line="+11"/>
         <source>Download selected items to %1</source>
-        <translation>Télécharger les éléments dans %1</translation>
+        <translation>Télécharger les éléments sélectionnés dans %1</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Download selected items to . . .</source>
-        <translation>Télécharger les éléments dans...</translation>
+        <translation>Télécharger les éléments sélectionnés dans...</translation>
     </message>
 </context>
 <context>
@@ -220,7 +220,7 @@
     <message>
         <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+56"/>
         <source>Queued</source>
-        <translation>En queue</translation>
+        <translation>Dans la file d'attente</translation>
     </message>
     <message>
         <source>Getting the hashes..</source>
@@ -267,7 +267,7 @@
     <message>
         <location line="+3"/>
         <source>No incoming directory</source>
-        <translation>Aucun dossier partagé défini</translation>
+        <translation>Aucun dossier de destination</translation>
     </message>
     <message>
         <location line="+4"/>
@@ -302,7 +302,7 @@
     <message>
         <location line="+19"/>
         <source>The remote entry is currently being scanned</source>
-        <translation>L&apos;entrée distante est en train d&apos;être parcouru</translation>
+        <translation>L'élément distant est en cours d'analyse</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -343,7 +343,7 @@
 <context>
     <name>GUI::DownloadsWidget</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+152"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+162"/>
         <source>Open location</source>
         <translation>Ouvrir le dossier</translation>
     </message>
@@ -360,7 +360,7 @@
     <message>
         <location line="+0"/>
         <source>Unpause selected entries</source>
-        <translation>Enlever la pause des éléments sélectionnés</translation>
+        <translation>Reprendre les éléments sélectionnés</translation>
     </message>
     <message>
         <location line="+88"/>
@@ -370,12 +370,12 @@
     <message>
         <location line="+1"/>
         <source>Are you sure to remove the selected downloads? There is one or more unfinished download.</source>
-        <translation>Êtes-vous sûr de vouloir enlever les downloads sélectionnés. Certains ne sont pas terminés.</translation>
+        <translation>Êtes-vous sûr de vouloir enlever les téléchargements sélectionnés ? Un ou plusieurs téléchargements ne sont pas terminés.</translation>
     </message>
     <message>
         <location line="+53"/>
         <source>Switch to file list view</source>
-        <translation>Basculervers la liste des fichiers</translation>
+        <translation>Basculer vers la liste des fichiers</translation>
     </message>
     <message>
         <location line="+13"/>
@@ -383,27 +383,27 @@
         <translation>Basculer vers la vue en arbre</translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location line="+27"/>
         <source>&lt;All&gt;</source>
         <translation>&lt;Tous&gt;</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+0"/>
         <source>Complete</source>
         <translation>Complet</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+0"/>
         <source>Downloading</source>
         <translation>En téléchargement</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+0"/>
         <source>Queued</source>
-        <translation>En queue</translation>
+        <translation>Dans la file d'attente</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+0"/>
         <source>Inactive</source>
         <translation>Inactif</translation>
     </message>
@@ -419,9 +419,9 @@
 <context>
     <name>GUI::MainWindow</name>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="+163"/>
+        <location filename="../GUI/MainWindow.cpp" line="+164"/>
         <source>Already connected to this address</source>
-        <translation>Déjà connecté à cette addresse</translation>
+        <translation>Déjà connecté à cette adresse</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -441,7 +441,7 @@
     <message>
         <location line="+3"/>
         <source>The host hasn&apos;t defined any password</source>
-        <translation>Aucun mot de passe n&apos;est définit chez l&apos;hôte</translation>
+        <translation>Aucun mot de passe n'est défini chez l'hôte</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -482,7 +482,7 @@
     <message>
         <location line="+4"/>
         <source>The connection to the core has been lost</source>
-        <translation>La connexion au core a été perdu</translation>
+        <translation>La connexion au core a été perdue</translation>
     </message>
 </context>
 <context>
@@ -503,12 +503,12 @@
     <message>
         <location filename="../GUI/Peers/PeerListModel.cpp" line="+258"/>
         <source>Their protocol version is more recent and incompatible with ours. Upgrade you version!</source>
-        <translation>La version du protocole est plus récente et est incompatible avec la notre. Mettez à jour votre version!</translation>
+        <translation>La version du protocole de ce pair est plus récente et incompatible avec la nôtre. Mettez à jour votre version !</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Their protocol version is outdated and incompatible with ours. They should upgrade their version!</source>
-        <translation>La version du protocole est obsolète et est incompatible avec la notre. Il devrait mettre à jouer leur version!</translation>
+        <translation>La version du protocole de ce pair est obsolète et incompatible avec la nôtre. Ce pair devrait mettre à jour sa version !</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -601,7 +601,7 @@
     <message>
         <location line="+106"/>
         <source>Open location</source>
-        <translation type="unfinished">Ouvrir le dossier</translation>
+        <translation>Ouvrir le dossier</translation>
     </message>
 </context>
 <context>
@@ -653,7 +653,7 @@
     <message>
         <location line="+1"/>
         <source>Relevance</source>
-        <translation>Pertinance</translation>
+        <translation>Pertinence</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -666,7 +666,7 @@
         <translation>Taille</translation>
     </message>
     <message>
-        <location line="+218"/>
+        <location line="+222"/>
         <location line="+54"/>
         <source>&lt;unknown&gt;</source>
         <translation>&lt;inconnu&gt;</translation>
@@ -708,9 +708,9 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+244"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+242"/>
         <source>Default</source>
-        <translation>Défaut</translation>
+        <translation>Par défaut</translation>
     </message>
     <message>
         <location line="+58"/>
@@ -734,23 +734,25 @@
     </message>
     <message>
         <location line="+46"/>
+        <location line="+303"/>
         <source>Connecting . . .</source>
         <translation>Connexion...</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="-295"/>
         <location line="+16"/>
         <location line="+19"/>
+        <location line="+260"/>
         <source>Connect</source>
         <translation>Connecter</translation>
     </message>
     <message>
-        <location line="+95"/>
+        <location line="-165"/>
         <source>Select one or more directories and/or files to share</source>
         <translation>Sélectionnez un ou plusieurs dossiers et/ou fichiers à partager</translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location line="+19"/>
         <source>Remove selected shared directory</source>
         <translation>Enlever le dossier partagé sélectionné</translation>
     </message>
@@ -760,7 +762,7 @@
         <translation>Êtes-vous sûr de vouloir enlever le dossier partagé sélectionné ?</translation>
     </message>
     <message>
-        <location line="+41"/>
+        <location line="+52"/>
         <source>Remove the shared directory</source>
         <translation>Enlever le dossier partagé</translation>
     </message>
@@ -896,7 +898,7 @@
     <message>
         <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="+66"/>
         <source>D-LAN Core cannot be installed as a service</source>
-        <translation>D-LAN ne peut pas être installé comme service</translation>
+        <translation>D-LAN Core ne peut pas être installé comme service</translation>
     </message>
     <message>
         <location line="+18"/>
@@ -921,7 +923,7 @@
     <message>
         <location line="+1"/>
         <source>An instance of D-LAN is already launched</source>
-        <translation>Une instance de D-LAN est déjà lancé</translation>
+        <translation>Une instance de D-LAN est déjà lancée</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -1090,7 +1092,7 @@
     <message>
         <location line="+48"/>
         <source>Download selected items to the first shared directory with enough free space</source>
-        <translation>Télécharger les éléments dans le premier dossier partagé avec assez de place</translation>
+        <translation>Télécharger les éléments sélectionnés dans le premier dossier partagé avec assez d’espace libre</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -1108,7 +1110,7 @@
     <message>
         <location line="+26"/>
         <source>Basic</source>
-        <translation>Basic</translation>
+        <translation>Général</translation>
     </message>
     <message>
         <location line="+6"/>
@@ -1148,12 +1150,12 @@
     <message>
         <location line="+10"/>
         <source>When activated all received data will be verified against their hashes.  It may consume CPU resources.</source>
-        <translation>Lorsque activé toutes les données reçues sont vérifiées par rapport à leur empreinte. Consomme un peu de puissance CPU.</translation>
+        <translation>Lorsque cette option est activée, toutes les données reçues sont vérifiées par rapport à leurs empreintes. Cela peut consommer des ressources du processeur.</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Data integrity check</source>
-        <translation>Verification de l&apos;intégrité des données</translation>
+        <translation>Vérification de l'intégrité des données</translation>
     </message>
     <message>
         <location line="-246"/>
@@ -1168,22 +1170,22 @@
     <message>
         <location line="+23"/>
         <source>Remove the selected shared directory or file</source>
-        <translation>Enlever les dossiers ou fichiers sélectionnés</translation>
+        <translation>Enlever le dossier ou fichier partagé sélectionné</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>Move down the selected shared directory or file</source>
-        <translation>Descendre les dossiers ou fichiers sélectionnés</translation>
+        <translation>Descendre le dossier ou fichier partagé sélectionné</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>Move up the selected shared directory or file</source>
-        <translation>Monter les dossiers ou fichiers sélectionnés</translation>
+        <translation>Monter le dossier ou fichier partagé sélectionné</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>Open location of the selected shared directory or file</source>
-        <translation>Ouvrir l&apos;emplacement des dossiers et fichiers sélectionnés</translation>
+        <translation>Ouvrir l'emplacement du dossier ou fichier partagé sélectionné</translation>
     </message>
     <message>
         <location line="+181"/>
@@ -1203,7 +1205,7 @@
     <message>
         <location line="+21"/>
         <source>Reload the current style</source>
-        <translation>Recharger le style courrant</translation>
+        <translation>Recharger le style courant</translation>
     </message>
     <message>
         <location line="+22"/>
@@ -1251,7 +1253,7 @@
     <message>
         <location filename="../GUI/Emoticons/SingleEmoticonWidget.ui" line="+14"/>
         <source>Form</source>
-        <translation></translation>
+        <translation>Formulaire</translation>
     </message>
 </context>
 <context>
@@ -1274,7 +1276,7 @@
     <message>
         <location line="+47"/>
         <source>Upload rate</source>
-        <translation>Débit d&apos;upload</translation>
+        <translation>Débit d'envoi</translation>
     </message>
     <message>
         <location line="+38"/>

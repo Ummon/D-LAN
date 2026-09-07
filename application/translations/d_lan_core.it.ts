@@ -34,7 +34,7 @@
 <context>
     <name>DM::FileDownload</name>
     <message>
-        <location filename="../Core/DownloadManager/priv/FileDownload.cpp" line="483"/>
+        <location filename="../Core/DownloadManager/priv/FileDownload.cpp" line="509"/>
         <source>File completed: %1%2%3</source>
         <translation>File completato: %1%2%3</translation>
     </message>
@@ -42,7 +42,7 @@
 <context>
     <name>FM::FileHasher</name>
     <message>
-        <location filename="../Core/FileManager/priv/Cache/FileHasher.cpp" line="95"/>
+        <location filename="../Core/FileManager/priv/Cache/FileHasher.cpp" line="158"/>
         <source>Computing hashes of %1 . . .</source>
         <translation>Calcolo degli hash di %1 . . .</translation>
     </message>
@@ -73,7 +73,7 @@
         <translation>Arresto</translation>
     </message>
     <message>
-        <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="352"/>
+        <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="360"/>
         <source>The version (%1) of the queue file &quot;%2&quot; doesn&apos;t match the current version (%3). Queue will be reset.</source>
         <translation>La versione (%1) del file di coda &quot;%2&quot; non corrisponde alla versione attuale (%3). La coda verrà reimpostata.</translation>
     </message>

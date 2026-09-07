@@ -16,7 +16,7 @@
     <message>
         <location line="+23"/>
         <source>New password</source>
-        <translation>Nueva Contraseña</translation>
+        <translation>Nueva contraseña</translation>
     </message>
     <message>
         <location line="+14"/>
@@ -37,12 +37,12 @@
     <message>
         <location filename="../GUI/Browse/BrowseWidget.ui" line="+52"/>
         <source>Download selected items to the first shared directory with enough free space</source>
-        <translation>Descargar items seleccionados al primer directorio compartido con espacio libre suficiente</translation>
+        <translation>Descargar los elementos seleccionados al primer directorio compartido con suficiente espacio libre</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Download selected items</source>
-        <translation>Descargar items seleccionados</translation>
+        <translation>Descargar los elementos seleccionados</translation>
     </message>
 </context>
 <context>
@@ -101,7 +101,7 @@
     <message>
         <location line="+34"/>
         <source>Item shown :</source>
-        <translation>Item mostrado :</translation>
+        <translation>Elementos mostrados:</translation>
     </message>
     <message>
         <location line="+27"/>
@@ -158,7 +158,7 @@
     <message>
         <location line="+35"/>
         <source>Copy selected lines</source>
-        <translation>Copiar lineas seleccionadas</translation>
+        <translation>Copiar las líneas seleccionadas</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -202,17 +202,17 @@
     <message>
         <location filename="../GUI/DownloadMenu.cpp" line="+50"/>
         <source>Download selected items to the first directory folder with enough free space</source>
-        <translation>Descargar items seleccionados a la primer carpeta con suficiente espacio libre</translation>
+        <translation>Descargar los elementos seleccionados a la primera carpeta con suficiente espacio libre</translation>
     </message>
     <message>
         <location line="+11"/>
         <source>Download selected items to %1</source>
-        <translation>Descargar items seleccionados a %1</translation>
+        <translation>Descargar los elementos seleccionados a %1</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Download selected items to . . .</source>
-        <translation>Descargar items seleccionados en . . .</translation>
+        <translation>Descargar los elementos seleccionados en . . .</translation>
     </message>
 </context>
 <context>
@@ -229,7 +229,7 @@
     <message>
         <location line="+3"/>
         <source>Getting hashes..</source>
-        <translation>Obteniendo las huellas..</translation>
+        <translation>Obteniendo los hashes..</translation>
     </message>
     <message>
         <location line="+10"/>
@@ -287,12 +287,12 @@
     <message>
         <location line="+1"/>
         <source>Unable to create the path of the file</source>
-        <translation>No se pudo crear el path del archivo</translation>
+        <translation>No se pudo crear la ruta del archivo</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Unable to retrieve the hashes</source>
-        <translation>No se pudo obtener los hashes</translation>
+        <translation>No se pudieron obtener los hashes</translation>
     </message>
     <message>
         <location line="+4"/>
@@ -337,25 +337,25 @@
     <message>
         <location line="+3"/>
         <source>Unable to retrieve the entries</source>
-        <translation>No se pudo obtener las entradas</translation>
+        <translation>No se pudieron obtener las entradas</translation>
     </message>
 </context>
 <context>
     <name>GUI::DownloadsWidget</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+152"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+162"/>
         <source>Open location</source>
         <translation>Abrir ubicación</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Move to top</source>
-        <translation>Mover arriba</translation>
+        <translation>Mover al principio</translation>
     </message>
     <message>
         <location line="+23"/>
         <source>Pause selected entries</source>
-        <translation>Reanudar entradas seleccionadas</translation>
+        <translation>Pausar las entradas seleccionadas</translation>
     </message>
     <message>
         <location line="+0"/>
@@ -370,7 +370,7 @@
     <message>
         <location line="+1"/>
         <source>Are you sure to remove the selected downloads? There is one or more unfinished download.</source>
-        <translation>Está seguro que desea remover las descargas seleccionadas? Hay una o mas descargas incompletas.</translation>
+        <translation>¿Está seguro de que desea eliminar las descargas seleccionadas? Hay una o más descargas incompletas.</translation>
     </message>
     <message>
         <location line="+53"/>
@@ -383,27 +383,27 @@
         <translation>Cambiar vista a árbol</translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location line="+27"/>
         <source>&lt;All&gt;</source>
         <translation>&lt;Todo&gt;</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+0"/>
         <source>Complete</source>
         <translation>Completo</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+0"/>
         <source>Downloading</source>
         <translation>Descargando</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+0"/>
         <source>Queued</source>
         <translation>En cola</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+0"/>
         <source>Inactive</source>
         <translation>Inactivo</translation>
     </message>
@@ -419,7 +419,7 @@
 <context>
     <name>GUI::MainWindow</name>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="+163"/>
+        <location filename="../GUI/MainWindow.cpp" line="+164"/>
         <source>Already connected to this address</source>
         <translation>Ya está conectado a esta dirección</translation>
     </message>
@@ -461,18 +461,18 @@
     <message>
         <location line="+4"/>
         <source>Unable to connect to the core</source>
-        <translation>No pudo conectarse a la base</translation>
+        <translation>No se pudo conectar al núcleo</translation>
     </message>
     <message>
         <location line="+3"/>
         <location line="+23"/>
         <source>Core address:</source>
-        <translation>Dirección de la base:</translation>
+        <translation>Dirección del núcleo:</translation>
     </message>
     <message>
         <location line="-13"/>
         <source>Connected to the core</source>
-        <translation>Conectado a la base</translation>
+        <translation>Conectado al núcleo</translation>
     </message>
     <message>
         <location line="+8"/>
@@ -482,7 +482,7 @@
     <message>
         <location line="+4"/>
         <source>The connection to the core has been lost</source>
-        <translation>La conexión a la base se ha perdido</translation>
+        <translation>Se ha perdido la conexión con el núcleo</translation>
     </message>
 </context>
 <context>
@@ -495,7 +495,7 @@
     <message>
         <location line="+181"/>
         <source>Leave room</source>
-        <translation>Salir de la habitación</translation>
+        <translation>Salir de la sala</translation>
     </message>
 </context>
 <context>
@@ -514,17 +514,18 @@
         <location line="+3"/>
         <source>Version %1
 </source>
-        <translation>Version %1</translation>
+        <translation>Versión %1
+</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Download rate: </source>
-        <translation>Velocidad dedescarga:</translation>
+        <translation>Velocidad de descarga: </translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Upload rate: </source>
-        <translation>Velocidad de subida:</translation>
+        <translation>Velocidad de subida: </translation>
     </message>
 </context>
 <context>
@@ -552,7 +553,7 @@
     <message>
         <location line="+3"/>
         <source>Sort alphabetically</source>
-        <translation>Ordenar alfabeticamente</translation>
+        <translation>Ordenar alfabéticamente</translation>
     </message>
     <message>
         <location line="+15"/>
@@ -600,7 +601,7 @@
     <message>
         <location line="+106"/>
         <source>Open location</source>
-        <translation type="unfinished">Abrir ubicación</translation>
+        <translation>Abrir ubicación</translation>
     </message>
 </context>
 <context>
@@ -626,7 +627,7 @@
     <message>
         <location line="+1"/>
         <source>Sort alphabetically</source>
-        <translation>Ordenar alfabeticamente</translation>
+        <translation>Ordenar alfabéticamente</translation>
     </message>
 </context>
 <context>
@@ -665,7 +666,7 @@
         <translation>Tamaño</translation>
     </message>
     <message>
-        <location line="+218"/>
+        <location line="+222"/>
         <location line="+54"/>
         <source>&lt;unknown&gt;</source>
         <translation>&lt;desconocido&gt;</translation>
@@ -707,7 +708,7 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+244"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+242"/>
         <source>Default</source>
         <translation>Por defecto</translation>
     </message>
@@ -733,23 +734,25 @@
     </message>
     <message>
         <location line="+46"/>
+        <location line="+303"/>
         <source>Connecting . . .</source>
         <translation>Conectando . . .</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="-295"/>
         <location line="+16"/>
         <location line="+19"/>
+        <location line="+260"/>
         <source>Connect</source>
         <translation>Conectar</translation>
     </message>
     <message>
-        <location line="+95"/>
+        <location line="-165"/>
         <source>Select one or more directories and/or files to share</source>
         <translation>Seleccione uno o más directorios y/o archivos para compartir</translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location line="+19"/>
         <source>Remove selected shared directory</source>
         <translation>Remover el directorio compartido seleccionado</translation>
     </message>
@@ -759,7 +762,7 @@
         <translation>¿Está seguro que desea remover el directorio compartido seleccionado?</translation>
     </message>
     <message>
-        <location line="+41"/>
+        <location line="+52"/>
         <source>Remove the shared directory</source>
         <translation>Remover el directorio compartido</translation>
     </message>
@@ -817,7 +820,7 @@
     <message>
         <location line="+13"/>
         <source>connected to %1</source>
-        <translation>conectar a %1</translation>
+        <translation>conectado a %1</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -832,12 +835,12 @@
     <message>
         <location line="+4"/>
         <source>hashing in progress . . .</source>
-        <translation>hashing en progreso . . .</translation>
+        <translation>cálculo de hashes en progreso . . .</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>cache is up to date</source>
-        <translation>la cache esta actualizada</translation>
+        <translation>la caché está actualizada</translation>
     </message>
     <message>
         <location line="+11"/>
@@ -879,7 +882,7 @@
     <message>
         <location line="+110"/>
         <source>Log</source>
-        <translation>bitácora</translation>
+        <translation>Bitácora</translation>
     </message>
 </context>
 <context>
@@ -905,7 +908,7 @@
     <message>
         <location line="+2"/>
         <source>Quit</source>
-        <translation>Quitar</translation>
+        <translation>Salir</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -915,7 +918,7 @@
     <message>
         <location filename="../GUI/main.cpp" line="+79"/>
         <source>D-LAN GUI version %1</source>
-        <translation>D-LAN GUI version %1</translation>
+        <translation>D-LAN GUI versión %1</translation>
     </message>
     <message>
         <location filename="../GUI/Search/SearchUtils.cpp" line="+15"/>
@@ -960,7 +963,7 @@
     <message>
         <location line="+4"/>
         <source>Subtitle</source>
-        <translation>Subtitulo</translation>
+        <translation>Subtítulo</translation>
     </message>
     <message>
         <location line="+4"/>
@@ -996,7 +999,7 @@
     <message>
         <location line="+5"/>
         <source>Core service launched</source>
-        <translation>Servicio base ejecutado</translation>
+        <translation>Servicio del núcleo iniciado</translation>
     </message>
     <message>
         <location filename="../GUI/Utils.cpp" line="+49"/>
@@ -1022,17 +1025,17 @@
     <message>
         <location filename="../GUI/Chat/RoomsDock.ui" line="+17"/>
         <source>Chat rooms</source>
-        <translation>Habitaciones de Chat</translation>
+        <translation>Salas de chat</translation>
     </message>
     <message>
         <location line="+40"/>
         <source>Join the room</source>
-        <translation>Unirse a la habitación</translation>
+        <translation>Unirse a la sala</translation>
     </message>
     <message>
         <location line="-7"/>
         <source>Room name</source>
-        <translation>Nombre de la habitación</translation>
+        <translation>Nombre de la sala</translation>
     </message>
 </context>
 <context>
@@ -1089,12 +1092,12 @@
     <message>
         <location line="+48"/>
         <source>Download selected items to the first shared directory with enough free space</source>
-        <translation>Descargar items seleccionados al primer directorio compartido con espacio libre suficiente</translation>
+        <translation>Descargar los elementos seleccionados al primer directorio compartido con suficiente espacio libre</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Download selected items</source>
-        <translation>Descargar items seleccionados</translation>
+        <translation>Descargar los elementos seleccionados</translation>
     </message>
 </context>
 <context>
@@ -1107,12 +1110,12 @@
     <message>
         <location line="+26"/>
         <source>Basic</source>
-        <translation>Basico</translation>
+        <translation>Básico</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Nick</source>
-        <translation>Nick</translation>
+        <translation>Apodo</translation>
     </message>
     <message>
         <location line="+14"/>
@@ -1197,7 +1200,7 @@
     <message>
         <location line="+6"/>
         <source>Language</source>
-        <translation>Lenguaje</translation>
+        <translation>Idioma</translation>
     </message>
     <message>
         <location line="+10"/>
@@ -1212,7 +1215,7 @@
     <message>
         <location line="+22"/>
         <source>Core connection</source>
-        <translation>Conexión base</translation>
+        <translation>Conexión al núcleo</translation>
     </message>
     <message>
         <location line="+8"/>
