@@ -58,6 +58,7 @@ private slots:
    void peerBlockDeadline();
    void averagePeerSpeed_data();
    void averagePeerSpeed();
+   void expiredPeerSpeedIsReplaced();
    void destroyManagerWithPendingConnections();
    void askForRootEntries();
    void askForSomeEntries();

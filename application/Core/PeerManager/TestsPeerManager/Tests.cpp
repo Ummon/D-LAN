@@ -489,6 +489,24 @@ void Tests::averagePeerSpeed()
    QCOMPARE(peer.getSpeed(), expected);
 }
 
+void Tests::expiredPeerSpeedIsReplaced()
+{
+   auto* manager = static_cast<PM::PeerManager*>(this->peerManagers[0].data());
+   PM::Peer peer(manager, this->fileManagers[0], this->peerIDs[1]);
+   PM::Peer reference(manager, this->fileManagers[0], this->peerIDs[1]);
+   peer.setSpeed(100);
+   reference.setSpeed(100);
+
+   // Test settings give measurements a one-second lifetime. Do not call the
+   // tested peer's getter before the next sample: that used to mask the bug.
+   QTest::qWait(1100);
+   QCOMPARE(reference.getSpeed(), quint32(0xffffffffu));
+   peer.setSpeed(300);
+   QCOMPARE(peer.getSpeed(), quint32(300));
+   peer.setSpeed(500);
+   QCOMPARE(peer.getSpeed(), quint32(400)); // Fresh measurements still average.
+}
+
 void Tests::destroyManagerWithPendingConnections()
 {
    QTcpServer server;
