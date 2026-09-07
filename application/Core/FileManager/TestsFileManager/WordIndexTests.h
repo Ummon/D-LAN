@@ -37,6 +37,7 @@ private slots:
    void removalPreservesRemainingWords_data();
    void removalPreservesRemainingWords();
    void multiTermRanking();
+   void prefixRankingSurvivesTrieChanges();
    void longQueries();
 
    void cleanupTestCase();

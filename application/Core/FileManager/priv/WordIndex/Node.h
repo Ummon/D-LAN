@@ -123,13 +123,14 @@ namespace FM
       Node(const QString& part);
       Node(const QString& part, const T& item);
 
-      QPair<Node<T>*, int> getNode(const QString& word, bool exactMatch = false) const;
+      QPair<Node<T>*, int> getNode(const QString& word, bool exactMatch = false, bool* fullyMatched = nullptr) const;
 
       /**
         * Return all items from the current node and its sub nodes (recursively) if 'alsoFromSubNodes' is true.
-        * For all direct sub nodes NodeResult::level is set to 0, for other sub nodes level is set to 1.
+        * Items in this node have level 0 only if the query fully matched it; all other items have level 1.
         */
       QList<NodeResult<T>> getItems(
+         bool fullyMatched,
          bool alsoFromSubNodes = false,
          int maxNbResult = -1,
          std::function<bool(const T&)> predicat = nullptr
@@ -238,11 +239,12 @@ QList<FM::NodeResult<T>> FM::Node<T>::search(
    std::function<bool(const T&)> predicat
 ) const
 {
-   QPair<Node<T>*, int> nodes = this->getNode(word, !alsoFromSubNodes);
+   bool fullyMatched = false;
+   QPair<Node<T>*, int> nodes = this->getNode(word, !alsoFromSubNodes, &fullyMatched);
    if (!nodes.first)
       return QList<NodeResult<T>>();
 
-   return nodes.first->children[nodes.second]->getItems(alsoFromSubNodes, maxNbResult, predicat);
+   return nodes.first->children[nodes.second]->getItems(fullyMatched, alsoFromSubNodes, maxNbResult, predicat);
 }
 
 template <typename T>
@@ -290,8 +292,10 @@ FM::Node<T>::Node(const QString& part, const T& item) :
   * Returns the node matching the given word as the 'QPair::second'th child of its parent 'QPair::first'.
   */
 template <typename T>
-QPair<FM::Node<T>*, int> FM::Node<T>::getNode(const QString& word, bool exactMatch) const
+QPair<FM::Node<T>*, int> FM::Node<T>::getNode(const QString& word, bool exactMatch, bool* fullyMatched) const
 {
+   if (fullyMatched)
+      *fullyMatched = false;
    QString part = word;
    Node<T>* currentParent = const_cast<Node<T>*>(this);
    for (int i = 0; i < currentParent->children.size(); ++i)
@@ -304,7 +308,11 @@ QPair<FM::Node<T>*, int> FM::Node<T>::getNode(const QString& word, bool exactMat
          if (p == child->part.size())
          {
             if (p == part.size())
+            {
+               if (fullyMatched)
+                  *fullyMatched = true;
                return qMakePair(currentParent, i);
+            }
 
             currentParent = child;
             part.remove(0, p);
@@ -326,6 +334,7 @@ QPair<FM::Node<T>*, int> FM::Node<T>::getNode(const QString& word, bool exactMat
 
 template <typename T>
 QList<FM::NodeResult<T>> FM::Node<T>::getItems(
+   bool fullyMatched,
    bool alsoFromSubNodes,
    int maxNbResult,
    std::function<bool(const T&)> predicat
@@ -345,7 +354,7 @@ QList<FM::NodeResult<T>> FM::Node<T>::getItems(
          const T& item = i.next();
          if (!predicat || predicat(item))
          {
-            result << NodeResult<T>(item, current == this ? 0 : 1); // 'level' == 0 means the item matches exactly, it's a bit tricky.
+            result << NodeResult<T>(item, !(fullyMatched && current == this));
             if (result.size() == maxNbResult)
                return result;
          }

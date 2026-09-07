@@ -165,6 +165,39 @@ void WordIndexTests::multiTermRanking()
    QCOMPARE(duplicate.first().level, 0);
 }
 
+void WordIndexTests::prefixRankingSurvivesTrieChanges()
+{
+   WordIndex<int> index;
+   index.addItem(QStringList { "alphabet", "beta" }, 1);
+   const auto checkPrefix = [&] {
+      const auto single = index.search(QString("alpha"));
+      QCOMPARE(single.size(), 1);
+      QCOMPARE(single.first().value, 1);
+      QCOMPARE(single.first().level, 1);
+      const auto multiple = index.search(QStringList { "alpha", "beta" });
+      QCOMPARE(multiple.size(), 1);
+      QCOMPARE(multiple.first().level, 1);
+      const auto exact = index.search(QString("alphabet"));
+      QCOMPARE(exact.size(), 1);
+      QCOMPARE(exact.first().level, 0);
+      QVERIFY(index.search(QString("al")).isEmpty()); // Short words still require an exact match.
+   };
+   checkPrefix(); // Query ends inside a compressed node.
+   index.addItem(QString("alpine"), 3);
+   checkPrefix(); // Query spans a branch and ends inside its child.
+   index.addItem(QStringList { "alpha", "beta" }, 2);
+   const auto ranked = index.search(QStringList { "alpha", "beta" }, 2);
+   QCOMPARE(WordIndex<int>::resultToList(ranked), (QList<int> { 2, 1 }));
+   QCOMPARE(ranked[0].level, 0);
+   QCOMPARE(ranked[1].level, 1);
+   QCOMPARE(WordIndex<int>::resultToList(index.search(QStringList { "alpha", "beta" }, 1)),
+      (QList<int> { 2 }));
+   QVERIFY(index.rmItem(QStringList { "alpha", "beta" }, 2));
+   checkPrefix();
+   QVERIFY(index.rmItem(QString("alpine"), 3));
+   checkPrefix(); // Compaction must not turn the prefix into an exact match.
+}
+
 void WordIndexTests::longQueries()
 {
    WordIndex<int> index;
