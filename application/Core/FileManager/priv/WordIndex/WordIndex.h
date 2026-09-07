@@ -58,7 +58,6 @@ namespace FM
       void addItem(const QStringList& words, const T& item);
       bool rmItem(const QString& word, const T& item);
       bool rmItem(const QStringList& words, const T& item);
-      void renameItem(const QString& oldWord, const QString& newWord, const T& item);
       void renameItem(const QStringList& oldWords, const QStringList& newWords, const T& item);
 
       QList<NodeResult<T>> search(
@@ -126,14 +125,6 @@ bool FM::WordIndex<T>::rmItem(const QStringList& words, const T& item)
    for (QStringListIterator i(words); i.hasNext();)
       itemRemoved |= this->root.rmItem(i.next(), item);
    return itemRemoved;
-}
-
-template<typename T>
-void FM::WordIndex<T>::renameItem(const QString& oldWord, const QString& newWord, const T& item)
-{
-   QMutexLocker locker(&this->mutex);
-   this->root.rmItem(oldWord, item);
-   this->root.addItem(&newWord, item);
 }
 
 template<typename T>

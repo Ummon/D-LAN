@@ -21,7 +21,6 @@
 #include <functional>
 
 #include <QList>
-#include <QSet>
 #include <QString>
 #include <QPair>
 
@@ -41,29 +40,10 @@ namespace FM
    {
       NodeResult() : level(0) {}
       NodeResult(T v, bool level = 0) : value(v), level(level) {}
-      static void intersect(QSet<NodeResult<T>>& s1, const QSet<NodeResult<T>>& s2, int matchValue);
 
       T value;
       int level;
    };
-
-   /**
-     * s1 <- s1 & s2.
-     * For all common items the 'level' fields are summed.
-     */
-   template <typename T>
-   void NodeResult<T>::intersect(QSet<NodeResult<T>>& s1, const QSet<NodeResult<T>>& s2, int matchValue)
-   {
-      for (QMutableSetIterator<NodeResult<T>> i(s1); i.hasNext();)
-      {
-         const NodeResult<T>& node = i.next();
-         typename QSet<NodeResult<T>>::const_iterator j = s2.find(node);
-         if (j == s2.constEnd())
-            i.remove();
-         else
-            const_cast<NodeResult<T>&>(node).level += j->level ? matchValue : 0;
-      }
-   }
 
    /**
      * To sort from the best level (the lowest value) to the worse (the hightest value).
