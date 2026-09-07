@@ -608,11 +608,35 @@ qint64 File::getRemainingBytesToHash() const
    QMutexLocker locker(&this->mutex);
    if (!this->isComplete())
       return 0;
-   qint64 remaining = 0;
+   return this->remainingBytesToHash;
+}
+
+int File::getFirstUnhashedChunk() const
+{
+   QMutexLocker locker(&this->mutex);
+   while (this->firstUnhashedChunk < this->chunks.size() && this->chunks[this->firstUnhashedChunk]->hasHash())
+      ++this->firstUnhashedChunk;
+   return this->firstUnhashedChunk;
+}
+
+void File::chunkHashChanged(const Chunk* chunk, bool hadHash, bool hasHash)
+{
+   QMutexLocker locker(&this->mutex);
+   const int num = chunk->getNum();
+   if (hadHash == hasHash || num < 0 || num >= this->chunks.size() || this->chunks.at(num).data() != chunk)
+      return;
+   this->remainingBytesToHash += (hasHash ? -1 : 1) * qint64(chunk->getChunkSize());
+   if (!hasHash)
+      this->firstUnhashedChunk = qMin(this->firstUnhashedChunk, num);
+}
+
+void File::rebuildHashingProgress()
+{
+   this->remainingBytesToHash = 0;
+   this->firstUnhashedChunk = 0;
    for (const auto& chunk : this->chunks)
       if (!chunk->hasHash())
-         remaining += chunk->getChunkSize();
-   return remaining;
+         this->remainingBytesToHash += chunk->getChunkSize();
 }
 
 bool File::hasOneOrMoreHashes() const
@@ -665,6 +689,7 @@ void File::setSize(qint64 size)
       this->getCache()->onFileResizing(this);
       qint64 oldSize = this->size;
       Entry::setSize(size);
+      this->rebuildHashingProgress();
       this->getCache()->onFileResized(this, oldSize);
 
       if (this->parentDirectory)
@@ -805,6 +830,8 @@ void File::deleteAllChunks()
       this->getCache()->onChunkRemoved(chunk);
    }
    this->chunks.clear();
+   this->remainingBytesToHash = 0;
+   this->firstUnhashedChunk = 0;
 
    // Readers and writers of detached chunks no longer call back into this file when destroyed.
    this->closePhysicalFiles();
@@ -887,8 +914,11 @@ void File::setHashes(const QList<Common::Hash>& hashes)
             this->getCache()->onChunkHashKnown(chunk);
       }
       else
+      {
          // If there is too few hashes then null hashes are added.
          this->chunks << QSharedPointer<Chunk>(new Chunk(this, i, chunkKnownBytes));
+         this->remainingBytesToHash += this->chunks.last()->getChunkSize();
+      }
    }
 }
 

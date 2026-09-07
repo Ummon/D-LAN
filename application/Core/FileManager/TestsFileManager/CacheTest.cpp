@@ -461,6 +461,74 @@ void CacheTest::hashingWorkFollowsFileChanges()
    QCOMPARE(file->getRemainingBytesToHash(), qint64(0));
 }
 
+void CacheTest::hashingResumesUnknownChunks_data()
+{
+   QTest::addColumn<int>("limit");
+   QTest::newRow("one-chunk-passes") << 1;
+   QTest::newRow("whole-file-pass") << 0;
+}
+
+void CacheTest::hashingResumesUnknownChunks()
+{
+   QFETCH(int, limit);
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   const qint64 chunkSize = FM::Chunk::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   const QString path = temp.filePath("resume.bin");
+   QFile physical(path);
+   QVERIFY(physical.open(QIODevice::WriteOnly));
+   QVERIFY(physical.resize(3 * chunkSize + 7));
+   physical.close();
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   const auto restored = Common::Hash::rand();
+   auto file = new FM::File(root, "resume.bin", 3 * chunkSize + 7, false,
+      QFileInfo(path).lastModified(), root->getRootDir(), { Common::Hash(), restored, Common::Hash(), restored });
+   const auto chunks = file->getChunks();
+   const auto* storage = chunks.constData();
+   QCOMPARE(file->getRemainingBytesToHash(), 2 * chunkSize);
+   FM::FileHasher hasher;
+   int readBytes = 0;
+   QCOMPARE(hasher.start(file, limit, &readBytes, true), limit == 0);
+   if (limit == 1)
+   {
+      QCOMPARE(file->getRemainingBytesToHash(), chunkSize);
+      QVERIFY(hasher.start(file, limit, &readBytes, true));
+   }
+   QCOMPARE(qint64(readBytes), 2 * chunkSize); // Never reread restored middle or tail chunks.
+   QCOMPARE(file->getRemainingBytesToHash(), qint64(0));
+   QCOMPARE(file->getChunks().constData(), storage); // Progress updates must not detach the shared list.
+   QVERIFY(hasher.start(file, 1, &readBytes, true));
+   QCOMPARE(qint64(readBytes), 2 * chunkSize);
+
+   // Invalidate an earlier hash after the cursor has passed it.
+   chunks[0]->setHash(Common::Hash(), false);
+   QCOMPARE(file->getRemainingBytesToHash(), chunkSize);
+   QVERIFY(hasher.start(file, 1, &readBytes, true));
+   QCOMPARE(qint64(readBytes), 3 * chunkSize);
+   chunks[3]->setHash(Common::Hash(), false);
+   QCOMPARE(file->getRemainingBytesToHash(), qint64(7));
+   QVERIFY(hasher.start(file, 1, &readBytes, true));
+   QCOMPARE(qint64(readBytes), 3 * chunkSize + 7);
+   QCOMPARE(file->getRemainingBytesToHash(), qint64(0));
+
+   // Replacing the generation resets both progress fields; retired chunks cannot update them.
+   QVERIFY(physical.open(QIODevice::ReadWrite));
+   QVERIFY(physical.resize(11));
+   physical.close();
+   file->fileHasChangedOnDisk(QFileInfo(path));
+   QCOMPARE(file->getRemainingBytesToHash(), qint64(11));
+   chunks[0]->setHash(Common::Hash(), false);
+   QCOMPARE(file->getRemainingBytesToHash(), qint64(11));
+   readBytes = 0;
+   QVERIFY(hasher.start(file, 1, &readBytes, true));
+   QCOMPARE(readBytes, 11);
+   QCOMPARE(file->getRemainingBytesToHash(), qint64(0));
+}
+
 void CacheTest::directoryTotalsFollowFileResizing()
 {
    FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;

@@ -23,6 +23,8 @@ private slots:
    void failedHashingIsQueuedOnce();
    void hashingSchedulerTransitions();
    void hashingWorkFollowsFileChanges();
+   void hashingResumesUnknownChunks_data();
+   void hashingResumesUnknownChunks();
    void directoryTotalsFollowFileResizing();
    void fittestDirectoryMatchesExistingPaths();
    void newDirectoryPreservesFinalComponent_data();

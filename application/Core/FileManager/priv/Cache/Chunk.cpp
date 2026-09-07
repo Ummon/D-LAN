@@ -215,10 +215,15 @@ void Chunk::setHash(const Common::Hash& hash, bool saveHashes)
          );
    #endif
 
+   bool hadHash;
    {
       QMutexLocker hashLocker(&this->hashMutex);
+      hadHash = !this->hash.isNull();
       this->hash = hash;
    }
+
+   if (this->file)
+      this->file->chunkHashChanged(this, hadHash, !hash.isNull());
 
    if (saveHashes && this->file)
       this->file->saveHashes();

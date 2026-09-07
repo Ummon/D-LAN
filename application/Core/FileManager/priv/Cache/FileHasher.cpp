@@ -145,8 +145,16 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed, bool deferPers
       return restartWithNewChunks();
 
    // An empty file has no chunk: there is nothing to hash and no file to open.
-   const QList<QSharedPointer<Chunk>> chunks = this->currentFileCache->getChunks();
-   if (chunks.isEmpty())
+   QList<QSharedPointer<Chunk>> chunkSnapshot;
+   int chunkNum;
+   {
+      const auto fileMutex = this->currentFileCache->getChunkMutex();
+      QMutexLocker fileLocker(fileMutex.data());
+      chunkSnapshot = this->currentFileCache->getChunks();
+      chunkNum = this->currentFileCache->getFirstUnhashedChunk();
+   }
+   const QList<QSharedPointer<Chunk>> chunks = std::move(chunkSnapshot);
+   if (chunkNum == chunks.size())
    {
       this->currentFileCache = nullptr;
       return true;
@@ -173,17 +181,13 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed, bool deferPers
       throw IOErrorException();
    }
 
-   // Skip the already known full hashes.
-   qint64 bytesSkipped = 0;
-   int chunkNum = 0;
-   while (
-      chunkNum < chunks.size() &&
-      chunks[chunkNum]->hasHash() &&
-      chunks[chunkNum]->getKnownBytes() == Chunk::CHUNK_SIZE) // Maybe the file has grown and the last chunk must be recomputed.
+   // The file remembers its first unknown hash across scheduler passes.
+   qint64 bytesSkipped = qint64(chunkNum) * Chunk::CHUNK_SIZE;
+   if (bytesSkipped && !file->seek(bytesSkipped))
    {
-      bytesSkipped += Chunk::CHUNK_SIZE;
-      chunkNum++;
-      file->seek(file->pos() + Chunk::CHUNK_SIZE);
+      this->hashing = false;
+      this->currentFileCache = nullptr;
+      throw IOErrorException();
    }
 
 #if DEBUG
@@ -207,6 +211,21 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed, bool deferPers
 
    while (!endOfFile)
    {
+      // Restored hashes need not form a contiguous prefix. Skip known chunks,
+      // including a known partial tail, without spending this pass's hash budget.
+      if (chunkNum < chunks.size() && chunks[chunkNum]->hasHash())
+      {
+         const qint64 chunkSize = qMin<qint64>(Chunk::CHUNK_SIZE, initialInfo.size() - qint64(chunkNum) * Chunk::CHUNK_SIZE);
+         if (!file->seek(file->pos() + chunkSize))
+         {
+            this->hashing = false;
+            this->currentFileCache = nullptr;
+            throw IOErrorException();
+         }
+         bytesSkipped += chunkSize;
+         ++chunkNum;
+         continue;
+      }
       int bytesReadChunk = 0;
       while (bytesReadChunk < Chunk::CHUNK_SIZE)
       {
@@ -316,8 +335,7 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed, bool deferPers
    this->toStopHashing = false;
    this->hashing = false;
 
-   qint64 fileSize = this->currentFileCache->getSize();
-   const bool complete = bytesReadTotal + bytesSkipped == fileSize;
+   const bool complete = this->currentFileCache->getRemainingBytesToHash() == 0;
    if (complete && this->pendingHashSaves.remove(chunks.first()))
       chunks.first()->saveFileHashes();
    deferSave = deferPersistence;

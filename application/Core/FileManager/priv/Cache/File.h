@@ -121,6 +121,9 @@ namespace FM
       static void setFileAsSparse(const QFile& file);
       static void setFileAsHidden(const QString& filepath);
       void setHashes(const QList<Common::Hash>& hashes);
+      int getFirstUnhashedChunk() const;
+      void chunkHashChanged(const Chunk* chunk, bool hadHash, bool hasHash);
+      void rebuildHashingProgress();
 
    protected:
       void setRootRecursively(SharedEntry* sharedEntry) override;
@@ -132,6 +135,9 @@ namespace FM
       QDateTime dateLastModified;
 
    private:
+      // Protected by Entry::mutex; reset whenever the chunk generation is replaced.
+      qint64 remainingBytesToHash = 0;
+      mutable int firstUnhashedChunk = 0;
       // 'atomic' to avoid using the mutex in 'isComplete()', it can cause deadlocks when called by 'FileUpdater'.
       std::atomic<bool> complete;
 
