@@ -63,6 +63,8 @@ private slots:
    void askForSomeEntries();
    void closedSocketIsNotReused_data();
    void closedSocketIsNotReused();
+   void endpointChanges_data();
+   void endpointChanges();
    void requestSocketLifecycle_data();
    void requestSocketLifecycle();
    void chunkRequestSocketLifecycle_data();

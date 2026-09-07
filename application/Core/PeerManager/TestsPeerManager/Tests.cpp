@@ -581,6 +581,82 @@ void Tests::closedSocketIsNotReused()
    result->setStatus(true);
 }
 
+void Tests::endpointChanges_data()
+{
+   QTest::addColumn<int>("change"); // 0: unchanged, 1: port, 2: address.
+   QTest::addColumn<bool>("active");
+   QTest::newRow("idle-unchanged") << 0 << false;
+   QTest::newRow("active-unchanged") << 0 << true;
+   QTest::newRow("idle-port-change") << 1 << false;
+   QTest::newRow("active-port-change") << 1 << true;
+   QTest::newRow("idle-address-change") << 2 << false;
+   QTest::newRow("active-address-change") << 2 << true;
+}
+
+void Tests::endpointChanges()
+{
+   QFETCH(int, change);
+   QFETCH(bool, active);
+   QTcpServer originalServer;
+   QTcpServer replacementServer;
+   QVERIFY(originalServer.listen(QHostAddress::AnyIPv4, 0));
+   QVERIFY(replacementServer.listen(QHostAddress::LocalHost, 0));
+   PM::ConnectionPool pool(static_cast<PM::PeerManager*>(this->peerManagers[0].data()),
+      this->fileManagers[0], this->peerIDs[1]);
+   pool.setIP(QHostAddress::LocalHost, originalServer.serverPort());
+   auto previous = pool.getASocket();
+   QTRY_VERIFY(originalServer.hasPendingConnections());
+   QScopedPointer<QTcpSocket> remote(originalServer.nextPendingConnection());
+   if (active)
+      previous->stopListening(); // Model a socket handed to a raw transfer.
+   else
+      previous->finished();
+
+   const QHostAddress address = change == 2 ? QHostAddress("127.0.0.2") : QHostAddress(QHostAddress::LocalHost);
+   const quint16 port = change == 1 ? replacementServer.serverPort() : originalServer.serverPort();
+   pool.setIP(address, port);
+   QCOMPARE(previous->isClosing(), change != 0 && !active);
+   if (active)
+   {
+      QVERIFY(previous->isActive());
+      // Changing the endpoint must not interrupt the stream already in progress.
+      const QByteArray data("remaining bytes");
+      QCOMPARE(remote->write(data), qint64(data.size()));
+      remote->flush();
+      QTRY_COMPARE(previous->bytesAvailable(), qint64(data.size()));
+      QCOMPARE(previous->readAll(), data);
+      previous->finished();
+      QCOMPARE(previous->isClosing(), change != 0);
+   }
+
+   // Do not pump events between finishing and requesting a socket: queued pool
+   // removal must not expose the retired socket for reuse.
+   auto next = pool.getASocket();
+   QCOMPARE(next == previous, change == 0);
+   QScopedPointer<QTcpSocket> nextRemote;
+   if (change != 0)
+   {
+      auto& server = change == 1 ? replacementServer : originalServer;
+      QTRY_VERIFY(server.hasPendingConnections());
+      nextRemote.reset(server.nextPendingConnection());
+      QCOMPARE(nextRemote->localAddress(), address);
+      QCOMPARE(nextRemote->localPort(), port);
+   }
+   auto* respondingSocket = change == 0 ? remote.data() : nextRemote.data();
+   auto result = QSharedPointer<PM::GetEntriesResult>(
+      new PM::GetEntriesResult(Protos::Core::GetEntries(), next), &PM::GetEntriesResult::doDeleteLater);
+   QSignalSpy response(result.data(), &PM::IGetEntriesResult::result);
+   result->start();
+   QTRY_VERIFY(respondingSocket->bytesAvailable() >= Common::MessageHeader::HEADER_SIZE);
+   respondingSocket->readAll();
+   Protos::Core::GetEntriesResult reply;
+   Common::Message::writeMessageToDevice(respondingSocket,
+      Common::MessageHeader(Common::MessageHeader::CORE_GET_ENTRIES_RESULT,
+         reply.ByteSizeLong(), this->peerIDs[1]), &reply);
+   respondingSocket->flush();
+   QTRY_COMPARE(response.count(), 1);
+}
+
 void Tests::requestSocketLifecycle_data()
 {
    QTest::addColumn<bool>("hashes");

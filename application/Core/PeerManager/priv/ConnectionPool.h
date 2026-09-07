@@ -71,7 +71,7 @@ namespace PM
       QList<QSharedPointer<PeerMessageSocket>> socketsFromPeer;
 
       QHostAddress peerIP;
-      quint16 port;
+      quint16 port = 0;
       const Common::Hash peerID;
    };
 }

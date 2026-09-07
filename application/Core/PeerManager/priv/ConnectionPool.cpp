@@ -57,8 +57,16 @@ ConnectionPool::~ConnectionPool()
   */
 void ConnectionPool::setIP(const QHostAddress& IP, quint16 port)
 {
+   if (this->peerIP == IP && this->port == port)
+      return;
+
    this->peerIP = IP;
    this->port = port;
+
+   // Incoming connections do not target the advertised listening endpoint.
+   // Let outgoing transfers finish, but never reuse their old endpoint afterward.
+   for (QListIterator<QSharedPointer<PeerMessageSocket>> i(this->socketsToPeer); i.hasNext();)
+      i.next()->retire();
 }
 
 /**

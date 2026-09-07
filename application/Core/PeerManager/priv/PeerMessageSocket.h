@@ -94,6 +94,7 @@ namespace PM
       bool isActive() const;
       bool isClosing() const;
       void setActive();
+      void retire(); // Close now if idle, otherwise when the current transaction finishes.
 
       void finished(bool closeTheSocket = false) override;
 
@@ -135,6 +136,7 @@ namespace PM
 
       bool active;
       bool closing = false; // Terminal state while queued pool removal/destruction is pending.
+      bool retired = false;
       IncomingTransaction incomingTransaction = IncomingTransaction::None;
       quint64 transactionGeneration = 0;
       QTimer inactiveTimer;

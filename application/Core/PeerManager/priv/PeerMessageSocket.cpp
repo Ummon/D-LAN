@@ -172,6 +172,13 @@ bool PeerMessageSocket::isClosing() const
    return this->closing;
 }
 
+void PeerMessageSocket::retire()
+{
+   this->retired = true;
+   if (!this->active)
+      this->close();
+}
+
 /**
   * Change the status of the socket to active. Automatically called when a message is sent.
   */
@@ -207,9 +214,10 @@ void PeerMessageSocket::finished(bool closeTheSocket)
          .arg(this->num).arg(closeTheSocket ? " (socket forced to close) " : " ")
    );
 
-   if (closeTheSocket)
+   if (closeTheSocket || this->retired)
    {
-      L_WARN("Socket forced to close");
+      if (closeTheSocket)
+         L_WARN("Socket forced to close");
       this->close();
       return;
    }
