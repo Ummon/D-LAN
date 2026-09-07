@@ -723,6 +723,123 @@ void Tests::requestSocketLifecycle()
    }
 }
 
+void Tests::chunkRequestSocketLifecycle_data()
+{
+   QTest::addColumn<int>("stage");
+   QTest::newRow("not-started") << 0;
+   QTest::newRow("cancel-before-response") << 1;
+   QTest::newRow("cancel-before-response-with-success-status") << 2;
+   QTest::newRow("timeout-before-response") << 3;
+   QTest::newRow("cancel-in-response-callback") << 4;
+   QTest::newRow("abandon-stream") << 5;
+   QTest::newRow("completed-stream") << 6;
+   QTest::newRow("release-in-error-callback") << 7;
+}
+
+void Tests::chunkRequestSocketLifecycle()
+{
+   QFETCH(int, stage);
+   const bool reusable = stage == 0 || stage == 6;
+   const quint32 oldTimeout = SETTINGS.get<quint32>("socket_timeout");
+   const auto restore = qScopeGuard([&] { SETTINGS.set("socket_timeout", oldTimeout); });
+   SETTINGS.set("socket_timeout", quint32(stage == 3 ? 150 : 2000));
+
+   QTcpServer server;
+   QVERIFY(server.listen(QHostAddress::LocalHost, 0));
+   PM::ConnectionPool pool(static_cast<PM::PeerManager*>(this->peerManagers[0].data()),
+      this->fileManagers[0], this->peerIDs[1]);
+   pool.setIP(QHostAddress::LocalHost, server.serverPort());
+   auto previous = pool.getASocket();
+   QTRY_VERIFY(server.hasPendingConnections());
+   QScopedPointer<QTcpSocket> remote(server.nextPendingConnection());
+
+   Protos::Core::GetChunks request;
+   request.add_chunks()->mutable_hash()->set_hash(this->peerIDs[1].getData(), Common::Hash::HASH_SIZE);
+   auto result = QSharedPointer<PM::GetChunksResult>(new PM::GetChunksResult(request, previous),
+      &PM::GetChunksResult::doDeleteLater);
+   QObject context;
+   int responses = 0;
+   int streams = 0;
+   connect(result.data(), &IGetChunksResult::result, &context,
+      [&](const Protos::Core::GetChunksResult&) {
+         ++responses;
+         if (stage == 4 || stage == 7)
+         {
+            result->setStatus(false); // Matches ChunkDownloader's cleanup path.
+            result.clear();
+         }
+      });
+   connect(result.data(), &IGetChunksResult::stream, &context,
+      [&](const QSharedPointer<PM::ISocket>&) { ++streams; });
+   QSignalSpy timeout(result.data(), &Common::Timeoutable::timeout);
+   if (stage != 0)
+   {
+      result->start();
+      QTRY_VERIFY(remote->bytesAvailable() >= Common::MessageHeader::HEADER_SIZE);
+      remote->readAll();
+   }
+
+   const QByteArray payload("chunk bytes");
+   Protos::Core::GetChunksResult reply;
+   reply.set_status(stage == 7 ? Protos::Core::GetChunksResult::ERROR_UNKNOWN : Protos::Core::GetChunksResult::OK);
+   reply.add_results()->set_chunk_size(payload.size());
+   auto send = [&](QTcpSocket* target, const Protos::Core::GetChunksResult& value, bool raw) {
+      Common::Message::writeMessageToDevice(target,
+         Common::MessageHeader(Common::MessageHeader::CORE_GET_CHUNKS_RESULT,
+            value.ByteSizeLong(), this->peerIDs[1]), &value);
+      if (raw)
+         target->write(payload);
+      target->flush();
+   };
+   if (stage >= 4)
+   {
+      send(remote.data(), reply, stage != 7);
+      QTRY_COMPARE(responses, 1);
+      QCOMPARE(streams, stage == 5 || stage == 6 ? 1 : 0);
+      if (stage == 6)
+      {
+         QTRY_COMPARE(previous->bytesAvailable(), qint64(payload.size()));
+         QCOMPARE(previous->readAll(), payload);
+         result->setStatus(false);
+      }
+   }
+   if (stage == 3)
+      QTRY_COMPARE(timeout.count(), 1);
+   if (stage == 2)
+      result->setStatus(false);
+   result.clear();
+
+   QCOMPARE(previous->isClosing(), !reusable);
+   auto next = pool.getASocket();
+   QCOMPARE(next == previous, reusable);
+   QScopedPointer<QTcpSocket> replacement;
+   if (!reusable)
+   {
+      QTRY_VERIFY(server.hasPendingConnections());
+      replacement.reset(server.nextPendingConnection());
+   }
+   auto* nextRemote = reusable ? remote.data() : replacement.data();
+   SETTINGS.set("socket_timeout", quint32(2000));
+   auto nextResult = QSharedPointer<PM::GetChunksResult>(new PM::GetChunksResult(request, next),
+      &PM::GetChunksResult::doDeleteLater);
+   int nextResponses = 0;
+   connect(nextResult.data(), &IGetChunksResult::result, &context,
+      [&](const Protos::Core::GetChunksResult& value) {
+         ++nextResponses;
+         QCOMPARE(value.status(), Protos::Core::GetChunksResult::TOO_MANY_CONNECTIONS);
+      });
+   nextResult->start();
+   QTRY_VERIFY(nextRemote->bytesAvailable() >= Common::MessageHeader::HEADER_SIZE);
+   nextRemote->readAll();
+   // Keep the old socket alive and deliver its late response plus raw bytes.
+   // Neither may become a response to the next request.
+   if (stage >= 1 && stage <= 3)
+      send(remote.data(), reply, true);
+   reply.set_status(Protos::Core::GetChunksResult::TOO_MANY_CONNECTIONS);
+   send(nextRemote, reply, false);
+   QTRY_COMPARE(nextResponses, 1);
+}
+
 void Tests::validateChunkOffsets()
 {
    const Common::Hash hash = this->resultListener.getLastReceivedHash();

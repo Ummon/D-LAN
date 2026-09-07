@@ -46,7 +46,8 @@ namespace PM
       virtual void doDeleteLater() = 0;
 
       /**
-        * If there is an error during the streaming, it can be reported by calling this method.
+        * Call with false after consuming the complete stream to allow socket reuse,
+        * or with true if streaming failed. Releasing an unfinished request closes its socket.
         */
       virtual void setStatus(bool closeTheSocket) = 0;
 

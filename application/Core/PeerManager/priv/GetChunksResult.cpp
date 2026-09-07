@@ -30,27 +30,34 @@ GetChunksResult::GetChunksResult(const Protos::Core::GetChunks& chunks, QSharedP
 
 void GetChunksResult::start()
 {
+   this->state = State::AwaitingResponse;
+   this->startTimer();
    // The socket may be null if the connection pool was unable to give one, in this case the request will simply time out.
    if (!this->socket.isNull())
    {
       connect(this->socket.data(), &PeerMessageSocket::newMessage, this, &GetChunksResult::newMessage, Qt::DirectConnection);
       socket->send(Common::MessageHeader::CORE_GET_CHUNKS, this->chunks);
    }
-   this->startTimer();
 }
 
 void GetChunksResult::setStatus(bool closeTheSocket)
 {
    this->closeTheSocket = closeTheSocket;
+   // A successful status is meaningful only after the stream has been handed off.
+   // Cancellation before that point must close even if the caller reports no error.
+   if (!closeTheSocket && this->state == State::Streaming)
+      this->state = State::Complete;
 }
 
 void GetChunksResult::doDeleteLater()
 {
+   this->stopTimer();
    if (!this->socket.isNull())
    {
       // We must disconnect because 'this->socket->finished' can read some data and emit 'newMessage'.
       disconnect(this->socket.data(), &PeerMessageSocket::newMessage, this, &GetChunksResult::newMessage);
-      this->socket->finished(this->isTimedout() ? true : this->closeTheSocket);
+      const bool unfinished = this->state != State::NotStarted && this->state != State::Complete;
+      this->socket->finished(unfinished || this->isTimedout() || this->closeTheSocket);
       this->socket.clear();
    }
    this->deleteLater();
@@ -64,17 +71,20 @@ void GetChunksResult::newMessage(const Common::Message& message)
    this->stopTimer();
 
    const Protos::Core::GetChunksResult& chunksResult = message.getMessage<Protos::Core::GetChunksResult>();
+   const bool success = chunksResult.status() == Protos::Core::GetChunksResult::OK;
+   this->state = State::AwaitingStream;
+   if (!success)
+      this->closeTheSocket = true;
+   else if (this->socket)
+      this->socket->stopListening();
+
+   // The receiver may release this result synchronously. Establish the raw-stream
+   // boundary and cancellation state before invoking it.
    emit result(chunksResult);
 
-   if (this->socket && chunksResult.status() == Protos::Core::GetChunksResult::OK)
+   if (this->socket && success)
    {
-      this->socket->stopListening();
+      this->state = State::Streaming;
       emit stream(this->socket);
-   }
-   else
-   {
-      this->closeTheSocket = true;
-      // Segfault, maybe we cannot disconnect a signal during a call to the connected slot (this method)!?.
-      //disconnect(this->socket.data(), SIGNAL(newMessage(Common::MessageHeader::MessageType, const google::protobuf::Message&)), this, SLOT(newMessage(Common::MessageHeader::MessageType, const google::protobuf::Message&)));
    }
 }

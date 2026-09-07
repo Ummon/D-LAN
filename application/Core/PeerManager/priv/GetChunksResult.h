@@ -48,8 +48,11 @@ namespace PM
       void newMessage(const Common::Message& message);
 
    private:
+      enum class State { NotStarted, AwaitingResponse, AwaitingStream, Streaming, Complete };
+
       const Protos::Core::GetChunks chunks;
       QSharedPointer<PeerMessageSocket> socket;
+      State state = State::NotStarted;
       bool closeTheSocket;
    };
 }
