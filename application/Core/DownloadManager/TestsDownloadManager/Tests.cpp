@@ -38,9 +38,19 @@ using namespace DM;
 #include <Core/FileManager/priv/Cache/File.h>
 #include <Core/PeerManager/priv/Peer.h>
 #include <priv/FileDownload.h>
+#include <priv/DownloadQueue.h>
 
 namespace
 {
+   class RetryDownload : public Download
+   {
+   public:
+      RetryDownload(QSharedPointer<FM::IFileManager> files, PM::IPeer* peer) :
+         Download(files, peer, Protos::Common::Entry(), Protos::Common::Entry()) {}
+      void start() override { this->setStatus(Protos::Common::DownloadStatus::QUEUED); }
+      using Download::setStatus;
+   };
+
    class EmptyHashCache : public HC::IHashCache
    {
    public:
@@ -63,6 +73,65 @@ namespace
       ResumePeer(QSharedPointer<FM::IFileManager> files) : Peer(nullptr, files, Common::Hash::rand(), "source") {}
       bool isAvailable() const override { return true; }
    };
+}
+
+void Tests::erroneousDownloadsAreUnique()
+{
+   ResumePeer peer(this->fileManager);
+   DownloadQueue queue;
+   auto first = new RetryDownload(this->fileManager, &peer);
+   auto second = new RetryDownload(this->fileManager, &peer);
+   for (auto download : { first, second })
+   {
+      queue.insert(queue.size(), download);
+      connect(download, &Download::becomeErroneous, &queue, &DownloadQueue::setDownloadAsErroneous);
+      download->setStatus(Protos::Common::DownloadStatus::TRANSFER_ERROR);
+   }
+
+   // Recovery followed by another error before the retry timer consumes the entry.
+   first->start();
+   first->setStatus(Protos::Common::DownloadStatus::TRANSFER_ERROR);
+   QCOMPARE(queue.getAnErroneousDownload(), first);
+   QCOMPARE(queue.getAnErroneousDownload(), second);
+   QVERIFY(!queue.getAnErroneousDownload());
+
+   // Once consumed, a failed retry must be eligible for scheduling again.
+   first->start();
+   first->setStatus(Protos::Common::DownloadStatus::TRANSFER_ERROR);
+   QCOMPARE(queue.getAnErroneousDownload(), first);
+   QVERIFY(!queue.getAnErroneousDownload());
+}
+
+void Tests::removeErroneousDownload_data()
+{
+   QTest::addColumn<bool>("bulkRemoval");
+   QTest::newRow("single") << false;
+   QTest::newRow("bulk") << true;
+}
+
+void Tests::removeErroneousDownload()
+{
+   QFETCH(bool, bulkRemoval);
+   ResumePeer peer(this->fileManager);
+   DownloadQueue queue;
+   auto download = new RetryDownload(this->fileManager, &peer);
+   queue.insert(0, download);
+   connect(download, &Download::becomeErroneous, &queue, &DownloadQueue::setDownloadAsErroneous);
+   download->setStatus(Protos::Common::DownloadStatus::TRANSFER_ERROR);
+   download->start();
+   download->setStatus(Protos::Common::DownloadStatus::TRANSFER_ERROR);
+
+   if (bulkRemoval)
+      QVERIFY(queue.removeDownloads(IsContainedInAList({ download->getID() })));
+   else
+   {
+      queue.remove(0);
+      delete download;
+   }
+
+   QCOMPARE(queue.size(), 0);
+   // Never dereference the result: before the fix it points to the deleted download.
+   QVERIFY(!queue.getAnErroneousDownload());
 }
 
 void Tests::resumeMissingFile_data()

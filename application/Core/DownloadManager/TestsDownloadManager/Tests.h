@@ -48,6 +48,9 @@ private slots:
    void initTestCase();
    void resumeMissingFile_data();
    void resumeMissingFile();
+   void erroneousDownloadsAreUnique();
+   void removeErroneousDownload_data();
+   void removeErroneousDownload();
 
 
    void cleanupTestCase();

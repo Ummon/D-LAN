@@ -111,7 +111,7 @@ void DownloadQueue::remove(int position)
    this->downloadsIndexedByName.remove(download->getLocalEntry().name(), download);
    this->downloadsIndexedBySourcePeer.remove(download->getPeerSource(), download);
    this->downloads.removeAt(position);
-   this->erroneousDownloads.removeOne(download);
+   this->erroneousDownloads.removeAll(download);
 }
 
 void DownloadQueue::peerBecomesAvailable(PM::IPeer* peer)
@@ -226,7 +226,7 @@ bool DownloadQueue::removeDownloads(const DownloadPredicate& predicate)
          }
          this->downloadsIndexedBySourcePeer.remove((*j)->getPeerSource(), *j);
          downloadsToDelete << *j;
-         this->erroneousDownloads.removeOne(*j);
+         this->erroneousDownloads.removeAll(*j);
          ++j;
 
          this->updateMarkersRemove(position);
@@ -301,7 +301,10 @@ bool DownloadQueue::isEntryAlreadyQueued(const Protos::Common::Entry& localEntry
 
 void DownloadQueue::setDownloadAsErroneous(Download* download)
 {
-   this->erroneousDownloads << download;
+   // A download may recover and fail again before its pending retry is consumed.
+   // Keep its original retry position and never retain duplicate pointers.
+   if (!this->erroneousDownloads.contains(download))
+      this->erroneousDownloads << download;
 }
 
 /**
