@@ -61,6 +61,8 @@ private slots:
    void peerDiscovery();
    void unicastReception();
    void search();
+   void heartbeatWithChatRooms_data();
+   void heartbeatWithChatRooms();
 
    void cleanupTestCase();
 

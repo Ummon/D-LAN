@@ -64,7 +64,8 @@ namespace NL
       void received(const Common::Message& message);
 
       /**
-        * Signal emitted before sending the IMAlive message, it allows to modify it before sending.
+        * Signal emitted before budgeting chunk hashes in the IMAlive message, to allow adding chat rooms.
+        * Trailing room announcements are omitted if they exceed the datagram limit.
         */
       void IMAliveMessageToBeSend(Protos::Core::IMAlive& IMAliveMessage);
    };

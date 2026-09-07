@@ -45,6 +45,43 @@ using namespace NL;
 
 static const int DISCOVERY_TIMEOUT = 5000; // [ms]
 
+namespace
+{
+   class PendingChunk : public DM::IChunkDownloader
+   {
+   public:
+      Common::Hash getHash() const override { return Common::Hash(); }
+      void addPeer(PM::IPeer*) override {}
+      void rmPeer(PM::IPeer*) override {}
+   };
+
+   // Always supplies as many hashes as requested, exercising a full heartbeat.
+   class BusyDownloadManager : public DM::IDownloadManager
+   {
+   public:
+      void addDownload(const Protos::Common::Entry&, PM::IPeer*, const Common::Hash&, const QString&) override {}
+      void addDownload(const Protos::Common::Entry&, PM::IPeer*, const QString&) override {}
+      QList<DM::IDownload*> getDownloads() const override { return {}; }
+      void moveDownloads(const QList<quint64>&, const QList<quint64>&, Protos::GUI::MoveDownloads::Position) override {}
+      void removeAllCompleteDownloads() override {}
+      void removeDownloads(QList<quint64>) override {}
+      void pauseDownloads(QList<quint64>, bool) override {}
+      int getDownloadRate() override { return 0; }
+      QList<QSharedPointer<DM::IChunkDownloader>> getTheFirstUnfinishedChunks(int n) override
+      {
+         QList<QSharedPointer<DM::IChunkDownloader>> chunks;
+         const QSharedPointer<DM::IChunkDownloader> chunk(new PendingChunk());
+         for (int i = 0; i < n; ++i)
+            chunks << chunk;
+         return chunks;
+      }
+      QList<QSharedPointer<DM::IChunkDownloader>> getTheOldestUnfinishedChunks(int n) override
+      {
+         return this->getTheFirstUnfinishedChunks(n);
+      }
+   };
+}
+
 Tests::Tests()
 {
 }
@@ -300,6 +337,72 @@ void Tests::search()
    QTRY_VERIFY_WITH_TIMEOUT(received(), DISCOVERY_TIMEOUT);
 
    QVERIFY(search->elapsed() >= 0);
+}
+
+void Tests::heartbeatWithChatRooms_data()
+{
+   QTest::addColumn<QStringList>("roomNames");
+   QTest::addColumn<bool>("expectOmissions");
+
+   QTest::newRow("ordinary rooms") << QStringList { "general", "development" } << false;
+   QTest::newRow("UTF-8 rooms") << QStringList { QString(200, QChar(0x20AC)), QString(200, QChar(0x00E9)) } << false;
+   QTest::newRow("oversized room") << QStringList { QString(20000, 'a') } << true;
+   QStringList manyRooms;
+   for (int i = 0; i < 100; ++i)
+      manyRooms << QString::number(i) + QString(200, QChar(0x20AC));
+   QTest::newRow("too many rooms") << manyRooms << true;
+}
+
+void Tests::heartbeatWithChatRooms()
+{
+#ifndef DEBUG
+   QSKIP("The multicast loopback is only enabled in debug");
+#endif
+   QFETCH(QStringList, roomNames);
+   QFETCH(bool, expectOmissions);
+
+   this->receivedMessages.clear();
+   quint64 tag = 0;
+   const Instance& instance = this->instances[1];
+   const auto busyDownloads = QSharedPointer<DM::IDownloadManager>(new BusyDownloadManager());
+   const auto networkListener = NL::Builder::newNetworkListener(
+      instance.fileManager, instance.peerManager, instance.uploadManager, busyDownloads);
+   // A scoped context disconnects the callback even if an assertion fails.
+   QObject context;
+   connect(networkListener.data(), &INetworkListener::IMAliveMessageToBeSend,
+      &context, [&](Protos::Core::IMAlive& message) {
+         tag = message.tag();
+         for (const QString& room : roomNames)
+            message.add_chat_rooms(room.toStdString());
+      });
+
+   auto receivedHeartbeat = [&]() {
+      for (const Common::Message& message : std::as_const(this->receivedMessages))
+         if (message.getHeader().getType() == Common::MessageHeader::CORE_IM_ALIVE &&
+             message.getHeader().getSenderID() == this->peerIDs[1] &&
+             message.getMessage<Protos::Core::IMAlive>().tag() == tag)
+            return true;
+      return false;
+   };
+   QTRY_VERIFY_WITH_TIMEOUT(receivedHeartbeat(), 2 * DISCOVERY_TIMEOUT);
+
+   for (const Common::Message& message : std::as_const(this->receivedMessages))
+   {
+      if (message.getHeader().getType() != Common::MessageHeader::CORE_IM_ALIVE ||
+          message.getHeader().getSenderID() != this->peerIDs[1])
+         continue;
+      const auto& heartbeat = message.getMessage<Protos::Core::IMAlive>();
+      if (heartbeat.tag() != tag)
+         continue;
+      QVERIFY(heartbeat.ByteSizeLong() + Common::MessageHeader::HEADER_SIZE <= SETTINGS.get<quint32>("max_udp_datagram_size"));
+      QCOMPARE(heartbeat.chat_rooms_size() < roomNames.size(), expectOmissions);
+      for (int i = 0; i < heartbeat.chat_rooms_size(); ++i)
+         QCOMPARE(QString::fromStdString(heartbeat.chat_rooms(i)), roomNames[i]);
+      if (roomNames.size() > 1)
+         QVERIFY(heartbeat.chat_rooms_size() > 0);
+      if (!expectOmissions)
+         QVERIFY(heartbeat.chunks_size() > 0);
+   }
 }
 
 void Tests::cleanupTestCase()

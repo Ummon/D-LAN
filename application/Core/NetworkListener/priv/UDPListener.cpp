@@ -165,6 +165,19 @@ void UDPListener::sendIMAliveMessage()
    this->currentIMAliveTag = QRandomGenerator64::global()->generate64();
    IMAliveMessage.set_tag(this->currentIMAliveTag);
 
+   // Reserve space for chat rooms before filling the remaining datagram with hashes.
+   emit IMAliveMessageToBeSend(IMAliveMessage);
+
+   // Room names alone can exceed the datagram budget. Keep a prefix of the room list
+   // so an excessive number of rooms (or a single long name) cannot suppress our heartbeat.
+   const int numberOfRooms = IMAliveMessage.chat_rooms_size();
+   while (IMAliveMessage.chat_rooms_size() > 0 &&
+          IMAliveMessage.ByteSizeLong() + Common::MessageHeader::HEADER_SIZE > static_cast<size_t>(this->MAX_UDP_DATAGRAM_PAYLOAD_SIZE))
+      IMAliveMessage.mutable_chat_rooms()->RemoveLast();
+
+   if (IMAliveMessage.chat_rooms_size() != numberOfRooms)
+      L_WARN(QString("IMAlive: %1 chat room announcements omitted to fit the datagram limit").arg(numberOfRooms - IMAliveMessage.chat_rooms_size()));
+
    // We fill the rest of the message with a maximum of needed hashes.
    // Everything is computed with signed 64 bits integers to avoid any division by zero, overflow or unsigned wrap around.
    static const qint64 MAX_IMALIVE_THROUGHPUT = SETTINGS.get<quint32>("max_imalive_throughput"); // [Byte/s]
@@ -218,8 +231,6 @@ void UDPListener::sendIMAliveMessage()
       // else
       //    chunkDownloader->rmPeer(this->peerManager->getSelf());
    }
-
-   emit IMAliveMessageToBeSend(IMAliveMessage);
 
    this->send(Common::MessageHeader::CORE_IM_ALIVE, IMAliveMessage);
 }
