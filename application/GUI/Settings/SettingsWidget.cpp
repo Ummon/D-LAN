@@ -643,6 +643,9 @@ void SettingsWidget::removeShared()
    QModelIndex index = this->ui->tblShareDirs->selectionModel()->currentIndex();
    if (index.isValid())
    {
+      // Core updates can move or remove this row while the confirmation is open.
+      const Common::SharedEntry selectedEntry = this->sharedEntryListModel.getSharedEntries().at(index.row());
+
       QMessageBox msgBox(this);
       msgBox.setWindowTitle(tr("Remove selected shared directory"));
       msgBox.setText(tr("Are you sure to remove the selected shared directory?"));
@@ -651,8 +654,19 @@ void SettingsWidget::removeShared()
       msgBox.setDefaultButton(QMessageBox::Ok);
       if (msgBox.exec() == QMessageBox::Ok)
       {
-         this->sharedEntryListModel.rmEntry(index.row());
-         this->saveCoreSettings();
+         const auto& entries = this->sharedEntryListModel.getSharedEntries();
+         for (int row = 0; row < entries.size(); ++row)
+         {
+            // Newly added entries have no ID until the core acknowledges them.
+            const bool matches = selectedEntry.ID.isNull() ?
+               entries[row].path == selectedEntry.path : entries[row].ID == selectedEntry.ID;
+            if (matches)
+            {
+               this->sharedEntryListModel.rmEntry(row);
+               this->saveCoreSettings();
+               break;
+            }
+         }
       }
    }
 }
