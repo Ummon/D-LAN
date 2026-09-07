@@ -542,7 +542,8 @@ void Tests::requestSocketLifecycle()
    // Keeping a completed result alive must not let its later destruction release
    // the socket now reserved by the next request.
    entries.clear();
-   hashResult.clear();
+   if (!complete)
+      hashResult.clear();
    QVERIFY(next->isActive());
    QVERIFY(!next->isClosing());
 
@@ -599,6 +600,25 @@ void Tests::requestSocketLifecycle()
       send(nextRemote, Common::MessageHeader::CORE_GET_ENTRIES_RESULT, entriesReply);
    }
    QTRY_COMPARE(nextResponses, 1);
+
+   if (hashes && complete)
+   {
+      // Retain the old result through socket reuse and beyond its original timeout.
+      // Cover the final hash, zero-hash success, and an error response: all three
+      // end the transaction and must disconnect it from subsequent replies.
+      QVERIFY(!timedOut.wait(2100));
+      QCOMPARE(timedOut.count(), 0);
+      QVERIFY(!hashResult->isTimedout());
+      QCOMPARE(received, 1);
+      QCOMPARE(hashesReceived, response == 2 ? 2 : 0);
+
+      auto following = pool.getASocket();
+      QCOMPARE(following, next);
+      hashResult.clear();
+      QVERIFY(following->isActive());
+      QVERIFY(!following->isClosing());
+      following->finished();
+   }
 }
 
 void Tests::validateChunkOffsets()
