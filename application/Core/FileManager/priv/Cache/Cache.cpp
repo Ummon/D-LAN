@@ -363,10 +363,11 @@ void Cache::newDirectory(Protos::Common::Entry& dirEntry)
 {
    QMutexLocker locker(&this->mutex);
 
-   const QString& dirPath =
+   // Keep the final component as a directory in both destination-selection paths.
+   const Common::Path dirPath(
       QDir::cleanPath(QString::fromStdString(dirEntry.path())) +
       '/' +
-      QString::fromStdString(dirEntry.name());
+      QString::fromStdString(dirEntry.name()) + '/');
 
    // If we know where to create the directory.
    Directory* dir = nullptr;
@@ -376,7 +377,7 @@ void Cache::newDirectory(Protos::Common::Entry& dirEntry)
          dynamic_cast<SharedDirectory*>(this->getSharedEntry(dirEntry.shared_entry().id().hash()));
 
       if (sharedDir)
-         dir = sharedDir->createSubDirs(dirPath.split('/', Qt::SkipEmptyParts), true);
+         dir = sharedDir->createSubDirs(dirPath.getDirs(), true);
       else
          dirEntry.clear_shared_entry(); // The shared entry is invalid.
    }

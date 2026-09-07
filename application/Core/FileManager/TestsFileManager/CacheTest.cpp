@@ -2066,3 +2066,48 @@ void CacheTest::updaterWatcherRecovery()
    QVERIFY(updater.entriesToScan.isEmpty());
    QVERIFY(updater.unwatchableEntries.isEmpty());
 }
+
+void CacheTest::newDirectoryPreservesFinalComponent_data()
+{
+   QTest::addColumn<QString>("destination");
+   QTest::addColumn<QString>("parentPath");
+   for (const QString& destination : { "missing", "invalid", "valid" })
+      for (const QString& parentPath : { "/", "/parent/deeper/", "parent/deeper" })
+         QTest::newRow(qPrintable(destination + ':' + parentPath)) << destination << parentPath;
+}
+
+void CacheTest::newDirectoryPreservesFinalComponent()
+{
+   QFETCH(QString, destination);
+   QFETCH(QString, parentPath);
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   root->getRootDir()->createSubDir("parent", true);
+
+   Protos::Common::Entry entry;
+   entry.set_type(Protos::Common::Entry::DIR);
+   entry.set_path(parentPath.toStdString());
+   entry.set_name("child");
+   if (destination != "missing")
+   {
+      const Common::Hash id = destination == "valid" ? shared.first.ID : Common::Hash::rand();
+      entry.mutable_shared_entry()->mutable_id()->set_hash(id.getData(), Common::Hash::HASH_SIZE);
+   }
+   cache.newDirectory(entry);
+
+   const QString expected = temp.filePath(parentPath == "/" ? "child" : "parent/deeper/child");
+   QVERIFY2(QFileInfo(expected).isDir(), qPrintable(expected));
+   auto created = dynamic_cast<FM::Directory*>(cache.getEntry(Common::Path(expected + '/')));
+   QVERIFY(created);
+   QCOMPARE(created->getName(), QString("child"));
+   QCOMPARE(created->getRoot(), static_cast<FM::SharedEntry*>(root));
+
+   // Repeating the request must reuse both the physical and cached directory.
+   cache.newDirectory(entry);
+   QCOMPARE(cache.getEntry(Common::Path(expected + '/')), static_cast<FM::Entry*>(created));
+   QVERIFY(QFileInfo(expected).isDir());
+}

@@ -23,6 +23,8 @@ private slots:
    void hashingWorkFollowsFileChanges();
    void directoryTotalsFollowFileResizing();
    void fittestDirectoryMatchesExistingPaths();
+   void newDirectoryPreservesFinalComponent_data();
+   void newDirectoryPreservesFinalComponent();
    void directoryMovesAllowCompletion_data();
    void directoryMovesAllowCompletion();
    void directoryLookupAllowsSizePropagation_data();
