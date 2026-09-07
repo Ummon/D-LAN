@@ -55,6 +55,7 @@ private slots:
    // Sending without any known peer.
    void sendToUnknownPeer();
    void sendMessageTooLarge();
+   void effectiveUDPMessageSize();
    void sendMulticast();
 
    // Between the two instances.

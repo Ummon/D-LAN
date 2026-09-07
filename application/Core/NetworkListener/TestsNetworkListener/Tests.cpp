@@ -38,6 +38,8 @@
 #include <Core/NetworkListener/ISearch.h>
 
 #include <priv/Utils.h>
+#include <priv/UDPListener.h>
+#include <limits>
 
 #include <MockHashCache.h>
 
@@ -235,6 +237,23 @@ void Tests::sendMessageTooLarge()
       this->instances[0].networkListener->send(Common::MessageHeader::CORE_FIND, findMessage),
       INetworkListener::SendStatus::MESSAGE_TOO_LARGE
    );
+}
+
+void Tests::effectiveUDPMessageSize()
+{
+   const quint32 original = SETTINGS.get<quint32>("max_udp_datagram_size");
+   const Instance& instance = this->instances[0];
+   for (quint32 configured : { quint32(0), quint32(256), std::numeric_limits<quint32>::max() })
+   {
+      SETTINGS.set("max_udp_datagram_size", configured);
+      UDPListener listener(instance.fileManager, instance.peerManager, instance.uploadManager, instance.downloadManager);
+      SETTINGS.set("max_udp_datagram_size", original);
+      const int expected = configured == 0 ? 0 : (configured == 256 ? 256 : 65536) - Common::MessageHeader::HEADER_SIZE;
+      QCOMPARE(listener.getMaxUDPMessageSize(), expected);
+      Protos::Core::Find message;
+      message.mutable_pattern()->set_pattern(std::string(expected + 1, 'x'));
+      QCOMPARE(listener.send(Common::MessageHeader::CORE_FIND, message), INetworkListener::SendStatus::MESSAGE_TOO_LARGE);
+   }
 }
 
 void Tests::sendMulticast()

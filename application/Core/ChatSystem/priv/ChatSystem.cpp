@@ -102,6 +102,11 @@ ChatSystem::SendStatus ChatSystem::send(
    Protos::Common::ChatMessage* protochatMessage = protoChatMessages.add_messages();
    chatMessage->fillProtoChatMessage(*protochatMessage);
 
+   // The complete history representation must fit too, otherwise a successful live
+   // message could never be forwarded to peers that missed the initial broadcast.
+   if (protoChatMessages.ByteSizeLong() > static_cast<size_t>(this->networkListener->getMaxUDPMessageSize()))
+      return SendStatus::MESSAGE_TOO_LARGE;
+
    quint64 time = protochatMessage->time();
 
    protochatMessage->clear_time(); // We let the receiver set the time.
@@ -309,12 +314,12 @@ void ChatSystem::received(const Common::Message& message)
          if (messages.isEmpty())
             break;
 
-         static const int MAX_SIZE = int(SETTINGS.get<quint32>("max_udp_datagram_size")) - Common::MessageHeader::HEADER_SIZE; // [Byte].
+         const int maxSize = this->networkListener->getMaxUDPMessageSize();
          Protos::Common::ChatMessages chatMessages;
          do
          {
             // 'fillProtoChatMessages' always consumes at least one message (a message too large to be sent alone is dropped), so this loop terminates.
-            messages = ChatMessages::fillProtoChatMessages(chatMessages, messages, MAX_SIZE);
+            messages = ChatMessages::fillProtoChatMessages(chatMessages, messages, maxSize);
             if (chatMessages.messages_size() > 0)
                this->networkListener->send(Common::MessageHeader::CORE_CHAT_MESSAGES, chatMessages, message.getHeader().getSenderID());
             chatMessages.Clear();

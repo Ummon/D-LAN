@@ -68,6 +68,8 @@ namespace NL
         */
       void rebindSockets(quint16 unicastPort);
 
+      int getMaxUDPMessageSize() const { return this->MAX_UDP_DATAGRAM_PAYLOAD_SIZE - Common::MessageHeader::HEADER_SIZE; }
+
    signals:
       /**
         * This signal is emitted when a message is received (unicast or multicast).

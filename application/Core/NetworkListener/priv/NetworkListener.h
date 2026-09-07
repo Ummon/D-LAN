@@ -47,17 +47,19 @@ namespace NL
 
       ~NetworkListener();
 
-      QSharedPointer<ISearch> newSearch();
+      QSharedPointer<ISearch> newSearch() override;
 
    public slots:
-      void rebindSockets();
+      void rebindSockets() override;
 
    public:
+      int getMaxUDPMessageSize() const override { return this->uDPListener.getMaxUDPMessageSize(); }
+
       SendStatus send(
          Common::MessageHeader::MessageType type,
          const google::protobuf::Message& message,
          const Common::Hash& peerID = Common::Hash()
-      );
+      ) override;
 
    private:
       LOG_INIT_H("NetworkListener")

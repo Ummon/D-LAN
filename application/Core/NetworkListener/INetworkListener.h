@@ -43,6 +43,9 @@ namespace NL
         */
       virtual void rebindSockets() = 0;
 
+      // Effective UDP protobuf body limit in bytes, excluding the message header.
+      virtual int getMaxUDPMessageSize() const = 0;
+
       enum class SendStatus
       {
          OK,
