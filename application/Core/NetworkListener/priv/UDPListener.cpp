@@ -275,6 +275,16 @@ void UDPListener::processPendingMulticastDatagrams()
       if (header.isNull())
          continue;
 
+      // Discovery and departure still update peer state while a peer is unavailable.
+      // All other multicast traffic follows the same availability policy as unicast.
+      if (header.getType() != Common::MessageHeader::CORE_IM_ALIVE &&
+          header.getType() != Common::MessageHeader::CORE_GOODBYE)
+      {
+         PM::IPeer* peer = this->peerManager->getPeer(header.getSenderID());
+         if (!peer || !peer->isAvailable())
+            continue;
+      }
+
       try
       {
          const Common::Message& message = Common::Message::readMessageBody(header, this->bodyBuffer);

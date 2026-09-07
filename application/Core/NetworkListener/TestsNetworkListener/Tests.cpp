@@ -361,6 +361,85 @@ void Tests::search()
    QVERIFY(search->elapsed() >= 0);
 }
 
+void Tests::unavailableMulticastPeer_data()
+{
+   QTest::addColumn<bool>("blocked");
+   QTest::newRow("blocked peer") << true;
+   QTest::newRow("incompatible peer") << false;
+}
+
+void Tests::unavailableMulticastPeer()
+{
+#ifndef DEBUG
+   QSKIP("The multicast loopback is only enabled in debug");
+#endif
+   QFETCH(bool, blocked);
+   QTRY_VERIFY_WITH_TIMEOUT(this->peersDiscovered(), DISCOVERY_TIMEOUT);
+   const auto manager = this->instances[0].peerManager;
+   PM::IPeer* peer = manager->getPeer(this->peerIDs[1]);
+   QVERIFY(peer);
+   const auto sender = this->instances[1].networkListener;
+
+   const QHostAddress address = peer->getIP();
+   const quint16 port = peer->getPort();
+   const QString nick = peer->getNick();
+   const QString coreVersion = peer->getCoreVersion();
+   const quint64 amount = peer->getSharingAmount();
+   const quint32 downloadRate = peer->getDownloadRate();
+   const quint32 uploadRate = peer->getUploadRate();
+   const quint32 version = peer->getProtocolVersion();
+   const auto restore = qScopeGuard([&]() {
+      manager->updatePeer(peer->getID(), address, port, nick, amount, coreVersion, downloadRate, uploadRate, version);
+      if (blocked)
+         peer->block(0);
+      QCoreApplication::processEvents();
+   });
+
+   auto receivedType = [&](Common::MessageHeader::MessageType type) {
+      for (const Common::Message& message : std::as_const(this->receivedMessages))
+         if (message.getHeader().getSenderID() == peer->getID() && message.getHeader().getType() == type)
+            return true;
+      return false;
+   };
+   Protos::Common::ChatMessages chat;
+   chat.add_messages()->set_message("Multicast availability test");
+   this->receivedMessages.clear();
+   QCOMPARE(sender->send(Common::MessageHeader::CORE_CHAT_MESSAGES, chat), INetworkListener::SendStatus::OK);
+   QTRY_VERIFY_WITH_TIMEOUT(receivedType(Common::MessageHeader::CORE_CHAT_MESSAGES), DISCOVERY_TIMEOUT);
+
+   Protos::Core::IMAlive heartbeat;
+   heartbeat.set_version(blocked ? version : version + 1);
+   heartbeat.set_port(port);
+   heartbeat.set_nick("unavailable peer");
+   heartbeat.set_tag(123456);
+   if (blocked)
+      peer->block(60000, "NetworkListener regression test");
+   QCOMPARE(sender->send(Common::MessageHeader::CORE_IM_ALIVE, heartbeat), INetworkListener::SendStatus::OK);
+   QTRY_COMPARE(peer->getNick(), QString("unavailable peer"));
+   QVERIFY(peer->isAlive());
+   QVERIFY(!peer->isAvailable());
+
+   this->receivedMessages.clear();
+   QCOMPARE(sender->send(Common::MessageHeader::CORE_CHAT_MESSAGES, chat), INetworkListener::SendStatus::OK);
+   Protos::Core::Find find;
+   find.set_tag(123456);
+   find.mutable_pattern()->set_pattern("unavailable peer search");
+   QCOMPARE(sender->send(Common::MessageHeader::CORE_FIND, find), INetworkListener::SendStatus::OK);
+   // A later heartbeat must still reach consumers and update the unavailable peer.
+   heartbeat.set_nick("still unavailable");
+   QCOMPARE(sender->send(Common::MessageHeader::CORE_IM_ALIVE, heartbeat), INetworkListener::SendStatus::OK);
+   QTRY_COMPARE(peer->getNick(), QString("still unavailable"));
+   QTest::qWait(50);
+   QVERIFY(receivedType(Common::MessageHeader::CORE_IM_ALIVE));
+   QVERIFY(!receivedType(Common::MessageHeader::CORE_CHAT_MESSAGES));
+   QVERIFY(!receivedType(Common::MessageHeader::CORE_FIND));
+   QVERIFY(!peer->isAvailable());
+
+   QCOMPARE(sender->send(Common::MessageHeader::CORE_GOODBYE, Protos::Common::Null()), INetworkListener::SendStatus::OK);
+   QTRY_VERIFY(!peer->isAlive());
+   QVERIFY(receivedType(Common::MessageHeader::CORE_GOODBYE));
+}
+
 void Tests::heartbeatWithChatRooms_data()
 {
    QTest::addColumn<QStringList>("roomNames");
