@@ -2247,3 +2247,117 @@ void CacheTest::emptyFileReplacementReportsRenameFailure()
    QSKIP("Windows destination sharing regression");
 #endif
 }
+
+void CacheTest::metadataReadersAvoidStructuralLocks()
+{
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   class LockedFile : public FM::File
+   {
+   public:
+      using FM::File::File;
+      QRecursiveMutex& structuralMutex() { return this->mutex; }
+   };
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   auto file = new LockedFile(root, "locked.txt", 8, false, QDateTime::currentDateTime(), root->getRootDir());
+   QSemaphore readDone;
+   bool correct = false;
+   QMutexLocker locker(&file->structuralMutex());
+   std::thread reader([&] {
+      // Parent lookups and index predicates may read child metadata while the
+      // child's structural lock is held by a writer waiting to enter its parent.
+      correct = root->getRootDir()->getFile("locked.txt") == file &&
+         file->getNameWithoutExtension() == "locked" && file->getExtension() == "txt" &&
+         file->getSize() == 8 && cache.getAmount() == 8 && file->getRoot() == root && !file->isRoot();
+      readDone.release();
+   });
+   const bool independent = readDone.tryAcquire(1, 5000);
+   locker.unlock();
+   reader.join();
+   QVERIFY2(independent, "Metadata reads acquired the child's structural mutex");
+   QVERIFY(correct);
+}
+
+void CacheTest::concurrentEntryMetadata()
+{
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   const QStringList stems { QString(257, 'a'), QString(513, 'b') };
+   const QStringList names { stems[0] + ".txt", stems[1] + ".txt" };
+   const QStringList directories { "first", "second" };
+   const QStringList aliases { QString(257, 'c'), QString(513, 'd') };
+   auto parent = root->getRootDir()->createSubDir(directories[0]);
+   auto file = new FM::File(root, names[0], 8, false, QDateTime::currentDateTime(), parent);
+   root->setUserName(aliases[0]);
+   const Common::Path originalParent = root->getParentPath();
+   const Common::Path alternateParent = originalParent.appendDir("alternate");
+   const qint64 sizes[] { 0x100000001LL, 0x200000002LL };
+   file->setSize(sizes[0]);
+   std::atomic<bool> valid { true };
+   // Notifications must be emitted after releasing the snapshot locks: consumers
+   // immediately read the same metadata to maintain indexes.
+   connect(&cache, &FM::Cache::entryRenamed, &cache, [&](FM::Entry* entry, const QString&) {
+      entry->getUserName();
+      entry->getRoot()->getPath();
+   }, Qt::DirectConnection);
+   QSemaphore start;
+   const auto validSize = [&](qint64 size) { return size == sizes[0] || size == sizes[1]; };
+   std::thread writer([&] {
+      start.acquire();
+      for (int i = 0; i < 2000; ++i)
+      {
+         file->rename(names[i % 2]);
+         file->setSize(sizes[i % 2]);
+         parent->rename(directories[i % 2]);
+         root->setUserName(aliases[i % 2]);
+         if (i % 64 == 0)
+            root->setPath((i / 64) % 2 ? originalParent : alternateParent);
+      }
+   });
+   std::thread hiddenWriter([&] {
+      start.acquire();
+      for (int i = 0; i < 2000; ++i)
+         file->setHidden(i % 2);
+   });
+   std::thread reader([&] {
+      start.acquire();
+      for (int i = 0; i < 2000; ++i)
+      {
+         if (!names.contains(file->getName()) || !stems.contains(file->getNameWithoutExtension()) ||
+             file->getExtension() != "txt" || !validSize(file->getSize()) ||
+             !validSize(cache.getAmount()) || !aliases.contains(root->getUserName()) ||
+             file->getRoot() != root || file->isRoot())
+            valid = false;
+         const auto sharedParent = root->getParentPath();
+         if (!(sharedParent == originalParent) && !(sharedParent == alternateParent))
+            valid = false;
+         const auto path = file->getAbsolutePath();
+         if (!names.contains(path.getFilename()) || !directories.contains(path.getLastDir()))
+            valid = false;
+         // Exercise lookup's parent-to-child reads while rename sorts membership.
+         parent->getFile(names[i % 2]);
+         Protos::Common::Entry entry;
+         file->populateEntry(&entry);
+         if (!names.contains(QString::fromStdString(entry.name())) || !validSize(entry.size()))
+            valid = false;
+      }
+   });
+   start.release(3);
+   writer.join();
+   hiddenWriter.join();
+   reader.join();
+   root->setPath(originalParent);
+   QVERIFY(valid.load());
+   QCOMPARE(cache.getAmount(), sizes[1]);
+   QCOMPARE(parent->getFile(names[1]), file);
+   QVERIFY(file->getRoot() == root);
+}

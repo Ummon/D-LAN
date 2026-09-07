@@ -96,6 +96,7 @@ namespace FM
 
       // TODO: Common::Path should be used instead of QString.
       void setPath(const Common::Path& path);
+      Common::Path getParentPath() const;
 
       Cache* getCache() const;
       // Common::Path getPath() const;
@@ -108,8 +109,12 @@ namespace FM
       // static Common::Path pathWithoutEntryName(const Common::Path& path);
 
       Cache* cache; // To announce when an entry, chunk is created or deleted.
-      Common::Path path; // The path to the directory containing the shared file or directory.
       Common::Hash id;
+
+   private:
+      // Leaf lock, released before cache/index notifications and root-entry access.
+      mutable QMutex metadataMutex;
+      Common::Path path; // Directory containing the shared file or directory.
 
       // The name of the shared entry. Default is the directory or filename. It may be changed later by the user.
       QString userName;

@@ -128,7 +128,7 @@ File::File(
       this->setHashes(hashes);
 
    if (this->parentDirectory)
-      this->parentDirectory->add(this);
+      this->parentDirectory.load()->add(this);
 }
 
 File::~File()
@@ -152,7 +152,7 @@ void File::del(bool invokeDelete)
 
       // Use the same child-to-parent order as completion, including detaching directory membership.
       if (this->parentDirectory)
-         this->parentDirectory->fileDeleted(this);
+         this->parentDirectory.load()->fileDeleted(this);
 
       this->deleteAllChunks();
    }
@@ -198,9 +198,9 @@ void File::setToUnfinished(qint64 size, const QList<Common::Hash>& hashes)
    locker.relock();
 
    this->getCache()->getHashCache()->rmHashes(this->getAbsolutePath());
-   this->name.append(Global::getUnfinishedSuffix());
+   this->setName(this->getName() + Global::getUnfinishedSuffix());
    if (this->parentDirectory)
-      this->parentDirectory->fileNameChanged(this);
+      this->parentDirectory.load()->fileNameChanged(this);
    this->setSize(size);
    this->dateLastModified = QDateTime::currentDateTime();
    this->deleteAllChunks();
@@ -324,9 +324,9 @@ Common::Path File::getRelativePath() const
    QMutexLocker locker(&this->mutex);
 
    if (this->parentDirectory)
-      return this->parentDirectory->getRelativePath().setFilename(this->name);
+      return this->parentDirectory.load()->getRelativePath().setFilename(this->getName());
    else
-      return Common::Path(this->name);
+      return Common::Path(this->getName());
 }
 
 Common::Path File::getAbsolutePath() const
@@ -334,16 +334,16 @@ Common::Path File::getAbsolutePath() const
    QMutexLocker locker(&this->mutex);
 
    if (this->parentDirectory)
-      return this->parentDirectory->getAbsolutePath().setFilename(this->name);
+      return this->parentDirectory.load()->getAbsolutePath().setFilename(this->getName());
    else
-      return this->getRoot()->path.setFilename(this->name);
+      return this->getRoot()->getParentPath().setFilename(this->getName());
 }
 
 Entry* File::getEntry(const Common::Path& path)
 {
    QMutexLocker locker(&this->mutex);
 
-   if (path.isFile() && !path.isAbsolute() && path.getDirs().isEmpty() && path.getFilename() == this->name)
+   if (path.isFile() && !path.isAbsolute() && path.getDirs().isEmpty() && path.getFilename() == this->getName())
       return this;
    return nullptr;
 }
@@ -353,7 +353,7 @@ Entry* File::getEntry(const Common::Path& path)
   */
 QString File::getExtension() const
 {
-   return Common::KnownExtensions::getExtension(this->name);
+   return Common::KnownExtensions::getExtension(this->getName());
 }
 
 void File::rename(const QString& newName)
@@ -363,7 +363,7 @@ void File::rename(const QString& newName)
    Entry::rename(newName);
 
    if (this->parentDirectory)
-      this->parentDirectory->fileNameChanged(this);
+      this->parentDirectory.load()->fileNameChanged(this);
 }
 
 QDateTime File::getDateLastModified() const
@@ -667,7 +667,7 @@ void File::setSize(qint64 size)
       this->getCache()->onFileResized(this, oldSize);
 
       if (this->parentDirectory)
-         this->parentDirectory->fileSizeChanged(oldSize, size);
+         this->parentDirectory.load()->fileSizeChanged(oldSize, size);
    }
 }
 
@@ -719,7 +719,7 @@ void File::moveInto(Directory* directory)
       return;
 
    if (this->parentDirectory)
-      this->parentDirectory->fileDeleted(this);
+      this->parentDirectory.load()->fileDeleted(this);
 
    // A shared root must not be moved with this method, see 'SharedEntry::moveInto(..)'.
    if (this->getRoot() != directory->getRoot())
@@ -739,7 +739,7 @@ bool File::hasAParentDir(Directory* dir)
    if (this->parentDirectory == dir)
       return true;
    else if (this->parentDirectory)
-      return this->parentDirectory->isAChildOf(dir);
+      return this->parentDirectory.load()->isAChildOf(dir);
    else
       return false;
 }
@@ -754,7 +754,7 @@ void File::setAsComplete()
 {
    L_DEBU(QString("File set as complete: %1").arg(this->getAbsolutePath()));
 
-   if (Global::isFileUnfinished(this->name))
+   if (Global::isFileUnfinished(this->getName()))
    {
       const QString oldPath = this->getAbsolutePath();
       const QString newPath = Global::removeUnfinishedSuffix(oldPath);
@@ -785,9 +785,9 @@ void File::setAsComplete()
          if (this->hidden)
             this->setFileAsHidden(newPath);
          this->dateLastModified = QFileInfo(newPath).lastModified();
-         this->name = Global::removeUnfinishedSuffix(this->name);
+         this->setName(Global::removeUnfinishedSuffix(this->getName()));
          if (this->parentDirectory)
-            this->parentDirectory->fileNameChanged(this);
+            this->parentDirectory.load()->fileNameChanged(this);
          this->saveHashes();
          this->getCache()->onEntryAdded(this); // To add the name to the index. (a bit tricky).
       }
@@ -815,7 +815,7 @@ void File::deleteAllChunks()
   */
 void File::createPhysicalFile()
 {
-   if (this->getSize() > 0 && !Global::isFileUnfinished(this->name))
+   if (this->getSize() > 0 && !Global::isFileUnfinished(this->getName()))
       L_ERRO(
          QString("File::createPhysicalFile(..): Cannot create a file (%1) without the '%2' suffix")
             .arg(this->File::getRelativePath(), Global::getUnfinishedSuffix())

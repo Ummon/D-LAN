@@ -50,8 +50,8 @@ SharedEntry::SharedEntry(
    const QString& userName
 ) :
    cache(cache),
-   path(fullPath.removeLastElement()),
    id(id.isNull() ? Common::Hash::rand() : id),
+   path(fullPath.removeLastElement()),
    userName(userName)
 {
    const QString& pathStr = fullPath.toString();
@@ -150,8 +150,17 @@ void SharedEntry::moveInto(Directory* directory)
 
 void SharedEntry::setPath(const Common::Path& path)
 {
-   this->path = path;
+   {
+      QMutexLocker locker(&this->metadataMutex);
+      this->path = path;
+   }
    this->getCache()->onSharedEntryPathChanged(this);
+}
+
+Common::Path SharedEntry::getParentPath() const
+{
+   QMutexLocker locker(&this->metadataMutex);
+   return this->path;
 }
 
 Cache* SharedEntry::getCache() const
@@ -171,16 +180,20 @@ Common::Hash SharedEntry::getId() const
 
 QString SharedEntry::getUserName() const
 {
+   QMutexLocker locker(&this->metadataMutex);
    return this->userName;
 }
 
 void SharedEntry::setUserName(const QString& name)
 {
-   if (this->userName == name)
-      return;
-
-   const QString oldName = this->userName;
-   this->userName = name;
+   QString oldName;
+   {
+      QMutexLocker locker(&this->metadataMutex);
+      if (this->userName == name)
+         return;
+      oldName = this->userName;
+      this->userName = name;
+   }
    this->getCache()->onEntryRenamed(this->getRootEntry(), oldName);
 }
 
@@ -267,7 +280,7 @@ Entry* SharedDirectory::getRootEntry() const
 
 Common::Path SharedDirectory::getPath() const
 {
-   return this->path.appendDir(this->directory->getName());
+   return this->getParentPath().appendDir(this->directory->getName());
 }
 
 Directory* SharedDirectory::getRootDir() const
@@ -315,7 +328,7 @@ Entry* SharedFile::getRootEntry() const
 
 Common::Path SharedFile::getPath() const
 {
-   return this->path.setFilename(this->file->getName());
+   return this->getParentPath().setFilename(this->file->getName());
 }
 
 File* SharedFile::getRootFile() const

@@ -59,7 +59,7 @@ Directory::Directory(
       cache->onEntryAdded(this);
 
    if (createPhysically)
-      if (!QDir(this->Directory::getAbsolutePath().removeLastDir()).mkdir(this->name))
+      if (!QDir(this->Directory::getAbsolutePath().removeLastDir()).mkdir(this->getName()))
       {
          L_ERRO(QString("Unable to create the directory: %1").arg(this->Directory::getAbsolutePath()));
          Entry::del(false);
@@ -67,7 +67,7 @@ Directory::Directory(
       }
 
    if (this->parentDirectory)
-      this->parentDirectory->add(this);
+      this->parentDirectory.load()->add(this);
 }
 
 Directory::~Directory()
@@ -128,7 +128,7 @@ void Directory::del(bool invokeDelete)
       f->del();
 
    if (this->parentDirectory)
-      this->parentDirectory->subDirDeleted(this);
+      this->parentDirectory.load()->subDirDeleted(this);
 
    Entry::del(invokeDelete);
 }
@@ -273,8 +273,8 @@ void Directory::moveInto(Directory* directory)
 
    if (this->parentDirectory)
    {
-      this->parentDirectory->adjustSize(-this->getSize());
-      this->parentDirectory->subDirDeleted(this);
+      this->parentDirectory.load()->adjustSize(-this->getSize());
+      this->parentDirectory.load()->subDirDeleted(this);
    }
 
    directory->add(this);
@@ -313,12 +313,9 @@ void Directory::subDirDeleted(Directory* dir)
 
 Common::Path Directory::getRelativePath() const
 {
-   // QMutexLocker locker(&this->mutex);
-
-   if (!this->parentDirectory)
-      return Common::Path();
-   else
-      return this->parentDirectory->getRelativePath().appendDir(this->name);
+   if (Directory* parent = this->parentDirectory.load())
+      return parent->getRelativePath().appendDir(this->getName());
+   return Common::Path();
 }
 
 /**
@@ -327,12 +324,9 @@ Common::Path Directory::getRelativePath() const
   */
 Common::Path Directory::getAbsolutePath() const
 {
-   // QMutexLocker locker(&this->mutex);
-
-   if (!this->parentDirectory)
-      return this->getRoot()->path.appendDir(this->name);
-   else
-      return this->parentDirectory->getAbsolutePath().appendDir(this->name);
+   if (Directory* parent = this->parentDirectory.load())
+      return parent->getAbsolutePath().appendDir(this->getName());
+   return this->getRoot()->getParentPath().appendDir(this->getName());
 }
 
 Entry* Directory::getEntry(const Common::Path& path)
@@ -364,7 +358,7 @@ void Directory::rename(const QString& newName)
 
    Entry::rename(newName);
    if (this->parentDirectory)
-      this->parentDirectory->subdirNameChanged(this);
+      this->parentDirectory.load()->subdirNameChanged(this);
 }
 
 bool Directory::isAChildOf(const Directory* dir) const
@@ -376,7 +370,7 @@ bool Directory::isAChildOf(const Directory* dir) const
       if (this->parentDirectory == dir)
          return true;
       else
-         return this->parentDirectory->isAChildOf(dir);
+         return this->parentDirectory.load()->isAChildOf(dir);
    }
    return false;
 }
@@ -595,7 +589,7 @@ void Directory::adjustSize(qint64 delta)
    QMutexLocker locker(&this->mutex);
    this->setSize(this->getSize() + delta);
    if (this->parentDirectory)
-      this->parentDirectory->adjustSize(delta);
+      this->parentDirectory.load()->adjustSize(delta);
 }
 
 /////

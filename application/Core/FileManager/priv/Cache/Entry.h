@@ -22,6 +22,7 @@
 
 #include <QString>
 #include <QRecursiveMutex>
+#include <QMutex>
 #include <QSharedPointer>
 
 #include <Common/Uncopyable.h>
@@ -108,12 +109,21 @@ namespace FM
    protected:
       virtual void setRootRecursively(SharedEntry* sharedEntry) = 0;
 
-      QString name;
-      SharedEntry* root;
-      Directory* parentDirectory; // Can be null if root.
+      // Writers still use mutex to serialize tree/index transitions. Readers used by
+      // parent containers and search indexes must never acquire a child's mutex.
+      void setName(const QString& name);
 
-      qint64 size;
-      bool hidden = false;
+   private:
+      // Leaf lock: copy/replace only; release before any callback or other lock.
+      mutable QMutex nameMutex;
+      QString name;
+
+   protected:
+      // Individual snapshots, not lifetime ownership or a transaction over the tree.
+      std::atomic<SharedEntry*> root;
+      std::atomic<Directory*> parentDirectory; // Can be null if root.
+      std::atomic<qint64> size;
+      std::atomic<bool> hidden { false };
 
       std::atomic<bool> deletePending { false }; ///< Set by 'del()', the deletion may be queued in another thread.
 

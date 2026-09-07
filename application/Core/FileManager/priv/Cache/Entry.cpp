@@ -76,8 +76,8 @@ Cache* Entry::getCache()
 {
    QMutexLocker locker(&this->mutex);
 
-   if (this->root)
-      return this->root->getCache();
+   if (SharedEntry* root = this->getRoot())
+      return root->getCache();
    else
       return nullptr;
 }
@@ -94,6 +94,7 @@ SharedEntry* Entry::getRoot() const
 
 QString Entry::getName() const
 {
+   QMutexLocker locker(&this->nameMutex);
    return this->name;
 }
 
@@ -107,7 +108,7 @@ QString Entry::getUserName() const
 
 QString Entry::getNameWithoutExtension() const
 {
-   return Common::KnownExtensions::removeExtension(this->name);
+   return Common::KnownExtensions::removeExtension(this->getName());
 }
 
 /**
@@ -117,18 +118,18 @@ void Entry::rename(const QString& newName)
 {
    QMutexLocker locker(&this->mutex);
 
-   if (this->name == newName)
+   if (this->getName() == newName)
       return;
 
    if (!this->isRoot())
    {
-      const QString oldName = this->name;
-      this->name = newName;
+      const QString oldName = this->getName();
+      this->setName(newName);
       this->getCache()->onEntryRenamed(this, oldName);
    }
    else
    {
-      this->name = newName;
+      this->setName(newName);
    }
 }
 
@@ -146,6 +147,12 @@ void Entry::setParentDirectory(Directory* dir)
          this->setRootRecursively(newRoot);
       }
    }
+}
+
+void Entry::setName(const QString& name)
+{
+   QMutexLocker locker(&this->nameMutex);
+   this->name = name;
 }
 
 qint64 Entry::getSize() const
@@ -169,7 +176,7 @@ int Entry::getDepth() const
 
    if (!this->parentDirectory)
       return 0;
-   return this->parentDirectory->getDepth() + 1;
+   return this->parentDirectory.load()->getDepth() + 1;
 }
 
 void Entry::populateSharedEntry(Protos::Common::Entry* entry) const

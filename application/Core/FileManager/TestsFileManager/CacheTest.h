@@ -51,6 +51,8 @@ private slots:
    void chunkAccessExcludesRetirement_data();
    void chunkAccessExcludesRetirement();
    void concurrentChunkMetadata();
+   void metadataReadersAvoidStructuralLocks();
+   void concurrentEntryMetadata();
    void openingHandlesExcludesCompletion_data();
    void openingHandlesExcludesCompletion();
    void browseDirectoryLifetime_data();
