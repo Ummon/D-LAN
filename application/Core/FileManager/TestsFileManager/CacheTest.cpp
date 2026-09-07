@@ -317,6 +317,99 @@ void CacheTest::directoryTotalsFollowFileResizing()
    QCOMPARE(cache.getAmount(), qint64(51));
 }
 
+void CacheTest::directoryMovesAllowCompletion_data()
+{
+   QTest::addColumn<bool>("merge");
+   QTest::addColumn<bool>("nested");
+   for (bool merge : { false, true })
+      for (bool nested : { false, true })
+         QTest::newRow(qPrintable(QString("merge=%1,nested=%2").arg(merge).arg(nested))) << merge << nested;
+}
+
+void CacheTest::directoryMovesAllowCompletion()
+{
+   QFETCH(bool, merge);
+   QFETCH(bool, nested);
+   class CompletingFile : public FM::File
+   {
+   public:
+      using FM::File::File;
+      QSemaphore completionLocked, resumeCompletion, changingRoot;
+      void complete()
+      {
+         QMutexLocker locker(&this->mutex);
+         this->completionLocked.release();
+         this->resumeCompletion.acquire();
+         this->chunkComplete(this->getChunks().first().data());
+      }
+   protected:
+      void setRootRecursively(FM::SharedEntry* root) override
+      {
+         this->changingRoot.release();
+         FM::File::setRootRecursively(root);
+      }
+   };
+
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   QVERIFY(QDir(temp.path()).mkdir("source"));
+   QVERIFY(QDir(temp.path()).mkdir("destination"));
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto sourceShare = cache.addASharedPath(temp.filePath("source") + '/');
+   const auto targetShare = cache.addASharedPath(temp.filePath("destination") + '/');
+   auto source = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(sourceShare.first.ID));
+   auto target = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(targetShare.first.ID));
+   QVERIFY(source && target);
+   auto moved = source->getRootDir()->createSubDir("moved");
+   auto parent = nested ? moved->createSubDir("nested") : moved;
+   auto file = new CompletingFile(source, "finishing.unfinished", 1, false, QDateTime::currentDateTime(),
+      parent, { Common::Hash::rand() });
+   file->getChunks().first()->setKnownBytes(1);
+
+   // The filesystem move precedes the cache event. Completion will rename the
+   // unfinished file at its new location once its parent link has been transferred.
+   const QString relative = nested ? "moved/nested/" : "moved/";
+   const QString destination = temp.filePath("destination/") + relative;
+   QVERIFY(QDir().mkpath(destination));
+   {
+      QFile physical(destination + "finishing.unfinished");
+      QVERIFY(physical.open(QIODevice::WriteOnly));
+      QCOMPARE(physical.write("x", 1), qint64(1));
+   }
+
+   QSemaphore completionDone, moveDone;
+   std::thread completing([&] { file->complete(); completionDone.release(); });
+   if (!file->completionLocked.tryAcquire(1, 5000))
+      qFatal("Completion did not acquire the file lock");
+   std::thread moving([&] {
+      if (merge)
+         target->getRootDir()->stealContent(source->getRootDir());
+      else
+         moved->moveInto(target->getRootDir());
+      moveDone.release();
+   });
+   if (!file->changingRoot.tryAcquire(1, 5000))
+      qFatal("Move did not reach file root propagation");
+   file->resumeCompletion.release();
+   if (!completionDone.tryAcquire(1, 5000) || !moveDone.tryAcquire(1, 5000))
+      qFatal("Directory move deadlocked with download completion");
+   completing.join();
+   moving.join();
+
+   QVERIFY(file->isComplete());
+   QCOMPARE(file->getRoot(), target);
+   QCOMPARE(parent->getRoot(), target);
+   QCOMPARE(file->getAbsolutePath().toString(), destination + "finishing");
+   QVERIFY(QFileInfo::exists(destination + "finishing"));
+   QVERIFY(!source->getRootDir()->getSubDir("moved"));
+   QCOMPARE(target->getRootDir()->getSubDir("moved"), moved);
+   QCOMPARE(parent->getFile("finishing"), file);
+   QCOMPARE(source->getRootDir()->getSize(), qint64(0));
+   QCOMPARE(target->getRootDir()->getSize(), qint64(1));
+   QCOMPARE(cache.getAmount(), qint64(1));
+}
+
 void CacheTest::hashingInvalidatesChangedFiles_data()
 {
    QTest::addColumn<bool>("duringCall");

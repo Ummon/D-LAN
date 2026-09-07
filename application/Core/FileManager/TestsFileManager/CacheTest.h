@@ -16,6 +16,8 @@ private slots:
    void hashingSchedulerTransitions();
    void hashingWorkFollowsFileChanges();
    void directoryTotalsFollowFileResizing();
+   void directoryMovesAllowCompletion_data();
+   void directoryMovesAllowCompletion();
    void directoryLookupAllowsSizePropagation_data();
    void directoryLookupAllowsSizePropagation();
    void directoryCreationDefersDeletion();

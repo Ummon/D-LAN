@@ -254,6 +254,10 @@ void Directory::removeUnfinishedFiles()
 
 void Directory::moveInto(Directory* directory)
 {
+   Cache* cache = this->getCache();
+   cache->beginTraversal();
+   const auto traversal = qScopeGuard([cache] { cache->endTraversal(); });
+   QMutexLocker retirementLocker(&this->retirementMutex);
    QMutexLocker locker(&this->mutex);
 
    if (directory == this->parentDirectory)
@@ -273,14 +277,16 @@ void Directory::moveInto(Directory* directory)
       this->parentDirectory->subDirDeleted(this);
    }
 
-   // A shared root must not be moved with this method, see 'SharedEntry::moveInto(..)'.
-   if (this->getRoot() != directory->getRoot())
-      this->setRootRecursively(directory->getRoot());
-
    directory->add(this);
    directory->adjustSize(this->getSize());
 
    this->parentDirectory = directory;
+   SharedEntry* newRoot = directory->getRoot();
+   locker.unlock();
+
+   // Finish the parent/size transfer before allowing child callbacks. Never hold
+   // this directory's metadata mutex while waiting for a child's file mutex.
+   this->setRootRecursively(newRoot);
 }
 
 /**
@@ -489,38 +495,24 @@ void Directory::fileSizeChanged(qint64 oldSize, qint64 newSize)
   */
 void Directory::stealContent(Directory* dir)
 {
-   QMutexLocker locker(&this->mutex);
-
    if (dir == this)
    {
       L_ERRO("Directory::stealSubDirs(..): dir == this");
       return;
    }
 
-   // L_DEBU(QString("this = %1, dir = %2").arg(this->getFullPath()).arg(dir->getFullPath()));
+   Cache* cache = this->getCache();
+   cache->beginTraversal();
+   const auto traversal = qScopeGuard([cache] { cache->endTraversal(); });
+   const auto directoriesToSteal = dir->getSubDirs();
+   const auto filesToSteal = dir->getFiles();
 
-   const QList<Directory*> directoriesToSteal = dir->subDirs.getList();
-   const QList<File*> filesToSteal = dir->files.getList();
-
-   this->subDirs.insert(directoriesToSteal);
-   this->files.insert(filesToSteal);
-
-   foreach (Directory* d, directoriesToSteal)
-   {
-      d->setParentDirectory(this);
-      this->adjustSize(d->getSize());
-      dir->adjustSize(-d->getSize());
-   }
-
-   foreach (File* f, filesToSteal)
-   {
-      f->setParentDirectory(this);
-      this->adjustSize(f->getSize());
-      dir->adjustSize(-f->getSize());
-   }
-
-   dir->subDirs.clear();
-   dir->files.clear();
+   // Use the same child-to-parent locking and size transfer as ordinary moves.
+   // Holding the destination mutex here would block concurrent completion below it.
+   for (Directory* child : directoriesToSteal)
+      child->moveInto(this);
+   for (File* file : filesToSteal)
+      file->moveInto(this);
 }
 
 void Directory::add(Directory* dir)
@@ -563,18 +555,24 @@ void Directory::fileNameChanged(File* file)
 
 void Directory::setRootRecursively(SharedEntry* sharedEntry)
 {
-   QMutexLocker locker(&this->mutex);
-
-   if (this->root != sharedEntry)
+   Cache* cache = this->getCache();
+   cache->beginTraversal();
+   const auto traversal = qScopeGuard([cache] { cache->endTraversal(); });
+   QList<File*> files;
+   QList<Directory*> directories;
    {
+      QMutexLocker locker(&this->mutex);
+      if (this->root == sharedEntry)
+         return;
       this->root = sharedEntry;
-
-      for (auto file : this->files.getList())
-         file->setRootRecursively(sharedEntry);
-
-      for (auto dir : this->subDirs.getList())
-         dir->setRootRecursively(sharedEntry);
+      files = this->files.getList();
+      directories = this->subDirs.getList();
    }
+   // The traversal guard retains snapshot entries while their locks are acquired.
+   for (File* file : files)
+      file->setRootRecursively(sharedEntry);
+   for (Directory* dir : directories)
+      dir->setRootRecursively(sharedEntry);
 }
 
 void Directory::subdirNameChanged(Directory* dir)

@@ -139,8 +139,12 @@ void Entry::setParentDirectory(Directory* dir)
    if (this->parentDirectory != dir)
    {
       this->parentDirectory = dir;
-      if (this->parentDirectory)
-         this->setRootRecursively(this->parentDirectory->getRoot());
+      if (dir)
+      {
+         SharedEntry* newRoot = dir->getRoot();
+         locker.unlock();
+         this->setRootRecursively(newRoot);
+      }
    }
 }
 
@@ -182,4 +186,3 @@ void Entry::populateSharedEntry(Protos::Common::Entry* entry) const
       sharedEntry->set_shared_name(root->getUserName().toStdString());
    }
 }
-
