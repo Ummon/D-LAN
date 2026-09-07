@@ -24,7 +24,9 @@ using namespace HC;
 #include <vector>
 
 #include <QSemaphore>
+#include <QScopeGuard>
 #include <QSqlDatabase>
+#include <QSqlQuery>
 #include <QTemporaryDir>
 
 #include <IHashCache.h>
@@ -32,6 +34,62 @@ using namespace HC;
 
 Tests::Tests()
 {
+}
+
+void Tests::independentConnections_data()
+{
+   QTest::addColumn<bool>("destroyFirst");
+   QTest::newRow("destroy-first-created") << true;
+   QTest::newRow("destroy-last-created") << false;
+}
+
+void Tests::independentConnections()
+{
+   QFETCH(bool, destroyFirst);
+   QTest::failOnWarning();
+   QTemporaryDir firstFolder;
+   QTemporaryDir secondFolder;
+   QVERIFY(firstFolder.isValid());
+   QVERIFY(secondFolder.isValid());
+
+   // A cache must also leave an unrelated default connection untouched.
+   QVERIFY(!QSqlDatabase::contains());
+   auto defaultDb = QSqlDatabase::addDatabase("QSQLITE");
+   const QString defaultName = defaultDb.connectionName();
+   const auto cleanupDefault = qScopeGuard([&]
+   {
+      defaultDb = QSqlDatabase();
+      QSqlDatabase::removeDatabase(defaultName);
+   });
+   defaultDb.setDatabaseName(":memory:");
+   QVERIFY(defaultDb.open());
+   const auto previousConnections = QSqlDatabase::connectionNames();
+
+   auto first = HC::Builder::newHashCache(firstFolder.path());
+   const QList<Common::Hash> firstHashes { Common::Hash(QByteArray(Common::Hash::HASH_SIZE, 'a')) };
+   const QList<Common::Hash> secondHashes { Common::Hash(QByteArray(Common::Hash::HASH_SIZE, 'b')) };
+   first->setHashes("file", firstHashes, 1);
+   auto second = HC::Builder::newHashCache(secondFolder.path());
+   second->setHashes("file", secondHashes, 1);
+   QCOMPARE(QSqlDatabase::connectionNames().size(), previousConnections.size() + 2);
+   QCOMPARE(first->getHashes("file", 1), firstHashes);
+   QCOMPARE(second->getHashes("file", 1), secondHashes);
+
+   auto& survivor = destroyFirst ? second : first;
+   (destroyFirst ? first : second).reset();
+   QCOMPARE(QSqlDatabase::connectionNames().size(), previousConnections.size() + 1);
+   QCOMPARE(survivor->getHashes("file", 1), destroyFirst ? secondHashes : firstHashes);
+   survivor->setHashes("new-file", firstHashes, 1);
+   QCOMPARE(survivor->getHashes("new-file", 1), firstHashes);
+   survivor->rmHashes("file");
+   QVERIFY(survivor->getHashes("file", 1).isEmpty());
+   survivor.reset();
+   QCOMPARE(QSqlDatabase::connectionNames(), previousConnections);
+
+   QSqlQuery query(defaultDb);
+   QVERIFY(query.exec("SELECT 42"));
+   QVERIFY(query.next());
+   QCOMPARE(query.value(0).toInt(), 42);
 }
 
 void Tests::lookupRequiresMatchingSize()

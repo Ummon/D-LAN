@@ -30,6 +30,8 @@ public:
    Tests();
 
 private slots:
+   void independentConnections_data();
+   void independentConnections();
    void lookupRequiresMatchingSize();
    void concurrentAccess();
    void destructionFromAnotherThread();
