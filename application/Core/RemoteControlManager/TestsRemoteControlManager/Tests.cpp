@@ -70,6 +70,88 @@ private slots:
       delete connection;
    }
 
+   void peerBrowseLimit_data()
+   {
+      QTest::addColumn<bool>("timeout");
+      QTest::newRow("completion-frees-slot") << false;
+      QTest::newRow("timeout-frees-slot") << true;
+   }
+
+   void peerBrowseLimit()
+   {
+      QFETCH(bool, timeout);
+      auto peers = QSharedPointer<BrowsePeerManager>::create();
+      auto* socket = new BufferedSocket;
+      QScopedPointer<RCM::RemoteConnection> connection(this->newConnection(socket, {}, peers));
+      connection->startListening();
+      Protos::GUI::Browse request;
+      const auto id = peers->peer.getID();
+      request.mutable_peer_id()->set_hash(id.getData(), Common::Hash::HASH_SIZE);
+      socket->output.clear();
+      for (int i = 0; i < 32; ++i)
+         socket->receive(Common::MessageHeader::GUI_BROWSE, request);
+      QCOMPARE(peers->peer.requests, 32);
+      QCOMPARE(socket->messages().size(), 32); // Tags only; all peer requests are pending.
+      const auto firstTag = socket->messages()[0].getMessage<Protos::GUI::Tag>().tag();
+      socket->output.clear();
+      socket->receive(Common::MessageHeader::GUI_BROWSE, request);
+      QCOMPARE(peers->peer.requests, 32); // Reject before allocating another peer request/socket.
+      auto messages = socket->messages();
+      QCOMPARE(messages.size(), 2);
+      QCOMPARE(messages[0].getHeader().getType(), Common::MessageHeader::GUI_BROWSE_TAG);
+      QCOMPARE(messages[1].getHeader().getType(), Common::MessageHeader::GUI_BROWSE_RESULT);
+      QCOMPARE(messages[1].getMessage<Protos::GUI::BrowseResult>().tag(), messages[0].getMessage<Protos::GUI::Tag>().tag());
+      QCOMPARE(messages[1].getMessage<Protos::GUI::BrowseResult>().entries_size(), 0);
+
+      socket->output.clear();
+      auto first = peers->peer.entries[0].toStrongRef();
+      QVERIFY(first->started);
+      if (timeout)
+         emit first->timeout();
+      else
+      {
+         first->complete();
+         const auto result = socket->messages()[0].getMessage<Protos::GUI::BrowseResult>();
+         QCOMPARE(result.tag(), firstTag);
+         QCOMPARE(result.entries(0).entries(0).name(), std::string("test entry"));
+      }
+      first.clear();
+      QVERIFY(peers->peer.entries[0].isNull());
+      socket->receive(Common::MessageHeader::GUI_BROWSE, request);
+      QCOMPARE(peers->peer.requests, 33);
+      connection.reset();
+      for (const auto& entry : peers->peer.entries)
+         QVERIFY(entry.isNull());
+   }
+
+   void synchronousPeerBrowse_data()
+   {
+      QTest::addColumn<int>("mode");
+      QTest::newRow("result") << 1;
+      QTest::newRow("timeout") << 2;
+      QTest::newRow("unavailable") << 3;
+   }
+
+   void synchronousPeerBrowse()
+   {
+      QFETCH(int, mode);
+      auto peers = QSharedPointer<BrowsePeerManager>::create();
+      peers->peer.mode = mode;
+      auto* socket = new BufferedSocket;
+      QScopedPointer<RCM::RemoteConnection> connection(this->newConnection(socket, {}, peers));
+      connection->startListening();
+      Protos::GUI::Browse request;
+      const auto id = peers->peer.getID();
+      request.mutable_peer_id()->set_hash(id.getData(), Common::Hash::HASH_SIZE);
+      for (int i = 0; i < 40; ++i)
+      {
+         socket->receive(Common::MessageHeader::GUI_BROWSE, request);
+         QCOMPARE(peers->peer.requests, i + 1);
+         if (mode != 3)
+            QVERIFY(peers->peer.entries.last().isNull());
+      }
+   }
+
    void malformedPasswordChange_data()
    {
       QTest::addColumn<bool>("invalidNew");
@@ -516,10 +598,11 @@ private slots:
 private:
    QTemporaryDir dataDirectory;
 
-   RCM::RemoteConnection* newConnection(BufferedSocket* socket, QSharedPointer<NL::INetworkListener> network = {})
+   RCM::RemoteConnection* newConnection(BufferedSocket* socket, QSharedPointer<NL::INetworkListener> network = {},
+      QSharedPointer<PM::IPeerManager> peers = {})
    {
       auto files = QSharedPointer<FileManager>::create();
-      return new RCM::RemoteConnection(files, PM::Builder::newPeerManager(files),
+      return new RCM::RemoteConnection(files, peers ? peers : PM::Builder::newPeerManager(files),
          QSharedPointer<UploadManager>::create(), QSharedPointer<DownloadManager>::create(),
          network, QSharedPointer<ChatSystem>::create(), socket);
    }

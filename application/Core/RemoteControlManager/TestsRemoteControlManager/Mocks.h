@@ -4,6 +4,9 @@
 #include <QElapsedTimer>
 
 #include <priv/RemoteConnection.h>
+#include <Core/PeerManager/priv/Log.h>
+#include <Core/PeerManager/priv/PeerManager.h>
+#include <Core/PeerManager/priv/Peer.h>
 
 // An in-memory socket makes data buffered before startListening deterministic.
 class BufferedSocket : public QTcpSocket
@@ -164,4 +167,56 @@ public:
    void rebindSockets() override {}
    int getMaxUDPMessageSize() const override { return 65507; }
    SendStatus send(Common::MessageHeader::MessageType, const google::protobuf::Message&, const Common::Hash&) override { return SendStatus::OK; }
+};
+
+class BrowseEntries : public PM::IGetEntriesResult
+{
+public:
+   int mode;
+   bool started = false;
+   explicit BrowseEntries(int mode) : IGetEntriesResult(1000), mode(mode) {}
+   void start() override
+   {
+      this->started = true;
+      if (this->mode == 1)
+         this->complete();
+      else if (this->mode == 2)
+         emit timeout();
+   }
+   void complete()
+   {
+      Protos::Core::GetEntriesResult response;
+      response.add_results()->mutable_entries()->add_entries()->set_name("test entry");
+      emit result(response);
+   }
+   void doDeleteLater() override { this->deleteLater(); }
+};
+
+class BrowsePeer : public PM::Peer
+{
+public:
+   int mode = 0; // Pending, immediate result, immediate timeout, or unavailable.
+   int requests = 0;
+   QList<QWeakPointer<BrowseEntries>> entries;
+   BrowsePeer() : Peer(nullptr, {}, Common::Hash::rand()) {}
+   QSharedPointer<PM::IGetEntriesResult> getEntries(const Protos::Core::GetEntries&) override
+   {
+      ++this->requests;
+      if (this->mode == 3)
+         return {};
+      auto result = QSharedPointer<BrowseEntries>(new BrowseEntries(this->mode), &BrowseEntries::doDeleteLater);
+      this->entries << result.toWeakRef();
+      return result;
+   }
+};
+
+class BrowsePeerManager : public PM::PeerManager
+{
+public:
+   BrowsePeer peer;
+   BrowsePeerManager() : PeerManager({}) {}
+   PM::IPeer* getPeer(const Common::Hash& id) override
+   {
+      return id == this->peer.getID() ? &this->peer : PeerManager::getPeer(id);
+   }
 };

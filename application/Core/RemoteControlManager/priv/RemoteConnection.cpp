@@ -703,7 +703,10 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
             getEntries.mutable_dirs()->CopyFrom(browseMessage.dirs());
             getEntries.set_get_roots(browseMessage.get_roots());
             getEntries.set_nb_max_hashes_per_entry(Common::Constants::MAX_NB_HASHES_PER_ENTRY_GUI_BROWSE);
-            QSharedPointer<PM::IGetEntriesResult> entries = peer->getEntries(getEntries);
+            // Check before getEntries(): creating a request may already allocate a peer socket.
+            QSharedPointer<PM::IGetEntriesResult> entries;
+            if (this->getEntriesResults.size() < MAX_NB_PEER_BROWSES)
+               entries = peer->getEntries(getEntries);
             if (entries.isNull())
             {
                Protos::GUI::BrowseResult result;
@@ -715,8 +718,8 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
             entries->setProperty("tag", tag);
             connect(entries.data(), &PM::IGetEntriesResult::result, this, &RemoteConnection::getEntriesResult);
             connect(entries.data(), &PM::IGetEntriesResult::timeout, this, &RemoteConnection::getEntriesTimeout);
-            entries->start();
             this->getEntriesResults << entries;
+            entries->start(); // Completion may be synchronous; ownership must already be registered.
          }
          else
          {

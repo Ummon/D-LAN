@@ -55,6 +55,7 @@ namespace RCM
 
       static const int MAX_DELAY_WAITING_AUTH_RES = 5000; // [ms]. We close the socket if we don't receive a response after this delay when sending the message 'Protos.GUI.AskForAuthentication'.
       static constexpr int MAX_NB_SEARCHES = 100; // Maximum outstanding network searches per GUI connection.
+      static constexpr int MAX_NB_PEER_BROWSES = 32; // Pending peer requests per GUI connection.
 
    protected:
       class Logger : public ILogger
