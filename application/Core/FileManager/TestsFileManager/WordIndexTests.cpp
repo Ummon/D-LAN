@@ -99,3 +99,53 @@ void WordIndexTests::testWordIndex()
 void WordIndexTests::cleanupTestCase()
 {
 }
+
+void WordIndexTests::multiTermRanking()
+{
+   WordIndex<int> index;
+   index.addItem(QStringList { "alpha", "beta", "gamma" }, 1);
+   index.addItem(QStringList { "alphabet", "beta", "gamma" }, 2);
+   index.addItem(QStringList { "alpha", "beta" }, 3);
+   index.addItem(QStringList { "alpha", "gamma" }, 4);
+   index.addItem(QStringList { "beta", "gamma" }, 5);
+   index.addItem(QStringList { "alphabet", "beta" }, 6);
+   index.addItem(QStringList { "alpha" }, 7);
+   index.addItem(QStringList { "alphabet" }, 8);
+   const QStringList terms { "alpha", "beta", "gamma" };
+   const auto result = index.search(terms); // The default negative limit is unlimited.
+   QCOMPARE(WordIndex<int>::resultToList(result), (QList<int> { 1, 2, 3, 4, 5, 6, 7, 8 }));
+   const QList<int> levels { 0, 1, 4, 5, 6, 7, 13, 16 };
+   for (int i = 0; i < result.size(); ++i)
+      QCOMPARE(result[i].level, levels[i]);
+   QCOMPARE(WordIndex<int>::resultToList(index.search(terms, 2)), (QList<int> { 1, 2 }));
+   QCOMPARE(WordIndex<int>::resultToList(index.search(terms, 2, [](int value) { return value > 2; })),
+      (QList<int> { 3, 4 }));
+   QVERIFY(index.search(terms, 0).isEmpty());
+   QVERIFY(index.search(QStringList()).isEmpty());
+
+   // Multiple indexed words matching one query term must not inflate its weight.
+   index.addItem(QString("alphabetical"), 1);
+   const auto duplicate = index.search(terms);
+   QCOMPARE(duplicate.size(), result.size());
+   QCOMPARE(duplicate.first().value, 1);
+   QCOMPARE(duplicate.first().level, 0);
+}
+
+void WordIndexTests::longQueries()
+{
+   WordIndex<int> index;
+   QStringList terms;
+   for (int i = 0; i < WordIndex<int>::MAX_SEARCH_TERMS; ++i)
+      terms << QString("absent%1").arg(i);
+   // Previously even an empty index enumerated millions of combinations.
+   QVERIFY(index.search(terms, 100).isEmpty());
+   index.addItem(terms, 1);
+   index.addItem(terms.last(), 2);
+   const auto result = index.search(terms, 100);
+   QCOMPARE(WordIndex<int>::resultToList(result), (QList<int> { 1, 2 }));
+   QCOMPARE(result.first().level, 0);
+   QVERIFY(result.last().level > 0);
+   QCOMPARE(WordIndex<int>::resultToList(index.search(terms, 1)), (QList<int> { 1 }));
+   terms << "one-term-too-many";
+   QVERIFY(index.search(terms, 100).isEmpty()); // Reject; do not silently ignore trailing constraints.
+}

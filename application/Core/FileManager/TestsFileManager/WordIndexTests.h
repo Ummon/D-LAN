@@ -34,6 +34,8 @@ private slots:
    void initTestCase();
 
    void testWordIndex();
+   void multiTermRanking();
+   void longQueries();
 
    void cleanupTestCase();
 };

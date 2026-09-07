@@ -22,6 +22,8 @@
 #include <algorithm>
 
 #include <QList>
+#include <QHash>
+#include <QVector>
 #include <QString>
 #include <QChar>
 #include <QRecursiveMutex>
@@ -46,6 +48,7 @@ namespace FM
    class WordIndex : public LM::ILoggable, Common::Uncopyable
    {
    public:
+      static constexpr int MAX_SEARCH_TERMS = 24; ///< Larger queries return no results; keeps work and relevance scores bounded.
       static const int MIN_WORD_SIZE_PARTIAL_MATCH; ///< During a search, the words which have a size below this value must match entirely, for example 'of' match "conspiracy of one" and not "offspring".
       static const int MIN_WORD_SIZE_PARTIAL_MATCH_KOREAN;
 
@@ -173,7 +176,8 @@ QList<FM::NodeResult<T>> FM::WordIndex<T>::search(
 }
 
 /**
-  * @see http://dev.euphorik.ch/wiki/pmp/Algorithms#Word-indexing for more information.
+  * Aggregate actual matches rather than enumerating every subset of query terms.
+  * A negative result limit means unlimited; oversized queries return no results.
   */
 template<typename T>
 QList<FM::NodeResult<T>> FM::WordIndex<T>::search(
@@ -185,87 +189,78 @@ QList<FM::NodeResult<T>> FM::WordIndex<T>::search(
    QMutexLocker locker(&this->mutex);
 
    const int N = words.size();
+   if (N == 0 || N > MAX_SEARCH_TERMS || maxNbResult == 0)
+      return {};
 
-   // Launch a search for each term.
-   QVector<QSet<NodeResult<T>>> results(N);
-   for (int i = 0; i < N; i++)
+   struct Match
    {
-      // We can only limit the number of result for one term. When there is more than one term and thus some results set, say [a, b, c] for example, some good result may be contained in intersect, for example a & b or a & c.
-      auto result = this->search(words[i], N == 1 ? maxNbResult : -1, predicat);
-      results[i] += QSet(result.begin(), result.end());
+      QList<int> terms;
+      int partialMatches = 0;
+   };
+   QHash<T, Match> matches;
+   for (int term = 0; term < N; ++term)
+   {
+      // An item can be indexed by several words matching the same prefix.
+      // Count it once per query term, preferring an exact match if available.
+      QHash<T, bool> termMatches;
+      for (const auto& node : this->search(words[term], -1, predicat))
+      {
+         auto it = termMatches.find(node.value);
+         if (it == termMatches.end())
+            termMatches.insert(node.value, node.level != 0);
+         else
+            it.value() = it.value() && node.level != 0;
+      }
+      for (auto it = termMatches.cbegin(); it != termMatches.cend(); ++it)
+      {
+         auto& match = matches[it.key()];
+         match.terms.append(term);
+         match.partialMatches += it.value() ? 1 : 0;
+      }
    }
+   if (matches.isEmpty())
+      return {};
+
+   // Preserve the legacy relevance levels without enumerating subsets:
+   // more matched terms first, then fewer prefix matches, then earlier query terms.
+   // At most 24 terms keeps these binomial coefficients and levels within int.
+   QVector<QVector<int>> choose(N + 1, QVector<int>(N + 1, 0));
+   for (int n = 0; n <= N; ++n)
+   {
+      choose[n][0] = choose[n][n] = 1;
+      for (int k = 1; k < n; ++k)
+         choose[n][k] = choose[n - 1][k - 1] + choose[n - 1][k];
+   }
+   QVector<int> groupBase(N + 1, 0);
+   for (int k = N - 1; k >= 1; --k)
+      groupBase[k] = groupBase[k + 1] + choose[N][k + 1] * (k + 2);
 
    QList<NodeResult<T>> finalResult;
-
-   int level = 0;
-
-   // For each group of intersection number.
-   // For example, [a, b, c] :
-   //  * a & b & c
-   //  * (a & b) \ c
-   //    (a & c) \ b
-   //    (b & c) \ a
-   //  * a \ b \ c
-   for (int i = 0; i < N && finalResult.size() < maxNbResult; i++)
+   finalResult.reserve(matches.size());
+   for (auto it = matches.cbegin(); it != matches.cend(); ++it)
    {
-      const int NB_INTERSECTS = N - i; // Number of set intersected.
-      QList<int> intersect(NB_INTERSECTS); // A array of the results wich will be intersected.
-      for (int j = 0; j < NB_INTERSECTS; j++)
-         intersect[j] = j;
-
-      // For each combination of the current intersection group.
-      // For 2 intersections (NB_INTERSECTS == 2) among 3 elements [a, b, c]:
-      //  * (a, b)
-      //  * (a, c)
-      //  * (b, c)
-      QList<NodeResult<T>> nodesToSort;
-      const int NB_COMBINATIONS = Common::Global::nCombinations(N, NB_INTERSECTS);
-      for (int j = 0; j < NB_COMBINATIONS && nodesToSort.size() + finalResult.size() < maxNbResult; j++)
+      const auto& match = it.value();
+      const int count = match.terms.size();
+      int rank = 0;
+      int previous = -1;
+      for (int i = 0; i < count; ++i)
       {
-         // Apply intersects.
-         QSet<NodeResult<T>> currentLevelSet = results[intersect[0]];
-         for (QSetIterator<NodeResult<T>> k(currentLevelSet); k.hasNext();)
-         {
-            NodeResult<T>& node = const_cast<NodeResult<T>&>(k.next());
-            node.level = node.level ? NB_COMBINATIONS : 0;
-         }
-
-         for (int k = 1; k < NB_INTERSECTS; k++)
-            NodeResult<T>::intersect(currentLevelSet, results[intersect[k]], NB_COMBINATIONS);
-
-         // Apply substracts.
-         for (int k = -1; k < NB_INTERSECTS; k++)
-            for (int l = (k == -1 ? 0 : intersect[k] + 1); l < (k == NB_INTERSECTS - 1 ? N : intersect[k+1]); l++)
-               currentLevelSet -= results[l];
-
-         for (QSetIterator<NodeResult<T>> k(currentLevelSet); k.hasNext();)
-            const_cast<NodeResult<T>&>(k.next()).level += level;
-
-         // Sort by level.
-         nodesToSort << currentLevelSet.values();
-
-         // Define positions of each intersect term.
-         for (int k = NB_INTERSECTS - 1; k >= 0; k--)
-            if  (intersect[k] < N - NB_INTERSECTS + k)
-            {
-               intersect[k] += 1;
-               for (int l = k + 1; l < NB_INTERSECTS; l++)
-                  intersect[l] = intersect[k] + (l - k);
-               break;
-            }
-
-         level += 1;
+         for (int skipped = previous + 1; skipped < match.terms[i]; ++skipped)
+            rank += choose[N - skipped - 1][count - i - 1];
+         previous = match.terms[i];
       }
-
-      std::sort(nodesToSort.begin(), nodesToSort.end()); // Sort by level.
-
-      finalResult << nodesToSort;
-
-      level += NB_COMBINATIONS * NB_INTERSECTS;
+      NodeResult<T> result(it.key());
+      result.level = groupBase[count] + match.partialMatches * choose[N][count] + rank;
+      finalResult.append(result);
    }
 
-   if (finalResult.size() > maxNbResult)
-      finalResult.erase(finalResult.end() - (finalResult.size() - maxNbResult), finalResult.end());
+   if (maxNbResult >= 0 && finalResult.size() > maxNbResult)
+   {
+      std::partial_sort(finalResult.begin(), finalResult.begin() + maxNbResult, finalResult.end());
+      finalResult.resize(maxNbResult);
+   }
+   else
+      std::sort(finalResult.begin(), finalResult.end());
 
    return finalResult;
 }
