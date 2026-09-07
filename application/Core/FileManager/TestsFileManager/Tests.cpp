@@ -1475,6 +1475,19 @@ void Tests::extensionIndexSearchWithSomeExtensions()
    }
 }
 
+void Tests::extensionIndexIgnoresRepeatedFilters()
+{
+   ExtensionIndex<int> index;
+   index.addItem("txt", 1);
+   index.addItem("nfo", 2);
+   index.addItem("jpg", 3);
+   const QList<QString> filters { "txt", "TXT", "txt", "NFO", "nfo", "jpg" };
+   QCOMPARE(index.search(filters), (QList<int> { 1, 2, 3 }));
+   QCOMPARE(index.search(filters, 2), (QList<int> { 1, 2 }));
+   QCOMPARE(index.search(filters, 2, [](int item) { return item > 1; }), (QList<int> { 2, 3 }));
+   QCOMPARE(index.search(QList<QString> { "JPG", "txt", "jpg", "TXT" }), (QList<int> { 3, 1 }));
+}
+
 void Tests::cleanupTestCase()
 {
    qDebug() << "===== cleanupTestCase() =====";

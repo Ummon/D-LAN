@@ -120,6 +120,7 @@ private slots:
    void extensionIndexChangeItem();
    void extensionIndexSearchWithOneExtension();
    void extensionIndexSearchWithSomeExtensions();
+   void extensionIndexIgnoresRepeatedFilters();
 
    void cleanupTestCase();
 

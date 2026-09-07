@@ -84,12 +84,17 @@ QList<T> FM::ExtensionIndex<T>::search(const QList<QString>& extensions, int lim
    QMutexLocker locker(&this->mutex);
 
    QList<T> result;
+   QSet<QString> visitedExtensions;
 
    for (QListIterator<QString> i(extensions); i.hasNext();)
    {
-      const QString& extension = i.next();
+      const QString extension = i.next().toLower();
+      // Visit each bucket once, preserving the order of the requested extensions.
+      if (visitedExtensions.contains(extension))
+         continue;
+      visitedExtensions.insert(extension);
 
-      auto setIterator = this->index.find(extension.toLower());
+      auto setIterator = this->index.find(extension);
       if (setIterator != this->index.constEnd())
       {
          // Special case to speedup the process.
