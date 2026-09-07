@@ -32,6 +32,7 @@ using namespace GUI;
 #include <QMessageBox>
 #include <QColor>
 #include <QPen>
+#include <QScreen>
 
 #include <Protos/gui_settings.pb.h>
 
@@ -251,6 +252,7 @@ void MainWindow::newLogMessage()
 void MainWindow::loadCustomStyle(const QString& filepath)
 {
    QApplication* app = dynamic_cast<QApplication*>(QApplication::instance());
+   const bool wasVisible = this->isVisible();
 
    if (!filepath.isEmpty())
    {
@@ -269,7 +271,8 @@ void MainWindow::loadCustomStyle(const QString& filepath)
          {
             this->setWindowFlags(FRAMELESS_FLAGS);
             this->resizeEvent(nullptr);
-            this->show();
+            if (wasVisible)
+               this->show();
          }
          return;
       }
@@ -292,7 +295,8 @@ void MainWindow::loadCustomStyle(const QString& filepath)
    if (this->windowFlags() != this->initialWindowFlags)
    {
       this->setWindowFlags(this->initialWindowFlags);
-      this->show();
+      if (wasVisible)
+         this->show();
    }
 }
 
@@ -455,13 +459,25 @@ void MainWindow::restoreWindowsSettings()
 {
    this->resize(QSize(SETTINGS.get<quint32>("main_window_width"), SETTINGS.get<quint32>("main_window_height")));
 
-#ifdef Q_OS_WIN32
-   if (SETTINGS.get<bool>("main_window_maximized"))
-      this->showMaximized();
-#endif
-
    QByteArray state = SETTINGS.get<QByteArray>("windows_state");
    if (state.isEmpty())
       state = QByteArray::fromHex("000000ff00000000fd000000020000000000000116000002bcfc0200000003fb000000140053006500610072006300680044006f0063006b0100000000000000250000002500000025fb00000012005000650065007200730044006f0063006b010000002b000001c30000004a00fffffffb000000120052006f006f006d00730044006f0063006b01000001f4000000c80000006400ffffff000000030000058f0000009cfc0100000001fb0000000e0064006f0063006b004c006f006708000000000000058f0000005c00ffffff00000428000002bc00000004000000040000000800000008fc00000000");
    this->restoreState(state);
+
+   // Choose the screen and position before showing: automatic placement can
+   // otherwise use the monitor containing the cursor.
+   if (QScreen* screen = QGuiApplication::primaryScreen())
+   {
+      this->setScreen(screen);
+      const QRect available = screen->availableGeometry();
+      this->resize(this->size().boundedTo(available.size()));
+      this->move(available.topLeft() + QPoint(
+         qMax(0, (available.width() - this->frameGeometry().width()) / 2),
+         qMax(0, (available.height() - this->frameGeometry().height()) / 2)));
+   }
+
+#ifdef Q_OS_WIN32
+   if (SETTINGS.get<bool>("main_window_maximized"))
+      this->setWindowState(this->windowState() | Qt::WindowMaximized);
+#endif
 }
