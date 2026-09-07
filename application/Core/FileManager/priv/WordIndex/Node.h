@@ -381,8 +381,9 @@ void FM::Node<T>::remove(int i)
       if (this->children.size() == 1)
          this->remove(0);
    }
-   // If the parent has no item and only one child (nodeToDelete) then we merge its child and delete it.
-   else if (this->items.isEmpty() && this->children.size() == 1)
+   // Merge an empty parent with its only child, except for the root: its empty
+   // part is the lookup starting point and must never absorb indexed words.
+   else if (!this->part.isEmpty() && this->items.isEmpty() && this->children.size() == 1)
    {
       this->items << nodeToDelete->items;
       this->children << nodeToDelete->children;

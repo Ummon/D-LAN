@@ -96,6 +96,40 @@ void WordIndexTests::testWordIndex()
    QVERIFY(result10.size() == 0);
 }
 
+void WordIndexTests::removalPreservesRemainingWords_data()
+{
+   QTest::addColumn<QString>("remaining");
+   QTest::addColumn<QString>("removed");
+   QTest::newRow("root-siblings") << QString("alpha") << QString("beta");
+   QTest::newRow("remove-prefix") << QString("alphabet") << QString("alpha");
+   QTest::newRow("remove-longer-word") << QString("alpha") << QString("alphabet");
+}
+
+void WordIndexTests::removalPreservesRemainingWords()
+{
+   QFETCH(QString, remaining);
+   QFETCH(QString, removed);
+   WordIndex<int> index;
+   index.addItem(remaining, 1);
+   index.addItem(removed, 2);
+   QVERIFY(index.rmItem(removed, 2));
+   QCOMPARE(WordIndex<int>::resultToList(index.search(remaining)), (QList<int> { 1 }));
+   QCOMPARE(WordIndex<int>::resultToList(index.search(remaining.left(3))), (QList<int> { 1 }));
+   QCOMPARE(WordIndex<int>::resultToList(index.search(QStringList { remaining })), (QList<int> { 1 }));
+
+   // Further changes must still traverse the original word from the root.
+   index.addItem(QString("gamma"), 3);
+   QVERIFY(index.rmItem(QString("gamma"), 3));
+   QCOMPARE(WordIndex<int>::resultToList(index.search(remaining)), (QList<int> { 1 }));
+   index.renameItem(QStringList { remaining }, QStringList { "delta" }, 1);
+   QVERIFY(index.search(remaining).isEmpty());
+   QCOMPARE(WordIndex<int>::resultToList(index.search(QString("delta"))), (QList<int> { 1 }));
+   QVERIFY(index.rmItem(QString("delta"), 1));
+   QVERIFY(index.search(QString("delta")).isEmpty());
+   index.addItem(remaining, 4);
+   QCOMPARE(WordIndex<int>::resultToList(index.search(remaining)), (QList<int> { 4 }));
+}
+
 void WordIndexTests::cleanupTestCase()
 {
 }
