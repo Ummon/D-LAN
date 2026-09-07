@@ -63,7 +63,8 @@ DirDownload::~DirDownload()
 void DirDownload::start()
 {
    this->updateStatus();
-   this->createDirectory();
+   if (!this->createDirectory())
+      return;
    this->retrieveEntries();
 }
 
@@ -119,8 +120,7 @@ bool DirDownload::updateStatus()
 
 void DirDownload::retryToGetEntries()
 {
-   this->setStatus(Protos::Common::DownloadStatus::QUEUED);
-   this->retrieveEntries();
+   this->start();
 }
 
 void DirDownload::result(const Protos::Core::GetEntriesResult& entries)
@@ -138,7 +138,21 @@ void DirDownload::result(const Protos::Core::GetEntriesResult& entries)
             entriesCopy.mutable_entries(i)->mutable_shared_entry()->CopyFrom(this->remoteEntry.shared_entry());
       }
 
+      disconnect(this->getEntriesResult.data(), nullptr, this, nullptr);
       this->getEntriesResult.clear();
+
+      // The directory may have become empty since it was browsed. Remember this for retries
+      // and create it locally before newEntries removes this download from the queue.
+      if (entriesCopy.entries_size() == 0)
+      {
+         this->remoteEntry.set_is_empty(true);
+         this->localEntry.set_is_empty(true);
+         if (!this->createDirectory())
+         {
+            this->freePeer();
+            return;
+         }
+      }
       emit newEntries(entriesCopy);
    }
    else
@@ -189,7 +203,7 @@ void DirDownload::freePeer()
    this->occupiedPeersAskingForEntries.setPeerAsFree(this->peerSource);
 }
 
-void DirDownload::createDirectory()
+bool DirDownload::createDirectory()
 {
    // Only create the directory if it's empty. In other cases the directories are created when the file is created.
    if (this->remoteEntry.is_empty())
@@ -202,16 +216,20 @@ void DirDownload::createDirectory()
       {
          L_DEBU(QString("There is no shared directory with writing rights for this download: %1").arg(this->remoteEntry.name()));
          this->setStatus(Protos::Common::DownloadStatus::NO_SHARED_DIRECTORY_TO_WRITE);
+         return false;
       }
       catch (FM::UnableToCreateNewDirException&)
       {
          L_DEBU(QString("Unable to create the directory, download: %1").arg(this->remoteEntry.name()));
          this->setStatus(Protos::Common::DownloadStatus::UNABLE_TO_CREATE_THE_DIRECTORY);
+         return false;
       }
       catch (FM::ScanningException&)
       {
          L_DEBU(QString("The local directory is being scanned, unable to create the directory for now, download: %1").arg(this->remoteEntry.name()));
          this->setStatus(Protos::Common::DownloadStatus::LOCAL_SCANNING_IN_PROGRESS);
+         return false;
       }
    }
+   return true;
 }

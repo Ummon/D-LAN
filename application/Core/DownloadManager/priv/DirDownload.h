@@ -65,7 +65,7 @@ namespace DM
 
    private:
       void freePeer();
-      void createDirectory();
+      bool createDirectory();
 
       OccupiedPeers& occupiedPeersAskingForEntries;
       QSharedPointer<PM::IGetEntriesResult> getEntriesResult;

@@ -108,6 +108,49 @@ namespace
       void doDeleteLater() override { this->deleteLater(); }
    };
 
+   class PendingEntriesResult : public PM::IGetEntriesResult
+   {
+   public:
+      PendingEntriesResult() : IGetEntriesResult(60000) {}
+      void start() override {}
+      void doDeleteLater() override { this->deleteLater(); }
+   };
+
+   class DirectoryPeer : public ResumePeer
+   {
+   public:
+      using ResumePeer::ResumePeer;
+      int requests = 0;
+      QSharedPointer<PM::IGetEntriesResult> entries;
+      QSharedPointer<PM::IGetEntriesResult> getEntries(const Protos::Core::GetEntries&) override
+      {
+         ++this->requests;
+         this->entries.reset(new PendingEntriesResult);
+         return this->entries;
+      }
+   };
+
+   class DirectoryFileManager : public MockFileManager
+   {
+   public:
+      DirectoryFileManager(FM::Cache& cache) : cache(cache) {}
+      int failure = 0;
+      int creations = 0;
+      void newDirectory(Protos::Common::Entry& entry) override
+      {
+         ++this->creations;
+         switch (this->failure)
+         {
+         case 1: throw FM::NoWriteableDirectoryException();
+         case 2: throw FM::UnableToCreateNewDirException();
+         case 3: throw FM::ScanningException();
+         }
+         this->cache.newDirectory(entry);
+      }
+   private:
+      FM::Cache& cache;
+   };
+
    class HashPeer : public ResumePeer
    {
    public:
@@ -177,6 +220,72 @@ namespace
       Common::Hash getRemotePeerID() const override { return {}; }
       void finished(bool) override {}
    };
+}
+
+void Tests::directoryBecomesEmpty_data()
+{
+   QTest::addColumn<bool>("explicitEntries");
+   QTest::addColumn<int>("failure");
+   for (bool explicitEntries : { false, true })
+      for (int failure : { 0, 1, 2, 3 })
+      {
+         const auto name = QString("%1-failure-%2").arg(explicitEntries ? "empty-entries" : "omitted-entries").arg(failure).toUtf8();
+         QTest::newRow(name.constData()) << explicitEntries << failure;
+      }
+}
+
+void Tests::directoryBecomesEmpty()
+{
+   QFETCH(bool, explicitEntries);
+   QFETCH(int, failure);
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new EmptyHashCache));
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   QSharedPointer<DirectoryFileManager> files(new DirectoryFileManager(cache));
+   files->failure = failure;
+   DirectoryPeer peer(files);
+   DownloadManager manager(files, this->peerManager);
+   Protos::Common::Entry entry;
+   entry.set_type(Protos::Common::Entry::DIR);
+   entry.set_name("became-empty");
+   entry.set_path("/");
+   entry.set_is_empty(false); // The browse result was obtained before its children disappeared.
+   entry.mutable_shared_entry()->mutable_id()->set_hash(shared.first.ID.getData(), Common::Hash::HASH_SIZE);
+   auto download = manager.addDownload(entry, entry, &peer, Protos::Queue::Queue::Entry::QUEUED);
+   QVERIFY(download);
+   QCOMPARE(files->creations, 0);
+   QCOMPARE(peer.requests, 1);
+   Protos::Core::GetEntriesResult response;
+   auto result = response.add_results();
+   result->set_status(Protos::Core::GetEntriesResult::EntryResult::OK);
+   if (explicitEntries)
+      result->mutable_entries();
+   const QString destination = temp.path() + "/became-empty";
+   emit peer.entries->result(response);
+
+   QCOMPARE(files->creations, 1);
+   if (failure)
+   {
+      QCOMPARE(manager.getDownloads().size(), 1);
+      QCOMPARE(manager.getDownloads().first()->getID(), download->getID());
+      const auto expected = failure == 1 ? Protos::Common::DownloadStatus::NO_SHARED_DIRECTORY_TO_WRITE
+         : failure == 2 ? Protos::Common::DownloadStatus::UNABLE_TO_CREATE_THE_DIRECTORY
+         : Protos::Common::DownloadStatus::LOCAL_SCANNING_IN_PROGRESS;
+      QCOMPARE(download->getStatus(), expected);
+      QVERIFY(!QFileInfo::exists(destination));
+      // A failed retry must keep the entry; a later retry must recreate the directory.
+      QVERIFY(QMetaObject::invokeMethod(&manager, "restartErroneousDownloads", Qt::DirectConnection));
+      QCOMPARE(files->creations, 2);
+      QCOMPARE(manager.getDownloads().size(), 1);
+      QCOMPARE(peer.requests, 1);
+      files->failure = 0;
+      QVERIFY(QMetaObject::invokeMethod(&manager, "restartErroneousDownloads", Qt::DirectConnection));
+      QCOMPARE(peer.requests, 2); // The first failed creation released the peer.
+      emit peer.entries->result(response);
+   }
+   QVERIFY(manager.getDownloads().isEmpty());
+   QVERIFY(QFileInfo(destination).isDir());
 }
 
 void Tests::validateChunkResponse_data()

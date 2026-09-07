@@ -64,6 +64,8 @@ private slots:
    void rejectInvalidChunkHashes();
    void validateChunkResponse_data();
    void validateChunkResponse();
+   void directoryBecomesEmpty_data();
+   void directoryBecomesEmpty();
 
 
    void cleanupTestCase();
