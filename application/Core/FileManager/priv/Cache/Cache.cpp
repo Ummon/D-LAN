@@ -35,6 +35,7 @@ using namespace FM;
 #include <priv/Log.h>
 #include <priv/Exceptions.h>
 #include <priv/Constants.h>
+#include <priv/Global.h>
 #include <priv/Cache/SharedEntry.h>
 #include <priv/Cache/Directory.h>
 #include <priv/Cache/File.h>
@@ -340,21 +341,33 @@ QList<QSharedPointer<IChunk>> Cache::newFile(Protos::Common::Entry& fileEntry)
    const auto& name = download.name;
    const auto& hashes = download.hashes;
 
-   // If a file with the same name already exists we will compare its hashes with the given entry.
-   File* file = dir->getFile(name);
+   // Prefer the in-progress replacement: its physical destination may coexist
+   // with the old completed file until the download finishes.
+   File* file = dir->getFile(name + Global::getUnfinishedSuffix());
+   if (!file)
+      file = dir->getFile(name);
    if (file != nullptr)
    {
+      const bool unfinished = !file->isComplete();
       bool resetExistingFile = false;
       const auto existingChunks = file->getChunks();
-      if (file->getSize() != static_cast<qint64>(fileEntry.size()) || existingChunks.size() != hashes.size())
+      if (file->getSize() != static_cast<qint64>(fileEntry.size()) ||
+          existingChunks.size() != Common::Global::nbChunks(fileEntry.size()) ||
+          (!unfinished && existingChunks.size() != hashes.size()) ||
+          (unfinished && (fileEntry.size() == 0 || !QFileInfo::exists(file->getAbsolutePath()))))
          resetExistingFile = true;
       else
-         for (int i = 0; i < existingChunks.size(); i++)
+         for (int i = 0; i < hashes.size(); i++)
+         {
+            // Missing hashes are not evidence of a different unfinished download.
+            if (unfinished && hashes[i].isNull())
+               continue;
             if (existingChunks[i]->getHash() != hashes[i])
             {
                resetExistingFile = true;
                break;
             }
+         }
 
       if (resetExistingFile)
          file->setToUnfinished(fileEntry.size(), hashes);

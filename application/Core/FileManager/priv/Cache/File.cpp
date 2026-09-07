@@ -198,7 +198,8 @@ void File::setToUnfinished(qint64 size, const QList<Common::Hash>& hashes)
    locker.relock();
 
    this->getCache()->getHashCache()->rmHashes(this->getAbsolutePath());
-   this->setName(this->getName() + Global::getUnfinishedSuffix());
+   if (!Global::isFileUnfinished(this->getName()))
+      this->setName(this->getName() + Global::getUnfinishedSuffix());
    if (this->parentDirectory)
       this->parentDirectory.load()->fileNameChanged(this);
    this->setSize(size);

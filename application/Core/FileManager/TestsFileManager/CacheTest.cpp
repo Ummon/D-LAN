@@ -2467,3 +2467,94 @@ void CacheTest::downloadEntryPathsAndHashes()
       QVERIFY(cache.getEntry(Common::Path(path)));
    }
 }
+
+void CacheTest::unfinishedDownloadRetry_data()
+{
+   QTest::addColumn<QString>("retry");
+   for (const QString& retry : { "same", "omitted-hashes", "unknown-hash", "different-hash", "different-size", "missing-file", "empty" })
+      QTest::newRow(qPrintable(retry)) << retry;
+}
+
+void CacheTest::unfinishedDownloadRetry()
+{
+   QFETCH(QString, retry);
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   const QByteArray original("abcdefgh");
+   const auto hashOf = [](const QByteArray& data) {
+      Common::Hasher hasher;
+      hasher.addData(std::span<const char>(data));
+      return hasher.getResult();
+   };
+   Protos::Common::Entry entry;
+   entry.set_type(Protos::Common::Entry::FILE);
+   entry.set_path("/");
+   entry.set_name("retry.txt");
+   entry.set_size(original.size());
+   entry.mutable_shared_entry()->mutable_id()->set_hash(shared.first.ID.getData(), Common::Hash::HASH_SIZE);
+   const auto hash = hashOf(original);
+   entry.add_chunks()->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
+   const auto oldChunks = cache.newFile(entry);
+   auto writer = oldChunks.first()->getDataWriter();
+   QVERIFY(!writer->write(original.constData(), 3));
+   auto file = root->getRootDir()->getFile("retry.txt.unfinished");
+   QVERIFY(file);
+   const QString unfinishedPath = temp.filePath("retry.txt.unfinished");
+   const bool preserve = retry == "same" || retry == "omitted-hashes" || retry == "unknown-hash";
+   QByteArray replacement = original;
+   if (retry == "different-hash") replacement = "ijklmnop";
+   if (retry == "different-size") replacement = "ijklmnopq";
+   if (retry == "empty") replacement.clear();
+   if (!preserve)
+   {
+      entry.set_size(replacement.size());
+      entry.clear_chunks();
+      if (!replacement.isEmpty())
+      {
+         const auto hash = hashOf(replacement);
+         entry.add_chunks()->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
+      }
+   }
+   if (retry == "omitted-hashes") entry.clear_chunks();
+   if (retry == "unknown-hash") entry.mutable_chunks(0)->clear_hash();
+   if (retry == "missing-file") file->removeUnfinishedFiles();
+
+   const auto chunks = cache.newFile(entry);
+   QCOMPARE(root->getRootDir()->getFiles().size(), 1);
+   QCOMPARE(root->getRootDir()->getFiles().first(), file);
+   QCOMPARE(cache.getAmount(), qint64(replacement.size()));
+   QVERIFY(!QFileInfo::exists(unfinishedPath + ".unfinished"));
+   if (preserve)
+   {
+      QCOMPARE(chunks.first().data(), oldChunks.first().data());
+      QCOMPARE(chunks.first()->getKnownBytes(), 3);
+      QFile physical(unfinishedPath);
+      QVERIFY(physical.open(QIODevice::ReadOnly));
+      QCOMPARE(physical.read(3), original.left(3));
+      physical.close();
+      // The original writer still owns this generation and can finish it.
+      QVERIFY(writer->write(original.constData() + 3, original.size() - 3));
+   }
+   else
+   {
+      QVERIFY(oldChunks.first()->getFilePath().isNull());
+      QVERIFY_THROWS_EXCEPTION(FM::ChunkDeletedException, writer->write("x", 1));
+      if (!chunks.isEmpty())
+      {
+         QVERIFY(chunks.first().data() != oldChunks.first().data());
+         QCOMPARE(chunks.first()->getKnownBytes(), 0);
+         auto replacementWriter = chunks.first()->getDataWriter();
+         QVERIFY(replacementWriter->write(replacement.constData(), replacement.size()));
+      }
+   }
+   QVERIFY(file->isComplete());
+   QVERIFY(!QFileInfo::exists(unfinishedPath));
+   QFile completed(temp.filePath("retry.txt"));
+   QVERIFY(completed.open(QIODevice::ReadOnly));
+   QCOMPARE(completed.readAll(), replacement);
+}
