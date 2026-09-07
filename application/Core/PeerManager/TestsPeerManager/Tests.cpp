@@ -24,6 +24,7 @@ using namespace PM;
 #include <QScopeGuard>
 #include <QSignalSpy>
 #include <QPointer>
+#include <thread>
 
 #include <Protos/core_protocol.pb.h>
 #include <Protos/core_settings.pb.h>
@@ -408,6 +409,54 @@ void Tests::peerAvailabilityTransitions()
    update(compatible);
    QVERIFY(!peer->isAvailable());
    QCOMPARE(notifications.size(), 3); // Compatibility alone cannot bypass a block.
+}
+
+void Tests::peerBlockDeadline_data()
+{
+   QTest::addColumn<bool>("staleTimeout");
+   QTest::newRow("old-timeout-before-worker-restart") << true;
+   QTest::newRow("old-worker-restart-after-new-block") << false;
+}
+
+void Tests::peerBlockDeadline()
+{
+   QFETCH(bool, staleTimeout);
+   auto manager = Builder::newPeerManager(this->fileManagers[0]);
+   manager->updatePeer(this->peerIDs[0], QHostAddress::LocalHost, PORT, "remote",
+      0, QString(), 0, 0, Common::Constants::PROTOCOL_VERSION);
+   auto* peer = static_cast<PM::Peer*>(manager->getPeer(this->peerIDs[0]));
+   QVERIFY(peer);
+   QVERIFY(peer->isAvailable());
+   QSignalSpy unblocked(peer, &PM::Peer::unblocked);
+   QSignalSpy available(manager.data(), &IPeerManager::peerBecomesAvailable);
+
+   peer->block(1);
+   // Join without processing main-thread events: the worker's timer update stays queued.
+   std::thread worker([&] { peer->block(staleTimeout ? 400 : 60000); });
+   worker.join();
+   QVERIFY(!peer->isAvailable());
+   if (staleTimeout)
+   {
+      // Deterministically deliver the previous timer's expiry before the queued update.
+      QVERIFY(QMetaObject::invokeMethod(peer, "unblock", Qt::DirectConnection));
+      QVERIFY(!peer->isAvailable());
+      QCOMPARE(unblocked.count(), 0);
+      QCOMPARE(available.count(), 0);
+   }
+   else
+   {
+      // The latest block replaces the duration; the worker's old 60s restart must not win.
+      peer->block(50);
+   }
+   QCoreApplication::sendPostedEvents(nullptr, QEvent::MetaCall);
+   QTRY_VERIFY_WITH_TIMEOUT(peer->isAvailable(), 2000);
+   QCOMPARE(unblocked.count(), 1);
+   QCOMPARE(available.count(), 1);
+
+   // A redundant expiry notification must not emit another availability signal.
+   QVERIFY(QMetaObject::invokeMethod(peer, "unblock", Qt::DirectConnection));
+   QCOMPARE(unblocked.count(), 1);
+   QCOMPARE(available.count(), 1);
 }
 
 void Tests::averagePeerSpeed_data()

@@ -19,6 +19,7 @@
 #pragma once
 
 #include <QElapsedTimer>
+#include <QDeadlineTimer>
 #include <QTimer>
 #include <QString>
 #include <QTcpSocket>
@@ -141,7 +142,8 @@ namespace PM
 
       bool blocked;
       QString blockedReason;
-      QTimer blockedTimer;
+      QDeadlineTimer blockedUntil; // Guarded by mutex, including updates from workers.
+      QTimer blockedTimer; // Main thread only; wakes up to check blockedUntil.
 
       quint32 protocolVersion;
    };

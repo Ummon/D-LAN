@@ -168,11 +168,12 @@ void Peer::block(int duration, const QString& reason)
       QMutexLocker locker(&this->mutex);
       this->blocked = true;
       this->blockedReason = reason;
+      this->blockedUntil.setRemainingTime(qMax(1, duration), Qt::PreciseTimer);
    }
 
-   // 'blockedTimer' belongs to the thread owning this peer, it must not be modified from the calling one:
-   // 'QTimer::start(int)' is a slot so the interval and the start are both applied in the right thread.
-   QMetaObject::invokeMethod(&this->blockedTimer, "start", Q_ARG(int, duration));
+   // Recheck the latest deadline in the owning thread rather than queueing an old
+   // duration. An earlier timeout or delayed restart must not override a newer block.
+   QMetaObject::invokeMethod(this, &Peer::unblock);
 }
 
 bool Peer::isAlive() const
@@ -280,11 +281,23 @@ void Peer::consideredDead()
 
 void Peer::unblock()
 {
+   qint64 remaining;
    {
       QMutexLocker locker(&this->mutex);
-      this->blocked = false;
+      if (!this->blocked)
+         return;
+      remaining = this->blockedUntil.remainingTime();
+      if (remaining == 0)
+         this->blocked = false;
    }
 
+   if (remaining > 0)
+   {
+      this->blockedTimer.start(static_cast<int>(remaining));
+      return;
+   }
+
+   this->blockedTimer.stop();
    // Emitted without holding 'mutex': 'PeerManager::peerUnblocked()' calls 'isAvailable()' back.
    emit unblocked();
 }

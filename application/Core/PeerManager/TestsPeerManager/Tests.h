@@ -54,6 +54,8 @@ private slots:
    void getPeerFromID();
    void createPeerValidatesID();
    void peerAvailabilityTransitions();
+   void peerBlockDeadline_data();
+   void peerBlockDeadline();
    void averagePeerSpeed_data();
    void averagePeerSpeed();
    void destroyManagerWithPendingConnections();
