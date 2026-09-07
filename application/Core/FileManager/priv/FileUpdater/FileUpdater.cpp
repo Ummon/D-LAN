@@ -437,7 +437,11 @@ void FileUpdater::scan(Entry* entry, bool addUnfinished)
          return true;
       };
 
-   if (File* file = dynamic_cast<File*>(entry))
+   // Recovery may be the only notification of a root's deletion (especially an
+   // individually watched file). Do not turn a missing file into a cached empty file.
+   if (entry->isRoot() && !QFileInfo::exists(entry->getAbsolutePath()))
+      emit deleteSharedEntry(entry->getRoot());
+   else if (File* file = dynamic_cast<File*>(entry))
    {
       this->addScannedFile(QFileInfo(file->getAbsolutePath()), file);
    }
@@ -677,6 +681,24 @@ bool FileUpdater::processEvents(const QList<WatcherEvent>& events)
          continue;
       }
 
+      if (event.type == WatcherEvent::RESCAN || event.type == WatcherEvent::WATCH_LOST)
+      {
+         // Recovery concerns the watched root, not a filename notification. In particular,
+         // directory paths have had their trailing slash removed by WatcherEvent.
+         Entry* entry = this->fileManager->getEntry(Common::Path(
+            event.isWatchedFile ? event.path1 : event.path1 + '/'));
+         if (entry)
+         {
+            QMutexLocker locker(&this->mutex);
+            if (!this->entriesToScan.contains(entry) && !this->rootEntriesToRemove.contains(entry))
+               this->entriesToScan << entry;
+            if (event.type == WatcherEvent::WATCH_LOST &&
+                !this->unwatchableEntries.contains(entry) && !this->rootEntriesToRemove.contains(entry))
+               this->unwatchableEntries << entry;
+         }
+         continue;
+      }
+
       // Unfinished files are ignored.
       if (Global::isFileUnfinished(event.path1))
          continue;
@@ -802,6 +824,8 @@ bool FileUpdater::processEvents(const QList<WatcherEvent>& events)
          newOrContentChanged(event.path1);
          break;
 
+      case WatcherEvent::RESCAN:
+      case WatcherEvent::WATCH_LOST:
       case WatcherEvent::UNKNOWN:
       case WatcherEvent::TIMEOUT:
          break; // Do nothing.

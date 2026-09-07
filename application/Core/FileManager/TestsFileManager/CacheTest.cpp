@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <atomic>
 #include <exception>
+#include <cstddef>
 #include <functional>
 #include <thread>
 #include <memory>
@@ -1929,4 +1930,139 @@ void CacheTest::browseDirectoryLifetime()
       QCOMPARE(deliveries, 1);
       QCOMPARE(timeouts.count(), 0);
    }
+}
+
+void CacheTest::watcherRecovery_data()
+{
+   QTest::addColumn<QString>("failure");
+   QTest::addColumn<bool>("watchedFile");
+   for (const QString& failure : { "overflow", "enum-error", "short-header", "long-name", "odd-name",
+         "bad-offset", "short-next", "oversize", "completion-error", "rearm-error" })
+      for (bool watchedFile : { false, true })
+         QTest::newRow(qPrintable(failure + (watchedFile ? "-file" : "-directory"))) << failure << watchedFile;
+}
+
+void CacheTest::watcherRecovery()
+{
+#ifdef Q_OS_WIN32
+   QFETCH(QString, failure);
+   QFETCH(bool, watchedFile);
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   const QString path = temp.path() + '/';
+   const QString filename = watchedFile ? "original.txt" : "";
+   QFile physical(temp.filePath("original.txt"));
+   QVERIFY(physical.open(QIODevice::WriteOnly));
+   physical.close();
+   FM::DirWatcherWin watcher;
+   FM::DirWatcherWin::Dir* dir;
+   if (failure == "rearm-error")
+   {
+      // A valid ordinary-file handle cannot issue directory notifications.
+      HANDLE handle = CreateFileW(reinterpret_cast<LPCWSTR>(physical.fileName().utf16()), GENERIC_READ,
+         FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, nullptr);
+      QVERIFY(handle != INVALID_HANDLE_VALUE);
+      HANDLE event = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+      QVERIFY(event);
+      dir = new FM::DirWatcherWin::Dir(handle, event, path, filename);
+      watcher.dirs << dir;
+   }
+   else
+   {
+      QVERIFY(watcher.addPath(path, filename));
+      dir = watcher.dirs.first();
+      QVERIFY(CancelIoEx(dir->handle, &dir->overlapped));
+      DWORD ignored;
+      GetOverlappedResult(dir->handle, &dir->overlapped, &ignored, TRUE);
+      ResetEvent(dir->overlapped.hEvent);
+   }
+   dir->pendingRenameName = "stale-name.txt";
+   memset(dir->buffer, 0, sizeof(dir->buffer));
+   auto record = reinterpret_cast<FILE_NOTIFY_INFORMATION*>(dir->buffer);
+   record->Action = FILE_ACTION_MODIFIED;
+   const QString notifiedName = "original.txt";
+   record->FileNameLength = notifiedName.size() * sizeof(wchar_t);
+   memcpy(record->FileName, notifiedName.utf16(), record->FileNameLength);
+   DWORD bytes = offsetof(FILE_NOTIFY_INFORMATION, FileName) + record->FileNameLength;
+   DWORD error = ERROR_SUCCESS;
+   if (failure == "overflow") bytes = 0;
+   if (failure == "enum-error") error = ERROR_NOTIFY_ENUM_DIR;
+   if (failure == "short-header") bytes = 4;
+   if (failure == "long-name") record->FileNameLength = FM::NOTIFY_BUFFER_SIZE;
+   if (failure == "odd-name") --record->FileNameLength;
+   if (failure == "bad-offset") record->NextEntryOffset = 1;
+   if (failure == "short-next") record->NextEntryOffset = bytes;
+   if (failure == "oversize") bytes = FM::NOTIFY_BUFFER_SIZE + 1;
+   if (failure == "completion-error") error = ERROR_ACCESS_DENIED;
+
+   const auto events = watcher.processCompletion(dir, bytes, error);
+   QVERIFY(!events.isEmpty());
+   QCOMPARE(events.first().type, failure == "rearm-error" ? FM::WatcherEvent::CONTENT_CHANGED : FM::WatcherEvent::RESCAN);
+   const bool lost = failure == "completion-error" || failure == "rearm-error";
+   QCOMPARE(events.last().type, lost ? FM::WatcherEvent::WATCH_LOST : FM::WatcherEvent::RESCAN);
+   QCOMPARE(events.last().path1, QDir::cleanPath(path + filename));
+   QCOMPARE(events.last().isWatchedFile, watchedFile);
+   QCOMPARE(watcher.nbWatchedPath(), lost ? 0 : 1);
+   if (!lost)
+   {
+      QVERIFY(dir->pendingRenameName.isEmpty());
+      QVERIFY(physical.open(QIODevice::Append));
+      QCOMPARE(physical.write("x"), qint64(1));
+      physical.close();
+      const auto next = watcher.waitEvent(1000);
+      QVERIFY(std::any_of(next.begin(), next.end(), [](const FM::WatcherEvent& event) {
+         return event.type == FM::WatcherEvent::CONTENT_CHANGED;
+      }));
+   }
+#else
+   QSKIP("Windows notification regression");
+#endif
+}
+
+void CacheTest::updaterWatcherRecovery_data()
+{
+   QTest::addColumn<bool>("watchedFile");
+   QTest::newRow("directory") << false;
+   QTest::newRow("file") << true;
+}
+
+void CacheTest::updaterWatcherRecovery()
+{
+   QFETCH(bool, watchedFile);
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   QFile physical(temp.filePath("original.txt"));
+   QVERIFY(physical.open(QIODevice::WriteOnly));
+   physical.close();
+   FM::FileManager manager(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const QString path = watchedFile ? physical.fileName() : temp.path() + '/';
+   manager.addASharedPath(path);
+   QTRY_COMPARE(manager.getCacheStatus(), FM::IFileManager::UP_TO_DATE);
+   FM::FileUpdater updater(&manager);
+   auto entry = manager.getEntry(Common::Path(path));
+   QVERIFY(entry);
+   const auto rescan = FM::WatcherEvent(FM::WatcherEvent::RESCAN, path, watchedFile);
+   updater.processEvents({ rescan, rescan });
+   QCOMPARE(updater.entriesToScan, QList<FM::Entry*> { entry });
+   QVERIFY(updater.unwatchableEntries.isEmpty());
+   const auto lost = FM::WatcherEvent(FM::WatcherEvent::WATCH_LOST, path, watchedFile);
+   updater.processEvents({ lost, lost });
+   QCOMPARE(updater.entriesToScan, QList<FM::Entry*> { entry });
+   QCOMPARE(updater.unwatchableEntries, QList<FM::Entry*> { entry });
+   QCOMPARE(updater.nextWaitTimeout(0, 0), int(SETTINGS.get<quint32>("scan_period_unwatchable_dirs")));
+   if (watchedFile)
+   {
+      int removals = 0;
+      connect(&updater, &FM::FileUpdater::deleteSharedEntry, &updater,
+         [&](FM::SharedEntry* removed) { if (removed == entry->getRoot()) ++removals; });
+      QVERIFY(QFile::remove(physical.fileName()));
+      updater.scan(entry);
+      QCOMPARE(removals, 1);
+   }
+   updater.rmRoot(entry->getRoot(), nullptr);
+   QVERIFY(updater.entriesToScan.isEmpty());
+   QVERIFY(updater.unwatchableEntries.isEmpty());
+   updater.processEvents({ rescan, lost });
+   QVERIFY(updater.entriesToScan.isEmpty());
+   QVERIFY(updater.unwatchableEntries.isEmpty());
 }

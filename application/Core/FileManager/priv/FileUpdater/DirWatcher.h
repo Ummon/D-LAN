@@ -123,6 +123,8 @@ namespace FM
          NEW,
          DELETED,
          CONTENT_CHANGED,
+         RESCAN, // Notifications were lost; enumerate path1 again.
+         WATCH_LOST, // Watching path1 stopped; rescan now and periodically.
          TIMEOUT,
          UNKNOWN
       };

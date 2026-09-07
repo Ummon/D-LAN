@@ -9,6 +9,10 @@ public:
    explicit CacheTest(QObject* parent = nullptr);
 
 private slots:
+   void watcherRecovery_data();
+   void watcherRecovery();
+   void updaterWatcherRecovery_data();
+   void updaterWatcherRecovery();
    void watchedFileRename_data();
    void watchedFileRename();
    void updaterWaitsForEarliestTask_data();

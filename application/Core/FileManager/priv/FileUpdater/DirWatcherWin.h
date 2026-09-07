@@ -25,6 +25,8 @@
 
 #include <windows.h>
 
+class CacheTest;
+
 namespace FM
 {
    static const int NOTIFY_BUFFER_SIZE = 32 * 1024; // 32 kB.
@@ -44,6 +46,7 @@ namespace FM
       const QList<WatcherEvent> waitEvent(int timeout, QList<WaitCondition*> ws = QList<WaitCondition*>());
 
    private:
+      friend class ::CacheTest;
       struct Dir
       {
          Dir(const HANDLE handle, const HANDLE event, const QString& fullPath, const QString& filename);
@@ -59,6 +62,7 @@ namespace FM
       };
 
       bool watch(Dir* dir);
+      QList<WatcherEvent> processCompletion(Dir* dir, DWORD bytesTransferred, DWORD error);
 
       static QString notifyActionToString(DWORD action);
 

@@ -22,6 +22,7 @@ using namespace FM;
 #include <QtCore/QDebug>
 
 #include <QMutexLocker>
+#include <cstddef>
 
 #include <Common/StringUtils.h>
 
@@ -119,7 +120,7 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(QList<WaitCondition*> ws)
 /**
   * Warning: If there is too much time between two calls of 'waitEvent(..)' and
   * there is some disk activities (new files/folders) the buffer 'NOTIFY_BUFFER_SIZE'
-  * may become full and some event may be dropped.
+  * may become full. A lost batch requests a rescan; a failed watch switches to polling.
   */
 const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondition*> ws)
 {
@@ -185,21 +186,83 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
    {
       Dir* dir = dirsCopy[waitStatus - WAIT_OBJECT_0]; // The dir where a modification occurred.
 
+      DWORD bytesTransferred = 0;
+      const bool completed = GetOverlappedResult(dir->handle, &dir->overlapped, &bytesTransferred, FALSE) != 0;
+      const DWORD error = completed ? ERROR_SUCCESS : GetLastError();
+      return this->processCompletion(dir, bytesTransferred, error);
+   }
+   // The cause of the wake up comes from a given wait condition.
+   else if (
+      !ws.isEmpty() &&
+      waitStatus >= WAIT_OBJECT_0 + (DWORD)numberOfDirs &&
+      waitStatus <= WAIT_OBJECT_0 + (DWORD)numberOfHandles - 1
+   )
+   {
+      return QList<WatcherEvent>();
+   }
+   else if (waitStatus == WAIT_TIMEOUT)
+   {
       QList<WatcherEvent> events;
+      events.append(WatcherEvent(WatcherEvent::TIMEOUT, false));
+      return events;
+   }
+   else if (waitStatus == WAIT_FAILED)
+   {
+      L_ERRO(QString("WaitForMultipleObjects(..) failed, error code: %1").arg(GetLastError()));
+   }
+   else
+   {
+      L_ERRO(QString("WaitForMultipleObjects(..), status: %1").arg(waitStatus));
+   }
 
+   return QList<WatcherEvent> { WatcherEvent(WatcherEvent::UNKNOWN, false) };
+}
+
+QList<WatcherEvent> DirWatcherWin::processCompletion(Dir* dir, DWORD bytesTransferred, DWORD error)
+{
+   // Validate the entire batch before interpreting any rename pair or emitting events.
+   // Zero bytes (and ERROR_NOTIFY_ENUM_DIR) mean changes were lost: enumerate again.
+   bool valid = error == ERROR_SUCCESS && bytesTransferred > 0 && bytesTransferred <= NOTIFY_BUFFER_SIZE;
+   DWORD offset = 0;
+   constexpr DWORD headerSize = offsetof(FILE_NOTIFY_INFORMATION, FileName);
+   while (valid)
+   {
+      const DWORD remaining = bytesTransferred - offset;
+      if (remaining < headerSize)
+      {
+         valid = false;
+         break;
+      }
+      const auto record = reinterpret_cast<const FILE_NOTIFY_INFORMATION*>(dir->buffer + offset);
+      if (record->FileNameLength == 0 || record->FileNameLength % sizeof(wchar_t) != 0 ||
+          record->FileNameLength > remaining - headerSize)
+      {
+         valid = false;
+         break;
+      }
+      if (record->NextEntryOffset == 0)
+         break;
+      if (record->NextEntryOffset % alignof(DWORD) != 0 ||
+          record->NextEntryOffset < headerSize + record->FileNameLength ||
+          record->NextEntryOffset > remaining - headerSize)
+      {
+         valid = false;
+         break;
+      }
+      offset += record->NextEntryOffset;
+   }
+
+   QList<WatcherEvent> events;
+   if (valid)
+   {
       const BYTE* pToBuffer = dir->buffer;
 
       forever
       {
          auto notifyInformation = reinterpret_cast<const FILE_NOTIFY_INFORMATION*>(pToBuffer);
 
-         // We need to add a null character termination because 'QString::fromStdWString' need one.
-         // 'filename' can be a directory or a file.
-         int nbChar = notifyInformation->FileNameLength / sizeof(wchar_t);
-         QList<wchar_t> filename_wchar(nbChar + 1);
-         wcsncpy(filename_wchar.data(), notifyInformation->FileName, nbChar);
-         filename_wchar[nbChar] = 0;
-         QString filename = QString::fromStdWString(filename_wchar.constData());
+         const QString filename = QString::fromWCharArray(notifyInformation->FileName,
+            notifyInformation->FileNameLength / sizeof(wchar_t));
 
          const bool isWatchedFile = !dir->filename.isEmpty();
          const QString path = dir->fullPath + filename;
@@ -253,36 +316,26 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
          // The next notify information data is given in the current notify information . . .
          pToBuffer += notifyInformation->NextEntryOffset;
       }
-
-      this->watch(dir);
-
-      return events;
-   }
-   // The cause of the wake up comes from a given wait condition.
-   else if (
-      !ws.isEmpty() &&
-      waitStatus >= WAIT_OBJECT_0 + (DWORD)numberOfDirs &&
-      waitStatus <= WAIT_OBJECT_0 + (DWORD)numberOfHandles - 1
-   )
-   {
-      return QList<WatcherEvent>();
-   }
-   else if (waitStatus == WAIT_TIMEOUT)
-   {
-      QList<WatcherEvent> events;
-      events.append(WatcherEvent(WatcherEvent::TIMEOUT, false));
-      return events;
-   }
-   else if (waitStatus == WAIT_FAILED)
-   {
-      L_ERRO(QString("WaitForMultipleObjects(..) failed, error code: %1").arg(GetLastError()));
    }
    else
    {
-      L_ERRO(QString("WaitForMultipleObjects(..), status: %1").arg(waitStatus));
+      dir->pendingRenameName.clear();
+      L_WARN(QString("Directory notifications lost for %1 (error %2, bytes %3); rescanning")
+         .arg(dir->fullPath).arg(error).arg(bytesTransferred));
+      events << WatcherEvent(WatcherEvent::RESCAN, dir->fullPath + dir->currentFilename, !dir->filename.isEmpty());
    }
 
-   return QList<WatcherEvent> { WatcherEvent(WatcherEvent::UNKNOWN, false) };
+   // A failed completion other than overflow is not a functioning watch. A failed
+   // rearm likewise needs polling, even when the preceding batch was valid.
+   if ((error != ERROR_SUCCESS && error != ERROR_NOTIFY_ENUM_DIR) || !this->watch(dir))
+   {
+      L_WARN(QString("Directory watch stopped for %1; falling back to polling").arg(dir->fullPath + dir->currentFilename));
+      events << WatcherEvent(WatcherEvent::WATCH_LOST, dir->fullPath + dir->currentFilename, !dir->filename.isEmpty());
+      this->dirs.removeOne(dir);
+      this->dirsToDelete.removeAll(dir);
+      delete dir;
+   }
+   return events;
 }
 
 DirWatcherWin::Dir::Dir(const HANDLE handle, const HANDLE event, const QString& fullPath, const QString& filename)

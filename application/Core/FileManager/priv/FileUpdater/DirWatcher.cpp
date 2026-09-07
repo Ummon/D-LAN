@@ -77,6 +77,8 @@ QString WatcherEvent::toStr() const
    case NEW: str += "NEW"; break;
    case DELETED: str += "DELETED"; break;
    case CONTENT_CHANGED: str += "CONTENT_CHANGED"; break;
+   case RESCAN: str += "RESCAN"; break;
+   case WATCH_LOST: str += "WATCH_LOST"; break;
    case TIMEOUT: str += "TIMEOUT"; break;
    case UNKNOWN: default : str += "UNKNOWN"; break;
    }
