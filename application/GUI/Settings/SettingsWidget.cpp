@@ -789,7 +789,10 @@ bool SettingsWidget::eventFilter(QObject* obj, QEvent* event)
 void SettingsWidget::changeEvent(QEvent* event)
 {
    if (event->type() == QEvent::LanguageChange)
+   {
       this->ui->retranslateUi(this);
+      this->ui->butConnect->setText(this->coreConnection->isConnecting() ? tr("Connecting . . .") : tr("Connect"));
+   }
 
    MdiWidget::changeEvent(event);
 }
