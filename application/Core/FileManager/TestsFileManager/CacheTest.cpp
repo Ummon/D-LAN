@@ -2222,6 +2222,89 @@ void CacheTest::updaterWatcherRecovery()
    QVERIFY(updater.unwatchableEntries.isEmpty());
 }
 
+void CacheTest::recoveryDetectsRootTypeReplacement_data()
+{
+   QTest::addColumn<bool>("wasDirectory");
+   QTest::addColumn<int>("eventType");
+   for (bool wasDirectory : { false, true })
+      for (auto eventType : { FM::WatcherEvent::RESCAN, FM::WatcherEvent::WATCH_LOST, FM::WatcherEvent::TIMEOUT })
+         QTest::newRow(qPrintable(QString("%1-event=%2").arg(wasDirectory ? "directory-to-file" : "file-to-directory").arg(eventType)))
+            << wasDirectory << int(eventType);
+}
+
+void CacheTest::recoveryDetectsRootTypeReplacement()
+{
+   QFETCH(bool, wasDirectory);
+   QFETCH(int, eventType);
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   const auto savedShares = SETTINGS.getRepeated<Protos::Common::SharedEntry>("shared_entries");
+   const auto restoreShares = qScopeGuard([&] { SETTINGS.set("shared_entries", savedShares); });
+   SETTINGS.rm("shared_entries");
+   const QString path = temp.filePath("replacement");
+   const auto writeFile = [&] {
+      QFile physical(path);
+      return physical.open(QIODevice::WriteOnly) && physical.write("abc", 3) == 3;
+   };
+   if (wasDirectory)
+      QVERIFY(QDir().mkdir(path));
+   else
+      QVERIFY(writeFile());
+
+   FM::FileManager manager(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   manager.fileUpdater.stop(); // Deliver recovery explicitly, without ordinary watcher events.
+   delete manager.fileUpdater.dirWatcher;
+   manager.fileUpdater.dirWatcher = nullptr;
+   const QString sharedPath = path + (wasDirectory ? "/" : "");
+   manager.addASharedPath(sharedPath);
+   auto entry = manager.getEntry(Common::Path(sharedPath));
+   QVERIFY(entry);
+   const qint64 oldSize = entry->getSize();
+   auto& updater = manager.fileUpdater;
+   updater.entriesToScan.clear();
+   if (auto file = dynamic_cast<FM::File*>(entry))
+      updater.hashingQueue.enqueue(file, file->getRemainingBytesToHash());
+
+   if (wasDirectory)
+   {
+      QVERIFY(QDir().rmdir(path));
+      QVERIFY(writeFile());
+   }
+   else
+   {
+      QVERIFY(QFile::remove(path));
+      QVERIFY(QDir().mkdir(path));
+   }
+
+   QSignalSpy removals(&updater, &FM::FileUpdater::deleteSharedEntry);
+   if (eventType == FM::WatcherEvent::TIMEOUT)
+   {
+      // Periodic polling of an unwatchable root calls scan directly.
+      QCOMPARE(updater.unwatchableEntries, QList<FM::Entry*> { entry });
+      updater.scan(entry);
+   }
+   else
+   {
+      updater.processEvents({ FM::WatcherEvent(static_cast<FM::WatcherEvent::Type>(eventType), path, !wasDirectory) });
+      QCOMPARE(updater.entriesToScan, QList<FM::Entry*> { entry });
+      updater.scan(updater.entriesToScan.takeFirst());
+   }
+   QCOMPARE(removals.size(), 1);
+   QCOMPARE(entry->getSize(), oldSize); // Never copy directory metadata into a cached File.
+   QVERIFY(!updater.isScanning());
+
+   QCoreApplication::sendPostedEvents(&manager, QEvent::MetaCall);
+   QVERIFY(manager.getSharedEntries().isEmpty());
+   QVERIFY(updater.hashingQueue.isEmpty());
+   QVERIFY(updater.entriesToScan.isEmpty());
+   QVERIFY(updater.unwatchableEntries.isEmpty());
+   QCOMPARE(updater.rootEntriesToRemove.size(), 1);
+   updater.rootEntriesToRemove.takeFirst()->del();
+   QCoreApplication::sendPostedEvents(&manager.cache, QEvent::MetaCall);
+   QCOMPARE(QFileInfo(path).isFile(), wasDirectory);
+   QCOMPARE(QFileInfo(path).isDir(), !wasDirectory); // The replacement is preserved on disk.
+}
+
 void CacheTest::newDirectoryPreservesFinalComponent_data()
 {
    QTest::addColumn<QString>("destination");

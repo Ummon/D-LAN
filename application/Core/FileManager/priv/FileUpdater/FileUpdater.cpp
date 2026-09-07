@@ -36,6 +36,16 @@ using namespace FM;
 #include <priv/Cache/File.h>
 #include <priv/FileUpdater/WaitCondition.h>
 
+namespace
+{
+   bool entryTypeChanged(const Entry* entry, const QFileInfo& info)
+   {
+      return entry &&
+         ((dynamic_cast<const File*>(entry) && info.isDir()) ||
+          (dynamic_cast<const Directory*>(entry) && info.isFile()));
+   }
+}
+
 /**
   * @class FM::FileUpdater
   *
@@ -436,13 +446,14 @@ void FileUpdater::scan(Entry* entry, bool addUnfinished)
          return true;
       };
 
-   // Recovery may be the only notification of a root's deletion (especially an
-   // individually watched file). Do not turn a missing file into a cached empty file.
-   if (entry->isRoot() && !QFileInfo::exists(entry->getAbsolutePath()))
+   // Recovery may be the only notification of a root's deletion or type change.
+   // Remove a directory's trailing slash so its replacement can be recognized as a file.
+   const QFileInfo entryInfo(QDir::cleanPath(entry->getAbsolutePath()));
+   if (entry->isRoot() && (!entryInfo.exists() || entryTypeChanged(entry, entryInfo)))
       emit deleteSharedEntry(entry->getRoot());
    else if (File* file = dynamic_cast<File*>(entry))
    {
-      this->addScannedFile(QFileInfo(file->getAbsolutePath()), file);
+      this->addScannedFile(entryInfo, file);
    }
    else if (Directory* dir = dynamic_cast<Directory*>(entry))
    {
@@ -656,10 +667,7 @@ bool FileUpdater::processEvents(const QList<WatcherEvent>& events)
             entry = this->fileManager->getEntry(Common::Path(path + '/'));
 
          const QFileInfo info(path);
-         const bool typeChanged = entry &&
-            ((dynamic_cast<File*>(entry) && info.isDir()) ||
-             (dynamic_cast<Directory*>(entry) && info.isFile()));
-         if (typeChanged)
+         if (entryTypeChanged(entry, info))
          {
             // Shared roots belong to the cache; their old share is no longer valid.
             if (entry->isRoot())
