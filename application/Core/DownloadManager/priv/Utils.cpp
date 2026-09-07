@@ -19,6 +19,35 @@
 #include <Utils.h>
 using namespace DM;
 
+#include <QRegularExpression>
+
+QString Utils::sharedDirectoryName(QString name)
+{
+   // Shared names are labels, not filesystem paths. Use portable filename rules.
+   for (qsizetype i = 0; i < name.size(); ++i)
+      if (name.at(i).unicode() < 32 || QStringLiteral("<>:\"/\\|?*").contains(name.at(i)))
+         name[i] = '_';
+
+   // Bound both UTF-8 bytes and UTF-16 units without splitting a surrogate pair.
+   while (name.toUtf8().size() > 240)
+   {
+      const bool pair = name.back().isLowSurrogate() && name.size() > 1 && name.at(name.size() - 2).isHighSurrogate();
+      name.chop(pair ? 2 : 1);
+   }
+   while (name.endsWith(' ') || name.endsWith('.'))
+      name.chop(1);
+   if (name.isEmpty())
+      return QStringLiteral("Shared directory");
+
+   // Windows reserves device names even when followed by a file extension.
+   static const QRegularExpression reserved(
+      QStringLiteral("^(CON|PRN|AUX|NUL|CONIN\\$|CONOUT\\$|COM[1-9\u00b9\u00b2\u00b3]|LPT[1-9\u00b9\u00b2\u00b3])$"),
+      QRegularExpression::CaseInsensitiveOption);
+   if (reserved.match(name.section('.', 0, 0).trimmed()).hasMatch())
+      name.prepend('_');
+   return name;
+}
+
 #ifdef DEBUG
    QString Utils::getStatusStr(Protos::Common::DownloadStatus status)
    {

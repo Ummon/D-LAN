@@ -46,6 +46,8 @@ public:
 
 private slots:
    void initTestCase();
+   void sharedRootDownload_data();
+   void sharedRootDownload();
    void resumeMissingFile_data();
    void resumeMissingFile();
    void erroneousDownloadsAreUnique();

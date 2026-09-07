@@ -121,9 +121,11 @@ namespace
    public:
       using ResumePeer::ResumePeer;
       int requests = 0;
+      Protos::Core::GetEntries requestedEntries;
       QSharedPointer<PM::IGetEntriesResult> entries;
-      QSharedPointer<PM::IGetEntriesResult> getEntries(const Protos::Core::GetEntries&) override
+      QSharedPointer<PM::IGetEntriesResult> getEntries(const Protos::Core::GetEntries& request) override
       {
+         this->requestedEntries = request;
          ++this->requests;
          this->entries.reset(new PendingEntriesResult);
          return this->entries;
@@ -220,6 +222,79 @@ namespace
       Common::Hash getRemotePeerID() const override { return {}; }
       void finished(bool) override {}
    };
+}
+
+void Tests::sharedRootDownload_data()
+{
+   QTest::addColumn<QString>("label");
+   QTest::addColumn<QString>("folder");
+   QTest::addColumn<bool>("empty");
+   QTest::newRow("contents") << QString("Shared media") << QString("Shared media") << false;
+   QTest::newRow("empty-root") << QString("Empty") << QString("Empty") << true;
+   QTest::newRow("invalid-characters") << QString("a<>:\"/\\|?*b") << QString("a_________b") << false;
+   QTest::newRow("traversal") << QString("..") << QString("Shared directory") << true;
+   QTest::newRow("empty-label") << QString() << QString("Shared directory") << true;
+   QTest::newRow("device") << QString("con.txt") << QString("_con.txt") << true;
+   QTest::newRow("trailing-dot-space") << QString("Media. ") << QString("Media") << true;
+   QTest::newRow("control") << QString("a") + QChar(0) + QChar(10) + "b" << QString("a__b") << true;
+   QTest::newRow("unicode") << QString::fromUtf8("Musik \xc3\xa9") << QString::fromUtf8("Musik \xc3\xa9") << true;
+   QTest::newRow("long") << QString(300, 'a') << QString(240, 'a') << true;
+}
+
+void Tests::sharedRootDownload()
+{
+   QFETCH(QString, label);
+   QFETCH(QString, folder);
+   QFETCH(bool, empty);
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new EmptyHashCache));
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   QSharedPointer<DirectoryFileManager> files(new DirectoryFileManager(cache));
+   DirectoryPeer peer(files);
+   DownloadManager manager(files, this->peerManager);
+   Protos::Common::Entry root;
+   root.set_type(Protos::Common::Entry::DIR);
+   root.set_is_empty(empty);
+   root.mutable_shared_entry()->set_shared_name(label.toStdString());
+   const auto remoteID = Common::Hash::rand();
+   root.mutable_shared_entry()->mutable_id()->set_hash(remoteID.getData(), Common::Hash::HASH_SIZE);
+   manager.addDownload(root, &peer, shared.first.ID, "/destination/");
+   QCOMPARE(manager.getDownloads().size(), 1);
+   QCOMPARE(QString::fromStdString(manager.getDownloads().first()->getLocalEntry().name()), folder);
+   QCOMPARE(peer.requestedEntries.dirs().entries(0).SerializeAsString(), root.SerializeAsString());
+
+   Protos::Core::GetEntriesResult response;
+   auto result = response.add_results();
+   result->set_status(Protos::Core::GetEntriesResult::EntryResult::OK);
+   if (!empty)
+   {
+      auto child = result->mutable_entries()->add_entries();
+      child->set_type(Protos::Common::Entry::FILE);
+      child->set_name("file.bin");
+      child->set_path("/");
+      child->set_size(100);
+      child = result->mutable_entries()->add_entries();
+      child->set_type(Protos::Common::Entry::DIR);
+      child->set_name("child");
+      child->set_path("/");
+      child->set_is_empty(true);
+   }
+   emit peer.entries->result(response);
+   const QString destination = temp.path() + "/destination/" + folder;
+   QVERIFY(QFileInfo(destination).isDir());
+   if (!empty)
+   {
+      QCOMPARE(manager.getDownloads().size(), 2);
+      for (auto download : manager.getDownloads())
+      {
+         QCOMPARE(QString::fromStdString(download->getLocalEntry().path()), "/destination/" + folder + '/');
+         QCOMPARE(static_cast<Download*>(download)->getRemoteEntry().path(), std::string("/"));
+      }
+      QVERIFY(QFileInfo(destination + "/child").isDir());
+   }
+   else
+      QVERIFY(manager.getDownloads().isEmpty());
 }
 
 void Tests::persistDirectoryRemoval_data()
