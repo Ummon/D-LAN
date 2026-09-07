@@ -66,15 +66,31 @@ InternalCoreConnection::InternalCoreConnection(CoreController& coreController) :
    forcedToClose(false),
    salt(0)
 {
+   this->retryTimer.setSingleShot(true);
+   this->retryTimer.setInterval(TIME_BETWEEN_RETRIES);
+   connect(&this->retryTimer, &QTimer::timeout, this, &InternalCoreConnection::tryToConnectToTheNextAddress);
    this->startListening();
 }
 
 InternalCoreConnection::~InternalCoreConnection()
 {
-   if (this->currentHostLookupID != -1)
-      QHostInfo::abortHostLookup(this->currentHostLookupID);
+   this->cancelConnectionAttempt();
+}
 
+void InternalCoreConnection::cancelConnectionAttempt()
+{
+   ++this->attemptGeneration;
+   if (this->currentHostLookupID != -1)
+   {
+      QHostInfo::abortHostLookup(this->currentHostLookupID);
+      this->currentHostLookupID = -1;
+   }
+   this->retryTimer.stop();
+   // Closing a connecting socket must not schedule another address or retry.
+   disconnect(this->socket, &QAbstractSocket::stateChanged, this, &InternalCoreConnection::stateChanged);
    this->addressesToTry.clear();
+   this->addressesToRetry.clear();
+   this->nbRetries = 0;
 }
 
 void InternalCoreConnection::connectToCore(const QString& address, quint16 port, Common::Hash password)
@@ -89,8 +105,7 @@ void InternalCoreConnection::connectToCore(const QString& address, quint16 port,
       return;
    }
 
-   if (this->currentHostLookupID != -1)
-      QHostInfo::abortHostLookup(this->currentHostLookupID);
+   this->cancelConnectionAttempt();
 
    this->currentHostLookupID =
       QHostInfo::lookupHost(this->connectionInfo.address, this, &InternalCoreConnection::addressResolved);
@@ -117,11 +132,15 @@ bool InternalCoreConnection::isConnected() const
 
 void InternalCoreConnection::disconnectFromCore()
 {
-   this->forcedToClose = true;
-   this->close();
-   this->forcedToClose = false;
-   this->addressesToTry.clear();
+   this->cancelConnectionAttempt();
    this->connectionInfo.clear();
+   this->forcedToClose = true;
+   // close() can defer shutdown until an in-progress TCP connection completes.
+   if (this->socket->state() == QAbstractSocket::HostLookupState || this->socket->state() == QAbstractSocket::ConnectingState)
+      this->socket->abort();
+   else
+      this->close();
+   this->forcedToClose = false;
 }
 
 QSharedPointer<ISendChatMessageResult> InternalCoreConnection::sendChatMessage(
@@ -329,6 +348,9 @@ ICoreConnection::ConnectionInfo InternalCoreConnection::getConnectionInfo() cons
 
 void InternalCoreConnection::addressResolved(QHostInfo hostInfo)
 {
+   // A result queued before cancellation may belong to an earlier attempt.
+   if (this->currentHostLookupID == -1 || hostInfo.lookupId() != this->currentHostLookupID)
+      return;
    this->currentHostLookupID = -1;
 
    if (hostInfo.addresses().isEmpty())
@@ -348,6 +370,7 @@ void InternalCoreConnection::tryToConnectToTheNextAddress()
    if (this->addressesToTry.isEmpty())
       return;
 
+   const quint64 generation = this->attemptGeneration;
    QHostAddress address;
 
    // Search for an IPv6 address first.
@@ -377,9 +400,13 @@ void InternalCoreConnection::tryToConnectToTheNextAddress()
    }
 #endif
 
+   // Starting the local core can emit signals whose handlers cancel this attempt.
+   if (generation != this->attemptGeneration)
+      return;
+
    connect(this->socket, &QAbstractSocket::stateChanged, this, &InternalCoreConnection::stateChanged);
-   this->socket->connectToHost(address, this->connectionInfo.port);
    this->addressesToRetry << address;
+   this->socket->connectToHost(address, this->connectionInfo.port);
 }
 
 void InternalCoreConnection::stateChanged(QAbstractSocket::SocketState socketState)
@@ -396,7 +423,7 @@ void InternalCoreConnection::stateChanged(QAbstractSocket::SocketState socketSta
       {
          this->addressesToTry = this->addressesToRetry;
          this->addressesToRetry.clear();
-         QTimer::singleShot(TIME_BETWEEN_RETRIES, this, &InternalCoreConnection::tryToConnectToTheNextAddress);
+         this->retryTimer.start();
       }
       else
       {

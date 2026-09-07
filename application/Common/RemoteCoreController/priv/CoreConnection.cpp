@@ -114,8 +114,11 @@ bool CoreConnection::isConnecting() const
 
 void CoreConnection::disconnectFromCore()
 {
-   this->current().disconnectFromCore();
+   // Detach the attempt before closing it: cancellation is not a timeout error.
+   this->connectingInProgress = false;
+   this->temp().disconnect(this);
    this->temp().disconnectFromCore();
+   this->current().disconnectFromCore();
 }
 
 QSharedPointer<ISendChatMessageResult> CoreConnection::sendChatMessage(const QString& message)

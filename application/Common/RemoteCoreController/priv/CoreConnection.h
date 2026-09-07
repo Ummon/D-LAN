@@ -40,6 +40,8 @@
 #include <priv/InternalCoreConnection.h>
 #include <priv/CoreController.h>
 
+class Tests;
+
 namespace RCC
 {
    class BrowseResult;
@@ -121,6 +123,8 @@ namespace RCC
       void tempDisconnected();
 
    private:
+      friend class ::Tests; // Exercise cancellation of the temporary connection.
+
       bool connectToCorePrepare(const QString& address);
 
       InternalCoreConnection& current();
