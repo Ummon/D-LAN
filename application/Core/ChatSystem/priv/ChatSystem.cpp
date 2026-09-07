@@ -450,11 +450,7 @@ void ChatSystem::loadChatMessages(const QString& roomName)
 void ChatSystem::emitNewMessages(const ChatMessages& messages)
 {
    Protos::Common::ChatMessages protoChatMessages;
-   for (QListIterator<QSharedPointer<ChatMessage>> i(messages.getMessages()); i.hasNext();)
-   {
-      Protos::Common::ChatMessage* protochatMessage = protoChatMessages.add_messages();
-      i.next()->fillProtoChatMessage(*protochatMessage);
-   }
+   messages.fillProtoChatMessages(protoChatMessages);
    emit newMessages(protoChatMessages);
 }
 
