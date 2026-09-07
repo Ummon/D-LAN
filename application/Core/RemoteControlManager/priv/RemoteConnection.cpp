@@ -110,7 +110,7 @@ RemoteConnection::RemoteConnection(
 RemoteConnection::~RemoteConnection()
 {
    for (auto* browse : this->localBrowses)
-      browse->cancel();
+      delete browse; // The watcher's destroyed callback cancels and dequeues its job.
    L_DEBU(QString("RemoteConnection[%1] deleted").arg(this->num));
    emit deleted(this);
 }
@@ -752,7 +752,9 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
                this->close();
             }
          });
-         watcher->setFuture(localBrowse(message.getMessage<Protos::GUI::LocalBrowse>()));
+         const auto job = localBrowse(message.getMessage<Protos::GUI::LocalBrowse>());
+         connect(watcher, &QObject::destroyed, job.cancel);
+         watcher->setFuture(job.future);
       }
       break;
 

@@ -1,4 +1,5 @@
 #include <limits>
+#include <stdexcept>
 
 #include <QTest>
 #include <QPointer>
@@ -207,6 +208,55 @@ private slots:
       QTest::addColumn<bool>("overload");
       QTest::newRow("disconnect-with-pending-work") << false;
       QTest::newRow("bounded-pending-work") << true;
+   }
+
+   void localBrowseQueueIsBoundedAndCancellationFreesSlots()
+   {
+      QSemaphore started;
+      QSemaphore release;
+      auto& pool = RCM::localBrowsePool();
+      for (int i = 0; i < 2; ++i)
+         pool.start([&] { started.release(); release.acquire(); });
+      const auto unblock = qScopeGuard([&] { release.release(2); pool.waitForDone(); });
+      QVERIFY(started.tryAcquire(2, 3000));
+
+      Protos::GUI::LocalBrowse request;
+      request.set_path(this->dataDirectory.path().toStdString());
+      QList<RCM::LocalBrowseJob> jobs;
+      const auto cancelJobs = qScopeGuard([&] { for (const auto& job : jobs) job.cancel(); });
+      for (int i = 0; i < 40; ++i)
+      {
+         jobs << RCM::localBrowse(request);
+         QVERIFY(!jobs.last().future.isFinished());
+      }
+      auto rejected = RCM::localBrowse(request);
+      QVERIFY(rejected.future.isFinished());
+      QVERIFY_THROWS_EXCEPTION(std::runtime_error, rejected.future.result());
+
+      for (const auto& job : jobs)
+      {
+         job.cancel();
+         QVERIFY(job.future.isCanceled());
+         QVERIFY(job.future.isFinished()); // No worker had to run the cancelled job.
+         job.cancel(); // Cancellation is idempotent.
+      }
+      jobs.clear();
+
+      // Reconnecting must not leave cancelled requests behind the blocked workers.
+      for (int cycle = 0; cycle < 12; ++cycle)
+      {
+         auto* socket = new BufferedSocket;
+         auto* connection = this->newConnection(socket);
+         connection->startListening();
+         for (int i = 0; i < 8; ++i)
+            socket->receive(Common::MessageHeader::GUI_LOCAL_BROWSE, request);
+         delete connection;
+      }
+      for (int i = 0; i < 40; ++i)
+      {
+         jobs << RCM::localBrowse(request);
+         QVERIFY(!jobs.last().future.isFinished()); // All global queue slots are available again.
+      }
    }
 
    void localBrowseDoesNotBlockConnection()

@@ -6,9 +6,33 @@
 #include <QSharedPointer>
 #include <QStorageInfo>
 #include <stdexcept>
+#include <QMutex>
+#include <QMutexLocker>
+#include <QRunnable>
 
 namespace
 {
+   struct BrowsePool
+   {
+      QMutex mutex;
+      int queued = 0;
+      // Destroy the pool before the mutex: running jobs use the mutex when starting.
+      QThreadPool pool;
+      BrowsePool() { pool.setMaxThreadCount(2); }
+   };
+
+   BrowsePool& browsePool()
+   {
+      static BrowsePool state;
+      return state;
+   }
+
+   struct Job
+   {
+      QPromise<Protos::GUI::LocalBrowseResult> promise;
+      QRunnable* queuedRunnable = nullptr; // Protected by BrowsePool::mutex.
+   };
+
    constexpr QDir::Filters FILTERS = QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot | QDir::Hidden;
 
    void enumerate(const Protos::GUI::LocalBrowse& request, QPromise<Protos::GUI::LocalBrowseResult>& promise)
@@ -79,27 +103,54 @@ namespace
 
 QThreadPool& RCM::localBrowsePool()
 {
-   static QThreadPool pool;
-   static const bool configured = [] { pool.setMaxThreadCount(2); return true; }();
-   Q_UNUSED(configured)
-   return pool;
+   return browsePool().pool;
 }
 
-QFuture<Protos::GUI::LocalBrowseResult> RCM::localBrowse(const Protos::GUI::LocalBrowse& request)
+RCM::LocalBrowseJob RCM::localBrowse(const Protos::GUI::LocalBrowse& request)
 {
-   auto promise = QSharedPointer<QPromise<Protos::GUI::LocalBrowseResult>>::create();
-   promise->start();
-   const auto future = promise->future();
-   localBrowsePool().start([request, promise] {
+   auto job = QSharedPointer<Job>::create();
+   job->promise.start();
+   const auto future = job->promise.future();
+   auto cancel = [job] {
+      job->promise.future().cancel();
+      auto& state = browsePool();
+      QMutexLocker lock(&state.mutex);
+      // A running job clears this pointer before doing any work. Holding the mutex
+      // prevents auto-deletion from racing with tryTake (and reusing the address).
+      if (job->queuedRunnable && state.pool.tryTake(job->queuedRunnable))
+      {
+         delete job->queuedRunnable; // Release the captured request immediately.
+         job->queuedRunnable = nullptr;
+         --state.queued;
+         job->promise.finish();
+      }
+   };
+   auto& state = browsePool();
+   QMutexLocker lock(&state.mutex);
+   if (state.queued >= 40)
+   {
+      job->promise.setException(std::make_exception_ptr(std::runtime_error("Local browse queue is full")));
+      job->promise.finish();
+      return {future, cancel};
+   }
+   job->queuedRunnable = QRunnable::create([request, job] {
+      {
+         auto& state = browsePool();
+         QMutexLocker lock(&state.mutex);
+         job->queuedRunnable = nullptr;
+         --state.queued;
+      }
       try
       {
-         enumerate(request, *promise);
+         enumerate(request, job->promise);
       }
       catch (...)
       {
-         promise->setException(std::current_exception());
+         job->promise.setException(std::current_exception());
       }
-      promise->finish();
+      job->promise.finish();
    });
-   return future;
+   ++state.queued;
+   state.pool.start(job->queuedRunnable);
+   return {future, cancel};
 }
