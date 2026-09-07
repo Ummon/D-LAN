@@ -160,6 +160,81 @@ private slots:
       QTest::newRow("maximum-incomplete") << maximum << (maximum - 1) << 0 << 9999;
    }
 
+   void searchesExpireWithoutAnotherRequest()
+   {
+      SETTINGS.set("search_lifetime", quint32(30));
+      auto network = QSharedPointer<NetworkListener>::create();
+      auto socket = new BufferedSocket;
+      QScopedPointer<RCM::RemoteConnection> connection(this->newConnection(socket, network));
+      connection->startListening();
+      socket->receive(Common::MessageHeader::GUI_SEARCH, Protos::GUI::Search());
+      QCOMPARE(network->searches.size(), 1);
+      QVERIFY(!network->searches[0].isNull());
+      QTRY_VERIFY(network->searches[0].isNull());
+      QVERIFY(connection->isConnected());
+   }
+
+   void expiredSearchResultsAreIgnored()
+   {
+      SETTINGS.set("search_lifetime", quint32(30));
+      auto network = QSharedPointer<NetworkListener>::create();
+      auto socket = new BufferedSocket;
+      QScopedPointer<RCM::RemoteConnection> connection(this->newConnection(socket, network));
+      connection->startListening();
+      socket->receive(Common::MessageHeader::GUI_SEARCH, Protos::GUI::Search());
+      auto search = network->searches[0].toStrongRef();
+      QVERIFY(search);
+      search->forcedElapsed = 0;
+      socket->output.clear();
+      search->deliver();
+      QCOMPARE(socket->messages().size(), 1);
+      QCOMPARE(socket->messages()[0].getHeader().getType(), Common::MessageHeader::GUI_SEARCH_RESULT);
+      QCOMPARE(socket->messages()[0].getMessage<Protos::Common::FindResult>().tag(), search->tag);
+
+      // Simulate expiry before the timer callback has had a chance to run.
+      search->forcedElapsed = 30;
+      search->deliver();
+      QCOMPARE(socket->messages().size(), 1);
+      QTest::qWait(80);
+      socket->output.clear();
+      // The timer must also disconnect a search retained by another owner.
+      search->forcedElapsed = 0;
+      search->deliver();
+      QVERIFY(socket->output.isEmpty());
+   }
+
+   void searchLimitAndFailedLaunches()
+   {
+      SETTINGS.set("search_lifetime", quint32(30));
+      auto network = QSharedPointer<NetworkListener>::create();
+      auto socket = new BufferedSocket;
+      QScopedPointer<RCM::RemoteConnection> connection(this->newConnection(socket, network));
+      connection->startListening();
+      socket->output.clear();
+      network->failSearch = true;
+      socket->receive(Common::MessageHeader::GUI_SEARCH, Protos::GUI::Search());
+      QCOMPARE(socket->messages().last().getMessage<Protos::GUI::Tag>().tag(), quint64(0));
+      QVERIFY(network->searches[0].isNull());
+      network->failSearch = false;
+
+      for (int i = 0; i < 100; ++i)
+      {
+         socket->receive(Common::MessageHeader::GUI_SEARCH, Protos::GUI::Search());
+         QVERIFY(socket->messages().last().getMessage<Protos::GUI::Tag>().tag() != 0);
+      }
+      socket->receive(Common::MessageHeader::GUI_SEARCH, Protos::GUI::Search());
+      QCOMPARE(socket->messages().last().getMessage<Protos::GUI::Tag>().tag(), quint64(0));
+      QCOMPARE(network->searches.size(), 101); // Failed launch plus 100 successful launches.
+
+      QTRY_VERIFY(network->searches.last().isNull());
+      socket->receive(Common::MessageHeader::GUI_SEARCH, Protos::GUI::Search());
+      QVERIFY(socket->messages().last().getMessage<Protos::GUI::Tag>().tag() != 0);
+      QVERIFY(!network->searches.last().isNull());
+      connection.reset();
+      QVERIFY(network->searches.last().isNull());
+      QTest::qWait(80); // Pending expiry callbacks must be cancelled with the connection.
+   }
+
    void uploadProgress()
    {
       QFETCH(quint64, size);
@@ -174,12 +249,12 @@ private slots:
 private:
    QTemporaryDir dataDirectory;
 
-   RCM::RemoteConnection* newConnection(BufferedSocket* socket)
+   RCM::RemoteConnection* newConnection(BufferedSocket* socket, QSharedPointer<NL::INetworkListener> network = {})
    {
       auto files = QSharedPointer<FileManager>::create();
       return new RCM::RemoteConnection(files, PM::Builder::newPeerManager(files),
          QSharedPointer<UploadManager>::create(), QSharedPointer<DownloadManager>::create(),
-         {}, QSharedPointer<ChatSystem>::create(), socket);
+         network, QSharedPointer<ChatSystem>::create(), socket);
    }
 };
 

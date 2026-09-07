@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstring>
+#include <QElapsedTimer>
 
 #include <priv/RemoteConnection.h>
 
@@ -123,4 +124,44 @@ public:
    QList<ChatRoom> getRooms() const override { return {}; }
    void joinRoom(const QString&) override {}
    void leaveRoom(const QString&) override {}
+};
+
+class Search : public NL::ISearch
+{
+public:
+   quint64 tag = 1;
+   qint64 forcedElapsed = -1;
+   QElapsedTimer timer;
+
+   quint64 search(const Protos::Common::FindPattern&) override
+   {
+      if (this->tag != 0)
+         this->timer.start();
+      return this->tag;
+   }
+   qint64 elapsed() override { return this->forcedElapsed >= 0 ? this->forcedElapsed : this->timer.elapsed(); }
+   void deliver()
+   {
+      Protos::Common::FindResult result;
+      result.set_tag(this->tag);
+      emit found(result);
+   }
+};
+
+class NetworkListener : public NL::INetworkListener
+{
+public:
+   bool failSearch = false;
+   QList<QWeakPointer<Search>> searches;
+
+   QSharedPointer<NL::ISearch> newSearch() override
+   {
+      auto search = QSharedPointer<Search>::create();
+      search->tag = this->failSearch ? 0 : this->searches.size() + 1;
+      this->searches << search.toWeakRef();
+      return search;
+   }
+   void rebindSockets() override {}
+   int getMaxUDPMessageSize() const override { return 65507; }
+   SendStatus send(Common::MessageHeader::MessageType, const google::protobuf::Message&, const Common::Hash&) override { return SendStatus::OK; }
 };
