@@ -73,10 +73,7 @@ namespace NL
 
       LOG_INIT_H("NetworkListener")
 
-      QSharedPointer<FM::IFileManager> fileManager;
       QSharedPointer<PM::IPeerManager> peerManager;
-      QSharedPointer<UM::IUploadManager> uploadManager;
-      QSharedPointer<DM::IDownloadManager> downloadManager;
 
       TCPListener tCPListener;
       UDPListener uDPListener;

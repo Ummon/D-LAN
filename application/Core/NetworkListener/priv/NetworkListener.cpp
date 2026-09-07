@@ -35,10 +35,7 @@ NetworkListener::NetworkListener(
    QSharedPointer<DM::IDownloadManager> downloadManager,
    std::function<QStringList()> networkConfigurationProvider
 ) :
-   fileManager(fileManager),
    peerManager(peerManager),
-   uploadManager(uploadManager),
-   downloadManager(downloadManager),
    tCPListener(peerManager),
    uDPListener(fileManager, peerManager, uploadManager, downloadManager),
    networkConfigurationProvider(networkConfigurationProvider ? networkConfigurationProvider : []() { return Utils::getNetworkConfiguration(); })
