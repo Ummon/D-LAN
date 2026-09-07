@@ -188,7 +188,8 @@ void D_LAN_GUI::showMainWindow()
 {
    if (this->mainWindow)
    {
-      this->mainWindow->setWindowState(Qt::WindowActive);
+      // Restore a minimized window without losing its maximized state.
+      this->mainWindow->setWindowState(this->mainWindow->windowState() & ~Qt::WindowMinimized);
       this->mainWindow->raise();
       this->mainWindow->activateWindow();
    }
