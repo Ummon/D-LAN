@@ -82,10 +82,14 @@ ChatSystem::SendStatus ChatSystem::send(
    const QList<Common::Hash>& peerIDsAnswer
 )
 {
-   if (!roomName.isEmpty() && !this->rooms.value(roomName).joined)
+   if (!roomName.isEmpty())
    {
-      L_WARN(QString("Unable to send a message to the room '%1': we haven't joined it").arg(roomName));
-      return SendStatus::UNABLE_TO_SEND;
+      const auto room = this->rooms.constFind(roomName);
+      if (room == this->rooms.cend() || !room->joined)
+      {
+         L_WARN(QString("Unable to send a message to the room '%1': we haven't joined it").arg(roomName));
+         return SendStatus::UNABLE_TO_SEND;
+      }
    }
 
    QSharedPointer<ChatMessage> chatMessage(
@@ -143,8 +147,11 @@ void ChatSystem::getLastChatMessages(
    if (roomName.isEmpty())
       this->messages.fillProtoChatMessages(chatMessages, number);
    else
-      // If the room doesn't exist then 'room.messages' will be empty.
-      this->rooms.value(roomName).messages.fillProtoChatMessages(chatMessages, number);
+   {
+      const auto room = this->rooms.constFind(roomName);
+      if (room != this->rooms.cend())
+         room->messages.fillProtoChatMessages(chatMessages, number);
+   }
 }
 
 QList<IChatSystem::ChatRoom> ChatSystem::getRooms() const
@@ -468,7 +475,11 @@ void ChatSystem::retrieveLastChatMessagesFromPeers(const QList<PM::IPeer*>& peer
    if (roomName.isEmpty())
       messageIDs = this->messages.getLastMessageIDs(N);
    else
-      messageIDs = this->rooms.value(roomName).messages.getLastMessageIDs(N);
+   {
+      const auto room = this->rooms.constFind(roomName);
+      if (room != this->rooms.cend())
+         messageIDs = room->messages.getLastMessageIDs(N);
+   }
 
    Protos::Core::GetLastChatMessages getLastChatMessages;
    getLastChatMessages.set_number(N);
