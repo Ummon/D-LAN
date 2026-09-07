@@ -768,7 +768,7 @@ void SettingsWidget::openLocation()
 {
    QModelIndexList selectedRows = this->ui->tblShareDirs->selectionModel()->selectedRows();
    foreach (QModelIndex index, selectedRows)
-      QDesktopServices::openUrl(QUrl("file:///" + this->sharedEntryListModel.getLocationPath(index), QUrl::TolerantMode));
+      QDesktopServices::openUrl(QUrl::fromLocalFile(this->sharedEntryListModel.getLocationPath(index)));
 }
 
 void SettingsWidget::buttonAddressToggled(bool checked)

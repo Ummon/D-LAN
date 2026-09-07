@@ -102,11 +102,11 @@ void Utils::openLocation(const QString& path)
 #else
    QFileInfo fileInfo(path);
    const QString dirPath = fileInfo.isDir() ? path : fileInfo.absolutePath();
-   QDesktopServices::openUrl(QUrl("file:///" + dirPath, QUrl::TolerantMode));
+   QDesktopServices::openUrl(QUrl::fromLocalFile(dirPath));
 #endif
 }
 
 void Utils::openFile(const QString& path)
 {
-   QDesktopServices::openUrl(QUrl("file:///" + path, QUrl::TolerantMode));
+   QDesktopServices::openUrl(QUrl::fromLocalFile(path));
 }
