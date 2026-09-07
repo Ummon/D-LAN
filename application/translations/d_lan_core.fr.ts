@@ -20,15 +20,15 @@
     <message>
         <location filename="../Core/DownloadManager/priv/ChunkDownloader.cpp" line="337"/>
         <source>Corrupted data received for the file &quot;%1&quot; from peer %2. Peer blocked for %3 ms</source>
-        <translation>Données corrompues reçues pour le fichier "%1" du pair %2. Le pair est bloqué durant %3 ms</translation>
+        <translation>Données corrompues reçues pour le fichier &quot;%1&quot; du pair %2. Le pair est bloqué durant %3 ms</translation>
     </message>
 </context>
 <context>
     <name>DM::DownloadManager</name>
     <message>
-        <location filename="../Core/DownloadManager/priv/DownloadManager.cpp" line="205"/>
+        <location filename="../Core/DownloadManager/priv/DownloadManager.cpp" line="232"/>
         <source>The file &apos;%1&apos; is already in queue</source>
-        <translation>Le fichier '%1' est déjà dans la file d'attente</translation>
+        <translation>Le fichier &apos;%1&apos; est déjà dans la file d&apos;attente</translation>
     </message>
 </context>
 <context>
@@ -63,9 +63,9 @@
         <translation>Prêt à servir</translation>
     </message>
     <message>
-        <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="360"/>
+        <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="364"/>
         <source>The version (%1) of the queue file &quot;%2&quot; doesn&apos;t match the current version (%3). Queue will be reset.</source>
-        <translation>La version (%1) du fichier contenant la file d’attente "%2" ne correspond pas à la version actuelle (%3). La file d’attente va être réinitialisée.</translation>
+        <translation>La version (%1) du fichier contenant la file d’attente &quot;%2&quot; ne correspond pas à la version actuelle (%3). La file d’attente va être réinitialisée.</translation>
     </message>
     <message>
         <location filename="../Core/Core.h" line="78"/>

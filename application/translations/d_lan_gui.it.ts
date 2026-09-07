@@ -708,76 +708,84 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="242"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="244"/>
         <source>Default</source>
         <translation>Predefinito</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="300"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="302"/>
         <source>Interface not active</source>
         <translation>Interfaccia non attiva</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="439"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="441"/>
         <source>Change the password</source>
         <translation>Cambia la password</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="443"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="445"/>
         <source>No password defined</source>
         <translation>Non è stata impostata alcuna password</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="445"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="447"/>
         <source>Define a password</source>
         <translation>Imposta una password</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="491"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="794"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="493"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="804"/>
         <source>Connecting . . .</source>
         <translation>Connessione in corso . . .</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="499"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="515"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="534"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="794"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="501"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="517"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="536"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="804"/>
         <source>Connect</source>
         <translation>Connetti</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="629"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="631"/>
         <source>Select one or more directories and/or files to share</source>
         <translation>Seleziona una o più cartelle e/o file da condividere</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="648"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="652"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="717"/>
+        <source>Remove selected shared entries</source>
+        <translation>Rimuovi gli elementi condivisi selezionati</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="653"/>
+        <source>Are you sure you want to remove the selected shared files and directories?</source>
+        <translation>Rimuovere i file e le cartelle condivisi selezionati?</translation>
+    </message>
+    <message>
         <source>Remove selected shared directory</source>
-        <translation>Rimuovi la cartella condivisa selezionata</translation>
+        <translation type="vanished">Rimuovi la cartella condivisa selezionata</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="649"/>
         <source>Are you sure to remove the selected shared directory?</source>
-        <translation>Rimuovere la cartella condivisa selezionata?</translation>
+        <translation type="vanished">Rimuovere la cartella condivisa selezionata?</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="701"/>
         <source>Remove the shared directory</source>
-        <translation>Rimuovi la cartella condivisa</translation>
+        <translation type="vanished">Rimuovi la cartella condivisa</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="709"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="725"/>
         <source>Move up</source>
         <translation>Sposta su</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="717"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="733"/>
         <source>Move down</source>
         <translation>Sposta giù</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="725"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="741"/>
         <source>Open location</source>
         <translation>Apri percorso</translation>
     </message>
@@ -1128,24 +1136,40 @@
         <translation>Aggiungi nuove cartelle e/o file da condividere</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="92"/>
         <source>Remove the selected shared directory or file</source>
-        <translation>Rimuovi la cartella o il file condiviso selezionato</translation>
+        <translation type="vanished">Rimuovi la cartella o il file condiviso selezionato</translation>
+    </message>
+    <message>
+        <source>Move down the selected shared directory or file</source>
+        <translation type="vanished">Sposta giù la cartella o il file condiviso selezionato</translation>
+    </message>
+    <message>
+        <source>Move up the selected shared directory or file</source>
+        <translation type="vanished">Sposta su la cartella o il file condiviso selezionato</translation>
+    </message>
+    <message>
+        <source>Open location of the selected shared directory or file</source>
+        <translation type="vanished">Apri il percorso della cartella o del file condiviso selezionato</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="92"/>
+        <source>Remove the selected shared files and directories</source>
+        <translation>Rimuovi i file e le cartelle condivisi selezionati</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="112"/>
-        <source>Move down the selected shared directory or file</source>
-        <translation>Sposta giù la cartella o il file condiviso selezionato</translation>
+        <source>Move down the selected shared files and directories</source>
+        <translation>Sposta in basso i file e le cartelle condivisi selezionati</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="132"/>
-        <source>Move up the selected shared directory or file</source>
-        <translation>Sposta su la cartella o il file condiviso selezionato</translation>
+        <source>Move up the selected shared files and directories</source>
+        <translation>Sposta in alto i file e le cartelle condivisi selezionati</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="152"/>
-        <source>Open location of the selected shared directory or file</source>
-        <translation>Apri il percorso della cartella o del file condiviso selezionato</translation>
+        <source>Open locations of the selected shared files and directories</source>
+        <translation>Apri i percorsi dei file e delle cartelle condivisi selezionati</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="202"/>

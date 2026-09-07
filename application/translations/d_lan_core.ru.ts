@@ -20,13 +20,13 @@
     <message>
         <location filename="../Core/DownloadManager/priv/ChunkDownloader.cpp" line="337"/>
         <source>Corrupted data received for the file &quot;%1&quot; from peer %2. Peer blocked for %3 ms</source>
-        <translation>От пира %2 получены повреждённые данные для файла "%1". Пир заблокирован на %3 мс</translation>
+        <translation>От пира %2 получены повреждённые данные для файла &quot;%1&quot;. Пир заблокирован на %3 мс</translation>
     </message>
 </context>
 <context>
     <name>DM::DownloadManager</name>
     <message>
-        <location filename="../Core/DownloadManager/priv/DownloadManager.cpp" line="205"/>
+        <location filename="../Core/DownloadManager/priv/DownloadManager.cpp" line="232"/>
         <source>The file &apos;%1&apos; is already in queue</source>
         <translation>Файл &apos;%1&apos; уже в очереди</translation>
     </message>
@@ -63,9 +63,9 @@
         <translation>Готов</translation>
     </message>
     <message>
-        <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="360"/>
+        <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="364"/>
         <source>The version (%1) of the queue file &quot;%2&quot; doesn&apos;t match the current version (%3). Queue will be reset.</source>
-        <translation>Версия (%1) файла очереди "%2" не соответствует текущей версии (%3). Очередь будет сброшена.</translation>
+        <translation>Версия (%1) файла очереди &quot;%2&quot; не соответствует текущей версии (%3). Очередь будет сброшена.</translation>
     </message>
     <message>
         <location filename="../Core/Core.h" line="78"/>

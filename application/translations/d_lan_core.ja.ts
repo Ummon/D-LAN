@@ -26,7 +26,7 @@
 <context>
     <name>DM::DownloadManager</name>
     <message>
-        <location filename="../Core/DownloadManager/priv/DownloadManager.cpp" line="205"/>
+        <location filename="../Core/DownloadManager/priv/DownloadManager.cpp" line="232"/>
         <source>The file &apos;%1&apos; is already in queue</source>
         <translation>ファイル &apos;%1&apos; はすでにキューにあります</translation>
     </message>
@@ -58,7 +58,7 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="360"/>
+        <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="364"/>
         <source>The version (%1) of the queue file &quot;%2&quot; doesn&apos;t match the current version (%3). Queue will be reset.</source>
         <translation>キューファイル &quot;%2&quot; のバージョン (%1) が現在のバージョン (%3) と一致しません。キューをリセットします。</translation>
     </message>

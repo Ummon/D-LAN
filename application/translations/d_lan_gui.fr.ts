@@ -106,12 +106,12 @@
     <message>
         <location line="+27"/>
         <source>Remove completed files from the queue</source>
-        <translation>Enlever les fichiers terminés de la file d'attente</translation>
+        <translation>Enlever les fichiers terminés de la file d&apos;attente</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>Removed selected downloads from the queue</source>
-        <translation>Enlever les téléchargements sélectionnés de la file d'attente</translation>
+        <translation>Enlever les téléchargements sélectionnés de la file d&apos;attente</translation>
     </message>
     <message>
         <location line="+20"/>
@@ -184,7 +184,7 @@
     <message>
         <location filename="../GUI/D-LAN_GUI.cpp" line="+153"/>
         <source>Show the user interface</source>
-        <translation>Afficher l'interface graphique</translation>
+        <translation>Afficher l&apos;interface graphique</translation>
     </message>
     <message>
         <location line="+4"/>
@@ -220,7 +220,7 @@
     <message>
         <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+56"/>
         <source>Queued</source>
-        <translation>Dans la file d'attente</translation>
+        <translation>Dans la file d&apos;attente</translation>
     </message>
     <message>
         <source>Getting the hashes..</source>
@@ -302,7 +302,7 @@
     <message>
         <location line="+19"/>
         <source>The remote entry is currently being scanned</source>
-        <translation>L'élément distant est en cours d'analyse</translation>
+        <translation>L&apos;élément distant est en cours d&apos;analyse</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -400,7 +400,7 @@
     <message>
         <location line="+0"/>
         <source>Queued</source>
-        <translation>Dans la file d'attente</translation>
+        <translation>Dans la file d&apos;attente</translation>
     </message>
     <message>
         <location line="+0"/>
@@ -441,7 +441,7 @@
     <message>
         <location line="+3"/>
         <source>The host hasn&apos;t defined any password</source>
-        <translation>Aucun mot de passe n'est défini chez l'hôte</translation>
+        <translation>Aucun mot de passe n&apos;est défini chez l&apos;hôte</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -708,7 +708,7 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+242"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+244"/>
         <source>Default</source>
         <translation>Par défaut</translation>
     </message>
@@ -734,40 +734,48 @@
     </message>
     <message>
         <location line="+46"/>
-        <location line="+303"/>
+        <location line="+311"/>
         <source>Connecting . . .</source>
         <translation>Connexion...</translation>
     </message>
     <message>
-        <location line="-295"/>
+        <location line="-303"/>
         <location line="+16"/>
         <location line="+19"/>
-        <location line="+260"/>
+        <location line="+268"/>
         <source>Connect</source>
         <translation>Connecter</translation>
     </message>
     <message>
-        <location line="-165"/>
+        <location line="-173"/>
         <source>Select one or more directories and/or files to share</source>
         <translation>Sélectionnez un ou plusieurs dossiers et/ou fichiers à partager</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location line="+21"/>
+        <location line="+65"/>
+        <source>Remove selected shared entries</source>
+        <translation>Enlever les éléments partagés sélectionnés</translation>
+    </message>
+    <message>
+        <location line="-64"/>
+        <source>Are you sure you want to remove the selected shared files and directories?</source>
+        <translation>Êtes-vous sûr de vouloir enlever les fichiers et dossiers partagés sélectionnés ?</translation>
+    </message>
+    <message>
         <source>Remove selected shared directory</source>
-        <translation>Enlever le dossier partagé sélectionné</translation>
+        <translation type="vanished">Enlever le dossier partagé sélectionné</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Are you sure to remove the selected shared directory?</source>
-        <translation>Êtes-vous sûr de vouloir enlever le dossier partagé sélectionné ?</translation>
+        <translation type="vanished">Êtes-vous sûr de vouloir enlever le dossier partagé sélectionné ?</translation>
     </message>
     <message>
-        <location line="+52"/>
         <source>Remove the shared directory</source>
-        <translation>Enlever le dossier partagé</translation>
+        <translation type="vanished">Enlever le dossier partagé</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+72"/>
         <source>Move up</source>
         <translation>Déplacer vers le haut</translation>
     </message>
@@ -1118,7 +1126,27 @@
         <translation>Pseudo</translation>
     </message>
     <message>
-        <location line="+156"/>
+        <location line="+46"/>
+        <source>Remove the selected shared files and directories</source>
+        <translation>Enlever les fichiers et dossiers partagés sélectionnés</translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Move down the selected shared files and directories</source>
+        <translation>Déplacer vers le bas les fichiers et dossiers partagés sélectionnés</translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Move up the selected shared files and directories</source>
+        <translation>Déplacer vers le haut les fichiers et dossiers partagés sélectionnés</translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Open locations of the selected shared files and directories</source>
+        <translation>Ouvrir les emplacements des fichiers et dossiers partagés sélectionnés</translation>
+    </message>
+    <message>
+        <location line="+50"/>
         <source>Network</source>
         <translation>Réseau</translation>
     </message>
@@ -1155,7 +1183,7 @@
     <message>
         <location line="+3"/>
         <source>Data integrity check</source>
-        <translation>Vérification de l'intégrité des données</translation>
+        <translation>Vérification de l&apos;intégrité des données</translation>
     </message>
     <message>
         <location line="-246"/>
@@ -1168,27 +1196,23 @@
         <translation>Ajouter de nouveaux dossiers et/ou fichiers à partager</translation>
     </message>
     <message>
-        <location line="+23"/>
         <source>Remove the selected shared directory or file</source>
-        <translation>Enlever le dossier ou fichier partagé sélectionné</translation>
+        <translation type="vanished">Enlever le dossier ou fichier partagé sélectionné</translation>
     </message>
     <message>
-        <location line="+20"/>
         <source>Move down the selected shared directory or file</source>
-        <translation>Descendre le dossier ou fichier partagé sélectionné</translation>
+        <translation type="vanished">Descendre le dossier ou fichier partagé sélectionné</translation>
     </message>
     <message>
-        <location line="+20"/>
         <source>Move up the selected shared directory or file</source>
-        <translation>Monter le dossier ou fichier partagé sélectionné</translation>
+        <translation type="vanished">Monter le dossier ou fichier partagé sélectionné</translation>
     </message>
     <message>
-        <location line="+20"/>
         <source>Open location of the selected shared directory or file</source>
-        <translation>Ouvrir l'emplacement du dossier ou fichier partagé sélectionné</translation>
+        <translation type="vanished">Ouvrir l&apos;emplacement du dossier ou fichier partagé sélectionné</translation>
     </message>
     <message>
-        <location line="+181"/>
+        <location line="+264"/>
         <source>Graphic User Interface</source>
         <translation>Interface Graphique</translation>
     </message>
@@ -1276,7 +1300,7 @@
     <message>
         <location line="+47"/>
         <source>Upload rate</source>
-        <translation>Débit d'envoi</translation>
+        <translation>Débit d&apos;envoi</translation>
     </message>
     <message>
         <location line="+38"/>

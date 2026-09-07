@@ -708,7 +708,7 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+242"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+244"/>
         <source>Default</source>
         <translation>Por defecto</translation>
     </message>
@@ -734,40 +734,48 @@
     </message>
     <message>
         <location line="+46"/>
-        <location line="+303"/>
+        <location line="+311"/>
         <source>Connecting . . .</source>
         <translation>Conectando . . .</translation>
     </message>
     <message>
-        <location line="-295"/>
+        <location line="-303"/>
         <location line="+16"/>
         <location line="+19"/>
-        <location line="+260"/>
+        <location line="+268"/>
         <source>Connect</source>
         <translation>Conectar</translation>
     </message>
     <message>
-        <location line="-165"/>
+        <location line="-173"/>
         <source>Select one or more directories and/or files to share</source>
         <translation>Seleccione uno o más directorios y/o archivos para compartir</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location line="+21"/>
+        <location line="+65"/>
+        <source>Remove selected shared entries</source>
+        <translation>Quitar los elementos compartidos seleccionados</translation>
+    </message>
+    <message>
+        <location line="-64"/>
+        <source>Are you sure you want to remove the selected shared files and directories?</source>
+        <translation>¿Seguro que desea quitar los archivos y directorios compartidos seleccionados?</translation>
+    </message>
+    <message>
         <source>Remove selected shared directory</source>
-        <translation>Remover el directorio compartido seleccionado</translation>
+        <translation type="vanished">Remover el directorio compartido seleccionado</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Are you sure to remove the selected shared directory?</source>
-        <translation>¿Está seguro que desea remover el directorio compartido seleccionado?</translation>
+        <translation type="vanished">¿Está seguro que desea remover el directorio compartido seleccionado?</translation>
     </message>
     <message>
-        <location line="+52"/>
         <source>Remove the shared directory</source>
-        <translation>Remover el directorio compartido</translation>
+        <translation type="vanished">Remover el directorio compartido</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+72"/>
         <source>Move up</source>
         <translation>Mover arriba</translation>
     </message>
@@ -1128,24 +1136,40 @@
         <translation>Agregar nuevos directorios y/o archivos compartidos</translation>
     </message>
     <message>
-        <location line="+23"/>
         <source>Remove the selected shared directory or file</source>
-        <translation>Remover el directorio o archivo compartido seleccionado</translation>
+        <translation type="vanished">Remover el directorio o archivo compartido seleccionado</translation>
     </message>
     <message>
-        <location line="+20"/>
         <source>Move down the selected shared directory or file</source>
-        <translation>Mover hacia abajo el directorio o archivo compartido seleccionado</translation>
+        <translation type="vanished">Mover hacia abajo el directorio o archivo compartido seleccionado</translation>
     </message>
     <message>
-        <location line="+20"/>
         <source>Move up the selected shared directory or file</source>
-        <translation>Mover hacia arriba el directorio o archivo compartido seleccionado</translation>
+        <translation type="vanished">Mover hacia arriba el directorio o archivo compartido seleccionado</translation>
+    </message>
+    <message>
+        <source>Open location of the selected shared directory or file</source>
+        <translation type="vanished">Abrir la ubicación del directorio o archivo compartido seleccionado</translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>Remove the selected shared files and directories</source>
+        <translation>Quitar los archivos y directorios compartidos seleccionados</translation>
     </message>
     <message>
         <location line="+20"/>
-        <source>Open location of the selected shared directory or file</source>
-        <translation>Abrir la ubicación del directorio o archivo compartido seleccionado</translation>
+        <source>Move down the selected shared files and directories</source>
+        <translation>Mover hacia abajo los archivos y directorios compartidos seleccionados</translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Move up the selected shared files and directories</source>
+        <translation>Mover hacia arriba los archivos y directorios compartidos seleccionados</translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Open locations of the selected shared files and directories</source>
+        <translation>Abrir las ubicaciones de los archivos y directorios compartidos seleccionados</translation>
     </message>
     <message>
         <location line="+50"/>

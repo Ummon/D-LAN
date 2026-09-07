@@ -708,7 +708,7 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+242"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+244"/>
         <source>Default</source>
         <translation>Standard</translation>
     </message>
@@ -734,40 +734,48 @@
     </message>
     <message>
         <location line="+46"/>
-        <location line="+303"/>
+        <location line="+311"/>
         <source>Connecting . . .</source>
         <translation>Verbinde . . .</translation>
     </message>
     <message>
-        <location line="-295"/>
+        <location line="-303"/>
         <location line="+16"/>
         <location line="+19"/>
-        <location line="+260"/>
+        <location line="+268"/>
         <source>Connect</source>
         <translation>Verbinden</translation>
     </message>
     <message>
-        <location line="-165"/>
+        <location line="-173"/>
         <source>Select one or more directories and/or files to share</source>
         <translation>Wählen Sie einen oder mehrere Ordner und/oder Dateien zum Freigeben aus</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location line="+21"/>
+        <location line="+65"/>
+        <source>Remove selected shared entries</source>
+        <translation>Ausgewählte Freigaben entfernen</translation>
+    </message>
+    <message>
+        <location line="-64"/>
+        <source>Are you sure you want to remove the selected shared files and directories?</source>
+        <translation>Möchten Sie die ausgewählten freigegebenen Dateien und Verzeichnisse wirklich entfernen?</translation>
+    </message>
+    <message>
         <source>Remove selected shared directory</source>
-        <translation>Ausgewählten freigegebenen Ordner entfernen</translation>
+        <translation type="vanished">Ausgewählten freigegebenen Ordner entfernen</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Are you sure to remove the selected shared directory?</source>
-        <translation>Möchten Sie den ausgewählten freigegebenen Ordner wirklich entfernen?</translation>
+        <translation type="vanished">Möchten Sie den ausgewählten freigegebenen Ordner wirklich entfernen?</translation>
     </message>
     <message>
-        <location line="+52"/>
         <source>Remove the shared directory</source>
-        <translation>Freigegebenen Ordner entfernen</translation>
+        <translation type="vanished">Freigegebenen Ordner entfernen</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+72"/>
         <source>Move up</source>
         <translation>Nach oben bewegen</translation>
     </message>
@@ -1118,7 +1126,27 @@
         <translation>Anzeigename</translation>
     </message>
     <message>
-        <location line="+156"/>
+        <location line="+46"/>
+        <source>Remove the selected shared files and directories</source>
+        <translation>Ausgewählte freigegebene Dateien und Verzeichnisse entfernen</translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Move down the selected shared files and directories</source>
+        <translation>Ausgewählte freigegebene Dateien und Verzeichnisse nach unten verschieben</translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Move up the selected shared files and directories</source>
+        <translation>Ausgewählte freigegebene Dateien und Verzeichnisse nach oben verschieben</translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Open locations of the selected shared files and directories</source>
+        <translation>Speicherorte der ausgewählten freigegebenen Dateien und Verzeichnisse öffnen</translation>
+    </message>
+    <message>
+        <location line="+50"/>
         <source>Network</source>
         <translation>Netzwerk</translation>
     </message>
@@ -1168,27 +1196,23 @@
         <translation>Neue Ordner und/oder Dateien freigeben</translation>
     </message>
     <message>
-        <location line="+23"/>
         <source>Remove the selected shared directory or file</source>
-        <translation>Ausgewählte Freigabe entfernen</translation>
+        <translation type="vanished">Ausgewählte Freigabe entfernen</translation>
     </message>
     <message>
-        <location line="+20"/>
         <source>Move down the selected shared directory or file</source>
-        <translation>Ausgewählte Freigabe nach unten verschieben</translation>
+        <translation type="vanished">Ausgewählte Freigabe nach unten verschieben</translation>
     </message>
     <message>
-        <location line="+20"/>
         <source>Move up the selected shared directory or file</source>
-        <translation>Ausgewählte Freigabe nach oben verschieben</translation>
+        <translation type="vanished">Ausgewählte Freigabe nach oben verschieben</translation>
     </message>
     <message>
-        <location line="+20"/>
         <source>Open location of the selected shared directory or file</source>
-        <translation>Speicherort der ausgewählten Freigabe anzeigen</translation>
+        <translation type="vanished">Speicherort der ausgewählten Freigabe anzeigen</translation>
     </message>
     <message>
-        <location line="+181"/>
+        <location line="+264"/>
         <source>Graphic User Interface</source>
         <translation>Grafische Benutzeroberfläche</translation>
     </message>

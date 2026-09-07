@@ -708,7 +708,7 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+242"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+244"/>
         <source>Default</source>
         <translation>Стандартный</translation>
     </message>
@@ -734,40 +734,48 @@
     </message>
     <message>
         <location line="+46"/>
-        <location line="+303"/>
+        <location line="+311"/>
         <source>Connecting . . .</source>
         <translation>Подключение...</translation>
     </message>
     <message>
-        <location line="-295"/>
+        <location line="-303"/>
         <location line="+16"/>
         <location line="+19"/>
-        <location line="+260"/>
+        <location line="+268"/>
         <source>Connect</source>
         <translation>Подключиться</translation>
     </message>
     <message>
-        <location line="-165"/>
+        <location line="-173"/>
         <source>Select one or more directories and/or files to share</source>
         <translation>Выберите одну или несколько папок и/или файлов для общего доступа</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location line="+21"/>
+        <location line="+65"/>
+        <source>Remove selected shared entries</source>
+        <translation>Удалить выбранные общие ресурсы</translation>
+    </message>
+    <message>
+        <location line="-64"/>
+        <source>Are you sure you want to remove the selected shared files and directories?</source>
+        <translation>Вы уверены, что хотите удалить выбранные общие файлы и папки?</translation>
+    </message>
+    <message>
         <source>Remove selected shared directory</source>
-        <translation>Удалить выбранную общую папку</translation>
+        <translation type="vanished">Удалить выбранную общую папку</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Are you sure to remove the selected shared directory?</source>
-        <translation>Вы уверены, что хотите удалить выбранную общую папку?</translation>
+        <translation type="vanished">Вы уверены, что хотите удалить выбранную общую папку?</translation>
     </message>
     <message>
-        <location line="+52"/>
         <source>Remove the shared directory</source>
-        <translation>Удалить общую папку</translation>
+        <translation type="vanished">Удалить общую папку</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+72"/>
         <source>Move up</source>
         <translation>На позицию вверх</translation>
     </message>
@@ -1118,7 +1126,27 @@
         <translation>Имя</translation>
     </message>
     <message>
-        <location line="+156"/>
+        <location line="+46"/>
+        <source>Remove the selected shared files and directories</source>
+        <translation>Удалить выбранные общие файлы и папки</translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Move down the selected shared files and directories</source>
+        <translation>Переместить выбранные общие файлы и папки вниз</translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Move up the selected shared files and directories</source>
+        <translation>Переместить выбранные общие файлы и папки вверх</translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Open locations of the selected shared files and directories</source>
+        <translation>Открыть расположения выбранных общих файлов и папок</translation>
+    </message>
+    <message>
+        <location line="+50"/>
         <source>Network</source>
         <translation>Сеть</translation>
     </message>
@@ -1168,27 +1196,23 @@
         <translation>Добавить новые общие папки и/или файлы</translation>
     </message>
     <message>
-        <location line="+23"/>
         <source>Remove the selected shared directory or file</source>
-        <translation>Удалить выбранную общую папку или файл</translation>
+        <translation type="vanished">Удалить выбранную общую папку или файл</translation>
     </message>
     <message>
-        <location line="+20"/>
         <source>Move down the selected shared directory or file</source>
-        <translation>Переместить выбранную общую папку или файл вниз</translation>
+        <translation type="vanished">Переместить выбранную общую папку или файл вниз</translation>
     </message>
     <message>
-        <location line="+20"/>
         <source>Move up the selected shared directory or file</source>
-        <translation>Переместить выбранную общую папку или файл вверх</translation>
+        <translation type="vanished">Переместить выбранную общую папку или файл вверх</translation>
     </message>
     <message>
-        <location line="+20"/>
         <source>Open location of the selected shared directory or file</source>
-        <translation>Открыть расположение выбранной общей папки или файла</translation>
+        <translation type="vanished">Открыть расположение выбранной общей папки или файла</translation>
     </message>
     <message>
-        <location line="+181"/>
+        <location line="+264"/>
         <source>Graphic User Interface</source>
         <translation>Пользовательский интерфейс</translation>
     </message>

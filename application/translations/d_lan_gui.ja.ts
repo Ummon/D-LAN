@@ -704,76 +704,84 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="242"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="244"/>
         <source>Default</source>
         <translation>既定</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="300"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="302"/>
         <source>Interface not active</source>
         <translation>インターフェースが有効ではありません</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="439"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="441"/>
         <source>Change the password</source>
         <translation>パスワードを変更</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="443"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="445"/>
         <source>No password defined</source>
         <translation>パスワードが設定されていません</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="445"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="447"/>
         <source>Define a password</source>
         <translation>パスワードを設定</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="491"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="794"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="493"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="804"/>
         <source>Connecting . . .</source>
         <translation>接続中 . . .</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="499"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="515"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="534"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="794"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="501"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="517"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="536"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="804"/>
         <source>Connect</source>
         <translation>接続</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="629"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="631"/>
         <source>Select one or more directories and/or files to share</source>
         <translation>共有するディレクトリやファイルを1つ以上選択してください</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="648"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="652"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="717"/>
+        <source>Remove selected shared entries</source>
+        <translation>選択した共有項目を削除</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="653"/>
+        <source>Are you sure you want to remove the selected shared files and directories?</source>
+        <translation>選択した共有ファイルとフォルダーを削除してもよろしいですか？</translation>
+    </message>
+    <message>
         <source>Remove selected shared directory</source>
-        <translation>選択した共有ディレクトリを削除</translation>
+        <translation type="vanished">選択した共有ディレクトリを削除</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="649"/>
         <source>Are you sure to remove the selected shared directory?</source>
-        <translation>選択した共有ディレクトリを削除してもよろしいですか？</translation>
+        <translation type="vanished">選択した共有ディレクトリを削除してもよろしいですか？</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="701"/>
         <source>Remove the shared directory</source>
-        <translation>共有ディレクトリを削除</translation>
+        <translation type="vanished">共有ディレクトリを削除</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="709"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="725"/>
         <source>Move up</source>
         <translation>上へ移動</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="717"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="733"/>
         <source>Move down</source>
         <translation>下へ移動</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="725"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="741"/>
         <source>Open location</source>
         <translation>場所を開く</translation>
     </message>
@@ -1124,24 +1132,40 @@
         <translation>共有するディレクトリまたはファイルを追加</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="92"/>
         <source>Remove the selected shared directory or file</source>
-        <translation>選択した共有ディレクトリまたはファイルを削除</translation>
+        <translation type="vanished">選択した共有ディレクトリまたはファイルを削除</translation>
+    </message>
+    <message>
+        <source>Move down the selected shared directory or file</source>
+        <translation type="vanished">選択した共有ディレクトリまたはファイルを下へ移動</translation>
+    </message>
+    <message>
+        <source>Move up the selected shared directory or file</source>
+        <translation type="vanished">選択した共有ディレクトリまたはファイルを上へ移動</translation>
+    </message>
+    <message>
+        <source>Open location of the selected shared directory or file</source>
+        <translation type="vanished">選択した共有ディレクトリまたはファイルの場所を開く</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="92"/>
+        <source>Remove the selected shared files and directories</source>
+        <translation>選択した共有ファイルとフォルダーを削除</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="112"/>
-        <source>Move down the selected shared directory or file</source>
-        <translation>選択した共有ディレクトリまたはファイルを下へ移動</translation>
+        <source>Move down the selected shared files and directories</source>
+        <translation>選択した共有ファイルとフォルダーを下に移動</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="132"/>
-        <source>Move up the selected shared directory or file</source>
-        <translation>選択した共有ディレクトリまたはファイルを上へ移動</translation>
+        <source>Move up the selected shared files and directories</source>
+        <translation>選択した共有ファイルとフォルダーを上に移動</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="152"/>
-        <source>Open location of the selected shared directory or file</source>
-        <translation>選択した共有ディレクトリまたはファイルの場所を開く</translation>
+        <source>Open locations of the selected shared files and directories</source>
+        <translation>選択した共有ファイルとフォルダーの場所を開く</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="202"/>

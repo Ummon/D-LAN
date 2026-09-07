@@ -26,7 +26,7 @@
 <context>
     <name>DM::DownloadManager</name>
     <message>
-        <location filename="../Core/DownloadManager/priv/DownloadManager.cpp" line="205"/>
+        <location filename="../Core/DownloadManager/priv/DownloadManager.cpp" line="232"/>
         <source>The file &apos;%1&apos; is already in queue</source>
         <translation>El archivo &apos;%1&apos; ya está en cola</translation>
     </message>
@@ -73,7 +73,7 @@
         <translation>Apagar</translation>
     </message>
     <message>
-        <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="360"/>
+        <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="364"/>
         <source>The version (%1) of the queue file &quot;%2&quot; doesn&apos;t match the current version (%3). Queue will be reset.</source>
         <translation>La versión (%1) del archivo de cola &quot;%2&quot; no concuerda con la versión actual (%3). La cola será restablecida.</translation>
     </message>
