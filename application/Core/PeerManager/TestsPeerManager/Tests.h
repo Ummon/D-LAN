@@ -52,6 +52,7 @@ private slots:
    void initTestCase();
    void updatePeers();
    void getPeerFromID();
+   void destroyManagerWithPendingConnections();
    void askForRootEntries();
    void askForSomeEntries();
    void closedSocketIsNotReused_data();

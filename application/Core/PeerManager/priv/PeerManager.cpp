@@ -44,6 +44,16 @@ PeerManager::PeerManager(QSharedPointer<FM::IFileManager> fileManager) :
 
 PeerManager::~PeerManager()
 {
+   this->timer.stop();
+   while (!this->pendingSockets.isEmpty())
+   {
+      QTcpSocket* socket = this->pendingSockets.takeLast().socket;
+      // Pending sockets have no parent. Disconnect our callbacks before deleting
+      // them so closing a connection cannot modify the pending list during cleanup.
+      socket->disconnect(this);
+      delete socket;
+   }
+
    for (QMapIterator<Common::Hash, Peer*> i(this->peers); i.hasNext();)
       delete i.next().value();
    delete this->self;

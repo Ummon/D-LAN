@@ -23,6 +23,7 @@ using namespace PM;
 #include <QStringList>
 #include <QScopeGuard>
 #include <QSignalSpy>
+#include <QPointer>
 
 #include <Protos/core_protocol.pb.h>
 #include <Protos/core_settings.pb.h>
@@ -335,6 +336,47 @@ void Tests::askForHashes()
       if (timer.elapsed() > 30000)
          QFAIL("We don't receive all the hashes");
    }
+}
+
+void Tests::destroyManagerWithPendingConnections()
+{
+   QTcpServer server;
+   QVERIFY(server.listen(QHostAddress::LocalHost, 0));
+   auto manager = Builder::newPeerManager(this->fileManagers[0]);
+   QList<QSharedPointer<QTcpSocket>> clients;
+   QList<QPointer<QTcpSocket>> pending;
+
+   for (int i = 0; i < 2; ++i)
+   {
+      auto client = QSharedPointer<QTcpSocket>::create();
+      clients << client;
+      client->connectToHost(QHostAddress::LocalHost, server.serverPort());
+      QTRY_COMPARE(client->state(), QAbstractSocket::ConnectedState);
+      QTRY_VERIFY(server.hasPendingConnections());
+      QTcpSocket* accepted = server.nextPendingConnection();
+      QVERIFY(accepted);
+      QVERIFY(accepted->isValid());
+      pending << accepted;
+      manager->newConnection(accepted);
+      QVERIFY(accepted->parent() == nullptr);
+
+      // Exercise both a silent connection and one with an incomplete first header.
+      if (i == 1)
+      {
+         const QByteArray partialHeader(Common::MessageHeader::HEADER_SIZE - 1, '\0');
+         QCOMPARE(client->write(partialHeader), qint64(partialHeader.size()));
+         client->flush();
+         QTRY_VERIFY(pending.last().isNull() || pending.last()->bytesAvailable() == partialHeader.size());
+         QVERIFY(!pending.last().isNull());
+      }
+   }
+
+   manager.clear();
+   // Shutdown must dispose of every parentless socket without waiting for its timeout.
+   for (const auto& socket : pending)
+      QVERIFY(socket.isNull());
+   for (const auto& client : clients)
+      QTRY_COMPARE(client->state(), QAbstractSocket::UnconnectedState);
 }
 
 void Tests::closedSocketIsNotReused_data()
