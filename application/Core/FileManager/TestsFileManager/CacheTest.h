@@ -42,6 +42,10 @@ private slots:
    void deferredHashPersistence_data();
    void deferredHashPersistence();
    void hashResultsOnlySendOutstandingChunks();
+   void hashRequestReceiverCanDestroyRequest_data();
+   void hashRequestReceiverCanDestroyRequest();
+   void hashRequestStartIsOneShot();
+   void queuedHashNotificationsRespectRetirement();
    void hashRequestsKeepOriginalGeneration_data();
    void hashRequestsKeepOriginalGeneration();
    void writerRegistrationSurvivesFileReset();

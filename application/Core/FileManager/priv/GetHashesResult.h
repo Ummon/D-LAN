@@ -19,7 +19,7 @@
 #pragma once
 
 #include <QObject>
-#include <QMutex>
+#include <QPointer>
 
 #include <Protos/core_protocol.pb.h>
 
@@ -41,25 +41,27 @@ namespace FM
    public:
       GetHashesResult(const Protos::Common::Entry& fileEntry, Cache& cache, FileUpdater& fileUpdater);
       ~GetHashesResult();
-      Protos::Core::GetHashesResult start();
+      Protos::Core::GetHashesResult start() override;
 
    private slots:
       void chunkHashKnown(QSharedPointer<FM::Chunk> chunk);
       void chunkRemoved(QSharedPointer<FM::Chunk> chunk);
+      void invalidate();
 
    private:
-      void sendNextHash(QSharedPointer<Chunk> chunk, bool direct);
       void disconnectFromCache();
       bool ownsChunk(const QSharedPointer<Chunk>& chunk) const;
 
       const Protos::Common::Entry fileEntry;
       // Retain the original generation; pointer identity cannot be reused after retirement.
       QList<QSharedPointer<Chunk>> chunks;
-      bool invalidated = false;
-      Cache& cache;
-      FileUpdater& fileUpdater;
+      enum class State { Created, Streaming, Finished, Invalidated, Failed };
+      State state = State::Created;
+      Protos::Core::GetHashesResult startResult;
+      QPointer<Cache> cache;
+      QPointer<FileUpdater> fileUpdater;
+      File* file = nullptr; // Identity only after start(); retained chunks protect against reuse.
 
-      QMutex mutex;
       QList<int> hashesRemaining;
    };
 }

@@ -31,15 +31,18 @@ namespace FM
    {
       Q_OBJECT
    public:
+      // Create, start, and destroy requests on their owning thread.
       virtual ~IGetHashesResult() {}
+      // Call on the request's owning thread. Repeated calls return the original
+      // response without restarting the stream or resending hashes.
       virtual Protos::Core::GetHashesResult start() = 0;
 
    signals:
       /**
-        * This signal must be connected as 'Qt::QueuedConnection'!
-        * If not, the connected slot may be called right after the 'start()' call and thus don't
-        * give the caller the time to treat the 'start()' return value.
-        * Another benefit to use 'Qt::QueuedConnection' is to avoid a call from a separated thread instead of the main thread.
+        * Use Qt::QueuedConnection when the receiver must process start()'s return
+        * value first: hashes already known can be emitted before start() returns.
+        * Direct receivers may reenter start() or destroy the request.
+        * Notifications are delivered on the request's owning thread.
         */
       void nextHash(Protos::Core::HashResult hash);
    };

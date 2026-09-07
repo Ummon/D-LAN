@@ -993,6 +993,147 @@ void CacheTest::deferredHashPersistence()
    }
 }
 
+void CacheTest::hashRequestReceiverCanDestroyRequest_data()
+{
+   QTest::addColumn<QString>("delivery");
+   QTest::newRow("initial-snapshot") << QString("initial");
+   QTest::newRow("later-same-thread") << QString("later");
+   QTest::newRow("queued-worker") << QString("worker");
+}
+
+void CacheTest::hashRequestReceiverCanDestroyRequest()
+{
+   QFETCH(QString, delivery);
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   const auto hash = Common::Hash::rand();
+   auto file = new FM::File(root, "lifecycle.bin", 2LL * FM::Chunk::CHUNK_SIZE, false,
+      QDateTime::currentDateTime(), root->getRootDir(),
+      delivery == "initial" ? QList<Common::Hash> { hash, hash } : QList<Common::Hash>());
+   const auto chunks = file->getChunks();
+   Protos::Common::Entry entry;
+   file->populateEntry(&entry, true);
+   for (auto& chunk : *entry.mutable_chunks())
+      chunk.clear_hash();
+   FM::FileUpdater updater(nullptr);
+   auto request = QSharedPointer<FM::GetHashesResult>::create(entry, cache, updater);
+   int calls = 0;
+   bool onOwnerThread = false;
+   Protos::Core::GetHashesResult reentered;
+   connect(request.data(), &FM::IGetHashesResult::nextHash, this, [&](const auto&) {
+      ++calls;
+      onOwnerThread = QThread::currentThread() == this->thread();
+      reentered = request->start();
+      request.clear(); // The last reference, released synchronously inside the signal.
+   }, Qt::DirectConnection);
+   const auto response = request->start();
+   QCOMPARE(response.status(), Protos::Core::GetHashesResult_Status_OK);
+   QCOMPARE(response.nb_hash(), 2);
+   if (delivery != "initial")
+   {
+      QCOMPARE(calls, 0);
+      QCOMPARE(request->start().SerializeAsString(), response.SerializeAsString());
+      const auto publish = [&] {
+         for (const auto& chunk : chunks)
+         {
+            chunk->setHash(hash, false);
+            cache.onChunkHashKnown(chunk);
+         }
+      };
+      if (delivery == "worker")
+      {
+         std::thread worker(publish);
+         worker.join();
+         QCOMPARE(calls, 0);
+         QCoreApplication::sendPostedEvents(nullptr, QEvent::MetaCall);
+      }
+      else
+         publish();
+   }
+   QVERIFY(request.isNull());
+   QCOMPARE(calls, 1);
+   QVERIFY(onOwnerThread);
+   QCOMPARE(reentered.SerializeAsString(), response.SerializeAsString());
+}
+
+void CacheTest::hashRequestStartIsOneShot()
+{
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   auto cache = std::make_unique<FM::Cache>(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = cache->addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache->getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   auto file = new FM::File(root, "oneshot.bin", FM::Chunk::CHUNK_SIZE, false,
+      QDateTime::currentDateTime(), root->getRootDir());
+   Protos::Common::Entry entry;
+   file->populateEntry(&entry, true);
+   FM::FileUpdater updater(nullptr);
+   auto missingEntry = entry;
+   missingEntry.set_name("missing.bin");
+   FM::GetHashesResult missing(missingEntry, *cache, updater);
+   const auto failed = missing.start();
+   QCOMPARE(failed.status(), Protos::Core::GetHashesResult_Status_DONT_HAVE);
+   new FM::File(root, "missing.bin", FM::Chunk::CHUNK_SIZE, false,
+      QDateTime::currentDateTime(), root->getRootDir());
+   QCOMPARE(missing.start().SerializeAsString(), failed.SerializeAsString());
+
+   FM::GetHashesResult request(entry, *cache, updater);
+   QSignalSpy received(&request, &FM::IGetHashesResult::nextHash);
+   const auto response = request.start();
+   QCOMPARE(request.start().SerializeAsString(), response.SerializeAsString());
+   const auto chunk = file->getChunks().first();
+   chunk->setHash(Common::Hash::rand(), false);
+   cache->onChunkHashKnown(chunk);
+   QCOMPARE(received.size(), 1);
+   QCOMPARE(request.start().SerializeAsString(), response.SerializeAsString());
+   cache->onChunkHashKnown(chunk);
+   QCOMPARE(received.size(), 1);
+
+   auto pendingEntry = missingEntry;
+   FM::GetHashesResult pending(pendingEntry, *cache, updater);
+   QSignalSpy pendingHashes(&pending, &FM::IGetHashesResult::nextHash);
+   const auto pendingResponse = pending.start();
+   cache.reset(); // Both completed and outstanding requests may outlive their cache.
+   QCOMPARE(pending.start().SerializeAsString(), pendingResponse.SerializeAsString());
+   QCOMPARE(pendingHashes.size(), 0);
+}
+
+void CacheTest::queuedHashNotificationsRespectRetirement()
+{
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   auto file = new FM::File(root, "retired.bin", FM::Chunk::CHUNK_SIZE, false,
+      QDateTime::currentDateTime(), root->getRootDir());
+   Protos::Common::Entry entry;
+   file->populateEntry(&entry, true);
+   FM::FileUpdater updater(nullptr);
+   FM::GetHashesResult request(entry, cache, updater);
+   QSignalSpy received(&request, &FM::IGetHashesResult::nextHash);
+   const auto response = request.start();
+   const auto chunk = file->getChunks().first();
+   std::thread worker([&] {
+      chunk->setHash(Common::Hash::rand(), false);
+      cache.onChunkHashKnown(chunk);
+      file->del();
+   });
+   worker.join();
+   QCoreApplication::sendPostedEvents(nullptr, QEvent::MetaCall);
+   QCOMPARE(received.size(), 0);
+   QCOMPARE(request.start().SerializeAsString(), response.SerializeAsString());
+}
+
 void CacheTest::hashResultsOnlySendOutstandingChunks()
 {
    FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;

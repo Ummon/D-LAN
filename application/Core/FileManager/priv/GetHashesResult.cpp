@@ -22,6 +22,7 @@
 #include <QList>
 #include <QMutexLocker>
 #include <QMetaType>
+#include <QThread>
 
 #include <Protos/core_protocol.pb.h>
 
@@ -32,53 +33,45 @@
 using namespace FM;
 
 GetHashesResult::GetHashesResult(const Protos::Common::Entry& fileEntry, Cache& cache, FileUpdater& fileUpdater) :
-   fileEntry(fileEntry), cache(cache), fileUpdater(fileUpdater)
+   fileEntry(fileEntry), cache(&cache), fileUpdater(&fileUpdater)
 {
+   Q_ASSERT(this->thread() == cache.thread());
+   Q_ASSERT(this->thread() == fileUpdater.thread());
    qRegisterMetaType<Protos::Core::HashResult>("Protos::Core::HashResult");
-
    L_DEBU("GetHashesResult::GetHashesResult(..)");
 }
 
 GetHashesResult::~GetHashesResult()
 {
-   // After the 'emit nextHash(chunk->getHash());' the receiver (in another thread) can decide to clear the
-   // QSharedPointer, if it does and it's the last reference the object will be destroyed by an another thread and
-   // 'mutex' will be unlock by this other thread.
-   QMutexLocker locker(&this->mutex);
-
-   L_DEBU("GetHashesResult::~GetHashesResult()");
-
+   Q_ASSERT(QThread::currentThread() == this->thread());
    this->disconnectFromCache();
+   L_DEBU("GetHashesResult::~GetHashesResult()");
 }
 
-/**
-  * Called from the main thread.
-  */
 Protos::Core::GetHashesResult GetHashesResult::start()
 {
-   Protos::Core::GetHashesResult result;
+   Q_ASSERT(QThread::currentThread() == this->thread());
+   if (this->state != State::Created)
+      return this->startResult;
 
-   File* file = this->cache.getFile(this->fileEntry);
-   if (!file)
-   {
-      result.set_status(Protos::Core::GetHashesResult_Status_DONT_HAVE);
-      return result;
-   }
+   this->state = State::Failed;
+   this->startResult.set_status(Protos::Core::GetHashesResult_Status_DONT_HAVE);
+   this->file = this->cache ? this->cache->getFile(this->fileEntry) : nullptr;
+   if (!this->file || !this->fileUpdater)
+      return this->startResult;
 
+   QList<QSharedPointer<Chunk>> ready;
    bool prioritize = false;
    {
-      // Same order as chunk retirement/notification: file mutex, then result mutex.
-      // Keep size validation, subscription and the initial snapshot in one generation.
-      const auto fileMutex = file->getChunkMutex();
+      // Validate and subscribe to one generation. Worker notifications are queued
+      // onto our thread, so request state never needs a mutex.
+      const auto fileMutex = this->file->getChunkMutex();
       QMutexLocker fileLocker(fileMutex.data());
-      QMutexLocker locker(&this->mutex);
-      this->chunks = file->getChunks();
-      if (!file->isComplete() || this->fileEntry.size() != static_cast<quint64>(file->getSize()) ||
+      this->chunks = this->file->getChunks();
+      this->startResult.set_status(Protos::Core::GetHashesResult_Status_ERROR_UNKNOWN);
+      if (!this->file->isComplete() || this->fileEntry.size() != static_cast<quint64>(this->file->getSize()) ||
           this->fileEntry.chunks_size() != this->chunks.size())
-      {
-         result.set_status(Protos::Core::GetHashesResult_Status_ERROR_UNKNOWN);
-         return result;
-      }
+         return this->startResult;
 
       for (int i = 0; i < this->chunks.size(); ++i)
       {
@@ -86,65 +79,90 @@ Protos::Core::GetHashesResult GetHashesResult::start()
          const auto& requested = this->fileEntry.chunks(i).hash();
          if (!requested.empty() && !hash.isNull() &&
              requested != std::string(hash.getData(), Common::Hash::HASH_SIZE))
-         {
-            result.set_status(Protos::Core::GetHashesResult_Status_ERROR_UNKNOWN);
-            return result;
-         }
+            return this->startResult;
       }
 
-      connect(&this->cache, &Cache::chunkHashKnown, this, &GetHashesResult::chunkHashKnown, Qt::DirectConnection);
-      connect(&this->cache, &Cache::chunkRemoved, this, &GetHashesResult::chunkRemoved, Qt::DirectConnection);
+      connect(this->cache, &Cache::chunkHashKnown, this, &GetHashesResult::chunkHashKnown);
+      connect(this->cache, &Cache::chunkRemoved, this, &GetHashesResult::chunkRemoved);
+      connect(this->cache, &QObject::destroyed, this, &GetHashesResult::invalidate);
 
-      int nbOfHashToSend = 0;
-      int j = 0;
-      for (QListIterator<QSharedPointer<Chunk>> i(this->chunks); i.hasNext();)
-      {
-         auto chunk = i.next();
-         const Protos::Common::Hash& protoChunk = this->fileEntry.chunks(j++);
-         // Only for unknown hashes (size == 0).
-         if (protoChunk.hash().size() == 0)
+      for (int i = 0; i < this->chunks.size(); ++i)
+         if (this->fileEntry.chunks(i).hash().empty())
          {
-            nbOfHashToSend++;
-            if (chunk->hasHash())
-               this->sendNextHash(chunk, true);
+            this->hashesRemaining << i;
+            if (this->chunks[i]->hasHash())
+               ready << this->chunks[i];
             else
-               this->hashesRemaining << chunk->getNum();
+               prioritize = true;
          }
-      }
 
-      result.set_nb_hash(nbOfHashToSend);
-      prioritize = !this->hashesRemaining.isEmpty();
-      if (!prioritize)
+      this->startResult.set_status(Protos::Core::GetHashesResult_Status_OK);
+      this->startResult.set_nb_hash(this->hashesRemaining.size());
+      this->state = this->hashesRemaining.isEmpty() ? State::Finished : State::Streaming;
+      if (this->state == State::Finished)
          this->disconnectFromCache();
    }
 
-   result.set_status(Protos::Core::GetHashesResult_Status_OK);
-
-   // Never acquire the updater's scheduler mutex while holding a file mutex.
+   // Finish setup before invoking any receiver. A receiver may reenter start()
+   // or release the last owner of this request on any notification.
+   const auto result = this->startResult;
    if (prioritize)
-      this->fileUpdater.prioritizeAFileToHash(file);
+      this->fileUpdater->prioritizeAFileToHash(this->file);
 
+   const QPointer<GetHashesResult> guard(this);
+   for (const auto& chunk : ready)
+   {
+      if (!guard)
+         break;
+      guard->chunkHashKnown(chunk);
+   }
    return result;
 }
 
 void GetHashesResult::chunkHashKnown(QSharedPointer<Chunk> chunk)
 {
-   QMutexLocker locker(&this->mutex);
-   if (!this->invalidated && this->ownsChunk(chunk))
-      this->sendNextHash(chunk, false);
+   Q_ASSERT(QThread::currentThread() == this->thread());
+   if (this->state != State::Streaming || !this->ownsChunk(chunk))
+      return;
+   // A worker notification can be queued before the generation is retired.
+   if (!chunk->isOwnedBy(this->file))
+   {
+      this->invalidate();
+      return;
+   }
+   const auto hash = chunk->getHash();
+   if (hash.isNull() || !this->hashesRemaining.removeOne(chunk->getNum()))
+      return;
+   if (this->hashesRemaining.isEmpty())
+   {
+      this->state = State::Finished;
+      this->disconnectFromCache();
+   }
+
+   Protos::Core::HashResult result;
+   result.set_num(chunk->getNum());
+   result.mutable_hash()->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
+   // All state changes are complete. Do not access this after a receiver runs.
+   emit nextHash(result);
 }
 
 void GetHashesResult::chunkRemoved(QSharedPointer<Chunk> chunk)
 {
-   QMutexLocker locker(&this->mutex);
+   Q_ASSERT(QThread::currentThread() == this->thread());
    if (this->ownsChunk(chunk))
-   {
-      // The streaming protocol has no cancellation message. Stop this stream;
-      // its caller's existing timeout handles the incomplete request.
-      this->invalidated = true;
-      this->hashesRemaining.clear();
-      this->disconnectFromCache();
-   }
+      this->invalidate();
+}
+
+void GetHashesResult::invalidate()
+{
+   Q_ASSERT(QThread::currentThread() == this->thread());
+   if (this->state != State::Streaming)
+      return;
+   // The streaming protocol has no cancellation message; the caller's timeout
+   // handles an incomplete request. Queued notifications must stay silent.
+   this->state = State::Invalidated;
+   this->hashesRemaining.clear();
+   this->disconnectFromCache();
 }
 
 bool GetHashesResult::ownsChunk(const QSharedPointer<Chunk>& chunk) const
@@ -155,26 +173,6 @@ bool GetHashesResult::ownsChunk(const QSharedPointer<Chunk>& chunk) const
 
 void GetHashesResult::disconnectFromCache()
 {
-   disconnect(&this->cache, &Cache::chunkHashKnown, this, &GetHashesResult::chunkHashKnown);
-   disconnect(&this->cache, &Cache::chunkRemoved, this, &GetHashesResult::chunkRemoved);
-}
-
-void GetHashesResult::sendNextHash(QSharedPointer<Chunk> chunk, bool direct)
-{
-   if (!direct)
-   {
-      const int i = this->hashesRemaining.indexOf(chunk->getNum());
-      // Notifications can repeat or concern hashes already supplied by the requester/sent by start().
-      if (i == -1)
-         return;
-
-      this->hashesRemaining.removeAt(i);
-      if (this->hashesRemaining.empty())
-         this->disconnectFromCache();
-   }
-
-   Protos::Core::HashResult hashResult;
-   hashResult.set_num(chunk->getNum());
-   hashResult.mutable_hash()->set_hash(chunk->getHash().getData(), Common::Hash::HASH_SIZE);
-   emit nextHash(hashResult);
+   if (this->cache)
+      disconnect(this->cache, nullptr, this, nullptr);
 }
