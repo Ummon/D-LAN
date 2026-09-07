@@ -153,11 +153,11 @@ void PeerManager::updatePeer(
       this->peers.insert(peer->getID(), peer);
    }
 
-   const bool wasDead = !peer->isAlive();
+   const bool wasAvailable = peer->isAvailable();
 
    peer->update(IP, port, nick, sharingAmount, coreVersion, downloadRate, uploadRate, protocolVersion);
 
-   if (wasDead && peer->isAvailable())
+   if (!wasAvailable && peer->isAvailable())
       emit peerBecomesAvailable(peer);
 }
 

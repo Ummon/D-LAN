@@ -338,6 +338,55 @@ void Tests::askForHashes()
    }
 }
 
+void Tests::peerAvailabilityTransitions()
+{
+   auto manager = Builder::newPeerManager(this->fileManagers[0]);
+   const Common::Hash id = this->peerIDs[0];
+   QVERIFY(id != manager->getSelf()->getID());
+   const quint32 compatible = Common::Constants::PROTOCOL_VERSION;
+   const quint32 incompatible = compatible ^ 1u;
+   QList<IPeer*> notifications;
+   QObject context;
+   connect(manager.data(), &IPeerManager::peerBecomesAvailable, &context,
+      [&](IPeer* peer) {
+         QVERIFY(peer->isAvailable());
+         notifications << peer;
+      });
+   auto update = [&](quint32 version) {
+      manager->updatePeer(id, QHostAddress::LocalHost, PORT, "remote", 0, QString(), 0, 0, version);
+   };
+
+   update(incompatible);
+   IPeer* peer = manager->getPeer(id);
+   QVERIFY(peer);
+   QVERIFY(peer->isAlive());
+   QVERIFY(!peer->isAvailable());
+   QVERIFY(notifications.isEmpty());
+
+   // An already alive peer becoming compatible must notify waiting downloads.
+   update(compatible);
+   QCOMPARE(notifications, QList<IPeer*>{peer});
+   update(compatible);
+   QCOMPARE(notifications.size(), 1); // Ordinary heartbeats must not notify again.
+
+   update(incompatible);
+   QVERIFY(!peer->isAvailable());
+   QCOMPARE(notifications.size(), 1);
+   update(compatible);
+   QCOMPARE(notifications.size(), 2);
+
+   manager->removePeer(id, QHostAddress::LocalHost);
+   QVERIFY(!peer->isAlive());
+   update(compatible);
+   QCOMPARE(notifications.size(), 3); // Revival still notifies.
+
+   peer->block(60000);
+   update(incompatible);
+   update(compatible);
+   QVERIFY(!peer->isAvailable());
+   QCOMPARE(notifications.size(), 3); // Compatibility alone cannot bypass a block.
+}
+
 void Tests::destroyManagerWithPendingConnections()
 {
    QTcpServer server;

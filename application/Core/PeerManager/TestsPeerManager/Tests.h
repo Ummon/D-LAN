@@ -52,6 +52,7 @@ private slots:
    void initTestCase();
    void updatePeers();
    void getPeerFromID();
+   void peerAvailabilityTransitions();
    void destroyManagerWithPendingConnections();
    void askForRootEntries();
    void askForSomeEntries();

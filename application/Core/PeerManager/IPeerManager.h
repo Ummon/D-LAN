@@ -116,7 +116,7 @@ namespace PM
       );
 
       /**
-        * Emitted when a peer becomes alive or is not blocked anymore.
+        * Emitted when a peer becomes available: it is alive, unblocked, and has a compatible protocol version.
         */
       void peerBecomesAvailable(PM::IPeer* peer);
    };
