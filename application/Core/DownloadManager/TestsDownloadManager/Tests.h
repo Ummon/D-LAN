@@ -62,6 +62,8 @@ private slots:
    void chunkErrorTakesPrecedence();
    void rejectInvalidChunkHashes_data();
    void rejectInvalidChunkHashes();
+   void validateChunkResponse_data();
+   void validateChunkResponse();
 
 
    void cleanupTestCase();

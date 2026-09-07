@@ -94,9 +94,10 @@ namespace
    {
    public:
       PendingChunksResult() : IGetChunksResult(60000) {}
+      bool closeRequested = false;
       void start() override {} // Keep the transfer pending without opening a socket.
       void doDeleteLater() override { this->deleteLater(); }
-      void setStatus(bool) override {}
+      void setStatus(bool close) override { this->closeRequested = close; }
    };
 
    class PendingHashesResult : public PM::IGetHashesResult
@@ -161,7 +162,8 @@ namespace
    {
    public:
       // The writer fails before any network IO; only ownership/buffer cleanup is exercised.
-      void setReadBufferSize(qint64) override {}
+      int bufferChanges = 0;
+      void setReadBufferSize(qint64) override { ++this->bufferChanges; }
       qint64 bytesAvailable() const override { return 0; }
       qint64 read(char*, qint64) override { return -1; }
       QByteArray readAll() override { return {}; }
@@ -175,6 +177,84 @@ namespace
       Common::Hash getRemotePeerID() const override { return {}; }
       void finished(bool) override {}
    };
+}
+
+void Tests::validateChunkResponse_data()
+{
+   QTest::addColumn<int>("localSize");
+   QTest::addColumn<int>("offset");
+   QTest::addColumn<quint32>("reportedSize");
+   QTest::addColumn<int>("resultCount");
+   QTest::addColumn<bool>("accepted");
+   const int fullSize = Common::Constants::CHUNK_SIZE;
+   QTest::newRow("full-chunk") << fullSize << 0 << quint32(fullSize) << 1 << true;
+   QTest::newRow("short-final-chunk") << 100 << 0 << quint32(100) << 1 << true;
+   QTest::newRow("resumed-chunk") << 100 << 25 << quint32(100) << 1 << true;
+   QTest::newRow("missing-result") << 100 << 0 << quint32(100) << 0 << false;
+   QTest::newRow("extra-result") << 100 << 0 << quint32(100) << 2 << false;
+   QTest::newRow("zero-size") << 100 << 0 << quint32(0) << 1 << false;
+   QTest::newRow("smaller-than-local") << 100 << 0 << quint32(99) << 1 << false;
+   QTest::newRow("larger-than-local") << 100 << 0 << quint32(101) << 1 << false;
+   QTest::newRow("size-below-offset") << 100 << 25 << quint32(20) << 1 << false;
+   QTest::newRow("above-protocol-limit") << fullSize << 0 << quint32(fullSize + 1) << 1 << false;
+   QTest::newRow("unsigned-overflow") << 100 << 0 << quint32(0xffffffffu) << 1 << false;
+   QTest::newRow("offset-at-end") << 100 << 100 << quint32(100) << 1 << false;
+   QTest::newRow("offset-beyond-end") << 100 << 101 << quint32(100) << 1 << false;
+   QTest::newRow("negative-offset") << 100 << -1 << quint32(100) << 1 << false;
+}
+
+void Tests::validateChunkResponse()
+{
+   QFETCH(int, localSize);
+   QFETCH(int, offset);
+   QFETCH(quint32, reportedSize);
+   QFETCH(int, resultCount);
+   QFETCH(bool, accepted);
+   class SizedChunk : public FailingChunk
+   {
+   public:
+      SizedChunk(Common::Hash hash, int size, int offset) : FailingChunk(0, hash), size(size), offset(offset) {}
+      int getChunkSize() const override { return this->size; }
+      int getKnownBytes() const override { return this->offset; }
+   private:
+      int size;
+      int offset;
+   };
+   CheckpointPeer peer(this->fileManager);
+   LinkedPeers links;
+   OccupiedPeers downloading;
+   Common::ThreadPool pool(1);
+   Common::TransferRateCalculator rate;
+   const auto hash = Common::Hash::rand();
+   auto downloader = (new ChunkDownloader(links, downloading, rate, pool, hash))->grabStrongRef();
+   downloader->setChunk(QSharedPointer<FM::IChunk>(new SizedChunk(hash, localSize, offset)));
+   downloader->setPeerSource(&peer);
+   QSignalSpy finished(downloader.data(), &ChunkDownloader::downloadFinished);
+   QCOMPARE(downloader->startDownloading(), &peer);
+   auto request = qSharedPointerDynamicCast<PendingChunksResult>(peer.lastChunksResult);
+   QVERIFY(request);
+   Protos::Core::GetChunksResult response;
+   response.set_status(Protos::Core::GetChunksResult::OK);
+   for (int i = 0; i < resultCount; ++i)
+      response.add_results()->set_chunk_size(reportedSize);
+   emit request->result(response);
+
+   QCOMPARE(downloader->isDownloading(), accepted);
+   QCOMPARE(downloading.isPeerFree(&peer), !accepted);
+   QCOMPARE(finished.count(), accepted ? 0 : 1);
+   QCOMPARE(request->closeRequested, !accepted);
+   QCOMPARE(downloader->getDownloadedBytes(), offset);
+   if (!accepted)
+   {
+      QCOMPARE(downloader->getLastTransferStatus(), Protos::Common::DownloadStatus::TRANSFER_ERROR);
+      // Rejected responses must disconnect their stream and timeout callbacks.
+      auto socket = QSharedPointer<UnusedSocket>::create();
+      emit request->stream(socket);
+      emit request->timeout();
+      QCOMPARE(socket->bufferChanges, 0);
+      QCOMPARE(finished.count(), 1);
+   }
+   downloader->stop();
 }
 
 void Tests::rejectInvalidChunkHashes_data()

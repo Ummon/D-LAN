@@ -565,18 +565,27 @@ void ChunkDownloader::result(const Protos::Core::GetChunksResult& result)
    }
    else
    {
-      if (result.results_size() == 0 || result.results(0).chunk_size() == 0)
+      const int expectedSize = this->chunk->getChunkSize();
+      // One chunk was requested. Validate before narrowing the peer's uint32 size to int,
+      // and ensure run() will have a positive, bounded number of bytes left to read.
+      if (
+         result.results_size() != 1 ||
+         expectedSize <= 0 || expectedSize > Common::Constants::CHUNK_SIZE ||
+         result.results(0).chunk_size() != static_cast<quint32>(expectedSize) ||
+         this->offsetRequested < 0 || this->offsetRequested >= expectedSize
+      )
       {
          L_ERRO(
-            QString("Message 'GetChunkResult' doesn't contain the size of the chunk: %1. Download aborted.")
+            QString("Message 'GetChunkResult' has an invalid chunk count, size or offset for chunk %1. Download aborted.")
                .arg(this->chunk->getHash().toStrShort())
          );
          this->closeTheSocket = true;
+         this->lastTransferStatus = Protos::Common::DownloadStatus::TRANSFER_ERROR;
          this->downloadingEnded();
       }
       else
       {
-         this->chunkSize = result.results(0).chunk_size();
+         this->chunkSize = expectedSize;
       }
    }
 }
