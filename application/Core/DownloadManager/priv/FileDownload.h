@@ -96,6 +96,7 @@ namespace DM
       bool tryToLinkToAnExistingFile();
       void connectChunkDownloaderSignals(const QSharedPointer<ChunkDownloader>& chunkDownload);
       bool createFile();
+      bool prepareFileForResume();
       void giveChunksToDownloaders();
       void reset();
 

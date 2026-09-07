@@ -18,12 +18,30 @@
   
 #include <QCoreApplication>
 #include <QTest>
+#include <QTemporaryDir>
+#include <Common/Global.h>
+#include <Common/Settings.h>
+#include <Protos/core_settings.pb.h>
 
 #include <Tests.h>
 
 int main(int argc, char *argv[])
 {
    QCoreApplication a(argc, argv);
+
+   QTemporaryDir settingsDir;
+   if (!settingsDir.isValid())
+      return 1;
+   Common::Global::setDataFolder(Common::Global::DataFolderType::LOCAL, settingsDir.path());
+   Common::Global::setDataFolder(Common::Global::DataFolderType::ROAMING, settingsDir.path());
+   auto settings = new Protos::Core::Settings();
+   settings->set_buffer_size_reading(131072);
+   settings->set_check_received_data_integrity(true);
+   settings->set_unfinished_suffix_term(".unfinished");
+   settings->set_peer_timeout_factor(3.2);
+   settings->set_peer_imalive_period(5000);
+   SETTINGS.setFilename("core_settings_download_manager_tests.json");
+   SETTINGS.setSettingsMessage(settings);
 
    Tests tests;
    return QTest::qExec(&tests, argc, argv);

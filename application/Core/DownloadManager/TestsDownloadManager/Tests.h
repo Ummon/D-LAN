@@ -46,6 +46,8 @@ public:
 
 private slots:
    void initTestCase();
+   void resumeMissingFile_data();
+   void resumeMissingFile();
 
 
    void cleanupTestCase();

@@ -20,6 +20,7 @@
 using namespace FM;
 
 #include <QByteArray>
+#include <QScopeGuard>
 
 #include <Common/Settings.h>
 
@@ -37,8 +38,12 @@ using namespace FM;
 DataWriter::DataWriter(Chunk& chunk) :
    CHECK_DATA_INTEGRITY(SETTINGS.get<bool>("check_received_data_integrity")), chunk(chunk)
 {
-   this->computeChunkHash();
+   // Opening first recreates a missing file and resets all chunk byte counts.
+   // Otherwise integrity checking tries to read data from the deleted file.
    this->chunk.newDataWriterCreated();
+   auto rollback = qScopeGuard([this] { this->chunk.dataWriterDeleted(); });
+   this->computeChunkHash();
+   rollback.dismiss();
 }
 
 DataWriter::~DataWriter()

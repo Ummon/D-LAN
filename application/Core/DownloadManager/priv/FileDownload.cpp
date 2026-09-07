@@ -23,6 +23,7 @@ using namespace DM;
 #include <QDateTime>
 #include <QSet>
 #include <QRandomGenerator64>
+#include <QFileInfo>
 
 #include <limits>
 
@@ -156,7 +157,13 @@ bool FileDownload::pause(bool pause)
    }
    else if (!pause && this->status == Protos::Common::DownloadStatus::PAUSED)
    {
+      // Keep the download paused while recovering so callbacks cannot schedule
+      // a chunk with the byte counts from a deleted file.
+      if (!this->prepareFileForResume())
+         return true;
       this->setStatus(Protos::Common::DownloadStatus::QUEUED);
+      if (this->hasAValidPeerSource())
+         this->peerSourceBecomesAvailable(); // Completed chunks may now need their source again.
       this->retrieveHashes();
       return true;
    }
@@ -617,9 +624,69 @@ void FileDownload::chunkDownloaderFinished()
 }
 
 /**
-  * Look if a file in the cache ('FM::IFileManager') owns the known hashes. If so, the chunks ('FM:IChunk') are given to each 'ChunkDownload' and
-  * 'this->local_entry().exists' is set to true.
-  * @return 'true' is the file exists.
+  * Recover a file deleted while paused before selecting any download offsets.
+  */
+bool FileDownload::prepareFileForResume()
+{
+   QSharedPointer<FM::IChunk> chunk;
+   for (const auto& downloader : std::as_const(this->chunkDownloaders))
+      if (downloader && downloader->getChunk())
+      {
+         chunk = downloader->getChunk();
+         break;
+      }
+   if (!chunk && !this->chunksWithoutDownloader.isEmpty())
+      chunk = this->chunksWithoutDownloader.first();
+   if (!chunk)
+      return true; // The file will be created when a source is scheduled.
+
+   const auto path = chunk->getFilePath();
+   if (path.isNull())
+   {
+      this->reset(); // The cached file itself has been removed (for example, its share).
+      return true;
+   }
+   if (QFileInfo::exists(path.toString()))
+      return true;
+
+   try
+   {
+      // FileManager recreates the file at its original destination and resets all
+      // chunks together, including those previously considered complete.
+      auto writer = chunk->getDataWriter();
+   }
+   catch (FM::FileResetException&)
+   {
+      // Recreation succeeded; existing chunks now have zero known bytes.
+   }
+   catch (FM::UnableToOpenFileInWriteModeException&)
+   {
+      this->setStatus(Protos::Common::DownloadStatus::UNABLE_TO_OPEN_THE_FILE);
+      return false;
+   }
+   catch (FM::UnableToOpenFileInReadModeException&)
+   {
+      this->setStatus(Protos::Common::DownloadStatus::UNABLE_TO_OPEN_THE_FILE);
+      return false;
+   }
+   catch (FM::IOErrorException&)
+   {
+      this->setStatus(Protos::Common::DownloadStatus::FILE_IO_ERROR);
+      return false;
+   }
+   catch (FM::ChunkDeletedException&)
+   {
+      this->reset();
+   }
+   catch (FM::ChunkDataUnknownException&)
+   {
+      this->reset();
+   }
+   return true;
+}
+
+/**
+  * Link cached chunks matching the known hashes and update localEntry.exists.
   */
 bool FileDownload::tryToLinkToAnExistingFile()
 {
