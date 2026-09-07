@@ -56,6 +56,8 @@ private slots:
    void checkpointDownloadProgress_data();
    void checkpointDownloadProgress();
    void retryFailedQueueSave();
+   void resetPreservesDestination_data();
+   void resetPreservesDestination();
 
 
    void cleanupTestCase();

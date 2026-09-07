@@ -41,6 +41,7 @@ using namespace DM;
 #include <priv/DownloadQueue.h>
 #include <priv/DownloadManager.h>
 #include <Common/PersistentData.h>
+#include <memory>
 
 namespace
 {
@@ -76,6 +77,18 @@ namespace
       bool isAvailable() const override { return true; }
    };
 
+   class DestinationFileManager : public ResumeFileManager
+   {
+   public:
+      DestinationFileManager(FM::Cache& cache) : cache(cache) {}
+      QList<QSharedPointer<FM::IChunk>> newFile(Protos::Common::Entry& entry) override
+      {
+         return this->cache.newFile(entry);
+      }
+   private:
+      FM::Cache& cache;
+   };
+
    class PendingChunksResult : public PM::IGetChunksResult
    {
    public:
@@ -96,6 +109,74 @@ namespace
          return QSharedPointer<PM::IGetChunksResult>(new PendingChunksResult);
       }
    };
+}
+
+void Tests::resetPreservesDestination_data()
+{
+   QTest::addColumn<bool>("reloadQueue");
+   QTest::newRow("resume") << false;
+   QTest::newRow("reload-queue") << true;
+}
+
+void Tests::resetPreservesDestination()
+{
+   QFETCH(bool, reloadQueue);
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   QVERIFY(QDir(temp.path()).mkdir("default"));
+   QVERIFY(QDir(temp.path()).mkdir("chosen"));
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new EmptyHashCache));
+   cache.addASharedPath(temp.path() + "/default/");
+   const auto chosen = cache.addASharedPath(temp.path() + "/chosen/");
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(chosen.first.ID));
+   QVERIFY(root);
+   auto file = new FM::File(root, "destination.bin", 100, false, QDateTime::currentDateTime(),
+      root->getRootDir(), { Common::Hash::rand() }, true);
+   const auto chunk = file->getChunks().first();
+   chunk->setKnownBytes(25);
+   const auto originalPath = chunk->getFilePath().toString();
+   Protos::Common::Entry entry;
+   file->populateEntry(&entry, true);
+   entry.set_name("destination.bin");
+   QSharedPointer<DestinationFileManager> files(new DestinationFileManager(cache));
+   files->chunks << chunk;
+   ResumePeer peer(files);
+   LinkedPeers links;
+   OccupiedPeers asking, downloading;
+   Common::ThreadPool pool(1);
+   Common::TransferRateCalculator rate;
+   auto download = std::make_unique<FileDownload>(files, links, asking, downloading, pool, &peer,
+      entry, entry, rate, Protos::Queue::Queue::Entry::PAUSED);
+   download->start();
+   QCOMPARE(download->getDownloadedBytes(), quint64(25));
+
+   // Simulate the scanner removing the cached file while its share remains available.
+   file->removeUnfinishedFiles();
+   file->del(false);
+   delete file;
+   files->chunks.clear();
+   QVERIFY(chunk->getFilePath().isNull());
+   QVERIFY(download->pause(false));
+   QCOMPARE(download->getDownloadedBytes(), quint64(0));
+   QVERIFY(!download->getLocalEntry().exists());
+
+   Protos::Queue::Queue::Entry saved;
+   download->populateQueueEntry(&saved);
+   if (reloadQueue)
+   {
+      download.reset();
+      download = std::make_unique<FileDownload>(files, links, asking, downloading, pool, &peer,
+         saved.remote_entry(), saved.local_entry(), rate, saved.status());
+      download->start();
+   }
+   const auto next = download->getAChunkToDownload();
+   QVERIFY(next);
+   QVERIFY(next->getChunk());
+   QCOMPARE(next->getChunk()->getFilePath().toString(), originalPath);
+   QCOMPARE(next->getChunk()->getKnownBytes(), 0);
+   QVERIFY(QFileInfo::exists(originalPath));
+   QCOMPARE(saved.local_entry().shared_entry().id().hash(), entry.shared_entry().id().hash());
 }
 
 void Tests::checkpointDownloadProgress_data()

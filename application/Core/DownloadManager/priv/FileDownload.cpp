@@ -812,7 +812,7 @@ void FileDownload::giveChunksToDownloaders()
 }
 
 /**
-  * Reset all download chunk and set the local file as non-existent.
+  * Reset all download chunks and set the local file as non-existent, preserving its destination.
   */
 void FileDownload::reset()
 {
@@ -824,5 +824,6 @@ void FileDownload::reset()
          chunk->reset();
    }
    this->localEntry.set_exists(false);
-   this->localEntry.clear_shared_entry();
+   // Losing the cached file does not invalidate its destination share. Keep it for recreation
+   // and queue persistence; FileManager handles a share that is no longer available.
 }
