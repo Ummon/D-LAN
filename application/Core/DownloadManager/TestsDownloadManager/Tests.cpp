@@ -58,7 +58,7 @@ namespace
    class EmptyHashCache : public HC::IHashCache
    {
    public:
-      QList<Common::Hash> getHashes(const QString&, QDateTime) override { return {}; }
+      QList<Common::Hash> getHashes(const QString&, qint64, QDateTime) override { return {}; }
       void setHashes(const QString&, const QList<Common::Hash>&, qint64, QDateTime) override {}
       void rmHashes(const QString&) override {}
    };
