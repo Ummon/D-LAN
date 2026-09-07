@@ -74,6 +74,9 @@ namespace RCM
       );
       ~RemoteConnection();
 
+      // Call once the owner has registered the connection and connected its signals.
+      void startListening() override;
+
       void send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message) override;
       void send(Common::MessageHeader::MessageType type) override;
 
@@ -107,6 +110,7 @@ namespace RCM
       void refreshAllInterfaces();
 
       void onNewMessage(const Common::Message& message) override;
+      void onStartListening() override;
       void onDisconnected() override;
 
       QSharedPointer<FM::IFileManager> fileManager;
@@ -129,6 +133,7 @@ namespace RCM
       QList<QSharedPointer<NL::ISearch>> currentSearches;
       QList<QSharedPointer<PM::IGetEntriesResult>> getEntriesResults;
 
+      bool started = false;
       bool authenticated;
       bool authenticationRefused; // Set when an authentication has failed, the connection is then about to be closed.
       quint64 saltChallenge;

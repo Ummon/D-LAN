@@ -112,6 +112,7 @@ void RemoteControlManager::newConnection()
    connect(remoteConnection, &RemoteConnection::deleted, this, &RemoteControlManager::connectionDeleted, Qt::DirectConnection);
    connect(remoteConnection, &RemoteConnection::languageDefined, this, &RemoteControlManager::languageDefined);
    this->connections << remoteConnection;
+   remoteConnection->startListening();
 }
 
 void RemoteControlManager::connectionDeleted(RemoteConnection* connection)

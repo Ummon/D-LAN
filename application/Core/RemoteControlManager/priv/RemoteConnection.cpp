@@ -104,21 +104,33 @@ RemoteConnection::RemoteConnection(
    Q_UNUSED(entryMetaType)
 
    connect(this->loggerHook.data(), &LM::ILoggerHook::newLogEntry, this, &RemoteConnection::newLogEntry, Qt::QueuedConnection);
-
-   // We start to listen only once every member is set up: 'onNewMessage(..)' can be called
-   // synchronously by 'startListening()' if some data has already been received.
-   this->startListening();
-
-   // Already received data may be invalid and thus close the connection, in this case there is
-   // nothing left to ask, 'this' is already waiting to be deleted.
-   if (this->isListening())
-      this->askForAuthentication();
 }
 
 RemoteConnection::~RemoteConnection()
 {
    L_DEBU(QString("RemoteConnection[%1] deleted").arg(this->num));
    emit deleted(this);
+}
+
+void RemoteConnection::startListening()
+{
+   if (this->started)
+      return;
+   this->started = true;
+
+   if (!this->isConnected())
+   {
+      this->onDisconnected();
+      return;
+   }
+
+   Common::MessageSocket::startListening();
+}
+
+void RemoteConnection::onStartListening()
+{
+   // Sending is now enabled, but no buffered message has been dispatched yet.
+   this->askForAuthentication();
 }
 
 void RemoteConnection::send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message)
@@ -414,7 +426,9 @@ void RemoteConnection::askForAuthentication()
    Protos::GUI::AskForAuthentication askForAuthenticationMessage;
    askForAuthenticationMessage.set_salt(SETTINGS.get<quint64>("salt"));
 
-   this->saltChallenge = QRandomGenerator64::global()->generate64();
+   do
+      this->saltChallenge = QRandomGenerator64::global()->generate64();
+   while (this->saltChallenge == 0); // Never accept a response using the initial challenge value.
    askForAuthenticationMessage.set_salt_challenge(this->saltChallenge);
 
    this->timerCloseSocket.start();
@@ -885,8 +899,7 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
 
 void RemoteConnection::onDisconnected()
 {
-   // 'deleteLater()' and not 'delete this': this method is called synchronously from the socket
-   // signals and can thus be reached while the constructor is still running.
+   // Socket signals may call this synchronously while a message is being dispatched.
    this->stopListening();
    this->deleteLater();
 }

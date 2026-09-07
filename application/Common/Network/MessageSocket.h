@@ -93,6 +93,9 @@ namespace Common
       void disconnectedSlot();
 
    private:
+      // Called after sending is enabled, before any buffered input is dispatched.
+      virtual void onStartListening() {}
+
       // Reject a message before either onNewMessage() or newMessage is called.
       virtual bool acceptsMessage(const Message& message) { return true; }
 

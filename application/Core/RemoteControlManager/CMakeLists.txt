@@ -28,8 +28,8 @@ target_link_libraries(RemoteControlManager PUBLIC
 )
 
 if(DLAN_BUILD_TESTS)
-   add_executable(TestsRemoteControlManager TestsRemoteControlManager/Tests.cpp)
+   add_executable(TestsRemoteControlManager TestsRemoteControlManager/Tests.cpp TestsRemoteControlManager/Mocks.h)
    target_include_directories(TestsRemoteControlManager PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
-   target_link_libraries(TestsRemoteControlManager PRIVATE PeerManager Qt6::Test)
+   target_link_libraries(TestsRemoteControlManager PRIVATE RemoteControlManager PeerManager FileManager NetworkListener ChatSystem Qt6::Test)
    add_test(NAME TestsRemoteControlManager COMMAND TestsRemoteControlManager)
 endif()

@@ -175,7 +175,10 @@ void MessageSocket::startListening()
    connect(this->socket, &QAbstractSocket::readyRead, this, &MessageSocket::dataReceivedSlot, Qt::DirectConnection);
    connect(this->socket, &QAbstractSocket::disconnected, this, &MessageSocket::disconnectedSlot, Qt::DirectConnection);
 
-   this->dataReceivedSlot();
+   const QPointer<MessageSocket> self(this);
+   this->onStartListening();
+   if (!self.isNull() && this->listening)
+      this->dataReceivedSlot();
 }
 
 /**
