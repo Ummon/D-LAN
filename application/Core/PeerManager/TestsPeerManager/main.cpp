@@ -73,6 +73,8 @@ Protos::Core::Settings* createDefaultValuesSettings()
    settings->set_get_entries_timeout(5000);
 
    ///// PeerManager /////
+   settings->set_lan_speed(52428800);
+   settings->set_download_rate_valid_time_factor(3000);
    settings->set_pending_socket_timeout(10000);
    settings->set_peer_timeout_factor(3.2);
    settings->set_peer_imalive_period(5000);

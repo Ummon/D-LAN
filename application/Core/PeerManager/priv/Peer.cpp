@@ -159,7 +159,7 @@ void Peer::setSpeed(quint32 newSpeed)
    if (this->speed == MAX_SPEED)
       this->speed = newSpeed;
    else
-      this->speed = (this->speed + newSpeed) / 2;
+      this->speed = static_cast<quint32>((quint64(this->speed) + newSpeed) / 2);
 }
 
 void Peer::block(int duration, const QString& reason)

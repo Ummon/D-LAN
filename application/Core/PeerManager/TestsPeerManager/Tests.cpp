@@ -387,6 +387,36 @@ void Tests::peerAvailabilityTransitions()
    QCOMPARE(notifications.size(), 3); // Compatibility alone cannot bypass a block.
 }
 
+void Tests::averagePeerSpeed_data()
+{
+   QTest::addColumn<quint32>("first");
+   QTest::addColumn<quint32>("second");
+   QTest::addColumn<quint32>("expected");
+   QTest::newRow("ordinary") << quint32(100) << quint32(200) << quint32(150);
+   QTest::newRow("round-down") << quint32(0) << quint32(3) << quint32(1);
+   QTest::newRow("three-gigabytes-per-second")
+      << quint32(3000000000u) << quint32(3000000000u) << quint32(3000000000u);
+   QTest::newRow("sum-at-32-bit-boundary")
+      << quint32(2147483647u) << quint32(2147483649u) << quint32(2147483648u);
+   // UINT32_MAX is reserved for an unknown speed; exercise the largest measured value.
+   QTest::newRow("maximum-measured-speed")
+      << quint32(4294967294u) << quint32(4294967294u) << quint32(4294967294u);
+}
+
+void Tests::averagePeerSpeed()
+{
+   QFETCH(quint32, first);
+   QFETCH(quint32, second);
+   QFETCH(quint32, expected);
+   PM::Peer peer(static_cast<PM::PeerManager*>(this->peerManagers[0].data()),
+      this->fileManagers[0], this->peerIDs[1]);
+   QCOMPARE(peer.getSpeed(), quint32(0xffffffffu));
+   peer.setSpeed(first);
+   QCOMPARE(peer.getSpeed(), first);
+   peer.setSpeed(second);
+   QCOMPARE(peer.getSpeed(), expected);
+}
+
 void Tests::destroyManagerWithPendingConnections()
 {
    QTcpServer server;

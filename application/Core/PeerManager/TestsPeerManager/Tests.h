@@ -53,6 +53,8 @@ private slots:
    void updatePeers();
    void getPeerFromID();
    void peerAvailabilityTransitions();
+   void averagePeerSpeed_data();
+   void averagePeerSpeed();
    void destroyManagerWithPendingConnections();
    void askForRootEntries();
    void askForSomeEntries();
