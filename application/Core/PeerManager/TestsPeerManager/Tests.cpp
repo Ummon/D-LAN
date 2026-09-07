@@ -286,7 +286,7 @@ void Tests::askForHashes()
       for (quint32 i = 0; i < NUMBER_OF_CHUNK; i++)
       {
          QByteArray randomData(CHUNK_SIZE, i);
-         file.write(randomData);
+         QCOMPARE(file.write(randomData), qint64(randomData.size()));
       }
    }
 
@@ -301,12 +301,12 @@ void Tests::askForHashes()
          QFAIL("After adding the big file 'big.bin' the amount of data must be greater the 32KiB");
    }
 
-   // Ask the ashes of "big.bin" from the first peer to the second one.
+   // Ask the hashes of "big.bin" from the first peer to the second one.
    Protos::Common::Entry fileEntry;
    fileEntry.set_type(Protos::Common::Entry_Type_FILE);
    fileEntry.set_path("/");
    fileEntry.set_name("big.bin");
-   fileEntry.set_size(0); // No obligation to set the correct size.
+   fileEntry.set_size(quint64(NUMBER_OF_CHUNK) * CHUNK_SIZE);
    for (quint32 i = 0; i < NUMBER_OF_CHUNK; i++)
       fileEntry.add_chunks();
    // Sets the root directory.
@@ -318,18 +318,12 @@ void Tests::askForHashes()
    QVERIFY(!result.isNull());
    connect(result.data(), &IGetHashesResult::result, &this->resultListener, &ResultListener::hashesResult);
    connect(result.data(), &IGetHashesResult::nextHash, &this->resultListener, &ResultListener::nextHashResult);
+   QSignalSpy responseReceived(result.data(), &IGetHashesResult::result);
    result->start();
 
-   timer.start();
-   while (
-      this->resultListener.getLastGetHashesResult().status() != Protos::Core::GetHashesResult::OK &&
-      this->resultListener.getLastGetHashesResult().nb_hash() != NUMBER_OF_CHUNK
-   )
-   {
-      QTest::qWait(100);
-      if (timer.elapsed() > 5000)
-         QFAIL("We don't receive the correct receive after asking for hashes");
-   }
+   QTRY_COMPARE_WITH_TIMEOUT(responseReceived.count(), 1, 5000);
+   QCOMPARE(this->resultListener.getLastGetHashesResult().status(), Protos::Core::GetHashesResult::OK);
+   QCOMPARE(this->resultListener.getLastGetHashesResult().nb_hash(), NUMBER_OF_CHUNK);
 
    // Wait to have all the hashes.
    timer.start();

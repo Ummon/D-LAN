@@ -77,6 +77,7 @@ void ResultListener::entriesResult(const Protos::Core::GetEntriesResult& result)
 
 void ResultListener::hashesResult(const Protos::Core::GetHashesResult& result)
 {
+   this->lastGetHashesResult = result;
    this->nbHashes = result.nb_hash();
    this->currentHash = 0;
    qDebug() << "ResultListener::hashesResult : " << Common::ProtoHelper::getDebugStr(result);
