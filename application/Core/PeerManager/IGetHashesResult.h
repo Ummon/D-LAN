@@ -36,6 +36,7 @@ namespace PM
 
    public:
       virtual ~IGetHashesResult() {}
+      // Start once. Subsequent calls have no effect, even after completion or timeout.
       virtual void start() = 0;
 
       /**

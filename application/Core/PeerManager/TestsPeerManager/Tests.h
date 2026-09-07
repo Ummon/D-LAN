@@ -71,6 +71,8 @@ private slots:
    void endpointChanges();
    void requestSocketLifecycle_data();
    void requestSocketLifecycle();
+   void resultStartsOnlyOnce_data();
+   void resultStartsOnlyOnce();
    void chunkRequestSocketLifecycle_data();
    void chunkRequestSocketLifecycle();
    void askForHashes();

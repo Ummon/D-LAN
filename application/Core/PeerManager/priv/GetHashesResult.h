@@ -51,6 +51,7 @@ namespace PM
       const Protos::Common::Entry file;
       QSharedPointer<PeerMessageSocket> socket;
       bool pending = false;
+      bool started = false;
       quint32 remainingHashes = 0;
    };
 }

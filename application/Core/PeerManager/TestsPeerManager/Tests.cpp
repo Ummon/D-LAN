@@ -925,6 +925,102 @@ void Tests::requestSocketLifecycle()
    }
 }
 
+void Tests::resultStartsOnlyOnce_data()
+{
+   QTest::addColumn<int>("kind");
+   QTest::addColumn<bool>("timeout");
+   QTest::newRow("entries-completed") << 0 << false;
+   QTest::newRow("entries-timeout") << 0 << true;
+   QTest::newRow("hashes-completed") << 1 << false;
+   QTest::newRow("hashes-timeout") << 1 << true;
+   QTest::newRow("chunks-completed") << 2 << false;
+   QTest::newRow("chunks-timeout") << 2 << true;
+}
+
+void Tests::resultStartsOnlyOnce()
+{
+   QFETCH(int, kind);
+   QFETCH(bool, timeout);
+   const char* setting = kind == 1 ? "get_hashes_timeout" : "socket_timeout";
+   const quint32 oldTimeout = SETTINGS.get<quint32>(setting);
+   const auto restore = qScopeGuard([&] { SETTINGS.set(setting, oldTimeout); });
+   SETTINGS.set(setting, quint32(400));
+   QTcpServer server;
+   QVERIFY(server.listen(QHostAddress::LocalHost, 0));
+   PM::ConnectionPool pool(static_cast<PM::PeerManager*>(this->peerManagers[0].data()),
+      this->fileManagers[0], this->peerIDs[1]);
+   pool.setIP(QHostAddress::LocalHost, server.serverPort());
+   auto socket = pool.getASocket();
+   QTRY_VERIFY(server.hasPendingConnections());
+   QScopedPointer<QTcpSocket> remote(server.nextPendingConnection());
+   QSharedPointer<PM::GetEntriesResult> entries;
+   QSharedPointer<PM::GetHashesResult> hashes;
+   QSharedPointer<PM::GetChunksResult> chunks;
+   std::function<void()> start;
+   Common::Timeoutable* result = nullptr;
+   QObject context;
+   int responses = 0;
+   auto received = [&](const auto&) { ++responses; start(); }; // Reentrant start must also be harmless.
+   if (kind == 0)
+   {
+      entries = QSharedPointer<PM::GetEntriesResult>(new PM::GetEntriesResult(Protos::Core::GetEntries(), socket),
+         &PM::GetEntriesResult::doDeleteLater);
+      start = [&] { entries->start(); };
+      result = entries.data();
+      connect(entries.data(), &IGetEntriesResult::result, &context, received);
+   }
+   else if (kind == 1)
+   {
+      hashes = QSharedPointer<PM::GetHashesResult>(new PM::GetHashesResult(Protos::Common::Entry(), socket),
+         &PM::GetHashesResult::doDeleteLater);
+      start = [&] { hashes->start(); };
+      result = hashes.data();
+      connect(hashes.data(), &IGetHashesResult::result, &context, received);
+   }
+   else
+   {
+      chunks = QSharedPointer<PM::GetChunksResult>(new PM::GetChunksResult(Protos::Core::GetChunks(), socket),
+         &PM::GetChunksResult::doDeleteLater);
+      start = [&] { chunks->start(); };
+      result = chunks.data();
+      connect(chunks.data(), &IGetChunksResult::result, &context, received);
+      connect(chunks.data(), &IGetChunksResult::stream, &context,
+         [&](const QSharedPointer<PM::ISocket>&) { start(); chunks->setStatus(false); });
+   }
+   QSignalSpy timedOut(result, &Common::Timeoutable::timeout);
+   start();
+   start();
+   QVERIFY(!socket->isClosing());
+   QTRY_VERIFY(remote->bytesAvailable() >= Common::MessageHeader::HEADER_SIZE);
+   const QByteArray request = remote->readAll();
+   const auto header = Common::MessageHeader::readHeader(request);
+   QCOMPARE(request.size(), qsizetype(Common::MessageHeader::HEADER_SIZE + header.getSize()));
+   if (timeout)
+      QTRY_COMPARE(timedOut.count(), 1);
+   else
+   {
+      auto reply = [&](Common::MessageHeader::MessageType type, const google::protobuf::Message& value) {
+         Common::Message::writeMessageToDevice(remote.data(),
+            Common::MessageHeader(type, value.ByteSizeLong(), this->peerIDs[1]), &value);
+         remote->flush();
+      };
+      if (kind == 0)
+         reply(Common::MessageHeader::CORE_GET_ENTRIES_RESULT, Protos::Core::GetEntriesResult());
+      else if (kind == 1)
+         reply(Common::MessageHeader::CORE_GET_HASHES_RESULT, Protos::Core::GetHashesResult());
+      else
+         reply(Common::MessageHeader::CORE_GET_CHUNKS_RESULT, Protos::Core::GetChunksResult());
+      QTRY_COMPARE(responses, 1);
+   }
+   start();
+   QCOMPARE(result->isTimedout(), timeout);
+   QVERIFY(!timedOut.wait(500)); // No restart after completion or timeout.
+   QCOMPARE(timedOut.count(), timeout ? 1 : 0);
+   QCOMPARE(responses, timeout ? 0 : 1);
+   QCOMPARE(remote->bytesAvailable(), qint64(0));
+   QVERIFY(!socket->isClosing());
+}
+
 void Tests::chunkRequestSocketLifecycle_data()
 {
    QTest::addColumn<int>("stage");

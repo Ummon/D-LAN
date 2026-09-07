@@ -30,6 +30,9 @@ GetHashesResult::GetHashesResult(const Protos::Common::Entry& file, QSharedPoint
 
 void GetHashesResult::start()
 {
+   if (this->started)
+      return;
+   this->started = true;
    this->pending = true;
    this->startTimer();
    // The socket may be null if the connection pool was unable to give one, in this case the request will simply time out.

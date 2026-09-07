@@ -38,6 +38,7 @@ namespace PM
 
    public:
       virtual ~IGetChunksResult() {}
+      // Start once. Subsequent calls have no effect, even after completion or timeout.
       virtual void start() = 0;
 
       /**

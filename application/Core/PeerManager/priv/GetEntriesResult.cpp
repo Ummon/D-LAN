@@ -30,6 +30,9 @@ GetEntriesResult::GetEntriesResult(const Protos::Core::GetEntries& dirs, QShared
 
 void GetEntriesResult::start()
 {
+   if (this->started)
+      return;
+   this->started = true;
    this->pending = true;
    this->startTimer();
    if (!this->socket.isNull())

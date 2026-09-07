@@ -34,6 +34,7 @@ namespace PM
 
    public:
       virtual ~IGetEntriesResult() {}
+      // Start once. Subsequent calls have no effect, even after completion or timeout.
       virtual void start() = 0;
 
       /**

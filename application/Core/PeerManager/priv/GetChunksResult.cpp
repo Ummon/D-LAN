@@ -30,6 +30,8 @@ GetChunksResult::GetChunksResult(const Protos::Core::GetChunks& chunks, QSharedP
 
 void GetChunksResult::start()
 {
+   if (this->state != State::NotStarted)
+      return;
    this->state = State::AwaitingResponse;
    this->startTimer();
    // The socket may be null if the connection pool was unable to give one, in this case the request will simply time out.
