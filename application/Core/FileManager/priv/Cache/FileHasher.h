@@ -45,6 +45,10 @@ namespace FM
       void flushHashes();
       void stop();
 
+   protected:
+      // Keep disk reads overridable for deterministic mutation and I/O failure tests.
+      virtual qint64 read(QFile& file, char* data, qint64 maxSize);
+
    private slots:
       void entryRemoved(FM::Entry* entry);
 

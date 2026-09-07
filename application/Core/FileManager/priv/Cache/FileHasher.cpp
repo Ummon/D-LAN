@@ -67,6 +67,11 @@ void FileHasher::flushPendingHashes()
    this->pendingHashSaves.clear();
 }
 
+qint64 FileHasher::read(QFile& file, char* data, qint64 maxSize)
+{
+   return file.read(data, maxSize);
+}
+
 /**
   * It will open the file, read it and calculate all theirs chunk hashes.
   * Only the chunk without hashes will be computed.
@@ -192,6 +197,13 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed, bool deferPers
    Common::Hasher hasher;
    bool endOfFile = false;
    qint64 bytesReadTotal = 0;
+   struct ComputedHash
+   {
+      int num;
+      Common::Hash hash;
+      int knownBytes;
+   };
+   QList<ComputedHash> computedHashes;
 
    while (!endOfFile)
    {
@@ -214,7 +226,7 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed, bool deferPers
          {
             // A buffer need not divide the chunk size (and may even exceed it). Never consume
             // bytes belonging to the next chunk when calculating this chunk's hash.
-            bytesRead = file->read(buffer.data(), qMin(BUFFER_SIZE, Chunk::CHUNK_SIZE - bytesReadChunk));
+            bytesRead = this->read(*file, buffer.data(), qMin(BUFFER_SIZE, Chunk::CHUNK_SIZE - bytesReadChunk));
             switch (bytesRead)
             {
             case -1:
@@ -247,20 +259,9 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed, bool deferPers
          if (amountHashed)
             *amountHashed += bytesReadChunk;
 
-         const Common::Hash& hash = hasher.getResult();
-
-         if (chunks[chunkNum]->getHash() != hash)
-         {
-            if (chunks[chunkNum]->hasHash())
-               // To remove the chunk from the chunk index (TODO: find a more elegant way).
-               this->currentFileCache->getCache()->onChunkRemoved(chunks[chunkNum]);
-
-            chunks[chunkNum]->setHash(hash, false);
-            chunks[chunkNum]->setKnownBytes(bytesReadChunk);
-            this->pendingHashSaves.insert(chunks.first());
-
-            this->currentFileCache->getCache()->onChunkHashKnown(chunks[chunkNum]);
-         }
+         // Keep this pass private: even a reader of Chunk::getHash() must not see
+         // data that has not passed the final filesystem validation.
+         computedHashes.append({ chunkNum, hasher.getResult(), bytesReadChunk });
 
          if (--n == 0)
             break;
@@ -282,11 +283,35 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed, bool deferPers
 #endif
 
    // Never attach a new timestamp to hashes computed from an older file version.
-   // Validate partial passes as well as completion, before allowing persistence.
+   // Validate partial passes as well as completion, before publication or persistence.
    const QFileInfo finalInfo(filePath);
    if (!finalInfo.exists() || finalInfo.size() != initialInfo.size() ||
        finalInfo.lastModified() != initialInfo.lastModified())
       return restartWithNewChunks();
+
+   for (const auto& computed : computedHashes)
+   {
+      const auto& chunk = chunks[computed.num];
+      const auto fileMutex = this->currentFileCache->getChunkMutex();
+      QMutexLocker fileLocker(fileMutex.data());
+      // A re-download or retirement can begin while disk reads are unlocked.
+      if (!this->currentFileCache->isComplete() || !chunk->isOwnedBy(this->currentFileCache))
+      {
+         this->toStopHashing = false;
+         this->hashing = false;
+         this->currentFileCache = nullptr;
+         return false;
+      }
+      if (chunk->getHash() != computed.hash)
+      {
+         if (chunk->hasHash())
+            this->currentFileCache->getCache()->onChunkRemoved(chunk);
+         chunk->setHash(computed.hash, false);
+         chunk->setKnownBytes(computed.knownBytes);
+         this->pendingHashSaves.insert(chunks.first());
+         this->currentFileCache->getCache()->onChunkHashKnown(chunk);
+      }
+   }
 
    this->toStopHashing = false;
    this->hashing = false;

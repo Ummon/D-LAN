@@ -32,6 +32,8 @@ private slots:
    void directoryCreationDefersDeletion();
    void hashingInvalidatesChangedFiles_data();
    void hashingInvalidatesChangedFiles();
+   void changedHashingPassDoesNotPublish_data();
+   void changedHashingPassDoesNotPublish();
    void redownloadStopsActiveHashing();
    void deferredHashPersistence_data();
    void deferredHashPersistence();

@@ -35,6 +35,25 @@
 
 namespace
 {
+   class ReadCallbackFileHasher : public FM::FileHasher
+   {
+   public:
+      std::function<void()> afterRead;
+
+   protected:
+      qint64 read(QFile& file, char* data, qint64 maxSize) override
+      {
+         const qint64 result = FM::FileHasher::read(file, data, maxSize);
+         if (result > 0 && this->afterRead)
+         {
+            auto callback = std::move(this->afterRead);
+            this->afterRead = {};
+            callback();
+         }
+         return result;
+      }
+   };
+
    class RecordingHashCache : public MockHashCache
    {
    public:
@@ -621,7 +640,7 @@ void CacheTest::hashingInvalidatesChangedFiles()
    auto file = new FM::File(root, "changing.bin", content.size(), false, originalDate, root->getRootDir());
    const auto oldChunks = file->getChunks();
    QSignalSpy removed(&cache, &FM::Cache::chunkRemoved);
-   FM::FileHasher hasher;
+   ReadCallbackFileHasher hasher;
 
    const auto edit = [&] {
       content[0] = 'b'; // Change data in the chunk that has already been hashed.
@@ -638,9 +657,7 @@ void CacheTest::hashingInvalidatesChangedFiles()
    if (duringCall)
    {
       bool edited = false;
-      const auto connection = connect(&cache, &FM::Cache::chunkHashKnown, &cache,
-         [&](const auto& chunk) { if (chunk == oldChunks.first()) edited = edit(); }, Qt::DirectConnection);
-      const auto disconnectCallback = qScopeGuard([&] { disconnect(connection); });
+      hasher.afterRead = [&] { edited = edit(); };
       QVERIFY(!hasher.start(file, 1, nullptr, true));
       QVERIFY(edited);
    }
@@ -676,6 +693,79 @@ void CacheTest::hashingInvalidatesChangedFiles()
    }
 }
 
+void CacheTest::changedHashingPassDoesNotPublish_data()
+{
+   QTest::addColumn<int>("chunkCount");
+   QTest::addColumn<int>("hashesPerPass");
+   QTest::addColumn<int>("sizeDelta");
+   for (int chunkCount : { 1, 2 })
+      for (int hashesPerPass : { 0, 1 })
+         for (int sizeDelta : { -1, 0, 1 })
+            QTest::newRow(qPrintable(QString("chunks=%1,limit=%2,delta=%3")
+               .arg(chunkCount).arg(hashesPerPass).arg(sizeDelta)))
+               << chunkCount << hashesPerPass << sizeDelta;
+}
+
+void CacheTest::changedHashingPassDoesNotPublish()
+{
+   QFETCH(int, chunkCount);
+   QFETCH(int, hashesPerPass);
+   QFETCH(int, sizeDelta);
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   const QString path = temp.filePath("changing.bin");
+   const qint64 size = qint64(chunkCount - 1) * FM::Chunk::CHUNK_SIZE + 127;
+   QFile physical(path);
+   QVERIFY(physical.open(QIODevice::WriteOnly));
+   QVERIFY(physical.resize(size));
+   physical.close();
+   const QDateTime date = QFileInfo(path).lastModified();
+   auto hashCache = QSharedPointer<RecordingHashCache>::create();
+   FM::Cache cache(hashCache);
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   auto file = new FM::File(root, "changing.bin", size, false, date, root->getRootDir());
+   Protos::Common::Entry entry;
+   file->populateEntry(&entry, true);
+   FM::FileUpdater updater(nullptr);
+   FM::GetHashesResult request(entry, cache, updater);
+   QSignalSpy received(&request, &FM::IGetHashesResult::nextHash);
+   QSignalSpy published(&cache, &FM::Cache::chunkHashKnown);
+   const auto response = request.start();
+   QCOMPARE(response.status(), Protos::Core::GetHashesResult_Status_OK);
+   QCOMPARE(response.nb_hash(), chunkCount);
+
+   ReadCallbackFileHasher hasher;
+   bool edited = false;
+   hasher.afterRead = [&] {
+      // Change bytes already read, before hashing can validate or publish them.
+      QFile replacement(path);
+      edited = replacement.open(QIODevice::ReadWrite) && replacement.write("x", 1) == 1 &&
+         replacement.resize(size + sizeDelta) && replacement.flush() &&
+         replacement.setFileTime(sizeDelta ? date : date.addSecs(10), QFileDevice::FileModificationTime);
+   };
+   QVERIFY(!hasher.start(file, hashesPerPass, nullptr, true));
+   QVERIFY(edited);
+   QCOMPARE(published.size(), 0);
+   QCOMPARE(received.size(), 0); // Includes a request waiting for its very last hash.
+   for (const auto& chunk : file->getChunks())
+      QVERIFY(!chunk->hasHash());
+   hasher.flushHashes();
+   QVERIFY(hashCache->writes.isEmpty());
+
+   // A new request gets the replacement generation; the retired stream stays silent.
+   file->populateEntry(&entry, true);
+   FM::GetHashesResult retry(entry, cache, updater);
+   QSignalSpy retried(&retry, &FM::IGetHashesResult::nextHash);
+   QCOMPARE(retry.start().status(), Protos::Core::GetHashesResult_Status_OK);
+   QVERIFY(hasher.start(file));
+   QCOMPARE(retried.size(), chunkCount);
+   QCOMPARE(received.size(), 0);
+   QCOMPARE(hashCache->writes.size(), 1);
+}
+
 void CacheTest::redownloadStopsActiveHashing()
 {
    FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
@@ -696,7 +786,7 @@ void CacheTest::redownloadStopsActiveHashing()
    auto file = new FM::File(root, "redownload.bin", size, false, QFileInfo(path).lastModified(), root->getRootDir());
    const auto oldChunks = file->getChunks();
    const QList<Common::Hash> replacementHashes { Common::Hash::rand(), Common::Hash::rand() };
-   FM::FileHasher hasher;
+   ReadCallbackFileHasher hasher;
    QSemaphore hashingReached, removalReached, hashingDone, resetDone;
    std::exception_ptr hashingError, resetError;
 
@@ -706,19 +796,15 @@ void CacheTest::redownloadStopsActiveHashing()
       if (entry == file)
          removalReached.release();
    }, Qt::DirectConnection);
-   const auto hashingConnection = connect(&cache, &FM::Cache::chunkHashKnown, &cache, [&](const QSharedPointer<FM::Chunk>& chunk) {
-      if (chunk == oldChunks.first())
-      {
-         hashingReached.release();
-         if (!removalReached.tryAcquire(1, 5000))
-            qFatal("Re-download did not reach the removal notification");
-         file->getChunks();
-      }
-   }, Qt::DirectConnection);
+   hasher.afterRead = [&] {
+      hashingReached.release();
+      if (!removalReached.tryAcquire(1, 5000))
+         qFatal("Re-download did not reach the removal notification");
+      file->getChunks();
+   };
 
    const auto disconnectCallbacks = qScopeGuard([&] {
       disconnect(removalConnection);
-      disconnect(hashingConnection);
    });
 
    std::thread hashing([&] {

@@ -111,6 +111,7 @@ namespace FM
 
    private:
       friend class GetHashesResult; // Subscribe and validate a chunk generation under the file lock.
+      friend class FileHasher; // Publish validated hashes while excluding generation retirement.
       QSharedPointer<QRecursiveMutex> getChunkMutex() const { return this->mutexStorage; }
       void setAsComplete();
       void deleteAllChunks();
