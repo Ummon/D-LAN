@@ -307,18 +307,17 @@ void FileUpdater::run()
          }
       }
 
-      if (timerScanUnwatchable.elapsed() >= SCAN_PERIOD_UNWATCHABLE_DIRS && !this->unwatchableEntries.isEmpty())
+      if (this->timerScanUnwatchable.elapsed() >= SCAN_PERIOD_UNWATCHABLE_DIRS)
       {
-         this->mutex.lock();
-         QList<Entry*> unwatchableEntriesCopy = this->unwatchableEntries;
-         this->mutex.unlock();
-
-         // Synchronize the new directory.
-         for (QListIterator<Entry*> i(unwatchableEntriesCopy); i.hasNext();)
+         QList<Entry*> unwatchableEntriesCopy;
          {
-            Entry* entry = i.next();
-            this->scan(entry);
+            QMutexLocker locker(&this->mutex);
+            unwatchableEntriesCopy = this->unwatchableEntries;
          }
+
+         // Read the shared list only under mutex; perform scans after releasing it.
+         for (Entry* entry : unwatchableEntriesCopy)
+            this->scan(entry);
       }
 
       if (this->toStop)
