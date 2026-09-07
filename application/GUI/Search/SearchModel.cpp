@@ -262,9 +262,9 @@ void SearchModel::sort(int column, Qt::SortOrder order)
       QAbstractItemModel::VerticalSortHint
    );
 
-   QHash<Tree*, QModelIndex> unsortedChildren;
-   for (int i = 0; i < this->root->getNbChildren(); i++)
-      unsortedChildren.insert(this->root->getChild(i), this->index(i, 0));
+   // Capture after layoutAboutToBeChanged: views may create persistent indexes
+   // while handling that signal. Preserve every column, including child indexes.
+   const QModelIndexList oldIndexes = this->persistentIndexList();
 
    this->root->sort(
       [&](const Tree* t1, const Tree* t2)
@@ -282,10 +282,14 @@ void SearchModel::sort(int column, Qt::SortOrder order)
       }
    );
 
-   // As the documentation says we have to tell the views which index goes where...
-   // it's a bit complicated and CPU consuming, is there a simplest way?
-   for (int i = 0; i < this->root->getNbChildren(); i++)
-      this->changePersistentIndex(unsortedChildren.value(this->root->getChild(i)), this->index(i, 0));
+   QModelIndexList newIndexes;
+   newIndexes.reserve(oldIndexes.size());
+   for (const QModelIndex& index : oldIndexes)
+   {
+      const Tree* tree = static_cast<const Tree*>(index.internalPointer());
+      newIndexes.append(this->createIndex(tree->getOwnPosition(), index.column(), tree));
+   }
+   this->changePersistentIndexList(oldIndexes, newIndexes);
 
    emit layoutChanged(QList<QPersistentModelIndex> { QPersistentModelIndex(QModelIndex()) }, QAbstractItemModel::VerticalSortHint);
 }
@@ -342,7 +346,7 @@ void SearchModel::resultFromFindResult(const Protos::Common::FindResult& findRes
          {
             if (similarTree->getNbChildren() == 0)
             {
-               this->beginInsertRows(this->createIndex(0, 0, similarTree), 0, 0);
+               this->beginInsertRows(this->createIndex(similarTree->getOwnPosition(), 0, similarTree), 0, 0);
                similarTree->insertChildSubTree(similarTree);
                this->endInsertRows();
             }
@@ -355,7 +359,7 @@ void SearchModel::resultFromFindResult(const Protos::Common::FindResult& findRes
                   static_cast<SearchTree*>(similarTree->getChild(i))->getLevel() > static_cast<int>(entry->level())
                )
                {
-                  this->beginInsertRows(this->createIndex(0, 0, similarTree), i, i);
+                  this->beginInsertRows(this->createIndex(similarTree->getOwnPosition(), 0, similarTree), i, i);
                   Common::Hash peerID = findResult.peer_id().hash();
                   SearchTree* newTree =
                      similarTree->insertChildEntryAtIndex(i, *entry, peerID, this->peerListModel.getNick(peerID, tr("<unknown>")));
@@ -380,7 +384,7 @@ void SearchModel::resultFromFindResult(const Protos::Common::FindResult& findRes
    }
 
    if (maxLevelChange && this->rowCount() > 0)
-      emit dataChanged(this->createIndex(0, RELEVANCE), this->createIndex(this->rowCount() - 1, RELEVANCE));
+      emit dataChanged(this->index(0, RELEVANCE), this->index(this->rowCount() - 1, RELEVANCE));
 }
 
 void SearchModel::sendNextProgress()
