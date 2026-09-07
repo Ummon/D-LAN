@@ -134,7 +134,6 @@ namespace PM
       bool active;
       bool closing = false; // Terminal state while queued pool removal/destruction is pending.
       QTimer inactiveTimer;
-      int nbError;
 
       // Used when asking hashes to the fileManager.
       QSharedPointer<FM::IGetHashesResult> currentHashesResult;

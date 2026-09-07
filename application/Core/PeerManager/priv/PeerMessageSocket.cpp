@@ -56,7 +56,6 @@ PeerMessageSocket::PeerMessageSocket(
    peerManager(peerManager),
    fileManager(fileManager),
    active(true),
-   nbError(0),
    nbHash(0)
 {
    this->initUnactiveTimer();
@@ -79,7 +78,6 @@ PeerMessageSocket::PeerMessageSocket(
    peerManager(peerManager),
    fileManager(fileManager),
    active(true),
-   nbError(0),
    nbHash(0)
 {
    this->initUnactiveTimer();
@@ -519,38 +517,6 @@ void PeerMessageSocket::onNewMessage(const Common::Message& message)
          {
             this->finished();
          }
-
-         // const Common::Hash hash(getChunksMessage.chunks().hash());
-         // if (hash.isNull())
-         // {
-         //    L_WARN("GET_CHUNK: Chunk null");
-         //    this->finished(true);
-         //    break;
-         // }
-
-         // // TODO: implements 'GetChunkResult.ALREADY_DOWNLOADING', 'GetChunkResult.TOO_MANY_CONNECTIONS' and 'GetChunkResult.DONT_HAVE_DATA_FROM_OFFSET'
-         // QSharedPointer<FM::IChunk> chunk = this->fileManager->getChunk(hash);
-         // if (chunk.isNull())
-         // {
-         //    // TODO
-         //    // Protos::Core::GetChunksResult result;
-         //    // result.set_status(Protos::Core::GetChunksResult::ChunkResult::DONT_HAVE);
-         //    // this->send(Common::MessageHeader::CORE_GET_CHUNK_RESULT, result);
-         //    // this->finished();
-
-         //    L_WARN(QString("GET_CHUNK: Chunk unknown: %1").arg(hash.toStr()));
-         // }
-         // else
-         // {
-         //    Protos::Core::GetChunksResult result;
-         //    result.set_status(Protos::Core::GetChunksResult::OK);
-         //    result.set_chunk_size(chunk->getKnownBytes());
-         //    this->send(Common::MessageHeader::CORE_GET_CHUNK_RESULT, result);
-
-         //    this->stopListening();
-
-         //    emit getChunk(chunk, getChunkMessage.offset(), this);
-         // }
       }
       break;
 
