@@ -44,7 +44,7 @@ namespace NL
    private:
       UDPListener& uDPListener;
 
-      int nbResult;
+      quint32 nbResult;
 
       quint64 tag;
 

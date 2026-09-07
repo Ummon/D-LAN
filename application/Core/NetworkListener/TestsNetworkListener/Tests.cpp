@@ -412,6 +412,85 @@ void Tests::searchSendFailure()
    QCOMPARE(results, 1); // Failed attempts must not leave duplicate result subscriptions.
 }
 
+void Tests::searchResultLimit_data()
+{
+   QTest::addColumn<int>("initialCount");
+   QTest::addColumn<int>("batchCount");
+   const int limit = SETTINGS.get<quint32>("max_number_of_result_shown");
+   QTest::newRow("partially fitting batch") << limit - 10 << 20;
+   QTest::newRow("oversized first batch") << 0 << limit + 1;
+   QTest::newRow("exactly fitting batch") << limit - 20 << 20;
+   QTest::newRow("already exhausted") << limit << 20;
+}
+
+void Tests::searchResultLimit()
+{
+   QFETCH(int, initialCount);
+   QFETCH(int, batchCount);
+   const int limit = SETTINGS.get<quint32>("max_number_of_result_shown");
+   const Instance& instance = this->instances[1];
+   UDPListener listener(instance.fileManager, instance.peerManager, instance.uploadManager, instance.downloadManager);
+   QTcpServer tcp;
+   QVERIFY(tcp.listen(Utils::getCurrentAddressToListenTo(), 0));
+   QVERIFY(listener.bindUnicastSocket(Utils::getCurrentAddressToListenTo(), tcp.serverPort()));
+   QVERIFY(listener.startListening());
+   Search search(listener);
+   Protos::Common::FindPattern pattern;
+   pattern.set_pattern("result limit test");
+   const quint64 tag = search.search(pattern);
+   QVERIFY(tag != 0);
+
+   QList<Protos::Common::FindResult> received;
+   connect(&search, &ISearch::found, this, [&](const Protos::Common::FindResult& result) { received << result; });
+   if (initialCount > 0)
+   {
+      Protos::Common::FindResult initial;
+      initial.set_tag(tag);
+      for (int i = 0; i < initialCount; ++i)
+         initial.add_entries();
+      emit listener.newFindResultMessage(initial);
+      QCOMPARE(received.size(), 1);
+      QCOMPARE(received.first().entries_size(), initialCount);
+      received.clear();
+   }
+
+   Protos::Common::FindResult batch;
+   batch.set_tag(tag);
+   batch.mutable_peer_id()->set_hash(this->peerIDs[1].getData(), Common::Hash::HASH_SIZE);
+   for (int i = 0; i < batchCount; ++i)
+   {
+      auto* entry = batch.add_entries();
+      entry->set_level(i);
+      entry->mutable_entry()->set_name(QString::number(i).toStdString());
+   }
+   const std::string original = batch.SerializeAsString();
+   batch.set_tag(tag ^ 1);
+   emit listener.newFindResultMessage(batch);
+   QVERIFY(received.isEmpty()); // An unrelated search must not consume the remaining allowance.
+   batch.set_tag(tag);
+   emit listener.newFindResultMessage(batch);
+   QCOMPARE(batch.SerializeAsString(), original);
+
+   const int expected = qMin(batchCount, limit - initialCount);
+   QCOMPARE(received.size(), expected == 0 ? 0 : 1);
+   if (expected > 0)
+   {
+      const auto& result = received.first();
+      QCOMPARE(result.entries_size(), expected);
+      QCOMPARE(result.tag(), tag);
+      QCOMPARE(result.peer_id().hash(), batch.peer_id().hash());
+      for (int i = 0; i < expected; ++i)
+         QCOMPARE(result.entries(i).SerializeAsString(), batch.entries(i).SerializeAsString());
+   }
+
+   received.clear();
+   Protos::Common::FindResult extra;
+   extra.set_tag(tag);
+   extra.add_entries();
+   emit listener.newFindResultMessage(extra);
+   QVERIFY(received.isEmpty()); // Every row has now reached the result limit.
+}
+
 void Tests::unavailableMulticastPeer_data()
 {
    QTest::addColumn<bool>("blocked");

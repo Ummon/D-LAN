@@ -82,10 +82,23 @@ qint64 Search::elapsed()
   */
 void Search::newFindResult(const Protos::Common::FindResult& result)
 {
-   static quint32 MAX_NUMBER_RESULT = SETTINGS.get<quint32>("max_number_of_result_shown");
-   if (result.tag() == this->tag && this->nbResult + static_cast<quint32>(result.entries_size()) <= MAX_NUMBER_RESULT)
+   static const quint32 MAX_NUMBER_RESULT = SETTINGS.get<quint32>("max_number_of_result_shown");
+   if (result.tag() != this->tag || this->nbResult >= MAX_NUMBER_RESULT)
+      return;
+
+   const quint32 remaining = MAX_NUMBER_RESULT - this->nbResult;
+   if (static_cast<quint32>(result.entries_size()) <= remaining)
    {
       this->nbResult += result.entries_size();
       emit found(result);
+   }
+   else
+   {
+      // Keep the prefix that fits without changing the message seen by other searches.
+      Protos::Common::FindResult limitedResult(result);
+      while (static_cast<quint32>(limitedResult.entries_size()) > remaining)
+         limitedResult.mutable_entries()->RemoveLast();
+      this->nbResult += remaining;
+      emit found(limitedResult);
    }
 }

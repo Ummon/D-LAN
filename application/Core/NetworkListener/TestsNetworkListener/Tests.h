@@ -64,6 +64,8 @@ private slots:
    void search();
    void searchSendFailure_data();
    void searchSendFailure();
+   void searchResultLimit_data();
+   void searchResultLimit();
    void unavailableMulticastPeer_data();
    void unavailableMulticastPeer();
    void heartbeatWithChatRooms_data();
