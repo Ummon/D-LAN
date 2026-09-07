@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include <Common/Path.h>
+
 #include <atomic>
 
 #include <QThread>
@@ -60,6 +62,7 @@ namespace FM
       int getProgress() const;
 
       void addRoot(SharedEntry* sharedEntry);
+      void updateRootPath(SharedEntry* sharedEntry, const Common::Path& oldPath);
       void rmRoot(SharedEntry* sharedEntry, Directory* dir = nullptr);
       void prepareToDeleteEntry(Entry* entry);
 

@@ -20,6 +20,7 @@
 using namespace DM;
 
 #include <QStringBuilder>
+#include <QDir>
 
 #include <Protos/queue.pb.h>
 
@@ -113,6 +114,28 @@ void DownloadManager::addDownload(
    }
    else
    {
+      if (remoteEntry.type() == Protos::Common::Entry::FILE)
+      {
+         Protos::Common::Entry localEntry(remoteEntry);
+         if (Common::ProtoHelper::isRoot(remoteEntry))
+            localEntry.set_name(Utils::sharedName(Common::ProtoHelper::getName(remoteEntry)).toStdString());
+         localEntry.clear_shared_entry();
+         localEntry.clear_path();
+         localEntry.set_exists(false);
+         // A pending file destination is kept in the queue without sharing its parent.
+         localEntry.mutable_shared_entry()->set_path(
+            QDir(absolutePath).absoluteFilePath(QString::fromStdString(localEntry.name())).toStdString());
+         const Common::Path destination(QString::fromStdString(localEntry.shared_entry().path()));
+         for (const auto& shared : this->fileManager->getSharedEntries())
+            if (!shared.path.isFile() && destination.isSubOf(shared.path))
+            {
+               const auto relative = destination.removeLastElement().toString().mid(shared.path.toString().size());
+               this->addDownload(remoteEntry, peerSource, shared.ID, '/' + relative);
+               return;
+            }
+         this->addDownload(remoteEntry, localEntry, peerSource, Protos::Queue::Queue::Entry::QUEUED);
+         return;
+      }
       try
       {
          QPair<Common::SharedEntry, QString> result = this->fileManager->addASharedPath(absolutePath);

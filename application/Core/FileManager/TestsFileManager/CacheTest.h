@@ -9,6 +9,10 @@ public:
    explicit CacheTest(QObject* parent = nullptr);
 
 private slots:
+   void failedSharedFileCreation();
+   void cancelSharedFileDownload();
+   void downloadToPrivateDirectory_data();
+   void downloadToPrivateDirectory();
    void sharedFileBrowseName_data();
    void sharedFileBrowseName();
    void watcherRecovery_data();

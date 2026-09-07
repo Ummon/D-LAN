@@ -78,6 +78,174 @@ CacheTest::CacheTest(QObject *parent) :
 {
 }
 
+void CacheTest::failedSharedFileCreation()
+{
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   Protos::Common::Entry entry;
+   entry.set_type(Protos::Common::Entry::FILE);
+   entry.set_name("file.bin");
+   entry.set_size(1);
+   // Force failure inside File's constructor on every platform.
+   QVERIFY_THROWS_EXCEPTION(FM::UnableToCreateNewFileException,
+      new FM::SharedFile(&cache, Common::Path(temp.filePath("missing/file.bin")), entry, {}));
+   QVERIFY(cache.getSharedEntries().isEmpty());
+#ifdef Q_OS_WIN32
+   entry.set_name("invalid?.bin");
+   entry.mutable_shared_entry()->set_path(temp.filePath("invalid?.bin").toStdString());
+   QVERIFY_THROWS_EXCEPTION(FM::UnableToCreateNewFileException, cache.newFile(entry));
+   QVERIFY(cache.getSharedEntries().isEmpty());
+#endif
+   entry.set_name("valid.bin");
+   entry.set_size(0);
+   entry.mutable_shared_entry()->set_path(temp.filePath("valid.bin").toStdString());
+   QVERIFY(cache.newFile(entry).isEmpty());
+   QVERIFY(QFileInfo::exists(temp.filePath("valid.bin")));
+}
+
+void CacheTest::cancelSharedFileDownload()
+{
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   const auto savedShares = SETTINGS.getRepeated<Protos::Common::SharedEntry>("shared_entries");
+   const auto restoreShares = qScopeGuard([&] { SETTINGS.set("shared_entries", savedShares); });
+   SETTINGS.rm("shared_entries");
+   FM::FileManager manager(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   manager.fileUpdater.stop();
+   Protos::Common::Entry entry;
+   entry.set_type(Protos::Common::Entry::FILE);
+   entry.set_name("cancel.bin");
+   entry.set_size(100);
+   entry.mutable_shared_entry()->set_path(temp.filePath("cancel.bin").toStdString());
+   const auto chunks = manager.newFile(entry);
+   QCOMPARE(chunks.size(), 1);
+   auto chunk = chunks.first();
+   auto& updater = manager.fileUpdater;
+   auto root = manager.cache.getSharedEntry(entry.shared_entry().id().hash())->getRootEntry();
+   QSignalSpy deletions(&manager.cache, &FM::Cache::entryAboutToBeDeleted);
+
+   // Download removal can ask several chunks to remove the same unfinished file.
+   chunk->removeItsIncompleteFile();
+   chunk->removeItsIncompleteFile();
+   // The root must remain alive until its share and watcher have been unregistered.
+   QVERIFY(!chunk->getFilePath().isNull());
+   // Cancellation must block reuse both before and after the share is unregistered.
+   QVERIFY_THROWS_EXCEPTION(FM::UnableToCreateNewFileException, manager.newFile(entry));
+   QCoreApplication::sendPostedEvents(&manager.cache, QEvent::MetaCall);
+   QVERIFY(manager.getSharedEntries().isEmpty());
+   QVERIFY(SETTINGS.getRepeated<Protos::Common::SharedEntry>("shared_entries").isEmpty());
+   QVERIFY(updater.entriesToScan.isEmpty());
+   QVERIFY(updater.unwatchableEntries.isEmpty());
+   QVERIFY(updater.hashingQueue.isEmpty());
+   QCOMPARE(updater.rootEntriesToRemove, QList<FM::Entry*> { root });
+   QCOMPARE(deletions.size(), 0);
+   QVERIFY_THROWS_EXCEPTION(FM::UnableToCreateNewFileException, manager.newFile(entry));
+   // Drain the stopped updater's normal root-removal work.
+   updater.rootEntriesToRemove.takeFirst()->del();
+   QCoreApplication::sendPostedEvents(&manager.cache, QEvent::MetaCall);
+   QCOMPARE(deletions.size(), 1);
+   QVERIFY(chunk->getFilePath().isNull());
+   QVERIFY(manager.getSharedEntries().isEmpty());
+   QVERIFY(manager.cache.getProtoSharedEntries().entries().empty());
+   QVERIFY(!QFileInfo::exists(temp.filePath("cancel.bin.unfinished")));
+   const auto replacement = manager.newFile(entry);
+   QCOMPARE(replacement.size(), 1);
+   QCoreApplication::sendPostedEvents(&manager.cache, QEvent::MetaCall);
+   QVERIFY(!replacement.first()->getFilePath().isNull());
+   QCOMPARE(manager.getSharedEntries().size(), 1);
+   QVERIFY(QFileInfo::exists(temp.filePath("cancel.bin.unfinished")));
+}
+
+void CacheTest::downloadToPrivateDirectory_data()
+{
+   QTest::addColumn<bool>("sharedParent");
+   QTest::addColumn<bool>("empty");
+   QTest::addColumn<bool>("existing");
+   for (bool shared : { false, true })
+      for (bool empty : { false, true })
+         QTest::newRow(qPrintable(QString("shared-%1-empty-%2").arg(shared).arg(empty))) << shared << empty << false;
+   QTest::newRow("replace-private-file") << false << false << true;
+   QTest::newRow("replace-with-empty-file") << false << true << true;
+}
+
+void CacheTest::downloadToPrivateDirectory()
+{
+   QFETCH(bool, sharedParent);
+   QFETCH(bool, empty);
+   QFETCH(bool, existing);
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   QFile sibling(temp.filePath("private.txt"));
+   QVERIFY(sibling.open(QIODevice::WriteOnly));
+   sibling.write("private");
+   sibling.close();
+   const QString destination = temp.filePath("download.bin");
+   if (existing)
+   {
+      QFile previous(destination);
+      QVERIFY(previous.open(QIODevice::WriteOnly));
+      previous.write("previous content");
+   }
+   const QByteArray content = empty ? QByteArray() : QByteArray("download data");
+   Common::Hasher hasher;
+   hasher.addData(std::span<const char>(content));
+   const auto hash = hasher.getResult();
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   if (sharedParent)
+      cache.addASharedPath(temp.path() + '/');
+   Protos::Common::Entry entry;
+   entry.set_type(Protos::Common::Entry::FILE);
+   entry.set_name("download.bin");
+   entry.set_size(content.size());
+   entry.mutable_shared_entry()->set_path(destination.toStdString());
+   if (!empty)
+      entry.add_chunks()->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
+   const auto chunks = cache.newFile(entry);
+   QCOMPARE(chunks.size(), empty ? 0 : 1);
+   const auto shares = cache.getSharedEntries();
+   QCOMPARE(shares.size(), 1);
+   QCOMPARE(!shares.first().path.isFile(), sharedParent);
+   QVERIFY(entry.exists());
+   if (!sharedParent)
+   {
+      QVERIFY(!cache.getEntry(Common::Path(sibling.fileName())));
+      QCOMPARE(shares.first().path.toString(), destination + (empty ? "" : ".unfinished"));
+      QCOMPARE(entry.shared_entry().path(), destination.toStdString());
+   }
+   const auto id = entry.shared_entry().id().hash();
+   if (!empty)
+   {
+      auto writer = chunks.first()->getDataWriter();
+      QVERIFY(!writer->write(content.constData(), 3));
+      const auto retry = cache.newFile(entry);
+      QCOMPARE(retry.first().data(), chunks.first().data());
+      QCOMPARE(retry.first()->getKnownBytes(), 3);
+      QCOMPARE(entry.shared_entry().id().hash(), id);
+      QVERIFY(writer->write(content.constData() + 3, content.size() - 3));
+   }
+   QCoreApplication::sendPostedEvents();
+   QFile completed(destination);
+   QVERIFY(completed.open(QIODevice::ReadOnly));
+   QCOMPARE(completed.readAll(), content);
+   QCOMPARE(cache.getSharedEntries().size(), 1);
+   if (!sharedParent)
+   {
+      QCOMPARE(cache.getSharedEntries().first().path.toString(), destination);
+      const auto roots = cache.getProtoSharedEntries();
+      QVERIFY(cache.getFile(roots.entries(0)));
+      const auto saved = SETTINGS.getRepeated<Protos::Common::SharedEntry>("shared_entries");
+      QCOMPARE(saved.size(), 1);
+      QCOMPARE(saved.first().path(), destination.toStdString());
+      // A completed shared file must still be found after restoring persisted shares.
+      FM::Cache restored(QSharedPointer<HC::IHashCache>(new MockHashCache));
+      restored.addExistingSharedEntry(saved.first());
+      QVERIFY(restored.getFile(entry));
+   }
+}
+
 void CacheTest::sharedFileBrowseName_data()
 {
    QTest::addColumn<QString>("label");

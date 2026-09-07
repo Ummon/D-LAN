@@ -45,6 +45,7 @@ namespace
    struct DownloadEntry
    {
       Common::Path directory;
+      Common::Path destination;
       QString name;
       QList<Common::Hash> hashes;
       qint64 spaceNeeded = 0;
@@ -84,6 +85,15 @@ namespace
          {
             // Check the single filename through the same Path rules used by File.
             result.directory.setFilename(result.name);
+            if (entry.path().empty() && !entry.shared_entry().path().empty())
+            {
+               const Common::Path requested(QString::fromStdString(entry.shared_entry().path()));
+               if (requested.isFile())
+               {
+                  require(requested.isAbsolute());
+                  result.destination = requested.removeLastElement().setFilename(result.name);
+               }
+            }
             const quint64 size = entry.size();
             const quint64 chunkSize = Common::Constants::CHUNK_SIZE;
             const quint64 chunkCount = size / chunkSize + (size % chunkSize != 0);
@@ -334,18 +344,64 @@ QList<QSharedPointer<IChunk>> Cache::newFile(Protos::Common::Entry& fileEntry)
 {
    const auto download = prepareDownloadEntry(fileEntry, false, this->MINIMUM_FREE_SPACE);
    QMutexLocker locker(&this->mutex);
-   Directory* dir = this->createDownloadDirectories(fileEntry, download.directory, download.spaceNeeded);
-   if (!dir)
-      throw UnableToCreateNewFileException();
-   dir->populateSharedEntry(&fileEntry);
    const auto& name = download.name;
    const auto& hashes = download.hashes;
+   Directory* dir = nullptr;
+   File* file = nullptr;
+   const auto& destination = download.destination;
+
+   if (!destination.isNull())
+   {
+      if (this->retiringSharedFiles.values().contains(destination))
+         throw UnableToCreateNewFileException();
+      if (auto sharedDir = this->getSuperSharedDirectory(destination))
+      {
+         // Reuse an existing directory share, without widening its scope.
+         const auto parent = destination.removeLastElement();
+         const auto relative = parent.toString().mid(sharedDir->getPath().toString().size());
+         fileEntry.set_path(QString('/' + relative).toStdString());
+         sharedDir->getRootEntry()->populateSharedEntry(&fileEntry);
+         dir = this->createDownloadDirectories(fileEntry, Common::Path(relative), download.spaceNeeded);
+      }
+      else
+      {
+         const auto parent = destination.removeLastElement();
+         if (!QDir(parent.toString()).exists())
+            throw UnableToCreateNewDirException();
+         if (Common::Global::availableDiskSpace(parent) < download.spaceNeeded)
+            throw InsufficientStorageSpaceException();
+         const auto unfinished = parent.setFilename(name + Global::getUnfinishedSuffix());
+         auto shared = dynamic_cast<SharedFile*>(this->getSharedEntry(unfinished));
+         if (!shared)
+            shared = dynamic_cast<SharedFile*>(this->getSharedEntry(destination));
+         if (!shared)
+         {
+            const auto existing = QFileInfo::exists(unfinished.toString()) ? unfinished : destination;
+            if (QFileInfo::exists(existing.toString()))
+               shared = dynamic_cast<SharedFile*>(this->createSharedEntry(existing, Common::Hash(), -1, name));
+         }
+         if (shared)
+         {
+            file = shared->getRootFile();
+            if (file->isRemovalPending())
+               throw UnableToCreateNewFileException();
+         }
+      }
+   }
+   else
+      dir = this->createDownloadDirectories(fileEntry, download.directory, download.spaceNeeded);
 
    // Prefer the in-progress replacement: its physical destination may coexist
    // with the old completed file until the download finishes.
-   File* file = dir->getFile(name + Global::getUnfinishedSuffix());
-   if (!file)
-      file = dir->getFile(name);
+   if (dir)
+   {
+      if (this->retiringSharedFiles.values().contains(dir->getAbsolutePath().setFilename(name)))
+         throw UnableToCreateNewFileException();
+      dir->populateSharedEntry(&fileEntry);
+      file = dir->getFile(name + Global::getUnfinishedSuffix());
+      if (!file)
+         file = dir->getFile(name);
+   }
    if (file != nullptr)
    {
       const bool unfinished = !file->isComplete();
@@ -372,7 +428,7 @@ QList<QSharedPointer<IChunk>> Cache::newFile(Protos::Common::Entry& fileEntry)
       if (resetExistingFile)
          file->setToUnfinished(fileEntry.size(), hashes);
    }
-   else
+   else if (dir)
    {
       file = new File(
          dir->getRoot(),
@@ -384,6 +440,23 @@ QList<QSharedPointer<IChunk>> Cache::newFile(Protos::Common::Entry& fileEntry)
          hashes,
          true
       );
+   }
+   else if (!destination.isNull())
+   {
+      auto shared = new SharedFile(this, destination, fileEntry, hashes);
+      this->sharedEntries << shared;
+      emit newSharedEntry(shared);
+      file = shared->getRootFile();
+   }
+   else
+      throw UnableToCreateNewFileException();
+
+   if (!dir)
+   {
+      file->populateSharedEntry(&fileEntry);
+      // Keep the final destination stable across the unfinished-file rename and retries.
+      fileEntry.mutable_shared_entry()->set_path(destination.toString().toStdString());
+      this->saveSharedEntries();
    }
 
    fileEntry.set_exists(true); // File has been physically created.
@@ -586,6 +659,9 @@ void Cache::removeSharedEntry(SharedEntry* entry, Directory* dir)
 
    if (this->sharedEntries.contains(entry))
    {
+      if (auto sharedFile = dynamic_cast<SharedFile*>(entry))
+         this->retiringSharedFiles.insert(sharedFile->getRootFile(),
+            Common::Path(Global::removeUnfinishedSuffix(sharedFile->getPath().toString())));
       this->sharedEntries.removeOne(entry);
       this->saveSharedEntries();
       emit sharedEntryRemoved(entry, dir);
@@ -778,12 +854,16 @@ void Cache::onScanned(Directory* dir)
 /**
   * The location of a shared entry has changed (moved or renamed on the file system): persist the new one.
   */
-void Cache::onSharedEntryPathChanged(SharedEntry* entry)
+void Cache::onSharedEntryPathChanged(SharedEntry* entry, const Common::Path& oldPath)
 {
    QMutexLocker locker(&this->mutex);
 
    if (this->sharedEntries.contains(entry))
+   {
       this->saveSharedEntries();
+      if (!oldPath.isNull())
+         emit sharedEntryPathChanged(entry, oldPath);
+   }
 }
 
 void Cache::deleteEntry(Entry* entry)
@@ -796,8 +876,15 @@ void Cache::deleteEntry(Entry* entry)
          return;
       }
    }
+   this->destroyEntry(entry);
+}
+
+void Cache::destroyEntry(Entry* entry)
+{
    emit entryAboutToBeDeleted(entry);
    delete entry;
+   QMutexLocker locker(&this->mutex);
+   this->retiringSharedFiles.remove(entry);
 }
 
 void Cache::beginTraversal()
@@ -826,8 +913,7 @@ void Cache::deleteDeferredEntries()
             return;
          entry = this->deferredDeletions.takeFirst();
       }
-      emit entryAboutToBeDeleted(entry);
-      delete entry;
+      this->destroyEntry(entry);
    }
 }
 

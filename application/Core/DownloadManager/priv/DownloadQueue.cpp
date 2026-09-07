@@ -285,9 +285,13 @@ bool DownloadQueue::isEntryAlreadyQueued(const Protos::Common::Entry& localEntry
    while (i != this->downloadsIndexedByName.constEnd() && i.key() == localEntry.name())
    {
       if (
+         // Pending custom destinations have no share ID yet. Compare their absolute
+         // file paths as well, including against an already-created shared file.
+         (!localEntry.path().empty() || localEntry.shared_entry().path().empty() ||
+            i.value()->getLocalEntry().shared_entry().path() == localEntry.shared_entry().path()) &&
          i.value()->getLocalEntry().path() == localEntry.path() &&
          (
-            !localEntry.has_shared_entry() ||
+            !localEntry.has_shared_entry() || localEntry.shared_entry().id().hash().empty() ||
             i.value()->getLocalEntry().shared_entry().id().hash() == localEntry.shared_entry().id().hash()
          )
       )

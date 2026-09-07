@@ -46,7 +46,8 @@ namespace FM
          Cache* cache,
          const Common::Path& fullPath,
          const Common::Hash& id = Common::Hash(),
-         const QString& userName = QString()
+         const QString& userName = QString(),
+         bool mustExist = true
       );
 
    public:
@@ -146,6 +147,9 @@ namespace FM
    class SharedFile : public SharedEntry
    {
    public:
+      // Creates an unfinished download without sharing the containing directory.
+      SharedFile(Cache* cache, const Common::Path& path, const Protos::Common::Entry& entry,
+         const QList<Common::Hash>& hashes);
       SharedFile(
          Cache* cache,
          const Common::Path& path,

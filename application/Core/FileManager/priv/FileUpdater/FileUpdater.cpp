@@ -137,6 +137,29 @@ void FileUpdater::addRoot(SharedEntry* sharedEntry)
    this->dirEvent->release();
 }
 
+// Follow a rename performed by the downloader, whose cached name is already updated.
+void FileUpdater::updateRootPath(SharedEntry* sharedEntry, const Common::Path& oldPath)
+{
+   QMutexLocker locker(&this->mutex);
+   if (!this->dirWatcher)
+      return;
+   this->dirWatcher->rmPath(oldPath.toString(false), oldPath.getFilename());
+   const auto path = sharedEntry->getPath();
+   bool watchable = false;
+   try
+   {
+      watchable = this->dirWatcher->addPath(path.toString(false), path.getFilename());
+   }
+   catch (FileSystemEntryNotFoundException&)
+   {
+   }
+   auto root = sharedEntry->getRootEntry();
+   if (watchable)
+      this->unwatchableEntries.removeOne(root);
+   else if (!this->unwatchableEntries.contains(root))
+      this->unwatchableEntries << root;
+}
+
 /**
   * Called by another thread.
   * If 'dir' is given it will steal the content of 'sharedEntry' and append

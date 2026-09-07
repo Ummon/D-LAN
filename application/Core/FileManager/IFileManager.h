@@ -112,6 +112,8 @@ namespace FM
         * @exception UnableToCreateNewFileException
         * @exception UnableToCreateNewDirException It means that one of the directories of the file path can't be created. The file is of course not created in this case.
         */
+      // With an empty entry.path and an absolute file path in shared_entry.path,
+      // create a shared file at that destination, or reuse its containing directory share.
       virtual QList<QSharedPointer<IChunk>> newFile(Protos::Common::Entry& entry) = 0;
 
       /**

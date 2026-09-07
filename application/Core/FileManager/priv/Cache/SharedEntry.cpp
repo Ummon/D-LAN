@@ -47,7 +47,8 @@ SharedEntry::SharedEntry(
    Cache* cache,
    const Common::Path& fullPath,
    const Common::Hash& id,
-   const QString& userName
+   const QString& userName,
+   bool mustExist
 ) :
    cache(cache),
    id(id.isNull() ? Common::Hash::rand() : id),
@@ -61,7 +62,7 @@ SharedEntry::SharedEntry(
       throw SharedEntryAlreadySharedException();
 
    // First of all check is the entry physically exists.
-   if (fullPath.isFile() && !QFile(pathStr).exists())
+   if (mustExist && fullPath.isFile() && !QFile(pathStr).exists())
       throw FileNotFoundException(pathStr);
 
    if (!fullPath.isFile() && !QDir(pathStr).exists())
@@ -265,6 +266,14 @@ SharedFile::SharedFile(
 {
    auto fileInfo = QFileInfo(path.toString());
    this->file = new File(this, path.getFilename(), fileInfo.size(), fileInfo.isHidden(), fileInfo.lastModified());
+}
+
+SharedFile::SharedFile(Cache* cache, const Common::Path& path, const Protos::Common::Entry& entry,
+   const QList<Common::Hash>& hashes) :
+   SharedEntry(cache, path, Common::Hash(), path.getFilename(), false)
+{
+   this->file = new File(this, path.getFilename(), entry.size(), entry.hidden(),
+      QDateTime::currentDateTime(), nullptr, hashes, true);
 }
 
 SharedFile::~SharedFile()

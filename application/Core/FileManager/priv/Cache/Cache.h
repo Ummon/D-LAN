@@ -100,7 +100,7 @@ namespace FM
       void onChunkRemoved(const QSharedPointer<Chunk>& chunk);
 
       void onScanned(Directory* dir);
-      void onSharedEntryPathChanged(SharedEntry* entry);
+      void onSharedEntryPathChanged(SharedEntry* entry, const Common::Path& oldPath = Common::Path());
 
    public slots:
       void deleteEntry(FM::Entry* entry);
@@ -123,6 +123,7 @@ namespace FM
       void directoryScanned(FM::Directory* dir);
 
       void newSharedEntry(FM::SharedEntry* entry);
+      void sharedEntryPathChanged(FM::SharedEntry* entry, const Common::Path& oldPath);
       void sharedEntryRemoved(FM::SharedEntry* entry, FM::Directory* dir);
 
    private:
@@ -140,6 +141,7 @@ namespace FM
       void beginTraversal();
       void endTraversal();
       void deleteDeferredEntries();
+      void destroyEntry(Entry* entry);
 
       QMutex deletionMutex;
       int activeTraversals = 0;
@@ -160,6 +162,8 @@ namespace FM
       QSharedPointer<HC::IHashCache> hashCache;
 
       QList<SharedEntry*> sharedEntries;
+      // A removed shared file still owns its path until the updater destroys it.
+      QHash<Entry*, Common::Path> retiringSharedFiles;
 
       FilePool filePool;
 

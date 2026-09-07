@@ -102,6 +102,7 @@ namespace FM
       virtual void setSize(qint64 size) override;
 
       void deleteIfIncomplete();
+      bool isRemovalPending() const { return this->removalPending; }
       void removeUnfinishedFiles() override;
 
       void moveInto(Directory* directory) override;
@@ -139,6 +140,7 @@ namespace FM
       mutable int firstUnhashedChunk = 0;
       // 'atomic' to avoid using the mutex in 'isComplete()', it can cause deadlocks when called by 'FileUpdater'.
       std::atomic<bool> complete;
+      std::atomic<bool> removalPending { false };
 
       quint16 numDataWriter;
       quint16 numDataReader;

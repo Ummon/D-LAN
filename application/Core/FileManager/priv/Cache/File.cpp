@@ -105,6 +105,10 @@ File::File(
          .arg(dateLastModified.toString("dd.MM.yyyy-hh:mm:ss.zzz"))
    );
 
+   // The enclosing SharedFile constructor owns its root until this constructor
+   // succeeds. Exception unwinding must not delete that still-constructing owner.
+   auto releaseRootOnFailure = qScopeGuard([this] { this->root = nullptr; });
+
    if (auto cache = this->getCache())
    {
       if (!createPhysically && hashes.isEmpty())
@@ -129,6 +133,7 @@ File::File(
 
    if (this->parentDirectory)
       this->parentDirectory.load()->add(this);
+   releaseRootOnFailure.dismiss();
 }
 
 File::~File()
@@ -199,7 +204,18 @@ void File::setToUnfinished(qint64 size, const QList<Common::Hash>& hashes)
 
    this->getCache()->getHashCache()->rmHashes(this->getAbsolutePath());
    if (!Global::isFileUnfinished(this->getName()))
+   {
+      const auto oldPath = this->getAbsolutePath();
       this->setName(this->getName() + Global::getUnfinishedSuffix());
+      if (!this->parentDirectory)
+      {
+         auto cache = this->getCache();
+         auto root = this->getRoot();
+         QMetaObject::invokeMethod(cache, [cache, root, oldPath] {
+            cache->onSharedEntryPathChanged(root, oldPath);
+         }, Qt::QueuedConnection);
+      }
+   }
    if (this->parentDirectory)
       this->parentDirectory.load()->fileNameChanged(this);
    this->setSize(size);
@@ -345,6 +361,9 @@ Entry* File::getEntry(const Common::Path& path)
 {
    QMutexLocker locker(&this->mutex);
 
+   // Shared-file browse entries identify the root by share ID with an empty path/name.
+   if (!this->parentDirectory && path.isNull())
+      return this;
    if (path.isFile() && !path.isAbsolute() && path.getDirs().isEmpty() && path.getFilename() == this->getName())
       return this;
    return nullptr;
@@ -696,7 +715,23 @@ void File::deleteIfIncomplete()
 
    if (!this->complete)
    {
+      if (this->isRoot() && this->removalPending.exchange(true))
+      {
+         this->mutex.unlock();
+         return;
+      }
       this->removeUnfinishedFiles();
+      if (this->isRoot())
+      {
+         auto cache = this->getCache();
+         auto root = this->getRoot();
+         this->mutex.unlock();
+         // The updater owns root retirement: unregister the share and its pending
+         // work before deleting the File (which also destroys its SharedEntry).
+         // Queue this outside file/cache locks; repeated requests are harmless.
+         QMetaObject::invokeMethod(cache, [cache, root] { cache->removeSharedEntry(root); }, Qt::QueuedConnection);
+         return;
+      }
       this->mutex.unlock();
       this->del();
       return;
@@ -805,6 +840,15 @@ void File::setAsComplete()
             this->setFileAsHidden(newPath);
          this->dateLastModified = QFileInfo(newPath).lastModified();
          this->setName(Global::removeUnfinishedSuffix(this->getName()));
+         if (!this->parentDirectory)
+         {
+            auto cache = this->getCache();
+            auto root = this->getRoot();
+            // Persist and update the file watch after releasing the file lock.
+            QMetaObject::invokeMethod(cache, [cache, root, oldPath] {
+               cache->onSharedEntryPathChanged(root, Common::Path(oldPath));
+            }, Qt::QueuedConnection);
+         }
          if (this->parentDirectory)
             this->parentDirectory.load()->fileNameChanged(this);
          this->saveHashes();

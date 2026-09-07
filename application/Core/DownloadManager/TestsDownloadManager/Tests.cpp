@@ -82,6 +82,7 @@ namespace
    {
    public:
       DestinationFileManager(FM::Cache& cache) : cache(cache) {}
+      QList<Common::SharedEntry> getSharedEntries() const override { return this->cache.getSharedEntries(); }
       QList<QSharedPointer<FM::IChunk>> newFile(Protos::Common::Entry& entry) override
       {
          return this->cache.newFile(entry);
@@ -222,6 +223,59 @@ namespace
       Common::Hash getRemotePeerID() const override { return {}; }
       void finished(bool) override {}
    };
+}
+
+void Tests::customFileDestination_data()
+{
+   QTest::addColumn<bool>("empty");
+   QTest::addColumn<bool>("sharedParent");
+   for (bool empty : { false, true })
+      for (bool shared : { false, true })
+         QTest::newRow(qPrintable(QString("empty-%1-shared-%2").arg(empty).arg(shared))) << empty << shared;
+}
+
+void Tests::customFileDestination()
+{
+   QFETCH(bool, empty);
+   QFETCH(bool, sharedParent);
+   QTemporaryDir first, second;
+   QVERIFY(first.isValid());
+   QVERIFY(second.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new EmptyHashCache));
+   if (sharedParent)
+      cache.addASharedPath(first.path() + '/');
+   QSharedPointer<DestinationFileManager> files(new DestinationFileManager(cache));
+   ResumePeer peer(files);
+   DownloadManager manager(files, this->peerManager);
+   Protos::Common::Entry remote;
+   remote.set_type(Protos::Common::Entry::FILE);
+   remote.set_path("/remote/");
+   remote.set_name("selected.txt");
+   remote.set_size(empty ? 0 : 100);
+   manager.addDownload(remote, &peer, first.path() + '/');
+   QCOMPARE(manager.getDownloads().size(), 1);
+   const auto local = manager.getDownloads().first()->getLocalEntry();
+   QCOMPARE(local.exists(), empty);
+   if (!sharedParent)
+      QCOMPARE(local.shared_entry().path(), first.filePath("selected.txt").toStdString());
+   manager.addDownload(remote, &peer, first.path() + '/');
+   QCOMPARE(manager.getDownloads().size(), 1);
+   manager.addDownload(remote, &peer, second.path() + '/');
+   QCOMPARE(manager.getDownloads().size(), 2);
+   const auto shares = cache.getSharedEntries();
+   QCOMPARE(shares.size(), empty ? 2 : sharedParent ? 1 : 0);
+   for (const auto& shared : shares)
+      if (!sharedParent || shared.path.toString() != first.path() + '/')
+         QVERIFY(shared.path.isFile());
+   if (empty)
+   {
+      QVERIFY(QFileInfo(first.filePath("selected.txt")).isFile());
+      QVERIFY(QFileInfo(second.filePath("selected.txt")).isFile());
+   }
+   Protos::Queue::Queue::Entry saved;
+   static_cast<Download*>(manager.getDownloads().last())->populateQueueEntry(&saved);
+   QCOMPARE(saved.local_entry().shared_entry().path(), second.filePath("selected.txt").toStdString());
+   QCOMPARE(saved.remote_entry().SerializeAsString(), remote.SerializeAsString());
 }
 
 void Tests::sharedRootDownload_data()
