@@ -319,15 +319,20 @@ Download* DownloadQueue::getAnErroneousDownload()
 
 QList<QSharedPointer<IChunkDownloader>> DownloadQueue::getTheOldestUnfinishedChunks(int n)
 {
+   if (n <= 0)
+      return {};
+
    // First pass: 'getUnfinishedChunks(..)' re-indexes the downloads in 'downloadsSortedByTime' (see
    // 'fileDownloadTimeChanged(..)'), it can't be called while iterating it.
+   // Snapshot all eligible files: a file may yield no chunks, so limiting the number of files to 'n'
+   // could prevent later files from filling the chunk budget.
    QList<FileDownload*> oldestDownloads;
-   for (QMutableMultiMapIterator<qint64, FileDownload*> i(this->downloadsSortedByTime); i.hasNext() && oldestDownloads.size() < n;)
+   for (QMutableMultiMapIterator<qint64, FileDownload*> i(this->downloadsSortedByTime); i.hasNext();)
    {
       i.next();
       if (i.value()->getStatus() == Protos::Common::DownloadStatus::COMPLETE || i.value()->getStatus() == Protos::Common::DownloadStatus::DELETED)
          i.remove();
-      else
+      else if (i.value()->getStatus() != Protos::Common::DownloadStatus::PAUSED)
          oldestDownloads << i.value();
    }
 
