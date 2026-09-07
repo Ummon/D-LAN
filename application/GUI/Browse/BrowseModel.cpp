@@ -477,17 +477,11 @@ QVariant BrowseModel::Tree::data(int column) const
    {
    case NAME:
       {
-         const auto& item = this->getItem();
-         if (item.name().empty())
-         {
-            const auto shareName = QString::fromStdString(this->getItem().shared_entry().shared_name());
-            if (!shareName.isEmpty())
-               return shareName;
-            else
-               return Common::Path(QString::fromStdString(this->getItem().shared_entry().path())).getLastElement();
-         }
+         const QString& name = Common::ProtoHelper::getName(this->getItem());
+         if (!name.isEmpty())
+            return name;
          else
-            return QString::fromStdString(this->getItem().name());
+            return Common::Path(QString::fromStdString(this->getItem().shared_entry().path())).getLastElement();
       }
    case SIZE: return Common::Global::formatByteSize(this->getItem().size());
    default: return QVariant();

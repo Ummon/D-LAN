@@ -9,6 +9,8 @@ public:
    explicit CacheTest(QObject* parent = nullptr);
 
 private slots:
+   void sharedFileBrowseName_data();
+   void sharedFileBrowseName();
    void watcherRecovery_data();
    void watcherRecovery();
    void updaterWatcherRecovery_data();

@@ -27,7 +27,7 @@ namespace DM
    class Utils
    {
    public:
-      static QString sharedDirectoryName(QString name);
+      static QString sharedName(QString userName);
 #ifdef DEBUG
       static QString getStatusStr(Protos::Common::DownloadStatus status);
 #endif

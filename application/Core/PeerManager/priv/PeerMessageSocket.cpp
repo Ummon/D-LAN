@@ -469,9 +469,17 @@ void PeerMessageSocket::onNewMessage(const Common::Message& message)
             auto entries = this->entriesResultMessage.add_results()->mutable_entries();
             entries->CopyFrom(this->fileManager->getEntries());
 
-            // Remove local absolute paths.
+            // Remove local absolute paths and set name if needed.
             for (int i = 0; i < entries->entries_size(); ++i)
-               entries->mutable_entries(i)->mutable_shared_entry()->mutable_path()->clear();
+            {
+               auto sharedEntry = entries->mutable_entries(i)->mutable_shared_entry();
+               if (sharedEntry->shared_name().empty())
+               {
+                  const auto path = Common::Path(QString::fromStdString(sharedEntry->path()));
+                  sharedEntry->set_shared_name(path.getLastElement().toStdString());
+               }
+               sharedEntry->mutable_path()->clear();
+            }
          }
 
          if (this->entriesResultsToReceive.isEmpty())

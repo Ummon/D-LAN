@@ -78,6 +78,41 @@ CacheTest::CacheTest(QObject *parent) :
 {
 }
 
+void CacheTest::sharedFileBrowseName_data()
+{
+   QTest::addColumn<QString>("label");
+   QTest::addColumn<QString>("expected");
+   QTest::newRow("missing-label") << QString() << QString("shared.txt");
+   QTest::newRow("empty-label") << QStringLiteral("") << QString("shared.txt");
+   QTest::newRow("custom-label") << QString("Shared document") << QString("Shared document");
+}
+
+void CacheTest::sharedFileBrowseName()
+{
+   QFETCH(QString, label);
+   QFETCH(QString, expected);
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   const QString path = temp.filePath("shared.txt");
+   QFile physical(path);
+   QVERIFY(physical.open(QIODevice::WriteOnly));
+   physical.close();
+
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   Protos::Common::SharedEntry saved;
+   saved.set_path(path.toStdString());
+   if (!label.isNull())
+      saved.set_shared_name(label.toStdString());
+   cache.addExistingSharedEntry(saved);
+   auto roots = cache.getProtoSharedEntries();
+   QCOMPARE(roots.entries_size(), 1);
+   auto entry = roots.mutable_entries(0);
+   QCOMPARE(entry->type(), Protos::Common::Entry::FILE);
+   // Remote browsing strips the absolute path, so the public name must stand alone.
+   entry->mutable_shared_entry()->clear_path();
+   QCOMPARE(QString::fromStdString(entry->shared_entry().shared_name()), expected);
+}
+
 void CacheTest::sharedFileRenameUpdatesSearchIndexes()
 {
    QTemporaryDir temp;

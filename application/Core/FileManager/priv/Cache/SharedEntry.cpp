@@ -260,7 +260,7 @@ SharedFile::SharedFile(
       cache,
       path,
       id,
-      userName.isNull() ? path.getFilename() : userName
+      userName.isEmpty() ? path.getFilename() : userName
    )
 {
    auto fileInfo = QFileInfo(path.toString());

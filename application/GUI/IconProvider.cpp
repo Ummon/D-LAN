@@ -57,7 +57,7 @@ QIcon IconProvider::getIcon(const Protos::Common::Entry& entry, bool withWarning
    }
    else
    {
-      const QString& name = QString::fromStdString(entry.name());
+      const QString& name = Common::ProtoHelper::getName(entry);
       return IconProvider::getIconCache(name, withWarning);
    }
 }

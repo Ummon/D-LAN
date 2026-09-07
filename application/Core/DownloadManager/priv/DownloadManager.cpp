@@ -168,8 +168,8 @@ Download* DownloadManager::addDownload(
 {
    Protos::Common::Entry localEntry(remoteEntry);
 
-   if (remoteEntry.type() == Protos::Common::Entry::DIR && Common::ProtoHelper::isRoot(remoteEntry))
-      localEntry.set_name(Utils::sharedDirectoryName(Common::ProtoHelper::getName(remoteEntry)).toStdString());
+   if (Common::ProtoHelper::isRoot(remoteEntry))
+      localEntry.set_name(Utils::sharedName(Common::ProtoHelper::getName(remoteEntry)).toStdString());
 
    localEntry.clear_shared_entry();
    localEntry.set_exists(false);
