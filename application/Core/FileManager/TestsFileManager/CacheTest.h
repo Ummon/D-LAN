@@ -68,6 +68,8 @@ private slots:
    void unfinishedDownloadRetry_data();
    void unfinishedDownloadRetry();
    void emptyFileReplacement_data();
+   void entryTypeReplacement_data();
+   void entryTypeReplacement();
    void emptyFileReplacement();
    void emptyFileReplacementReportsRenameFailure();
    void unfinishedFilesStayOutOfSearch_data();

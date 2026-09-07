@@ -2113,6 +2113,80 @@ void CacheTest::newDirectoryPreservesFinalComponent()
    QVERIFY(QFileInfo(expected).isDir());
 }
 
+void CacheTest::entryTypeReplacement_data()
+{
+   QTest::addColumn<bool>("wasDirectory");
+   QTest::addColumn<int>("eventType");
+   for (bool wasDirectory : { false, true })
+      for (auto eventType : { FM::WatcherEvent::DELETED, FM::WatcherEvent::NEW, FM::WatcherEvent::CONTENT_CHANGED })
+         QTest::newRow(qPrintable(QString("%1-%2").arg(wasDirectory ? "directory-to-file" : "file-to-directory").arg(eventType)))
+            << wasDirectory << int(eventType);
+}
+
+void CacheTest::entryTypeReplacement()
+{
+   QFETCH(bool, wasDirectory);
+   QFETCH(int, eventType);
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   const auto savedShares = SETTINGS.getRepeated<Protos::Common::SharedEntry>("shared_entries");
+   const auto restoreShares = qScopeGuard([&] { SETTINGS.set("shared_entries", savedShares); });
+   SETTINGS.rm("shared_entries");
+   FM::FileManager manager(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   manager.fileUpdater.stop();
+   manager.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::Directory*>(manager.getEntry(Common::Path(temp.path() + '/')));
+   QVERIFY(root);
+   FM::FileUpdater updater(&manager);
+   const QString path = temp.filePath("replacement");
+   const auto writeFile = [](const QString& filePath) {
+      QFile file(filePath);
+      return file.open(QIODevice::WriteOnly) && file.write("abc", 3) == 3;
+   };
+   if (wasDirectory)
+   {
+      QVERIFY(QDir().mkdir(path));
+      QVERIFY(writeFile(path + "/child"));
+   }
+   else
+      QVERIFY(writeFile(path));
+   updater.scan(root);
+   auto oldEntry = manager.getEntry(Common::Path(path + (wasDirectory ? "/" : "")));
+   QVERIFY(oldEntry);
+   updater.entriesToScan << oldEntry;
+   if (wasDirectory)
+   {
+      auto child = manager.getEntry(Common::Path(path + "/child"));
+      QVERIFY(child);
+      updater.entriesToScan << child;
+      QVERIFY(QFile::remove(path + "/child"));
+      QVERIFY(QDir().rmdir(path));
+      QVERIFY(writeFile(path));
+   }
+   else
+   {
+      QVERIFY(QFile::remove(path));
+      QVERIFY(QDir().mkdir(path));
+      QVERIFY(writeFile(path + "/newchild"));
+   }
+
+   updater.processEvents({ FM::WatcherEvent(static_cast<FM::WatcherEvent::Type>(eventType), path, false) });
+   QCOMPARE(updater.entriesToScan, QList<FM::Entry*> { root });
+   QVERIFY(!manager.getEntry(Common::Path(path + (wasDirectory ? "/" : ""))));
+   updater.scan(root);
+   if (wasDirectory)
+   {
+      QVERIFY(dynamic_cast<FM::File*>(manager.getEntry(Common::Path(path))));
+      QVERIFY(!manager.getEntry(Common::Path(path + "/child")));
+   }
+   else
+   {
+      QVERIFY(dynamic_cast<FM::Directory*>(manager.getEntry(Common::Path(path + '/'))));
+      QVERIFY(dynamic_cast<FM::File*>(manager.getEntry(Common::Path(path + "/newchild"))));
+   }
+   QCOMPARE(manager.getAmount(), qint64(3));
+}
+
 void CacheTest::emptyFileReplacement_data()
 {
    QTest::addColumn<int>("originalSize");

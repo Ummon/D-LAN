@@ -652,7 +652,32 @@ bool FileUpdater::processEvents(const QList<WatcherEvent>& events)
    const auto newOrContentChanged =
       [this](const QString& path)
       {
-         File* file = dynamic_cast<File*>(this->fileManager->getEntry(path));
+         Entry* entry = this->fileManager->getEntry(path);
+         if (!entry)
+            entry = this->fileManager->getEntry(Common::Path(path + '/'));
+
+         const QFileInfo info(path);
+         const bool typeChanged = entry &&
+            ((dynamic_cast<File*>(entry) && info.isDir()) ||
+             (dynamic_cast<Directory*>(entry) && info.isFile()));
+         if (typeChanged)
+         {
+            // Shared roots belong to the cache; their old share is no longer valid.
+            if (entry->isRoot())
+            {
+               emit deleteSharedEntry(entry->getRoot());
+               return;
+            }
+
+            Directory* parent = this->fileManager->getFittestDirectory(Common::Path(path).removeLastElement());
+            this->deleteEntry(entry);
+            QMutexLocker locker(&this->mutex);
+            if (parent && !this->entriesToScan.contains(parent))
+               this->entriesToScan << parent;
+            return;
+         }
+
+         File* file = dynamic_cast<File*>(entry);
          if (file)
          {
             QMutexLocker locker(&this->mutex);

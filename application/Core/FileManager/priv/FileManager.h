@@ -55,6 +55,7 @@ namespace FM
    class FileManager : public IFileManager, Common::Uncopyable
    {
       Q_OBJECT
+      friend class ::CacheTest; // Stop the worker for deterministic filesystem event tests.
    public:
       FileManager(QSharedPointer<HC::IHashCache> hashCache);
       ~FileManager();
