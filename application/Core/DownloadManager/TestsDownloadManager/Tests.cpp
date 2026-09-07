@@ -99,6 +99,27 @@ namespace
       void setStatus(bool) override {}
    };
 
+   class PendingHashesResult : public PM::IGetHashesResult
+   {
+   public:
+      PendingHashesResult() : IGetHashesResult(60000) {}
+      void start() override {}
+      void doDeleteLater() override { this->deleteLater(); }
+   };
+
+   class HashPeer : public ResumePeer
+   {
+   public:
+      using ResumePeer::ResumePeer;
+      Protos::Common::Entry requestedEntry;
+      QSharedPointer<PM::IGetHashesResult> hashes = QSharedPointer<PendingHashesResult>::create();
+      QSharedPointer<PM::IGetHashesResult> getHashes(const Protos::Common::Entry& entry) override
+      {
+         this->requestedEntry = entry;
+         return this->hashes;
+      }
+   };
+
    class CheckpointPeer : public ResumePeer
    {
    public:
@@ -154,6 +175,78 @@ namespace
       Common::Hash getRemotePeerID() const override { return {}; }
       void finished(bool) override {}
    };
+}
+
+void Tests::rejectInvalidChunkHashes_data()
+{
+   QTest::addColumn<bool>("inEntry");
+   QTest::addColumn<QByteArray>("invalidHash");
+   for (bool inEntry : { true, false })
+      for (int length : { 0, 1, Common::Hash::HASH_SIZE - 1, Common::Hash::HASH_SIZE, Common::Hash::HASH_SIZE + 1 })
+      {
+         const auto name = QString("%1-length-%2").arg(inEntry ? "entry" : "response").arg(length).toUtf8();
+         QTest::newRow(name.constData()) << inEntry
+            << QByteArray(length, length == Common::Hash::HASH_SIZE ? '\0' : 'x');
+      }
+}
+
+void Tests::rejectInvalidChunkHashes()
+{
+   QFETCH(bool, inEntry);
+   QFETCH(QByteArray, invalidHash);
+   HashPeer peer(this->fileManager);
+   LinkedPeers links;
+   OccupiedPeers asking, downloading;
+   Common::ThreadPool pool(1);
+   Common::TransferRateCalculator rate;
+   const auto knownHash = Common::Hash::rand();
+   const auto replacementHash = Common::Hash::rand();
+   Protos::Common::Entry entry;
+   entry.set_type(Protos::Common::Entry::FILE);
+   entry.set_name("hashes.bin");
+   entry.set_size(quint64(2) * Common::Constants::CHUNK_SIZE);
+   entry.add_chunks()->set_hash(inEntry ? invalidHash.toStdString() : std::string());
+   entry.add_chunks()->set_hash(knownHash.getData(), Common::Hash::HASH_SIZE);
+   FileDownload download(this->fileManager, links, asking, downloading, pool, &peer, entry, entry,
+      rate, Protos::Queue::Queue::Entry::QUEUED);
+   QVERIFY(download.retrieveHashes());
+   QVERIFY(!asking.isPeerFree(&peer));
+   QSignalSpy newHashes(&download, &FileDownload::newHashKnown);
+   if (!inEntry)
+   {
+      Protos::Core::HashResult invalid;
+      invalid.set_num(0);
+      invalid.mutable_hash()->set_hash(invalidHash.toStdString());
+      emit peer.hashes->nextHash(invalid);
+   }
+   QCOMPARE(newHashes.count(), 0);
+   QCOMPARE(download.getStatus(), Protos::Common::DownloadStatus::GETTING_THE_HASHES);
+   QVERIFY(!asking.isPeerFree(&peer));
+   QList<QSharedPointer<IChunkDownloader>> chunks;
+   download.getUnfinishedChunks(chunks, 2, false);
+   QCOMPARE(chunks.size(), 1);
+   QCOMPARE(chunks.first()->getHash(), knownHash);
+   Protos::Queue::Queue::Entry saved;
+   download.populateQueueEntry(&saved);
+   QVERIFY(saved.remote_entry().chunks(0).hash().empty());
+   QVERIFY(saved.local_entry().chunks(0).hash().empty());
+   QVERIFY(peer.requestedEntry.chunks(0).hash().empty());
+
+   // The rejected hash must neither occupy its slot nor count towards completing the request.
+   Protos::Core::HashResult valid;
+   valid.set_num(0);
+   valid.mutable_hash()->set_hash(replacementHash.getData(), Common::Hash::HASH_SIZE);
+   emit peer.hashes->nextHash(valid);
+   QCOMPARE(newHashes.count(), 1);
+   QVERIFY(asking.isPeerFree(&peer));
+   chunks.clear();
+   download.getUnfinishedChunks(chunks, 2, false);
+   QCOMPARE(chunks.size(), 2);
+   QCOMPARE(chunks[0]->getHash(), replacementHash);
+   QCOMPARE(chunks[1]->getHash(), knownHash);
+   download.populateQueueEntry(&saved);
+   QCOMPARE(saved.remote_entry().chunks(0).hash(), valid.hash().hash());
+   QCOMPARE(saved.local_entry().chunks(0).hash(), valid.hash().hash());
 }
 
 void Tests::chunkErrorTakesPrecedence_data()

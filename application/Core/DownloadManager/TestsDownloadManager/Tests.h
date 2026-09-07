@@ -60,6 +60,8 @@ private slots:
    void resetPreservesDestination();
    void chunkErrorTakesPrecedence_data();
    void chunkErrorTakesPrecedence();
+   void rejectInvalidChunkHashes_data();
+   void rejectInvalidChunkHashes();
 
 
    void cleanupTestCase();

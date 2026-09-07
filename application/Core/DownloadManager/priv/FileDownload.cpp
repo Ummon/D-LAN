@@ -61,6 +61,13 @@ FileDownload::FileDownload(
    transferRateCalculator(transferRateCalculator),
    lastTimeGetAllUnfinishedChunks(0)
 {
+   // Invalid hashes are unknown, not occupied chunk slots. Normalize both entries so requests,
+   // file creation and queue persistence cannot reuse malformed data.
+   for (auto* entry : { &this->remoteEntry, &this->localEntry })
+      for (auto& chunk : *entry->mutable_chunks())
+         if (chunk.hash().size() != Common::Hash::HASH_SIZE || Common::Hash(chunk.hash()).isNull())
+            chunk.clear_hash();
+
    L_DEBU(QString("New FileDownload: peer source = %1, remoteEntry: \n%2\nlocalEntry: \n%3").
       arg(
          this->peerSource->toStringLog(),
@@ -547,13 +554,18 @@ void FileDownload::result(const Protos::Core::GetHashesResult& result)
 
 void FileDownload::nextHash(const Protos::Core::HashResult& hashResult)
 {
-   if (hashResult.hash().hash().size() == 0)
+   if (hashResult.hash().hash().size() != Common::Hash::HASH_SIZE)
    {
-      L_DEBU("The received hash contains no data");
+      L_WARN("The received chunk hash has an invalid length");
       return;
    }
 
    Common::Hash hash { hashResult.hash().hash() };
+   if (hash.isNull())
+   {
+      L_WARN("The received chunk hash is null");
+      return;
+   }
    quint32 num = hashResult.num();
 
    L_DEBU(QString("New Hash received %2 num %1").arg(num).arg(hash.toStrShort()));
