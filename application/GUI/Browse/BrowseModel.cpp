@@ -307,7 +307,9 @@ void BrowseModel::browse(Tree* tree)
 
 void BrowseModel::loadChildren(const QPersistentModelIndex &index)
 {
-   if (index == this->currentBrowseIndex)
+   // Keep the destination of the pending request: browse() refuses another request
+   // while it is running, so changing the index here would redirect its response.
+   if (!this->browseResult.isNull() || index == this->currentBrowseIndex)
       return;
 
    this->currentBrowseIndex = index;
