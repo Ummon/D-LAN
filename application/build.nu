@@ -82,9 +82,13 @@ def "main run-tests" [] {
 
     let tests = [
         build/release/output/TestsCommon
+        build/release/output/TestsLogManager
         build/release/output/TestsFileManager
+        build/release/output/TestsFilePool
+        build/release/output/TestsHashCache
         build/release/output/TestsPeerManager
         build/release/output/TestsUploadManager
+        build/release/output/TestsDownloadManager
         build/release/output/TestsNetworkListener
     ]
 
