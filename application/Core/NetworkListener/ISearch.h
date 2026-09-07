@@ -32,13 +32,14 @@ namespace NL
       virtual ~ISearch() {}
 
       /**
-        * Begin a new search. This function can be called only ONE time.
-        * @return An associated tag. This tag will be repeated in the result, see the signal 'found'.
+        * Begin a new search. Only one successful launch is allowed per object.
+        * @return A nonzero tag repeated in the results (see 'found'), or 0 if sending fails
+        *         or the search was already launched. A failed send can be retried.
         */
       virtual quint64 search(const Protos::Common::FindPattern& findPattern) = 0;
 
       /**
-        * @return ms elapsed from the call to 'search'.
+        * @return ms elapsed since the successful launch, or -1 if no search has been launched.
         */
       virtual qint64 elapsed() = 0;
 

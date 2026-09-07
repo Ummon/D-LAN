@@ -46,25 +46,35 @@ quint64 Search::search(const Protos::Common::FindPattern& findPattern)
       return 0;
    }
 
-   this->nbResult = 0;
-   this->timer.start();
-
    Protos::Core::Find findMessage;
 
-   this->tag = QRandomGenerator64::global()->generate64();
-   findMessage.set_tag(this->tag);
+   quint64 tag;
+   do
+      tag = QRandomGenerator64::global()->generate64();
+   while (tag == 0); // Zero is reserved for failure.
+   findMessage.set_tag(tag);
    findMessage.mutable_pattern()->CopyFrom(findPattern);
 
-   connect(&this->uDPListener, &UDPListener::newFindResultMessage, this, &Search::newFindResult);
+   const auto status = this->uDPListener.send(Common::MessageHeader::CORE_FIND, findMessage);
+   if (status != INetworkListener::SendStatus::OK)
+   {
+      L_ERRO(status == INetworkListener::SendStatus::MESSAGE_TOO_LARGE ?
+         "Unable to start search: request exceeds the UDP message size limit" :
+         "Unable to start search: request could not be sent");
+      return 0;
+   }
 
-   this->uDPListener.send(Common::MessageHeader::CORE_FIND, findMessage);
+   this->tag = tag;
+   this->nbResult = 0;
+   this->timer.start();
+   connect(&this->uDPListener, &UDPListener::newFindResultMessage, this, &Search::newFindResult);
 
    return this->tag;
 }
 
 qint64 Search::elapsed()
 {
-   return timer.elapsed();
+   return this->timer.isValid() ? this->timer.elapsed() : -1;
 }
 
 /**

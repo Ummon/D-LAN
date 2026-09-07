@@ -42,6 +42,7 @@
 
 #include <priv/Utils.h>
 #include <priv/UDPListener.h>
+#include <priv/Search.h>
 #include <limits>
 
 #include <MockHashCache.h>
@@ -359,6 +360,56 @@ void Tests::search()
    QTRY_VERIFY_WITH_TIMEOUT(received(), DISCOVERY_TIMEOUT);
 
    QVERIFY(search->elapsed() >= 0);
+}
+
+void Tests::searchSendFailure_data()
+{
+   QTest::addColumn<bool>("oversized");
+   QTest::newRow("oversized request") << true;
+   QTest::newRow("unavailable socket") << false;
+}
+
+void Tests::searchSendFailure()
+{
+   QFETCH(bool, oversized);
+   const Instance& instance = this->instances[1];
+   UDPListener listener(instance.fileManager, instance.peerManager, instance.uploadManager, instance.downloadManager);
+   QTcpServer tcp;
+   QVERIFY(tcp.listen(Utils::getCurrentAddressToListenTo(), 0));
+   QVERIFY(listener.bindUnicastSocket(Utils::getCurrentAddressToListenTo(), tcp.serverPort()));
+   QVERIFY(listener.startListening());
+   if (!oversized)
+      listener.closeSockets();
+
+   Search search(listener);
+   QCOMPARE(search.elapsed(), qint64(-1));
+   int results = 0;
+   connect(&search, &ISearch::found, this, [&](const Protos::Common::FindResult&) { ++results; });
+   Protos::Common::FindPattern pattern;
+   pattern.set_pattern(oversized ? std::string(listener.getMaxUDPMessageSize() + 1, 'x') : "something");
+   QCOMPARE(search.search(pattern), quint64(0));
+   QCOMPARE(search.search(pattern), quint64(0));
+   QCOMPARE(search.elapsed(), qint64(-1));
+
+   Protos::Common::FindResult result;
+   result.set_tag(0);
+   result.add_entries();
+   emit listener.newFindResultMessage(result);
+   QCOMPARE(results, 0);
+
+   if (!oversized)
+   {
+      QVERIFY(listener.bindUnicastSocket(Utils::getCurrentAddressToListenTo(), tcp.serverPort()));
+      QVERIFY(listener.startListening());
+   }
+   pattern.set_pattern("something");
+   const quint64 tag = search.search(pattern);
+   QVERIFY(tag != 0);
+   QVERIFY(search.elapsed() >= 0);
+   QCOMPARE(search.search(pattern), quint64(0));
+   result.set_tag(tag);
+   emit listener.newFindResultMessage(result);
+   QCOMPARE(results, 1); // Failed attempts must not leave duplicate result subscriptions.
 }
 
 void Tests::unavailableMulticastPeer_data()

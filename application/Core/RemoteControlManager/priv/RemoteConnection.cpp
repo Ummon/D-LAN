@@ -634,8 +634,9 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
          {
             QSharedPointer<NL::ISearch> search = this->networkListener->newSearch();
             connect(search.data(), &NL::ISearch::found, this, &RemoteConnection::searchFound);
-            this->currentSearches << search;
             const quint64 tag = search->search(findPattern);
+            if (tag != 0)
+               this->currentSearches << search;
 
             Protos::GUI::Tag tagMess;
             tagMess.set_tag(tag);
