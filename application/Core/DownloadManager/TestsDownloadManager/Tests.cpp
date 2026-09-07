@@ -21,6 +21,7 @@ using namespace DM;
 
 #include <QtDebug>
 #include <QStringList>
+#include <QSignalSpy>
 
 #include <Protos/core_protocol.pb.h>
 #include <Protos/core_settings.pb.h>
@@ -103,12 +104,123 @@ namespace
    public:
       using ResumePeer::ResumePeer;
       bool available = true;
+      QSharedPointer<PM::IGetChunksResult> lastChunksResult;
       bool isAvailable() const override { return this->available; }
       QSharedPointer<PM::IGetChunksResult> getChunks(const Protos::Core::GetChunks&) override
       {
-         return QSharedPointer<PM::IGetChunksResult>(new PendingChunksResult);
+         this->lastChunksResult.reset(new PendingChunksResult);
+         return this->lastChunksResult;
       }
    };
+
+   class FailingChunk : public FM::IChunk
+   {
+   public:
+      FailingChunk(int num, Common::Hash hash) : num(num), hash(hash) {}
+      QSharedPointer<FM::IDataReader> getDataReader() override { return {}; }
+      QSharedPointer<FM::IDataWriter> getDataWriter() override { throw FM::IOErrorException(); }
+      void removeItsIncompleteFile() override {}
+      bool populateEntry(Protos::Common::Entry*) const override { return false; }
+      Common::Path getFilePath() const override { return {}; }
+      int getNum() const override { return this->num; }
+      int getNbTotalChunk() const override { return 2; }
+      Common::Hash getHash() const override { return this->hash; }
+      void setHash(const Common::Hash& hash) override { this->hash = hash; }
+      int getKnownBytes() const override { return 0; }
+      void setKnownBytes(int) override {}
+      int getChunkSize() const override { return Common::Constants::CHUNK_SIZE; }
+      bool isComplete() const override { return false; }
+      QString toStringLog() const override { return "failing test chunk"; }
+   private:
+      int num;
+      Common::Hash hash;
+   };
+
+   class UnusedSocket : public PM::ISocket
+   {
+   public:
+      // The writer fails before any network IO; only ownership/buffer cleanup is exercised.
+      void setReadBufferSize(qint64) override {}
+      qint64 bytesAvailable() const override { return 0; }
+      qint64 read(char*, qint64) override { return -1; }
+      QByteArray readAll() override { return {}; }
+      bool waitForReadyRead(int) override { return false; }
+      qint64 bytesToWrite() const override { return 0; }
+      qint64 write(const char*, qint64) override { return -1; }
+      qint64 write(const QByteArray&) override { return -1; }
+      bool waitForBytesWritten(int) override { return false; }
+      void moveToThread(QThread*) override {}
+      QString errorString() const override { return "unused test socket"; }
+      Common::Hash getRemotePeerID() const override { return {}; }
+      void finished(bool) override {}
+   };
+}
+
+void Tests::chunkErrorTakesPrecedence_data()
+{
+   QTest::addColumn<int>("errorIndex");
+   QTest::addColumn<bool>("otherHasPeer");
+   QTest::addColumn<bool>("otherDownloading");
+   QTest::newRow("error-first-ready") << 0 << true << false;
+   QTest::newRow("error-last-ready") << 1 << true << false;
+   QTest::newRow("error-first-no-source") << 0 << false << false;
+   QTest::newRow("error-last-no-source") << 1 << false << false;
+   QTest::newRow("defer-until-last-transfer-ends") << 0 << true << true;
+}
+
+void Tests::chunkErrorTakesPrecedence()
+{
+   QFETCH(int, errorIndex);
+   QFETCH(bool, otherHasPeer);
+   QFETCH(bool, otherDownloading);
+   QSharedPointer<ResumeFileManager> files(new ResumeFileManager);
+   Protos::Common::Entry entry;
+   entry.set_type(Protos::Common::Entry::FILE);
+   entry.set_name("errors.bin");
+   entry.set_size(quint64(2) * Common::Constants::CHUNK_SIZE);
+   for (int i = 0; i < 2; ++i)
+   {
+      const auto hash = Common::Hash::rand();
+      entry.add_chunks()->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
+      files->chunks << QSharedPointer<FM::IChunk>(new FailingChunk(i, hash));
+   }
+   CheckpointPeer peer(files), otherPeer(files);
+   LinkedPeers links;
+   OccupiedPeers asking, downloading;
+   Common::ThreadPool pool(1);
+   Common::TransferRateCalculator rate;
+   FileDownload download(files, links, asking, downloading, pool, &peer, entry, entry,
+      rate, Protos::Queue::Queue::Entry::QUEUED);
+   download.start();
+   QList<QSharedPointer<IChunkDownloader>> chunks;
+   download.getUnfinishedChunks(chunks, 2);
+   QCOMPARE(chunks.size(), 2);
+   auto failed = qSharedPointerDynamicCast<ChunkDownloader>(chunks[errorIndex]);
+   auto other = qSharedPointerDynamicCast<ChunkDownloader>(chunks[1 - errorIndex]);
+   QVERIFY(failed);
+   QVERIFY(other);
+   if (!otherHasPeer || otherDownloading)
+      other->rmPeer(&peer);
+   if (otherDownloading)
+   {
+      other->addPeer(&otherPeer);
+      QCOMPARE(other->startDownloading(), &otherPeer);
+   }
+   QSignalSpy errors(&download, &Download::becomeErroneous);
+   QCOMPARE(failed->startDownloading(), &peer);
+   // Run the actual worker and completion callback, failing when it opens the data writer.
+   emit peer.lastChunksResult->stream(QSharedPointer<PM::ISocket>(new UnusedSocket));
+   QTRY_VERIFY(!failed->isDownloading());
+   if (otherDownloading)
+   {
+      QCOMPARE(download.getStatus(), Protos::Common::DownloadStatus::DOWNLOADING);
+      QCOMPARE(errors.count(), 0);
+      QCOMPARE(failed->getLastTransferStatus(), Protos::Common::DownloadStatus::FILE_IO_ERROR);
+      other->stop();
+   }
+   QCOMPARE(download.getStatus(), Protos::Common::DownloadStatus::FILE_IO_ERROR);
+   QCOMPARE(errors.count(), 1);
+   QCOMPARE(failed->getLastTransferStatus(), Protos::Common::DownloadStatus::QUEUED);
 }
 
 void Tests::resetPreservesDestination_data()

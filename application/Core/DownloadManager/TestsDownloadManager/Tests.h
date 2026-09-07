@@ -58,6 +58,8 @@ private slots:
    void retryFailedQueueSave();
    void resetPreservesDestination_data();
    void resetPreservesDestination();
+   void chunkErrorTakesPrecedence_data();
+   void chunkErrorTakesPrecedence();
 
 
    void cleanupTestCase();

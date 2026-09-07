@@ -446,6 +446,7 @@ bool FileDownload::updateStatus()
    }
 
    Protos::Common::DownloadStatus newStatus = this->status;
+   Protos::Common::DownloadStatus transferError = Protos::Common::DownloadStatus::QUEUED;
 
    if (this->nbHashesKnown == NB_CHUNK)
       newStatus = Protos::Common::DownloadStatus::COMPLETE;
@@ -459,14 +460,18 @@ bool FileDownload::updateStatus()
 
       if (chunkDownloader->getLastTransferStatus() >= 0x20)
       {
-         newStatus = chunkDownloader->getLastTransferStatus();
+         const auto error = chunkDownloader->getLastTransferStatus();
          chunkDownloader->resetLastTransferStatus();
 
+         // Keep the first transfer error separately so later chunks' readiness cannot overwrite it.
+         if (transferError < 0x20)
+            transferError = error;
+
          // If the local file disappear we reset the download.
-         if (newStatus == Protos::Common::DownloadStatus::FILE_NON_EXISTENT)
+         if (error == Protos::Common::DownloadStatus::FILE_NON_EXISTENT)
          {
             this->reset();
-            this->setStatus(newStatus);
+            this->setStatus(error);
             return false;
          }
       }
@@ -482,6 +487,13 @@ bool FileDownload::updateStatus()
             newStatus = Protos::Common::DownloadStatus::NO_SOURCE;
          }
       }
+   }
+
+   // Errors also take precedence over a pending hash request. Active transfers were checked above.
+   if (transferError >= 0x20)
+   {
+      this->setStatus(transferError);
+      return false;
    }
 
    if (newStatus == Protos::Common::DownloadStatus::COMPLETE)
