@@ -31,15 +31,15 @@ namespace NL
    class TCPListener : public QObject, Common::Uncopyable
    {
       Q_OBJECT
-      static const int MAX_LISTEN_ATTEMPT;
 
    public:
       /**
-        * The server doesn't listen until 'rebindSockets()' is called.
+        * The server doesn't listen until 'listen()' is called.
         */
       TCPListener(QSharedPointer<PM::IPeerManager> peerManager);
       quint16 getCurrentPort();
-      void rebindSockets();
+      bool listen(const QHostAddress& address, quint16 port);
+      void close();
 
    private slots:
       void newConnection();

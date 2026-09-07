@@ -22,6 +22,8 @@ using namespace NL;
 // #include <QNetworkInformation>
 
 #include <Common/LogManager/Builder.h>
+#include <Common/Settings.h>
+#include <limits>
 
 #include <priv/Search.h>
 #include <priv/Utils.h>
@@ -61,11 +63,40 @@ QSharedPointer<ISearch> NetworkListener::newSearch()
 
 void NetworkListener::rebindSockets()
 {
+   this->uDPListener.closeSockets();
+   this->tCPListener.close();
    this->peerManager->removeAllPeers();
    Utils::sanitizeListenSettings();
-   // The TCP listener is rebound first because its port may change, the UDP unicast socket must use the same port.
-   this->tCPListener.rebindSockets();
-   this->uDPListener.rebindSockets(this->tCPListener.getCurrentPort());
+
+   const QHostAddress address = Utils::getCurrentAddressToListenTo();
+   const quint32 basePort = SETTINGS.get<quint32>("unicast_base_port");
+   constexpr int MAX_LISTEN_ATTEMPTS = 10;
+   auto bindBoth = [&](quint16 port) {
+      if (!this->tCPListener.listen(address, port))
+         return false;
+      if (this->uDPListener.bindUnicastSocket(address, this->tCPListener.getCurrentPort()))
+         return true;
+      this->tCPListener.close();
+      return false;
+   };
+
+   bool bound = false;
+   for (int n = 0; basePort != 0 && n < MAX_LISTEN_ATTEMPTS &&
+        static_cast<quint64>(basePort) + n <= std::numeric_limits<quint16>::max(); ++n)
+      if ((bound = bindBoth(static_cast<quint16>(basePort + n))))
+         break;
+
+   // A TCP port chosen by the OS can still be occupied by UDP. Retry a bounded number of times.
+   for (int n = 0; !bound && n < MAX_LISTEN_ATTEMPTS; ++n)
+      if ((bound = bindBoth(0)))
+         L_WARN(QString("Listening to TCP and UDP on OS-selected port %1").arg(this->tCPListener.getCurrentPort()));
+
+   if (!bound || !this->uDPListener.startListening())
+   {
+      this->uDPListener.closeSockets();
+      this->tCPListener.close();
+      L_ERRO(QString("Unable to initialize network listeners on %1; discovery is disabled").arg(address.toString()));
+   }
 }
 
 NetworkListener::SendStatus NetworkListener::send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message, const Common::Hash& peerID)

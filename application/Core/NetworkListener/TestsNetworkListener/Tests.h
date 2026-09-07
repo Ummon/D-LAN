@@ -64,6 +64,10 @@ private slots:
    void search();
    void heartbeatWithChatRooms_data();
    void heartbeatWithChatRooms();
+   void sharedUnicastPort_data();
+   void sharedUnicastPort();
+   void bindFailureAndRecovery();
+   void rejectZeroUnicastPort();
 
    void cleanupTestCase();
 

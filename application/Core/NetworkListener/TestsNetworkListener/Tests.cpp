@@ -21,6 +21,9 @@
 #include <QTest>
 #include <QHostAddress>
 #include <QAbstractSocket>
+#include <QTcpServer>
+#include <QTcpSocket>
+#include <QScopeGuard>
 
 #include <Protos/common.pb.h>
 #include <Protos/core_protocol.pb.h>
@@ -422,6 +425,145 @@ void Tests::heartbeatWithChatRooms()
       if (!expectOmissions)
          QVERIFY(heartbeat.chunks_size() > 0);
    }
+}
+
+void Tests::sharedUnicastPort_data()
+{
+   QTest::addColumn<bool>("occupyTCP");
+   QTest::addColumn<bool>("occupyUDP");
+   QTest::addColumn<bool>("forceFallback");
+   QTest::newRow("TCP conflict") << true << false << false;
+   QTest::newRow("UDP conflict") << false << true << false;
+   QTest::newRow("both occupied") << true << true << false;
+   QTest::newRow("OS-selected fallback") << false << false << true;
+}
+
+void Tests::sharedUnicastPort()
+{
+   QFETCH(bool, occupyTCP);
+   QFETCH(bool, occupyUDP);
+   QFETCH(bool, forceFallback);
+
+   const quint32 originalPort = SETTINGS.get<quint32>("unicast_base_port");
+   const quint32 originalProtocol = SETTINGS.get<quint32>("listen_any");
+   const QString originalAddress = SETTINGS.get<QString>("listen_address");
+   const auto restore = qScopeGuard([&]() {
+      SETTINGS.set("unicast_base_port", originalPort);
+      SETTINGS.set("listen_any", originalProtocol);
+      SETTINGS.set("listen_address", originalAddress);
+   });
+   SETTINGS.set("listen_any", static_cast<quint32>(Protos::Common::Interface::Address::IPv4));
+   SETTINGS.set("listen_address", QString());
+
+   QTcpServer tcpBlocker;
+   QVERIFY(tcpBlocker.listen(QHostAddress::AnyIPv4, 0));
+   const quint16 occupiedPort = tcpBlocker.serverPort();
+   QUdpSocket udpBlocker;
+   if (occupyUDP)
+      QVERIFY(udpBlocker.bind(QHostAddress::AnyIPv4, occupiedPort, QUdpSocket::DontShareAddress));
+   if (!occupyTCP)
+      tcpBlocker.close();
+   SETTINGS.set("unicast_base_port", forceFallback ? std::numeric_limits<quint32>::max() : quint32(occupiedPort));
+
+   const Instance& instance = this->instances[1];
+   const auto listener = NL::Builder::newNetworkListener(
+      instance.fileManager, instance.peerManager, instance.uploadManager, instance.downloadManager);
+   quint16 advertisedPort = 0;
+   QObject context;
+   connect(listener.data(), &INetworkListener::IMAliveMessageToBeSend, &context,
+      [&](Protos::Core::IMAlive& message) { advertisedPort = message.port(); });
+   QTRY_VERIFY(advertisedPort != 0);
+   if (!forceFallback)
+      QVERIFY(advertisedPort != occupiedPort);
+
+   QTcpSocket client;
+   client.connectToHost(QHostAddress::LocalHost, advertisedPort);
+   QVERIFY(client.waitForConnected(1000));
+   QUdpSocket probe;
+   QVERIFY(!probe.bind(QHostAddress::AnyIPv4, advertisedPort, QUdpSocket::DontShareAddress));
+
+   // Rebinding must release our own sockets before attempting the same port again.
+   SETTINGS.set("unicast_base_port", quint32(advertisedPort));
+   const quint16 previousPort = advertisedPort;
+   advertisedPort = 0;
+   listener->rebindSockets();
+   QTRY_COMPARE(advertisedPort, previousPort);
+}
+
+void Tests::bindFailureAndRecovery()
+{
+   const quint32 originalPort = SETTINGS.get<quint32>("unicast_base_port");
+   const quint32 originalMulticastPort = SETTINGS.get<quint32>("multicast_port");
+   const quint32 originalProtocol = SETTINGS.get<quint32>("listen_any");
+   const QString originalAddress = SETTINGS.get<QString>("listen_address");
+   const auto restore = qScopeGuard([&]() {
+      SETTINGS.set("unicast_base_port", originalPort);
+      SETTINGS.set("multicast_port", originalMulticastPort);
+      SETTINGS.set("listen_any", originalProtocol);
+      SETTINGS.set("listen_address", originalAddress);
+   });
+   SETTINGS.set("listen_any", static_cast<quint32>(Protos::Common::Interface::Address::IPv4));
+   SETTINGS.set("listen_address", QString());
+
+   QUdpSocket multicastBlocker;
+   QVERIFY(multicastBlocker.bind(QHostAddress::AnyIPv4, 0, QUdpSocket::DontShareAddress));
+   SETTINGS.set("multicast_port", quint32(multicastBlocker.localPort()));
+   QTcpServer tcpProbe;
+   QVERIFY(tcpProbe.listen(QHostAddress::AnyIPv4, 0));
+   const quint16 port = tcpProbe.serverPort();
+   QUdpSocket udpProbe;
+   QVERIFY(udpProbe.bind(QHostAddress::AnyIPv4, port, QUdpSocket::DontShareAddress));
+   tcpProbe.close();
+   udpProbe.close();
+   SETTINGS.set("unicast_base_port", quint32(port));
+
+   const Instance& instance = this->instances[1];
+   const auto listener = NL::Builder::newNetworkListener(
+      instance.fileManager, instance.peerManager, instance.uploadManager, instance.downloadManager);
+   int heartbeats = 0;
+   QObject context;
+   connect(listener.data(), &INetworkListener::IMAliveMessageToBeSend, &context,
+      [&](Protos::Core::IMAlive&) { ++heartbeats; });
+   QCoreApplication::processEvents();
+   QCOMPARE(heartbeats, 0);
+   QCOMPARE(listener->send(Common::MessageHeader::CORE_GOODBYE, Protos::Common::Null()),
+      INetworkListener::SendStatus::UNABLE_TO_SEND);
+   // Multicast failure must roll back both unicast bindings.
+   QVERIFY(tcpProbe.listen(QHostAddress::AnyIPv4, port));
+   QVERIFY(udpProbe.bind(QHostAddress::AnyIPv4, port, QUdpSocket::DontShareAddress));
+   tcpProbe.close();
+   udpProbe.close();
+
+   multicastBlocker.close();
+   listener->rebindSockets();
+   listener->rebindSockets(); // Replace, rather than duplicate, the queued startup heartbeat.
+   QTRY_COMPARE(heartbeats, 1);
+   QCOMPARE(listener->send(Common::MessageHeader::CORE_GOODBYE, Protos::Common::Null()),
+      INetworkListener::SendStatus::OK);
+
+   // A failed unicast rebind must also suppress an already queued startup heartbeat.
+   UDPListener udp(instance.fileManager, instance.peerManager, instance.uploadManager, instance.downloadManager);
+   QVERIFY(tcpProbe.listen(QHostAddress::AnyIPv4, 0));
+   QVERIFY(udp.bindUnicastSocket(QHostAddress::AnyIPv4, tcpProbe.serverPort()));
+   QVERIFY(udp.startListening());
+   int stoppedHeartbeats = 0;
+   connect(&udp, &UDPListener::IMAliveMessageToBeSend, &context,
+      [&](Protos::Core::IMAlive&) { ++stoppedHeartbeats; });
+   QUdpSocket unicastBlocker;
+   QVERIFY(unicastBlocker.bind(QHostAddress::AnyIPv4, 0, QUdpSocket::DontShareAddress));
+   QVERIFY(!udp.bindUnicastSocket(QHostAddress::AnyIPv4, unicastBlocker.localPort()));
+   QCoreApplication::processEvents();
+   QCOMPARE(stoppedHeartbeats, 0);
+   QCOMPARE(udp.send(Common::MessageHeader::CORE_GOODBYE), INetworkListener::SendStatus::UNABLE_TO_SEND);
+}
+
+void Tests::rejectZeroUnicastPort()
+{
+   const Instance& instance = this->instances[1];
+   UDPListener listener(instance.fileManager, instance.peerManager, instance.uploadManager, instance.downloadManager);
+   QVERIFY(!listener.bindUnicastSocket(QHostAddress::AnyIPv4, 0));
+   QVERIFY(!listener.startListening());
+   QCOMPARE(listener.send(Common::MessageHeader::CORE_GOODBYE), INetworkListener::SendStatus::UNABLE_TO_SEND);
 }
 
 void Tests::cleanupTestCase()

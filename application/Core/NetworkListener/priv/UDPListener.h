@@ -63,10 +63,12 @@ namespace NL
       INetworkListener::SendStatus send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message = Protos::Common::Null());
 
       /**
-        * The sockets aren't bound until this method is called.
-        * @param unicastPort The port to bind the unicast socket to, it must be the same as the TCP port.
+        * Reserve the same nonzero port as the TCP listener, without announcing it yet.
         */
-      void rebindSockets(quint16 unicastPort);
+      bool bindUnicastSocket(const QHostAddress& address, quint16 port);
+      // Join multicast and start heartbeats only after both unicast listeners are bound.
+      bool startListening();
+      void closeSockets();
 
       int getMaxUDPMessageSize() const { return this->MAX_UDP_DATAGRAM_PAYLOAD_SIZE - Common::MessageHeader::HEADER_SIZE; }
 
@@ -83,10 +85,8 @@ namespace NL
       void processPendingMulticastDatagrams();
       void processPendingUnicastDatagrams();
 
-      void initMulticastUDPSocket();
-      void initUnicastUDPSocket();
-
    private:
+      bool initMulticastUDPSocket();
       int writeMessageToBuffer(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);
       Common::MessageHeader readDatagramToBuffer(QUdpSocket& socket, QHostAddress& peerAddress);
 
@@ -120,6 +120,7 @@ namespace NL
       HashRequestType nextHashRequestType;
 
       QTimer timerIMAlive;
+      QTimer timerInitialIMAlive;
       QSharedPointer<LM::ILogger> loggerIMAlive; // A logger especially for the IMAlive message.
    };
 }

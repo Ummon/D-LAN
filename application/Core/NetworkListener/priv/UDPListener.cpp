@@ -76,11 +76,8 @@ UDPListener::UDPListener(
    loggerIMAlive(LM::Builder::newLogger("NetworkListener (IMAlive)"))
 {
    connect(&this->timerIMAlive, &QTimer::timeout, this, &UDPListener::sendIMAliveMessage);
-   this->timerIMAlive.start(static_cast<int>(SETTINGS.get<quint32>("peer_imalive_period")));
-
-   // The first 'IMAlive' message is deferred to the event loop: the sockets must be bound (see 'rebindSockets(..)') and
-   // the other components must be connected to 'IMAliveMessageToBeSend' to be able to complete the message.
-   QTimer::singleShot(0, this, &UDPListener::sendIMAliveMessage);
+   this->timerInitialIMAlive.setSingleShot(true);
+   connect(&this->timerInitialIMAlive, &QTimer::timeout, this, &UDPListener::sendIMAliveMessage);
 }
 
 /**
@@ -99,6 +96,9 @@ INetworkListener::SendStatus UDPListener::send(
    int messageSize;
    if (!(messageSize = this->writeMessageToBuffer(type, message)))
       return INetworkListener::SendStatus::MESSAGE_TOO_LARGE;
+
+   if (!this->timerIMAlive.isActive())
+      return INetworkListener::SendStatus::UNABLE_TO_SEND;
 
    L_DEBU(QString("Send unicast UDP to %1, header.getType(): %2, message size: %3 \n%4").
       arg(peer->toStringLog(), Common::MessageHeader::messToStr(type)).
@@ -127,6 +127,9 @@ INetworkListener::SendStatus UDPListener::send(
    if (!(messageSize = this->writeMessageToBuffer(type, message)))
       return INetworkListener::SendStatus::MESSAGE_TOO_LARGE;
 
+   if (!this->timerIMAlive.isActive())
+      return INetworkListener::SendStatus::UNABLE_TO_SEND;
+
 #if DEBUG
    QString logMess = QString("Send multicast UDP: header.getType() = %1, message size = %2 \n%3").
       arg(Common::MessageHeader::messToStr(type)).
@@ -150,6 +153,9 @@ INetworkListener::SendStatus UDPListener::send(
 
 void UDPListener::sendIMAliveMessage()
 {
+   if (!this->timerIMAlive.isActive())
+      return;
+
    Protos::Core::IMAlive IMAliveMessage;
    IMAliveMessage.set_version(Common::Constants::PROTOCOL_VERSION);
    IMAliveMessage.set_core_version(Common::Global::getVersionFull().toStdString());
@@ -235,11 +241,29 @@ void UDPListener::sendIMAliveMessage()
    this->send(Common::MessageHeader::CORE_IM_ALIVE, IMAliveMessage);
 }
 
-void UDPListener::rebindSockets(quint16 unicastPort)
+void UDPListener::closeSockets()
 {
-   this->unicastPort = unicastPort;
-   this->initMulticastUDPSocket();
-   this->initUnicastUDPSocket();
+   this->timerIMAlive.stop();
+   this->timerInitialIMAlive.stop();
+   this->multicastSocket.close();
+   this->unicastSocket.close();
+   this->unicastPort = 0;
+   this->currentIMAliveTag = 0;
+   this->currentChunkDownloaders.clear();
+}
+
+bool UDPListener::startListening()
+{
+   if (this->unicastPort == 0 || !this->initMulticastUDPSocket())
+   {
+      this->closeSockets();
+      return false;
+   }
+
+   this->timerIMAlive.start(static_cast<int>(SETTINGS.get<quint32>("peer_imalive_period")));
+   // Defer the first heartbeat so callers can connect their message contributors.
+   this->timerInitialIMAlive.start(0);
+   return true;
 }
 
 void UDPListener::processPendingMulticastDatagrams()
@@ -424,7 +448,7 @@ void UDPListener::processPendingUnicastDatagrams()
    }
 }
 
-void UDPListener::initMulticastUDPSocket()
+bool UDPListener::initMulticastUDPSocket()
 {
    this->multicastSocket.close();
    this->multicastSocket.disconnect(this);
@@ -445,7 +469,7 @@ void UDPListener::initMulticastUDPSocket()
    )
    {
       L_ERRO("Can't bind the multicast socket");
-      return;
+      return false;
    }
 
    // 'loop' is activated only for tests.
@@ -468,10 +492,13 @@ void UDPListener::initMulticastUDPSocket()
            !this->multicastSocket.joinMulticastGroup(this->multicastGroup, networkInterface)
          : !this->multicastSocket.joinMulticastGroup(this->multicastGroup)
    )
+   {
       L_ERRO(
          QString("Unable to join the multicast group: %1 on the interface: %2")
             .arg(this->multicastGroup.toString(), networkInterface.name())
       );
+      return false;
+   }
 
    // This settings cannot change dynamically -> static.
    static const quint32 BUFFER_SIZE_UDP = SETTINGS.get<quint32>("udp_buffer_size");
@@ -479,15 +506,18 @@ void UDPListener::initMulticastUDPSocket()
    this->multicastSocket.setSocketOption(QAbstractSocket::ReceiveBufferSizeSocketOption, BUFFER_SIZE_UDP);
 
    connect(&this->multicastSocket, &QUdpSocket::readyRead, this, &UDPListener::processPendingMulticastDatagrams);
+   return true;
 }
 
-void UDPListener::initUnicastUDPSocket()
+bool UDPListener::bindUnicastSocket(const QHostAddress& address, quint16 port)
 {
-   this->unicastSocket.close();
+   this->closeSockets();
    this->unicastSocket.disconnect(this);
 
-   if (!this->unicastSocket.bind(Utils::getCurrentAddressToListenTo(), this->unicastPort, QUdpSocket::ReuseAddressHint))
-      L_ERRO("Can't bind the unicast socket");
+   if (port == 0 || !this->unicastSocket.bind(address, port, QUdpSocket::DontShareAddress))
+      return false;
+
+   this->unicastPort = port;
 
    // This settings cannot change dynamically -> static.
    static const int BUFFER_SIZE_UDP = SETTINGS.get<quint32>("udp_buffer_size");
@@ -495,6 +525,7 @@ void UDPListener::initUnicastUDPSocket()
    this->unicastSocket.setSocketOption(QAbstractSocket::ReceiveBufferSizeSocketOption, BUFFER_SIZE_UDP);
 
    connect(&this->unicastSocket, &QUdpSocket::readyRead, this, &UDPListener::processPendingUnicastDatagrams);
+   return true;
 }
 
 /**
