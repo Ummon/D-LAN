@@ -19,7 +19,6 @@
 #include <priv/RemoteConnection.h>
 using namespace RCM;
 
-#include <algorithm>
 #include <limits>
 
 #include <QCoreApplication>
@@ -45,6 +44,7 @@ using namespace RCM;
 #include <Core/UploadManager/IChunksUploader.h>
 
 #include <priv/Log.h>
+#include <priv/UploadProgress.h>
 
 void RemoteConnection::Logger::logDebug(const QString& message)
 {
@@ -243,14 +243,7 @@ void RemoteConnection::refresh()
 
          entry.mutable_chunks()->Clear();
 
-         int progress = 0;
-         if (entry.size() > 0)
-            progress =
-               std::clamp(
-                  int(10000LL * (chunk.getFileBytesOwnedByPeer() + chunk.getOffset()) / entry.size()),
-                  0,
-                  10000
-               );
+         const int progress = uploadProgress(entry.size(), chunk.getFileBytesOwnedByPeer(), chunk.getOffset());
 
          const auto key = std::make_pair(chunksUploader->getPeerID(), entry);
          const auto i = addedFiles.constFind(key);

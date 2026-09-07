@@ -12,6 +12,7 @@ add_library(RemoteControlManager STATIC
    IRemoteControlManager.h
    priv/RemoteControlManager.h
    priv/RemoteConnection.h
+   priv/UploadProgress.h
    Builder.h
    priv/Log.h
 )
@@ -25,3 +26,10 @@ target_link_libraries(RemoteControlManager PUBLIC
    LogManager
    dlan_protos
 )
+
+if(DLAN_BUILD_TESTS)
+   add_executable(TestsRemoteControlManager TestsRemoteControlManager/Tests.cpp)
+   target_include_directories(TestsRemoteControlManager PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+   target_link_libraries(TestsRemoteControlManager PRIVATE PeerManager Qt6::Test)
+   add_test(NAME TestsRemoteControlManager COMMAND TestsRemoteControlManager)
+endif()

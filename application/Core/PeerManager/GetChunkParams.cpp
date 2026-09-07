@@ -19,7 +19,7 @@
 #include <GetChunkParams.h>
 using namespace PM;
 
-GetChunkParams::GetChunkParams(QSharedPointer<FM::IChunk> chunk, int offset, int endOffset, qint64 fileBytesOwnedByPeer) :
+GetChunkParams::GetChunkParams(QSharedPointer<FM::IChunk> chunk, int offset, int endOffset, quint64 fileBytesOwnedByPeer) :
    chunk(chunk), offset(offset), endOffset(endOffset), fileBytesOwnedByPeer(fileBytesOwnedByPeer)
 {
 }
@@ -44,7 +44,7 @@ int GetChunkParams::getEndOffset() const
    return this->endOffset;
 }
 
-qint64 GetChunkParams::getFileBytesOwnedByPeer() const
+quint64 GetChunkParams::getFileBytesOwnedByPeer() const
 {
    return this->fileBytesOwnedByPeer;
 }

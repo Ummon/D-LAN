@@ -30,7 +30,7 @@ namespace PM
    class GetChunkParams
    {
    public:
-      GetChunkParams(QSharedPointer<FM::IChunk> chunk, int offset, int endOffset, qint64 fileBytesOwnedByPeer);
+      GetChunkParams(QSharedPointer<FM::IChunk> chunk, int offset, int endOffset, quint64 fileBytesOwnedByPeer);
 
       QSharedPointer<FM::IChunk> getChunk() const;
 
@@ -44,12 +44,12 @@ namespace PM
         */
       int getEndOffset() const;
 
-      qint64 getFileBytesOwnedByPeer() const;
+      quint64 getFileBytesOwnedByPeer() const;
 
    private:
       QSharedPointer<FM::IChunk> chunk;
       int offset;
       int endOffset;
-      qint64 fileBytesOwnedByPeer;
+      quint64 fileBytesOwnedByPeer;
    };
 }
