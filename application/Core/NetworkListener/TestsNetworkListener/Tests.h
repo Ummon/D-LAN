@@ -63,6 +63,7 @@ private slots:
    void peerDiscovery();
    void unicastReception();
    void search();
+   void searchResultReception();
    void searchSendFailure_data();
    void searchSendFailure();
    void searchResultLimit_data();

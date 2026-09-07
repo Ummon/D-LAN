@@ -30,6 +30,8 @@ GetHashesResult::GetHashesResult(const Protos::Common::Entry& file, QSharedPoint
 
 void GetHashesResult::start()
 {
+   this->pending = true;
+   this->startTimer();
    // The socket may be null if the connection pool was unable to give one, in this case the request will simply time out.
    if (!this->socket.isNull())
    {
@@ -38,15 +40,16 @@ void GetHashesResult::start()
       connect(this->socket.data(), &PeerMessageSocket::newMessage, this, &GetHashesResult::newMessage, Qt::DirectConnection);
       socket->send(Common::MessageHeader::CORE_GET_HASHES, message);
    }
-   this->startTimer();
 }
 
 void GetHashesResult::doDeleteLater()
 {
+   this->stopTimer();
    if (!this->socket.isNull())
    {
       disconnect(this->socket.data(), &PeerMessageSocket::newMessage, this, &GetHashesResult::newMessage);
-      this->socket->finished();
+      // Abandoning a hash stream must not expose its remaining replies to a new request.
+      this->socket->finished(this->pending);
       this->socket.clear();
    }
    this->deleteLater();
@@ -59,7 +62,11 @@ void GetHashesResult::newMessage(const Common::Message& message)
    case Common::MessageHeader::CORE_GET_HASHES_RESULT:
       {
          const Protos::Core::GetHashesResult& hashesResult = message.getMessage<Protos::Core::GetHashesResult>();
-         this->startTimer(); // Restart the timer.
+         this->remainingHashes = hashesResult.nb_hash();
+         if (hashesResult.status() != Protos::Core::GetHashesResult::OK || this->remainingHashes == 0)
+            this->complete();
+         else
+            this->startTimer();
          emit result(hashesResult);
       }
       break;
@@ -67,11 +74,27 @@ void GetHashesResult::newMessage(const Common::Message& message)
    case Common::MessageHeader::CORE_HASH_RESULT:
       {
          const Protos::Core::HashResult& hashResult = message.getMessage<Protos::Core::HashResult>();
-         this->startTimer(); // Restart the timer.
+         if (this->remainingHashes == 0)
+            return;
+         if (--this->remainingHashes == 0)
+            this->complete();
+         else
+            this->startTimer();
          emit nextHash(hashResult);
       }
       break;
 
    default:;
    }
+}
+
+void GetHashesResult::complete()
+{
+   this->pending = false;
+   this->stopTimer();
+   if (this->socket)
+      disconnect(this->socket.data(), &PeerMessageSocket::newMessage, this, &GetHashesResult::newMessage);
+   // PeerMessageSocket has already marked the socket idle. An old result must not
+   // finish it again after a caller has started the next transaction.
+   this->socket.clear();
 }

@@ -30,20 +30,23 @@ GetEntriesResult::GetEntriesResult(const Protos::Core::GetEntries& dirs, QShared
 
 void GetEntriesResult::start()
 {
+   this->pending = true;
+   this->startTimer();
    if (!this->socket.isNull())
    {
       connect(this->socket.data(), &PeerMessageSocket::newMessage, this, &GetEntriesResult::newMessage, Qt::DirectConnection);
       socket->send(Common::MessageHeader::CORE_GET_ENTRIES, this->dirs);
    }
-   this->startTimer();
 }
 
 void GetEntriesResult::doDeleteLater()
 {
+   this->stopTimer();
    if (!this->socket.isNull())
    {
       disconnect(this->socket.data(), &PeerMessageSocket::newMessage, this, &GetEntriesResult::newMessage);
-      this->socket->finished();
+      // An unfinished response has no request ID and cannot be reused by another request.
+      this->socket->finished(this->pending);
       this->socket.clear();
    }
    this->deleteLater();
@@ -55,9 +58,14 @@ void GetEntriesResult::newMessage(const Common::Message& message)
       return;
 
    this->stopTimer();
+   this->pending = false;
 
    if (!this->socket.isNull())
       disconnect(this->socket.data(), &PeerMessageSocket::newMessage, this, &GetEntriesResult::newMessage);
+
+   // PeerMessageSocket has already finished the transaction. Drop ownership before
+   // notifying callers, which may immediately start another request on this socket.
+   this->socket.clear();
 
    const Protos::Core::GetEntriesResult& entries = message.getMessage<Protos::Core::GetEntriesResult>();
    emit result(entries);

@@ -56,6 +56,8 @@ private slots:
    void askForSomeEntries();
    void closedSocketIsNotReused_data();
    void closedSocketIsNotReused();
+   void requestSocketLifecycle_data();
+   void requestSocketLifecycle();
    void askForHashes();
    void validateChunkOffsets();
    void uploadReservations();

@@ -46,7 +46,11 @@ namespace PM
       void newMessage(const Common::Message& message);
 
    private:
+      void complete();
+
       const Protos::Common::Entry file;
       QSharedPointer<PeerMessageSocket> socket;
+      bool pending = false;
+      quint32 remainingHashes = 0;
    };
 }

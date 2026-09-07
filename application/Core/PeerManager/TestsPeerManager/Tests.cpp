@@ -41,6 +41,8 @@ using namespace PM;
 #include <priv/PeerMessageSocket.h>
 #include <priv/ConnectionPool.h>
 #include <priv/GetChunksResult.h>
+#include <priv/GetEntriesResult.h>
+#include <priv/GetHashesResult.h>
 
 const int Tests::PORT = 59487;
 
@@ -384,6 +386,177 @@ void Tests::closedSocketIsNotReused()
    QTRY_VERIFY_WITH_TIMEOUT(received, 2000);
    QCOMPARE(timeout.count(), 0);
    result->setStatus(true);
+}
+
+void Tests::requestSocketLifecycle_data()
+{
+   QTest::addColumn<bool>("hashes");
+   QTest::addColumn<int>("response"); // 0: none, 1: partial, 2: complete, 3: empty, 4: error.
+   QTest::addColumn<bool>("timeout");
+   QTest::newRow("cancel-entries") << false << 0 << false;
+   QTest::newRow("timeout-entries") << false << 0 << true;
+   QTest::newRow("complete-entries") << false << 2 << false;
+   QTest::newRow("cancel-hashes-before-header") << true << 0 << false;
+   QTest::newRow("timeout-hashes-before-header") << true << 0 << true;
+   QTest::newRow("cancel-partial-hashes") << true << 1 << false;
+   QTest::newRow("timeout-partial-hashes") << true << 1 << true;
+   QTest::newRow("complete-hashes") << true << 2 << false;
+   QTest::newRow("empty-hashes") << true << 3 << false;
+   QTest::newRow("error-hashes") << true << 4 << false;
+}
+
+void Tests::requestSocketLifecycle()
+{
+   QFETCH(bool, hashes);
+   QFETCH(int, response);
+   QFETCH(bool, timeout);
+   const bool complete = response >= 2;
+   const char* timeoutSetting = hashes ? "get_hashes_timeout" : "socket_timeout";
+   const quint32 previousTimeout = SETTINGS.get<quint32>(timeoutSetting);
+   const auto restoreSettings = qScopeGuard([&] { SETTINGS.set(timeoutSetting, previousTimeout); });
+   SETTINGS.set(timeoutSetting, quint32(timeout ? 100 : 2000));
+
+   // A raw server controls when replies arrive, independently of the real file manager.
+   QTcpServer server;
+   QVERIFY(server.listen(QHostAddress::LocalHost, 0));
+   PM::ConnectionPool pool(static_cast<PM::PeerManager*>(this->peerManagers[0].data()),
+      this->fileManagers[0], this->peerIDs[1]);
+   pool.setIP(QHostAddress::LocalHost, server.serverPort());
+   auto previous = pool.getASocket();
+   QTRY_VERIFY(server.hasPendingConnections());
+   QScopedPointer<QTcpSocket> remote(server.nextPendingConnection());
+
+   QSharedPointer<PM::GetEntriesResult> entries;
+   QSharedPointer<PM::GetHashesResult> hashResult;
+   int received = 0;
+   int hashesReceived = 0;
+   QObject context;
+   Common::Timeoutable* request;
+   if (hashes)
+   {
+      hashResult = QSharedPointer<PM::GetHashesResult>(
+         new PM::GetHashesResult(Protos::Common::Entry(), previous), &PM::GetHashesResult::doDeleteLater);
+      request = hashResult.data();
+      connect(hashResult.data(), &IGetHashesResult::result, &context,
+         [&](const Protos::Core::GetHashesResult&) { ++received; });
+      connect(hashResult.data(), &IGetHashesResult::nextHash, &context,
+         [&](const Protos::Core::HashResult&) { ++hashesReceived; });
+      hashResult->start();
+   }
+   else
+   {
+      entries = QSharedPointer<PM::GetEntriesResult>(
+         new PM::GetEntriesResult(Protos::Core::GetEntries(), previous), &PM::GetEntriesResult::doDeleteLater);
+      request = entries.data();
+      connect(entries.data(), &IGetEntriesResult::result, &context,
+         [&](const Protos::Core::GetEntriesResult&) { ++received; });
+      entries->start();
+   }
+   QSignalSpy timedOut(request, &Common::Timeoutable::timeout);
+   QTRY_VERIFY(remote->bytesAvailable() >= Common::MessageHeader::HEADER_SIZE);
+   remote->readAll();
+
+   auto send = [&](QTcpSocket* target, Common::MessageHeader::MessageType type,
+                   const google::protobuf::Message& message) {
+      Common::Message::writeMessageToDevice(target,
+         Common::MessageHeader(type, message.ByteSizeLong(), this->peerIDs[1]), &message);
+      target->flush();
+   };
+   Protos::Core::GetEntriesResult entriesReply;
+   Protos::Core::GetHashesResult hashesReply;
+   hashesReply.set_nb_hash(response == 3 ? 0 : 2);
+   if (response == 4)
+      hashesReply.set_status(Protos::Core::GetHashesResult::ERROR_UNKNOWN);
+   Protos::Core::HashResult hashReply;
+
+   if (response != 0)
+   {
+      if (hashes)
+      {
+         send(remote.data(), Common::MessageHeader::CORE_GET_HASHES_RESULT, hashesReply);
+         if (response == 1 || response == 2)
+         {
+            send(remote.data(), Common::MessageHeader::CORE_HASH_RESULT, hashReply);
+            if (response == 2)
+               send(remote.data(), Common::MessageHeader::CORE_HASH_RESULT, hashReply);
+            QTRY_COMPARE(hashesReceived, response == 2 ? 2 : 1);
+         }
+      }
+      else
+         send(remote.data(), Common::MessageHeader::CORE_GET_ENTRIES_RESULT, entriesReply);
+      QTRY_COMPARE(received, 1);
+   }
+   if (timeout)
+      QTRY_COMPARE(timedOut.count(), 1);
+
+   if (!complete)
+   {
+      entries.clear();
+      hashResult.clear();
+      QVERIFY(previous->isClosing());
+   }
+   auto next = pool.getASocket();
+   QCOMPARE(next == previous, complete);
+   // Keeping a completed result alive must not let its later destruction release
+   // the socket now reserved by the next request.
+   entries.clear();
+   hashResult.clear();
+   QVERIFY(next->isActive());
+   QVERIFY(!next->isClosing());
+
+   QScopedPointer<QTcpSocket> replacement;
+   if (!complete)
+   {
+      QTRY_VERIFY(server.hasPendingConnections());
+      replacement.reset(server.nextPendingConnection());
+   }
+   auto* nextRemote = complete ? remote.data() : replacement.data();
+   // Follow with the same request type so an old reply would be accepted if the
+   // abandoned socket were mistakenly reused.
+   int nextResponses = 0;
+   QSharedPointer<PM::GetEntriesResult> nextEntries;
+   QSharedPointer<PM::GetHashesResult> nextHashes;
+   if (hashes)
+   {
+      nextHashes = QSharedPointer<PM::GetHashesResult>(
+         new PM::GetHashesResult(Protos::Common::Entry(), next), &PM::GetHashesResult::doDeleteLater);
+      connect(nextHashes.data(), &IGetHashesResult::result, &context,
+         [&](const Protos::Core::GetHashesResult& value) {
+            if (value.nb_hash() == 0) ++nextResponses;
+         });
+      nextHashes->start();
+   }
+   else
+   {
+      nextEntries = QSharedPointer<PM::GetEntriesResult>(
+         new PM::GetEntriesResult(Protos::Core::GetEntries(), next), &PM::GetEntriesResult::doDeleteLater);
+      connect(nextEntries.data(), &IGetEntriesResult::result, &context,
+         [&](const Protos::Core::GetEntriesResult& value) {
+            if (value.results_size() == 1) ++nextResponses;
+         });
+      nextEntries->start();
+   }
+   QTRY_VERIFY(nextRemote->bytesAvailable() >= Common::MessageHeader::HEADER_SIZE);
+   nextRemote->readAll();
+   if (!complete)
+   {
+      if (hashes)
+         send(remote.data(), Common::MessageHeader::CORE_GET_HASHES_RESULT, hashesReply);
+      else
+         send(remote.data(), Common::MessageHeader::CORE_GET_ENTRIES_RESULT, entriesReply);
+   }
+   if (hashes)
+   {
+      hashesReply.set_status(Protos::Core::GetHashesResult::OK);
+      hashesReply.set_nb_hash(0);
+      send(nextRemote, Common::MessageHeader::CORE_GET_HASHES_RESULT, hashesReply);
+   }
+   else
+   {
+      entriesReply.add_results();
+      send(nextRemote, Common::MessageHeader::CORE_GET_ENTRIES_RESULT, entriesReply);
+   }
+   QTRY_COMPARE(nextResponses, 1);
 }
 
 void Tests::validateChunkOffsets()

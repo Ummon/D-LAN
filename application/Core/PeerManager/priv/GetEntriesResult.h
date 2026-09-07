@@ -47,5 +47,6 @@ namespace PM
    private:
       const Protos::Core::GetEntries dirs;
       QSharedPointer<PeerMessageSocket> socket;
+      bool pending = false;
    };
 }
