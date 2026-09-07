@@ -1040,20 +1040,23 @@ void Tests::findFilesWithSomeWordsAndExtensions()
    expectedResult[14] << "bbbb.txt";
    expectedResult[16] << "aaaaaa dddddd.txt";
 
-   QList<Protos::Common::FindResult> results =
-      this->fileManager->find(
-         terms,
-         QList<QString> { "txt" },
-         0,
-         std::numeric_limits<qint64>::max(),
-         Protos::Common::FindPattern::FILE_DIR,
-         10000,
-         65536,
-         true
-      );
-   QVERIFY(!results.isEmpty());
-   this->printSearch(terms, results.first());
-   this->compareExpectedResult(results.first(), expectedResult);
+   for (const QString& extension : QStringList { "txt", "TXT", "Txt" })
+   {
+      QList<Protos::Common::FindResult> results =
+         this->fileManager->find(
+            terms,
+            QList<QString> { extension },
+            0,
+            std::numeric_limits<qint64>::max(),
+            Protos::Common::FindPattern::FILE_DIR,
+            10000,
+            65536,
+            true
+         );
+      QVERIFY(!results.isEmpty());
+      this->printSearch(terms, results.first());
+      this->compareExpectedResult(results.first(), expectedResult);
+   }
 }
 
 void Tests::findFilesWithSomeWordsAndExtensionsAndSizeRange()
@@ -1074,20 +1077,23 @@ void Tests::findFilesWithSomeWordsAndExtensionsAndSizeRange()
    //expectedResult[14] << "bbbb.txt"; // 8
    expectedResult[16] << "aaaaaa dddddd.txt"; // 17
 
-   QList<Protos::Common::FindResult> results =
-      this->fileManager->find(
-         terms,
-         QList<QString> { "txt" },
-         15, // >= 15 B.
-         17, // <= 16 B.
-         Protos::Common::FindPattern::FILE_DIR,
-         10000,
-         65536,
-         true
-      );
-   QVERIFY(!results.isEmpty());
-   this->printSearch(terms, results.first());
-   this->compareExpectedResult(results.first(), expectedResult);
+   for (const QString& extension : QStringList { "txt", "TXT", "Txt" })
+   {
+      QList<Protos::Common::FindResult> results =
+         this->fileManager->find(
+            terms,
+            QList<QString> { extension },
+            15, // >= 15 B.
+            17, // <= 16 B.
+            Protos::Common::FindPattern::FILE_DIR,
+            10000,
+            65536,
+            true
+         );
+      QVERIFY(!results.isEmpty());
+      this->printSearch(terms, results.first());
+      this->compareExpectedResult(results.first(), expectedResult);
+   }
 }
 
 void Tests::findFilesByExtensions()
@@ -1097,19 +1103,22 @@ void Tests::findFilesByExtensions()
    FindResult expectedResult;
    expectedResult[0] << "bbbb cccc.nfo" << "cccc bbbb.nfo" << "bbbb dddd.nfo";
 
-   QList<Protos::Common::FindResult> results =
-      this->fileManager->find(
-         "",
-         QList<QString> { "nfo" },
-         0,
-         std::numeric_limits<qint64>::max(),
-         Protos::Common::FindPattern::FILE_DIR,
-         10000,
-         65536,
-         true
-      );
-   QVERIFY(!results.isEmpty());
-   this->compareExpectedResult(results.first(), expectedResult);
+   for (const QString& extension : QStringList { "nfo", "NFO", "Nfo" })
+   {
+      QList<Protos::Common::FindResult> results =
+         this->fileManager->find(
+            "",
+            QList<QString> { extension },
+            0,
+            std::numeric_limits<qint64>::max(),
+            Protos::Common::FindPattern::FILE_DIR,
+            10000,
+            65536,
+            true
+         );
+      QVERIFY(!results.isEmpty());
+      this->compareExpectedResult(results.first(), expectedResult);
+   }
 }
 
 void Tests::findFilesByExtensionsAndSizeRange()
@@ -1119,19 +1128,22 @@ void Tests::findFilesByExtensionsAndSizeRange()
    FindResult expectedResult;
    expectedResult[0] << "aaaa bbbb.txt" << "aaaa cccc.txt" << "remoteFile.txt";
 
-   QList<Protos::Common::FindResult> results =
-      this->fileManager->find(
-         "",
-         QList<QString> { "txt" },
-         12,
-         13,
-         Protos::Common::FindPattern::FILE_DIR,
-         10000,
-         65536,
-         true
-      );
-   QVERIFY(!results.isEmpty());
-   this->compareExpectedResult(results.first(), expectedResult);
+   for (const QString& extension : QStringList { "txt", "TXT", "Txt" })
+   {
+      QList<Protos::Common::FindResult> results =
+         this->fileManager->find(
+            "",
+            QList<QString> { extension },
+            12,
+            13,
+            Protos::Common::FindPattern::FILE_DIR,
+            10000,
+            65536,
+            true
+         );
+      QVERIFY(!results.isEmpty());
+      this->compareExpectedResult(results.first(), expectedResult);
+   }
 }
 
 void Tests::findFilesBySizeRange()

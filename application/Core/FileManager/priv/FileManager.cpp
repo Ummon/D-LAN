@@ -284,6 +284,11 @@ QList<Protos::Common::FindResult> FileManager::find(
    bool setSharedEntryPath
 )
 {
+   QList<QString> normalizedExtensions;
+   normalizedExtensions.reserve(extensions.size());
+   for (const QString& extension : extensions)
+      normalizedExtensions.append(extension.toLower());
+
    bool filterBySizeOn = minFileSize > 0 || maxFileSize != std::numeric_limits<qint64>::max();
    bool filterByExtensionsOn = !extensions.isEmpty();
    bool filterByCategoryOn = category != Protos::Common::FindPattern::FILE_DIR;
@@ -301,7 +306,7 @@ QList<Protos::Common::FindResult> FileManager::find(
             [&](const Entry* entry) {
                const File* file = dynamic_cast<const File*>(entry);
                return (!filterBySizeOn || entry->getSize() >= minFileSize && entry->getSize() <= maxFileSize) &&
-                      (!filterByExtensionsOn || file && extensions.contains(file->getExtension().toLower())) &&
+                      (!filterByExtensionsOn || file && normalizedExtensions.contains(file->getExtension().toLower())) &&
                       (!filterByCategoryOn || (category == Protos::Common::FindPattern::FILE && dynamic_cast<const File*>(entry) || category == Protos::Common::FindPattern::DIR && dynamic_cast<const Directory*>(entry)));
             }
          );
@@ -316,7 +321,7 @@ QList<Protos::Common::FindResult> FileManager::find(
          if (filterBySizeOn)
             intermediateResult =
                this->extensionIndex.search(
-                  extensions,
+                  normalizedExtensions,
                   maxNbResult,
                   [&](const File* file)
                   {
@@ -324,7 +329,7 @@ QList<Protos::Common::FindResult> FileManager::find(
                   }
                );
          else
-            intermediateResult = this->extensionIndex.search(extensions, maxNbResult);
+            intermediateResult = this->extensionIndex.search(normalizedExtensions, maxNbResult);
       }
       else
       {
