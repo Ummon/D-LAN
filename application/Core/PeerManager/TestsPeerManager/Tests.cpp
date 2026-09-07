@@ -22,6 +22,7 @@ using namespace PM;
 #include <QtDebug>
 #include <QStringList>
 #include <QScopeGuard>
+#include <QSignalSpy>
 
 #include <Protos/core_protocol.pb.h>
 #include <Protos/core_settings.pb.h>
@@ -38,6 +39,8 @@ using namespace PM;
 #include <IGetHashesResult.h>
 #include <priv/PeerManager.h>
 #include <priv/PeerMessageSocket.h>
+#include <priv/ConnectionPool.h>
+#include <priv/GetChunksResult.h>
 
 const int Tests::PORT = 59487;
 
@@ -336,6 +339,57 @@ void Tests::askForHashes()
       if (timer.elapsed() > 30000)
          QFAIL("We don't receive all the hashes");
    }
+}
+
+void Tests::closedSocketIsNotReused_data()
+{
+   QTest::addColumn<bool>("finishTransfer");
+   QTest::newRow("paused-transfer") << true;
+   QTest::newRow("explicit-close") << false;
+}
+
+void Tests::closedSocketIsNotReused()
+{
+   QFETCH(bool, finishTransfer);
+   PM::ConnectionPool pool(static_cast<PM::PeerManager*>(this->peerManagers[0].data()),
+      this->fileManagers[0], this->peerIDs[1]);
+   pool.setIP(QHostAddress::LocalHost, PORT + 1);
+   auto previous = pool.getASocket();
+   QVERIFY(previous);
+   QSignalSpy closed(previous.data(), &PM::PeerMessageSocket::closed);
+   if (finishTransfer)
+      previous->finished(true);
+   else
+      previous->close();
+
+   // Pausing releases the occupied peer and starts the next download synchronously,
+   // before the pool receives its queued close notification. Do not pump events here.
+   auto next = pool.getASocket();
+   QVERIFY(next);
+   QVERIFY(next != previous);
+   QVERIFY(previous->isClosing());
+   previous->setActive();
+   QVERIFY(!previous->isActive());
+   previous->close();
+   QCOMPARE(closed.count(), 1);
+   previous.clear();
+
+   // The replacement must actually send and receive a response, rather than merely
+   // appearing active until GetChunksResult's seven-second timeout fires.
+   Protos::Core::GetChunks request;
+   const Common::Hash missing = Common::Hash::rand();
+   request.add_chunks()->mutable_hash()->set_hash(missing.getData(), Common::Hash::HASH_SIZE);
+   QSharedPointer<PM::GetChunksResult> result(new PM::GetChunksResult(request, next),
+      &PM::GetChunksResult::doDeleteLater);
+   bool received = false;
+   QObject context;
+   QSignalSpy timeout(result.data(), &PM::IGetChunksResult::timeout);
+   connect(result.data(), &PM::IGetChunksResult::result, &context,
+      [&](const Protos::Core::GetChunksResult&) { received = true; });
+   result->start();
+   QTRY_VERIFY_WITH_TIMEOUT(received, 2000);
+   QCOMPARE(timeout.count(), 0);
+   result->setStatus(true);
 }
 
 void Tests::validateChunkOffsets()

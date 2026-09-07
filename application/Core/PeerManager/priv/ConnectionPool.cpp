@@ -81,7 +81,7 @@ QSharedPointer<PeerMessageSocket> ConnectionPool::getASocket()
    for (QListIterator<QSharedPointer<PeerMessageSocket>> i(this->socketsToPeer); i.hasNext();)
    {
       QSharedPointer<PeerMessageSocket> socket = i.next();
-      if (!socket->isActive())
+      if (!socket->isActive() && !socket->isClosing())
       {
          socket->setActive();
          return socket;
@@ -112,7 +112,7 @@ void ConnectionPool::socketBecomeIdle(PeerMessageSocket* socket)
    for (QListIterator<QSharedPointer<PeerMessageSocket>> i(this->getAllSockets()); i.hasNext();)
    {
      QSharedPointer<PeerMessageSocket> currentSocket = i.next();
-     if (!currentSocket.data()->isActive())
+     if (!currentSocket->isActive() && !currentSocket->isClosing())
      {
         n += 1;
         if (n > SETTINGS.get<quint32>("max_number_idle_socket"))

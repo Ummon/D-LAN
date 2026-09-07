@@ -85,8 +85,11 @@ void CacheTest::updaterWaitsForEarliestTask()
    if (unwatchable)
       updater.unwatchableEntries.append(nullptr);
    if (retry)
-      updater.filesWithoutHashesIOError.append(nullptr);
-   QCOMPARE(updater.nextWaitTimeout(elapsed), expected);
+   {
+      updater.hashingQueue.enqueue(nullptr, 100);
+      updater.hashingQueue.finishPass(nullptr, 100, true, 0, 3000);
+   }
+   QCOMPARE(updater.nextWaitTimeout(elapsed, 0), expected);
 }
 
 void CacheTest::failedHashingIsQueuedOnce_data()
@@ -122,35 +125,144 @@ void CacheTest::failedHashingIsQueuedOnce()
    updater.addScannedFile(info, file);
    QVERIFY(QFile::remove(path));
    updater.computeSomeHashes();
-   QCOMPARE(updater.filesWithoutHashesIOError.count(file), 1);
-   QVERIFY(updater.filesWithoutHashes.isEmpty());
+   QCOMPARE(updater.hashingQueue.size(), qsizetype(1));
+   QVERIFY(!updater.hashingQueue.next());
+   QVERIFY(updater.isHashing()); // Pending retries are not an up-to-date cache.
 
-   // A rescan (using the original metadata) must not duplicate a pending retry.
+   // Neither repeated scans nor priority requests duplicate work or bypass backoff.
    updater.addScannedFile(info, file);
    updater.addScannedFile(info, file);
-   QVERIFY(updater.filesWithoutHashes.isEmpty());
    if (prioritize)
    {
       updater.prioritizeAFileToHash(file);
       updater.prioritizeAFileToHash(file);
-      QVERIFY(updater.filesWithoutHashesIOError.isEmpty());
-      QCOMPARE(updater.filesWithoutHashesPrioritized.count(file), 1);
    }
-   QCOMPARE(updater.remainingSizeToHash, qint64(100));
-   updater.requeueFailedFiles();
-   updater.requeueFailedFiles();
-   QCOMPARE(updater.filesWithoutHashes.count(file), prioritize ? 0 : 1);
-   QCOMPARE(updater.filesWithoutHashesPrioritized.count(file), prioritize ? 1 : 0);
-   QVERIFY(updater.filesWithoutHashesIOError.isEmpty());
+   QCOMPARE(updater.hashingQueue.size(), qsizetype(1));
+   QCOMPARE(updater.hashingQueue.remainingBytes(), qint64(100));
+   QVERIFY(!updater.hashingQueue.next());
+   const qint64 later = updater.schedulerClock.elapsed() + 3000;
+   updater.hashingQueue.releaseDueRetries(later);
+   updater.hashingQueue.releaseDueRetries(later);
+   QCOMPARE(updater.hashingQueue.next(), file);
+   QCOMPARE(updater.hashingQueue.size(), qsizetype(1));
 
-   updater.removeFromFilesWithoutHashes(removeDirectory ? static_cast<FM::Entry*>(root->getRootDir()) : file);
+   updater.removeFromHashingQueue(removeDirectory ? static_cast<FM::Entry*>(root->getRootDir()) : file);
    file->del(false);
    cache.deleteEntry(file);
-   QVERIFY(updater.filesWithoutHashes.isEmpty());
-   QVERIFY(updater.filesWithoutHashesPrioritized.isEmpty());
-   QVERIFY(updater.filesWithoutHashesIOError.isEmpty());
-   QCOMPARE(updater.remainingSizeToHash, qint64(0));
+   QVERIFY(updater.hashingQueue.isEmpty());
+   QCOMPARE(updater.hashingQueue.remainingBytes(), qint64(0));
    updater.computeSomeHashes(); // No retained pointer may be visited after deletion.
+}
+
+void CacheTest::hashingSchedulerTransitions()
+{
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   auto first = new FM::File(root, "first", 100, false, QDateTime(), root->getRootDir());
+   auto second = new FM::File(root, "second", 200, false, QDateTime(), root->getRootDir());
+   auto third = new FM::File(root, "third", 300, false, QDateTime(), root->getRootDir());
+   FM::HashingQueue queue;
+   queue.enqueue(first, 100);
+   queue.enqueue(second, 200);
+   queue.enqueue(third, 300);
+   queue.enqueue(second, 200, true);
+   queue.enqueue(third, 300, true);
+   QCOMPARE(queue.remainingBytes(), qint64(600));
+   QCOMPARE(queue.next(), second);
+
+   queue.finishPass(second, 150, false, 0, 3000);
+   QCOMPARE(queue.next(), third); // Prioritized requests alternate after each chunk.
+   QCOMPARE(queue.remainingBytes(), qint64(550));
+   queue.finishPass(third, 300, true, 100, 3000);
+   queue.finishPass(second, 150, true, 200, 3000);
+   QCOMPARE(queue.next(), first); // A failed priority request must not block ordinary work.
+   QCOMPARE(queue.retryTimeout(1000), 2100);
+
+   queue.enqueue(third, 300, true);
+   queue.releaseDueRetries(3099);
+   QCOMPARE(queue.next(), first);
+   QCOMPARE(queue.retryTimeout(3099), 1);
+   queue.releaseDueRetries(3100);
+   QCOMPARE(queue.next(), third);
+   QCOMPARE(queue.retryTimeout(3100), 100);
+   queue.releaseDueRetries(3200);
+   QCOMPARE(queue.retryTimeout(3200), -1);
+
+   queue.finishPass(third, 0, false, 3200, 3000);
+   QCOMPARE(queue.next(), second);
+   queue.remove(second); // Remove only the 150 bytes still pending, not its original 200.
+   QCOMPARE(queue.remainingBytes(), qint64(100));
+   queue.finishPass(second, 150, true, 3300, 3000); // A late result cannot resurrect removed work.
+   QCOMPARE(queue.size(), qsizetype(1));
+   queue.enqueue(first, 400); // A changed file replaces its previous contribution.
+   QCOMPARE(queue.remainingBytes(), qint64(400));
+   queue.enqueue(second, 200, true);
+   queue.enqueue(third, 300);
+   queue.finishPass(third, 300, true, 3400, 3000);
+   queue.removeIf([first](FM::File* file) { return file != first; });
+   QCOMPARE(queue.remainingBytes(), qint64(400));
+   QCOMPARE(queue.retryTimeout(3400), -1);
+   queue.remove(first);
+   QVERIFY(queue.isEmpty());
+   QVERIFY(!queue.next());
+   QCOMPARE(queue.remainingBytes(), qint64(0));
+}
+
+void CacheTest::hashingWorkFollowsFileChanges()
+{
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   const auto previousDuration = SETTINGS.get<quint32>("minimum_duration_when_hashing");
+   const auto restore = qScopeGuard([&] { SETTINGS.set("minimum_duration_when_hashing", previousDuration); });
+   SETTINGS.set("minimum_duration_when_hashing", quint32(0));
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   const QString path = temp.filePath("changing.bin");
+   const qint64 chunkSize = FM::Chunk::CHUNK_SIZE;
+   {
+      QFile physical(path);
+      QVERIFY(physical.open(QIODevice::WriteOnly));
+      QVERIFY(physical.resize(3 * chunkSize + 7));
+   }
+   const QFileInfo info(path);
+   auto file = new FM::File(root, "changing.bin", info.size(), false, info.lastModified(), root->getRootDir());
+   // Simulate a restored hash: these bytes must never enter the remaining total.
+   file->getChunks().first()->setHash(Common::Hash::rand(), false);
+   FM::FileUpdater updater(nullptr);
+   updater.addScannedFile(info, file);
+   QCOMPARE(updater.hashingQueue.remainingBytes(), 2 * chunkSize + 7);
+   updater.computeSomeHashes();
+   QCOMPARE(updater.hashingQueue.remainingBytes(), chunkSize + 7);
+   updater.addScannedFile(info, file);
+   QCOMPARE(updater.hashingQueue.remainingBytes(), chunkSize + 7);
+
+   {
+      QFile physical(path);
+      QVERIFY(physical.open(QIODevice::ReadWrite));
+      QVERIFY(physical.resize(4 * chunkSize + 11));
+   }
+   updater.addScannedFile(QFileInfo(path), file);
+   QCOMPARE(updater.hashingQueue.size(), qsizetype(1));
+   QCOMPARE(updater.hashingQueue.remainingBytes(), 4 * chunkSize + 11);
+   updater.computeSomeHashes();
+   QCOMPARE(updater.hashingQueue.remainingBytes(), 3 * chunkSize + 11);
+   updater.removeFromHashingQueue(file);
+   QCOMPARE(updater.hashingQueue.remainingBytes(), qint64(0));
+   QVERIFY(!updater.isHashing());
+
+   updater.addScannedFile(QFileInfo(path), file);
+   file->setToUnfinished(100, { Common::Hash::rand() });
+   updater.addScannedFile(QFileInfo(file->getAbsolutePath()), file);
+   QVERIFY(updater.hashingQueue.isEmpty());
+   QCOMPARE(file->getRemainingBytesToHash(), qint64(0));
 }
 
 void CacheTest::directoryTotalsFollowFileResizing()

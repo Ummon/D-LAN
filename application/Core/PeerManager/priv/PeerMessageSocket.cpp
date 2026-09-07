@@ -169,11 +169,19 @@ bool PeerMessageSocket::isActive() const
    return this->active;
 }
 
+bool PeerMessageSocket::isClosing() const
+{
+   return this->closing;
+}
+
 /**
   * Change the status of the socket to active. Automatically called when a message is sent.
   */
 void PeerMessageSocket::setActive()
 {
+   if (this->closing)
+      return;
+
    // Some transactions (like GET_HASHES) can go for a long time, we have to restart the timer even for an active connection.
    this->inactiveTimer.start();
 
@@ -233,6 +241,9 @@ void PeerMessageSocket::finished(bool closeTheSocket)
   */
 void PeerMessageSocket::startListening()
 {
+   if (this->closing)
+      return;
+
    // Started before the base method: the latter may read a pending message and stop the timer again.
    this->inactiveTimer.start();
 
@@ -251,6 +262,12 @@ void PeerMessageSocket::stopListening()
   */
 void PeerMessageSocket::close()
 {
+   if (this->closing)
+      return;
+
+   // Pool removal is queued to protect callbacks still using this object. Mark
+   // it unavailable now: releasing a download can synchronously request a socket.
+   this->closing = true;
    this->active = false;
    this->stopListening();
    emit closed(this);

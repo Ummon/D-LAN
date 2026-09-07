@@ -591,6 +591,20 @@ bool File::hasAllHashes() const
    return true;
 }
 
+qint64 File::getRemainingBytesToHash() const
+{
+   // Snapshot one file generation: restored hashes, resize, and re-download can
+   // change the work left independently of the bytes read by the last pass.
+   QMutexLocker locker(&this->mutex);
+   if (!this->isComplete())
+      return 0;
+   qint64 remaining = 0;
+   for (const auto& chunk : this->chunks)
+      if (!chunk->hasHash())
+         remaining += chunk->getChunkSize();
+   return remaining;
+}
+
 bool File::hasOneOrMoreHashes() const
 {
    for (QListIterator<QSharedPointer<Chunk>> i(this->chunks); i.hasNext();)

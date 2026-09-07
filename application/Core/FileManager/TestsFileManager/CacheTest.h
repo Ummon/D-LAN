@@ -13,6 +13,8 @@ private slots:
    void updaterWaitsForEarliestTask();
    void failedHashingIsQueuedOnce_data();
    void failedHashingIsQueuedOnce();
+   void hashingSchedulerTransitions();
+   void hashingWorkFollowsFileChanges();
    void directoryTotalsFollowFileResizing();
    void directoryLookupAllowsSizePropagation_data();
    void directoryLookupAllowsSizePropagation();

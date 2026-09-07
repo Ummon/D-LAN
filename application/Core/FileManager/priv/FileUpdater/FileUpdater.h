@@ -30,6 +30,7 @@
 #include <QFileInfo>
 
 #include <priv/FileUpdater/DirWatcher.h>
+#include <priv/FileUpdater/HashingQueue.h>
 #include <priv/Cache/FileHasher.h>
 
 class CacheTest;
@@ -71,9 +72,7 @@ namespace FM
    private:
       friend class ::CacheTest; // Exercise scheduler transitions without running its event loop.
       void computeSomeHashes();
-      void requeueFailedFiles();
-      int nextWaitTimeout(qint64 elapsedSinceScan) const;
-      void updateHashingProgress();
+      int nextWaitTimeout(qint64 elapsedSinceScan, qint64 now) const;
 
       void stopHashing();
 
@@ -85,7 +84,7 @@ namespace FM
 
       void deleteEntry(Entry* entry);
       void removeFromEntriesToScan(Entry* entry);
-      void removeFromFilesWithoutHashes(Entry* entry);
+      void removeFromHashingQueue(Entry* entry);
 
       bool processEvents(const QList<WatcherEvent>& events);
 
@@ -97,10 +96,8 @@ namespace FM
 
       std::atomic<bool> toStop; ///< Set to true when the service must be stopped.
 
-      int progress;
-
       WaitCondition* dirEvent; ///< Using to wait when a sharing directory is added or deleted.
-      mutable QRecursiveMutex mutex; ///< Prevent the access from many thread to the internal data like 'filesWithoutHashes' for example.
+      mutable QRecursiveMutex mutex; ///< Protects scanning queues and all hashing scheduler access.
 
       QList<Entry*> unwatchableEntries;
       QElapsedTimer timerScanUnwatchable;
@@ -118,11 +115,7 @@ namespace FM
 
       QList<Entry*> rootEntriesToRemove;
 
-      // Mutually exclusive queues: scans must include retries in their membership
-      // check, and promotion transfers an existing entry without recounting it.
-      QList<File*> filesWithoutHashesIOError;
-      QList<File*> filesWithoutHashes;
-      QList<File*> filesWithoutHashesPrioritized;
-      qint64 remainingSizeToHash;
+      HashingQueue hashingQueue;
+      QElapsedTimer schedulerClock;
    };
 }

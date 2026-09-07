@@ -92,6 +92,7 @@ namespace PM
       void send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message) override;
 
       bool isActive() const;
+      bool isClosing() const;
       void setActive();
 
       void finished(bool closeTheSocket = false) override;
@@ -131,6 +132,7 @@ namespace PM
       QSharedPointer<FM::IFileManager> fileManager;
 
       bool active;
+      bool closing = false; // Terminal state while queued pool removal/destruction is pending.
       QTimer inactiveTimer;
       int nbError;
 

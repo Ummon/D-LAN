@@ -18,10 +18,12 @@
   
 #include <QCoreApplication>
 #include <QTest>
+#include <QTemporaryDir>
 
 #include <Protos/core_settings.pb.h>
 
 #include <Common/Settings.h>
+#include <Common/Global.h>
 #include <Common/LogManager/Builder.h>
 
 #include <Tests.h>
@@ -31,6 +33,12 @@ Protos::Core::Settings* createDefaultValuesSettings();
 int main(int argc, char *argv[])
 {
    QCoreApplication a(argc, argv);
+
+   QTemporaryDir settingsDir;
+   if (!settingsDir.isValid())
+      return 1;
+   Common::Global::setDataFolder(Common::Global::DataFolderType::LOCAL, settingsDir.path());
+   Common::Global::setDataFolder(Common::Global::DataFolderType::ROAMING, settingsDir.path());
 
    SETTINGS.setFilename("core_settings_peer_manager_tests.json");
    SETTINGS.setSettingsMessage(createDefaultValuesSettings());

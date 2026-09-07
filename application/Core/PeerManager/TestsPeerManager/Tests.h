@@ -54,6 +54,8 @@ private slots:
    void getPeerFromID();
    void askForRootEntries();
    void askForSomeEntries();
+   void closedSocketIsNotReused_data();
+   void closedSocketIsNotReused();
    void askForHashes();
    void validateChunkOffsets();
    void uploadReservations();

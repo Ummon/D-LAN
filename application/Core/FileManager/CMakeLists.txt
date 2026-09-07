@@ -32,6 +32,7 @@ add_library(FileManager STATIC
    priv/Log.h
    priv/FileManager.h
    priv/FileUpdater/FileUpdater.h
+   priv/FileUpdater/HashingQueue.h
    priv/FileUpdater/DirWatcher.h
    priv/Cache/Entry.h
    priv/Cache/File.h

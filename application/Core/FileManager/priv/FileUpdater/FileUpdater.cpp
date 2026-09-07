@@ -47,12 +47,11 @@ FileUpdater::FileUpdater(FileManager* fileManager) :
    fileManager(fileManager),
    dirWatcher(DirWatcher::getNewWatcher()),
    toStop(false),
-   progress(0),
    currentScanningEntry(nullptr),
-   toStopHashing(false),
-   remainingSizeToHash(0)
+   toStopHashing(false)
 {
    this->dirEvent = WaitCondition::getNewWaitCondition();
+   this->schedulerClock.start();
 }
 
 FileUpdater::~FileUpdater()
@@ -147,7 +146,7 @@ void FileUpdater::rmRoot(SharedEntry* sharedEntry, Directory* dir)
    if (dir && rootDirectory)
       dir->stealContent(rootDirectory);
 
-   this->removeFromFilesWithoutHashes(root);
+   this->removeFromHashingQueue(root);
    this->removeFromEntriesToScan(root);
    this->unwatchableEntries.removeOne(root);
    this->rootEntriesToRemove << root;
@@ -157,33 +156,16 @@ void FileUpdater::rmRoot(SharedEntry* sharedEntry, Directory* dir)
 
 void FileUpdater::prioritizeAFileToHash(File* file)
 {
-   // Same locking order as 'computeSomeHashes()' and 'rmRoot(..)': 'hashingMutex' then 'mutex'.
-   QMutexLocker lockerHashing(&this->hashingMutex);
    QMutexLocker locker(&this->mutex);
 
    L_DEBU(QString("FileUpdater::prioritizeAFileToHash: %1").arg(file->getAbsolutePath()));
 
-   // If a file is incomplete (unfinished) we can't compute its hashes because we don't have all data.
-   if (!file->hasAllHashes() && file->isComplete())
+   const qint64 remaining = file->getRemainingBytesToHash();
+   if (remaining > 0)
    {
-      // Promotion transfers existing work, including a pending I/O retry.
-      // A file must belong to only one of the three scheduling lists.
-      bool alreadyQueued = this->filesWithoutHashes.removeAll(file) != 0;
-      alreadyQueued |= this->filesWithoutHashesIOError.removeAll(file) != 0;
-
-      if (!this->filesWithoutHashesPrioritized.contains(file))
-      {
-         this->filesWithoutHashesPrioritized << file;
-         if (!alreadyQueued)
-            this->remainingSizeToHash += file->getSize();
-      }
-
-      // Commented to avoid this behavior:
-      // When a lot of unhashed tiny file are asked the hashing process will constantly abort the current hashing file
-      // and will never finish it thus slow down the global hashing rate.
-      // this->fileHasher.stop();
-
-      this->toStopHashing = true;
+      this->hashingQueue.enqueue(file, remaining, true);
+      // Let the in-flight chunk finish. The next selection observes the new priority.
+      this->dirEvent->release();
    }
    else
       L_DEBU(QString("FileUpdater::prioritizeAFileToHash, unable to prioritize: %1").arg(file->getAbsolutePath()));
@@ -198,14 +180,20 @@ bool FileUpdater::isScanning() const
 
 bool FileUpdater::isHashing() const
 {
-   QMutexLocker locker(&this->hashingMutex);
-   return !this->filesWithoutHashes.isEmpty() || !this->filesWithoutHashesPrioritized.isEmpty();
+   QMutexLocker locker(&this->mutex);
+   return !this->hashingQueue.isEmpty();
 }
 
 int FileUpdater::getProgress() const
 {
+   // Cache operations can call into the updater, so never acquire the cache mutex
+   // while holding the scheduler mutex.
+   const qint64 total = this->fileManager->getAmount();
    QMutexLocker locker(&this->mutex);
-   return this->progress;
+   if (total <= 0 || this->hashingQueue.isEmpty())
+      return 0;
+   const qint64 remaining = qBound<qint64>(0, this->hashingQueue.remainingBytes(), total);
+   return static_cast<int>(10000.0L * (total - remaining) / total);
 }
 
 void FileUpdater::run()
@@ -236,8 +224,6 @@ void FileUpdater::run()
 
    emit initialScanFinished();
 
-   this->progress = 0;
-
    forever
    {
       this->computeSomeHashes();
@@ -264,12 +250,11 @@ void FileUpdater::run()
       {
          if (
             this->entriesToScan.isEmpty() &&
-            this->filesWithoutHashes.isEmpty() &&
-            this->filesWithoutHashesPrioritized.isEmpty()
+            !this->hashingQueue.next()
          )
          {
             L_DEBU("Waiting for a new entry added..");
-            const int timeout = this->nextWaitTimeout(this->timerScanUnwatchable.elapsed());
+            const int timeout = this->nextWaitTimeout(this->timerScanUnwatchable.elapsed(), this->schedulerClock.elapsed());
             this->mutex.unlock();
 
             this->dirEvent->wait(timeout);
@@ -301,11 +286,10 @@ void FileUpdater::run()
          // or a filesystem event.
          if (
             this->entriesToScan.isEmpty() &&
-            this->filesWithoutHashes.isEmpty() &&
-            this->filesWithoutHashesPrioritized.isEmpty()
+            !this->hashingQueue.next()
          )
          {
-            const int timeout = this->nextWaitTimeout(this->timerScanUnwatchable.elapsed());
+            const int timeout = this->nextWaitTimeout(this->timerScanUnwatchable.elapsed(), this->schedulerClock.elapsed());
             this->mutex.unlock();
 
             this->processEvents(
@@ -337,8 +321,6 @@ void FileUpdater::run()
          }
       }
 
-      this->requeueFailedFiles();
-
       if (this->toStop)
       {
          L_DEBU("FileUpdater mainloop finished");
@@ -349,148 +331,66 @@ void FileUpdater::run()
 
 // Both wait backends wake for the earliest pending maintenance task. Calculate
 // this before releasing mutex so concurrent queue changes cannot race the reads.
-int FileUpdater::nextWaitTimeout(qint64 elapsedSinceScan) const
+int FileUpdater::nextWaitTimeout(qint64 elapsedSinceScan, qint64 now) const
 {
    QMutexLocker locker(&this->mutex);
-   int timeout = -1;
+   int timeout = this->hashingQueue.retryTimeout(now);
    if (!this->unwatchableEntries.isEmpty())
-      timeout = static_cast<int>(qMax<qint64>(0, this->SCAN_PERIOD_UNWATCHABLE_DIRS - elapsedSinceScan));
-   if (!this->filesWithoutHashesIOError.isEmpty())
-      timeout = timeout < 0 ? this->IO_ERROR_WAITING_BEFORE_RETRY : qMin(timeout, this->IO_ERROR_WAITING_BEFORE_RETRY);
+   {
+      const int scanTimeout = static_cast<int>(qMax<qint64>(0, this->SCAN_PERIOD_UNWATCHABLE_DIRS - elapsedSinceScan));
+      timeout = timeout < 0 ? scanTimeout : qMin(timeout, scanTimeout);
+   }
    return timeout;
 }
 
-void FileUpdater::requeueFailedFiles()
-{
-   QMutexLocker lockerHashing(&this->hashingMutex);
-   QMutexLocker locker(&this->mutex);
-   this->filesWithoutHashes.append(this->filesWithoutHashesIOError);
-   this->filesWithoutHashesIOError.clear();
-}
-
-/**
-  * It will take some files from 'filesWithoutHashesPrioritized' or 'fileWithoutHashes' and compute theirs hashes.
-  * The minimum duration of the computation is equal to the setting 'minimum_duration_when_hashing'.
-  */
 void FileUpdater::computeSomeHashes()
 {
-   QMutexLocker locker(&this->hashingMutex);
-
-   if (this->toStopHashing)
-   {
-      this->toStopHashing = false;
-      return;
-   }
-
-   if (this->filesWithoutHashes.isEmpty() && this->filesWithoutHashesPrioritized.isEmpty())
-      return;
-
-   L_DEBU("Start computing some hashes . . .");
-
    QElapsedTimer timer;
    timer.start();
+   const quint32 MINIMUM_DURATION_WHEN_HASHING = SETTINGS.get<quint32>("minimum_duration_when_hashing");
 
-   // We take the file from the prioritized list first.
-   QList<QList<File*>*> fileLists { &this->filesWithoutHashesPrioritized, &this->filesWithoutHashes };
-   for (QMutableListIterator<QList<File*>*> i(fileLists); i.hasNext();)
+   for (;;)
    {
-      QList<File*>* fileList = i.next();
-      while (!fileList->empty())
+      File* file;
       {
-         File* nextFileToHash = fileList->first();
-
-         // A file can change its state from 'completed' to 'unfinished' if it's redownloaded.
-         if (nextFileToHash->isComplete())
-         {
-            locker.unlock();
-            bool gotAllHashes = false;
-            bool ioError = false;
-            try
-            {
-               int hashedAmount = 0;
-               // Be careful of methods 'prioritizeAFileToHash(..)' and 'rmRoot(..)' called concurrently here.
-               // We ask to compute the next unknown chunk (only one).
-               gotAllHashes = this->fileHasher.start(nextFileToHash, 1, &hashedAmount, true);
-
-               {
-                  QMutexLocker locker(&this->mutex);
-                  this->remainingSizeToHash -= hashedAmount;
-               }
-
-               this->updateHashingProgress();
-            }
-            catch (IOErrorException&)
-            {
-               ioError = true;
-            }
-            locker.relock();
-
-            // The current hashing file may have been removed from 'filesWithoutHashes' or
-            // 'filesWithoutHashesPrioritized' by 'rmRoot(..)' while the mutex was unlocked: it is about to be
-            // deleted and must not be requeued.
-            if (!fileList->isEmpty() && fileList->first() == nextFileToHash)
-            {
-               if (ioError)
-               {
-                  fileList->removeFirst();
-                  this->filesWithoutHashesIOError << nextFileToHash;
-               }
-               else if (gotAllHashes)
-                  fileList->removeFirst();
-               // Special case for the prioritized list, we put the file at the end after the computation of a hash.
-               else if (fileList == &this->filesWithoutHashesPrioritized && fileList->size() > 1)
-                  fileList->move(0, fileList->size() - 1);
-            }
-         }
-         else
-         {
-            QMutexLocker locker(&this->mutex);
-            this->remainingSizeToHash -= fileList->first()->getSize();
-            fileList->removeFirst();
-         }
-
-         if (this->toStopHashing)
-         {
-            this->toStopHashing = false;
-            goto end;
-         }
-
-         static const quint32 MINIMUM_DURATION_WHEN_HASHING = SETTINGS.get<quint32>("minimum_duration_when_hashing");
-         if (static_cast<quint32>(timer.elapsed()) >= MINIMUM_DURATION_WHEN_HASHING)
-            goto end;
+         // Retain the existing stop/removal ordering, but queue state itself is
+         // always protected by mutex, including reads from the status thread.
+         QMutexLocker hashingLocker(&this->hashingMutex);
+         if (this->toStopHashing.exchange(false) || this->toStop)
+            break;
+         QMutexLocker locker(&this->mutex);
+         this->hashingQueue.releaseDueRetries(this->schedulerClock.elapsed());
+         file = this->hashingQueue.next();
+         if (!file)
+            break;
       }
+
+      bool ioError = false;
+      try
+      {
+         this->fileHasher.start(file, 1, nullptr, true);
+      }
+      catch (IOErrorException&)
+      {
+         ioError = true;
+      }
+
+      {
+         QMutexLocker hashingLocker(&this->hashingMutex);
+         QMutexLocker locker(&this->mutex);
+         // rmRoot may have removed this job while hashing was unlocked. Root
+         // destruction runs later on this updater thread; do not requeue it.
+         if (this->hashingQueue.contains(file))
+            this->hashingQueue.finishPass(file, file->getRemainingBytesToHash(), ioError,
+               this->schedulerClock.elapsed(), this->IO_ERROR_WAITING_BEFORE_RETRY);
+      }
+
+      if (static_cast<quint32>(timer.elapsed()) >= MINIMUM_DURATION_WHEN_HASHING)
+         break;
    }
 
-end:
-   // Save each changed file once per scheduling batch, rather than once per chunk.
-   locker.unlock();
+   // Persistence and disk I/O never run under the scheduler mutex.
    this->fileHasher.flushHashes();
-   locker.relock();
-   L_DEBU(
-      QString(
-         "Computing some hashes ended. this->filesWithoutHashes.size(): %1, this->filesWithoutHashesPrioritized.size(): %2"
-      )
-      .arg(this->filesWithoutHashes.size())
-      .arg(this->filesWithoutHashesPrioritized.size())
-   );
-
-   {
-      QMutexLocker locker(&this->mutex);
-      if (this->filesWithoutHashes.isEmpty() && this->filesWithoutHashesPrioritized.isEmpty() &&
-          this->filesWithoutHashesIOError.isEmpty())
-      {
-         this->remainingSizeToHash = 0;
-         this->progress = 0;
-      }
-   }
-}
-
-void FileUpdater::updateHashingProgress()
-{
-   const qint64 totalAmountOfData = this->fileManager->getAmount();
-
-   QMutexLocker locker(&this->mutex);
-   this->progress = totalAmountOfData == 0 ? 0 : 10000LL * (totalAmountOfData - this->remainingSizeToHash) / totalAmountOfData;
 }
 
 /**
@@ -642,19 +542,8 @@ File* FileUpdater::addScannedFile(const QFileInfo& fileInfo, File* file, Directo
       }
    }
 
-   if (
-      file &&
-      file->getSize() > 0 &&
-      // If a file is incomplete (unfinished) we can't compute its hashes because we don't have all data.
-      file->isComplete() &&
-      (!file->hasAllHashes() || !file->correspondTo(fileInfo)) &&
-      !this->filesWithoutHashes.contains(file) &&
-      !this->filesWithoutHashesPrioritized.contains(file) &&
-      !this->filesWithoutHashesIOError.contains(file))
-   {
-      this->filesWithoutHashes << file;
-      this->remainingSizeToHash += file->getSize();
-   }
+   if (file)
+      this->hashingQueue.enqueue(file, file->getRemainingBytesToHash());
 
    return file;
 }
@@ -713,7 +602,7 @@ void FileUpdater::deleteEntry(Entry* entry)
 
    QMutexLocker locker(&this->mutex);
 
-   this->removeFromFilesWithoutHashes(entry);
+   this->removeFromHashingQueue(entry);
    this->removeFromEntriesToScan(entry);
 
    entry->removeUnfinishedFiles();
@@ -738,53 +627,16 @@ void FileUpdater::removeFromEntriesToScan(Entry* entry)
 }
 
 /**
-  * Remove all the pending files owned by 'dir'.
+  * Remove the pending work for an entry and its descendants.
   */
-void FileUpdater::removeFromFilesWithoutHashes(Entry* entry)
+void FileUpdater::removeFromHashingQueue(Entry* entry)
 {
    QMutexLocker locker(&this->mutex);
 
-   if (Directory* dir = dynamic_cast<Directory*>(entry))
-   {
-      for (QMutableListIterator<File*> i(this->filesWithoutHashes); i.hasNext();)
-      {
-         File* f = i.next();
-         if (f->hasAParentDir(dir))
-         {
-            this->remainingSizeToHash -= f->getSize();
-            i.remove();
-         }
-      }
-
-      for (QMutableListIterator<File*> i(this->filesWithoutHashesPrioritized); i.hasNext();)
-      {
-         File* f = i.next();
-         if (f->hasAParentDir(dir))
-         {
-            this->remainingSizeToHash -= f->getSize();
-            i.remove();
-         }
-      }
-
-      for (QMutableListIterator<File*> i(this->filesWithoutHashesIOError); i.hasNext();)
-      {
-         File* f = i.next();
-         if (f->hasAParentDir(dir))
-         {
-            this->remainingSizeToHash -= f->getSize();
-            i.remove();
-         }
-      }
-   }
-   else if (File* file = dynamic_cast<File*>(entry))
-   {
-      bool fileInAList = this->filesWithoutHashes.removeAll(file) != 0;
-      fileInAList |= this->filesWithoutHashesPrioritized.removeAll(file) != 0;
-      fileInAList |= this->filesWithoutHashesIOError.removeAll(file) != 0;
-
-      if (fileInAList)
-         this->remainingSizeToHash -= file->getSize();
-   }
+   if (File* file = dynamic_cast<File*>(entry))
+      this->hashingQueue.remove(file);
+   else
+      this->hashingQueue.removeIf([entry](File* file) { return isEntryUnder(file, entry); });
 }
 
 /**
