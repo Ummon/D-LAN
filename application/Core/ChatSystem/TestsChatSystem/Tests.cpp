@@ -148,6 +148,85 @@ private slots:
       QVERIFY(network->sent.size() > 1);
    }
 
+   void validateIncomingTimestamps()
+   {
+      const quint64 now = QDateTime::currentMSecsSinceEpoch();
+      auto batch = message(QString(), 1); // Old history remains valid.
+      const QList<quint64> times { 0, now + 60000, now + 10 * 60000,
+         quint64(std::numeric_limits<qint64>::max()), std::numeric_limits<quint64>::max() };
+      for (int i = 0; i < times.size(); ++i)
+      {
+         auto entry = message(QString(), i + 2);
+         entry.mutable_messages(0)->set_time(times[i]);
+         batch.MergeFrom(entry);
+      }
+      CS::ChatMessages history;
+      const auto inserted = history.add(batch);
+      QCOMPARE(inserted.size(), 3);
+      Protos::Common::ChatMessages saved;
+      history.fillProtoChatMessages(saved);
+      QCOMPARE(saved.messages(0).time(), quint64(1000));
+      for (int i = 1; i < saved.messages_size(); ++i)
+      {
+         QVERIFY(saved.messages(i).time() >= now);
+         QVERIFY(saved.messages(i).time() <= quint64(QDateTime::currentMSecsSinceEpoch()));
+      }
+      // Rejected IDs must remain usable for later valid messages.
+      QCOMPARE(history.add(message(QString(), 4)).size(), 1);
+   }
+
+   void futureMessagesCannotBlockLiveMessages()
+   {
+      const auto peers = PM::Builder::newPeerManager({});
+      const auto network = QSharedPointer<NetworkListener>::create();
+      CS::ChatSystem chat(peers, network);
+      QSignalSpy notifications(&chat, &CS::IChatSystem::newMessages);
+      Protos::Common::ChatMessages batch;
+      const quint64 future = QDateTime::currentMSecsSinceEpoch() + 24 * 60 * 60 * 1000;
+      for (int i = 0; i < 500; ++i)
+      {
+         auto entry = message(QString(), i + 1);
+         entry.mutable_messages(0)->set_time(future);
+         batch.MergeFrom(entry);
+      }
+      auto receive = [&](const Protos::Common::ChatMessages& entries) {
+         const auto bytes = entries.SerializeAsString();
+         emit network->received(Common::Message::readMessageBody(
+            Common::MessageHeader(Common::MessageHeader::CORE_CHAT_MESSAGES, bytes.size(), Common::Hash::rand()), bytes.data()));
+      };
+      receive(batch);
+      QVERIFY(notifications.isEmpty());
+      auto live = message(QString(), 501);
+      live.mutable_messages(0)->clear_time();
+      receive(live);
+      QCOMPARE(notifications.size(), 1);
+      Protos::Common::ChatMessages saved;
+      chat.getLastChatMessages(saved);
+      QCOMPARE(saved.messages_size(), 1);
+      QCOMPARE(saved.messages(0).id(), quint64(501));
+   }
+
+   void cleanSavedFutureTimestamps()
+   {
+      QVERIFY(QDir(this->directory->path()).mkpath("chat/rooms"));
+      auto batch = message("General", 1);
+      auto skewed = message("General", 2);
+      skewed.mutable_messages(0)->set_time(QDateTime::currentMSecsSinceEpoch() + 60000);
+      batch.MergeFrom(skewed);
+      auto invalid = message("General", 3);
+      invalid.mutable_messages(0)->set_time(std::numeric_limits<quint64>::max());
+      batch.MergeFrom(invalid);
+      Common::PersistentData::setValue(roomFile("General"), batch, FOLDER);
+      CS::ChatMessages history;
+      history.loadForRoom("General");
+      QCOMPARE(history.getMessages().size(), 2);
+      history.saveForRoom("General");
+      Protos::Common::ChatMessages saved;
+      Common::PersistentData::getValue(roomFile("General"), saved, FOLDER);
+      QCOMPARE(saved.messages_size(), 2);
+      QVERIFY(saved.messages(1).time() <= quint64(QDateTime::currentMSecsSinceEpoch()));
+   }
+
    void distinctRoomHistories()
    {
       const QStringList rooms { "General", "general", "a/b", "a&#47;b", QString(10000, 'x'),

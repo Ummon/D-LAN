@@ -47,11 +47,42 @@ bool ChatMessages::add(const QSharedPointer<ChatMessage>& message)
 
 QList<QSharedPointer<ChatMessage>> ChatMessages::add(const Protos::Common::ChatMessages& chatMessages)
 {
+   bool timestampsChanged;
+   return this->add(chatMessages, timestampsChanged);
+}
+
+/**
+  * Zero timestamps denote live messages and use our receipt time. Allow five minutes
+  * of clock skew, but normalize future times to now so they cannot displace normal
+  * messages. Reject larger future times before converting uint64 to Qt's signed time.
+  */
+QList<QSharedPointer<ChatMessage>> ChatMessages::add(const Protos::Common::ChatMessages& chatMessages, bool& timestampsChanged)
+{
+   static constexpr quint64 MAX_CLOCK_SKEW_MS = 5 * 60 * 1000;
+   const quint64 now = QDateTime::currentMSecsSinceEpoch();
+   timestampsChanged = false;
    QList<QSharedPointer<ChatMessage>> messages;
-
-   for (int i = 0; i < chatMessages.messages_size(); i++)
-      messages << QSharedPointer<ChatMessage>(new ChatMessage(chatMessages.messages(i)));
-
+   int rejected = 0;
+   for (const auto& message : chatMessages.messages())
+   {
+      if (message.time() > now + MAX_CLOCK_SKEW_MS)
+      {
+         ++rejected;
+         timestampsChanged = true;
+         continue;
+      }
+      if (message.time() == 0 || message.time() > now)
+      {
+         auto normalized = message;
+         normalized.set_time(now);
+         messages << QSharedPointer<ChatMessage>::create(normalized);
+         timestampsChanged = true;
+      }
+      else
+         messages << QSharedPointer<ChatMessage>::create(message);
+   }
+   if (rejected > 0)
+      L_WARN(QString("Ignored %1 chat messages with timestamps more than five minutes in the future").arg(rejected));
    return this->insert(messages);
 }
 
@@ -173,8 +204,9 @@ void ChatMessages::loadForRoom(const QString& roomName)
          L_WARN(QString("Ignored %1 saved chat messages belonging to another room in %2").arg(originalSize - messages->size()).arg(filename));
 
       const bool wasChanged = this->d->changed;
-      this->add(chatMessages);
-      this->d->changed = wasChanged || filtered;
+      bool timestampsChanged;
+      this->add(chatMessages, timestampsChanged);
+      this->d->changed = wasChanged || filtered || timestampsChanged;
    }
    catch (Common::UnknownValueException&)
    {

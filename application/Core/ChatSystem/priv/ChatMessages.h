@@ -70,6 +70,7 @@ namespace CS
 
    private:
       static QString getFilename(const QString& roomName);
+      QList<QSharedPointer<ChatMessage>> add(const Protos::Common::ChatMessages& chatMessages, bool& timestampsChanged);
 
       QList<QSharedPointer<ChatMessage>> insert(const QList<QSharedPointer<ChatMessage>>& messages);
 
