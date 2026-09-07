@@ -20,6 +20,9 @@
 
 #include <QtCore>
 
+#include <QSharedPointer>
+#include <QPointer>
+
 #include <Protos/common.pb.h>
 #include <Protos/gui_protocol.pb.h>
 
@@ -31,7 +34,7 @@ namespace RCC
 {
    class InternalCoreConnection;
 
-   class BrowseResult : public IBrowseResult
+   class BrowseResult : public IBrowseResult, public QEnableSharedFromThis<BrowseResult>
    {
       Q_OBJECT
    public:
@@ -47,7 +50,8 @@ namespace RCC
    private:
       void init(InternalCoreConnection* coreConnection);
 
-      InternalCoreConnection* coreConnection;
+      QPointer<InternalCoreConnection> coreConnection;
+      bool started = false;
       const Common::Hash peerID;
       Protos::GUI::Browse browseMessage;
 

@@ -20,6 +20,9 @@
 
 #include <QString>
 
+#include <QSharedPointer>
+#include <QPointer>
+
 #include <Protos/common.pb.h>
 
 #include <ISearchResult.h>
@@ -28,7 +31,7 @@ namespace RCC
 {
    class InternalCoreConnection;
 
-   class SearchResult : public ISearchResult
+   class SearchResult : public ISearchResult, public QEnableSharedFromThis<SearchResult>
    {
       Q_OBJECT
    public:
@@ -40,7 +43,8 @@ namespace RCC
       void searchResult(const Protos::Common::FindResult& findResult);
 
    private:
-      InternalCoreConnection* coreConnection;
+      QPointer<InternalCoreConnection> coreConnection;
+      bool started = false;
       const Protos::Common::FindPattern findPattern;
       bool local;
 

@@ -21,6 +21,9 @@
 #include <QString>
 #include <QList>
 
+#include <QSharedPointer>
+#include <QPointer>
+
 #include <Protos/gui_protocol.pb.h>
 
 #include <Common/Hash.h>
@@ -30,7 +33,7 @@ namespace RCC
 {
    class InternalCoreConnection;
 
-   class SendChatMessageResult : public ISendChatMessageResult
+   class SendChatMessageResult : public ISendChatMessageResult, public QEnableSharedFromThis<SendChatMessageResult>
    {
       Q_OBJECT
    public:
@@ -41,7 +44,8 @@ namespace RCC
       void setResult(const Protos::GUI::ChatMessageResult& result);
 
    private:
-      InternalCoreConnection* coreConnection;
+      QPointer<InternalCoreConnection> coreConnection;
+      bool started = false;
 
       QString message;
       QString roomName;

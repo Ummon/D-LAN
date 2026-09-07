@@ -28,10 +28,22 @@ using namespace RCC;
 SendChatMessageResult::SendChatMessageResult(InternalCoreConnection* coreConnection, int socketTimeout, const QString& message, const QString& roomName, const QList<Common::Hash>& peerIDsAnswered) :
    ISendChatMessageResult(socketTimeout), coreConnection(coreConnection), message(message), roomName(roomName), peerIDsAnswered(peerIDsAnswered)
 {
+   connect(coreConnection, &InternalCoreConnection::disconnected, this, [this] {
+      this->coreConnection.clear();
+   });
 }
 
 void SendChatMessageResult::start()
 {
+   if (this->started)
+      return;
+   this->started = true;
+   this->startTimer();
+   if (!this->coreConnection || !this->coreConnection->isConnected())
+      return;
+
+   this->coreConnection->sendChatMessageResultWithoutReply << this->sharedFromThis().toWeakRef();
+
    Protos::GUI::ChatMessage chatMessage;
 
    chatMessage.set_message(this->message.toStdString());
@@ -43,7 +55,6 @@ void SendChatMessageResult::start()
       chatMessage.add_peer_ids_answer()->set_hash(i.next().getData(), Common::Hash::HASH_SIZE);
 
    this->coreConnection->send(Common::MessageHeader::GUI_CHAT_MESSAGE, chatMessage);
-   this->startTimer();
 }
 
 void SendChatMessageResult::setResult(const Protos::GUI::ChatMessageResult& chatMessageResult)

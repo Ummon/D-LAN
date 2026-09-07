@@ -90,6 +90,7 @@ def "main run-tests" [] {
         build/release/output/TestsUploadManager
         build/release/output/TestsDownloadManager
         build/release/output/TestsNetworkListener
+        build/release/output/TestsRemoteCoreController
         build/release/output/TestsRemoteControlManager
     ]
 

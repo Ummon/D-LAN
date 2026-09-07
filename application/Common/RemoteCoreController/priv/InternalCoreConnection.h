@@ -156,6 +156,7 @@ namespace RCC
       void onNewMessage(const Common::Message& message) override;
       void onDisconnected() override;
 
+      friend class SendChatMessageResult;
       friend class BrowseResult;
       friend class SearchResult;
 

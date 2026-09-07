@@ -28,16 +28,28 @@ using namespace RCC;
 SearchResult::SearchResult(InternalCoreConnection* coreConnection, const Protos::Common::FindPattern& findPattern, bool local, int socketTimeout) :
    ISearchResult(socketTimeout), coreConnection(coreConnection), findPattern(findPattern), local(local), tag(0), tagSet(false)
 {
-   connect(this->coreConnection, &InternalCoreConnection::searchResult, this, &SearchResult::searchResult);
+   connect(this->coreConnection.data(), &InternalCoreConnection::searchResult, this, &SearchResult::searchResult);
+   connect(coreConnection, &InternalCoreConnection::disconnected, this, [this] {
+      this->coreConnection.clear();
+      this->tagSet = false;
+   });
 }
 
 void SearchResult::start()
 {
+   if (this->started)
+      return;
+   this->started = true;
+   this->startTimer();
+   if (!this->coreConnection || !this->coreConnection->isConnected())
+      return;
+
+   this->coreConnection->searchResultsWithoutTag << this->sharedFromThis().toWeakRef();
+
    Protos::GUI::Search search;
    search.mutable_pattern()->CopyFrom(this->findPattern);
    search.set_local(this->local);
    this->coreConnection->send(Common::MessageHeader::GUI_SEARCH, search);
-   this->startTimer();
 }
 
 void SearchResult::setTag(quint64 tag)

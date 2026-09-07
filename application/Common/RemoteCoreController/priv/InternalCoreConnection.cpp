@@ -136,7 +136,6 @@ QSharedPointer<ISendChatMessageResult> InternalCoreConnection::sendChatMessage(
          new SendChatMessageResult(this, socketTimeout, message, roomName, peerIDsAnswered)
       );
 
-   this->sendChatMessageResultWithoutReply << sendChatMessageResult.toWeakRef();
    return sendChatMessageResult;
 }
 
@@ -208,21 +207,18 @@ void InternalCoreConnection::resetCorePassword()
 QSharedPointer<IBrowseResult> InternalCoreConnection::browse(const Common::Hash& peerID, int socketTimeout)
 {
    QSharedPointer<BrowseResult> browseResult = QSharedPointer<BrowseResult>(new BrowseResult(this, peerID, socketTimeout));
-   this->browseResultsWithoutTag << browseResult.toWeakRef();
    return browseResult;
 }
 
 QSharedPointer<IBrowseResult> InternalCoreConnection::browse(const Common::Hash& peerID, const Protos::Common::Entry& entry, int socketTimeout)
 {
    QSharedPointer<BrowseResult> browseResult = QSharedPointer<BrowseResult>(new BrowseResult(this, peerID, entry, socketTimeout));
-   this->browseResultsWithoutTag << browseResult.toWeakRef();
    return browseResult;
 }
 
 QSharedPointer<IBrowseResult> InternalCoreConnection::browse(const Common::Hash& peerID, const Protos::Common::Entries& entries, bool withRoots, int socketTimeout)
 {
    QSharedPointer<BrowseResult> browseResult = QSharedPointer<BrowseResult>(new BrowseResult(this, peerID, entries, withRoots, socketTimeout));
-   this->browseResultsWithoutTag << browseResult.toWeakRef();
    return browseResult;
 }
 
@@ -244,7 +240,6 @@ QSharedPointer<ILocalBrowseQuickAccessResult> InternalCoreConnection::localBrows
 QSharedPointer<ISearchResult> InternalCoreConnection::search(const Protos::Common::FindPattern& findPattern, bool local, int socketTimeout)
 {
    QSharedPointer<SearchResult> searchResult = QSharedPointer<SearchResult>(new SearchResult(this, findPattern, local, socketTimeout));
-   this->searchResultsWithoutTag << searchResult.toWeakRef();
    return searchResult;
 }
 
@@ -532,32 +527,21 @@ void InternalCoreConnection::onNewMessage(const Common::Message& message)
       }
       break;
 
+   // Each reply consumes exactly one sent request. An expired weak pointer is a
+   // placeholder for a discarded request, not permission to use the next one.
    case Common::MessageHeader::GUI_CHAT_MESSAGE_RESULT:
-      while (!this->sendChatMessageResultWithoutReply.isEmpty())
+      if (!this->sendChatMessageResultWithoutReply.isEmpty())
       {
-         const Protos::GUI::ChatMessageResult result = message.getMessage<Protos::GUI::ChatMessageResult>();
-         QWeakPointer<SendChatMessageResult> sendChatMessageResult = this->sendChatMessageResultWithoutReply.takeFirst();
-         if (!sendChatMessageResult.isNull())
-         {
-            sendChatMessageResult.toStrongRef()->setResult(result);
-            break;
-         }
+         if (auto result = this->sendChatMessageResultWithoutReply.takeFirst().toStrongRef())
+            result->setResult(message.getMessage<Protos::GUI::ChatMessageResult>());
       }
       break;
 
    case Common::MessageHeader::GUI_SEARCH_TAG:
+      if (!this->searchResultsWithoutTag.isEmpty())
       {
-         const Protos::GUI::Tag& tagMessage = message.getMessage<Protos::GUI::Tag>();
-
-         while (!this->searchResultsWithoutTag.isEmpty())
-         {
-            QWeakPointer<SearchResult> searchResult = this->searchResultsWithoutTag.takeFirst();
-            if (!searchResult.isNull())
-            {
-               searchResult.toStrongRef()->setTag(tagMessage.tag());
-               break;
-            }
-         }
+         if (auto result = this->searchResultsWithoutTag.takeFirst().toStrongRef())
+            result->setTag(message.getMessage<Protos::GUI::Tag>().tag());
       }
       break;
 
@@ -569,18 +553,10 @@ void InternalCoreConnection::onNewMessage(const Common::Message& message)
       break;
 
    case Common::MessageHeader::GUI_BROWSE_TAG:
+      if (!this->browseResultsWithoutTag.isEmpty())
       {
-         const Protos::GUI::Tag& tagMessage = message.getMessage<Protos::GUI::Tag>();
-
-         while (!this->browseResultsWithoutTag.isEmpty())
-         {
-            QWeakPointer<BrowseResult> browseResult = this->browseResultsWithoutTag.takeFirst();
-            if (!browseResult.isNull())
-            {
-               browseResult.toStrongRef()->setTag(tagMessage.tag());
-               break;
-            }
-         }
+         if (auto result = this->browseResultsWithoutTag.takeFirst().toStrongRef())
+            result->setTag(message.getMessage<Protos::GUI::Tag>().tag());
       }
       break;
 
@@ -613,6 +589,9 @@ void InternalCoreConnection::onNewMessage(const Common::Message& message)
 void InternalCoreConnection::onDisconnected()
 {
    this->authenticated = false;
+   this->sendChatMessageResultWithoutReply.clear();
+   this->browseResultsWithoutTag.clear();
+   this->searchResultsWithoutTag.clear();
    emit disconnected(this->forcedToClose);
    this->forcedToClose = false;
 }

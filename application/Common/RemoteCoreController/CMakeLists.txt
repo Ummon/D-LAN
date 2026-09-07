@@ -46,3 +46,9 @@ target_link_libraries(RemoteCoreController PUBLIC
    qtservice
    dlan_protos
 )
+
+if(DLAN_BUILD_TESTS)
+   add_executable(TestsRemoteCoreController TestsRemoteCoreController/Tests.cpp)
+   target_link_libraries(TestsRemoteCoreController PRIVATE RemoteCoreController Qt6::Test)
+   add_test(NAME TestsRemoteCoreController COMMAND TestsRemoteCoreController)
+endif()

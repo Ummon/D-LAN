@@ -56,9 +56,17 @@ BrowseResult::BrowseResult(
 
 void BrowseResult::start()
 {
+   if (this->started)
+      return;
+   this->started = true;
+   this->startTimer();
+   if (!this->coreConnection || !this->coreConnection->isConnected())
+      return;
+
+   this->coreConnection->browseResultsWithoutTag << this->sharedFromThis().toWeakRef();
+
    this->browseMessage.mutable_peer_id()->set_hash(this->peerID.getData(), Common::Hash::HASH_SIZE);
    this->coreConnection->send(Common::MessageHeader::GUI_BROWSE, this->browseMessage);
-   this->startTimer();
 }
 
 void BrowseResult::setTag(quint64 tag)
@@ -80,5 +88,9 @@ void BrowseResult::browseResult(const Protos::GUI::BrowseResult& browseResult)
 void BrowseResult::init(InternalCoreConnection* coreConnection)
 {
    this->coreConnection = coreConnection;
-   connect(this->coreConnection, &InternalCoreConnection::browseResult, this, &BrowseResult::browseResult);
+   connect(coreConnection, &InternalCoreConnection::disconnected, this, [this] {
+      this->coreConnection.clear();
+      this->waitingForResult = false;
+   });
+   connect(this->coreConnection.data(), &InternalCoreConnection::browseResult, this, &BrowseResult::browseResult);
 }
