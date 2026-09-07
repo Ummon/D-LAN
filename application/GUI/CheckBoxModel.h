@@ -206,7 +206,8 @@ void GUI::CheckBoxModel<T>::setChecked(int row, bool checked)
 template <typename T>
 void GUI::CheckBoxModel<T>::setText(int row, const QString& text)
 {
-   if (row >= this->items.size())
+   if (row >= this->items.size() || this->items[row].text == text)
       return;
    this->items[row].text = text;
+   emit dataChanged(this->index(row, 0), this->index(row, 0), { Qt::DisplayRole });
 }

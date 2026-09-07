@@ -177,7 +177,17 @@ DownloadsWidget::DownloadsWidget(
    this->updateCheckBoxElements();
    this->ui->layTools->insertWidget(1, this->filterStatusList);
 
-   connect(&this->checkBoxModel, &CheckBoxModel<DownloadFilterStatus>::dataChanged, this, &DownloadsWidget::filterChanged);
+   connect(
+      &this->checkBoxModel,
+      &CheckBoxModel<DownloadFilterStatus>::dataChanged,
+      this,
+      [this](const QModelIndex&, const QModelIndex&, const QList<int>& roles)
+      {
+         // Translating labels does not change which downloads are filtered.
+         if (roles.isEmpty() || roles.contains(Qt::UserRole))
+            this->filterChanged();
+      }
+   );
 }
 
 DownloadsWidget::~DownloadsWidget()
@@ -428,11 +438,22 @@ void DownloadsWidget::switchView(Protos::GUI::Settings::DownloadView view)
 
 void DownloadsWidget::updateCheckBoxElements()
 {
-   this->checkBoxModel.clear(tr("<All>"));
-   this->checkBoxModel.addElement(tr("Complete"), true, STATUS_COMPLETE);
-   this->checkBoxModel.addElement(tr("Downloading"), true, STATUS_DOWNLOADING);
-   this->checkBoxModel.addElement(tr("Queued"), true, STATUS_QUEUED);
-   this->checkBoxModel.addElement(tr("Inactive"), true, STATUS_INACTIVE);
+   // Initialize once; language changes must preserve every checkbox state.
+   if (this->checkBoxModel.rowCount() == 0)
+   {
+      this->checkBoxModel.clear(QString());
+      this->checkBoxModel.addElement(QString(), true, STATUS_COMPLETE);
+      this->checkBoxModel.addElement(QString(), true, STATUS_DOWNLOADING);
+      this->checkBoxModel.addElement(QString(), true, STATUS_QUEUED);
+      this->checkBoxModel.addElement(QString(), true, STATUS_INACTIVE);
+   }
+
+   const QStringList labels { tr("<All>"), tr("Complete"), tr("Downloading"), tr("Queued"), tr("Inactive") };
+   for (int row = 0; row < labels.size(); ++row)
+      this->checkBoxModel.setData(this->checkBoxModel.index(row, 0), labels[row], Qt::EditRole);
+
+   this->filterStatusList->updateGeometry();
+   this->filterStatusList->update();
 }
 
 QPair<QList<quint64>, bool> DownloadsWidget::getDownloadIDsToPause() const
