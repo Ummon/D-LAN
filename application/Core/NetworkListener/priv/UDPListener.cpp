@@ -75,6 +75,8 @@ UDPListener::UDPListener(
    nextHashRequestType(FIRST_HASHES),
    loggerIMAlive(LM::Builder::newLogger("NetworkListener (IMAlive)"))
 {
+   connect(&this->multicastSocket, &QUdpSocket::readyRead, this, &UDPListener::processPendingMulticastDatagrams);
+   connect(&this->unicastSocket, &QUdpSocket::readyRead, this, &UDPListener::processPendingUnicastDatagrams);
    connect(&this->timerIMAlive, &QTimer::timeout, this, &UDPListener::sendIMAliveMessage);
    this->timerInitialIMAlive.setSingleShot(true);
    connect(&this->timerInitialIMAlive, &QTimer::timeout, this, &UDPListener::sendIMAliveMessage);
@@ -461,7 +463,6 @@ void UDPListener::processPendingUnicastDatagrams()
 bool UDPListener::initMulticastUDPSocket()
 {
    this->multicastSocket.close();
-   this->multicastSocket.disconnect(this);
 
    QHostAddress currentAddressToListenTo = Utils::getCurrentAddressToListenTo();
 
@@ -515,14 +516,12 @@ bool UDPListener::initMulticastUDPSocket()
    this->multicastSocket.setSocketOption(QAbstractSocket::SendBufferSizeSocketOption, BUFFER_SIZE_UDP);
    this->multicastSocket.setSocketOption(QAbstractSocket::ReceiveBufferSizeSocketOption, BUFFER_SIZE_UDP);
 
-   connect(&this->multicastSocket, &QUdpSocket::readyRead, this, &UDPListener::processPendingMulticastDatagrams);
    return true;
 }
 
 bool UDPListener::bindUnicastSocket(const QHostAddress& address, quint16 port)
 {
    this->closeSockets();
-   this->unicastSocket.disconnect(this);
 
    if (port == 0 || !this->unicastSocket.bind(address, port, QUdpSocket::DontShareAddress))
       return false;
@@ -534,7 +533,6 @@ bool UDPListener::bindUnicastSocket(const QHostAddress& address, quint16 port)
    this->unicastSocket.setSocketOption(QAbstractSocket::SendBufferSizeSocketOption, BUFFER_SIZE_UDP);
    this->unicastSocket.setSocketOption(QAbstractSocket::ReceiveBufferSizeSocketOption, BUFFER_SIZE_UDP);
 
-   connect(&this->unicastSocket, &QUdpSocket::readyRead, this, &UDPListener::processPendingUnicastDatagrams);
    return true;
 }
 
