@@ -529,6 +529,8 @@ void DownloadManager::chunkDownloaderFinished()
          .arg(this->numberOfDownloadThreadRunning)
    );
    this->numberOfDownloadThreadRunning--;
+   // Persist the final bytes and status even when no transfer remains at the next save tick.
+   this->setQueueChanged();
 }
 
 /**
@@ -572,7 +574,9 @@ void DownloadManager::loadQueueFromFile()
 
 void DownloadManager::saveQueueToFile()
 {
-   if (this->queueChanged && this->queueLoaded)
+   // Chunk byte counts change without queue edits or new hashes. Checkpoint active transfers
+   // at every save tick; their completion also marks the queue dirty for the final checkpoint.
+   if (this->queueLoaded && (this->queueChanged || this->numberOfDownloadThreadRunning > 0))
    {
       L_DEBU("Persisting queue . . .");
 

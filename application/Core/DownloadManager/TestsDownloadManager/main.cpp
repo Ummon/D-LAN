@@ -40,6 +40,8 @@ int main(int argc, char *argv[])
    settings->set_unfinished_suffix_term(".unfinished");
    settings->set_peer_timeout_factor(3.2);
    settings->set_peer_imalive_period(5000);
+   settings->set_number_of_downloader(1);
+   settings->set_save_queue_period(60000);
    SETTINGS.setFilename("core_settings_download_manager_tests.json");
    SETTINGS.setSettingsMessage(settings);
 

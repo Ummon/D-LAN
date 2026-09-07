@@ -53,6 +53,8 @@ private slots:
    void removeErroneousDownload();
    void oldestChunksSkipUnavailableDownloads_data();
    void oldestChunksSkipUnavailableDownloads();
+   void checkpointDownloadProgress_data();
+   void checkpointDownloadProgress();
 
 
    void cleanupTestCase();

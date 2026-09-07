@@ -39,6 +39,8 @@ using namespace DM;
 #include <Core/PeerManager/priv/Peer.h>
 #include <priv/FileDownload.h>
 #include <priv/DownloadQueue.h>
+#include <priv/DownloadManager.h>
+#include <Common/PersistentData.h>
 
 namespace
 {
@@ -73,6 +75,89 @@ namespace
       ResumePeer(QSharedPointer<FM::IFileManager> files) : Peer(nullptr, files, Common::Hash::rand(), "source") {}
       bool isAvailable() const override { return true; }
    };
+
+   class PendingChunksResult : public PM::IGetChunksResult
+   {
+   public:
+      PendingChunksResult() : IGetChunksResult(60000) {}
+      void start() override {} // Keep the transfer pending without opening a socket.
+      void doDeleteLater() override { this->deleteLater(); }
+      void setStatus(bool) override {}
+   };
+
+   class CheckpointPeer : public ResumePeer
+   {
+   public:
+      using ResumePeer::ResumePeer;
+      bool available = true;
+      bool isAvailable() const override { return this->available; }
+      QSharedPointer<PM::IGetChunksResult> getChunks(const Protos::Core::GetChunks&) override
+      {
+         return QSharedPointer<PM::IGetChunksResult>(new PendingChunksResult);
+      }
+   };
+}
+
+void Tests::checkpointDownloadProgress_data()
+{
+   QTest::addColumn<bool>("complete");
+   QTest::newRow("completed") << true;
+   QTest::newRow("interrupted") << false;
+}
+
+void Tests::checkpointDownloadProgress()
+{
+   QFETCH(bool, complete);
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new EmptyHashCache));
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   auto file = new FM::File(root, "checkpoint.bin", 100, false, QDateTime::currentDateTime(),
+      root->getRootDir(), { Common::Hash::rand() }, true);
+   const auto chunk = file->getChunks().first();
+   QSharedPointer<ResumeFileManager> files(new ResumeFileManager);
+   files->chunks << chunk;
+   CheckpointPeer peer(files);
+   // The test executable redirects persistence into its own temporary directory.
+   Common::PersistentData::rmValue(Common::Constants::FILE_QUEUE, Common::Global::DataFolderType::LOCAL);
+   DownloadManager manager(files, this->peerManager);
+   emit files->fileCacheScanningComplete();
+   Protos::Common::Entry entry;
+   file->populateEntry(&entry, true);
+   auto download = manager.addDownload(entry, entry, &peer, Protos::Queue::Queue::Entry::QUEUED);
+   QVERIFY(download);
+   QCOMPARE(download->getStatus(), Protos::Common::DownloadStatus::DOWNLOADING);
+   const auto unfinished = manager.getTheFirstUnfinishedChunks(1);
+   QCOMPARE(unfinished.size(), 1);
+   const auto downloader = qSharedPointerDynamicCast<ChunkDownloader>(unfinished.first());
+   QVERIFY(downloader);
+
+   // Exercise the timer's slot directly, without waiting a minute per checkpoint.
+   for (int bytes : { 10, 20, 30 })
+   {
+      chunk->setKnownBytes(bytes);
+      QVERIFY(QMetaObject::invokeMethod(&manager, "saveQueueToFile", Qt::DirectConnection));
+      const auto saved = DownloadQueue::loadFromFile();
+      QCOMPARE(saved.entries_size(), 1);
+      QCOMPARE(saved.entries(0).known_bytes_size(), 1);
+      QCOMPARE(saved.entries(0).known_bytes(0), bytes);
+      QCOMPARE(saved.entries(0).local_entry().shared_entry().id().hash(), entry.shared_entry().id().hash());
+   }
+
+   const int finalBytes = complete ? 100 : 40;
+   chunk->setKnownBytes(finalBytes);
+   peer.available = false; // An interrupted transfer must not immediately restart.
+   downloader->stop();
+   QVERIFY(!downloader->isDownloading());
+   QVERIFY(QMetaObject::invokeMethod(&manager, "saveQueueToFile", Qt::DirectConnection));
+   const auto saved = DownloadQueue::loadFromFile();
+   QCOMPARE(saved.entries_size(), 1);
+   QCOMPARE(saved.entries(0).known_bytes_size(), 1);
+   QCOMPARE(saved.entries(0).known_bytes(0), finalBytes);
+   QCOMPARE(saved.entries(0).status(), complete ? Protos::Queue::Queue::Entry::COMPLETE : Protos::Queue::Queue::Entry::QUEUED);
 }
 
 void Tests::erroneousDownloadsAreUnique()
@@ -132,6 +217,77 @@ void Tests::removeErroneousDownload()
    QCOMPARE(queue.size(), 0);
    // Never dereference the result: before the fix it points to the deleted download.
    QVERIFY(!queue.getAnErroneousDownload());
+}
+
+void Tests::oldestChunksSkipUnavailableDownloads_data()
+{
+   QTest::addColumn<bool>("paused");
+   QTest::newRow("paused") << true;
+   QTest::newRow("unknown-hashes") << false;
+}
+
+void Tests::oldestChunksSkipUnavailableDownloads()
+{
+   QFETCH(bool, paused);
+   ResumePeer peer(this->fileManager);
+   LinkedPeers links;
+   OccupiedPeers asking, downloading;
+   Common::ThreadPool pool(1);
+   Common::TransferRateCalculator rate;
+   DownloadQueue queue;
+   const auto activeHash = Common::Hash::rand();
+   const auto blockedHash = Common::Hash::rand();
+   auto addFile = [&](const char* name, int chunks, const Common::Hash& hash, bool pause)
+   {
+      Protos::Common::Entry entry;
+      entry.set_type(Protos::Common::Entry::FILE);
+      entry.set_name(name);
+      entry.set_size(quint64(chunks) * Common::Constants::CHUNK_SIZE);
+      for (int i = 0; i < chunks; ++i)
+      {
+         auto chunk = entry.add_chunks();
+         if (!hash.isNull())
+            chunk->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
+      }
+      auto file = new FileDownload(this->fileManager, links, asking, downloading, pool, &peer,
+         entry, entry, rate, pause ? Protos::Queue::Queue::Entry::PAUSED : Protos::Queue::Queue::Entry::QUEUED);
+      queue.insert(queue.size(), file);
+      return file;
+   };
+
+   auto active = addFile("active", 2, activeHash, false);
+   // Advance the active file's timestamp so every unavailable file is older,
+   // without relying on the ordering of equal timestamp keys.
+   QList<QSharedPointer<IChunkDownloader>> initialChunks;
+   active->getUnfinishedChunks(initialChunks, 2);
+   QCOMPARE(initialChunks.size(), 2);
+   const auto activeTime = active->getLastTimeGetAllUnfinishedChunks();
+   auto blocked = addFile("blocked", 1, paused ? blockedHash : Common::Hash(), paused);
+   addFile("blocked-too", 1, paused ? blockedHash : Common::Hash(), paused);
+
+   QVERIFY(queue.getTheOldestUnfinishedChunks(0).isEmpty());
+   QVERIFY(queue.getTheOldestUnfinishedChunks(-1).isEmpty());
+   QCOMPARE(active->getLastTimeGetAllUnfinishedChunks(), activeTime);
+   QCOMPARE(blocked->getLastTimeGetAllUnfinishedChunks(), qint64(0));
+
+   for (int attempt = 0; attempt < 2; ++attempt)
+   {
+      const auto chunks = queue.getTheOldestUnfinishedChunks(2);
+      QCOMPARE(chunks.size(), 2);
+      QCOMPARE(chunks[0]->getHash(), activeHash);
+      QCOMPARE(chunks[1]->getHash(), activeHash);
+      QVERIFY(chunks[0] != chunks[1]);
+   }
+
+   if (paused)
+   {
+      // Paused files must remain indexed so resuming makes them discoverable again.
+      QCOMPARE(blocked->getLastTimeGetAllUnfinishedChunks(), qint64(0));
+      QVERIFY(blocked->pause(false));
+      const auto chunks = queue.getTheOldestUnfinishedChunks(1);
+      QCOMPARE(chunks.size(), 1);
+      QCOMPARE(chunks[0]->getHash(), blockedHash);
+   }
 }
 
 void Tests::resumeMissingFile_data()
