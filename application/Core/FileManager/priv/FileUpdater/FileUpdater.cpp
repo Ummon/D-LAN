@@ -182,6 +182,16 @@ void FileUpdater::prioritizeAFileToHash(File* file)
 
 }
 
+// Called on the cache thread immediately before destruction, outside entry locks.
+void FileUpdater::prepareToDeleteEntry(Entry* entry)
+{
+   this->stopScanning(entry);
+   QMutexLocker hashingLocker(&this->hashingMutex);
+   QMutexLocker locker(&this->mutex);
+   this->removeFromHashingQueue(entry);
+   this->removeFromEntriesToScan(entry);
+}
+
 bool FileUpdater::isScanning() const
 {
    QMutexLocker scanningLocker(&this->scanningMutex);
@@ -360,11 +370,13 @@ void FileUpdater::computeSomeHashes()
 
    for (;;)
    {
+      // Keep the selected file alive until both hashing and bookkeeping finish.
+      // Cache destruction waits on this mutex before removing pending work.
+      QMutexLocker hashingLocker(&this->hashingMutex);
       File* file;
       {
          // Retain the existing stop/removal ordering, but queue state itself is
          // always protected by mutex, including reads from the status thread.
-         QMutexLocker hashingLocker(&this->hashingMutex);
          if (this->toStopHashing.exchange(false) || this->toStop)
             break;
          QMutexLocker locker(&this->mutex);
@@ -385,10 +397,8 @@ void FileUpdater::computeSomeHashes()
       }
 
       {
-         QMutexLocker hashingLocker(&this->hashingMutex);
          QMutexLocker locker(&this->mutex);
-         // rmRoot may have removed this job while hashing was unlocked. Root
-         // destruction runs later on this updater thread; do not requeue it.
+         // Update only existing work; never resurrect a removed job.
          if (this->hashingQueue.contains(file))
             this->hashingQueue.finishPass(file, file->getRemainingBytesToHash(), ioError,
                this->schedulerClock.elapsed(), this->IO_ERROR_WAITING_BEFORE_RETRY);

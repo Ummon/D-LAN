@@ -461,6 +461,116 @@ void CacheTest::hashingWorkFollowsFileChanges()
    QCOMPARE(file->getRemainingBytesToHash(), qint64(0));
 }
 
+void CacheTest::cancelledReplacementLeavesNoHashingJob_data()
+{
+   QTest::addColumn<QString>("queue");
+   QTest::newRow("normal") << QString("normal");
+   QTest::newRow("priority") << QString("priority");
+   QTest::newRow("retry") << QString("retry");
+}
+
+void CacheTest::cancelledReplacementLeavesNoHashingJob()
+{
+   QFETCH(QString, queue);
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   const auto saved = SETTINGS.getRepeated<Protos::Common::SharedEntry>("shared_entries");
+   const auto restore = qScopeGuard([&] { SETTINGS.set("shared_entries", saved); });
+   SETTINGS.rm("shared_entries");
+   FM::FileManager manager(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   manager.fileUpdater.stop();
+   manager.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::Directory*>(manager.getEntry(Common::Path(temp.path() + '/')));
+   QVERIFY(root);
+   const QString path = temp.filePath("cancelled.bin");
+   QFile physical(path);
+   QVERIFY(physical.open(QIODevice::WriteOnly));
+   QCOMPARE(physical.write("abc"), qint64(3));
+   physical.close();
+   auto file = new FM::File(root->getRoot(), "cancelled.bin", 3, false, QFileInfo(path).lastModified(), root);
+   auto& updater = manager.fileUpdater;
+   updater.entriesToScan.clear();
+   updater.entriesToScan << file;
+   updater.hashingQueue.enqueue(file, 3, queue == "priority");
+   if (queue == "retry")
+      updater.hashingQueue.finishPass(file, 3, true, 0, 3000);
+   file->setToUnfinished(3, { Common::Hash::rand() });
+   const auto chunk = file->getChunks().first();
+   chunk->removeItsIncompleteFile();
+   QCoreApplication::sendPostedEvents(&manager.cache, QEvent::MetaCall);
+   QVERIFY(updater.hashingQueue.isEmpty());
+   QCOMPARE(updater.hashingQueue.remainingBytes(), qint64(0));
+   QVERIFY(updater.entriesToScan.isEmpty());
+   QVERIFY(!chunk->isOwnedBy(file));
+   QVERIFY(QFileInfo::exists(path)); // Cancellation preserves the old completed file.
+   QVERIFY(!QFileInfo::exists(path + ".unfinished"));
+   updater.toStop = false;
+   updater.toStopHashing = false;
+   updater.computeSomeHashes(); // No stale job may be selected after physical deletion.
+}
+
+void CacheTest::retirementWaitsForSelectedHashingJob()
+{
+   class GatedFile : public FM::File
+   {
+   public:
+      using FM::File::File;
+      mutable std::atomic<bool> gate { false };
+      mutable QSemaphore selected, resume;
+      Common::Path getAbsolutePath() const override
+      {
+         if (this->gate.exchange(false))
+         {
+            this->selected.release();
+            if (!this->resume.tryAcquire(1, 5000))
+               qFatal("Selected hashing job was not released");
+         }
+         return FM::File::getAbsolutePath();
+      }
+   };
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   const auto duration = SETTINGS.get<quint32>("minimum_duration_when_hashing");
+   const auto restore = qScopeGuard([&] { SETTINGS.set("minimum_duration_when_hashing", duration); });
+   SETTINGS.set("minimum_duration_when_hashing", quint32(0));
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   const QString path = temp.filePath("selected.bin");
+   QFile physical(path);
+   QVERIFY(physical.open(QIODevice::WriteOnly));
+   QVERIFY(physical.resize(qint64(FM::Chunk::CHUNK_SIZE) + 7));
+   physical.close();
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   auto file = new GatedFile(root, "selected.bin", QFileInfo(path).size(), false,
+      QFileInfo(path).lastModified(), root->getRootDir());
+   FM::FileUpdater updater(nullptr);
+   updater.prioritizeAFileToHash(file);
+   file->gate = true;
+   QSemaphore hashingDone, retirementStarted, retirementDone;
+   std::thread worker([&] { updater.computeSomeHashes(); hashingDone.release(); });
+   if (!file->selected.tryAcquire(1, 5000))
+      qFatal("Hashing did not select the file");
+   std::thread retire([&] {
+      retirementStarted.release();
+      updater.prepareToDeleteEntry(file);
+      retirementDone.release();
+   });
+   retirementStarted.acquire();
+   const bool retiredTooEarly = retirementDone.tryAcquire(1, 100);
+   file->resume.release();
+   if (!hashingDone.tryAcquire(1, 5000) || (!retiredTooEarly && !retirementDone.tryAcquire(1, 5000)))
+      qFatal("Retirement deadlocked with selected hashing job");
+   worker.join();
+   retire.join();
+   QVERIFY(!retiredTooEarly);
+   QVERIFY(updater.hashingQueue.isEmpty());
+   file->del();
+   QCoreApplication::sendPostedEvents(&cache, QEvent::MetaCall);
+}
+
 void CacheTest::hashingResumesUnknownChunks_data()
 {
    QTest::addColumn<int>("limit");

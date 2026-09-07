@@ -27,6 +27,7 @@ using namespace FM;
 #include <priv/Cache/SharedEntry.h>
 #include <priv/Cache/DataReader.h>
 #include <priv/Cache/DataWriter.h>
+#include <priv/Cache/Cache.h>
 
 /**
   * @class FM::Chunk
@@ -90,7 +91,13 @@ void Chunk::removeItsIncompleteFile()
 {
    QMutexLocker locker(this->fileMutex.data());
    if (this->file)
-      this->file->deleteIfIncomplete();
+   {
+      File* file = this->file;
+      const Cache::TraversalGuard lifetime(*file->getCache());
+      // Removal callbacks may wait for hashing, which also acquires the file lock.
+      locker.unlock();
+      file->deleteIfIncomplete();
+   }
 }
 
 bool Chunk::populateEntry(Protos::Common::Entry* entry) const

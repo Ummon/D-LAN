@@ -106,6 +106,8 @@ namespace FM
       void deleteEntry(FM::Entry* entry);
 
    signals:
+      // Synchronous barrier on the cache thread, outside entry and deletion locks.
+      void entryAboutToBeDeleted(FM::Entry* entry);
       void entryAdded(FM::Entry* entry);
       void entryRemoved(FM::Entry* entry);
       // Physical filenames and shared display names have independent search indexes.
@@ -125,6 +127,7 @@ namespace FM
 
    private:
       friend class Directory;
+      friend class Chunk;
       class TraversalGuard : Common::Uncopyable
       {
       public:

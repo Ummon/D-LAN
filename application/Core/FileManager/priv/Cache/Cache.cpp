@@ -796,6 +796,7 @@ void Cache::deleteEntry(Entry* entry)
          return;
       }
    }
+   emit entryAboutToBeDeleted(entry);
    delete entry;
 }
 
@@ -825,6 +826,7 @@ void Cache::deleteDeferredEntries()
             return;
          entry = this->deferredDeletions.takeFirst();
       }
+      emit entryAboutToBeDeleted(entry);
       delete entry;
    }
 }

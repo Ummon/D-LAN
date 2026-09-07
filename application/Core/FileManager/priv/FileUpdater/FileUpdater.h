@@ -61,6 +61,7 @@ namespace FM
 
       void addRoot(SharedEntry* sharedEntry);
       void rmRoot(SharedEntry* sharedEntry, Directory* dir = nullptr);
+      void prepareToDeleteEntry(Entry* entry);
 
    signals:
       void initialScanFinished();
@@ -109,7 +110,7 @@ namespace FM
       mutable QMutex scanningMutex;
       std::atomic<bool> scanAbortRequested { false };
 
-      mutable QMutex hashingMutex;
+      mutable QMutex hashingMutex; ///< Protects selected-file lifetime through hashing and scheduler bookkeeping.
       std::atomic<bool> toStopHashing;
       FileHasher fileHasher;
 

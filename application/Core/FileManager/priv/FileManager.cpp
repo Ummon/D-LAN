@@ -71,6 +71,8 @@ FileManager::FileManager(QSharedPointer<HC::IHashCache> hashCache) :
 
    connect(&this->cache, &Cache::entryAdded, this, &FileManager::entryAdded, Qt::DirectConnection);
    connect(&this->cache, &Cache::entryRemoved, this, &FileManager::entryRemoved, Qt::DirectConnection);
+   connect(&this->cache, &Cache::entryAboutToBeDeleted, &this->fileUpdater,
+      &FileUpdater::prepareToDeleteEntry, Qt::DirectConnection);
    connect(&this->cache, &Cache::entryRenamed, this, &FileManager::entryRenamed, Qt::DirectConnection);
    connect(&this->cache, &Cache::chunkHashKnown, this, &FileManager::chunkHashKnown, Qt::DirectConnection);
    connect(&this->cache, &Cache::chunkRemoved, this, &FileManager::chunkRemoved, Qt::DirectConnection);

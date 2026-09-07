@@ -23,6 +23,9 @@ private slots:
    void failedHashingIsQueuedOnce();
    void hashingSchedulerTransitions();
    void hashingWorkFollowsFileChanges();
+   void cancelledReplacementLeavesNoHashingJob_data();
+   void cancelledReplacementLeavesNoHashingJob();
+   void retirementWaitsForSelectedHashingJob();
    void hashingResumesUnknownChunks_data();
    void hashingResumesUnknownChunks();
    void directoryTotalsFollowFileResizing();
