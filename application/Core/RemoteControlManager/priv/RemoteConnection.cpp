@@ -23,7 +23,6 @@ using namespace RCM;
 #include <chrono>
 
 #include <QCoreApplication>
-#include <QStorageInfo>
 #include <QDateTime>
 #include <QNetworkInterface>
 #include <QRandomGenerator64>
@@ -46,6 +45,7 @@ using namespace RCM;
 
 #include <priv/Log.h>
 #include <priv/UploadProgress.h>
+#include <priv/LocalBrowse.h>
 
 void RemoteConnection::Logger::logDebug(const QString& message)
 {
@@ -109,6 +109,8 @@ RemoteConnection::RemoteConnection(
 
 RemoteConnection::~RemoteConnection()
 {
+   for (auto* browse : this->localBrowses)
+      browse->cancel();
    L_DEBU(QString("RemoteConnection[%1] deleted").arg(this->num));
    emit deleted(this);
 }
@@ -725,52 +727,32 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
 
    case Common::MessageHeader::GUI_LOCAL_BROWSE:
       {
-         static QDir::Filters ENTRY_LIST_FILTER = QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot | QDir::Hidden;
-         const Protos::GUI::LocalBrowse& browseMessage = message.getMessage<Protos::GUI::LocalBrowse>();
-
-         Protos::GUI::LocalBrowseResult result;
-         result.set_tag(browseMessage.tag());
-
-         const QString& path = QString::fromStdString(browseMessage.path());
-
-         if (path.isEmpty())
+         // Bound queued work as well as the number of worker threads. There is no browse-error
+         // response in this protocol, so an overloaded connection is closed rather than returning
+         // a misleading empty or partial directory listing.
+         if (this->localBrowses.size() >= 8)
          {
-            for (const QStorageInfo& storage : QStorageInfo::mountedVolumes())
-            {
-               if (!storage.isValid() || !storage.isReady())
-                  continue;
-
-               auto entryResult = result.mutable_entries()->Add();
-
-               entryResult->set_name(storage.rootPath().toStdString());
-               entryResult->set_type(Protos::GUI::LocalBrowseResult::DIR);
-               entryResult->set_size(storage.bytesTotal() - storage.bytesAvailable());
-
-               entryResult->set_volume_label(storage.name().toStdString());
-               entryResult->set_capacity(storage.bytesTotal());
-            }
+            this->close();
+            break;
          }
-         else
-         {
-            for (const auto& entry : QDir(path).entryInfoList(ENTRY_LIST_FILTER))
+         auto* watcher = new QFutureWatcher<Protos::GUI::LocalBrowseResult>(this);
+         this->localBrowses << watcher;
+         connect(watcher, &QFutureWatcher<Protos::GUI::LocalBrowseResult>::finished, this, [this, watcher] {
+            this->localBrowses.removeOne(watcher);
+            watcher->deleteLater();
+            if (!this->isListening())
+               return;
+            try
             {
-               const bool isDir = entry.isDir();
-               const auto path = Common::Path(entry.absoluteFilePath() + (isDir ? "/" : ""));
-
-               auto entryResult = result.mutable_entries()->Add();
-
-               entryResult->set_name(path.getLastElement(true).toStdString());
-               entryResult->set_type(isDir ? Protos::GUI::LocalBrowseResult::DIR : Protos::GUI::LocalBrowseResult::FILE);
-               entryResult->set_date_modified(entry.lastModified().toMSecsSinceEpoch());
-
-               if (isDir)
-                  entryResult->set_size(QDir(entry.absoluteFilePath()).entryList(ENTRY_LIST_FILTER).size());
-               else
-                  entryResult->set_size(entry.size());
+               this->send(Common::MessageHeader::GUI_LOCAL_BROWSE_RESULT, watcher->result());
             }
-         }
-
-         this->send(Common::MessageHeader::GUI_LOCAL_BROWSE_RESULT, result);
+            catch (...)
+            {
+               L_WARN("Unable to complete local browsing");
+               this->close();
+            }
+         });
+         watcher->setFuture(localBrowse(message.getMessage<Protos::GUI::LocalBrowse>()));
       }
       break;
 

@@ -4,6 +4,9 @@
 #include <QPointer>
 #include <QSignalSpy>
 #include <QTemporaryDir>
+#include <QSemaphore>
+#include <QScopeGuard>
+#include <priv/LocalBrowse.h>
 
 #include <Common/Settings.h>
 #include <Common/Global.h>
@@ -158,6 +161,85 @@ private slots:
       QTest::newRow("multiplication-overflow") << (quint64(1) << 62) << (quint64(1) << 61) << 0 << 5000;
       QTest::newRow("unsigned-addition-overflow") << maximum << (maximum - 1) << 2 << 10000;
       QTest::newRow("maximum-incomplete") << maximum << (maximum - 1) << 0 << 9999;
+   }
+
+   void localBrowseContents()
+   {
+      QTemporaryDir directory;
+      QVERIFY(directory.isValid());
+      QDir root(directory.path());
+      QVERIFY(root.mkdir("empty"));
+      QVERIFY(root.mkdir("nonempty"));
+      for (const auto& name : {"file.txt", "nonempty/child.txt"})
+      {
+         QFile file(root.filePath(name));
+         QVERIFY(file.open(QIODevice::WriteOnly));
+         QCOMPARE(file.write("hello"), qint64(5));
+      }
+      auto socket = new BufferedSocket;
+      QScopedPointer<RCM::RemoteConnection> connection(this->newConnection(socket));
+      connection->startListening();
+      socket->output.clear();
+      Protos::GUI::LocalBrowse request;
+      request.set_path(directory.path().toStdString());
+      request.set_tag(1234);
+      socket->receive(Common::MessageHeader::GUI_LOCAL_BROWSE, request);
+      QTRY_COMPARE(socket->messages().size(), 1);
+      const auto message = socket->messages()[0];
+      QCOMPARE(message.getHeader().getType(), Common::MessageHeader::GUI_LOCAL_BROWSE_RESULT);
+      const auto& result = message.getMessage<Protos::GUI::LocalBrowseResult>();
+      QCOMPARE(result.tag(), quint64(1234));
+      QCOMPARE(result.entries_size(), 3);
+      QMap<QString, qint64> sizes;
+      for (const auto& entry : result.entries())
+      {
+         sizes.insert(QString::fromStdString(entry.name()), entry.size());
+         QCOMPARE(entry.type(), entry.name() == "file.txt" ? Protos::GUI::LocalBrowseResult::FILE : Protos::GUI::LocalBrowseResult::DIR);
+         QVERIFY(entry.date_modified() > 0);
+      }
+      QCOMPARE(sizes.value("empty", -1), qint64(0));
+      QCOMPARE(sizes.value("nonempty", -1), qint64(1));
+      QCOMPARE(sizes.value("file.txt", -1), qint64(5));
+   }
+
+   void localBrowseDoesNotBlockConnection_data()
+   {
+      QTest::addColumn<bool>("overload");
+      QTest::newRow("disconnect-with-pending-work") << false;
+      QTest::newRow("bounded-pending-work") << true;
+   }
+
+   void localBrowseDoesNotBlockConnection()
+   {
+      QFETCH(bool, overload);
+      QSemaphore started;
+      QSemaphore release;
+      auto& pool = RCM::localBrowsePool();
+      for (int i = 0; i < 2; ++i)
+         pool.start([&] { started.release(); release.acquire(); });
+      const auto unblock = qScopeGuard([&] { release.release(2); pool.waitForDone(); });
+      QVERIFY(started.tryAcquire(2, 3000));
+
+      auto socket = new BufferedSocket;
+      QPointer<RCM::RemoteConnection> connection = this->newConnection(socket);
+      connection->startListening();
+      QSignalSpy languageDefined(connection, &RCM::RemoteConnection::languageDefined);
+      socket->output.clear();
+      Protos::GUI::LocalBrowse request;
+      request.set_path(this->dataDirectory.path().toStdString());
+      socket->receive(Common::MessageHeader::GUI_LOCAL_BROWSE, request);
+      QVERIFY(socket->output.isEmpty());
+      socket->receive(Common::MessageHeader::GUI_LANGUAGE, Protos::GUI::Language());
+      QCOMPARE(languageDefined.size(), 1); // Process another command while all browse workers are busy.
+      if (overload)
+      {
+         for (int i = 0; i < 8; ++i)
+            socket->receive(Common::MessageHeader::GUI_LOCAL_BROWSE, request);
+         QVERIFY(!connection->isConnected());
+      }
+      else
+         socket->close();
+      QTRY_VERIFY(!connection); // Destruction must not wait for the filesystem workers.
    }
 
    void searchesExpireWithoutAnotherRequest()

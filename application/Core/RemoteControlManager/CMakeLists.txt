@@ -6,6 +6,7 @@
 add_library(RemoteControlManager STATIC
    priv/RemoteControlManager.cpp
    priv/RemoteConnection.cpp
+   priv/LocalBrowse.cpp
    priv/Builder.cpp
    priv/Log.cpp
 
@@ -13,6 +14,7 @@ add_library(RemoteControlManager STATIC
    priv/RemoteControlManager.h
    priv/RemoteConnection.h
    priv/UploadProgress.h
+   priv/LocalBrowse.h
    Builder.h
    priv/Log.h
 )

@@ -24,6 +24,7 @@
 #include <QTimer>
 #include <QList>
 #include <QLocale>
+#include <QFutureWatcher>
 
 #include <google/protobuf/message.h>
 
@@ -133,6 +134,7 @@ namespace RCM
 
       QList<QSharedPointer<NL::ISearch>> currentSearches;
       QList<QSharedPointer<PM::IGetEntriesResult>> getEntriesResults;
+      QList<QFutureWatcher<Protos::GUI::LocalBrowseResult>*> localBrowses;
 
       bool started = false;
       bool authenticated;
