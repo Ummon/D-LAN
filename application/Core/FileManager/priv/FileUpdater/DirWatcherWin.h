@@ -53,6 +53,8 @@ namespace FM
          OVERLAPPED overlapped;
          const QString fullPath;
          const QString filename;
+         QString currentFilename; // Follows renames; filename remains the registration key for rmPath().
+         QString pendingRenameName; // A rename pair can span notification buffers.
          alignas(sizeof(DWORD)) BYTE buffer[NOTIFY_BUFFER_SIZE];
       };
 

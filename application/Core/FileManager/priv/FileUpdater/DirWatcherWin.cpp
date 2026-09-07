@@ -187,8 +187,6 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
 
       QList<WatcherEvent> events;
 
-      QString previousPath; // Used for FILE_ACTION_RENAMED_OLD_NAME.
-
       const BYTE* pToBuffer = dir->buffer;
 
       forever
@@ -204,12 +202,28 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
          QString filename = QString::fromStdWString(filename_wchar.constData());
 
          const bool isWatchedFile = !dir->filename.isEmpty();
+         const QString path = dir->fullPath + filename;
 
-         // If 'filename' is set we only care about this specific file.
-         if (!isWatchedFile || filename == dir->filename)
+         // Pair before filtering: the new name no longer matches a watched file's
+         // old name. Also retain the new name for later events in this batch.
+         if (notifyInformation->Action == FILE_ACTION_RENAMED_OLD_NAME)
+            dir->pendingRenameName = filename;
+         else if (notifyInformation->Action == FILE_ACTION_RENAMED_NEW_NAME)
          {
-            QString path = dir->fullPath;
-            path.append(filename);
+            if (!dir->pendingRenameName.isEmpty() &&
+                (!isWatchedFile || dir->pendingRenameName == dir->currentFilename))
+            {
+               events << WatcherEvent(WatcherEvent::MOVE, dir->fullPath + dir->pendingRenameName, path, isWatchedFile);
+               if (isWatchedFile)
+                  dir->currentFilename = filename;
+            }
+            else if (!isWatchedFile || filename == dir->currentFilename)
+               // An unmatched new name (or a replacement arriving at the watched path).
+               events << WatcherEvent(WatcherEvent::NEW, path, isWatchedFile);
+            dir->pendingRenameName.clear();
+         }
+         else if (!isWatchedFile || filename == dir->currentFilename)
+         {
 
             L_DEBU("---------");
             L_DEBU(QString("action = %1").arg(notifyActionToString(notifyInformation->Action)));
@@ -227,12 +241,6 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
                break;
             case FILE_ACTION_MODIFIED: // 3.
                events << WatcherEvent(WatcherEvent::CONTENT_CHANGED, path, isWatchedFile);
-               break;
-            case FILE_ACTION_RENAMED_OLD_NAME: // 4.
-               previousPath = path;
-               break;
-            case FILE_ACTION_RENAMED_NEW_NAME: // 5.
-               events << WatcherEvent(WatcherEvent::MOVE, previousPath, path, isWatchedFile);
                break;
             default:
                L_WARN(QString("File event action unknown: %1").arg(notifyInformation->Action));
@@ -278,7 +286,7 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
 }
 
 DirWatcherWin::Dir::Dir(const HANDLE handle, const HANDLE event, const QString& fullPath, const QString& filename)
-   : handle(handle), fullPath(fullPath), filename(filename)
+   : handle(handle), fullPath(fullPath), filename(filename), currentFilename(filename)
 {
    memset(&this->overlapped, 0, sizeof(OVERLAPPED));
    overlapped.hEvent = event;

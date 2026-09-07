@@ -27,6 +27,9 @@
 #include <priv/GetEntriesResult.h>
 #include <priv/GetHashesResult.h>
 #include <priv/FileManager.h>
+#ifdef Q_OS_WIN32
+#include <priv/FileUpdater/DirWatcherWin.h>
+#endif
 
 namespace
 {
@@ -52,6 +55,85 @@ namespace
 CacheTest::CacheTest(QObject *parent) :
    QObject(parent)
 {
+}
+
+void CacheTest::watchedFileRename_data()
+{
+   QTest::addColumn<QString>("renamed");
+   QTest::newRow("new-name") << QString("renamed.txt");
+   QTest::newRow("case-only") << QString("ORIGINAL.txt");
+}
+
+void CacheTest::watchedFileRename()
+{
+#ifdef Q_OS_WIN32
+   QFETCH(QString, renamed);
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   const QString original = temp.filePath("original.txt");
+   const QString destination = temp.filePath(renamed);
+   const QString unrelated = temp.filePath("unrelated.txt");
+   for (const auto& path : { original, unrelated })
+   {
+      QFile physical(path);
+      QVERIFY(physical.open(QIODevice::WriteOnly));
+      QCOMPARE(physical.write("x", 1), qint64(1));
+   }
+   FM::DirWatcherWin watcher;
+   QVERIFY(watcher.addPath(temp.path() + '/', "original.txt"));
+   QVERIFY(QFile::rename(unrelated, temp.filePath("other.txt")));
+   // Unrelated rename pairs must not escape the individual-file filter.
+   const auto unrelatedEvents = watcher.waitEvent(1000);
+   for (const auto& event : unrelatedEvents)
+      QCOMPARE(event.type, FM::WatcherEvent::TIMEOUT);
+
+   QList<FM::WatcherEvent> events;
+   const auto waitFor = [&](FM::WatcherEvent::Type type, const QString& path) {
+      QElapsedTimer timer;
+      timer.start();
+      while (timer.elapsed() < 3000)
+      {
+         const auto batch = watcher.waitEvent(100);
+         events.append(batch);
+         for (const auto& event : batch)
+            if (event.type == type && (type == FM::WatcherEvent::MOVE ? event.path2 : event.path1) == path)
+               return true;
+      }
+      return false;
+   };
+   // Use the native operation so a case-only rename cannot be treated as a no-op.
+   QVERIFY(MoveFileExW(reinterpret_cast<LPCWSTR>(original.utf16()),
+      reinterpret_cast<LPCWSTR>(destination.utf16()), 0));
+   QVERIFY(waitFor(FM::WatcherEvent::MOVE, destination));
+   int moves = 0;
+   for (const auto& event : events)
+      if (event.type == FM::WatcherEvent::MOVE)
+      {
+         ++moves;
+         QCOMPARE(event.path1, original);
+         QCOMPARE(event.path2, destination);
+         QVERIFY(event.isWatchedFile);
+      }
+   QCOMPARE(moves, 1);
+
+   // Follow the new filename even before the updater has replaced the registration.
+   {
+      QFile physical(destination);
+      QVERIFY(physical.open(QIODevice::Append));
+      QCOMPARE(physical.write("y", 1), qint64(1));
+   }
+   QVERIFY(waitFor(FM::WatcherEvent::CONTENT_CHANGED, destination));
+
+   // FileUpdater removes by the original registration and adds the new path.
+   watcher.rmPath(temp.path() + '/', "original.txt");
+   QVERIFY(watcher.addPath(temp.path() + '/', renamed));
+   watcher.waitEvent(0);
+   QCOMPARE(watcher.nbWatchedPath(), 1);
+   QVERIFY(QFile::remove(destination));
+   QVERIFY(waitFor(FM::WatcherEvent::DELETED, destination));
+#else
+   QSKIP("Windows notification regression");
+#endif
 }
 
 void CacheTest::updaterWaitsForEarliestTask_data()

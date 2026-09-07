@@ -9,6 +9,8 @@ public:
    explicit CacheTest(QObject* parent = nullptr);
 
 private slots:
+   void watchedFileRename_data();
+   void watchedFileRename();
    void updaterWaitsForEarliestTask_data();
    void updaterWaitsForEarliestTask();
    void failedHashingIsQueuedOnce_data();
