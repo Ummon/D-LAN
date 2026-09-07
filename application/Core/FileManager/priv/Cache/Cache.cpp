@@ -656,6 +656,7 @@ Directory* Cache::getFittestDirectory(const Common::Path& path) const
                return currentDir;
             currentDir = nextdir;
          }
+         return currentDir;
       }
    }
 

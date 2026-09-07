@@ -57,6 +57,31 @@ CacheTest::CacheTest(QObject *parent) :
 {
 }
 
+void CacheTest::fittestDirectoryMatchesExistingPaths()
+{
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   QVERIFY(QDir(temp.path()).mkdir("shared"));
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const QString sharedPath = temp.filePath("shared/");
+   const auto shared = cache.addASharedPath(sharedPath);
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   auto nested = root->getRootDir()->createSubDir("nested");
+   auto leaf = nested->createSubDir("leaf");
+
+   QCOMPARE(cache.getFittestDirectory(sharedPath), root->getRootDir());
+   QCOMPARE(cache.getFittestDirectory(Common::Path(sharedPath + "nested/")), nested);
+   QCOMPARE(cache.getFittestDirectory(Common::Path(sharedPath + "nested/leaf/")), leaf);
+   // Watcher notifications also supply directory paths without a trailing slash.
+   QCOMPARE(cache.getFittestDirectory(Common::Path(sharedPath + "nested/leaf")), leaf);
+   QCOMPARE(cache.getFittestDirectory(Common::Path(sharedPath + "nested/leaf/file.bin")), leaf);
+   QCOMPARE(cache.getFittestDirectory(Common::Path(sharedPath + "nested/missing/deeper/")), nested);
+   QCOMPARE(cache.getFittestDirectory(Common::Path(sharedPath + "missing/")), root->getRootDir());
+   QVERIFY(!cache.getFittestDirectory(temp.filePath("outside/")));
+   QVERIFY(!cache.getFittestDirectory(temp.filePath("shared-other/")));
+}
+
 void CacheTest::watchedFileRename_data()
 {
    QTest::addColumn<QString>("renamed");
