@@ -64,10 +64,13 @@ namespace CS
          int maxByteSize = std::numeric_limits<int>::max()
       );
 
-      void loadFromFile(const QString& filename);
-      void saveToFile(const QString& filename) const;
+      // An empty room name selects the main chat.
+      void loadForRoom(const QString& roomName = QString());
+      void saveForRoom(const QString& roomName = QString()) const;
 
    private:
+      static QString getFilename(const QString& roomName);
+
       QList<QSharedPointer<ChatMessage>> insert(const QList<QSharedPointer<ChatMessage>>& messages);
 
       struct ChatMessagesData : public QSharedData

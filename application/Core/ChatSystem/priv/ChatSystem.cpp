@@ -30,7 +30,6 @@ using namespace CS;
 #include <Common/ProtoHelper.h>
 #include <Common/Network/Message.h>
 #include <Common/Settings.h>
-#include <Common/Path.h>
 
 #include <Core/PeerManager/IPeer.h>
 
@@ -50,9 +49,6 @@ ChatSystem::ChatSystem(
    peerManager(peerManager),
    networkListener(networkListener)
 {
-   if (!QDir(Common::Global::getDataFolder(ChatMessages::FOLDER_TYPE_MESSAGES_SAVED)).exists(Common::Constants::DIR_CHAT_MESSAGES))
-      QDir(Common::Global::getDataFolder(ChatMessages::FOLDER_TYPE_MESSAGES_SAVED)).mkdir(Common::Constants::DIR_CHAT_MESSAGES);
-
    this->loadChatMessages(); // The room messages are loaded when joining the rooms, see 'loadRoomListFromSettings()'.
 
    connect(this->networkListener.data(), &NL::INetworkListener::received, this, &ChatSystem::received);
@@ -421,9 +417,9 @@ void ChatSystem::saveAllChatMessages()
 void ChatSystem::saveChatMessages(const QString& roomName)
 {
    if (roomName.isEmpty())
-      this->messages.saveToFile(getChatMessageFilename());
+      this->messages.saveForRoom();
    else if (this->rooms.contains(roomName))
-      this->rooms[roomName].messages.saveToFile(getChatMessageFilename(roomName));
+      this->rooms[roomName].messages.saveForRoom(roomName);
 }
 
 /**
@@ -435,13 +431,13 @@ void ChatSystem::loadChatMessages(const QString& roomName)
    {
       if (this->rooms.contains(roomName))
       {
-         this->rooms[roomName].messages.loadFromFile(getChatMessageFilename(roomName));
+         this->rooms[roomName].messages.loadForRoom(roomName);
          this->emitNewMessages(this->rooms[roomName].messages);
       }
    }
    else
    {
-      this->messages.loadFromFile(getChatMessageFilename());
+      this->messages.loadForRoom();
       this->emitNewMessages(this->messages);
    }
 }
@@ -455,14 +451,6 @@ void ChatSystem::emitNewMessages(const ChatMessages& messages)
       i.next()->fillProtoChatMessage(*protochatMessage);
    }
    emit newMessages(protoChatMessages);
-}
-
-QString ChatSystem::getChatMessageFilename(const QString& roomName)
-{
-   if (roomName.isEmpty())
-      return Common::Constants::DIR_CHAT_MESSAGES % '/' % Common::Constants::FILE_CHAT_MESSAGES;
-   else
-      return Common::Constants::DIR_CHAT_MESSAGES % '/' % Common::Constants::FILE_CHAT_ROOM_MESSAGES.arg(Common::Path::sanitizePath(roomName));
 }
 
 /**

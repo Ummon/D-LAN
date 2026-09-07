@@ -22,6 +22,11 @@ using namespace CS;
 #include <algorithm>
 
 #include <QSet>
+#include <QCryptographicHash>
+#include <QDir>
+#include <QFileInfo>
+
+#include <Common/Constants.h>
 
 #include <Common/PersistentData.h>
 #include <Common/Settings.h>
@@ -137,16 +142,39 @@ QList<QSharedPointer<ChatMessage>> ChatMessages::fillProtoChatMessages(
 
 
 /**
-  * Load the chat messages from the file previously saved in the user home and return it.
+  * Hash the exact UTF-8 name without case folding or Unicode normalization.
   */
-void ChatMessages::loadFromFile(const QString& filename)
+QString ChatMessages::getFilename(const QString& roomName)
 {
+   if (roomName.isEmpty())
+      return Common::Constants::DIR_CHAT_MESSAGES % '/' % Common::Constants::FILE_CHAT_MESSAGES;
+
+   const QString digest = QString::fromLatin1(QCryptographicHash::hash(roomName.toUtf8(), QCryptographicHash::Sha256).toHex());
+   return Common::Constants::DIR_CHAT_MESSAGES % "/rooms/" % Common::Constants::FILE_CHAT_ROOM_MESSAGES.arg(digest);
+}
+
+/**
+  * Load only messages belonging to the requested room.
+  */
+void ChatMessages::loadForRoom(const QString& roomName)
+{
+   const QString filename = getFilename(roomName);
    try
    {
       Protos::Common::ChatMessages chatMessages;
       Common::PersistentData::getValue(filename, chatMessages, FOLDER_TYPE_MESSAGES_SAVED);
+      const auto expectedRoom = roomName.toStdString();
+      auto* messages = chatMessages.mutable_messages();
+      const int originalSize = messages->size();
+      messages->erase(std::remove_if(messages->begin(), messages->end(),
+         [&](const Protos::Common::ChatMessage& message) { return message.chat_room() != expectedRoom; }), messages->end());
+      const bool filtered = messages->size() != originalSize;
+      if (filtered)
+         L_WARN(QString("Ignored %1 saved chat messages belonging to another room in %2").arg(originalSize - messages->size()).arg(filename));
+
+      const bool wasChanged = this->d->changed;
       this->add(chatMessages);
-      this->d->changed = false;
+      this->d->changed = wasChanged || filtered;
    }
    catch (Common::UnknownValueException&)
    {
@@ -159,15 +187,20 @@ void ChatMessages::loadFromFile(const QString& filename)
 }
 
 /**
-  * Save the chat messages to a file in the user home.
+  * Save the chat messages, retaining the dirty flag if writing fails.
   */
-void ChatMessages::saveToFile(const QString& filename) const
+void ChatMessages::saveForRoom(const QString& roomName) const
 {
    if (!this->d->changed)
       return;
 
    try
    {
+      const QString filename = getFilename(roomName);
+      const QString directory = QFileInfo(Common::Global::getDataFolder(FOLDER_TYPE_MESSAGES_SAVED) % '/' % filename).absolutePath();
+      if (!QDir().mkpath(directory))
+         throw Common::PersistentDataIOException(QString("Unable to create chat history directory: %1").arg(directory));
+
       Protos::Common::ChatMessages chatMessages;
       this->fillProtoChatMessages(chatMessages);
       Common::PersistentData::setValue(filename, chatMessages, FOLDER_TYPE_MESSAGES_SAVED);
@@ -176,6 +209,10 @@ void ChatMessages::saveToFile(const QString& filename) const
    catch (Common::PersistentDataIOException& err)
    {
       L_ERRO(err.message);
+   }
+   catch (Common::Global::UnableToGetFolder& err)
+   {
+      L_ERRO(err.errorMessage);
    }
 }
 

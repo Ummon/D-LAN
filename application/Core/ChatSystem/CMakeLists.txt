@@ -25,3 +25,7 @@ target_link_libraries(ChatSystem PUBLIC
    Common
    LogManager
 )
+
+if(DLAN_BUILD_TESTS)
+   add_subdirectory(TestsChatSystem)
+endif()
