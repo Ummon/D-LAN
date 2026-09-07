@@ -109,6 +109,10 @@ void FileUpdater::addRoot(SharedEntry* sharedEntry)
 
    const Common::Path& entryPath = sharedEntry->getPath();
 
+   // Browse requests must wait until the initial scan has populated the root directory.
+   if (auto directory = dynamic_cast<Directory*>(sharedEntry->getRootEntry()))
+      directory->setScanned(false);
+
    bool watchable = false;
    if (this->dirWatcher)
    {

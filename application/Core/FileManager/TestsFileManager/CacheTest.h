@@ -76,6 +76,8 @@ private slots:
    void openingHandlesExcludesCompletion();
    void browseDirectoryLifetime_data();
    void browseDirectoryLifetime();
+   void browseNewSharedDirectory_data();
+   void browseNewSharedDirectory();
    void partialWrites_data();
    void partialWrites();
    void unfinishedDownloadRetry_data();

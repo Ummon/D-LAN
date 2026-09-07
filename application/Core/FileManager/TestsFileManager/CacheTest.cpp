@@ -2312,6 +2312,62 @@ namespace
    };
 }
 
+void CacheTest::browseNewSharedDirectory_data()
+{
+   QTest::addColumn<bool>("populated");
+   QTest::newRow("empty") << false;
+   QTest::newRow("populated") << true;
+}
+
+void CacheTest::browseNewSharedDirectory()
+{
+   QFETCH(bool, populated);
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   if (populated)
+   {
+      QVERIFY(QDir(temp.path()).mkdir("child"));
+      QFile file(temp.filePath("complete.txt"));
+      QVERIFY(file.open(QIODevice::WriteOnly));
+      QCOMPARE(file.write("content"), qint64(7));
+   }
+
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   FM::FileUpdater updater(nullptr); // Drive the initial scan explicitly.
+   connect(&cache, &FM::Cache::newSharedEntry, &updater, &FM::FileUpdater::addRoot, Qt::DirectConnection);
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   auto dir = root->getRootDir();
+   QCOMPARE(updater.entriesToScan, QList<FM::Entry*> { dir });
+
+   Protos::Common::Entry directory;
+   dir->populateEntry(&directory, true);
+   FM::GetEntriesResult request(cache, directory, 0);
+   int deliveries = 0;
+   Protos::Core::GetEntriesResult::EntryResult response;
+   connect(&request, &FM::IGetEntriesResult::result, &request, [&](const auto& result) {
+      ++deliveries;
+      response = result;
+   });
+   request.start();
+   QCoreApplication::sendPostedEvents(&request, QEvent::MetaCall);
+   QCOMPARE(deliveries, 0);
+   QVERIFY(!dir->isScanned());
+
+   updater.scan(updater.entriesToScan.takeFirst());
+   QVERIFY(dir->isScanned());
+   QCoreApplication::sendPostedEvents(&request, QEvent::MetaCall);
+   QCOMPARE(deliveries, 1);
+   QCOMPARE(response.status(), Protos::Core::GetEntriesResult::EntryResult::OK);
+   QCOMPARE(response.entries().entries_size(), populated ? 2 : 0);
+   if (populated)
+   {
+      QCOMPARE(response.entries().entries(0).name(), std::string("child"));
+      QCOMPARE(response.entries().entries(1).name(), std::string("complete.txt"));
+   }
+}
+
 void CacheTest::browseDirectoryLifetime_data()
 {
    QTest::addColumn<QString>("scenario");
