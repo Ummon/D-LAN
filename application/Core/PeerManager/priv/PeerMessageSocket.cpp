@@ -222,6 +222,8 @@ void PeerMessageSocket::finished(bool closeTheSocket)
 
    this->socket->flush();
    this->active = false;
+   this->incomingTransaction = IncomingTransaction::None;
+   ++this->transactionGeneration;
 
    this->startListening();
    emit becomeIdle(this);
@@ -267,6 +269,8 @@ void PeerMessageSocket::close()
    // it unavailable now: releasing a download can synchronously request a socket.
    this->closing = true;
    this->active = false;
+   this->incomingTransaction = IncomingTransaction::None;
+   ++this->transactionGeneration;
    this->stopListening();
    emit closed(this);
 }
@@ -277,6 +281,9 @@ void PeerMessageSocket::close()
   */
 void PeerMessageSocket::nextAskedHash(Protos::Core::HashResult hash)
 {
+   if (this->closing || this->incomingTransaction != IncomingTransaction::Hashes || this->nbHash <= 0)
+      return;
+
    this->send(Common::MessageHeader::CORE_HASH_RESULT, hash);
 
    if (--this->nbHash == 0)
@@ -288,6 +295,9 @@ void PeerMessageSocket::nextAskedHash(Protos::Core::HashResult hash)
 
 void PeerMessageSocket::entriesResult(const Protos::Core::GetEntriesResult::EntryResult& result)
 {
+   if (this->closing || this->incomingTransaction != IncomingTransaction::Entries)
+      return;
+
    bool resultEmpty = true;
    for (int i = 0; i < this->entriesResultsToReceive.count(); i++)
    {
@@ -311,6 +321,9 @@ void PeerMessageSocket::entriesResult(const Protos::Core::GetEntriesResult::Entr
   */
 void PeerMessageSocket::entriesResultTimeout()
 {
+   if (this->closing || this->incomingTransaction != IncomingTransaction::Entries)
+      return;
+
    L_DEBU("PeerMessageSocket::entriesResultTimeout()");
 
    bool resultEmpty = true;
@@ -335,12 +348,23 @@ void PeerMessageSocket::entriesResultTimeout()
 
 void PeerMessageSocket::onNewMessage(const Common::Message& message)
 {
+   if (this->closing)
+      return;
+   // There are no transaction IDs on the wire. Another message cannot safely
+   // interrupt an asynchronous reply, including a forged response that calls finished().
+   if (this->incomingTransaction != IncomingTransaction::None)
+   {
+      L_WARN("Overlapping message during an incoming transaction, closing socket");
+      this->close();
+      return;
+   }
+
    switch (message.getHeader().getType())
    {
    case Common::MessageHeader::CORE_GET_ENTRIES:
       {
-         if (!this->entriesResultsToReceive.isEmpty())
-            return;
+         this->incomingTransaction = IncomingTransaction::Entries;
+         ++this->transactionGeneration;
 
          const Protos::Core::GetEntries& getEntries = message.getMessage<Protos::Core::GetEntries>();
 
@@ -396,6 +420,8 @@ void PeerMessageSocket::onNewMessage(const Common::Message& message)
 
    case Common::MessageHeader::CORE_GET_HASHES:
       {
+         this->incomingTransaction = IncomingTransaction::Hashes;
+         const quint64 generation = ++this->transactionGeneration;
          const Protos::Core::GetHashes& getHashes = message.getMessage<Protos::Core::GetHashes>();
 
          this->currentHashesResult = this->fileManager->getHashes(getHashes.file());
@@ -403,7 +429,12 @@ void PeerMessageSocket::onNewMessage(const Common::Message& message)
             this->currentHashesResult.data(),
             &FM::IGetHashesResult::nextHash,
             this,
-            &PeerMessageSocket::nextAskedHash,
+            [this, generation](Protos::Core::HashResult hash) {
+               // Disconnecting/destroying the producer does not cancel callbacks
+               // already queued for a previous transaction.
+               if (generation == this->transactionGeneration)
+                  this->nextAskedHash(hash);
+            },
             Qt::QueuedConnection
          );
          Protos::Core::GetHashesResult res = this->currentHashesResult->start();
@@ -441,6 +472,8 @@ void PeerMessageSocket::onNewMessage(const Common::Message& message)
 
    case Common::MessageHeader::CORE_GET_CHUNKS:
       {
+         this->incomingTransaction = IncomingTransaction::Chunks;
+         ++this->transactionGeneration;
          const Protos::Core::GetChunks& getChunksMessage = message.getMessage<Protos::Core::GetChunks>();
 
          QList<GetChunkParams> chunksParams;

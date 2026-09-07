@@ -118,6 +118,8 @@ namespace PM
       void entriesResultTimeout();
 
    private:
+      enum class IncomingTransaction { None, Entries, Hashes, Chunks };
+
       void onNewMessage(const Common::Message& message) override;
       void onNewDataReceived() override;
       void onDisconnected() override;
@@ -133,6 +135,8 @@ namespace PM
 
       bool active;
       bool closing = false; // Terminal state while queued pool removal/destruction is pending.
+      IncomingTransaction incomingTransaction = IncomingTransaction::None;
+      quint64 transactionGeneration = 0;
       QTimer inactiveTimer;
 
       // Used when asking hashes to the fileManager.

@@ -840,6 +840,116 @@ void Tests::chunkRequestSocketLifecycle()
    QTRY_COMPARE(nextResponses, 1);
 }
 
+void Tests::incomingTransactions_data()
+{
+   QTest::addColumn<int>("overlap");
+   QTest::newRow("sequential-hashes-then-chunks") << 0;
+   QTest::newRow("overlapping-hashes") << 1;
+   QTest::newRow("overlapping-chunks") << 2;
+   QTest::newRow("overlapping-entries") << 3;
+   QTest::newRow("unexpected-entries-response") << 4;
+   QTest::newRow("unexpected-hash-response") << 5;
+}
+
+void Tests::incomingTransactions()
+{
+   QFETCH(int, overlap);
+   auto* manager = static_cast<PM::PeerManager*>(this->peerManagers[1].data());
+   const auto chunk = this->fileManagers[1]->getChunk(this->resultListener.getLastReceivedHash());
+   QVERIFY(chunk);
+
+   Protos::Core::GetHashes hashes;
+   auto* file = hashes.mutable_file();
+   file->set_type(Protos::Common::Entry::FILE);
+   file->set_path("/");
+   file->set_name("big.bin");
+   file->set_size(quint64(4) * Common::Constants::CHUNK_SIZE);
+   for (int i = 0; i < 4; ++i)
+      file->add_chunks();
+   file->mutable_shared_entry()->CopyFrom(
+      this->resultListener.getEntriesResultList().constFirst().results(0).entries().entries(0).shared_entry());
+
+   Protos::Core::GetChunks chunks;
+   chunks.add_chunks()->mutable_hash()->set_hash(chunk->getHash().getData(), Common::Hash::HASH_SIZE);
+   chunks.mutable_chunks(0)->set_offset(chunk->getKnownBytes()); // Empty raw stream.
+   QByteArray requests;
+   QBuffer buffer(&requests);
+   QVERIFY(buffer.open(QIODevice::WriteOnly));
+   auto append = [&](Common::MessageHeader::MessageType type, const google::protobuf::Message& message) {
+      Common::Message::writeMessageToDevice(&buffer,
+         Common::MessageHeader(type, message.ByteSizeLong(), this->peerIDs[0]), &message);
+   };
+   append(Common::MessageHeader::CORE_GET_HASHES, hashes);
+   switch (overlap)
+   {
+   case 1: append(Common::MessageHeader::CORE_GET_HASHES, hashes); break;
+   case 2: append(Common::MessageHeader::CORE_GET_CHUNKS, chunks); break;
+   case 3: append(Common::MessageHeader::CORE_GET_ENTRIES, Protos::Core::GetEntries()); break;
+   case 4: append(Common::MessageHeader::CORE_GET_ENTRIES_RESULT, Protos::Core::GetEntriesResult()); break;
+   case 5: append(Common::MessageHeader::CORE_HASH_RESULT, Protos::Core::HashResult()); break;
+   }
+
+   QTcpServer server;
+   QVERIFY(server.listen(QHostAddress::LocalHost, 0));
+   QTcpSocket client;
+   client.connectToHost(QHostAddress::LocalHost, server.serverPort());
+   QTRY_COMPARE(client.state(), QAbstractSocket::ConnectedState);
+   QTRY_VERIFY(server.hasPendingConnections());
+   auto* accepted = server.nextPendingConnection();
+   accepted->setParent(nullptr);
+   auto socket = QSharedPointer<PM::PeerMessageSocket>(
+      new PM::PeerMessageSocket(manager, this->fileManagers[1], this->peerIDs[0], accepted));
+   QSignalSpy closed(socket.data(), &PM::PeerMessageSocket::closed);
+   QSignalSpy idle(socket.data(), &PM::PeerMessageSocket::becomeIdle);
+   QObject context;
+   int uploads = 0;
+   // Advertise upload support while holding the socket here instead of handing it to a worker.
+   connect(manager, &IPeerManager::getChunks, &context,
+      [](const QList<PM::GetChunkParams>&, const QSharedPointer<PM::ISocket>&) {});
+   connect(socket.data(), &PM::PeerMessageSocket::getChunks, &context,
+      [&](const QList<PM::GetChunkParams>&, PM::PeerMessageSocket*) { ++uploads; });
+
+   QCOMPARE(client.write(requests), qint64(requests.size()));
+   client.flush();
+   // Buffer both requests before parsing, so the second arrives before the queued
+   // callbacks for the first request's already-known hashes can run.
+   QTRY_COMPARE(accepted->bytesAvailable(), qint64(requests.size()));
+   socket->startListening();
+   if (overlap)
+   {
+      QCOMPARE(closed.count(), 1);
+      QCoreApplication::sendPostedEvents(nullptr, QEvent::MetaCall);
+      QCOMPARE(uploads, 0);
+      QCOMPARE(idle.count(), 0);
+      QVERIFY(socket->isClosing());
+      QVERIFY(!socket->isActive());
+   }
+   else
+   {
+      // A completed hash response must permit a later chunk request on the same connection.
+      QTRY_COMPARE(idle.count(), 1);
+      QCOMPARE(closed.count(), 0);
+      requests.clear();
+      buffer.seek(0);
+      append(Common::MessageHeader::CORE_GET_CHUNKS, chunks);
+      QCOMPARE(client.write(requests), qint64(requests.size()));
+      client.flush();
+      QTRY_COMPARE(uploads, 1);
+      QCoreApplication::sendPostedEvents(nullptr, QEvent::MetaCall);
+      QCOMPARE(idle.count(), 1);
+      QCOMPARE(closed.count(), 0);
+      QVERIFY(socket->isActive());
+      socket->finished();
+      QCOMPARE(idle.count(), 2);
+      requests.clear();
+      buffer.seek(0);
+      append(Common::MessageHeader::CORE_GET_ENTRIES, Protos::Core::GetEntries());
+      QCOMPARE(client.write(requests), qint64(requests.size()));
+      client.flush();
+      QTRY_COMPARE(idle.count(), 3); // Message parsing resumes after the upload finishes.
+   }
+}
+
 void Tests::validateChunkOffsets()
 {
    const Common::Hash hash = this->resultListener.getLastReceivedHash();

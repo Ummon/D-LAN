@@ -66,6 +66,8 @@ private slots:
    void chunkRequestSocketLifecycle_data();
    void chunkRequestSocketLifecycle();
    void askForHashes();
+   void incomingTransactions_data();
+   void incomingTransactions();
    void validateChunkOffsets();
    void uploadReservations();
    void rejectExcessUploads();
