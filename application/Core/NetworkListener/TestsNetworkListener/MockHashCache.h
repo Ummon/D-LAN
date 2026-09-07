@@ -26,7 +26,7 @@
 class MockHashCache : public HC::IHashCache
 {
 public:
-   QList<Common::Hash> getHashes(const QString&, QDateTime = QDateTime()) override { return QList<Common::Hash>(); }
+   QList<Common::Hash> getHashes(const QString&, qint64, QDateTime = QDateTime()) override { return QList<Common::Hash>(); }
    void setHashes(const QString&, const QList<Common::Hash>&, qint64, QDateTime = QDateTime()) override {}
    void rmHashes(const QString&) override {}
 };

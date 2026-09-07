@@ -39,7 +39,7 @@ public:
    explicit Database(const QString& databaseFolder);
    ~Database();
 
-   QList<Common::Hash> getHashes(const QString& filePath, QDateTime timeLastModified);
+   QList<Common::Hash> getHashes(const QString& filePath, qint64 size, QDateTime timeLastModified);
    void setHashes(const QString& filePath, const QList<Common::Hash>& hashes, qint64 size, QDateTime dateTime);
    void rmHashes(const QString& filePath);
 
@@ -83,12 +83,12 @@ HashCache::~HashCache()
    this->databaseThread.wait();
 }
 
-QList<Common::Hash> HashCache::getHashes(const QString& filePath, QDateTime timeLastModified)
+QList<Common::Hash> HashCache::getHashes(const QString& filePath, qint64 size, QDateTime timeLastModified)
 {
    QList<Common::Hash> result;
-   QMetaObject::invokeMethod(this->databaseContext, [this, &filePath, timeLastModified, &result]
+   QMetaObject::invokeMethod(this->databaseContext, [this, &filePath, size, timeLastModified, &result]
    {
-      result = this->database->getHashes(filePath, timeLastModified);
+      result = this->database->getHashes(filePath, size, timeLastModified);
    }, Qt::BlockingQueuedConnection);
    return result;
 }
@@ -133,10 +133,10 @@ HashCache::Database::Database(const QString& databaseFolder) :
    this->updateDatabaseScheme();
 
    this->queryGetHashesWithDate->prepare(
-      "SELECT [hashes], [size] FROM [File] WHERE [path] = $1 AND [date_last_modified] = $2"
+      "SELECT [hashes], [size] FROM [File] WHERE [path] = $1 AND [size] = $2 AND [date_last_modified] = $3"
    );
 
-   this->queryGetHashes->prepare("SELECT [hashes], [size] FROM [File] WHERE [path] = $1");
+   this->queryGetHashes->prepare("SELECT [hashes], [size] FROM [File] WHERE [path] = $1 AND [size] = $2");
 
    this->querySetHashes->prepare(
       R"(
@@ -164,15 +164,16 @@ HashCache::Database::~Database()
    L_DEBU("HashCache deleted");
 }
 
-QList<Common::Hash> HashCache::Database::getHashes(const QString& filePath, QDateTime timeLastModified)
+QList<Common::Hash> HashCache::Database::getHashes(const QString& filePath, qint64 size, QDateTime timeLastModified)
 {
    L_DEBU(QString("[getHashes] filePath: %1").arg(filePath));
 
    QSqlQuery& query = timeLastModified.isNull() ? *this->queryGetHashes : *this->queryGetHashesWithDate;
    query.bindValue(0, filePath);
+   query.bindValue(1, size);
 
    if (!timeLastModified.isNull())
-      query.bindValue(1, timeLastModified.toMSecsSinceEpoch());
+      query.bindValue(2, timeLastModified.toMSecsSinceEpoch());
 
    query.exec();
 
@@ -186,8 +187,8 @@ QList<Common::Hash> HashCache::Database::getHashes(const QString& filePath, QDat
    if (query.first())
    {
       const QByteArray hashes = query.value(0).toByteArray();
-      const qint64 size = query.value(1).toLongLong();
-      const int nbHashes = Common::Global::nbChunks(size);
+      const qint64 storedSize = query.value(1).toLongLong();
+      const int nbHashes = Common::Global::nbChunks(storedSize);
 
       if (hashes.size() % Common::Hash::HASH_SIZE != 0 || hashes.size() / Common::Hash::HASH_SIZE != nbHashes)
       {

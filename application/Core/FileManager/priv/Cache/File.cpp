@@ -243,6 +243,7 @@ void File::loadHashes()
    const QList<Common::Hash> hashes =
       this->getCache()->getHashCache()->getHashes(
          this->getAbsolutePath(),
+         this->size,
          this->dateLastModified
       );
 

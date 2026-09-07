@@ -34,11 +34,13 @@ namespace HC
       virtual ~IHashCache() {}
 
       /**
-        * Try to retrieve all hashes from a file path.
-        * If the file path is unknown a empty list is returned.
+        * Retrieve hashes matching the file path and current size in bytes.
+        * If supplied, the modification time must also match.
+        * An unknown path or mismatching metadata returns an empty list.
         */
       virtual QList<Common::Hash> getHashes(
          const QString& filePath,
+         qint64 size,
          QDateTime timeLastModified = QDateTime()
       ) = 0;
 

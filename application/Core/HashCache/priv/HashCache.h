@@ -36,7 +36,7 @@ namespace HC
       HashCache(const QString& databaseFolder);
       ~HashCache();
 
-      QList<Common::Hash> getHashes(const QString& filePath, QDateTime timeLastModified = QDateTime()) override;
+      QList<Common::Hash> getHashes(const QString& filePath, qint64 size, QDateTime timeLastModified = QDateTime()) override;
 
       void setHashes(const QString& filePath, const QList<Common::Hash>& hashes, qint64 size, QDateTime dateTime = QDateTime()) override;
 

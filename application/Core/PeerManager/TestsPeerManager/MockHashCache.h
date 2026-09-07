@@ -9,6 +9,7 @@ public:
 
    virtual QList<Common::Hash> getHashes(
       const QString& filePath,
+      qint64 size,
       QDateTime timeLastModified = QDateTime()
    ) override;
 

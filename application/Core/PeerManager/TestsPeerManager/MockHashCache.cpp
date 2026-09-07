@@ -6,6 +6,7 @@ MockHashCache::MockHashCache() {}
 
 QList<Common::Hash> MockHashCache::getHashes(
    const QString& filePath,
+   qint64 size,
    QDateTime timeLastModified
 )
 {

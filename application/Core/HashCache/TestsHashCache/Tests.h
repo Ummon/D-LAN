@@ -30,6 +30,7 @@ public:
    Tests();
 
 private slots:
+   void lookupRequiresMatchingSize();
    void concurrentAccess();
    void destructionFromAnotherThread();
 };
