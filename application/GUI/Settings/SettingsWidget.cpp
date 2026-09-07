@@ -20,6 +20,8 @@
 #include <ui_SettingsWidget.h>
 using namespace GUI;
 
+#include <algorithm>
+
 #include <QFileDialog>
 #include <QTranslator>
 #include <QMessageBox>
@@ -65,7 +67,7 @@ SettingsWidget::SettingsWidget(
    this->ui->tblShareDirs->verticalHeader()->setDefaultSectionSize(QFontMetrics(QApplication::font()).height() + 2);
    this->ui->tblShareDirs->verticalHeader()->setVisible(false);
    this->ui->tblShareDirs->setSelectionBehavior(QAbstractItemView::SelectRows);
-   this->ui->tblShareDirs->setSelectionMode(QAbstractItemView::SingleSelection);
+   this->ui->tblShareDirs->setSelectionMode(QAbstractItemView::ExtendedSelection);
    this->ui->tblShareDirs->setShowGrid(false);
    this->ui->tblShareDirs->setAlternatingRowColors(true);
 
@@ -110,7 +112,7 @@ SettingsWidget::SettingsWidget(
       this->ui->tblShareDirs->selectionModel(),
       &QItemSelectionModel::selectionChanged,
       this,
-      qOverload<const QItemSelection&>(&SettingsWidget::refreshButtonsAvailability)
+      &SettingsWidget::refreshButtonsAvailability
    );
    connect(
       &this->sharedEntryListModel,
@@ -638,53 +640,67 @@ void SettingsWidget::addShared()
 
 void SettingsWidget::removeShared()
 {
-   QModelIndex index = this->ui->tblShareDirs->selectionModel()->currentIndex();
-   if (index.isValid())
+   const QModelIndexList selectedRows = this->ui->tblShareDirs->selectionModel()->selectedRows();
+   if (!selectedRows.isEmpty())
    {
-      // Core updates can move or remove this row while the confirmation is open.
-      const Common::SharedEntry selectedEntry = this->sharedEntryListModel.getSharedEntries().at(index.row());
+      // Core updates can move or remove rows while the confirmation is open.
+      QList<Common::SharedEntry> selectedEntries;
+      for (const QModelIndex& index : selectedRows)
+         selectedEntries << this->sharedEntryListModel.getSharedEntries().at(index.row());
 
       QMessageBox msgBox(this);
-      msgBox.setWindowTitle(tr("Remove selected shared directory"));
-      msgBox.setText(tr("Are you sure to remove the selected shared directory?"));
+      msgBox.setWindowTitle(tr("Remove selected shared entries"));
+      msgBox.setText(tr("Are you sure you want to remove the selected shared files and directories?"));
       msgBox.setIcon(QMessageBox::Question);
       msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
       msgBox.setDefaultButton(QMessageBox::Ok);
       if (msgBox.exec() == QMessageBox::Ok)
       {
          const auto& entries = this->sharedEntryListModel.getSharedEntries();
-         for (int row = 0; row < entries.size(); ++row)
+         bool removed = false;
+         for (int row = entries.size() - 1; row >= 0; --row)
          {
             // Newly added entries have no ID until the core acknowledges them.
-            const bool matches = selectedEntry.ID.isNull() ?
-               entries[row].path == selectedEntry.path : entries[row].ID == selectedEntry.ID;
+            const bool matches = std::any_of(selectedEntries.constBegin(), selectedEntries.constEnd(),
+               [&entries, row](const Common::SharedEntry& selectedEntry)
+               {
+                  return selectedEntry.ID.isNull() ?
+                     entries[row].path == selectedEntry.path : entries[row].ID == selectedEntry.ID;
+               });
             if (matches)
             {
                this->sharedEntryListModel.rmEntry(row);
-               this->saveCoreSettings();
-               break;
+               removed = true;
             }
          }
+         if (removed)
+            this->saveCoreSettings();
       }
    }
 }
 
 void SettingsWidget::moveUpShared()
 {
-   QModelIndex index = this->ui->tblShareDirs->selectionModel()->currentIndex();
-   if (index.isValid())
+   QModelIndexList selectedRows = this->ui->tblShareDirs->selectionModel()->selectedRows();
+   std::sort(selectedRows.begin(), selectedRows.end(),
+      [](const QModelIndex& a, const QModelIndex& b) { return a.row() < b.row(); });
+   if (!selectedRows.isEmpty() && selectedRows.first().row() > 0)
    {
-      this->sharedEntryListModel.mvUpEntry(index.row());
+      for (const QModelIndex& index : selectedRows)
+         this->sharedEntryListModel.mvUpEntry(index.row());
       this->saveCoreSettings();
    }
 }
 
 void SettingsWidget::moveDownShared()
 {
-   QModelIndex index = this->ui->tblShareDirs->selectionModel()->currentIndex();
-   if (index.isValid())
+   QModelIndexList selectedRows = this->ui->tblShareDirs->selectionModel()->selectedRows();
+   std::sort(selectedRows.begin(), selectedRows.end(),
+      [](const QModelIndex& a, const QModelIndex& b) { return a.row() > b.row(); });
+   if (!selectedRows.isEmpty() && selectedRows.first().row() < this->sharedEntryListModel.rowCount() - 1)
    {
-      this->sharedEntryListModel.mvDownEntry(index.row());
+      for (const QModelIndex& index : selectedRows)
+         this->sharedEntryListModel.mvDownEntry(index.row());
       this->saveCoreSettings();
    }
 }
@@ -698,7 +714,7 @@ void SettingsWidget::displayContextMenuSharedDirs(const QPoint& point)
    QAction* actionDelete =
       menu.addAction(
          QIcon(":/icons/resources/remove_file_folder.svg"),
-         tr("Remove the shared directory"),
+         tr("Remove selected shared entries"),
          this,
          &SettingsWidget::removeShared
       );
@@ -727,21 +743,18 @@ void SettingsWidget::displayContextMenuSharedDirs(const QPoint& point)
          &SettingsWidget::openLocation
       );
 
-   if (this->sharedEntryListModel.rowCount() == 0)
-      actionDelete->setDisabled(true);
-
-   if (this->ui->tblShareDirs->currentIndex().row() == 0 || this->sharedEntryListModel.rowCount() == 0)
-      actionUp->setDisabled(true);
-
-   if (this->ui->tblShareDirs->currentIndex().row() >= this->sharedEntryListModel.rowCount() - 1  || this->sharedEntryListModel.rowCount() == 0)
-      actionDown->setDisabled(true);
+   this->refreshButtonsAvailability();
+   actionDelete->setEnabled(this->ui->butRemoveShared->isEnabled());
+   actionUp->setEnabled(this->ui->butMoveUpShared->isEnabled());
+   actionDown->setEnabled(this->ui->butMoveDownShared->isEnabled());
 
    menu.exec(globalPosition);
 }
 
-void SettingsWidget::refreshButtonsAvailability(const QItemSelection& selected)
+void SettingsWidget::refreshButtonsAvailability()
 {
-   if (selected.indexes().isEmpty() || !selected.indexes().first().isValid())
+   const QModelIndexList selectedRows = this->ui->tblShareDirs->selectionModel()->selectedRows();
+   if (selectedRows.isEmpty())
    {
       this->ui->butMoveUpShared->setDisabled(true);
       this->ui->butMoveDownShared->setDisabled(true);
@@ -750,16 +763,13 @@ void SettingsWidget::refreshButtonsAvailability(const QItemSelection& selected)
    }
    else
    {
-      this->ui->butMoveUpShared->setDisabled(selected.indexes().first().row() == 0);
-      this->ui->butMoveDownShared->setDisabled(selected.indexes().first().row() == this->sharedEntryListModel.rowCount() - 1);
+      const auto bounds = std::minmax_element(selectedRows.constBegin(), selectedRows.constEnd(),
+         [](const QModelIndex& a, const QModelIndex& b) { return a.row() < b.row(); });
+      this->ui->butMoveUpShared->setDisabled(bounds.first->row() == 0);
+      this->ui->butMoveDownShared->setDisabled(bounds.second->row() == this->sharedEntryListModel.rowCount() - 1);
       this->ui->butRemoveShared->setDisabled(false);
       this->ui->butOpenFolder->setDisabled(!this->coreConnection->isLocal());
    }
-}
-
-void SettingsWidget::refreshButtonsAvailability()
-{
-   this->refreshButtonsAvailability(QItemSelection(this->ui->tblShareDirs->selectionModel()->selection()));
 }
 
 void SettingsWidget::openLocation()

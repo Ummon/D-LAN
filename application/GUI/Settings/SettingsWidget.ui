@@ -89,7 +89,7 @@
          <item>
           <widget class="QPushButton" name="butRemoveShared">
            <property name="toolTip">
-            <string>Remove the selected shared directory or file</string>
+            <string>Remove the selected shared files and directories</string>
            </property>
            <property name="text">
             <string/>
@@ -109,7 +109,7 @@
          <item>
           <widget class="QPushButton" name="butMoveDownShared">
            <property name="toolTip">
-            <string>Move down the selected shared directory or file</string>
+            <string>Move down the selected shared files and directories</string>
            </property>
            <property name="text">
             <string/>
@@ -129,7 +129,7 @@
          <item>
           <widget class="QPushButton" name="butMoveUpShared">
            <property name="toolTip">
-            <string>Move up the selected shared directory or file</string>
+            <string>Move up the selected shared files and directories</string>
            </property>
            <property name="text">
             <string/>
@@ -149,7 +149,7 @@
          <item>
           <widget class="QPushButton" name="butOpenFolder">
            <property name="toolTip">
-            <string>Open location of the selected shared directory or file</string>
+            <string>Open locations of the selected shared files and directories</string>
            </property>
            <property name="text">
             <string/>
