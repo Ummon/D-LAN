@@ -24,6 +24,7 @@
 #include <QTimer>
 #include <QQueue>
 #include <QSharedPointer>
+#include <QPointer>
 
 #include <google/protobuf/message.h>
 
@@ -133,7 +134,7 @@ namespace PM
       QList<QSharedPointer<FM::IGetEntriesResult>> entriesResultsToReceive;
       Protos::Core::GetEntriesResult entriesResultMessage;
 
-      PeerManager* peerManager;
+      QPointer<PeerManager> peerManager; // Shared sockets may outlive the manager; do not keep it alive.
       QSharedPointer<FM::IFileManager> fileManager;
       const bool incoming;
 

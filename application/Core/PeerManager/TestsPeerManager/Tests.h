@@ -60,6 +60,9 @@ private slots:
    void averagePeerSpeed();
    void expiredPeerSpeedIsReplaced();
    void destroyManagerWithPendingConnections();
+   void socketOutlivesManager_data();
+   void socketOutlivesManager();
+   void requestOutlivesManager();
    void askForRootEntries();
    void askForSomeEntries();
    void closedSocketIsNotReused_data();

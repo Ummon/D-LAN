@@ -548,6 +548,65 @@ void Tests::destroyManagerWithPendingConnections()
       QTRY_COMPARE(client->state(), QAbstractSocket::UnconnectedState);
 }
 
+void Tests::socketOutlivesManager_data()
+{
+   QTest::addColumn<bool>("finish");
+   QTest::newRow("destruction-with-upload-reservation") << false;
+   QTest::newRow("completion-after-manager-destruction") << true;
+}
+
+void Tests::socketOutlivesManager()
+{
+   QFETCH(bool, finish);
+   auto manager = Builder::newPeerManager(this->fileManagers[0]);
+   QPointer<IPeerManager> managerGuard(manager.data());
+   auto* concrete = static_cast<PM::PeerManager*>(manager.data());
+   auto socket = QSharedPointer<PM::PeerMessageSocket>(
+      new PM::PeerMessageSocket(concrete, this->fileManagers[0], this->peerIDs[0], new QTcpSocket()));
+   QPointer<PM::PeerMessageSocket> socketGuard(socket.data());
+   QVERIFY(concrete->tryReserveUpload(socket.data()));
+
+   manager.clear();
+   QVERIFY(managerGuard.isNull()); // Retaining a socket must not create an ownership cycle.
+   QVERIFY(!socketGuard.isNull());
+   if (finish)
+   {
+      socket->finished();
+      QVERIFY(socket->isClosing());
+      socket->finished(true); // Repeated cleanup is also harmless.
+      socket->startListening();
+      QVERIFY(socket->isClosing());
+   }
+   socket.clear();
+   QVERIFY(socketGuard.isNull());
+}
+
+void Tests::requestOutlivesManager()
+{
+   QTcpServer server;
+   QVERIFY(server.listen(QHostAddress::LocalHost, 0));
+   auto manager = Builder::newPeerManager(this->fileManagers[0]);
+   QPointer<IPeerManager> managerGuard(manager.data());
+   manager->updatePeer(this->peerIDs[0], QHostAddress::LocalHost, server.serverPort(), "remote",
+      0, QString(), 0, 0, Common::Constants::PROTOCOL_VERSION);
+   auto result = manager->getPeer(this->peerIDs[0])->getEntries(Protos::Core::GetEntries());
+   QVERIFY(result);
+   QPointer<IGetEntriesResult> resultGuard(result.data());
+   result->start();
+   QTRY_VERIFY(server.hasPendingConnections());
+   QScopedPointer<QTcpSocket> remote(server.nextPendingConnection());
+   QTRY_VERIFY(remote->bytesAvailable() >= Common::MessageHeader::HEADER_SIZE);
+   remote->readAll();
+
+   manager.clear();
+   QVERIFY(managerGuard.isNull());
+   QVERIFY(!resultGuard.isNull());
+   result.clear(); // Finishes and destroys the retained socket after its manager is gone.
+   QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
+   QVERIFY(resultGuard.isNull());
+   QTRY_COMPARE(remote->state(), QAbstractSocket::UnconnectedState);
+}
+
 void Tests::closedSocketIsNotReused_data()
 {
    QTest::addColumn<bool>("finishTransfer");

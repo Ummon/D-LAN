@@ -87,7 +87,8 @@ PeerMessageSocket::PeerMessageSocket(
 
 PeerMessageSocket::~PeerMessageSocket()
 {
-   this->peerManager->releaseUpload(this);
+   if (this->peerManager)
+      this->peerManager->releaseUpload(this);
    L_DEBU(QString("Socket[%1] deleted").arg(this->num));
 }
 
@@ -153,6 +154,11 @@ Common::Hash PeerMessageSocket::getRemotePeerID() const
 
 void PeerMessageSocket::send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message)
 {
+   if (!this->peerManager)
+   {
+      this->close();
+      return;
+   }
    if (!this->isListening())
       return;
 
@@ -221,6 +227,11 @@ void PeerMessageSocket::setActive()
   */
 void PeerMessageSocket::finished(bool closeTheSocket)
 {
+   if (!this->peerManager)
+   {
+      this->close();
+      return;
+   }
    // Release even if close() already marked this socket inactive. Do not release in close():
    // the uploader may still be running and keeps a strong reference until it finishes.
    this->peerManager->releaseUpload(this);
@@ -268,6 +279,11 @@ void PeerMessageSocket::finished(bool closeTheSocket)
   */
 void PeerMessageSocket::startListening()
 {
+   if (!this->peerManager)
+   {
+      this->close();
+      return;
+   }
    if (this->closing)
       return;
 
@@ -376,6 +392,11 @@ void PeerMessageSocket::entriesResultTimeout()
 
 bool PeerMessageSocket::acceptsMessage(const Common::Message& message)
 {
+   if (!this->peerManager)
+   {
+      this->close();
+      return false;
+   }
    if (this->closing)
       return false;
    const auto type = message.getHeader().getType();
