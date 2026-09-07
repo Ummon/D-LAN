@@ -21,7 +21,6 @@
 #include <QObject>
 #include <QTcpSocket>
 #include <QHostInfo>
-#include <QTimer>
 #include <QSharedPointer>
 #include <QWeakPointer>
 #include <QProcess>
@@ -44,8 +43,6 @@
 #include <ISearchResult.h>
 #include <Types.h>
 #include <priv/CoreController.h>
-
-class Tests;
 
 namespace RCC
 {
@@ -152,7 +149,6 @@ namespace RCC
       void stateChanged(QAbstractSocket::SocketState socketState);
 
    private:      
-      void cancelConnectionAttempt();
       void connectedAndAuthenticated();
 
       void sendCurrentLanguage();
@@ -160,7 +156,6 @@ namespace RCC
       void onNewMessage(const Common::Message& message) override;
       void onDisconnected() override;
 
-      friend class ::Tests; // Exercise cancellation at deterministic DNS/socket/retry stages.
       friend class SendChatMessageResult;
       friend class BrowseResult;
       friend class SearchResult;
@@ -172,8 +167,6 @@ namespace RCC
       QLocale currentLanguage;
 
       int currentHostLookupID;
-      QTimer retryTimer;
-      quint64 attemptGeneration = 0;
 
       // When a name is resolved many addresses can be returned, we will try all of
       // them until a connection is successfully established.

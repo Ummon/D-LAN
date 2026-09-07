@@ -3,7 +3,6 @@
 #include <QTcpServer>
 
 #include <priv/InternalCoreConnection.h>
-#include <priv/CoreConnection.h>
 
 using Common::MessageHeader;
 
@@ -141,117 +140,6 @@ private slots:
       this->connection.disconnectFromCore();
       this->peer.reset();
       this->server.close();
-   }
-
-   void cancellation_data()
-   {
-      QTest::addColumn<QString>("stage");
-      for (const auto& stage : {"lookup", "retry", "socket", "authentication"})
-         QTest::newRow(stage) << QString(stage);
-   }
-
-   void cancellation()
-   {
-      QFETCH(QString, stage);
-      RCC::CoreConnection core;
-      QSignalSpy connected(&core, &RCC::ICoreConnection::connected);
-      QSignalSpy errors(&core, &RCC::ICoreConnection::connectingError);
-      QSignalSpy disconnected(&core, &RCC::ICoreConnection::disconnected);
-      auto& pending = core.temp();
-      QScopedPointer<TestPeer> pendingPeer;
-      int cancelledLookup = -1;
-      if (stage == "lookup")
-      {
-         // Cancel before processing events, while even a cached lookup is pending.
-         core.connectToCore("localhost", this->server.serverPort(), Common::Hash());
-         cancelledLookup = pending.currentHostLookupID;
-         QVERIFY(cancelledLookup != -1);
-      }
-      else
-      {
-         QVERIFY(core.connectToCorePrepare("localhost"));
-         pending.connectionInfo = {"localhost", this->server.serverPort(), Common::Hash()};
-         if (stage == "retry")
-         {
-            // Enter the retry delay deterministically, without a real connection timeout.
-            pending.addressesToRetry << QHostAddress("192.0.2.1");
-            pending.stateChanged(QAbstractSocket::UnconnectedState);
-            QVERIFY(pending.retryTimer.isActive());
-         }
-         else
-         {
-            pending.socket->connectToHost(QHostAddress::LocalHost, this->server.serverPort());
-            if (stage == "authentication")
-            {
-               QTRY_VERIFY(this->server.hasPendingConnections());
-               pendingPeer.reset(new TestPeer(this->server.nextPendingConnection()));
-               QTRY_COMPARE(pending.socket->state(), QAbstractSocket::ConnectedState);
-               QVERIFY(!pending.isConnected()); // Authentication has not arrived.
-            }
-            else
-            {
-               QCOMPARE(pending.socket->state(), QAbstractSocket::ConnectingState);
-               pending.addressesToTry << QHostAddress("192.0.2.1");
-               connect(pending.socket, &QAbstractSocket::stateChanged, &pending, &RCC::InternalCoreConnection::stateChanged);
-            }
-         }
-      }
-      QVERIFY(core.isConnecting());
-      core.disconnectFromCore();
-      QVERIFY(!core.isConnecting());
-      QVERIFY(!core.isConnected());
-      QCOMPARE(pending.currentHostLookupID, -1);
-      QVERIFY(!pending.retryTimer.isActive());
-      QVERIFY(pending.addressesToTry.isEmpty());
-      QVERIFY(pending.addressesToRetry.isEmpty());
-      QCOMPARE(pending.socket->state(), QAbstractSocket::UnconnectedState);
-      QVERIFY(pending.connectionInfo.address.isEmpty());
-      QCOMPARE(pending.connectionInfo.port, 0);
-      core.disconnectFromCore(); // Repeated cancellation is harmless.
-
-      if (stage == "lookup")
-      {
-         // A late result must not revive the cancelled attempt or abort its replacement.
-         QHostInfo stale(cancelledLookup);
-         stale.setAddresses({QHostAddress("192.0.2.1")});
-         pending.addressResolved(stale);
-         QCOMPARE(pending.socket->state(), QAbstractSocket::UnconnectedState);
-         core.connectToCore("localhost", this->server.serverPort(), Common::Hash());
-         const int replacementLookup = pending.currentHostLookupID;
-         QVERIFY(replacementLookup != -1);
-         QVERIFY(replacementLookup != cancelledLookup);
-         pending.addressResolved(stale);
-         QCOMPARE(pending.currentHostLookupID, replacementLookup);
-         QVERIFY(core.isConnecting());
-         core.disconnectFromCore();
-      }
-
-      QTest::qWait(350); // Longer than the retry delay on both Windows and Linux.
-      QCOMPARE(pending.socket->state(), QAbstractSocket::UnconnectedState);
-      QCOMPARE(connected.size(), 0);
-      QCOMPARE(errors.size(), 0);
-      QCOMPARE(disconnected.size(), 0); // No established session was disconnected.
-      // A connection cancelled in ConnectingState may still have reached the listener.
-      while (this->server.hasPendingConnections())
-         delete this->server.nextPendingConnection();
-      pendingPeer.reset();
-
-      // A fresh attempt must still reach the public connected/disconnected signals.
-      QVERIFY(core.connectToCorePrepare("localhost"));
-      pending.socket->connectToHost(QHostAddress::LocalHost, this->server.serverPort());
-      QTRY_VERIFY(this->server.hasPendingConnections());
-      pendingPeer.reset(new TestPeer(this->server.nextPendingConnection()));
-      Protos::GUI::AuthenticationResult auth;
-      auth.set_status(Protos::GUI::AuthenticationResult::AUTH_OK);
-      pendingPeer->send(MessageHeader::GUI_AUTHENTICATION_RESULT, auth);
-      QTRY_COMPARE(connected.size(), 1);
-      QVERIFY(core.isConnected());
-      QVERIFY(!core.isConnecting());
-      QCOMPARE(errors.size(), 0);
-      core.disconnectFromCore();
-      QCOMPARE(disconnected.size(), 1);
-      QCOMPARE(disconnected[0][0].toBool(), true);
-      QVERIFY(!core.isConnected());
    }
 
    void correlation_data()
