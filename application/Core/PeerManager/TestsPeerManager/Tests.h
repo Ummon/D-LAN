@@ -52,6 +52,7 @@ private slots:
    void initTestCase();
    void updatePeers();
    void getPeerFromID();
+   void createPeerValidatesID();
    void peerAvailabilityTransitions();
    void averagePeerSpeed_data();
    void averagePeerSpeed();

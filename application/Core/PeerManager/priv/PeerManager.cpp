@@ -114,6 +114,9 @@ IPeer* PeerManager::getPeer(const Common::Hash& ID)
 
 IPeer* PeerManager::createPeer(const Common::Hash& ID, const QString& nick)
 {
+   if (ID.isNull())
+      return nullptr;
+
    IPeer* existingPeer = this->getPeer(ID);
    if (existingPeer)
       return existingPeer;

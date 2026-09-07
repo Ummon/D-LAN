@@ -632,6 +632,28 @@ void Tests::checkpointDownloadProgress_data()
    QTest::newRow("interrupted") << false;
 }
 
+void Tests::skipRejectedSourceWhenLoadingQueue()
+{
+   // The mock peer manager returns nullptr for createPeer(), as the real manager
+   // now does for a missing or null source ID in a saved download.
+   QSharedPointer<MockFileManager> files(new MockFileManager);
+   QSharedPointer<MockPeerManager> peers(new MockPeerManager);
+   DownloadQueue emptyQueue;
+   QVERIFY(emptyQueue.saveToFile());
+   auto savedQueue = DownloadQueue::loadFromFile();
+   auto* entry = savedQueue.add_entries();
+   entry->mutable_remote_entry()->set_type(Protos::Common::Entry::FILE);
+   entry->mutable_remote_entry()->set_name("invalid-source.bin");
+   entry->mutable_local_entry()->CopyFrom(entry->remote_entry());
+   entry->set_status(Protos::Queue::Queue::Entry::PAUSED);
+   Common::PersistentData::setValue(Common::Constants::FILE_QUEUE, savedQueue,
+      Common::Global::DataFolderType::LOCAL);
+
+   DownloadManager manager(files, peers);
+   emit files->fileCacheScanningComplete();
+   QVERIFY(manager.getDownloads().isEmpty());
+}
+
 void Tests::retryFailedQueueSave()
 {
    QSharedPointer<MockFileManager> files(new MockFileManager);

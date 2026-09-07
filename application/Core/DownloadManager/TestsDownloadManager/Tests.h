@@ -56,6 +56,7 @@ private slots:
    void checkpointDownloadProgress_data();
    void checkpointDownloadProgress();
    void retryFailedQueueSave();
+   void skipRejectedSourceWhenLoadingQueue();
    void resetPreservesDestination_data();
    void resetPreservesDestination();
    void chunkErrorTakesPrecedence_data();

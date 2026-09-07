@@ -338,6 +338,29 @@ void Tests::askForHashes()
    }
 }
 
+void Tests::createPeerValidatesID()
+{
+   auto manager = Builder::newPeerManager(this->fileManagers[0]);
+   const Common::Hash nullID;
+   for (int i = 0; i < 3; ++i)
+   {
+      QVERIFY(manager->createPeer(nullID, "invalid") == nullptr);
+      QVERIFY(manager->getPeer(nullID) == nullptr);
+   }
+   QVERIFY(manager->getPeers().isEmpty());
+   QCOMPARE(manager->getNbOfPeers(), 0);
+
+   const Common::Hash validID = this->peerIDs[0];
+   QVERIFY(validID != manager->getSelf()->getID());
+   IPeer* peer = manager->createPeer(validID, "remote");
+   QVERIFY(peer);
+   QCOMPARE(peer->getID(), validID);
+   QVERIFY(!peer->isAlive());
+   QCOMPARE(manager->getPeer(validID), peer);
+   QCOMPARE(manager->createPeer(validID, "duplicate"), peer);
+   QCOMPARE(manager->createPeer(manager->getSelf()->getID(), "self"), manager->getSelf());
+}
+
 void Tests::peerAvailabilityTransitions()
 {
    auto manager = Builder::newPeerManager(this->fileManagers[0]);

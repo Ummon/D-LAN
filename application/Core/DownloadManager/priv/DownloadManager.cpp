@@ -559,13 +559,20 @@ void DownloadManager::loadQueueFromFile()
    {
       const Protos::Queue::Queue_Entry& entry = savedQueue.entries(i);
 
+      PM::IPeer* peerSource = this->peerManager->createPeer(entry.peer_source_id().hash(), QString::fromStdString(entry.peer_source_nick()));
+      if (!peerSource)
+      {
+         L_WARN(QString("Skipping saved download %1: invalid source peer").arg(i));
+         continue;
+      }
+
       // Give the chunk hashes, known bytes and remote entry attributes to the cache file.
       this->fileManager->updateFromQueueEntry(entry);
 
       this->addDownload(
          entry.remote_entry(),
          entry.local_entry(),
-         this->peerManager->createPeer(entry.peer_source_id().hash(), QString::fromStdString(entry.peer_source_nick())),
+         peerSource,
          entry.status()
       );
    }
