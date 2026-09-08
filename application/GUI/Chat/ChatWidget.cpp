@@ -28,6 +28,7 @@ using namespace GUI;
 #include <QTextDocument>
 #include <QTextBlock>
 #include <QTextDocumentFragment>
+#include <QFontInfo>
 #include <QAbstractTextDocumentLayout>
 #include <QPainter>
 #include <QClipboard>
@@ -283,6 +284,62 @@ QString ChatWidget::getRoomName() const
    return this->chatModel.getRoomName();
 }
 
+// Qt's Markdown writer closes combined styles in the wrong order (e.g. **_text**_).
+// Protect underlined fragments as inline HTML while Qt serializes the surrounding document.
+static QList<QPair<QString, QString>> protectUnderlinedText(QTextDocument& document, const QString& originalContent)
+{
+   QString markerPrefix = "DLANUNDERLINE";
+   while (originalContent.contains(markerPrefix))
+      markerPrefix += 'X';
+
+   QList<QTextFragment> fragments;
+   for (auto block = document.begin(); block.isValid(); block = block.next())
+      if (!block.blockFormat().nonBreakableLines())
+         for (auto i = block.begin(); !i.atEnd(); ++i)
+         {
+            const QTextFragment fragment = i.fragment();
+            const QTextCharFormat format = fragment.charFormat();
+            if (format.fontUnderline() && !format.isImageFormat() &&
+                !format.fontFixedPitch() && !QFontInfo(format.font()).fixedPitch())
+               fragments.append(fragment);
+         }
+
+   QList<QPair<QString, QString>> replacements;
+   // Work backwards so replacing a fragment does not move the earlier fragments.
+   for (auto i = fragments.crbegin(); i != fragments.crend(); ++i)
+   {
+      const QTextCharFormat format = i->charFormat();
+      QString html;
+      for (const QChar c : i->text())
+      {
+         if (c == QChar::LineSeparator)
+            html += "<br/>";
+         else if (c.unicode() < 128 && (c.isPunct() || c.isSymbol()))
+            // Escape Markdown punctuation as well as HTML, so literal delimiters stay literal.
+            html += "&#" + QString::number(c.unicode()) + ';';
+         else
+            html += c;
+      }
+      if (format.fontItalic())
+         html = "<i>" + html + "</i>";
+      if (format.fontWeight() >= QFont::Bold)
+         html = "<b>" + html + "</b>";
+      if (format.fontStrikeOut())
+         html = "<s>" + html + "</s>";
+      html = "<u style=\"white-space: pre-wrap\">" + html + "</u>";
+      if (format.isAnchor())
+         html = "<a href=\"" + format.anchorHref().toHtmlEscaped() + "\">" + html + "</a>";
+
+      const QString marker = markerPrefix + QString::number(replacements.size()) + "END";
+      QTextCursor cursor(&document);
+      cursor.setPosition(i->position());
+      cursor.setPosition(i->position() + i->length(), QTextCursor::KeepAnchor);
+      cursor.insertText(marker, QTextCharFormat());
+      replacements.append({ marker, html });
+   }
+   return replacements;
+}
+
 void ChatWidget::sendMessage()
 {
    // Serialize a copy so the editor's text, reply ranges and undo history stay intact.
@@ -291,6 +348,7 @@ void ChatWidget::sendMessage()
    const QString originalContent = document->toRawText() + document->toHtml();
    while (originalContent.contains(lineBreakMarker))
       lineBreakMarker += 'X';
+   const auto underlinedText = protectUnderlinedText(*document, originalContent);
 
    // Qt writes U+2028 (Shift+Enter / HTML <br>) as a soft Markdown break.
    // Protect these breaks during conversion, then encode them as hard breaks.
@@ -304,6 +362,8 @@ void ChatWidget::sendMessage()
    QString md = document->toMarkdown();
    // Inline breaks also preserve consecutive breaks and continuation lines inside list items.
    md.replace(lineBreakMarker, "<br/>");
+   for (const auto& replacement : underlinedText)
+      md.replace(replacement.first, replacement.second);
    this->chatModel.sendMessage(md, this->getPeerAnswers(), this->draftRevision);
 }
 
