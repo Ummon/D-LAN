@@ -256,8 +256,8 @@ void SearchDock::loadSettings()
    this->ui->txtMinSize->setText(minSize == 0 ? QString() : QString::number(minSize));
    this->ui->txtMaxSize->setText(maxSize == 0 ? QString() : QString::number(maxSize));
 
-   this->ui->cmbMinSize->setCurrentIndex(SETTINGS.get<quint32>("search_min_size_unit") - 1);
-   this->ui->cmbMaxSize->setCurrentIndex(SETTINGS.get<quint32>("search_max_size_unit") - 1);
+   this->ui->cmbMinSize->setCurrentIndex(SETTINGS.get<quint32>("search_min_size_unit"));
+   this->ui->cmbMaxSize->setCurrentIndex(SETTINGS.get<quint32>("search_max_size_unit"));
 
    this->ui->chkOwnFiles->setChecked(SETTINGS.get<bool>("search_local"));
 
