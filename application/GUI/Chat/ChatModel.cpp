@@ -242,22 +242,27 @@ QVariant ChatModel::data(const QModelIndex& index, int role) const
    return QVariant();
 }
 
-void ChatModel::sendMessage(const QString& message, const QList<Common::Hash>& peerIDsAnswered)
+void ChatModel::sendMessage(const QString& message, const QList<Common::Hash>& peerIDsAnswered, quint64 draftRevision)
 {
    const QString trimmedMessage = message.trimmed();
 
    if (trimmedMessage.isEmpty())
       return;
 
-   this->sendRawMessage(trimmedMessage, peerIDsAnswered);
+   this->sendRawMessage(trimmedMessage, peerIDsAnswered, draftRevision);
 }
-void ChatModel::sendRawMessage(const QString& message, const QList<Common::Hash>& peerIDsAnswered)
+void ChatModel::sendRawMessage(const QString& message, const QList<Common::Hash>& peerIDsAnswered, quint64 draftRevision)
 {
    QSharedPointer<RCC::ISendChatMessageResult> result =
       this->coreConnection->sendChatMessage(message, this->roomName, peerIDsAnswered);
 
-   connect(result.data(), &RCC::ISendChatMessageResult::result, this, &ChatModel::result);
-   connect(result.data(), &Common::Timeoutable::timeout, this, &ChatModel::resultTimeout);
+   // Carry each draft's revision with its result, even when replies arrive out of order.
+   connect(result.data(), &RCC::ISendChatMessageResult::result, this, [this, draftRevision](const Protos::GUI::ChatMessageResult& result) {
+      this->result(result, draftRevision);
+   });
+   connect(result.data(), &Common::Timeoutable::timeout, this, [this, draftRevision]() {
+      this->resultTimeout(draftRevision);
+   });
    this->results << result;
    result->start();
 }
@@ -341,29 +346,29 @@ void ChatModel::newChatMessages(const Protos::Common::ChatMessages& messages)
    }
 }
 
-void ChatModel::result(const Protos::GUI::ChatMessageResult& result)
+void ChatModel::result(const Protos::GUI::ChatMessageResult& result, quint64 draftRevision)
 {
    switch (result.status())
    {
    case Protos::GUI::ChatMessageResult::OK:
-      emit sendMessageStatus(OK);
+      emit sendMessageStatus(OK, draftRevision);
       break;
 
    case Protos::GUI::ChatMessageResult::MESSAGE_TOO_LARGE:
-      emit sendMessageStatus(MESSAGE_TOO_LARGE);
+      emit sendMessageStatus(MESSAGE_TOO_LARGE, draftRevision);
       break;
 
    default:
-      emit sendMessageStatus(ERROR_UNKNOWN);
+      emit sendMessageStatus(ERROR_UNKNOWN, draftRevision);
       break;
    }
 
    this->removeResult(qobject_cast<RCC::ISendChatMessageResult*>(this->sender()));
 }
 
-void ChatModel::resultTimeout()
+void ChatModel::resultTimeout(quint64 draftRevision)
 {
-   emit sendMessageStatus(TIMEOUT);
+   emit sendMessageStatus(TIMEOUT, draftRevision);
    this->removeResult(qobject_cast<RCC::ISendChatMessageResult*>(this->sender()));
 }
 

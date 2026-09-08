@@ -98,7 +98,7 @@ namespace GUI
    private slots:
       void sendMessage();
       void newRows(const QModelIndex& parent, int start, int end);
-      void sendMessageStatus(GUI::ChatModel::SendMessageStatus status);
+      void sendMessageStatus(GUI::ChatModel::SendMessageStatus status, quint64 draftRevision);
       void scrollChanged(int value);
 
       void displayContextMenuPeers(const QPoint& point);
@@ -183,6 +183,7 @@ namespace GUI
       ChatModel chatModel;
       ChatDelegate chatDelegate;
 
+      quint64 draftRevision = 0;
       bool autoScroll;
    };
 }

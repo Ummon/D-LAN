@@ -78,18 +78,18 @@ namespace GUI
          ERROR_UNKNOWN
       };
 
-      void sendMessage(const QString& message, const QList<Common::Hash>& peerIDsAnswered = QList<Common::Hash>());
+      void sendMessage(const QString& message, const QList<Common::Hash>& peerIDsAnswered = QList<Common::Hash>(), quint64 draftRevision = 0);
 
    private:
-      void sendRawMessage(const QString& message, const QList<Common::Hash>& peerIDsAnswered);
+      void sendRawMessage(const QString& message, const QList<Common::Hash>& peerIDsAnswered, quint64 draftRevision);
 
    signals:
-      void sendMessageStatus(GUI::ChatModel::SendMessageStatus status);
+      void sendMessageStatus(GUI::ChatModel::SendMessageStatus status, quint64 draftRevision);
 
    private slots:
       void newChatMessages(const Protos::Common::ChatMessages& messages);
-      void result(const Protos::GUI::ChatMessageResult& result);
-      void resultTimeout();
+      void result(const Protos::GUI::ChatMessageResult& result, quint64 draftRevision);
+      void resultTimeout(quint64 draftRevision);
 
    private:
       void removeResult(const RCC::ISendChatMessageResult* result);

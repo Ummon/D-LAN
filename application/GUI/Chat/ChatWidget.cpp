@@ -285,7 +285,7 @@ void ChatWidget::sendMessage()
    QString md = this->ui->txtMessage->toMarkdown();
    md.replace(QChar(10), ' '); // 'toMarkdown' inserts some '\n'.. we remove it.
    md.replace(EXPLICIT_LINE_RETURN, '\n'); // We replace the explicit line returns (U+2800) by a '\n'.
-   this->chatModel.sendMessage(md, this->getPeerAnswers());
+   this->chatModel.sendMessage(md, this->getPeerAnswers(), this->draftRevision);
    this->answers.clear();
    this->currentAnswer = {};
 }
@@ -305,12 +305,13 @@ void ChatWidget::newRows(const QModelIndex& parent, int start, int end)
    this->setNewMessageState(true);
 }
 
-void ChatWidget::sendMessageStatus(ChatModel::SendMessageStatus status)
+void ChatWidget::sendMessageStatus(ChatModel::SendMessageStatus status, quint64 draftRevision)
 {
    switch (status)
    {
    case  ChatModel::OK:
-      this->ui->txtMessage->document()->clear();
+      if (draftRevision == this->draftRevision)
+         this->ui->txtMessage->document()->clear();
       break;
 
    case ChatModel::MESSAGE_TOO_LARGE:
@@ -463,6 +464,8 @@ void ChatWidget::currentCharFormatChanged(const QTextCharFormat& charFormat)
   */
 void ChatWidget::textChanged()
 {
+   // Keep a monotonic revision: undo or recreating the same text is still a new draft.
+   ++this->draftRevision;
    this->ui->txtMessage->setFixedHeight(this->ui->txtMessage->document()->size().height());
 }
 
