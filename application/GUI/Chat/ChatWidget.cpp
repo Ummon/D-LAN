@@ -471,30 +471,31 @@ void ChatWidget::textChanged()
   */
 void ChatWidget::documentChanged(int position, int charsRemoved, int charsAdded)
 {
-   if (this->answers.getList().isEmpty())
+   if (this->answers.getList().isEmpty() || (charsRemoved == 0 && charsAdded == 0))
       return;
 
-   // const int delta = charsAdded - charsRemoved;
+   const int removedEnd = position + charsRemoved;
+   const int delta = charsAdded - charsRemoved;
+   QList<Answer> remainingAnswers;
+   for (auto answer : this->answers.getList())
+   {
+      // Answer ranges include '@' and the nickname, with an exclusive end.
+      if (charsRemoved > 0 && position < answer.end && removedEnd > answer.begin)
+         continue;
+      if (charsAdded > 0 && position > answer.begin && position < answer.end)
+         continue;
 
-   // TODO.....
-   /*for (const auto& answer: )
-
-   QMutableLinkedListIterator i<Answer>{this->answers.getList()};
-   i.toBack();
-
-   while (i.hasPrevious()) {
-      const auto& answer = e.previous();
-
-      if (
-          charsRemoved > 0 && position < answer.begin && position + charsRemoved >= answer.begin || // If there is one or more character removed into the answer or . . .
-          position >= answer.begin && position < answer.end // . . . if there is one or more character added or removed into the answer
-          )
+      if (removedEnd <= answer.begin)
       {
-         // The answer is removed.
-         i.remove();
+         answer.begin += delta;
+         answer.end += delta;
       }
+      remainingAnswers.append(answer);
+   }
 
-   } while (i != this->answers.getList().begin());*/
+   // Surviving ranges retain their order after the edit.
+   this->answers.clear();
+   this->answers.insert(remainingAnswers);
 }
 
 void ChatWidget::setFocusTxtMessage()
@@ -637,6 +638,7 @@ void ChatWidget::autoCompleteClosed()
       cursor.setPosition(this->currentAnswer.begin + 1);
       cursor.setPosition(this->currentAnswer.end, QTextCursor::KeepAnchor);
       cursor.insertText(nick + ' ');
+      this->currentAnswer.end = cursor.position() - 1; // Exclude the trailing space.
       this->currentAnswer.peerID = currentPeerID;
       this->answers.insert(this->currentAnswer);
    }
