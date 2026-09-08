@@ -85,6 +85,12 @@ p {
 }
 
 .gallery {
+   img {
+      width: 140px;
+      height: auto;
+      max-width: none;
+   }
+
    p {
       font-style: italic;
       font-size: 0.9rem;

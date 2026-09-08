@@ -10,7 +10,7 @@ pub fn image(
   html.div([attr.class("box"), attr.class("gallery")], [
     html.a(
       [
-        attr.href("static/img/gallery/" <> filename <> ".png"),
+        attr.href("static/img/gallery/" <> filename <> ".webp"),
         attr.rel("group"),
         attr.title(case comment == "" {
           True -> caption
@@ -19,7 +19,7 @@ pub fn image(
       ],
       [
         html.img([
-          attr.src("static/img/gallery/" <> filename <> "_thumb.png"),
+          attr.src("static/img/gallery/" <> filename <> "_thumb.webp"),
           attr.alt(caption),
         ]),
       ],
