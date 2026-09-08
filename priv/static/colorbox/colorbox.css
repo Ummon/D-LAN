@@ -22,20 +22,20 @@
 */
 #cboxOverlay{background:url(images/overlay.png) repeat 0 0; opacity: 0.9; filter: alpha(opacity = 90);}
 #colorbox{outline:0;}
-    #cboxTopLeft{width:21px; height:21px; background:url(images/controls.png) no-repeat -101px 0;}
-    #cboxTopRight{width:21px; height:21px; background:url(images/controls.png) no-repeat -130px 0;}
-    #cboxBottomLeft{width:21px; height:21px; background:url(images/controls.png) no-repeat -101px -29px;}
-    #cboxBottomRight{width:21px; height:21px; background:url(images/controls.png) no-repeat -130px -29px;}
-    #cboxMiddleLeft{width:21px; background:url(images/controls.png) left top repeat-y;}
-    #cboxMiddleRight{width:21px; background:url(images/controls.png) right top repeat-y;}
-    #cboxTopCenter{height:21px; background:url(images/border.png) 0 0 repeat-x;}
-    #cboxBottomCenter{height:21px; background:url(images/border.png) 0 -29px repeat-x;}
-    #cboxContent{background:#fff; overflow:hidden;}
-        .cboxIframe{background:#fff;}
+    #cboxTopLeft{width:21px; height:21px; background:#000;}
+    #cboxTopRight{width:21px; height:21px; background:#000;}
+    #cboxBottomLeft{width:21px; height:21px; background:#000;}
+    #cboxBottomRight{width:21px; height:21px; background:#000;}
+    #cboxMiddleLeft{width:21px; background:#000;}
+    #cboxMiddleRight{width:21px; background:#000;}
+    #cboxTopCenter{height:21px; background:#000;}
+    #cboxBottomCenter{height:21px; background:#000;}
+    #cboxContent{background:#000; color:#fff; overflow:hidden;}
+        .cboxIframe{background:#000;}
         #cboxError{padding:50px; border:1px solid #ccc;}
         #cboxLoadedContent{margin-bottom:28px;}
-        #cboxTitle{position:absolute; bottom:4px; left:0; text-align:center; width:100%; color:#949494;}
-        #cboxCurrent{position:absolute; bottom:4px; left:58px; color:#949494;}
+        #cboxTitle{position:absolute; bottom:4px; left:0; text-align:center; width:100%; color:#fff;}
+        #cboxCurrent{position:absolute; bottom:4px; left:58px; color:#fff;}
         #cboxLoadingOverlay{background:url(images/loading_background.png) no-repeat center center;}
         #cboxLoadingGraphic{background:url(images/loading.gif) no-repeat center center;}
 
