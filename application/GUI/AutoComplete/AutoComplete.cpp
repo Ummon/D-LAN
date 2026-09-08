@@ -41,13 +41,13 @@ AutoComplete::AutoComplete(QWidget* parent) :
    // The next three 'connects' are here to automatically select the first list item when the list is populated and was previously empty.
    auto selectFirstItem = [this](){
       if (this->ui->listView->selectionModel()->selectedRows().isEmpty() && this->filterModel.rowCount() > 0)
-         this->ui->listView->selectionModel()->select(this->filterModel.index(0, 0), QItemSelectionModel::SelectCurrent);
+         this->ui->listView->selectionModel()->setCurrentIndex(this->filterModel.index(0, 0), QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
    };
    connect(&this->filterModel, &QSortFilterProxyModel::rowsInserted, selectFirstItem);
    connect(&this->filterModel, &QSortFilterProxyModel::rowsRemoved, selectFirstItem);
    connect(&this->filterModel, &QSortFilterProxyModel::modelReset, [this](){
       if (this->filterModel.rowCount() > 0)
-         this->ui->listView->selectionModel()->select(this->filterModel.index(0, 0), QItemSelectionModel::SelectCurrent);
+         this->ui->listView->selectionModel()->setCurrentIndex(this->filterModel.index(0, 0), QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
    });
 }
 
