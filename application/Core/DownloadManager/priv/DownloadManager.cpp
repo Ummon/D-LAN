@@ -136,25 +136,55 @@ void DownloadManager::addDownload(
          this->addDownload(remoteEntry, localEntry, peerSource, Protos::Queue::Queue::Entry::QUEUED);
          return;
       }
+      const QString name = Common::ProtoHelper::isRoot(remoteEntry)
+         ? Utils::sharedName(Common::ProtoHelper::getName(remoteEntry))
+         : QString::fromStdString(remoteEntry.name());
+      if (name.isEmpty() || name == "." || name == ".." || name.contains('/') ||
+         name.contains('\\') || name.contains(':') || name.contains(QChar::Null))
+         return;
+      const QString destination = QDir(absolutePath).absoluteFilePath(name) + '/';
+      const Common::Path destinationPath(destination);
+      for (const auto& shared : this->fileManager->getSharedEntries())
+         if (!shared.path.isFile() && destinationPath.isSubOf(shared.path))
+         {
+            const auto relative = destinationPath.removeLastElement().toString().mid(shared.path.toString().size());
+            this->addDownload(remoteEntry, peerSource, shared.ID, '/' + relative);
+            return;
+         }
+      if (!QDir(absolutePath).exists() || !QDir().mkpath(destination))
+      {
+         L_WARN(QString("Unable to create the following directory: %1").arg(destination));
+         return;
+      }
       try
       {
-         QPair<Common::SharedEntry, QString> result = this->fileManager->addASharedPath(absolutePath);
-         this->addDownload(
-            remoteEntry,
-            peerSource,
-            result.first.ID,
-            result.second,
-            Protos::Queue::Queue::Entry::QUEUED,
-            this->downloadQueue.size()
-         );
+         const auto result = this->fileManager->addASharedPath(destination);
+         Protos::Common::Entry localEntry(remoteEntry);
+         localEntry.clear_shared_entry();
+         localEntry.set_exists(false);
+         localEntry.mutable_shared_entry()->mutable_id()->set_hash(result.first.ID.getData(), Common::Hash::HASH_SIZE);
+         localEntry.mutable_shared_entry()->set_path(result.first.path.toString().toStdString());
+         localEntry.mutable_shared_entry()->set_shared_name(result.first.getName().toStdString());
+         if (result.second == "/")
+         {
+            // The downloaded directory is itself the shared root.
+            localEntry.clear_path();
+            localEntry.clear_name();
+         }
+         else
+         {
+            localEntry.set_path(result.second.chopped(name.size() + 1).toStdString());
+            localEntry.set_name(name.toStdString());
+         }
+         this->addDownload(remoteEntry, localEntry, peerSource, Protos::Queue::Queue::Entry::QUEUED);
       }
       catch (FM::EntriesNotFoundException& e)
       {
-         L_WARN(QString("The following item isn't found: %1").arg(absolutePath));
+         L_WARN(QString("The following item isn't found: %1").arg(destination));
       }
       catch (FM::UnableToCreateSharedEntry& e)
       {
-         L_WARN(QString("Unable to share the following directory: %1").arg(absolutePath));
+         L_WARN(QString("Unable to share the following directory: %1").arg(destination));
       }
    }
 }

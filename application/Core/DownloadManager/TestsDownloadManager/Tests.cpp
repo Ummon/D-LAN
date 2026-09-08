@@ -137,6 +137,11 @@ namespace
    {
    public:
       DirectoryFileManager(FM::Cache& cache) : cache(cache) {}
+      QList<Common::SharedEntry> getSharedEntries() const override { return this->cache.getSharedEntries(); }
+      QPair<Common::SharedEntry, QString> addASharedPath(const QString& path) override
+      {
+         return this->cache.addASharedPath(path);
+      }
       int failure = 0;
       int creations = 0;
       void newDirectory(Protos::Common::Entry& entry) override
@@ -276,6 +281,83 @@ void Tests::customFileDestination()
    static_cast<Download*>(manager.getDownloads().last())->populateQueueEntry(&saved);
    QCOMPARE(saved.local_entry().shared_entry().path(), second.filePath("selected.txt").toStdString());
    QCOMPARE(saved.remote_entry().SerializeAsString(), remote.SerializeAsString());
+}
+
+void Tests::customDirectoryDestination_data()
+{
+   QTest::addColumn<bool>("empty");
+   QTest::addColumn<bool>("sharedParent");
+   QTest::addColumn<bool>("root");
+   for (bool empty : { false, true })
+      for (bool shared : { false, true })
+         for (bool root : { false, true })
+            QTest::newRow(qPrintable(QString("empty-%1-shared-%2-root-%3").arg(empty).arg(shared).arg(root)))
+               << empty << shared << root;
+}
+
+void Tests::customDirectoryDestination()
+{
+   QFETCH(bool, empty);
+   QFETCH(bool, sharedParent);
+   QFETCH(bool, root);
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new EmptyHashCache));
+   if (sharedParent)
+      cache.addASharedPath(temp.path() + '/');
+   QSharedPointer<DirectoryFileManager> files(new DirectoryFileManager(cache));
+   DirectoryPeer peer(files);
+   DownloadManager manager(files, this->peerManager);
+   Protos::Common::Entry remote;
+   remote.set_type(Protos::Common::Entry::DIR);
+   remote.set_is_empty(empty);
+   if (root)
+      remote.mutable_shared_entry()->set_shared_name("Selected");
+   else
+   {
+      remote.set_path("/remote/");
+      remote.set_name("Selected");
+   }
+   manager.addDownload(remote, &peer, temp.path());
+   QCOMPARE(manager.getDownloads().size(), 1);
+   const auto shares = cache.getSharedEntries();
+   QCOMPARE(manager.getDownloads().first()->getLocalEntry().path(), std::string(sharedParent ? "/" : ""));
+   QCOMPARE(manager.getDownloads().first()->getLocalEntry().name(), std::string(sharedParent ? "Selected" : ""));
+   QCOMPARE(shares.size(), 1);
+   QCOMPARE(shares.first().path.toString(), temp.path() + (sharedParent ? "/" : "/Selected/"));
+   QCOMPARE(static_cast<Download*>(manager.getDownloads().first())->getRemoteEntry().SerializeAsString(), remote.SerializeAsString());
+
+   Protos::Core::GetEntriesResult response;
+   auto result = response.add_results();
+   result->set_status(Protos::Core::GetEntriesResult::EntryResult::OK);
+   if (!empty)
+   {
+      auto child = result->mutable_entries()->add_entries();
+      child->set_type(Protos::Common::Entry::DIR);
+      child->set_path("/Selected/");
+      child->set_name("child");
+      child->set_is_empty(true);
+      child = result->mutable_entries()->add_entries();
+      child->set_type(Protos::Common::Entry::FILE);
+      child->set_path("/Selected/");
+      child->set_name("file.bin");
+      child->set_size(100);
+   }
+   emit peer.entries->result(response);
+   QVERIFY(QFileInfo(temp.filePath("Selected")).isDir());
+   QVERIFY(!QFileInfo::exists(temp.filePath("Selected/Selected")));
+   if (!empty)
+   {
+      QVERIFY(QFileInfo(temp.filePath("Selected/child")).isDir());
+      QCOMPARE(manager.getDownloads().size(), 2);
+      for (auto download : manager.getDownloads())
+      {
+         QCOMPARE(download->getLocalEntry().path(), std::string(sharedParent ? "/Selected/" : "/"));
+         QCOMPARE(Common::Hash(download->getLocalEntry().shared_entry().id().hash()), shares.first().ID);
+      }
+   }
+   else
+      QVERIFY(manager.getDownloads().isEmpty());
 }
 
 void Tests::sharedRootDownload_data()
