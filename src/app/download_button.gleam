@@ -70,8 +70,8 @@ pub fn element(
   let assert Ok(file_info) =
     simplifile.file_info(release_platform_folder <> "/" <> filename)
 
-  let assert Ok(month_int) = int.parse(month)
-  let released_date = date.month_name(month_int) <> " " <> day <> " " <> year
+  let assert Ok(released_date) =
+    date.parse_date(year <> "-" <> month <> "-" <> day)
 
   // Add a link to the torrent file if it exists.
   let torrent_link = case

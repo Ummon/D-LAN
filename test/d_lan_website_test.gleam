@@ -57,6 +57,23 @@ pub fn date_round_trip_test() {
   assert date.parse_date(date.date_to_str(date)) == Ok(date)
 }
 
+pub fn localized_date_test() {
+  let released = calendar.Date(2026, calendar.July, 10)
+  assert tr.format_date(tr.En, released) == "July 10, 2026"
+  assert tr.format_date(tr.Fr, released) == "10 juillet 2026"
+  assert tr.format_date(tr.De, released) == "10. Juli 2026"
+  assert tr.format_date(tr.Es, released) == "10 de julio de 2026"
+  assert tr.format_date(tr.It, released) == "10 luglio 2026"
+  assert tr.format_date(tr.Ru, released) == "10 июля 2026 г."
+  assert tr.format_date(tr.Ko, released) == "2026년 7월 10일"
+  assert tr.format_date(tr.Ja, released) == "2026年7月10日"
+
+  assert tr.format_date(tr.Fr, calendar.Date(2026, calendar.January, 5))
+    == "5 janvier 2026"
+  assert tr.format_date(tr.Ru, calendar.Date(2026, calendar.December, 25))
+    == "25 декабря 2026 г."
+}
+
 pub fn latest_release_test() {
   // A newer minor version has a lower lexicographical order than an older one.
   assert download_button.latest_release([

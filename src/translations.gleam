@@ -4,6 +4,7 @@ import gleam/int
 import gleam/list
 import gleam/result
 import gleam/string
+import gleam/time/calendar
 import lustre/element
 import lustre/element/html
 import wisp
@@ -1352,7 +1353,91 @@ pub fn download_button_version(
   |> html.text
 }
 
-pub fn download_button_released(l: Lang, date: String) -> element.Element(a) {
+/// Formats a display date using the selected language's month names and order.
+pub fn format_date(l: Lang, date: calendar.Date) -> String {
+  let year = int.to_string(date.year)
+  let day = int.to_string(date.day)
+  let month_number = int.to_string(calendar.month_to_int(date.month))
+  let months = case date.month {
+    calendar.January -> #(
+      "January",
+      "janvier",
+      "Januar",
+      "enero",
+      "gennaio",
+      "января",
+    )
+    calendar.February -> #(
+      "February",
+      "février",
+      "Februar",
+      "febrero",
+      "febbraio",
+      "февраля",
+    )
+    calendar.March -> #("March", "mars", "März", "marzo", "marzo", "марта")
+    calendar.April -> #("April", "avril", "April", "abril", "aprile", "апреля")
+    calendar.May -> #("May", "mai", "Mai", "mayo", "maggio", "мая")
+    calendar.June -> #("June", "juin", "Juni", "junio", "giugno", "июня")
+    calendar.July -> #("July", "juillet", "Juli", "julio", "luglio", "июля")
+    calendar.August -> #(
+      "August",
+      "août",
+      "August",
+      "agosto",
+      "agosto",
+      "августа",
+    )
+    calendar.September -> #(
+      "September",
+      "septembre",
+      "September",
+      "septiembre",
+      "settembre",
+      "сентября",
+    )
+    calendar.October -> #(
+      "October",
+      "octobre",
+      "Oktober",
+      "octubre",
+      "ottobre",
+      "октября",
+    )
+    calendar.November -> #(
+      "November",
+      "novembre",
+      "November",
+      "noviembre",
+      "novembre",
+      "ноября",
+    )
+    calendar.December -> #(
+      "December",
+      "décembre",
+      "Dezember",
+      "diciembre",
+      "dicembre",
+      "декабря",
+    )
+  }
+  case l {
+    En -> months.0 <> " " <> day <> ", " <> year
+    Fr -> day <> " " <> months.1 <> " " <> year
+    De -> day <> ". " <> months.2 <> " " <> year
+    Es -> day <> " de " <> months.3 <> " de " <> year
+    It -> day <> " " <> months.4 <> " " <> year
+    Ru -> day <> " " <> months.5 <> " " <> year <> " г."
+    Ko -> year <> "년 " <> month_number <> "월 " <> day <> "일"
+    Ja -> year <> "年" <> month_number <> "月" <> day <> "日"
+  }
+}
+
+pub fn download_button_released(
+  l: Lang,
+  released: calendar.Date,
+) -> element.Element(a) {
+  let date = format_date(l, released)
   case l {
     En -> "Released on " <> date
     Fr -> "Sorti le " <> date
