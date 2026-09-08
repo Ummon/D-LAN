@@ -312,6 +312,7 @@ void ChatWidget::sendMessageStatus(ChatModel::SendMessageStatus status, quint64 
       {
          // Reply references belong to the draft and must survive failed sends and retries.
          this->answers.clear();
+         this->answerHistory.clear();
          this->currentAnswer = {};
          this->ui->txtMessage->document()->clear();
       }
@@ -481,11 +482,30 @@ void ChatWidget::documentChanged(int position, int charsRemoved, int charsAdded)
    const QString messageText = this->ui->txtMessage->document()->toRawText();
    const bool textChanged = messageText != this->previousMessageText;
    this->previousMessageText = messageText;
-   if (!textChanged)
+   auto* document = this->ui->txtMessage->document();
+   if (!document->isUndoAvailable() && !document->isRedoAvailable())
+      this->answerHistory.clear();
+
+   // New commands discard their old branch in undoCommandAdded; an existing state is an undo/redo target.
+   const auto saved = this->answerHistory.constFind(document->availableUndoSteps());
+   if (saved != this->answerHistory.constEnd() && saved->text == messageText)
+   {
+      this->answers.clear();
+      this->answers.insert(saved->answers);
       return;
+   }
+
+   if (!textChanged)
+   {
+      this->rememberAnswers();
+      return;
+   }
 
    if (this->answers.getList().isEmpty() || (charsRemoved == 0 && charsAdded == 0))
+   {
+      this->rememberAnswers();
       return;
+   }
 
    const int removedEnd = position + charsRemoved;
    const int delta = charsAdded - charsRemoved;
@@ -509,6 +529,12 @@ void ChatWidget::documentChanged(int position, int charsRemoved, int charsAdded)
    // Surviving ranges retain their order after the edit.
    this->answers.clear();
    this->answers.insert(remainingAnswers);
+   this->rememberAnswers();
+}
+
+void ChatWidget::rememberAnswers()
+{
+   this->answerHistory.insert(this->ui->txtMessage->document()->availableUndoSteps(), { this->previousMessageText, this->answers.getList() });
 }
 
 void ChatWidget::setFocusTxtMessage()
@@ -659,6 +685,8 @@ void ChatWidget::autoCompleteClosed()
       this->currentAnswer.end = cursor.position() - 1; // Exclude the trailing space.
       this->currentAnswer.peerID = currentPeerID;
       this->answers.insert(this->currentAnswer);
+      // Completion adds the reference after the document's contentsChange signal.
+      this->rememberAnswers();
    }
 
    this->currentAnswer = {};
@@ -824,6 +852,13 @@ void ChatWidget::init()
    // connect(this->ui->txtMessage, &ChatTextEdit::cursorPositionChanged, this, &ChatWidget::cursorPositionChanged);
    connect(this->ui->txtMessage, &ChatTextEdit::textChanged, this, &ChatWidget::textChanged);
    this->previousMessageText = this->ui->txtMessage->document()->toRawText();
+   this->rememberAnswers();
+   connect(this->ui->txtMessage->document(), &QTextDocument::undoCommandAdded, this, [this]() {
+      // A new edit after undo replaces the redo branch, including its reply references.
+      auto i = this->answerHistory.lowerBound(this->ui->txtMessage->document()->availableUndoSteps());
+      while (i != this->answerHistory.end())
+         i = this->answerHistory.erase(i);
+   });
    connect(this->ui->txtMessage->document(), &QTextDocument::contentsChange, this, &ChatWidget::documentChanged);
 
    // connect(this->ui->cmbFontSize, &QComboBox::currentIndexChanged, this, &ChatWidget::setFocusTxtMessage);

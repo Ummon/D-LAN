@@ -23,6 +23,7 @@
 #include <QStyledItemDelegate>
 #include <QTextCharFormat>
 #include <QUrl>
+#include <QMap>
 
 #include <Common/Containers/SortedList.h>
 #include <Common/RemoteCoreController/ICoreConnection.h>
@@ -147,6 +148,7 @@ namespace GUI
       void activatePeerNameInsertionMode();
 
       QList<Common::Hash> getPeerAnswers() const;
+      void rememberAnswers();
 
       void onActivate() override;
 
@@ -170,6 +172,11 @@ namespace GUI
       };
 
       Common::SortedList<Answer> answers;
+      struct AnswerState {
+         QString text;
+         QList<Answer> answers;
+      };
+      QMap<int, AnswerState> answerHistory;
       QString previousMessageText;
       bool peerNameInsertionMode;
       Answer currentAnswer;
