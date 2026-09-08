@@ -66,9 +66,16 @@ namespace GUI
       QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
       //Qt::ItemFlags flags(const QModelIndex& index) const;
 
-      inline QSize getCachedSize(const QModelIndex& index) { return this->messages[index.row()].size; }
-      inline void insertCachedSize(const QModelIndex& index, const QSize& size) { this->messages[index.row()].size = size; }
-      inline void removeCachedSize(const QModelIndex& index) { this->messages[index.row()].size = QSize(); }
+      inline QSize getCachedSize(const QModelIndex& index)
+      {
+         return this->isValidMessageIndex(index) ? this->messages[index.row()].size : QSize();
+      }
+      inline void insertCachedSize(const QModelIndex& index, const QSize& size)
+      {
+         if (this->isValidMessageIndex(index))
+            this->messages[index.row()].size = size;
+      }
+      inline void removeCachedSize(const QModelIndex& index) { this->insertCachedSize(index, QSize()); }
 
       enum SendMessageStatus
       {
@@ -81,6 +88,7 @@ namespace GUI
       void sendMessage(const QString& message, const QList<Common::Hash>& peerIDsAnswered = QList<Common::Hash>(), quint64 draftRevision = 0);
 
    private:
+      bool isValidMessageIndex(const QModelIndex& index) const;
       void sendRawMessage(const QString& message, const QList<Common::Hash>& peerIDsAnswered, quint64 draftRevision);
 
    signals:

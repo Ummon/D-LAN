@@ -188,6 +188,9 @@ QString ChatModel::getNick(const Common::Hash& id) const
   */
 QString ChatModel::getLineStr(int row) const
 {
+   if (row < 0 || row >= this->messages.size())
+      return QString();
+
    QString result = this->formatMessage(this->messages[row]);
    // if (!withHTML)
    // {
@@ -233,7 +236,7 @@ QString ChatModel::getLineStr(int row) const
 
 Common::Hash ChatModel::getPeerID(int row) const
 {
-   if (row >= this->messages.size())
+   if (row < 0 || row >= this->messages.size())
       return Common::Hash();
 
    return this->messages[row].peerID;
@@ -241,7 +244,7 @@ Common::Hash ChatModel::getPeerID(int row) const
 
 bool ChatModel::isMessageIsOurs(int row) const
 {
-   if (row >= this->messages.size())
+   if (row < 0 || row >= this->messages.size())
       return false;
 
    return this->messages[row].peerID == this->coreConnection->getRemoteID();
@@ -249,17 +252,17 @@ bool ChatModel::isMessageIsOurs(int row) const
 
 int ChatModel::rowCount(const QModelIndex& parent) const
 {
-   return this->messages.size();
+   return parent.isValid() ? 0 : this->messages.size();
 }
 
 int ChatModel::columnCount(const QModelIndex& parent) const
 {
-   return 1;
+   return parent.isValid() ? 0 : 1;
 }
 
 QVariant ChatModel::data(const QModelIndex& index, int role) const
 {
-   if (index.row() >= this->messages.size())
+   if (!this->isValidMessageIndex(index))
       return QVariant();
 
    switch (role)
@@ -269,6 +272,12 @@ QVariant ChatModel::data(const QModelIndex& index, int role) const
    }
 
    return QVariant();
+}
+
+bool ChatModel::isValidMessageIndex(const QModelIndex& index) const
+{
+   return index.isValid() && index.model() == this && index.column() == 0 &&
+      index.row() >= 0 && index.row() < this->messages.size();
 }
 
 void ChatModel::sendMessage(const QString& message, const QList<Common::Hash>& peerIDsAnswered, quint64 draftRevision)
