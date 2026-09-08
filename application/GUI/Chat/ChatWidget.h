@@ -20,6 +20,7 @@
 
 #include <QWidget>
 #include <QTextDocument>
+#include <QTextCursor>
 #include <QStyledItemDelegate>
 #include <QTextCharFormat>
 #include <QUrl>
@@ -170,6 +171,11 @@ namespace GUI
       };
 
       Common::SortedList<Answer> answers;
+      struct AnswerCursors {
+         QTextCursor begin;
+         QTextCursor end;
+      };
+      QList<AnswerCursors> answerCursors; // In the same order as answers.
       struct AnswerState {
          QString text;
          QList<Answer> answers;

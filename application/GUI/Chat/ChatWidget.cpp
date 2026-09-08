@@ -327,6 +327,7 @@ void ChatWidget::sendMessageStatus(ChatModel::SendMessageStatus status, quint64 
       {
          // Reply references belong to the draft and must survive failed sends and retries.
          this->answers.clear();
+         this->answerCursors.clear();
          this->answerHistory.clear();
          this->currentAnswer = {};
          this->ui->txtMessage->document()->clear();
@@ -496,10 +497,8 @@ void ChatWidget::textChanged()
   */
 void ChatWidget::documentChanged(int position, int charsRemoved, int charsAdded)
 {
-   // Qt also reports formatting as removed/reinserted characters. Only text edits affect answers.
    const QString previousText = this->previousMessageText;
    const QString messageText = this->ui->txtMessage->document()->toRawText();
-   const bool textChanged = messageText != this->previousMessageText;
    this->previousMessageText = messageText;
    auto* document = this->ui->txtMessage->document();
    if (!document->isUndoAvailable() && !document->isRedoAvailable())
@@ -511,63 +510,28 @@ void ChatWidget::documentChanged(int position, int charsRemoved, int charsAdded)
    {
       this->answers.clear();
       this->answers.insert(saved->answers);
-      return;
-   }
-
-   if (!textChanged)
-   {
       this->rememberAnswers();
       return;
    }
 
-   if (this->answers.getList().isEmpty())
-   {
-      this->rememberAnswers();
-      return;
-   }
-
-   // An earlier contentsChange handler may already have replaced typed text with an emoticon.
-   // In that case the original signal describes an intermediate document, not the text we see now.
-   if (position + charsRemoved > previousText.size() || position + charsAdded > messageText.size() ||
-       previousText.left(position) != messageText.left(position) ||
-       previousText.mid(position + charsRemoved) != messageText.mid(position + charsAdded))
-   {
-      int begin = 0;
-      // Keep the signal's insertion position when identical characters make the boundary ambiguous.
-      while (begin < position && begin < previousText.size() && begin < messageText.size() && previousText[begin] == messageText[begin])
-         ++begin;
-      int previousEnd = previousText.size();
-      int newEnd = messageText.size();
-      while (previousEnd > begin && newEnd > begin && previousText[previousEnd - 1] == messageText[newEnd - 1])
-      {
-         --previousEnd;
-         --newEnd;
-      }
-      position = begin;
-      charsRemoved = previousEnd - begin;
-      charsAdded = newEnd - begin;
-   }
-
-   const int removedEnd = position + charsRemoved;
-   const int delta = charsAdded - charsRemoved;
    QList<Answer> remainingAnswers;
+   int i = 0;
    for (auto answer : this->answers.getList())
    {
-      // Answer ranges include '@' and the nickname, with an exclusive end.
-      if (charsRemoved > 0 && position < answer.end && removedEnd > answer.begin)
-         continue;
-      if (charsAdded > 0 && position > answer.begin && position < answer.end)
+      // Live cursors follow each edit, even when contentsChange combines a move or formatting
+      // with other edits into one range spanning an untouched mention.
+      const auto& cursors = this->answerCursors[i++];
+      const int begin = cursors.begin.position();
+      const int end = cursors.end.position();
+      if (end - begin != answer.end - answer.begin ||
+          messageText.mid(begin, end - begin) != previousText.mid(answer.begin, answer.end - answer.begin))
          continue;
 
-      if (removedEnd <= answer.begin)
-      {
-         answer.begin += delta;
-         answer.end += delta;
-      }
+      answer.begin = begin;
+      answer.end = end;
       remainingAnswers.append(answer);
    }
 
-   // Surviving ranges retain their order after the edit.
    this->answers.clear();
    this->answers.insert(remainingAnswers);
    this->rememberAnswers();
@@ -575,7 +539,26 @@ void ChatWidget::documentChanged(int position, int charsRemoved, int charsAdded)
 
 void ChatWidget::rememberAnswers()
 {
-   this->answerHistory.insert(this->ui->txtMessage->document()->availableUndoSteps(), { this->previousMessageText, this->answers.getList() });
+   auto* document = this->ui->txtMessage->document();
+   this->answerHistory.insert(document->availableUndoSteps(), { this->previousMessageText, this->answers.getList() });
+
+   // Undo snapshots keep fixed positions; only the current answers have live cursors.
+   if (!document->isUndoRedoEnabled() && !this->answerCursors.isEmpty())
+   {
+      // Document reset temporarily saves its cursor registry while emitting change signals.
+      // Keep the old cursors alive until that reset has finished restoring the registry.
+      QTimer::singleShot(0, this, [cursors = this->answerCursors]() {});
+   }
+   this->answerCursors.clear();
+   for (const auto& answer : this->answers.getList())
+   {
+      QTextCursor begin(document);
+      begin.setPosition(answer.begin);
+      QTextCursor end(document);
+      end.setPosition(answer.end);
+      end.setKeepPositionOnInsert(true); // Text inserted immediately after a mention is outside it.
+      this->answerCursors.append({ begin, end });
+   }
 }
 
 void ChatWidget::setFocusTxtMessage()
