@@ -5,5 +5,5 @@
 *.exe
 /config.toml
 /d_lan_website.sqlite3*
-/deploy.nu
+/deploy*.nu
 *.dets

@@ -6,7 +6,11 @@ dlan.isMobile = function () {
 }
 
 $(function () {
-   $(".gallery a").colorbox();
+   $(".gallery a").colorbox({
+      maxWidth: "100%",
+      maxHeight: "100%",
+      scalePhotos: true
+   });
 
    // Reload the current page with the chosen language. The server then sets a
    // one year 'lang' cookie, so the choice persists on the next pages.
