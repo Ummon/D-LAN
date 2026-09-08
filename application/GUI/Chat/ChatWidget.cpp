@@ -494,6 +494,7 @@ void ChatWidget::textChanged()
 void ChatWidget::documentChanged(int position, int charsRemoved, int charsAdded)
 {
    // Qt also reports formatting as removed/reinserted characters. Only text edits affect answers.
+   const QString previousText = this->previousMessageText;
    const QString messageText = this->ui->txtMessage->document()->toRawText();
    const bool textChanged = messageText != this->previousMessageText;
    this->previousMessageText = messageText;
@@ -516,10 +517,32 @@ void ChatWidget::documentChanged(int position, int charsRemoved, int charsAdded)
       return;
    }
 
-   if (this->answers.getList().isEmpty() || (charsRemoved == 0 && charsAdded == 0))
+   if (this->answers.getList().isEmpty())
    {
       this->rememberAnswers();
       return;
+   }
+
+   // An earlier contentsChange handler may already have replaced typed text with an emoticon.
+   // In that case the original signal describes an intermediate document, not the text we see now.
+   if (position + charsRemoved > previousText.size() || position + charsAdded > messageText.size() ||
+       previousText.left(position) != messageText.left(position) ||
+       previousText.mid(position + charsRemoved) != messageText.mid(position + charsAdded))
+   {
+      int begin = 0;
+      // Keep the signal's insertion position when identical characters make the boundary ambiguous.
+      while (begin < position && begin < previousText.size() && begin < messageText.size() && previousText[begin] == messageText[begin])
+         ++begin;
+      int previousEnd = previousText.size();
+      int newEnd = messageText.size();
+      while (previousEnd > begin && newEnd > begin && previousText[previousEnd - 1] == messageText[newEnd - 1])
+      {
+         --previousEnd;
+         --newEnd;
+      }
+      position = begin;
+      charsRemoved = previousEnd - begin;
+      charsAdded = newEnd - begin;
    }
 
    const int removedEnd = position + charsRemoved;
