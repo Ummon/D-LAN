@@ -22,6 +22,8 @@ using namespace GUI;
 
 #include <QHostAddress>
 #include <QMenu>
+#include <QMdiArea>
+#include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QTextDocument>
 #include <QTextBlock>
@@ -306,17 +308,20 @@ void ChatWidget::sendMessage()
 
 void ChatWidget::newRows(const QModelIndex& parent, int start, int end)
 {
+   bool incomingMessage = false;
    for (int i = start; i <= end; i++)
       if (this->chatModel.isMessageIsOurs(i))
-      {
          this->autoScroll = true;
-         break;
-      }
+      else
+         incomingMessage = true;
 
    if (this->autoScroll)
       this->ui->tblChat->scrollToBottom();
 
-   this->setNewMessageState(true);
+   if (this->isChatActive())
+      this->setNewMessageState(false);
+   else if (incomingMessage)
+      this->setNewMessageState(true);
 }
 
 void ChatWidget::sendMessageStatus(ChatModel::SendMessageStatus status, quint64 draftRevision)
@@ -758,6 +763,17 @@ void ChatWidget::keyPressEvent(QKeyEvent* keyEvent)
    MdiWidget::keyPressEvent(keyEvent);
 }
 
+bool ChatWidget::event(QEvent* event)
+{
+   const bool handled = MdiWidget::event(event);
+   if (event->type() == QEvent::WindowActivate)
+      QTimer::singleShot(0, this, [this]() {
+         if (this->isChatActive())
+            this->setNewMessageState(false);
+      });
+   return handled;
+}
+
 void ChatWidget::changeEvent(QEvent* event)
 {
    if (event->type() == QEvent::LanguageChange)
@@ -1010,6 +1026,19 @@ void ChatWidget::onActivate()
 {
    this->setNewMessageState(false);
    this->ui->txtMessage->setFocus();
+}
+
+bool ChatWidget::isChatActive() const
+{
+   if (!this->isVisible())
+      return false;
+   for (auto* parent = this->parentWidget(); parent; parent = parent->parentWidget())
+      if (auto* subWindow = qobject_cast<QMdiSubWindow*>(parent))
+      {
+         auto* area = subWindow->mdiArea();
+         return area && area->activeSubWindow() == subWindow && area->window()->isActiveWindow();
+      }
+   return this->window()->isActiveWindow();
 }
 
 void ChatWidget::setNewMessageState(bool newMessage)

@@ -134,6 +134,7 @@ namespace GUI
       void autoCompleteClosed();
 
    protected:
+      bool event(QEvent* event) override;
       void keyPressEvent(QKeyEvent* keyEvent) override;
       void changeEvent(QEvent* event) override;
       void resizeEvent(QResizeEvent* event) override;
@@ -154,6 +155,7 @@ namespace GUI
       void onActivate() override;
 
       void setNewMessageState(bool newMessage);
+      bool isChatActive() const;
 
       static QUrl buildUrlEmoticon(const QString& theme, const QString& emoticonName);
       static QString mdEmoticon(const QString& theme, const QString& emoticonName);

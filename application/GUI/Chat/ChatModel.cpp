@@ -123,51 +123,39 @@ QList<QPair<Common::Hash, QString>> ChatModel::getSortedOtherPeersByRelevance() 
 {
    QList<QPair<Common::Hash, QString>> result;
    QSet<Common::Hash> processedPeers;
-   Common::Hash ourself = this->coreConnection->getRemoteID();
+   const Common::Hash ourself = this->coreConnection->getRemoteID();
+   QHash<Common::Hash, QString> latestNicks;
+   for (auto i = this->messages.crbegin(); i != this->messages.crend(); ++i)
+      if (!latestNicks.contains(i->peerID))
+         latestNicks.insert(i->peerID, i->nick);
 
-   QListIterator<Message> i(this->messages);
+   // Relevance determines peer order, not which historical nickname is displayed.
+   const auto appendPeer = [&](const Common::Hash& peerID) {
+      if (peerID == ourself || processedPeers.contains(peerID))
+         return;
+      QString nick = this->peerListModel.getNick(peerID);
+      if (nick.isEmpty())
+         nick = latestNicks.value(peerID);
+      if (!nick.isEmpty())
+      {
+         result.append(qMakePair(peerID, nick));
+         processedPeers.insert(peerID);
+      }
+   };
 
    // First level: peers answering to us.
-   i.toBack();
-   while (i.hasPrevious())
-   {
-      const Message& message = i.previous();
-      if (
-         message.peerID != ourself &&
-         message.answeringToUs &&
-         !processedPeers.contains(message.peerID) &&
-         !message.nick.isEmpty()
-      )
-      {
-         result << QPair<Common::Hash, QString>(message.peerID, message.nick);
-         processedPeers.insert(message.peerID);
-      }
-   }
+   for (auto i = this->messages.crbegin(); i != this->messages.crend(); ++i)
+      if (i->answeringToUs)
+         appendPeer(i->peerID);
 
    // Second level: peers which have posted a message.
-   i.toBack();
-   while (i.hasPrevious())
-   {
-      const Message& message = i.previous();
-      if (
-         message.peerID != ourself &&
-         !message.answeringToUs &&
-         !processedPeers.contains(message.peerID) &&
-         !message.nick.isEmpty()
-      )
-      {
-         result << QPair<Common::Hash, QString>(message.peerID, message.nick);
-         processedPeers.insert(message.peerID);
-      }
-   }
+   for (auto i = this->messages.crbegin(); i != this->messages.crend(); ++i)
+      if (!i->answeringToUs)
+         appendPeer(i->peerID);
 
    // Third level: the rest.
    for (int i = 0; i < this->peerListModel.rowCount(); ++i)
-   {
-      const Common::Hash& peerID = this->peerListModel.getPeerID(i);
-      if (peerID != ourself && !processedPeers.contains(peerID))
-         result << QPair<Common::Hash, QString>(peerID, this->peerListModel.getNick(i));
-   }
+      appendPeer(this->peerListModel.getPeerID(i));
 
    return result;
 }
