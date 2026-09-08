@@ -29,6 +29,7 @@ using namespace GUI;
 #include <QTextBlock>
 #include <QTextDocumentFragment>
 #include <QFontInfo>
+#include <QRegularExpression>
 #include <QAbstractTextDocumentLayout>
 #include <QPainter>
 #include <QClipboard>
@@ -284,9 +285,9 @@ QString ChatWidget::getRoomName() const
    return this->chatModel.getRoomName();
 }
 
-// Qt's Markdown writer closes combined styles in the wrong order (e.g. **_text**_).
-// Protect underlined fragments as inline HTML while Qt serializes the surrounding document.
-static QList<QPair<QString, QString>> protectUnderlinedText(QTextDocument& document, const QString& originalContent)
+// Qt's Markdown writer misnests combined styles and incompletely escapes literal punctuation.
+// Protect affected fragments as inline HTML while Qt serializes the surrounding document.
+static QList<QPair<QString, QString>> protectInlineText(QTextDocument& document, const QString& originalContent)
 {
    QString markerPrefix = "DLANUNDERLINE";
    while (originalContent.contains(markerPrefix))
@@ -299,7 +300,11 @@ static QList<QPair<QString, QString>> protectUnderlinedText(QTextDocument& docum
          {
             const QTextFragment fragment = i.fragment();
             const QTextCharFormat format = fragment.charFormat();
-            if (format.fontUnderline() && !format.isImageFormat() &&
+            bool needsProtection = format.fontUnderline();
+            for (const QChar c : fragment.text())
+               if (c.unicode() < 128 && (c.isPunct() || c.isSymbol()))
+                  needsProtection = true;
+            if (needsProtection && !format.isImageFormat() &&
                 !format.fontFixedPitch() && !QFontInfo(format.font()).fixedPitch())
                fragments.append(fragment);
          }
@@ -326,7 +331,8 @@ static QList<QPair<QString, QString>> protectUnderlinedText(QTextDocument& docum
          html = "<b>" + html + "</b>";
       if (format.fontStrikeOut())
          html = "<s>" + html + "</s>";
-      html = "<u style=\"white-space: pre-wrap\">" + html + "</u>";
+      const QString tag = format.fontUnderline() ? "u" : "span";
+      html = '<' + tag + " style=\"white-space: pre-wrap\">" + html + "</" + tag + '>';
       if (format.isAnchor())
          html = "<a href=\"" + format.anchorHref().toHtmlEscaped() + "\">" + html + "</a>";
 
@@ -340,6 +346,49 @@ static QList<QPair<QString, QString>> protectUnderlinedText(QTextDocument& docum
    return replacements;
 }
 
+// Make the links Qt normally detects in plain text explicit before escaping punctuation.
+static void preserveAutomaticLinks(QTextDocument& document)
+{
+   struct Link { int position; int length; QString href; };
+   QList<Link> links;
+   static const QRegularExpression wordExpression("\\S+");
+   for (auto block = document.begin(); block.isValid(); block = block.next())
+      if (!block.blockFormat().nonBreakableLines())
+         for (auto i = block.begin(); !i.atEnd(); ++i)
+         {
+            const auto fragment = i.fragment();
+            const auto format = fragment.charFormat();
+            if (format.isImageFormat() || format.isAnchor() || format.fontFixedPitch() || QFontInfo(format.font()).fixedPitch())
+               continue;
+            auto words = wordExpression.globalMatch(fragment.text());
+            while (words.hasNext())
+            {
+               const auto word = words.next();
+               const QString text = word.captured();
+               if (!text.contains("://") && !text.contains('@') && !text.startsWith("www."))
+                  continue;
+               QTextDocument parsed;
+               parsed.setMarkdown(text);
+               if (parsed.toPlainText() != text)
+                  continue;
+               for (auto j = parsed.begin().begin(); !j.atEnd(); ++j)
+                  if (!j.fragment().charFormat().anchorHref().isEmpty())
+                     links.append({ fragment.position() + int(word.capturedStart()) + j.fragment().position(),
+                        j.fragment().length(), j.fragment().charFormat().anchorHref() });
+            }
+         }
+   for (const auto& link : links)
+   {
+      QTextCursor cursor(&document);
+      cursor.setPosition(link.position);
+      cursor.setPosition(link.position + link.length, QTextCursor::KeepAnchor);
+      QTextCharFormat format;
+      format.setAnchor(true);
+      format.setAnchorHref(link.href);
+      cursor.mergeCharFormat(format);
+   }
+}
+
 void ChatWidget::sendMessage()
 {
    // Serialize a copy so the editor's text, reply ranges and undo history stay intact.
@@ -348,7 +397,8 @@ void ChatWidget::sendMessage()
    const QString originalContent = document->toRawText() + document->toHtml();
    while (originalContent.contains(lineBreakMarker))
       lineBreakMarker += 'X';
-   const auto underlinedText = protectUnderlinedText(*document, originalContent);
+   preserveAutomaticLinks(*document);
+   const auto inlineText = protectInlineText(*document, originalContent);
 
    // Qt writes U+2028 (Shift+Enter / HTML <br>) as a soft Markdown break.
    // Protect these breaks during conversion, then encode them as hard breaks.
@@ -362,7 +412,7 @@ void ChatWidget::sendMessage()
    QString md = document->toMarkdown();
    // Inline breaks also preserve consecutive breaks and continuation lines inside list items.
    md.replace(lineBreakMarker, "<br/>");
-   for (const auto& replacement : underlinedText)
+   for (const auto& replacement : inlineText)
       md.replace(replacement.first, replacement.second);
    this->chatModel.sendMessage(md, this->getPeerAnswers(), this->draftRevision);
 }
@@ -681,6 +731,7 @@ void ChatWidget::messageWordTyped(int position, const QString& word)
    std::pair<QString, QString> themeAndSmile = this->emoticons.getSmileName(word);
    if (!themeAndSmile.second.isEmpty())
    {
+      const QTextCharFormat textFormat = this->ui->txtMessage->currentCharFormat();
       QTextCursor cursor(this->ui->txtMessage->document());
       cursor.setPosition(position);
       cursor.setPosition(position + word.length(), QTextCursor::KeepAnchor);
@@ -689,6 +740,7 @@ void ChatWidget::messageWordTyped(int position, const QString& word)
       format.setName(buildUrlEmoticon(themeAndSmile.first, themeAndSmile.second).toString());
       format.setVerticalAlignment(QTextCharFormat::AlignMiddle);
       cursor.insertImage(format);
+      this->ui->txtMessage->setCurrentCharFormat(textFormat);
    }
 }
 
@@ -708,6 +760,7 @@ void ChatWidget::emoticonsWindowHiddenDelayed()
 
 void ChatWidget::insertEmoticon(const QString& theme, const QString& emoticonName)
 {
+   const QTextCharFormat textFormat = this->ui->txtMessage->currentCharFormat();
    if (
       !this->ui->txtMessage->textCursor().atStart() &&
       !this->ui->txtMessage->document()->characterAt(this->ui->txtMessage->textCursor().position() - 1).isSpace()
@@ -720,6 +773,7 @@ void ChatWidget::insertEmoticon(const QString& theme, const QString& emoticonNam
    format.setVerticalAlignment(QTextCharFormat::AlignMiddle);
    cursor.insertImage(format);
 
+   this->ui->txtMessage->setCurrentCharFormat(textFormat);
    this->ui->txtMessage->insertPlainText(" ");
 }
 
