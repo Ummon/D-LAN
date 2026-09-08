@@ -85,7 +85,7 @@ fn raw_ul(html_string: String) -> element.Element(a) {
 
 pub fn title(l: Lang) -> String {
   case l {
-    En -> "D-LAN - A LAN file sharing software"
+    En -> "D-LAN - LAN file-sharing software"
     Fr -> "D-LAN - Un logiciel de partage de fichiers en LAN"
     De -> "D-LAN - Eine Software zum Dateiaustausch im LAN"
     Es -> "D-LAN - Un software de intercambio de archivos en LAN"
@@ -169,7 +169,7 @@ pub fn menu_about(l: Lang) -> element.Element(a) {
 pub fn home_title(l: Lang) -> element.Element(a) {
   case l {
     En ->
-      "D-LAN - A free <abbr title=\"Local Area Network\">LAN</abbr> file sharing software."
+      "D-LAN - Free <abbr title=\"Local Area Network\">LAN</abbr> file-sharing software."
     Fr ->
       "D-LAN - Un logiciel libre de partage de fichiers en <abbr title=\"Local Area Network (Réseau local)\">LAN</abbr>."
     De ->
@@ -181,9 +181,9 @@ pub fn home_title(l: Lang) -> element.Element(a) {
     Ru ->
       "D-LAN - Свободная программа для обмена файлами в <abbr title=\"Local Area Network (локальная сеть)\">LAN</abbr>."
     Ko ->
-      "D-LAN - 자유로운 <abbr title=\"Local Area Network (근거리 통신망)\">LAN</abbr> 파일 공유 소프트웨어."
+      "D-LAN - 오픈 소스 <abbr title=\"Local Area Network (근거리 통신망)\">LAN</abbr> 파일 공유 소프트웨어."
     Ja ->
-      "D-LAN - 自由な <abbr title=\"Local Area Network (ローカルエリアネットワーク)\">LAN</abbr> ファイル共有ソフトウェア。"
+      "D-LAN - オープンソースの <abbr title=\"Local Area Network (ローカルエリアネットワーク)\">LAN</abbr> ファイル共有ソフトウェア。"
   }
   |> raw_span
 }
@@ -697,7 +697,7 @@ pub fn faq_q4(l: Lang) -> element.Element(a) {
   case l {
     En -> "D-LAN uses too many resources, how can I improve that?"
     Fr ->
-      "D-LAN utilise trop de ressource, comment puis-je faire pour réduire sa consommation ?"
+      "D-LAN utilise trop de ressources, comment puis-je faire pour réduire sa consommation ?"
     De -> "D-LAN verbraucht zu viele Ressourcen, was kann ich dagegen tun?"
     Es -> "D-LAN consume demasiados recursos, ¿cómo puedo mejorarlo?"
     It -> "D-LAN usa troppe risorse, come posso migliorare la situazione?"
@@ -1280,7 +1280,7 @@ pub fn gallery_download_files_comment(l: Lang) -> String {
     En ->
       "This view shows only the files, they can be rearranged, the top files are downloaded first."
     Fr ->
-      "Cette vue montre seulement les fichiers, ils peuvent être réordonnés, les fichiers en haut sont téléchargés en premiers."
+      "Cette vue montre seulement les fichiers, ils peuvent être réordonnés, les fichiers en haut sont téléchargés en premier."
     De ->
       "Diese Ansicht zeigt nur die Dateien; sie können umsortiert werden, die obersten Dateien werden zuerst heruntergeladen."
     Es ->
