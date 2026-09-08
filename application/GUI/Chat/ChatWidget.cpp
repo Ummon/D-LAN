@@ -474,6 +474,13 @@ void ChatWidget::textChanged()
   */
 void ChatWidget::documentChanged(int position, int charsRemoved, int charsAdded)
 {
+   // Qt also reports formatting as removed/reinserted characters. Only text edits affect answers.
+   const QString messageText = this->ui->txtMessage->document()->toRawText();
+   const bool textChanged = messageText != this->previousMessageText;
+   this->previousMessageText = messageText;
+   if (!textChanged)
+      return;
+
    if (this->answers.getList().isEmpty() || (charsRemoved == 0 && charsAdded == 0))
       return;
 
@@ -813,6 +820,7 @@ void ChatWidget::init()
    connect(this->ui->txtMessage, &ChatTextEdit::currentCharFormatChanged, this, &ChatWidget::currentCharFormatChanged);
    // connect(this->ui->txtMessage, &ChatTextEdit::cursorPositionChanged, this, &ChatWidget::cursorPositionChanged);
    connect(this->ui->txtMessage, &ChatTextEdit::textChanged, this, &ChatWidget::textChanged);
+   this->previousMessageText = this->ui->txtMessage->document()->toRawText();
    connect(this->ui->txtMessage->document(), &QTextDocument::contentsChange, this, &ChatWidget::documentChanged);
 
    // connect(this->ui->cmbFontSize, &QComboBox::currentIndexChanged, this, &ChatWidget::setFocusTxtMessage);

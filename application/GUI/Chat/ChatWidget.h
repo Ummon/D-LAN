@@ -170,6 +170,7 @@ namespace GUI
       };
 
       Common::SortedList<Answer> answers;
+      QString previousMessageText;
       bool peerNameInsertionMode;
       Answer currentAnswer;
       AutoComplete* autoComplete;
