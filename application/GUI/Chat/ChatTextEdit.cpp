@@ -30,6 +30,9 @@ ChatTextEdit::ChatTextEdit(QWidget* parent) :
    // Ignore CTRL-I, we use it as a italic key combination.
    this->addIgnoreKeyCombination({ Qt::ControlModifier, Qt::Key_I });
 
+   connect(this->document(), &QTextDocument::undoCommandAdded, this, [this]() {
+      this->previousUndoSteps = this->document()->availableUndoSteps();
+   });
    connect(this->document(), &QTextDocument::contentsChange, this, &ChatTextEdit::documentContentsChange);
 }
 
@@ -73,7 +76,12 @@ QVariant ChatTextEdit::loadResource(int type, const QUrl& name)
 
 void ChatTextEdit::documentContentsChange(int position, int charsRemoved, int charsAdded)
 {
-   if (charsAdded > 0)
+   // New edits announce their undo commands first; undo/redo moves through existing commands.
+   // Merged typing keeps the same step count and must still be checked for emoticons.
+   const int undoSteps = this->document()->availableUndoSteps();
+   const bool undoOrRedo = this->document()->isUndoRedoEnabled() && undoSteps != this->previousUndoSteps;
+   this->previousUndoSteps = undoSteps;
+   if (charsAdded > 0 && !undoOrRedo)
    {
       if (!this->document()->characterAt(position).isSpace())
       {

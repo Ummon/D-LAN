@@ -621,7 +621,6 @@ void ChatWidget::messageWordTyped(int position, const QString& word)
       QTextCursor cursor(this->ui->txtMessage->document());
       cursor.setPosition(position);
       cursor.setPosition(position + word.length(), QTextCursor::KeepAnchor);
-      cursor.deleteChar();
 
       QTextImageFormat format;
       format.setName(buildUrlEmoticon(themeAndSmile.first, themeAndSmile.second).toString());

@@ -54,6 +54,7 @@ namespace GUI
 
    private:
       const Emoticons* emoticons = nullptr;
+      int previousUndoSteps = 0;
       QList<KeyCombination> keyCombinationIgnored;
    };
 }
