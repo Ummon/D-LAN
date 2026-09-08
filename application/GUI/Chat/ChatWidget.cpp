@@ -35,6 +35,7 @@ using namespace GUI;
 #include <QTimer>
 #include <QIcon>
 #include <QDesktopServices>
+#include <QScopedPointer>
 
 #include <Log.h>
 #include <Common/Settings.h>
@@ -231,8 +232,6 @@ QString ChatDelegate::anchorAt(
 
 /////
 
-const QChar ChatWidget::EXPLICIT_LINE_RETURN(0x2800);
-
 ChatWidget::ChatWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, Emoticons& emoticons, QWidget* parent) :
    MdiWidget(parent),
    ui(new Ui::ChatWidget),
@@ -282,9 +281,25 @@ QString ChatWidget::getRoomName() const
 
 void ChatWidget::sendMessage()
 {
-   QString md = this->ui->txtMessage->toMarkdown();
-   md.replace(QChar(10), ' '); // 'toMarkdown' inserts some '\n'.. we remove it.
-   md.replace(EXPLICIT_LINE_RETURN, '\n'); // We replace the explicit line returns (U+2800) by a '\n'.
+   // Serialize a copy so the editor's text, reply ranges and undo history stay intact.
+   QScopedPointer<QTextDocument> document(this->ui->txtMessage->document()->clone());
+   QString lineBreakMarker = "DLANLINEBREAK";
+   const QString originalContent = document->toRawText() + document->toHtml();
+   while (originalContent.contains(lineBreakMarker))
+      lineBreakMarker += 'X';
+
+   // Qt writes U+2028 (Shift+Enter / HTML <br>) as a soft Markdown break.
+   // Protect these breaks during conversion, then encode them as hard breaks.
+   QTextCursor cursor(document.data());
+   while (!(cursor = document->find(QString(QChar::LineSeparator), cursor)).isNull())
+   {
+      // Newlines inside code blocks are already preserved by Markdown.
+      if (!cursor.blockFormat().nonBreakableLines())
+         cursor.insertText(lineBreakMarker);
+   }
+   QString md = document->toMarkdown();
+   // Inline breaks also preserve consecutive breaks and continuation lines inside list items.
+   md.replace(lineBreakMarker, "<br/>");
    this->chatModel.sendMessage(md, this->getPeerAnswers(), this->draftRevision);
 }
 
@@ -750,13 +765,6 @@ bool ChatWidget::eventFilter(QObject* obj, QEvent* event)
          {
             this->sendMessage();
             return true;
-         }
-         else
-         {
-            // We add special characters to know where the explicit line returns are put,
-            // they will be replaced in 'sendMessage'.
-            QTextCursor cursor = this->ui->txtMessage->textCursor();
-            cursor.insertText(QString(EXPLICIT_LINE_RETURN));
          }
          break;
 

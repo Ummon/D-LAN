@@ -73,8 +73,6 @@ namespace GUI
 
    class ChatWidget : public MdiWidget
    {
-      static const QChar EXPLICIT_LINE_RETURN;
-
       Q_OBJECT
    public:
       explicit ChatWidget(
