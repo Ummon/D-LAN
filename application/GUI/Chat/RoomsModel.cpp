@@ -43,6 +43,7 @@ RoomsModel::RoomsModel(QSharedPointer<RCC::ICoreConnection> coreConnection) :
    coreConnection(coreConnection),
    currentSortType(Protos::GUI::Settings::BY_NAME)
 {
+   this->setSortType(this->currentSortType);
    connect(coreConnection.data(), &RCC::ICoreConnection::newState, this, &RoomsModel::newState);
    connect(coreConnection.data(), &RCC::ICoreConnection::disconnected, this, &RoomsModel::coreDisconnected);
 }
@@ -59,14 +60,14 @@ RoomsModel::~RoomsModel()
    return this->createIndex(row, column)
 }*/
 
-int RoomsModel::rowCount(const QModelIndex& /*parent*/) const
+int RoomsModel::rowCount(const QModelIndex& parent) const
 {
-   return this->orderedRooms.size();
+   return parent.isValid() ? 0 : this->orderedRooms.size();
 }
 
-int RoomsModel::columnCount(const QModelIndex& /*parent*/) const
+int RoomsModel::columnCount(const QModelIndex& parent) const
 {
-   return 2;
+   return parent.isValid() ? 0 : 2;
 }
 
 QVariant RoomsModel::data(const QModelIndex& index, int role) const
@@ -107,9 +108,17 @@ QString RoomsModel::getRoomName(const QModelIndex& index)
 
 void RoomsModel::setSortType(Protos::GUI::Settings::RoomSortType sortType)
 {
-   this->currentSortType = sortType;
+   if (sortType != Protos::GUI::Settings::BY_NAME && sortType != Protos::GUI::Settings::BY_NB_PEERS)
+      return;
 
    emit layoutAboutToBeChanged();
+   // Views may create persistent indexes in response to layoutAboutToBeChanged.
+   const QModelIndexList oldIndexes = this->persistentIndexList();
+   QList<Room*> indexedRooms;
+   for (const QModelIndex& index : oldIndexes)
+      indexedRooms.append(this->orderedRooms.getFromIndex(index.row()));
+
+   this->currentSortType = sortType;
    switch (this->currentSortType)
    {
    case Protos::GUI::Settings::BY_NAME:
@@ -132,6 +141,11 @@ void RoomsModel::setSortType(Protos::GUI::Settings::RoomSortType sortType)
 
    default:;
    }
+
+   QModelIndexList newIndexes;
+   for (int i = 0; i < oldIndexes.size(); ++i)
+      newIndexes.append(this->index(this->orderedRooms.indexOf(indexedRooms[i]), oldIndexes[i].column()));
+   this->changePersistentIndexList(oldIndexes, newIndexes);
    emit layoutChanged();
 }
 
@@ -153,15 +167,6 @@ void RoomsModel::coreDisconnected(bool force)
 
 void RoomsModel::updateRooms(const google::protobuf::RepeatedPtrField<Protos::GUI::State::Room>& rooms)
 {
-   bool dataChanged = false;
-   auto setDataChanged =
-      [&dataChanged, this]()
-      {
-         if (!dataChanged)
-            emit layoutAboutToBeChanged(QList<QPersistentModelIndex>(), QAbstractItemModel::VerticalSortHint);
-         dataChanged = true;
-      };
-
    QList<QString> roomsToRemoveList = this->indexedRooms.keys();
    QSet<QString> roomsToRemove(roomsToRemoveList.begin(), roomsToRemoveList.end());
 
@@ -181,32 +186,45 @@ void RoomsModel::updateRooms(const google::protobuf::RepeatedPtrField<Protos::GU
 
          if (room->peerIDs != peerIDs || room->joined != joined)
          {
-            setDataChanged();
+            const int oldRow = this->orderedRooms.indexOf(room);
+            Room updatedRoom { name, peerIDs, joined };
+            // Calculate the destination without changing the live model before beginMoveRows.
+            auto updatedOrder = this->orderedRooms;
+            updatedOrder.remove(room);
+            const int newRow = updatedOrder.insert(&updatedRoom);
+            if (oldRow != newRow)
+               this->beginMoveRows(QModelIndex(), oldRow, oldRow, QModelIndex(), newRow > oldRow ? newRow + 1 : newRow);
+
             this->orderedRooms.remove(room);
             room->peerIDs = peerIDs;
+            room->joined = joined;
             this->orderedRooms.insert(room);
-         }
 
-         room->joined = joined;
+            if (oldRow != newRow)
+               this->endMoveRows();
+            emit dataChanged(this->index(newRow, 0), this->index(newRow, 1));
+         }
       }
       else
       {
-         setDataChanged();
          Room* r = new Room { name, peerIDs, joined };
+         auto updatedOrder = this->orderedRooms;
+         const int row = updatedOrder.insert(r);
+         this->beginInsertRows(QModelIndex(), row, row);
          this->indexedRooms.insert(name, r);
-         this->orderedRooms.insert(r);
+         this->orderedRooms = updatedOrder;
+         this->endInsertRows();
       }
    }
 
    for (auto i = roomsToRemove.begin(); i != roomsToRemove.end(); ++i)
    {
-      setDataChanged();
       Room* room = this->indexedRooms[*i];
+      const int row = this->orderedRooms.indexOf(room);
+      this->beginRemoveRows(QModelIndex(), row, row);
       this->indexedRooms.remove(room->name);
       this->orderedRooms.remove(room);
       delete room;
+      this->endRemoveRows();
    }
-
-   if (dataChanged)
-      emit layoutChanged(QList<QPersistentModelIndex>(), QAbstractItemModel::VerticalSortHint);
 }
