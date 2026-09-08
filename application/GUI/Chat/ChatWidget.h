@@ -168,6 +168,7 @@ namespace GUI
          bool operator<(const Answer& other) const { return this->begin < other.begin; }
          bool operator==(const Answer& other) const { return this->begin == other.begin; }
       };
+
       Common::SortedList<Answer> answers;
       bool peerNameInsertionMode;
       Answer currentAnswer;

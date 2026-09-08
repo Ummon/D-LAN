@@ -618,10 +618,13 @@ void ChatWidget::autoCompleteClosed()
 
    this->peerNameInsertionMode = false;
 
-   const Common::Hash& current = this->autoComplete->getCurrent();
-   const QString& nick = this->peerListModel.getNick(current);
+   const Common::Hash& currentPeerID = this->autoComplete->getCurrent();
+   QString nick = this->peerListModel.getNick(currentPeerID);
 
-   if (nick.isNull())
+   if (nick.isEmpty())
+      nick = this->chatModel.getNick(currentPeerID);
+
+   if (nick.isEmpty())
    {
       QTextCursor cursor(this->ui->txtMessage->document());
       cursor.setPosition(this->currentAnswer.begin - (this->currentAnswer.startWithSpace ? 1 : 0));
@@ -634,6 +637,7 @@ void ChatWidget::autoCompleteClosed()
       cursor.setPosition(this->currentAnswer.begin + 1);
       cursor.setPosition(this->currentAnswer.end, QTextCursor::KeepAnchor);
       cursor.insertText(nick + ' ');
+      this->currentAnswer.peerID = currentPeerID;
       this->answers.insert(this->currentAnswer);
    }
 

@@ -103,7 +103,12 @@ QList<QPair<Common::Hash, QString>> ChatModel::getSortedOtherPeersByRelevance() 
    while (i.hasPrevious())
    {
       const Message& message = i.previous();
-      if (message.peerID != ourself && message.answeringToUs && !processedPeers.contains(message.peerID))
+      if (
+         message.peerID != ourself &&
+         message.answeringToUs &&
+         !processedPeers.contains(message.peerID) &&
+         !message.nick.isEmpty()
+      )
       {
          result << QPair<Common::Hash, QString>(message.peerID, message.nick);
          processedPeers.insert(message.peerID);
@@ -115,7 +120,12 @@ QList<QPair<Common::Hash, QString>> ChatModel::getSortedOtherPeersByRelevance() 
    while (i.hasPrevious())
    {
       const Message& message = i.previous();
-      if (message.peerID != ourself && !message.answeringToUs && !processedPeers.contains(message.peerID))
+      if (
+         message.peerID != ourself &&
+         !message.answeringToUs &&
+         !processedPeers.contains(message.peerID) &&
+         !message.nick.isEmpty()
+      )
       {
          result << QPair<Common::Hash, QString>(message.peerID, message.nick);
          processedPeers.insert(message.peerID);
@@ -131,6 +141,17 @@ QList<QPair<Common::Hash, QString>> ChatModel::getSortedOtherPeersByRelevance() 
    }
 
    return result;
+}
+
+QString ChatModel::getNick(const Common::Hash& id) const
+{
+   for (int i = this->messages.size() - 1; i >= 0; --i)
+   {
+      if (this->messages[i].peerID == id)
+         return this->messages[i].nick;
+   }
+
+   return QString();
 }
 
 /**
@@ -229,33 +250,6 @@ void ChatModel::sendMessage(const QString& message, const QList<Common::Hash>& p
       return;
 
    this->sendRawMessage(trimmedMessage, peerIDsAnswered);
-
-   // Remove the HTML header and footer with a regular expression . . . I know: http://stackoverflow.com/a/1732454 . . .
-   // TODO: test that and try to remove regexp usage.
-   // const auto messageContentMatch = this->regexMatchMessageContent.match(message);
-   // const int beginning = messageContentMatch.lastCapturedIndex();
-   // const int end = message.lastIndexOf("</p>");
-
-   // if (beginning != -1 && end > beginning + messageContentMatch.captured().length())
-   // {
-   //    QString innerMessage =
-   //       message.mid(
-   //          beginning + messageContentMatch.captured().length(),
-   //          end - beginning - messageContentMatch.captured().length()
-   //       ).trimmed();
-
-   //    innerMessage.remove(this->regexMatchFirstBR);
-   //    innerMessage.remove(this->regexMatchLastBR);
-
-   //    if (!innerMessage.isEmpty())
-   //       this->sendRawMessage(innerMessage, peerIDsAnswered);
-   // }
-   // else
-   // {
-   //    const QString trimmedMessage = message.trimmed();
-   //    if (!trimmedMessage.isEmpty())
-   //       this->sendRawMessage(trimmedMessage, peerIDsAnswered);
-   // }
 }
 void ChatModel::sendRawMessage(const QString& message, const QList<Common::Hash>& peerIDsAnswered)
 {
@@ -409,11 +403,6 @@ QString ChatModel::formatMessage(const Message& message) const
    const QDateTime now = QDateTime::currentDateTime();
 
    return
-      // QString(
-      //    "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">"
-      //    "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">"
-      //    "p, li { white-space: pre-wrap; }"
-      //    "</style></head><body style=\" font-family:'Sans'; font-size:8pt; font-weight:400; font-style:normal;\">")
       QString()
          .append(
             now.date() == message.dateTime.date() ?
@@ -421,5 +410,4 @@ QString ChatModel::formatMessage(const Message& message) const
             : message.dateTime.toString("[%1 HH:mm:ss] ").arg(message.dateTime.date().toString(Qt::TextDate)))
          .append("*").append(escapeMarkdown(message.nick)).append("*: ")
          .append(message.message);
-         // .append("</body></html>");
    }

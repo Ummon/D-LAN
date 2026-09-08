@@ -55,6 +55,7 @@ namespace GUI
       QString getRoomName() const;
 
       QList<QPair<Common::Hash, QString>> getSortedOtherPeersByRelevance() const;
+      QString getNick(const Common::Hash& id) const;
 
       QString getLineStr(int row) const;
       Common::Hash getPeerID(int row) const;
