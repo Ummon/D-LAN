@@ -875,10 +875,16 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
       {
          const Protos::GUI::ChatMessage& chatMessage = message.getMessage<Protos::GUI::ChatMessage>();
 
-         CS::IChatSystem::SendStatus status =
-            chatMessage.room().size() > 0 ?
-                 this->chatSystem->send(QString::fromStdString(chatMessage.message()), QString::fromStdString(chatMessage.room()))
-               : this->chatSystem->send(QString::fromStdString(chatMessage.message()));
+         QList<Common::Hash> peerIDsAnswer;
+         peerIDsAnswer.reserve(chatMessage.peer_ids_answer_size());
+         for (const auto& peerID : chatMessage.peer_ids_answer())
+            peerIDsAnswer.append(Common::Hash(peerID.hash()));
+
+         CS::IChatSystem::SendStatus status = this->chatSystem->send(
+            QString::fromStdString(chatMessage.message()),
+            QString::fromStdString(chatMessage.room()),
+            peerIDsAnswer
+         );
 
          Protos::GUI::ChatMessageResult result;
          result.set_status(status == CS::IChatSystem::SendStatus::OK ? Protos::GUI::ChatMessageResult::OK : (status == CS::IChatSystem::SendStatus::MESSAGE_TOO_LARGE ? Protos::GUI::ChatMessageResult::MESSAGE_TOO_LARGE : Protos::GUI::ChatMessageResult::ERROR_UNKNOWN));
