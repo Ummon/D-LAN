@@ -236,8 +236,8 @@ void SearchDock::saveSettings()
    SETTINGS.set("search_min_size_value", this->ui->txtMinSize->text().toUInt());
    SETTINGS.set("search_max_size_value", this->ui->txtMaxSize->text().toUInt());
 
-   SETTINGS.set("search_min_size_unit", (quint32)(this->ui->cmbMinSize->currentIndex() + 1));
-   SETTINGS.set("search_max_size_unit", (quint32)(this->ui->cmbMaxSize->currentIndex() + 1));
+   SETTINGS.set("search_min_size_unit", (quint32)(this->ui->cmbMinSize->currentIndex()));
+   SETTINGS.set("search_max_size_unit", (quint32)(this->ui->cmbMaxSize->currentIndex()));
 
    SETTINGS.set("search_local", this->ui->chkOwnFiles->checkState() == Qt::Checked);
 

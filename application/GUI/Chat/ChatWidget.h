@@ -111,6 +111,7 @@ namespace GUI
 
       void currentCharFormatChanged(const QTextCharFormat& charFormat);
       void textChanged();      
+      void updateMessageHeight();
       void documentChanged(int position, int charsRemoved, int charsAdded);
 
       void setFocusTxtMessage();
@@ -135,6 +136,7 @@ namespace GUI
    protected:
       void keyPressEvent(QKeyEvent* keyEvent) override;
       void changeEvent(QEvent* event) override;
+      void resizeEvent(QResizeEvent* event) override;
       bool eventFilter(QObject* obj, QEvent* event) override;
 
    private:

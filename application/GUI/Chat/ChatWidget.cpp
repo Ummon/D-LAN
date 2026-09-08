@@ -36,6 +36,7 @@ using namespace GUI;
 #include <QIcon>
 #include <QDesktopServices>
 #include <QScopedPointer>
+#include <QtMath>
 
 #include <Log.h>
 #include <Common/Settings.h>
@@ -482,14 +483,24 @@ void ChatWidget::currentCharFormatChanged(const QTextCharFormat& charFormat)
 //    }
 // }
 
-/**
-  * Adjust the text edit size depending of the size of each lines.
-  */
 void ChatWidget::textChanged()
 {
    // Keep a monotonic revision: undo or recreating the same text is still a new draft.
    ++this->draftRevision;
-   this->ui->txtMessage->setFixedHeight(this->ui->txtMessage->document()->size().height());
+}
+
+void ChatWidget::updateMessageHeight()
+{
+   auto* editor = this->ui->txtMessage;
+   const int frameHeight = 2 * editor->frameWidth();
+   const int margins = qCeil(2 * editor->document()->documentMargin()) + frameHeight;
+   const int lineHeight = editor->fontMetrics().lineSpacing();
+   const int minimumHeight = lineHeight + margins;
+   // Keep room for the conversation; longer drafts can scroll inside the editor.
+   const int maximumHeight = qMax(minimumHeight, qMin(8 * lineHeight + margins, this->height() / 3));
+   const int height = qBound(minimumHeight, qCeil(editor->document()->size().height()) + frameHeight, maximumHeight);
+   if (editor->minimumHeight() != height || editor->maximumHeight() != height)
+      editor->setFixedHeight(height);
 }
 
 /**
@@ -755,6 +766,12 @@ void ChatWidget::changeEvent(QEvent* event)
    QWidget::changeEvent(event);
 }
 
+void ChatWidget::resizeEvent(QResizeEvent* event)
+{
+   MdiWidget::resizeEvent(event);
+   QMetaObject::invokeMethod(this, &ChatWidget::updateMessageHeight, Qt::QueuedConnection);
+}
+
 /**
   * To grab events from the text box ('ui->txtMessage').
   */
@@ -867,6 +884,9 @@ void ChatWidget::init()
    connect(this->ui->txtMessage, &ChatTextEdit::currentCharFormatChanged, this, &ChatWidget::currentCharFormatChanged);
    // connect(this->ui->txtMessage, &ChatTextEdit::cursorPositionChanged, this, &ChatWidget::cursorPositionChanged);
    connect(this->ui->txtMessage, &ChatTextEdit::textChanged, this, &ChatWidget::textChanged);
+   // Wrapping also changes on resize. Defer resizing until the document layout has finished.
+   connect(this->ui->txtMessage->document()->documentLayout(), &QAbstractTextDocumentLayout::documentSizeChanged,
+      this, &ChatWidget::updateMessageHeight, Qt::QueuedConnection);
    this->previousMessageText = this->ui->txtMessage->document()->toRawText();
    this->rememberAnswers();
    connect(this->ui->txtMessage->document(), &QTextDocument::undoCommandAdded, this, [this]() {
@@ -905,6 +925,7 @@ void ChatWidget::init()
       this->ui->txtMessage->addIgnoreKeyCombination({ Qt::AltModifier, c });
 
    this->setNewMessageState(false);
+   this->updateMessageHeight();
 }
 
 void ChatWidget::applyCurrentFormat()
