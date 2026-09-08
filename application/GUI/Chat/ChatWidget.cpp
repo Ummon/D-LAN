@@ -287,8 +287,18 @@ QString ChatWidget::getRoomName() const
 
 // Qt's Markdown writer misnests combined styles and incompletely escapes literal punctuation.
 // Protect affected fragments as inline HTML while Qt serializes the surrounding document.
-static QList<QPair<QString, QString>> protectInlineText(QTextDocument& document, const QString& originalContent)
+struct ProtectedInlineText
 {
+   QString marker;
+   QString html;
+   bool joinsPrevious;
+   bool joinsNext;
+   QString quotePrefix;
+};
+
+static QList<ProtectedInlineText> protectInlineText(QTextDocument& document, const QString& originalContent)
+{
+   const QString originalText = document.toRawText();
    QString markerPrefix = "DLANUNDERLINE";
    while (originalContent.contains(markerPrefix))
       markerPrefix += 'X';
@@ -309,7 +319,7 @@ static QList<QPair<QString, QString>> protectInlineText(QTextDocument& document,
                fragments.append(fragment);
          }
 
-   QList<QPair<QString, QString>> replacements;
+   QList<ProtectedInlineText> replacements;
    // Work backwards so replacing a fragment does not move the earlier fragments.
    for (auto i = fragments.crbegin(); i != fragments.crend(); ++i)
    {
@@ -337,11 +347,18 @@ static QList<QPair<QString, QString>> protectInlineText(QTextDocument& document,
          html = "<a href=\"" + format.anchorHref().toHtmlEscaped() + "\">" + html + "</a>";
 
       const QString marker = markerPrefix + QString::number(replacements.size()) + "END";
+      const int begin = i->position();
+      const int end = begin + i->length();
+      // Whitespace inside this fragment is already preserved in its HTML.
+      const bool joinsPrevious = begin > 0 && !originalText.at(begin - 1).isSpace();
+      const bool joinsNext = end < originalText.size() && !originalText.at(end).isSpace();
+      const QString quotePrefix = QString("> ").repeated(
+         document.findBlock(begin).blockFormat().intProperty(QTextFormat::BlockQuoteLevel));
       QTextCursor cursor(&document);
       cursor.setPosition(i->position());
       cursor.setPosition(i->position() + i->length(), QTextCursor::KeepAnchor);
       cursor.insertText(marker, QTextCharFormat());
-      replacements.append({ marker, html });
+      replacements.append({ marker, html, joinsPrevious, joinsNext, quotePrefix });
    }
    return replacements;
 }
@@ -413,7 +430,18 @@ void ChatWidget::sendMessage()
    // Inline breaks also preserve consecutive breaks and continuation lines inside list items.
    md.replace(lineBreakMarker, "<br/>");
    for (const auto& replacement : inlineText)
-      md.replace(replacement.first, replacement.second);
+   {
+      // Qt may wrap before/after a placeholder even where the original fragments touch.
+      // Remove only those synthetic breaks. Original paragraph boundaries are excluded;
+      // whitespace and explicit breaks inside the protected fragment remain in its HTML.
+      const QString marker = QRegularExpression::escape(replacement.marker);
+      const QString continuation = QRegularExpression::escape(replacement.quotePrefix) + "[ \\t]*";
+      if (replacement.joinsPrevious)
+         md.replace(QRegularExpression("\\n" + continuation + marker), replacement.marker);
+      if (replacement.joinsNext)
+         md.replace(QRegularExpression(marker + "([*_~`]*)\\n" + continuation), replacement.marker + "\\1");
+      md.replace(replacement.marker, replacement.html);
+   }
    this->chatModel.sendMessage(md, this->getPeerAnswers(), this->draftRevision);
 }
 
