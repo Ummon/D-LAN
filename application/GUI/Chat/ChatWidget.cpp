@@ -79,7 +79,8 @@ void ChatDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, 
 
    QStyle* style = newOption.widget ? newOption.widget->style() : QApplication::style();
 
-   this->textDocument.setMarkdown(newOption.text);
+   // initStyleOption() converts newlines to line separators, which turns Markdown soft wraps into hard breaks.
+   this->textDocument.setMarkdown(index.data(Qt::DisplayRole).toString());
    this->textDocument.setTextWidth(newOption.rect.width());
 
    // Aligne all emoticons at the middle.
@@ -133,7 +134,7 @@ QSize	ChatDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelInd
    QStyleOptionViewItem newOption = option;
    initStyleOption(&newOption, index);
 
-   this->textDocument.setMarkdown(newOption.text);
+   this->textDocument.setMarkdown(index.data(Qt::DisplayRole).toString());
    this->textDocument.setTextWidth(newOption.rect.width());
    QSize size(newOption.rect.width(), this->textDocument.size().height()); // Width should be "doc.idealWidth()".
    model->insertCachedSize(index, size);
@@ -222,7 +223,7 @@ QString ChatDelegate::anchorAt(
    this->initStyleOption(&opt, index);
 
    // Lay the document out exactly as paint() does.
-   this->textDocument.setMarkdown(opt.text);
+   this->textDocument.setMarkdown(index.data(Qt::DisplayRole).toString());
    this->textDocument.setTextWidth(opt.rect.width());
 
    QStyle* style = opt.widget ? opt.widget->style() : QApplication::style();

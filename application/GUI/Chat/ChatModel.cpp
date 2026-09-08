@@ -26,6 +26,7 @@ using namespace GUI;
 #include <QDomDocument>
 #include <QTextDocument>
 #include <QTextBlock>
+#include <QRegularExpression>
 
 #include <Protos/common.pb.h>
 
@@ -59,10 +60,6 @@ static QString escapeMarkdown(const QString& str)
 
 static bool needsSeparateSenderLine(const QString& markdown)
 {
-   // Multiline Markdown may contain fences, tables or reference definitions whose line starts matter.
-   if (markdown.contains('\n') || markdown.contains('\r'))
-      return true;
-
    // Qt does not consistently flag single-line indented code in the parsed block format.
    int indentation = 0;
    for (const QChar c : markdown)
@@ -77,6 +74,16 @@ static bool needsSeparateSenderLine(const QString& markdown)
 
    QTextDocument document;
    document.setMarkdown(markdown);
+   // Qt wraps Markdown source at a fixed column, particularly around long emoticon URLs.
+   // Those soft wraps still form one paragraph and must not move the sender onto another line.
+   if (document.blockCount() > 1)
+      return true;
+
+   // Reference definitions can disappear from the parsed document, but need their own line.
+   static const QRegularExpression referenceDefinition("^\\s*\\[[^\\r\\n]+\\]:");
+   if (referenceDefinition.match(markdown).hasMatch())
+      return true;
+
    const QTextBlock firstBlock = document.firstBlock();
    const QTextBlockFormat format = firstBlock.blockFormat();
    return firstBlock.text().isEmpty() || firstBlock.textList() || format.headingLevel() > 0 ||
