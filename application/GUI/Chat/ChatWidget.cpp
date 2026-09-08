@@ -286,8 +286,6 @@ void ChatWidget::sendMessage()
    md.replace(QChar(10), ' '); // 'toMarkdown' inserts some '\n'.. we remove it.
    md.replace(EXPLICIT_LINE_RETURN, '\n'); // We replace the explicit line returns (U+2800) by a '\n'.
    this->chatModel.sendMessage(md, this->getPeerAnswers(), this->draftRevision);
-   this->answers.clear();
-   this->currentAnswer = {};
 }
 
 void ChatWidget::newRows(const QModelIndex& parent, int start, int end)
@@ -311,7 +309,12 @@ void ChatWidget::sendMessageStatus(ChatModel::SendMessageStatus status, quint64 
    {
    case  ChatModel::OK:
       if (draftRevision == this->draftRevision)
+      {
+         // Reply references belong to the draft and must survive failed sends and retries.
+         this->answers.clear();
+         this->currentAnswer = {};
          this->ui->txtMessage->document()->clear();
+      }
       break;
 
    case ChatModel::MESSAGE_TOO_LARGE:
