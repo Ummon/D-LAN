@@ -76,12 +76,17 @@ QVariant ChatTextEdit::loadResource(int type, const QUrl& name)
 
 void ChatTextEdit::documentContentsChange(int position, int charsRemoved, int charsAdded)
 {
+   // Qt reports formatting as removed/reinserted characters too; only actual text edits are typing.
+   const QString documentText = this->document()->toRawText();
+   const bool textChanged = documentText != this->previousDocumentText;
+   this->previousDocumentText = documentText;
+
    // New edits announce their undo commands first; undo/redo moves through existing commands.
    // Merged typing keeps the same step count and must still be checked for emoticons.
    const int undoSteps = this->document()->availableUndoSteps();
    const bool undoOrRedo = this->document()->isUndoRedoEnabled() && undoSteps != this->previousUndoSteps;
    this->previousUndoSteps = undoSteps;
-   if (charsAdded > 0 && !undoOrRedo)
+   if (textChanged && charsAdded > 0 && !undoOrRedo)
    {
       if (!this->document()->characterAt(position).isSpace())
       {
@@ -93,7 +98,11 @@ void ChatTextEdit::documentContentsChange(int position, int charsRemoved, int ch
          while (i >= 0 && !this->document()->characterAt(i).isSpace())
             word.prepend(this->document()->characterAt(i--));
          if (!word.isEmpty())
+         {
             emit wordTyped(i + 1, word);
+            // A receiver may synchronously replace the word with an emoticon.
+            this->previousDocumentText = this->document()->toRawText();
+         }
       }
    }
 }
