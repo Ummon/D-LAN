@@ -21,6 +21,8 @@
 using namespace GUI;
 
 #include <QKeyEvent>
+#include <QScreen>
+#include <QScrollBar>
 
 #include <Log.h>
 
@@ -49,6 +51,13 @@ AutoComplete::AutoComplete(QWidget* parent) :
       if (this->filterModel.rowCount() > 0)
          this->ui->listView->selectionModel()->setCurrentIndex(this->filterModel.index(0, 0), QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
    });
+
+   connect(&this->filterModel, &QSortFilterProxyModel::rowsInserted, this, &AutoComplete::updateHeight);
+   connect(&this->filterModel, &QSortFilterProxyModel::rowsRemoved, this, &AutoComplete::updateHeight);
+   connect(&this->filterModel, &QSortFilterProxyModel::modelReset, this, &AutoComplete::updateHeight);
+   connect(&this->filterModel, &QSortFilterProxyModel::dataChanged, this, &AutoComplete::updateHeight);
+   connect(this->ui->listView->horizontalScrollBar(), &QScrollBar::rangeChanged,
+      this, &AutoComplete::updateHeight, Qt::QueuedConnection);
 }
 
 void AutoComplete::setValues(const QList<QPair<Common::Hash, QString>>& values)
@@ -153,4 +162,26 @@ void AutoComplete::reset()
    this->model.setValues(QList<QPair<Common::Hash, QString>>());
    this->currentPattern.clear();
    this->filterModel.setFilterWildcard("");
+}
+
+void AutoComplete::updateHeight()
+{
+   QListView* list = this->ui->listView;
+   list->doItemsLayout();
+
+   const QRect available = this->screen()->availableGeometry();
+   const QMargins margins = this->layout()->contentsMargins();
+   int height = margins.top() + margins.bottom() + 2 * list->frameWidth();
+   if (list->horizontalScrollBar()->maximum() > 0)
+      height += list->horizontalScrollBar()->sizeHint().height();
+
+   // Keep an empty list usable while typing a pattern with no matches.
+   if (this->filterModel.rowCount() == 0)
+      height += list->fontMetrics().height();
+   for (int row = 0; row < this->filterModel.rowCount() && height < available.height(); ++row)
+      height += list->sizeHintForRow(row) + 2 * list->spacing();
+
+   this->setFixedHeight(qMin(height, available.height()));
+   if (this->isWindow())
+      this->move(this->x(), qBound(available.top(), this->y(), available.bottom() - this->height() + 1));
 }

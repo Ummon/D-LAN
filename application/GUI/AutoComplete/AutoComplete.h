@@ -56,6 +56,7 @@ namespace GUI
 
    private:
       void reset();
+      void updateHeight();
 
       Ui::AutoComplete* ui;
 
