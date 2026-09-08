@@ -24,6 +24,8 @@ using namespace GUI;
 #include <QImage>
 #include <QResource>
 #include <QDomDocument>
+#include <QTextDocument>
+#include <QTextBlock>
 
 #include <Protos/common.pb.h>
 
@@ -53,6 +55,33 @@ static QString escapeMarkdown(const QString& str)
    }
 
    return result;
+}
+
+static bool needsSeparateSenderLine(const QString& markdown)
+{
+   // Multiline Markdown may contain fences, tables or reference definitions whose line starts matter.
+   if (markdown.contains('\n') || markdown.contains('\r'))
+      return true;
+
+   // Qt does not consistently flag single-line indented code in the parsed block format.
+   int indentation = 0;
+   for (const QChar c : markdown)
+   {
+      if (c == '\t')
+         return true;
+      if (c != ' ')
+         break;
+      if (++indentation == 4)
+         return true;
+   }
+
+   QTextDocument document;
+   document.setMarkdown(markdown);
+   const QTextBlock firstBlock = document.firstBlock();
+   const QTextBlockFormat format = firstBlock.blockFormat();
+   return firstBlock.text().isEmpty() || firstBlock.textList() || format.headingLevel() > 0 ||
+      format.nonBreakableLines() || format.intProperty(QTextFormat::BlockQuoteLevel) > 0 ||
+      format.hasProperty(QTextFormat::BlockTrailingHorizontalRulerWidth);
 }
 
 ChatModel::ChatModel(
@@ -309,6 +338,7 @@ void ChatModel::newChatMessages(const Protos::Common::ChatMessages& messages)
          QDateTime::fromMSecsSinceEpoch(messages.messages(i).time()),
          QString::fromStdString(messages.messages(i).message())
       };
+      message.separateSenderLine = needsSeparateSenderLine(message.message);
 
       int previousJ = j;
       while (j > 0 && this->messages[j-1].dateTime > message.dateTime)
@@ -413,6 +443,7 @@ QString ChatModel::formatMessage(const Message& message) const
             now.date() == message.dateTime.date() ?
               message.dateTime.toString("[HH:mm:ss] ")
             : message.dateTime.toString("[%1 HH:mm:ss] ").arg(message.dateTime.date().toString(Qt::TextDate)))
-         .append("*").append(escapeMarkdown(message.nick)).append("*: ")
+         .append("*").append(escapeMarkdown(message.nick)).append("*:")
+         .append(message.separateSenderLine ? "\n\n" : " ")
          .append(message.message);
-   }
+}

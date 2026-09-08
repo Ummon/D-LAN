@@ -105,6 +105,7 @@ namespace GUI
          QDateTime dateTime;
          QString message;
          QSize size; // Ugly hack, we cache the rendered size to speed-up the method 'ChatDelegate::sizeHint'.
+         bool separateSenderLine = false;
       };
 
       QString formatMessage(const Message& message) const;
