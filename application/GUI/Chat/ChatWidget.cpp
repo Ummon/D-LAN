@@ -603,15 +603,20 @@ void ChatWidget::autoCompleteStringAdded(QString str)
    this->ui->txtMessage->insertPlainText(str);
 }
 
-void ChatWidget::autoCompleteLastCharRemoved()
+void ChatWidget::autoCompleteLastCharRemoved(int charsRemoved)
 {
    if (!this->peerNameInsertionMode)
       return;
 
-   if (this->currentAnswer.end > this->currentAnswer.begin + 1)
+   if (charsRemoved > 0 && this->currentAnswer.end - charsRemoved >= this->currentAnswer.begin + 1)
    {
-      this->ui->txtMessage->textCursor().deletePreviousChar();
-      this->currentAnswer.end -= 1;
+      // Delete exactly the UTF-16 range removed from the autocomplete pattern.
+      QTextCursor cursor = this->ui->txtMessage->textCursor();
+      cursor.setPosition(this->currentAnswer.end);
+      cursor.setPosition(this->currentAnswer.end - charsRemoved, QTextCursor::KeepAnchor);
+      cursor.removeSelectedText();
+      this->currentAnswer.end = cursor.position();
+      this->ui->txtMessage->setTextCursor(cursor);
    }
 }
 

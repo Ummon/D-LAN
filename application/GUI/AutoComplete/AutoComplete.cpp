@@ -84,9 +84,14 @@ bool AutoComplete::eventFilter(QObject* obj, QEvent* event)
       case Qt::Key_Backspace:
          if (!this->currentPattern.isEmpty())
          {
-            this->currentPattern.remove(this->currentPattern.size() - 1, 1);
+            // QString and document positions count UTF-16 units; keep surrogate pairs intact.
+            const int length = this->currentPattern.size();
+            const int charsRemoved = length >= 2 &&
+               this->currentPattern.at(length - 1).isLowSurrogate() &&
+               this->currentPattern.at(length - 2).isHighSurrogate() ? 2 : 1;
+            this->currentPattern.chop(charsRemoved);
             this->filterModel.setFilterWildcard(this->currentPattern + "*");
-            emit lastCharRemoved();
+            emit lastCharRemoved(charsRemoved);
          }
          else
             this->close();

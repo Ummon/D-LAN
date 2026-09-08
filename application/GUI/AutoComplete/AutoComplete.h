@@ -45,7 +45,7 @@ namespace GUI
 
    signals:
       void stringAdded(QString str);
-      void lastCharRemoved();
+      void lastCharRemoved(int charsRemoved);
       void closed();
 
    protected:

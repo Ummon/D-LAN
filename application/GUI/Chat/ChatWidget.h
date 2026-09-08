@@ -129,7 +129,7 @@ namespace GUI
       void defaultEmoticonThemeChanged(const QString& theme);
 
       void autoCompleteStringAdded(QString str);
-      void autoCompleteLastCharRemoved();
+      void autoCompleteLastCharRemoved(int charsRemoved);
       void autoCompleteClosed();
 
    protected:
