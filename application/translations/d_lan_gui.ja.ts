@@ -130,43 +130,43 @@
 <context>
     <name>GUI::ChatWidget</name>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="317"/>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="321"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="486"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="490"/>
         <source>Unable to send message</source>
         <translation>メッセージを送信できません</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="317"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="486"/>
         <source>The message is too long</source>
         <translation>メッセージが長すぎます</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="321"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="490"/>
         <source>The message can&apos;t be send, unknown error</source>
         <translation>メッセージを送信できません。原因不明のエラーです</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="339"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="508"/>
         <source>Browse</source>
         <translation>閲覧</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="343"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="512"/>
         <source>Copy IP: %1</source>
         <translation>IP をコピー: %1</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="378"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="547"/>
         <source>Copy selected lines</source>
         <translation>選択した行をコピー</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="379"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="548"/>
         <source>Browse selected peers</source>
         <translation>選択したピアを閲覧</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="740"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="984"/>
         <source>Chat</source>
         <translation>チャット</translation>
     </message>

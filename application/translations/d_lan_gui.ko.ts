@@ -130,43 +130,43 @@
 <context>
     <name>GUI::ChatWidget</name>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="317"/>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="321"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="486"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="490"/>
         <source>Unable to send message</source>
         <translation>메시지를 보낼 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="317"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="486"/>
         <source>The message is too long</source>
         <translation>메시지가 너무 깁니다</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="321"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="490"/>
         <source>The message can&apos;t be send, unknown error</source>
         <translation>메시지를 보낼 수 없습니다. 알 수 없는 오류입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="339"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="508"/>
         <source>Browse</source>
         <translation>탐색</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="343"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="512"/>
         <source>Copy IP: %1</source>
         <translation>IP 복사: %1</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="378"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="547"/>
         <source>Copy selected lines</source>
         <translation>선택한 줄 복사</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="379"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="548"/>
         <source>Browse selected peers</source>
         <translation>선택한 피어 탐색</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="740"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="984"/>
         <source>Chat</source>
         <translation>채팅</translation>
     </message>

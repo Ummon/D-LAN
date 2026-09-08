@@ -130,43 +130,43 @@
 <context>
     <name>GUI::ChatWidget</name>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="317"/>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="321"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="486"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="490"/>
         <source>Unable to send message</source>
         <translation>Impossibile inviare il messaggio</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="317"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="486"/>
         <source>The message is too long</source>
         <translation>Il messaggio è troppo lungo</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="321"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="490"/>
         <source>The message can&apos;t be send, unknown error</source>
         <translation>Impossibile inviare il messaggio, errore sconosciuto</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="339"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="508"/>
         <source>Browse</source>
         <translation>Sfoglia</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="343"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="512"/>
         <source>Copy IP: %1</source>
         <translation>Copia IP: %1</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="378"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="547"/>
         <source>Copy selected lines</source>
         <translation>Copia le righe selezionate</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="379"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="548"/>
         <source>Browse selected peers</source>
         <translation>Sfoglia i peer selezionati</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="740"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="984"/>
         <source>Chat</source>
         <translation>Chat</translation>
     </message>

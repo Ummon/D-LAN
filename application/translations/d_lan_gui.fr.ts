@@ -130,7 +130,7 @@
 <context>
     <name>GUI::ChatWidget</name>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="+317"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="+486"/>
         <location line="+4"/>
         <source>Unable to send message</source>
         <translation>Impossible d&apos;envoyer le message</translation>
@@ -166,7 +166,7 @@
         <translation>Explorer les pairs sélectionnés</translation>
     </message>
     <message>
-        <location line="+361"/>
+        <location line="+436"/>
         <source>Chat</source>
         <translation>Chat</translation>
     </message>
