@@ -27,6 +27,7 @@ struct RoomsModel::Room
 {
    bool operator==(const Room& r) const { return this->name == r.name; }
    bool operator!=(const Room& r) const { return this->name != r.name; }
+   qsizetype peerCount() const { return this->peerIDs.size() + (this->joined ? 1 : 0); }
 
    QString name; // Room identifier.
    QSet<Common::Hash> peerIDs;
@@ -83,7 +84,7 @@ QVariant RoomsModel::data(const QModelIndex& index, int role) const
       switch (index.column())
       {
       case 0: return room->name;
-      case 1: return room->peerIDs.size() + (room->joined ? 1 : 0);
+      case 1: return room->peerCount();
       }
       break;
    }
@@ -133,9 +134,9 @@ void RoomsModel::setSortType(Protos::GUI::Settings::RoomSortType sortType)
       this->orderedRooms.setSortedFunction([](const Room* r1, const Room* r2) {
          if (!r1 || !r2)
             return false;
-         if (r1->peerIDs.count() == r2->peerIDs.count())
+         if (r1->peerCount() == r2->peerCount())
             return r1->name < r2->name;
-         return r1->peerIDs.count() > r2->peerIDs.count();
+         return r1->peerCount() > r2->peerCount();
       });
       break;
 
