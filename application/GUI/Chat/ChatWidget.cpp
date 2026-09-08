@@ -330,6 +330,9 @@ void ChatWidget::sendMessageStatus(ChatModel::SendMessageStatus status, quint64 
          this->answerHistory.clear();
          this->currentAnswer = {};
          this->ui->txtMessage->document()->clear();
+         // Recreate the editor cursor after clearing so subsequent typing advances it normally.
+         this->ui->txtMessage->setTextCursor(QTextCursor(this->ui->txtMessage->document()));
+         this->applyCurrentFormat();
       }
       break;
 
