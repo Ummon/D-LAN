@@ -30,11 +30,14 @@ pub fn handle_request(req: Request, app_ctx: web.AppContext) -> Response {
 }
 
 fn serve_page(segments: List(String), ctx: web.Context) -> Response {
-  let page = case segments {
-    [p] -> p
-    _ -> "home.html"
+  case segments {
+    [] -> serve_named_page("home.html", ctx)
+    [page] -> serve_named_page(page, ctx)
+    _ -> wisp.not_found()
   }
+}
 
+fn serve_named_page(page: String, ctx: web.Context) -> Response {
   case page {
     "home.html" ->
       home.page(ctx)

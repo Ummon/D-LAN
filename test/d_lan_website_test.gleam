@@ -33,6 +33,28 @@ pub fn index_test() {
   assert response.headers == [#("content-type", "text/html; charset=utf-8")]
 }
 
+pub fn page_routes_test() {
+  let app_ctx =
+    web.AppContext(
+      "static",
+      "release",
+      db.Db(fn(_) { Nil }, fn() { [] }, fn(_, _, _) { [] }),
+      "",
+      False,
+    )
+  let status = fn(path) {
+    router.handle_request(simulate.browser_request(http.Get, path), app_ctx).status
+  }
+
+  assert status("/") == 200
+  assert status("/home.html") == 200
+  assert status("/about.html") == 200
+  assert status("/missing") == 404
+  assert status("/missing/nested") == 404
+  assert status("/about.html/extra") == 404
+  assert status("/download/windows") == 404
+}
+
 pub fn date_to_str_test() {
   assert date.date_to_str(calendar.Date(2026, calendar.January, 5))
     == "2026-01-05"
