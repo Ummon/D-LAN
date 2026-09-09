@@ -26,7 +26,7 @@ pub fn element(
   let release_platform_folder = ctx.app.releases_directory <> "/" <> platform
   use filenames <- result.try(
     simplifile.read_directory(release_platform_folder)
-    |> result.map_error(fn(_) { Nil }),
+    |> result.replace_error(Nil),
   )
 
   use filename <- result.try(
