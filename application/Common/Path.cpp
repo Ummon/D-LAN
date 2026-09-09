@@ -401,11 +401,6 @@ Path Path::prependDir(const QString& dir) &&
    return Path(std::move(this->root), std::move(this->dirs), std::move(this->filename));
 }
 
-// QString Path::toString() const
-// {
-//    return this->toString();
-// }
-
 Path::operator QString() const
 {
    return this->toString();
@@ -462,21 +457,6 @@ Common::Path Path::fromExistingPath(const QString& path)
    else
       return Common::Path(cleanedPath);
 }
-
-/**
-  * See QDir::cleanPath(..) documentation.
-  * Add a slash at the end.
-  */
-// QString Path::cleanDirPath(const QString& path)
-// {
-//    Q_ASSERT(!path.isEmpty());
-
-//    QString cleanedPath = QDir::cleanPath(path);
-//    if (!cleanedPath.isEmpty() && cleanedPath[cleanedPath.size()-1] != '/')
-//       cleanedPath.append('/');
-
-//    return cleanedPath;
-// }
 
 /**
   * @return 'true' if path begins with  "<Drive letter>:/" or "<Drive letter>:\", for example: "C:/Users/"

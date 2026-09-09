@@ -21,9 +21,6 @@ using namespace GUI;
 
 #include <algorithm>
 
-#include <QFileInfo>
-#include <QDir>
-
 #include <Common/Global.h>
 
 #include <IconProvider.h>
@@ -78,11 +75,9 @@ void SharedEntryListModel::addEntries(const QStringList& entries)
 
    for (const auto& entry : entries)
    {
-      QString cleaned = QDir::cleanPath(entry);
-      if (QFileInfo(cleaned).isDir() && (cleaned.isEmpty() || !cleaned.endsWith('/')))
-         cleaned += '/';
-
-      const auto sharedEntry = Common::SharedEntry { Common::Hash(), cleaned, QString(), 0, 0 };
+      // Path normalizes the browser's path while preserving its trailing directory slash.
+      // The entry may belong to a remote core, so its type cannot be checked locally.
+      const auto sharedEntry = Common::SharedEntry { Common::Hash(), entry, QString(), 0, 0 };
 
       // The paths are compared and not the entries themselves: 'SharedEntry::operator==', which 'contains(..)'
       // would use, only compares the IDs and a new entry doesn't have one yet, the core assigns it. It would

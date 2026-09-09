@@ -93,7 +93,6 @@ namespace Common
 
       static Common::Path fromExistingPath(const QString& path);
 
-      // static QString cleanDirPath(const QString& path);
       static bool isWindowsPath(const QString& path);
       static bool isWindowsRootPath(const QString& path);
 
