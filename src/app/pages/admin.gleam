@@ -6,6 +6,7 @@ import gleam/option
 import gleam/result
 import gleam/time/calendar
 import gleam/time/timestamp
+import gleam/uri
 import lustre/attribute as attr
 import lustre/element
 import lustre/element/html
@@ -88,9 +89,9 @@ fn calendar(ctx: web.Context) -> element.Element(a) {
       date.date_to_str(last_day),
     )
 
+  let file_url = "/admin.html?" <> uri.query_to_string([#("file", file)])
   let url_params = fn(month, year) {
-    "/admin.html?file="
-    <> file
+    file_url
     <> "&month="
     <> int.to_string(month)
     <> "&year="
@@ -117,7 +118,7 @@ fn calendar(ctx: web.Context) -> element.Element(a) {
           ],
         ),
         html.div([], [
-          html.a([attr.href("/admin.html?file=" <> file)], [
+          html.a([attr.href(file_url)], [
             html.text(int.to_string(year) <> " " <> date.month_name(month)),
           ]),
         ]),

@@ -1,10 +1,14 @@
 import app/date
 import app/db
 import app/download_button
+import app/pages/admin
 import app/router
 import app/web
 import gleam/http
+import gleam/option.{Some}
+import gleam/string
 import gleam/time/calendar
+import lustre/element
 import translations as tr
 import wisp
 import wisp/simulate
@@ -53,6 +57,37 @@ pub fn page_routes_test() {
   assert status("/missing/nested") == 404
   assert status("/about.html/extra") == 404
   assert status("/download/windows") == 404
+}
+
+pub fn admin_navigation_encodes_filename_test() {
+  let file = "windows/D-LAN &#+%.exe"
+  let app_ctx =
+    web.AppContext(
+      "static",
+      "release",
+      db.Db(fn(_) { Nil }, fn() { [file] }, fn(_, _, _) { [] }),
+      "",
+      False,
+    )
+  let html =
+    admin.page(web.Context(
+      app: app_ctx,
+      lang: tr.En,
+      is_admin: True,
+      params: web.AdminParams(file, Some(1), Some(2026)),
+    ))
+    |> element.to_string
+  let file_url = "/admin.html?file=windows%2FD-LAN%20%26%23%2B%25.exe"
+
+  assert string.contains(html, "href=\"" <> file_url <> "\"")
+  assert string.contains(
+    html,
+    "href=\"" <> file_url <> "&amp;month=12&amp;year=2025\"",
+  )
+  assert string.contains(
+    html,
+    "href=\"" <> file_url <> "&amp;month=2&amp;year=2026\"",
+  )
 }
 
 pub fn date_to_str_test() {
