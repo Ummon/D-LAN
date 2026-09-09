@@ -1,13 +1,13 @@
 # D-LAN
 
-D-LAN is an open source decentralized LAN file sharing software.
+D-LAN is open source, decentralized LAN file sharing software.
 
-The goal is to easily share some files and folders on a local area network environment like a LAN-Party. After you launched D-LAN, you will see all other people and theirs sharing automatically without special configuration or central server.
+Easily share files and folders on a local area network, such as at a LAN party. After launching D-LAN, you automatically discover other users and their shared files without special configuration or a central server.
 
-* "Website":http://www.d-lan.net
-* "Development wiki":http://dev.d-lan.net/projects/pmp/wiki
-* "Forums":http://dev.d-lan.net/projects/pmp/boards
-* "Issues":http://dev.d-lan.net/projects/pmp/issues
+* [Website](http://www.d-lan.net)
+* [Development wiki](http://dev.d-lan.net/projects/pmp/wiki)
+* [Forums](http://dev.d-lan.net/projects/pmp/boards)
+* [Issues](http://dev.d-lan.net/projects/pmp/issues)
 
 
 ## Features
@@ -18,33 +18,60 @@ The goal is to easily share some files and folders on a local area network envir
 * Fast indexed search among all other peers.
 * Browse all files and folders of any other peer.
 * Manage the download queue. It includes adding, deleting, pausing or reordering.
-* A global persisted chat with channels, formatting and smiles features.
-* D-LAN can run without graphic interface (GUI) and be controlled remotely.
-* Open source. Code source distributed under GPLv3 license.
-* Free of any sort of ads or malwares.
+* Persistent global chat with channels, formatting, and emoticons.
+* D-LAN can run without a graphical user interface (GUI) and be controlled remotely.
+* Open source. Source code distributed under the [GPLv3 license](COPYING).
+* Free of ads and malware.
 
 
 ## Development
 
-### Configure & build
+The release workflow below targets Windows with LLVM-MinGW.
 
-```
-cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
-cmake --build build
-ctest --test-dir build        # run the tests
-```
+### Prerequisites
 
-In Qt Creator: File → Open File or Project → select the top-level
-`CMakeLists.txt`, pick the llvm-mingw kit.
+* CMake 3.21 or newer and Ninja, available on `PATH`.
+* An LLVM-MinGW toolchain compatible with your Qt installation. Add its `bin` directory to `PATH` so that `clang`, `clang++`, and `llvm-rc` are available.
+* [Qt Framework](https://www.qt.io/development/download): Install Qt 6 with the Core, Network, Xml, Sql, Widgets, and SvgWidgets modules, plus Test for tests. The release workflow also requires LinguistTools and Qt 6.7 or newer for the translation commands. Add the Qt `bin` directory to `PATH`, for example `C:\Qt\6.11.2\llvm-mingw_64\bin`, adjusting the version and kit to your installation. Set `CMAKE_PREFIX_PATH` to the Qt installation directory if CMake cannot locate it.
+* [BLAKE3](https://github.com/BLAKE3-team/BLAKE3): Install or build the C library. Set `DLAN_BLAKE3_ROOT` to the directory containing `blake3.h` and the `lib` directory.
+* [Protobuf](https://github.com/protocolbuffers/protobuf): Install or build the library and the matching `protoc` compiler. Set `DLAN_PROTOBUF_ROOT` to the installation directory, with `protoc` in its `bin` directory or on `PATH`. If the installation has no CMake package configuration, the build requires pkg-config and Protobuf's `.pc` file.
+* Git, available on `PATH`, for the release script's version information.
+* [Nushell](https://www.nushell.sh/), available as `nu`, to run the build scripts.
+* For Windows packaging: Qt's `windeployqt.exe` and Inno Setup's `iscc`, both available on `PATH`.
+
+CMake locates existing BLAKE3 and Protobuf installations; it does not download or build them. Use libraries compatible with the selected compiler and architecture. Their default locations are defined in [application/CMakeLists.txt](application/CMakeLists.txt) and can be overridden using the cache options below.
+
+### Qt Creator
+
+In Qt Creator: File → Open File or Project → select
+`application/CMakeLists.txt`, then pick the LLVM-MinGW kit matching your Qt installation.
 
 Useful cache options:
 
 | Option | Default | Purpose |
 |---|---|---|
 | `DLAN_BUILD_TESTS` | `ON` | Test executables (+ CTest) |
-| `DLAN_BUILD_TOOLS` | `ON` | LogViewer, FileIndexer, PasswordHasher, ProtoBinReader |
-| `DLAN_PROFILING` | `OFF` | gprof `-pg` (was `CONFIG += prof`) |
-| `DLAN_BLAKE3_ROOT` | `C:/BLAKE3-1.8.5/c` | BLAKE3 location (was `blake3.pri`) |
-| `DLAN_PROTOBUF_ROOT` | `C:/protobuf` | protobuf location (was `protobuf.pri`) |
+| `DLAN_BUILD_TOOLS` | `ON` | LogViewer, FileIndexer, PasswordHasher |
+| `DLAN_PROFILING` | `OFF` | gprof `-pg` |
+| `DLAN_BLAKE3_ROOT` | `C:/BLAKE3-1.8.5/c` | BLAKE3 location |
+| `DLAN_PROTOBUF_ROOT` | `C:/protobuf` | protobuf location |
 
-D-LAN can be built under Windows or Linux (Ubuntu), see here for more information: http://dev.d-lan.net/projects/pmp/wiki/#Technical
+### Build a release
+
+Run [application/build.nu](application/build.nu) from the `application` directory. From the repository root:
+
+```sh
+cd application
+nu build.nu
+```
+
+Before packaging, check the `libwinpthread-1.dll` source path in the script's `make-setup` subcommand. It currently uses `C:/Qt/Tools/llvm-mingw1706_64/bin/libwinpthread-1.dll`; adjust it to your LLVM-MinGW installation.
+
+Keep `DLAN_BUILD_TESTS` and `DLAN_BUILD_TOOLS` enabled for the full release workflow. The script will:
+
+* Update translations.
+* Clean and build the executables.
+* Run the tests.
+* Create the Windows installer.
+
+Release executables are written to `application/build/release/output`, and installers to `application/Setups/Windows/Installations`.
