@@ -188,7 +188,7 @@ ON CONFLICT (file, date) DO UPDATE SET count = count + 1",
 
 fn get_files(db: sqlight.Connection) -> List(String) {
   sqlight.query(
-    "SELECT DISTINCT file FROM downloads ORDER BY date DESC, file",
+    "SELECT file FROM downloads GROUP BY file ORDER BY MAX(date) DESC, file",
     db,
     [],
     decode.at([0], decode.string),
