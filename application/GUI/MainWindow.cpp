@@ -442,11 +442,8 @@ void MainWindow::saveWindowsSettings()
 
    SETTINGS.set("windows_state", this->saveState());
 
-   // Qt doc says maximized property only works on Windows.
-#ifdef Q_OS_WIN32
    SETTINGS.set("main_window_maximized", this->isMaximized());
    if (!this->isMaximized())
-#endif
    {
       SETTINGS.set("main_window_width", static_cast<quint32>(this->size().width()));
       SETTINGS.set("main_window_height", static_cast<quint32>(this->size().height()));
@@ -476,8 +473,6 @@ void MainWindow::restoreWindowsSettings()
          qMax(0, (available.height() - this->frameGeometry().height()) / 2)));
    }
 
-#ifdef Q_OS_WIN32
    if (SETTINGS.get<bool>("main_window_maximized"))
       this->setWindowState(this->windowState() | Qt::WindowMaximized);
-#endif
 }
