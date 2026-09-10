@@ -60,6 +60,7 @@ namespace RCC
       Q_OBJECT
       static const int NB_RETRIES_MAX;
       static const int TIME_BETWEEN_RETRIES; // [ms]
+      static const int CONNECTION_TIMEOUT; // [ms]
 
    protected:
       class Logger : public ILogger
@@ -149,6 +150,7 @@ namespace RCC
    private slots:
       void addressResolved(QHostInfo hostInfo);
       void tryToConnectToTheNextAddress();
+      void connectionTimedOut();
       void stateChanged(QAbstractSocket::SocketState socketState);
 
    private:      
@@ -173,6 +175,10 @@ namespace RCC
 
       int currentHostLookupID;
       QTimer retryTimer;
+
+      // Qt aborts a connection attempt only after 30 s, this timer enforces a shorter delay.
+      QTimer connectionTimeoutTimer;
+
       quint64 attemptGeneration = 0;
 
       // When a name is resolved many addresses can be returned, we will try all of

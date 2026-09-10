@@ -47,6 +47,10 @@ using namespace RCC;
    const int InternalCoreConnection::TIME_BETWEEN_RETRIES(250);
 #endif
 
+// 'connectToHost(..)' is asynchronous and Qt gives up only after 30 s, for instance when the
+// packets are silently dropped by a firewall. Each attempt is aborted after this delay instead.
+const int InternalCoreConnection::CONNECTION_TIMEOUT(3000);
+
 void InternalCoreConnection::Logger::logDebug(const QString& message)
 {
    L_DEBU(message);
@@ -69,6 +73,10 @@ InternalCoreConnection::InternalCoreConnection(CoreController& coreController) :
    this->retryTimer.setSingleShot(true);
    this->retryTimer.setInterval(TIME_BETWEEN_RETRIES);
    connect(&this->retryTimer, &QTimer::timeout, this, &InternalCoreConnection::tryToConnectToTheNextAddress);
+
+   this->connectionTimeoutTimer.setSingleShot(true);
+   this->connectionTimeoutTimer.setInterval(CONNECTION_TIMEOUT);
+   connect(&this->connectionTimeoutTimer, &QTimer::timeout, this, &InternalCoreConnection::connectionTimedOut);
    this->startListening();
 }
 
@@ -86,6 +94,7 @@ void InternalCoreConnection::cancelConnectionAttempt()
       this->currentHostLookupID = -1;
    }
    this->retryTimer.stop();
+   this->connectionTimeoutTimer.stop();
    // Closing a connecting socket must not schedule another address or retry.
    disconnect(this->socket, &QAbstractSocket::stateChanged, this, &InternalCoreConnection::stateChanged);
    this->addressesToTry.clear();
@@ -407,6 +416,15 @@ void InternalCoreConnection::tryToConnectToTheNextAddress()
    connect(this->socket, &QAbstractSocket::stateChanged, this, &InternalCoreConnection::stateChanged);
    this->addressesToRetry << address;
    this->socket->connectToHost(address, this->connectionInfo.port);
+   this->connectionTimeoutTimer.start();
+}
+
+void InternalCoreConnection::connectionTimedOut()
+{
+   L_DEBU(QString("Connection to %1 timed out after %2 ms").arg(this->socket->peerAddress().toString()).arg(CONNECTION_TIMEOUT));
+
+   // 'abort()' puts the socket in 'UnconnectedState', 'stateChanged(..)' then tries the next address or retries.
+   this->socket->abort();
 }
 
 void InternalCoreConnection::stateChanged(QAbstractSocket::SocketState socketState)
@@ -415,6 +433,7 @@ void InternalCoreConnection::stateChanged(QAbstractSocket::SocketState socketSta
    {
    case QAbstractSocket::UnconnectedState:
       disconnect(this->socket, &QAbstractSocket::stateChanged, this, &InternalCoreConnection::stateChanged);
+      this->connectionTimeoutTimer.stop();
       if (!this->addressesToTry.isEmpty())
       {
          this->tryToConnectToTheNextAddress();
@@ -433,6 +452,7 @@ void InternalCoreConnection::stateChanged(QAbstractSocket::SocketState socketSta
 
    case QAbstractSocket::ConnectedState:
       disconnect(this->socket, &QAbstractSocket::stateChanged, this, &InternalCoreConnection::stateChanged);
+      this->connectionTimeoutTimer.stop();
       // Now we wait a message 'Protos.GUI.AskForAuthentication' from the Core before being authenticated.
 
    default:;
