@@ -482,10 +482,16 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
       // Watched files.
       else if (file = this->getFile(event->wd))
       {
-         if (event->mask & IN_MOVE_SELF)
+         if (event->mask & (IN_MOVE_SELF | IN_DELETE_SELF))
          {
-            L_DEBU(QString("inotify event (file): IN_MOVE_SELF (path=%1)").arg(this->getEventPath(event)));
-            // TODO
+            // IN_MOVE_SELF does not provide the new pathname. As for moved
+            // root directories, retire the old path and its watch instead of
+            // attributing later modifications of the inode to the old name.
+            const QString path = file->path;
+            L_DEBU(QString("inotify event (file): IN_MOVE_SELF || IN_DELETE_SELF (path=%1)").arg(path));
+            events << WatcherEvent(WatcherEvent::DELETED, path, true);
+            this->rmPath(path);
+            continue;
          }
 
          if (event->mask & IN_MODIFY)
@@ -494,13 +500,6 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
             events << WatcherEvent(WatcherEvent::CONTENT_CHANGED, this->getEventPath(event), true);
          }
 
-         if (event->mask & IN_DELETE_SELF)
-         {
-            const QString& path = this->getEventPath(event);
-            L_DEBU(QString("inotify event (file): IN_DELETE_SELF (path=%1)").arg(path));
-            events << WatcherEvent(WatcherEvent::DELETED, path, true);
-            this->rmPath(path);
-         }
       }
    }
 

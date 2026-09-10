@@ -11,6 +11,63 @@ class DirWatcherLinuxTests : public QObject
    Q_OBJECT
 
 private slots:
+   void movedFilesReleaseOldPath_data()
+   {
+      QTest::addColumn<QString>("destination");
+      QTest::newRow("rename") << "renamed.txt";
+      QTest::newRow("move-to-another-directory") << "other/moved.txt";
+   }
+
+   void movedFilesReleaseOldPath()
+   {
+      QFETCH(QString, destination);
+      QTemporaryDir temp;
+      QVERIFY(temp.isValid());
+      QDir base(temp.path());
+      QVERIFY(base.mkdir("other"));
+      const QString oldPath = temp.filePath("file.txt");
+      const QString newPath = temp.filePath(destination);
+      {
+         QFile file(oldPath);
+         QVERIFY(file.open(QIODevice::WriteOnly));
+      }
+      FM::DirWatcherLinux watcher;
+      QVERIFY(watcher.addPath(temp.path(), "file.txt"));
+      QVERIFY(QFile::rename(oldPath, newPath));
+      {
+         QFile file(newPath);
+         QVERIFY(file.open(QIODevice::Append));
+         QCOMPARE(file.write("before"), qint64(6));
+      }
+      // A self-move has no destination name. Retire the old registration,
+      // including modifications queued after the rename in the same read.
+      const auto events = watcher.waitEvent(1000);
+      QCOMPARE(events.size(), 1);
+      QCOMPARE(events[0].type, FM::WatcherEvent::DELETED);
+      QCOMPARE(events[0].path1, oldPath);
+      QVERIFY(events[0].isWatchedFile);
+      QCOMPARE(watcher.nbWatchedPath(), 0);
+      {
+         QFile file(newPath);
+         QVERIFY(file.open(QIODevice::Append));
+         QCOMPARE(file.write("after"), qint64(5));
+      }
+      for (const auto& event : watcher.waitEvent(0))
+         QCOMPARE(event.type, FM::WatcherEvent::TIMEOUT);
+
+      // Explicitly watching the new location must work normally.
+      QVERIFY(watcher.addPath(newPath));
+      {
+         QFile file(newPath);
+         QVERIFY(file.open(QIODevice::Append));
+         QCOMPARE(file.write("watched"), qint64(7));
+      }
+      bool found = false;
+      for (const auto& event : watcher.waitEvent(1000))
+         found |= event.type == FM::WatcherEvent::CONTENT_CHANGED && event.path1 == newPath && event.isWatchedFile;
+      QVERIFY(found);
+   }
+
    void symlinkRootsAreRejected_data()
    {
       QTest::addColumn<bool>("directory");
