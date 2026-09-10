@@ -37,6 +37,70 @@ class DirWatcherLinuxTests : public QObject
    Q_OBJECT
 
 private slots:
+   void fileRegistrationReplacesDirectory_data()
+   {
+      QTest::addColumn<bool>("removeImmediately");
+      QTest::newRow("remove-before-processing-events") << true;
+      QTest::newRow("check-replacement-events") << false;
+   }
+
+   void fileRegistrationReplacesDirectory()
+   {
+      QFETCH(bool, removeImmediately);
+      QTemporaryDir temp;
+      QVERIFY(temp.isValid());
+      QDir base(temp.path());
+      QVERIFY(base.mkpath("root/sub"));
+      const QString path = temp.filePath("root");
+      FM::DirWatcherLinux watcher;
+      QVERIFY(watcher.addPath(path));
+      const auto references = watcher.watchReferences;
+      const auto ancestors = watcher.ancestorPaths;
+      QVERIFY(base.rename("root", "backup"));
+
+      // A failed replacement must preserve the original registration.
+      QVERIFY(!watcher.addPath(path));
+      QCOMPARE(watcher.nbWatchedPath(), 1);
+      QCOMPARE(watcher.watchReferences, references);
+      QCOMPARE(watcher.ancestorPaths, ancestors);
+      {
+         QFile file(path);
+         QVERIFY(file.open(QIODevice::WriteOnly));
+      }
+      QVERIFY(watcher.addPath(path));
+      QCOMPARE(watcher.nbWatchedPath(), 1);
+      QVERIFY(watcher.dirs.isEmpty());
+      QVERIFY(watcher.files.contains(path));
+      if (!removeImmediately)
+      {
+         // Old directory events must not retire the replacement file.
+         for (const auto& event : watcher.waitEvent(0))
+            QCOMPARE(event.type, FM::WatcherEvent::TIMEOUT);
+         {
+            QFile file(path);
+            QVERIFY(file.open(QIODevice::Append));
+            QCOMPARE(file.write("changed"), qint64(7));
+         }
+         bool changed = false;
+         for (const auto& event : watcher.waitEvent(1000))
+            changed |= event.type == FM::WatcherEvent::CONTENT_CHANGED && event.path1 == path && event.isWatchedFile;
+         QVERIFY(changed);
+      }
+      watcher.rmPath(path);
+      QCOMPARE(watcher.nbWatchedPath(), 0);
+      QVERIFY(watcher.watchReferences.isEmpty());
+      QVERIFY(watcher.ancestorPaths.isEmpty());
+      {
+         QFile file(path);
+         QVERIFY(file.open(QIODevice::Append));
+         QCOMPARE(file.write("after removal"), qint64(13));
+         QFile oldChild(temp.filePath("backup/sub/later.txt"));
+         QVERIFY(oldChild.open(QIODevice::WriteOnly));
+      }
+      for (const auto& event : watcher.waitEvent(0))
+         QCOMPARE(event.type, FM::WatcherEvent::TIMEOUT);
+   }
+
    void ancestorReplacementDuringRegistration_data()
    {
       QTest::addColumn<QString>("triggerPath");
