@@ -501,12 +501,11 @@ QString CrashHandler::stackTrace(int framesToSkip)
    return QString::fromLatin1(buffer.data, buffer.size);
 }
 
-#else // Q_OS_WIN
+#elif !defined(Q_OS_LINUX)
 
 void CrashHandler::install(bool)
 {
-   // Not implemented on this platform yet. Candidates: 'sigaction' + 'backtrace_symbols' (glibc)
-   // or '<stacktrace>' once libc++ implements it.
+   // Implemented separately for Linux in CrashHandlerLinux.cpp.
 }
 
 QString CrashHandler::stackTrace(int)

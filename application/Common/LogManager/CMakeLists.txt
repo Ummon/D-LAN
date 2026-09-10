@@ -37,6 +37,11 @@ target_link_libraries(LogManager PUBLIC Qt6::Core)
 if(WIN32)
    # 'StackWalk64', 'SymFromAddr', 'MiniDumpWriteDump' (priv/CrashHandler.cpp).
    target_link_libraries(LogManager PUBLIC dbghelp)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+   target_sources(LogManager PRIVATE priv/CrashHandlerLinux.cpp)
+   target_link_libraries(LogManager PUBLIC ${CMAKE_DL_LIBS})
+   # Make executable symbols visible to backtrace_symbols_fd/dladdr.
+   target_link_options(LogManager INTERFACE -rdynamic)
 endif()
 
 if(DLAN_BUILD_TESTS)

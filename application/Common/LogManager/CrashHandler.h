@@ -25,7 +25,7 @@ namespace LM
    /**
      * Catches the fatal errors which normally kill the process silently (access violations,
      * unhandled C++ exceptions, abort(), pure virtual calls, ...) and dumps a symbolized
-     * stack trace:
+     * stack trace on Windows:
      *  - into the current D-LAN log file, as a 'SV_FATAL_ERROR' entry;
      *  - into a standalone '<log dir>/crash_<date>.log' written with plain Win32 calls, so
      *    the report survives even when the log machinery itself is broken;
@@ -33,6 +33,14 @@ namespace LM
      *
      * 'install()' must be called as early as possible in 'main()', but *after*
      * 'Builder::setLogDirName(..)' so the report lands in the right directory.
+     *
+     * Linux: SIGSEGV, SIGBUS, SIGABRT, SIGILL and SIGFPE produce a standalone
+     * crash_<Unix seconds>_<nanoseconds>_<pid>.log and stderr output. Reports
+     * include signal details, process mappings and a best-effort stack trace.
+     * The normal logger is not used from the signal handler. The process then
+     * terminates with the original signal (system core-dump policy still applies).
+     * writeMiniDump is Windows-only. Install before starting worker threads;
+     * the alternate signal stack protects only the thread calling install().
      */
    class CrashHandler
    {

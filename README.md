@@ -94,3 +94,40 @@ Keep `DLAN_BUILD_TESTS` and `DLAN_BUILD_TOOLS` enabled for the full release work
 * Create the Windows installer.
 
 Release executables are written to `application/build/release/output`, and installers to `application/Setups/Windows/Installations`.
+
+### Linux crash reports
+
+The GUI and core automatically install a fatal-signal handler. Reports named
+`crash_<Unix seconds>_<nanoseconds>_<pid>.log` are saved beside their normal logs,
+usually in `~/.d-lan/log_gui/` and `~/.d-lan/log_core/`. They contain the executable
+path, D-LAN version, signal, process/thread IDs, fault address (for hardware faults),
+instruction pointer on x86/x86-64/AArch64, memory mappings and a stack trace.
+Signal details and the trace are also written to stderr, including when the report
+directory is unavailable. Reports use owner-only permissions and remain local.
+Copy reports you want to keep: normal log rotation also removes old crash logs.
+
+The process still terminates with the original signal; system core-dump settings
+continue to apply. `writeMiniDump` is Windows-only. On Linux, use the system's core
+dump with GDB when a complete memory snapshot is needed.
+
+Executable symbols are exported for function names. For source filenames and line
+numbers, build with `-DCMAKE_BUILD_TYPE=Debug` or `RelWithDebInfo` and retain the
+matching executable and debug symbols. C++ names in fatal reports can be decoded
+with `c++filt < crash_....log`. For a trace entry of the form
+`/path/to/binary(+0xOFFSET)`, resolve the offset using:
+
+```sh
+addr2line -e /path/to/the/matching/binary -f -C -i 0xOFFSET
+```
+
+For entries containing a function name, the following offset is relative to that
+function, not the binary. The bracketed runtime address and saved mappings allow
+ASLR adjustment for offline debugging. `LM::CrashHandler::stackTrace()` can also
+be called during normal execution and returns demangled names and module offsets.
+
+Crash-time unwinding is best effort: corrupted stacks or allocator/loader failures
+can prevent a complete trace. The signal details and mappings are written before
+unwinding, and the signal handler avoids Qt and the normal logger. The unwinder is
+preloaded at startup but is not guaranteed async-signal-safe. An alternate signal
+stack helps with stack overflow on the installing thread (normally the main
+thread); worker-thread stack overflows may not produce a report.
