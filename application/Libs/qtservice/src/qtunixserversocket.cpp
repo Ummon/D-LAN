@@ -74,11 +74,17 @@ void QtUnixServerSocket::setPath(const QString &path)
 	unsigned int pathlen = strlen(path.toLatin1().constData());
 	if (pathlen > sizeof(addr.sun_path)) pathlen = sizeof(addr.sun_path);
 	::memcpy(addr.sun_path, path.toLatin1().constData(), pathlen);
-	if ((::bind(sock, (struct sockaddr *)&addr, SUN_LEN(&addr)) != -1) &&
-	    (::listen(sock, 5) != -1)) {
-	    setSocketDescriptor(sock);
-            path_ = path;
+        if (::bind(sock, (struct sockaddr *)&addr, SUN_LEN(&addr)) == -1) {
+            ::close(sock);
+            return;
         }
+        if (::listen(sock, 5) == -1) {
+            ::close(sock);
+            ::unlink(path.toLatin1().constData());
+            return;
+        }
+        setSocketDescriptor(sock);
+        path_ = path;
     }
 }
 

@@ -1,9 +1,14 @@
 #include <QElapsedTimer>
 #include <QScopeGuard>
+#include <QFileInfo>
+#include <QTemporaryDir>
 #include <QTest>
 #include <qtservice.h>
+#include <qtunixserversocket.h>
 
+#include <cerrno>
 #include <chrono>
+#include <fcntl.h>
 #include <thread>
 #include <csignal>
 #include <pthread.h>
@@ -14,6 +19,33 @@
 namespace
 {
    int connectionFd = -1;
+   bool trackServerSocket = false;
+   bool failListen = false;
+   bool listenAttempted = false;
+   int serverFd = -1;
+}
+
+extern "C" int __real_bind(int fd, const sockaddr* address, socklen_t length);
+extern "C" int __wrap_bind(int fd, const sockaddr* address, socklen_t length)
+{
+   if (trackServerSocket)
+      serverFd = fd;
+   return __real_bind(fd, address, length);
+}
+
+extern "C" int __real_listen(int fd, int backlog);
+extern "C" int __wrap_listen(int fd, int backlog)
+{
+   if (trackServerSocket && fd == serverFd)
+   {
+      listenAttempted = true;
+      if (failListen)
+      {
+         errno = EOPNOTSUPP;
+         return -1;
+      }
+   }
+   return __real_listen(fd, backlog);
 }
 
 // Supply a private connected socket instead of contacting an installed service.
@@ -33,6 +65,47 @@ class QtServiceUnixTests : public QObject
    Q_OBJECT
 
 private slots:
+   void serverSetupFailure_data()
+   {
+      QTest::addColumn<bool>("listenFailure");
+      QTest::newRow("bind-failure") << false;
+      QTest::newRow("listen-failure") << true;
+   }
+
+   void serverSetupFailure()
+   {
+      QFETCH(bool, listenFailure);
+      QTemporaryDir directory;
+      QVERIFY(directory.isValid());
+      const QString path = directory.filePath(listenFailure ? "service.sock" : "missing/service.sock");
+      QtUnixServerSocket server;
+      trackServerSocket = true;
+      failListen = listenFailure;
+      const auto cleanup = qScopeGuard([]
+      {
+         // Keep a failing regression test from leaking its own descriptor.
+         if (serverFd >= 0 && fcntl(serverFd, F_GETFD) != -1)
+            close(serverFd);
+         serverFd = -1;
+         trackServerSocket = false;
+         failListen = false;
+      });
+      for (int attempt = 0; attempt < 8; ++attempt)
+      {
+         listenAttempted = false;
+         server.setPath(path);
+         QVERIFY(serverFd >= 0);
+         QCOMPARE(listenAttempted, listenFailure);
+         QVERIFY(!server.isListening());
+         errno = 0;
+         const int descriptorFlags = fcntl(serverFd, F_GETFD);
+         const int descriptorError = errno;
+         QCOMPARE(descriptorFlags, -1);
+         QCOMPARE(descriptorError, EBADF);
+         QVERIFY(!QFileInfo::exists(path));
+      }
+   }
+
    void commandReply_data()
    {
       QTest::addColumn<QString>("command");
