@@ -39,16 +39,14 @@
 ****************************************************************************/
 
 #include "qtunixserversocket.h"
+#include <QFile>
+#include <cerrno>
+#include <cstddef>
 #include <sys/types.h>
 #include <sys/un.h>
 #include <sys/socket.h>
 #include <string.h>
 #include <unistd.h>
-
-#ifndef SUN_LEN
-#define SUN_LEN(ptr) ((size_t)(((struct sockaddr_un *) 0)->sun_path) \
-                      +strlen ((ptr)->sun_path))
-#endif
 
 QtUnixServerSocket::QtUnixServerSocket(const QString &path, QObject *parent)
     : QTcpServer(parent)
@@ -63,24 +61,32 @@ QtUnixServerSocket::QtUnixServerSocket(QObject *parent)
 
 void QtUnixServerSocket::setPath(const QString &path)
 {
+    struct sockaddr_un addr{};
+    const QByteArray encodedPath = QFile::encodeName(path);
+    // Validate before creating a descriptor or unlinking anything at this path.
+    if (encodedPath.size() >= static_cast<qsizetype>(sizeof(addr.sun_path))) {
+        errno = ENAMETOOLONG;
+        return;
+    }
+    if (encodedPath.isEmpty() || encodedPath.contains('\0')) {
+        errno = EINVAL;
+        return;
+    }
+    addr.sun_family = AF_UNIX;
+    ::memcpy(addr.sun_path, encodedPath.constData(), encodedPath.size());
+    const socklen_t addressLength = static_cast<socklen_t>(offsetof(sockaddr_un, sun_path) + encodedPath.size() + 1);
     path_.clear();
 
     int sock = ::socket(PF_UNIX, SOCK_STREAM, 0);
     if (sock != -1) {
-	struct sockaddr_un addr;
-	::memset(&addr, 0, sizeof(struct sockaddr_un));
-	addr.sun_family = AF_UNIX;
-	::unlink(path.toLatin1().constData()); // ### This might need to be changed
-	unsigned int pathlen = strlen(path.toLatin1().constData());
-	if (pathlen > sizeof(addr.sun_path)) pathlen = sizeof(addr.sun_path);
-	::memcpy(addr.sun_path, path.toLatin1().constData(), pathlen);
-        if (::bind(sock, (struct sockaddr *)&addr, SUN_LEN(&addr)) == -1) {
+        ::unlink(encodedPath.constData()); // ### This might need to be changed
+        if (::bind(sock, (struct sockaddr *)&addr, addressLength) == -1) {
             ::close(sock);
             return;
         }
         if (::listen(sock, 5) == -1) {
             ::close(sock);
-            ::unlink(path.toLatin1().constData());
+            ::unlink(encodedPath.constData());
             return;
         }
         setSocketDescriptor(sock);
@@ -92,7 +98,7 @@ void QtUnixServerSocket::close()
 {
     QTcpServer::close();
     if (!path_.isEmpty()) {
-        ::unlink(path_.toLatin1().constData());
+        ::unlink(QFile::encodeName(path_).constData());
         path_.clear();
     }
 }

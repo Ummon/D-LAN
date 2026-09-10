@@ -1,6 +1,7 @@
 #include <QElapsedTimer>
 #include <QScopeGuard>
 #include <QFileInfo>
+#include <QFile>
 #include <QTemporaryDir>
 #include <QTest>
 #include <qtservice.h>
@@ -77,6 +78,96 @@ class QtServiceUnixTests : public QObject
    Q_OBJECT
 
 private slots:
+   void socketPathLength_data()
+   {
+      QTest::addColumn<int>("byteCount");
+      QTest::addColumn<bool>("unicode");
+      const int capacity = sizeof(sockaddr_un{}.sun_path);
+      QTest::newRow("maximum-valid") << capacity - 1 << false;
+      QTest::newRow("no-space-for-terminator") << capacity << false;
+      QTest::newRow("overlong") << capacity + 20 << false;
+      QTest::newRow("unicode-maximum-valid") << capacity - 1 << true;
+      QTest::newRow("unicode-too-long") << capacity << true;
+   }
+
+   void socketPathLength()
+   {
+      QFETCH(int, byteCount);
+      QFETCH(bool, unicode);
+      QTemporaryDir directory;
+      QVERIFY(directory.isValid());
+      QString path = directory.path() + '/';
+      const int padding = byteCount - QFile::encodeName(path).size();
+      QVERIFY(padding > 0);
+      if (unicode)
+         path += QString(padding / 2, QChar(0x00e9)) + QString(padding % 2, 'x');
+      else
+         path += QString(padding, 'x');
+      QCOMPARE(QFile::encodeName(path).size(), byteCount);
+      const bool valid = byteCount < static_cast<int>(sizeof(sockaddr_un{}.sun_path));
+      if (!valid)
+      {
+         // Reject the full path before unlink(), even if a file already exists there.
+         QFile sentinel(path);
+         QVERIFY(sentinel.open(QIODevice::WriteOnly));
+         QCOMPARE(sentinel.write("preserve"), 8);
+      }
+
+      QtUnixServerSocket server;
+      const auto closeServer = qScopeGuard([&] { server.close(); });
+      server.setPath(path);
+      const int serverError = errno;
+      QCOMPARE(server.isListening(), valid);
+      QtUnixSocket client;
+      const bool connected = client.connectTo(path);
+      const int clientError = errno;
+      QCOMPARE(connected, valid);
+      if (!valid)
+      {
+         QCOMPARE(serverError, ENAMETOOLONG);
+         QCOMPARE(clientError, ENAMETOOLONG);
+         QFile sentinel(path);
+         QVERIFY(sentinel.open(QIODevice::ReadOnly));
+         QCOMPARE(sentinel.readAll(), QByteArray("preserve"));
+      }
+      else
+      {
+         QVERIFY(QFileInfo::exists(path));
+         client.close();
+         server.close();
+         QVERIFY(!QFileInfo::exists(path));
+      }
+   }
+
+   void invalidSocketPath_data()
+   {
+      QTest::addColumn<bool>("embeddedNull");
+      QTest::newRow("empty") << false;
+      QTest::newRow("embedded-null") << true;
+   }
+
+   void invalidSocketPath()
+   {
+      QFETCH(bool, embeddedNull);
+      QTemporaryDir directory;
+      QVERIFY(directory.isValid());
+      const QString originalPath = directory.filePath("original");
+      QFile sentinel(originalPath);
+      QVERIFY(sentinel.open(QIODevice::WriteOnly));
+      sentinel.close();
+      const QString path = embeddedNull ? originalPath + QChar(0) + "suffix" : QString();
+      QtUnixServerSocket server;
+      const auto closeServer = qScopeGuard([&] { server.close(); });
+      server.setPath(path);
+      const int serverError = errno;
+      QVERIFY(!server.isListening());
+      QCOMPARE(serverError, EINVAL);
+      QtUnixSocket client;
+      QVERIFY(!client.connectTo(path));
+      QCOMPARE(errno, EINVAL);
+      QVERIFY(QFileInfo::exists(originalPath));
+   }
+
    void connectionBacklog_data()
    {
       QTest::addColumn<QString>("operation");

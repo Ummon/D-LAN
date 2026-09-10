@@ -39,9 +39,11 @@
 ****************************************************************************/
 
 #include "qtunixsocket.h"
+#include <QFile>
 #include <QScopeGuard>
 #include <QThread>
 #include <cerrno>
+#include <cstddef>
 #include <fcntl.h>
 #include <poll.h>
 #include <sys/types.h>
@@ -50,11 +52,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#ifndef SUN_LEN
-#define SUN_LEN(ptr) ((size_t)(((struct sockaddr_un *) 0)->sun_path) \
-                      +strlen ((ptr)->sun_path))
-#endif
-
 QtUnixSocket::QtUnixSocket(QObject *parent)
     : QTcpSocket(parent)
 {
@@ -62,12 +59,20 @@ QtUnixSocket::QtUnixSocket(QObject *parent)
 
 bool QtUnixSocket::connectTo(const QString &path, QDeadlineTimer deadline)
 {
-    struct sockaddr_un addr;
-    ::memset(&addr, 0, sizeof(addr));
+    struct sockaddr_un addr{};
+    const QByteArray encodedPath = QFile::encodeName(path);
+    // Reserve space for the terminator and never silently truncate a pathname.
+    if (encodedPath.size() >= static_cast<qsizetype>(sizeof(addr.sun_path))) {
+        errno = ENAMETOOLONG;
+        return false;
+    }
+    if (encodedPath.isEmpty() || encodedPath.contains('\0')) {
+        errno = EINVAL;
+        return false;
+    }
     addr.sun_family = AF_UNIX;
-    size_t pathlen = strlen(path.toLatin1().constData());
-    pathlen = qMin(pathlen, sizeof(addr.sun_path));
-    ::memcpy(addr.sun_path, path.toLatin1().constData(), pathlen);
+    ::memcpy(addr.sun_path, encodedPath.constData(), encodedPath.size());
+    const socklen_t addressLength = static_cast<socklen_t>(offsetof(sockaddr_un, sun_path) + encodedPath.size() + 1);
 
     while (!deadline.hasExpired()) {
         const int sock = ::socket(PF_UNIX, SOCK_STREAM, 0);
@@ -78,7 +83,7 @@ bool QtUnixSocket::connectTo(const QString &path, QDeadlineTimer deadline)
         if (flags == -1 || ::fcntl(sock, F_SETFL, flags | O_NONBLOCK) == -1)
             return false;
 
-        if (::connect(sock, reinterpret_cast<struct sockaddr *>(&addr), SUN_LEN(&addr)) == -1) {
+        if (::connect(sock, reinterpret_cast<struct sockaddr *>(&addr), addressLength) == -1) {
             if (errno == EAGAIN || errno == EWOULDBLOCK) {
                 // A full Linux Unix-socket backlog has not started a connection.
                 // Retry with a fresh socket, without spinning or resetting the deadline.
