@@ -87,6 +87,8 @@ namespace GUI
    private:
       QString getBusyIndicatorToolTip() const;
 
+      void addMdiWindow(QWidget* widget);
+
       void addSettingsWindow();
       void removeSettingsWindow();
 

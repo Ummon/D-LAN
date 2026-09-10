@@ -340,12 +340,20 @@ QString MdiArea::getBusyIndicatorToolTip() const
    return tr("Waiting the initial scanning process is finished before loading the download queue");
 }
 
+void MdiArea::addMdiWindow(QWidget* widget)
+{
+   QMdiSubWindow* subWindow = this->addSubWindow(widget, Qt::CustomizeWindowHint);
+   // The wrapper otherwise inherits the application icon instead of the widget's.
+   subWindow->setWindowIcon(widget->windowIcon());
+   connect(widget, &QWidget::windowIconChanged, subWindow, &QWidget::setWindowIcon);
+}
+
 void MdiArea::addSettingsWindow()
 {
    this->settingsWidget = new SettingsWidget(this->coreConnection, this->sharedEntryListModel);
    connect(this->settingsWidget, &SettingsWidget::languageChanged, this, &MdiArea::languageChanged);
    connect(this->settingsWidget, &SettingsWidget::styleChanged, this, &MdiArea::styleChanged);
-   this->addSubWindow(this->settingsWidget, Qt::CustomizeWindowHint);
+   this->addMdiWindow(this->settingsWidget);
    this->mdiAreaTabBar->setTabData(this->mdiAreaTabBar->count() - 1, Protos::GUI::Settings_Window_WIN_SETTINGS);
    this->settingsWidget->setWindowState(Qt::WindowMaximized);
 }
@@ -366,7 +374,7 @@ void MdiArea::addChatWindow()
 
    this->chatWidget = new ChatWidget(this->coreConnection, this->emoticon);
    connect(this->chatWidget, &ChatWidget::browsePeer, this, &MdiArea::openBrowseWindow);
-   this->addSubWindow(this->chatWidget, Qt::CustomizeWindowHint);
+   this->addMdiWindow(this->chatWidget);
    this->mdiAreaTabBar->setTabData(this->mdiAreaTabBar->count() - 1, Protos::GUI::Settings_Window_WIN_CHAT);
    this->chatWidget->setWindowState(Qt::WindowMaximized);
 }
@@ -386,7 +394,7 @@ void MdiArea::addDownloadsWindow()
       return;
 
    this->downloadsWidget = new DownloadsWidget(this->coreConnection, this->peerListModel, this->sharedEntryListModel);
-   this->addSubWindow(this->downloadsWidget, Qt::CustomizeWindowHint);
+   this->addMdiWindow(this->downloadsWidget);
    this->mdiAreaTabBar->setTabData(this->mdiAreaTabBar->count() - 1, Protos::GUI::Settings_Window_WIN_DOWNLOAD);
    this->downloadsWidget->setWindowState(Qt::WindowMaximized);
 
@@ -414,7 +422,7 @@ void MdiArea::addUploadsWindow()
       return;
 
    this->uploadsWidget = new UploadsWidget(this->coreConnection, this->peerListModel);
-   this->addSubWindow(this->uploadsWidget, Qt::CustomizeWindowHint);
+   this->addMdiWindow(this->uploadsWidget);
    this->mdiAreaTabBar->setTabData(this->mdiAreaTabBar->count() - 1, Protos::GUI::Settings_Window_WIN_UPLOAD);
    this->uploadsWidget->setWindowState(Qt::WindowMaximized);
 }
@@ -444,7 +452,7 @@ BrowseWidget* MdiArea::addBrowseWindow(const Common::Hash& peerID)
 
    BrowseWidget* browseWindow =
       new BrowseWidget(this->coreConnection, this->peerListModel, this->sharedEntryListModel, peerID);
-   this->addSubWindow(browseWindow, Qt::CustomizeWindowHint);
+   this->addMdiWindow(browseWindow);
    browseWindow->setWindowState(Qt::WindowMaximized);
    this->browseWidgets << browseWindow;
 
@@ -478,7 +486,7 @@ SearchWidget* MdiArea::addSearchWindow(const Protos::Common::FindPattern& findPa
 {
    SearchWidget* searchWindow =
       new SearchWidget(this->coreConnection, this->peerListModel, this->sharedEntryListModel, findPattern, local);
-   this->addSubWindow(searchWindow, Qt::CustomizeWindowHint);
+   this->addMdiWindow(searchWindow);
    searchWindow->setWindowState(Qt::WindowMaximized);
    this->searchWidgets << searchWindow;
    connect(
@@ -514,7 +522,7 @@ ChatWidget* MdiArea::addChatWindow(const QString& roomName, bool switchTo)
 
    ChatWidget* chatWindow = new ChatWidget(this->coreConnection, this->emoticon, roomName);
    connect(chatWindow, &ChatWidget::browsePeer, this, &MdiArea::openBrowseWindow);
-   this->addSubWindow(chatWindow, Qt::CustomizeWindowHint);
+   this->addMdiWindow(chatWindow);
    chatWindow->setWindowState(Qt::WindowMaximized);
    this->chatRooms << chatWindow;
 
