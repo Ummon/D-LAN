@@ -18,9 +18,6 @@
   
 #pragma once
 
-#include <QMutex>
-#include <QWaitCondition>
-
 #include <priv/FileUpdater/WaitCondition.h>
 #include <priv/Log.h>
 
@@ -38,8 +35,5 @@ namespace FM
 
    private:
       int pfd[2];
-      bool released;
-      QMutex mutex;
-      QWaitCondition waitCondition;
    };
 }

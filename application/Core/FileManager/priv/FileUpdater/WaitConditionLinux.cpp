@@ -26,6 +26,7 @@ using namespace FM;
 #include <stdint.h>
 #include <signal.h>
 #include <fcntl.h>
+#include <errno.h>
 
 /**
   * @class FM::WaitConditionLinux
@@ -35,37 +36,45 @@ using namespace FM;
   */
 
 WaitConditionLinux::WaitConditionLinux()
-   : released(false)
-{   
-   if(0 != pipe(this->pfd))
+   : pfd{-1, -1}
+{
+   if (pipe(this->pfd) != 0)
+   {
       L_ERRO("WaitConditionLinux::WaitConditionLinux: Unable to create pipe.");
+      return;
+   }
 
-   fcntl(this->pfd[0],F_SETFL,fcntl(this->pfd[0],F_GETFL)|O_NONBLOCK);
-   fcntl(this->pfd[1],F_SETFL,fcntl(this->pfd[1],F_GETFL)|O_NONBLOCK);
+   for (int fd : this->pfd)
+   {
+      const int flags = fcntl(fd, F_GETFL);
+      if (flags < 0 || fcntl(fd, F_SETFL, flags | O_NONBLOCK) < 0)
+         L_ERRO(QString("WaitConditionLinux: Unable to configure pipe descriptor %1.").arg(fd));
+   }
 }
 
 WaitConditionLinux::~WaitConditionLinux()
 {
-   close(this->pfd[0]);
-   close(this->pfd[1]);
+   for (int fd : this->pfd)
+      if (fd >= 0)
+         close(fd);
 }
 
 void WaitConditionLinux::release()
 {
-   L_DEBU(QString("WaitConditionLinux::release: begin write in pipe for read in fd=%1").arg(this->pfd[0]));
-   write(this->pfd[1], "", 1);
-   L_DEBU(QString("WaitConditionLinux::release: end write in pipe for read in fd=%1").arg(this->pfd[0]));
+   if (this->pfd[1] < 0)
+      return;
 
-   this->released = true;
+   L_DEBU(QString("WaitConditionLinux::release: begin write in pipe for read in fd=%1").arg(this->pfd[0]));
+   const char signal = 0;
+   if (write(this->pfd[1], &signal, 1) < 0 && errno != EAGAIN && errno != EWOULDBLOCK)
+      L_ERRO(QString("WaitConditionLinux::release: Unable to signal pipe: %1").arg(errno));
+   L_DEBU(QString("WaitConditionLinux::release: end write in pipe for read in fd=%1").arg(this->pfd[0]));
 }
 
 bool WaitConditionLinux::wait(int timeout)
 {
-   if(this->released)
-   {
-      this->released = false;
-      return true;
-   }
+   if (this->pfd[0] < 0)
+      return false;
 
    struct timeval time;
    fd_set fds;
@@ -81,7 +90,8 @@ bool WaitConditionLinux::wait(int timeout)
    FD_SET(this->pfd[0], &fds);
 
    L_DEBU(QString("WaitConditionLinux::wait: active select for fd=%1").arg(this->pfd[0]));
-   if(select(this->pfd[0] + 1, &fds, NULL, NULL, (timeout==-1 ? 0 : &time)))
+   const int result = select(this->pfd[0] + 1, &fds, NULL, NULL, (timeout == -1 ? 0 : &time));
+   if (result > 0)
    {
       L_DEBU(QString("WaitConditionLinux::wait: exit select by release (fd=%1)").arg(this->pfd[0]));
       static char dummy[4096];
@@ -89,7 +99,12 @@ bool WaitConditionLinux::wait(int timeout)
       return false;
    }
 
-   return true;
+   if (result == 0)
+      return true;
+
+   if (errno != EINTR)
+      L_ERRO(QString("WaitConditionLinux::wait: select failed: %1").arg(errno));
+   return false;
 }
 
 int WaitConditionLinux::getFd()
