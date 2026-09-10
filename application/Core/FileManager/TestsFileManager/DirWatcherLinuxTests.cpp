@@ -1622,6 +1622,14 @@ private slots:
          QVERIFY(first.getFd() > 1100);
          QVERIFY(second.getFd() > 1100);
       }
+      // FileUpdater also waits directly on the condition when no paths are
+      // watched. That path must support high descriptors as well.
+      QVERIFY(first.wait(0));
+      QElapsedTimer waitTimer;
+      waitTimer.start();
+      QVERIFY(first.wait(20));
+      QVERIFY(waitTimer.elapsed() >= 20);
+
       QVERIFY(watcher.addPath(temp.path()));
       const QList<FM::WaitCondition*> conditions{&first, &second};
       const auto timeout = watcher.waitEvent(10, conditions);

@@ -26,6 +26,7 @@ using namespace FM;
 #include <stdint.h>
 #include <signal.h>
 #include <fcntl.h>
+#include <poll.h>
 
 /**
   * @class FM::WaitConditionLinux
@@ -67,33 +68,27 @@ bool WaitConditionLinux::wait(int timeout)
       return true;
    }
 
-   struct timeval time;
-   fd_set fds;
+   // poll() supports descriptors above FD_SETSIZE and uses milliseconds,
+   // including -1 for an indefinite wait, just like this method's API.
+   pollfd fd{this->pfd[0], POLLIN, 0};
+   L_DEBU(QString("WaitConditionLinux::wait: active poll for fd=%1").arg(this->pfd[0]));
+   const int ready = poll(&fd, 1, timeout);
+   if (ready == 0)
+      return true;
 
-   // Convert timeout in timeval
-   time.tv_sec = timeout / 1000;
-   time.tv_usec = (timeout % 1000) * 1000;
-
-   // Zero-out the fd_set.
-   FD_ZERO(&fds);
-
-   // Add the inotify fd to the fd_set.
-   FD_SET(this->pfd[0], &fds);
-
-   L_DEBU(QString("WaitConditionLinux::wait: active select for fd=%1").arg(this->pfd[0]));
-   if(select(this->pfd[0] + 1, &fds, NULL, NULL, (timeout==-1 ? 0 : &time)))
+   if (ready > 0 && (fd.revents & POLLIN))
    {
-      L_DEBU(QString("WaitConditionLinux::wait: exit select by release (fd=%1)").arg(this->pfd[0]));
-      static char dummy[4096];
+      L_DEBU(QString("WaitConditionLinux::wait: exit poll by release (fd=%1)").arg(this->pfd[0]));
+      char dummy[4096];
       while (read(this->pfd[0], dummy, sizeof(dummy)) > 0);
-      return false;
    }
+   else
+      L_ERRO("WaitConditionLinux::wait: poll failed or woke without readable data.");
 
-   return true;
+   return false;
 }
 
 int WaitConditionLinux::getFd()
 {
    return this->pfd[0];
 }
-
