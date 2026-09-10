@@ -149,7 +149,7 @@ void DirWatcherLinux::releaseAncestors(const QList<AncestorWatch>& ancestors)
 QList<WatcherEvent> DirWatcherLinux::rebuildWatches()
 {
    QStringList directoryPaths;
-   for (Dir* dir : this->dirs)
+    for (Dir* dir : std::as_const(this->dirs))
       directoryPaths << dir->name;
    const QStringList filePaths = this->files.keys();
 
@@ -160,7 +160,7 @@ QList<WatcherEvent> DirWatcherLinux::rebuildWatches()
    this->initialized = this->fileDescriptor >= 0;
 
    QList<WatcherEvent> events;
-   for (const QString& path : directoryPaths)
+   for (const QString& path : std::as_const(directoryPaths))
    {
       bool restored = false;
       if (this->initialized && QDir(path).exists())
@@ -253,7 +253,7 @@ DirWatcherLinux::Dir* DirWatcherLinux::getDir(int wd) const
       Dir* dir = pending.takeLast();
       if (dir->wd == wd)
          return dir;
-      for (Dir* child : dir->children)
+      for (Dir* child : std::as_const(dir->children))
          pending.append(child);
    }
    return nullptr;
@@ -269,7 +269,7 @@ QList<DirWatcherLinux::Dir*> DirWatcherLinux::getDirs(int wd) const
       Dir* dir = pending.takeLast();
       if (dir->wd == wd)
          result << dir;
-      for (Dir* child : dir->children)
+      for (Dir* child : std::as_const(dir->children))
          pending << child;
    }
    return result;
@@ -406,7 +406,7 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
    std::vector<pollfd> fds;
    fds.reserve(ws.size() + 1);
    fds.push_back({this->initialized ? this->fileDescriptor : -1, POLLIN, 0});
-   for (WaitCondition* condition : ws)
+   for (WaitCondition* condition : std::as_const(ws))
    {
       const int wcfd = dynamic_cast<WaitConditionLinux*>(condition)->getFd();
       fds.push_back({wcfd, POLLIN, 0});
@@ -747,7 +747,7 @@ QList<WatcherEvent> DirWatcherLinux::processInotifyEvents(const char* buf, int l
    {
       for (Dir* dir : this->getDirs(wd))
          failedRoots.insert(dir->getRoot()->name);
-      for (Dir* root : this->dirs)
+      for (Dir* root : std::as_const(this->dirs))
          if (std::any_of(root->ancestors.begin(), root->ancestors.end(),
                [wd](const AncestorWatch& ancestor) { return ancestor.wd == wd; }))
             failedRoots.insert(root->name);
@@ -807,7 +807,7 @@ QList<WatcherEvent> DirWatcherLinux::processInotifyEvents(const char* buf, int l
    }
    // Restore replacements after interpreting all events against the old trees.
    // Keep each notification's original position relative to other path changes.
-   for (const PendingRestoration& pending : pathsToRestore)
+   for (const PendingRestoration& pending : std::as_const(pathsToRestore))
    {
       const RemovedPath& registration = pending.registration;
       const QFileInfo info(QDir::cleanPath(registration.path));
