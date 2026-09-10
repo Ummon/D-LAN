@@ -256,6 +256,43 @@ void DirWatcherLinux::rmPath(const QString& directory, const QString& filename)
    }
 }
 
+// A root move also invalidates the registered paths of independently shared
+// descendants, which do not receive their own IN_MOVE_SELF notifications.
+QList<WatcherEvent> DirWatcherLinux::removeWatchedPathsUnder(const QString& path)
+{
+   const QString root = QDir::cleanPath(path);
+   const QString prefix = root.endsWith('/') ? root : root + '/';
+   const auto isUnderRoot = [&](const QString& registeredPath)
+   {
+      const QString cleanPath = QDir::cleanPath(registeredPath);
+      return cleanPath == root || cleanPath.startsWith(prefix);
+   };
+
+   QList<WatcherEvent> events;
+   for (QMutableListIterator<Dir*> i(this->dirs); i.hasNext();)
+   {
+      Dir* dir = i.next();
+      if (isUnderRoot(dir->name))
+      {
+         events << WatcherEvent(WatcherEvent::DELETED, dir->name, false);
+         delete dir;
+         i.remove();
+      }
+   }
+   for (auto i = this->files.begin(); i != this->files.end();)
+   {
+      if (isUnderRoot(i.key()))
+      {
+         events << WatcherEvent(WatcherEvent::DELETED, i.key(), true);
+         delete i.value();
+         i = this->files.erase(i);
+      }
+      else
+         ++i;
+   }
+   return events;
+}
+
 /**
   * Return the full path of the file notified by an inotify event.
   * Return a null QString if not found.
@@ -509,9 +546,8 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
          if (!dir->parent && (event->mask & IN_DELETE_SELF || event->mask & IN_MOVE_SELF))
          {
             L_DEBU(QString("inotify event (dir): IN_DELETE_SELF || IN_MOVE_SELF (path=%1)").arg(this->getEventPath(event)));
-            // processed only for ROOT directory
-            events << WatcherEvent(WatcherEvent::DELETED, this->getEventPath(event), false);
-            this->rmPath(this->getEventPath(event));
+            const QString path = dir->getFullPath();
+            events.append(this->removeWatchedPathsUnder(path));
          }
       }
       // Watched files.

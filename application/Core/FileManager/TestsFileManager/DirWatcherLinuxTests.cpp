@@ -1,6 +1,7 @@
 #include <QDir>
 #include <QElapsedTimer>
 #include <QFile>
+#include <QSet>
 #include <QTemporaryDir>
 #include <QTest>
 
@@ -16,6 +17,82 @@ class DirWatcherLinuxTests : public QObject
    Q_OBJECT
 
 private slots:
+   void movedAncestorReleasesDescendantShares_data()
+   {
+      QTest::addColumn<bool>("childFirst");
+      QTest::addColumn<bool>("trailingSlash");
+      QTest::newRow("parent-first") << false << false;
+      QTest::newRow("child-first") << true << false;
+      QTest::newRow("parent-first-trailing-slash") << false << true;
+      QTest::newRow("child-first-trailing-slash") << true << true;
+   }
+
+   void movedAncestorReleasesDescendantShares()
+   {
+      QFETCH(bool, childFirst);
+      QFETCH(bool, trailingSlash);
+      QTemporaryDir temp;
+      QVERIFY(temp.isValid());
+      QDir base(temp.path());
+      QVERIFY(base.mkpath("root/sub/deep"));
+      QVERIFY(base.mkpath("root-other"));
+      const QString root = temp.filePath("root");
+      const QString rootRegistration = root + (trailingSlash ? "/" : "");
+      const QString child = temp.filePath("root/sub");
+      const QString deep = temp.filePath("root/sub/deep");
+      const QString filePath = temp.filePath("root/sub/deep/file.txt");
+      {
+         QFile file(filePath);
+         QVERIFY(file.open(QIODevice::WriteOnly));
+      }
+
+      FM::DirWatcherLinux watcher;
+      QVERIFY(watcher.addPath(childFirst ? child : rootRegistration));
+      QVERIFY(watcher.addPath(childFirst ? rootRegistration : child));
+      QVERIFY(watcher.addPath(deep));
+      QVERIFY(watcher.addPath(deep, "file.txt"));
+      QVERIFY(watcher.addPath(temp.filePath("root-other")));
+      QVERIFY(base.rename("root", "outside"));
+      // Queue descendant changes immediately after the ancestor move.
+      {
+         QFile file(temp.filePath("outside/sub/deep/file.txt"));
+         QVERIFY(file.open(QIODevice::Append));
+         QCOMPARE(file.write("data"), qint64(4));
+      }
+      {
+         QFile file(temp.filePath("outside/sub/new.txt"));
+         QVERIFY(file.open(QIODevice::WriteOnly));
+      }
+      QSet<QString> deleted;
+      const auto events = watcher.waitEvent(1000);
+      QCOMPARE(events.size(), 4);
+      for (const auto& event : events)
+      {
+         QCOMPARE(event.type, FM::WatcherEvent::DELETED);
+         QCOMPARE(event.isWatchedFile, event.path1 == filePath);
+         deleted.insert(event.path1);
+      }
+      QCOMPARE(deleted, (QSet<QString>{root, child, deep, filePath}));
+      QCOMPARE(watcher.nbWatchedPath(), 1);
+      {
+         QFile file(temp.filePath("outside/sub/deep/later.txt"));
+         QVERIFY(file.open(QIODevice::WriteOnly));
+      }
+      for (const auto& event : watcher.waitEvent(0))
+         QCOMPARE(event.type, FM::WatcherEvent::TIMEOUT);
+
+      // A similarly prefixed sibling share must remain active.
+      const QString siblingFile = temp.filePath("root-other/new.txt");
+      {
+         QFile file(siblingFile);
+         QVERIFY(file.open(QIODevice::WriteOnly));
+      }
+      bool found = false;
+      for (const auto& event : watcher.waitEvent(1000))
+         found |= event.type == FM::WatcherEvent::NEW && event.path1 == siblingFile;
+      QVERIFY(found);
+   }
+
    void overlappingDirectoryChanges_data()
    {
       QTest::addColumn<bool>("childFirst");

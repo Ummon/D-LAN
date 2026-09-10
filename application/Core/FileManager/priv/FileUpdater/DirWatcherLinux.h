@@ -82,6 +82,7 @@ namespace FM
       Dir* getDir(int wd) const;
       QList<Dir*> getDirs(int wd) const;
       void addChildWatches(int parentWd, const QString& name);
+      QList<WatcherEvent> removeWatchedPathsUnder(const QString& path);
 
       void rmWatcher(int watcher);
       void clearWatches();
