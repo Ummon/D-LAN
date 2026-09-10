@@ -20,6 +20,118 @@ class DirWatcherLinuxTests : public QObject
    Q_OBJECT
 
 private slots:
+   void hardLinkChangesNotifyEveryRegistration()
+   {
+      QTemporaryDir temp;
+      QVERIFY(temp.isValid());
+      const QString first = temp.filePath("first.txt");
+      const QString second = temp.filePath("second.txt");
+      {
+         QFile file(first);
+         QVERIFY(file.open(QIODevice::WriteOnly));
+      }
+      QVERIFY(::link(QFile::encodeName(first).constData(), QFile::encodeName(second).constData()) == 0);
+      FM::DirWatcherLinux watcher;
+      QVERIFY(watcher.addPath(first));
+      QVERIFY(watcher.addPath(second));
+      for (const QString& path : {first, second})
+      {
+         {
+            QFile file(path);
+            QVERIFY(file.open(QIODevice::Append));
+            QCOMPARE(file.write("changed"), qint64(7));
+         }
+         QSet<QString> changed;
+         for (const auto& event : watcher.waitEvent(1000))
+         {
+            QCOMPARE(event.type, FM::WatcherEvent::CONTENT_CHANGED);
+            QVERIFY(event.isWatchedFile);
+            QVERIFY(!changed.contains(event.path1));
+            changed.insert(event.path1);
+         }
+         QCOMPARE(changed, (QSet<QString>{first, second}));
+      }
+      // Releasing one registration must retain the other owner's kernel watch.
+      watcher.rmPath(first);
+      {
+         QFile file(first);
+         QVERIFY(file.open(QIODevice::Append));
+         QCOMPARE(file.write("later"), qint64(5));
+      }
+      const auto events = watcher.waitEvent(1000);
+      QCOMPARE(events.size(), 1);
+      QCOMPARE(events[0].type, FM::WatcherEvent::CONTENT_CHANGED);
+      QCOMPARE(events[0].path1, second);
+      watcher.rmPath(second);
+      QVERIFY(watcher.watchReferences.isEmpty());
+   }
+
+   void hardLinkPathChangesAreIndependent_data()
+   {
+      QTest::addColumn<QString>("operation");
+      QTest::addColumn<bool>("changeFirst");
+      for (const QString& operation : {QString("replace"), QString("rename"), QString("delete")})
+         for (bool changeFirst : {false, true})
+            QTest::newRow(qPrintable(QString("%1,first=%2").arg(operation).arg(changeFirst))) << operation << changeFirst;
+   }
+
+   void hardLinkPathChangesAreIndependent()
+   {
+      QFETCH(QString, operation);
+      QFETCH(bool, changeFirst);
+      QTemporaryDir temp;
+      QVERIFY(temp.isValid());
+      const QString first = temp.filePath("first.txt");
+      const QString second = temp.filePath("second.txt");
+      const QString changedPath = changeFirst ? first : second;
+      const QString unchangedPath = changeFirst ? second : first;
+      {
+         QFile file(first);
+         QVERIFY(file.open(QIODevice::WriteOnly));
+      }
+      QVERIFY(::link(QFile::encodeName(first).constData(), QFile::encodeName(second).constData()) == 0);
+      FM::DirWatcherLinux watcher;
+      QVERIFY(watcher.addPath(first));
+      QVERIFY(watcher.addPath(second));
+      if (operation == "replace")
+      {
+         const QString replacementPath = temp.filePath("replacement.txt");
+         {
+            QFile file(replacementPath);
+            QVERIFY(file.open(QIODevice::WriteOnly));
+         }
+         QVERIFY(::rename(QFile::encodeName(replacementPath).constData(), QFile::encodeName(changedPath).constData()) == 0);
+      }
+      else if (operation == "rename")
+         QVERIFY(QFile::rename(changedPath, temp.filePath("renamed.txt")));
+      else
+         QVERIFY(QFile::remove(changedPath));
+      const auto events = watcher.waitEvent(1000);
+      QCOMPARE(events.size(), 1);
+      QCOMPARE(events[0].type, operation == "replace" ? FM::WatcherEvent::RESCAN : FM::WatcherEvent::DELETED);
+      QCOMPARE(events[0].path1, changedPath);
+      QVERIFY(events[0].isWatchedFile);
+      QCOMPARE(watcher.nbWatchedPath(), operation == "replace" ? 2 : 1);
+      // The remaining hard link still watches the original inode. Replacements
+      // must separately watch their new inode, without cross-path notifications.
+      for (const QString& path : operation == "replace" ? QStringList{unchangedPath, changedPath} : QStringList{unchangedPath})
+      {
+         {
+            QFile file(path);
+            QVERIFY(file.open(QIODevice::Append));
+            QCOMPARE(file.write("changed"), qint64(7));
+         }
+         const auto changes = watcher.waitEvent(1000);
+         QCOMPARE(changes.size(), 1);
+         QCOMPARE(changes[0].type, FM::WatcherEvent::CONTENT_CHANGED);
+         QCOMPARE(changes[0].path1, path);
+         QVERIFY(changes[0].isWatchedFile);
+      }
+      watcher.rmPath(first);
+      watcher.rmPath(second);
+      QVERIFY(watcher.watchReferences.isEmpty());
+   }
+
    void movedNonRootAncestorRetiresDescendantRegistrations_data()
    {
       QTest::addColumn<bool>("moveOutside");

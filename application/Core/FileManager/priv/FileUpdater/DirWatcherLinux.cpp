@@ -169,15 +169,15 @@ bool DirWatcherLinux::addPath(const QString& directory, const QString& filename)
    }
 }
 
-/**
-  * Return 'nullptr' if not found.
-  */
-DirWatcherLinux::File* DirWatcherLinux::getFile(int wd) const
+// Hard-linked files share a kernel watch. Snapshot every owner before handling
+// an event, since individual paths may be removed or attached to a new inode.
+QList<DirWatcherLinux::File*> DirWatcherLinux::getFiles(int wd) const
 {
+   QList<File*> result;
    for (auto i = this->files.begin(); i != this->files.end(); ++i)
       if (i.value()->wd == wd)
-         return i.value();
-   return nullptr;
+         result << i.value();
+   return result;
 }
 
 /**
@@ -299,7 +299,7 @@ QList<DirWatcherLinux::RemovedPath> DirWatcherLinux::removeWatchedPathsUnder(con
 }
 
 /**
-  * Return the full path of the file notified by an inotify event.
+  * Return the full path notified by an inotify event on a directory watch.
   * Return a null QString if not found.
   * @param path the full path
   */
@@ -315,15 +315,6 @@ QString DirWatcherLinux::getEventPath(const inotify_event* event)
       if (event->len)
          p.append('/').append(event->name);
       return p;
-   }
-
-   // Event for a watched file.
-   File* file = this->getFile(event->wd);
-   if (file)
-   {
-      for (auto i = this->files.constBegin(); i != this->files.constEnd(); ++i)
-         if (i.value()->wd == event->wd)
-            return i.key();
    }
 
    return QString();
@@ -485,7 +476,6 @@ QList<WatcherEvent> DirWatcherLinux::processInotifyEvents(const char* buf, int l
          continue;
 
       Dir* dir = nullptr;
-      File* file = nullptr;
 
       // Watched directories.
       if (dir = this->getDir(event->wd))
@@ -608,13 +598,13 @@ QList<WatcherEvent> DirWatcherLinux::processInotifyEvents(const char* buf, int l
          }
       }
       // Watched files.
-      else if (file = this->getFile(event->wd))
+      else for (File* file : this->getFiles(event->wd))
       {
-         if ((event->mask & (IN_MOVE_SELF | IN_DELETE_SELF)) ||
-             ((event->mask & IN_ATTRIB) && !file->matchesPath()))
+         if ((event->mask & (IN_MOVE_SELF | IN_DELETE_SELF | IN_ATTRIB)) && !file->matchesPath())
          {
             // Atomic replacement can unlink an inode that is still open or
             // hard-linked elsewhere; in that case only IN_ATTRIB is reported.
+            // Other hard links can still name the original inode and keep their watches.
             const QString path = file->path;
             this->rmPath(path);
             const QFileInfo info(path);
@@ -637,8 +627,8 @@ QList<WatcherEvent> DirWatcherLinux::processInotifyEvents(const char* buf, int l
 
          if (event->mask & IN_MODIFY)
          {
-            L_DEBU(QString("inotify event (file): IN_MODIFY (path=%1)").arg(this->getEventPath(event)));
-            events << WatcherEvent(WatcherEvent::CONTENT_CHANGED, this->getEventPath(event), true);
+            L_DEBU(QString("inotify event (file): IN_MODIFY (path=%1)").arg(file->path));
+            events << WatcherEvent(WatcherEvent::CONTENT_CHANGED, file->path, true);
          }
 
       }

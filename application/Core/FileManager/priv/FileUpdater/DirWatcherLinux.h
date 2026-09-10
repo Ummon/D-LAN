@@ -87,7 +87,7 @@ namespace FM
       QHash<QString, File*> files; // Files indexed by their path.
       QHash<int, int> watchReferences; // Overlapping paths can share an inotify watch descriptor.
 
-      File* getFile(int wd) const;
+      QList<File*> getFiles(int wd) const;
       Dir* getDir(int wd) const;
       QList<Dir*> getDirs(int wd) const;
       void addChildWatches(int parentWd, const QString& name, QSet<QString>& failedRoots);
