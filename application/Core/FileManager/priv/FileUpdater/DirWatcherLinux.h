@@ -104,7 +104,7 @@ namespace FM
       void addChildWatches(int parentWd, const QString& name, QSet<QString>& failedRoots);
       struct RemovedPath
       {
-         QString path; // Preserve the caller's spelling for subsequent rmPath().
+         QString path; // Normalized registration path, also used by rmPath().
          bool isWatchedFile;
       };
       QList<RemovedPath> removeWatchedPathsUnder(const QString& path);

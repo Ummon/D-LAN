@@ -37,6 +37,78 @@ class DirWatcherLinuxTests : public QObject
    Q_OBJECT
 
 private slots:
+   void equivalentPathSpellingsShareRegistration_data()
+   {
+      QTest::addColumn<QString>("spelling");
+      QTest::addColumn<bool>("watchFile");
+      QTest::newRow("directory-trailing-slash") << QString("root/") << false;
+      QTest::newRow("directory-dot") << QString("./root/.") << false;
+      QTest::newRow("directory-parent") << QString("root/sub/..") << false;
+      QTest::newRow("directory-repeated-slashes") << QString("root//") << false;
+      QTest::newRow("file-trailing-slash") << QString("root/") << true;
+      QTest::newRow("file-dot") << QString("./root/.") << true;
+      QTest::newRow("file-parent") << QString("root/sub/..") << true;
+      QTest::newRow("file-repeated-slashes") << QString("root//") << true;
+   }
+
+   void equivalentPathSpellingsShareRegistration()
+   {
+      QFETCH(QString, spelling);
+      QFETCH(bool, watchFile);
+      QTemporaryDir temp;
+      QVERIFY(temp.isValid());
+      QDir base(temp.path());
+      QVERIFY(base.mkpath("root/sub"));
+      const QString filePath = temp.filePath("root/file.txt");
+      {
+         QFile file(filePath);
+         QVERIFY(file.open(QIODevice::WriteOnly));
+      }
+      const QString path = watchFile ? filePath : temp.filePath("root");
+      const QString filename = watchFile ? QString("./file.txt") : QString();
+      FM::DirWatcherLinux watcher;
+
+      // Removing a single registration using its normalized spelling must work.
+      QVERIFY(watcher.addPath(temp.filePath(spelling), filename));
+      watcher.rmPath(path);
+      QCOMPARE(watcher.nbWatchedPath(), 0);
+      QVERIFY(watcher.watchReferences.isEmpty());
+      QVERIFY(watcher.ancestorPaths.isEmpty());
+      watcher.waitEvent(0);
+
+      QVERIFY(watcher.addPath(path));
+      const auto references = watcher.watchReferences;
+      const auto ancestors = watcher.ancestorPaths;
+      QVERIFY(watcher.addPath(temp.filePath(spelling), filename));
+      QCOMPARE(watcher.nbWatchedPath(), 1);
+      QCOMPARE(watcher.watchReferences, references);
+      QCOMPARE(watcher.ancestorPaths, ancestors);
+      {
+         QFile file(filePath);
+         QVERIFY(file.open(QIODevice::Append));
+         QCOMPARE(file.write("changed"), qint64(7));
+      }
+      int changes = 0;
+      for (const auto& event : watcher.waitEvent(1000))
+         if (event.type == FM::WatcherEvent::CONTENT_CHANGED && event.path1 == filePath && event.isWatchedFile == watchFile)
+            ++changes;
+      QCOMPARE(changes, 1);
+
+      // Removal must also accept the alternate spelling after the path vanishes.
+      QVERIFY(base.rename("root", "moved"));
+      watcher.rmPath(temp.filePath(spelling), filename);
+      QCOMPARE(watcher.nbWatchedPath(), 0);
+      QVERIFY(watcher.watchReferences.isEmpty());
+      QVERIFY(watcher.ancestorPaths.isEmpty());
+      {
+         QFile file(temp.filePath("moved/file.txt"));
+         QVERIFY(file.open(QIODevice::Append));
+         QCOMPARE(file.write("after removal"), qint64(13));
+      }
+      for (const auto& event : watcher.waitEvent(0))
+         QCOMPARE(event.type, FM::WatcherEvent::TIMEOUT);
+   }
+
    void fileRegistrationReplacesDirectory_data()
    {
       QTest::addColumn<bool>("removeImmediately");

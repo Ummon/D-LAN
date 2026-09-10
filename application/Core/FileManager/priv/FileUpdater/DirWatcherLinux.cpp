@@ -192,7 +192,8 @@ QList<WatcherEvent> DirWatcherLinux::rebuildWatches()
   */
 bool DirWatcherLinux::addPath(const QString& directory, const QString& filename)
 {
-   const QString path = filename.isEmpty() ? directory : QDir(directory).filePath(filename);
+   // Use the same lexical spelling for registration, events, and removal.
+   const QString path = QDir::cleanPath(filename.isEmpty() ? directory : QDir(directory).filePath(filename));
    QMutexLocker locker(&this->mutex);
 
    if (!this->initialized)
@@ -293,7 +294,8 @@ void DirWatcherLinux::addChildWatches(int parentWd, const QString& name, QSet<QS
   */
 void DirWatcherLinux::rmPath(const QString& directory, const QString& filename)
 {
-   const QString path = filename.isEmpty() ? directory : QDir(directory).filePath(filename);
+   // Lexical normalization still works when the watched path no longer exists.
+   const QString path = QDir::cleanPath(filename.isEmpty() ? directory : QDir(directory).filePath(filename));
    QMutexLocker locker(&this->mutex);
 
    // Consult the registration, since a removed or renamed path no longer
