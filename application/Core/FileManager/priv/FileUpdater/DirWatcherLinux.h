@@ -25,6 +25,7 @@
 #include <priv/FileUpdater/DirWatcher.h>
 
 #include <sys/inotify.h>
+#include <sys/types.h>
 
 namespace FM
 {
@@ -68,10 +69,13 @@ namespace FM
       {
          File(DirWatcherLinux* dwl, const QString& path);
          ~File();
+         bool matchesPath() const;
 
          DirWatcherLinux* dwl;
          const QString path;
          int wd; // Watch descriptor.
+         dev_t device;
+         ino_t inode;
       };
 
       QList<Dir*> dirs; // The watched root dirs, indexed by full path.

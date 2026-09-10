@@ -22,6 +22,7 @@ using namespace FM;
 #include <unistd.h>
 
 #include <QMutexLocker>
+#include <QFile>
 #include <QFileInfo>
 
 #include <priv/FileUpdater/WaitConditionLinux.h>
@@ -29,6 +30,7 @@ using namespace FM;
 
 #include <poll.h>
 #include <sys/inotify.h>
+#include <sys/stat.h>
 #include <unistd.h>
 #include <errno.h>
 #include <memory>
@@ -45,7 +47,7 @@ const int DirWatcherLinux::EVENT_SIZE = (sizeof (struct inotify_event));
 const size_t DirWatcherLinux::BUF_LEN = (1024 * (EVENT_SIZE + 16));
 const uint32_t DirWatcherLinux::EVENTS_OBS = IN_MOVE | IN_DELETE | IN_CREATE | IN_CLOSE_WRITE;
 const uint32_t DirWatcherLinux::ROOT_EVENTS_OBS = EVENTS_OBS | IN_MOVE_SELF | IN_DELETE_SELF;
-const uint32_t DirWatcherLinux::EVENTS_FILE = IN_MODIFY | IN_MOVE_SELF | IN_DELETE_SELF;
+const uint32_t DirWatcherLinux::EVENTS_FILE = IN_MODIFY | IN_ATTRIB | IN_MOVE_SELF | IN_DELETE_SELF;
 
 class UnableToWatchException {};
 
@@ -553,15 +555,28 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
       // Watched files.
       else if (file = this->getFile(event->wd))
       {
-         if (event->mask & (IN_MOVE_SELF | IN_DELETE_SELF))
+         if ((event->mask & (IN_MOVE_SELF | IN_DELETE_SELF)) ||
+             ((event->mask & IN_ATTRIB) && !file->matchesPath()))
          {
-            // IN_MOVE_SELF does not provide the new pathname. As for moved
-            // root directories, retire the old path and its watch instead of
-            // attributing later modifications of the inode to the old name.
+            // Atomic replacement can unlink an inode that is still open or
+            // hard-linked elsewhere; in that case only IN_ATTRIB is reported.
             const QString path = file->path;
-            L_DEBU(QString("inotify event (file): IN_MOVE_SELF || IN_DELETE_SELF (path=%1)").arg(path));
-            events << WatcherEvent(WatcherEvent::DELETED, path, true);
             this->rmPath(path);
+            const QFileInfo info(path);
+            if (info.isFile() && !info.isSymLink())
+            {
+               bool restored = false;
+               try
+               {
+                  this->files.insert(path, new File(this, path));
+                  restored = true;
+               }
+               catch (UnableToWatchException&) {}
+               // Rescan catches changes made before the new watch was added.
+               events << WatcherEvent(restored ? WatcherEvent::RESCAN : WatcherEvent::WATCH_LOST, path, true);
+            }
+            else
+               events << WatcherEvent(WatcherEvent::DELETED, path, true);
             continue;
          }
 
@@ -739,7 +754,25 @@ void DirWatcherLinux::Dir::move(Dir* to, const QString& newName)
 DirWatcherLinux::File::File(DirWatcherLinux* dwl, const QString& path) :
    dwl(dwl), path(path)
 {
+   struct stat status;
+   if (lstat(QFile::encodeName(path).constData(), &status) < 0 || !S_ISREG(status.st_mode))
+      throw UnableToWatchException();
+   this->device = status.st_dev;
+   this->inode = status.st_ino;
    this->wd = dwl->addWatch(path, EVENTS_FILE);
+   // Fail safely if the pathname changed while the watch was being installed.
+   if (!this->matchesPath())
+   {
+      dwl->rmWatcher(this->wd);
+      throw UnableToWatchException();
+   }
+}
+
+bool DirWatcherLinux::File::matchesPath() const
+{
+   struct stat status;
+   return lstat(QFile::encodeName(this->path).constData(), &status) == 0 &&
+      S_ISREG(status.st_mode) && status.st_dev == this->device && status.st_ino == this->inode;
 }
 
 DirWatcherLinux::File::~File()

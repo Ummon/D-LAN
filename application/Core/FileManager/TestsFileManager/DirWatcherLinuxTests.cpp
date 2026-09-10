@@ -11,12 +11,113 @@
 #include <memory>
 #include <vector>
 #include <sys/resource.h>
+#include <unistd.h>
+#include <cstdio>
 
 class DirWatcherLinuxTests : public QObject
 {
    Q_OBJECT
 
 private slots:
+   void replacedFilesRemainWatched_data()
+   {
+      QTest::addColumn<QString>("replacementMode");
+      QTest::newRow("atomic-replace") << "atomic";
+      QTest::newRow("old-file-still-open") << "open";
+      QTest::newRow("old-file-has-another-link") << "hardlink";
+      QTest::newRow("rename-old-file-to-backup") << "backup";
+   }
+
+   void replacedFilesRemainWatched()
+   {
+      QFETCH(QString, replacementMode);
+      QTemporaryDir temp;
+      QVERIFY(temp.isValid());
+      const QString path = temp.filePath("file.txt");
+      const QString replacementPath = temp.filePath("replacement.txt");
+      const QString backupPath = temp.filePath("backup.txt");
+      {
+         QFile file(path);
+         QVERIFY(file.open(QIODevice::WriteOnly));
+         QCOMPARE(file.write("original"), qint64(8));
+      }
+      QFile original(path);
+      if (replacementMode == "open")
+         QVERIFY(original.open(QIODevice::ReadWrite));
+      if (replacementMode == "hardlink")
+         QVERIFY(::link(QFile::encodeName(path).constData(), QFile::encodeName(backupPath).constData()) == 0);
+
+      FM::DirWatcherLinux watcher;
+      QVERIFY(watcher.addPath(temp.path(), "file.txt"));
+      // Attribute changes on the same inode must preserve its watch.
+      QVERIFY(QFile::setPermissions(path, QFile::permissions(path) | QFileDevice::ExeOwner));
+      QVERIFY(watcher.waitEvent(1000).isEmpty());
+      QCOMPARE(watcher.nbWatchedPath(), 1);
+      for (int iteration = 0; iteration < 2; ++iteration)
+      {
+         {
+            QFile replacement(replacementPath);
+            QVERIFY(replacement.open(QIODevice::WriteOnly));
+            QCOMPARE(replacement.write("replacement"), qint64(11));
+         }
+         if (replacementMode == "backup")
+         {
+            QFile::remove(backupPath);
+            QVERIFY(QFile::rename(path, backupPath));
+         }
+         QVERIFY(::rename(QFile::encodeName(replacementPath).constData(), QFile::encodeName(path).constData()) == 0);
+         const auto events = watcher.waitEvent(1000);
+         QCOMPARE(events.size(), 1);
+         QCOMPARE(events[0].type, FM::WatcherEvent::RESCAN);
+         QCOMPARE(events[0].path1, path);
+         QVERIFY(events[0].isWatchedFile);
+         QCOMPARE(watcher.nbWatchedPath(), 1);
+
+         // Writes to a retained old inode must not be attributed to the replacement.
+         if (original.isOpen())
+         {
+            QCOMPARE(original.write("old"), qint64(3));
+            QVERIFY(original.flush());
+         }
+         for (const auto& event : watcher.waitEvent(0))
+            QCOMPARE(event.type, FM::WatcherEvent::TIMEOUT);
+         {
+            QFile replacement(path);
+            QVERIFY(replacement.open(QIODevice::Append));
+            QCOMPARE(replacement.write("new"), qint64(3));
+         }
+         bool found = false;
+         for (const auto& event : watcher.waitEvent(1000))
+            found |= event.type == FM::WatcherEvent::CONTENT_CHANGED && event.path1 == path && event.isWatchedFile;
+         QVERIFY(found);
+      }
+   }
+
+   void replacementWatchFailureRequestsFallback()
+   {
+      if (::geteuid() == 0)
+         QSKIP("Root can watch unreadable files");
+      QTemporaryDir temp;
+      QVERIFY(temp.isValid());
+      const QString path = temp.filePath("file.txt");
+      const QString replacementPath = temp.filePath("replacement.txt");
+      for (const auto& filePath : {path, replacementPath})
+      {
+         QFile file(filePath);
+         QVERIFY(file.open(QIODevice::WriteOnly));
+      }
+      FM::DirWatcherLinux watcher;
+      QVERIFY(watcher.addPath(temp.path(), "file.txt"));
+      QVERIFY(QFile::setPermissions(replacementPath, QFileDevice::Permissions{}));
+      QVERIFY(::rename(QFile::encodeName(replacementPath).constData(), QFile::encodeName(path).constData()) == 0);
+      const auto events = watcher.waitEvent(1000);
+      QCOMPARE(events.size(), 1);
+      QCOMPARE(events[0].type, FM::WatcherEvent::WATCH_LOST);
+      QCOMPARE(events[0].path1, path);
+      QVERIFY(events[0].isWatchedFile);
+      QCOMPARE(watcher.nbWatchedPath(), 0);
+   }
+
    void movedAncestorReleasesDescendantShares_data()
    {
       QTest::addColumn<bool>("childFirst");
