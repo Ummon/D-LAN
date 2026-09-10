@@ -129,6 +129,24 @@ DirWatcherLinux::File* DirWatcherLinux::getFile(int wd) const
 }
 
 /**
+  * Find a watched directory, including descendants of every watched root.
+  * Return 'nullptr' if not found.
+  */
+DirWatcherLinux::Dir* DirWatcherLinux::getDir(int wd) const
+{
+   QList<Dir*> pending = this->dirs;
+   while (!pending.isEmpty())
+   {
+      Dir* dir = pending.takeLast();
+      if (dir->wd == wd)
+         return dir;
+      for (Dir* child : dir->children)
+         pending.append(child);
+   }
+   return nullptr;
+}
+
+/**
   * @copydoc FM::DirWatcher::rmPath(..)
   */
 void DirWatcherLinux::rmPath(const QString& directory, const QString& filename)
@@ -568,7 +586,8 @@ void DirWatcherLinux::Dir::move(Dir* to)
 /**
   * @exception UnableToWatchException
   */
-DirWatcherLinux::File::File(DirWatcherLinux* dwl, const QString& path)
+DirWatcherLinux::File::File(DirWatcherLinux* dwl, const QString& path) :
+   dwl(dwl), path(path)
 {
    this->wd = addWatch(dwl->fileDescriptor, path, EVENTS_FILE);
 }

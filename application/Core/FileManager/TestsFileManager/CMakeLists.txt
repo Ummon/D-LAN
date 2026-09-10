@@ -45,6 +45,12 @@ add_executable(TestsFilePool FilePoolTests.cpp)
 target_link_libraries(TestsFilePool PRIVATE FileManager Qt6::Test)
 add_test(NAME TestsFilePool COMMAND TestsFilePool)
 
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+   add_executable(TestsDirWatcherLinux DirWatcherLinuxTests.cpp)
+   target_link_libraries(TestsDirWatcherLinux PRIVATE FileManager Qt6::Test)
+   add_test(NAME TestsDirWatcherLinux COMMAND TestsDirWatcherLinux)
+endif()
+
 # Compile and exercise the portable backend even when the application uses Win32 handles.
 if(WIN32)
    add_executable(TestsFilePoolQt
