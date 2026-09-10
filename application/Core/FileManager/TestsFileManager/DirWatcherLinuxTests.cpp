@@ -23,6 +23,87 @@ class DirWatcherLinuxTests : public QObject
    Q_OBJECT
 
 private slots:
+   void duplicateDirectoryRegistrationReleasesOldTree_data()
+   {
+      QTest::addColumn<bool>("watchChild");
+      QTest::addColumn<bool>("replaceDirectory");
+      QTest::addColumn<bool>("registrationFails");
+      QTest::newRow("same-directory") << false << false << false;
+      QTest::newRow("shared-descendant") << true << false << false;
+      QTest::newRow("replacement-directory") << false << true << false;
+      QTest::newRow("failed-registration") << false << false << true;
+   }
+
+   void duplicateDirectoryRegistrationReleasesOldTree()
+   {
+      QFETCH(bool, watchChild);
+      QFETCH(bool, replaceDirectory);
+      QFETCH(bool, registrationFails);
+      if (registrationFails && ::geteuid() == 0)
+         QSKIP("Root can watch unreadable directories");
+      QTemporaryDir temp;
+      QVERIFY(temp.isValid());
+      QDir base(temp.path());
+      QVERIFY(base.mkpath("root/sub"));
+      const QString root = temp.filePath("root");
+      const QString child = temp.filePath("root/sub");
+      FM::DirWatcherLinux watcher;
+      QVERIFY(watcher.addPath(root));
+      if (watchChild)
+         QVERIFY(watcher.addPath(child));
+      const auto references = watcher.watchReferences;
+      const auto ancestors = watcher.ancestorPaths;
+      if (replaceDirectory)
+      {
+         QVERIFY(base.rename("root", "old"));
+         QVERIFY(base.mkpath("root/sub"));
+      }
+      const auto permissions = QFile::permissions(child);
+      const auto restorePermissions = qScopeGuard([&] { QFile::setPermissions(child, permissions); });
+      if (registrationFails)
+         QVERIFY(QFile::setPermissions(child, QFileDevice::WriteOwner | QFileDevice::ExeOwner));
+      for (int i = 0; i < 2; ++i)
+         QCOMPARE(watcher.addPath(root), !registrationFails);
+      QCOMPARE(watcher.nbWatchedPath(), watchChild ? 2 : 1);
+      if (!replaceDirectory)
+      {
+         QCOMPARE(watcher.watchReferences, references);
+         QCOMPARE(watcher.ancestorPaths, ancestors);
+      }
+      QVERIFY(QFile::setPermissions(child, permissions));
+      watcher.waitEvent(0);
+      const QString filePath = child + "/new.txt";
+      {
+         QFile file(filePath);
+         QVERIFY(file.open(QIODevice::WriteOnly));
+      }
+      bool found = false;
+      for (const auto& event : watcher.waitEvent(1000))
+      {
+         QVERIFY(event.type != FM::WatcherEvent::WATCH_LOST);
+         found |= event.type == FM::WatcherEvent::NEW && event.path1 == filePath;
+      }
+      QVERIFY(found);
+      watcher.rmPath(root);
+      QCOMPARE(watcher.nbWatchedPath(), watchChild ? 1 : 0);
+      watcher.waitEvent(0);
+      {
+         QFile file(filePath);
+         QVERIFY(file.open(QIODevice::Append));
+         QCOMPARE(file.write("changed"), qint64(7));
+      }
+      bool changed = false;
+      for (const auto& event : watcher.waitEvent(0))
+      {
+         QVERIFY(event.type == FM::WatcherEvent::CONTENT_CHANGED || event.type == FM::WatcherEvent::TIMEOUT);
+         changed |= event.type == FM::WatcherEvent::CONTENT_CHANGED && event.path1 == filePath;
+      }
+      QCOMPARE(changed, watchChild);
+      watcher.rmPath(child);
+      QVERIFY(watcher.watchReferences.isEmpty());
+      QVERIFY(watcher.ancestorPaths.isEmpty());
+   }
+
    void ancestorWatchLossRequestsFallback()
    {
       QTemporaryDir temp;

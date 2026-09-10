@@ -195,6 +195,9 @@ bool DirWatcherLinux::addPath(const QString& directory, const QString& filename)
       if (QDir(path).exists())
       {
          Dir* dir = new Dir(this, nullptr, path);
+         // Replace an existing registration only after the new tree succeeds.
+         // Its own references keep shared descendant and ancestor watches alive.
+         this->rmPath(path);
          this->dirs << dir;
       }
       else
