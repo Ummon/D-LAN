@@ -29,3 +29,9 @@ target_link_libraries(TestsCommon PRIVATE
 )
 
 add_test(NAME TestsCommon COMMAND TestsCommon)
+
+if(UNIX)
+   add_executable(TestsConsoleReader ConsoleReaderTests.cpp)
+   target_link_libraries(TestsConsoleReader PRIVATE Common Qt6::Test)
+   add_test(NAME TestsConsoleReader COMMAND TestsConsoleReader)
+endif()

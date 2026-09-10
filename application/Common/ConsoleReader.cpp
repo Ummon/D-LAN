@@ -38,7 +38,15 @@ ConsoleReader::ConsoleReader(QObject* parent) :
 
 void ConsoleReader::inputAvailable()
 {
-   QString line = this->inputStream.readLine().trimmed();
+   QString line = this->inputStream.readLine();
+   if (line.isNull())
+   {
+      // EOF remains readable to QSocketNotifier. Stop watching it instead of
+      // repeatedly scheduling this slot after the input stream has ended.
+      this->notifier.setEnabled(false);
+      return;
+   }
+   line = line.trimmed();
    if (!line.isEmpty())
       emit newLine(line);
 }
