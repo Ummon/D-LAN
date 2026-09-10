@@ -32,7 +32,8 @@ namespace GUI
    {
    public:
       /**
-        * Returns an icon associated to a provided entry. The icon may depends of the entry type (file or directory) and of the file extension.
+        * Returns an icon for a directory or a file type, determined from its name.
+        * Linux uses MIME types and the desktop icon theme; remote files need not exist locally.
         * @param entry The entry
         * @param withWarning If 'true' a little warning image is added to the returned icon
         * @return The corresponding icon
@@ -45,8 +46,8 @@ namespace GUI
 
    private:
       static QIcon getIconCache(const QString& filename, bool withWarning);
-      static QIcon getIconCacheByExtension(const QString& extension, bool withWarning);
-      static QIcon getIconNative(const QString& icon);
+      static QIcon getIconCacheByType(const QString& type, bool withWarning);
+      static QIcon getIconNative(const QString& type);
 
       static QIcon drawWarning(const QIcon& icon);
 

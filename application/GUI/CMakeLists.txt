@@ -185,6 +185,15 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
    target_link_libraries(DLanGUI PRIVATE Qt6::DBus)
 
    if(DLAN_BUILD_TESTS)
+      add_executable(TestsIconProvider TestsIconProvider.cpp IconProvider.cpp resources.qrc)
+      set_target_properties(TestsIconProvider PROPERTIES AUTORCC ON)
+      target_include_directories(TestsIconProvider PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+      target_link_libraries(TestsIconProvider PRIVATE Common Qt6::Widgets Qt6::Svg Qt6::Test)
+      add_test(NAME TestsIconProvider COMMAND TestsIconProvider)
+      set_tests_properties(TestsIconProvider PROPERTIES
+         ENVIRONMENT "QT_QPA_PLATFORM=offscreen;QT_QPA_PLATFORMTHEME=;DBUS_SESSION_BUS_ADDRESS=unix:path=/nonexistent/dlan-icon-tests"
+         TIMEOUT 20)
+
       add_executable(TestsFileLocations
          TestsFileLocations.cpp UtilsLocations.cpp Browse/BrowseModel.cpp
          Settings/SharedEntryListModel.cpp IconProvider.cpp Log.cpp
