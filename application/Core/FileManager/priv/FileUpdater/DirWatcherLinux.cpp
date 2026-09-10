@@ -100,17 +100,25 @@ void DirWatcherLinux::clearWatches()
 QList<DirWatcherLinux::AncestorWatch> DirWatcherLinux::watchAncestors(const QString& path)
 {
    QList<AncestorWatch> ancestors;
+   QStringList paths;
    QString current = QDir::cleanPath(QFileInfo(path).absoluteFilePath());
+   while (current != "/")
+   {
+      current = QFileInfo(current).absolutePath();
+      paths.prepend(current);
+   }
    try
    {
-      while (current != "/")
+      // Install from the filesystem root downward. If an ancestor moves while
+      // lower watches are being installed, its existing watch queues a self-move
+      // event so the normal recovery path can invalidate the registration.
+      for (const QString& ancestorPath : paths)
       {
-         current = QFileInfo(current).absolutePath();
          // Watching the ancestors themselves avoids subscribing to unrelated
          // sibling changes and catches moves at any level above a shared path.
-         const int wd = this->addWatch(current, IN_MOVE_SELF | IN_DELETE_SELF | IN_ONLYDIR);
-         ancestors << AncestorWatch{current, wd};
-         ++this->ancestorPaths[wd][current];
+         const int wd = this->addWatch(ancestorPath, IN_MOVE_SELF | IN_DELETE_SELF | IN_ONLYDIR);
+         ancestors.prepend(AncestorWatch{ancestorPath, wd});
+         ++this->ancestorPaths[wd][ancestorPath];
       }
    }
    catch (UnableToWatchException&)

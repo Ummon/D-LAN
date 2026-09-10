@@ -10,6 +10,7 @@
 #include <priv/FileUpdater/WaitConditionLinux.h>
 
 #include <memory>
+#include <functional>
 #include <vector>
 #include <sys/resource.h>
 #include <sys/syscall.h>
@@ -18,11 +19,87 @@
 #include <unistd.h>
 #include <cstdio>
 
+namespace
+{
+   std::function<void(const QString&)> beforeAddWatch;
+}
+
+extern "C" int __real_inotify_add_watch(int fd, const char* path, uint32_t mask);
+extern "C" int __wrap_inotify_add_watch(int fd, const char* path, uint32_t mask)
+{
+   if (beforeAddWatch)
+      beforeAddWatch(QFile::decodeName(path));
+   return __real_inotify_add_watch(fd, path, mask);
+}
+
 class DirWatcherLinuxTests : public QObject
 {
    Q_OBJECT
 
 private slots:
+   void ancestorReplacementDuringRegistration_data()
+   {
+      QTest::addColumn<QString>("triggerPath");
+      QTest::newRow("before-parent-watch") << QString("parent");
+      QTest::newRow("after-parent-watch") << QString("parent/sub");
+   }
+
+   void ancestorReplacementDuringRegistration()
+   {
+      QFETCH(QString, triggerPath);
+      QTemporaryDir temp;
+      QVERIFY(temp.isValid());
+      QDir base(temp.path());
+      QVERIFY(base.mkpath("parent/sub/root"));
+      const QString root = temp.filePath("parent/sub/root");
+      FM::DirWatcherLinux watcher;
+      bool triggered = false;
+      bool replaced = false;
+      const auto resetHook = qScopeGuard([] { beforeAddWatch = {}; });
+      beforeAddWatch = [&](const QString& path)
+      {
+         if (!triggered && path == temp.filePath(triggerPath))
+         {
+            triggered = true;
+            replaced = base.rename("parent", "outside") && base.mkpath("parent/sub/root");
+         }
+      };
+      QVERIFY(watcher.addPath(root));
+      beforeAddWatch = {};
+      QVERIFY(triggered);
+      QVERIFY(replaced);
+      // A move after the parent watch was installed may request a rescan.
+      for (const auto& event : watcher.waitEvent(0))
+         QVERIFY(event.type == FM::WatcherEvent::RESCAN || event.type == FM::WatcherEvent::TIMEOUT);
+      QCOMPARE(watcher.nbWatchedPath(), 1);
+      {
+         QFile file(root + "/new.txt");
+         QVERIFY(file.open(QIODevice::WriteOnly));
+      }
+      bool found = false;
+      for (const auto& event : watcher.waitEvent(1000))
+         found |= event.type == FM::WatcherEvent::NEW && event.path1 == root + "/new.txt";
+      QVERIFY(found);
+
+      // The immediate ancestor must belong to the replacement tree. Otherwise
+      // this move is missed and subsequent events retain the obsolete root path.
+      QVERIFY(base.rename("parent/sub", "moved-sub"));
+      bool deleted = false;
+      for (const auto& event : watcher.waitEvent(1000))
+         deleted |= event.type == FM::WatcherEvent::DELETED && event.path1 == root;
+      QVERIFY(deleted);
+      QCOMPARE(watcher.nbWatchedPath(), 0);
+      QVERIFY(watcher.watchReferences.isEmpty());
+      QVERIFY(watcher.ancestorPaths.isEmpty());
+      {
+         QFile file(temp.filePath("moved-sub/root/later.txt"));
+         QVERIFY(file.open(QIODevice::WriteOnly));
+         QCOMPARE(file.write("changed"), qint64(7));
+      }
+      for (const auto& event : watcher.waitEvent(0))
+         QCOMPARE(event.type, FM::WatcherEvent::TIMEOUT);
+   }
+
    void duplicateDirectoryRegistrationReleasesOldTree_data()
    {
       QTest::addColumn<bool>("watchChild");
