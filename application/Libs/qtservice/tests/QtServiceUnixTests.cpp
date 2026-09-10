@@ -5,6 +5,9 @@
 #include <QTemporaryDir>
 #include <QTest>
 #include <qtservice.h>
+#include <qtservice_unix_p.h>
+#include <QTcpSocket>
+#include <QPointer>
 #include <qtunixserversocket.h>
 #include <qtunixsocket.h>
 
@@ -78,6 +81,44 @@ class QtServiceUnixTests : public QObject
    Q_OBJECT
 
 private slots:
+   void disconnectedClientReleasesCommandBuffer_data()
+   {
+      QTest::addColumn<QByteArray>("input");
+      QTest::addColumn<QString>("pending");
+      QTest::newRow("idle") << QByteArray() << QString();
+      QTest::newRow("partial-command") << QByteArray("termi") << QString("termi");
+      QTest::newRow("complete-command") << QByteArray("alive\r\n") << QString();
+      QTest::newRow("complete-and-partial") << QByteArray("alive\r\ntermi") << QString("termi");
+   }
+
+   void disconnectedClientReleasesCommandBuffer()
+   {
+      QFETCH(QByteArray, input);
+      QFETCH(QString, pending);
+      QtServiceSysPrivate server;
+      // Repeat to exercise connection churn without relying on allocator address reuse.
+      for (int attempt = 0; attempt < 3; ++attempt)
+      {
+         int pair[2];
+         QVERIFY(socketpair(AF_UNIX, SOCK_STREAM, 0, pair) == 0);
+         const auto closePeer = qScopeGuard([&] { if (pair[1] >= 0) close(pair[1]); });
+         server.incomingConnection(pair[0]); // The server owns this descriptor now.
+         QPointer<QTcpSocket> client = server.findChild<QTcpSocket*>();
+         QVERIFY(client);
+         if (!input.isEmpty())
+         {
+            QCOMPARE(write(pair[1], input.constData(), input.size()), input.size());
+            QTRY_VERIFY(server.cache.contains(client.data()));
+            QCOMPARE(server.cache.value(client.data()), pending);
+         }
+         close(pair[1]);
+         pair[1] = -1;
+         QTRY_VERIFY(client.isNull());
+         // No dangling socket key or partial command may survive the connection.
+         QVERIFY(server.cache.isEmpty());
+      }
+   }
+
    void socketPathLength_data()
    {
       QTest::addColumn<int>("byteCount");

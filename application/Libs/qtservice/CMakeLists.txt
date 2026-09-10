@@ -19,6 +19,7 @@ if(WIN32)
 else()
    target_sources(qtservice PRIVATE
       src/qtservice_unix.cpp
+      src/qtservice_unix_p.h
       src/qtunixsocket.cpp
       src/qtunixserversocket.cpp
       src/qtunixsocket.h

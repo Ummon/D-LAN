@@ -40,6 +40,7 @@
 
 #include "qtservice.h"
 #include "qtservice_p.h"
+#include "qtservice_unix_p.h"
 #include "qtunixsocket.h"
 #include "qtunixserversocket.h"
 #include <QCoreApplication>
@@ -285,33 +286,6 @@ bool QtServiceController::isRunning() const
 
 ///////////////////////////////////
 
-class QtServiceSysPrivate : public QtUnixServerSocket
-{
-    Q_OBJECT
-public:
-    QtServiceSysPrivate();
-    ~QtServiceSysPrivate();
-
-    char *ident;
-
-    QtServiceBase::ServiceFlags serviceFlags;
-
-protected:
-#if QT_VERSION >= 0x050000
-    void incomingConnection(qintptr socketDescriptor);
-#else
-    void incomingConnection(int socketDescriptor);
-#endif
-
-private slots:
-    void slotReady();
-    void slotClosed();
-
-private:
-    QString getCommand(const QTcpSocket *socket);
-    QMap<const QTcpSocket *, QString> cache;
-};
-
 QtServiceSysPrivate::QtServiceSysPrivate()
     : QtUnixServerSocket(), ident(0), serviceFlags(0)
 {
@@ -379,6 +353,8 @@ void QtServiceSysPrivate::slotReady()
 void QtServiceSysPrivate::slotClosed()
 {
     QTcpSocket *s = (QTcpSocket *)sender();
+    // Discard partial commands before a new socket can reuse this address.
+    cache.remove(s);
     s->deleteLater();
 }
 
@@ -392,8 +368,6 @@ QString QtServiceSysPrivate::getCommand(const QTcpSocket *socket)
     }
     return "";
 }
-
-#include "qtservice_unix.moc"
 
 bool QtServiceBasePrivate::sysInit()
 {
