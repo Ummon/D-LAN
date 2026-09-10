@@ -55,6 +55,14 @@ namespace FM
 
       int addWatch(const QString& path, uint32_t mask);
 
+      struct AncestorWatch
+      {
+         QString path;
+         int wd;
+      };
+      QList<AncestorWatch> watchAncestors(const QString& path);
+      void releaseAncestors(const QList<AncestorWatch>& ancestors);
+
       struct Dir
       {
          Dir(DirWatcherLinux* dwl, Dir* parent, const QString& name);
@@ -68,6 +76,7 @@ namespace FM
          QHash<QString, Dir*> children;
          QString name;
          int wd; // Watch descriptor.
+         QList<AncestorWatch> ancestors; // Only explicit directory registrations own these.
       };
 
       struct File
@@ -81,11 +90,13 @@ namespace FM
          int wd; // Watch descriptor.
          dev_t device;
          ino_t inode;
+         QList<AncestorWatch> ancestors;
       };
 
       QList<Dir*> dirs; // The watched root dirs, indexed by full path.
       QHash<QString, File*> files; // Files indexed by their path.
       QHash<int, int> watchReferences; // Overlapping paths can share an inotify watch descriptor.
+      QHash<int, QHash<QString, int>> ancestorPaths; // Ancestor names and their registration counts.
 
       QList<File*> getFiles(int wd) const;
       Dir* getDir(int wd) const;

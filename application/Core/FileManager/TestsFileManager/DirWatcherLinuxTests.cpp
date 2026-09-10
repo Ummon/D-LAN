@@ -23,6 +23,159 @@ class DirWatcherLinuxTests : public QObject
    Q_OBJECT
 
 private slots:
+   void ancestorWatchLossRequestsFallback()
+   {
+      QTemporaryDir temp;
+      QVERIFY(temp.isValid());
+      QDir base(temp.path());
+      QVERIFY(base.mkpath("parent/root"));
+      QVERIFY(base.mkdir("other"));
+      const QString root = temp.filePath("parent/root");
+      const QString filePath = temp.filePath("parent/file.txt");
+      const QString other = temp.filePath("other");
+      {
+         QFile file(filePath);
+         QVERIFY(file.open(QIODevice::WriteOnly));
+      }
+      FM::DirWatcherLinux watcher;
+      QVERIFY(watcher.addPath(root));
+      QVERIFY(watcher.addPath(filePath));
+      QVERIFY(watcher.addPath(other));
+      const int wd = watcher.dirs.first()->ancestors.first().wd;
+      QVERIFY(watcher.getDirs(wd).isEmpty()); // An ancestor-only watch.
+      QVERIFY(::inotify_rm_watch(watcher.fileDescriptor, wd) == 0);
+      QSet<QString> lost;
+      for (const auto& event : watcher.waitEvent(1000))
+      {
+         QCOMPARE(event.type, FM::WatcherEvent::WATCH_LOST);
+         QCOMPARE(event.isWatchedFile, event.path1 == filePath);
+         lost.insert(event.path1);
+      }
+      QCOMPARE(lost, (QSet<QString>{root, filePath}));
+      QCOMPARE(watcher.nbWatchedPath(), 1);
+      watcher.rmPath(other);
+      QVERIFY(watcher.watchReferences.isEmpty());
+      QVERIFY(watcher.ancestorPaths.isEmpty());
+   }
+
+   void ancestorWatchFailureRollsBack_data()
+   {
+      QTest::addColumn<bool>("file");
+      QTest::newRow("directory") << false;
+      QTest::newRow("file") << true;
+   }
+
+   void ancestorWatchFailureRollsBack()
+   {
+      if (::geteuid() == 0)
+         QSKIP("Root can watch unreadable ancestors");
+      QFETCH(bool, file);
+      QTemporaryDir temp;
+      QVERIFY(temp.isValid());
+      QDir base(temp.path());
+      QVERIFY(base.mkpath("private/sub/root"));
+      QVERIFY(base.mkdir("other"));
+      const QString filePath = temp.filePath("private/sub/file.txt");
+      {
+         QFile file(filePath);
+         QVERIFY(file.open(QIODevice::WriteOnly));
+      }
+      FM::DirWatcherLinux watcher;
+      QVERIFY(watcher.addPath(temp.filePath("other")));
+      const auto references = watcher.watchReferences;
+      const auto ancestors = watcher.ancestorPaths;
+      const QString denied = temp.filePath("private");
+      const auto permissions = QFile::permissions(denied);
+      const auto restorePermissions = qScopeGuard([&] { QFile::setPermissions(denied, permissions); });
+      QVERIFY(QFile::setPermissions(denied, QFileDevice::WriteOwner | QFileDevice::ExeOwner));
+      QVERIFY(!watcher.addPath(file ? filePath : temp.filePath("private/sub/root")));
+      QCOMPARE(watcher.nbWatchedPath(), 1);
+      QCOMPARE(watcher.watchReferences, references);
+      QCOMPARE(watcher.ancestorPaths, ancestors);
+   }
+
+   void unwatchedAncestorMovesInvalidateRegistrations_data()
+   {
+      QTest::addColumn<bool>("grandparent");
+      QTest::addColumn<bool>("replacement");
+      for (bool grandparent : {false, true})
+         for (bool replacement : {false, true})
+            QTest::newRow(qPrintable(QString("grandparent=%1,replacement=%2").arg(grandparent).arg(replacement)))
+               << grandparent << replacement;
+   }
+
+   void unwatchedAncestorMovesInvalidateRegistrations()
+   {
+      QFETCH(bool, grandparent);
+      QFETCH(bool, replacement);
+      QTemporaryDir temp;
+      QVERIFY(temp.isValid());
+      QDir base(temp.path());
+      QVERIFY(base.mkpath("parent/nested/root/deep"));
+      QVERIFY(base.mkpath("parent-other"));
+      const QString root = temp.filePath("parent/nested/root");
+      const QString filePath = temp.filePath("parent/nested/file.txt");
+      const QString sibling = temp.filePath("parent-other");
+      {
+         QFile file(filePath);
+         QVERIFY(file.open(QIODevice::WriteOnly));
+      }
+      FM::DirWatcherLinux watcher;
+      QVERIFY(watcher.addPath(root));
+      QVERIFY(watcher.addPath(filePath));
+      QVERIFY(watcher.addPath(sibling));
+      QVERIFY(base.rename(grandparent ? "parent" : "parent/nested", "outside"));
+      if (replacement)
+      {
+         QVERIFY(base.mkpath("parent/nested/root/deep"));
+         QFile file(filePath);
+         QVERIFY(file.open(QIODevice::WriteOnly));
+      }
+      // No descendant activity is needed to wake the watcher after a parent move.
+      QSet<QString> invalidated;
+      for (const auto& event : watcher.waitEvent(1000))
+      {
+         QCOMPARE(event.type, replacement ? FM::WatcherEvent::RESCAN : FM::WatcherEvent::DELETED);
+         QCOMPARE(event.isWatchedFile, event.path1 == filePath);
+         QVERIFY(!invalidated.contains(event.path1));
+         invalidated.insert(event.path1);
+      }
+      QCOMPARE(invalidated, (QSet<QString>{root, filePath}));
+      QCOMPARE(watcher.nbWatchedPath(), replacement ? 3 : 1);
+      watcher.waitEvent(0);
+      const QString oldBase = temp.filePath(grandparent ? "outside/nested" : "outside");
+      for (const auto& path : QStringList{oldBase + "/root/deep/old.txt", oldBase + "/file.txt"})
+      {
+         QFile file(path);
+         QVERIFY(file.open(QIODevice::Append));
+         QCOMPARE(file.write("old"), qint64(3));
+      }
+      for (const auto& event : watcher.waitEvent(0))
+         QCOMPARE(event.type, FM::WatcherEvent::TIMEOUT);
+      const QString directoryFile = root + "/deep/new.txt";
+      const QString siblingFile = sibling + "/new.txt";
+      QStringList paths{siblingFile};
+      if (replacement)
+         paths << directoryFile << filePath;
+      for (const auto& path : paths)
+      {
+         QFile file(path);
+         QVERIFY(file.open(QIODevice::Append));
+         QCOMPARE(file.write("new"), qint64(3));
+      }
+      QSet<QString> notified;
+      for (const auto& event : watcher.waitEvent(1000))
+      {
+         QVERIFY(paths.contains(event.path1));
+         notified.insert(event.path1);
+      }
+      QCOMPARE(notified, QSet<QString>(paths.begin(), paths.end()));
+      watcher.rmPath(root);
+      watcher.rmPath(filePath);
+      watcher.rmPath(sibling);
+      QVERIFY(watcher.watchReferences.isEmpty());
+   }
+
    void conflictingDirectoryMovesRebuildWatches_data()
    {
       QTest::addColumn<bool>("exchange");
@@ -258,7 +411,7 @@ private slots:
       QCOMPARE(changed, replaceFile ? QSet<QString>{path} : (QSet<QString>{path, alias}));
       watcher.rmPath(path);
       QCOMPARE(watcher.nbWatchedPath(), 1);
-      QCOMPARE(watcher.watchReferences.size(), 1);
+      QCOMPARE(watcher.watchReferences.size(), 1 + watcher.files.value(alias)->ancestors.size());
       QCOMPARE(watcher.watchReferences.value(aliasWd), 1);
       watcher.waitEvent(0);
       {
@@ -672,8 +825,9 @@ private slots:
       }
       else
          events = watcher.waitEvent(1000);
-      const QSet<QString> expected = target == "file" ? QSet<QString>{filePath, aliasPath} :
-         target == "root" ? QSet<QString>{root} : QSet<QString>{root, sub};
+      // The independently registered subdirectory also depends on the root's
+      // watch to detect ancestor moves, so losing it invalidates both owners.
+      const QSet<QString> expected = target == "file" ? QSet<QString>{filePath, aliasPath} : QSet<QString>{root, sub};
       QSet<QString> lost;
       for (const auto& event : events)
       {

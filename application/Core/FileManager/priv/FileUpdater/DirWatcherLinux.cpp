@@ -35,6 +35,7 @@ using namespace FM;
 #include <errno.h>
 #include <memory>
 #include <vector>
+#include <algorithm>
 
 /**
   * @class FM::DirWatcherLinux
@@ -93,6 +94,48 @@ void DirWatcherLinux::clearWatches()
       delete i.value();
    this->files.clear();
    this->watchReferences.clear();
+   this->ancestorPaths.clear();
+}
+
+QList<DirWatcherLinux::AncestorWatch> DirWatcherLinux::watchAncestors(const QString& path)
+{
+   QList<AncestorWatch> ancestors;
+   QString current = QDir::cleanPath(QFileInfo(path).absoluteFilePath());
+   try
+   {
+      while (current != "/")
+      {
+         current = QFileInfo(current).absolutePath();
+         // Watching the ancestors themselves avoids subscribing to unrelated
+         // sibling changes and catches moves at any level above a shared path.
+         const int wd = this->addWatch(current, IN_MOVE_SELF | IN_DELETE_SELF | IN_ONLYDIR);
+         ancestors << AncestorWatch{current, wd};
+         ++this->ancestorPaths[wd][current];
+      }
+   }
+   catch (UnableToWatchException&)
+   {
+      this->releaseAncestors(ancestors);
+      throw;
+   }
+   return ancestors;
+}
+
+void DirWatcherLinux::releaseAncestors(const QList<AncestorWatch>& ancestors)
+{
+   for (const AncestorWatch& ancestor : ancestors)
+   {
+      auto paths = this->ancestorPaths.find(ancestor.wd);
+      if (paths != this->ancestorPaths.end())
+      {
+         auto reference = paths->find(ancestor.path);
+         if (reference != paths->end() && --reference.value() == 0)
+            paths->erase(reference);
+         if (paths->isEmpty())
+            this->ancestorPaths.erase(paths);
+      }
+      this->rmWatcher(ancestor.wd);
+   }
 }
 
 QList<WatcherEvent> DirWatcherLinux::rebuildWatches()
@@ -508,6 +551,16 @@ QList<WatcherEvent> DirWatcherLinux::processInotifyEvents(const char* buf, int l
       if (lostWatches.contains(event->wd))
          continue;
 
+      if (event->mask & (IN_MOVE_SELF | IN_DELETE_SELF))
+      {
+         // Ancestors need not be shared roots. Their descendants get no self
+         // move event, so invalidate the registrations before reading later
+         // inode events through obsolete pathnames.
+         const QStringList paths = this->ancestorPaths.value(event->wd).keys();
+         for (const QString& path : paths)
+            retirePaths(path);
+      }
+
       Dir* dir = nullptr;
 
       // Watched directories.
@@ -681,11 +734,17 @@ QList<WatcherEvent> DirWatcherLinux::processInotifyEvents(const char* buf, int l
    {
       for (Dir* dir : this->getDirs(wd))
          failedRoots.insert(dir->getRoot()->name);
+      for (Dir* root : this->dirs)
+         if (std::any_of(root->ancestors.begin(), root->ancestors.end(),
+               [wd](const AncestorWatch& ancestor) { return ancestor.wd == wd; }))
+            failedRoots.insert(root->name);
       // The kernel already removed this watch. Cleanup must not remove it again.
       this->watchReferences.remove(wd);
    }
    for (auto i = this->files.begin(); i != this->files.end();)
-      if (lostWatches.contains(i.value()->wd))
+      if (lostWatches.contains(i.value()->wd) ||
+          std::any_of(i.value()->ancestors.begin(), i.value()->ancestors.end(),
+             [&](const AncestorWatch& ancestor) { return lostWatches.contains(ancestor.wd); }))
       {
          events << WatcherEvent(WatcherEvent::WATCH_LOST, i.key(), true);
          delete i.value();
@@ -828,27 +887,29 @@ void DirWatcherLinux::rmWatcher(int watcher)
   * @exception UnableToWatchException
   */
 DirWatcherLinux::Dir::Dir(DirWatcherLinux* dwl, Dir* parent, const QString& name) :
-   dwl(dwl), parent(parent), name(name)
+   dwl(dwl), parent(parent), name(name), wd(-1)
 {
-   this->wd = dwl->addWatch(this->getFullPath(), (this->parent ? EVENTS_OBS : ROOT_EVENTS_OBS) | IN_ONLYDIR);
-
-   for (QListIterator<QString> i(QDir(this->getFullPath()).entryList(QDir::Dirs | QDir::Hidden | QDir::NoDotAndDotDot | QDir::NoSymLinks)); i.hasNext();)
-      try
-      {
+   try
+   {
+      if (!parent)
+         this->ancestors = dwl->watchAncestors(name);
+      this->wd = dwl->addWatch(this->getFullPath(), (this->parent ? EVENTS_OBS : ROOT_EVENTS_OBS) | IN_ONLYDIR);
+      for (QListIterator<QString> i(QDir(this->getFullPath()).entryList(QDir::Dirs | QDir::Hidden | QDir::NoDotAndDotDot | QDir::NoSymLinks)); i.hasNext();)
          new Dir(this->dwl, this, i.next());
-      }
-      catch (UnableToWatchException&)
+   }
+   catch (UnableToWatchException&)
+   {
+      for (QHashIterator<QString, Dir*> j(this->children); j.hasNext();)
       {
-         for (QHashIterator<QString, Dir*> j(this->children); j.hasNext();)
-         {
-            auto child = j.next();
-            child.value()->parent = nullptr;
-            delete child.value();
-         }
-         this->dwl->rmWatcher(this->wd);
-         throw;
+         auto child = j.next();
+         child.value()->parent = nullptr;
+         delete child.value();
       }
-
+      if (this->wd >= 0)
+         this->dwl->rmWatcher(this->wd);
+      this->dwl->releaseAncestors(this->ancestors);
+      throw;
+   }
 
    if (this->parent)
       this->parent->children.insert(this->name, this);
@@ -873,6 +934,7 @@ DirWatcherLinux::Dir::~Dir()
          delete child.value();
       }
    }
+   this->dwl->releaseAncestors(this->ancestors);
 }
 
 /**
@@ -915,19 +977,27 @@ void DirWatcherLinux::Dir::move(Dir* to, const QString& newName)
   * @exception UnableToWatchException
   */
 DirWatcherLinux::File::File(DirWatcherLinux* dwl, const QString& path) :
-   dwl(dwl), path(path)
+   dwl(dwl), path(path), wd(-1)
 {
    struct stat status;
    if (lstat(QFile::encodeName(path).constData(), &status) < 0 || !S_ISREG(status.st_mode))
       throw UnableToWatchException();
    this->device = status.st_dev;
    this->inode = status.st_ino;
-   this->wd = dwl->addWatch(path, EVENTS_FILE);
-   // Fail safely if the pathname changed while the watch was being installed.
-   if (!this->matchesPath())
+   this->ancestors = dwl->watchAncestors(path);
+   try
    {
-      dwl->rmWatcher(this->wd);
-      throw UnableToWatchException();
+      this->wd = dwl->addWatch(path, EVENTS_FILE);
+      // Fail safely if the pathname changed while the watch was being installed.
+      if (!this->matchesPath())
+         throw UnableToWatchException();
+   }
+   catch (UnableToWatchException&)
+   {
+      if (this->wd >= 0)
+         dwl->rmWatcher(this->wd);
+      dwl->releaseAncestors(this->ancestors);
+      throw;
    }
 }
 
@@ -944,4 +1014,5 @@ DirWatcherLinux::File::~File()
    {
       this->dwl->rmWatcher(this->wd);
    }
+   this->dwl->releaseAncestors(this->ancestors);
 }
