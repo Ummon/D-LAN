@@ -37,5 +37,5 @@ if(DLAN_BUILD_TESTS AND CMAKE_SYSTEM_NAME STREQUAL "Linux")
    target_link_options(TestsQtServiceUnix PRIVATE
       "LINKER:--wrap=connect" "LINKER:--wrap=bind" "LINKER:--wrap=listen")
    add_test(NAME TestsQtServiceUnix COMMAND TestsQtServiceUnix)
-   set_tests_properties(TestsQtServiceUnix PROPERTIES TIMEOUT 20)
+   set_tests_properties(TestsQtServiceUnix PROPERTIES TIMEOUT 30)
 endif()

@@ -5,6 +5,7 @@
 #include <QTest>
 #include <qtservice.h>
 #include <qtunixserversocket.h>
+#include <qtunixsocket.h>
 
 #include <cerrno>
 #include <chrono>
@@ -14,11 +15,14 @@
 #include <pthread.h>
 #include <poll.h>
 #include <sys/socket.h>
+#include <sys/un.h>
 #include <unistd.h>
 
 namespace
 {
    int connectionFd = -1;
+   QByteArray connectionPath;
+   int lastConnectionFd = -1;
    bool trackServerSocket = false;
    bool failListen = false;
    bool listenAttempted = false;
@@ -52,6 +56,14 @@ extern "C" int __wrap_listen(int fd, int backlog)
 extern "C" int __real_connect(int fd, const sockaddr* address, socklen_t length);
 extern "C" int __wrap_connect(int fd, const sockaddr* address, socklen_t length)
 {
+   if (!connectionPath.isEmpty())
+   {
+      sockaddr_un redirected{};
+      redirected.sun_family = AF_UNIX;
+      qstrncpy(redirected.sun_path, connectionPath.constData(), sizeof(redirected.sun_path));
+      lastConnectionFd = fd;
+      return __real_connect(fd, reinterpret_cast<const sockaddr*>(&redirected), sizeof(redirected));
+   }
    if (connectionFd < 0)
       return __real_connect(fd, address, length);
    const int result = dup2(connectionFd, fd);
@@ -65,6 +77,93 @@ class QtServiceUnixTests : public QObject
    Q_OBJECT
 
 private slots:
+   void connectionBacklog_data()
+   {
+      QTest::addColumn<QString>("operation");
+      QTest::newRow("status-times-out") << QString("status");
+      QTest::newRow("command-times-out") << QString("command");
+      QTest::newRow("queue-recovers") << QString("recover");
+      QTest::newRow("connection-and-reply-share-deadline") << QString("shared-deadline");
+   }
+
+   void connectionBacklog()
+   {
+      QFETCH(QString, operation);
+      QTemporaryDir directory;
+      QVERIFY(directory.isValid());
+      const QByteArray path = directory.filePath("service.sock").toUtf8();
+      sockaddr_un address{};
+      address.sun_family = AF_UNIX;
+      QVERIFY(path.size() < static_cast<qsizetype>(sizeof(address.sun_path)));
+      qstrncpy(address.sun_path, path.constData(), sizeof(address.sun_path));
+      const int listener = socket(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0);
+      QVERIFY(listener >= 0);
+      const auto closeListener = qScopeGuard([&] { close(listener); });
+      QVERIFY(bind(listener, reinterpret_cast<const sockaddr*>(&address), sizeof(address)) == 0);
+      QVERIFY(listen(listener, 0) == 0);
+      const int queued = socket(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0);
+      QVERIFY(queued >= 0);
+      const auto closeQueued = qScopeGuard([&] { close(queued); });
+      // Linux permits one pending connection even with backlog zero.
+      QVERIFY(__real_connect(queued, reinterpret_cast<const sockaddr*>(&address), sizeof(address)) == 0);
+
+      connectionPath = path; // Exercise the public controller without contacting a real service.
+      const auto resetPath = qScopeGuard([] { connectionPath.clear(); });
+      std::thread peer;
+      if (operation == "recover" || operation == "shared-deadline")
+         peer = std::thread([&]
+         {
+            std::this_thread::sleep_for(std::chrono::milliseconds(operation == "recover" ? 100 : 2000));
+            const int first = accept(listener, nullptr, nullptr);
+            if (first >= 0)
+               close(first);
+            // Accept the retry, then keep the connection open without replying.
+            pollfd incoming{listener, POLLIN, 0};
+            if (poll(&incoming, 1, 4000) <= 0)
+               return;
+            const int client = accept(listener, nullptr, nullptr);
+            if (client < 0)
+               return;
+            const auto closeClient = qScopeGuard([&] { close(client); });
+            QDeadlineTimer deadline(4000);
+            char buffer[128];
+            while (!deadline.hasExpired())
+            {
+               pollfd fd{client, POLLIN, 0};
+               if (poll(&fd, 1, static_cast<int>(deadline.remainingTime())) <= 0 ||
+                   read(client, buffer, sizeof(buffer)) <= 0)
+                  return;
+            }
+         });
+      const auto joinPeer = qScopeGuard([&] { if (peer.joinable()) peer.join(); });
+
+      QElapsedTimer timer;
+      timer.start();
+      bool result;
+      if (operation == "recover")
+      {
+         QtUnixSocket socket;
+         result = socket.connectTo(QString::fromUtf8(path));
+      }
+      else
+      {
+         QtServiceController controller("D-LAN unit test");
+         result = operation == "status" ? controller.isRunning() : controller.stop();
+      }
+      const qint64 elapsed = timer.elapsed();
+      if (peer.joinable())
+         peer.join();
+      QCOMPARE(result, operation == "recover");
+      QVERIFY(elapsed < 4500);
+      if (operation != "recover")
+         QVERIFY(elapsed >= 2800);
+      // Both timed-out and successful temporary clients release their descriptor.
+      QVERIFY(lastConnectionFd >= 0);
+      errno = 0;
+      QCOMPARE(fcntl(lastConnectionFd, F_GETFD), -1);
+      QCOMPARE(errno, EBADF);
+   }
+
    void serverSetupFailure_data()
    {
       QTest::addColumn<bool>("listenFailure");

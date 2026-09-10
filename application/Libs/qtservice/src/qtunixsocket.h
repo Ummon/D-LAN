@@ -42,6 +42,7 @@
 #define QTUNIXSOCKET_H
 
 #include <QTcpSocket>
+#include <QDeadlineTimer>
 
 class QtUnixSocket : public QTcpSocket
 {
@@ -49,7 +50,7 @@ class QtUnixSocket : public QTcpSocket
 public:
     QtUnixSocket(QObject *parent = 0);
 
-    bool connectTo(const QString &path);
+    bool connectTo(const QString &path, QDeadlineTimer deadline = QDeadlineTimer(3000));
 };
 
 #endif

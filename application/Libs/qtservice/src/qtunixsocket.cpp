@@ -39,6 +39,11 @@
 ****************************************************************************/
 
 #include "qtunixsocket.h"
+#include <QScopeGuard>
+#include <QThread>
+#include <cerrno>
+#include <fcntl.h>
+#include <poll.h>
 #include <sys/types.h>
 #include <sys/un.h>
 #include <sys/socket.h>
@@ -55,24 +60,57 @@ QtUnixSocket::QtUnixSocket(QObject *parent)
 {
 }
 
-bool QtUnixSocket::connectTo(const QString &path)
+bool QtUnixSocket::connectTo(const QString &path, QDeadlineTimer deadline)
 {
-    bool ret = false;
-    int sock = ::socket(PF_UNIX, SOCK_STREAM, 0);
-    if (sock != -1) {
-        struct sockaddr_un addr;
-	::memset(&addr, 0, sizeof(struct sockaddr_un));
-	addr.sun_family = AF_UNIX;
-	size_t pathlen = strlen(path.toLatin1().constData());
-        pathlen = qMin(pathlen, sizeof(addr.sun_path));
-	::memcpy(addr.sun_path, path.toLatin1().constData(), pathlen);
-	int err = ::connect(sock, (struct sockaddr *)&addr, SUN_LEN(&addr));
-        if (err != -1) {
-            setSocketDescriptor(sock);
-	    ret = true;
-	} else {
-            ::close(sock);
+    struct sockaddr_un addr;
+    ::memset(&addr, 0, sizeof(addr));
+    addr.sun_family = AF_UNIX;
+    size_t pathlen = strlen(path.toLatin1().constData());
+    pathlen = qMin(pathlen, sizeof(addr.sun_path));
+    ::memcpy(addr.sun_path, path.toLatin1().constData(), pathlen);
+
+    while (!deadline.hasExpired()) {
+        const int sock = ::socket(PF_UNIX, SOCK_STREAM, 0);
+        if (sock == -1)
+            return false;
+        auto closeSocket = qScopeGuard([sock] { ::close(sock); });
+        const int flags = ::fcntl(sock, F_GETFL);
+        if (flags == -1 || ::fcntl(sock, F_SETFL, flags | O_NONBLOCK) == -1)
+            return false;
+
+        if (::connect(sock, reinterpret_cast<struct sockaddr *>(&addr), SUN_LEN(&addr)) == -1) {
+            if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                // A full Linux Unix-socket backlog has not started a connection.
+                // Retry with a fresh socket, without spinning or resetting the deadline.
+                const qint64 remaining = deadline.remainingTime();
+                if (remaining > 0)
+                    QThread::msleep(static_cast<unsigned long>(qMin<qint64>(10, remaining)));
+                continue;
+            }
+            if (errno == EINTR)
+                continue;
+            if (errno != EINPROGRESS)
+                return false;
+
+            pollfd fd{sock, POLLOUT, 0};
+            int ready;
+            do {
+                if (deadline.hasExpired())
+                    return false;
+                ready = ::poll(&fd, 1, static_cast<int>(deadline.remainingTime()));
+            } while (ready < 0 && errno == EINTR);
+            if (ready <= 0 || (fd.revents & POLLNVAL))
+                return false;
+            int error = 0;
+            socklen_t errorSize = sizeof(error);
+            if (::getsockopt(sock, SOL_SOCKET, SO_ERROR, &error, &errorSize) == -1 || error != 0)
+                return false;
         }
+
+        if (!setSocketDescriptor(sock))
+            return false;
+        closeSocket.dismiss(); // QTcpSocket now owns the descriptor.
+        return true;
     }
-    return ret;
+    return false;
 }

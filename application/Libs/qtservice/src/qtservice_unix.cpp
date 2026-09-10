@@ -94,13 +94,12 @@ static QString socketPath(const QString &serviceName)
 
 static bool sendCmd(const QString &serviceName, const QString &cmd)
 {
+    // Share one deadline across connecting, writes, and reply fragments.
+    QDeadlineTimer deadline(3000);
     QtUnixSocket sock;
-    if (!sock.connectTo(socketPath(serviceName)))
+    if (!sock.connectTo(socketPath(serviceName), deadline))
         return false;
 
-    // Share one deadline across writes and reply fragments. A connected but
-    // unresponsive service must not keep the calling GUI blocked indefinitely.
-    QDeadlineTimer deadline(3000);
     const QByteArray request = (cmd + QLatin1String("\r\n")).toLatin1();
     if (sock.write(request) != request.size())
         return false;
