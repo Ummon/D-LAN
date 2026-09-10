@@ -10,6 +10,56 @@ class DirWatcherLinuxTests : public QObject
    Q_OBJECT
 
 private slots:
+   void directoryMovesPreserveSiblings_data()
+   {
+      QTest::addColumn<QString>("destination");
+      QTest::newRow("rename") << "root/renamed";
+      QTest::newRow("move") << "root/dest/a";
+      QTest::newRow("move-and-rename") << "root/dest/b";
+   }
+
+   void directoryMovesPreserveSiblings()
+   {
+      QFETCH(QString, destination);
+      QTemporaryDir temp;
+      QVERIFY(temp.isValid());
+      QDir base(temp.path());
+      QVERIFY(base.mkpath("root/a/deep"));
+      QVERIFY(base.mkpath("root/b"));
+      QVERIFY(base.mkpath("root/dest/other"));
+      // Catch collisions with the old name at the destination as well as
+      // collisions with the new name at the source.
+      if (destination == "root/dest/b")
+         QVERIFY(base.mkpath("root/dest/a"));
+
+      FM::DirWatcherLinux watcher;
+      QVERIFY(watcher.addPath(temp.filePath("root")));
+      QVERIFY(base.rename("root/a", destination));
+
+      const auto events = watcher.waitEvent(1000);
+      QCOMPARE(events.size(), 1);
+      QCOMPARE(events[0].type, FM::WatcherEvent::MOVE);
+      QCOMPARE(events[0].path1, temp.filePath("root/a"));
+      QCOMPARE(events[0].path2, temp.filePath(destination));
+
+      QStringList directories{"root/b", "root/dest/other", destination, destination + "/deep"};
+      if (destination == "root/dest/b")
+         directories << "root/dest/a";
+      for (const QString& directory : directories)
+      {
+         const QString path = temp.filePath(directory + "/new.txt");
+         QFile file(path);
+         QVERIFY(file.open(QIODevice::WriteOnly));
+         QCOMPARE(file.write("data"), qint64(4));
+         file.close();
+         bool found = false;
+         for (const auto& event : watcher.waitEvent(1000))
+            if (event.type == FM::WatcherEvent::NEW && event.path1 == path && !event.isWatchedFile)
+               found = true;
+         QVERIFY2(found, qPrintable(path));
+      }
+   }
+
    void overlappingDirectories_data()
    {
       QTest::addColumn<bool>("childFirst");

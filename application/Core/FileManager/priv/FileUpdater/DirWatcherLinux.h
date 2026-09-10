@@ -54,8 +54,7 @@ namespace FM
          Dir(DirWatcherLinux* dwl, Dir* parent, const QString& name);
          ~Dir();
          QString getFullPath();
-         void rename(const QString& newName);
-         void move(Dir* to);
+         void move(Dir* to, const QString& newName);
 
          DirWatcherLinux* dwl;
          Dir* parent;

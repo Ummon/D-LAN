@@ -351,15 +351,10 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
                   {
                      // Retrieve moved directory by child map of from directory,
                      // because actually the name hasn't changed.
-                     Dir* movedDir = this->getDir(fromEvent->wd)->children.value(fromEvent->name); // TODO: check if the dir exists!?
-
-                     // If the name of moved directory has changed, rename it.
-                     if (movedDir && fromEvent->name != event->name)
-                        movedDir->rename(event->name);
-
-                     // If the path of moved directory has changed, move it.
-                     if (movedDir && movedDir->parent->getFullPath() != dir->getFullPath())
-                        movedDir->move(dir);
+                     Dir* fromDir = this->getDir(fromEvent->wd);
+                     Dir* movedDir = fromDir ? fromDir->children.value(fromEvent->name) : nullptr;
+                     if (movedDir)
+                        movedDir->move(dir, event->name);
                   }
 
                   i.remove();
@@ -581,24 +576,15 @@ QString DirWatcherLinux::Dir::getFullPath()
 }
 
 /**
-  * Rename the directory.
-  * @param newName the new name
-  */
-void DirWatcherLinux::Dir::rename(const QString& newName)
-{
-   this->parent->children.remove(this->name);
-   this->name = newName;
-   this->parent->children.insert(this->name, this);
-}
-
-/**
-  * Move a directory in the tree.
+  * Move and rename a directory in the tree without inserting an intermediate path.
   * @param to the new parent of the directory
+  * @param newName the new name of the directory
   */
-void DirWatcherLinux::Dir::move(Dir* to)
+void DirWatcherLinux::Dir::move(Dir* to, const QString& newName)
 {
    this->parent->children.remove(this->name);
    this->parent = to;
+   this->name = newName;
    to->children.insert(this->name, this);
 }
 
