@@ -11,6 +11,147 @@ class DirWatcherLinuxTests : public QObject
    Q_OBJECT
 
 private slots:
+   void removedRootsReleaseWatches_data()
+   {
+      QTest::addColumn<bool>("rename");
+      QTest::addColumn<bool>("explicitRemoval");
+      QTest::newRow("renamed-root") << true << false;
+      QTest::newRow("deleted-root") << false << false;
+      QTest::newRow("remove-renamed-root") << true << true;
+      QTest::newRow("remove-deleted-root") << false << true;
+   }
+
+   void removedRootsReleaseWatches()
+   {
+      QFETCH(bool, rename);
+      QFETCH(bool, explicitRemoval);
+      QTemporaryDir temp;
+      QVERIFY(temp.isValid());
+      QDir base(temp.path());
+      QVERIFY(base.mkpath("root/deep"));
+      const QString root = temp.filePath("root");
+      FM::DirWatcherLinux watcher;
+      QVERIFY(watcher.addPath(root));
+      if (rename)
+         QVERIFY(base.rename("root", "outside"));
+      else
+         QVERIFY(QDir(root).removeRecursively());
+
+      if (explicitRemoval)
+         watcher.rmPath(root);
+      else
+      {
+         bool found = false;
+         for (const auto& event : watcher.waitEvent(1000))
+            found |= event.type == FM::WatcherEvent::DELETED && event.path1 == root;
+         QVERIFY(found);
+      }
+      QCOMPARE(watcher.nbWatchedPath(), 0);
+      watcher.rmPath(root); // Repeated removal is harmless.
+
+      if (rename)
+      {
+         QFile outside(temp.filePath("outside/deep/new.txt"));
+         QVERIFY(outside.open(QIODevice::WriteOnly));
+      }
+      for (const auto& event : watcher.waitEvent(0))
+         QCOMPARE(event.type, FM::WatcherEvent::TIMEOUT);
+   }
+
+   void movedOutSubtreeStopsNotifications_data()
+   {
+      QTest::addColumn<bool>("replaceBeforeRead");
+      QTest::newRow("move-out") << false;
+      QTest::newRow("reuse-old-path-before-reading") << true;
+   }
+
+   void movedOutSubtreeStopsNotifications()
+   {
+      QFETCH(bool, replaceBeforeRead);
+      QTemporaryDir temp;
+      QVERIFY(temp.isValid());
+      QDir base(temp.path());
+      QVERIFY(base.mkpath("root/sub/deep"));
+      FM::DirWatcherLinux watcher;
+      QVERIFY(watcher.addPath(temp.filePath("root")));
+      QVERIFY(base.rename("root/sub", "outside"));
+      // Queue an event from outside the share in the same read as the move.
+      {
+         QFile outside(temp.filePath("outside/deep/before.txt"));
+         QVERIFY(outside.open(QIODevice::WriteOnly));
+      }
+      if (replaceBeforeRead)
+         QVERIFY(base.mkpath("root/sub/deep"));
+
+      bool deleted = false;
+      for (const auto& event : watcher.waitEvent(1000))
+      {
+         deleted |= event.type == FM::WatcherEvent::DELETED && event.path1 == temp.filePath("root/sub");
+         if (event.type == FM::WatcherEvent::NEW && event.path1 == temp.filePath("root/sub"))
+            QVERIFY(deleted); // FileUpdater must delete the old entry before adding its replacement.
+         QVERIFY(!event.path1.endsWith("before.txt"));
+      }
+      QVERIFY(deleted);
+      {
+         QFile outside(temp.filePath("outside/deep/after.txt"));
+         QVERIFY(outside.open(QIODevice::WriteOnly));
+      }
+      for (const auto& event : watcher.waitEvent(0))
+         QCOMPARE(event.type, FM::WatcherEvent::TIMEOUT);
+
+      if (!replaceBeforeRead)
+      {
+         QVERIFY(base.mkpath("root/sub/deep"));
+         watcher.waitEvent(1000);
+      }
+      QFile replacement(temp.filePath("root/sub/deep/new.txt"));
+      QVERIFY(replacement.open(QIODevice::WriteOnly));
+      replacement.close();
+      bool found = false;
+      for (const auto& event : watcher.waitEvent(1000))
+         found |= event.type == FM::WatcherEvent::NEW && event.path1 == replacement.fileName();
+      QVERIFY(found);
+   }
+
+   void directoryMoveAcrossReads()
+   {
+      QTemporaryDir temp;
+      QVERIFY(temp.isValid());
+      QDir base(temp.path());
+      QVERIFY(base.mkpath("root/sub/deep"));
+      const QStringList floodPaths{temp.filePath("root/a"), temp.filePath("root/b")};
+      for (const QString& path : floodPaths)
+      {
+         QFile file(path);
+         QVERIFY(file.open(QIODevice::WriteOnly));
+      }
+      FM::DirWatcherLinux watcher;
+      QVERIFY(watcher.addPath(temp.filePath("root")));
+      // 1023 short-name events leave one slot in the 32 KiB read buffer,
+      // placing IN_MOVED_FROM and IN_MOVED_TO in separate reads.
+      for (int i = 0; i < 1023; ++i)
+      {
+         QFile file(floodPaths[i % 2]);
+         QVERIFY(file.open(QIODevice::WriteOnly));
+      }
+      QVERIFY(base.rename("root/sub", "root/moved"));
+      bool deleted = false;
+      for (const auto& event : watcher.waitEvent(1000))
+         deleted |= event.type == FM::WatcherEvent::DELETED && event.path1 == temp.filePath("root/sub");
+      QVERIFY(deleted);
+      bool added = false;
+      for (const auto& event : watcher.waitEvent(1000))
+         added |= event.type == FM::WatcherEvent::NEW && event.path1 == temp.filePath("root/moved");
+      QVERIFY(added);
+      QFile file(temp.filePath("root/moved/deep/new.txt"));
+      QVERIFY(file.open(QIODevice::WriteOnly));
+      file.close();
+      bool found = false;
+      for (const auto& event : watcher.waitEvent(1000))
+         found |= event.type == FM::WatcherEvent::NEW && event.path1 == file.fileName();
+      QVERIFY(found);
+   }
+
    void queueOverflowRecoversWatches()
    {
       QFile limitFile("/proc/sys/fs/inotify/max_queued_events");

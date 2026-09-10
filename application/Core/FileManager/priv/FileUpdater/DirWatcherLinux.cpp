@@ -30,6 +30,8 @@ using namespace FM;
 #include <sys/inotify.h>
 #include <unistd.h>
 #include <errno.h>
+#include <memory>
+#include <vector>
 
 /**
   * @class FM::DirWatcherLinux
@@ -206,27 +208,23 @@ void DirWatcherLinux::rmPath(const QString& directory, const QString& filename)
    const QString path = filename.isEmpty() ? directory : QDir(directory).filePath(filename);
    QMutexLocker locker(&this->mutex);
 
-   if (QDir(path).exists())
+   // Consult the registration, since a removed or renamed path no longer
+   // identifies the filesystem object that was originally watched.
+   for (QMutableListIterator<Dir*> i(dirs); i.hasNext();)
    {
-      for (QMutableListIterator<Dir*> i(dirs); i.hasNext();)
+      Dir* dir = i.next();
+      if (dir->name == path)
       {
-         Dir* dir = i.next();
-         if (dir->name == path)
-         {
-            delete dir;
-            i.remove();
-            break;
-         }
+         delete dir;
+         i.remove();
+         return;
       }
    }
-   else
+   auto file = this->files.find(path);
+   if (file != this->files.end())
    {
-      auto file = this->files.find(path);
-      if (file != this->files.end())
-      {
-         delete file.value();
-         this->files.erase(file);
-      }
+      delete file.value();
+      this->files.erase(file);
    }
 }
 
@@ -375,7 +373,14 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
    }
 
    QList<WatcherEvent> events;
-   QList<inotify_event*> movedFromEvents;
+   struct PendingMove
+   {
+      uint32_t cookie;
+      QString path;
+      qsizetype eventIndex;
+      std::unique_ptr<Dir> directory;
+   };
+   std::vector<PendingMove> movedFromEvents;
 
    for (int i = 0; i < len;)
    {
@@ -391,42 +396,42 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
          if (event->mask & IN_MOVED_FROM)
          {
             L_DEBU(QString("inotify event (dir): IN_MOVED_FROM (path=%1)").arg(this->getEventPath(event)));
-            // Add the event to movedToEvents.
-            movedFromEvents << event;
+            const QString path = this->getEventPath(event);
+            // Hide the old subtree immediately, including from later events in
+            // this read. Keep ownership until the move is matched or abandoned.
+            Dir* movedDir = event->mask & IN_ISDIR ? dir->children.take(event->name) : nullptr;
+            if (movedDir)
+               movedDir->parent = nullptr;
+            movedFromEvents.push_back({event->cookie, path, events.size(), std::unique_ptr<Dir>(movedDir)});
+            // Preserve ordering if the old path is recreated before this read ends.
+            events << WatcherEvent(WatcherEvent::DELETED, path, false);
          }
 
          if (event->mask & IN_MOVED_TO)
          {
             L_DEBU(QString("inotify event (dir): IN_MOVED_TO (path=%1)").arg(this->getEventPath(event)));
             // Check list of IN_MOVED_FROM events.
-            for (QMutableListIterator<inotify_event*> i(movedFromEvents); i.hasNext();)
+            for (auto i = movedFromEvents.begin(); i != movedFromEvents.end(); ++i)
             {
-               struct inotify_event *fromEvent = i.next();
-               if (fromEvent->cookie == event->cookie)
+               if (i->cookie == event->cookie)
                {
-                  // If an IN_MOVES_FROM event is linked, create a MOVE WatcherEvent.
-                  events << WatcherEvent(WatcherEvent::MOVE, this->getEventPath(fromEvent), this->getEventPath(event), false);
+                  // Replace the provisional deletion with the matched move.
+                  events[i->eventIndex] = WatcherEvent(WatcherEvent::MOVE, i->path, this->getEventPath(event), false);
 
-                  // If moved object is a directory, apply change to the local directory index
-                  if (event->mask & IN_ISDIR)
+                  if (i->directory)
                   {
-                     // Retrieve moved directory by child map of from directory,
-                     // because actually the name hasn't changed.
-                     Dir* fromDir = this->getDir(fromEvent->wd);
-                     Dir* movedDir = fromDir ? fromDir->children.value(fromEvent->name) : nullptr;
-                     if (movedDir)
-                        movedDir->move(dir, event->name);
+                     i->directory->move(dir, event->name);
+                     i->directory.release(); // The destination tree now owns it.
                   }
 
-                  i.remove();
+                  movedFromEvents.erase(i);
 
                   // exit the IN_MOVED_TO process
                   goto end_moved_to;
                }
             }
-            // if no IN_MOVED_FROM event is linked, create a NEW WatcherEvent.
-            // IN_MOVED_FROM event without IN_MOVE_TO event have to be processed at
-            // the end of the loop, when every IN_MOVED_TO event is processed.
+            // An unmatched destination enters the watched tree. This also
+            // restores watches when the move pair spans two reads.
             events << WatcherEvent(WatcherEvent::NEW, this->getEventPath(event), false);
 
             if (event->mask & IN_ISDIR)
@@ -498,14 +503,8 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
       }
    }
 
-   // Because every IN_MOVED_FROM event with a linked IN_MOVED_TO event was removed of
-   // the list, it contains only alone IN_MOVED_FROM event.
-   for (QMutableListIterator<struct inotify_event*> i(movedFromEvents); i.hasNext();)
-   {
-      struct inotify_event* e = i.next();
-      events << WatcherEvent(WatcherEvent::DELETED, this->getEventPath(e), false);
-   }
-
+   // Unmatched moves leave the watched tree. Destroying their detached branches
+   // releases their watches, without touching any replacement at the old path.
    return events;
 }
 
@@ -643,7 +642,8 @@ QString DirWatcherLinux::Dir::getFullPath()
   */
 void DirWatcherLinux::Dir::move(Dir* to, const QString& newName)
 {
-   this->parent->children.remove(this->name);
+   if (this->parent)
+      this->parent->children.remove(this->name);
    this->parent = to;
    this->name = newName;
    to->children.insert(this->name, this);
