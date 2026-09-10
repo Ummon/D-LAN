@@ -158,8 +158,10 @@ bool DirWatcherLinux::addPath(const QString& directory, const QString& filename)
       else
       {
          File* file = new File(this, path);
+         // Acquire the new watch first so failure preserves the registration.
+         // Replacing its pointer must also release the previous owner's reference.
+         delete this->files.value(path);
          this->files.insert(path, file);
-
       }
       return true;
    }

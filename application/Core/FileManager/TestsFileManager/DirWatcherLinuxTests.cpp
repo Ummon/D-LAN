@@ -20,6 +20,79 @@ class DirWatcherLinuxTests : public QObject
    Q_OBJECT
 
 private slots:
+   void duplicateFileRegistrationReleasesOldReference_data()
+   {
+      QTest::addColumn<bool>("replaceFile");
+      QTest::newRow("same-inode") << false;
+      QTest::newRow("replacement-inode") << true;
+   }
+
+   void duplicateFileRegistrationReleasesOldReference()
+   {
+      QFETCH(bool, replaceFile);
+      QTemporaryDir temp;
+      QVERIFY(temp.isValid());
+      const QString path = temp.filePath("file.txt");
+      const QString alias = temp.filePath("alias.txt");
+      {
+         QFile file(path);
+         QVERIFY(file.open(QIODevice::WriteOnly));
+      }
+      QVERIFY(::link(QFile::encodeName(path).constData(), QFile::encodeName(alias).constData()) == 0);
+      FM::DirWatcherLinux watcher;
+      QVERIFY(watcher.addPath(path));
+      QVERIFY(watcher.addPath(alias));
+      if (replaceFile)
+      {
+         const QString replacement = temp.filePath("replacement.txt");
+         {
+            QFile file(replacement);
+            QVERIFY(file.open(QIODevice::WriteOnly));
+         }
+         QVERIFY(::rename(QFile::encodeName(replacement).constData(), QFile::encodeName(path).constData()) == 0);
+      }
+      // Both forms of addPath identify the same registration.
+      QVERIFY(watcher.addPath(temp.path(), "file.txt"));
+      QVERIFY(watcher.addPath(path));
+      QCOMPARE(watcher.nbWatchedPath(), 2);
+      const int wd = watcher.files.value(path)->wd;
+      const int aliasWd = watcher.files.value(alias)->wd;
+      QCOMPARE(watcher.watchReferences.value(wd), replaceFile ? 1 : 2);
+      QCOMPARE(watcher.watchReferences.value(aliasWd), replaceFile ? 1 : 2);
+      watcher.waitEvent(0); // Drain any attribute event on the old inode.
+      {
+         QFile file(path);
+         QVERIFY(file.open(QIODevice::Append));
+         QCOMPARE(file.write("changed"), qint64(7));
+      }
+      QSet<QString> changed;
+      for (const auto& event : watcher.waitEvent(1000))
+      {
+         QCOMPARE(event.type, FM::WatcherEvent::CONTENT_CHANGED);
+         QVERIFY(event.isWatchedFile);
+         QVERIFY(!changed.contains(event.path1));
+         changed.insert(event.path1);
+      }
+      QCOMPARE(changed, replaceFile ? QSet<QString>{path} : (QSet<QString>{path, alias}));
+      watcher.rmPath(path);
+      QCOMPARE(watcher.nbWatchedPath(), 1);
+      QCOMPARE(watcher.watchReferences.size(), 1);
+      QCOMPARE(watcher.watchReferences.value(aliasWd), 1);
+      watcher.waitEvent(0);
+      {
+         QFile file(alias);
+         QVERIFY(file.open(QIODevice::Append));
+         QCOMPARE(file.write("later"), qint64(5));
+      }
+      const auto events = watcher.waitEvent(1000);
+      QCOMPARE(events.size(), 1);
+      QCOMPARE(events[0].type, FM::WatcherEvent::CONTENT_CHANGED);
+      QCOMPARE(events[0].path1, alias);
+      watcher.rmPath(alias);
+      QCOMPARE(watcher.nbWatchedPath(), 0);
+      QVERIFY(watcher.watchReferences.isEmpty());
+   }
+
    void hardLinkChangesNotifyEveryRegistration()
    {
       QTemporaryDir temp;
