@@ -29,7 +29,7 @@ namespace FM
    class WaitConditionLinux : public WaitCondition
    {
    public:
-      WaitConditionLinux();
+      WaitConditionLinux(); // Throws std::system_error if pipe creation fails.
       ~WaitConditionLinux();
 
       void release();

@@ -60,7 +60,16 @@ FileUpdater::FileUpdater(FileManager* fileManager) :
    currentScanningEntry(nullptr),
    toStopHashing(false)
 {
-   this->dirEvent = WaitCondition::getNewWaitCondition();
+   try
+   {
+      this->dirEvent = WaitCondition::getNewWaitCondition();
+   }
+   catch (...)
+   {
+      // The destructor is not called if construction fails.
+      delete this->dirWatcher;
+      throw;
+   }
    this->schedulerClock.start();
 }
 

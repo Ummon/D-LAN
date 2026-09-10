@@ -48,7 +48,7 @@ add_test(NAME TestsFilePool COMMAND TestsFilePool)
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
    add_executable(TestsDirWatcherLinux DirWatcherLinuxTests.cpp)
    target_link_libraries(TestsDirWatcherLinux PRIVATE FileManager Qt6::Test)
-   target_link_options(TestsDirWatcherLinux PRIVATE "LINKER:--wrap=inotify_add_watch")
+   target_link_options(TestsDirWatcherLinux PRIVATE "LINKER:--wrap=inotify_add_watch" "LINKER:--wrap=pipe2")
    add_test(NAME TestsDirWatcherLinux COMMAND TestsDirWatcherLinux)
 endif()
 

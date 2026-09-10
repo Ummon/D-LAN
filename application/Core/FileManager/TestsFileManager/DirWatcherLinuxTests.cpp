@@ -18,10 +18,31 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <cstdio>
+#include <cerrno>
+#include <system_error>
 
 namespace
 {
    std::function<void(const QString&)> beforeAddWatch;
+   int pipeCreationError = 0;
+   int createdPipe[2] = {-1, -1};
+}
+
+extern "C" int __real_pipe2(int fds[2], int flags);
+extern "C" int __wrap_pipe2(int fds[2], int flags)
+{
+   if (pipeCreationError)
+   {
+      errno = pipeCreationError;
+      return -1;
+   }
+   const int result = __real_pipe2(fds, flags);
+   if (result == 0)
+   {
+      createdPipe[0] = fds[0];
+      createdPipe[1] = fds[1];
+   }
+   return result;
 }
 
 extern "C" int __real_inotify_add_watch(int fd, const char* path, uint32_t mask);
@@ -37,6 +58,61 @@ class DirWatcherLinuxTests : public QObject
    Q_OBJECT
 
 private slots:
+   void waitConditionPipeFailure_data()
+   {
+      QTest::addColumn<int>("error");
+      QTest::newRow("process-descriptor-limit") << EMFILE;
+      QTest::newRow("system-descriptor-limit") << ENFILE;
+   }
+
+   void waitConditionPipeFailure()
+   {
+      QFETCH(int, error);
+      QFile unrelated("/dev/null");
+      QVERIFY(unrelated.open(QIODevice::ReadOnly));
+      const int fd = unrelated.handle();
+      const int flags = fcntl(fd, F_GETFL);
+      QVERIFY(flags >= 0);
+      const auto descriptors = QDir("/proc/self/fd").entryList();
+      const auto resetError = qScopeGuard([] { pipeCreationError = 0; });
+      pipeCreationError = error;
+      bool threw = false;
+      try
+      {
+         std::unique_ptr<FM::WaitCondition> condition(FM::WaitCondition::getNewWaitCondition());
+      }
+      catch (const std::system_error& e)
+      {
+         threw = true;
+         QCOMPARE(e.code(), std::error_code(error, std::generic_category()));
+      }
+      pipeCreationError = 0;
+      QVERIFY(threw);
+      QCOMPARE(fcntl(fd, F_GETFL), flags);
+      QCOMPARE(QDir("/proc/self/fd").entryList(), descriptors);
+
+      // A subsequent successful construction still owns and releases both ends.
+      int readFd, writeFd;
+      {
+         FM::WaitConditionLinux condition;
+         readFd = createdPipe[0];
+         writeFd = createdPipe[1];
+         QCOMPARE(condition.getFd(), readFd);
+         for (int pipeFd : {readFd, writeFd})
+         {
+            QVERIFY(pipeFd >= 0);
+            QVERIFY(fcntl(pipeFd, F_GETFL) & O_NONBLOCK);
+            QVERIFY(fcntl(pipeFd, F_GETFD) & FD_CLOEXEC);
+         }
+         QVERIFY(condition.wait(0));
+      }
+      QCOMPARE(fcntl(readFd, F_GETFD), -1);
+      QCOMPARE(errno, EBADF);
+      QCOMPARE(fcntl(writeFd, F_GETFD), -1);
+      QCOMPARE(errno, EBADF);
+      QCOMPARE(QDir("/proc/self/fd").entryList(), descriptors);
+   }
+
    void equivalentPathSpellingsShareRegistration_data()
    {
       QTest::addColumn<QString>("spelling");

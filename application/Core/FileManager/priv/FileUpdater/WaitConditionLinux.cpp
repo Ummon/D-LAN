@@ -27,6 +27,8 @@ using namespace FM;
 #include <signal.h>
 #include <fcntl.h>
 #include <poll.h>
+#include <cerrno>
+#include <system_error>
 
 /**
   * @class FM::WaitConditionLinux
@@ -36,13 +38,12 @@ using namespace FM;
   */
 
 WaitConditionLinux::WaitConditionLinux()
-   : released(false)
-{   
-   if(0 != pipe(this->pfd))
-      L_ERRO("WaitConditionLinux::WaitConditionLinux: Unable to create pipe.");
-
-   fcntl(this->pfd[0],F_SETFL,fcntl(this->pfd[0],F_GETFL)|O_NONBLOCK);
-   fcntl(this->pfd[1],F_SETFL,fcntl(this->pfd[1],F_GETFL)|O_NONBLOCK);
+   : pfd{-1, -1}, released(false)
+{
+   // Create both nonblocking descriptors atomically. On failure no usable
+   // condition exists, so propagate the error instead of using invalid fds.
+   if (pipe2(this->pfd, O_NONBLOCK | O_CLOEXEC) < 0)
+      throw std::system_error(errno, std::generic_category(), "Unable to create wait-condition pipe");
 }
 
 WaitConditionLinux::~WaitConditionLinux()
