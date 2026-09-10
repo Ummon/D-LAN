@@ -45,7 +45,7 @@ namespace FM
       static const size_t BUF_LEN; // Reasonable guess as to size of 1024 events.
       static const uint32_t EVENTS_OBS; // Inotify events caught for subdirectories.
       static const uint32_t ROOT_EVENTS_OBS; // Inotify events caught for root directories.
-      static const uint32_t EVENTS_FILE; // Inotify events caught for files.
+      static const uint32_t EVENTS_FILE; // Inotify events caught for file parent directories.
 
       static int addWatch(int fileDescriptor, const QString& path, uint32_t mask);
 
@@ -71,13 +71,16 @@ namespace FM
 
          DirWatcherLinux* dwl;
          const QString path;
-         int wd; // Watch descriptor.
+         const QString parentPath;
+         QString currentName;
+         int wd; // Parent directory watch descriptor.
       };
 
       QList<Dir*> dirs; // The watched root dirs, indexed by full path.
       QHash<QString, File*> files; // Files indexed by their path.
 
       File* getFile(int wd) const;
+      File* getFile(int wd, const QString& name) const;
       Dir* getDir(int wd) const;
 
       QString getEventPath(inotify_event *event);

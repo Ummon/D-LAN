@@ -42,7 +42,7 @@ const int DirWatcherLinux::EVENT_SIZE = (sizeof (struct inotify_event));
 const size_t DirWatcherLinux::BUF_LEN = (1024 * (EVENT_SIZE + 16));
 const uint32_t DirWatcherLinux::EVENTS_OBS = IN_MOVE | IN_DELETE | IN_CREATE | IN_CLOSE_WRITE;
 const uint32_t DirWatcherLinux::ROOT_EVENTS_OBS = EVENTS_OBS | IN_MOVE_SELF | IN_DELETE_SELF;
-const uint32_t DirWatcherLinux::EVENTS_FILE = IN_MODIFY | IN_MOVE_SELF | IN_DELETE_SELF;
+const uint32_t DirWatcherLinux::EVENTS_FILE = IN_MOVE | IN_DELETE | IN_CREATE | IN_MODIFY | IN_CLOSE_WRITE;
 
 class UnableToWatchException {};
 
@@ -132,6 +132,14 @@ DirWatcherLinux::File* DirWatcherLinux::getFile(int wd) const
    return nullptr;
 }
 
+DirWatcherLinux::File* DirWatcherLinux::getFile(int wd, const QString& name) const
+{
+   for (auto i = this->files.begin(); i != this->files.end(); ++i)
+      if (i.value()->wd == wd && i.value()->currentName == name)
+         return i.value();
+   return nullptr;
+}
+
 DirWatcherLinux::Dir* DirWatcherLinux::getDir(int wd) const
 {
    QList<Dir*> pending(this->dirs);
@@ -198,9 +206,7 @@ QString DirWatcherLinux::getEventPath(inotify_event* event)
    File* file = this->getFile(event->wd);
    if (file)
    {
-      for (auto i = this->files.constBegin(); i != this->files.constEnd(); ++i)
-         if (i.value()->wd == event->wd)
-            return i.key();
+      return QDir(file->parentPath).filePath(file->currentName);
    }
 
    return QString();
@@ -334,10 +340,61 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
             events << WatcherEvent(WatcherEvent::WATCH_LOST, root->getFullPath(), false);
             this->rmPath(root->getFullPath());
          }
-         else if ((file = this->getFile(event->wd)))
+         else
          {
-            const QString path = file->path;
-            events << WatcherEvent(WatcherEvent::WATCH_LOST, path, true);
+            QList<QString> paths;
+            for (auto i = this->files.constBegin(); i != this->files.constEnd(); ++i)
+               if (i.value()->wd == event->wd)
+                  paths << i.key();
+
+            for (const QString& path : paths)
+            {
+               file = this->files.value(path);
+               if (file)
+                  events << WatcherEvent(WatcherEvent::WATCH_LOST,
+                     QDir(file->parentPath).filePath(file->currentName), true);
+               this->rmPath(path);
+            }
+         }
+         continue;
+      }
+
+      if (!this->getDir(event->wd) && (event->mask & IN_MOVED_TO))
+      {
+         bool matched = false;
+         for (QMutableListIterator<inotify_event*> i(movedFromEvents); i.hasNext();)
+         {
+            inotify_event* fromEvent = i.next();
+            File* movedFile = this->getFile(fromEvent->wd, fromEvent->name);
+            if (movedFile && fromEvent->cookie == event->cookie && fromEvent->wd == event->wd)
+            {
+               const QString oldPath = QDir(movedFile->parentPath).filePath(movedFile->currentName);
+               movedFile->currentName = event->name;
+               const QString newPath = QDir(movedFile->parentPath).filePath(movedFile->currentName);
+               events << WatcherEvent(WatcherEvent::MOVE, oldPath, newPath, true);
+               i.remove();
+               matched = true;
+               break;
+            }
+         }
+         if (matched)
+            continue;
+      }
+
+      if (!this->getDir(event->wd) && !event->len &&
+          (event->mask & (IN_DELETE_SELF | IN_MOVE_SELF)))
+      {
+         QList<QString> paths;
+         for (auto i = this->files.constBegin(); i != this->files.constEnd(); ++i)
+            if (i.value()->wd == event->wd)
+               paths << i.key();
+
+         for (const QString& path : paths)
+         {
+            file = this->files.value(path);
+            if (file)
+               events << WatcherEvent(WatcherEvent::WATCH_LOST,
+                  QDir(file->parentPath).filePath(file->currentName), true);
             this->rmPath(path);
          }
          continue;
@@ -381,6 +438,10 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
                      if (movedDir && movedDir->parent->getFullPath() != dir->getFullPath())
                         movedDir->move(dir);
                   }
+
+                  for (auto file = this->files.begin(); file != this->files.end(); ++file)
+                     if (file.value()->wd == fromEvent->wd && file.value()->currentName == fromEvent->name)
+                        file.value()->currentName = event->name;
 
                   i.remove();
 
@@ -437,15 +498,14 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
             this->rmPath(this->getEventPath(event));
          }
       }
-      // Watched files.
-      else if (file = this->getFile(event->wd))
+      // Watched files are watched through their parent directory. Ignore events for
+      // unrelated names when no directory watcher owns the same descriptor.
+      else if (event->len && (file = this->getFile(event->wd, event->name)))
       {
-         if (event->mask & IN_MOVE_SELF)
+         if (event->mask & IN_MOVED_FROM)
          {
-            const QString path = this->getEventPath(event);
-            L_DEBU(QString("inotify event (file): IN_MOVE_SELF (path=%1)").arg(path));
-            events << WatcherEvent(WatcherEvent::DELETED, path, true);
-            this->rmPath(path);
+            L_DEBU(QString("inotify event (file): IN_MOVED_FROM (path=%1)").arg(this->getEventPath(event)));
+            movedFromEvents << event;
          }
 
          if (event->mask & IN_MODIFY)
@@ -454,12 +514,23 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
             events << WatcherEvent(WatcherEvent::CONTENT_CHANGED, this->getEventPath(event), true);
          }
 
-         if (event->mask & IN_DELETE_SELF)
+         if (event->mask & IN_CLOSE_WRITE)
          {
-            const QString& path = this->getEventPath(event);
-            L_DEBU(QString("inotify event (file): IN_DELETE_SELF (path=%1)").arg(path));
+            L_DEBU(QString("inotify event (file): IN_CLOSE_WRITE (path=%1)").arg(this->getEventPath(event)));
+            events << WatcherEvent(WatcherEvent::CONTENT_CHANGED, this->getEventPath(event), true);
+         }
+
+         if (event->mask & (IN_CREATE | IN_MOVED_TO))
+         {
+            L_DEBU(QString("inotify event (file): IN_CREATE || IN_MOVED_TO (path=%1)").arg(this->getEventPath(event)));
+            events << WatcherEvent(WatcherEvent::NEW, this->getEventPath(event), true);
+         }
+
+         if (event->mask & IN_DELETE)
+         {
+            const QString path = this->getEventPath(event);
+            L_DEBU(QString("inotify event (file): IN_DELETE (path=%1)").arg(path));
             events << WatcherEvent(WatcherEvent::DELETED, path, true);
-            this->rmPath(path);
          }
       }
    }
@@ -469,12 +540,17 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
    for (QMutableListIterator<struct inotify_event*> i(movedFromEvents); i.hasNext();)
    {
       struct inotify_event* e = i.next();
-      const QString path = this->getEventPath(e);
-      events << WatcherEvent(WatcherEvent::DELETED, path, false);
-
-      Dir* parent = this->getDir(e->wd);
-      if (parent)
+      if (Dir* parent = this->getDir(e->wd))
+      {
+         const QString path = this->getEventPath(e);
+         events << WatcherEvent(WatcherEvent::DELETED, path, false);
          delete parent->children.value(e->name);
+      }
+      else if (File* file = this->getFile(e->wd, e->name))
+      {
+         const QString path = QDir(file->parentPath).filePath(file->currentName);
+         events << WatcherEvent(WatcherEvent::DELETED, path, true);
+      }
    }
 
    if (overflow)
@@ -634,15 +710,20 @@ void DirWatcherLinux::Dir::move(Dir* to)
 /**
   * @exception UnableToWatchException
   */
-DirWatcherLinux::File::File(DirWatcherLinux* dwl, const QString& path)
+DirWatcherLinux::File::File(DirWatcherLinux* dwl, const QString& path) :
+   dwl(dwl), path(path), parentPath(QFileInfo(path).absolutePath()), currentName(QFileInfo(path).fileName())
 {
-   this->dwl = dwl;
-   this->wd = addWatch(dwl->fileDescriptor, path, EVENTS_FILE);
+   this->wd = addWatch(dwl->fileDescriptor, this->parentPath, EVENTS_FILE | IN_MASK_ADD);
 }
 
 DirWatcherLinux::File::~File()
 {
-   if (this->wd >= 0)
+   bool watchIsShared = this->dwl->getDir(this->wd) != nullptr;
+   for (auto i = this->dwl->files.constBegin(); i != this->dwl->files.constEnd(); ++i)
+      if (i.value() != this && i.value()->wd == this->wd)
+         watchIsShared = true;
+
+   if (this->wd >= 0 && !watchIsShared)
    {
       if (inotify_rm_watch(this->dwl->fileDescriptor, this->wd))
          L_WARN(QString("File::~File: Unable to remove an inotify watcher."));
