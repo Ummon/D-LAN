@@ -47,7 +47,7 @@ namespace FM
       static const uint32_t ROOT_EVENTS_OBS; // Inotify events caught for root directories.
       static const uint32_t EVENTS_FILE; // Inotify events caught for files.
 
-      static int addWatch(int fileDescriptor, const QString& path, uint32_t mask);
+      int addWatch(const QString& path, uint32_t mask);
 
       struct Dir
       {
@@ -76,6 +76,7 @@ namespace FM
 
       QList<Dir*> dirs; // The watched root dirs, indexed by full path.
       QHash<QString, File*> files; // Files indexed by their path.
+      QHash<int, int> watchReferences; // Overlapping paths can share an inotify watch descriptor.
 
       File* getFile(int wd) const;
       Dir* getDir(int wd) const;

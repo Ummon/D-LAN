@@ -134,6 +134,11 @@ DirWatcherLinux::File* DirWatcherLinux::getFile(int wd) const
   */
 DirWatcherLinux::Dir* DirWatcherLinux::getDir(int wd) const
 {
+   // A directly shared directory takes precedence over another root's descendant.
+   for (Dir* dir : this->dirs)
+      if (dir->wd == wd)
+         return dir;
+
    QList<Dir*> pending = this->dirs;
    while (!pending.isEmpty())
    {
@@ -404,7 +409,7 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
             events << WatcherEvent(WatcherEvent::CONTENT_CHANGED, this->getEventPath(event), false);
          }
 
-         if (event->mask & IN_DELETE_SELF || event->mask & IN_MOVE_SELF)
+         if (!dir->parent && (event->mask & IN_DELETE_SELF || event->mask & IN_MOVE_SELF))
          {
             L_DEBU(QString("inotify event (dir): IN_DELETE_SELF || IN_MOVE_SELF (path=%1)").arg(this->getEventPath(event)));
             // processed only for ROOT directory
@@ -448,11 +453,12 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
    return events;
 }
 
-int DirWatcherLinux::addWatch(int fileDescriptor, const QString& path, uint32_t mask)
+int DirWatcherLinux::addWatch(const QString& path, uint32_t mask)
 {
    const QByteArray& pathArray = path.toUtf8();
 
-   const int wd = inotify_add_watch(fileDescriptor, pathArray.constData(), mask);
+   // Adding a descendant must not replace the mask of an existing root watch.
+   const int wd = inotify_add_watch(this->fileDescriptor, pathArray.constData(), mask | IN_MASK_ADD);
 
    if (wd < 0)
    {
@@ -483,7 +489,20 @@ int DirWatcherLinux::addWatch(int fileDescriptor, const QString& path, uint32_t 
       throw UnableToWatchException();
    }
 
+   ++this->watchReferences[wd];
    return wd;
+}
+
+void DirWatcherLinux::rmWatcher(int watcher)
+{
+   auto reference = this->watchReferences.find(watcher);
+   if (reference == this->watchReferences.end() || --reference.value() > 0)
+      return;
+
+   this->watchReferences.erase(reference);
+   // A deleted inode may already have had its watch removed by the kernel.
+   if (inotify_rm_watch(this->fileDescriptor, watcher) < 0 && errno != EINVAL)
+      L_WARN(QString("Unable to remove an inotify watcher."));
 }
 
 /**
@@ -502,7 +521,7 @@ int DirWatcherLinux::addWatch(int fileDescriptor, const QString& path, uint32_t 
 DirWatcherLinux::Dir::Dir(DirWatcherLinux* dwl, Dir* parent, const QString& name) :
    dwl(dwl), parent(parent), name(name)
 {
-   this->wd = addWatch(dwl->fileDescriptor, this->getFullPath(), (this->parent ? EVENTS_OBS : ROOT_EVENTS_OBS));
+   this->wd = dwl->addWatch(this->getFullPath(), (this->parent ? EVENTS_OBS : ROOT_EVENTS_OBS));
 
    for (QListIterator<QString> i(QDir(this->getFullPath()).entryList(QDir::Dirs | QDir::NoDotAndDotDot)); i.hasNext();)
       try
@@ -517,6 +536,7 @@ DirWatcherLinux::Dir::Dir(DirWatcherLinux* dwl, Dir* parent, const QString& name
             child.value()->parent = nullptr;
             delete child.value();
          }
+         this->dwl->rmWatcher(this->wd);
          throw;
       }
 
@@ -532,8 +552,7 @@ DirWatcherLinux::Dir::~Dir()
 {
    if (this->wd >= 0)
    {
-      if (inotify_rm_watch(this->dwl->fileDescriptor, this->wd))
-         L_WARN(QString("Dir::~Dir: Unable to remove an inotify watcher."));
+      this->dwl->rmWatcher(this->wd);
 
       if (this->parent)
          this->parent->children.remove(this->name);
@@ -589,14 +608,13 @@ void DirWatcherLinux::Dir::move(Dir* to)
 DirWatcherLinux::File::File(DirWatcherLinux* dwl, const QString& path) :
    dwl(dwl), path(path)
 {
-   this->wd = addWatch(dwl->fileDescriptor, path, EVENTS_FILE);
+   this->wd = dwl->addWatch(path, EVENTS_FILE);
 }
 
 DirWatcherLinux::File::~File()
 {
    if (this->wd >= 0)
    {
-      if (inotify_rm_watch(this->dwl->fileDescriptor, this->wd))
-         L_WARN(QString("File::~File: Unable to remove an inotify watcher."));
+      this->dwl->rmWatcher(this->wd);
    }
 }

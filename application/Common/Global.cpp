@@ -413,7 +413,7 @@ QString Global::getDataServiceFolder(DataFolderType type)
   */
 QString Global::getDataSystemFolder(DataFolderType type)
 {
-#ifdef Q_OS_WIN32
+#if defined(Q_OS_WIN32)
    wchar_t dataPathSystem[MAX_PATH];
    // SHGetKnownFolderPath should be use for vista a superior but it doesn't exist in mingw.
    if (!SUCCEEDED(SHGetFolderPath(NULL, CSIDL_SYSTEMX86, NULL, 0, dataPathSystem)))
