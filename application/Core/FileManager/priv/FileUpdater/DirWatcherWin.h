@@ -38,7 +38,6 @@ namespace FM
       DirWatcherWin();
       ~DirWatcherWin();
 
-      bool isReliable() const;
       bool addPath(const QString& path, const QString& filename = QString(""));
       void rmPath(const QString& path, const QString& filename = QString(""));
       int nbWatchedPath();

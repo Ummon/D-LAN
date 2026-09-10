@@ -80,7 +80,6 @@ namespace FM
       File* getFile(int wd) const;
       Dir* getDir(int wd) const;
 
-      void rmWatcher(int watcher);
       QString getEventPath(inotify_event *event);
 
       QRecursiveMutex mutex;

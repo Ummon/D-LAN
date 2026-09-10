@@ -81,7 +81,7 @@ DirWatcherLinux::~DirWatcherLinux()
       delete i.value();
 
    // Close file descriptor.
-   if (close(this->fileDescriptor) < 0)
+   if (this->fileDescriptor >= 0 && close(this->fileDescriptor) < 0)
        L_WARN(QString("DirWatcherLinux::~DirWatcherLinux: Unable to close file descriptor (inotify)"));
 }
 
@@ -98,7 +98,11 @@ bool DirWatcherLinux::addPath(const QString& directory, const QString& filename)
 
    try
    {
-      if (QDir(path).exists())
+      const QFileInfo pathInfo(path);
+      if (pathInfo.isSymLink())
+         return false;
+
+      if (pathInfo.isDir())
       {
          Dir* dir = new Dir(this, nullptr, path);
          this->dirs << dir;
@@ -152,27 +156,22 @@ void DirWatcherLinux::rmPath(const QString& directory, const QString& filename)
    const QString path = filename.isEmpty() ? directory : QDir(directory).filePath(filename);
    QMutexLocker locker(&this->mutex);
 
-   if (QDir(path).exists())
+   for (QMutableListIterator<Dir*> i(dirs); i.hasNext();)
    {
-      for (QMutableListIterator<Dir*> i(dirs); i.hasNext();)
+      Dir* dir = i.next();
+      if (dir->name == path)
       {
-         Dir* dir = i.next();
-         if (dir->name == path)
-         {
-            delete dir;
-            i.remove();
-            break;
-         }
+         delete dir;
+         i.remove();
+         return;
       }
    }
-   else
+
+   auto file = this->files.find(path);
+   if (file != this->files.end())
    {
-      auto file = this->files.find(path);
-      if (file != this->files.end())
-      {
-         delete file.value();
-         this->files.erase(file);
-      }
+      delete file.value();
+      this->files.erase(file);
    }
 }
 
@@ -308,14 +307,41 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
 
    QList<WatcherEvent> events;
    QList<inotify_event*> movedFromEvents;
+   bool overflow = false;
 
    for (int i = 0; i < len;)
    {
       struct inotify_event* event = (struct inotify_event*)&buf[i];
       i += EVENT_SIZE + event->len;
 
+      if (event->mask & IN_Q_OVERFLOW)
+      {
+         overflow = true;
+         continue;
+      }
+
       Dir* dir = nullptr;
       File* file = nullptr;
+
+      if (event->mask & (IN_IGNORED | IN_UNMOUNT))
+      {
+         if ((dir = this->getDir(event->wd)))
+         {
+            Dir* root = dir;
+            while (root->parent)
+               root = root->parent;
+
+            events << WatcherEvent(WatcherEvent::WATCH_LOST, root->getFullPath(), false);
+            this->rmPath(root->getFullPath());
+         }
+         else if ((file = this->getFile(event->wd)))
+         {
+            const QString path = file->path;
+            events << WatcherEvent(WatcherEvent::WATCH_LOST, path, true);
+            this->rmPath(path);
+         }
+         continue;
+      }
 
       // Watched directories.
       if (dir = this->getDir(event->wd))
@@ -344,7 +370,8 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
                   {
                      // Retrieve moved directory by child map of from directory,
                      // because actually the name hasn't changed.
-                     Dir* movedDir = this->getDir(fromEvent->wd)->children.value(fromEvent->name); // TODO: check if the dir exists!?
+                     Dir* fromDir = this->getDir(fromEvent->wd);
+                     Dir* movedDir = fromDir ? fromDir->children.value(fromEvent->name) : nullptr;
 
                      // If the name of moved directory has changed, rename it.
                      if (movedDir && fromEvent->name != event->name)
@@ -415,8 +442,10 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
       {
          if (event->mask & IN_MOVE_SELF)
          {
-            L_DEBU(QString("inotify event (file): IN_MOVE_SELF (path=%1)").arg(this->getEventPath(event)));
-            // TODO
+            const QString path = this->getEventPath(event);
+            L_DEBU(QString("inotify event (file): IN_MOVE_SELF (path=%1)").arg(path));
+            events << WatcherEvent(WatcherEvent::DELETED, path, true);
+            this->rmPath(path);
          }
 
          if (event->mask & IN_MODIFY)
@@ -440,7 +469,21 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
    for (QMutableListIterator<struct inotify_event*> i(movedFromEvents); i.hasNext();)
    {
       struct inotify_event* e = i.next();
-      events << WatcherEvent(WatcherEvent::DELETED, this->getEventPath(e), false);
+      const QString path = this->getEventPath(e);
+      events << WatcherEvent(WatcherEvent::DELETED, path, false);
+
+      Dir* parent = this->getDir(e->wd);
+      if (parent)
+         delete parent->children.value(e->name);
+   }
+
+   if (overflow)
+   {
+      events.clear();
+      for (Dir* dir : this->dirs)
+         events << WatcherEvent(WatcherEvent::RESCAN, dir->getFullPath(), false);
+      for (auto i = this->files.constBegin(); i != this->files.constEnd(); ++i)
+         events << WatcherEvent(WatcherEvent::RESCAN, i.key(), true);
    }
 
    return events;
@@ -502,7 +545,8 @@ DirWatcherLinux::Dir::Dir(DirWatcherLinux* dwl, Dir* parent, const QString& name
 {
    this->wd = addWatch(dwl->fileDescriptor, this->getFullPath(), (this->parent ? EVENTS_OBS : ROOT_EVENTS_OBS));
 
-   for (QListIterator<QString> i(QDir(this->getFullPath()).entryList(QDir::Dirs | QDir::NoDotAndDotDot)); i.hasNext();)
+   for (QListIterator<QString> i(QDir(this->getFullPath()).entryList(
+      QDir::Dirs | QDir::NoDotAndDotDot | QDir::NoSymLinks)); i.hasNext();)
       try
       {
          new Dir(this->dwl, this, i.next());
@@ -514,6 +558,12 @@ DirWatcherLinux::Dir::Dir(DirWatcherLinux* dwl, Dir* parent, const QString& name
             auto child = j.next();
             child.value()->parent = nullptr;
             delete child.value();
+         }
+
+         if (this->wd >= 0)
+         {
+            inotify_rm_watch(this->dwl->fileDescriptor, this->wd);
+            this->wd = -1;
          }
          throw;
       }
