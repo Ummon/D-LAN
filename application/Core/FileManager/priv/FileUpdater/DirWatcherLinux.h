@@ -21,6 +21,7 @@
 #include <QHash>
 #include <QList>
 #include <QRecursiveMutex>
+#include <QSet>
 
 #include <priv/FileUpdater/DirWatcher.h>
 
@@ -85,7 +86,7 @@ namespace FM
       File* getFile(int wd) const;
       Dir* getDir(int wd) const;
       QList<Dir*> getDirs(int wd) const;
-      void addChildWatches(int parentWd, const QString& name);
+      void addChildWatches(int parentWd, const QString& name, QSet<QString>& failedRoots);
       QList<WatcherEvent> removeWatchedPathsUnder(const QString& path);
 
       void rmWatcher(int watcher);

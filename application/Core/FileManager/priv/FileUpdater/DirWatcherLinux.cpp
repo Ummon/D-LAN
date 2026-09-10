@@ -219,7 +219,7 @@ QList<DirWatcherLinux::Dir*> DirWatcherLinux::getDirs(int wd) const
    return result;
 }
 
-void DirWatcherLinux::addChildWatches(int parentWd, const QString& name)
+void DirWatcherLinux::addChildWatches(int parentWd, const QString& name, QSet<QString>& failedRoots)
 {
    for (Dir* parent : this->getDirs(parentWd))
       if (!parent->children.contains(name))
@@ -227,7 +227,10 @@ void DirWatcherLinux::addChildWatches(int parentWd, const QString& name)
          {
             new Dir(this, parent, name);
          }
-         catch (UnableToWatchException&) {}
+         catch (UnableToWatchException&)
+         {
+            failedRoots.insert(parent->getRoot()->name);
+         }
 }
 
 /**
@@ -442,6 +445,7 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
       std::vector<DetachedDirectory> directories;
    };
    std::vector<PendingMove> movedFromEvents;
+   QSet<QString> failedRoots;
 
    for (int i = 0; i < len;)
    {
@@ -503,7 +507,10 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
                            {
                               new Dir(this, parent, event->name);
                            }
-                           catch (UnableToWatchException&) {}
+                           catch (UnableToWatchException&)
+                           {
+                              failedRoots.insert(parent->getRoot()->name);
+                           }
                      }
 
                   movedFromEvents.erase(i);
@@ -517,7 +524,7 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
             events << WatcherEvent(WatcherEvent::NEW, this->getEventPath(event), false);
 
             if (event->mask & IN_ISDIR)
-               this->addChildWatches(event->wd, event->name);
+               this->addChildWatches(event->wd, event->name, failedRoots);
          }
 
          end_moved_to:
@@ -536,7 +543,7 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
             L_DEBU(QString("inotify event (dir): IN_CREATE (path=%1)").arg(this->getEventPath(event)));
             events << WatcherEvent(WatcherEvent::NEW, this->getEventPath(event), false);
             if (event->mask & IN_ISDIR)
-               this->addChildWatches(event->wd, event->name);
+               this->addChildWatches(event->wd, event->name, failedRoots);
          }
 
          if (event->mask & IN_CLOSE_WRITE)
@@ -591,6 +598,21 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
 
    // Unmatched moves leave the watched tree. Destroying their detached branches
    // releases their watches, without touching any replacement at the old path.
+   movedFromEvents.clear();
+
+   // Retire incomplete roots only after processing the batch, so pending moves
+   // and directory pointers remain valid. Notify each surviving registration
+   // once; FileUpdater will rescan it and switch to periodic scanning.
+   for (QMutableListIterator<Dir*> i(this->dirs); i.hasNext();)
+   {
+      Dir* root = i.next();
+      if (failedRoots.contains(root->name))
+      {
+         events << WatcherEvent(WatcherEvent::WATCH_LOST, root->name, false);
+         delete root;
+         i.remove();
+      }
+   }
    return events;
 }
 

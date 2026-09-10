@@ -2,6 +2,7 @@
 #include <QElapsedTimer>
 #include <QFile>
 #include <QSet>
+#include <QScopeGuard>
 #include <QTemporaryDir>
 #include <QTest>
 
@@ -19,6 +20,92 @@ class DirWatcherLinuxTests : public QObject
    Q_OBJECT
 
 private slots:
+   void newDirectoryWatchFailureRequestsFallback_data()
+   {
+      QTest::addColumn<QString>("operation");
+      QTest::addColumn<bool>("nestedFailure");
+      for (const QString& operation : {QString("create"), QString("move-in"), QString("matched-move")})
+         for (bool nestedFailure : {false, true})
+            QTest::newRow(qPrintable(operation + (nestedFailure ? "-nested" : "-direct"))) << operation << nestedFailure;
+   }
+
+   void newDirectoryWatchFailureRequestsFallback()
+   {
+      if (::geteuid() == 0)
+         QSKIP("Root can watch unreadable directories");
+      QFETCH(QString, operation);
+      QFETCH(bool, nestedFailure);
+      QTemporaryDir temp;
+      QVERIFY(temp.isValid());
+      QDir base(temp.path());
+      QVERIFY(base.mkpath("root/sub"));
+      QVERIFY(base.mkpath("unaffected"));
+      const QString root = temp.filePath("root");
+      const QString sub = temp.filePath("root/sub");
+      const QString destination = temp.filePath("root/sub/incoming");
+      const QString source = operation == "create" ? destination :
+         temp.filePath(operation == "matched-move" ? "root/source" : "outside");
+      const QString suffix = nestedFailure ? "/blocked" : "";
+      if (operation != "create")
+         QVERIFY(base.mkpath(source + suffix));
+
+      FM::DirWatcherLinux watcher;
+      QVERIFY(watcher.addPath(root));
+      QVERIFY(watcher.addPath(sub));
+      QVERIFY(watcher.addPath(temp.filePath("unaffected")));
+      if (operation == "create")
+         QVERIFY(base.mkpath(source + suffix));
+      const auto originalPermissions = QFile::permissions(source + suffix);
+      const auto restorePermissions = qScopeGuard([&]
+      {
+         QFile::setPermissions(source + suffix, originalPermissions);
+         QFile::setPermissions(destination + suffix, originalPermissions);
+      });
+      QVERIFY(QFile::setPermissions(source + suffix, QFileDevice::WriteOwner | QFileDevice::ExeOwner));
+      if (operation != "create")
+         QVERIFY(base.rename(source, destination));
+
+      const auto events = watcher.waitEvent(1000);
+      QSet<QString> lostRoots;
+      bool foundChange = false;
+      for (const auto& event : events)
+      {
+         if (event.type == FM::WatcherEvent::WATCH_LOST)
+         {
+            QVERIFY(!event.isWatchedFile);
+            QVERIFY(!lostRoots.contains(event.path1));
+            lostRoots.insert(event.path1);
+         }
+         foundChange |= operation == "matched-move" ?
+            event.type == FM::WatcherEvent::MOVE && event.path1 == source && event.path2 == destination :
+            event.type == FM::WatcherEvent::NEW && event.path1 == destination;
+      }
+      QVERIFY(foundChange);
+      // A matched move reuses the outer root's existing watches. Only the
+      // additional destination owner needs new watches and loses coverage.
+      QCOMPARE(lostRoots, operation == "matched-move" ? QSet<QString>{sub} : (QSet<QString>{root, sub}));
+      QCOMPARE(watcher.nbWatchedPath(), operation == "matched-move" ? 2 : 1);
+      QVERIFY(QFile::setPermissions(destination + suffix, originalPermissions));
+      watcher.waitEvent(0); // Drain IN_IGNORED from retired watches.
+
+      const QString laterPath = destination + suffix + "/later.txt";
+      const QString unaffectedPath = temp.filePath("unaffected/later.txt");
+      for (const auto& path : {laterPath, unaffectedPath})
+      {
+         QFile file(path);
+         QVERIFY(file.open(QIODevice::WriteOnly));
+      }
+      bool foundLater = false;
+      bool foundUnaffected = false;
+      for (const auto& event : watcher.waitEvent(1000))
+      {
+         foundLater |= event.type == FM::WatcherEvent::NEW && event.path1 == laterPath;
+         foundUnaffected |= event.type == FM::WatcherEvent::NEW && event.path1 == unaffectedPath;
+      }
+      QCOMPARE(foundLater, operation == "matched-move");
+      QVERIFY(foundUnaffected);
+   }
+
    void replacedFilesRemainWatched_data()
    {
       QTest::addColumn<QString>("replacementMode");
