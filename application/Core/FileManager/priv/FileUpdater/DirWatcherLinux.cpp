@@ -128,6 +128,22 @@ DirWatcherLinux::File* DirWatcherLinux::getFile(int wd) const
    return nullptr;
 }
 
+DirWatcherLinux::Dir* DirWatcherLinux::getDir(int wd) const
+{
+   QList<Dir*> pending(this->dirs);
+   while (!pending.isEmpty())
+   {
+      Dir* dir = pending.takeFirst();
+      if (dir->wd == wd)
+         return dir;
+
+      for (auto i = dir->children.constBegin(); i != dir->children.constEnd(); ++i)
+         pending << i.value();
+   }
+
+   return nullptr;
+}
+
 /**
   * @copydoc FM::DirWatcher::rmPath(..)
   */
@@ -570,6 +586,7 @@ void DirWatcherLinux::Dir::move(Dir* to)
   */
 DirWatcherLinux::File::File(DirWatcherLinux* dwl, const QString& path)
 {
+   this->dwl = dwl;
    this->wd = addWatch(dwl->fileDescriptor, path, EVENTS_FILE);
 }
 

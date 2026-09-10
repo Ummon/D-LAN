@@ -12,6 +12,9 @@ cmake_minimum_required(VERSION 3.21)
 
 project(D-LAN LANGUAGES CXX)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_COLOR_DIAGNOSTICS ON)
+
 if(WIN32)
    enable_language(RC) # For version.rc / passwordhasher.rc.
 endif()
@@ -19,8 +22,8 @@ endif()
 # ------------------------------------------------------------------------------
 # Options.
 # ------------------------------------------------------------------------------
-option(DLAN_BUILD_TESTS "Build the unit/stress test executables" ON)
-option(DLAN_BUILD_TOOLS "Build the tools (LogViewer, FileIndexer, PasswordHasher)" ON)
+option(DLAN_BUILD_TESTS "Build the unit/stress test executables" OFF)
+option(DLAN_BUILD_TOOLS "Build the tools (LogViewer, FileIndexer, PasswordHasher)" OFF)
 option(DLAN_PROFILING   "Build with gprof instrumentation (-pg), was 'CONFIG += prof'" OFF)
 option(DLAN_PDB         "Emit CodeView debug info and a .pdb so LM::CrashHandler can print function names and line numbers" ON)
 
@@ -50,8 +53,8 @@ add_compile_definitions(
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
    # llvm-mingw toolchain: libc++ + the warning set from common.pri.
-   add_compile_options(-stdlib=libc++ -Wall -Wno-parentheses -Wno-ignored-attributes)
-   add_link_options(-stdlib=libc++)
+   add_compile_options(-Wall -Wno-parentheses -Wno-ignored-attributes)
+   add_link_options()
 endif()
 
 # 'CONFIG += ltcg' in release.

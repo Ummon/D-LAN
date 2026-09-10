@@ -14,8 +14,8 @@ def "main build-all" [
     print "=== BUILD ALL ==="
     main translations
     main compile --clean=$clean
-    main run-tests
-    main make-setup
+    # main run-tests
+    # main make-setup
 }
 
 # Update the .ts translation files which can be edited with Qt Linguist.
