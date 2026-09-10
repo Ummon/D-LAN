@@ -22,6 +22,7 @@ using namespace FM;
 #include <unistd.h>
 
 #include <QMutexLocker>
+#include <QFileInfo>
 
 #include <priv/FileUpdater/WaitConditionLinux.h>
 #include <priv/Log.h>
@@ -407,7 +408,7 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
             events << WatcherEvent(WatcherEvent::DELETED, path, false);
          }
 
-         if (event->mask & IN_MOVED_TO)
+         if ((event->mask & IN_MOVED_TO) && !QFileInfo(this->getEventPath(event)).isSymLink())
          {
             L_DEBU(QString("inotify event (dir): IN_MOVED_TO (path=%1)").arg(this->getEventPath(event)));
             // Check list of IN_MOVED_FROM events.
@@ -452,7 +453,7 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
                delete dir->children.value(event->name);
          }
 
-         if (event->mask & IN_CREATE)
+         if ((event->mask & IN_CREATE) && !QFileInfo(this->getEventPath(event)).isSymLink())
          {
             L_DEBU(QString("inotify event (dir): IN_CREATE (path=%1)").arg(this->getEventPath(event)));
             events << WatcherEvent(WatcherEvent::NEW, this->getEventPath(event), false);
@@ -510,10 +511,15 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
 
 int DirWatcherLinux::addWatch(const QString& path, uint32_t mask)
 {
-   const QByteArray& pathArray = path.toUtf8();
+   // Strip trailing separators so neither the check nor inotify resolves a
+   // directory symlink just because the caller supplied a trailing slash.
+   const QString cleanPath = QDir::cleanPath(path);
+   if (QFileInfo(cleanPath).isSymLink())
+      throw UnableToWatchException();
+   const QByteArray pathArray = cleanPath.toUtf8();
 
    // Adding a descendant must not replace the mask of an existing root watch.
-   const int wd = inotify_add_watch(this->fileDescriptor, pathArray.constData(), mask | IN_MASK_ADD);
+   const int wd = inotify_add_watch(this->fileDescriptor, pathArray.constData(), mask | IN_MASK_ADD | IN_DONT_FOLLOW);
 
    if (wd < 0)
    {
@@ -576,9 +582,9 @@ void DirWatcherLinux::rmWatcher(int watcher)
 DirWatcherLinux::Dir::Dir(DirWatcherLinux* dwl, Dir* parent, const QString& name) :
    dwl(dwl), parent(parent), name(name)
 {
-   this->wd = dwl->addWatch(this->getFullPath(), (this->parent ? EVENTS_OBS : ROOT_EVENTS_OBS));
+   this->wd = dwl->addWatch(this->getFullPath(), (this->parent ? EVENTS_OBS : ROOT_EVENTS_OBS) | IN_ONLYDIR);
 
-   for (QListIterator<QString> i(QDir(this->getFullPath()).entryList(QDir::Dirs | QDir::NoDotAndDotDot)); i.hasNext();)
+   for (QListIterator<QString> i(QDir(this->getFullPath()).entryList(QDir::Dirs | QDir::NoDotAndDotDot | QDir::NoSymLinks)); i.hasNext();)
       try
       {
          new Dir(this->dwl, this, i.next());

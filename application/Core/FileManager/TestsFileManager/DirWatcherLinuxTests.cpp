@@ -11,6 +11,99 @@ class DirWatcherLinuxTests : public QObject
    Q_OBJECT
 
 private slots:
+   void symlinkRootsAreRejected_data()
+   {
+      QTest::addColumn<bool>("directory");
+      QTest::addColumn<bool>("trailingSlash");
+      QTest::newRow("directory") << true << false;
+      QTest::newRow("directory-with-trailing-slash") << true << true;
+      QTest::newRow("file") << false << false;
+   }
+
+   void symlinkRootsAreRejected()
+   {
+      QFETCH(bool, directory);
+      QFETCH(bool, trailingSlash);
+      QTemporaryDir temp;
+      QVERIFY(temp.isValid());
+      if (directory)
+         QVERIFY(QDir(temp.path()).mkdir("target"));
+      else
+      {
+         QFile file(temp.filePath("target"));
+         QVERIFY(file.open(QIODevice::WriteOnly));
+      }
+      QVERIFY(QFile::link(temp.filePath("target"), temp.filePath("link")));
+      FM::DirWatcherLinux watcher;
+      QVERIFY(!watcher.addPath(temp.filePath("link") + (trailingSlash ? "/" : "")));
+      QVERIFY(!watcher.addPath(temp.path(), "link"));
+      QCOMPARE(watcher.nbWatchedPath(), 0);
+   }
+
+   void symlinkTargetsAreNotWatched_data()
+   {
+      QTest::addColumn<QString>("when");
+      QTest::newRow("initial-tree") << "initial";
+      QTest::newRow("created-after-registration") << "created";
+      QTest::newRow("moved-in-tree") << "moved";
+      QTest::newRow("moved-in-links") << "moved-links";
+   }
+
+   void symlinkTargetsAreNotWatched()
+   {
+      QFETCH(QString, when);
+      QTemporaryDir temp;
+      QVERIFY(temp.isValid());
+      QDir base(temp.path());
+      QVERIFY(base.mkpath("root"));
+      QVERIFY(base.mkpath("incoming"));
+      QVERIFY(base.mkpath("outside/deep"));
+      {
+         QFile file(temp.filePath("outside/file.txt"));
+         QVERIFY(file.open(QIODevice::WriteOnly));
+      }
+      FM::DirWatcherLinux watcher;
+      if (when != "initial")
+         QVERIFY(watcher.addPath(temp.filePath("root")));
+      const QString container = when.startsWith("moved") ? temp.filePath("incoming") : temp.filePath("root");
+      QVERIFY(QFile::link(temp.filePath("outside"), container + "/dir-link"));
+      QVERIFY(QFile::link(temp.filePath("outside/file.txt"), container + "/file-link"));
+      // An ancestor link must not cause recursive traversal either.
+      QVERIFY(QFile::link(temp.filePath("root"), container + "/loop"));
+      if (when == "initial")
+         QVERIFY(watcher.addPath(temp.filePath("root")));
+      else if (when == "moved")
+         QVERIFY(base.rename("incoming", "root/incoming"));
+      else if (when == "moved-links")
+         for (const QString& name : QStringList{"dir-link", "file-link", "loop"})
+            QVERIFY(base.rename("incoming/" + name, "root/" + name));
+      for (const auto& event : watcher.waitEvent(0))
+      {
+         QVERIFY(!event.path1.endsWith("dir-link"));
+         QVERIFY(!event.path1.endsWith("file-link"));
+         QVERIFY(!event.path1.endsWith("loop"));
+      }
+
+      for (const QString& path : QStringList{temp.filePath("outside/deep/new.txt"), temp.filePath("outside/file.txt")})
+      {
+         QFile file(path);
+         QVERIFY(file.open(QIODevice::WriteOnly));
+         QCOMPARE(file.write("data"), qint64(4));
+      }
+      for (const auto& event : watcher.waitEvent(0))
+         QCOMPARE(event.type, FM::WatcherEvent::TIMEOUT);
+
+      const QString realPath = when == "moved" ? temp.filePath("root/incoming/real.txt") : temp.filePath("root/real.txt");
+      {
+         QFile file(realPath);
+         QVERIFY(file.open(QIODevice::WriteOnly));
+      }
+      bool found = false;
+      for (const auto& event : watcher.waitEvent(1000))
+         found |= event.type == FM::WatcherEvent::NEW && event.path1 == realPath;
+      QVERIFY(found);
+   }
+
    void removedRootsReleaseWatches_data()
    {
       QTest::addColumn<bool>("rename");
