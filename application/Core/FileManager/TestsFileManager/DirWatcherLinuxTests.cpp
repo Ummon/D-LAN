@@ -20,6 +20,96 @@ class DirWatcherLinuxTests : public QObject
    Q_OBJECT
 
 private slots:
+   void replacedChildPreservesParentCoverage_data()
+   {
+      QTest::addColumn<bool>("childFirst");
+      QTest::addColumn<bool>("recreate");
+      QTest::addColumn<bool>("watchFailure");
+      QTest::newRow("atomic-parent-first") << false << false << false;
+      QTest::newRow("atomic-child-first") << true << false << false;
+      QTest::newRow("recreate-parent-first") << false << true << false;
+      QTest::newRow("recreate-child-first") << true << true << false;
+      QTest::newRow("replacement-watch-failure") << false << false << true;
+   }
+
+   void replacedChildPreservesParentCoverage()
+   {
+      QFETCH(bool, childFirst);
+      QFETCH(bool, recreate);
+      QFETCH(bool, watchFailure);
+      if (watchFailure && ::geteuid() == 0)
+         QSKIP("Root can watch unreadable directories");
+      QTemporaryDir temp;
+      QVERIFY(temp.isValid());
+      QDir base(temp.path());
+      QVERIFY(base.mkpath("root/parent/child"));
+      QVERIFY(base.mkpath("incoming/deep"));
+      const QString root = temp.filePath("root");
+      const QString parent = temp.filePath("root/parent");
+      const QString child = temp.filePath("root/parent/child");
+      const auto permissions = QFile::permissions(temp.filePath("incoming/deep"));
+      const auto restorePermissions = qScopeGuard([&]
+      {
+         QFile::setPermissions(temp.filePath("incoming/deep"), permissions);
+         QFile::setPermissions(child + "/deep", permissions);
+      });
+      FM::DirWatcherLinux watcher;
+      QVERIFY(watcher.addPath(childFirst ? child : root));
+      QVERIFY(watcher.addPath(parent));
+      QVERIFY(watcher.addPath(childFirst ? root : child));
+      if (watchFailure)
+         QVERIFY(QFile::setPermissions(temp.filePath("incoming/deep"), QFileDevice::WriteOwner | QFileDevice::ExeOwner));
+      if (recreate)
+         QVERIFY(base.rmdir("root/parent/child"));
+      QVERIFY(::rename(QFile::encodeName(temp.filePath("incoming")).constData(), QFile::encodeName(child).constData()) == 0);
+      QSet<QString> lost;
+      QSet<QString> rescanned;
+      for (const auto& event : watcher.waitEvent(1000))
+      {
+         if (event.type == FM::WatcherEvent::WATCH_LOST)
+         {
+            QVERIFY(!lost.contains(event.path1));
+            lost.insert(event.path1);
+         }
+         if (event.type == FM::WatcherEvent::RESCAN)
+            rescanned.insert(event.path1);
+      }
+      if (watchFailure)
+      {
+         QCOMPARE(lost, (QSet<QString>{root, parent, child}));
+         QCOMPARE(watcher.nbWatchedPath(), 0);
+         QVERIFY(watcher.watchReferences.isEmpty());
+         return;
+      }
+      QVERIFY(lost.isEmpty());
+      QVERIFY(rescanned.contains(child));
+      if (!recreate)
+         QCOMPARE(rescanned, (QSet<QString>{root, parent, child}));
+      QCOMPARE(watcher.nbWatchedPath(), 3);
+      // Each containing root must retain a complete tree after the more
+      // specific registrations are removed, even with pending IN_IGNORED events.
+      for (const QString& removed : {child, parent})
+      {
+         watcher.rmPath(removed);
+         watcher.waitEvent(0);
+         const QString filePath = child + "/deep/" + (removed == child ? "first.txt" : "second.txt");
+         {
+            QFile file(filePath);
+            QVERIFY(file.open(QIODevice::WriteOnly));
+         }
+         bool found = false;
+         for (const auto& event : watcher.waitEvent(1000))
+         {
+            QVERIFY(event.type != FM::WatcherEvent::WATCH_LOST);
+            found |= event.type == FM::WatcherEvent::NEW && event.path1 == filePath;
+         }
+         QVERIFY(found);
+      }
+      watcher.rmPath(root);
+      QCOMPARE(watcher.nbWatchedPath(), 0);
+      QVERIFY(watcher.watchReferences.isEmpty());
+   }
+
    void duplicateFileRegistrationReleasesOldReference_data()
    {
       QTest::addColumn<bool>("replaceFile");

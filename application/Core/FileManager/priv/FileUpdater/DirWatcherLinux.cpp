@@ -446,6 +446,7 @@ QList<WatcherEvent> DirWatcherLinux::processInotifyEvents(const char* buf, int l
    std::vector<PendingMove> movedFromEvents;
    QSet<QString> failedRoots;
    QSet<int> lostWatches;
+   QHash<int, QSet<QString>> childrenToRestore;
    struct PendingRestoration
    {
       RemovedPath registration;
@@ -489,7 +490,11 @@ QList<WatcherEvent> DirWatcherLinux::processInotifyEvents(const char* buf, int l
             const QString path = dir->getFullPath();
             retirePaths(path);
             for (Dir* deleted : this->getDirs(event->wd))
+            {
+               if (deleted->parent)
+                  childrenToRestore[deleted->parent->wd].insert(deleted->name);
                delete deleted;
+            }
             continue;
          }
 
@@ -659,6 +664,30 @@ QList<WatcherEvent> DirWatcherLinux::processInotifyEvents(const char* buf, int l
       else
          ++i;
 
+   // A replacement's IN_MOVED_TO can precede the old inode's IN_DELETE_SELF.
+   // In that order, addChildWatches saw the old child and skipped it. Repair
+   // each surviving parent's tree after queued deletions and moves are complete.
+   QSet<QString> rescannedRoots;
+   for (auto i = childrenToRestore.constBegin(); i != childrenToRestore.constEnd(); ++i)
+      for (Dir* parent : this->getDirs(i.key()))
+         for (const QString& name : i.value())
+         {
+            if (parent->children.contains(name))
+               continue;
+            const QFileInfo info(QDir(parent->getFullPath()).filePath(name));
+            if (!info.isDir() || info.isSymLink())
+               continue;
+            try
+            {
+               new Dir(this, parent, name);
+               rescannedRoots.insert(parent->getRoot()->name);
+            }
+            catch (UnableToWatchException&)
+            {
+               failedRoots.insert(parent->getRoot()->name);
+            }
+         }
+
    // Retire incomplete roots only after processing the batch, so pending moves
    // and directory pointers remain valid. Notify each surviving registration
    // once; FileUpdater will rescan it and switch to periodic scanning.
@@ -671,6 +700,8 @@ QList<WatcherEvent> DirWatcherLinux::processInotifyEvents(const char* buf, int l
          delete root;
          i.remove();
       }
+      else if (rescannedRoots.contains(root->name))
+         events << WatcherEvent(WatcherEvent::RESCAN, root->name, false);
    }
    // Restore replacements after interpreting all events against the old trees.
    // Keep each notification's original position relative to other path changes.
