@@ -91,7 +91,12 @@ namespace FM
       Dir* getDir(int wd) const;
       QList<Dir*> getDirs(int wd) const;
       void addChildWatches(int parentWd, const QString& name, QSet<QString>& failedRoots);
-      QList<WatcherEvent> removeWatchedPathsUnder(const QString& path);
+      struct RemovedPath
+      {
+         QString path; // Preserve the caller's spelling for subsequent rmPath().
+         bool isWatchedFile;
+      };
+      QList<RemovedPath> removeWatchedPathsUnder(const QString& path);
 
       void rmWatcher(int watcher);
       void clearWatches();

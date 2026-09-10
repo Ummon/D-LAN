@@ -20,6 +20,145 @@ class DirWatcherLinuxTests : public QObject
    Q_OBJECT
 
 private slots:
+   void replacedDirectoriesRemainWatched_data()
+   {
+      QTest::addColumn<QString>("operation");
+      QTest::addColumn<bool>("trailingSlash");
+      QTest::newRow("atomic-replace") << "atomic" << false;
+      QTest::newRow("delete-and-recreate") << "recreate" << false;
+      QTest::newRow("rename-to-backup") << "backup" << false;
+      QTest::newRow("trailing-slash") << "atomic" << true;
+   }
+
+   void replacedDirectoriesRemainWatched()
+   {
+      QFETCH(QString, operation);
+      QFETCH(bool, trailingSlash);
+      QTemporaryDir temp;
+      QVERIFY(temp.isValid());
+      QDir base(temp.path());
+      QVERIFY(base.mkdir("root"));
+      QVERIFY(base.mkpath("incoming/deep"));
+      const QString path = temp.filePath("root");
+      const QString registration = path + (trailingSlash ? "/" : "");
+      FM::DirWatcherLinux watcher;
+      QVERIFY(watcher.addPath(registration));
+      if (operation == "recreate")
+         QVERIFY(base.rmdir("root"));
+      else if (operation == "backup")
+         QVERIFY(base.rename("root", "backup"));
+      QVERIFY(::rename(QFile::encodeName(temp.filePath("incoming")).constData(), QFile::encodeName(path).constData()) == 0);
+      const auto events = watcher.waitEvent(1000);
+      QCOMPARE(events.size(), 1);
+      QCOMPARE(events[0].type, FM::WatcherEvent::RESCAN);
+      QCOMPARE(events[0].path1, path);
+      QVERIFY(!events[0].isWatchedFile);
+      QCOMPARE(watcher.nbWatchedPath(), 1);
+      // Old IN_IGNORED events must not invalidate the replacement watch.
+      for (const auto& event : watcher.waitEvent(0))
+         QCOMPARE(event.type, FM::WatcherEvent::TIMEOUT);
+      if (operation == "backup")
+      {
+         QFile oldFile(temp.filePath("backup/old.txt"));
+         QVERIFY(oldFile.open(QIODevice::WriteOnly));
+      }
+      const QString filePath = temp.filePath("root/deep/later.txt");
+      {
+         QFile file(filePath);
+         QVERIFY(file.open(QIODevice::WriteOnly));
+      }
+      bool found = false;
+      for (const auto& event : watcher.waitEvent(1000))
+      {
+         QVERIFY(!event.path1.endsWith("old.txt"));
+         found |= event.type == FM::WatcherEvent::NEW && event.path1 == filePath;
+      }
+      QVERIFY(found);
+      watcher.rmPath(registration);
+      QCOMPARE(watcher.nbWatchedPath(), 0);
+      QVERIFY(watcher.watchReferences.isEmpty());
+   }
+
+   void directoryReplacementRestoresDescendantRegistrations()
+   {
+      QTemporaryDir temp;
+      QVERIFY(temp.isValid());
+      QDir base(temp.path());
+      QVERIFY(base.mkpath("root/sub"));
+      QVERIFY(base.mkpath("incoming/sub"));
+      for (const auto& name : {"root/sub/file.txt", "incoming/sub/file.txt"})
+      {
+         QFile file(temp.filePath(name));
+         QVERIFY(file.open(QIODevice::WriteOnly));
+      }
+      const QString root = temp.filePath("root");
+      const QString sub = temp.filePath("root/sub");
+      const QString filePath = temp.filePath("root/sub/file.txt");
+      FM::DirWatcherLinux watcher;
+      QVERIFY(watcher.addPath(root));
+      QVERIFY(watcher.addPath(sub));
+      QVERIFY(watcher.addPath(filePath));
+      QVERIFY(base.rename("root", "backup"));
+      QVERIFY(base.rename("incoming", "root"));
+      QSet<QString> rescanned;
+      for (const auto& event : watcher.waitEvent(1000))
+      {
+         QCOMPARE(event.type, FM::WatcherEvent::RESCAN);
+         QCOMPARE(event.isWatchedFile, event.path1 == filePath);
+         QVERIFY(!rescanned.contains(event.path1));
+         rescanned.insert(event.path1);
+      }
+      QCOMPARE(rescanned, (QSet<QString>{root, sub, filePath}));
+      // Removing the restored ancestor must preserve the descendant watches.
+      watcher.rmPath(root);
+      QCOMPARE(watcher.nbWatchedPath(), 2);
+      watcher.waitEvent(0);
+      {
+         QFile file(filePath);
+         QVERIFY(file.open(QIODevice::Append));
+         QCOMPARE(file.write("changed"), qint64(7));
+      }
+      bool fileChanged = false;
+      bool directoryChanged = false;
+      for (const auto& event : watcher.waitEvent(1000))
+         if (event.type == FM::WatcherEvent::CONTENT_CHANGED && event.path1 == filePath)
+         {
+            fileChanged |= event.isWatchedFile;
+            directoryChanged |= !event.isWatchedFile;
+         }
+      QVERIFY(fileChanged);
+      QVERIFY(directoryChanged);
+   }
+
+   void replacementDirectoryWatchFailureRequestsFallback()
+   {
+      if (::geteuid() == 0)
+         QSKIP("Root can watch unreadable directories");
+      QTemporaryDir temp;
+      QVERIFY(temp.isValid());
+      QDir base(temp.path());
+      QVERIFY(base.mkdir("root"));
+      QVERIFY(base.mkpath("incoming/blocked"));
+      const QString path = temp.filePath("root");
+      const auto permissions = QFile::permissions(temp.filePath("incoming/blocked"));
+      const auto restorePermissions = qScopeGuard([&]
+      {
+         QFile::setPermissions(temp.filePath("incoming/blocked"), permissions);
+         QFile::setPermissions(temp.filePath("root/blocked"), permissions);
+      });
+      FM::DirWatcherLinux watcher;
+      QVERIFY(watcher.addPath(path));
+      QVERIFY(QFile::setPermissions(temp.filePath("incoming/blocked"), QFileDevice::WriteOwner | QFileDevice::ExeOwner));
+      QVERIFY(::rename(QFile::encodeName(temp.filePath("incoming")).constData(), QFile::encodeName(path).constData()) == 0);
+      const auto events = watcher.waitEvent(1000);
+      QCOMPARE(events.size(), 1);
+      QCOMPARE(events[0].type, FM::WatcherEvent::WATCH_LOST);
+      QCOMPARE(events[0].path1, path);
+      QVERIFY(!events[0].isWatchedFile);
+      QCOMPARE(watcher.nbWatchedPath(), 0);
+      QVERIFY(watcher.watchReferences.isEmpty());
+   }
+
    void unexpectedWatchLossRequestsFallback_data()
    {
       QTest::addColumn<QString>("target");

@@ -263,7 +263,7 @@ void DirWatcherLinux::rmPath(const QString& directory, const QString& filename)
 
 // A root move also invalidates the registered paths of independently shared
 // descendants, which do not receive their own IN_MOVE_SELF notifications.
-QList<WatcherEvent> DirWatcherLinux::removeWatchedPathsUnder(const QString& path)
+QList<DirWatcherLinux::RemovedPath> DirWatcherLinux::removeWatchedPathsUnder(const QString& path)
 {
    const QString root = QDir::cleanPath(path);
    const QString prefix = root.endsWith('/') ? root : root + '/';
@@ -273,13 +273,13 @@ QList<WatcherEvent> DirWatcherLinux::removeWatchedPathsUnder(const QString& path
       return cleanPath == root || cleanPath.startsWith(prefix);
    };
 
-   QList<WatcherEvent> events;
+   QList<RemovedPath> removed;
    for (QMutableListIterator<Dir*> i(this->dirs); i.hasNext();)
    {
       Dir* dir = i.next();
       if (isUnderRoot(dir->name))
       {
-         events << WatcherEvent(WatcherEvent::DELETED, dir->name, false);
+         removed << RemovedPath{dir->name, false};
          delete dir;
          i.remove();
       }
@@ -288,14 +288,14 @@ QList<WatcherEvent> DirWatcherLinux::removeWatchedPathsUnder(const QString& path
    {
       if (isUnderRoot(i.key()))
       {
-         events << WatcherEvent(WatcherEvent::DELETED, i.key(), true);
+         removed << RemovedPath{i.key(), true};
          delete i.value();
          i = this->files.erase(i);
       }
       else
          ++i;
    }
-   return events;
+   return removed;
 }
 
 /**
@@ -453,6 +453,20 @@ QList<WatcherEvent> DirWatcherLinux::processInotifyEvents(const char* buf, int l
    std::vector<PendingMove> movedFromEvents;
    QSet<QString> failedRoots;
    QSet<int> lostWatches;
+   struct PendingRestoration
+   {
+      RemovedPath registration;
+      qsizetype eventIndex;
+   };
+   QList<PendingRestoration> pathsToRestore;
+   const auto retirePaths = [&](const QString& path)
+   {
+      for (const RemovedPath& removed : this->removeWatchedPathsUnder(path))
+      {
+         pathsToRestore << PendingRestoration{removed, events.size()};
+         events << WatcherEvent(WatcherEvent::DELETED, removed.path, removed.isWatchedFile);
+      }
+   };
 
    for (int i = 0; i < len;)
    {
@@ -481,7 +495,7 @@ QList<WatcherEvent> DirWatcherLinux::processInotifyEvents(const char* buf, int l
             // Retire all representations before the expected IN_IGNORED,
             // which can arrive before the parent's IN_DELETE notification.
             const QString path = dir->getFullPath();
-            events.append(this->removeWatchedPathsUnder(path));
+            retirePaths(path);
             for (Dir* deleted : this->getDirs(event->wd))
                delete deleted;
             continue;
@@ -585,7 +599,7 @@ QList<WatcherEvent> DirWatcherLinux::processInotifyEvents(const char* buf, int l
          {
             L_DEBU(QString("inotify event (dir): IN_MOVE_SELF (path=%1)").arg(this->getEventPath(event)));
             const QString path = dir->getFullPath();
-            events.append(this->removeWatchedPathsUnder(path));
+            retirePaths(path);
          }
       }
       // Watched files.
@@ -660,6 +674,27 @@ QList<WatcherEvent> DirWatcherLinux::processInotifyEvents(const char* buf, int l
          delete root;
          i.remove();
       }
+   }
+   // Restore replacements after interpreting all events against the old trees.
+   // Keep each notification's original position relative to other path changes.
+   for (const PendingRestoration& pending : pathsToRestore)
+   {
+      const RemovedPath& registration = pending.registration;
+      const QFileInfo info(QDir::cleanPath(registration.path));
+      if (info.isSymLink() || !(registration.isWatchedFile ? info.isFile() : info.isDir()))
+         continue;
+      bool restored = false;
+      try
+      {
+         if (registration.isWatchedFile)
+            this->files.insert(registration.path, new File(this, registration.path));
+         else
+            this->dirs << new Dir(this, nullptr, registration.path);
+         restored = true;
+      }
+      catch (UnableToWatchException&) {}
+      events[pending.eventIndex] = WatcherEvent(restored ? WatcherEvent::RESCAN : WatcherEvent::WATCH_LOST,
+         registration.path, registration.isWatchedFile);
    }
    return events;
 }
