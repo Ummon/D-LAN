@@ -50,6 +50,12 @@ D_LAN_GUI::D_LAN_GUI(int& argc, char* argv[]) :
    // 'QPalette::Base' background. See 'MainWindow::loadCustomStyle(..)' about why Fusion is used.
    this->setStyle("Fusion");
 
+   this->setWindowIcon(this->trayIcon.icon());
+#ifdef Q_OS_LINUX
+   // Match the desktop entry installed by the Linux package.
+   this->setDesktopFileName("d-lan");
+#endif
+
    this->installTranslator(&this->translator);
    QLocale current = QLocale::system();
    if (SETTINGS.isSet("language"))
