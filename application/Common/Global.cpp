@@ -282,7 +282,8 @@ qint64 Global::availableDiskSpace(const QString& path)
 #elif defined(Q_OS_LINUX)
    struct statvfs info;
    if (statvfs(pathToDir.toUtf8().constData(), &info) == 0)
-      return static_cast<qint64>(info.f_bsize) * info.f_bavail;
+      // Available blocks are measured in fragment-size units, not I/O block size.
+      return static_cast<qint64>(info.f_frsize) * info.f_bavail;
 #endif
 
    return std::numeric_limits<qint64>::max();
