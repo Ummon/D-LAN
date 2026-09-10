@@ -423,7 +423,7 @@ void SearchWidget::openLocation()
          locations.insert(this->searchModel.getPath(index, true));
    }
 
-   Utils::openLocations(locations.values());
+   Utils::openLocations(locations.values(), this);
 }
 
 void SearchWidget::browseCurrents()

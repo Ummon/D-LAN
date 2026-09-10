@@ -41,8 +41,8 @@ namespace GUI
 
       static QString emoticonsDirectoryPath();
 
-      static void openLocations(const QStringList& paths);
-      static void openLocation(const QString& path);
+      static void openLocations(const QStringList& paths, QWidget* parent = nullptr);
+      static void openLocation(const QString& path, QWidget* parent = nullptr);
       static void openFile(const QString& path);
    };
 }

@@ -26,7 +26,6 @@ using namespace GUI;
 #include <QDir>
 #include <QDesktopServices>
 #include <QUrl>
-#include <QProcess>
 #include <QGridLayout>
 #include <QTreeView>
 #include <QLabel>
@@ -76,34 +75,6 @@ QString Utils::emoticonsDirectoryPath()
       return QCoreApplication::applicationDirPath() % "/../../resources/emoticons";
 #endif
    return defaultPath;
-}
-
-void Utils::openLocations(const QStringList& paths)
-{
-   foreach (QString path, paths)
-      Utils::openLocation(path);
-}
-
-/**
-  * Open the location of the path, launch a system file browser to the given directory path. If the path is a file then it will open it's containing directory and select it.
-  *
-  * An other on Windows is to use 'SHOpenFolderAndSelectItems(..)'.
-  */
-void Utils::openLocation(const QString& path)
-{
-#ifdef Q_OS_WIN32
-   QProcess explorer;
-   if (!QFileInfo(path).isDir())
-      explorer.setArguments(QStringList() << "/select,");
-   explorer.setNativeArguments("\"" + QDir::toNativeSeparators(path) + "\"");
-   explorer.setProgram("explorer");
-   explorer.start();
-   explorer.waitForFinished(5000);
-#else
-   QFileInfo fileInfo(path);
-   const QString dirPath = fileInfo.isDir() ? path : fileInfo.absolutePath();
-   QDesktopServices::openUrl(QUrl::fromLocalFile(dirPath));
-#endif
 }
 
 void Utils::openFile(const QString& path)

@@ -187,5 +187,5 @@ void RemoteBrowseDialog::openLocation()
    for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
       locations.insert(this->model.getPath(i.next(), true));
 
-   Utils::openLocations(locations.values());
+   Utils::openLocations(locations.values(), this);
 }

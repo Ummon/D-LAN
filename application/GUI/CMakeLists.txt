@@ -32,6 +32,7 @@ add_executable(DLanGUI WIN32
    ProgressBar.cpp
    IconProvider.cpp
    Utils.cpp
+   UtilsLocations.cpp
    Settings/AskNewPasswordDialog.cpp
    Downloads/DownloadsTreeModel.cpp
    Downloads/DownloadsModel.cpp
@@ -167,6 +168,37 @@ target_link_libraries(DLanGUI PRIVATE
    Qt6::Xml
    Qt6::SvgWidgets
 )
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+   find_package(Qt6 REQUIRED COMPONENTS DBus)
+   # Qt's Wayland activation-token interface is declared in private headers,
+   # but implemented in QtGui itself. Only the matching headers are needed;
+   # the full GuiPrivate target also requires unrelated XKB development files.
+   find_path(DLAN_QT_GUI_PRIVATE_HEADERS qpa/qplatformwindow_p.h
+      HINTS ${Qt6Gui_INCLUDE_DIRS} PATH_SUFFIXES "${Qt6Gui_VERSION}/QtGui" REQUIRED)
+   find_path(DLAN_QT_CORE_PRIVATE_HEADERS private/qglobal_p.h
+      HINTS ${Qt6Core_INCLUDE_DIRS} PATH_SUFFIXES "${Qt6Core_VERSION}/QtCore" REQUIRED)
+   set(DLAN_QT_NATIVE_INCLUDE_DIRS
+      "${DLAN_QT_GUI_PRIVATE_HEADERS}" "${DLAN_QT_GUI_PRIVATE_HEADERS}/.."
+      "${DLAN_QT_CORE_PRIVATE_HEADERS}" "${DLAN_QT_CORE_PRIVATE_HEADERS}/..")
+   target_include_directories(DLanGUI SYSTEM PRIVATE ${DLAN_QT_NATIVE_INCLUDE_DIRS})
+   target_link_libraries(DLanGUI PRIVATE Qt6::DBus)
+
+   if(DLAN_BUILD_TESTS)
+      add_executable(TestsFileLocations
+         TestsFileLocations.cpp UtilsLocations.cpp Browse/BrowseModel.cpp
+         Settings/SharedEntryListModel.cpp IconProvider.cpp Log.cpp
+      )
+      target_include_directories(TestsFileLocations PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+      target_include_directories(TestsFileLocations SYSTEM PRIVATE ${DLAN_QT_NATIVE_INCLUDE_DIRS})
+      target_link_libraries(TestsFileLocations PRIVATE RemoteCoreController LogManager Common Qt6::Widgets Qt6::DBus Qt6::Test)
+      find_program(DLAN_DBUS_RUN_SESSION dbus-run-session)
+      if(DLAN_DBUS_RUN_SESSION)
+         add_test(NAME TestsFileLocations COMMAND "${DLAN_DBUS_RUN_SESSION}" -- $<TARGET_FILE:TestsFileLocations>)
+         set_tests_properties(TestsFileLocations PROPERTIES TIMEOUT 20)
+      endif()
+   endif()
+endif()
 
 if(WIN32)
    target_sources(DLanGUI PRIVATE

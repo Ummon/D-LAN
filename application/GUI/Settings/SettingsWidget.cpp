@@ -776,7 +776,7 @@ void SettingsWidget::openLocation()
 {
    QModelIndexList selectedRows = this->ui->tblShareDirs->selectionModel()->selectedRows();
    foreach (QModelIndex index, selectedRows)
-      Utils::openLocation(this->sharedEntryListModel.getLocationPath(index));
+      Utils::openLocation(this->sharedEntryListModel.getLocationPath(index), this);
 }
 
 void SettingsWidget::buttonAddressToggled(bool checked)
@@ -812,4 +812,3 @@ void SettingsWidget::onActivate()
    if (this->ui->tabWidget->isTabEnabled(0))
       this->ui->tabWidget->setCurrentIndex(0);
 }
-

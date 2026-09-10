@@ -208,7 +208,7 @@ void BrowseWidget::openLocation()
    for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
       locations.insert(this->browseModel.getPath(i.next(), true));
 
-   Utils::openLocations(locations.values());
+   Utils::openLocations(locations.values(), this);
 }
 
 /**

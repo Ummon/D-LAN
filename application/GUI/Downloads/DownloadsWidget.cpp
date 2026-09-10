@@ -291,7 +291,7 @@ void DownloadsWidget::openLocationSelectedEntries()
          locations.insert(this->currentDownloadsModel->getPath(index, true));
    }
 
-   Utils::openLocations(locations.values());
+   Utils::openLocations(locations.values(), this);
 }
 
 void DownloadsWidget::moveSelectedEntriesToTop()
