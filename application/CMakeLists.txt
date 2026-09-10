@@ -22,8 +22,8 @@ endif()
 # ------------------------------------------------------------------------------
 # Options.
 # ------------------------------------------------------------------------------
-option(DLAN_BUILD_TESTS "Build the unit/stress test executables" ON)
-option(DLAN_BUILD_TOOLS "Build the tools (LogViewer, FileIndexer, PasswordHasher)" ON)
+option(DLAN_BUILD_TESTS "Build the unit/stress test executables" OFF)
+option(DLAN_BUILD_TOOLS "Build the tools (LogViewer, FileIndexer, PasswordHasher)" OFF)
 option(DLAN_PROFILING   "Build with gprof instrumentation (-pg), was 'CONFIG += prof'" OFF)
 option(DLAN_PDB         "Emit CodeView debug info and a .pdb so LM::CrashHandler can print function names and line numbers" ON)
 
