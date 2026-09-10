@@ -27,28 +27,80 @@ using namespace Common;
 
 #if defined Q_OS_UNIX
 
-#include <limits>
+#include <QPointer>
+#include <QStringList>
+#include <cerrno>
+#include <fcntl.h>
+#include <system_error>
 #include <unistd.h> //Provides STDIN_FILENO
 
 ConsoleReader::ConsoleReader(QObject* parent) :
-   QObject(parent), inputStream(stdin), notifier(STDIN_FILENO, QSocketNotifier::Read)
+   QObject(parent), originalInputFlags(fcntl(STDIN_FILENO, F_GETFL)), notifier(STDIN_FILENO, QSocketNotifier::Read)
 {
+   if (this->originalInputFlags < 0 || fcntl(STDIN_FILENO, F_SETFL, this->originalInputFlags | O_NONBLOCK) < 0)
+      throw std::system_error(errno, std::generic_category(), "Unable to configure console input");
    connect(&this->notifier, &QSocketNotifier::activated, this, &ConsoleReader::inputAvailable);
+}
+
+ConsoleReader::~ConsoleReader()
+{
+   this->notifier.setEnabled(false);
+   fcntl(STDIN_FILENO, F_SETFL, this->originalInputFlags);
 }
 
 void ConsoleReader::inputAvailable()
 {
-   QString line = this->inputStream.readLine();
-   if (line.isNull())
+   // Read a bounded chunk per activation so a partial line or a continuously
+   // writing producer cannot keep this slot waiting for more input.
+   char buffer[4096];
+   ssize_t bytesRead;
+   do
    {
-      // EOF remains readable to QSocketNotifier. Stop watching it instead of
-      // repeatedly scheduling this slot after the input stream has ended.
-      this->notifier.setEnabled(false);
+      bytesRead = read(STDIN_FILENO, buffer, sizeof(buffer));
+   }
+   while (bytesRead < 0 && errno == EINTR);
+   if (bytesRead < 0)
+   {
+      if (errno != EAGAIN && errno != EWOULDBLOCK)
+         this->notifier.setEnabled(false);
       return;
    }
-   line = line.trimmed();
-   if (!line.isEmpty())
-      emit newLine(line);
+   if (bytesRead == 0)
+      this->notifier.setEnabled(false);
+   else
+      this->pendingInput.append(buffer, bytesRead);
+
+   QStringList lines;
+   qsizetype start = 0;
+   qsizetype end;
+   while ((end = this->pendingInput.indexOf('\n', start)) >= 0)
+   {
+      lines << QString::fromUtf8(this->pendingInput.constData() + start, end - start);
+      start = end + 1;
+   }
+   this->pendingInput.remove(0, start);
+   if (bytesRead == 0 && !this->pendingInput.isEmpty())
+   {
+      lines << QString::fromUtf8(this->pendingInput);
+      this->pendingInput.clear();
+   }
+
+   // Decode only complete lines (or the final line at EOF), preserving UTF-8
+   // characters split across reads. Accept an initial UTF-8 BOM as QTextStream did.
+   QPointer<ConsoleReader> guard(this);
+   for (QString line : lines)
+   {
+      if (this->firstLine && line.startsWith(QChar::ByteOrderMark))
+         line.remove(0, 1);
+      this->firstLine = false;
+      line = line.trimmed();
+      if (!line.isEmpty())
+      {
+         emit newLine(line);
+         if (!guard)
+            return;
+      }
+   }
 }
 
 #elif defined Q_OS_WIN32

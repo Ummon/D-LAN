@@ -24,6 +24,7 @@
 #if defined Q_OS_UNIX
 
 #include <QIODevice>
+#include <QByteArray>
 #include <QSocketNotifier>
 
 namespace Common
@@ -33,6 +34,7 @@ namespace Common
       Q_OBJECT
    public:
       explicit ConsoleReader(QObject* parent = nullptr);
+      ~ConsoleReader() override;
 
    signals:
       void newLine(QString line);
@@ -41,7 +43,9 @@ namespace Common
       void inputAvailable();
 
    private:
-      QTextStream inputStream;
+      QByteArray pendingInput;
+      int originalInputFlags;
+      bool firstLine = true;
       QSocketNotifier notifier;
    };
 }
