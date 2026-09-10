@@ -53,8 +53,8 @@ add_compile_definitions(
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
    # llvm-mingw toolchain: libc++ + the warning set from common.pri.
-   add_compile_options(-stdlib=libc++ -Wall -Wno-parentheses -Wno-ignored-attributes)
-   add_link_options(-stdlib=libc++)
+   add_compile_options(-Wall -Wno-parentheses -Wno-ignored-attributes)
+   add_link_options()
 endif()
 
 # 'CONFIG += ltcg' in release.
