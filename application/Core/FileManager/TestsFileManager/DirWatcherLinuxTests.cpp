@@ -457,6 +457,9 @@ private slots:
       QTest::addColumn<QString>("relativePath");
       QTest::newRow("root") << "first/file.txt";
       QTest::newRow("nested") << "first/child/grandchild/file.txt";
+      QTest::newRow("hidden-directory") << "first/.hidden/file.txt";
+      QTest::newRow("inside-hidden-directory") << "first/.hidden/sub/file.txt";
+      QTest::newRow("nested-hidden-directory") << "first/child/.hidden/file.txt";
       QTest::newRow("second-root") << "second/file.txt";
    }
 
@@ -466,6 +469,8 @@ private slots:
       QTemporaryDir temp;
       QVERIFY(temp.isValid());
       QVERIFY(QDir(temp.path()).mkpath("first/child/grandchild"));
+      QVERIFY(QDir(temp.path()).mkpath("first/.hidden/sub"));
+      QVERIFY(QDir(temp.path()).mkpath("first/child/.hidden"));
       QVERIFY(QDir(temp.path()).mkdir("second"));
       FM::DirWatcherLinux watcher;
       QVERIFY(watcher.addPath(temp.filePath("first")));

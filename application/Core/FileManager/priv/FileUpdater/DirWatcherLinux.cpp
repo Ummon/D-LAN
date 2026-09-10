@@ -584,7 +584,7 @@ DirWatcherLinux::Dir::Dir(DirWatcherLinux* dwl, Dir* parent, const QString& name
 {
    this->wd = dwl->addWatch(this->getFullPath(), (this->parent ? EVENTS_OBS : ROOT_EVENTS_OBS) | IN_ONLYDIR);
 
-   for (QListIterator<QString> i(QDir(this->getFullPath()).entryList(QDir::Dirs | QDir::NoDotAndDotDot | QDir::NoSymLinks)); i.hasNext();)
+   for (QListIterator<QString> i(QDir(this->getFullPath()).entryList(QDir::Dirs | QDir::Hidden | QDir::NoDotAndDotDot | QDir::NoSymLinks)); i.hasNext();)
       try
       {
          new Dir(this->dwl, this, i.next());
