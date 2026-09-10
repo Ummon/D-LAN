@@ -28,6 +28,8 @@
 #include <sys/inotify.h>
 #include <sys/types.h>
 
+class DirWatcherLinuxTests;
+
 namespace FM
 {
    class DirWatcherLinux : public DirWatcher
@@ -43,6 +45,8 @@ namespace FM
       const QList<WatcherEvent> waitEvent(int timeout, QList<WaitCondition*> ws = QList<WaitCondition*>());
 
    private:
+      friend class ::DirWatcherLinuxTests; // Inject unmount events without privileged mounts.
+
       static const int EVENT_SIZE; // Size of the event structure, not counting name.
       static const size_t BUF_LEN; // Reasonable guess as to size of 1024 events.
       static const uint32_t EVENTS_OBS; // Inotify events caught for subdirectories.
@@ -92,7 +96,8 @@ namespace FM
       void rmWatcher(int watcher);
       void clearWatches();
       QList<WatcherEvent> recoverFromOverflow();
-      QString getEventPath(inotify_event *event);
+      QList<WatcherEvent> processInotifyEvents(const char* buf, int len);
+      QString getEventPath(const inotify_event* event);
 
       QRecursiveMutex mutex;
 

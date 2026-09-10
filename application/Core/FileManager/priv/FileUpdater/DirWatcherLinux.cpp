@@ -303,7 +303,7 @@ QList<WatcherEvent> DirWatcherLinux::removeWatchedPathsUnder(const QString& path
   * Return a null QString if not found.
   * @param path the full path
   */
-QString DirWatcherLinux::getEventPath(inotify_event* event)
+QString DirWatcherLinux::getEventPath(const inotify_event* event)
 {
    QMutexLocker locker(&this->mutex);
 
@@ -421,6 +421,12 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
       L_ERRO(QString("DirWatcherLinux::waitEvent: BUF_LEN to small?"));
    }
 
+   return this->processInotifyEvents(buf, len);
+}
+
+// Called with the watcher mutex held.
+QList<WatcherEvent> DirWatcherLinux::processInotifyEvents(const char* buf, int len)
+{
    // Detect overflow before interpreting any events in this buffer against a
    // potentially stale index. Overflow is global and has no watch descriptor.
    for (int i = 0; i < len;)
@@ -446,11 +452,23 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
    };
    std::vector<PendingMove> movedFromEvents;
    QSet<QString> failedRoots;
+   QSet<int> lostWatches;
 
    for (int i = 0; i < len;)
    {
-      struct inotify_event* event = (struct inotify_event*)&buf[i];
+      const auto* event = reinterpret_cast<const inotify_event*>(&buf[i]);
       i += EVENT_SIZE + event->len;
+
+      if (event->mask & (IN_IGNORED | IN_UNMOUNT))
+      {
+         // Explicit removal has already released all references. Any remaining
+         // owners have unexpectedly lost coverage, including detached moves.
+         if (this->watchReferences.contains(event->wd))
+            lostWatches.insert(event->wd);
+         continue;
+      }
+      if (lostWatches.contains(event->wd))
+         continue;
 
       Dir* dir = nullptr;
       File* file = nullptr;
@@ -458,6 +476,17 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
       // Watched directories.
       if (dir = this->getDir(event->wd))
       {
+         if (event->mask & IN_DELETE_SELF)
+         {
+            // Retire all representations before the expected IN_IGNORED,
+            // which can arrive before the parent's IN_DELETE notification.
+            const QString path = dir->getFullPath();
+            events.append(this->removeWatchedPathsUnder(path));
+            for (Dir* deleted : this->getDirs(event->wd))
+               delete deleted;
+            continue;
+         }
+
          if (event->mask & IN_MOVED_FROM)
          {
             L_DEBU(QString("inotify event (dir): IN_MOVED_FROM (path=%1)").arg(this->getEventPath(event)));
@@ -552,9 +581,9 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
             events << WatcherEvent(WatcherEvent::CONTENT_CHANGED, this->getEventPath(event), false);
          }
 
-         if (!dir->parent && (event->mask & IN_DELETE_SELF || event->mask & IN_MOVE_SELF))
+         if (!dir->parent && (event->mask & IN_MOVE_SELF))
          {
-            L_DEBU(QString("inotify event (dir): IN_DELETE_SELF || IN_MOVE_SELF (path=%1)").arg(this->getEventPath(event)));
+            L_DEBU(QString("inotify event (dir): IN_MOVE_SELF (path=%1)").arg(this->getEventPath(event)));
             const QString path = dir->getFullPath();
             events.append(this->removeWatchedPathsUnder(path));
          }
@@ -599,6 +628,25 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
    // Unmatched moves leave the watched tree. Destroying their detached branches
    // releases their watches, without touching any replacement at the old path.
    movedFromEvents.clear();
+
+   // Resolve owners after moves have finished: a lost watch may have been
+   // temporarily detached when its terminal event arrived.
+   for (int wd : lostWatches)
+   {
+      for (Dir* dir : this->getDirs(wd))
+         failedRoots.insert(dir->getRoot()->name);
+      // The kernel already removed this watch. Cleanup must not remove it again.
+      this->watchReferences.remove(wd);
+   }
+   for (auto i = this->files.begin(); i != this->files.end();)
+      if (lostWatches.contains(i.value()->wd))
+      {
+         events << WatcherEvent(WatcherEvent::WATCH_LOST, i.key(), true);
+         delete i.value();
+         i = this->files.erase(i);
+      }
+      else
+         ++i;
 
    // Retire incomplete roots only after processing the batch, so pending moves
    // and directory pointers remain valid. Notify each surviving registration

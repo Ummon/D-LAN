@@ -20,6 +20,178 @@ class DirWatcherLinuxTests : public QObject
    Q_OBJECT
 
 private slots:
+   void unexpectedWatchLossRequestsFallback_data()
+   {
+      QTest::addColumn<QString>("target");
+      QTest::addColumn<bool>("unmount");
+      for (const QString& target : {QString("root"), QString("descendant"), QString("file")})
+         for (bool unmount : {false, true})
+            QTest::newRow(qPrintable(target + (unmount ? "-unmount" : "-ignored"))) << target << unmount;
+   }
+
+   void unexpectedWatchLossRequestsFallback()
+   {
+      QFETCH(QString, target);
+      QFETCH(bool, unmount);
+      QTemporaryDir temp;
+      QVERIFY(temp.isValid());
+      QDir base(temp.path());
+      QVERIFY(base.mkpath("root/sub/deep"));
+      QVERIFY(base.mkdir("unaffected"));
+      const QString root = temp.filePath("root");
+      const QString sub = temp.filePath("root/sub");
+      const QString filePath = temp.filePath("file.txt");
+      const QString aliasPath = temp.filePath("alias.txt");
+      {
+         QFile file(filePath);
+         QVERIFY(file.open(QIODevice::WriteOnly));
+      }
+      QVERIFY(::link(QFile::encodeName(filePath).constData(), QFile::encodeName(aliasPath).constData()) == 0);
+      FM::DirWatcherLinux watcher;
+      QVERIFY(watcher.addPath(root));
+      QVERIFY(watcher.addPath(sub));
+      QVERIFY(watcher.addPath(filePath));
+      QVERIFY(watcher.addPath(aliasPath));
+      QVERIFY(watcher.addPath(temp.filePath("unaffected")));
+      const int wd = target == "file" ? watcher.files.value(filePath)->wd :
+         watcher.dirs[target == "root" ? 0 : 1]->wd;
+      // Remove the kernel watch behind the class's back to get a real,
+      // unexpected IN_IGNORED event without deleting the watched object.
+      QVERIFY(inotify_rm_watch(watcher.fileDescriptor, wd) == 0);
+      QList<FM::WatcherEvent> events;
+      if (unmount)
+      {
+         // A real unmount reports IN_UNMOUNT before IN_IGNORED. Inject the
+         // first event separately to exercise a pair split across reads.
+         const inotify_event event{wd, IN_UNMOUNT, 0, 0};
+         events = watcher.processInotifyEvents(reinterpret_cast<const char*>(&event), sizeof(event));
+      }
+      else
+         events = watcher.waitEvent(1000);
+      const QSet<QString> expected = target == "file" ? QSet<QString>{filePath, aliasPath} :
+         target == "root" ? QSet<QString>{root} : QSet<QString>{root, sub};
+      QSet<QString> lost;
+      for (const auto& event : events)
+      {
+         QCOMPARE(event.type, FM::WatcherEvent::WATCH_LOST);
+         QCOMPARE(event.isWatchedFile, target == "file");
+         QVERIFY(!lost.contains(event.path1));
+         lost.insert(event.path1);
+      }
+      QCOMPARE(lost, expected);
+      QCOMPARE(watcher.nbWatchedPath(), 5 - expected.size());
+      // The subsequent IN_IGNORED and cleanup of the other watches must not
+      // produce duplicate notifications or affect surviving registrations.
+      for (const auto& event : watcher.waitEvent(0))
+         QCOMPARE(event.type, FM::WatcherEvent::TIMEOUT);
+      const QString unaffectedPath = temp.filePath("unaffected/new.txt");
+      {
+         QFile file(unaffectedPath);
+         QVERIFY(file.open(QIODevice::WriteOnly));
+      }
+      bool found = false;
+      for (const auto& event : watcher.waitEvent(1000))
+      {
+         QVERIFY(event.type != FM::WatcherEvent::WATCH_LOST);
+         found |= event.type == FM::WatcherEvent::NEW && event.path1 == unaffectedPath;
+      }
+      QVERIFY(found);
+   }
+
+   void expectedWatchRemovalDoesNotRequestFallback_data()
+   {
+      QTest::addColumn<bool>("explicitRemoval");
+      QTest::newRow("explicit-removal") << true;
+      QTest::newRow("directory-deletion") << false;
+   }
+
+   void expectedWatchRemovalDoesNotRequestFallback()
+   {
+      QFETCH(bool, explicitRemoval);
+      QTemporaryDir temp;
+      QVERIFY(temp.isValid());
+      QDir base(temp.path());
+      QVERIFY(base.mkpath("root/sub/deep"));
+      FM::DirWatcherLinux watcher;
+      QVERIFY(watcher.addPath(temp.filePath("root")));
+      QVERIFY(watcher.addPath(temp.filePath("root/sub")));
+      if (explicitRemoval)
+         watcher.rmPath(temp.filePath("root"));
+      else
+         QVERIFY(QDir(temp.filePath("root/sub")).removeRecursively());
+      for (const auto& event : watcher.waitEvent(1000))
+         QVERIFY(event.type != FM::WatcherEvent::WATCH_LOST);
+      QCOMPARE(watcher.nbWatchedPath(), 1);
+      QVERIFY(base.mkpath("root/sub/deep"));
+      for (const auto& event : watcher.waitEvent(0))
+         QVERIFY(event.type != FM::WatcherEvent::WATCH_LOST);
+      const QString path = temp.filePath("root/sub/deep/new.txt");
+      {
+         QFile file(path);
+         QVERIFY(file.open(QIODevice::WriteOnly));
+      }
+      bool found = false;
+      for (const auto& event : watcher.waitEvent(1000))
+      {
+         QVERIFY(event.type != FM::WatcherEvent::WATCH_LOST);
+         found |= event.type == FM::WatcherEvent::NEW && event.path1 == path;
+      }
+      QVERIFY(found);
+   }
+
+   void watchLossDuringMove_data()
+   {
+      QTest::addColumn<bool>("reattach");
+      QTest::newRow("move-within-root") << true;
+      QTest::newRow("move-out-of-root") << false;
+   }
+
+   void watchLossDuringMove()
+   {
+      QFETCH(bool, reattach);
+      QTemporaryDir temp;
+      QVERIFY(temp.isValid());
+      QDir base(temp.path());
+      QVERIFY(base.mkpath("root/source/deep"));
+      QVERIFY(base.mkpath("root/destination"));
+      FM::DirWatcherLinux watcher;
+      const QString rootPath = temp.filePath("root");
+      QVERIFY(watcher.addPath(rootPath));
+      auto* root = watcher.dirs.first();
+      const int lostWd = root->children.value("source")->children.value("deep")->wd;
+      QVERIFY(inotify_rm_watch(watcher.fileDescriptor, lostWd) == 0);
+      QVERIFY(base.rename("root/source", reattach ? "root/destination/moved" : "outside"));
+
+      // Exercise a terminal event while its subtree is detached from the index,
+      // including IN_UNMOUNT and IN_IGNORED arriving in the same read.
+      QByteArray batch;
+      const auto appendEvent = [&](int wd, uint32_t mask, uint32_t cookie, const QByteArray& name = {})
+      {
+         const uint32_t len = name.isEmpty() ? 0 : (name.size() + 16) & ~15;
+         const inotify_event event{wd, mask, cookie, len};
+         batch.append(reinterpret_cast<const char*>(&event), sizeof(event));
+         batch.append(name);
+         batch.append(QByteArray(len - name.size(), '\0'));
+      };
+      appendEvent(root->wd, IN_MOVED_FROM | IN_ISDIR, 1, "source");
+      appendEvent(lostWd, IN_UNMOUNT, 0);
+      appendEvent(lostWd, IN_IGNORED, 0);
+      if (reattach)
+         appendEvent(root->children.value("destination")->wd, IN_MOVED_TO | IN_ISDIR, 1, "moved");
+      const auto events = watcher.processInotifyEvents(batch.constData(), batch.size());
+      QCOMPARE(events.size(), reattach ? 2 : 1);
+      QCOMPARE(events[0].type, reattach ? FM::WatcherEvent::MOVE : FM::WatcherEvent::DELETED);
+      QCOMPARE(events[0].path1, temp.filePath("root/source"));
+      if (reattach)
+      {
+         QCOMPARE(events[0].path2, temp.filePath("root/destination/moved"));
+         QCOMPARE(events[1].type, FM::WatcherEvent::WATCH_LOST);
+         QCOMPARE(events[1].path1, rootPath);
+         QVERIFY(!events[1].isWatchedFile);
+      }
+      QCOMPARE(watcher.nbWatchedPath(), reattach ? 0 : 1);
+   }
+
    void newDirectoryWatchFailureRequestsFallback_data()
    {
       QTest::addColumn<QString>("operation");
