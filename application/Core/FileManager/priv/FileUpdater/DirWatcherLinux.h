@@ -81,6 +81,8 @@ namespace FM
       Dir* getDir(int wd) const;
 
       void rmWatcher(int watcher);
+      void clearWatches();
+      QList<WatcherEvent> recoverFromOverflow();
       QString getEventPath(inotify_event *event);
 
       QRecursiveMutex mutex;

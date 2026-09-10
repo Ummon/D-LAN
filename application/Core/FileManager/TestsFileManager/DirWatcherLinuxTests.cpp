@@ -1,4 +1,5 @@
 #include <QDir>
+#include <QElapsedTimer>
 #include <QFile>
 #include <QTemporaryDir>
 #include <QTest>
@@ -10,6 +11,105 @@ class DirWatcherLinuxTests : public QObject
    Q_OBJECT
 
 private slots:
+   void queueOverflowRecoversWatches()
+   {
+      QFile limitFile("/proc/sys/fs/inotify/max_queued_events");
+      QVERIFY(limitFile.open(QIODevice::ReadOnly));
+      bool validLimit = false;
+      const int limit = limitFile.readAll().trimmed().toInt(&validLimit);
+      QVERIFY(validLimit && limit > 0);
+      if (limit > 100000)
+         QSKIP("The system inotify queue is too large for this bounded overflow test.");
+
+      QTemporaryDir temp;
+      QVERIFY(temp.isValid());
+      QDir base(temp.path());
+      for (const QString& path : QStringList{"root/old", "root/before", "second", "gone"})
+         QVERIFY(base.mkpath(path));
+      const QString filePath = temp.filePath("individual.txt");
+      const QString goneFilePath = temp.filePath("gone.txt");
+      const QStringList floodPaths{temp.filePath("root/a"), temp.filePath("root/b")};
+      for (const QString& path : QStringList{filePath, goneFilePath, floodPaths[0], floodPaths[1]})
+      {
+         QFile file(path);
+         QVERIFY(file.open(QIODevice::WriteOnly));
+      }
+
+      FM::DirWatcherLinux watcher;
+      QVERIFY(watcher.addPath(temp.filePath("root")));
+      QVERIFY(watcher.addPath(temp.filePath("second")));
+      QVERIFY(watcher.addPath(temp.filePath("gone")));
+      QVERIFY(watcher.addPath(temp.path(), "individual.txt"));
+      QVERIFY(watcher.addPath(temp.path(), "gone.txt"));
+
+      // Alternate names so adjacent IN_CLOSE_WRITE events cannot be coalesced.
+      for (int i = 0; i <= limit; ++i)
+      {
+         QFile file(floodPaths[i % 2]);
+         QVERIFY(file.open(QIODevice::WriteOnly));
+      }
+
+      // These notifications are lost while the queue is full.
+      QVERIFY(base.rename("root/old", "outside"));
+      QVERIFY(base.rename("root/before", "root/after"));
+      QVERIFY(base.mkpath("root/new/deep"));
+      QVERIFY(base.rmdir("gone"));
+      QVERIFY(QFile::remove(goneFilePath));
+      QVERIFY(QFile::remove(filePath));
+      {
+         QFile replacement(filePath);
+         QVERIFY(replacement.open(QIODevice::WriteOnly));
+      }
+
+      QList<FM::WatcherEvent> recovery;
+      QElapsedTimer timer;
+      timer.start();
+      while (timer.elapsed() < 10000)
+      {
+         const auto events = watcher.waitEvent(0);
+         for (const auto& event : events)
+            if (event.type == FM::WatcherEvent::RESCAN || event.type == FM::WatcherEvent::WATCH_LOST)
+               recovery << event;
+         if (!recovery.isEmpty() || events.isEmpty() || events[0].type == FM::WatcherEvent::TIMEOUT)
+            break;
+      }
+      QCOMPARE(recovery.size(), 5);
+      for (const auto& event : recovery)
+      {
+         const bool lost = event.path1 == temp.filePath("gone") || event.path1 == goneFilePath;
+         QCOMPARE(event.type, lost ? FM::WatcherEvent::WATCH_LOST : FM::WatcherEvent::RESCAN);
+         QCOMPARE(event.isWatchedFile, event.path1 == filePath || event.path1 == goneFilePath);
+      }
+      QCOMPARE(watcher.nbWatchedPath(), 3);
+
+      // The fresh queue contains no notifications from the abandoned watch tree.
+      const auto idle = watcher.waitEvent(0);
+      QCOMPARE(idle.size(), 1);
+      QCOMPARE(idle[0].type, FM::WatcherEvent::TIMEOUT);
+
+      for (const QString& path : QStringList{temp.filePath("root/new/deep/new.txt"),
+                                             temp.filePath("root/after/new.txt"),
+                                             temp.filePath("second/new.txt"), filePath})
+      {
+         QFile file(path);
+         QVERIFY(file.open(QIODevice::WriteOnly));
+         QCOMPARE(file.write("data"), qint64(4));
+         file.close();
+         bool found = false;
+         for (const auto& event : watcher.waitEvent(1000))
+            if (event.path1 == path && event.type == (path == filePath ? FM::WatcherEvent::CONTENT_CHANGED : FM::WatcherEvent::NEW))
+               found = true;
+         QVERIFY2(found, qPrintable(path));
+      }
+      {
+         QFile outside(temp.filePath("outside/new.txt"));
+         QVERIFY(outside.open(QIODevice::WriteOnly));
+      }
+      const auto outsideEvents = watcher.waitEvent(0);
+      QCOMPARE(outsideEvents.size(), 1);
+      QCOMPARE(outsideEvents[0].type, FM::WatcherEvent::TIMEOUT);
+   }
+
    void directoryMovesPreserveSiblings_data()
    {
       QTest::addColumn<QString>("destination");

@@ -67,7 +67,14 @@ DirWatcherLinux::DirWatcherLinux()
 DirWatcherLinux::~DirWatcherLinux()
 {
    QMutexLocker locker(&this->mutex);
+   this->clearWatches();
 
+   if (this->fileDescriptor >= 0 && close(this->fileDescriptor) < 0)
+      L_WARN(QString("DirWatcherLinux::~DirWatcherLinux: Unable to close file descriptor (inotify)"));
+}
+
+void DirWatcherLinux::clearWatches()
+{
    // Remove all directories.
    for (QMutableListIterator<Dir*> i(dirs); i.hasNext();)
    {
@@ -79,10 +86,50 @@ DirWatcherLinux::~DirWatcherLinux()
    // Remove all files.
    for (auto i = this->files.begin(); i != this->files.end(); ++i)
       delete i.value();
+   this->files.clear();
+   this->watchReferences.clear();
+}
 
-   // Close file descriptor.
-   if (close(this->fileDescriptor) < 0)
-       L_WARN(QString("DirWatcherLinux::~DirWatcherLinux: Unable to close file descriptor (inotify)"));
+QList<WatcherEvent> DirWatcherLinux::recoverFromOverflow()
+{
+   L_WARN("Inotify queue overflowed; rebuilding watches and requesting a rescan.");
+   QStringList directoryPaths;
+   for (Dir* dir : this->dirs)
+      directoryPaths << dir->name;
+   const QStringList filePaths = this->files.keys();
+
+   this->clearWatches();
+   // A fresh instance discards stale events and descriptors from the old tree.
+   close(this->fileDescriptor);
+   this->fileDescriptor = inotify_init();
+   this->initialized = this->fileDescriptor >= 0;
+
+   QList<WatcherEvent> events;
+   for (const QString& path : directoryPaths)
+   {
+      bool restored = false;
+      if (this->initialized && QDir(path).exists())
+         try
+         {
+            this->dirs << new Dir(this, nullptr, path);
+            restored = true;
+         }
+         catch (UnableToWatchException&) {}
+      events << WatcherEvent(restored ? WatcherEvent::RESCAN : WatcherEvent::WATCH_LOST, path, false);
+   }
+   for (const QString& path : filePaths)
+   {
+      bool restored = false;
+      if (this->initialized && QFileInfo(path).isFile())
+         try
+         {
+            this->files.insert(path, new File(this, path));
+            restored = true;
+         }
+         catch (UnableToWatchException&) {}
+      events << WatcherEvent(restored ? WatcherEvent::RESCAN : WatcherEvent::WATCH_LOST, path, true);
+   }
+   return events;
 }
 
 /**
@@ -250,8 +297,12 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
    FD_ZERO(&fds);
 
    // Add the inotify fd to the fd_set.
-   FD_SET(this->fileDescriptor, &fds);
-   fd_max = this->fileDescriptor;
+   fd_max = -1;
+   if (this->initialized)
+   {
+      FD_SET(this->fileDescriptor, &fds);
+      fd_max = this->fileDescriptor;
+   }
 
    // Add fd for all WaitCondition in fd_set and ajust fd_max if needed.
    for (int i = 0; i < ws.size(); i++)
@@ -298,7 +349,7 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
 
    L_DEBU("DirWatcherLinux::waitEvent: exit select by inotify");
 
-   char buf[BUF_LEN];
+   alignas(inotify_event) char buf[BUF_LEN];
    int len = read(this->fileDescriptor, buf, BUF_LEN);
    if (len < 0)
    {
@@ -311,6 +362,16 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
    else if (!len)
    {
       L_ERRO(QString("DirWatcherLinux::waitEvent: BUF_LEN to small?"));
+   }
+
+   // Detect overflow before interpreting any events in this buffer against a
+   // potentially stale index. Overflow is global and has no watch descriptor.
+   for (int i = 0; i < len;)
+   {
+      const auto* event = reinterpret_cast<const inotify_event*>(&buf[i]);
+      if (event->mask & IN_Q_OVERFLOW)
+         return this->recoverFromOverflow();
+      i += EVENT_SIZE + event->len;
    }
 
    QList<WatcherEvent> events;
