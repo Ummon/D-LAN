@@ -593,7 +593,7 @@ void Settings::get(const google::protobuf::FieldDescriptor* fieldDescriptor, qui
    Q_ASSERT(fieldDescriptor);
    if (fieldDescriptor->type() == google::protobuf::FieldDescriptor::TYPE_ENUM)
    {
-      value = this->settings->GetReflection()->GetEnum(*this->settings, fieldDescriptor)->number();
+      value = this->settings->GetReflection()->GetEnumValue(*this->settings, fieldDescriptor);
    }
    else
    {
@@ -662,7 +662,7 @@ void Settings::getRepeated(const google::protobuf::FieldDescriptor* fieldDescrip
    if (fieldDescriptor->type() == google::protobuf::FieldDescriptor::TYPE_ENUM)
    {
       for (int i = 0; i < this->settings->GetReflection()->FieldSize(*this->settings, fieldDescriptor); i++)
-         values << this->settings->GetReflection()->GetRepeatedEnum(*this->settings, fieldDescriptor, i)->number();
+         values << this->settings->GetReflection()->GetRepeatedEnumValue(*this->settings, fieldDescriptor, i);
    }
    else
    {

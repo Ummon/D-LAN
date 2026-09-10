@@ -45,7 +45,7 @@ CMake locates existing BLAKE3 and Protobuf installations; it does not download o
 
 Run these commands from the directory `BLAKE3-1.8.7/c/`:
 
-```
+```nushell
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY="../lib"
 cmake --build build --parallel
 ```
@@ -54,7 +54,7 @@ cmake --build build --parallel
 
 Run these commands from the directory `protobuf-36.1/`:
 
-```
+```nushell
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20 -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_INSTALL_PREFIX="." -DCMAKE_INSTALL_LIBDIR=lib -DBUILD_SHARED_LIBS=OFF -Dprotobuf_BUILD_SHARED_LIBS=OFF -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_BUILD_PROTOC_BINARIES=ON -Dprotobuf_FORCE_FETCH_DEPENDENCIES=ON
 cmake --build build --parallel 4
 cmake --install build
@@ -79,7 +79,7 @@ Useful cache options:
 
 Run [application/build.nu](application/build.nu) from the `application` directory. From the repository root:
 
-```sh
+```nushell
 cd application
 nu build.nu
 ```
