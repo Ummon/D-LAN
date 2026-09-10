@@ -58,6 +58,7 @@
 #include <QMap>
 #include <QSettings>
 #include <QProcess>
+#include <QDeadlineTimer>
 
 static QString encodeName(const QString &name, bool allowUpper = false)
 {
@@ -93,18 +94,34 @@ static QString socketPath(const QString &serviceName)
 
 static bool sendCmd(const QString &serviceName, const QString &cmd)
 {
-    bool retValue = false;
     QtUnixSocket sock;
-    if (sock.connectTo(socketPath(serviceName))) {
-        sock.write(QString(cmd+"\r\n").toLatin1().constData());
-	sock.flush();
-        sock.waitForReadyRead(-1);
-        QString reply = sock.readAll();
-        if (reply == QLatin1String("true"))
-            retValue = true;
-	sock.close();
+    if (!sock.connectTo(socketPath(serviceName)))
+        return false;
+
+    // Share one deadline across writes and reply fragments. A connected but
+    // unresponsive service must not keep the calling GUI blocked indefinitely.
+    QDeadlineTimer deadline(3000);
+    const QByteArray request = (cmd + QLatin1String("\r\n")).toLatin1();
+    if (sock.write(request) != request.size())
+        return false;
+    while (sock.bytesToWrite() > 0) {
+        if (deadline.hasExpired() || !sock.waitForBytesWritten(static_cast<int>(deadline.remainingTime())))
+            return false;
     }
-    return retValue;
+
+    const QByteArray successReply("true");
+    QByteArray reply;
+    for (;;) {
+        // Socket reads need not contain a complete reply. Stop immediately on
+        // a negative or invalid response, and bound the amount of data read.
+        reply += sock.read(successReply.size() + 1 - reply.size());
+        if (reply == successReply)
+            return true;
+        if (!successReply.startsWith(reply))
+            return false;
+        if (deadline.hasExpired() || !sock.waitForReadyRead(static_cast<int>(deadline.remainingTime())))
+            return false;
+    }
 }
 
 static QString absPath(const QString &path)
