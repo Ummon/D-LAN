@@ -54,6 +54,7 @@ namespace FM
          Dir(DirWatcherLinux* dwl, Dir* parent, const QString& name);
          ~Dir();
          QString getFullPath();
+         Dir* getRoot();
          void move(Dir* to, const QString& newName);
 
          DirWatcherLinux* dwl;
@@ -79,6 +80,8 @@ namespace FM
 
       File* getFile(int wd) const;
       Dir* getDir(int wd) const;
+      QList<Dir*> getDirs(int wd) const;
+      void addChildWatches(int parentWd, const QString& name);
 
       void rmWatcher(int watcher);
       void clearWatches();

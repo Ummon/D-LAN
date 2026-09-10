@@ -201,6 +201,33 @@ DirWatcherLinux::Dir* DirWatcherLinux::getDir(int wd) const
    return nullptr;
 }
 
+// A kernel watch can be represented in several overlapping root trees.
+QList<DirWatcherLinux::Dir*> DirWatcherLinux::getDirs(int wd) const
+{
+   QList<Dir*> result;
+   QList<Dir*> pending = this->dirs;
+   while (!pending.isEmpty())
+   {
+      Dir* dir = pending.takeLast();
+      if (dir->wd == wd)
+         result << dir;
+      for (Dir* child : dir->children)
+         pending << child;
+   }
+   return result;
+}
+
+void DirWatcherLinux::addChildWatches(int parentWd, const QString& name)
+{
+   for (Dir* parent : this->getDirs(parentWd))
+      if (!parent->children.contains(name))
+         try
+         {
+            new Dir(this, parent, name);
+         }
+         catch (UnableToWatchException&) {}
+}
+
 /**
   * @copydoc FM::DirWatcher::rmPath(..)
   */
@@ -363,12 +390,17 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
    }
 
    QList<WatcherEvent> events;
+   struct DetachedDirectory
+   {
+      Dir* root;
+      std::unique_ptr<Dir> directory;
+   };
    struct PendingMove
    {
       uint32_t cookie;
       QString path;
       qsizetype eventIndex;
-      std::unique_ptr<Dir> directory;
+      std::vector<DetachedDirectory> directories;
    };
    std::vector<PendingMove> movedFromEvents;
 
@@ -389,10 +421,15 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
             const QString path = this->getEventPath(event);
             // Hide the old subtree immediately, including from later events in
             // this read. Keep ownership until the move is matched or abandoned.
-            Dir* movedDir = event->mask & IN_ISDIR ? dir->children.take(event->name) : nullptr;
-            if (movedDir)
-               movedDir->parent = nullptr;
-            movedFromEvents.push_back({event->cookie, path, events.size(), std::unique_ptr<Dir>(movedDir)});
+            PendingMove move{event->cookie, path, events.size(), {}};
+            if (event->mask & IN_ISDIR)
+               for (Dir* parent : this->getDirs(event->wd))
+                  if (Dir* movedDir = parent->children.take(event->name))
+                  {
+                     movedDir->parent = nullptr;
+                     move.directories.push_back({parent->getRoot(), std::unique_ptr<Dir>(movedDir)});
+                  }
+            movedFromEvents.push_back(std::move(move));
             // Preserve ordering if the old path is recreated before this read ends.
             events << WatcherEvent(WatcherEvent::DELETED, path, false);
          }
@@ -408,11 +445,27 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
                   // Replace the provisional deletion with the matched move.
                   events[i->eventIndex] = WatcherEvent(WatcherEvent::MOVE, i->path, this->getEventPath(event), false);
 
-                  if (i->directory)
-                  {
-                     i->directory->move(dir, event->name);
-                     i->directory.release(); // The destination tree now owns it.
-                  }
+                  if (event->mask & IN_ISDIR)
+                     for (Dir* parent : this->getDirs(event->wd))
+                     {
+                        bool restored = false;
+                        // Reattach each copy to its own root tree. A destination
+                        // may have additional owners that did not watch the source.
+                        for (auto& detached : i->directories)
+                           if (detached.root == parent->getRoot() && detached.directory)
+                           {
+                              detached.directory->move(parent, event->name);
+                              detached.directory.release();
+                              restored = true;
+                              break;
+                           }
+                        if (!restored && !parent->children.contains(event->name))
+                           try
+                           {
+                              new Dir(this, parent, event->name);
+                           }
+                           catch (UnableToWatchException&) {}
+                     }
 
                   movedFromEvents.erase(i);
 
@@ -425,11 +478,7 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
             events << WatcherEvent(WatcherEvent::NEW, this->getEventPath(event), false);
 
             if (event->mask & IN_ISDIR)
-               try
-               {
-                  new Dir(this, dir, event->name);
-               }
-               catch (UnableToWatchException&) {}
+               this->addChildWatches(event->wd, event->name);
          }
 
          end_moved_to:
@@ -439,7 +488,8 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
             L_DEBU(QString("inotify event (dir): IN_DELETE (path=%1)").arg(this->getEventPath(event)));
             events << WatcherEvent(WatcherEvent::DELETED, this->getEventPath(event), false);
             if (event->mask & IN_ISDIR)
-               delete dir->children.value(event->name);
+               for (Dir* parent : this->getDirs(event->wd))
+                  delete parent->children.value(event->name);
          }
 
          if ((event->mask & IN_CREATE) && !QFileInfo(this->getEventPath(event)).isSymLink())
@@ -447,11 +497,7 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
             L_DEBU(QString("inotify event (dir): IN_CREATE (path=%1)").arg(this->getEventPath(event)));
             events << WatcherEvent(WatcherEvent::NEW, this->getEventPath(event), false);
             if (event->mask & IN_ISDIR)
-               try
-               {
-                  new Dir(this, dir, event->name);
-               }
-               catch (UnableToWatchException&) {}
+               this->addChildWatches(event->wd, event->name);
          }
 
          if (event->mask & IN_CLOSE_WRITE)
@@ -627,6 +673,14 @@ QString DirWatcherLinux::Dir::getFullPath()
       fullPath.prepend(this->parent->getFullPath().append("/"));
    }
    return fullPath;
+}
+
+DirWatcherLinux::Dir* DirWatcherLinux::Dir::getRoot()
+{
+   Dir* root = this;
+   while (root->parent)
+      root = root->parent;
+   return root;
 }
 
 /**

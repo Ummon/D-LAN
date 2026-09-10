@@ -16,6 +16,84 @@ class DirWatcherLinuxTests : public QObject
    Q_OBJECT
 
 private slots:
+   void overlappingDirectoryChanges_data()
+   {
+      QTest::addColumn<bool>("childFirst");
+      QTest::addColumn<bool>("removeParent");
+      for (bool childFirst : {false, true})
+         for (bool removeParent : {false, true})
+            QTest::newRow(qPrintable(QString("child-first=%1,remove-parent=%2").arg(childFirst).arg(removeParent)))
+               << childFirst << removeParent;
+   }
+
+   void overlappingDirectoryChanges()
+   {
+      QFETCH(bool, childFirst);
+      QFETCH(bool, removeParent);
+      QTemporaryDir temp;
+      QVERIFY(temp.isValid());
+      QDir base(temp.path());
+      QVERIFY(base.mkpath("root/sub/original/deep"));
+      QVERIFY(base.mkpath("incoming/deep"));
+      const QString parent = temp.filePath("root");
+      const QString child = temp.filePath("root/sub");
+      FM::DirWatcherLinux watcher;
+      QVERIFY(watcher.addPath(childFirst ? child : parent));
+      QVERIFY(watcher.addPath(childFirst ? parent : child));
+
+      QVERIFY(base.mkpath("root/sub/created/deep"));
+      watcher.waitEvent(1000);
+      QVERIFY(base.rename("incoming", "root/sub/incoming"));
+      watcher.waitEvent(1000);
+      QVERIFY(base.rename("root/sub/original", "root/sub/renamed"));
+      const auto renamed = watcher.waitEvent(1000);
+      QCOMPARE(renamed.size(), 1); // One public event, even with multiple owners.
+      QCOMPARE(renamed[0].type, FM::WatcherEvent::MOVE);
+      QVERIFY(QDir(temp.filePath("root/sub/created")).removeRecursively());
+      watcher.waitEvent(1000);
+      QVERIFY(base.mkpath("root/sub/created/deep"));
+      watcher.waitEvent(1000);
+
+      // Move between locations with different numbers of owning root trees.
+      QVERIFY(base.mkpath("root/entering/deep"));
+      watcher.waitEvent(1000);
+      QVERIFY(base.rename("root/entering", "root/sub/entered"));
+      watcher.waitEvent(1000);
+      QVERIFY(base.mkpath("root/sub/leaving/deep"));
+      watcher.waitEvent(1000);
+      QVERIFY(base.rename("root/sub/leaving", "root/left"));
+      watcher.waitEvent(1000);
+      QVERIFY(base.mkpath("root/sub/exiting/deep"));
+      watcher.waitEvent(1000);
+      QVERIFY(base.rename("root/sub/exiting", "outside"));
+      watcher.waitEvent(1000);
+      {
+         QFile outside(temp.filePath("outside/deep/file.txt"));
+         QVERIFY(outside.open(QIODevice::WriteOnly));
+      }
+      for (const auto& event : watcher.waitEvent(0))
+         QCOMPARE(event.type, FM::WatcherEvent::TIMEOUT);
+
+      watcher.rmPath(removeParent ? parent : child);
+      QCOMPARE(watcher.nbWatchedPath(), 1);
+      watcher.waitEvent(0); // Drain IN_IGNORED for watches belonging only to the removed root.
+      QStringList directories{"root/sub/created", "root/sub/incoming", "root/sub/renamed", "root/sub/entered"};
+      if (!removeParent)
+         directories << "root/left";
+      for (const QString& directory : directories)
+      {
+         const QString path = temp.filePath(directory + "/deep/file.txt");
+         QFile file(path);
+         QVERIFY(file.open(QIODevice::WriteOnly));
+         file.close();
+         int found = 0;
+         for (const auto& event : watcher.waitEvent(1000))
+            if (event.type == FM::WatcherEvent::NEW && event.path1 == path)
+               ++found;
+         QCOMPARE(found, 1);
+      }
+   }
+
    void descriptorPolling_data()
    {
       QTest::addColumn<bool>("highDescriptors");
