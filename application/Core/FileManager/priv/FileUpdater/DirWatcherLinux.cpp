@@ -261,7 +261,7 @@ void DirWatcherLinux::rmPath(const QString& directory, const QString& filename)
    }
 }
 
-// A root move also invalidates the registered paths of independently shared
+// An ancestor move also invalidates the registered paths of independently shared
 // descendants, which do not receive their own IN_MOVE_SELF notifications.
 QList<DirWatcherLinux::RemovedPath> DirWatcherLinux::removeWatchedPathsUnder(const QString& path)
 {
@@ -518,6 +518,11 @@ QList<WatcherEvent> DirWatcherLinux::processInotifyEvents(const char* buf, int l
             movedFromEvents.push_back(std::move(move));
             // Preserve ordering if the old path is recreated before this read ends.
             events << WatcherEvent(WatcherEvent::DELETED, path, false);
+            // Independently registered descendants do not receive IN_MOVE_SELF
+            // when an ancestor moves. Retire their old paths before processing
+            // any queued changes; replacements are restored at the end as usual.
+            if (event->mask & IN_ISDIR)
+               retirePaths(path);
          }
 
          if ((event->mask & IN_MOVED_TO) && !QFileInfo(this->getEventPath(event)).isSymLink())

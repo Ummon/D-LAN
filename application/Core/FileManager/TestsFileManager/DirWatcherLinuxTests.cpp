@@ -20,6 +20,104 @@ class DirWatcherLinuxTests : public QObject
    Q_OBJECT
 
 private slots:
+   void movedNonRootAncestorRetiresDescendantRegistrations_data()
+   {
+      QTest::addColumn<bool>("moveOutside");
+      QTest::addColumn<bool>("childFirst");
+      for (bool moveOutside : {false, true})
+         for (bool childFirst : {false, true})
+            QTest::newRow(qPrintable(QString("outside=%1,child-first=%2").arg(moveOutside).arg(childFirst)))
+               << moveOutside << childFirst;
+   }
+
+   void movedNonRootAncestorRetiresDescendantRegistrations()
+   {
+      QFETCH(bool, moveOutside);
+      QFETCH(bool, childFirst);
+      QTemporaryDir temp;
+      QVERIFY(temp.isValid());
+      QDir base(temp.path());
+      QVERIFY(base.mkpath("root/ancestor/child/deep"));
+      QVERIFY(base.mkpath("root/ancestor-other"));
+      const QString root = temp.filePath("root");
+      const QString ancestor = temp.filePath("root/ancestor");
+      const QString child = ancestor + "/child";
+      const QString deep = child + "/deep";
+      const QString filePath = deep + "/file.txt";
+      const QString sibling = temp.filePath("root/ancestor-other");
+      const QString destination = temp.filePath(moveOutside ? "outside" : "root/renamed");
+      {
+         QFile file(filePath);
+         QVERIFY(file.open(QIODevice::WriteOnly));
+      }
+      FM::DirWatcherLinux watcher;
+      QVERIFY(watcher.addPath(childFirst ? child : root));
+      QVERIFY(watcher.addPath(childFirst ? root : child));
+      QVERIFY(watcher.addPath(deep));
+      QVERIFY(watcher.addPath(filePath));
+      QVERIFY(watcher.addPath(sibling));
+      QVERIFY(base.rename(ancestor, destination));
+      const QString movedFile = destination + "/child/deep/file.txt";
+      {
+         // These events share a read with the ancestor move and must never
+         // resolve through the descendants' obsolete registrations.
+         QFile file(movedFile);
+         QVERIFY(file.open(QIODevice::Append));
+         QCOMPARE(file.write("changed"), qint64(7));
+      }
+      QSet<QString> deleted;
+      bool foundMove = false;
+      for (const auto& event : watcher.waitEvent(1000))
+      {
+         if (event.type == FM::WatcherEvent::DELETED)
+         {
+            QVERIFY(!deleted.contains(event.path1));
+            QCOMPARE(event.isWatchedFile, event.path1 == filePath);
+            deleted.insert(event.path1);
+         }
+         else if (event.type == FM::WatcherEvent::MOVE)
+         {
+            QCOMPARE(event.path1, ancestor);
+            QCOMPARE(event.path2, destination);
+            foundMove = true;
+         }
+         else
+         {
+            QVERIFY(!moveOutside);
+            QCOMPARE(event.type, FM::WatcherEvent::CONTENT_CHANGED);
+            QCOMPARE(event.path1, movedFile);
+            QVERIFY(!event.isWatchedFile);
+         }
+      }
+      QSet<QString> expected{child, deep, filePath};
+      if (moveOutside)
+         expected.insert(ancestor);
+      QCOMPARE(deleted, expected);
+      QCOMPARE(foundMove, !moveOutside);
+      QCOMPARE(watcher.nbWatchedPath(), 2);
+      watcher.waitEvent(0);
+      const QString laterPath = destination + "/child/deep/later.txt";
+      const QString siblingPath = sibling + "/later.txt";
+      for (const auto& path : {laterPath, siblingPath})
+      {
+         QFile file(path);
+         QVERIFY(file.open(QIODevice::WriteOnly));
+      }
+      bool foundLater = false;
+      bool foundSibling = false;
+      for (const auto& event : watcher.waitEvent(1000))
+      {
+         QVERIFY(!event.path1.startsWith(ancestor + '/'));
+         foundLater |= event.type == FM::WatcherEvent::NEW && event.path1 == laterPath;
+         foundSibling |= event.type == FM::WatcherEvent::NEW && event.path1 == siblingPath;
+      }
+      QCOMPARE(foundLater, !moveOutside);
+      QVERIFY(foundSibling);
+      watcher.rmPath(root);
+      watcher.rmPath(sibling);
+      QVERIFY(watcher.watchReferences.isEmpty());
+   }
+
    void replacedDirectoriesRemainWatched_data()
    {
       QTest::addColumn<QString>("operation");
