@@ -27,7 +27,7 @@ using namespace FM;
 #include <priv/FileUpdater/WaitConditionLinux.h>
 #include <priv/Log.h>
 
-#include <sys/select.h>
+#include <poll.h>
 #include <sys/inotify.h>
 #include <unistd.h>
 #include <errno.h>
@@ -284,69 +284,58 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
 {
    QMutexLocker locker(&this->mutex);
 
-   fd_set fds;
-   int fd_max;
-   struct timeval time;
-
-   // Convert timeout in timeval.
-   time.tv_sec = timeout / 1000;
-   time.tv_usec = (timeout % 1000) * 1000;
-
-   // Zero-out the fd_set.
-   FD_ZERO(&fds);
-
-   // Add the inotify fd to the fd_set.
-   fd_max = -1;
-   if (this->initialized)
+   // poll() accepts descriptors above FD_SETSIZE. Keep inotify in the first
+   // slot; a negative descriptor is ignored if initialization failed.
+   std::vector<pollfd> fds;
+   fds.reserve(ws.size() + 1);
+   fds.push_back({this->initialized ? this->fileDescriptor : -1, POLLIN, 0});
+   for (WaitCondition* condition : ws)
    {
-      FD_SET(this->fileDescriptor, &fds);
-      fd_max = this->fileDescriptor;
+      const int wcfd = dynamic_cast<WaitConditionLinux*>(condition)->getFd();
+      fds.push_back({wcfd, POLLIN, 0});
    }
 
-   // Add fd for all WaitCondition in fd_set and ajust fd_max if needed.
-   for (int i = 0; i < ws.size(); i++)
-   {
-      int wcfd = dynamic_cast<WaitConditionLinux*>(ws[i])->getFd();
-      L_DEBU(QString("DirWatcherLinux::waitEvent: add WaitCondition(fd=%1) to select fd_set").arg(wcfd));
-      FD_SET(wcfd, &fds);
-      if (wcfd > fd_max)
-         fd_max = wcfd;
-   }
-
-   // Active select to wait events in unlocked mode.
-   L_DEBU("DirWatcherLinux::waitEvent: active select");
+   // Wait with the mutex unlocked so registrations can still change.
+   L_DEBU("DirWatcherLinux::waitEvent: active poll");
    locker.unlock();
-   int sel = select(fd_max + 1, &fds, NULL, NULL, (timeout==-1 ? 0 : &time));
+   const int ready = poll(fds.data(), fds.size(), timeout);
    locker.relock();
 
-   if (sel < 0)
+   if (ready < 0)
    {
-      L_ERRO(QString("DirWatcherLinux::waitEvent: select error."));
+      L_ERRO(QString("DirWatcherLinux::waitEvent: poll error."));
       return QList<WatcherEvent>();
    }
-   else if (!sel)
+   else if (!ready)
    {
-      // select is released by timeout.
-      L_DEBU("DirWatcherLinux::waitEvent: exit select by timeout");
+      L_DEBU("DirWatcherLinux::waitEvent: exit poll by timeout");
       QList<WatcherEvent> events;
       events << WatcherEvent(WatcherEvent::TIMEOUT, false);
       return events;
    }
 
-   // Test if select is released by a WaitCondition.
-   for (int i = 0; i < ws.size(); i++)
+   // Give wait conditions priority, leaving pending filesystem events queued.
+   for (size_t i = 1; i < fds.size(); ++i)
    {
-      int wcfd = dynamic_cast<WaitConditionLinux*>(ws[i])->getFd();
-      if (FD_ISSET(wcfd, &fds))
+      if (fds[i].revents & POLLIN)
       {
-         L_DEBU(QString("DirWatcherLinux::waitEvent: exit select by WaitCondition release (fd=%1)").arg(wcfd));
-         static char dummy[4096];
+         const int wcfd = fds[i].fd;
+         L_DEBU(QString("DirWatcherLinux::waitEvent: exit poll by WaitCondition release (fd=%1)").arg(wcfd));
+         char dummy[4096];
          while (read(wcfd, dummy, sizeof(dummy)) > 0);
          return QList<WatcherEvent>();
       }
    }
 
-   L_DEBU("DirWatcherLinux::waitEvent: exit select by inotify");
+   // An error or hangup on a descriptor can wake poll without readable data.
+   // Do not enter the blocking inotify read unless POLLIN was reported.
+   if (!(fds[0].revents & POLLIN))
+   {
+      L_ERRO(QString("DirWatcherLinux::waitEvent: poll woke without readable data."));
+      return QList<WatcherEvent>();
+   }
+
+   L_DEBU("DirWatcherLinux::waitEvent: exit poll by inotify");
 
    alignas(inotify_event) char buf[BUF_LEN];
    int len = read(this->fileDescriptor, buf, BUF_LEN);

@@ -5,12 +5,82 @@
 #include <QTest>
 
 #include <priv/FileUpdater/DirWatcherLinux.h>
+#include <priv/FileUpdater/WaitConditionLinux.h>
+
+#include <memory>
+#include <vector>
+#include <sys/resource.h>
 
 class DirWatcherLinuxTests : public QObject
 {
    Q_OBJECT
 
 private slots:
+   void descriptorPolling_data()
+   {
+      QTest::addColumn<bool>("highDescriptors");
+      QTest::newRow("normal-descriptors") << false;
+      QTest::newRow("descriptors-above-1023") << true;
+   }
+
+   void descriptorPolling()
+   {
+      QFETCH(bool, highDescriptors);
+      QTemporaryDir temp;
+      QVERIFY(temp.isValid());
+      // Hold the lower descriptors open without changing the process limits.
+      // RAII also closes them if an assertion fails or the test is skipped.
+      std::vector<std::unique_ptr<QFile>> heldFiles;
+      if (highDescriptors)
+      {
+         struct rlimit limit;
+         QVERIFY(getrlimit(RLIMIT_NOFILE, &limit) == 0);
+         if (limit.rlim_cur < 1120)
+            QSKIP("The process descriptor limit is too low for this test.");
+         do
+         {
+            auto file = std::make_unique<QFile>("/dev/null");
+            if (!file->open(QIODevice::ReadOnly))
+               QSKIP("The process descriptor limit is too low for this test.");
+            heldFiles.push_back(std::move(file));
+         }
+         while (heldFiles.back()->handle() < 1100);
+      }
+
+      FM::DirWatcherLinux watcher;
+      FM::WaitConditionLinux first;
+      FM::WaitConditionLinux second;
+      if (highDescriptors)
+      {
+         QVERIFY(first.getFd() > 1100);
+         QVERIFY(second.getFd() > 1100);
+      }
+      QVERIFY(watcher.addPath(temp.path()));
+      const QList<FM::WaitCondition*> conditions{&first, &second};
+      const auto timeout = watcher.waitEvent(10, conditions);
+      QCOMPARE(timeout.size(), 1);
+      QCOMPARE(timeout[0].type, FM::WatcherEvent::TIMEOUT);
+
+      const QString path = temp.filePath("file.txt");
+      {
+         QFile file(path);
+         QVERIFY(file.open(QIODevice::WriteOnly));
+      }
+      // A wait-condition wakeup takes priority without consuming file events.
+      second.release();
+      QVERIFY(watcher.waitEvent(1000, conditions).isEmpty());
+      bool found = false;
+      for (const auto& event : watcher.waitEvent(1000, conditions))
+         found |= event.type == FM::WatcherEvent::NEW && event.path1 == path;
+      QVERIFY(found);
+      first.release();
+      QVERIFY(watcher.waitEvent(1000, conditions).isEmpty());
+
+      const auto drained = watcher.waitEvent(0, conditions);
+      QCOMPARE(drained.size(), 1);
+      QCOMPARE(drained[0].type, FM::WatcherEvent::TIMEOUT);
+   }
+
    void movedFilesReleaseOldPath_data()
    {
       QTest::addColumn<QString>("destination");
