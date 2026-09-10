@@ -22,6 +22,7 @@ using namespace FM;
 #include <unistd.h>
 
 #include <QtCore/QDebug>
+#include <QDeadlineTimer>
 
 #include <stdint.h>
 #include <signal.h>
@@ -38,7 +39,7 @@ using namespace FM;
   */
 
 WaitConditionLinux::WaitConditionLinux()
-   : pfd{-1, -1}, released(false)
+   : pfd{-1, -1}
 {
    // Create both nonblocking descriptors atomically. On failure no usable
    // condition exists, so propagate the error instead of using invalid fds.
@@ -55,25 +56,32 @@ WaitConditionLinux::~WaitConditionLinux()
 void WaitConditionLinux::release()
 {
    L_DEBU(QString("WaitConditionLinux::release: begin write in pipe for read in fd=%1").arg(this->pfd[0]));
-   write(this->pfd[1], "", 1);
+   ssize_t written;
+   do
+   {
+      written = write(this->pfd[1], "", 1);
+   }
+   while (written < 0 && errno == EINTR);
+   // A full pipe already represents a pending release. No userspace flag is
+   // needed, and concurrent producers never block waiting for the consumer.
+   if (written < 0 && errno != EAGAIN && errno != EWOULDBLOCK)
+      L_ERRO("WaitConditionLinux::release: unable to signal wait-condition pipe.");
    L_DEBU(QString("WaitConditionLinux::release: end write in pipe for read in fd=%1").arg(this->pfd[0]));
-
-   this->released = true;
 }
 
 bool WaitConditionLinux::wait(int timeout)
 {
-   if(this->released)
-   {
-      this->released = false;
-      return true;
-   }
-
    // poll() supports descriptors above FD_SETSIZE and uses milliseconds,
    // including -1 for an indefinite wait, just like this method's API.
    pollfd fd{this->pfd[0], POLLIN, 0};
    L_DEBU(QString("WaitConditionLinux::wait: active poll for fd=%1").arg(this->pfd[0]));
-   const int ready = poll(&fd, 1, timeout);
+   QDeadlineTimer deadline(timeout);
+   int ready;
+   do
+   {
+      ready = poll(&fd, 1, static_cast<int>(deadline.remainingTime()));
+   }
+   while (ready < 0 && errno == EINTR);
    if (ready == 0)
       return true;
 
@@ -81,7 +89,12 @@ bool WaitConditionLinux::wait(int timeout)
    {
       L_DEBU(QString("WaitConditionLinux::wait: exit poll by release (fd=%1)").arg(this->pfd[0]));
       char dummy[4096];
-      while (read(this->pfd[0], dummy, sizeof(dummy)) > 0);
+      ssize_t bytesRead;
+      do
+      {
+         bytesRead = read(this->pfd[0], dummy, sizeof(dummy));
+      }
+      while (bytesRead > 0 || (bytesRead < 0 && errno == EINTR));
    }
    else
       L_ERRO("WaitConditionLinux::wait: poll failed or woke without readable data.");

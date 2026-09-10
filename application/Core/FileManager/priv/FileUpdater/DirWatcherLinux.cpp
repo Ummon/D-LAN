@@ -439,7 +439,12 @@ const QList<WatcherEvent> DirWatcherLinux::waitEvent(int timeout, QList<WaitCond
          const int wcfd = fds[i].fd;
          L_DEBU(QString("DirWatcherLinux::waitEvent: exit poll by WaitCondition release (fd=%1)").arg(wcfd));
          char dummy[4096];
-         while (read(wcfd, dummy, sizeof(dummy)) > 0);
+         ssize_t bytesRead;
+         do
+         {
+            bytesRead = read(wcfd, dummy, sizeof(dummy));
+         }
+         while (bytesRead > 0 || (bytesRead < 0 && errno == EINTR));
          return QList<WatcherEvent>();
       }
    }

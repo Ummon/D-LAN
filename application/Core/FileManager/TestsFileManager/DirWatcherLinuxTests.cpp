@@ -20,6 +20,8 @@
 #include <cstdio>
 #include <cerrno>
 #include <system_error>
+#include <thread>
+#include <chrono>
 
 namespace
 {
@@ -58,6 +60,86 @@ class DirWatcherLinuxTests : public QObject
    Q_OBJECT
 
 private slots:
+   void waitConditionConsumesReleaseOnce_data()
+   {
+      QTest::addColumn<bool>("firstViaWatcher");
+      QTest::addColumn<bool>("secondViaWatcher");
+      QTest::newRow("direct-direct") << false << false;
+      QTest::newRow("direct-watcher") << false << true;
+      QTest::newRow("watcher-direct") << true << false;
+      QTest::newRow("watcher-watcher") << true << true;
+   }
+
+   void waitConditionConsumesReleaseOnce()
+   {
+      QFETCH(bool, firstViaWatcher);
+      QFETCH(bool, secondViaWatcher);
+      FM::DirWatcherLinux watcher;
+      FM::WaitConditionLinux condition;
+      for (bool viaWatcher : {firstViaWatcher, secondViaWatcher})
+      {
+         // Multiple pending releases coalesce into one wakeup.
+         for (int i = 0; i < 3; ++i)
+            condition.release();
+         if (viaWatcher)
+            QVERIFY(watcher.waitEvent(0, {&condition}).isEmpty());
+         else
+            QVERIFY(!condition.wait(0)); // false means released, not timed out.
+
+         QElapsedTimer timer;
+         timer.start();
+         QVERIFY(condition.wait(20));
+         QVERIFY(timer.elapsed() >= 20);
+         const auto events = watcher.waitEvent(0, {&condition});
+         QCOMPARE(events.size(), 1);
+         QCOMPARE(events.first().type, FM::WatcherEvent::TIMEOUT);
+      }
+   }
+
+   void waitConditionReleaseFromAnotherThread_data()
+   {
+      QTest::addColumn<bool>("viaWatcher");
+      QTest::newRow("direct") << false;
+      QTest::newRow("watcher") << true;
+   }
+
+   void waitConditionReleaseFromAnotherThread()
+   {
+      QFETCH(bool, viaWatcher);
+      FM::DirWatcherLinux watcher;
+      FM::WaitConditionLinux condition;
+      for (int i = 0; i < 5; ++i)
+      {
+         std::thread producer([&]
+         {
+            std::this_thread::sleep_for(std::chrono::milliseconds(20));
+            condition.release();
+         });
+         const auto joinProducer = qScopeGuard([&] { producer.join(); });
+         if (viaWatcher)
+            QVERIFY(watcher.waitEvent(1000, {&condition}).isEmpty());
+         else
+            QVERIFY(!condition.wait(1000));
+      }
+      QVERIFY(condition.wait(0));
+      const auto events = watcher.waitEvent(0, {&condition});
+      QCOMPARE(events.size(), 1);
+      QCOMPARE(events.first().type, FM::WatcherEvent::TIMEOUT);
+   }
+
+   void waitConditionFullPipeStillWakes()
+   {
+      FM::WaitConditionLinux condition;
+      const int capacity = fcntl(condition.getFd(), F_GETPIPE_SZ);
+      QVERIFY(capacity > 0);
+      // release() is nonblocking even when the pipe already holds a wakeup
+      // and all its available buffer space has been consumed.
+      for (int i = 0; i <= capacity; ++i)
+         condition.release();
+      QVERIFY(!condition.wait(0));
+      QVERIFY(condition.wait(0));
+   }
+
    void waitConditionPipeFailure_data()
    {
       QTest::addColumn<int>("error");

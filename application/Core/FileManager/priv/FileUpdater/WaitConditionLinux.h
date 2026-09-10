@@ -18,9 +18,6 @@
   
 #pragma once
 
-#include <QMutex>
-#include <QWaitCondition>
-
 #include <priv/FileUpdater/WaitCondition.h>
 #include <priv/Log.h>
 
@@ -37,9 +34,7 @@ namespace FM
       int getFd();
 
    private:
+      // Readability is the release state, shared with DirWatcherLinux.
       int pfd[2];
-      bool released;
-      QMutex mutex;
-      QWaitCondition waitCondition;
    };
 }
