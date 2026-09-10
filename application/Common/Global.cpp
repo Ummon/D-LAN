@@ -27,6 +27,7 @@ using namespace Common;
 #include <QByteArray>
 #include <QFileInfo>
 #include <QSet>
+#include <QStandardPaths>
 #include <QtGlobal>
 #include <QHostAddress>
 #include <QNetworkInterface>
@@ -489,17 +490,16 @@ QString Global::getCurrentMachineName()
 
 /**
   * Returns the folders which may be shown as shortcuts by a file browser: the home folder of the current
-  * user followed by the folders of the Windows Explorer "Quick Access" ("Home" since Windows 11), the
-  * pinned ones as well as the frequently used ones. The duplicates are removed, the home folder is always
-  * the first element.
-  * @remarks Only implemented for Windows, the other platforms only get the home folder.
+  * user followed by Windows Explorer "Quick Access" folders or Linux standard user folders.
+  * On Linux, QStandardPaths honours the XDG user directory configuration.
+  * Missing folders and duplicates are removed; the home folder is always first.
   * @remarks When the core runs as a service the quick access folders are the ones of the service account,
   *          thus there is usually none and only the home folder is returned.
   */
 QList<Global::QuickAccessFolder> Global::getQuickAccessFolders()
 {
    QList<QuickAccessFolder> folders;
-   QSet<QString> knownPaths; // Lower case paths, to avoid duplicates.
+   QSet<QString> knownPaths;
 
    auto append = [&folders, &knownPaths](const QString& name, const QString& path)
    {
@@ -509,18 +509,23 @@ QList<Global::QuickAccessFolder> Global::getQuickAccessFolders()
       const QString cleanedPath = QDir::cleanPath(QDir::fromNativeSeparators(path));
 
       // Also discards the pinned folders which don't exist anymore.
-      if (!QFileInfo(cleanedPath).isDir())
+      if (!QDir::isAbsolutePath(cleanedPath) || !QFileInfo(cleanedPath).isDir())
          return;
 
-      if (knownPaths.contains(cleanedPath.toLower()))
+      QString pathKey = cleanedPath;
+#ifdef Q_OS_WIN32
+      pathKey = pathKey.toLower();
+#endif
+      if (knownPaths.contains(pathKey))
          return;
 
-      knownPaths.insert(cleanedPath.toLower());
+      knownPaths.insert(pathKey);
       folders << QuickAccessFolder { name, cleanedPath };
    };
 
    const QString homePath = QDir::homePath();
-   append(QDir(homePath).dirName(), homePath);
+   const QString homeName = QDir(homePath).dirName();
+   append(homeName.isEmpty() ? QStandardPaths::displayName(QStandardPaths::HomeLocation) : homeName, homePath);
 
 #ifdef Q_OS_WIN32
    // 'CoInitializeEx' returns 'S_FALSE' if COM has already been initialized for this thread, 'CoUninitialize' must be
@@ -569,6 +574,18 @@ QList<Global::QuickAccessFolder> Global::getQuickAccessFolders()
 
    if (COMResult != RPC_E_CHANGED_MODE)
       CoUninitialize();
+#elif defined(Q_OS_LINUX)
+   for (const auto location : {
+      QStandardPaths::DesktopLocation,
+      QStandardPaths::DocumentsLocation,
+      QStandardPaths::DownloadLocation,
+      QStandardPaths::MusicLocation,
+      QStandardPaths::PicturesLocation,
+      QStandardPaths::MoviesLocation,
+      QStandardPaths::PublicShareLocation,
+      QStandardPaths::TemplatesLocation
+   })
+      append(QStandardPaths::displayName(location), QStandardPaths::writableLocation(location));
 #endif
 
    return folders;
