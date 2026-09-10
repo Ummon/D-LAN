@@ -95,9 +95,8 @@ void DirWatcherLinux::clearWatches()
    this->watchReferences.clear();
 }
 
-QList<WatcherEvent> DirWatcherLinux::recoverFromOverflow()
+QList<WatcherEvent> DirWatcherLinux::rebuildWatches()
 {
-   L_WARN("Inotify queue overflowed; rebuilding watches and requesting a rescan.");
    QStringList directoryPaths;
    for (Dir* dir : this->dirs)
       directoryPaths << dir->name;
@@ -426,8 +425,39 @@ QList<WatcherEvent> DirWatcherLinux::processInotifyEvents(const char* buf, int l
    {
       const auto* event = reinterpret_cast<const inotify_event*>(&buf[i]);
       if (event->mask & IN_Q_OVERFLOW)
-         return this->recoverFromOverflow();
+      {
+         L_WARN("Inotify queue overflowed; rebuilding watches and requesting a rescan.");
+         return this->rebuildWatches();
+      }
       i += EVENT_SIZE + event->len;
+   }
+
+   // A move onto an indexed directory can be an overwrite or one half of
+   // RENAME_EXCHANGE. Rebuild before changing any ownership: applying the two
+   // exchange pairs as ordinary moves would overwrite a still-live subtree,
+   // and would also give FileUpdater an invalid sequence of cache moves.
+   QHash<int, QSet<QString>> incomingDirectories;
+   for (int i = 0; i < len;)
+   {
+      const auto* event = reinterpret_cast<const inotify_event*>(&buf[i]);
+      i += EVENT_SIZE + event->len;
+      if (!(event->mask & IN_ISDIR) || !(event->mask & (IN_CREATE | IN_MOVED_TO)))
+         continue;
+      const QString name = QString::fromUtf8(event->name);
+      if (event->mask & IN_MOVED_TO)
+      {
+         bool occupied = incomingDirectories.value(event->wd).contains(name);
+         for (Dir* parent : this->getDirs(event->wd))
+            occupied |= parent->children.contains(name);
+         if (occupied)
+         {
+            L_WARN("Directory move has an occupied destination; rebuilding watches and requesting a rescan.");
+            return this->rebuildWatches();
+         }
+      }
+      // Include destinations introduced earlier in this read. Keeping names
+      // after a subsequent move out conservatively requests a rescan on reuse.
+      incomingDirectories[event->wd].insert(name);
    }
 
    QList<WatcherEvent> events;

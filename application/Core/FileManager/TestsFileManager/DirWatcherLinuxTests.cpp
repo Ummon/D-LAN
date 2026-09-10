@@ -12,6 +12,9 @@
 #include <memory>
 #include <vector>
 #include <sys/resource.h>
+#include <sys/syscall.h>
+#include <linux/fs.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <cstdio>
 
@@ -20,6 +23,95 @@ class DirWatcherLinuxTests : public QObject
    Q_OBJECT
 
 private slots:
+   void conflictingDirectoryMovesRebuildWatches_data()
+   {
+      QTest::addColumn<bool>("exchange");
+      QTest::addColumn<bool>("crossParent");
+      QTest::addColumn<bool>("splitRead");
+      QTest::addColumn<bool>("newDestination");
+      QTest::newRow("overwrite") << false << false << false << false;
+      QTest::newRow("overwrite-across-parents") << false << true << false << false;
+      QTest::newRow("exchange") << true << false << false << false;
+      QTest::newRow("exchange-across-parents") << true << true << false << false;
+      QTest::newRow("exchange-across-reads") << true << false << true << false;
+      QTest::newRow("destination-created-in-batch") << false << false << false << true;
+   }
+
+   void conflictingDirectoryMovesRebuildWatches()
+   {
+      QFETCH(bool, exchange);
+      QFETCH(bool, crossParent);
+      QFETCH(bool, splitRead);
+      QFETCH(bool, newDestination);
+      QTemporaryDir temp;
+      QVERIFY(temp.isValid());
+      QDir base(temp.path());
+      QVERIFY(base.mkpath("root/left/source/deep"));
+      QVERIFY(base.mkpath("root/right"));
+      const QString root = temp.filePath("root");
+      const QString left = temp.filePath("root/left");
+      const QString right = temp.filePath("root/right");
+      const QString source = left + "/source";
+      const QString destination = (crossParent ? right : left) + "/destination";
+      if (!newDestination)
+         QVERIFY(base.mkpath(destination + (exchange ? "/other" : "")));
+      FM::DirWatcherLinux watcher;
+      QVERIFY(watcher.addPath(root));
+      QVERIFY(watcher.addPath(left));
+      QVERIFY(watcher.addPath(right));
+      if (newDestination)
+         QVERIFY(base.mkpath(destination));
+      const QByteArray from = QFile::encodeName(source);
+      const QByteArray to = QFile::encodeName(destination);
+      if (exchange)
+         QVERIFY(::syscall(SYS_renameat2, AT_FDCWD, from.constData(), AT_FDCWD, to.constData(), RENAME_EXCHANGE) == 0);
+      else
+         QVERIFY(::rename(from.constData(), to.constData()) == 0);
+      if (splitRead)
+      {
+         // Read only IN_MOVED_FROM, leaving its destination in the kernel queue.
+         alignas(inotify_event) char buf[sizeof(inotify_event) + 16];
+         const int len = ::read(watcher.fileDescriptor, buf, sizeof(buf));
+         QCOMPARE(len, int(sizeof(buf)));
+         QVERIFY(reinterpret_cast<const inotify_event*>(buf)->mask & IN_MOVED_FROM);
+         watcher.processInotifyEvents(buf, len);
+      }
+      QSet<QString> rescanned;
+      for (const auto& event : watcher.waitEvent(1000))
+      {
+         // An exchange must not be applied to the cache as two ordinary moves.
+         QCOMPARE(event.type, FM::WatcherEvent::RESCAN);
+         QVERIFY(!event.isWatchedFile);
+         QVERIFY(!rescanned.contains(event.path1));
+         rescanned.insert(event.path1);
+      }
+      QCOMPARE(rescanned, (QSet<QString>{root, left, right}));
+      QCOMPARE(watcher.nbWatchedPath(), 3);
+      // The outer root must own the complete rebuilt trees independently.
+      watcher.rmPath(left);
+      watcher.rmPath(right);
+      watcher.waitEvent(0);
+      QStringList paths{destination + "/deep/first.txt"};
+      if (exchange)
+         paths << source + "/other/second.txt";
+      for (const auto& path : paths)
+      {
+         QFile file(path);
+         QVERIFY(file.open(QIODevice::WriteOnly));
+      }
+      QSet<QString> created;
+      for (const auto& event : watcher.waitEvent(1000))
+      {
+         QVERIFY(paths.contains(event.path1));
+         if (event.type == FM::WatcherEvent::NEW)
+            created.insert(event.path1);
+      }
+      QCOMPARE(created, QSet<QString>(paths.begin(), paths.end()));
+      watcher.rmPath(root);
+      QCOMPARE(watcher.nbWatchedPath(), 0);
+      QVERIFY(watcher.watchReferences.isEmpty());
+   }
+
    void replacedChildPreservesParentCoverage_data()
    {
       QTest::addColumn<bool>("childFirst");

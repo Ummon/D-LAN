@@ -100,7 +100,7 @@ namespace FM
 
       void rmWatcher(int watcher);
       void clearWatches();
-      QList<WatcherEvent> recoverFromOverflow();
+      QList<WatcherEvent> rebuildWatches();
       QList<WatcherEvent> processInotifyEvents(const char* buf, int len);
       QString getEventPath(const inotify_event* event);
 
