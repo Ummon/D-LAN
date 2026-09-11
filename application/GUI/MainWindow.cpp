@@ -185,16 +185,18 @@ void MainWindow::coreConnectionError(RCC::ICoreConnection::ConnectionErrorCode e
       error = tr("Error unknown");
    }
 
-   QMessageBox msgBox(this);
-   msgBox.setWindowTitle(tr("Unable to connect to the core"));
-   msgBox.setText(
+   // The main window can be destroyed while the dialog is open (for example via tray Exit).
+   auto* msgBox = new QMessageBox(this);
+   msgBox->setAttribute(Qt::WA_DeleteOnClose);
+   msgBox->setWindowTitle(tr("Unable to connect to the core"));
+   msgBox->setText(
       QString("<p>%1</p><p>%2 <em>%3:%4</em></p>")
          .arg(error, tr("Core address:"), this->coreConnection->getConnectionInfoConnecting().address)
          .arg(this->coreConnection->getConnectionInfoConnecting().port)
    );
-   msgBox.setIcon(QMessageBox::Information);
-   msgBox.setStandardButtons(QMessageBox::Ok);
-   msgBox.exec();
+   msgBox->setIcon(QMessageBox::Information);
+   msgBox->setStandardButtons(QMessageBox::Ok);
+   msgBox->open();
 }
 
 void MainWindow::coreConnected()
@@ -206,9 +208,10 @@ void MainWindow::coreDisconnected(bool forced)
 {
    if (!forced && !this->coreConnection->isConnecting())
    {
-      QMessageBox msgBox(this);
-      msgBox.setWindowTitle(tr("Connection lost"));
-      msgBox.setText(
+      auto* msgBox = new QMessageBox(this);
+      msgBox->setAttribute(Qt::WA_DeleteOnClose);
+      msgBox->setWindowTitle(tr("Connection lost"));
+      msgBox->setText(
          QString("<p>%1</p><p>%2 <em>%3:%4</em></p>")
             .arg(
                tr("The connection to the core has been lost"),
@@ -217,9 +220,9 @@ void MainWindow::coreDisconnected(bool forced)
             )
             .arg(this->coreConnection->getConnectionInfo().port)
       );
-      msgBox.setIcon(QMessageBox::Information);
-      msgBox.setStandardButtons(QMessageBox::Ok);
-      msgBox.exec();
+      msgBox->setIcon(QMessageBox::Information);
+      msgBox->setStandardButtons(QMessageBox::Ok);
+      msgBox->open();
    }
 }
 
