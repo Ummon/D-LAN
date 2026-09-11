@@ -232,7 +232,7 @@ select {
          background-color: rgba(255, 255, 255, consts.$opacity2);
          margin: 15px 15px 0px 15px;
 
-         &.win32 {
+         &.windows {
             background-image: url("img/download_for_windows.png");
          }
 
@@ -240,11 +240,7 @@ select {
             background-image: url("img/download_for_mac.png");
          }
 
-         &.amd64 {
-            background-image: url("img/download_for_linux.png");
-         }
-
-         &.i386 {
+         &.linux {
             background-image: url("img/download_for_linux.png");
          }
 

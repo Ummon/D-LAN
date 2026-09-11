@@ -1,6 +1,6 @@
 Put here the released setup. The format must be (EBNF) :
 
-format = "D-LAN-", version, version tag, "-", year, "-", month, "-", day, "_", hour, "-", minute, "-amd64.deb" ;
+format = "D-LAN-", version, version tag, "-", year, "-", month, "-", day, "_", hour, "-", minute, "-x86_64.deb" ;
 version = digit, ".", digit, ".", digit ;
 version tag = { alphabetic character } ;
 year = digit, digit, digit, digit ;

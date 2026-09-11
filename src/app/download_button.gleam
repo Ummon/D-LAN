@@ -32,7 +32,7 @@ pub fn element(
   use filename <- result.try(
     filenames
     |> list.filter(fn(f) {
-      list.any([".exe", ".dmg", ".deb"], string.ends_with(f, _))
+      list.any([".exe", ".dmg", ".deb", ".AppImage"], string.ends_with(f, _))
     })
     |> latest_release,
   )
@@ -41,7 +41,8 @@ pub fn element(
 
   let assert Ok(re) =
     regexp.from_string(case extension {
-      "deb" -> "D-LAN-((?:\\d|\\.)+)([^-]*)-(\\d+)-(\\d+)-(\\d+)_.*-(\\w+)\\..*"
+      "deb" | "AppImage" ->
+        "D-LAN-((?:\\d|\\.)+)([^-]*)-(\\d+)-(\\d+)-(\\d+)_.*-(\\w+)\\..*"
       _ -> "D-LAN-((?:\\d|\\.)+)([^-]*)-(\\d+)-(\\d+)-(\\d+).*\\..*"
     })
   let assert [
@@ -52,16 +53,12 @@ pub fn element(
         Some(year),
         Some(month),
         Some(day),
-        ..rest
+        // We may extract the architecture here if needed (x86_64, armf, etc..).
+        ..
       ],
       ..,
     ),
   ] = regexp.scan(re, filename)
-  // 'archi' isn't used for the moment.
-  let archi = case rest {
-    [Some(archi)] -> archi
-    _ -> "win32"
-  }
   let version_full = case version_tag {
     Some(tag) -> version <> " " <> tag
     None -> version
@@ -88,7 +85,7 @@ pub fn element(
     Error(Nil) -> []
   }
 
-  html.div([attr.class("download " <> extension <> " " <> archi)], [
+  html.div([attr.class("download " <> extension <> " " <> platform)], [
     html.a(
       [attr.class("installer"), attr.href(file_to_url(filename, platform))],
       [

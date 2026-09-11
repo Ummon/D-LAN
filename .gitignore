@@ -3,6 +3,7 @@
 /priv/static/style.css
 /priv/static/style.css.map
 *.exe
+*.AppImage
 /config.toml
 /d_lan_website.sqlite3*
 /deploy*.nu
