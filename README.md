@@ -56,7 +56,7 @@ Run these commands from the directory `protobuf-36.1/`:
 
 ```nushell
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20 -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_INSTALL_PREFIX="." -DCMAKE_INSTALL_LIBDIR=lib -DBUILD_SHARED_LIBS=OFF -Dprotobuf_BUILD_SHARED_LIBS=OFF -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_BUILD_PROTOC_BINARIES=ON -Dprotobuf_FORCE_FETCH_DEPENDENCIES=ON
-cmake --build build --parallel 4
+cmake --build build --parallel
 cmake --install build
 ```
 
