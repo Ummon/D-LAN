@@ -33,6 +33,54 @@ class GlobalLinuxTests : public QObject
    Q_OBJECT
 
 private slots:
+   void dataFolders()
+   {
+      using Common::Global;
+      using Folder = Global::DataFolderType;
+      const QByteArray previousConfig = qgetenv("XDG_CONFIG_HOME");
+      const QByteArray previousData = qgetenv("XDG_DATA_HOME");
+      const auto restore = qScopeGuard([&]
+      {
+         for (const auto& variable : {qMakePair("XDG_CONFIG_HOME", previousConfig), qMakePair("XDG_DATA_HOME", previousData)})
+            if (variable.second.isNull())
+               qunsetenv(variable.first);
+            else
+               qputenv(variable.first, variable.second);
+         Global::setDataFolderToDefault(Folder::ROAMING);
+         Global::setDataFolderToDefault(Folder::LOCAL);
+      });
+      Global::setDataFolderToDefault(Folder::ROAMING);
+      Global::setDataFolderToDefault(Folder::LOCAL);
+      qunsetenv("XDG_CONFIG_HOME");
+      qunsetenv("XDG_DATA_HOME");
+      QCOMPARE(Global::getDataFolder(Folder::ROAMING, false), QDir::homePath() + "/.config/d-lan");
+      QCOMPARE(Global::getDataFolder(Folder::LOCAL, false), QDir::homePath() + "/.local/share/d-lan");
+
+      QTemporaryDir temp;
+      QVERIFY(temp.isValid());
+      QVERIFY(qputenv("XDG_CONFIG_HOME", temp.filePath("config").toUtf8()));
+      QVERIFY(qputenv("XDG_DATA_HOME", temp.filePath("data").toUtf8()));
+      for (const auto& folder : {qMakePair(Folder::ROAMING, "config/d-lan"), qMakePair(Folder::LOCAL, "data/d-lan")})
+      {
+         const QString expected = temp.filePath(folder.second);
+         QCOMPARE(Global::getDataFolder(folder.first, false), expected);
+         QVERIFY(!QFileInfo::exists(expected));
+         QCOMPARE(Global::getDataFolder(folder.first), expected);
+         QVERIFY(QFileInfo(expected).isDir());
+         Global::setDataFolder(folder.first, temp.path());
+         QCOMPARE(Global::getDataFolder(folder.first), temp.path());
+         Global::setDataFolderToDefault(folder.first);
+         QCOMPARE(Global::getDataFolder(folder.first, false), expected);
+      }
+
+      QFile blocked(temp.filePath("blocked"));
+      QVERIFY(blocked.open(QIODevice::WriteOnly));
+      blocked.close();
+      QVERIFY(qputenv("XDG_CONFIG_HOME", blocked.fileName().toUtf8()));
+      QCOMPARE(Global::getDataFolder(Folder::ROAMING, false), blocked.fileName() + "/d-lan");
+      QVERIFY_THROWS_EXCEPTION(Global::UnableToGetFolder, Global::getDataFolder(Folder::ROAMING));
+   }
+
    void quickAccessFolders_data()
    {
       QTest::addColumn<QStringList>("configuredFolders");

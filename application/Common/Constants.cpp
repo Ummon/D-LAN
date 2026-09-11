@@ -25,6 +25,8 @@ const quint16 Constants::DEFAULT_CORE_REMOTE_CONTROL_PORT { 59485 };
 
 #ifdef Q_OS_WIN32
    const QString Constants::APPLICATION_FOLDER_NAME("D-LAN");
+#elif defined(Q_OS_LINUX)
+   const QString Constants::APPLICATION_FOLDER_NAME("d-lan");
 #else
    const QString Constants::APPLICATION_FOLDER_NAME(".d-lan");
 #endif

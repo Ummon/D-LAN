@@ -315,11 +315,13 @@ bool Global::isLocal(const QHostAddress& address)
 QString Global::dataFolders[2]; // The two folders (roaming and local), see DataFolderType enum.
 
 /**
-  * Returns the absolute path to the roaming data folder.
+  * Returns the absolute path to the requested data folder.
   * For example under Windows :
   * - type == ROAMING : "C:/Users/john/AppData/Roaming/D-LAN"
   * - type == LOCAL : "C:/Users/john/AppData/Local/D-LAN"
-  * Create the folder "D-LAN" if needed.
+  * On Linux, ROAMING uses $XDG_CONFIG_HOME/d-lan (default ~/.config/d-lan)
+  * and LOCAL uses $XDG_DATA_HOME/d-lan (default ~/.local/share/d-lan).
+  * Creates the folder if requested.
   * @exception UnableToGetFolder
   */
 QString Global::getDataFolder(DataFolderType type, bool create)
@@ -350,6 +352,15 @@ QString Global::getDataFolder(DataFolderType type, bool create)
             );
 
       return dataFolder.absoluteFilePath(Constants::APPLICATION_FOLDER_NAME);
+#elif defined(Q_OS_LINUX)
+      const QString basePath = QStandardPaths::writableLocation(type == DataFolderType::ROAMING
+         ? QStandardPaths::GenericConfigLocation : QStandardPaths::GenericDataLocation);
+      if (basePath.isEmpty())
+         throw UnableToGetFolder("Unable to locate the user data directory");
+      const QString folder = QDir(basePath).absoluteFilePath(Constants::APPLICATION_FOLDER_NAME);
+      if (create && !QDir().mkpath(folder))
+         throw UnableToGetFolder(QString("Unable to create the directory %1").arg(folder));
+      return folder;
 #else
       if (create && !QDir::home().exists(Constants::APPLICATION_FOLDER_NAME))
          if (!QDir::home().mkdir(Constants::APPLICATION_FOLDER_NAME))

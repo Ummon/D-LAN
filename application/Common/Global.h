@@ -58,6 +58,8 @@ namespace Common
 
       static bool isLocal(const QHostAddress& address);
 
+      // Linux defaults: ROAMING = ~/.config/d-lan, LOCAL = ~/.local/share/d-lan.
+      // XDG_CONFIG_HOME and XDG_DATA_HOME override the respective base directories.
       enum class DataFolderType { ROAMING = 0, LOCAL = 1 };
 
    private:

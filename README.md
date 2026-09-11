@@ -105,8 +105,9 @@ nu build.nu make-setup
 
 On Linux this packages the Release directory selected by `get_release_directory`
 in `build.nu`. It includes `D-LAN.GUI`, `D-LAN.Core`, translations, styles,
-emoticons, and Qt dependencies (including SQLite and available Wayland platform
-plugins). Qt LinguistTools must be installed to compile translations.
+emoticons, and Qt dependencies (including SQLite, available Wayland platform
+plugins, and GTK desktop theme integration when the Qt SDK provides `libqgtk3.so`).
+Qt LinguistTools must be installed to compile translations.
 
 The first run requires `curl` and internet access to download the official
 linuxdeploy and Qt plugin continuous builds. Tools are cached under
@@ -122,11 +123,18 @@ Build on the oldest Linux environment you intend to support, and test the result
 on your target distributions: bundled libraries do not remove the host glibc
 requirement.
 
+### Linux settings and data
+
+Settings (`ROAMING`) use `~/.config/d-lan/`, and local data (`LOCAL`), including
+logs and caches, use `~/.local/share/d-lan/`. `XDG_CONFIG_HOME` and `XDG_DATA_HOME`
+override the respective base directories. Existing files in `~/.d-lan/` are not
+migrated or loaded automatically.
+
 ### Linux crash reports
 
 The GUI and core automatically install a fatal-signal handler. Reports named
 `crash_<Unix seconds>_<nanoseconds>_<pid>.log` are saved beside their normal logs,
-usually in `~/.d-lan/log_gui/` and `~/.d-lan/log_core/`. They contain the executable
+usually in `~/.local/share/d-lan/log_gui/` and `~/.local/share/d-lan/log_core/`. They contain the executable
 path, D-LAN version, signal, process/thread IDs, fault address (for hardware faults),
 instruction pointer on x86/x86-64/AArch64, memory mappings and a stack trace.
 Signal details and the trace are also written to stderr, including when the report
