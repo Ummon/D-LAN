@@ -35,6 +35,14 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+   # Keep all targets, including static libraries, position-independent. LTO
+   # also needs -fPIC at link time to avoid copies of Qt globals such as
+   # QCoreApplication::self, which can cause a crash during GUI startup.
+   set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+   add_link_options(-fPIC)
+endif()
+
 set(CMAKE_AUTOMOC ON)
 
 set(CMAKE_BUILD_PARALLEL_LEVEL 32)
