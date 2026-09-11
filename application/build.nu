@@ -241,6 +241,20 @@ def make_linux_app_image [] {
         if $env.LAST_EXIT_CODE != 0 { error make {msg: "AppImage dependency deployment failed"} }
         ^$qt_plugin --appdir $appdir ...$sql_exclusions
         if $env.LAST_EXIT_CODE != 0 { error make {msg: "Qt plugin deployment failed"} }
+
+        # Qt's GTK integration supplies the desktop palette on Cinnamon/GNOME.
+        # linuxdeploy-plugin-qt does not deploy it automatically. Use the same
+        # SDK as the application and scan its dependencies at its plugin location.
+        let gtk_theme = $plugins.stdout | str trim | path join "platformthemes/libqgtk3.so"
+        if ($gtk_theme | path exists) {
+            let theme_directory = $appdir | path join "usr/plugins/platformthemes"
+            mkdir $theme_directory
+            cp $gtk_theme $theme_directory
+            ^$linuxdeploy --appdir $appdir --deploy-deps-only ($theme_directory | path join "libqgtk3.so")
+            if $env.LAST_EXIT_CODE != 0 { error make {msg: "GTK theme integration deployment failed"} }
+        } else {
+            print --stderr "Warning: this Qt SDK has no GTK theme plugin; GTK desktop colors may not be available."
+        }
         ^$linuxdeploy --appdir $appdir --output appimage
         if $env.LAST_EXIT_CODE != 0 { error make {msg: "AppImage packaging failed"} }
     }
