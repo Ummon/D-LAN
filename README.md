@@ -116,7 +116,8 @@ Packaging uses extract-and-run mode, so the build host does not need FUSE.
 The script finds qmake through the selected build's `Qt6_DIR`; set `QMAKE` to
 the matching qmake executable if your Qt installation uses a different layout.
 
-The result is `application/Setups/AppImage/D-LAN-<version>-<architecture>.AppImage`.
+The result is `application/Setups/AppImage/D-LAN-<version>-<build-time>-<architecture>.AppImage`,
+using `BUILD_TIME` from `application/Common/Version.h` (for example, `2026-09-11_22-00`).
 Staging files stay under `application/build/appimage`. Supported packaging host
 architectures are x86-64 and AArch64; the Release binaries must match the host.
 Build on the oldest Linux environment you intend to support, and test the result

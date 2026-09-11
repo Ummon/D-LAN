@@ -215,10 +215,12 @@ def make_linux_app_image [] {
         | parse '#define VERSION "{version}"' | get version | first)
     let tag = (open --raw Common/Version.h | lines
         | parse '#define VERSION_TAG "{tag}"' | get tag | first)
+    let build_time = (open --raw Common/Version.h | lines
+        | parse '#define BUILD_TIME "{build_time}"' | get build_time | first)
     let package_version = if ($tag | is-empty) { $version } else { $"($version)-($tag)" }
     let output_directory = $application_directory | path join "Setups/AppImage"
     mkdir $output_directory
-    let output = $output_directory | path join $"D-LAN-($package_version)-($architecture).AppImage"
+    let output = $output_directory | path join $"D-LAN-($package_version)-($build_time)-($architecture).AppImage"
     let linuxdeploy = $tools_directory | path join $"linuxdeploy-($architecture).AppImage"
     let qt_plugin = $tools_directory | path join $"linuxdeploy-plugin-qt-($architecture).AppImage"
     # D-LAN uses SQLite only. Other SDK SQL plugins may need unavailable
