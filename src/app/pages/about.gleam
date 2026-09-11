@@ -25,23 +25,6 @@ pub fn page(ctx: web.Context) -> element.Element(a) {
         html.a([attr.href("http://www.gburri.org")], [html.text("Greg Burri")]),
       ),
     ]),
-    html.p([], [
-      tr.about_linux(
-        ctx.lang,
-        html.a([attr.href("mailto:herve.martinet@gmail.com")], [
-          html.text("Hervé Martinet"),
-        ]),
-      ),
-    ]),
-    html.p([], [
-      tr.about_thanks(
-        ctx.lang,
-        html.text("Maximilien Cuony (\"The Glu\")"),
-        html.a([attr.href("http://twitter.com/algorithme")], [
-          html.text("Olivier Morel"),
-        ]),
-      ),
-    ]),
 
     html.h2([], [tr.about_tech(ctx.lang)]),
 
