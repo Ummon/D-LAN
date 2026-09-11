@@ -182,7 +182,7 @@
 <context>
     <name>GUI::D_LAN_GUI</name>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="+153"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="+159"/>
         <source>Show the user interface</source>
         <translation>Mostrar la interfaz de usuario</translation>
     </message>
@@ -459,23 +459,23 @@
         <translation>Error desconocido</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+6"/>
         <source>Unable to connect to the core</source>
         <translation>No se pudo conectar al núcleo</translation>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+23"/>
+        <location line="+24"/>
         <source>Core address:</source>
         <translation>Dirección del núcleo:</translation>
     </message>
     <message>
-        <location line="-13"/>
+        <location line="-14"/>
         <source>Connected to the core</source>
         <translation>Conectado al núcleo</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+9"/>
         <source>Connection lost</source>
         <translation>Conexión perdida</translation>
     </message>
@@ -493,7 +493,7 @@
         <translation>Esperando a que termine el escaneo inicial antes de cargar la cola de descargas</translation>
     </message>
     <message>
-        <location line="+181"/>
+        <location line="+189"/>
         <source>Leave room</source>
         <translation>Salir de la sala</translation>
     </message>
@@ -793,7 +793,7 @@
 <context>
     <name>GUI::SharedEntryListModel</name>
     <message>
-        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="+290"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="+285"/>
         <source>Name</source>
         <translation>Nombre</translation>
     </message>
@@ -1010,7 +1010,7 @@
         <translation>Servicio del núcleo iniciado</translation>
     </message>
     <message>
-        <location filename="../GUI/Utils.cpp" line="+49"/>
+        <location filename="../GUI/Utils.cpp" line="+48"/>
         <source>Select one or more directories and/or files</source>
         <translation>Seleccione uno o más directorios y/o archivos</translation>
     </message>

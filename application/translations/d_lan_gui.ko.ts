@@ -182,17 +182,17 @@
 <context>
     <name>GUI::D_LAN_GUI</name>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="153"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="159"/>
         <source>Show the user interface</source>
         <translation>사용자 인터페이스 표시</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="157"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="163"/>
         <source>Stop the user interface</source>
         <translation>사용자 인터페이스 닫기</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="160"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="166"/>
         <source>Exit</source>
         <translation>종료</translation>
     </message>
@@ -459,28 +459,28 @@
         <translation>알 수 없는 오류</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="189"/>
+        <location filename="../GUI/MainWindow.cpp" line="191"/>
         <source>Unable to connect to the core</source>
         <translation>코어에 연결할 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="192"/>
-        <location filename="../GUI/MainWindow.cpp" line="215"/>
+        <location filename="../GUI/MainWindow.cpp" line="194"/>
+        <location filename="../GUI/MainWindow.cpp" line="218"/>
         <source>Core address:</source>
         <translation>코어 주소:</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="202"/>
+        <location filename="../GUI/MainWindow.cpp" line="204"/>
         <source>Connected to the core</source>
         <translation>코어에 연결되었습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="210"/>
+        <location filename="../GUI/MainWindow.cpp" line="213"/>
         <source>Connection lost</source>
         <translation>연결이 끊어졌습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="214"/>
+        <location filename="../GUI/MainWindow.cpp" line="217"/>
         <source>The connection to the core has been lost</source>
         <translation>코어와의 연결이 끊어졌습니다</translation>
     </message>
@@ -493,7 +493,7 @@
         <translation>초기 스캔이 완료될 때까지 기다린 후 다운로드 대기열을 불러옵니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MDI/MdiArea.cpp" line="521"/>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="529"/>
         <source>Leave room</source>
         <translation>대화방 나가기</translation>
     </message>
@@ -793,22 +793,22 @@
 <context>
     <name>GUI::SharedEntryListModel</name>
     <message>
-        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="290"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="285"/>
         <source>Name</source>
         <translation>이름</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="291"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="286"/>
         <source>Path</source>
         <translation>경로</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="292"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="287"/>
         <source>Size</source>
         <translation>크기</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="293"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="288"/>
         <source>Free space</source>
         <translation>여유 공간</translation>
     </message>
@@ -924,22 +924,22 @@
         <translation>코어 서비스가 시작되었습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="73"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="79"/>
         <source>D-LAN already launched</source>
         <translation>D-LAN이 이미 실행 중입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="74"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="80"/>
         <source>An instance of D-LAN is already launched</source>
         <translation>D-LAN 인스턴스가 이미 실행 중입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="76"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="82"/>
         <source>Quit</source>
         <translation>종료</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="77"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="83"/>
         <source>Launch anyway</source>
         <translation>무시하고 실행</translation>
     </message>
@@ -1005,12 +1005,12 @@
         <translation>로컬</translation>
     </message>
     <message>
-        <location filename="../GUI/Utils.cpp" line="49"/>
+        <location filename="../GUI/Utils.cpp" line="48"/>
         <source>Select one or more directories and/or files</source>
         <translation>폴더 및/또는 파일을 하나 이상 선택하십시오</translation>
     </message>
     <message>
-        <location filename="../GUI/Utils.cpp" line="59"/>
+        <location filename="../GUI/Utils.cpp" line="58"/>
         <source>Select a directory where to download to</source>
         <translation>다운로드할 폴더를 선택하십시오</translation>
     </message>

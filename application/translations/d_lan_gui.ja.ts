@@ -182,17 +182,17 @@
 <context>
     <name>GUI::D_LAN_GUI</name>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="153"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="159"/>
         <source>Show the user interface</source>
         <translation>ユーザーインターフェースを表示</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="157"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="163"/>
         <source>Stop the user interface</source>
         <translation>ユーザーインターフェースを終了</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="160"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="166"/>
         <source>Exit</source>
         <translation>終了</translation>
     </message>
@@ -455,28 +455,28 @@
         <translation>原因不明のエラー</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="189"/>
+        <location filename="../GUI/MainWindow.cpp" line="191"/>
         <source>Unable to connect to the core</source>
         <translation>Core に接続できません</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="192"/>
-        <location filename="../GUI/MainWindow.cpp" line="215"/>
+        <location filename="../GUI/MainWindow.cpp" line="194"/>
+        <location filename="../GUI/MainWindow.cpp" line="218"/>
         <source>Core address:</source>
         <translation>Core のアドレス:</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="202"/>
+        <location filename="../GUI/MainWindow.cpp" line="204"/>
         <source>Connected to the core</source>
         <translation>Core に接続しました</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="210"/>
+        <location filename="../GUI/MainWindow.cpp" line="213"/>
         <source>Connection lost</source>
         <translation>接続が切断されました</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="214"/>
+        <location filename="../GUI/MainWindow.cpp" line="217"/>
         <source>The connection to the core has been lost</source>
         <translation>Core との接続が切断されました</translation>
     </message>
@@ -489,7 +489,7 @@
         <translation>ダウンロードキューを読み込む前に、初回スキャンの完了を待っています</translation>
     </message>
     <message>
-        <location filename="../GUI/MDI/MdiArea.cpp" line="521"/>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="529"/>
         <source>Leave room</source>
         <translation>ルームを退出</translation>
     </message>
@@ -789,22 +789,22 @@
 <context>
     <name>GUI::SharedEntryListModel</name>
     <message>
-        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="290"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="285"/>
         <source>Name</source>
         <translation>名前</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="291"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="286"/>
         <source>Path</source>
         <translation>パス</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="292"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="287"/>
         <source>Size</source>
         <translation>サイズ</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="293"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="288"/>
         <source>Free space</source>
         <translation>空き容量</translation>
     </message>
@@ -925,32 +925,32 @@
         <translation>D-LAN GUI バージョン %1</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="73"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="79"/>
         <source>D-LAN already launched</source>
         <translation>D-LAN はすでに起動しています</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="74"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="80"/>
         <source>An instance of D-LAN is already launched</source>
         <translation>D-LAN のインスタンスがすでに起動しています</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="76"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="82"/>
         <source>Quit</source>
         <translation>終了</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="77"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="83"/>
         <source>Launch anyway</source>
         <translation>それでも起動する</translation>
     </message>
     <message>
-        <location filename="../GUI/Utils.cpp" line="49"/>
+        <location filename="../GUI/Utils.cpp" line="48"/>
         <source>Select one or more directories and/or files</source>
         <translation>ディレクトリやファイルを1つ以上選択してください</translation>
     </message>
     <message>
-        <location filename="../GUI/Utils.cpp" line="59"/>
+        <location filename="../GUI/Utils.cpp" line="58"/>
         <source>Select a directory where to download to</source>
         <translation>ダウンロード先のディレクトリを選択してください</translation>
     </message>

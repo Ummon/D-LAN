@@ -182,17 +182,17 @@
 <context>
     <name>GUI::D_LAN_GUI</name>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="153"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="159"/>
         <source>Show the user interface</source>
         <translation>Mostra l&apos;interfaccia utente</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="157"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="163"/>
         <source>Stop the user interface</source>
         <translation>Chiudi l&apos;interfaccia utente</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="160"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="166"/>
         <source>Exit</source>
         <translation>Esci</translation>
     </message>
@@ -459,28 +459,28 @@
         <translation>Errore sconosciuto</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="189"/>
+        <location filename="../GUI/MainWindow.cpp" line="191"/>
         <source>Unable to connect to the core</source>
         <translation>Impossibile connettersi al Core</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="192"/>
-        <location filename="../GUI/MainWindow.cpp" line="215"/>
+        <location filename="../GUI/MainWindow.cpp" line="194"/>
+        <location filename="../GUI/MainWindow.cpp" line="218"/>
         <source>Core address:</source>
         <translation>Indirizzo del Core:</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="202"/>
+        <location filename="../GUI/MainWindow.cpp" line="204"/>
         <source>Connected to the core</source>
         <translation>Connesso al Core</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="210"/>
+        <location filename="../GUI/MainWindow.cpp" line="213"/>
         <source>Connection lost</source>
         <translation>Connessione persa</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="214"/>
+        <location filename="../GUI/MainWindow.cpp" line="217"/>
         <source>The connection to the core has been lost</source>
         <translation>La connessione al Core è stata persa</translation>
     </message>
@@ -493,7 +493,7 @@
         <translation>In attesa del completamento della scansione iniziale prima di caricare la coda dei download</translation>
     </message>
     <message>
-        <location filename="../GUI/MDI/MdiArea.cpp" line="521"/>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="529"/>
         <source>Leave room</source>
         <translation>Esci dalla stanza</translation>
     </message>
@@ -793,22 +793,22 @@
 <context>
     <name>GUI::SharedEntryListModel</name>
     <message>
-        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="290"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="285"/>
         <source>Name</source>
         <translation>Nome</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="291"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="286"/>
         <source>Path</source>
         <translation>Percorso</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="292"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="287"/>
         <source>Size</source>
         <translation>Dimensione</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="293"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="288"/>
         <source>Free space</source>
         <translation>Spazio libero</translation>
     </message>
@@ -904,22 +904,22 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="73"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="79"/>
         <source>D-LAN already launched</source>
         <translation>D-LAN è già in esecuzione</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="74"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="80"/>
         <source>An instance of D-LAN is already launched</source>
         <translation>Un&apos;istanza di D-LAN è già in esecuzione</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="76"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="82"/>
         <source>Quit</source>
         <translation>Esci</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="77"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="83"/>
         <source>Launch anyway</source>
         <translation>Avvia comunque</translation>
     </message>
@@ -1010,12 +1010,12 @@
         <translation>Servizio Core avviato</translation>
     </message>
     <message>
-        <location filename="../GUI/Utils.cpp" line="49"/>
+        <location filename="../GUI/Utils.cpp" line="48"/>
         <source>Select one or more directories and/or files</source>
         <translation>Seleziona una o più cartelle e/o file</translation>
     </message>
     <message>
-        <location filename="../GUI/Utils.cpp" line="59"/>
+        <location filename="../GUI/Utils.cpp" line="58"/>
         <source>Select a directory where to download to</source>
         <translation>Seleziona una cartella di destinazione per il download</translation>
     </message>

@@ -182,7 +182,7 @@
 <context>
     <name>GUI::D_LAN_GUI</name>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="+153"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="+159"/>
         <source>Show the user interface</source>
         <translation>Открыть пользовательский интерфейс</translation>
     </message>
@@ -459,23 +459,23 @@
         <translation>Неизвестная ошибка</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+6"/>
         <source>Unable to connect to the core</source>
         <translation>Не удалось подключиться к ядру</translation>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+23"/>
+        <location line="+24"/>
         <source>Core address:</source>
         <translation>Адрес ядра:</translation>
     </message>
     <message>
-        <location line="-13"/>
+        <location line="-14"/>
         <source>Connected to the core</source>
         <translation>Подключён к ядру</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+9"/>
         <source>Connection lost</source>
         <translation>Соединение потеряно</translation>
     </message>
@@ -493,7 +493,7 @@
         <translation>Ожидание завершения первоначального сканирования перед загрузкой очереди загрузок</translation>
     </message>
     <message>
-        <location line="+181"/>
+        <location line="+189"/>
         <source>Leave room</source>
         <translation>Покинуть комнату</translation>
     </message>
@@ -793,7 +793,7 @@
 <context>
     <name>GUI::SharedEntryListModel</name>
     <message>
-        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="+290"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="+285"/>
         <source>Name</source>
         <translation>Имя</translation>
     </message>
@@ -1010,7 +1010,7 @@
         <translation>Локальный</translation>
     </message>
     <message>
-        <location filename="../GUI/Utils.cpp" line="+49"/>
+        <location filename="../GUI/Utils.cpp" line="+48"/>
         <source>Select one or more directories and/or files</source>
         <translation>Выберите одну или несколько папок и/или файлов</translation>
     </message>
