@@ -25,24 +25,24 @@ def "main build-all" [
 def "main translations" [] {
     print "=== TRANSLATIONS ==="
 
-    configure
+    let release_directory = get_release_directory
 
     # Extracts the strings from the sources into the .ts files ('update_translations' is
     # the global target created by the 'qt_add_lupdate' calls in CMakeLists.txt) then
     # compiles them into .qm files (built in 'build/release').
-    cmake --build build/release --target update_translations
-    cmake --build build/release --target dlan_translations
+    cmake --build $release_directory --target update_translations
+    cmake --build $release_directory --target dlan_translations
 
     for $project in [GUI Core] {
         mkdir ($project)/output/debug/languages
     }
 
-    cp build/release/*gui*.qm GUI/output/debug/languages
-    cp build/release/*core*.qm Core/output/debug/languages
+    cp ($release_directory)/*gui*.qm GUI/output/debug/languages
+    cp ($release_directory)/*core*.qm Core/output/debug/languages
 
     mkdir Setups/Windows/setup_bundle/languages
-    cp build/release/*gui*.qm Setups/Windows/setup_bundle/languages
-    cp build/release/*core*.qm Setups/Windows/setup_bundle/languages
+    cp ($release_directory)/*gui*.qm Setups/Windows/setup_bundle/languages
+    cp ($release_directory)/*core*.qm Setups/Windows/setup_bundle/languages
 }
 
 def "main compile" [
@@ -51,9 +51,6 @@ def "main compile" [
     print "=== COMPILATION ==="
 
     let release_directory = get_release_directory
-    if $release_directory == null {
-        error make {msg: "Compilation aborted: cannot find the release directory"}
-    }
 
     print $"Release directory: ($release_directory)"
 
@@ -64,13 +61,11 @@ def "main compile" [
     # rm -f build/release/Core/CMakeFiles/DLanCore.dir/__/Common/version.rc.obj
     # rm -f build/release/GUI/CMakeFiles/DLanGUI.dir/DialogAbout.cpp.obj
 
-    cmake --build $release_directory --parallel
-
     if $clean {
-        cmake --build $release_directory --target clean
+        cmake --build $release_directory --target clean --parallel
     }
 
-    cmake --build $release_directory
+    cmake --build $release_directory --parallel
 }
 
 def update_version [] {
@@ -81,20 +76,22 @@ def update_version [] {
 def "main run-tests" [] {
     print "=== RUN TESTS ==="
 
+    let release_directory = get_release_directory
+
     let exe_extension = ".exe" # No extension on Linux.
 
     let tests = [
-        build/release/output/TestsCommon
-        build/release/output/TestsLogManager
-        build/release/output/TestsFileManager
-        build/release/output/TestsFilePool
-        build/release/output/TestsHashCache
-        build/release/output/TestsPeerManager
-        build/release/output/TestsUploadManager
-        build/release/output/TestsDownloadManager
-        build/release/output/TestsNetworkListener
-        build/release/output/TestsRemoteCoreController
-        build/release/output/TestsRemoteControlManager
+        ($release_directory)/output/TestsCommon
+        ($release_directory)/output/TestsLogManager
+        ($release_directory)/output/TestsFileManager
+        ($release_directory)/output/TestsFilePool
+        ($release_directory)/output/TestsHashCache
+        ($release_directory)/output/TestsPeerManager
+        ($release_directory)/output/TestsUploadManager
+        ($release_directory)/output/TestsDownloadManager
+        ($release_directory)/output/TestsNetworkListener
+        ($release_directory)/output/TestsRemoteCoreController
+        ($release_directory)/output/TestsRemoteControlManager
     ]
 
     for $test in $tests {
@@ -120,17 +117,13 @@ def "main make-setup" [] {
 
 def make_windows_setup [] {
     let release_directory = get_release_directory
-    if $release_directory == null {
-        print "Setup building aborted: can't find the release directory"
-        return
-    }
 
     cd Setups/Windows
     mkdir setup_bundle
 
-    cp ../../$release_directory/output/D-LAN.Core.exe setup_bundle
-    cp ../../$release_directory/output/D-LAN.GUI.exe setup_bundle
-    cp ../../$release_directory/output/PasswordHasher.exe setup_bundle
+    cp ../../($release_directory)/output/D-LAN.Core.exe setup_bundle
+    cp ../../($release_directory)/output/D-LAN.GUI.exe setup_bundle
+    cp ../../($release_directory)/output/PasswordHasher.exe setup_bundle
 
     cd setup_bundle
     cp C:/Qt/Tools/llvm-mingw1706_64/bin/libwinpthread-1.dll .
@@ -148,9 +141,6 @@ def make_windows_setup [] {
 
 def make_linux_app_image [] {
     let release_directory = get_release_directory
-    if $release_directory == null {
-        error make {msg: "Cannot package AppImage without a configured Release build"}
-    }
     let release_directory = $release_directory | path expand
     let application_directory = pwd
     let architecture = match $nu.os-info.arch {
@@ -261,8 +251,7 @@ def make_linux_app_image [] {
 def get_release_directory [] {
     let release_directories = ls build | where name =~ Release
     if ($release_directories | is-empty) {
-        print "Cannot find the release directory, try to configure a release build with Qt Creator"
-        return null
+        error make {msg:"Cannot find the release directory, try to configure a release build with Qt Creator"}
     }
 
     $release_directories | first | get name
