@@ -50,6 +50,14 @@ def "main compile" [
 ] {
     print "=== COMPILATION ==="
 
+    let release_directory = get_release_directory
+    if $release_directory == null {
+        print "Compilation aborted"
+        return
+    }
+
+    print $"Release directory: ($release_directory)"
+
     update_version
 
     # To force to recompile the Common/Version.rs and DialogAbout.
@@ -57,17 +65,13 @@ def "main compile" [
     # rm -f build/release/Core/CMakeFiles/DLanCore.dir/__/Common/version.rc.obj
     # rm -f build/release/GUI/CMakeFiles/DLanGUI.dir/DialogAbout.cpp.obj
 
-    configure
+    cmake --build $release_directory --parallel
 
     if $clean {
-        cmake --build build/release --target clean
+        cmake --build $release_directory --target clean
     }
 
-    cmake --build build/release
-}
-
-def configure [] {
-    cmake -S . -B build/release -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DCMAKE_RC_COMPILER=llvm-rc
+    cmake --build $release_directory
 }
 
 def update_version [] {
@@ -108,12 +112,26 @@ def "main run-tests" [] {
 def "main make-setup" [] {
     print "=== MAKE SETUP ==="
 
+    match $nu.os-info.name {
+        "window" => { make_windows_setup }
+        "linux" => { make_linux_app_image }
+        other => { print $"Unsupported OS: $other" }
+    }
+}
+
+def make_windows_setup [] {
+    let release_directory = get_release_directory
+    if $release_directory == null {
+        print "Setup building aborted: can't find the release directory"
+        return
+    }
+
     cd Setups/Windows
     mkdir setup_bundle
 
-    cp ../../build/release/output/D-LAN.Core.exe setup_bundle
-    cp ../../build/release/output/D-LAN.GUI.exe setup_bundle
-    cp ../../build/release/output/PasswordHasher.exe setup_bundle
+    cp ../../$release_directory/output/D-LAN.Core.exe setup_bundle
+    cp ../../$release_directory/output/D-LAN.GUI.exe setup_bundle
+    cp ../../$release_directory/output/PasswordHasher.exe setup_bundle
 
     cd setup_bundle
     cp C:/Qt/Tools/llvm-mingw1706_64/bin/libwinpthread-1.dll .
@@ -127,4 +145,18 @@ def "main make-setup" [] {
     cd ..
 
     iscc windows_setup.iss
+}
+
+def make_linux_app_image [] {
+    # TODO
+}
+
+def get_release_directory [] {
+    let release_directories = ls build | where name =~ Release
+    if ($release_directories | is-empty) {
+        print "Cannot find the release directory, try to configure a release build with Qt Creator"
+        return null
+    }
+
+    $release_directories | first | get name
 }
