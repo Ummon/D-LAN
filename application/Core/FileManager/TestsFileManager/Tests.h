@@ -71,6 +71,7 @@ private slots:
    void moveAnEmptyDirectory();
    void moveADirectoryContainingFiles();
    void removeADirectory();
+   void recursiveDirectoryDeletion();
    void createNewFileAndWriteData();
 
    // /***** Ask for chunks by hash *****/

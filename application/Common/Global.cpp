@@ -628,15 +628,17 @@ bool Global::recursiveDeleteDirectoryContent(const QString& dir)
 
    bool success = true;
 
-   for (QDirIterator i(dir, QDir::Files, QDirIterator::Subdirectories); i.hasNext();)
+   // Remove immediate children recursively, keeping 'dir' itself. Include
+   // hidden entries and unlink symlinks without traversing their targets.
+   const auto entries = QDir(dir).entryInfoList(QDir::AllEntries | QDir::Hidden | QDir::System | QDir::NoDotAndDotDot);
+   for (const QFileInfo& entry : entries)
    {
-      QFile file(i.next());
-      if (file.exists() && !file.remove())
+      const bool removed = entry.isDir() && !entry.isSymLink()
+         ? QDir(entry.absoluteFilePath()).removeRecursively()
+         : QFile::remove(entry.absoluteFilePath());
+      if (!removed)
          success = false;
    }
-
-   for (QDirIterator i(dir, QDir::AllDirs | QDir::NoDotAndDotDot, QDirIterator::Subdirectories); i.hasNext();)
-      QDir(i.next()).rmpath(".");
 
    return success;
 }
@@ -650,7 +652,7 @@ bool Global::recursiveDeleteDirectory(const QString& dir)
 
    bool success = Global::recursiveDeleteDirectoryContent(dir);
 
-   if (QDir::current().exists(dir) && !QDir(dir).rmdir("."))
+   if (QDir::current().exists(dir) && !QDir().rmdir(QDir(dir).absolutePath()))
       success = false;
 
    return success;

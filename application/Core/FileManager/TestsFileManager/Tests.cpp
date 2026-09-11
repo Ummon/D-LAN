@@ -27,6 +27,7 @@ using namespace FM;
 #include <QDataStream>
 #include <QStringList>
 #include <QDirIterator>
+#include <QTemporaryDir>
 
 #include <Common/LogManager/Builder.h>
 #include <Common/PersistentData.h>
@@ -725,7 +726,8 @@ void Tests::removeADirectory()
 {
    qDebug() << "===== removeADirectory() =====";
 
-   Common::Global::recursiveDeleteDirectory("sharedDirs/share1/share2");
+   QVERIFY(Common::Global::recursiveDeleteDirectory("sharedDirs/share1/share2"));
+   QVERIFY(!QFileInfo::exists("sharedDirs/share1/share2"));
 
    auto sharedEntry = Utils::tryFindEntry(this->fileManager, Common::Path("sharedDirs/share1/"));
    QVERIFY(sharedEntry.IsInitialized());
@@ -746,6 +748,34 @@ void Tests::removeADirectory()
          }
       )
    );
+}
+
+void Tests::recursiveDirectoryDeletion()
+{
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   const QString root = temp.filePath("root");
+   QVERIFY(QDir().mkpath(root + "/nested/empty"));
+   QVERIFY(Common::Global::createFile(root + "/nested/file.txt"));
+   QVERIFY(Common::Global::createFile(root + "/.hidden/file.txt"));
+   const QString outside = temp.filePath("outside");
+   QVERIFY(QDir().mkpath(outside));
+   QVERIFY(Common::Global::createFile(outside + "/keep.txt"));
+#ifdef Q_OS_UNIX
+   QVERIFY(QFile::link(outside, root + "/link"));
+   QVERIFY(QFile::link(temp.filePath("missing"), root + "/broken-link"));
+#endif
+
+   QVERIFY(Common::Global::recursiveDeleteDirectoryContent(root));
+   QVERIFY(QFileInfo(root).isDir());
+   QVERIFY(QDir(root).entryList(QDir::AllEntries | QDir::Hidden | QDir::System | QDir::NoDotAndDotDot).isEmpty());
+   QVERIFY(QFileInfo::exists(outside + "/keep.txt"));
+
+   QVERIFY(Common::Global::createFile(root + "/nested/file.txt"));
+   QVERIFY(Common::Global::recursiveDeleteDirectory(root));
+   QVERIFY(!QFileInfo::exists(root));
+   QVERIFY(QFileInfo::exists(outside + "/keep.txt"));
+   QVERIFY(Common::Global::recursiveDeleteDirectory(root));
 }
 
 void Tests::createNewFileAndWriteData()
