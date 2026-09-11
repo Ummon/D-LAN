@@ -31,3 +31,5 @@ application/build/
 application/.qtcreator/
 application/.qmake.stash
 application/Setups/Windows/setup_bundle
+application/Setups/AppImage/*.AppImage
+application/Setups/AppImage/*.zsync

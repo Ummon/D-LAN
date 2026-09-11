@@ -52,8 +52,7 @@ def "main compile" [
 
     let release_directory = get_release_directory
     if $release_directory == null {
-        print "Compilation aborted"
-        return
+        error make {msg: "Compilation aborted: cannot find the release directory"}
     }
 
     print $"Release directory: ($release_directory)"
@@ -113,9 +112,9 @@ def "main make-setup" [] {
     print "=== MAKE SETUP ==="
 
     match $nu.os-info.name {
-        "window" => { make_windows_setup }
+        "windows" => { make_windows_setup }
         "linux" => { make_linux_app_image }
-        other => { print $"Unsupported OS: $other" }
+        $other => { print $"Unsupported OS: ($other)" }
     }
 }
 
@@ -148,7 +147,115 @@ def make_windows_setup [] {
 }
 
 def make_linux_app_image [] {
-    # TODO
+    let release_directory = get_release_directory
+    if $release_directory == null {
+        error make {msg: "Cannot package AppImage without a configured Release build"}
+    }
+    let release_directory = $release_directory | path expand
+    let application_directory = pwd
+    let architecture = match $nu.os-info.arch {
+        "x86_64" => "x86_64"
+        "aarch64" => "aarch64"
+        $other => { error make {msg: $"Unsupported AppImage architecture: ($other)"} }
+    }
+
+    # Use the same Qt SDK as the selected build, not an unrelated system Qt.
+    # QMAKE can override discovery for distribution-specific Qt layouts.
+    let qt_directory = (open --raw ($release_directory | path join "CMakeCache.txt")
+        | lines | parse "Qt6_DIR:PATH={directory}" | get directory | first)
+    let qmake = $env.QMAKE? | default ($qt_directory | path join "../../../bin/qmake" | path expand)
+    if not ($qmake | path exists) {
+        error make {msg: "Cannot find Qt's qmake. Set QMAKE to the qmake executable matching this build."}
+    }
+
+    for executable in [D-LAN.GUI D-LAN.Core] {
+        if not ($release_directory | path join "output" $executable | path exists) {
+            error make {msg: $"Missing ($executable); build the Release configuration first."}
+        }
+    }
+
+    # Compile translations without updating the source .ts files.
+    cmake --build $release_directory --target dlan_translations
+    if $env.LAST_EXIT_CODE != 0 { error make {msg: "Could not build translations; Qt LinguistTools is required."} }
+    let translations = glob ($release_directory | path join "d_lan_*.qm")
+    if ($translations | is-empty) { error make {msg: "No compiled D-LAN translations found"} }
+
+    let tools_directory = $application_directory | path join "build/appimage-tools" $architecture
+    mkdir $tools_directory
+    for tool in [linuxdeploy linuxdeploy-plugin-qt] {
+        let filename = $"($tool)-($architecture).AppImage"
+        let destination = $tools_directory | path join $filename
+        if not ($destination | path exists) {
+            let download = $"($destination).download"
+            curl --fail --location --retry 3 --output $download $"https://github.com/linuxdeploy/($tool)/releases/download/continuous/($filename)"
+            if $env.LAST_EXIT_CODE != 0 { error make {msg: $"Could not download ($tool)"} }
+            mv -f $download $destination
+        }
+        chmod +x $destination
+        if $env.LAST_EXIT_CODE != 0 { error make {msg: $"Could not make ($tool) executable"} }
+    }
+
+    let appdir = $application_directory | path join "build/appimage/D-LAN.AppDir"
+    if ($appdir | path exists) { rm -rf $appdir }
+    let bin_directory = $appdir | path join "usr/bin"
+    mkdir $bin_directory
+    for executable in [D-LAN.GUI D-LAN.Core] {
+        cp ($release_directory | path join "output" $executable) $bin_directory
+    }
+    mkdir ($bin_directory | path join "languages")
+    cp ...$translations ($bin_directory | path join "languages")
+    cp -r styles ($bin_directory | path join "styles")
+    cp -r GUI/resources/emoticons ($bin_directory | path join "emoticons")
+    mkdir ($appdir | path join "usr/share/licenses/d-lan")
+    cp ../COPYING ($appdir | path join "usr/share/licenses/d-lan/COPYING")
+
+    let desktop = $appdir | path join "d-lan.desktop"
+    open --raw Setups/Ubuntu/d-lan.desktop
+        | str replace "Exec=d-lan-gui" "Exec=D-LAN.GUI"
+        | save $desktop
+    let icon = $appdir | path join "d-lan.svg"
+    cp GUI/resources/icon.svg $icon
+
+    # Include whichever Wayland platform plugins this Qt version provides.
+    let plugins = (do { ^$qmake -query QT_INSTALL_PLUGINS } | complete)
+    if $plugins.exit_code != 0 { error make {msg: "Could not query Qt plugin directory"} }
+    let wayland_plugins = (glob ($plugins.stdout | str trim | path join "platforms/libqwayland*.so")
+        | each {|plugin| $plugin | path basename } | str join ";")
+    let version = (open --raw Common/Version.h | lines
+        | parse '#define VERSION "{version}"' | get version | first)
+    let tag = (open --raw Common/Version.h | lines
+        | parse '#define VERSION_TAG "{tag}"' | get tag | first)
+    let package_version = if ($tag | is-empty) { $version } else { $"($version)-($tag)" }
+    let output_directory = $application_directory | path join "Setups/AppImage"
+    mkdir $output_directory
+    let output = $output_directory | path join $"D-LAN-($package_version)-($architecture).AppImage"
+    let linuxdeploy = $tools_directory | path join $"linuxdeploy-($architecture).AppImage"
+    let qt_plugin = $tools_directory | path join $"linuxdeploy-plugin-qt-($architecture).AppImage"
+    # D-LAN uses SQLite only. Other SDK SQL plugins may need unavailable
+    # database client libraries, so exclude them before dependency scanning.
+    let sql_exclusions = (glob ($plugins.stdout | str trim | path join "sqldrivers/libqsql*.so")
+        | where {|plugin| ($plugin | path basename) != "libqsqlite.so" }
+        | each {|plugin| ["--exclude-library" ($plugin | path basename)] } | flatten)
+
+    # Extract-and-run allows packaging on build hosts without FUSE.
+    # linuxdeploy includes the AppImage output plugin in its own AppImage.
+    with-env {
+        QMAKE: $qmake
+        EXTRA_PLATFORM_PLUGINS: $wayland_plugins
+        APPIMAGE_EXTRACT_AND_RUN: "1"
+        VERSION: $package_version
+        OUTPUT: $output
+    } {
+        cd $output_directory
+        ^$linuxdeploy --appdir $appdir --executable ($bin_directory | path join "D-LAN.GUI") --executable ($bin_directory | path join "D-LAN.Core") --desktop-file $desktop --icon-file $icon
+        if $env.LAST_EXIT_CODE != 0 { error make {msg: "AppImage dependency deployment failed"} }
+        ^$qt_plugin --appdir $appdir ...$sql_exclusions
+        if $env.LAST_EXIT_CODE != 0 { error make {msg: "Qt plugin deployment failed"} }
+        ^$linuxdeploy --appdir $appdir --output appimage
+        if $env.LAST_EXIT_CODE != 0 { error make {msg: "AppImage packaging failed"} }
+    }
+    if not ($output | path exists) { error make {msg: "Packaging did not produce the expected AppImage"} }
+    print $"Created ($output)"
 }
 
 def get_release_directory [] {

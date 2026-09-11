@@ -95,6 +95,33 @@ Keep `DLAN_BUILD_TESTS` and `DLAN_BUILD_TOOLS` enabled for the full release work
 
 Release executables are written to `application/build/release/output`, and installers to `application/Setups/Windows/Installations`.
 
+### Linux AppImage
+
+Build a Release configuration in Qt Creator, then run from `application`:
+
+```sh
+nu build.nu make-setup
+```
+
+On Linux this packages the Release directory selected by `get_release_directory`
+in `build.nu`. It includes `D-LAN.GUI`, `D-LAN.Core`, translations, styles,
+emoticons, and Qt dependencies (including SQLite and available Wayland platform
+plugins). Qt LinguistTools must be installed to compile translations.
+
+The first run requires `curl` and internet access to download the official
+linuxdeploy and Qt plugin continuous builds. Tools are cached under
+`application/build/appimage-tools`; remove that cache to download newer versions.
+Packaging uses extract-and-run mode, so the build host does not need FUSE.
+The script finds qmake through the selected build's `Qt6_DIR`; set `QMAKE` to
+the matching qmake executable if your Qt installation uses a different layout.
+
+The result is `application/Setups/AppImage/D-LAN-<version>-<architecture>.AppImage`.
+Staging files stay under `application/build/appimage`. Supported packaging host
+architectures are x86-64 and AArch64; the Release binaries must match the host.
+Build on the oldest Linux environment you intend to support, and test the result
+on your target distributions: bundled libraries do not remove the host glibc
+requirement.
+
 ### Linux crash reports
 
 The GUI and core automatically install a fatal-signal handler. Reports named
