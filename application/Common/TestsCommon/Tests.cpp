@@ -393,6 +393,16 @@ void Tests::path()
    QCOMPARE(Path(QStringLiteral("\\\\server\\share\\folder\\")).removeLastElement(), uncRoot);
 
    // Composed paths must have the same components and containment as parsed paths.
+   const Path driveRoot("C:/");
+   QCOMPARE(driveRoot.getRoot(), QString("C:/"));
+   QVERIFY(driveRoot.isAbsolute());
+   QVERIFY(!driveRoot.isFile());
+   QVERIFY(driveRoot.getDirs().isEmpty());
+   QCOMPARE(Path(QStringLiteral("C:\\")), driveRoot);
+   QCOMPARE(Path("C:/folder/../"), driveRoot);
+   QCOMPARE(Path("C:/../../"), driveRoot);
+   QCOMPARE(Path("C:/../file.txt"), driveRoot.setFilename("file.txt"));
+
    const Path shared("C:/shared/");
    const Path outside("../outside.txt");
    const Path combined = shared.append(outside);

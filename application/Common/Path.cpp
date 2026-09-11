@@ -69,7 +69,14 @@ Path::Path(const QString& path)
       }
    }
 
-   if (this->root.isEmpty())
+   // Extract drive roots before cleaning: on Unix cleanPath("C:/") becomes
+   // "C:", and parent components could otherwise remove the drive itself.
+   if (this->root.isEmpty() && isWindowsPath(trimmedPath))
+   {
+      this->root = trimmedPath.left(3);
+      cleanedPath = trimmedPath.mid(3);
+   }
+   else if (this->root.isEmpty())
       cleanedPath = QDir::cleanPath(trimmedPath);
 
    if (cleanedPath.isEmpty())
