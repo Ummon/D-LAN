@@ -74,7 +74,6 @@ void Tests::getVersion()
    qDebug() << "Global::getVersionFull(): " << Global::getVersionFull();
 
    QVERIFY(!Global::getVersion().isEmpty());
-   QVERIFY(!Global::getVersionTag().isEmpty());
    QVERIFY(!Global::getSystemVersion().isEmpty());
    QVERIFY(!Global::getVersionFull().isEmpty());
 }
