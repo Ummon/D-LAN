@@ -48,6 +48,10 @@ namespace Common
       void insert(const Container& items);
 
       void itemChanged(const T& item);
+
+      template <typename Updater>
+      bool updateItem(const T& item, Updater update);
+
       void removeOne(const T& item);
       void clear();
 
@@ -77,7 +81,6 @@ void Common::SortedList<T, U>::insert(const T& item)
 {
    const auto less = [this](const T& a, const T& b)
    {
-      // return this->getKey ? this->getKey(a) < this->getKey(b) : a < b;
       return this->less(a, b);
    };
 
@@ -146,6 +149,54 @@ void Common::SortedList<T, U>::itemChanged(const T& item)
    this->insert(item);
 }
 
+/**
+  * Find an existing item before updating the external data used for its sort key.
+  * Returns false without calling 'update' if the item is absent. The callback must
+  * not throw or modify this list. Callers must exclude concurrent readers/writers
+  * throughout the update, just as for 'itemChanged'.
+  */
+template <typename T, typename U>
+template <typename Updater>
+bool Common::SortedList<T, U>::updateItem(const T& item, Updater update)
+{
+   const auto less = [this](const T& a, const T& b) { return this->less(a, b); };
+   auto position = this->list.cend();
+   if (this->getKey)
+   {
+      const U oldKey = this->getKey(item);
+      position = std::lower_bound(this->list.cbegin(), this->list.cend(), oldKey,
+         [this](const T& other, const U& key) { return this->getKey(other) < key; });
+   }
+   else
+      position = std::lower_bound(this->list.cbegin(), this->list.cend(), item, less);
+   // Equal sort keys need not identify the same item.
+   while (position != this->list.cend() && !less(item, *position))
+   {
+      if (*position == item)
+         break;
+      ++position;
+   }
+   if (position == this->list.cend() || less(item, *position))
+      return false;
+
+   const auto index = position - this->list.cbegin();
+   // The argument may refer to an element of this list; keep it valid if we move it.
+   const T updatedItem = *position;
+   update();
+
+   // Reinsertion would put the item after all equivalent keys. Requiring a strictly
+   // greater successor preserves that ordering even for an unchanged key.
+   if ((index == 0 || !less(updatedItem, this->list.at(index - 1))) &&
+       (index + 1 == this->list.size() || less(updatedItem, this->list.at(index + 1))))
+      return true;
+
+   // Most download completions keep the same neighbours. Only detach the array
+   // and move pointers when the position actually changes.
+   this->list.removeAt(index);
+   this->insert(updatedItem);
+   return true;
+}
+
 template <typename T, typename U>
 void Common::SortedList<T, U>::removeOne(const T& item)
 {
@@ -176,9 +227,8 @@ QList<T> Common::SortedList<T, U>::getItems(const U& key) const
 
    auto position = std::partition_point(this->list.cbegin(), this->list.cend(), lessThan);
 
-   while (position != this->list.end()) {
-      // --position;
-
+   while (position != this->list.end())
+   {
       if (this->getKey(*position) == key)
          result << *position;
       else

@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include <functional>
+
 #include <QString>
 #include <QList>
 #include <QFileInfo>
@@ -93,14 +95,11 @@ namespace FM
       bool isScanned() const;
       void setScanned(bool value);
 
-      void fileNameChanged(File* file);
-
    protected:
       void setRootRecursively(SharedEntry* sharedEntry) override;
 
    private:
-      void entryNameChanged(Entry* entry);
-      void subdirNameChanged(Directory* dir);
+      void updateEntryName(Entry* entry, const std::function<void()>& update);
 
       void adjustSize(qint64 delta);
 

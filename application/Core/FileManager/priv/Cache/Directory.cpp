@@ -437,25 +437,19 @@ void Directory::setScanned(bool value)
       this->getCache()->onScanned(this);
 }
 
-// Entry::setName holds this directory's mutex until the new key is in order.
-void Directory::entryNameChanged(Entry* entry)
+// Entry::setName holds this directory's mutex across lookup, mutation and reordering.
+void Directory::updateEntryName(Entry* entry, const std::function<void()>& update)
 {
+   bool found = false;
    if (auto file = dynamic_cast<File*>(entry))
-      this->fileNameChanged(file);
+      found = this->files.updateItem(file, update);
    else if (auto dir = dynamic_cast<Directory*>(entry))
-      this->subdirNameChanged(dir);
-}
+      found = this->subDirs.updateItem(dir, update);
 
-/**
-  * Must be called only by a file.
-  */
-void Directory::fileNameChanged(File* file)
-{
-   QMutexLocker locker(&this->mutex);
-
-   // Completion can arrive after removal, or while the parent is destroying its detached children.
-   if (this->files.getList().contains(file))
-      this->files.itemChanged(file);
+   // Completion can arrive after removal or while the parent destroys detached
+   // children. Update their metadata without reinserting them into the directory.
+   if (!found)
+      update();
 }
 
 void Directory::setRootRecursively(SharedEntry* sharedEntry)
@@ -476,14 +470,6 @@ void Directory::setRootRecursively(SharedEntry* sharedEntry)
       file->setRootRecursively(sharedEntry);
    for (Directory* dir : directories)
       dir->setRootRecursively(sharedEntry);
-}
-
-void Directory::subdirNameChanged(Directory* dir)
-{
-   QMutexLocker locker(&this->mutex);
-
-   if (this->subDirs.getList().contains(dir))
-      this->subDirs.itemChanged(dir);
 }
 
 /**

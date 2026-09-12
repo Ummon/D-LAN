@@ -154,13 +154,16 @@ void Entry::setName(const QString& name)
    // Keep the child-to-parent lock order. Binary lookups must not observe a new
    // name until the parent's list has been reordered, including during completion.
    QMutexLocker parentLocker(parent ? &parent->mutex : nullptr);
-   {
+   const auto update = [this, &name] {
       QMutexLocker nameLocker(&this->nameMutex);
       this->name = name;
-   }
-   // Sorting reads names, so release the leaf name lock before reordering.
+   };
+   // Locate the old key before updating it, and release the leaf name lock before
+   // checking neighbours or reordering. Sorting reads names through that same lock.
    if (parent)
-      parent->entryNameChanged(this);
+      parent->updateEntryName(this, update);
+   else
+      update();
 }
 
 qint64 Entry::getSize() const

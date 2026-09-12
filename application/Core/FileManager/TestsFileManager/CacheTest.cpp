@@ -2451,7 +2451,7 @@ void CacheTest::directoryDestructionReleasesParentLocks()
             // A completion/rename callback must not reinsert a child detached by the destructor.
             if (leafAvailable)
             {
-               leaf->fileNameChanged(file);
+               file->rename("completed.bin");
                reinserted = !leaf->getFiles().isEmpty();
             }
          });
