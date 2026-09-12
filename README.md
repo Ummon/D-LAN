@@ -71,9 +71,33 @@ Useful cache options:
 |---|---|---|
 | `DLAN_BUILD_TESTS` | `ON` | Test executables (+ CTest) |
 | `DLAN_BUILD_TOOLS` | `ON` | LogViewer, FileIndexer, PasswordHasher |
-| `DLAN_PROFILING` | `OFF` | gprof `-pg` |
+| `DLAN_PROFILING` | `OFF` | gprof `-pg`; requires a compatible compiler and runtime (checked at configure time) |
+| `DLAN_PDB` | `ON` | Windows Clang: emit PDB symbols in non-Debug builds for crash reports and profiling |
 | `DLAN_BLAKE3_ROOT` | `C:/BLAKE3-1.8.5/c` | BLAKE3 location |
 | `DLAN_PROTOBUF_ROOT` | `C:/protobuf` | protobuf location |
+
+### Profiling
+
+For CPU profiling with this Windows kit, set `DLAN_PROFILING=OFF`, keep
+`DLAN_PDB=ON`, and rebuild in Release mode. Keep the generated `.pdb` files
+beside the matching executables in the build's `output` directory. Record CPU
+activity with Windows Performance Recorder, then open the trace in
+[Windows Performance Analyzer](https://learn.microsoft.com/en-us/windows-hardware/test/wpt/cpu-analysis)
+and use the CPU Usage (Sampled) table, filtered to `D-LAN.Core.exe` or
+`D-LAN.GUI.exe`. Add the absolute path to the `output` directory under
+**Trace > Configure Symbol Paths > Paths**, then select **Trace > Load Symbols**
+to resolve function names. The **SymCache** tab is for WPA's processed symbol
+cache. Sampling does not require `-pg`.
+
+The build embeds only the PDB filename in each executable. Older builds embedded
+an absolute path with forward slashes, which WPA can treat as a single filename
+and reject with `PDB Not Found` (the symbol loader may report `filename cannot
+exceed 100 characters`). After rebuilding with this fix, restart the rebuilt
+executable and record a new trace: existing traces retain the old PDB reference.
+Keep the PDB from the exact build used for the recording.
+
+For gprof output (`gmon.out`), use a toolchain with working gprof support and
+matching Qt and third-party libraries, then enable `DLAN_PROFILING`.
 
 ### Build a release
 
