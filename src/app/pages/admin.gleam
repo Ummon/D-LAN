@@ -11,6 +11,8 @@ import lustre/attribute as attr
 import lustre/element
 import lustre/element/html
 
+const all = "all"
+
 pub fn page(ctx: web.Context) -> element.Element(a) {
   html.div([attr.id("content"), attr.class("admin")], case ctx.is_admin {
     True -> [calendar(ctx)]
@@ -44,11 +46,7 @@ fn calendar(ctx: web.Context) -> element.Element(a) {
         month |> option.unwrap(current_date.month |> calendar.month_to_int),
       )
       _ -> {
-        #(
-          files |> list.first |> result.unwrap(""),
-          current_date.year,
-          current_date.month |> calendar.month_to_int,
-        )
+        #(all, current_date.year, current_date.month |> calendar.month_to_int)
       }
     }
   }
@@ -82,12 +80,19 @@ fn calendar(ctx: web.Context) -> element.Element(a) {
 
   let nb_days = date.nb_days(first_day, last_day)
 
-  let counts =
-    ctx.app.db.get_download_counts(
-      file,
-      date.date_to_str(first_day),
-      date.date_to_str(last_day),
-    )
+  let counts = case file {
+    f if f == all ->
+      ctx.app.db.get_download_counts_total(
+        date.date_to_str(first_day),
+        date.date_to_str(last_day),
+      )
+    _ ->
+      ctx.app.db.get_download_counts(
+        file,
+        date.date_to_str(first_day),
+        date.date_to_str(last_day),
+      )
+  }
 
   let file_url = "/admin.html?" <> uri.query_to_string([#("file", file)])
   let url_params = fn(month, year) {
@@ -101,7 +106,7 @@ fn calendar(ctx: web.Context) -> element.Element(a) {
   [
     html.select(
       [attr.id("file")],
-      files
+      [all, ..files]
         |> list.map(fn(f) {
           html.option([attr.selected(f == file), attr.value(f)], f)
         }),

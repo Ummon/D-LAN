@@ -21,31 +21,17 @@ pub fn main() {
 }
 
 pub fn index_test() {
-  let app_ctx =
-    web.AppContext(
-      "static",
-      "release",
-      db.Db(fn(_) { Nil }, fn() { [] }, fn(_, _, _) { [] }),
-      "",
-      False,
-    )
+  let app_ctx = web.AppContext("static", "release", db_stub(), "", False)
 
   let response =
     router.handle_request(simulate.browser_request(http.Get, "/"), app_ctx)
 
-  assert response.status == 200
+  assert response§.status == 200
   assert response.headers == [#("content-type", "text/html; charset=utf-8")]
 }
 
 pub fn page_routes_test() {
-  let app_ctx =
-    web.AppContext(
-      "static",
-      "release",
-      db.Db(fn(_) { Nil }, fn() { [] }, fn(_, _, _) { [] }),
-      "",
-      False,
-    )
+  let app_ctx = web.AppContext("static", "release", db_stub(), "", False)
   let status = fn(path) {
     router.handle_request(simulate.browser_request(http.Get, path), app_ctx).status
   }
@@ -61,14 +47,7 @@ pub fn page_routes_test() {
 
 pub fn admin_navigation_encodes_filename_test() {
   let file = "windows/D-LAN &#+%.exe"
-  let app_ctx =
-    web.AppContext(
-      "static",
-      "release",
-      db.Db(fn(_) { Nil }, fn() { [file] }, fn(_, _, _) { [] }),
-      "",
-      False,
-    )
+  let app_ctx = web.AppContext("static", "release", db_stub(), "", False)
   let html =
     admin.page(web.Context(
       app: app_ctx,
@@ -88,6 +67,10 @@ pub fn admin_navigation_encodes_filename_test() {
     html,
     "href=\"" <> file_url <> "&amp;month=2&amp;year=2026\"",
   )
+}
+
+fn db_stub() {
+  db.Db(fn(_) { Nil }, fn() { [] }, fn(_, _, _) { [] }, fn(_, _) { [] })
 }
 
 pub fn date_to_str_test() {

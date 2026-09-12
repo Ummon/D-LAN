@@ -21,6 +21,7 @@ pub type Db {
     increment_download_count: fn(String) -> Nil,
     get_files: fn() -> List(String),
     get_download_counts: fn(String, String, String) -> List(#(String, Int)),
+    get_download_counts_total: fn(String, String) -> List(#(String, Int)),
   )
 }
 
@@ -65,6 +66,9 @@ CREATE INDEX IF NOT EXISTS downloads_file_index ON downloads(file);
       fn() { get_files(db) },
       fn(file, start_date, end_date) {
         get_download_counts(db, file, start_date, end_date)
+      },
+      fn(start_date, end_date) {
+        get_download_counts_total(db, start_date, end_date)
       },
     ),
   )
@@ -214,6 +218,29 @@ WHERE file = ? AND date >= ? AND date <= ?
 ORDER BY date",
     db,
     [sqlight.text(file), sqlight.text(start_date), sqlight.text(end_date)],
+    decoder,
+  )
+  |> rows_or_log("Unable to retrieve counts")
+}
+
+fn get_download_counts_total(
+  db: sqlight.Connection,
+  start_date: String,
+  end_date: String,
+) -> List(#(String, Int)) {
+  let decoder = {
+    use date <- decode.field(0, decode.string)
+    use count <- decode.field(1, decode.int)
+    decode.success(#(date, count))
+  }
+  sqlight.query(
+    "
+SELECT date, SUM(count) FROM downloads
+WHERE date >= ? AND date <= ?
+GROUP BY date
+ORDER BY date",
+    db,
+    [sqlight.text(start_date), sqlight.text(end_date)],
     decoder,
   )
   |> rows_or_log("Unable to retrieve counts")
