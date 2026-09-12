@@ -26,7 +26,7 @@ pub fn index_test() {
   let response =
     router.handle_request(simulate.browser_request(http.Get, "/"), app_ctx)
 
-  assert response§.status == 200
+  assert response.status == 200
   assert response.headers == [#("content-type", "text/html; charset=utf-8")]
 }
 
