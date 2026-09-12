@@ -373,9 +373,7 @@ File* Directory::getFile(const QString& name) const
 {
    QMutexLocker locker(&this->mutex);
 
-   // return this->files
-
-   foreach (File* f, this->files.getList())
+   foreach (File* f, this->files.getItems(name.toLower()))
       if (f->getName() == name)
          return f;
 

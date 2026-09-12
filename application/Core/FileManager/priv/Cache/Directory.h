@@ -105,8 +105,8 @@ namespace FM
 
       static inline QString entryGetKeyFun(const Entry* const& entry) { return entry->getName().toLower(); }
 
-      Common::SortedList<Directory*, QString> subDirs; ///< Sorted by name.
-      Common::SortedList<File*, QString> files; ///< Sorted by name.
+      Common::SortedList<Directory*, QString> subDirs; ///< Sorted by name as lower case.
+      Common::SortedList<File*, QString> files; ///< Sorted by name as lower case.
 
       bool scanned;
       QRecursiveMutex retirementMutex; ///< Serializes subtree retirement without blocking metadata callbacks.

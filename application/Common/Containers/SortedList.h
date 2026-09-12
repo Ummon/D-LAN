@@ -51,7 +51,7 @@ namespace Common
       void removeOne(const T& item);
       void clear();
 
-      // void const std::optional<T> getItem()
+      QList<T> getItems(const U& key) const;
 
       inline const QList<T>& getList() const { return this->list; }
 
@@ -59,7 +59,6 @@ namespace Common
       inline bool less(const T& a, const T&b) { return this->getKey ? this->getKey(a) < this->getKey(b) : a < b; }
 
       std::function<U(const T&)> getKey;
-
       QList<T> list;
    };
 }
@@ -157,4 +156,36 @@ template <typename T, typename U>
 void Common::SortedList<T, U>::clear()
 {
    this->list.clear();
+}
+
+/**
+  * Get items by key, 'getKey' must have been given in the constructor.
+  */
+template <typename T, typename U>
+QList<T> Common::SortedList<T, U>::getItems(const U& key) const
+{
+   QList<T> result;
+
+   if (!this->getKey || this->list.isEmpty() ||this->getKey(this->list.constLast()) < key)
+      return result;
+
+   const auto lessThan = [this, &key](const T& other)
+   {
+      return this->getKey(other) < key;
+   };
+
+   auto position = std::partition_point(this->list.cbegin(), this->list.cend(), lessThan);
+
+   while (position != this->list.end()) {
+      // --position;
+
+      if (this->getKey(*position) == key)
+         result << *position;
+      else
+         break;
+
+      ++position;
+   }
+
+   return result;
 }

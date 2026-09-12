@@ -15,6 +15,7 @@ private slots:
    void sortedListEquivalentItems();
    void sortedListInsertionComparisons_data();
    void sortedListInsertionComparisons();
+   void sortedListGetItems();
 };
 
 void SortedListTests::defaultOrdering()
@@ -109,6 +110,29 @@ void SortedListTests::sortedListInsertionComparisons()
    for (int item : items)
       list.insert(item);
    QCOMPARE(list.getList(), expected);
+}
+
+void SortedListTests::sortedListGetItems()
+{
+   QString first = QStringLiteral("Alpha");
+   QString second = QStringLiteral("ALPHA");
+   QString third = QStringLiteral("alpha");
+   QString before = QStringLiteral("0");
+   QString after = QStringLiteral("Zulu");
+   SortedList<QString*, QString> list([](const QString* const& str) { return str->toLower(); });
+
+   QVERIFY(list.getItems("alpha").isEmpty());
+
+   list.insert(&after);
+   list.insert(&first);
+   list.insert(&second);
+   list.insert(&before);
+   list.insert(&third);
+
+   QCOMPARE(list.getItems("alpha"), (QList<QString*> { &first, &second, &third }));
+   QCOMPARE(list.getItems("0"), (QList<QString*> { &before }));
+   QCOMPARE(list.getItems("zulu"), (QList<QString*> { &after }));
+   QVERIFY(list.getItems("XXX").isEmpty());
 }
 
 QTEST_APPLESS_MAIN(SortedListTests)
