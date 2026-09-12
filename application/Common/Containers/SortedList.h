@@ -36,11 +36,11 @@
 
 namespace Common
 {
-   template <typename T>
+   template <typename T, typename U = T>
    class SortedList
    {
    public:
-      SortedList(std::function<bool(const T&, const T&)> lesserThan = nullptr);
+      SortedList(std::function<U(const T&)> getKey = nullptr);
 
       void insert(const T& item);
 
@@ -51,10 +51,15 @@ namespace Common
       void removeOne(const T& item);
       void clear();
 
+      // void const std::optional<T> getItem()
+
       inline const QList<T>& getList() const { return this->list; }
 
    private:
-      std::function<bool(const T&, const T&)> lesserThan;
+      inline bool less(const T& a, const T&b) { return this->getKey ? this->getKey(a) < this->getKey(b) : a < b; }
+
+      std::function<U(const T&)> getKey;
+
       QList<T> list;
    };
 }
@@ -62,18 +67,19 @@ namespace Common
 /**
   * If no function 'lesserThan' is given then the operator < on T is used.
   */
-template <typename T>
-Common::SortedList<T>::SortedList(std::function<bool(const T&, const T&)> lesserThan) :
-   lesserThan(lesserThan)
+template <typename T, typename U>
+Common::SortedList<T, U>::SortedList(std::function<U(const T&)> getKey) :
+   getKey(getKey)
 {
 }
 
-template <typename T>
-void Common::SortedList<T>::insert(const T& item)
+template <typename T, typename U>
+void Common::SortedList<T, U>::insert(const T& item)
 {
    const auto less = [this](const T& a, const T& b)
    {
-      return this->lesserThan ? this->lesserThan(a, b) : a < b;
+      // return this->getKey ? this->getKey(a) < this->getKey(b) : a < b;
+      return this->less(a, b);
    };
 
    // Directory scans commonly supply names in order. Avoid searching or
@@ -102,9 +108,9 @@ void Common::SortedList<T>::insert(const T& item)
 /**
   * The given items MUST be sorted.
   */
-template <typename T>
+template <typename T, typename U>
 template <typename Container>
-void Common::SortedList<T>::insert(const Container& items)
+void Common::SortedList<T, U>::insert(const Container& items)
 {   
    QMutableListIterator<T> j(this->list);
 
@@ -123,7 +129,7 @@ void Common::SortedList<T>::insert(const Container& items)
             break;
          }
 
-         if (this->lesserThan ? this->lesserThan(ei, ej) : ei < ej)
+         if (this->less(ei, ej))
             break;
 
          j.next();
@@ -134,21 +140,21 @@ void Common::SortedList<T>::insert(const Container& items)
    }
 }
 
-template <typename T>
-void Common::SortedList<T>::itemChanged(const T& item)
+template <typename T, typename U>
+void Common::SortedList<T, U>::itemChanged(const T& item)
 {
    this->list.removeOne(item);
    this->insert(item);
 }
 
-template <typename T>
-void Common::SortedList<T>::removeOne(const T& item)
+template <typename T, typename U>
+void Common::SortedList<T, U>::removeOne(const T& item)
 {
    this->list.removeOne(item);
 }
 
-template <typename T>
-void Common::SortedList<T>::clear()
+template <typename T, typename U>
+void Common::SortedList<T, U>::clear()
 {
    this->list.clear();
 }

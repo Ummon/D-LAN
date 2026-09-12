@@ -43,7 +43,7 @@ void SortedListTests::sortedListEquivalentItems()
    QString third = QStringLiteral("alpha");
    QString before = QStringLiteral("0");
    QString after = QStringLiteral("Zulu");
-   SortedList<QString*> list([](const QString* a, const QString* b) { return a->toLower() < b->toLower(); });
+   SortedList<QString*, QString> list([](const QString* const& str) { return str->toLower(); });
 
    list.insert(&after);
    list.insert(&first);
@@ -95,14 +95,17 @@ void SortedListTests::sortedListInsertionComparisons()
       std::shuffle(items.begin(), items.end(), rng);
    }
 
-   qint64 comparisons = 0;
-   SortedList<int> list([&comparisons](int a, int b) { ++comparisons; return a < b; });
+   qint64 keyExtractions = 0;
+   SortedList<int> list([&keyExtractions](int a) { ++keyExtractions; return a; });
    for (int item : items)
       list.insert(item);
    QCOMPARE(list.getList(), expected);
    // Deterministic complexity checks instead of timing thresholds: sorted input
    // should append cheaply, and arbitrary input must not scan every prior item.
-   QVERIFY2(comparisons <= qint64(count) * (order == 0 ? 1 : 20), qPrintable(QString::number(comparisons)));
+   // Each comparison extracts two keys, so allow twice the comparison budget.
+   const qint64 maxKeyExtractions = 2 * qint64(count) * (order == 0 ? 1 : 20);
+   QVERIFY2(keyExtractions <= maxKeyExtractions, qPrintable(QString("Key extractions: %1, maximum: %2")
+      .arg(keyExtractions).arg(maxKeyExtractions)));
    for (int item : items)
       list.insert(item);
    QCOMPARE(list.getList(), expected);

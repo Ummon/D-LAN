@@ -35,6 +35,8 @@ private slots:
    void hashingResumesUnknownChunks_data();
    void hashingResumesUnknownChunks();
    void directoryTotalsFollowFileResizing();
+   void directoryFileLookupFollowsChanges();
+   void directoryFileLookupDuringRenameRemoval();
    void fittestDirectoryMatchesExistingPaths();
    void newDirectoryPreservesFinalComponent_data();
    void newDirectoryPreservesFinalComponent();

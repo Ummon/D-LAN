@@ -133,15 +133,15 @@ namespace FM
       QRecursiveMutex& mutex = *mutexStorage;
    };
 
-   inline bool operator<(const Entry& e1, const Entry& e2)
-   {
-      return e1.getName().toLower() < e2.getName().toLower();
-   }
+   // inline bool operator<(const Entry& e1, const Entry& e2)
+   // {
+   //    return e1.getName().toLower() < e2.getName().toLower();
+   // }
 
-   inline bool operator>(const Entry& e1, const Entry& e2)
-   {
-      return e1.getName().toLower() > e2.getName().toLower();
-   }
+   // inline bool operator>(const Entry& e1, const Entry& e2)
+   // {
+   //    return e1.getName().toLower() > e2.getName().toLower();
+   // }
 
    inline uint qHash(const Entry* entry)
    {

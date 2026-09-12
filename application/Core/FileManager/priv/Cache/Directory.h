@@ -103,10 +103,10 @@ namespace FM
 
       void adjustSize(qint64 delta);
 
-      static inline bool entrySortingFun(const Entry* const& e1, const Entry* const& e2) { return (*e1) < (*e2); }
+      static inline QString entryGetKeyFun(const Entry* const& entry) { return entry->getName().toLower(); }
 
-      Common::SortedList<Directory*> subDirs; ///< Sorted by name.
-      Common::SortedList<File*> files; ///< Sorted by name.
+      Common::SortedList<Directory*, QString> subDirs; ///< Sorted by name.
+      Common::SortedList<File*, QString> files; ///< Sorted by name.
 
       bool scanned;
       QRecursiveMutex retirementMutex; ///< Serializes subtree retirement without blocking metadata callbacks.

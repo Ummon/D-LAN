@@ -894,6 +894,84 @@ void CacheTest::directoryTotalsFollowFileResizing()
    QCOMPARE(cache.getAmount(), qint64(51));
 }
 
+void CacheTest::directoryFileLookupFollowsChanges()
+{
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   auto source = root->getRootDir()->createSubDir("source");
+   auto destination = root->getRootDir()->createSubDir("destination");
+   QVERIFY(!source->getFile("missing"));
+
+   // The cache can contain case variants even on a case-insensitive filesystem.
+   const QStringList names { "z.bin", "File.bin", "file.bin", "FILE.bin", "a.bin",
+      QString::fromUtf8("\xc3\x84.bin"), QString::fromUtf8("\xc3\xa4.bin") };
+   QList<FM::File*> files;
+   for (const auto& name : names)
+      files.append(new FM::File(root, name, 0, false, QDateTime(), source));
+   for (int i = 0; i < names.size(); ++i)
+      QCOMPARE(source->getFile(names[i]), files[i]);
+   QVERIFY(!source->getFile("FiLe.bin"));
+   QVERIFY(!source->getFile("zz.bin"));
+
+   auto renamed = files.first();
+   renamed->rename("File.bin");
+   QVERIFY(!source->getFile("z.bin"));
+   QCOMPARE(source->getFile("File.bin"), files[1]);
+   // An unchanged-name notification still reorders equivalent entries in SortedList.
+   files[1]->rename("File.bin");
+   QCOMPARE(source->getFile("File.bin"), renamed);
+   renamed->moveInto(destination);
+   QCOMPARE(source->getFile("File.bin"), files[1]);
+   QCOMPARE(destination->getFile("File.bin"), renamed);
+
+   // Merging directories can temporarily introduce exact duplicates.
+   destination->stealContent(source);
+   QVERIFY(source->getFiles().isEmpty());
+   QCOMPARE(destination->getFile("File.bin"), renamed);
+   for (const auto& name : names)
+      QVERIFY(!source->getFile(name));
+   renamed->del(false);
+   cache.deleteEntry(renamed);
+   QCOMPARE(destination->getFile("File.bin"), files[1]);
+
+   files[1]->rename("finished.bin.unfinished");
+   QVERIFY(!destination->getFile("File.bin"));
+   QCOMPARE(destination->getFile("finished.bin.unfinished"), files[1]);
+   files[1]->del(false);
+   // A late completion callback must not reinsert a detached file.
+   files[1]->rename("finished.bin");
+   QVERIFY(!destination->getFile("finished.bin.unfinished"));
+   QVERIFY(!destination->getFile("finished.bin"));
+   cache.deleteEntry(files[1]);
+}
+
+void CacheTest::directoryFileLookupDuringRenameRemoval()
+{
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   auto dir = root->getRootDir();
+   auto file = new FM::File(root, "before.bin", 0, false, QDateTime(), dir);
+   // Rename notifications run after the live name changes but before the parent
+   // callback. Removal must erase the original index key even in that interval.
+   connect(&cache, &FM::Cache::entryRenamed, &cache, [&](FM::Entry* entry) {
+      if (entry == file)
+         file->del(false);
+   }, Qt::DirectConnection);
+   file->rename("after.bin");
+   QVERIFY(dir->getFiles().isEmpty());
+   QVERIFY(!dir->getFile("before.bin"));
+   QVERIFY(!dir->getFile("after.bin"));
+   cache.deleteEntry(file);
+}
+
 void CacheTest::directoryMovesAllowCompletion_data()
 {
    QTest::addColumn<bool>("merge");

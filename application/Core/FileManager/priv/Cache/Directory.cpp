@@ -42,8 +42,8 @@ Directory::Directory(
    bool hidden
 ) :
    Entry(root, name, parentDirectory, 0, hidden),
-   subDirs(&Directory::entrySortingFun),
-   files(&Directory::entrySortingFun),
+   subDirs(&Directory::entryGetKeyFun),
+   files(&Directory::entryGetKeyFun),
    scanned(true)
 {
    QMutexLocker locker(&this->mutex);
@@ -372,6 +372,8 @@ Directory* Directory::createSubDirs(const QStringList& names, bool physically)
 File* Directory::getFile(const QString& name) const
 {
    QMutexLocker locker(&this->mutex);
+
+   // return this->files
 
    foreach (File* f, this->files.getList())
       if (f->getName() == name)
