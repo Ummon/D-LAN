@@ -959,8 +959,7 @@ void CacheTest::directoryFileLookupDuringRenameRemoval()
    QVERIFY(root);
    auto dir = root->getRootDir();
    auto file = new FM::File(root, "before.bin", 0, false, QDateTime(), dir);
-   // Rename notifications run after the live name changes but before the parent
-   // callback. Removal must erase the original index key even in that interval.
+   // A reentrant removal during the rename notification must leave no stale entry.
    connect(&cache, &FM::Cache::entryRenamed, &cache, [&](FM::Entry* entry) {
       if (entry == file)
          file->del(false);
@@ -970,6 +969,145 @@ void CacheTest::directoryFileLookupDuringRenameRemoval()
    QVERIFY(!dir->getFile("before.bin"));
    QVERIFY(!dir->getFile("after.bin"));
    cache.deleteEntry(file);
+}
+
+void CacheTest::directoryLookupDuringRenameNotification_data()
+{
+   QTest::addColumn<bool>("directory");
+   QTest::newRow("file") << false;
+   QTest::newRow("directory") << true;
+}
+
+void CacheTest::directoryLookupDuringRenameNotification()
+{
+   QFETCH(bool, directory);
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   auto parent = root->getRootDir();
+   const auto create = [&](const QString& name) -> FM::Entry* {
+      if (directory)
+         return parent->createSubDir(name);
+      return new FM::File(root, name, 0, false, QDateTime(), parent);
+   };
+   auto renamed = create("a");
+   auto middle = create("m");
+   auto last = create("z");
+   QSemaphore notification, resumeRename, lookupDone;
+   connect(&cache, &FM::Cache::entryRenamed, &cache, [&](FM::Entry* entry) {
+      if (entry == renamed)
+      {
+         notification.release();
+         resumeRename.acquire();
+      }
+   }, Qt::DirectConnection);
+   std::thread writer([&] { renamed->rename("zz"); });
+   if (!notification.tryAcquire(1, 5000))
+      qFatal("Rename did not reach its notification");
+
+   bool found = false, sorted = false;
+   std::thread reader([&] {
+      if (directory)
+      {
+         found = parent->getSubDir("m") == middle && parent->getSubDir("zz") == renamed &&
+            !parent->getSubDir("a");
+         const auto entries = parent->getSubDirs();
+         sorted = entries.size() == 3 && entries[0] == middle && entries[1] == last && entries[2] == renamed;
+      }
+      else
+      {
+         found = parent->getFile("m") == middle && parent->getFile("zz") == renamed &&
+            !parent->getFile("a");
+         const auto entries = parent->getFiles();
+         sorted = entries.size() == 3 && entries[0] == middle && entries[1] == last && entries[2] == renamed;
+      }
+      lookupDone.release();
+   });
+   // Notifications must see the reordered list and must not retain its mutex.
+   const bool lookupDuringNotification = lookupDone.tryAcquire(1, 5000);
+   resumeRename.release();
+   writer.join();
+   reader.join();
+   QVERIFY(lookupDuringNotification);
+   QVERIFY(found);
+   QVERIFY(sorted);
+}
+
+void CacheTest::fileNameChangesWaitForDirectory_data()
+{
+   QTest::addColumn<QString>("operation");
+   QTest::newRow("rename") << QString("rename");
+   QTest::newRow("redownload") << QString("redownload");
+   QTest::newRow("completion") << QString("completion");
+}
+
+void CacheTest::fileNameChangesWaitForDirectory()
+{
+   QFETCH(QString, operation);
+   class LockedDirectory : public FM::Directory
+   {
+   public:
+      using FM::Directory::Directory;
+      QRecursiveMutex& structuralMutex() { return this->mutex; }
+   };
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   auto parent = new LockedDirectory(root, "parent", root->getRootDir(), true);
+   const QString oldName = operation == "completion" ? "a.unfinished" : "a";
+   const QString newName = operation == "completion" ? "a" : operation == "redownload" ? "a.unfinished" : "zz";
+   auto file = new FM::File(root, oldName, 1, false, QDateTime(), parent, { Common::Hash::rand() });
+   auto sibling = new FM::File(root, "a.txt", 0, false, QDateTime(), parent);
+   new FM::File(root, "z", 0, false, QDateTime(), parent);
+   if (operation == "completion")
+   {
+      QFile physical(file->getAbsolutePath());
+      QVERIFY(physical.open(QIODevice::WriteOnly));
+      QCOMPARE(physical.write("x"), qint64(1));
+      file->getChunks().first()->setKnownBytes(1);
+   }
+   QSemaphore started, done;
+   std::exception_ptr error;
+   QMutexLocker parentLocker(&parent->structuralMutex());
+   std::thread writer([&] {
+      started.release();
+      try
+      {
+         if (operation == "completion")
+            file->chunkComplete(file->getChunks().first().data());
+         else if (operation == "redownload")
+            file->setToUnfinished(1);
+         else
+            file->rename(newName);
+      }
+      catch (...) { error = std::current_exception(); }
+      done.release();
+   });
+   const bool writerStarted = started.tryAcquire(1, 5000);
+   // While a directory reader holds the mutex, writers must keep the old sort key.
+   const bool finishedWhileLocked = done.tryAcquire(1, 100);
+   const QString nameWhileLocked = file->getName();
+   const bool siblingFound = parent->getFile("a.txt") == sibling;
+   parentLocker.unlock();
+   if (!finishedWhileLocked && !done.tryAcquire(1, 5000))
+      qFatal("Filename change deadlocked after releasing the directory mutex");
+   writer.join();
+   QVERIFY(writerStarted);
+   QVERIFY(!finishedWhileLocked);
+   QVERIFY(!error);
+   QCOMPARE(nameWhileLocked, oldName);
+   QVERIFY(siblingFound);
+   QCOMPARE(file->getName(), newName);
+   QCOMPARE(parent->getFile(newName), file);
+   QCOMPARE(parent->getFile("a.txt"), sibling);
+   QVERIFY(!parent->getFile(oldName));
 }
 
 void CacheTest::directoryMovesAllowCompletion_data()

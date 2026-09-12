@@ -39,6 +39,7 @@ namespace FM
    class Directory : public Entry
    {
       friend class DirIterator;
+      friend class Entry;
 
    public:
       Directory(
@@ -71,7 +72,6 @@ namespace FM
       Common::Path getAbsolutePath() const override;
       Entry* getEntry(const Common::Path& path) override;
 
-      void rename(const QString& newName) override;
       bool isAChildOf(const Directory* dir) const;
 
       Directory* getSubDir(const QString& name) const;
@@ -99,6 +99,7 @@ namespace FM
       void setRootRecursively(SharedEntry* sharedEntry) override;
 
    private:
+      void entryNameChanged(Entry* entry);
       void subdirNameChanged(Directory* dir);
 
       void adjustSize(qint64 delta);

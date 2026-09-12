@@ -77,7 +77,6 @@ namespace FM
 
       QString getExtension() const;
 
-      void rename(const QString& newName) override;
       QDateTime getDateLastModified() const;
 
       void newDataWriterCreated();

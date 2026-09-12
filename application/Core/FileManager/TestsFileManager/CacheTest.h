@@ -37,6 +37,10 @@ private slots:
    void directoryTotalsFollowFileResizing();
    void directoryFileLookupFollowsChanges();
    void directoryFileLookupDuringRenameRemoval();
+   void directoryLookupDuringRenameNotification_data();
+   void directoryLookupDuringRenameNotification();
+   void fileNameChangesWaitForDirectory_data();
+   void fileNameChangesWaitForDirectory();
    void fittestDirectoryMatchesExistingPaths();
    void newDirectoryPreservesFinalComponent_data();
    void newDirectoryPreservesFinalComponent();

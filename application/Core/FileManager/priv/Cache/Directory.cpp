@@ -267,15 +267,6 @@ Entry* Directory::getEntry(const Common::Path& path)
    return currentDirectory;
 }
 
-void Directory::rename(const QString& newName)
-{
-   QMutexLocker locker(&this->mutex);
-
-   Entry::rename(newName);
-   if (this->parentDirectory)
-      this->parentDirectory.load()->subdirNameChanged(this);
-}
-
 bool Directory::isAChildOf(const Directory* dir) const
 {
    QMutexLocker locker(&this->mutex);
@@ -444,6 +435,15 @@ void Directory::setScanned(bool value)
    this->scanned = value;
    if (this->scanned)
       this->getCache()->onScanned(this);
+}
+
+// Entry::setName holds this directory's mutex until the new key is in order.
+void Directory::entryNameChanged(Entry* entry)
+{
+   if (auto file = dynamic_cast<File*>(entry))
+      this->fileNameChanged(file);
+   else if (auto dir = dynamic_cast<Directory*>(entry))
+      this->subdirNameChanged(dir);
 }
 
 /**

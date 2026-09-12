@@ -111,6 +111,7 @@ namespace FM
 
       // Writers still use mutex to serialize tree/index transitions. Readers used by
       // parent containers and search indexes must never acquire a child's mutex.
+      // Updates the parent's sort order atomically with the name, before notifications.
       void setName(const QString& name);
 
    private:
@@ -132,16 +133,6 @@ namespace FM
       const QSharedPointer<QRecursiveMutex> mutexStorage = QSharedPointer<QRecursiveMutex>::create();
       QRecursiveMutex& mutex = *mutexStorage;
    };
-
-   // inline bool operator<(const Entry& e1, const Entry& e2)
-   // {
-   //    return e1.getName().toLower() < e2.getName().toLower();
-   // }
-
-   // inline bool operator>(const Entry& e1, const Entry& e2)
-   // {
-   //    return e1.getName().toLower() > e2.getName().toLower();
-   // }
 
    inline uint qHash(const Entry* entry)
    {
