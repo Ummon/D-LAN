@@ -16,6 +16,8 @@ private slots:
    void sortedListInsertionComparisons_data();
    void sortedListInsertionComparisons();
    void sortedListGetItems();
+   void sortedListGetItem_data();
+   void sortedListGetItem();
    void sortedListUpdateItem();
    void sortedListUpdateItemComplexity();
 };
@@ -135,6 +137,44 @@ void SortedListTests::sortedListGetItems()
    QCOMPARE(list.getItems("0"), (QList<QString*> { &before }));
    QCOMPARE(list.getItems("zulu"), (QList<QString*> { &after }));
    QVERIFY(list.getItems("XXX").isEmpty());
+}
+
+void SortedListTests::sortedListGetItem_data()
+{
+   QTest::addColumn<QString>("exactName");
+   QTest::addColumn<int>("expectedIndex");
+   QTest::newRow("first-match") << QString("Alpha") << 0;
+   QTest::newRow("reject-first") << QString("ALPHA") << 1;
+   QTest::newRow("reject-first-two") << QString("alpha") << 2;
+   QTest::newRow("reject-all") << QString("AlPhA") << -1;
+}
+
+void SortedListTests::sortedListGetItem()
+{
+   QFETCH(QString, exactName);
+   QFETCH(int, expectedIndex);
+   QString first = "Alpha", second = "ALPHA", third = "alpha", before = "0", after = "Zulu";
+   const QList<QString*> candidates { &first, &second, &third };
+   SortedList<QString*, QString> list([](const QString* str) { return str->toLower(); });
+   QList<QString*> visited;
+   const auto predicate = [&](QString* str) {
+      visited.append(str);
+      return *str == exactName;
+   };
+   QVERIFY(!list.getItem("alpha", predicate));
+   QVERIFY(visited.isEmpty());
+   for (auto item : { &after, &first, &second, &before, &third })
+      list.insert(item);
+
+   const auto result = list.getItem("alpha", predicate);
+   QCOMPARE(result.value_or(nullptr), expectedIndex < 0 ? nullptr : candidates[expectedIndex]);
+   // Stop at the first accepted candidate, and never call the predicate for other keys.
+   QCOMPARE(visited, expectedIndex < 0 ? candidates : candidates.mid(0, expectedIndex + 1));
+
+   visited.clear();
+   for (const auto key : { "", "beta", "zzzz" })
+      QVERIFY(!list.getItem(key, predicate));
+   QVERIFY(visited.isEmpty());
 }
 
 void SortedListTests::sortedListUpdateItem()

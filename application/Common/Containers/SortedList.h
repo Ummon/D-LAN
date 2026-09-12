@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include <optional>
 #include <algorithm>
 #include <functional>
 
@@ -56,6 +57,9 @@ namespace Common
       void clear();
 
       QList<T> getItems(const U& key) const;
+
+      template <typename Predicate>
+      std::optional<T> getItem(const U& key, Predicate predicate) const;
 
       inline const QList<T>& getList() const { return this->list; }
 
@@ -238,4 +242,39 @@ QList<T> Common::SortedList<T, U>::getItems(const U& key) const
    }
 
    return result;
+}
+
+
+/**
+  * Returns the first item matching the key and the predicate.
+  * Get item by key, 'getKey' must have been given in the constructor.
+  */
+template <typename T, typename U>
+template <typename Predicate>
+std::optional<T> Common::SortedList<T, U>::getItem(const U& key, Predicate predicate) const
+{
+   if (!this->getKey || this->list.isEmpty() ||this->getKey(this->list.constLast()) < key)
+      return std::nullopt;
+
+   const auto lessThan = [this, &key](const T& other)
+   {
+      return this->getKey(other) < key;
+   };
+
+   auto position = std::partition_point(this->list.cbegin(), this->list.cend(), lessThan);
+
+   while (position != this->list.end())
+   {
+      if (this->getKey(*position) == key)
+      {
+         if (predicate(*position))
+            return *position;
+      }
+      else
+         break;
+
+      ++position;
+   }
+
+   return std::nullopt;
 }
