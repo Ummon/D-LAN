@@ -30,6 +30,11 @@ target_link_libraries(TestsCommon PRIVATE
 
 add_test(NAME TestsCommon COMMAND TestsCommon)
 
+add_executable(TestsSortedList SortedListTests.cpp)
+target_include_directories(TestsSortedList PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
+target_link_libraries(TestsSortedList PRIVATE Qt6::Test)
+add_test(NAME TestsSortedList COMMAND TestsSortedList)
+
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
    add_executable(TestsGlobalLinux GlobalLinuxTests.cpp)
    target_link_libraries(TestsGlobalLinux PRIVATE Common Qt6::Test)

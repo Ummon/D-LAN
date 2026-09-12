@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <functional>
 
 #include <QList>
@@ -26,8 +27,8 @@
 /**
   * @class Common::SortedList
   *
-  * A very simple sorted list, not very efficient, implemented as a simple array.
-  * A more efficient implementation should use a red-black tree or a B-tree.
+  * An array-backed sorted list. Single insertion uses logarithmic comparisons,
+  * plus a scan of equivalent items for duplicates; moving elements is linear.
   * Don't forget to call 'itemChanged(..)' if the data of one of the items has
   * changed and the sorting function ('lesserThan') depends of this data.
   * Do not allow multiple same item.
@@ -70,19 +71,32 @@ Common::SortedList<T>::SortedList(std::function<bool(const T&, const T&)> lesser
 template <typename T>
 void Common::SortedList<T>::insert(const T& item)
 {
-   for (QMutableListIterator<T> i(this->list); i.hasNext(); i.next())
+   const auto less = [this](const T& a, const T& b)
    {
-      T e = i.peekNext();
-      if (e == item)
-         return;
-      if (this->lesserThan ? this->lesserThan(item, e) : item < e)
-      {
-         i.insert(item);
-         return;
-      }
+      return this->lesserThan ? this->lesserThan(a, b) : a < b;
+   };
+
+   // Directory scans commonly supply names in order. Avoid searching or
+   // detaching the list just to discover that the new item belongs at the end.
+   if (this->list.isEmpty() || less(this->list.constLast(), item))
+   {
+      this->list.append(item);
+      return;
    }
 
-   this->list << item;
+   auto position = std::lower_bound(this->list.cbegin(), this->list.cend(), item, less);
+   // Equivalent sort keys need not identify the same item (e.g. distinct files
+   // with case-insensitively equal names). Keep their insertion order and reject
+   // only operator== duplicates, as before.
+   while (position != this->list.cend() && !less(item, *position))
+   {
+      if (*position == item)
+         return;
+      ++position;
+   }
+
+   const auto index = position - this->list.cbegin();
+   this->list.insert(index, item);
 }
 
 /**
