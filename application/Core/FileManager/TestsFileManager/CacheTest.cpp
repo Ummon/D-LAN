@@ -2607,6 +2607,94 @@ void CacheTest::browseNewSharedDirectory()
    }
 }
 
+void CacheTest::scanDirectoryIncrementally_data()
+{
+   QTest::addColumn<bool>("addUnfinished");
+   QTest::newRow("initial-scan") << true;
+   QTest::newRow("rescan") << false;
+}
+
+void CacheTest::scanDirectoryIncrementally()
+{
+   QFETCH(bool, addUnfinished);
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   const auto writeFile = [&](const QString& name, const QByteArray& content) {
+      QFile file(temp.filePath(name));
+      return file.open(QIODevice::WriteOnly) && file.write(content) == content.size();
+   };
+   QStringList expected;
+   // Create out of name order: enumeration order must not determine browse order.
+   for (int i = 511; i >= 0; --i)
+   {
+      const QString name = QString("%1-%2.bin").arg(i % 2 ? "Asset" : "asset").arg(i, 4, 10, QLatin1Char('0'));
+      QVERIFY(writeFile(name, "abc"));
+      expected << name;
+   }
+   QVERIFY(writeFile(".hidden", "hidden"));
+#ifdef Q_OS_WIN32
+   const auto hiddenPath = temp.filePath(".hidden").toStdWString();
+   QVERIFY(SetFileAttributesW(hiddenPath.c_str(), FILE_ATTRIBUTE_HIDDEN));
+#endif
+   expected << ".hidden";
+   const QString unfinished = "download" + SETTINGS.get<QString>("unfinished_suffix_term");
+   QVERIFY(writeFile(unfinished, "partial"));
+   if (addUnfinished)
+      expected << unfinished;
+   QVERIFY(QDir(temp.path()).mkdir("child"));
+   QVERIFY(writeFile("child/nested.bin", "nested"));
+
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   FM::FileUpdater updater(nullptr);
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   auto dir = root->getRootDir();
+   const auto checkFiles = [&]() {
+      std::sort(expected.begin(), expected.end(), [](const QString& a, const QString& b) {
+         return a.toLower() < b.toLower();
+      });
+      QStringList actual;
+      for (FM::File* file : dir->getFiles())
+         actual << file->getName();
+      QCOMPARE(actual, expected);
+      QVERIFY(dir->isScanned());
+      QVERIFY(!updater.isScanning());
+   };
+
+   updater.scan(dir, addUnfinished);
+   checkFiles();
+   auto survivor = dir->getFile("Asset-0001.bin");
+   QVERIFY(survivor);
+   auto hidden = dir->getFile(".hidden");
+   QVERIFY(hidden);
+   Protos::Common::Entry hiddenEntry;
+   hidden->populateEntry(&hiddenEntry);
+   QVERIFY(hiddenEntry.hidden());
+   auto child = dir->getSubDir("child");
+   QVERIFY(child);
+   QVERIFY(child->isScanned());
+   QVERIFY(child->getFile("nested.bin"));
+   QCOMPARE(dir->getSubDirs().size(), qsizetype(1));
+   QCOMPARE(dir->getCompleteFiles().size(), qsizetype(513));
+
+   QVERIFY(QFile::remove(temp.filePath("asset-0000.bin")));
+   expected.removeOne("asset-0000.bin");
+   QVERIFY(writeFile("Asset-0001.bin", "changed-size"));
+   QVERIFY(writeFile("new.bin", "new"));
+   expected << "new.bin";
+   QVERIFY(QFile::remove(temp.filePath("child/nested.bin")));
+   QVERIFY(QDir(temp.path()).rmdir("child"));
+   updater.scan(dir);
+   checkFiles();
+   QCOMPARE(dir->getFile("Asset-0001.bin"), survivor);
+   QCOMPARE(survivor->getSize(), qint64(12));
+   QVERIFY(dir->getSubDirs().isEmpty());
+   // A normal rescan neither discovers new unfinished files nor removes known ones.
+   QCOMPARE(dir->getFile(unfinished) != nullptr, addUnfinished);
+}
+
 void CacheTest::browseDirectoryLifetime_data()
 {
    QTest::addColumn<QString>("scenario");

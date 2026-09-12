@@ -85,6 +85,8 @@ private slots:
    void browseDirectoryLifetime();
    void browseNewSharedDirectory_data();
    void browseNewSharedDirectory();
+   void scanDirectoryIncrementally_data();
+   void scanDirectoryIncrementally();
    void partialWrites_data();
    void partialWrites();
    void unfinishedDownloadRetry_data();
