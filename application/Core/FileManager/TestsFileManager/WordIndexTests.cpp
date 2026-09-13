@@ -166,6 +166,50 @@ void WordIndexTests::normalizedKanaAndHangul()
    QVERIFY(search(QStringLiteral("\uD558")).isEmpty());
 }
 
+void WordIndexTests::prefixGraphemeBoundaries_data()
+{
+   QTest::addColumn<QString>("prefix");
+   QTest::addColumn<QString>("combined");
+   QTest::newRow("hiragana-dakuten") << QStringLiteral("\u308F") << QStringLiteral("\u308F\u3099");
+   QTest::newRow("katakana-handakuten") << QStringLiteral("\u30C8") << QStringLiteral("\u30C8\u309A");
+   QTest::newRow("hangul-jamo") << QStringLiteral("\u1100") << QStringLiteral("\u1100\u1161");
+   QTest::newRow("latin-combining") << QString("abc") << QStringLiteral("abc\u0301");
+   QTest::newRow("supplementary-mark") << QStringLiteral("\u65E5") << QStringLiteral("\u65E5\U000E0100");
+   QTest::newRow("emoji-joiner") << QStringLiteral("abc\U0001F469") << QStringLiteral("abc\U0001F469\u200D\U0001F4BB");
+}
+
+void WordIndexTests::prefixGraphemeBoundaries()
+{
+   QFETCH(QString, prefix);
+   QFETCH(QString, combined);
+   WordIndex<int> index;
+   index.addItem(combined + "x", 1);
+   const auto check = [&](const QList<int>& expected) {
+      QCOMPARE(WordIndex<int>::resultToList(index.search(prefix)), expected);
+      QCOMPARE(WordIndex<int>::resultToList(index.search(QStringList { prefix })), expected);
+      QCOMPARE(WordIndex<int>::resultToList(index.search(combined)), (QList<int> { 1 }));
+      int predicateCalls = 0;
+      const auto limited = index.search(prefix, 1, [&](int) { ++predicateCalls; return true; });
+      QCOMPARE(limited.size(), expected.isEmpty() ? 0 : 1);
+      QCOMPARE(predicateCalls, expected.isEmpty() ? 0 : 1);
+   };
+   check({}); // Query ends inside a compressed node.
+   index.addItem(prefix + "y", 2);
+   check({ 2 }); // A branch separates the base from the combining continuation.
+   index.addItem(prefix, 3);
+   check({ 3, 2 }); // Exact matches still rank before valid prefixes.
+   QVERIFY(index.rmItem(prefix, 3));
+   check({ 2 });
+   QVERIFY(index.rmItem(prefix + "y", 2));
+   check({}); // Compaction must preserve the boundary decision.
+
+   // A supplementary format character and a combining mark can share a high surrogate.
+   index.addItem(prefix + QStringLiteral("\U000E0001"), 4);
+   check({ 4 });
+   QVERIFY(index.rmItem(prefix + QStringLiteral("\U000E0001"), 4));
+   check({});
+}
+
 void WordIndexTests::singleWordResultLimits()
 {
    WordIndex<int> index;

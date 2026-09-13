@@ -23,6 +23,7 @@
 #include <QList>
 #include <QString>
 #include <QPair>
+#include <QTextBoundaryFinder>
 
 #include <Common/Uncopyable.h>
 #include <Common/StringUtils.h>
@@ -103,13 +104,16 @@ namespace FM
       Node(const QString& part);
       Node(const QString& part, const T& item);
 
-      QPair<Node<T>*, int> getNode(const QString& word, bool exactMatch = false, bool* fullyMatched = nullptr) const;
+      QPair<Node<T>*, int> getNode(const QString& word, bool exactMatch = false, bool* fullyMatched = nullptr, int* matchedLength = nullptr) const;
 
       /**
         * Return all items from the current node and its sub nodes (recursively) if 'alsoFromSubNodes' is true.
         * Items in this node have level 0 only if the query fully matched it; all other items have level 1.
+        * Prefix matches must end at a grapheme boundary in the indexed word.
         */
       QList<NodeResult<T>> getItems(
+         const QString& word,
+         int matchedLength,
          bool fullyMatched,
          bool alsoFromSubNodes = false,
          int maxNbResult = -1,
@@ -220,11 +224,12 @@ QList<FM::NodeResult<T>> FM::Node<T>::search(
 ) const
 {
    bool fullyMatched = false;
-   QPair<Node<T>*, int> nodes = this->getNode(word, !alsoFromSubNodes, &fullyMatched);
+   int matchedLength = 0;
+   QPair<Node<T>*, int> nodes = this->getNode(word, !alsoFromSubNodes, &fullyMatched, &matchedLength);
    if (!nodes.first)
       return QList<NodeResult<T>>();
 
-   return nodes.first->children[nodes.second]->getItems(fullyMatched, alsoFromSubNodes, maxNbResult, predicat);
+   return nodes.first->children[nodes.second]->getItems(word, matchedLength, fullyMatched, alsoFromSubNodes, maxNbResult, predicat);
 }
 
 template <typename T>
@@ -272,7 +277,7 @@ FM::Node<T>::Node(const QString& part, const T& item) :
   * Returns the node matching the given word as the 'QPair::second'th child of its parent 'QPair::first'.
   */
 template <typename T>
-QPair<FM::Node<T>*, int> FM::Node<T>::getNode(const QString& word, bool exactMatch, bool* fullyMatched) const
+QPair<FM::Node<T>*, int> FM::Node<T>::getNode(const QString& word, bool exactMatch, bool* fullyMatched, int* matchedLength) const
 {
    if (fullyMatched)
       *fullyMatched = false;
@@ -291,6 +296,8 @@ QPair<FM::Node<T>*, int> FM::Node<T>::getNode(const QString& word, bool exactMat
             {
                if (fullyMatched)
                   *fullyMatched = true;
+               if (matchedLength)
+                  *matchedLength = p;
                return qMakePair(currentParent, i);
             }
 
@@ -304,7 +311,11 @@ QPair<FM::Node<T>*, int> FM::Node<T>::getNode(const QString& word, bool exactMat
             if (exactMatch)
                break;
             else
+            {
+               if (matchedLength)
+                  *matchedLength = p;
                return qMakePair(currentParent, i);
+            }
          }
          break;
       }
@@ -314,6 +325,8 @@ QPair<FM::Node<T>*, int> FM::Node<T>::getNode(const QString& word, bool exactMat
 
 template <typename T>
 QList<FM::NodeResult<T>> FM::Node<T>::getItems(
+   const QString& word,
+   int matchedLength,
    bool fullyMatched,
    bool alsoFromSubNodes,
    int maxNbResult,
@@ -321,15 +334,38 @@ QList<FM::NodeResult<T>> FM::Node<T>::getItems(
 ) const
 {
    QList<NodeResult<T>> result;
-   QList<Node<T>*> nodesToVisit;
+   struct Candidate
+   {
+      const Node<T>* node;
+      QString text;
+      bool boundaryKnown;
+   };
+   QList<Candidate> nodesToVisit;
 
-   nodesToVisit.append(const_cast<Node<T>*>(this));
+   nodesToVisit.append({ this, word + this->part.sliced(matchedLength), false });
 
    while (!nodesToVisit.empty())
    {
-      const Node<T>* current = nodesToVisit.takeFirst();
+      Candidate candidate = nodesToVisit.takeFirst();
+      const Node<T>* current = candidate.node;
+      bool matches = true;
+      if (!candidate.boundaryKnown && candidate.text.size() > word.size())
+      {
+         // Trie nodes may split combining sequences or surrogate pairs. Keep the full
+         // query context until the first following code point is available.
+         QTextBoundaryFinder boundaries(QTextBoundaryFinder::Grapheme, candidate.text);
+         boundaries.setPosition(word.size());
+         matches = boundaries.isAtBoundary();
+         const bool incompleteCodePoint = candidate.text.size() == word.size() + 1 && candidate.text.back().isHighSurrogate();
+         if (!incompleteCodePoint)
+         {
+            if (!matches)
+               continue;
+            candidate.boundaryKnown = true;
+         }
+      }
 
-      for (QListIterator<T> i(current->items); i.hasNext();)
+      for (QListIterator<T> i(current->items); matches && i.hasNext();)
       {
          const T& item = i.next();
          if (!predicat || predicat(item))
@@ -343,7 +379,8 @@ QList<FM::NodeResult<T>> FM::Node<T>::getItems(
       if (!alsoFromSubNodes)
          break;
 
-      nodesToVisit.append(current->children);
+      for (const Node<T>* child : current->children)
+         nodesToVisit.append({ child, candidate.boundaryKnown ? QString() : candidate.text + child->part, candidate.boundaryKnown });
    }
 
    return result;
