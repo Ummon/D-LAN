@@ -23,6 +23,7 @@ using namespace GUI;
 #include <algorithm>
 
 #include <QTextDocument>
+#include <QTextBoundaryFinder>
 #include <QAbstractTextDocumentLayout>
 #include <QMenu>
 #include <QIcon>
@@ -145,25 +146,27 @@ QString SearchDelegate::toHtmlText(const QString& text) const
 
    QList<QPair<int, int>> partsToHighlight; // Parts of 'text' to put in bold, as [begin, end[ positions.
 
-   for (QStringListIterator i(this->currentTerms); i.hasNext();)
+   // Use the index's tokenization, including digits and preserved combining marks.
+   // Locate each token in the folded text to retain the mapping to the original name.
+   int nextWord = 0;
+   for (const QString& word : Common::StringUtils::splitInWords(text))
    {
-      const QString& term = i.next();
-      if (term.isEmpty()) // Would match at every position without ever advancing.
-         continue;
+      const int pos = foldedText.indexOf(word, nextWord);
+      if (pos == -1)
+         break;
+      nextWord = pos + word.size();
+      QTextBoundaryFinder boundaries(QTextBoundaryFinder::Grapheme, word);
 
-      for (int pos = 0; (pos = foldedText.indexOf(term, pos)) != -1; pos += term.size())
+      for (const QString& term : this->currentTerms)
       {
-         // Only highlight terms beginning a word. A preceding supplementary letter
-         // occupies two UTF-16 units, so classify the complete code point.
-         if (pos > 0)
-         {
-            const QChar previous = foldedText.at(pos - 1);
-            const char32_t previousCodePoint = previous.isLowSurrogate() && pos >= 2 && foldedText.at(pos - 2).isHighSurrogate()
-               ? QChar::surrogateToUcs4(foldedText.at(pos - 2), previous)
-               : char32_t(previous.unicode());
-            if (QChar::isLetter(previousCodePoint))
-               continue;
-         }
+         if (term.isEmpty() || !word.startsWith(term))
+            continue;
+
+         // Like the index, reject prefixes ending inside a folded grapheme before
+         // expanding the accepted span to cover complete source graphemes.
+         boundaries.setPosition(term.size());
+         if (!boundaries.isAtBoundary())
+            continue;
 
          int end = pos + term.size();
          // A source grapheme may expand to several folded characters. Include the
