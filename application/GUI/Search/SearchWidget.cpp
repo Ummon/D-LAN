@@ -152,15 +152,26 @@ QString SearchDelegate::toHtmlText(const QString& text) const
          continue;
 
       for (int pos = 0; (pos = foldedText.indexOf(term, pos)) != -1; pos += term.size())
-         if (pos == 0 || !foldedText.at(pos - 1).isLetter()) // Only the terms beginning a word are highlighted.
+      {
+         // Only highlight terms beginning a word. A preceding supplementary letter
+         // occupies two UTF-16 units, so classify the complete code point.
+         if (pos > 0)
          {
-            int end = pos + term.size();
-            // A source grapheme may expand to several folded characters. Include the
-            // entire source grapheme when the match ends within that expansion.
-            while (end < foldedText.size() && positions[end] == positions[end - 1])
-               ++end;
-            partsToHighlight << qMakePair(positions[pos], positions[end]);
+            const QChar previous = foldedText.at(pos - 1);
+            const char32_t previousCodePoint = previous.isLowSurrogate() && pos >= 2 && foldedText.at(pos - 2).isHighSurrogate()
+               ? QChar::surrogateToUcs4(foldedText.at(pos - 2), previous)
+               : char32_t(previous.unicode());
+            if (QChar::isLetter(previousCodePoint))
+               continue;
          }
+
+         int end = pos + term.size();
+         // A source grapheme may expand to several folded characters. Include the
+         // entire source grapheme when the match ends within that expansion.
+         while (end < foldedText.size() && positions[end] == positions[end - 1])
+            ++end;
+         partsToHighlight << qMakePair(positions[pos], positions[end]);
+      }
    }
 
    if (partsToHighlight.isEmpty())
