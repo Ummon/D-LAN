@@ -82,6 +82,8 @@ def "main run-tests" [] {
 
     let tests = [
         ($release_directory)/output/TestsCommon
+        ($release_directory)/output/TestsSortedList
+        ($release_directory)/output/TestsChatSystem
         ($release_directory)/output/TestsLogManager
         ($release_directory)/output/TestsFileManager
         ($release_directory)/output/TestsFilePool
@@ -92,6 +94,7 @@ def "main run-tests" [] {
         ($release_directory)/output/TestsNetworkListener
         ($release_directory)/output/TestsRemoteCoreController
         ($release_directory)/output/TestsRemoteControlManager
+        ($release_directory)/output/TestsDownloadsTreeModel
     ]
 
     for $test in $tests {

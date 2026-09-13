@@ -894,6 +894,222 @@ void CacheTest::directoryTotalsFollowFileResizing()
    QCOMPARE(cache.getAmount(), qint64(51));
 }
 
+void CacheTest::directoryFileLookupFollowsChanges()
+{
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   auto source = root->getRootDir()->createSubDir("source");
+   auto destination = root->getRootDir()->createSubDir("destination");
+   QVERIFY(!source->getFile("missing"));
+
+   // The cache can contain case variants even on a case-insensitive filesystem.
+   const QStringList names { "z.bin", "File.bin", "file.bin", "FILE.bin", "a.bin",
+      QString::fromUtf8("\xc3\x84.bin"), QString::fromUtf8("\xc3\xa4.bin") };
+   QList<FM::File*> files;
+   for (const auto& name : names)
+      files.append(new FM::File(root, name, 0, false, QDateTime(), source));
+   for (int i = 0; i < names.size(); ++i)
+      QCOMPARE(source->getFile(names[i]), files[i]);
+   QVERIFY(!source->getFile("FiLe.bin"));
+   QVERIFY(!source->getFile("zz.bin"));
+
+   auto renamed = files.first();
+   renamed->rename("File.bin");
+   QVERIFY(!source->getFile("z.bin"));
+   QCOMPARE(source->getFile("File.bin"), files[1]);
+   // An unchanged-name notification still reorders equivalent entries in SortedList.
+   files[1]->rename("File.bin");
+   QCOMPARE(source->getFile("File.bin"), renamed);
+   renamed->moveInto(destination);
+   QCOMPARE(source->getFile("File.bin"), files[1]);
+   QCOMPARE(destination->getFile("File.bin"), renamed);
+
+   // Merging directories can temporarily introduce exact duplicates.
+   destination->stealContent(source);
+   QVERIFY(source->getFiles().isEmpty());
+   QCOMPARE(destination->getFile("File.bin"), renamed);
+   for (const auto& name : names)
+      QVERIFY(!source->getFile(name));
+   renamed->del(false);
+   cache.deleteEntry(renamed);
+   QCOMPARE(destination->getFile("File.bin"), files[1]);
+
+   files[1]->rename("finished.bin.unfinished");
+   QVERIFY(!destination->getFile("File.bin"));
+   QCOMPARE(destination->getFile("finished.bin.unfinished"), files[1]);
+   files[1]->del(false);
+   // A late completion callback must not reinsert a detached file.
+   files[1]->rename("finished.bin");
+   QVERIFY(!destination->getFile("finished.bin.unfinished"));
+   QVERIFY(!destination->getFile("finished.bin"));
+   cache.deleteEntry(files[1]);
+}
+
+void CacheTest::directoryFileLookupDuringRenameRemoval()
+{
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   auto dir = root->getRootDir();
+   auto file = new FM::File(root, "before.bin", 0, false, QDateTime(), dir);
+   // A reentrant removal during the rename notification must leave no stale entry.
+   connect(&cache, &FM::Cache::entryRenamed, &cache, [&](FM::Entry* entry) {
+      if (entry == file)
+         file->del(false);
+   }, Qt::DirectConnection);
+   file->rename("after.bin");
+   QVERIFY(dir->getFiles().isEmpty());
+   QVERIFY(!dir->getFile("before.bin"));
+   QVERIFY(!dir->getFile("after.bin"));
+   cache.deleteEntry(file);
+}
+
+void CacheTest::directoryLookupDuringRenameNotification_data()
+{
+   QTest::addColumn<bool>("directory");
+   QTest::newRow("file") << false;
+   QTest::newRow("directory") << true;
+}
+
+void CacheTest::directoryLookupDuringRenameNotification()
+{
+   QFETCH(bool, directory);
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   auto parent = root->getRootDir();
+   const auto create = [&](const QString& name) -> FM::Entry* {
+      if (directory)
+         return parent->createSubDir(name);
+      return new FM::File(root, name, 0, false, QDateTime(), parent);
+   };
+   auto renamed = create("a");
+   auto middle = create("m");
+   auto last = create("z");
+   QSemaphore notification, resumeRename, lookupDone;
+   connect(&cache, &FM::Cache::entryRenamed, &cache, [&](FM::Entry* entry) {
+      if (entry == renamed)
+      {
+         notification.release();
+         resumeRename.acquire();
+      }
+   }, Qt::DirectConnection);
+   std::thread writer([&] { renamed->rename("zz"); });
+   if (!notification.tryAcquire(1, 5000))
+      qFatal("Rename did not reach its notification");
+
+   bool found = false, sorted = false;
+   std::thread reader([&] {
+      if (directory)
+      {
+         found = parent->getSubDir("m") == middle && parent->getSubDir("zz") == renamed &&
+            !parent->getSubDir("a");
+         const auto entries = parent->getSubDirs();
+         sorted = entries.size() == 3 && entries[0] == middle && entries[1] == last && entries[2] == renamed;
+      }
+      else
+      {
+         found = parent->getFile("m") == middle && parent->getFile("zz") == renamed &&
+            !parent->getFile("a");
+         const auto entries = parent->getFiles();
+         sorted = entries.size() == 3 && entries[0] == middle && entries[1] == last && entries[2] == renamed;
+      }
+      lookupDone.release();
+   });
+   // Notifications must see the reordered list and must not retain its mutex.
+   const bool lookupDuringNotification = lookupDone.tryAcquire(1, 5000);
+   resumeRename.release();
+   writer.join();
+   reader.join();
+   QVERIFY(lookupDuringNotification);
+   QVERIFY(found);
+   QVERIFY(sorted);
+}
+
+void CacheTest::fileNameChangesWaitForDirectory_data()
+{
+   QTest::addColumn<QString>("operation");
+   QTest::newRow("rename") << QString("rename");
+   QTest::newRow("redownload") << QString("redownload");
+   QTest::newRow("completion") << QString("completion");
+}
+
+void CacheTest::fileNameChangesWaitForDirectory()
+{
+   QFETCH(QString, operation);
+   class LockedDirectory : public FM::Directory
+   {
+   public:
+      using FM::Directory::Directory;
+      QRecursiveMutex& structuralMutex() { return this->mutex; }
+   };
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   auto parent = new LockedDirectory(root, "parent", root->getRootDir(), true);
+   const QString oldName = operation == "completion" ? "a.unfinished" : "a";
+   const QString newName = operation == "completion" ? "a" : operation == "redownload" ? "a.unfinished" : "zz";
+   auto file = new FM::File(root, oldName, 1, false, QDateTime(), parent, { Common::Hash::rand() });
+   auto sibling = new FM::File(root, "a.txt", 0, false, QDateTime(), parent);
+   new FM::File(root, "z", 0, false, QDateTime(), parent);
+   if (operation == "completion")
+   {
+      QFile physical(file->getAbsolutePath());
+      QVERIFY(physical.open(QIODevice::WriteOnly));
+      QCOMPARE(physical.write("x"), qint64(1));
+      file->getChunks().first()->setKnownBytes(1);
+   }
+   QSemaphore started, done;
+   std::exception_ptr error;
+   QMutexLocker parentLocker(&parent->structuralMutex());
+   std::thread writer([&] {
+      started.release();
+      try
+      {
+         if (operation == "completion")
+            file->chunkComplete(file->getChunks().first().data());
+         else if (operation == "redownload")
+            file->setToUnfinished(1);
+         else
+            file->rename(newName);
+      }
+      catch (...) { error = std::current_exception(); }
+      done.release();
+   });
+   const bool writerStarted = started.tryAcquire(1, 5000);
+   // While a directory reader holds the mutex, writers must keep the old sort key.
+   const bool finishedWhileLocked = done.tryAcquire(1, 100);
+   const QString nameWhileLocked = file->getName();
+   const bool siblingFound = parent->getFile("a.txt") == sibling;
+   parentLocker.unlock();
+   if (!finishedWhileLocked && !done.tryAcquire(1, 5000))
+      qFatal("Filename change deadlocked after releasing the directory mutex");
+   writer.join();
+   QVERIFY(writerStarted);
+   QVERIFY(!finishedWhileLocked);
+   QVERIFY(!error);
+   QCOMPARE(nameWhileLocked, oldName);
+   QVERIFY(siblingFound);
+   QCOMPARE(file->getName(), newName);
+   QCOMPARE(parent->getFile(newName), file);
+   QCOMPARE(parent->getFile("a.txt"), sibling);
+   QVERIFY(!parent->getFile(oldName));
+}
+
 void CacheTest::directoryMovesAllowCompletion_data()
 {
    QTest::addColumn<bool>("merge");
@@ -2235,7 +2451,7 @@ void CacheTest::directoryDestructionReleasesParentLocks()
             // A completion/rename callback must not reinsert a child detached by the destructor.
             if (leafAvailable)
             {
-               leaf->fileNameChanged(file);
+               file->rename("completed.bin");
                reinserted = !leaf->getFiles().isEmpty();
             }
          });
@@ -2605,6 +2821,94 @@ void CacheTest::browseNewSharedDirectory()
       QCOMPARE(response.entries().entries(0).name(), std::string("child"));
       QCOMPARE(response.entries().entries(1).name(), std::string("complete.txt"));
    }
+}
+
+void CacheTest::scanDirectoryIncrementally_data()
+{
+   QTest::addColumn<bool>("addUnfinished");
+   QTest::newRow("initial-scan") << true;
+   QTest::newRow("rescan") << false;
+}
+
+void CacheTest::scanDirectoryIncrementally()
+{
+   QFETCH(bool, addUnfinished);
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   const auto writeFile = [&](const QString& name, const QByteArray& content) {
+      QFile file(temp.filePath(name));
+      return file.open(QIODevice::WriteOnly) && file.write(content) == content.size();
+   };
+   QStringList expected;
+   // Create out of name order: enumeration order must not determine browse order.
+   for (int i = 511; i >= 0; --i)
+   {
+      const QString name = QString("%1-%2.bin").arg(i % 2 ? "Asset" : "asset").arg(i, 4, 10, QLatin1Char('0'));
+      QVERIFY(writeFile(name, "abc"));
+      expected << name;
+   }
+   QVERIFY(writeFile(".hidden", "hidden"));
+#ifdef Q_OS_WIN32
+   const auto hiddenPath = temp.filePath(".hidden").toStdWString();
+   QVERIFY(SetFileAttributesW(hiddenPath.c_str(), FILE_ATTRIBUTE_HIDDEN));
+#endif
+   expected << ".hidden";
+   const QString unfinished = "download" + SETTINGS.get<QString>("unfinished_suffix_term");
+   QVERIFY(writeFile(unfinished, "partial"));
+   if (addUnfinished)
+      expected << unfinished;
+   QVERIFY(QDir(temp.path()).mkdir("child"));
+   QVERIFY(writeFile("child/nested.bin", "nested"));
+
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   FM::FileUpdater updater(nullptr);
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   auto dir = root->getRootDir();
+   const auto checkFiles = [&]() {
+      std::sort(expected.begin(), expected.end(), [](const QString& a, const QString& b) {
+         return a.toLower() < b.toLower();
+      });
+      QStringList actual;
+      for (FM::File* file : dir->getFiles())
+         actual << file->getName();
+      QCOMPARE(actual, expected);
+      QVERIFY(dir->isScanned());
+      QVERIFY(!updater.isScanning());
+   };
+
+   updater.scan(dir, addUnfinished);
+   checkFiles();
+   auto survivor = dir->getFile("Asset-0001.bin");
+   QVERIFY(survivor);
+   auto hidden = dir->getFile(".hidden");
+   QVERIFY(hidden);
+   Protos::Common::Entry hiddenEntry;
+   hidden->populateEntry(&hiddenEntry);
+   QVERIFY(hiddenEntry.hidden());
+   auto child = dir->getSubDir("child");
+   QVERIFY(child);
+   QVERIFY(child->isScanned());
+   QVERIFY(child->getFile("nested.bin"));
+   QCOMPARE(dir->getSubDirs().size(), qsizetype(1));
+   QCOMPARE(dir->getCompleteFiles().size(), qsizetype(513));
+
+   QVERIFY(QFile::remove(temp.filePath("asset-0000.bin")));
+   expected.removeOne("asset-0000.bin");
+   QVERIFY(writeFile("Asset-0001.bin", "changed-size"));
+   QVERIFY(writeFile("new.bin", "new"));
+   expected << "new.bin";
+   QVERIFY(QFile::remove(temp.filePath("child/nested.bin")));
+   QVERIFY(QDir(temp.path()).rmdir("child"));
+   updater.scan(dir);
+   checkFiles();
+   QCOMPARE(dir->getFile("Asset-0001.bin"), survivor);
+   QCOMPARE(survivor->getSize(), qint64(12));
+   QVERIFY(dir->getSubDirs().isEmpty());
+   // A normal rescan neither discovers new unfinished files nor removes known ones.
+   QCOMPARE(dir->getFile(unfinished) != nullptr, addUnfinished);
 }
 
 void CacheTest::browseDirectoryLifetime_data()

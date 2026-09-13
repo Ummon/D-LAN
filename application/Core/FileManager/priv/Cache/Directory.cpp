@@ -42,8 +42,8 @@ Directory::Directory(
    bool hidden
 ) :
    Entry(root, name, parentDirectory, 0, hidden),
-   subDirs(&Directory::entrySortingFun),
-   files(&Directory::entrySortingFun),
+   subDirs(&Directory::entryGetKeyFun),
+   files(&Directory::entryGetKeyFun),
    scanned(true)
 {
    QMutexLocker locker(&this->mutex);
@@ -267,15 +267,6 @@ Entry* Directory::getEntry(const Common::Path& path)
    return currentDirectory;
 }
 
-void Directory::rename(const QString& newName)
-{
-   QMutexLocker locker(&this->mutex);
-
-   Entry::rename(newName);
-   if (this->parentDirectory)
-      this->parentDirectory.load()->subdirNameChanged(this);
-}
-
 bool Directory::isAChildOf(const Directory* dir) const
 {
    QMutexLocker locker(&this->mutex);
@@ -373,11 +364,11 @@ File* Directory::getFile(const QString& name) const
 {
    QMutexLocker locker(&this->mutex);
 
-   foreach (File* f, this->files.getList())
-      if (f->getName() == name)
-         return f;
-
-   return nullptr;
+   return
+      this->files.getItem(
+         name.toLower(),
+         [&name](const File* const& file) { return file->getName() == name; }
+      ).value_or(nullptr);
 }
 
 /**
@@ -446,16 +437,19 @@ void Directory::setScanned(bool value)
       this->getCache()->onScanned(this);
 }
 
-/**
-  * Must be called only by a file.
-  */
-void Directory::fileNameChanged(File* file)
+// Entry::setName holds this directory's mutex across lookup, mutation and reordering.
+void Directory::updateEntryName(Entry* entry, const std::function<void()>& update)
 {
-   QMutexLocker locker(&this->mutex);
+   bool found = false;
+   if (auto file = dynamic_cast<File*>(entry))
+      found = this->files.updateItem(file, update);
+   else if (auto dir = dynamic_cast<Directory*>(entry))
+      found = this->subDirs.updateItem(dir, update);
 
-   // Completion can arrive after removal, or while the parent is destroying its detached children.
-   if (this->files.getList().contains(file))
-      this->files.itemChanged(file);
+   // Completion can arrive after removal or while the parent destroys detached
+   // children. Update their metadata without reinserting them into the directory.
+   if (!found)
+      update();
 }
 
 void Directory::setRootRecursively(SharedEntry* sharedEntry)
@@ -476,14 +470,6 @@ void Directory::setRootRecursively(SharedEntry* sharedEntry)
       file->setRootRecursively(sharedEntry);
    for (Directory* dir : directories)
       dir->setRootRecursively(sharedEntry);
-}
-
-void Directory::subdirNameChanged(Directory* dir)
-{
-   QMutexLocker locker(&this->mutex);
-
-   if (this->subDirs.getList().contains(dir))
-      this->subDirs.itemChanged(dir);
 }
 
 /**

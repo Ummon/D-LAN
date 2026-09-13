@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include <functional>
+
 #include <QString>
 #include <QList>
 #include <QFileInfo>
@@ -39,6 +41,7 @@ namespace FM
    class Directory : public Entry
    {
       friend class DirIterator;
+      friend class Entry;
 
    public:
       Directory(
@@ -71,7 +74,6 @@ namespace FM
       Common::Path getAbsolutePath() const override;
       Entry* getEntry(const Common::Path& path) override;
 
-      void rename(const QString& newName) override;
       bool isAChildOf(const Directory* dir) const;
 
       Directory* getSubDir(const QString& name) const;
@@ -93,20 +95,18 @@ namespace FM
       bool isScanned() const;
       void setScanned(bool value);
 
-      void fileNameChanged(File* file);
-
    protected:
       void setRootRecursively(SharedEntry* sharedEntry) override;
 
    private:
-      void subdirNameChanged(Directory* dir);
+      void updateEntryName(Entry* entry, const std::function<void()>& update);
 
       void adjustSize(qint64 delta);
 
-      static inline bool entrySortingFun(const Entry* const& e1, const Entry* const& e2) { return (*e1) < (*e2); }
+      static inline QString entryGetKeyFun(const Entry* const& entry) { return entry->getName().toLower(); }
 
-      Common::SortedList<Directory*> subDirs; ///< Sorted by name.
-      Common::SortedList<File*> files; ///< Sorted by name.
+      Common::SortedList<Directory*, QString> subDirs; ///< Sorted by name as lower case.
+      Common::SortedList<File*, QString> files; ///< Sorted by name as lower case.
 
       bool scanned;
       QRecursiveMutex retirementMutex; ///< Serializes subtree retirement without blocking metadata callbacks.

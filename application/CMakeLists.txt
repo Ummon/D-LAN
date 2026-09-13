@@ -21,7 +21,7 @@ endif()
 # ------------------------------------------------------------------------------
 option(DLAN_BUILD_TESTS "Build the unit/stress test executables" ON)
 option(DLAN_BUILD_TOOLS "Build the tools (LogViewer, FileIndexer, PasswordHasher)" ON)
-option(DLAN_PROFILING   "Build with gprof instrumentation (-pg), was 'CONFIG += prof'" OFF)
+option(DLAN_PROFILING   "Build with gprof instrumentation (-pg); requires a compatible compiler and runtime" OFF)
 option(DLAN_PDB         "Emit CodeView debug info and a .pdb so LM::CrashHandler can print function names and line numbers" ON)
 
 # Third-party locations (were hardcoded in blake3.pri / protobuf.pri).
@@ -70,6 +70,26 @@ if(DLAN_IPO_SUPPORTED)
 endif()
 
 if(DLAN_PROFILING)
+   # Accepting -pg at compile time is not enough: LLVM-MinGW can compile it
+   # but fails to link the gprof runtime (unresolved mcount / etext).
+   # Keep probe settings local, and force a link even for toolchains that
+   # normally use static libraries for try_compile checks.
+   function(dlan_check_gprof)
+      include(CheckCXXCompilerFlag)
+      set(CMAKE_TRY_COMPILE_TARGET_TYPE EXECUTABLE)
+      set(CMAKE_REQUIRED_LINK_OPTIONS -pg)
+      check_cxx_compiler_flag(-pg DLAN_GPROF_SUPPORTED)
+   endfunction()
+   dlan_check_gprof()
+   if(NOT DLAN_GPROF_SUPPORTED)
+      message(FATAL_ERROR
+         "DLAN_PROFILING requires a working gprof (-pg) compiler and runtime. "
+         "The selected toolchain cannot compile and link a program with -pg "
+         "(LLVM-MinGW can fail with unresolved mcount / etext). "
+         "Set DLAN_PROFILING=OFF. For Windows CPU sampling, build Release with "
+         "DLAN_PDB=ON and use a sampling profiler with the generated .pdb files. "
+         "For gprof instrumentation, use a compatible toolchain and dependencies.")
+   endif()
    add_compile_options(-pg -g)
    add_link_options(-pg)
 endif()
@@ -95,6 +115,10 @@ if(DLAN_PDB AND WIN32 AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
    add_compile_options($<$<NOT:$<CONFIG:Debug>>:-gcodeview> -g)
    # An empty '--pdb=' tells lld to derive the .pdb name from the output binary.
    add_link_options($<$<NOT:$<CONFIG:Debug>>:-Wl,--pdb=> -g)
+   # WPA treats lld's forward-slash PDB path as a single filename, which can
+   # prevent symbol lookup even when the matching PDB is on the symbol path.
+   # Embed only the filename; keep the actual PDB beside the executable.
+   add_link_options("$<$<NOT:$<CONFIG:Debug>>:-Wl,--Xlink=/pdbaltpath:$<TARGET_FILE_BASE_NAME:$<TARGET_PROPERTY:NAME>>.pdb>")
 endif()
 
 # ------------------------------------------------------------------------------

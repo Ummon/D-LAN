@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include <optional>
+#include <algorithm>
 #include <functional>
 
 #include <QList>
@@ -26,8 +28,8 @@
 /**
   * @class Common::SortedList
   *
-  * A very simple sorted list, not very efficient, implemented as a simple array.
-  * A more efficient implementation should use a red-black tree or a B-tree.
+  * An array-backed sorted list. Single insertion uses logarithmic comparisons,
+  * plus a scan of equivalent items for duplicates; moving elements is linear.
   * Don't forget to call 'itemChanged(..)' if the data of one of the items has
   * changed and the sorting function ('lesserThan') depends of this data.
   * Do not allow multiple same item.
@@ -35,11 +37,11 @@
 
 namespace Common
 {
-   template <typename T>
+   template <typename T, typename U = T>
    class SortedList
    {
    public:
-      SortedList(std::function<bool(const T&, const T&)> lesserThan = nullptr);
+      SortedList(std::function<U(const T&)> getKey = nullptr);
 
       void insert(const T& item);
 
@@ -47,13 +49,24 @@ namespace Common
       void insert(const Container& items);
 
       void itemChanged(const T& item);
+
+      template <typename Updater>
+      bool updateItem(const T& item, Updater update);
+
       void removeOne(const T& item);
       void clear();
+
+      QList<T> getItems(const U& key) const;
+
+      template <typename Predicate>
+      std::optional<T> getItem(const U& key, Predicate predicate) const;
 
       inline const QList<T>& getList() const { return this->list; }
 
    private:
-      std::function<bool(const T&, const T&)> lesserThan;
+      inline bool less(const T& a, const T&b) { return this->getKey ? this->getKey(a) < this->getKey(b) : a < b; }
+
+      std::function<U(const T&)> getKey;
       QList<T> list;
    };
 }
@@ -61,36 +74,49 @@ namespace Common
 /**
   * If no function 'lesserThan' is given then the operator < on T is used.
   */
-template <typename T>
-Common::SortedList<T>::SortedList(std::function<bool(const T&, const T&)> lesserThan) :
-   lesserThan(lesserThan)
+template <typename T, typename U>
+Common::SortedList<T, U>::SortedList(std::function<U(const T&)> getKey) :
+   getKey(getKey)
 {
 }
 
-template <typename T>
-void Common::SortedList<T>::insert(const T& item)
+template <typename T, typename U>
+void Common::SortedList<T, U>::insert(const T& item)
 {
-   for (QMutableListIterator<T> i(this->list); i.hasNext(); i.next())
+   const auto less = [this](const T& a, const T& b)
    {
-      T e = i.peekNext();
-      if (e == item)
-         return;
-      if (this->lesserThan ? this->lesserThan(item, e) : item < e)
-      {
-         i.insert(item);
-         return;
-      }
+      return this->less(a, b);
+   };
+
+   // Directory scans commonly supply names in order. Avoid searching or
+   // detaching the list just to discover that the new item belongs at the end.
+   if (this->list.isEmpty() || less(this->list.constLast(), item))
+   {
+      this->list.append(item);
+      return;
    }
 
-   this->list << item;
+   auto position = std::lower_bound(this->list.cbegin(), this->list.cend(), item, less);
+   // Equivalent sort keys need not identify the same item (e.g. distinct files
+   // with case-insensitively equal names). Keep their insertion order and reject
+   // only operator== duplicates, as before.
+   while (position != this->list.cend() && !less(item, *position))
+   {
+      if (*position == item)
+         return;
+      ++position;
+   }
+
+   const auto index = position - this->list.cbegin();
+   this->list.insert(index, item);
 }
 
 /**
   * The given items MUST be sorted.
   */
-template <typename T>
+template <typename T, typename U>
 template <typename Container>
-void Common::SortedList<T>::insert(const Container& items)
+void Common::SortedList<T, U>::insert(const Container& items)
 {   
    QMutableListIterator<T> j(this->list);
 
@@ -109,7 +135,7 @@ void Common::SortedList<T>::insert(const Container& items)
             break;
          }
 
-         if (this->lesserThan ? this->lesserThan(ei, ej) : ei < ej)
+         if (this->less(ei, ej))
             break;
 
          j.next();
@@ -120,21 +146,135 @@ void Common::SortedList<T>::insert(const Container& items)
    }
 }
 
-template <typename T>
-void Common::SortedList<T>::itemChanged(const T& item)
+template <typename T, typename U>
+void Common::SortedList<T, U>::itemChanged(const T& item)
 {
    this->list.removeOne(item);
    this->insert(item);
 }
 
-template <typename T>
-void Common::SortedList<T>::removeOne(const T& item)
+/**
+  * Find an existing item before updating the external data used for its sort key.
+  * Returns false without calling 'update' if the item is absent. The callback must
+  * not throw or modify this list. Callers must exclude concurrent readers/writers
+  * throughout the update, just as for 'itemChanged'.
+  */
+template <typename T, typename U>
+template <typename Updater>
+bool Common::SortedList<T, U>::updateItem(const T& item, Updater update)
+{
+   const auto less = [this](const T& a, const T& b) { return this->less(a, b); };
+   auto position = this->list.cend();
+   if (this->getKey)
+   {
+      const U oldKey = this->getKey(item);
+      position = std::lower_bound(this->list.cbegin(), this->list.cend(), oldKey,
+         [this](const T& other, const U& key) { return this->getKey(other) < key; });
+   }
+   else
+      position = std::lower_bound(this->list.cbegin(), this->list.cend(), item, less);
+   // Equal sort keys need not identify the same item.
+   while (position != this->list.cend() && !less(item, *position))
+   {
+      if (*position == item)
+         break;
+      ++position;
+   }
+   if (position == this->list.cend() || less(item, *position))
+      return false;
+
+   const auto index = position - this->list.cbegin();
+   // The argument may refer to an element of this list; keep it valid if we move it.
+   const T updatedItem = *position;
+   update();
+
+   // Reinsertion would put the item after all equivalent keys. Requiring a strictly
+   // greater successor preserves that ordering even for an unchanged key.
+   if ((index == 0 || !less(updatedItem, this->list.at(index - 1))) &&
+       (index + 1 == this->list.size() || less(updatedItem, this->list.at(index + 1))))
+      return true;
+
+   // Most download completions keep the same neighbours. Only detach the array
+   // and move pointers when the position actually changes.
+   this->list.removeAt(index);
+   this->insert(updatedItem);
+   return true;
+}
+
+template <typename T, typename U>
+void Common::SortedList<T, U>::removeOne(const T& item)
 {
    this->list.removeOne(item);
 }
 
-template <typename T>
-void Common::SortedList<T>::clear()
+template <typename T, typename U>
+void Common::SortedList<T, U>::clear()
 {
    this->list.clear();
+}
+
+/**
+  * Get items by key, 'getKey' must have been given in the constructor.
+  */
+template <typename T, typename U>
+QList<T> Common::SortedList<T, U>::getItems(const U& key) const
+{
+   QList<T> result;
+
+   if (!this->getKey || this->list.isEmpty() ||this->getKey(this->list.constLast()) < key)
+      return result;
+
+   const auto lessThan = [this, &key](const T& other)
+   {
+      return this->getKey(other) < key;
+   };
+
+   auto position = std::partition_point(this->list.cbegin(), this->list.cend(), lessThan);
+
+   while (position != this->list.end())
+   {
+      if (this->getKey(*position) == key)
+         result << *position;
+      else
+         break;
+
+      ++position;
+   }
+
+   return result;
+}
+
+
+/**
+  * Returns the first item matching the key and the predicate.
+  * Get item by key, 'getKey' must have been given in the constructor.
+  */
+template <typename T, typename U>
+template <typename Predicate>
+std::optional<T> Common::SortedList<T, U>::getItem(const U& key, Predicate predicate) const
+{
+   if (!this->getKey || this->list.isEmpty() ||this->getKey(this->list.constLast()) < key)
+      return std::nullopt;
+
+   const auto lessThan = [this, &key](const T& other)
+   {
+      return this->getKey(other) < key;
+   };
+
+   auto position = std::partition_point(this->list.cbegin(), this->list.cend(), lessThan);
+
+   while (position != this->list.end())
+   {
+      if (this->getKey(*position) == key)
+      {
+         if (predicate(*position))
+            return *position;
+      }
+      else
+         break;
+
+      ++position;
+   }
+
+   return std::nullopt;
 }

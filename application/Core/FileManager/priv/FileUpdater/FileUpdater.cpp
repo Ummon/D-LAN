@@ -21,6 +21,7 @@ using namespace FM;
 
 #include <QList>
 #include <QDir>
+#include <QDirIterator>
 #include <QElapsedTimer>
 
 #include <Common/Settings.h>
@@ -516,17 +517,17 @@ void FileUpdater::scan(Entry* entry, bool addUnfinished)
          QList<Directory*> currentSubDirs = currentDir->getSubDirs();
          QList<File*> currentFiles = currentDir->getCompleteFiles(); // We don't care about the unfinished files.
 
+         // Stream metadata instead of retaining a QFileInfo for every entry.
+         // Directory::add maintains cache ordering independently of enumeration order.
          // TODO: Add an option to follow or not symlinks.
-         for (
-            const QFileInfo& fileInfo :
-            QDir(currentDir->getAbsolutePath()).entryInfoList(
-               QDir::AllEntries | QDir::NoDotAndDotDot | QDir::NoSymLinks | QDir::Hidden
-            )
-         )
+         QDirIterator entries(currentDir->getAbsolutePath(),
+            QDir::AllEntries | QDir::NoDotAndDotDot | QDir::NoSymLinks | QDir::Hidden);
+         while (entries.hasNext())
          {
             if (abortIfRequested(currentDir))
                return;
 
+            const QFileInfo fileInfo = entries.nextFileInfo();
             if (fileInfo.isDir())
             {
                Directory* subDir = currentDir->createSubDir(fileInfo.fileName(), false, fileInfo.isHidden());

@@ -216,8 +216,6 @@ void File::setToUnfinished(qint64 size, const QList<Common::Hash>& hashes)
          }, Qt::QueuedConnection);
       }
    }
-   if (this->parentDirectory)
-      this->parentDirectory.load()->fileNameChanged(this);
    this->setSize(size);
    this->dateLastModified = QDateTime::currentDateTime();
    this->deleteAllChunks();
@@ -375,16 +373,6 @@ Entry* File::getEntry(const Common::Path& path)
 QString File::getExtension() const
 {
    return Common::KnownExtensions::getExtension(this->getName());
-}
-
-void File::rename(const QString& newName)
-{
-   QMutexLocker locker(&this->mutex);
-
-   Entry::rename(newName);
-
-   if (this->parentDirectory)
-      this->parentDirectory.load()->fileNameChanged(this);
 }
 
 QDateTime File::getDateLastModified() const
@@ -849,8 +837,6 @@ void File::setAsComplete()
                cache->onSharedEntryPathChanged(root, Common::Path(oldPath));
             }, Qt::QueuedConnection);
          }
-         if (this->parentDirectory)
-            this->parentDirectory.load()->fileNameChanged(this);
          this->saveHashes();
          this->getCache()->onEntryAdded(this); // To add the name to the index. (a bit tricky).
       }

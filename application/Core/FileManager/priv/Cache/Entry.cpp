@@ -119,7 +119,11 @@ void Entry::rename(const QString& newName)
    QMutexLocker locker(&this->mutex);
 
    if (this->getName() == newName)
+   {
+      // Preserve the ordering of equivalent entries on a repeated rename.
+      this->setName(newName);
       return;
+   }
 
    const QString oldName = this->getName();
    const QString oldUserName = this->getUserName();
@@ -145,8 +149,21 @@ void Entry::setParentDirectory(Directory* dir)
 
 void Entry::setName(const QString& name)
 {
-   QMutexLocker locker(&this->nameMutex);
-   this->name = name;
+   QMutexLocker locker(&this->mutex);
+   Directory* parent = this->parentDirectory.load();
+   // Keep the child-to-parent lock order. Binary lookups must not observe a new
+   // name until the parent's list has been reordered, including during completion.
+   QMutexLocker parentLocker(parent ? &parent->mutex : nullptr);
+   const auto update = [this, &name] {
+      QMutexLocker nameLocker(&this->nameMutex);
+      this->name = name;
+   };
+   // Locate the old key before updating it, and release the leaf name lock before
+   // checking neighbours or reordering. Sorting reads names through that same lock.
+   if (parent)
+      parent->updateEntryName(this, update);
+   else
+      update();
 }
 
 qint64 Entry::getSize() const

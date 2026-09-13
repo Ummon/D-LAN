@@ -35,6 +35,12 @@ private slots:
    void hashingResumesUnknownChunks_data();
    void hashingResumesUnknownChunks();
    void directoryTotalsFollowFileResizing();
+   void directoryFileLookupFollowsChanges();
+   void directoryFileLookupDuringRenameRemoval();
+   void directoryLookupDuringRenameNotification_data();
+   void directoryLookupDuringRenameNotification();
+   void fileNameChangesWaitForDirectory_data();
+   void fileNameChangesWaitForDirectory();
    void fittestDirectoryMatchesExistingPaths();
    void newDirectoryPreservesFinalComponent_data();
    void newDirectoryPreservesFinalComponent();
@@ -85,6 +91,8 @@ private slots:
    void browseDirectoryLifetime();
    void browseNewSharedDirectory_data();
    void browseNewSharedDirectory();
+   void scanDirectoryIncrementally_data();
+   void scanDirectoryIncrementally();
    void partialWrites_data();
    void partialWrites();
    void unfinishedDownloadRetry_data();
