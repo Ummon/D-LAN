@@ -78,14 +78,28 @@ namespace GUI
       public:
          Tree();
          Tree(const Protos::GUI::State::Download& download, Tree* parent);
+         ~Tree() override;
+
+         int getOwnPosition() const override;
+         Tree* insertChild(const Protos::GUI::State::Download& download) override;
+         Tree* insertChild(const Protos::GUI::State::Download& download, int position) override;
+         void moveChild(int from, int to) override;
 
          Common::Hash getSharedEntryId() const;
 
          bool visited;
+         bool dataDirty = false;
          int nbPausedFiles;
          int nbErrorFiles;
          int nbDownloadingFiles;
+
+      private:
+         void refreshChildPositions(int first = 0);
+         int ownPosition = 0;
+         bool childPositionsDirty = false;
       };
+
+      using DirectoryIndex = QHash<QPair<Tree*, QString>, Tree*>;
 
       QList<quint64> getDownloadIDs(Tree* tree) const;
       Tree* updateDirectoryFromPath(
@@ -93,13 +107,15 @@ namespace GUI
          const QString& dir,
          const QString& peerSourceNick,
          const Common::Hash& peerSourceID,
-         const Common::Hash& sharedDirID
+         const Common::Hash& sharedDirID,
+         DirectoryIndex& childrenByName
       );
       Tree* insert(Tree* tree, const Protos::GUI::State::Download& download);
       Tree* createEntry(const QModelIndex& parent, int position, const Protos::GUI::State::Download& download);
 
       Tree* moveUp(Tree* tree);
       Tree* update(Tree* tree, const Protos::GUI::State::Download& download);
+      void emitDataChanges();
       /**
         * Number of files per kind of status, see 'Tree::nbErrorFiles', 'Tree::nbPausedFiles' and 'Tree::nbDownloadingFiles'.
         * Also used as a delta to apply to these counters.
