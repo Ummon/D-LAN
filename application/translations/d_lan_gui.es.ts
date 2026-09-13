@@ -166,7 +166,8 @@
         <translation>Navegar los peers seleccionados</translation>
     </message>
     <message>
-        <location line="+436"/>
+        <location line="+377"/>
+        <location line="+62"/>
         <source>Chat</source>
         <translation>Chat</translation>
     </message>
@@ -633,7 +634,7 @@
 <context>
     <name>GUI::SearchMenu</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="+233"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="+213"/>
         <source>Browse</source>
         <translation>Navegar</translation>
     </message>
@@ -708,7 +709,7 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+244"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+243"/>
         <source>Default</source>
         <translation>Por defecto</translation>
     </message>
@@ -718,7 +719,7 @@
         <translation>Interfaz desactivada</translation>
     </message>
     <message>
-        <location line="+139"/>
+        <location line="+136"/>
         <source>Change the password</source>
         <translation>Cambiar la contraseña</translation>
     </message>
@@ -734,15 +735,15 @@
     </message>
     <message>
         <location line="+46"/>
-        <location line="+311"/>
+        <location line="+308"/>
         <source>Connecting . . .</source>
         <translation>Conectando . . .</translation>
     </message>
     <message>
-        <location line="-303"/>
-        <location line="+16"/>
-        <location line="+19"/>
-        <location line="+268"/>
+        <location line="-300"/>
+        <location line="+15"/>
+        <location line="+18"/>
+        <location line="+267"/>
         <source>Connect</source>
         <translation>Conectar</translation>
     </message>
@@ -1202,17 +1203,15 @@
         <translation>Refrescar interfaces</translation>
     </message>
     <message>
-        <location line="+10"/>
         <source>When activated all received data will be verified against their hashes.  It may consume CPU resources.</source>
-        <translation>Cuando sea activado, todos los datos recibidos serán verificados contra sus hashes. Puede consumir CPU adicional.</translation>
+        <translation type="vanished">Cuando sea activado, todos los datos recibidos serán verificados contra sus hashes. Puede consumir CPU adicional.</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Data integrity check</source>
-        <translation>Chequeo de integridad de datos</translation>
+        <translation type="vanished">Chequeo de integridad de datos</translation>
     </message>
     <message>
-        <location line="+24"/>
+        <location line="+27"/>
         <source>User interface</source>
         <translation>Interfaz de usuario</translation>
     </message>

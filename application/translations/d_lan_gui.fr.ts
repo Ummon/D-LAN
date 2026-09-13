@@ -166,7 +166,8 @@
         <translation>Explorer les pairs sélectionnés</translation>
     </message>
     <message>
-        <location line="+436"/>
+        <location line="+377"/>
+        <location line="+62"/>
         <source>Chat</source>
         <translation>Chat</translation>
     </message>
@@ -633,7 +634,7 @@
 <context>
     <name>GUI::SearchMenu</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="+233"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="+213"/>
         <source>Browse</source>
         <translation>Explorer</translation>
     </message>
@@ -708,7 +709,7 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+244"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+243"/>
         <source>Default</source>
         <translation>Par défaut</translation>
     </message>
@@ -718,7 +719,7 @@
         <translation>Interface inactive</translation>
     </message>
     <message>
-        <location line="+139"/>
+        <location line="+136"/>
         <source>Change the password</source>
         <translation>Changer le mot de passe</translation>
     </message>
@@ -734,15 +735,15 @@
     </message>
     <message>
         <location line="+46"/>
-        <location line="+311"/>
+        <location line="+308"/>
         <source>Connecting . . .</source>
         <translation>Connexion...</translation>
     </message>
     <message>
-        <location line="-303"/>
-        <location line="+16"/>
-        <location line="+19"/>
-        <location line="+268"/>
+        <location line="-300"/>
+        <location line="+15"/>
+        <location line="+18"/>
+        <location line="+267"/>
         <source>Connect</source>
         <translation>Connecter</translation>
     </message>
@@ -1176,17 +1177,15 @@
         <translation>Rafraichir les interfaces</translation>
     </message>
     <message>
-        <location line="+10"/>
         <source>When activated all received data will be verified against their hashes.  It may consume CPU resources.</source>
-        <translation>Lorsque cette option est activée, toutes les données reçues sont vérifiées par rapport à leurs empreintes. Cela peut consommer des ressources du processeur.</translation>
+        <translation type="vanished">Lorsque cette option est activée, toutes les données reçues sont vérifiées par rapport à leurs empreintes. Cela peut consommer des ressources du processeur.</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Data integrity check</source>
-        <translation>Vérification de l&apos;intégrité des données</translation>
+        <translation type="vanished">Vérification de l&apos;intégrité des données</translation>
     </message>
     <message>
-        <location line="-246"/>
+        <location line="-233"/>
         <source>Shared folders and files</source>
         <translation>Dossiers et fichiers partagés</translation>
     </message>
@@ -1212,7 +1211,7 @@
         <translation type="vanished">Ouvrir l&apos;emplacement du dossier ou fichier partagé sélectionné</translation>
     </message>
     <message>
-        <location line="+264"/>
+        <location line="+254"/>
         <source>Graphic User Interface</source>
         <translation>Interface Graphique</translation>
     </message>

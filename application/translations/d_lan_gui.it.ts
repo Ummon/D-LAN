@@ -166,7 +166,8 @@
         <translation>Sfoglia i peer selezionati</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="984"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="925"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="987"/>
         <source>Chat</source>
         <translation>Chat</translation>
     </message>
@@ -633,7 +634,7 @@
 <context>
     <name>GUI::SearchMenu</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="233"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="213"/>
         <source>Browse</source>
         <translation>Sfoglia</translation>
     </message>
@@ -675,32 +676,32 @@
 <context>
     <name>GUI::SearchWidget</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="369"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="349"/>
         <source>Open location</source>
         <translation>Apri percorso</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="370"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="350"/>
         <source>Browse</source>
         <translation>Sfoglia</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="446"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="426"/>
         <source>1 directory</source>
         <translation>1 cartella</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="446"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="426"/>
         <source>%1 directories</source>
         <translation>%1 cartelle</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="447"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="427"/>
         <source>1 file</source>
         <translation>1 file</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="447"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="427"/>
         <source>%1 files</source>
         <translation>%1 file</translation>
     </message>
@@ -708,57 +709,57 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="244"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="243"/>
         <source>Default</source>
         <translation>Predefinito</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="302"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="301"/>
         <source>Interface not active</source>
         <translation>Interfaccia non attiva</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="441"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="437"/>
         <source>Change the password</source>
         <translation>Cambia la password</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="445"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="441"/>
         <source>No password defined</source>
         <translation>Non è stata impostata alcuna password</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="447"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="443"/>
         <source>Define a password</source>
         <translation>Imposta una password</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="493"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="804"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="489"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="797"/>
         <source>Connecting . . .</source>
         <translation>Connessione in corso . . .</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="501"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="517"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="536"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="804"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="497"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="512"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="530"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="797"/>
         <source>Connect</source>
         <translation>Connetti</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="631"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="624"/>
         <source>Select one or more directories and/or files to share</source>
         <translation>Seleziona una o più cartelle e/o file da condividere</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="652"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="717"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="645"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="710"/>
         <source>Remove selected shared entries</source>
         <translation>Rimuovi gli elementi condivisi selezionati</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="653"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="646"/>
         <source>Are you sure you want to remove the selected shared files and directories?</source>
         <translation>Rimuovere i file e le cartelle condivisi selezionati?</translation>
     </message>
@@ -775,17 +776,17 @@
         <translation type="vanished">Rimuovi la cartella condivisa</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="725"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="718"/>
         <source>Move up</source>
         <translation>Sposta su</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="733"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="726"/>
         <source>Move down</source>
         <translation>Sposta giù</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="741"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="734"/>
         <source>Open location</source>
         <translation>Apri percorso</translation>
     </message>
@@ -1202,72 +1203,70 @@
         <translation>Aggiorna le interfacce</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="303"/>
         <source>When activated all received data will be verified against their hashes.  It may consume CPU resources.</source>
-        <translation>Se attivato, tutti i dati ricevuti verranno verificati tramite i loro hash. Può consumare risorse della CPU.</translation>
+        <translation type="vanished">Se attivato, tutti i dati ricevuti verranno verificati tramite i loro hash. Può consumare risorse della CPU.</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="306"/>
         <source>Data integrity check</source>
-        <translation>Verifica dell&apos;integrità dei dati</translation>
+        <translation type="vanished">Verifica dell&apos;integrità dei dati</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="330"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="320"/>
         <source>User interface</source>
         <translation>Interfaccia utente</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="333"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="323"/>
         <source>Graphic User Interface</source>
         <translation>Interfaccia grafica</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="339"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="329"/>
         <source>Language</source>
         <translation>Lingua</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="349"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="339"/>
         <source>Style</source>
         <translation>Stile</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="370"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="360"/>
         <source>Reload the current style</source>
         <translation>Ricarica lo stile corrente</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="392"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="382"/>
         <source>Core connection</source>
         <translation>Connessione al Core</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="400"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="390"/>
         <source>Address</source>
         <translation>Indirizzo</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="410"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="400"/>
         <source>Reset to local</source>
         <translation>Ripristina connessione locale</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="417"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="407"/>
         <source>Password</source>
         <translation>Password</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="475"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="465"/>
         <source>Disconnect</source>
         <translation>Disconnetti</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="489"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="479"/>
         <source>Change the password</source>
         <translation>Cambia la password</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="496"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="486"/>
         <source>Reset the password</source>
         <translation>Reimposta la password</translation>
     </message>
