@@ -160,6 +160,9 @@ QList<FM::NodeResult<T>> FM::WordIndex<T>::search(
    std::function<bool(const T&)> predicat
 ) const
 {
+   if (maxNbResult == 0)
+      return {};
+
    QMutexLocker locker(&this->mutex);
    int minimumLength = MIN_WORD_SIZE_PARTIAL_MATCH;
    if (Common::StringUtils::isKorean(word))

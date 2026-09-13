@@ -166,6 +166,32 @@ void WordIndexTests::normalizedKanaAndHangul()
    QVERIFY(search(QStringLiteral("\uD558")).isEmpty());
 }
 
+void WordIndexTests::singleWordResultLimits()
+{
+   WordIndex<int> index;
+   index.addItem(QString("of"), 1);
+   index.addItem(QString("office"), 2);
+   index.addItem(QString("alpha"), 3);
+   index.addItem(QString("alphabet"), 4);
+
+   int predicateCalls = 0;
+   const auto predicate = [&](int) { ++predicateCalls; return true; };
+   for (const QString& query : QStringList { "of", "alp", "alpha" })
+   {
+      QVERIFY(index.search(query, 0).isEmpty());
+      QVERIFY(index.search(query, 0, predicate).isEmpty());
+      QVERIFY(index.search(QStringList { query }, 0, predicate).isEmpty());
+   }
+   QCOMPARE(predicateCalls, 0);
+
+   QCOMPARE(index.search(QString("of"), -1).size(), 1);
+   QCOMPARE(index.search(QString("alp"), -1).size(), 2);
+   QCOMPARE(index.search(QString("alp"), -2).size(), 2);
+   QCOMPARE(index.search(QString("alp"), 1).size(), 1);
+   QCOMPARE(WordIndex<int>::resultToList(index.search(QString("alp"), 1, [](int item) { return item == 4; })),
+      (QList<int> { 4 }));
+}
+
 void WordIndexTests::removalPreservesRemainingWords_data()
 {
    QTest::addColumn<QString>("remaining");

@@ -37,6 +37,7 @@ private slots:
    void shortPrefixMatching_data();
    void shortPrefixMatching();
    void normalizedKanaAndHangul();
+   void singleWordResultLimits();
    void removalPreservesRemainingWords_data();
    void removalPreservesRemainingWords();
    void multiTermRanking();
