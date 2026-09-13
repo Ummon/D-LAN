@@ -191,7 +191,7 @@ void UDPListener::sendIMAliveMessage()
    // We fill the rest of the message with a maximum of needed hashes.
    // Everything is computed with signed 64 bits integers to avoid any division by zero, overflow or unsigned wrap around.
    static const qint64 MAX_IMALIVE_THROUGHPUT = SETTINGS.get<quint32>("max_imalive_throughput"); // [Byte/s]
-   static const qint64 AVERAGE_FIXED_SIZE = 100; // [Byte]. Header size + information in the 'IMAlive' message without the hashes.
+   static const qint64 AVERAGE_FIXED_SIZE = Common::MessageHeader::HEADER_SIZE + 60; // [Byte]. Header size + information in the 'IMAlive' message without the hashes.
    static const qint64 IMALIVE_PERIOD = qMax<qint64>(1, SETTINGS.get<quint32>("peer_imalive_period")); // [ms]
 
    const qint64 numberOfPeers = this->peerManager->getNbOfPeers();
