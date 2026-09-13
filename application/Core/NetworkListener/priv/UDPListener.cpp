@@ -173,35 +173,37 @@ void UDPListener::sendIMAliveMessage()
    this->currentIMAliveTag = QRandomGenerator64::global()->generate64();
    IMAliveMessage.set_tag(this->currentIMAliveTag);
 
-   // Reserve space for chat rooms before filling the remaining datagram with hashes.
+   static const qint64 HASH_SIZE = Common::Hash::HASH_SIZE + 4; // "4" is the overhead added by protobuf for each hash.
+   static const qint64 MIN_HASHES_TO_SEND = 4; // Keep chunk discovery progressing even when the throughput budget is exhausted.
+
+   // Add chat rooms before filling the remaining datagram with hashes.
    emit IMAliveMessageToBeSend(IMAliveMessage);
 
-   // Room names alone can exceed the datagram budget. Keep a prefix of the room list
-   // so an excessive number of rooms (or a single long name) cannot suppress our heartbeat.
+   // Keep a prefix of the room list while reserving space for the minimum number of hashes.
    const int numberOfRooms = IMAliveMessage.chat_rooms_size();
    while (IMAliveMessage.chat_rooms_size() > 0 &&
-          IMAliveMessage.ByteSizeLong() + Common::MessageHeader::HEADER_SIZE > static_cast<size_t>(this->MAX_UDP_DATAGRAM_PAYLOAD_SIZE))
+          static_cast<qint64>(IMAliveMessage.ByteSizeLong()) + Common::MessageHeader::HEADER_SIZE + MIN_HASHES_TO_SEND * HASH_SIZE > this->MAX_UDP_DATAGRAM_PAYLOAD_SIZE)
       IMAliveMessage.mutable_chat_rooms()->RemoveLast();
 
    if (IMAliveMessage.chat_rooms_size() != numberOfRooms)
-      L_WARN(QString("IMAlive: %1 chat room announcements omitted to fit the datagram limit").arg(numberOfRooms - IMAliveMessage.chat_rooms_size()));
+      L_WARN(QString("IMAlive: %1 chat room announcements omitted to fit the datagram limit and reserve space for hashes").arg(numberOfRooms - IMAliveMessage.chat_rooms_size()));
 
    // We fill the rest of the message with a maximum of needed hashes.
    // Everything is computed with signed 64 bits integers to avoid any division by zero, overflow or unsigned wrap around.
    static const qint64 MAX_IMALIVE_THROUGHPUT = SETTINGS.get<quint32>("max_imalive_throughput"); // [Byte/s]
    static const qint64 AVERAGE_FIXED_SIZE = 100; // [Byte]. Header size + information in the 'IMAlive' message without the hashes.
    static const qint64 IMALIVE_PERIOD = qMax<qint64>(1, SETTINGS.get<quint32>("peer_imalive_period")); // [ms]
-   static const qint64 HASH_SIZE = Common::Hash::HASH_SIZE + 4; // "4" is the overhead added by protobuff for each hash.
 
    const qint64 numberOfPeers = this->peerManager->getNbOfPeers();
 
    // Throughput constraint: n * s / period <= 'max_imalive_throughput', where n is the number of peers and s the size of the message.
+   // Allow the minimum number of hashes even if this exceeds the throughput budget.
    qint64 maxNumberOfHashesToSend = std::numeric_limits<int>::max();
    if (numberOfPeers > 0)
    {
       // Number of bytes available for the hashes during one period once the fixed part of the message is deducted for each peer.
       const qint64 bytesAvailableForHashes = MAX_IMALIVE_THROUGHPUT * IMALIVE_PERIOD / 1000 - numberOfPeers * AVERAGE_FIXED_SIZE;
-      maxNumberOfHashesToSend = qMax<qint64>(0, bytesAvailableForHashes / (numberOfPeers * HASH_SIZE));
+      maxNumberOfHashesToSend = qMax<qint64>(MIN_HASHES_TO_SEND, bytesAvailableForHashes / (numberOfPeers * HASH_SIZE));
    }
 
    // Datagram constraint: the hashes must fit in the remaining space of the datagram.

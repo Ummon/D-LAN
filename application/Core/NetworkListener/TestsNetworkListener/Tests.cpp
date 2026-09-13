@@ -668,6 +668,10 @@ void Tests::heartbeatWithChatRooms_data()
    for (int i = 0; i < 100; ++i)
       manyRooms << QString::number(i) + QString(200, QChar(0x20AC));
    QTest::newRow("too many rooms") << manyRooms << true;
+   QStringList shortRooms;
+   for (int i = 0; i < 4000; ++i)
+      shortRooms << QString("%1").arg(i, 4, 10, QChar('0'));
+   QTest::newRow("short rooms filling hash space") << shortRooms << true;
 }
 
 void Tests::heartbeatWithChatRooms()
@@ -717,8 +721,7 @@ void Tests::heartbeatWithChatRooms()
          QCOMPARE(QString::fromStdString(heartbeat.chat_rooms(i)), roomNames[i]);
       if (roomNames.size() > 1)
          QVERIFY(heartbeat.chat_rooms_size() > 0);
-      if (!expectOmissions)
-         QVERIFY(heartbeat.chunks_size() > 0);
+      QVERIFY(heartbeat.chunks_size() >= 4);
    }
 }
 
