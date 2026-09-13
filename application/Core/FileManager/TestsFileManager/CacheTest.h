@@ -95,6 +95,8 @@ private slots:
    void scanDirectoryIncrementally();
    void partialWrites_data();
    void partialWrites();
+   void corruptedWrites_data();
+   void corruptedWrites();
    void unfinishedDownloadRetry_data();
    void unfinishedDownloadRetry();
    void emptyFileReplacement_data();

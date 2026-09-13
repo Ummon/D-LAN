@@ -83,7 +83,6 @@ SettingsWidget::SettingsWidget(
 
    connect(this->ui->txtNick, &QLineEdit::editingFinished, this, &SettingsWidget::saveCoreSettings);
 
-   connect(this->ui->chkEnableIntegrityCheck, &QCheckBox::clicked, this, &SettingsWidget::saveCoreSettings);
    connect(this->ui->butRefreshInterfaces, &QPushButton::clicked, this, &SettingsWidget::refreshNetworkInterfaces);
 
    this->connectAllAddressButtons();
@@ -431,9 +430,6 @@ void SettingsWidget::newState(const Protos::GUI::State& state)
    if (!this->ui->txtNick->hasFocus())
       this->ui->txtNick->setText(QString::fromStdString(state.peers(0).nick()));
 
-   if (!this->ui->chkEnableIntegrityCheck->hasFocus())
-      this->ui->chkEnableIntegrityCheck->setChecked(state.integrity_check_enabled());
-
    if ((this->corePasswordDefined = state.password_defined()))
    {
       this->ui->txtPassword->setPlaceholderText("");
@@ -511,7 +507,6 @@ void SettingsWidget::coreConnected()
    this->ui->txtPassword->clear();
    this->ui->tabWidget->setTabEnabled(0, true);
    this->ui->tabWidget->setTabEnabled(1, true);
-   this->ui->chkEnableIntegrityCheck->setEnabled(true);
 
    this->ui->butConnect->setDisabled(false);
    this->ui->butConnect->setText(tr("Connect"));
@@ -530,7 +525,6 @@ void SettingsWidget::coreDisconnected()
 
    this->ui->tabWidget->setTabEnabled(0, false);
    this->ui->tabWidget->setTabEnabled(1, false);
-   this->ui->chkEnableIntegrityCheck->setEnabled(false);
 
    this->ui->butConnect->setDisabled(false);
    this->ui->butConnect->setText(tr("Connect"));
@@ -555,7 +549,6 @@ void SettingsWidget::saveCoreSettings()
 
    Protos::GUI::CoreSettings settings;
    settings.set_nick(this->ui->txtNick->text().toStdString());
-   settings.set_enable_integrity_check(this->ui->chkEnableIntegrityCheck->isChecked() ? Protos::Common::TS_TRUE : Protos::Common::TS_FALSE);
 
    for (const Common::SharedEntry& sharedEntry : this->sharedEntryListModel.getSharedEntries())
    {

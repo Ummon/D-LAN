@@ -90,7 +90,6 @@ Protos::Core::Settings* createDefaultValuesSettings()
    settings->set_unfinished_suffix_term(".unfinished");
    settings->set_minimum_free_space(1048576);
    settings->set_save_cache_period(60000);
-   settings->set_check_received_data_integrity(true);
    settings->set_get_entries_timeout(5000);
 
    return settings;

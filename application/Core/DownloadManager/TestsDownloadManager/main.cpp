@@ -36,7 +36,6 @@ int main(int argc, char *argv[])
    Common::Global::setDataFolder(Common::Global::DataFolderType::ROAMING, settingsDir.path());
    auto settings = new Protos::Core::Settings();
    settings->set_buffer_size_reading(131072);
-   settings->set_check_received_data_integrity(true);
    settings->set_unfinished_suffix_term(".unfinished");
    settings->set_peer_timeout_factor(3.2);
    settings->set_peer_imalive_period(5000);

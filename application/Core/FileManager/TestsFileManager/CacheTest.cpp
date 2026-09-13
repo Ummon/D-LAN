@@ -1757,10 +1757,6 @@ void CacheTest::hashResultsOnlySendOutstandingChunks()
 void CacheTest::writerRegistrationSurvivesFileReset()
 {
    FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
-   const bool savedIntegrity = SETTINGS.get<bool>("check_received_data_integrity");
-   const auto restore = qScopeGuard([&] { SETTINGS.set("check_received_data_integrity", savedIntegrity); });
-   // Reach the write-open reset path rather than failing earlier when rehashing the missing prefix.
-   SETTINGS.set("check_received_data_integrity", false);
    QTemporaryDir temp;
    QVERIFY(temp.isValid());
    FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
@@ -1768,8 +1764,10 @@ void CacheTest::writerRegistrationSurvivesFileReset()
    auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
    QVERIFY(root);
    const QByteArray content("download");
+   Common::Hasher hasher;
+   hasher.addData(std::span<const char>(content));
    auto file = new FM::File(root, "download.bin", content.size(), false, QDateTime::currentDateTime(),
-      root->getRootDir(), QList<Common::Hash>(), true);
+      root->getRootDir(), { hasher.getResult() }, true);
    auto chunk = file->getChunks().first();
    const QString path = file->getAbsolutePath();
    QSignalSpy resets(&cache, &FM::Cache::chunkRemoved);
@@ -2615,22 +2613,19 @@ void CacheTest::partialWrites_data()
 {
    QTest::addColumn<int>("failure");
    QTest::addColumn<bool>("recreateWriter");
-   QTest::addColumn<bool>("checkIntegrity");
-   for (bool checkIntegrity : { false, true })
-      for (bool recreateWriter : { false, true })
-         for (int failure : { 1, 0, -1 })
-         {
-            const QByteArray name = QString("failure=%1,recreate=%2,integrity=%3")
-               .arg(failure).arg(recreateWriter).arg(checkIntegrity).toLatin1();
-            QTest::newRow(name.constData()) << failure << recreateWriter << checkIntegrity;
-         }
+   for (bool recreateWriter : { false, true })
+      for (int failure : { 1, 0, -1 })
+      {
+         const QByteArray name = QString("failure=%1,recreate=%2")
+            .arg(failure).arg(recreateWriter).toLatin1();
+         QTest::newRow(name.constData()) << failure << recreateWriter;
+      }
 }
 
 void CacheTest::partialWrites()
 {
    QFETCH(int, failure);
    QFETCH(bool, recreateWriter);
-   QFETCH(bool, checkIntegrity);
    FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
    QTemporaryDir temp;
    QVERIFY(temp.isValid());
@@ -2645,10 +2640,7 @@ void CacheTest::partialWrites()
       QDateTime::currentDateTime(), root->getRootDir(), { hasher.getResult() }, true);
    auto chunk = file->getChunks().first();
 
-   const bool originalIntegrity = SETTINGS.get<bool>("check_received_data_integrity");
-   SETTINGS.set("check_received_data_integrity", checkIntegrity);
    auto writer = chunk->getDataWriter();
-   SETTINGS.set("check_received_data_integrity", originalIntegrity);
    QVERIFY(!writer->write(content.constData(), 3));
    QCOMPARE(chunk->getKnownBytes(), 3);
    QCOMPARE(file->writeCalls, 2); // The first request needed two physical writes.
@@ -2670,14 +2662,58 @@ void CacheTest::partialWrites()
    if (recreateWriter)
    {
       writer.clear();
-      SETTINGS.set("check_received_data_integrity", checkIntegrity);
       writer = chunk->getDataWriter();
-      SETTINGS.set("check_received_data_integrity", originalIntegrity);
    }
    QVERIFY(writer->write(content.constData() + 3, 7));
    QCOMPARE(chunk->getKnownBytes(), content.size());
    QVERIFY(file->isComplete());
    QCOMPARE(completedChunks, 1);
+   QFile downloaded(temp.filePath("download.bin"));
+   QVERIFY(downloaded.open(QIODevice::ReadOnly));
+   QCOMPARE(downloaded.readAll(), content);
+}
+
+void CacheTest::corruptedWrites_data()
+{
+   QTest::addColumn<bool>("recreateWriter");
+   QTest::newRow("same-writer") << false;
+   QTest::newRow("resumed-writer") << true;
+}
+
+void CacheTest::corruptedWrites()
+{
+   QFETCH(bool, recreateWriter);
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   const QByteArray content("abcdefghij");
+   Common::Hasher hasher;
+   hasher.addData(std::span<const char>(content));
+   auto file = new FM::File(root, "download.bin", content.size(), false,
+      QDateTime::currentDateTime(), root->getRootDir(), { hasher.getResult() }, true);
+   auto chunk = file->getChunks().first();
+   QSignalSpy completedChunks(&cache, &FM::Cache::chunkHashKnown);
+
+   auto writer = chunk->getDataWriter();
+   QVERIFY(!writer->write("xbc", 3)); // Corruption in the prefix must also be detected after resuming.
+   if (recreateWriter)
+   {
+      writer.clear();
+      writer = chunk->getDataWriter();
+   }
+   QVERIFY_THROWS_EXCEPTION(FM::hashMismatchException, writer->write(content.constData() + 3, 7));
+   QCOMPARE(chunk->getKnownBytes(), 0);
+   QVERIFY(!file->isComplete());
+   QCOMPARE(completedChunks.count(), 0);
+   QVERIFY(!QFileInfo::exists(temp.filePath("download.bin")));
+
+   QVERIFY(writer->write(content.constData(), content.size()));
+   QVERIFY(file->isComplete());
+   QCOMPARE(completedChunks.count(), 1);
    QFile downloaded(temp.filePath("download.bin"));
    QVERIFY(downloaded.open(QIODevice::ReadOnly));
    QCOMPARE(downloaded.readAll(), content);

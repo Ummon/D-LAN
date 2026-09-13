@@ -184,7 +184,6 @@ void RemoteConnection::refresh()
 
    Protos::GUI::State state;
 
-   state.set_integrity_check_enabled(SETTINGS.get<bool>("check_received_data_integrity"));
    state.set_password_defined(!SETTINGS.get<Common::Hash>("remote_password").isNull());
 
    // Ourself
@@ -573,9 +572,6 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
 
          if (coreSettingsMessage.nick_optional_case() == Protos::GUI::CoreSettings::NickOptionalCase::kNick)
             this->peerManager->setNick(QString::fromStdString(coreSettingsMessage.nick()));
-
-         if (coreSettingsMessage.enable_integrity_check() != Protos::Common::TS_NO_CHANGE)
-            SETTINGS.set("check_received_data_integrity", coreSettingsMessage.enable_integrity_check() == Protos::Common::TriState::TS_TRUE);
 
          try
          {

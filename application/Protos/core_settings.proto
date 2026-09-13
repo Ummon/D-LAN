@@ -9,6 +9,9 @@ import "common.proto";
 package Protos.Core;
 
 message Settings {
+   reserved 25;
+   reserved "check_received_data_integrity";
+
    string nick = 1;
    Common.Hash peer_id = 2;
 
@@ -28,7 +31,6 @@ message Settings {
    string unfinished_suffix_term = 22; // [default = ".unfinished"].
    uint32 minimum_free_space = 23; // [default = 1048576] (1 MiB) After creating a file in a directory this is the minimum space it must be left.
    uint32 save_cache_period = 24; // [default = 60000] [ms]. (1 min).
-   bool check_received_data_integrity = 25; // [default = true] All chunk data received will be checked against their hash if true.
    uint32 get_entries_timeout = 101; // [default = 5000] [ms].
 
    ///// PeerManager /////

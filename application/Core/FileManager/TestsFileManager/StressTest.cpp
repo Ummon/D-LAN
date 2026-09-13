@@ -691,6 +691,11 @@ void Downloader::run()
    {
       qDebug() << "TryToWriteBeyondTheEndOfChunkException, file = " << this->filePath;
    }
+   catch (hashMismatchException&)
+   {
+      // StressTest::newFile supplies random hashes for the synthetic download data.
+      qDebug() << "hashMismatchException, file = " << this->filePath;
+   }
    catch (ChunkDeletedException&)
    {
       qDebug() << "ChunkDeletedException, file = " << this->filePath;
@@ -740,4 +745,3 @@ void Uploader::run()
 
    qDebug() << "Uploader::run() finished";
 }
-
