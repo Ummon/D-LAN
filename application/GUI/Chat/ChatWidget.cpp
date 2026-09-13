@@ -920,7 +920,10 @@ bool ChatWidget::event(QEvent* event)
 void ChatWidget::changeEvent(QEvent* event)
 {
    if (event->type() == QEvent::LanguageChange)
+   {
       this->ui->retranslateUi(this);
+      this->setWindowTitle(this->chatModel.isMainChat() ? tr("Chat") : this->chatModel.getRoomName());
+   }
 
    QWidget::changeEvent(event);
 }
