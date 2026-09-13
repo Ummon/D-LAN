@@ -27,6 +27,7 @@ using namespace GUI;
 #include <QTextDocument>
 #include <QTextBlock>
 #include <QRegularExpression>
+#include <QLocale>
 
 #include <Protos/common.pb.h>
 
@@ -187,44 +188,6 @@ QString ChatModel::getLineStr(int row) const
       return QString();
 
    QString result = this->formatMessage(this->messages[row]);
-   // if (!withHTML)
-   // {
-   //    QDomDocument doc;
-   //    doc.setContent(result);
-
-   //    QDomElement HTMLElement = doc.firstChildElement("html");
-   //    QDomElement BodyElement = HTMLElement.firstChildElement("body");
-   //    QDomElement currentElement = BodyElement.firstChildElement();
-
-   //    while (!currentElement.isNull())
-   //    {
-   //       QDomElement nextElement = currentElement.nextSiblingElement();
-   //       if (currentElement.tagName() == "img")
-   //       {
-   //          QStringList srcEmoticon = currentElement.attribute("src").split('/', Qt::SkipEmptyParts);
-   //          if (srcEmoticon.count() == 3)
-   //          {
-   //             QStringList emoticonSymbols = this->emoticons.getSmileSymbols(srcEmoticon[1], srcEmoticon[2]);
-   //             if (!emoticonSymbols.isEmpty())
-   //                currentElement.parentNode().replaceChild(doc.createTextNode(emoticonSymbols.first()), currentElement);
-   //          }
-   //       }
-   //       else if (currentElement.tagName() == "span")
-   //       {
-   //          QDomElement innerSpanElement = currentElement.firstChildElement();
-   //          while (!innerSpanElement.isNull())
-   //          {
-   //             QDomElement nextInnerSpanElement = innerSpanElement.nextSiblingElement();
-   //             if (innerSpanElement.tagName() == "br")
-   //                innerSpanElement.parentNode().replaceChild(doc.createTextNode("\n"), innerSpanElement);
-   //             innerSpanElement = nextInnerSpanElement;
-   //          }
-   //       }
-   //       currentElement = nextElement;
-   //    }
-
-   //    return BodyElement.text();
-   // }
 
    return result;
 }
@@ -440,13 +403,15 @@ void ChatModel::removeResult(const RCC::ISendChatMessageResult* result)
 QString ChatModel::formatMessage(const Message& message) const
 {
    const QDateTime now = QDateTime::currentDateTime();
+   const QLocale locale = SETTINGS.isSet("language") ? SETTINGS.get<QLocale>("language") : QLocale::system();
+   const QString dateFormat = locale.dateFormat(QLocale::ShortFormat);
 
    return
       QString()
          .append(
             now.date() == message.dateTime.date() ?
               message.dateTime.toString("[HH:mm:ss] ")
-            : message.dateTime.toString("[%1 HH:mm:ss] ").arg(message.dateTime.date().toString(Qt::TextDate)))
+            : message.dateTime.toString("[%1 HH:mm:ss] ").arg(locale.toString(message.dateTime.date(), dateFormat)))
          .append("*").append(escapeMarkdown(message.nick)).append("*:")
          .append(message.separateSenderLine ? "\n\n" : " ")
          .append(message.message);
