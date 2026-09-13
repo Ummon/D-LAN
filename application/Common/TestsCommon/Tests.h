@@ -40,6 +40,11 @@ private slots:
    void formatTime();
    void availableDiskSpace();
    void splitInWords();
+   void splitInWordsUnicode();
+   void isKorean_data();
+   void isKorean();
+   void isJapanese_data();
+   void isJapanese();
    void hashStringToInt();
 
    // Path class.

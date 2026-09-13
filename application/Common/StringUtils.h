@@ -33,6 +33,7 @@ namespace Common
       static QStringList splitArguments(const QString& str);
 
       static bool isKorean(const QString& str);
+      static bool isJapanese(const QString& str);
 
       static int strcmpi(const std::string& s1, const std::string& s2);
 
@@ -58,4 +59,3 @@ inline int Common::StringUtils::commonPrefix(QStringView s1, QStringView s2)
    }
    return i;
 }
-

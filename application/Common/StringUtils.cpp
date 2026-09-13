@@ -42,7 +42,7 @@ QString StringUtils::toLowerAndRemoveAccents(const QString& str)
   */
 QStringList StringUtils::splitInWords(const QString& words)
 {
-   static const QRegularExpression regExp("(\\W+|_)");
+   static const QRegularExpression regExp("(\\W+|_)", QRegularExpression::UseUnicodePropertiesOption);
    return StringUtils::toLowerAndRemoveAccents(words).split(regExp, Qt::SkipEmptyParts);
 }
 
@@ -87,23 +87,27 @@ QStringList StringUtils::splitArguments(const QString& str)
 }
 
 /**
-  * http://www.tamasoft.co.jp/en/general-info/unicode.html
-  * http://en.wikipedia.org/wiki/Hangul
+  * Return whether the string contains at least one character in the Hangul script.
   */
 bool StringUtils::isKorean(const QString& str)
 {
-   for (int i = 0; i < str.size(); ++i)
+   for (const QChar c : str)
+      if (c.script() == QChar::Script_Hangul)
+         return true;
+   return false;
+}
+
+/**
+  * Return whether the string contains Hiragana or Katakana. Han characters alone
+  * do not identify Japanese because they are shared with other languages.
+  */
+bool StringUtils::isJapanese(const QString& str)
+{
+   // Some kana are outside the Basic Multilingual Plane, so inspect full code points.
+   for (const char32_t c : str.toUcs4())
    {
-      const ushort& code = str[i].unicode();
-      if (
-          code >= 0x1100 && code <= 0x11FF ||
-          code >= 0x3130 && code <= 0x318F ||
-          code >= 0x3200 && code <= 0x32FF ||
-          code >= 0xA960 && code <= 0xA97F ||
-          code >= 0xAC00 && code <= 0xD7AF ||
-          code >= 0xD7B0 && code <= 0xD7FF ||
-          code >= 0xFF00 && code <= 0xFFEF
-       )
+      const QChar::Script script = QChar::script(c);
+      if (script == QChar::Script_Hiragana || script == QChar::Script_Katakana)
          return true;
    }
    return false;

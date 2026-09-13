@@ -51,6 +51,8 @@ namespace FM
       static constexpr int MAX_SEARCH_TERMS = 24; ///< Larger queries return no results; keeps work and relevance scores bounded.
       static const int MIN_WORD_SIZE_PARTIAL_MATCH; ///< During a search, the words which have a size below this value must match entirely, for example 'of' match "conspiracy of one" and not "offspring".
       static const int MIN_WORD_SIZE_PARTIAL_MATCH_KOREAN;
+      static const int MIN_WORD_SIZE_PARTIAL_MATCH_JAPANESE;
+      static const int MIN_WORD_SIZE_PARTIAL_MATCH_HAN; ///< Shared ideographs, including kanji-only queries.
 
       WordIndex();
 
@@ -87,6 +89,12 @@ const int FM::WordIndex<T>::MIN_WORD_SIZE_PARTIAL_MATCH(3);
 
 template<typename T>
 const int FM::WordIndex<T>::MIN_WORD_SIZE_PARTIAL_MATCH_KOREAN(1);
+
+template<typename T>
+const int FM::WordIndex<T>::MIN_WORD_SIZE_PARTIAL_MATCH_JAPANESE(1);
+
+template<typename T>
+const int FM::WordIndex<T>::MIN_WORD_SIZE_PARTIAL_MATCH_HAN(1);
 
 template<typename T>
    FM::WordIndex<T>::WordIndex()
@@ -152,18 +160,21 @@ QList<FM::NodeResult<T>> FM::WordIndex<T>::search(
 ) const
 {
    QMutexLocker locker(&this->mutex);
-   return
-      this->root.search(
-         word,
-         word.size() >=
-            (
-               Common::StringUtils::isKorean(word) ?
-                    MIN_WORD_SIZE_PARTIAL_MATCH_KOREAN
-                  : MIN_WORD_SIZE_PARTIAL_MATCH
-            ),
-         maxNbResult,
-         predicat
-      );
+   int minimumLength = MIN_WORD_SIZE_PARTIAL_MATCH;
+   if (Common::StringUtils::isKorean(word))
+      minimumLength = MIN_WORD_SIZE_PARTIAL_MATCH_KOREAN;
+   else if (Common::StringUtils::isJapanese(word))
+      minimumLength = MIN_WORD_SIZE_PARTIAL_MATCH_JAPANESE;
+   else
+      // Han characters need short prefix matching regardless of the text's language.
+      for (const char32_t c : word.toUcs4())
+         if (QChar::script(c) == QChar::Script_Han)
+         {
+            minimumLength = MIN_WORD_SIZE_PARTIAL_MATCH_HAN;
+            break;
+         }
+
+   return this->root.search(word, word.size() >= minimumLength, maxNbResult, predicat);
 }
 
 /**

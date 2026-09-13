@@ -96,6 +96,49 @@ void WordIndexTests::testWordIndex()
    QVERIFY(result10.size() == 0);
 }
 
+void WordIndexTests::shortPrefixMatching_data()
+{
+   QTest::addColumn<QString>("prefix");
+   QTest::addColumn<QString>("word");
+   QTest::addColumn<bool>("matches");
+   QTest::newRow("one-han") << QStringLiteral("\u65E5") << QStringLiteral("\u65E5\u672C\u8A9E") << true;
+   QTest::newRow("two-han") << QStringLiteral("\u65E5\u672C") << QStringLiteral("\u65E5\u672C\u8A9E") << true;
+   QTest::newRow("supplementary-han") << QStringLiteral("\U00020000") << QStringLiteral("\U00020000\u65E5") << true;
+   QTest::newRow("kana") << QStringLiteral("\u306B") << QStringLiteral("\u306B\u307B\u3093") << true;
+   QTest::newRow("hangul") << QStringLiteral("\uD55C") << QStringLiteral("\uD55C\uAE00") << true;
+   QTest::newRow("short-latin") << QString("al") << QString("alpha") << false;
+   QTest::newRow("long-latin") << QString("alp") << QString("alpha") << true;
+}
+
+void WordIndexTests::shortPrefixMatching()
+{
+   QFETCH(QString, prefix);
+   QFETCH(QString, word);
+   QFETCH(bool, matches);
+
+   WordIndex<int> index;
+   index.addItem(word, 1);
+   const auto result = index.search(prefix);
+   QCOMPARE(result.size(), matches ? 1 : 0);
+   if (matches)
+   {
+      QCOMPARE(result.first().value, 1);
+      QCOMPARE(result.first().level, 1);
+   }
+
+   // Exercise the same normalization and list overload used by FileManager.
+   WordIndex<int> normalizedIndex;
+   normalizedIndex.addItem(Common::StringUtils::splitInWords(word), 1);
+   const QStringList terms = Common::StringUtils::splitInWords(prefix);
+   QCOMPARE(terms.size(), 1);
+   QCOMPARE(normalizedIndex.search(terms).size(), matches ? 1 : 0);
+   normalizedIndex.addItem(terms, 2);
+   const auto ranked = normalizedIndex.search(terms);
+   QCOMPARE(ranked.first().value, 2);
+   QCOMPARE(ranked.first().level, 0);
+   QCOMPARE(ranked.size(), matches ? 2 : 1);
+}
+
 void WordIndexTests::removalPreservesRemainingWords_data()
 {
    QTest::addColumn<QString>("remaining");

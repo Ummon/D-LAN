@@ -180,6 +180,86 @@ void Tests::splitInWords()
    QCOMPARE(StringUtils::splitInWords("àšř"), QStringList() << "asr");
 }
 
+void Tests::splitInWordsUnicode()
+{
+   const QString korean = QStringLiteral("\uD55C\uAE00");
+   const QString hiragana = QStringLiteral("\u306B\u307B\u3093");
+   const QString katakana = QStringLiteral("\u30AB\u30BF\u30AB\u30CA");
+   const QString han = QStringLiteral("\u65E5\u672C");
+   const QString normalizedKorean = QStringLiteral("\u1112\u1161\u11AB\u1100\u1173\u11AF");
+
+   QCOMPARE(StringUtils::splitInWords(korean), QStringList { normalizedKorean });
+   QCOMPARE(StringUtils::splitInWords(hiragana), QStringList { hiragana });
+   QCOMPARE(StringUtils::splitInWords(katakana), QStringList { katakana });
+   QCOMPARE(StringUtils::splitInWords(han), QStringList { han });
+   QCOMPARE(StringUtils::splitInWords(QStringLiteral("ABC_") + korean + QStringLiteral("\u3001") + hiragana + " 123"),
+      (QStringList { "abc", normalizedKorean, hiragana, "123" }));
+   QCOMPARE(StringUtils::splitInWords(QStringLiteral("\U0001B001")),
+      QStringList { QStringLiteral("\U0001B001") });
+}
+
+void Tests::isKorean_data()
+{
+   QTest::addColumn<QString>("text");
+   QTest::addColumn<bool>("expected");
+
+   QTest::newRow("empty") << QString() << false;
+   QTest::newRow("ascii") << QStringLiteral("abc 123") << false;
+   QTest::newRow("syllables") << QStringLiteral("\uD55C\uAE00") << true;
+   QTest::newRow("decomposed") << QStringLiteral("\u1112\u1161\u11AB") << true;
+   QTest::newRow("compatibility-jamo") << QStringLiteral("\u3131") << true;
+   QTest::newRow("extended-jamo") << QStringLiteral("\uA960\uD7B0") << true;
+   QTest::newRow("halfwidth-hangul") << QStringLiteral("\uFFA1") << true;
+   QTest::newRow("enclosed-hangul") << QStringLiteral("\u3200\u3260") << true;
+   QTest::newRow("single-dot-tone-mark") << QStringLiteral("\u302E") << true;
+   QTest::newRow("double-dot-tone-mark") << QStringLiteral("\u302F") << true;
+   QTest::newRow("mixed") << QStringLiteral("abc \uD55C 123") << true;
+   QTest::newRow("fullwidth-latin") << QStringLiteral("\uFF21") << false;
+   QTest::newRow("fullwidth-digit") << QStringLiteral("\uFF11") << false;
+   QTest::newRow("halfwidth-katakana") << QStringLiteral("\uFF71") << false;
+   QTest::newRow("enclosed-ideograph") << QStringLiteral("\u3220") << false;
+   QTest::newRow("unassigned-syllable") << QStringLiteral("\uD7A4") << false;
+   QTest::newRow("unassigned-jamo") << QStringLiteral("\uA97D") << false;
+   QTest::newRow("emoji") << QStringLiteral("\U0001F600") << false;
+}
+
+void Tests::isKorean()
+{
+   QFETCH(QString, text);
+   QFETCH(bool, expected);
+   QCOMPARE(StringUtils::isKorean(text), expected);
+}
+
+void Tests::isJapanese_data()
+{
+   QTest::addColumn<QString>("text");
+   QTest::addColumn<bool>("expected");
+
+   QTest::newRow("empty") << QString() << false;
+   QTest::newRow("ascii") << QStringLiteral("abc 123") << false;
+   QTest::newRow("hiragana") << QStringLiteral("\u3042") << true;
+   QTest::newRow("katakana") << QStringLiteral("\u30A2") << true;
+   QTest::newRow("halfwidth-katakana") << QStringLiteral("\uFF71") << true;
+   QTest::newRow("katakana-extension") << QStringLiteral("\u31F0") << true;
+   QTest::newRow("supplementary-hiragana") << QStringLiteral("\U0001B001") << true;
+   QTest::newRow("supplementary-katakana") << QStringLiteral("\U0001B000") << true;
+   QTest::newRow("mixed") << QStringLiteral("abc \u65E5\u672C\u8A9E\u3067 123") << true;
+   QTest::newRow("han-only") << QStringLiteral("\u65E5\u672C\u8A9E") << false;
+   QTest::newRow("hangul") << QStringLiteral("\uD55C\uAE00") << false;
+   QTest::newRow("fullwidth-latin") << QStringLiteral("\uFF21") << false;
+   QTest::newRow("shared-punctuation") << QStringLiteral("\u3001\u3002") << false;
+   QTest::newRow("shared-prolonged-sound-mark") << QStringLiteral("\u30FC") << false;
+   QTest::newRow("unassigned") << QStringLiteral("\u3040") << false;
+   QTest::newRow("emoji") << QStringLiteral("\U0001F600") << false;
+}
+
+void Tests::isJapanese()
+{
+   QFETCH(QString, text);
+   QFETCH(bool, expected);
+   QCOMPARE(StringUtils::isJapanese(text), expected);
+}
+
 void Tests::hashStringToInt()
 {
    QCOMPARE(StringUtils::hashStringToInt(""), 0u);
