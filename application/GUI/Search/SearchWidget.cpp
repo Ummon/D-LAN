@@ -153,7 +153,14 @@ QString SearchDelegate::toHtmlText(const QString& text) const
 
       for (int pos = 0; (pos = foldedText.indexOf(term, pos)) != -1; pos += term.size())
          if (pos == 0 || !foldedText.at(pos - 1).isLetter()) // Only the terms beginning a word are highlighted.
-            partsToHighlight << qMakePair(positions[pos], positions[pos + term.size()]);
+         {
+            int end = pos + term.size();
+            // A source grapheme may expand to several folded characters. Include the
+            // entire source grapheme when the match ends within that expansion.
+            while (end < foldedText.size() && positions[end] == positions[end - 1])
+               ++end;
+            partsToHighlight << qMakePair(positions[pos], positions[end]);
+         }
    }
 
    if (partsToHighlight.isEmpty())
