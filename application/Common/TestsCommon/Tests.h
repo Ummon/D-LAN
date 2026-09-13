@@ -41,6 +41,7 @@ private slots:
    void availableDiskSpace();
    void splitInWords();
    void splitInWordsUnicode();
+   void normalizeSearchWords();
    void isKorean_data();
    void isKorean();
    void isJapanese_data();

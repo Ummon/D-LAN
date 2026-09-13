@@ -23,6 +23,7 @@ using namespace GUI;
 #include <algorithm>
 
 #include <QTextDocument>
+#include <QTextBoundaryFinder>
 #include <QAbstractTextDocumentLayout>
 #include <QMenu>
 #include <QIcon>
@@ -133,8 +134,8 @@ void SearchDelegate::setTerms(const QString& terms)
 
 /**
   * Folds 'text' the same way 'Common::StringUtils::splitInWords(..)' folds the search terms and fills 'positions'
-  * with, for each character of the folded text, the position in 'text' of the character it comes from.
-  * A character may fold to zero characters (a combining mark), to one, or to several ('½' gives "1/2",
+  * with, for each character of the folded text, the start in 'text' of the grapheme it comes from.
+  * A grapheme may fold to zero characters (a combining mark), to one, or to several ('½' gives "1/2",
   * a ligature gives its letters, ...), so the folded text and 'text' do NOT share their indices: 'positions' is
   * the only way to map a position in one back to the other.
   * 'positions' gets one extra element at the end, equal to the size of 'text', so the end of a match maps as well.
@@ -146,11 +147,11 @@ static QString foldAndMapPositions(const QString& text, QList<int>& positions)
    positions.clear();
    positions.reserve(text.size() + 1);
 
-   for (int i = 0; i < text.size();)
+   QTextBoundaryFinder boundaries(QTextBoundaryFinder::Grapheme, text);
+   for (int i = 0, end; (end = boundaries.toNextBoundary()) != -1; i = end)
    {
-      // A non-BMP character is stored as two 'QChar', they must be folded together.
-      const int nbChars =
-         text.at(i).isHighSurrogate() && i + 1 < text.size() && text.at(i + 1).isLowSurrogate() ? 2 : 1;
+      // Fold combining sequences together so normalization can compose kana and Hangul.
+      const int nbChars = end - i;
 
       if (nbChars == 1 && text.at(i).unicode() < 0x80) // ASCII is never expanded nor removed, no need to fold it.
       {
@@ -164,8 +165,6 @@ static QString foldAndMapPositions(const QString& text, QList<int>& positions)
          for (int j = 0; j < foldedChars.size(); j++)
             positions << i;
       }
-
-      i += nbChars;
    }
 
    positions << text.size();

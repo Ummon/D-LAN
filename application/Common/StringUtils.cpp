@@ -29,9 +29,12 @@ QString StringUtils::toLowerAndRemoveAccents(const QString& str)
    QString result;
    result.reserve(decomposed.size());
    for (const QChar c : decomposed)
-      if (c.category() != QChar::Mark_NonSpacing && c.category() != QChar::Mark_SpacingCombining)
+      // Dakuten and handakuten distinguish kana, unlike accents folded for searching.
+      if (c.unicode() == 0x3099 || c.unicode() == 0x309A ||
+          (c.category() != QChar::Mark_NonSpacing && c.category() != QChar::Mark_SpacingCombining))
          result.append(c);
-   return result;
+   // Restore Hangul syllables and composed kana after compatibility decomposition.
+   return result.normalized(QString::NormalizationForm_C);
 }
 
 /**

@@ -27,6 +27,7 @@
 #include <QString>
 #include <QChar>
 #include <QRecursiveMutex>
+#include <QTextBoundaryFinder>
 
 #include <Common/Uncopyable.h>
 #include <Common/Global.h>
@@ -49,7 +50,7 @@ namespace FM
    {
    public:
       static constexpr int MAX_SEARCH_TERMS = 24; ///< Larger queries return no results; keeps work and relevance scores bounded.
-      static const int MIN_WORD_SIZE_PARTIAL_MATCH; ///< During a search, the words which have a size below this value must match entirely, for example 'of' match "conspiracy of one" and not "offspring".
+      static const int MIN_WORD_SIZE_PARTIAL_MATCH; ///< Minimum grapheme count for prefix matching; shorter words must match entirely, e.g. 'of' must not match "offspring".
       static const int MIN_WORD_SIZE_PARTIAL_MATCH_KOREAN;
       static const int MIN_WORD_SIZE_PARTIAL_MATCH_JAPANESE;
       static const int MIN_WORD_SIZE_PARTIAL_MATCH_HAN; ///< Shared ideographs, including kanji-only queries.
@@ -174,7 +175,13 @@ QList<FM::NodeResult<T>> FM::WordIndex<T>::search(
             break;
          }
 
-   return this->root.search(word, word.size() >= minimumLength, maxNbResult, predicat);
+   // Count user-perceived characters, including surrogate pairs and combining sequences.
+   QTextBoundaryFinder boundaries(QTextBoundaryFinder::Grapheme, word);
+   int length = 0;
+   while (length < minimumLength && boundaries.toNextBoundary() != -1)
+      ++length;
+
+   return this->root.search(word, length >= minimumLength, maxNbResult, predicat);
 }
 
 /**

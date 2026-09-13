@@ -186,16 +186,31 @@ void Tests::splitInWordsUnicode()
    const QString hiragana = QStringLiteral("\u306B\u307B\u3093");
    const QString katakana = QStringLiteral("\u30AB\u30BF\u30AB\u30CA");
    const QString han = QStringLiteral("\u65E5\u672C");
-   const QString normalizedKorean = QStringLiteral("\u1112\u1161\u11AB\u1100\u1173\u11AF");
+   const QString decomposedKorean = QStringLiteral("\u1112\u1161\u11AB\u1100\u1173\u11AF");
 
-   QCOMPARE(StringUtils::splitInWords(korean), QStringList { normalizedKorean });
+   QCOMPARE(StringUtils::splitInWords(korean), QStringList { korean });
+   QCOMPARE(StringUtils::splitInWords(decomposedKorean), QStringList { korean });
    QCOMPARE(StringUtils::splitInWords(hiragana), QStringList { hiragana });
    QCOMPARE(StringUtils::splitInWords(katakana), QStringList { katakana });
    QCOMPARE(StringUtils::splitInWords(han), QStringList { han });
    QCOMPARE(StringUtils::splitInWords(QStringLiteral("ABC_") + korean + QStringLiteral("\u3001") + hiragana + " 123"),
-      (QStringList { "abc", normalizedKorean, hiragana, "123" }));
+      (QStringList { "abc", korean, hiragana, "123" }));
    QCOMPARE(StringUtils::splitInWords(QStringLiteral("\U0001B001")),
       QStringList { QStringLiteral("\U0001B001") });
+}
+
+void Tests::normalizeSearchWords()
+{
+   QCOMPARE(StringUtils::toLowerAndRemoveAccents(QStringLiteral("\uD55C")), QStringLiteral("\uD55C"));
+   QCOMPARE(StringUtils::toLowerAndRemoveAccents(QStringLiteral("\u1112\u1161\u11AB")), QStringLiteral("\uD55C"));
+   QCOMPARE(StringUtils::toLowerAndRemoveAccents(QStringLiteral("\u304C")), QStringLiteral("\u304C"));
+   QCOMPARE(StringUtils::toLowerAndRemoveAccents(QStringLiteral("\u304B\u3099")), QStringLiteral("\u304C"));
+   QCOMPARE(StringUtils::toLowerAndRemoveAccents(QStringLiteral("\u306F\u309A")), QStringLiteral("\u3071"));
+   QCOMPARE(StringUtils::toLowerAndRemoveAccents(QStringLiteral("\uFF76\uFF9E")), QStringLiteral("\u30AC"));
+   QCOMPARE(StringUtils::toLowerAndRemoveAccents(QStringLiteral("\uFF8A\uFF9F")), QStringLiteral("\u30D1"));
+   QCOMPARE(StringUtils::splitInWords(QStringLiteral("\u304B \u304C \u3071")),
+      (QStringList { QStringLiteral("\u304B"), QStringLiteral("\u304C"), QStringLiteral("\u3071") }));
+   QCOMPARE(StringUtils::toLowerAndRemoveAccents(QStringLiteral("\u00C9 E\u0301 \uFF21")), QString("e e a"));
 }
 
 void Tests::isKorean_data()

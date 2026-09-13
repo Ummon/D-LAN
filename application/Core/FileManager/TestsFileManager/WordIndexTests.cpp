@@ -108,6 +108,10 @@ void WordIndexTests::shortPrefixMatching_data()
    QTest::newRow("hangul") << QStringLiteral("\uD55C") << QStringLiteral("\uD55C\uAE00") << true;
    QTest::newRow("short-latin") << QString("al") << QString("alpha") << false;
    QTest::newRow("long-latin") << QString("alp") << QString("alpha") << true;
+   QTest::newRow("two-graphemes-combining") << QStringLiteral("a\u0301b") << QStringLiteral("a\u0301bcd") << false;
+   QTest::newRow("three-graphemes-combining") << QStringLiteral("a\u0301bc") << QStringLiteral("a\u0301bcd") << true;
+   QTest::newRow("two-graphemes-surrogate") << QStringLiteral("\U00010428a") << QStringLiteral("\U00010428abcd") << false;
+   QTest::newRow("three-graphemes-surrogate") << QStringLiteral("\U00010428ab") << QStringLiteral("\U00010428abcd") << true;
 }
 
 void WordIndexTests::shortPrefixMatching()
@@ -137,6 +141,29 @@ void WordIndexTests::shortPrefixMatching()
    QCOMPARE(ranked.first().value, 2);
    QCOMPARE(ranked.first().level, 0);
    QCOMPARE(ranked.size(), matches ? 2 : 1);
+}
+
+void WordIndexTests::normalizedKanaAndHangul()
+{
+   WordIndex<int> index;
+   const auto add = [&](const QString& word, int item) {
+      index.addItem(Common::StringUtils::splitInWords(word), item);
+   };
+   const auto search = [&](const QString& word) {
+      return WordIndex<int>::resultToList(index.search(Common::StringUtils::splitInWords(word)));
+   };
+   add(QStringLiteral("\u304B\u304D"), 1);
+   add(QStringLiteral("\u304C\u304D"), 2);
+   add(QStringLiteral("\u30D1\u30F3"), 3);
+   add(QStringLiteral("\uD55C\uAE00"), 4);
+   QCOMPARE(search(QStringLiteral("\u304B")), (QList<int> { 1 }));
+   QCOMPARE(search(QStringLiteral("\u304C")), (QList<int> { 2 }));
+   QCOMPARE(search(QStringLiteral("\u304B\u3099")), (QList<int> { 2 }));
+   QCOMPARE(search(QStringLiteral("\uFF8A\uFF9F")), (QList<int> { 3 }));
+   QCOMPARE(search(QStringLiteral("\uD55C")), (QList<int> { 4 }));
+   QCOMPARE(search(QStringLiteral("\u1112\u1161\u11AB")), (QList<int> { 4 }));
+   // A complete syllable must not match another syllable's decomposed prefix.
+   QVERIFY(search(QStringLiteral("\uD558")).isEmpty());
 }
 
 void WordIndexTests::removalPreservesRemainingWords_data()
