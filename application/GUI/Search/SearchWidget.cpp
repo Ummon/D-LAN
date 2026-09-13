@@ -23,7 +23,6 @@ using namespace GUI;
 #include <algorithm>
 
 #include <QTextDocument>
-#include <QTextBoundaryFinder>
 #include <QAbstractTextDocumentLayout>
 #include <QMenu>
 #include <QIcon>
@@ -133,55 +132,16 @@ void SearchDelegate::setTerms(const QString& terms)
 }
 
 /**
-  * Folds 'text' the same way 'Common::StringUtils::splitInWords(..)' folds the search terms and fills 'positions'
-  * with, for each character of the folded text, the start in 'text' of the grapheme it comes from.
-  * A grapheme may fold to zero characters (a combining mark), to one, or to several ('½' gives "1/2",
-  * a ligature gives its letters, ...), so the folded text and 'text' do NOT share their indices: 'positions' is
-  * the only way to map a position in one back to the other.
-  * 'positions' gets one extra element at the end, equal to the size of 'text', so the end of a match maps as well.
-  */
-static QString foldAndMapPositions(const QString& text, QList<int>& positions)
-{
-   QString foldedText;
-   foldedText.reserve(text.size());
-   positions.clear();
-   positions.reserve(text.size() + 1);
-
-   QTextBoundaryFinder boundaries(QTextBoundaryFinder::Grapheme, text);
-   for (int i = 0, end; (end = boundaries.toNextBoundary()) != -1; i = end)
-   {
-      // Fold combining sequences together so normalization can compose kana and Hangul.
-      const int nbChars = end - i;
-
-      if (nbChars == 1 && text.at(i).unicode() < 0x80) // ASCII is never expanded nor removed, no need to fold it.
-      {
-         foldedText += text.at(i).toLower();
-         positions << i;
-      }
-      else
-      {
-         const QString foldedChars = Common::StringUtils::toLowerAndRemoveAccents(text.mid(i, nbChars));
-         foldedText += foldedChars;
-         for (int j = 0; j < foldedChars.size(); j++)
-            positions << i;
-      }
-   }
-
-   positions << text.size();
-   return foldedText;
-}
-
-/**
   * Put in bold each part of 'text' matching one of the current search terms.
   * The terms are searched in the folded text but the markup is inserted in 'text', at the positions given by
-  * 'foldAndMapPositions(..)'.
+  * 'Common::StringUtils::toLowerAndRemoveAccents(..)'.
   * 'text' is an entry name or path coming from a remote peer, every part of it is escaped so it cannot inject
   * any markup of its own into the document built by 'SearchDelegate::paint(..)' and 'sizeHint(..)'.
   */
 QString SearchDelegate::toHtmlText(const QString& text) const
 {
    QList<int> positions;
-   const QString foldedText = foldAndMapPositions(text, positions);
+   const QString foldedText = Common::StringUtils::toLowerAndRemoveAccents(text, positions);
 
    QList<QPair<int, int>> partsToHighlight; // Parts of 'text' to put in bold, as [begin, end[ positions.
 

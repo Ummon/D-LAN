@@ -29,6 +29,7 @@ namespace Common
    {
    public:
       static QString toLowerAndRemoveAccents(const QString& str);
+      static QString toLowerAndRemoveAccents(const QString& str, QList<int>& positions);
       static QStringList splitInWords(const QString& words);
       static QStringList splitArguments(const QString& str);
 

@@ -42,6 +42,8 @@ private slots:
    void splitInWords();
    void splitInWordsUnicode();
    void normalizeSearchWords();
+   void normalizeSearchPositions_data();
+   void normalizeSearchPositions();
    void isKorean_data();
    void isKorean();
    void isJapanese_data();

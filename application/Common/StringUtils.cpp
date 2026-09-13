@@ -20,8 +20,10 @@
 using namespace Common;
 
 #include <cctype>
+#include <utility>
 
 #include <QRegularExpression>
+#include <QTextBoundaryFinder>
 
 QString StringUtils::toLowerAndRemoveAccents(const QString& str)
 {
@@ -35,6 +37,54 @@ QString StringUtils::toLowerAndRemoveAccents(const QString& str)
          result.append(c);
    // Restore Hangul syllables and composed kana after compatibility decomposition.
    return result.normalized(QString::NormalizationForm_C);
+}
+
+/**
+  * Fold text and map each resulting UTF-16 unit to its source grapheme's start.
+  * Append the source length as a sentinel so match ends can also be mapped.
+  */
+QString StringUtils::toLowerAndRemoveAccents(const QString& str, QList<int>& positions)
+{
+   QString folded;
+   folded.reserve(str.size());
+   positions.clear();
+   positions.reserve(str.size() + 1);
+
+   QTextBoundaryFinder boundaries(QTextBoundaryFinder::Grapheme, str);
+   for (int start = 0, end; (end = boundaries.toNextBoundary()) != -1; start = end)
+   {
+      if (end == start + 1 && str.at(start).unicode() < 0x80)
+      {
+         folded += str.at(start).toLower();
+         positions << start;
+         continue;
+      }
+      const QString part = StringUtils::toLowerAndRemoveAccents(str.mid(start, end - start));
+      folded += part;
+      for (int i = 0; i < part.size(); ++i)
+         positions << start;
+   }
+
+   // Compatibility decomposition may join formerly separate graphemes: e.g. ㄱ + ㅏ
+   // becomes conjoining Jamo, which must compose to 가 just as in whole-string folding.
+   const QString composed = folded.normalized(QString::NormalizationForm_C);
+   if (composed != folded)
+   {
+      QList<int> composedPositions;
+      composedPositions.reserve(composed.size() + 1);
+      QTextBoundaryFinder foldedBoundaries(QTextBoundaryFinder::Grapheme, folded);
+      for (int start = 0, end; (end = foldedBoundaries.toNextBoundary()) != -1; start = end)
+      {
+         const QString part = folded.mid(start, end - start);
+         const QString composedPart = part.normalized(QString::NormalizationForm_C);
+         for (int i = 0; i < composedPart.size(); ++i)
+            composedPositions << positions[part == composedPart ? start + i : start];
+      }
+      positions = std::move(composedPositions);
+   }
+
+   positions << str.size();
+   return composed;
 }
 
 /**

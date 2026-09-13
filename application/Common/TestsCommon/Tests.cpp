@@ -213,6 +213,37 @@ void Tests::normalizeSearchWords()
    QCOMPARE(StringUtils::toLowerAndRemoveAccents(QStringLiteral("\u00C9 E\u0301 \uFF21")), QString("e e a"));
 }
 
+void Tests::normalizeSearchPositions_data()
+{
+   QTest::addColumn<QString>("text");
+   QTest::addColumn<QString>("expected");
+   QTest::addColumn<QList<int>>("expectedPositions");
+   QTest::newRow("empty") << QString() << QString() << QList<int> { 0 };
+   QTest::newRow("ascii") << QString("Ab") << QString("ab") << QList<int> { 0, 1, 2 };
+   QTest::newRow("compatibility-hangul") << QStringLiteral("\u3131\u314F") << QStringLiteral("\uAC00") << QList<int> { 0, 2 };
+   QTest::newRow("halfwidth-hangul") << QStringLiteral("\uFFA1\uFFC2") << QStringLiteral("\uAC00") << QList<int> { 0, 2 };
+   QTest::newRow("mixed-jamo") << QStringLiteral("\u3131\u314F\u11A8") << QStringLiteral("\uAC01") << QList<int> { 0, 3 };
+   QTest::newRow("two-syllables") << QStringLiteral("\u3131\u314F\u3134\u314F") << QStringLiteral("\uAC00\uB098") << QList<int> { 0, 2, 4 };
+   QTest::newRow("surrounding-text") << QStringLiteral("A \u3131\u314F.txt") << QStringLiteral("a \uAC00.txt") << QList<int> { 0, 1, 2, 4, 5, 6, 7, 8 };
+   QTest::newRow("canonical-hangul") << QStringLiteral("\u1112\u1161\u11AB") << QStringLiteral("\uD55C") << QList<int> { 0, 3 };
+   QTest::newRow("voiced-kana") << QStringLiteral("\u304B\u3099") << QStringLiteral("\u304C") << QList<int> { 0, 2 };
+   QTest::newRow("halfwidth-kana") << QStringLiteral("\uFF76\uFF9E") << QStringLiteral("\u30AC") << QList<int> { 0, 2 };
+   QTest::newRow("latin-accent") << QStringLiteral("E\u0301") << QString("e") << QList<int> { 0, 2 };
+   QTest::newRow("surrogate") << QStringLiteral("\U00010400") << QStringLiteral("\U00010428") << QList<int> { 0, 0, 2 };
+}
+
+void Tests::normalizeSearchPositions()
+{
+   QFETCH(QString, text);
+   QFETCH(QString, expected);
+   QFETCH(QList<int>, expectedPositions);
+   QList<int> positions { -1 }; // The output replaces any prior mapping.
+   const QString folded = StringUtils::toLowerAndRemoveAccents(text, positions);
+   QCOMPARE(folded, expected);
+   QCOMPARE(folded, StringUtils::toLowerAndRemoveAccents(text));
+   QCOMPARE(positions, expectedPositions);
+}
+
 void Tests::isKorean_data()
 {
    QTest::addColumn<QString>("text");
