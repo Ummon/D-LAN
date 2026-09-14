@@ -47,19 +47,10 @@ fn header(lang: tr.Lang) {
       html.li([], [
         html.a(
           [
-            attr.href("http://dev.d-lan.net/projects/pmp/wiki"),
+            attr.href("https://github.com/Ummon/D-LAN/releases"),
             attr.target("_blank"),
           ],
-          [html.text("wiki")],
-        ),
-      ]),
-      html.li([], [
-        html.a(
-          [
-            attr.href("http://dev.d-lan.net/projects/pmp/boards"),
-            attr.target("_blank"),
-          ],
-          [html.text("forums")],
+          [html.text("changelog")],
         ),
       ]),
       html.li([], [
