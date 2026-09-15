@@ -168,7 +168,9 @@ void SearchDock::adjustHeight()
    // while floating, native frame included): explicitly ask to re-apply the constraint.
    if (!this->isFloating())
       if (QMainWindow* mainWindow = qobject_cast<QMainWindow*>(this->parentWidget()))
-         mainWindow->resizeDocks({ this }, { contents->height() }, Qt::Vertical);
+         // During construction, the dock has a parent but has not been added to its layout yet.
+         if (mainWindow->dockWidgetArea(this) != Qt::NoDockWidgetArea)
+            mainWindow->resizeDocks({ this }, { contents->height() }, Qt::Vertical);
 }
 
 void SearchDock::search()
