@@ -20,7 +20,9 @@
 
 #include <algorithm>
 #include <memory>
+#include <optional>
 #include <stdexcept>
+#include <string>
 #include <type_traits>
 #include <vector>
 
@@ -1040,6 +1042,128 @@ void Tests::sortedArrayInsertIndex()
    QVERIFY(exists);
    QCOMPARE(map.size(), 3);
    QCOMPARE(map.getValueFromIndex(1), QString("updated"));
+}
+
+void Tests::sortedArrayInsertConversion_data()
+{
+   QTest::addColumn<int>("order");
+   QTest::addColumn<bool>("descending");
+   for (int order : {3, 7})
+      for (bool descending : {false, true})
+      {
+         const QByteArray name = QByteArray::number(order) + (descending ? "-descending" : "-ascending");
+         QTest::newRow(name.constData()) << order << descending;
+      }
+}
+
+void Tests::sortedArrayInsertConversion()
+{
+   QFETCH(int, order);
+   QFETCH(bool, descending);
+   const auto checkConversion = [&]<int M>() {
+      using Value = std::optional<std::string>;
+      const auto less = [descending](const Value& a, const Value& b) { return descending ? a > b : a < b; };
+      SortedArray<Value, M> array(less);
+      std::vector<Value> expected;
+      std::vector<std::string> inputs {"alpha", "zulu", "middle", "beta"};
+      for (int i = 0; i < 40; ++i)
+         inputs.push_back(std::to_string((i * 17) % 40));
+      for (std::size_t i = 0; i < inputs.size(); ++i)
+      {
+         const Value value(inputs[i]);
+         auto position = std::lower_bound(expected.begin(), expected.end(), value, less);
+         const int index = static_cast<int>(position - expected.begin());
+         expected.insert(position, value);
+         bool exists = true;
+         // Conversion from an lvalue must preserve its input; conversion from an
+         // rvalue must not consume it once for comparison and again for storage.
+         std::string input = inputs[i];
+         if (i % 2 == 0)
+         {
+            QCOMPARE(array.insert(input, &exists), index);
+            QCOMPARE(input, inputs[i]);
+         }
+         else
+            QCOMPARE(array.insert(std::move(input), &exists), index);
+         QVERIFY(!exists);
+         QVERIFY((std::vector<Value>(array.begin(), array.end()) == expected));
+         QCOMPARE(array.indexOf(value), index);
+      }
+      // Updating an existing value must report the same rank and preserve order.
+      for (int i = 0; i < static_cast<int>(expected.size()); ++i)
+      {
+         bool exists = false;
+         QCOMPARE(array.insert(std::string(*expected[i]), &exists), i);
+         QVERIFY(exists);
+      }
+      QVERIFY((std::vector<Value>(array.begin(), array.end()) == expected));
+   };
+   if (order == 3)
+      checkConversion.template operator()<3>();
+   else
+      checkConversion.template operator()<7>();
+}
+
+void Tests::sortedArrayInsertConversionException()
+{
+   struct Input
+   {
+      QString value;
+      int& conversions;
+      bool fail = false;
+      operator QString() const & { ++conversions; return value; }
+      operator QString() &&
+      {
+         ++conversions;
+         if (fail)
+            throw std::runtime_error("Conversion failed");
+         return std::move(value);
+      }
+   };
+   SortedArray<QString, 3> array;
+   array.insert(QString("alpha"));
+   int conversions = 0;
+   QCOMPARE(array.insert(Input{"zulu", conversions}), 1);
+   QCOMPARE(conversions, 1);
+   const auto snapshot = array;
+   const auto& unchanged = array;
+   conversions = 0;
+   bool exists = true;
+   QVERIFY_THROWS_EXCEPTION(std::runtime_error, array.insert(Input{"middle", conversions, true}, &exists));
+   QCOMPARE(conversions, 1);
+   QVERIFY(exists);
+   QCOMPARE(array.toList(), snapshot.toList());
+   QCOMPARE(&unchanged.getFromIndex(0), &snapshot.getFromIndex(0));
+   QCOMPARE(array.insert(Input{"middle", conversions}), 1);
+   QCOMPARE(array.toList(), (QList<QString>{"alpha", "middle", "zulu"}));
+
+   struct RvalueInput
+   {
+      QString value;
+      operator QString() && { return std::move(value); }
+   };
+   QCOMPARE(array.insert(RvalueInput{"beta"}), 1);
+   QCOMPARE(array.toList(), (QList<QString>{"alpha", "beta", "middle", "zulu"}));
+}
+
+void Tests::sortedArrayIteratorAddress()
+{
+   struct Item
+   {
+      int key = 0;
+      bool operator<(const Item& other) const { return key < other.key; }
+      Item* operator&() { return nullptr; }
+      const Item* operator&() const { return nullptr; }
+   };
+   SortedArray<Item, 3> array;
+   for (int i = 0; i < 40; ++i)
+      array.insert(Item{(i * 17) % 40});
+   const auto snapshot = array;
+   for (auto it = snapshot.begin(); it != snapshot.end(); ++it)
+   {
+      QCOMPARE(it.operator->(), std::addressof(*it));
+      QCOMPARE(it->key, (*it).key);
+   }
 }
 
 void Tests::sortedArrayToList()

@@ -65,6 +65,9 @@ private slots:
    void sortedArraySubscriptCascadingSplit();
    void sortedArrayInternalNodeIndices();
    void sortedArrayInsertIndex();
+   void sortedArrayInsertConversion_data();
+   void sortedArrayInsertConversion();
+   void sortedArrayInsertConversionException();
    void sortedArrayToList();
    void sortedArrayComparatorCollisions();
    void sortedArrayComparatorException();
@@ -73,6 +76,7 @@ private slots:
    void sortedArrayEmptyNearestIndex();
    void sortedArrayComparatorConstructor();
    void sortedArrayStandardIterator();
+   void sortedArrayIteratorAddress();
    void sortedArrayClearException();
    void sortedArrayMove_data();
    void sortedArrayMove();

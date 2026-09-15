@@ -22,6 +22,7 @@
 #include <iterator>
 #include <memory>
 #include <stdexcept>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -270,7 +271,7 @@ const T& Common::SortedArray<T, M>::iterator::operator*() const
 template <typename T, int M>
 const T* Common::SortedArray<T, M>::iterator::operator->() const
 {
-   return &this->currentPosition.node->items[this->currentPosition.p];
+   return std::addressof(this->currentPosition.node->items[this->currentPosition.p]);
 }
 
 template <typename T, int M>
@@ -335,6 +336,7 @@ int Common::SortedArray<T, M>::size() const
 
 /**
   * Insert or update the given value. The update is done with assignment operator of T.
+  * Arguments of a different type are converted to T once, before lookup or mutation.
   * @param exists Optional, set to 'true' if the value already exists.
   * @return The zero-based index of the inserted or updated value.
   */
@@ -342,23 +344,31 @@ template <typename T, int M>
 template <typename U>
 int Common::SortedArray<T, M>::insert(U&& value, bool* exists)
 {
-   int position;
-   int index;
-   // Compute the rank before forwarding can move from value. Splits preserve it.
-   Node* node = getNode(this->d->root, value, position, this->d->lesserThanFun, &index);
-   if (position == -1)
+   if constexpr (!std::is_same_v<std::remove_cvref_t<U>, T>)
    {
-      if (Node* newRoot = add(node, std::forward<U>(value), this->d->lesserThanFun))
-         this->d->root = newRoot;
+      // A converting move must happen only once, never as a side effect of comparison.
+      return this->insert(T(std::forward<U>(value)), exists);
    }
    else
-      node->items[position] = std::forward<U>(value);
+   {
+      int position;
+      int index;
+      // Compute the rank before forwarding can move from value. Splits preserve it.
+      Node* node = getNode(this->d->root, value, position, this->d->lesserThanFun, &index);
+      if (position == -1)
+      {
+         if (Node* newRoot = add(node, std::forward<U>(value), this->d->lesserThanFun))
+            this->d->root = newRoot;
+      }
+      else
+         node->items[position] = std::forward<U>(value);
 
-   // If the argument 'exists' is given (is not a null pointer).
-   if (exists)
-      *exists = position != -1;
+      // If the argument 'exists' is given (is not a null pointer).
+      if (exists)
+         *exists = position != -1;
 
-   return index;
+      return index;
+   }
 }
 
 /**
@@ -1263,7 +1273,7 @@ typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::addPrepared
       for (int i = node->nbItems - 1; i >= -1; i--)
       {
          // If 'e' must be put after the ith element.
-         if (i == -1 || lesserThan(node->items[i], std::forward<U>(value)))
+         if (i == -1 || lesserThan(node->items[i], value))
          {
             node->items[i+1] = std::forward<U>(value);
             node->children[i+2] = child; // If 'child' is null then "node->children[i+2]" must be null too.
