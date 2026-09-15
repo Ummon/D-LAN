@@ -27,7 +27,6 @@ namespace GUI
    class DownloadsFlatModel : public DownloadsModel
    {
       Q_OBJECT
-      static const int WEIGHT_LAST_ETA = 3; // Used in the weighted mean computation.
 
    public:
       DownloadsFlatModel(
@@ -75,6 +74,12 @@ namespace GUI
       quint64 totalBytesInQueue;
       quint64 totalBytesDownloadedInQueue;
       quint64 eta;
+
+      static constexpr int NB_OF_DL_RATE_VALUES = 10;
+      int nbOfNonZeroDlRateValues;
+      quint64 sumDlRateValues;
+      quint32 dlRateValues[NB_OF_DL_RATE_VALUES]{};
+      quint32 currentDlRateValueIndex;
 
       QList<Protos::GUI::State::Download> downloads;
    };

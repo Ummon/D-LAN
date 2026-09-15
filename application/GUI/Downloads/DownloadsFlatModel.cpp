@@ -48,7 +48,10 @@ DownloadsFlatModel::DownloadsFlatModel(
    DownloadsModel(coreConnection, peerListModel, sharedEntryListModel, filter),
    totalBytesInQueue(0),
    totalBytesDownloadedInQueue(0),
-   eta(0)
+   eta(0),
+   nbOfNonZeroDlRateValues(0),
+   sumDlRateValues(0),
+   currentDlRateValueIndex(0)
 {
 }
 
@@ -363,25 +366,28 @@ void DownloadsFlatModel::onNewState(const Protos::GUI::State& state)
       this->endRemoveRows();
    }
 
-   const quint64 oldEta = this->eta;
-   if (state.stats().download_rate() == 0)
-   {
-      this->eta = ETA_UNKNOWN;
-   }
-   else
-   {
-      const quint64 currentEta =
-         (this->totalBytesInQueue - this->totalBytesDownloadedInQueue) / state.stats().download_rate();
+   // ETA computation.
+   const quint32 oldRate = this->dlRateValues[this->currentDlRateValueIndex];
+   const quint32 newRate = state.stats().download_rate();
+   this->sumDlRateValues -= oldRate;
+   this->sumDlRateValues += newRate;
 
-      // Neither 'ETA_UNKNOWN' nor 0 is a real ETA, they must not be given to the weighted mean: multiplying
-      // 'ETA_UNKNOWN' by 'WEIGHT_LAST_ETA' overflows and gives a huge value which then needs hundreds of states
-      // to fade away. The download rate is 0 right before the first bytes arrive, so this happens at the
-      // beginning of nearly every download.
-      this->eta =
-         this->eta == 0 || this->eta == ETA_UNKNOWN ?
-              currentEta
-            : (WEIGHT_LAST_ETA * this->eta + currentEta) / (WEIGHT_LAST_ETA + 1);
-   }
+   // Count the nonzero samples in the window, including the one being evicted.
+   if (oldRate > 0)
+      --this->nbOfNonZeroDlRateValues;
+   if (newRate > 0)
+      ++this->nbOfNonZeroDlRateValues;
+
+   this->dlRateValues[this->currentDlRateValueIndex] = newRate;
+   this->currentDlRateValueIndex = (this->currentDlRateValueIndex + 1) % NB_OF_DL_RATE_VALUES;
+
+   const quint64 oldEta = this->eta;
+   const quint64 averageDlRate = this->sumDlRateValues / NB_OF_DL_RATE_VALUES;
+
+   if (this->nbOfNonZeroDlRateValues < NB_OF_DL_RATE_VALUES || averageDlRate == 0)
+      this->eta = ETA_UNKNOWN;
+   else
+      this->eta = (this->totalBytesInQueue - this->totalBytesDownloadedInQueue) / averageDlRate;
 
    if (
       this->totalBytesInQueue != oldTotalBytesInQueue ||

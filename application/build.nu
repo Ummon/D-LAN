@@ -96,6 +96,7 @@ def "main run-tests" [] {
         ($release_directory)/output/TestsRemoteCoreController
         ($release_directory)/output/TestsRemoteControlManager
         ($release_directory)/output/TestsDownloadsTreeModel
+        ($release_directory)/output/TestsDownloadsFlatModel
     ]
 
     for $test in $tests {

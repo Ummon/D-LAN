@@ -221,6 +221,18 @@ if(DLAN_BUILD_TESTS)
    target_link_libraries(TestsDownloadsTreeModel PRIVATE RemoteCoreController LogManager Common Qt6::Widgets Qt6::Svg Qt6::Test)
    add_test(NAME TestsDownloadsTreeModel COMMAND TestsDownloadsTreeModel)
    set_tests_properties(TestsDownloadsTreeModel PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 60)
+
+   add_executable(TestsDownloadsFlatModel
+      Downloads/TestsDownloadsFlatModel.cpp
+      Downloads/DownloadsFlatModel.cpp Downloads/DownloadsModel.cpp
+      Peers/PeerListModel.cpp Settings/SharedEntryListModel.cpp
+      IconProvider.cpp Log.cpp resources.qrc
+   )
+   set_target_properties(TestsDownloadsFlatModel PROPERTIES AUTORCC ON)
+   target_include_directories(TestsDownloadsFlatModel PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+   target_link_libraries(TestsDownloadsFlatModel PRIVATE RemoteCoreController LogManager Common Qt6::Widgets Qt6::Svg Qt6::Test)
+   add_test(NAME TestsDownloadsFlatModel COMMAND TestsDownloadsFlatModel)
+   set_tests_properties(TestsDownloadsFlatModel PROPERTIES TIMEOUT 60)
 endif()
 
 if(WIN32)
