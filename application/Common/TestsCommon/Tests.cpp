@@ -1436,6 +1436,132 @@ void Tests::sortedArrayClearException()
    QCOMPARE(retained.size(), 1);
 }
 
+void Tests::sortedArrayMove_data()
+{
+   QTest::addColumn<bool>("assignment");
+   QTest::addColumn<bool>("shared");
+   QTest::addColumn<bool>("empty");
+   for (bool assignment : {false, true})
+      for (bool shared : {false, true})
+         for (bool empty : {false, true})
+         {
+            const QByteArray name = QByteArray(assignment ? "assignment" : "construction")
+               + (shared ? "-shared" : "-unique") + (empty ? "-empty" : "-populated");
+            QTest::newRow(name.constData()) << assignment << shared << empty;
+         }
+}
+
+void Tests::sortedArrayMove()
+{
+   QFETCH(bool, assignment);
+   QFETCH(bool, shared);
+   QFETCH(bool, empty);
+   struct Item { int key = 0; }; // Custom ordering must work without operator<.
+   using Array = SortedArray<Item, 3>;
+   const auto descending = [](const Item& a, const Item& b) { return a.key > b.key; };
+   const auto ascending = [](const Item& a, const Item& b) { return a.key < b.key; };
+   Array source(descending);
+   if (!empty)
+      for (int i = 0; i < 40; ++i)
+         source.insert(Item{i});
+   const auto& constSource = source;
+   const Item* first = empty ? nullptr : &constSource.getFromIndex(0);
+   Array snapshot(descending);
+   if (shared)
+      snapshot = source;
+
+   std::unique_ptr<Array> destination;
+   if (assignment)
+   {
+      destination = std::make_unique<Array>(ascending);
+      destination->insert(Item{100});
+      QCOMPARE(&(*destination = std::move(source)), destination.get());
+   }
+   else
+      destination = std::make_unique<Array>(std::move(source));
+   const auto& constDestination = *destination;
+   QCOMPARE(destination->size(), empty ? 0 : 40);
+   if (!empty)
+      QCOMPARE(&constDestination.getFromIndex(0), first); // No element copies.
+
+   QCOMPARE(source.size(), 0);
+   QVERIFY(source.isEmpty());
+   QCOMPARE(source.begin(), source.end());
+   QVERIFY(source.toList().isEmpty());
+   QVERIFY(!source.contains(Item{1}));
+   QCOMPARE(source.indexOf(Item{1}), -1);
+   QCOMPARE(source.indexOfNearest(Item{1}), -1);
+   QCOMPARE(source.iteratorOfNearest(Item{1}), source.end());
+   QVERIFY(!source.remove(Item{1}));
+   QVERIFY_THROWS_EXCEPTION(Array::NotFoundException, source.iteratorOf(Item{1}));
+   QVERIFY_THROWS_EXCEPTION(Array::NotFoundException, source.removeFromIndex(0));
+   QVERIFY_THROWS_EXCEPTION(Array::NotFoundException, source.getFromIndex(0));
+   QVERIFY_THROWS_EXCEPTION(Array::NotFoundException, constSource.getFromIndex(0));
+   QVERIFY_THROWS_EXCEPTION(Array::NotFoundException, source.getFromValue(Item{1}));
+   QVERIFY_THROWS_EXCEPTION(Array::NotFoundException, constSource.getFromValue(Item{1}));
+
+   Array movedAgain(std::move(source));
+   QVERIFY(source.isEmpty());
+   QVERIFY(movedAgain.isEmpty());
+   const auto emptyCopy = source;
+   source.clear(); // Original crash reproduction.
+   source[Item{1}];
+   source.insert(Item{2});
+   QCOMPARE(constSource.getFromIndex(0).key, 2); // Source comparator retained.
+   QCOMPARE(constSource.getFromIndex(1).key, 1);
+   QVERIFY(emptyCopy.isEmpty());
+   source.setSortedFunction(ascending);
+   QCOMPARE(constSource.getFromIndex(0).key, 1);
+   source.clear();
+
+   auto& alias = *destination;
+   *destination = std::move(alias);
+   QCOMPARE(destination->size(), empty ? 0 : 40);
+   if (!empty)
+      QCOMPARE(&constDestination.getFromIndex(0), first);
+   destination->insert(Item{99});
+   QCOMPARE(constDestination.getFromIndex(0).key, 99); // Destination comparator transferred.
+   QCOMPARE(snapshot.size(), shared && !empty ? 40 : 0);
+   QVERIFY(!snapshot.contains(Item{99}));
+}
+
+void Tests::sortedArrayMoveException()
+{
+   // Element default construction can fail while preparing the source's replacement.
+   for (bool assignment : {false, true})
+   {
+      using Array = SortedArray<SortedArrayClearItem, 3>;
+      Array source;
+      SortedArrayClearItem item;
+      item.key = 1;
+      source.insert(item);
+      Array destination;
+      item.key = 2;
+      destination.insert(item);
+      bool threw = false;
+      SortedArrayClearItem::defaultsBeforeThrow = 1;
+      try
+      {
+         if (assignment)
+            destination = std::move(source);
+         else
+         {
+            Array moved(std::move(source));
+         }
+      }
+      catch (const std::runtime_error&) { threw = true; }
+      SortedArrayClearItem::defaultsBeforeThrow = -1;
+      QVERIFY(threw);
+      QCOMPARE(source.size(), 1);
+      QCOMPARE(source.getFromIndex(0).key, 1);
+      QCOMPARE(destination.size(), 1);
+      QCOMPARE(destination.getFromIndex(0).key, 2);
+      destination = std::move(source);
+      QVERIFY(source.isEmpty());
+      QCOMPARE(destination.getFromIndex(0).key, 1);
+   }
+}
+
 void Tests::mapArray()
 {
    MapArray<Common::Hash, QString> array;

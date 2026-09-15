@@ -74,6 +74,9 @@ private slots:
    void sortedArrayComparatorConstructor();
    void sortedArrayStandardIterator();
    void sortedArrayClearException();
+   void sortedArrayMove_data();
+   void sortedArrayMove();
+   void sortedArrayMoveException();
 
    // MapArray class.
    void mapArray();

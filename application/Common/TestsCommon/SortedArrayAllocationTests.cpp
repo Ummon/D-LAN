@@ -41,6 +41,8 @@ class SortedArrayAllocationTests : public QObject
 private slots:
    void insertionFailure_data();
    void insertionFailure();
+   void moveFailure_data();
+   void moveFailure();
 
 private:
    template<int M>
@@ -150,6 +152,73 @@ void SortedArrayAllocationTests::checkFailures(int count, bool shared, bool subs
       }
    }
    QFAIL("Insertion did not succeed after exhausting the allocation failure points");
+}
+
+void SortedArrayAllocationTests::moveFailure_data()
+{
+   QTest::addColumn<bool>("assignment");
+   QTest::addColumn<bool>("shared");
+   for (bool assignment : {false, true})
+      for (bool shared : {false, true})
+         QTest::newRow(assignment ? (shared ? "assignment-shared" : "assignment-unique")
+            : (shared ? "construction-shared" : "construction-unique")) << assignment << shared;
+}
+
+void SortedArrayAllocationTests::moveFailure()
+{
+   QFETCH(bool, assignment);
+   QFETCH(bool, shared);
+   using Array = Common::SortedArray<int, 3>;
+   for (int budget = 0; budget < 32; ++budget)
+   {
+      Array source([](int a, int b) { return a > b; });
+      for (int i = 0; i < 40; ++i)
+         source.insert(i);
+      const QList<int> before = source.toList();
+      Array snapshot;
+      if (shared)
+         snapshot = source;
+      Array destination;
+      destination.insert(100);
+      bool threw = false;
+      {
+         AllocationFailure failure(budget);
+         try
+         {
+            if (assignment)
+               destination = std::move(source);
+            else
+            {
+               Array moved(std::move(source));
+               destination = moved; // Copy assignment does not allocate.
+            }
+         }
+         catch (const std::bad_alloc&) { threw = true; }
+      }
+      if (shared)
+         QCOMPARE(snapshot.toList(), before);
+      if (threw)
+      {
+         QCOMPARE(source.toList(), before);
+         QCOMPARE(destination.toList(), (QList<int>{100}));
+         source.insert(99);
+         QCOMPARE(source.getFromIndex(0), 99); // Source ordering retained.
+         destination.insert(1);
+         QCOMPARE(destination.getFromIndex(0), 1); // Destination ordering retained.
+      }
+      else
+      {
+         QCOMPARE(destination.toList(), before);
+         QVERIFY(source.isEmpty());
+         source.clear();
+         source.insert(1);
+         source.insert(2);
+         QCOMPARE(source.toList(), (QList<int>{2, 1}));
+         QVERIFY(budget > 0);
+         return;
+      }
+   }
+   QFAIL("Move did not succeed after exhausting the allocation failure points");
 }
 
 QTEST_APPLESS_MAIN(SortedArrayAllocationTests)

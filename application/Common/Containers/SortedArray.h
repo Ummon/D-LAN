@@ -40,6 +40,9 @@
   * node splitting, rebalancing and copy-on-write still copy elements.
   * The default constructor requires operator '<'. Types without it must supply
   * a comparator to the constructor. Comparators must define a strict weak order.
+  * Moving leaves the source empty and reusable with its original comparator.
+  * Moves allocate an empty replacement; if construction fails, both arrays retain
+  * their original contents. Self-move assignment leaves the array unchanged.
   * Mutable references must not be used to change fields involved in ordering.
   * Remove and reinsert an element when its ordering key changes.
   * Obtain mutable references after copying an array: references obtained before
@@ -117,7 +120,7 @@ namespace Common
       SortedArray(SortedArray&& other);
 
       SortedArray& operator=(const SortedArray& other) = default;
-      SortedArray& operator=(SortedArray&& other) = default;
+      SortedArray& operator=(SortedArray&& other);
 
       int size() const;
 
@@ -307,8 +310,21 @@ Common::SortedArray<T, M>::SortedArray(const SortedArray& other) :
 
 template<typename T, int M>
 Common::SortedArray<T, M>::SortedArray(SortedArray&& other) :
-   d(std::move(other.d))
+   SortedArray(other.d.constData()->lesserThanFun)
 {
+   // Finish constructing the source's empty replacement before transferring data.
+   this->d.swap(other.d);
+}
+
+template<typename T, int M>
+Common::SortedArray<T, M>& Common::SortedArray<T, M>::operator=(SortedArray&& other)
+{
+   if (this != &other)
+   {
+      SortedArray moved(std::move(other));
+      this->d.swap(moved.d);
+   }
+   return *this;
 }
 
 template <typename T, int M>
