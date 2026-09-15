@@ -22,4 +22,5 @@
 
 namespace HC
 {
+   constexpr int INITIAL_FILE_CHECK_DELAY = 60 * 1000; // [ms] One minute.
 }

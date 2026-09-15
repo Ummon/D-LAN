@@ -31,8 +31,10 @@ using namespace HC;
 #include <QFile>
 #include <QSqlError>
 #include <QUuid>
+#include <QElapsedTimer>
 
 #include <IHashCache.h>
+#include <priv/HashCache.h>
 #include <Common/Constants.h>
 #include <Common/Settings.h>
 #include <Protos/core_settings.pb.h>
@@ -40,6 +42,12 @@ using namespace HC;
 
 namespace
 {
+   QSharedPointer<HC::IHashCache> newTestHashCache(const QString& folder)
+   {
+      // Exercise maintenance immediately without waiting a minute per cache.
+      return QSharedPointer<HC::IHashCache>(new HC::HashCache(folder, 0));
+   }
+
    // An independent connection lets tests inspect committed rows and inject
    // failures without exposing Database or its worker thread in the public API.
    struct TestDatabase
@@ -105,11 +113,11 @@ void Tests::independentConnections()
    QVERIFY(defaultDb.open());
    const auto previousConnections = QSqlDatabase::connectionNames();
 
-   auto first = HC::Builder::newHashCache(firstFolder.path());
+   auto first = newTestHashCache(firstFolder.path());
    const QList<Common::Hash> firstHashes { Common::Hash(QByteArray(Common::Hash::HASH_SIZE, 'a')) };
    const QList<Common::Hash> secondHashes { Common::Hash(QByteArray(Common::Hash::HASH_SIZE, 'b')) };
    first->setHashes("file", firstHashes, 1);
-   auto second = HC::Builder::newHashCache(secondFolder.path());
+   auto second = newTestHashCache(secondFolder.path());
    second->setHashes("file", secondHashes, 1);
    QCOMPARE(QSqlDatabase::connectionNames().size(), previousConnections.size() + 2);
    QCOMPARE(first->getHashes("file", 1), firstHashes);
@@ -137,7 +145,7 @@ void Tests::lookupRequiresMatchingSize()
    QTest::failOnWarning();
    QTemporaryDir folder;
    QVERIFY(folder.isValid());
-   const auto cache = HC::Builder::newHashCache(folder.path());
+   const auto cache = newTestHashCache(folder.path());
    const QList<Common::Hash> hashes { Common::Hash::rand() };
    const QDateTime date = QDateTime::fromMSecsSinceEpoch(123456789);
    cache->setHashes("file", hashes, 2, date);
@@ -171,7 +179,7 @@ void Tests::concurrentAccess()
    const QDateTime date = QDateTime::fromMSecsSinceEpoch(123456789);
 
    {
-      const auto cache = HC::Builder::newHashCache(folder.path());
+      const auto cache = newTestHashCache(folder.path());
       cache->setHashes("shared", initial, 1, date);
 
       QSemaphore start;
@@ -207,7 +215,7 @@ void Tests::concurrentAccess()
    QCOMPARE(QSqlDatabase::connectionNames(), previousConnections);
 
    // Committed data remains visible after the worker and connection are recreated.
-   const auto reopened = HC::Builder::newHashCache(folder.path());
+   const auto reopened = newTestHashCache(folder.path());
    QCOMPARE(reopened->getHashes("shared", 1, date), initial);
 }
 
@@ -222,7 +230,7 @@ void Tests::destructionFromAnotherThread()
    QSemaphore destroyed;
    std::thread creator([&]
    {
-      cache = HC::Builder::newHashCache(folder.path());
+      cache = newTestHashCache(folder.path());
       created.release();
       destroyed.acquire();
    });
@@ -266,7 +274,7 @@ void Tests::cleanupMissingFiles()
    file.close();
    const QList<Common::Hash> hashes { Common::Hash::rand() };
    {
-      auto cache = HC::Builder::newHashCache(folder.path());
+      auto cache = newTestHashCache(folder.path());
       cache->setHashes(present, hashes, 1);
       cache->setHashes(folder.filePath("missing-a"), hashes, 1);
       cache->setHashes(folder.filePath("missing-b"), hashes, 1);
@@ -283,7 +291,7 @@ void Tests::cleanupMissingFiles()
    SETTINGS.set("hashcache_nb_of_files_before_check", minFiles);
    SETTINGS.set("hashcache_nb_of_files_deleted_before_vacuum", minDeleted);
    {
-      auto cache = HC::Builder::newHashCache(folder.path());
+      auto cache = newTestHashCache(folder.path());
       QCOMPARE(cache->getHashes(present, 1), hashes); // Wait for startup cleanup.
    }
    QVERIFY(query.exec("SELECT COUNT(*) FROM [File]"));
@@ -303,7 +311,7 @@ void Tests::cleanupMissingFiles()
    // A recent persisted check prevents another scan on restart.
    QVERIFY(file.remove());
    {
-      auto cache = HC::Builder::newHashCache(folder.path());
+      auto cache = newTestHashCache(folder.path());
       QCOMPARE(cache->getHashes(present, 1), hashes);
    }
 
@@ -312,7 +320,7 @@ void Tests::cleanupMissingFiles()
       // A later removal exceeds the vacuum threshold even though File is now
       // below the scan threshold. Removing an unknown path must not count.
       {
-         auto cache = HC::Builder::newHashCache(folder.path());
+         auto cache = newTestHashCache(folder.path());
          cache->rmHashes(present);
          cache->rmHashes(present);
       }
@@ -322,7 +330,7 @@ void Tests::cleanupMissingFiles()
       QVERIFY(query.exec("DELETE FROM [Settings] WHERE [key] = 'last_check_time'"));
       query.finish();
       {
-         auto cache = HC::Builder::newHashCache(folder.path());
+         auto cache = newTestHashCache(folder.path());
          QVERIFY(cache->getHashes(present, 1).isEmpty());
       }
       QVERIFY(query.exec("SELECT [value] FROM [Settings] WHERE [key] = 'nb_deleted_files'"));
@@ -339,7 +347,7 @@ void Tests::cleanupRollsBackOnFailure()
    const QList<Common::Hash> hashes { Common::Hash::rand() };
    const QString missing = folder.filePath("missing");
    {
-      auto cache = HC::Builder::newHashCache(folder.path());
+      auto cache = newTestHashCache(folder.path());
       cache->setHashes(missing, hashes, 1);
    }
    TestDatabase inspector(folder.path());
@@ -350,7 +358,7 @@ void Tests::cleanupRollsBackOnFailure()
    query.finish();
    SETTINGS.set("hashcache_nb_of_files_before_check", quint32(0));
    {
-      auto cache = HC::Builder::newHashCache(folder.path());
+      auto cache = newTestHashCache(folder.path());
       QCOMPARE(cache->getHashes(missing, 1), hashes);
       cache->rmHashes(missing);
       QCOMPARE(cache->getHashes(missing, 1), hashes);
@@ -361,7 +369,7 @@ void Tests::cleanupRollsBackOnFailure()
    QVERIFY(query.exec("DROP TRIGGER fail_settings"));
    query.finish();
    {
-      auto cache = HC::Builder::newHashCache(folder.path());
+      auto cache = newTestHashCache(folder.path());
       QVERIFY(cache->getHashes(missing, 1).isEmpty());
    }
 }
@@ -372,7 +380,7 @@ void Tests::vacuumCompactsDatabase()
    QTemporaryDir folder;
    QVERIFY(folder.isValid());
    {
-      auto cache = HC::Builder::newHashCache(folder.path());
+      auto cache = newTestHashCache(folder.path());
    }
    TestDatabase inspector(folder.path());
    QSqlQuery query(inspector.db);
@@ -394,7 +402,7 @@ void Tests::vacuumCompactsDatabase()
    query.finish();
    SETTINGS.set("hashcache_nb_of_files_before_check", quint32(0));
    SETTINGS.set("hashcache_nb_of_files_deleted_before_vacuum", quint32(1));
-   auto cache = HC::Builder::newHashCache(folder.path());
+   auto cache = newTestHashCache(folder.path());
    QVERIFY(cache->getHashes("barrier", 1).isEmpty());
    // Verify physical shrinking without closing the cache connection.
    QVERIFY(QFile(databasePath).size() < bytesBefore);
@@ -418,7 +426,7 @@ void Tests::periodicCleanupWithoutCallerEventLoop()
    SETTINGS.set("hashcache_period_verify_files_exist", quint32(1));
    SETTINGS.set("hashcache_nb_of_files_before_check", quint32(0));
    QSharedPointer<HC::IHashCache> cache;
-   std::thread creator([&] { cache = HC::Builder::newHashCache(folder.path()); });
+   std::thread creator([&] { cache = newTestHashCache(folder.path()); });
    creator.join();
    const QString missing = folder.filePath("missing");
    const QList<Common::Hash> hashes { Common::Hash::rand() };
@@ -436,7 +444,7 @@ void Tests::restartKeepsMaintenanceDeadline()
    const QString missing = folder.filePath("missing");
    const QList<Common::Hash> hashes { Common::Hash::rand() };
    {
-      auto cache = HC::Builder::newHashCache(folder.path());
+      auto cache = newTestHashCache(folder.path());
       cache->setHashes(missing, hashes, 1);
    }
    TestDatabase inspector(folder.path());
@@ -447,7 +455,7 @@ void Tests::restartKeepsMaintenanceDeadline()
    query.finish();
    SETTINGS.set("hashcache_period_verify_files_exist", quint32(10));
    SETTINGS.set("hashcache_nb_of_files_before_check", quint32(0));
-   auto cache = HC::Builder::newHashCache(folder.path());
+   auto cache = newTestHashCache(folder.path());
    QCOMPARE(cache->getHashes(missing, 1), hashes);
    // Only two seconds remain; restarting must not postpone the check by ten.
    QTRY_VERIFY_WITH_TIMEOUT(cache->getHashes(missing, 1).isEmpty(), 5000);
@@ -464,4 +472,38 @@ void Tests::defaultsSurviveOlderSettings()
    QCOMPARE(settings.hashcache_period_verify_files_exist(), quint32(86400));
    QCOMPARE(settings.hashcache_nb_of_files_before_check(), quint32(100000));
    QCOMPARE(settings.hashcache_nb_of_files_deleted_before_vacuum(), quint32(10000));
+}
+
+void Tests::firstCheckIsDelayed()
+{
+   QTest::failOnWarning();
+   QTemporaryDir folder;
+   QVERIFY(folder.isValid());
+   SETTINGS.set("hashcache_nb_of_files_before_check", quint32(0));
+   const QString missing = folder.filePath("missing");
+   const QList<Common::Hash> hashes { Common::Hash::rand() };
+   {
+      auto cache = HC::Builder::newHashCache(folder.path());
+      cache->setHashes(missing, hashes, 1);
+   }
+   TestDatabase inspector(folder.path());
+   QSqlQuery query(inspector.db);
+   {
+      // The public builder uses the one-minute delay, even for an overdue check.
+      auto cache = HC::Builder::newHashCache(folder.path());
+      QCOMPARE(cache->getHashes(missing, 1), hashes);
+      QVERIFY(query.exec("SELECT COUNT(*) FROM [Settings] WHERE [key] = 'last_check_time'"));
+      QVERIFY(query.first());
+      QCOMPARE(query.value(0).toInt(), 0);
+      query.finish();
+   }
+
+   // Use a shorter delay to verify the timer fires without slowing the suite.
+   constexpr int testDelay = 250;
+   QElapsedTimer elapsed;
+   elapsed.start();
+   auto cache = QSharedPointer<HC::IHashCache>(new HC::HashCache(folder.path(), testDelay));
+   QCOMPARE(cache->getHashes(missing, 1), hashes);
+   QTRY_VERIFY_WITH_TIMEOUT(cache->getHashes(missing, 1).isEmpty(), 5000);
+   QVERIFY(elapsed.elapsed() >= testDelay);
 }

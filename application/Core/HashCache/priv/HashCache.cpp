@@ -87,7 +87,7 @@ private:
 
 LOG_INIT_CPP(HashCache::Database)
 
-HashCache::HashCache(const QString& databaseFolder) :
+HashCache::HashCache(const QString& databaseFolder, int initialFileCheckDelay) :
    databaseContext(new QObject)
 {
    this->databaseThread.setObjectName("HashCache");
@@ -97,7 +97,7 @@ HashCache::HashCache(const QString& databaseFolder) :
 
    QMetaObject::invokeMethod(
       this->databaseContext,
-      [this, &databaseFolder]
+      [this, &databaseFolder, initialFileCheckDelay]
       {
          this->database = std::make_unique<Database>(databaseFolder);
          const quint32 period = SETTINGS.get<quint32>("hashcache_period_verify_files_exist");
@@ -111,7 +111,10 @@ HashCache::HashCache(const QString& databaseFolder) :
                this->checkDeletedFileTimer->start(this->database->checkFilesExist());
             };
             this->checkDeletedFileTimer->callOnTimeout(this->databaseContext, checkFiles);
-            QMetaObject::invokeMethod(this->databaseContext, checkFiles, Qt::QueuedConnection);
+            if (initialFileCheckDelay == 0)
+               QMetaObject::invokeMethod(this->databaseContext, checkFiles, Qt::QueuedConnection);
+            else
+               this->checkDeletedFileTimer->start(initialFileCheckDelay);
          }
       },
       Qt::BlockingQueuedConnection

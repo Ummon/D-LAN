@@ -28,13 +28,14 @@
 #include <Common/Path.h>
 
 #include <IHashCache.h>
+#include <priv/Constants.h>
 
 namespace HC
 {
    class HashCache : public IHashCache
    {
    public:
-      HashCache(const QString& databaseFolder);
+      HashCache(const QString& databaseFolder, int initialFileCheckDelay = INITIAL_FILE_CHECK_DELAY);
       ~HashCache();
 
       QList<Common::Hash> getHashes(const QString& filePath, qint64 size, QDateTime timeLastModified = QDateTime()) override;

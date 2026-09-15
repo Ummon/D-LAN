@@ -326,6 +326,6 @@ void Core::checkSettingsIntegrity()
    this->checkSetting("delay_before_sending_log_messages", 0u, 1000u);
 
    this->checkSetting("hashcache_period_verify_files_exist", 60u, 365u * 24u * 60u * 60u);
-   this->checkSetting("hashcache_nb_of_files_before_check", 0u, 1000000u);
+   this->checkSetting("hashcache_nb_of_files_before_check", 0u, 2000000u);
    this->checkSetting("hashcache_nb_of_files_deleted_before_vacuum", 0u, 1000000u);
 }

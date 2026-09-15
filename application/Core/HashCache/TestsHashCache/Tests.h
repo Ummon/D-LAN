@@ -43,4 +43,5 @@ private slots:
    void periodicCleanupWithoutCallerEventLoop();
    void restartKeepsMaintenanceDeadline();
    void defaultsSurviveOlderSettings();
+   void firstCheckIsDelayed();
 };

@@ -101,6 +101,6 @@ message Settings {
 
    ///// HashCache /////
    uint32 hashcache_period_verify_files_exist = 104; // [default = 86400] [s] (one day). Periodically checks every hash cache file path to ensure the file exists.
-   uint32 hashcache_nb_of_files_before_check = 105; // [default = 100000]. Check files only if the number of rows exceeds this threshold.
+   uint32 hashcache_nb_of_files_before_check = 105; // [default = 200000]. Check files only if the number of rows exceeds this threshold.
    uint32 hashcache_nb_of_files_deleted_before_vacuum = 106; // [default = 10000]. Execute VACUUM when the number of deleted rows since the last successful VACUUM exceeds this threshold.
 }
