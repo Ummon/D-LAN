@@ -582,7 +582,10 @@ bool SearchModel::SearchTree::isSameAs(const Protos::Common::Entry& otherEntry) 
    if (this->getItem().size() == 0 && otherEntry.size() == 0)
       return true;
 
-   if (otherEntry.chunks_size() == 0 || otherEntry.chunks_size() != this->getItem().chunks_size())
+   // A matching prefix is insufficient to identify the complete file.
+   if (this->getItem().size() != otherEntry.size() ||
+       otherEntry.chunks_size() == 0 || otherEntry.chunks_size() != this->getItem().chunks_size() ||
+       otherEntry.chunks_size() != Common::Global::nbChunks(otherEntry.size()))
       return false;
 
    for (int i = 0; i < otherEntry.chunks_size(); i++)
