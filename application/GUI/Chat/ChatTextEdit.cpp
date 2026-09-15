@@ -63,7 +63,13 @@ bool ChatTextEdit::event(QEvent* e)
       }
    }
 
-   return QTextEdit::event(e);
+   const bool keyPress = e->type() == QEvent::KeyPress;
+   const int revision = this->document()->revision();
+   const bool handled = QTextEdit::event(e);
+   // Completion needs the cursor position after the editor has processed the key.
+   if (keyPress && this->document()->revision() != revision)
+      emit textEdited();
+   return handled;
 }
 
 QVariant ChatTextEdit::loadResource(int type, const QUrl& name)

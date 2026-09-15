@@ -44,6 +44,7 @@ namespace GUI
 
    signals:
       void wordTyped(int position, const QString&);
+      void textEdited();
 
    protected:
       bool event(QEvent* e) override;

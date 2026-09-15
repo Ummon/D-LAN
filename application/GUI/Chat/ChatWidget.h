@@ -148,6 +148,7 @@ namespace GUI
       void displayEmoticons(const QPoint& positionSender, const QSize& sizeSender);
 
       void activatePeerNameInsertionMode();
+      bool updatePeerNameCompletion();
 
       QList<Common::Hash> getPeerAnswers() const;
       void rememberAnswers();
@@ -168,7 +169,6 @@ namespace GUI
       struct Answer {
          int begin;
          int end;
-         bool startWithSpace;
          Common::Hash peerID;
          bool operator<(const Answer& other) const { return this->begin < other.begin; }
          bool operator==(const Answer& other) const { return this->begin == other.begin; }

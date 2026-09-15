@@ -23,6 +23,7 @@ using namespace GUI;
 #include <QKeyEvent>
 #include <QScreen>
 #include <QScrollBar>
+#include <QRegularExpression>
 
 #include <Log.h>
 
@@ -65,6 +66,18 @@ void AutoComplete::setValues(const QList<QPair<Common::Hash, QString>>& values)
    this->model.setValues(values);
 }
 
+void AutoComplete::setPattern(const QString& pattern)
+{
+   this->currentPattern = pattern;
+   this->filterModel.setFilterRegularExpression(QRegularExpression(
+      "^" + QRegularExpression::escape(pattern), QRegularExpression::CaseInsensitiveOption));
+}
+
+bool AutoComplete::hasMatches() const
+{
+   return this->filterModel.rowCount() > 0;
+}
+
 /**
   * Returns the current selected hash. It may return a null hash if nothing is selected.
   */
@@ -98,23 +111,29 @@ bool AutoComplete::eventFilter(QObject* obj, QEvent* event)
             const int charsRemoved = length >= 2 &&
                this->currentPattern.at(length - 1).isLowSurrogate() &&
                this->currentPattern.at(length - 2).isHighSurrogate() ? 2 : 1;
-            this->currentPattern.chop(charsRemoved);
-            this->filterModel.setFilterWildcard(this->currentPattern + "*");
             emit lastCharRemoved(charsRemoved);
+            this->setPattern(this->currentPattern.left(length - charsRemoved));
          }
          else
+         {
+            emit lastCharRemoved(1); // Remove the opening '@' as well.
             this->close();
+         }
          break;
 
       case Qt::Key_Escape:
          this->close();
          break;
 
-      // This is the only was to validate the selected entry.
+      case Qt::Key_Tab:
       case Qt::Key_Enter:
       case Qt::Key_Return:
-      case Qt::Key_Space:
          this->validated = true;
+         this->close();
+         break;
+
+      case Qt::Key_Space:
+         emit stringAdded(" ");
          this->close();
          break;
 
@@ -128,9 +147,10 @@ bool AutoComplete::eventFilter(QObject* obj, QEvent* event)
             const QString& text = keyEvent->text();
             if (!text.isEmpty())
             {
-               this->currentPattern.append(text);
-               this->filterModel.setFilterWildcard(this->currentPattern + "*");
                emit stringAdded(text);
+               this->setPattern(this->currentPattern + text);
+               if (!this->hasMatches())
+                  this->close();
             }
          }
          break;
@@ -144,7 +164,7 @@ bool AutoComplete::eventFilter(QObject* obj, QEvent* event)
 
 void AutoComplete::showEvent(QShowEvent* event)
 {
-   this->reset();
+   this->validated = false;
    this->ui->listView->setFocus();
 }
 
@@ -175,7 +195,7 @@ void AutoComplete::updateHeight()
    if (list->horizontalScrollBar()->maximum() > 0)
       height += list->horizontalScrollBar()->sizeHint().height();
 
-   // Keep an empty list usable while typing a pattern with no matches.
+   // Allow a minimum height while preparing the list before it is shown.
    if (this->filterModel.rowCount() == 0)
       height += list->fontMetrics().height();
    for (int row = 0; row < this->filterModel.rowCount() && height < available.height(); ++row)

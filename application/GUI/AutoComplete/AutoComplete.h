@@ -40,6 +40,8 @@ namespace GUI
       explicit AutoComplete(QWidget* parent = 0);
 
       void setValues(const QList<QPair<Common::Hash, QString>>& values);
+      void setPattern(const QString& pattern);
+      bool hasMatches() const;
 
       Common::Hash getCurrent() const;
 

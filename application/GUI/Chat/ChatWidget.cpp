@@ -826,7 +826,7 @@ void ChatWidget::autoCompleteLastCharRemoved(int charsRemoved)
    if (!this->peerNameInsertionMode)
       return;
 
-   if (charsRemoved > 0 && this->currentAnswer.end - charsRemoved >= this->currentAnswer.begin + 1)
+   if (charsRemoved > 0 && this->currentAnswer.end - charsRemoved >= this->currentAnswer.begin)
    {
       // Delete exactly the UTF-16 range removed from the autocomplete pattern.
       QTextCursor cursor = this->ui->txtMessage->textCursor();
@@ -846,24 +846,25 @@ void ChatWidget::autoCompleteClosed()
    this->peerNameInsertionMode = false;
 
    const Common::Hash& currentPeerID = this->autoComplete->getCurrent();
+   if (currentPeerID.isNull())
+   {
+      this->currentAnswer = {};
+      this->ui->txtMessage->setFocus();
+      return;
+   }
+
    QString nick = this->peerListModel.getNick(currentPeerID);
 
    if (nick.isEmpty())
       nick = this->chatModel.getNick(currentPeerID);
 
-   if (nick.isEmpty())
-   {
-      QTextCursor cursor(this->ui->txtMessage->document());
-      cursor.setPosition(this->currentAnswer.begin - (this->currentAnswer.startWithSpace ? 1 : 0));
-      cursor.setPosition(this->currentAnswer.end, QTextCursor::KeepAnchor);
-      cursor.deleteChar();
-   }
-   else
+   if (!nick.isEmpty())
    {
       QTextCursor cursor(this->ui->txtMessage->document());
       cursor.setPosition(this->currentAnswer.begin + 1);
       cursor.setPosition(this->currentAnswer.end, QTextCursor::KeepAnchor);
       cursor.insertText(nick + ' ');
+      this->ui->txtMessage->setTextCursor(cursor);
       this->currentAnswer.end = cursor.position() - 1; // Exclude the trailing space.
       this->currentAnswer.peerID = currentPeerID;
       this->answers.insert(this->currentAnswer);
@@ -872,6 +873,7 @@ void ChatWidget::autoCompleteClosed()
    }
 
    this->currentAnswer = {};
+   this->ui->txtMessage->setFocus();
 }
 
 void ChatWidget::keyPressEvent(QKeyEvent* keyEvent)
@@ -955,7 +957,7 @@ bool ChatWidget::eventFilter(QObject* obj, QEvent* event)
          }
          break;
 
-      case Qt::Key_Tab: // 'tab' : begins a peer name insertion or in peer name insertion mode step through each peer names.
+      case Qt::Key_Tab: // Begin or resume a peer name insertion.
          this->activatePeerNameInsertionMode();
          return true;
       }
@@ -1070,6 +1072,7 @@ void ChatWidget::init()
 
    connect(this->ui->butEmoticons, &QPushButton::toggled, this, &ChatWidget::emoticonsButtonToggled);
    connect(this->ui->txtMessage, &ChatTextEdit::wordTyped, this, &ChatWidget::messageWordTyped);
+   connect(this->ui->txtMessage, &ChatTextEdit::textEdited, this, &ChatWidget::updatePeerNameCompletion);
    connect(this->emoticonsWidget, &EmoticonsWidget::hidden, this, &ChatWidget::emoticonsWindowHidden);
    connect(this->emoticonsWidget, &EmoticonsWidget::emoticonChosen, this, &ChatWidget::insertEmoticon);
    connect(this->emoticonsWidget, &EmoticonsWidget::defaultThemeChanged, this, &ChatWidget::defaultEmoticonThemeChanged);
@@ -1136,6 +1139,9 @@ void ChatWidget::activatePeerNameInsertionMode()
    if (this->peerNameInsertionMode)
       return;
 
+   if (this->updatePeerNameCompletion())
+      return;
+
    const bool insertSpaceBefore =
       !this->ui->txtMessage->textCursor().atStart() &&
       !this->ui->txtMessage->document()->characterAt(this->ui->txtMessage->textCursor().position() - 1).isSpace();
@@ -1144,20 +1150,47 @@ void ChatWidget::activatePeerNameInsertionMode()
       this->ui->txtMessage->insertPlainText(" ");
    this->ui->txtMessage->insertPlainText("@");
 
-   const int cursorPosition = this->ui->txtMessage->textCursor().position();
-   currentAnswer.startWithSpace = insertSpaceBefore;
-   currentAnswer.begin = cursorPosition - 1;
-   currentAnswer.end = cursorPosition;
-   currentAnswer.peerID = Common::Hash();
+   this->updatePeerNameCompletion();
+}
+
+bool ChatWidget::updatePeerNameCompletion()
+{
+   if (this->peerNameInsertionMode)
+      return true;
+
+   const QTextCursor cursor = this->ui->txtMessage->textCursor();
+   if (cursor.hasSelection())
+      return false;
+
+   QTextDocument* document = this->ui->txtMessage->document();
+   int begin = cursor.position() - 1;
+   while (begin >= 0 && !document->characterAt(begin).isSpace() && document->characterAt(begin) != '@')
+      --begin;
+   if (begin < 0 || document->characterAt(begin) != '@')
+      return false;
+
+   // Editing next to a completed reference must not start another completion.
+   for (const auto& answer : this->answers.getList())
+      if (begin >= answer.begin && begin < answer.end)
+         return false;
+
+   QTextCursor patternCursor(document);
+   patternCursor.setPosition(begin + 1);
+   patternCursor.setPosition(cursor.position(), QTextCursor::KeepAnchor);
+   this->autoComplete->setValues(this->chatModel.getSortedOtherPeersByRelevance());
+   this->autoComplete->setPattern(patternCursor.selectedText());
+   if (!this->autoComplete->hasMatches())
+      return true;
+
+   this->currentAnswer = { begin, cursor.position(), Common::Hash() };
+   this->peerNameInsertionMode = true;
 
    QRect cursorRect = this->ui->txtMessage->cursorRect();
    const QPoint& pos = this->ui->txtMessage->viewport()->mapToGlobal(cursorRect.bottomRight());
 
-   this->autoComplete->show();
    this->autoComplete->move(pos.x(), pos.y());
-   this->autoComplete->setValues(this->chatModel.getSortedOtherPeersByRelevance());
-
-   this->peerNameInsertionMode = true;
+   this->autoComplete->show();
+   return true;
 }
 
 QList<Common::Hash> ChatWidget::getPeerAnswers() const
