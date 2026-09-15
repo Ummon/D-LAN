@@ -1159,6 +1159,131 @@ void Tests::sortedArrayComparatorException()
    }
 }
 
+namespace
+{
+   struct SortedArrayCleanupItem
+   {
+      enum Failure { Comparison, Copy, Construction };
+      static inline int live = 0;
+      static inline int budget = -1;
+      static inline Failure failure = Comparison;
+      int key = 0;
+
+      static void checkpoint(Failure operation)
+      {
+         if (operation == failure && budget >= 0 && budget-- == 0)
+            throw std::runtime_error("Rebuild interrupted");
+      }
+
+      SortedArrayCleanupItem() { checkpoint(Construction); ++live; }
+      explicit SortedArrayCleanupItem(int key) : key(key) { ++live; }
+      SortedArrayCleanupItem(const SortedArrayCleanupItem& other) : key(other.key)
+      { checkpoint(Copy); ++live; }
+      SortedArrayCleanupItem& operator=(const SortedArrayCleanupItem& other)
+      { checkpoint(Copy); key = other.key; return *this; }
+      ~SortedArrayCleanupItem() { --live; }
+      bool operator<(const SortedArrayCleanupItem& other) const { return key < other.key; }
+   };
+}
+
+void Tests::sortedArrayComparatorCleanup_data()
+{
+   QTest::addColumn<int>("order");
+   QTest::addColumn<int>("ordering");
+   QTest::addColumn<int>("failure");
+   for (int order : {3, 7})
+      for (int ordering = 0; ordering < 4; ++ordering)
+         for (int failure = 0; failure < 3; ++failure)
+         {
+            const QByteArray name = QByteArray::number(order) + '-' + QByteArray::number(ordering)
+               + '-' + QByteArray::number(failure);
+            QTest::newRow(name.constData()) << order << ordering << failure;
+         }
+}
+
+void Tests::sortedArrayComparatorCleanup()
+{
+   QFETCH(int, order);
+   QFETCH(int, ordering);
+   QFETCH(int, failure);
+   using Item = SortedArrayCleanupItem;
+   const auto sortKey = [ordering](int key) {
+      switch (ordering)
+      {
+      case 0: return -key;
+      case 1: return (key * 17) % 41; // Exercise insertion into the middle of nodes.
+      case 2: return key % 11; // Comparator collisions replace existing values.
+      default: return key;
+      }
+   };
+   const auto comparator = [sortKey](const Item& a, const Item& b) {
+      Item::checkpoint(Item::Comparison);
+      return sortKey(a.key) < sortKey(b.key);
+   };
+
+   const auto checkCleanup = [&]<int M>() {
+      SortedArray<Item, M> original;
+      QList<int> expected;
+      for (int i = 0; i < 40; ++i)
+      {
+         original.insert(Item(i));
+         auto position = std::lower_bound(expected.begin(), expected.end(), i,
+            [&](int a, int b) { return sortKey(a) < sortKey(b); });
+         if (position != expected.end() && sortKey(*position) == sortKey(i))
+            *position = i;
+         else
+            expected.insert(position, i);
+      }
+      const int originalLive = Item::live;
+      const auto& constOriginal = original;
+      Item::failure = static_cast<Item::Failure>(failure);
+
+      // Fail at every comparison, copy or default construction, including those
+      // after children have moved during a split or a cascading promotion.
+      for (int budget = 0; budget < 10000; ++budget)
+      {
+         bool threw = false;
+         {
+            auto array = original;
+            Item::budget = budget;
+            try { array.setSortedFunction(comparator); }
+            catch (const std::runtime_error&) { threw = true; }
+            Item::budget = -1;
+
+            if (threw)
+            {
+               QCOMPARE(Item::live, originalLive);
+               QCOMPARE(array.size(), original.size());
+               const auto& unchanged = array;
+               for (int i = 0; i < 40; ++i)
+               {
+                  QCOMPARE(unchanged.getFromIndex(i).key, i);
+                  QCOMPARE(array.indexOf(Item(i)), i); // Original comparator retained.
+                  QCOMPARE(&unchanged.getFromIndex(i), &constOriginal.getFromIndex(i));
+               }
+               array.setSortedFunction(comparator); // Retry after failure.
+            }
+            QList<int> actual;
+            for (const Item& item : array)
+               actual.append(item.key);
+            QCOMPARE(actual, expected);
+         }
+         QCOMPARE(Item::live, originalLive);
+         if (!threw)
+         {
+            QVERIFY(budget > 0);
+            return;
+         }
+      }
+      QFAIL("Rebuild did not succeed after exhausting the failure points");
+   };
+   if (order == 3)
+      checkCleanup.template operator()<3>();
+   else
+      checkCleanup.template operator()<7>();
+   QCOMPARE(Item::live, 0);
+}
+
 void Tests::sortedArrayEmptyNearestIndex()
 {
    SortedArray<int, 3> array;

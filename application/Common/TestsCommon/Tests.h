@@ -68,6 +68,8 @@ private slots:
    void sortedArrayToList();
    void sortedArrayComparatorCollisions();
    void sortedArrayComparatorException();
+   void sortedArrayComparatorCleanup_data();
+   void sortedArrayComparatorCleanup();
    void sortedArrayEmptyNearestIndex();
    void sortedArrayComparatorConstructor();
    void sortedArrayStandardIterator();

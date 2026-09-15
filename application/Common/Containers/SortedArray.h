@@ -203,11 +203,12 @@ namespace Common
       static void deleteNode(Node* node);
 
       template<typename U>
-      static Node* add(Node* node, U&& value, const std::function<bool(const T&, const T&)>& lesserThan);
+      static Node* add(Node* node, U&& value, const std::function<bool(const T&, const T&)>& lesserThan,
+         std::vector<std::unique_ptr<Node>>* rebuildNodes = nullptr);
 
       template<typename U>
       static Node* addPrepared(Node* node, U&& value, const std::function<bool(const T&, const T&)>& lesserThan,
-         std::vector<std::unique_ptr<Node>>& nodes, Node* child = nullptr);
+         const std::vector<std::unique_ptr<Node>>& nodes, std::size_t& availableNodes, Node* child = nullptr);
 
       static void split(Node* node, Node* rightNode, const T& value, const std::function<bool(const T&, const T&)>& lesserThan, Node* child = nullptr);
 
@@ -227,7 +228,7 @@ namespace Common
             root(nullptr),
             lesserThanFun(other.lesserThanFun)
          { this->root = duplicateNode(other.root); }
-         ~SortedArrayData() { deleteNode(this->root); }
+         ~SortedArrayData() { if (this->root) deleteNode(this->root); }
 
          Node* root;
          std::function<bool(const T&, const T&)> lesserThanFun;
@@ -544,19 +545,28 @@ void Common::SortedArray<T, M>::setSortedFunction(const std::function<bool(const
    // For the moment we recreate an entire new tree and inserting all the elements in it.
    // A better approach will be to re-sort the tree in place.
    QSharedDataPointer<SortedArrayData> newD(new SortedArrayData(lesserThan));
+   // Until rebuilding succeeds, own nodes independently of their child links:
+   // a throwing comparison or element operation can interrupt a split or shift.
+   std::vector<std::unique_ptr<Node>> rebuildNodes;
+   rebuildNodes.reserve(static_cast<std::size_t>(this->size()) + 1);
+   rebuildNodes.emplace_back(newD->root);
+   Node* root = std::exchange(newD->root, nullptr);
    for (const T& value : *this)
    {
       int position;
-      Node* node = getNode(newD->root, value, position, newD->lesserThanFun);
+      Node* node = getNode(root, value, position, newD->lesserThanFun);
 
       if (position == -1)
       {
-         if (Node* newRoot = add(node, value, newD->lesserThanFun))
-            newD->root = newRoot;
+         if (Node* newRoot = add(node, value, newD->lesserThanFun, &rebuildNodes))
+            root = newRoot;
       }
       else
          node->items[position] = value;
    }
+   newD->root = root;
+   for (auto& node : rebuildNodes)
+      node.release();
    this->d = newD;
 }
 
@@ -1190,7 +1200,8 @@ void Common::SortedArray<T, M>::deleteNode(Node* node)
   */
 template<typename T, int M>
 template<typename U>
-typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::add(Node* node, U&& value, const std::function<bool(const T&, const T&)>& lesserThan)
+typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::add(Node* node, U&& value,
+   const std::function<bool(const T&, const T&)>& lesserThan, std::vector<std::unique_ptr<Node>>* rebuildNodes)
 {
    int nbNodes = 0;
    for (Node* current = node; current && current->nbItems == M - 1; current = current->parent)
@@ -1205,7 +1216,17 @@ typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::add(Node* n
    for (int i = 0; i < nbNodes; ++i)
       nodes.emplace_back(new Node());
 
-   return addPrepared(node, std::forward<U>(value), lesserThan, nodes);
+   // Reserve before mutation so transferring ownership after insertion cannot throw.
+   if (rebuildNodes)
+      rebuildNodes->reserve(rebuildNodes->size() + nodes.size());
+   std::size_t availableNodes = nodes.size();
+   Node* newRoot = addPrepared(node, std::forward<U>(value), lesserThan, nodes, availableNodes);
+   for (auto& allocatedNode : nodes)
+      if (rebuildNodes)
+         rebuildNodes->push_back(std::move(allocatedNode));
+      else
+         allocatedNode.release();
+   return newRoot;
 }
 
 /**
@@ -1214,7 +1235,8 @@ typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::add(Node* n
 template<typename T, int M>
 template<typename U>
 typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::addPrepared(Node* node, U&& value,
-   const std::function<bool(const T&, const T&)>& lesserThan, std::vector<std::unique_ptr<Node>>& nodes, Node* child)
+   const std::function<bool(const T&, const T&)>& lesserThan, const std::vector<std::unique_ptr<Node>>& nodes,
+   std::size_t& availableNodes, Node* child)
 {
    if (child)
       child->parent = node;
@@ -1244,20 +1266,18 @@ typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::addPrepared
    // If the node doesn't have a parent we create one.
    else
    {
-      Node* rightNode = nodes.back().release();
-      nodes.pop_back();
+      Node* rightNode = nodes[--availableNodes].get();
       split(node, rightNode, std::forward<U>(value), lesserThan, child);
 
       Node* newRoot;
 
       if (node->parent)
       {
-         newRoot = addPrepared(node->parent, node->items[M / 2], lesserThan, nodes, rightNode);
+         newRoot = addPrepared(node->parent, node->items[M / 2], lesserThan, nodes, availableNodes, rightNode);
       }
       else
       {
-         newRoot = nodes.back().release();
-         nodes.pop_back();
+         newRoot = nodes[--availableNodes].get();
          newRoot->nbItems = 1;
          newRoot->size = 1 + node->size + rightNode->size;
          newRoot->items[0] = node->items[M / 2]; // Copy the median value.
