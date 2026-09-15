@@ -88,6 +88,7 @@ QVariant DownloadsModel::getData(const Protos::GUI::State::Download& download, c
       switch (index.column())
       {
       case NAME:
+      case PROGRESS:
          {
             QString toolTip;
             switch (download.status())
