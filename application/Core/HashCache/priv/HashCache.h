@@ -20,6 +20,7 @@
 
 #include <memory>
 
+#include <QTimer>
 #include <QString>
 #include <QThread>
 
@@ -45,11 +46,12 @@ namespace HC
    private:
       class Database;
 
-      // All SQL objects, including their destruction, belong to databaseThread.
-      // Blocking dispatch preserves the synchronous IHashCache API for callers
-      // that may hold FileManager locks or have no event loop of their own.
+      // SQL objects and the maintenance timer belong to databaseThread.
+      // Reads block for their result; writes own their arguments and are queued.
       QThread databaseThread;
       QObject* databaseContext;
       std::unique_ptr<Database> database;
+
+      QTimer* checkDeletedFileTimer = nullptr;
    };
 }

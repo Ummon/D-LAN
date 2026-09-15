@@ -18,12 +18,19 @@
   
 #include <QCoreApplication>
 #include <QTest>
+#include <QTemporaryDir>
+#include <Common/Global.h>
 
 #include <Tests.h>
 
 int main(int argc, char *argv[])
 {
    QCoreApplication a(argc, argv);
+   QTemporaryDir dataFolder;
+   if (!dataFolder.isValid())
+      return 1;
+   Common::Global::setDataFolder(Common::Global::DataFolderType::LOCAL, dataFolder.path());
+   Common::Global::setDataFolder(Common::Global::DataFolderType::ROAMING, dataFolder.path());
    Tests tests;
    return QTest::qExec(&tests, argc, argv);
 }

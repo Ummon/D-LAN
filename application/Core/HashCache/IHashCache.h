@@ -46,6 +46,7 @@ namespace HC
 
       /**
         * Set all hashes for the given file path.
+        * Queues the write; a subsequent getHashes call waits for preceding writes.
         * If the number of hashes doesn't match the file size, the request is rejected.
         */
       virtual void setHashes(
@@ -55,6 +56,7 @@ namespace HC
          QDateTime dateTime = QDateTime()
       ) = 0;
 
+      // Queues removal of the hashes for the given path.
       virtual void rmHashes(const QString& filePath) = 0;
    };
 }

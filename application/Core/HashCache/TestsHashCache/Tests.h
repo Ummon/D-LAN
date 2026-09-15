@@ -30,9 +30,17 @@ public:
    Tests();
 
 private slots:
+   void init();
    void independentConnections_data();
    void independentConnections();
    void lookupRequiresMatchingSize();
    void concurrentAccess();
    void destructionFromAnotherThread();
+   void cleanupMissingFiles_data();
+   void cleanupMissingFiles();
+   void cleanupRollsBackOnFailure();
+   void vacuumCompactsDatabase();
+   void periodicCleanupWithoutCallerEventLoop();
+   void restartKeepsMaintenanceDeadline();
+   void defaultsSurviveOlderSettings();
 };
