@@ -24,6 +24,8 @@
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QScopeGuard>
+#include <QTemporaryDir>
+#include <Common/Constants.h>
 
 #include <Protos/common.pb.h>
 #include <Protos/core_protocol.pb.h>
@@ -34,9 +36,11 @@
 #include <Common/Network/MessageHeader.h>
 
 #include <Core/FileManager/Builder.h>
+#include <Core/FileManager/IDataWriter.h>
 #include <Core/PeerManager/Builder.h>
 #include <Core/UploadManager/Builder.h>
 #include <Core/DownloadManager/Builder.h>
+#include <Core/DownloadManager/IDownload.h>
 #include <Core/NetworkListener/Builder.h>
 #include <Core/NetworkListener/ISearch.h>
 
@@ -312,6 +316,72 @@ void Tests::peerDiscovery()
 
    // Both instances run on the same machine, they must listen to different ports.
    QVERIFY(advertisedPorts[0] != advertisedPorts[1]);
+}
+
+void Tests::multicastOnLANInterface()
+{
+   const QString originalAddress = SETTINGS.get<QString>("listen_address");
+   const auto restore = qScopeGuard([&]() { SETTINGS.set("listen_address", originalAddress); });
+   SETTINGS.set("listen_address", QString());
+   const QHostAddress address = Utils::getCurrentAddressToListenTo();
+   const auto group = Utils::getMulticastGroup(address.protocol());
+   const auto& instance = this->instances[0];
+   // This temporary listener must not advertise another instance's ID on its temporary port.
+   const Common::Hash originalID = SETTINGS.get<Common::Hash>("peer_id");
+   SETTINGS.set("peer_id", Common::Hash::rand());
+   const auto peerManager = PM::Builder::newPeerManager(instance.fileManager);
+   SETTINGS.set("peer_id", originalID);
+   QTcpServer tcp;
+   QVERIFY(tcp.listen(address, 0));
+   UDPListener listener(instance.fileManager, peerManager, instance.uploadManager, instance.downloadManager);
+   QVERIFY(listener.bindUnicastSocket(address, tcp.serverPort()));
+   QVERIFY(listener.startListening());
+
+   int checked = 0;
+   for (const auto& iface : QNetworkInterface::allInterfaces())
+   {
+      if (!iface.flags().testFlags(QNetworkInterface::IsUp | QNetworkInterface::IsRunning | QNetworkInterface::CanMulticast) ||
+          iface.flags().testFlag(QNetworkInterface::IsLoopBack))
+         continue;
+      QHostAddress sourceAddress;
+      for (const auto& entry : iface.addressEntries())
+         if (entry.ip().protocol() == address.protocol())
+         {
+            sourceAddress = entry.ip();
+            break;
+         }
+      if (sourceAddress.isNull())
+         continue;
+      ++checked;
+
+      QUdpSocket sender;
+      QVERIFY(sender.bind(sourceAddress, 0));
+      sender.setMulticastInterface(iface);
+      sender.setSocketOption(QAbstractSocket::MulticastLoopbackOption, 1);
+      const Common::Hash ID = Common::Hash::rand();
+      Protos::Core::IMAlive heartbeat;
+      heartbeat.set_version(Common::Constants::PROTOCOL_VERSION);
+      heartbeat.set_port(sender.localPort());
+      heartbeat.set_nick("LAN interface test");
+      QByteArray datagram(1024, Qt::Uninitialized);
+      const Common::MessageHeader header(Common::MessageHeader::CORE_IM_ALIVE, heartbeat.ByteSizeLong(), ID);
+      const int size = Common::Message::writeMessageToBuffer(datagram.data(), datagram.size(), header, &heartbeat);
+      QVERIFY(size > 0);
+      bool received = false;
+      QObject context;
+      connect(&listener, &UDPListener::received, &context, [&](const Common::Message& message) {
+         if (message.getHeader().getSenderID() == ID)
+            received = true;
+      });
+      QCOMPARE(sender.writeDatagram(datagram.constData(), size, group, SETTINGS.get<quint32>("multicast_port")), size);
+      QTRY_VERIFY_WITH_TIMEOUT(received, 2000);
+      QVERIFY(peerManager->getPeer(ID)->isAvailable());
+      // "Any" selects the first usable LAN adapter, rather than the OS default.
+      QCOMPARE(Utils::getCurrentInterfaceToListenTo().index(), iface.index());
+      break;
+   }
+   if (checked == 0)
+      QSKIP("No active multicast LAN interface for this protocol");
 }
 
 void Tests::unicastReception()
@@ -771,6 +841,8 @@ void Tests::sharedUnicastPort()
    connect(listener.data(), &INetworkListener::IMAliveMessageToBeSend, &context,
       [&](Protos::Core::IMAlive& message) { advertisedPort = message.port(); });
    QTRY_VERIFY(advertisedPort != 0);
+   QCOMPARE(instance.peerManager->getSelf()->getPort(), advertisedPort);
+   QCOMPARE(instance.peerManager->getSelf()->getIP(), QHostAddress(QHostAddress::LocalHost));
    if (!forceFallback)
       QVERIFY(advertisedPort != occupiedPort);
 
@@ -786,6 +858,7 @@ void Tests::sharedUnicastPort()
    advertisedPort = 0;
    listener->rebindSockets();
    QTRY_COMPARE(advertisedPort, previousPort);
+   QCOMPARE(instance.peerManager->getSelf()->getPort(), previousPort);
 }
 
 void Tests::bindFailureAndRecovery()
@@ -824,6 +897,7 @@ void Tests::bindFailureAndRecovery()
       [&](Protos::Core::IMAlive&) { ++heartbeats; });
    QCoreApplication::processEvents();
    QCOMPARE(heartbeats, 0);
+   QVERIFY(!instance.peerManager->getSelf()->isAvailable());
    QCOMPARE(listener->send(Common::MessageHeader::CORE_GOODBYE, Protos::Common::Null()),
       INetworkListener::SendStatus::UNABLE_TO_SEND);
    // Multicast failure must roll back both unicast bindings.
@@ -835,6 +909,7 @@ void Tests::bindFailureAndRecovery()
    multicastBlocker.close();
    // Recover even when the interface configuration has not changed.
    QTRY_COMPARE_WITH_TIMEOUT(heartbeats, 1, 3500);
+   QVERIFY(instance.peerManager->getSelf()->isAvailable());
    listener->rebindSockets();
    listener->rebindSockets(); // Replace, rather than duplicate, the queued startup heartbeat.
    QTRY_COMPARE(heartbeats, 2);
@@ -923,6 +998,97 @@ void Tests::automaticRebinding()
    QTRY_COMPARE(heartbeats, 4);
    QCOMPARE(listener.send(Common::MessageHeader::CORE_GOODBYE, Protos::Common::Null()),
       INetworkListener::SendStatus::OK);
+}
+
+void Tests::downloadOwnChunks_data()
+{
+   QTest::addColumn<QString>("address");
+   QTest::addColumn<quint32>("protocol");
+   QTest::addColumn<bool>("unfinishedSource");
+   QTest::newRow("IPv4 port conflict") << QString() << quint32(Protos::Common::Interface::Address::IPv4) << false;
+   QTest::newRow("IPv6 port conflict") << QString() << quint32(Protos::Common::Interface::Address::IPv6) << false;
+   QTest::newRow("specific IPv6 address") << QString("::1") << quint32(Protos::Common::Interface::Address::IPv6) << false;
+   QTest::newRow("resume from same unfinished file") << QString() << quint32(Protos::Common::Interface::Address::IPv4) << true;
+}
+
+void Tests::downloadOwnChunks()
+{
+   QFETCH(QString, address);
+   QFETCH(quint32, protocol);
+   QFETCH(bool, unfinishedSource);
+   const quint32 originalPort = SETTINGS.get<quint32>("unicast_base_port");
+   const quint32 originalProtocol = SETTINGS.get<quint32>("listen_any");
+   const QString originalAddress = SETTINGS.get<QString>("listen_address");
+   const auto restore = qScopeGuard([&]() {
+      SETTINGS.set("unicast_base_port", originalPort);
+      SETTINGS.set("listen_any", originalProtocol);
+      SETTINGS.set("listen_address", originalAddress);
+   });
+   SETTINGS.set("listen_any", protocol);
+   SETTINGS.set("listen_address", address);
+   QTcpServer blocker;
+   QVERIFY(blocker.listen(Utils::getCurrentAddressToListenTo(), 0));
+   SETTINGS.set("unicast_base_port", quint32(blocker.serverPort()));
+
+   QTemporaryDir directory;
+   QVERIFY(directory.isValid());
+   // Repeated full chunks exercise duplicate hashes and socket reuse; the last chunk is shorter.
+   const QByteArray block(Common::Constants::CHUNK_SIZE, 'x');
+   const QByteArray data = block + block + QByteArray(12345, 'y');
+   QFile source(directory.filePath("source.bin"));
+   QVERIFY(source.open(QIODevice::WriteOnly));
+   QCOMPARE(source.write(data), data.size());
+   source.close();
+   const QString destination = directory.filePath("destination/");
+   QVERIFY(QDir().mkpath(destination));
+
+   Instance instance = this->createInstance(Common::Hash::rand(), "local chunks");
+   QVERIFY(instance.peerManager->getSelf()->getPort() != blocker.serverPort());
+   instance.fileManager->setSharedPaths({ { "source", source.fileName() }, { "destination", destination } });
+   const Common::Hash destinationID = instance.fileManager->getSharedEntries().last().ID;
+   Common::Hasher hasher;
+   hasher.addData(block);
+   const Common::Hash hash = hasher.getResult();
+   QTRY_VERIFY_WITH_TIMEOUT(!instance.fileManager->getChunk(hash).isNull(), 10000);
+   Protos::Common::Entry entry;
+   QVERIFY(instance.fileManager->getChunk(hash)->populateEntry(&entry));
+   QCOMPARE(entry.chunks_size(), 3);
+   hasher.reset();
+   hasher.addData(QByteArray(12345, 'y'));
+   const Common::Hash tailHash = hasher.getResult();
+   QTRY_VERIFY_WITH_TIMEOUT(!instance.fileManager->getChunk(tailHash).isNull(), 10000);
+   // Refresh the entry after the final chunk has been hashed.
+   QVERIFY(instance.fileManager->getChunk(hash)->populateEntry(&entry));
+   entry.set_name("copy.bin");
+   if (unfinishedSource)
+   {
+      // Only the incomplete destination remains: chunk zero can supply the rest of chunk one.
+      Protos::Common::Entry localEntry(entry);
+      localEntry.clear_shared_entry();
+      localEntry.mutable_shared_entry()->mutable_id()->set_hash(destinationID.getData(), Common::Hash::HASH_SIZE);
+      localEntry.set_path("/");
+      const auto chunks = instance.fileManager->newFile(localEntry);
+      QCOMPARE(chunks.size(), 3);
+      QVERIFY(chunks[0]->getDataWriter()->write(block.constData(), block.size()));
+      QVERIFY(!chunks[1]->getDataWriter()->write(block.constData(), 1234));
+      QVERIFY(chunks[2]->getDataWriter()->write(data.constData() + 2 * block.size(), 12345));
+      instance.fileManager->setSharedPaths({ { "destination", destination } });
+      QTRY_COMPARE_WITH_TIMEOUT(instance.fileManager->getChunk(hash), chunks[0], 10000);
+      QVERIFY(!chunks[1]->isComplete());
+   }
+   PM::IPeer* offline = instance.peerManager->createPeer(Common::Hash::rand(), "offline source");
+   QVERIFY(!offline->isAvailable());
+   instance.downloadManager->addDownload(entry, offline, destinationID, "/");
+   const auto downloads = instance.downloadManager->getDownloads();
+   QCOMPARE(downloads.size(), 1);
+   // A heartbeat discovers the local source without help from another peer.
+   QTRY_COMPARE_WITH_TIMEOUT(downloads.first()->getStatus(), Protos::Common::DownloadStatus::COMPLETE, 15000);
+   QFile copy(destination + "copy.bin");
+   QVERIFY(copy.open(QIODevice::ReadOnly));
+   QCOMPARE(copy.readAll(), data);
+   QVERIFY(source.open(QIODevice::ReadOnly));
+   QCOMPARE(source.readAll(), data);
+   instance.downloadManager->removeAllCompleteDownloads();
 }
 
 void Tests::cleanupTestCase()

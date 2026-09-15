@@ -18,10 +18,13 @@
 
 #include <QCoreApplication>
 #include <QTest>
+#include <QTemporaryDir>
+#include <QUdpSocket>
 
 #include <Protos/core_settings.pb.h>
 
 #include <Common/Settings.h>
+#include <Common/Global.h>
 
 #include <Tests.h>
 
@@ -31,8 +34,21 @@ int main(int argc, char *argv[])
 {
    QCoreApplication a(argc, argv);
 
+   QTemporaryDir settingsDir;
+   if (!settingsDir.isValid())
+      return 1;
+   Common::Global::setDataFolder(Common::Global::DataFolderType::LOCAL, settingsDir.path());
+   Common::Global::setDataFolder(Common::Global::DataFolderType::ROAMING, settingsDir.path());
+
    SETTINGS.setFilename("core_settings_network_listener_tests.json");
-   SETTINGS.setSettingsMessage(createDefaultValuesSettings());
+   // Keep real LAN peers from replying to test searches or sending chat requests into the tests.
+   QUdpSocket portReservation;
+   if (!portReservation.bind(QHostAddress::AnyIPv6, 0, QUdpSocket::DontShareAddress))
+      return 1;
+   auto settings = createDefaultValuesSettings();
+   settings->set_multicast_port(portReservation.localPort());
+   portReservation.close();
+   SETTINGS.setSettingsMessage(settings);
    SETTINGS.save();
 
    Tests tests;

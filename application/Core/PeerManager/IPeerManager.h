@@ -46,6 +46,9 @@ namespace PM
 
       virtual IPeer* getSelf() = 0;
 
+      // Actual local TCP endpoint. A null address and port zero disable self transfers.
+      virtual void setSelfAddress(const QHostAddress& address, quint16 port) = 0;
+
       /**
         * @return The number of alive peers.
         */

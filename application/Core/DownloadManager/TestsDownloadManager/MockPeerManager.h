@@ -12,6 +12,7 @@ public:
 
    void setNick(const QString& nick);
    PM::IPeer* getSelf();
+   void setSelfAddress(const QHostAddress&, quint16) {}
    int getNbOfPeers() const;
    QList<PM::IPeer*> getPeers() const;
    PM::IPeer* getPeer(const Common::Hash& ID);

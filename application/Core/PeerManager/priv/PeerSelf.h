@@ -30,6 +30,7 @@ namespace PM
       PeerSelf(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager);
 
       void setNick(const QString& nick);
+      void setAddress(const QHostAddress& address, quint16 port);
 
    private:
       static Common::Hash loadID();

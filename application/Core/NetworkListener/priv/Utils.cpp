@@ -50,34 +50,22 @@ QStringList Utils::getNetworkConfiguration(const QList<QNetworkInterface>& inter
 QNetworkInterface Utils::getCurrentInterfaceToListenTo()
 {
    const QString addressToListen = SETTINGS.get<QString>("listen_address");
-   const auto interfaces = QNetworkInterface::allInterfaces();
-
-   if (interfaces.isEmpty() || addressToListen.isEmpty())
-      return QNetworkInterface();
-
-   // L_DEBU(QString("address to listen to: %1").arg(addressToListen));
-
-   for (QList<QNetworkInterface>::const_iterator i = interfaces.begin(); i != interfaces.end(); ++i)
+   const auto protocol = Utils::getCurrentAddressToListenTo().protocol();
+   for (const auto& interface : QNetworkInterface::allInterfaces())
    {
-      // L_DEBU(QString("Interface: %1").arg(i->name()));
-      foreach (QNetworkAddressEntry entry, i->addressEntries())
+      // An explicit address may select loopback. "Any" must use a LAN adapter,
+      // not the OS default multicast interface, which can be loopback on Windows.
+      if (addressToListen.isEmpty() &&
+          (!interface.flags().testFlags(QNetworkInterface::IsUp | QNetworkInterface::IsRunning | QNetworkInterface::CanMulticast) ||
+           interface.flags().testFlag(QNetworkInterface::IsLoopBack)))
+         continue;
+      for (const auto& entry : interface.addressEntries())
       {
-         // L_DEBU(QString("IP: %1").arg(entry.ip().toString()));
-         if (entry.ip().toString() == addressToListen)
-            return *i;
+         if (addressToListen.isEmpty() ? entry.ip().protocol() == protocol : entry.ip() == QHostAddress(addressToListen))
+            return interface;
       }
    }
-
-   // Fall back if 'addressToListen' isn't found.
-   for (const auto& interface : interfaces)
-      if (
-         interface.isValid() &&
-         interface.flags().testFlags(QNetworkInterface::IsUp | QNetworkInterface::IsRunning | QNetworkInterface::CanMulticast) &&
-         !interface.flags().testFlags(QNetworkInterface::IsLoopBack)
-      )
-         return interface;
-
-   return interfaces.first();
+   return QNetworkInterface();
 }
 
 /**

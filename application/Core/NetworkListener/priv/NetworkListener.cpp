@@ -52,6 +52,7 @@ NetworkListener::NetworkListener(
 NetworkListener::~NetworkListener()
 {
    this->uDPListener.send(Common::MessageHeader::CORE_GOODBYE);
+   this->peerManager->setSelfAddress(QHostAddress(), 0);
    L_DEBU("NetworkListener deleted");
 }
 
@@ -77,6 +78,7 @@ void NetworkListener::bindSockets(bool sanitizeSettings)
    this->socketsBound = false;
    this->uDPListener.closeSockets();
    this->tCPListener.close();
+   this->peerManager->setSelfAddress(QHostAddress(), 0);
    this->peerManager->removeAllPeers();
    if (sanitizeSettings)
       Utils::sanitizeListenSettings();
@@ -115,6 +117,8 @@ void NetworkListener::bindSockets(bool sanitizeSettings)
       this->tCPListener.close();
       L_ERRO(QString("Unable to initialize network listeners on %1; discovery is disabled").arg(address.toString()));
    }
+   else
+      this->peerManager->setSelfAddress(address, this->tCPListener.getCurrentPort());
 }
 
 NetworkListener::SendStatus NetworkListener::send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message, const Common::Hash& peerID)

@@ -61,6 +61,7 @@ private slots:
 
    // Between the two instances.
    void peerDiscovery();
+   void multicastOnLANInterface();
    void unicastReception();
    void search();
    void searchResultReception();
@@ -77,6 +78,8 @@ private slots:
    void bindFailureAndRecovery();
    void rejectZeroUnicastPort();
    void automaticRebinding();
+   void downloadOwnChunks_data();
+   void downloadOwnChunks();
 
    void cleanupTestCase();
 

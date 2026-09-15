@@ -233,13 +233,12 @@ void UDPListener::sendIMAliveMessage()
       QSharedPointer<DM::IChunkDownloader> chunkDownloader = i.next();
       IMAliveMessage.add_chunks()->set_hash(chunkDownloader->getHash().getData(), Common::Hash::HASH_SIZE);
 
-      // Commented out because there are some issues when downloading our own chunks.
-      // If we already have the chunk . . .
-      // QSharedPointer<FM::IChunk> chunk = this->fileManager->getChunk(chunkDownloader->getHash());
-      // if (!chunk.isNull() && chunk->isComplete())
-      //    chunkDownloader->addPeer(this->peerManager->getSelf());
-      // else
-      //    chunkDownloader->rmPeer(this->peerManager->getSelf());
+      // Reuse complete local chunks, including those in other unfinished files.
+      const QSharedPointer<FM::IChunk> chunk = this->fileManager->getChunk(chunkDownloader->getHash());
+      if (!chunk.isNull() && chunk->isComplete())
+         chunkDownloader->addPeer(this->peerManager->getSelf());
+      else
+         chunkDownloader->rmPeer(this->peerManager->getSelf());
    }
 
    this->send(Common::MessageHeader::CORE_IM_ALIVE, IMAliveMessage);
@@ -495,23 +494,22 @@ bool UDPListener::initMulticastUDPSocket()
    this->multicastSocket.setSocketOption(QAbstractSocket::MulticastLoopbackOption, loop);
    this->multicastSocket.setSocketOption(QAbstractSocket::MulticastTtlOption, SETTINGS.get<quint32>("multicast_ttl"));
 
-   QNetworkInterface networkInterface = Utils::getCurrentInterfaceToListenTo();
-   // Group membership does not select the interface used to send multicast datagrams.
-   if (networkInterface.isValid())
-      this->multicastSocket.setMulticastInterface(networkInterface);
-
-   if (
-      networkInterface.isValid() ?
-           !this->multicastSocket.joinMulticastGroup(this->multicastGroup, networkInterface)
-         : !this->multicastSocket.joinMulticastGroup(this->multicastGroup)
-   )
+   const QNetworkInterface networkInterface = Utils::getCurrentInterfaceToListenTo();
+   if (!networkInterface.isValid())
    {
-      L_ERRO(
-         QString("Unable to join the multicast group: %1 on the interface: %2")
-            .arg(this->multicastGroup.toString(), networkInterface.name())
-      );
+      L_ERRO("No usable multicast interface; discovery is disabled");
       return false;
    }
+   // Select the same explicit adapter for membership and outgoing datagrams.
+   this->multicastSocket.setMulticastInterface(networkInterface);
+   if (!this->multicastSocket.joinMulticastGroup(this->multicastGroup, networkInterface))
+   {
+      L_ERRO(QString("Unable to join multicast group %1 on %2: %3")
+         .arg(this->multicastGroup.toString(), networkInterface.humanReadableName(), this->multicastSocket.errorString()));
+      return false;
+   }
+   L_DEBU(QString("Joined multicast group %1 on %2 (%3)")
+      .arg(this->multicastGroup.toString(), networkInterface.humanReadableName()).arg(networkInterface.index()));
 
    // This settings cannot change dynamically -> static.
    static const quint32 BUFFER_SIZE_UDP = SETTINGS.get<quint32>("udp_buffer_size");

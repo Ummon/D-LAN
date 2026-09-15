@@ -74,6 +74,11 @@ IPeer* PeerManager::getSelf()
    return this->self;
 }
 
+void PeerManager::setSelfAddress(const QHostAddress& address, quint16 port)
+{
+   this->self->setAddress(address, port);
+}
+
 int PeerManager::getNbOfPeers() const
 {
    int n = 0;

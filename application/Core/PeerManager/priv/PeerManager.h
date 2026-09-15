@@ -65,6 +65,7 @@ namespace PM
       void setNick(const QString& nick);
 
       IPeer* getSelf();
+      void setSelfAddress(const QHostAddress& address, quint16 port);
       int getNbOfPeers() const;
       QList<IPeer*> getPeers() const;
 

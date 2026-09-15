@@ -28,20 +28,27 @@ using namespace PM;
 PM::PeerSelf::PeerSelf(PM::PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager) :
    Peer(peerManager, fileManager, loadID(), SETTINGS.get<QString>("nick"))
 {
-   const QHostAddress IP(QHostAddress::LocalHost);
-   const quint16 port = SETTINGS.get<quint32>("unicast_base_port");
+   {
+      QMutexLocker locker(&this->mutex);
+      this->protocolVersion = Common::Constants::PROTOCOL_VERSION;
+   }
 
+   L_USER(QString(tr("Our current ID: %1")).arg(this->ID.toStr()));
+}
+
+void PeerSelf::setAddress(const QHostAddress& address, quint16 port)
+{
+   // Wildcard listening addresses cannot be used as connection destinations.
+   const QHostAddress IP = address == QHostAddress::AnyIPv6 ? QHostAddress::LocalHostIPv6 :
+      address == QHostAddress::AnyIPv4 || address == QHostAddress::Any ? QHostAddress::LocalHost : address;
    {
       QMutexLocker locker(&this->mutex);
       this->IP = IP;
       this->port = port;
-      this->alive = true;
-      this->protocolVersion = Common::Constants::PROTOCOL_VERSION;
+      this->alive = !IP.isNull() && port != 0;
    }
-
+   // Retires outgoing sockets targeting the previous endpoint, without an alive timer for self.
    this->connectionPool.setIP(IP, port);
-
-   L_USER(QString(tr("Our current ID: %1")).arg(this->ID.toStr()));
 }
 
 void PeerSelf::setNick(const QString& nick)
