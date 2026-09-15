@@ -27,7 +27,7 @@ namespace Common
 {
    class TransferRateCalculator : Common::Uncopyable
    {
-      static const quint32 PERIOD = 3000000000u; // [ns].
+      static const quint32 PERIOD = 3000000000u; // [ns]. (3 seconds).
       static const quint32 PERIOD_S = PERIOD / 1000000000; // [s].
       static const quint32 NB_VALUE = 30;
       static const quint32 D = PERIOD / NB_VALUE; // [ns].

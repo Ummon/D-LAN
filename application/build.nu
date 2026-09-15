@@ -82,6 +82,7 @@ def "main run-tests" [] {
 
     let tests = [
         ($release_directory)/output/TestsCommon
+        ($release_directory)/output/TestsTransferRateCalculator
         ($release_directory)/output/TestsSortedList
         ($release_directory)/output/TestsChatSystem
         ($release_directory)/output/TestsLogManager

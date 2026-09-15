@@ -79,53 +79,27 @@ void TransferRateCalculator::reset()
 void TransferRateCalculator::update(int value)
 {
    const qint64 t2 = this->timer.nsecsElapsed();
-   forever
+   if (t2 - this->t1 > PERIOD)
    {
-      const qint64 dt = t2 - this->t1;
-      const qint64 t1_ = this->t1 % D; // (t1 prime), relative to the current position.
-      const qint64 t2_ = t1_ + dt; // (t2 prime), relative to t1 prime.
-
-      if (t2_ < D) // We are in the current position.
-      {
-         this->currentValue += value;
-         this->t1 = t2;
-         return;
-      }
-      else if (dt > PERIOD)
-      {
-         if (value != 0)
-         {
-            this->currentValue = 0;
-            this->currentValuePos = 0;
-            this->t1 = 0;
-            this->total = 0;
-            const quint64 v = quint64(value) / NB_VALUE;
-            for (quint32 i = 0; i < NB_VALUE; i++)
-            {
-               this->values[i] = v;
-               this->total += v;
-            }
-            this->timer.start();
-         }
-         else
-            this->reset();
-
-         return;
-      }
-      else
-      {
-         const quint64 v1 = quint64(qint64(value) * (D - t1_) / dt);
-
-         this->total -= this->values[this->currentValuePos];
-         this->values[this->currentValuePos++] = this->currentValue + v1;
-         this->total += this->currentValue + v1;
-         if (this->currentValuePos == NB_VALUE)
-            this->currentValuePos = 0;
-
-         value -= static_cast<int>(v1); // 'v1' is a part of 'value', it always fits.
-         this->t1 += (D - t1_);
-         this->currentValue = 0;
-      }
+      this->reset();
+      this->currentValue = value;
+      return;
    }
-}
 
+   // Age existing data before recording the new bytes. They arrived now, so
+   // they must not be spread over the time since the last add or rate query.
+   while (this->t1 / D < t2 / D)
+   {
+      this->total -= this->values[this->currentValuePos];
+      this->values[this->currentValuePos++] = this->currentValue;
+      this->total += this->currentValue;
+      if (this->currentValuePos == NB_VALUE)
+         this->currentValuePos = 0;
+
+      this->t1 += D - this->t1 % D;
+      this->currentValue = 0;
+   }
+
+   this->currentValue += value;
+   this->t1 = t2;
+}
