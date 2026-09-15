@@ -23,6 +23,7 @@
 #include <memory>
 #include <stdexcept>
 #include <utility>
+#include <vector>
 
 #include <QSharedDataPointer>
 #include <QList>
@@ -46,6 +47,8 @@
   * Iterators are read-only forward iterators. Tree mutations and detachment may
   * invalidate iterators and references; reacquire them after these operations.
   * Copying and clear() preserve the original array if allocation or copying fails.
+  * Insertion allocates all nodes needed for splits before modifying the tree, so
+  * node allocation failure preserves its contents (detachment may still occur).
   * In-place insertion and removal require non-throwing element operations and
   * comparisons to preserve tree invariants if an operation fails partway through.
   *
@@ -200,9 +203,13 @@ namespace Common
       static void deleteNode(Node* node);
 
       template<typename U>
-      static Node* add(Node* node, U&& value, const std::function<bool(const T&, const T&)>& lesserThan, Node* child = nullptr);
+      static Node* add(Node* node, U&& value, const std::function<bool(const T&, const T&)>& lesserThan);
 
-      static Node* split(Node* node, const T& value, const std::function<bool(const T&, const T&)>& lesserThan, Node* child = nullptr);
+      template<typename U>
+      static Node* addPrepared(Node* node, U&& value, const std::function<bool(const T&, const T&)>& lesserThan,
+         std::vector<std::unique_ptr<Node>>& nodes, Node* child = nullptr);
+
+      static void split(Node* node, Node* rightNode, const T& value, const std::function<bool(const T&, const T&)>& lesserThan, Node* child = nullptr);
 
       //static void quickSort(const Position& first, const Position& last);
       static Position partition(const Position& first, const Position& last, const Position& pivot);
@@ -1178,12 +1185,36 @@ void Common::SortedArray<T, M>::deleteNode(Node* node)
 }
 
 /**
-  * Add the element 'e' to 'node', may attach an optional child after the position of 'e'.
+  * Allocate every sibling and any new root before the first split changes the tree.
   * @return the new root if a new root has been created, else returns 'nullptr'.
   */
 template<typename T, int M>
 template<typename U>
-typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::add(Node* node, U&& value, const std::function<bool(const T&, const T&)>& lesserThan, Node* child)
+typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::add(Node* node, U&& value, const std::function<bool(const T&, const T&)>& lesserThan)
+{
+   int nbNodes = 0;
+   for (Node* current = node; current && current->nbItems == M - 1; current = current->parent)
+   {
+      ++nbNodes;
+      if (!current->parent)
+         ++nbNodes; // Splitting the root also needs a new root.
+   }
+
+   std::vector<std::unique_ptr<Node>> nodes;
+   nodes.reserve(nbNodes);
+   for (int i = 0; i < nbNodes; ++i)
+      nodes.emplace_back(new Node());
+
+   return addPrepared(node, std::forward<U>(value), lesserThan, nodes);
+}
+
+/**
+  * Insert using the nodes allocated by add(); recursive promotions never allocate nodes.
+  */
+template<typename T, int M>
+template<typename U>
+typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::addPrepared(Node* node, U&& value,
+   const std::function<bool(const T&, const T&)>& lesserThan, std::vector<std::unique_ptr<Node>>& nodes, Node* child)
 {
    if (child)
       child->parent = node;
@@ -1213,17 +1244,20 @@ typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::add(Node* n
    // If the node doesn't have a parent we create one.
    else
    {
-      Node* rightNode = split(node, std::forward<U>(value), lesserThan, child);
+      Node* rightNode = nodes.back().release();
+      nodes.pop_back();
+      split(node, rightNode, std::forward<U>(value), lesserThan, child);
 
       Node* newRoot;
 
       if (node->parent)
       {
-         newRoot = add(node->parent, node->items[M / 2], lesserThan, rightNode);
+         newRoot = addPrepared(node->parent, node->items[M / 2], lesserThan, nodes, rightNode);
       }
       else
       {
-         newRoot = new Node();
+         newRoot = nodes.back().release();
+         nodes.pop_back();
          newRoot->nbItems = 1;
          newRoot->size = 1 + node->size + rightNode->size;
          newRoot->items[0] = node->items[M / 2]; // Copy the median value.
@@ -1241,13 +1275,12 @@ typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::add(Node* n
 }
 
 /**
-  * Split the given node by creating a new node.
+  * Split the given node using an already allocated empty right node.
   * The median value is put in the position "M / 2" in 'node'.
   */
 template <typename T, int M>
-typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::split(Node* node, const T& value, const std::function<bool(const T&, const T&)>& lesserThan, Node* child)
+void Common::SortedArray<T, M>::split(Node* node, Node* rightNode, const T& value, const std::function<bool(const T&, const T&)>& lesserThan, Node* child)
 {
-   Node* rightNode = new Node();
    rightNode->nbItems = (M-1) / 2;
    rightNode->size = rightNode->nbItems;
    node->nbItems = rightNode->nbItems;
@@ -1314,8 +1347,6 @@ typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::split(Node*
             node->children[i+2] = node->children[i+1];
          }
       }
-
-   return rightNode;
 }
 
 /**
