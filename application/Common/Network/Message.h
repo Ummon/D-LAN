@@ -115,7 +115,6 @@ Common::Message Common::Message::readMessageBody(const Common::MessageHeader& he
    case MessageHeader::GUI_CHANGE_PASSWORD:              return readMessageBody<Protos::GUI::ChangePassword>         (header, source);
    case MessageHeader::GUI_SETTINGS:                     return readMessageBody<Protos::GUI::CoreSettings>           (header, source);
    case MessageHeader::GUI_SEARCH:                       return readMessageBody<Protos::GUI::Search>                 (header, source);
-   case MessageHeader::GUI_SEARCH_TAG:                   return readMessageBody<Protos::GUI::Tag>                    (header, source);
    case MessageHeader::GUI_SEARCH_RESULT:                return readMessageBody<Protos::Common::FindResult>          (header, source);
    case MessageHeader::GUI_BROWSE:                       return readMessageBody<Protos::GUI::Browse>                 (header, source);
    case MessageHeader::GUI_BROWSE_RESULT:                return readMessageBody<Protos::GUI::BrowseResult>           (header, source);

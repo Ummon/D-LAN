@@ -19,6 +19,8 @@
 #include <priv/SearchResult.h>
 using namespace RCC;
 
+#include <QRandomGenerator64>
+
 #include <Protos/gui_protocol.pb.h>
 
 #include <Common/ProtoHelper.h>
@@ -26,12 +28,12 @@ using namespace RCC;
 #include <priv/InternalCoreConnection.h>
 
 SearchResult::SearchResult(InternalCoreConnection* coreConnection, const Protos::Common::FindPattern& findPattern, bool local, int socketTimeout) :
-   ISearchResult(socketTimeout), coreConnection(coreConnection), findPattern(findPattern), local(local), tag(0), tagSet(false)
+   ISearchResult(socketTimeout), coreConnection(coreConnection), findPattern(findPattern), local(local), tag(QRandomGenerator64::global()->generate64())
 {
    connect(this->coreConnection.data(), &InternalCoreConnection::searchResult, this, &SearchResult::searchResult);
    connect(coreConnection, &InternalCoreConnection::disconnected, this, [this] {
       this->coreConnection.clear();
-      this->tagSet = false;
+      this->receivingResults = false;
    });
 }
 
@@ -44,23 +46,17 @@ void SearchResult::start()
    if (!this->coreConnection || !this->coreConnection->isConnected())
       return;
 
-   this->coreConnection->searchResultsWithoutTag << this->sharedFromThis().toWeakRef();
-
    Protos::GUI::Search search;
    search.mutable_pattern()->CopyFrom(this->findPattern);
    search.set_local(this->local);
+   search.set_tag(this->tag);
+   this->receivingResults = true;
    this->coreConnection->send(Common::MessageHeader::GUI_SEARCH, search);
-}
-
-void SearchResult::setTag(quint64 tag)
-{
-   this->tag = tag;
-   this->tagSet = true;
 }
 
 void SearchResult::searchResult(const Protos::Common::FindResult& findResult)
 {
-   if (this->tagSet && findResult.tag() == this->tag) // Is this message for us?
+   if (this->receivingResults && !this->isTimedout() && findResult.tag() == this->tag) // Is this message for us?
    {
       this->stopTimer();
       emit result(findResult);

@@ -73,6 +73,7 @@ protected:
 class FileManager : public FM::IFileManager
 {
 public:
+   QList<Protos::Common::FindResult> searchResults;
    void setSharedPaths(const QList<SharedPath>&) override {}
    QPair<Common::SharedEntry, QString> addASharedPath(const QString&) override { return {}; }
    QList<Common::SharedEntry> getSharedEntries() const override { return {}; }
@@ -87,7 +88,7 @@ public:
    Protos::Common::Entries getEntries(const Protos::Common::Entry&, int) override { return {}; }
    Protos::Common::Entries getEntries() override { return {}; }
    QList<Protos::Common::FindResult> find(const QString&, int, int) override { return {}; }
-   QList<Protos::Common::FindResult> find(const QString&, const QList<QString>&, qint64, qint64, Protos::Common::FindPattern_Category, int, int, bool) override { return {}; }
+   QList<Protos::Common::FindResult> find(const QString&, const QList<QString>&, qint64, qint64, Protos::Common::FindPattern_Category, int, int, bool) override { return this->searchResults; }
    QBitArray haveChunks(const QList<Common::Hash>&) override { return {}; }
    qint64 getAmount() override { return 0; }
    CacheStatus getCacheStatus() const override { return UP_TO_DATE; }

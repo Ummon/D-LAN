@@ -37,6 +37,7 @@ class Tests : public QObject
    QList<int> results;
    QList<MessageHeader::MessageType> requests;
    QList<Protos::GUI::Browse> browseRequests;
+   QList<Protos::GUI::Search> searchRequests;
    Kind kind;
 
    void connectSession()
@@ -49,6 +50,8 @@ class Tests : public QObject
             this->requests << message.getHeader().getType();
          if (message.getHeader().getType() == MessageHeader::GUI_BROWSE)
             this->browseRequests << message.getMessage<Protos::GUI::Browse>();
+         if (message.getHeader().getType() == MessageHeader::GUI_SEARCH)
+            this->searchRequests << message.getMessage<Protos::GUI::Search>();
       });
       Protos::GUI::AuthenticationResult auth;
       auth.set_status(Protos::GUI::AuthenticationResult::AUTH_OK);
@@ -93,24 +96,17 @@ class Tests : public QObject
       }
    }
 
-   void assignSearchTag(quint64 value)
-   {
-      if (this->kind != Search)
-         return;
-      QSignalSpy received(&this->connection, &Common::MessageSocket::newMessage);
-      Protos::GUI::Tag tag;
-      tag.set_tag(value);
-      this->peer->send(MessageHeader::GUI_SEARCH_TAG, tag);
-      QTRY_COMPARE(received.size(), 1);
-   }
-
    void replyToRequest(int index)
    {
-      this->assignSearchTag(index);
       if (this->kind == Browse)
       {
          QVERIFY(index < this->browseRequests.size());
          this->reply(this->browseRequests[index].tag());
+      }
+      else if (this->kind == Search)
+      {
+         QVERIFY(index < this->searchRequests.size());
+         this->reply(this->searchRequests[index].tag());
       }
       else
          this->reply(index);
@@ -149,6 +145,7 @@ private slots:
       this->results.clear();
       this->requests.clear();
       this->browseRequests.clear();
+      this->searchRequests.clear();
       this->connectSession();
    }
 
@@ -313,12 +310,51 @@ private slots:
       QCOMPARE(this->results, QList<int>({2, 0, 1}));
    }
 
-   void browseLateReplyAfterTimeout()
+   void searchReplies()
    {
-      this->kind = Browse;
+      this->kind = Search;
+      Protos::Common::FindPattern pattern;
+      pattern.set_pattern("test files");
+      QList<QSharedPointer<RCC::ISearchResult>> pending;
+      for (int i = 0; i < 2; ++i)
+      {
+         auto search = this->connection.search(pattern, i == 0, 5000);
+         connect(search.data(), &RCC::ISearchResult::result, this, [this, i] { this->results << i; });
+         pending << search;
+         search->start();
+      }
+      QTRY_COMPARE(this->searchRequests.size(), 2);
+      QVERIFY(this->searchRequests[0].tag() != this->searchRequests[1].tag());
+      for (int i = 0; i < 2; ++i)
+      {
+         QCOMPARE(this->searchRequests[i].pattern().pattern(), pattern.pattern());
+         QCOMPARE(this->searchRequests[i].local(), i == 0);
+      }
+      quint64 unknownTag = 0;
+      while (unknownTag == this->searchRequests[0].tag() || unknownTag == this->searchRequests[1].tag())
+         ++unknownTag;
+      this->reply(unknownTag);
+      QVERIFY(this->results.isEmpty());
+      // Searches keep receiving batches, including interleaved and out-of-order replies.
+      for (int i : {1, 0, 1, 0})
+         this->replyToRequest(i);
+      QCOMPARE(this->results, QList<int>({1, 0, 1, 0}));
+   }
+
+   void lateReplyAfterTimeout_data()
+   {
+      QTest::addColumn<int>("requestKind");
+      QTest::newRow("browse") << int(Browse);
+      QTest::newRow("search") << int(Search);
+   }
+
+   void lateReplyAfterTimeout()
+   {
+      QFETCH(int, requestKind);
+      this->kind = Kind(requestKind);
       auto pending = this->request(1, 10);
       this->start(pending);
-      QTRY_COMPARE(this->browseRequests.size(), 1);
+      QTRY_COMPARE(this->requests.size(), 1);
       QTRY_VERIFY(pending->isTimedout());
       this->replyToRequest(0);
       QVERIFY(this->results.isEmpty());
@@ -329,7 +365,7 @@ private slots:
       QTest::addColumn<int>("requestKind");
       QTest::addColumn<QString>("scenario");
       for (int k : {Chat, Browse, Search})
-         for (const auto& scenario : {"discarded", "unstarted", "reverse", "duplicate", "timeout", "reconnect", "tagged-reconnect"})
+         for (const auto& scenario : {"discarded", "unstarted", "reverse", "duplicate", "timeout", "reconnect"})
             QTest::newRow(qPrintable(QString::number(k) + "-" + scenario)) << k << QString(scenario);
    }
 
@@ -359,23 +395,23 @@ private slots:
          return;
       }
       this->start(first);
-      if (scenario == "reconnect" || scenario == "tagged-reconnect")
+      if (scenario == "reconnect")
       {
          QTRY_COMPARE(this->requests.size(), 1);
-         if (scenario == "tagged-reconnect")
-            this->assignSearchTag(0);
-         const quint64 oldTag = this->kind == Browse ? this->browseRequests[0].tag() : 0;
+         const quint64 oldTag = this->kind == Browse ? this->browseRequests[0].tag() :
+            this->kind == Search ? this->searchRequests[0].tag() : 0;
          // Keep both old request objects alive across a remote disconnect.
          this->peer->close();
          QTRY_VERIFY(!this->connection.isConnected());
          this->connectSession();
          this->requests.clear();
          this->browseRequests.clear();
+         this->searchRequests.clear();
          this->start(second); // An unstarted request from the old session must not be sent.
          auto third = this->request(3);
          this->start(third);
          QTRY_COMPARE(this->requests.size(), 1);
-         if (this->kind == Browse)
+         if (this->kind != Chat)
          {
             this->reply(oldTag); // A late reply must not revive the old request.
             QVERIFY(this->results.isEmpty());

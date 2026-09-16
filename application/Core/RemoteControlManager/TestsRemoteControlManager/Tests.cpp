@@ -556,6 +556,75 @@ private slots:
       QTRY_VERIFY(!connection); // Destruction must not wait for the filesystem workers.
    }
 
+   void searchTags_data()
+   {
+      QTest::addColumn<bool>("local");
+      QTest::addColumn<quint64>("tag");
+      for (bool local : {false, true})
+         for (quint64 tag : {quint64(0), std::numeric_limits<quint64>::max()})
+            QTest::newRow(qPrintable(QString("%1-%2").arg(local ? "local" : "network").arg(tag))) << local << tag;
+   }
+
+   void searchTags()
+   {
+      QFETCH(bool, local);
+      QFETCH(quint64, tag);
+      SETTINGS.set("search_lifetime", quint32(5000));
+      auto files = QSharedPointer<FileManager>::create();
+      Protos::Common::FindResult original;
+      original.set_tag(123);
+      original.add_entries()->mutable_entry()->set_name("test file");
+      files->searchResults << original;
+      auto network = QSharedPointer<NetworkListener>::create();
+      auto* socket = new BufferedSocket;
+      QScopedPointer<RCM::RemoteConnection> connection(this->newConnection(socket, network, {}, files));
+      connection->startListening();
+      socket->output.clear();
+      Protos::GUI::Search request;
+      request.set_local(local);
+      request.set_tag(tag);
+      socket->receive(Common::MessageHeader::GUI_SEARCH, request);
+      if (!local)
+      {
+         QVERIFY(socket->output.isEmpty()); // No tag acknowledgement.
+         auto first = network->searches[0].toStrongRef();
+         QVERIFY(first);
+         request.set_tag(tag ^ 1);
+         socket->receive(Common::MessageHeader::GUI_SEARCH, request);
+         auto second = network->searches[1].toStrongRef();
+         QVERIFY(second);
+         second->deliver();
+         QCOMPARE(socket->messages().size(), 1);
+         QCOMPARE(socket->messages()[0].getMessage<Protos::Common::FindResult>().tag(), request.tag());
+         socket->output.clear();
+         // Multiple batches retain the GUI tag without changing the network result.
+         emit first->found(original);
+         emit first->found(original);
+         QCOMPARE(original.tag(), quint64(123));
+      }
+      else
+         QVERIFY(network->searches.isEmpty());
+
+      const auto messages = socket->messages();
+      QCOMPARE(messages.size(), local ? 1 : 2);
+      for (const auto& message : messages)
+      {
+         QCOMPARE(message.getHeader().getType(), Common::MessageHeader::GUI_SEARCH_RESULT);
+         const auto result = message.getMessage<Protos::Common::FindResult>();
+         QCOMPARE(result.tag(), tag);
+         QCOMPARE(result.entries_size(), 1);
+         QCOMPARE(result.entries(0).entry().name(), std::string("test file"));
+      }
+      QCOMPARE(files->searchResults[0].tag(), quint64(123));
+      if (local)
+      {
+         socket->output.clear();
+         files->searchResults.clear();
+         socket->receive(Common::MessageHeader::GUI_SEARCH, request);
+         QVERIFY(socket->output.isEmpty());
+      }
+   }
+
    void searchesExpireWithoutAnotherRequest()
    {
       SETTINGS.set("search_lifetime", quint32(30));
@@ -585,7 +654,7 @@ private slots:
       search->deliver();
       QCOMPARE(socket->messages().size(), 1);
       QCOMPARE(socket->messages()[0].getHeader().getType(), Common::MessageHeader::GUI_SEARCH_RESULT);
-      QCOMPARE(socket->messages()[0].getMessage<Protos::Common::FindResult>().tag(), search->tag);
+      QCOMPARE(socket->messages()[0].getMessage<Protos::Common::FindResult>().tag(), quint64(0));
 
       // Simulate expiry before the timer callback has had a chance to run.
       search->forcedElapsed = 30;
@@ -609,22 +678,24 @@ private slots:
       socket->output.clear();
       network->failSearch = true;
       socket->receive(Common::MessageHeader::GUI_SEARCH, Protos::GUI::Search());
-      QCOMPARE(socket->messages().last().getMessage<Protos::GUI::Tag>().tag(), quint64(0));
+      QVERIFY(socket->output.isEmpty());
       QVERIFY(network->searches[0].isNull());
       network->failSearch = false;
 
       for (int i = 0; i < 100; ++i)
       {
          socket->receive(Common::MessageHeader::GUI_SEARCH, Protos::GUI::Search());
-         QVERIFY(socket->messages().last().getMessage<Protos::GUI::Tag>().tag() != 0);
+         QVERIFY(socket->output.isEmpty());
+         QVERIFY(!network->searches.last().isNull());
       }
       socket->receive(Common::MessageHeader::GUI_SEARCH, Protos::GUI::Search());
-      QCOMPARE(socket->messages().last().getMessage<Protos::GUI::Tag>().tag(), quint64(0));
+      QVERIFY(socket->output.isEmpty());
       QCOMPARE(network->searches.size(), 101); // Failed launch plus 100 successful launches.
 
       QTRY_VERIFY(network->searches.last().isNull());
       socket->receive(Common::MessageHeader::GUI_SEARCH, Protos::GUI::Search());
-      QVERIFY(socket->messages().last().getMessage<Protos::GUI::Tag>().tag() != 0);
+      QVERIFY(socket->output.isEmpty());
+      QCOMPARE(network->searches.size(), 102);
       QVERIFY(!network->searches.last().isNull());
       connection.reset();
       QVERIFY(network->searches.last().isNull());
@@ -646,9 +717,10 @@ private:
    QTemporaryDir dataDirectory;
 
    RCM::RemoteConnection* newConnection(BufferedSocket* socket, QSharedPointer<NL::INetworkListener> network = {},
-      QSharedPointer<PM::IPeerManager> peers = {})
+      QSharedPointer<PM::IPeerManager> peers = {}, QSharedPointer<FileManager> files = {})
    {
-      auto files = QSharedPointer<FileManager>::create();
+      if (!files)
+         files = QSharedPointer<FileManager>::create();
       return new RCM::RemoteConnection(files, peers ? peers : PM::Builder::newPeerManager(files),
          QSharedPointer<UploadManager>::create(), QSharedPointer<DownloadManager>::create(),
          network, QSharedPointer<ChatSystem>::create(), socket);

@@ -77,7 +77,6 @@ namespace Common
          GUI_SETTINGS =                   0x1031,
 
          GUI_SEARCH =                     0x1041,
-         GUI_SEARCH_TAG =                 0x1042,
          GUI_SEARCH_RESULT =              0x1043,
 
          GUI_BROWSE =                     0x1051,
