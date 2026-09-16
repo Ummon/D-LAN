@@ -18,9 +18,6 @@
   
 #pragma once
 
-#include <QString>
-
-#include <QSharedPointer>
 #include <QPointer>
 
 #include <Protos/common.pb.h>
@@ -31,13 +28,12 @@ namespace RCC
 {
    class InternalCoreConnection;
 
-   class SearchResult : public ISearchResult, public QEnableSharedFromThis<SearchResult>
+   class SearchResult : public ISearchResult
    {
       Q_OBJECT
    public:
       SearchResult(InternalCoreConnection* coreConnection, const Protos::Common::FindPattern& findPattern, bool local, int socketTimeout);
-      void start();
-      void setTag(quint64 tag);
+      void start() override;
 
    private slots:
       void searchResult(const Protos::Common::FindResult& findResult);
@@ -48,12 +44,8 @@ namespace RCC
       const Protos::Common::FindPattern findPattern;
       bool local;
 
-      quint64 tag;
-
-      /**
-        * 'tag' alone can't say whether a message is ours: 0 is both its initial value and a tag the core
-        * may legitimately send. Unlike a browse, a search keeps emitting, thus it's never cleared.
-        */
-      bool tagSet;
+      const quint64 tag;
+      // A search can emit multiple results until its session ends.
+      bool receivingResults = false;
    };
 }

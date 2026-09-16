@@ -630,53 +630,43 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
                true
             );
 
-            const quint64 tag = QRandomGenerator64::global()->generate64();
-            Protos::GUI::Tag tagMess;
-            tagMess.set_tag(tag);
-            this->send(Common::MessageHeader::GUI_SEARCH_TAG, tagMess);
-
             if (!results.isEmpty())
             {
                Protos::Common::FindResult result = results.first();
                result.mutable_peer_id()->set_hash(this->peerManager->getSelf()->getID().getData(), Common::Hash::HASH_SIZE);
-               result.set_tag(tag);
+               result.set_tag(searchMessage.tag());
                this->searchFound(result);
             }
          }
-         else
+         else if (this->currentSearches.size() < MAX_NB_SEARCHES)
          {
-            quint64 tag = 0; // Also used to report a full search queue to the GUI.
-            if (this->currentSearches.size() < MAX_NB_SEARCHES)
+            const auto search = this->networkListener->newSearch();
+            if (search->search(findPattern) != 0)
             {
-               const auto search = this->networkListener->newSearch();
-               tag = search->search(findPattern);
-               if (tag != 0)
-               {
-                  this->currentSearches << search;
-                  const auto weakSearch = search.toWeakRef();
-                  const quint32 lifetime = SETTINGS.get<quint32>("search_lifetime");
-                  connect(search.data(), &NL::ISearch::found, this,
-                     [this, weakSearch, lifetime](const Protos::Common::FindResult& result) {
-                        const auto search = weakSearch.toStrongRef();
-                        // Timer delivery can be delayed by other events. Enforce the deadline here too.
-                        if (search && search->elapsed() >= 0 && search->elapsed() < lifetime)
-                           this->searchFound(result);
-                     });
-                  const auto remaining = std::chrono::milliseconds(qMax<qint64>(0, qint64(lifetime) - search->elapsed()));
-                  QTimer::singleShot(remaining, Qt::PreciseTimer, this, [this, weakSearch] {
-                     if (const auto search = weakSearch.toStrongRef())
+               this->currentSearches << search;
+               const auto weakSearch = search.toWeakRef();
+               const quint32 lifetime = SETTINGS.get<quint32>("search_lifetime");
+               connect(search.data(), &NL::ISearch::found, this,
+                  [this, weakSearch, lifetime, tag = searchMessage.tag()](const Protos::Common::FindResult& result) {
+                     const auto search = weakSearch.toStrongRef();
+                     // Timer delivery can be delayed by other events. Enforce the deadline here too.
+                     if (search && search->elapsed() >= 0 && search->elapsed() < lifetime)
                      {
-                        // Disconnect even if another owner keeps the search alive.
-                        search->disconnect(this);
-                        this->currentSearches.removeOne(search);
+                        Protos::Common::FindResult guiResult(result);
+                        guiResult.set_tag(tag);
+                        this->searchFound(guiResult);
                      }
                   });
-               }
+               const auto remaining = std::chrono::milliseconds(qMax<qint64>(0, qint64(lifetime) - search->elapsed()));
+               QTimer::singleShot(remaining, Qt::PreciseTimer, this, [this, weakSearch] {
+                  if (const auto search = weakSearch.toStrongRef())
+                  {
+                     // Disconnect even if another owner keeps the search alive.
+                     search->disconnect(this);
+                     this->currentSearches.removeOne(search);
+                  }
+               });
             }
-
-            Protos::GUI::Tag tagMess;
-            tagMess.set_tag(tag);
-            this->send(Common::MessageHeader::GUI_SEARCH_TAG, tagMess);
          }
       }
       break;
@@ -687,11 +677,6 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
 
          Common::Hash peerID(browseMessage.peer_id().hash());
          PM::IPeer* peer = this->peerManager->getPeer(peerID);
-
-         const quint64 tag = QRandomGenerator64::global()->generate64();
-         Protos::GUI::Tag tagMess;
-         tagMess.set_tag(tag);
-         this->send(Common::MessageHeader::GUI_BROWSE_TAG, tagMess);
 
          if (peer && peer != this->peerManager->getSelf())
          {
@@ -706,12 +691,12 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
             if (entries.isNull())
             {
                Protos::GUI::BrowseResult result;
-               result.set_tag(tag);
+               result.set_tag(browseMessage.tag());
                this->send(Common::MessageHeader::GUI_BROWSE_RESULT, result);
                break;
             }
 
-            entries->setProperty("tag", tag);
+            entries->setProperty("tag", QVariant::fromValue<quint64>(browseMessage.tag()));
             connect(entries.data(), &PM::IGetEntriesResult::result, this, &RemoteConnection::getEntriesResult);
             connect(entries.data(), &PM::IGetEntriesResult::timeout, this, &RemoteConnection::getEntriesTimeout);
             this->getEntriesResults << entries;
@@ -732,7 +717,7 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
                   result.add_entries()->CopyFrom(this->fileManager->getEntries());
             }
 
-            result.set_tag(tag);
+            result.set_tag(browseMessage.tag());
             this->send(Common::MessageHeader::GUI_BROWSE_RESULT, result);
          }
       }

@@ -584,26 +584,10 @@ void InternalCoreConnection::onNewMessage(const Common::Message& message)
       }
       break;
 
-   case Common::MessageHeader::GUI_SEARCH_TAG:
-      if (!this->searchResultsWithoutTag.isEmpty())
-      {
-         if (auto result = this->searchResultsWithoutTag.takeFirst().toStrongRef())
-            result->setTag(message.getMessage<Protos::GUI::Tag>().tag());
-      }
-      break;
-
    case Common::MessageHeader::GUI_SEARCH_RESULT:
       {
          const Protos::Common::FindResult& findResultMessage = message.getMessage<Protos::Common::FindResult>();
          emit searchResult(findResultMessage);
-      }
-      break;
-
-   case Common::MessageHeader::GUI_BROWSE_TAG:
-      if (!this->browseResultsWithoutTag.isEmpty())
-      {
-         if (auto result = this->browseResultsWithoutTag.takeFirst().toStrongRef())
-            result->setTag(message.getMessage<Protos::GUI::Tag>().tag());
       }
       break;
 
@@ -637,8 +621,6 @@ void InternalCoreConnection::onDisconnected()
 {
    this->authenticated = false;
    this->sendChatMessageResultWithoutReply.clear();
-   this->browseResultsWithoutTag.clear();
-   this->searchResultsWithoutTag.clear();
    emit disconnected(this->forcedToClose);
    this->forcedToClose = false;
 }

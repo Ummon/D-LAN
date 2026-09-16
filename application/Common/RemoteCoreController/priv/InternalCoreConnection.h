@@ -50,10 +50,8 @@ class Tests;
 namespace RCC
 {
    class SendChatMessageResult;
-   class BrowseResult;
    class LocalBrowseResult;
    class LocalBrowseQuickAccessResult;
-   class SearchResult;
 
    class InternalCoreConnection : public Common::MessageSocket
    {
@@ -164,8 +162,6 @@ namespace RCC
 
       friend class ::Tests; // Exercise cancellation at deterministic DNS/socket/retry stages.
       friend class SendChatMessageResult;
-      friend class BrowseResult;
-      friend class SearchResult;
 
       CoreController& coreController;
 
@@ -188,8 +184,6 @@ namespace RCC
       int nbRetries;
 
       QList<QWeakPointer<SendChatMessageResult>> sendChatMessageResultWithoutReply;
-      QList<QWeakPointer<BrowseResult>> browseResultsWithoutTag;
-      QList<QWeakPointer<SearchResult>> searchResultsWithoutTag;
 
       QList<QWeakPointer<LocalBrowseResult>> localBrowseResults;
       QList<QWeakPointer<LocalBrowseQuickAccessResult>> localBrowseQuickAccessResults;

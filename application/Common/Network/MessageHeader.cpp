@@ -111,10 +111,8 @@ QString MessageHeader::messToStr(MessageType type)
    case GUI_CHANGE_PASSWORD: return "CHANGE_PASSWORD";
    case GUI_SETTINGS: return "SETTINGS";
    case GUI_SEARCH: return "SEARCH";
-   case GUI_SEARCH_TAG: return "SEARCH_TAG";
    case GUI_SEARCH_RESULT: return "SEARCH_RESULT";
    case GUI_BROWSE: return "BROWSE";
-   case GUI_BROWSE_TAG: return "BROWSE_TAG";
    case GUI_BROWSE_RESULT: return "BROWSE_RESULT";
    case GUI_LOCAL_BROWSE: return "LOCAL_BROWSE";
    case GUI_LOCAL_BROWSE_RESULT: return "LOCAL_BROWSE_RESULT";

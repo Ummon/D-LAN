@@ -18,9 +18,6 @@
 
 #pragma once
 
-#include <QtCore>
-
-#include <QSharedPointer>
 #include <QPointer>
 
 #include <Protos/common.pb.h>
@@ -34,33 +31,23 @@ namespace RCC
 {
    class InternalCoreConnection;
 
-   class BrowseResult : public IBrowseResult, public QEnableSharedFromThis<BrowseResult>
+   class BrowseResult : public IBrowseResult
    {
       Q_OBJECT
    public:
       BrowseResult(InternalCoreConnection* coreConnection, const Common::Hash& peerID, int socketTimeout);
       BrowseResult(InternalCoreConnection* coreConnection, const Common::Hash& peerID, const Protos::Common::Entry& entry, int socketTimeout);
       BrowseResult(InternalCoreConnection* coreConnection, const Common::Hash& peerID, const Protos::Common::Entries& entries, bool withRoots, int socketTimeout);
-      void start();
-      void setTag(quint64 tag);
+      void start() override;
 
    private slots:
       void browseResult(const Protos::GUI::BrowseResult& browseResult);
 
    private:
-      void init(InternalCoreConnection* coreConnection);
-
       QPointer<InternalCoreConnection> coreConnection;
       bool started = false;
-      const Common::Hash peerID;
       Protos::GUI::Browse browseMessage;
 
-      quint64 tag;
-
-      /**
-        * 'tag' alone can't say whether a message is ours: 0 is both its initial value and a tag the core
-        * may legitimately send. Set by 'setTag(..)' and cleared once the result has been emitted.
-        */
-      bool waitingForResult;
+      bool waitingForResult = false;
    };
 }
