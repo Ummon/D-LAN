@@ -20,7 +20,6 @@
 using namespace GUI;
 
 #include <algorithm>
-#include <string>
 
 #include <QtAlgorithms>
 #include <QFont>
