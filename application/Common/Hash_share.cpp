@@ -51,7 +51,7 @@ Hash::Hash(const Hash& h) noexcept
 {
    this->data = h.data;
    if (this->data)
-      this->data->nbRef.fetch_add(1, std::memory_order_relaxed);
+      ++this->data->nbRef;
 }
 
 Hash::Hash(Hash&& h) noexcept
@@ -136,7 +136,7 @@ Hash& Hash::operator=(const Hash& h)
       this->dereference();
       this->data = h.data;
       if (this->data)
-         this->data->nbRef.fetch_add(1, std::memory_order_relaxed);
+         ++this->data->nbRef;
    }
    return *this;
 }

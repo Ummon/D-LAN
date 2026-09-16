@@ -202,7 +202,7 @@ namespace Common
   */
 inline void Common::Hash::dereference()
 {
-   if (this->data && this->data->nbRef.fetch_sub(1, std::memory_order_acq_rel) == 1)
+   if (this->data && --this->data->nbRef == 0)
       delete this->data;
 }
 
