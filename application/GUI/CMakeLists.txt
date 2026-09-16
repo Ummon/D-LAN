@@ -210,6 +210,17 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 endif()
 
 if(DLAN_BUILD_TESTS)
+   add_executable(TestsSearchModel
+      Search/TestsSearchModel.cpp Search/SearchModel.cpp Browse/BrowseModel.cpp
+      Peers/PeerListModel.cpp Settings/SharedEntryListModel.cpp
+      IconProvider.cpp Log.cpp resources.qrc
+   )
+   set_target_properties(TestsSearchModel PROPERTIES AUTORCC ON)
+   target_include_directories(TestsSearchModel PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+   target_link_libraries(TestsSearchModel PRIVATE RemoteCoreController LogManager Common Qt6::Widgets Qt6::Svg Qt6::Test)
+   add_test(NAME TestsSearchModel COMMAND TestsSearchModel)
+   set_tests_properties(TestsSearchModel PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 30)
+
    add_executable(TestsChatCompletion
       Chat/TestsChatCompletion.cpp Chat/ChatWidget.cpp Chat/ChatModel.cpp Chat/ChatTextEdit.cpp Chat/EmoticonTextDocument.cpp
       AutoComplete/AutoComplete.cpp AutoComplete/AutoCompleteModel.cpp

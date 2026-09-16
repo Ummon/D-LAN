@@ -20,7 +20,7 @@
 
 #include <QAbstractItemModel>
 #include <QTimer>
-#include <QHash>
+#include <QMultiHash>
 
 #include <Protos/common.pb.h>
 
@@ -109,7 +109,7 @@ namespace GUI
 
       int currentProgress;
 
-      QHash<Common::Hash, SearchTree*> indexedFile;
+      QMultiHash<Common::Hash, SearchTree*> indexedFile;
 
       class SearchTree : public Tree
       {

@@ -298,7 +298,8 @@ void SearchModel::sort(int column, Qt::SortOrder order)
   * This method is called several times, one per received entries. The entries are inserted into the model.
   * The given entries are sorted by their level, we will keep the sort when inserting the entry but with some modifications:
   *  - All entries with the same level are sorted first by their path (prefixed with the shared directory name) and then by their name.
-  *  - All file entries with the same chunks (identical data) are grouped. They can be owned by different peer.
+  *  - File entries with equal sizes and matching search hashes are grouped. They can be owned by different peers.
+  *    Search results may contain only a prefix of the hashes, so this does not establish full-file identity.
   */
 void SearchModel::resultFromFindResult(const Protos::Common::FindResult& findResult)
 {
@@ -342,7 +343,16 @@ void SearchModel::resultFromFindResult(const Protos::Common::FindResult& findRes
       {
          Common::Hash firstChunk = entry->entry().chunks(0).hash();
          SearchTree* similarTree = nullptr;
-         if ((similarTree = this->indexedFile.value(firstChunk)) && similarTree->isSameAs(entry->entry()))
+         const auto candidates = this->indexedFile.equal_range(firstChunk);
+         for (auto candidate = candidates.first; candidate != candidates.second; ++candidate)
+         {
+            if (candidate.value()->isSameAs(entry->entry()))
+            {
+               similarTree = candidate.value();
+               break;
+            }
+         }
+         if (similarTree)
          {
             if (similarTree->getNbChildren() == 0)
             {
@@ -366,11 +376,11 @@ void SearchModel::resultFromFindResult(const Protos::Common::FindResult& findRes
                   this->endInsertRows();
 
                   if (static_cast<int>(entry->level()) < similarTree->getLevel())
-                  {
-                     const int row = similarTree->getOwnPosition();
                      similarTree->copyFrom(newTree);
-                     emit dataChanged(this->createIndex(row, NAME, similarTree), this->createIndex(row, PEER, similarTree));
-                  }
+
+                  // Grouping can change the displayed directory and peer even if the name stays the same.
+                  const int row = similarTree->getOwnPosition();
+                  emit dataChanged(this->createIndex(row, NAME, similarTree), this->createIndex(row, PEER, similarTree));
 
                   break;
                }
@@ -463,6 +473,8 @@ bool SearchModel::setMaxLevel(int newLevel)
 SearchModel::SearchTree::SearchTree() :
    level(0)
 {
+   // Search results are inserted explicitly; the root has no lazy-loaded children.
+   this->getItem().set_is_empty(true);
 }
 
 SearchModel::SearchTree::SearchTree(
@@ -582,10 +594,10 @@ bool SearchModel::SearchTree::isSameAs(const Protos::Common::Entry& otherEntry) 
    if (this->getItem().size() == 0 && otherEntry.size() == 0)
       return true;
 
-   // A matching prefix is insufficient to identify the complete file.
+   // FileManager::find limits the number of hashes sent with each result.
+   // Compare the supplied hashes and size for similarity, not full-file identity.
    if (this->getItem().size() != otherEntry.size() ||
-       otherEntry.chunks_size() == 0 || otherEntry.chunks_size() != this->getItem().chunks_size() ||
-       otherEntry.chunks_size() != Common::Global::nbChunks(otherEntry.size()))
+       otherEntry.chunks_size() == 0 || otherEntry.chunks_size() != this->getItem().chunks_size())
       return false;
 
    for (int i = 0; i < otherEntry.chunks_size(); i++)
