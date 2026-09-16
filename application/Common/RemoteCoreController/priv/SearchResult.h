@@ -18,9 +18,6 @@
   
 #pragma once
 
-#include <QString>
-
-#include <QSharedPointer>
 #include <QPointer>
 
 #include <Protos/common.pb.h>
@@ -36,7 +33,7 @@ namespace RCC
       Q_OBJECT
    public:
       SearchResult(InternalCoreConnection* coreConnection, const Protos::Common::FindPattern& findPattern, bool local, int socketTimeout);
-      void start();
+      void start() override;
 
    private slots:
       void searchResult(const Protos::Common::FindResult& findResult);

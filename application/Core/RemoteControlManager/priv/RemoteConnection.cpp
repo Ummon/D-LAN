@@ -638,37 +638,34 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
                this->searchFound(result);
             }
          }
-         else
+         else if (this->currentSearches.size() < MAX_NB_SEARCHES)
          {
-            if (this->currentSearches.size() < MAX_NB_SEARCHES)
+            const auto search = this->networkListener->newSearch();
+            if (search->search(findPattern) != 0)
             {
-               const auto search = this->networkListener->newSearch();
-               if (search->search(findPattern) != 0)
-               {
-                  this->currentSearches << search;
-                  const auto weakSearch = search.toWeakRef();
-                  const quint32 lifetime = SETTINGS.get<quint32>("search_lifetime");
-                  connect(search.data(), &NL::ISearch::found, this,
-                     [this, weakSearch, lifetime, tag = searchMessage.tag()](const Protos::Common::FindResult& result) {
-                        const auto search = weakSearch.toStrongRef();
-                        // Timer delivery can be delayed by other events. Enforce the deadline here too.
-                        if (search && search->elapsed() >= 0 && search->elapsed() < lifetime)
-                        {
-                           Protos::Common::FindResult guiResult(result);
-                           guiResult.set_tag(tag);
-                           this->searchFound(guiResult);
-                        }
-                     });
-                  const auto remaining = std::chrono::milliseconds(qMax<qint64>(0, qint64(lifetime) - search->elapsed()));
-                  QTimer::singleShot(remaining, Qt::PreciseTimer, this, [this, weakSearch] {
-                     if (const auto search = weakSearch.toStrongRef())
+               this->currentSearches << search;
+               const auto weakSearch = search.toWeakRef();
+               const quint32 lifetime = SETTINGS.get<quint32>("search_lifetime");
+               connect(search.data(), &NL::ISearch::found, this,
+                  [this, weakSearch, lifetime, tag = searchMessage.tag()](const Protos::Common::FindResult& result) {
+                     const auto search = weakSearch.toStrongRef();
+                     // Timer delivery can be delayed by other events. Enforce the deadline here too.
+                     if (search && search->elapsed() >= 0 && search->elapsed() < lifetime)
                      {
-                        // Disconnect even if another owner keeps the search alive.
-                        search->disconnect(this);
-                        this->currentSearches.removeOne(search);
+                        Protos::Common::FindResult guiResult(result);
+                        guiResult.set_tag(tag);
+                        this->searchFound(guiResult);
                      }
                   });
-               }
+               const auto remaining = std::chrono::milliseconds(qMax<qint64>(0, qint64(lifetime) - search->elapsed()));
+               QTimer::singleShot(remaining, Qt::PreciseTimer, this, [this, weakSearch] {
+                  if (const auto search = weakSearch.toStrongRef())
+                  {
+                     // Disconnect even if another owner keeps the search alive.
+                     search->disconnect(this);
+                     this->currentSearches.removeOne(search);
+                  }
+               });
             }
          }
       }

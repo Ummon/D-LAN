@@ -19,7 +19,8 @@
 #include <priv/BrowseResult.h>
 using namespace RCC;
 
-#include <priv/Log.h>
+#include <QRandomGenerator64>
+
 #include <priv/InternalCoreConnection.h>
 
 BrowseResult::BrowseResult(
@@ -28,10 +29,15 @@ BrowseResult::BrowseResult(
    int socketTimeout
 ) :
    IBrowseResult(socketTimeout),
-   peerID(peerID),
-   tag(QRandomGenerator64::global()->generate64())
+   coreConnection(coreConnection)
 {
-   this->init(coreConnection);
+   this->browseMessage.mutable_peer_id()->set_hash(peerID.getData(), Common::Hash::HASH_SIZE);
+   this->browseMessage.set_tag(QRandomGenerator64::global()->generate64());
+   connect(coreConnection, &InternalCoreConnection::disconnected, this, [this] {
+      this->coreConnection.clear();
+      this->waitingForResult = false;
+   });
+   connect(coreConnection, &InternalCoreConnection::browseResult, this, &BrowseResult::browseResult);
 }
 
 BrowseResult::BrowseResult(
@@ -40,12 +46,9 @@ BrowseResult::BrowseResult(
    const Protos::Common::Entry& entry,
    int socketTimeout
 ) :
-   IBrowseResult(socketTimeout),
-   peerID(peerID),
-   tag(QRandomGenerator64::global()->generate64())
+   BrowseResult(coreConnection, peerID, socketTimeout)
 {
    this->browseMessage.mutable_dirs()->add_entries()->CopyFrom(entry);
-   this->init(coreConnection);
 }
 
 BrowseResult::BrowseResult(
@@ -55,13 +58,10 @@ BrowseResult::BrowseResult(
    bool withRoots,
    int socketTimeout
 ) :
-   IBrowseResult(socketTimeout),
-   peerID(peerID),
-   tag(QRandomGenerator64::global()->generate64())
+   BrowseResult(coreConnection, peerID, socketTimeout)
 {
    this->browseMessage.mutable_dirs()->CopyFrom(entries);
    this->browseMessage.set_get_roots(withRoots);
-   this->init(coreConnection);
 }
 
 void BrowseResult::start()
@@ -73,28 +73,16 @@ void BrowseResult::start()
    if (!this->coreConnection || !this->coreConnection->isConnected())
       return;
 
-   this->browseMessage.mutable_peer_id()->set_hash(this->peerID.getData(), Common::Hash::HASH_SIZE);
    this->waitingForResult = true;
    this->coreConnection->send(Common::MessageHeader::GUI_BROWSE, this->browseMessage);
 }
 
 void BrowseResult::browseResult(const Protos::GUI::BrowseResult& browseResult)
 {
-   if (this->waitingForResult && !this->isTimedout() && browseResult.tag() == this->tag) // Is this message for us?
+   if (this->waitingForResult && !this->isTimedout() && browseResult.tag() == this->browseMessage.tag()) // Is this message for us?
    {
       this->waitingForResult = false;
       this->stopTimer();
       emit result(browseResult.entries());
    }
-}
-
-void BrowseResult::init(InternalCoreConnection* coreConnection)
-{
-   this->coreConnection = coreConnection;
-   this->browseMessage.set_tag(this->tag);
-   connect(coreConnection, &InternalCoreConnection::disconnected, this, [this] {
-      this->coreConnection.clear();
-      this->waitingForResult = false;
-   });
-   connect(this->coreConnection.data(), &InternalCoreConnection::browseResult, this, &BrowseResult::browseResult);
 }

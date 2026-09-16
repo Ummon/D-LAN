@@ -23,8 +23,6 @@ using namespace RCC;
 
 #include <Protos/gui_protocol.pb.h>
 
-#include <Common/ProtoHelper.h>
-
 #include <priv/InternalCoreConnection.h>
 
 SearchResult::SearchResult(InternalCoreConnection* coreConnection, const Protos::Common::FindPattern& findPattern, bool local, int socketTimeout) :
