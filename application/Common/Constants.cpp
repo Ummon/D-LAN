@@ -19,7 +19,7 @@
 #include <Common/Constants.h>
 using namespace Common;
 
-const quint32 Constants::PROTOCOL_VERSION { 4 };
+const quint32 Constants::PROTOCOL_VERSION { 5 };
 
 const quint16 Constants::DEFAULT_CORE_REMOTE_CONTROL_PORT { 59485 };
 

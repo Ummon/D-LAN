@@ -27,6 +27,7 @@ namespace Common
    public:
       // 2 -> 3 : BLAKE -> Sha-1
       // 3 -> 4 : New chat protocol + changes of the 'GET_ENTRIES_RESULT' message. (Breaking compatible with previous versions).
+      // 4 -> 5 : Not sending all trailing empty chunks when browsing or searching break the compatibilty with the 1.2 branch.
       static const quint32 PROTOCOL_VERSION;
 
       static const quint16 DEFAULT_CORE_REMOTE_CONTROL_PORT;
