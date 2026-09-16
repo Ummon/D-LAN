@@ -23,6 +23,7 @@
 #include <optional>
 #include <span>
 #include <string>
+#include <utility>
 
 #include <QHash>
 #include <QString>
@@ -47,6 +48,7 @@ namespace Common
      * @remarks Its observable behaviour must stay identical to the one of 'Hash_noShare', both are the same
      *          type for the rest of the application. In particular the hash values must be the same, thus
      *          the same hash function is used.
+     * @remarks The value of a moved-from hash is unspecified: it is null here while 'Hash_noShare' keeps its value.
      */
    class Hash
    {
@@ -123,13 +125,7 @@ namespace Common
          return stream;
 
       if (memcmp(Hash::NULL_HASH, data, Hash::HASH_SIZE) == 0)
-      {
-         if (hash.data)
-         {
-            hash.dereference();
-            hash.data = nullptr;
-         }
-      }
+         hash.dereference();
       else if (!hash.data || memcmp(hash.data->hash, data, Hash::HASH_SIZE) != 0)
       {
          // Construct the replacement before releasing the current reference: allocation may throw.
@@ -198,12 +194,13 @@ namespace Common
 }
 
 /**
-  * Removes the reference to the pointed data if it exists.
+  * Removes the reference to the pointed data if it exists, the hash becomes null.
   */
 inline void Common::Hash::dereference()
 {
    if (this->data && --this->data->nbRef == 0)
       delete this->data;
+   this->data = nullptr;
 }
 
 inline void Common::Hash::newData()
@@ -214,8 +211,5 @@ inline void Common::Hash::newData()
 inline void Common::Hash::releaseDataIfNull()
 {
    if (this->data && memcmp(this->data->hash, NULL_HASH, HASH_SIZE) == 0)
-   {
       this->dereference();
-      this->data = nullptr;
-   }
 }

@@ -54,10 +54,9 @@ Hash::Hash(const Hash& h) noexcept
       ++this->data->nbRef;
 }
 
-Hash::Hash(Hash&& h) noexcept
+Hash::Hash(Hash&& h) noexcept :
+   data(std::exchange(h.data, nullptr))
 {
-   this->data = h.data;
-   h.data = nullptr;
 }
 
 /**
@@ -131,7 +130,7 @@ Hash::~Hash()
   */
 Hash& Hash::operator=(const Hash& h)
 {
-   if (&h != this && h.data != this->data)
+   if (h.data != this->data)
    {
       this->dereference();
       this->data = h.data;
@@ -141,9 +140,16 @@ Hash& Hash::operator=(const Hash& h)
    return *this;
 }
 
+/**
+  * Take the data of another hash, 'h' becomes null.
+  */
 Hash& Hash::operator=(Hash&& h) noexcept
 {
-   std::swap(this->data, h.data);
+   if (&h != this)
+   {
+      this->dereference();
+      this->data = std::exchange(h.data, nullptr);
+   }
    return *this;
 }
 
