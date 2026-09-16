@@ -599,14 +599,6 @@ void InternalCoreConnection::onNewMessage(const Common::Message& message)
       }
       break;
 
-   case Common::MessageHeader::GUI_BROWSE_TAG:
-      if (!this->browseResultsWithoutTag.isEmpty())
-      {
-         if (auto result = this->browseResultsWithoutTag.takeFirst().toStrongRef())
-            result->setTag(message.getMessage<Protos::GUI::Tag>().tag());
-      }
-      break;
-
    case Common::MessageHeader::GUI_BROWSE_RESULT:
       {
          const Protos::GUI::BrowseResult& browseResultMessage = message.getMessage<Protos::GUI::BrowseResult>();
@@ -637,7 +629,6 @@ void InternalCoreConnection::onDisconnected()
 {
    this->authenticated = false;
    this->sendChatMessageResultWithoutReply.clear();
-   this->browseResultsWithoutTag.clear();
    this->searchResultsWithoutTag.clear();
    emit disconnected(this->forcedToClose);
    this->forcedToClose = false;

@@ -81,7 +81,6 @@ namespace Common
          GUI_SEARCH_RESULT =              0x1043,
 
          GUI_BROWSE =                     0x1051,
-         GUI_BROWSE_TAG =                 0x1052,
          GUI_BROWSE_RESULT =              0x1053,
 
          GUI_LOCAL_BROWSE =               0x10F1,

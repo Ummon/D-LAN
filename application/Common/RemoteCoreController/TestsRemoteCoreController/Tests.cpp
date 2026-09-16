@@ -36,6 +36,7 @@ class Tests : public QObject
    QScopedPointer<TestPeer> peer;
    QList<int> results;
    QList<MessageHeader::MessageType> requests;
+   QList<Protos::GUI::Browse> browseRequests;
    Kind kind;
 
    void connectSession()
@@ -46,6 +47,8 @@ class Tests : public QObject
       connect(this->peer.data(), &Common::MessageSocket::newMessage, this, [this](const Common::Message& message) {
          if (message.getHeader().getType() != MessageHeader::GUI_LANGUAGE)
             this->requests << message.getHeader().getType();
+         if (message.getHeader().getType() == MessageHeader::GUI_BROWSE)
+            this->browseRequests << message.getMessage<Protos::GUI::Browse>();
       });
       Protos::GUI::AuthenticationResult auth;
       auth.set_status(Protos::GUI::AuthenticationResult::AUTH_OK);
@@ -90,15 +93,27 @@ class Tests : public QObject
       }
    }
 
-   void tag(quint64 value)
+   void assignSearchTag(quint64 value)
    {
-      if (this->kind == Chat)
+      if (this->kind != Search)
          return;
       QSignalSpy received(&this->connection, &Common::MessageSocket::newMessage);
       Protos::GUI::Tag tag;
       tag.set_tag(value);
-      this->peer->send(this->kind == Browse ? MessageHeader::GUI_BROWSE_TAG : MessageHeader::GUI_SEARCH_TAG, tag);
+      this->peer->send(MessageHeader::GUI_SEARCH_TAG, tag);
       QTRY_COMPARE(received.size(), 1);
+   }
+
+   void replyToRequest(int index)
+   {
+      this->assignSearchTag(index);
+      if (this->kind == Browse)
+      {
+         QVERIFY(index < this->browseRequests.size());
+         this->reply(this->browseRequests[index].tag());
+      }
+      else
+         this->reply(index);
    }
 
    void reply(quint64 value)
@@ -133,6 +148,7 @@ private slots:
       QVERIFY(this->server.listen(QHostAddress::LocalHost));
       this->results.clear();
       this->requests.clear();
+      this->browseRequests.clear();
       this->connectSession();
    }
 
@@ -254,6 +270,60 @@ private slots:
       QVERIFY(!core.isConnected());
    }
 
+   void browseReplies()
+   {
+      this->kind = Browse;
+      const auto peerID = Common::Hash::rand();
+      Protos::Common::Entry entry;
+      entry.set_name("directory");
+      Protos::Common::Entries entries;
+      entries.add_entries()->CopyFrom(entry);
+      const QList<QSharedPointer<RCC::IBrowseResult>> pending {
+         this->connection.browse(peerID, 5000),
+         this->connection.browse(peerID, entry, 5000),
+         this->connection.browse(peerID, entries, true, 5000)
+      };
+      for (int i = 0; i < pending.size(); ++i)
+      {
+         connect(pending[i].data(), &RCC::IBrowseResult::result, this, [this, i] { this->results << i; });
+         pending[i]->start();
+      }
+      QTRY_COMPARE(this->browseRequests.size(), 3);
+      QSet<quint64> tags;
+      for (const auto& request : this->browseRequests)
+      {
+         QCOMPARE(Common::Hash(request.peer_id().hash()), peerID);
+         tags.insert(request.tag());
+      }
+      QCOMPARE(tags.size(), 3);
+      QCOMPARE(this->browseRequests[0].dirs().entries_size(), 0);
+      QCOMPARE(this->browseRequests[1].dirs().entries(0).name(), entry.name());
+      QCOMPARE(this->browseRequests[2].dirs().entries(0).name(), entry.name());
+      QVERIFY(this->browseRequests[2].get_roots());
+      quint64 unknownTag = 0;
+      while (tags.contains(unknownTag))
+         ++unknownTag;
+      this->reply(unknownTag);
+      QVERIFY(this->results.isEmpty());
+      for (int i : {2, 0, 1})
+      {
+         this->replyToRequest(i);
+         this->replyToRequest(i); // Repeated replies must only emit one result.
+      }
+      QCOMPARE(this->results, QList<int>({2, 0, 1}));
+   }
+
+   void browseLateReplyAfterTimeout()
+   {
+      this->kind = Browse;
+      auto pending = this->request(1, 10);
+      this->start(pending);
+      QTRY_COMPARE(this->browseRequests.size(), 1);
+      QTRY_VERIFY(pending->isTimedout());
+      this->replyToRequest(0);
+      QVERIFY(this->results.isEmpty());
+   }
+
    void correlation_data()
    {
       QTest::addColumn<int>("requestKind");
@@ -274,8 +344,7 @@ private slots:
       {
          this->start(second);
          QTRY_COMPARE(this->requests.size(), 1);
-         this->tag(0);
-         this->reply(0);
+         this->replyToRequest(0);
          QCOMPARE(this->results, QList<int>({2}));
          return;
       }
@@ -284,10 +353,8 @@ private slots:
          this->start(second);
          this->start(first);
          QTRY_COMPARE(this->requests.size(), 2);
-         this->tag(0);
-         this->reply(0);
-         this->tag(1);
-         this->reply(1);
+         this->replyToRequest(0);
+         this->replyToRequest(1);
          QCOMPARE(this->results, QList<int>({2, 1}));
          return;
       }
@@ -296,18 +363,24 @@ private slots:
       {
          QTRY_COMPARE(this->requests.size(), 1);
          if (scenario == "tagged-reconnect")
-            this->tag(0);
+            this->assignSearchTag(0);
+         const quint64 oldTag = this->kind == Browse ? this->browseRequests[0].tag() : 0;
          // Keep both old request objects alive across a remote disconnect.
          this->peer->close();
          QTRY_VERIFY(!this->connection.isConnected());
          this->connectSession();
          this->requests.clear();
+         this->browseRequests.clear();
          this->start(second); // An unstarted request from the old session must not be sent.
          auto third = this->request(3);
          this->start(third);
          QTRY_COMPARE(this->requests.size(), 1);
-         this->tag(0); // A new core may reuse tags from the previous session.
-         this->reply(0);
+         if (this->kind == Browse)
+         {
+            this->reply(oldTag); // A late reply must not revive the old request.
+            QVERIFY(this->results.isEmpty());
+         }
+         this->replyToRequest(0);
          QCOMPARE(this->results, QList<int>({3}));
          return;
       }
@@ -319,11 +392,9 @@ private slots:
       QTRY_COMPARE(this->requests.size(), 2);
       if (scenario == "discarded" || scenario == "timeout")
          first.clear();
-      this->tag(0);
-      this->reply(0);
+      this->replyToRequest(0);
       QCOMPARE(this->results, scenario == "duplicate" ? QList<int>({1}) : QList<int>());
-      this->tag(1);
-      this->reply(1);
+      this->replyToRequest(1);
       QCOMPARE(this->results, scenario == "duplicate" ? QList<int>({1, 2}) : QList<int>({2}));
    }
 };

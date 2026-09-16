@@ -188,7 +188,6 @@ namespace RCC
       int nbRetries;
 
       QList<QWeakPointer<SendChatMessageResult>> sendChatMessageResultWithoutReply;
-      QList<QWeakPointer<BrowseResult>> browseResultsWithoutTag;
       QList<QWeakPointer<SearchResult>> searchResultsWithoutTag;
 
       QList<QWeakPointer<LocalBrowseResult>> localBrowseResults;

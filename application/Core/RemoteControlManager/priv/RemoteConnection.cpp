@@ -688,11 +688,6 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
          Common::Hash peerID(browseMessage.peer_id().hash());
          PM::IPeer* peer = this->peerManager->getPeer(peerID);
 
-         const quint64 tag = QRandomGenerator64::global()->generate64();
-         Protos::GUI::Tag tagMess;
-         tagMess.set_tag(tag);
-         this->send(Common::MessageHeader::GUI_BROWSE_TAG, tagMess);
-
          if (peer && peer != this->peerManager->getSelf())
          {
             Protos::Core::GetEntries getEntries;
@@ -706,12 +701,12 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
             if (entries.isNull())
             {
                Protos::GUI::BrowseResult result;
-               result.set_tag(tag);
+               result.set_tag(browseMessage.tag());
                this->send(Common::MessageHeader::GUI_BROWSE_RESULT, result);
                break;
             }
 
-            entries->setProperty("tag", tag);
+            entries->setProperty("tag", QVariant::fromValue<quint64>(browseMessage.tag()));
             connect(entries.data(), &PM::IGetEntriesResult::result, this, &RemoteConnection::getEntriesResult);
             connect(entries.data(), &PM::IGetEntriesResult::timeout, this, &RemoteConnection::getEntriesTimeout);
             this->getEntriesResults << entries;
@@ -732,7 +727,7 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
                   result.add_entries()->CopyFrom(this->fileManager->getEntries());
             }
 
-            result.set_tag(tag);
+            result.set_tag(browseMessage.tag());
             this->send(Common::MessageHeader::GUI_BROWSE_RESULT, result);
          }
       }

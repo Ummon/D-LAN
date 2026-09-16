@@ -237,11 +237,9 @@ message Browse {
    Common.Hash peer_id = 1;
    Common.Entries dirs = 2;
    bool get_roots = 3; // [default = false] If true the roots directories will be appended to the entries result. If the Dir field above is empty then the roots folders will always be sent whatever get_roots is true or false.
+   uint64 tag = 4;
 }
 
-// Core -> GUI (directly)
-// id: 0x1052
-// Tag
 // Core -> GUI (deferred)
 // id: 0x1053
 message BrowseResult {

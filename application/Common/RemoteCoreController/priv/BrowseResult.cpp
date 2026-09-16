@@ -22,8 +22,14 @@ using namespace RCC;
 #include <priv/Log.h>
 #include <priv/InternalCoreConnection.h>
 
-BrowseResult::BrowseResult(InternalCoreConnection* coreConnection, const Common::Hash& peerID, int socketTimeout) :
-   IBrowseResult(socketTimeout), peerID(peerID), tag(0), waitingForResult(false)
+BrowseResult::BrowseResult(
+   InternalCoreConnection* coreConnection,
+   const Common::Hash& peerID,
+   int socketTimeout
+) :
+   IBrowseResult(socketTimeout),
+   peerID(peerID),
+   tag(QRandomGenerator64::global()->generate64())
 {
    this->init(coreConnection);
 }
@@ -34,7 +40,9 @@ BrowseResult::BrowseResult(
    const Protos::Common::Entry& entry,
    int socketTimeout
 ) :
-   IBrowseResult(socketTimeout), peerID(peerID), tag(0), waitingForResult(false)
+   IBrowseResult(socketTimeout),
+   peerID(peerID),
+   tag(QRandomGenerator64::global()->generate64())
 {
    this->browseMessage.mutable_dirs()->add_entries()->CopyFrom(entry);
    this->init(coreConnection);
@@ -47,7 +55,9 @@ BrowseResult::BrowseResult(
    bool withRoots,
    int socketTimeout
 ) :
-   IBrowseResult(socketTimeout), peerID(peerID), tag(0), waitingForResult(false)
+   IBrowseResult(socketTimeout),
+   peerID(peerID),
+   tag(QRandomGenerator64::global()->generate64())
 {
    this->browseMessage.mutable_dirs()->CopyFrom(entries);
    this->browseMessage.set_get_roots(withRoots);
@@ -63,23 +73,16 @@ void BrowseResult::start()
    if (!this->coreConnection || !this->coreConnection->isConnected())
       return;
 
-   this->coreConnection->browseResultsWithoutTag << this->sharedFromThis().toWeakRef();
-
    this->browseMessage.mutable_peer_id()->set_hash(this->peerID.getData(), Common::Hash::HASH_SIZE);
-   this->coreConnection->send(Common::MessageHeader::GUI_BROWSE, this->browseMessage);
-}
-
-void BrowseResult::setTag(quint64 tag)
-{
-   this->tag = tag;
    this->waitingForResult = true;
+   this->coreConnection->send(Common::MessageHeader::GUI_BROWSE, this->browseMessage);
 }
 
 void BrowseResult::browseResult(const Protos::GUI::BrowseResult& browseResult)
 {
-   if (this->waitingForResult && browseResult.tag() == this->tag) // Is this message for us?
+   if (this->waitingForResult && !this->isTimedout() && browseResult.tag() == this->tag) // Is this message for us?
    {
-      this->waitingForResult = false; // To avoid multi emit (should not occurs).
+      this->waitingForResult = false;
       this->stopTimer();
       emit result(browseResult.entries());
    }
@@ -88,6 +91,7 @@ void BrowseResult::browseResult(const Protos::GUI::BrowseResult& browseResult)
 void BrowseResult::init(InternalCoreConnection* coreConnection)
 {
    this->coreConnection = coreConnection;
+   this->browseMessage.set_tag(this->tag);
    connect(coreConnection, &InternalCoreConnection::disconnected, this, [this] {
       this->coreConnection.clear();
       this->waitingForResult = false;

@@ -42,7 +42,6 @@ namespace RCC
       BrowseResult(InternalCoreConnection* coreConnection, const Common::Hash& peerID, const Protos::Common::Entry& entry, int socketTimeout);
       BrowseResult(InternalCoreConnection* coreConnection, const Common::Hash& peerID, const Protos::Common::Entries& entries, bool withRoots, int socketTimeout);
       void start();
-      void setTag(quint64 tag);
 
    private slots:
       void browseResult(const Protos::GUI::BrowseResult& browseResult);
@@ -55,12 +54,7 @@ namespace RCC
       const Common::Hash peerID;
       Protos::GUI::Browse browseMessage;
 
-      quint64 tag;
-
-      /**
-        * 'tag' alone can't say whether a message is ours: 0 is both its initial value and a tag the core
-        * may legitimately send. Set by 'setTag(..)' and cleared once the result has been emitted.
-        */
-      bool waitingForResult;
+      const quint64 tag;
+      bool waitingForResult = false;
    };
 }

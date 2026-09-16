@@ -89,19 +89,20 @@ private slots:
       request.mutable_peer_id()->set_hash(id.getData(), Common::Hash::HASH_SIZE);
       socket->output.clear();
       for (int i = 0; i < 32; ++i)
+      {
+         request.set_tag(0xFEDCBA9876543200ULL + i);
          socket->receive(Common::MessageHeader::GUI_BROWSE, request);
+      }
       QCOMPARE(peers->peer.requests, 32);
-      QCOMPARE(socket->messages().size(), 32); // Tags only; all peer requests are pending.
-      const auto firstTag = socket->messages()[0].getMessage<Protos::GUI::Tag>().tag();
-      socket->output.clear();
+      QVERIFY(socket->messages().isEmpty()); // No acknowledgement; all peer requests are pending.
+      request.set_tag(0xFEDCBA9876543220ULL);
       socket->receive(Common::MessageHeader::GUI_BROWSE, request);
       QCOMPARE(peers->peer.requests, 32); // Reject before allocating another peer request/socket.
       auto messages = socket->messages();
-      QCOMPARE(messages.size(), 2);
-      QCOMPARE(messages[0].getHeader().getType(), Common::MessageHeader::GUI_BROWSE_TAG);
-      QCOMPARE(messages[1].getHeader().getType(), Common::MessageHeader::GUI_BROWSE_RESULT);
-      QCOMPARE(messages[1].getMessage<Protos::GUI::BrowseResult>().tag(), messages[0].getMessage<Protos::GUI::Tag>().tag());
-      QCOMPARE(messages[1].getMessage<Protos::GUI::BrowseResult>().entries_size(), 0);
+      QCOMPARE(messages.size(), 1);
+      QCOMPARE(messages[0].getHeader().getType(), Common::MessageHeader::GUI_BROWSE_RESULT);
+      QCOMPARE(messages[0].getMessage<Protos::GUI::BrowseResult>().tag(), request.tag());
+      QCOMPARE(messages[0].getMessage<Protos::GUI::BrowseResult>().entries_size(), 0);
 
       socket->output.clear();
       auto first = peers->peer.entries[0].toStrongRef();
@@ -111,10 +112,13 @@ private slots:
       else
       {
          first->complete();
+         QCOMPARE(socket->messages().size(), 1);
          const auto result = socket->messages()[0].getMessage<Protos::GUI::BrowseResult>();
-         QCOMPARE(result.tag(), firstTag);
+         QCOMPARE(result.tag(), quint64(0xFEDCBA9876543200ULL));
          QCOMPARE(result.entries(0).entries(0).name(), std::string("test entry"));
       }
+      if (timeout)
+         QVERIFY(socket->messages().isEmpty());
       first.clear();
       QVERIFY(peers->peer.entries[0].isNull());
       socket->receive(Common::MessageHeader::GUI_BROWSE, request);
@@ -145,11 +149,54 @@ private slots:
       request.mutable_peer_id()->set_hash(id.getData(), Common::Hash::HASH_SIZE);
       for (int i = 0; i < 40; ++i)
       {
+         socket->output.clear();
+         request.set_tag(i == 0 ? 0 : std::numeric_limits<quint64>::max() - i);
          socket->receive(Common::MessageHeader::GUI_BROWSE, request);
          QCOMPARE(peers->peer.requests, i + 1);
          if (mode != 3)
             QVERIFY(peers->peer.entries.last().isNull());
+         const auto messages = socket->messages();
+         QCOMPARE(messages.size(), mode == 2 ? 0 : 1);
+         if (mode != 2)
+         {
+            QCOMPARE(messages[0].getHeader().getType(), Common::MessageHeader::GUI_BROWSE_RESULT);
+            const auto result = messages[0].getMessage<Protos::GUI::BrowseResult>();
+            QCOMPARE(result.tag(), request.tag());
+            QCOMPARE(result.entries_size(), mode == 1 ? 1 : 0);
+         }
       }
+   }
+
+   void immediateBrowse_data()
+   {
+      QTest::addColumn<bool>("self");
+      QTest::addColumn<quint64>("tag");
+      for (bool self : {false, true})
+         for (quint64 tag : {quint64(0), std::numeric_limits<quint64>::max()})
+            QTest::newRow(qPrintable(QString("%1-%2").arg(self ? "self" : "unknown").arg(tag))) << self << tag;
+   }
+
+   void immediateBrowse()
+   {
+      QFETCH(bool, self);
+      QFETCH(quint64, tag);
+      auto peers = QSharedPointer<BrowsePeerManager>::create();
+      auto* socket = new BufferedSocket;
+      QScopedPointer<RCM::RemoteConnection> connection(this->newConnection(socket, {}, peers));
+      connection->startListening();
+      socket->output.clear();
+      Protos::GUI::Browse request;
+      const auto id = self ? peers->getSelf()->getID() : Common::Hash::rand();
+      request.mutable_peer_id()->set_hash(id.getData(), Common::Hash::HASH_SIZE);
+      request.set_tag(tag);
+      socket->receive(Common::MessageHeader::GUI_BROWSE, request);
+      const auto messages = socket->messages();
+      QCOMPARE(messages.size(), 1);
+      QCOMPARE(messages[0].getHeader().getType(), Common::MessageHeader::GUI_BROWSE_RESULT);
+      const auto result = messages[0].getMessage<Protos::GUI::BrowseResult>();
+      QCOMPARE(result.tag(), tag);
+      QCOMPARE(result.entries_size(), self ? 1 : 0);
+      QCOMPARE(peers->peer.requests, 0);
    }
 
    void malformedPasswordChange_data()
