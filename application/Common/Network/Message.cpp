@@ -64,7 +64,7 @@ int Message::writeMessageToDevice(QIODevice* ioDevice, const MessageHeader& head
    if (message)
    {
       ZeroCopyOutputStreamQIODevice outputStream(ioDevice);
-      if (!message->SerializeToZeroCopyStream(&outputStream))
+      if (!message->SerializeToZeroCopyStream(&outputStream) || !outputStream.Flush())
          return 0;
    }
 

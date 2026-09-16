@@ -25,62 +25,57 @@ using namespace Common;
   * @class Common::ZeroCopyOutputStreamQIODevice
   *
   * A bridge to write data to a QIODevice from a google::protobuf::message.
-  * Warning : The data will be effectively written when the object is destroyed.
+  * The device must outlive the stream. Pending data is written by Flush() or destruction;
+  * callers must check Flush() to detect errors in the final write.
   */
 
 ZeroCopyOutputStreamQIODevice::ZeroCopyOutputStreamQIODevice(QIODevice* device) :
-   device(device), buffer(new char[Constants::PROTOBUF_STREAMING_BUFFER_SIZE]), bytesWritten(0)
+   writer(device), adapter(&this->writer, Constants::PROTOBUF_STREAMING_BUFFER_SIZE)
 {
-   this->pos = this->buffer;
+   Q_ASSERT(device);
 }
 
-ZeroCopyOutputStreamQIODevice::~ZeroCopyOutputStreamQIODevice()
+bool ZeroCopyOutputStreamQIODevice::DeviceWriter::Write(const void* buffer, int size)
 {
-   if (this->pos != this->buffer)
-      this->device->write(this->buffer, this->pos - this->buffer);
-   delete[] this->buffer;
-}
+   if (this->failed)
+      return false;
 
-bool ZeroCopyOutputStreamQIODevice::Next(void** data, int* size)
-{
-   if (this->pos != this->buffer)
+   const char* data = static_cast<const char*>(buffer);
+   while (size > 0)
    {
-      int nBytes = this->device->write(this->buffer, this->pos - this->buffer);
-      if (nBytes == -1)
-         return false;
-
-      this->bytesWritten += nBytes;
-
-      // The whole buffer is expected to be written. If not the stream can't be used any further,
-      // 'false' tells the caller the serialization has failed.
-      if (nBytes != this->pos - this->buffer)
+      const qint64 written = this->device->write(data, size);
+      if (written <= 0)
       {
-         this->pos = this->buffer;
+         this->failed = true;
          return false;
       }
 
-      this->pos = this->buffer;
+      data += written;
+      size -= static_cast<int>(written);
    }
-
-   *data = this->buffer;
-   *size = Constants::PROTOBUF_STREAMING_BUFFER_SIZE;
-
-   this->pos = this->buffer + Constants::PROTOBUF_STREAMING_BUFFER_SIZE;
 
    return true;
 }
 
+bool ZeroCopyOutputStreamQIODevice::Next(void** data, int* size)
+{
+   // Some protobuf versions can return a new buffer after a failed flush.
+   return !this->writer.failed && this->adapter.Next(data, size);
+}
+
 void ZeroCopyOutputStreamQIODevice::BackUp(int count)
 {
-   this->pos -= count;
-
-   if (this->pos < this->buffer)
-      this->pos = this->buffer;
+   this->adapter.BackUp(count);
 }
 
 google::protobuf::int64 ZeroCopyOutputStreamQIODevice::ByteCount() const
 {
-   return this->bytesWritten;
+   return this->adapter.ByteCount();
+}
+
+bool ZeroCopyOutputStreamQIODevice::Flush()
+{
+   return this->adapter.Flush();
 }
 
 /**
