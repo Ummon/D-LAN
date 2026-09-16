@@ -18,6 +18,13 @@ def "main build-all" [
     main make-setup
 }
 
+# Update Common/Version.h:
+# - git revision to HEAD
+# - Date and time
+def "main update-version" [] {
+   update_version
+}
+
 # Update the .ts translation files which can be edited with Qt Linguist.
 #
 # It will then generate the compiled files .qm.
@@ -54,7 +61,7 @@ def "main compile" [
 
     print $"Release directory: ($release_directory)"
 
-    update_version
+    # update_version Need to be done manually now.
 
     # To force to recompile the Common/Version.rs and DialogAbout.
     # rm -f build/release/GUI/CMakeFiles/DLanGUI.dir/__/Common/version.rc.obj
