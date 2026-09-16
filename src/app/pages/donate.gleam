@@ -8,8 +8,19 @@ pub fn page(ctx: web.Context) -> element.Element(a) {
   let href_attr =
     attr.href("http://blockchain.info/address/" <> bitcoin_address())
   html.div([attr.id("content"), attr.class("donate")], [
-    html.h2([], [tr.donate_title(ctx.lang)]),
+    html.h1([], [tr.donate_title(ctx.lang)]),
     html.p([], [tr.donate_intro(ctx.lang)]),
+    html.h2([], [tr.donate_buy_me_a_coffee(ctx.lang)]),
+    html.div([attr.class("box"), attr.id("buy-me-a-coffee")], [
+      html.a([attr.href("https://www.buymeacoffee.com/d_lan")], [
+        html.img([
+          attr.src(
+            "https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=d_lan&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff",
+          ),
+        ]),
+      ]),
+    ]),
+    html.h2([], [html.text("Bitcoin")]),
     html.div([attr.class("box")], [
       html.a([attr.href("http://www.bitcoin.org")], [
         html.img([
@@ -36,6 +47,8 @@ pub fn page(ctx: web.Context) -> element.Element(a) {
     ]),
   ])
 }
+
+// https://buymeacoffee.com/d_lan
 
 fn bitcoin_address() {
   "1Hw2RGLAfhnbXhYPPPR4auSAv9pxVvzwCP"

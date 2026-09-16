@@ -1161,6 +1161,20 @@ pub fn donate_intro(l: Lang) -> element.Element(a) {
   |> html.text
 }
 
+pub fn donate_buy_me_a_coffee(l: Lang) -> element.Element(a) {
+  case l {
+    En -> "Buy me a coffee"
+    Fr -> "Offrez-moi un café"
+    De -> "Spendieren Sie mir einen Kaffee"
+    Es -> "Invíteme a un café"
+    It -> "Offritemi un caffè"
+    Ru -> "Угостите меня кофе"
+    Ko -> "커피 한 잔 사 주세요"
+    Ja -> "コーヒーを一杯おごってください"
+  }
+  |> html.text
+}
+
 pub fn donate_bitcoin_address(l: Lang) -> element.Element(a) {
   case l {
     En -> "Bitcoin address: "
