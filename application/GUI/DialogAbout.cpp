@@ -37,7 +37,7 @@ DialogAbout::DialogAbout(QWidget *parent) :
    this->ui->svgLogo->load(QStringLiteral(":/icons/resources/logo.svg"));
    this->ui->svgLogo->renderer()->setAspectRatioMode(Qt::KeepAspectRatio);
 
-   this->setWindowFlags(this->windowFlags() & (~Qt::WindowContextHelpButtonHint));
+   this->setWindowFlags(this->windowFlags() & (~Qt::WindowContextHelpButtonHint) | Qt::WindowMaximizeButtonHint);
 
    QDateTime buildTime = QDateTime::fromString(BUILD_TIME, "yyyy-MM-dd_hh-mm");
 
