@@ -130,9 +130,8 @@ namespace Common
       }
       else if (!hash.data || memcmp(hash.data->hash, data, Hash::HASH_SIZE) != 0)
       {
-         hash.dereference();
-         hash.newData();
-         memcpy(hash.data->hash, data, Hash::HASH_SIZE);
+         // Construct the replacement before releasing the current reference: allocation may throw.
+         hash = Hash(data);
       }
 
       return stream;
