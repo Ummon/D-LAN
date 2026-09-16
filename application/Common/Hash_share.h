@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include <atomic>
 #include <cstring>
 #include <optional>
 #include <span>
@@ -40,8 +41,9 @@ namespace Common
      * The alternative implementation of 'Hash', selected with 'SHARED_DATA' in "Hash.h".
      * The hash data is shared between the copies instead of being embedded in each object.
      *
-     * @remarks The reference counter isn't atomic: unlike 'Hash_noShare', an object of this implementation
-     *          must not be copied from two threads at the same time.
+     * @remarks Distinct objects sharing hash data may be used concurrently, including copying and destruction.
+     *          Reading or copying the same object concurrently is safe; modifying or destroying it while
+     *          another thread accesses it requires external synchronization.
      * @remarks Its observable behaviour must stay identical to the one of 'Hash_noShare', both are the same
      *          type for the rest of the application. In particular the hash values must be the same, thus
      *          the same hash function is used.
@@ -104,7 +106,7 @@ namespace Common
 
       struct SharedData
       {
-         int nbRef;
+         std::atomic<int> nbRef { 1 };
          char hash[HASH_SIZE];
       };
 
@@ -200,18 +202,13 @@ namespace Common
   */
 inline void Common::Hash::dereference()
 {
-   if (this->data)
-   {
-      this->data->nbRef -= 1;
-      if (this->data->nbRef == 0)
-         delete this->data;
-   }
+   if (this->data && this->data->nbRef.fetch_sub(1, std::memory_order_acq_rel) == 1)
+      delete this->data;
 }
 
 inline void Common::Hash::newData()
 {
    this->data = new SharedData;
-   this->data->nbRef = 1;
 }
 
 inline void Common::Hash::releaseDataIfNull()
