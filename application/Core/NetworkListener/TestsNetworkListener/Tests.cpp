@@ -320,6 +320,10 @@ void Tests::peerDiscovery()
 
 void Tests::multicastOnLANInterface()
 {
+#if !DEBUG
+   QSKIP("The multicast loopback is only enabled in debug; this test sends and receives on the same host");
+#endif
+
    const QString originalAddress = SETTINGS.get<QString>("listen_address");
    const auto restore = qScopeGuard([&]() { SETTINGS.set("listen_address", originalAddress); });
    SETTINGS.set("listen_address", QString());
