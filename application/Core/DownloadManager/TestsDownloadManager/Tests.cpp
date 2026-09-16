@@ -280,7 +280,10 @@ void Tests::customFileDestination()
    Protos::Queue::Queue::Entry saved;
    static_cast<Download*>(manager.getDownloads().last())->populateQueueEntry(&saved);
    QCOMPARE(saved.local_entry().shared_entry().path(), second.filePath("selected.txt").toStdString());
-   QCOMPARE(saved.remote_entry().SerializeAsString(), remote.SerializeAsString());
+   Protos::Common::Entry expectedRemote(remote);
+   if (!empty)
+      expectedRemote.add_chunks(); // The download restores the unknown chunk slot.
+   QCOMPARE(saved.remote_entry().SerializeAsString(), expectedRemote.SerializeAsString());
 }
 
 void Tests::customDirectoryDestination_data()
@@ -627,6 +630,58 @@ void Tests::validateChunkResponse()
       QCOMPARE(finished.count(), 1);
    }
    downloader->stop();
+}
+
+void Tests::downloadWithOmittedHashes_data()
+{
+   QTest::addColumn<int>("knownChunks");
+   QTest::newRow("empty-list") << 0;
+   QTest::newRow("known-prefix") << 8;
+}
+
+void Tests::downloadWithOmittedHashes()
+{
+   QFETCH(int, knownChunks);
+   HashPeer peer(this->fileManager);
+   LinkedPeers links;
+   OccupiedPeers asking, downloading;
+   Common::ThreadPool pool(1);
+   Common::TransferRateCalculator rate;
+   Protos::Common::Entry entry;
+   entry.set_type(Protos::Common::Entry::FILE);
+   entry.set_name("omitted-hashes.bin");
+   entry.set_size(quint64(9) * Common::Constants::CHUNK_SIZE + 1);
+   for (int i = 0; i < knownChunks; ++i)
+   {
+      const auto hash = Common::Hash::rand();
+      entry.add_chunks()->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
+   }
+   FileDownload download(this->fileManager, links, asking, downloading, pool, &peer, entry, entry,
+      rate, Protos::Queue::Queue::Entry::QUEUED);
+   QVERIFY(download.retrieveHashes());
+   QCOMPARE(peer.requestedEntry.chunks_size(), 10);
+   for (int i = 0; i < 10; ++i)
+      QCOMPARE(peer.requestedEntry.chunks(i).hash(),
+         i < knownChunks ? entry.chunks(i).hash() : std::string());
+
+   for (int i = knownChunks; i < 10; ++i)
+   {
+      const auto hash = Common::Hash::rand();
+      Protos::Core::HashResult result;
+      result.set_num(i);
+      result.mutable_hash()->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
+      emit peer.hashes->nextHash(result);
+      Protos::Queue::Queue::Entry saved;
+      download.populateQueueEntry(&saved);
+      QCOMPARE(saved.remote_entry().chunks_size(), 10);
+      QCOMPARE(saved.local_entry().chunks_size(), 10);
+      QCOMPARE(saved.remote_entry().chunks(i).hash(), result.hash().hash());
+      QCOMPARE(saved.local_entry().chunks(i).hash(), result.hash().hash());
+   }
+   QVERIFY(asking.isPeerFree(&peer));
+   QList<QSharedPointer<IChunkDownloader>> chunks;
+   download.getUnfinishedChunks(chunks, 10, false);
+   QCOMPARE(chunks.size(), 10);
 }
 
 void Tests::rejectInvalidChunkHashes_data()

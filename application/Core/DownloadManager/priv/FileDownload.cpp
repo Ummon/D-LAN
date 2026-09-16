@@ -64,9 +64,15 @@ FileDownload::FileDownload(
    // Invalid hashes are unknown, not occupied chunk slots. Normalize both entries so requests,
    // file creation and queue persistence cannot reuse malformed data.
    for (auto* entry : { &this->remoteEntry, &this->localEntry })
+   {
+      // Search results may omit trailing unknown hashes. Restore their slots for
+      // hash requests and for saving hashes received later at their chunk indices.
+      while (entry->chunks_size() < this->NB_CHUNK)
+         entry->add_chunks();
       for (auto& chunk : *entry->mutable_chunks())
          if (chunk.hash().size() != Common::Hash::HASH_SIZE || Common::Hash(chunk.hash()).isNull())
             chunk.clear_hash();
+   }
 
    L_DEBU(QString("New FileDownload: peer source = %1, remoteEntry: \n%2\nlocalEntry: \n%3").
       arg(

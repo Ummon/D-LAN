@@ -69,6 +69,8 @@ private slots:
    void chunkErrorTakesPrecedence();
    void rejectInvalidChunkHashes_data();
    void rejectInvalidChunkHashes();
+   void downloadWithOmittedHashes_data();
+   void downloadWithOmittedHashes();
    void validateChunkResponse_data();
    void validateChunkResponse();
    void directoryBecomesEmpty_data();

@@ -288,8 +288,12 @@ void File::populateEntry(Protos::Common::Entry* entry, bool setSharedDir, int ma
       Protos::Common::Hash* protoHash = entry->add_chunks();
 
       Common::Hash hash = i.next()->getHash();
-      if (!hash.isNull() && ++nb <= maxHashes)
+      if (!hash.isNull())
+      {
          protoHash->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
+         if (++nb >= maxHashes)
+            break;
+      }
    }
 }
 
