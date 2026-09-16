@@ -492,7 +492,7 @@ QString Global::getCurrentMachineName()
    if (gethostname(machineName, sizeof(machineName)) != 0)
       return QString();
 
-   machineName[sizeof(machineName) - 1] = ' '; // 'gethostname' may not null terminate a truncated name.
+   machineName[sizeof(machineName) - 1] = '\0'; // 'gethostname' may not null terminate a truncated name.
    return QString::fromUtf8(machineName);
 #else
    return "Bob";
