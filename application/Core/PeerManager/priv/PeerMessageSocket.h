@@ -106,7 +106,7 @@ namespace PM
       void close() override;
 
    signals:
-      void getChunks(QList<GetChunkParams>, PM::PeerMessageSocket*);
+      void getChunks(QList<PM::GetChunkParams>, PM::PeerMessageSocket*);
       void becomeIdle(PM::PeerMessageSocket*);
 
       /**

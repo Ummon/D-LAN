@@ -651,8 +651,10 @@ void PeerMessageSocket::onDisconnected()
 
 void PeerMessageSocket::initUnactiveTimer()
 {
+   static const quint32 IDLE_SOCKET_TIMEOUT = SETTINGS.get<quint32>("idle_socket_timeout");
+
    this->inactiveTimer.setSingleShot(true);
-   this->inactiveTimer.setInterval(SETTINGS.get<quint32>("idle_socket_timeout"));
+   this->inactiveTimer.setInterval(IDLE_SOCKET_TIMEOUT);
    connect(&this->inactiveTimer, &QTimer::timeout, this, &PeerMessageSocket::close);
    // Not started here: 'startListening()' owns the timer and is called right after the socket is built,
    // see 'ConnectionPool::addNewSocket(..)'.
