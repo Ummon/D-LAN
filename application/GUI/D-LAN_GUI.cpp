@@ -21,6 +21,10 @@ using namespace GUI;
 
 #include <QMessageBox>
 #include <QPushButton>
+#ifdef Q_OS_LINUX
+#include <QDir>
+#include <QStandardPaths>
+#endif
 
 #include <Common/LogManager/Builder.h>
 #include <Common/Constants.h>
@@ -30,7 +34,9 @@ using namespace GUI;
 
 #include <Log.h>
 
+#ifndef Q_OS_LINUX
 const QString D_LAN_GUI::SHARED_MEMORY_KEYNAME("D-LAN GUI instance");
+#endif
 
 /**
   * @class GUI::D_LAN_GUI
@@ -63,17 +69,33 @@ D_LAN_GUI::D_LAN_GUI(int& argc, char* argv[]) :
    Common::Languages langs(QCoreApplication::applicationDirPath() + "/" + Common::Constants::LANGUAGE_DIRECTORY);
    this->loadLanguage(langs.getBestMatchLanguage(Common::Languages::ExeType::GUI, current).filename);
 
-   // If multiple instance isn't allowed we will test if a particular
-   // shared memory segment already exists. There is actually no
-   // easy way to bring the already existing GUI windows to the front without
-   // dirty polling.
-   // Under linux the flag may persist after process crash.
-#ifndef Q_OS_LINUX
+   // Keep the instance marker alive for the lifetime of the application.
    if (!SETTINGS.get<bool>("multiple_instance_allowed"))
    {
+#ifdef Q_OS_LINUX
+      const QString runtimeDirectory = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
+      bool alreadyRunning = false;
+      if (runtimeDirectory.isEmpty())
+         L_WARN("Unable to check for another GUI instance: no runtime directory available");
+      else
+      {
+         this->instanceLock.reset(new QLockFile(QDir(runtimeDirectory).filePath("d-lan-gui.lock")));
+         // A running GUI must never lose its lock due to its age. QLockFile still
+         // detects dead processes and removes their stale locks after a crash.
+         this->instanceLock->setStaleLockTime(0);
+         if (!this->instanceLock->tryLock())
+         {
+            alreadyRunning = this->instanceLock->error() == QLockFile::LockFailedError;
+            if (!alreadyRunning)
+               L_WARN(QString("Unable to check for another GUI instance: lock error %1").arg(this->instanceLock->error()));
+         }
+      }
+#else
       this->sharedMemory.lock();
       this->sharedMemory.setKey(SHARED_MEMORY_KEYNAME);
-      if (!this->sharedMemory.create(1))
+      const bool alreadyRunning = !this->sharedMemory.create(1);
+#endif
+      if (alreadyRunning)
       {
          QMessageBox message;
          message.setWindowTitle(QObject::tr("D-LAN already launched"));
@@ -84,15 +106,18 @@ D_LAN_GUI::D_LAN_GUI(int& argc, char* argv[]) :
          message.exec();
          if (message.clickedButton() == abortButton)
          {
+#ifndef Q_OS_LINUX
             this->sharedMemory.unlock();
+#endif
             QSharedPointer<LM::ILogger> mainLogger = LM::Builder::newLogger("D-LAN GUI");
             mainLogger->log("User interface already launched, exiting . . .", LM::SV_END_USER);
             throw AbortException();
          }
       }
+#ifndef Q_OS_LINUX
       this->sharedMemory.unlock();
-   }
 #endif
+   }
 
    this->setQuitOnLastWindowClosed(false);
 
