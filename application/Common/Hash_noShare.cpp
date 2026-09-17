@@ -82,19 +82,19 @@ Hash::Hash(const char* h)
   */
 Hash::Hash(const std::string& str)
 {
-   memcpy(this->data, static_cast<int>(str.size()) != HASH_SIZE ? NULL_HASH : str.data(), HASH_SIZE);
+   memcpy(this->data, str.size() != HASH_SIZE ? NULL_HASH : str.data(), HASH_SIZE);
 }
 
 /**
   * Build a new hash from a QByteArray.
-  * 'a' must have a length equal or bigger to HASH_SIZE!
+  * 'a' must have a length of exactly HASH_SIZE.
   * The data are copied, no pointer is kept to 'a'.
   */
 Hash::Hash(const QByteArray& a)
 {
    Q_ASSERT_X(a.size() == HASH_SIZE, "Hash::Hash", QString("The given QByteArray must have a size of %1").arg(HASH_SIZE).toUtf8().constData());
 
-   memcpy(this->data, a.isNull() || a.size() != HASH_SIZE ? NULL_HASH : a.constData(), HASH_SIZE);
+   memcpy(this->data, a.size() != HASH_SIZE ? NULL_HASH : a.constData(), HASH_SIZE);
 }
 
 /**
