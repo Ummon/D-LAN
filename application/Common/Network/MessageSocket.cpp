@@ -20,6 +20,7 @@
 using namespace Common;
 
 #include <QPointer>
+#include <QScopeGuard>
 
 #include <Protos/common.pb.h>
 #include <Protos/core_protocol.pb.h>
@@ -220,9 +221,19 @@ bool MessageSocket::isListening() const
   */
 void MessageSocket::dataReceivedSlot()
 {
+   // A callback can restart listening or trigger readyRead synchronously. Let the
+   // active loop finish dispatching this message before reading the next frame.
+   if (this->processingData)
+      return;
+
+   this->processingData = true;
    // 'onNewDataReceived()', 'onNewMessage(..)' and the signal 'newMessage' may delete this object,
    // for instance by closing the connection. Once it happens no member may be accessed anymore.
    const QPointer<MessageSocket> self(this);
+   const auto resetProcessing = qScopeGuard([self] {
+      if (self)
+         self->processingData = false;
+   });
 
    while (!this->socket->atEnd() && this->listening)
    {
@@ -280,8 +291,6 @@ void MessageSocket::dataReceivedSlot()
 
          if (self.isNull())
             return;
-
-         this->currentHeader.setNull();
       }
       else
          return;
@@ -308,6 +317,8 @@ bool MessageSocket::readMessage()
    try
    {
       const Message& message = Message::readMessageBodyFromDevice(this->currentHeader, this->socket);
+      // The frame has been consumed. Commit that state before invoking callbacks.
+      this->currentHeader.setNull();
 
       MESSAGE_SOCKET_LOG_DEBUG(QString("Socket[%1]: Data received from %2, %3\n%4").arg(
          QString::number(this->num),

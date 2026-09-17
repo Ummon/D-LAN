@@ -123,6 +123,7 @@ namespace Common
       const bool remoteIDDefined;
 
       bool listening;
+      bool processingData = false;
 
       MessageHeader currentHeader;
 

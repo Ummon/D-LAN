@@ -48,6 +48,10 @@ add_executable(TestsZeroCopyOutputStreamQIODevice ZeroCopyOutputStreamQIODeviceT
 target_link_libraries(TestsZeroCopyOutputStreamQIODevice PRIVATE Common Qt6::Test)
 add_test(NAME TestsZeroCopyOutputStreamQIODevice COMMAND TestsZeroCopyOutputStreamQIODevice)
 
+add_executable(TestsMessageSocket MessageSocketTests.cpp)
+target_link_libraries(TestsMessageSocket PRIVATE Common Qt6::Test)
+add_test(NAME TestsMessageSocket COMMAND TestsMessageSocket)
+
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
    add_executable(TestsGlobalLinux GlobalLinuxTests.cpp)
    target_link_libraries(TestsGlobalLinux PRIVATE Common Qt6::Test)
