@@ -216,10 +216,9 @@ void D_LAN_GUI::mainWindowClosed()
    }
 
    if (this->coreConnection->isConnected())
-      // TODO: translate?
       this->trayIcon.showMessage(
-         "D-LAN user interface closed",
-         "D-LAN Core is still running in background. Select 'exit' from the contextual menu if you want to stop it."
+         tr("D-LAN user interface closed"),
+         tr("D-LAN Core is still running in background. Select 'exit' from the contextual menu if you want to stop it.")
       );
    this->coreConnection->disconnectFromCore();
 }

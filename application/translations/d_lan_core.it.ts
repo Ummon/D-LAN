@@ -34,7 +34,7 @@
 <context>
     <name>DM::FileDownload</name>
     <message>
-        <location filename="../Core/DownloadManager/priv/FileDownload.cpp" line="509"/>
+        <location filename="../Core/DownloadManager/priv/FileDownload.cpp" line="515"/>
         <source>File completed: %1%2%3</source>
         <translation>File completato: %1%2%3</translation>
     </message>
@@ -50,7 +50,7 @@
 <context>
     <name>PM::PeerSelf</name>
     <message>
-        <location filename="../Core/PeerManager/priv/PeerSelf.cpp" line="44"/>
+        <location filename="../Core/PeerManager/priv/PeerSelf.cpp" line="36"/>
         <source>Our current ID: %1</source>
         <translation>ID attuale: %1</translation>
     </message>

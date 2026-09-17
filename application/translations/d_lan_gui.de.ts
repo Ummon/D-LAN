@@ -166,7 +166,7 @@
         <translation>Ausgewählte Peers durchsuchen</translation>
     </message>
     <message>
-        <location line="+377"/>
+        <location line="+379"/>
         <location line="+62"/>
         <source>Chat</source>
         <translation>Chat</translation>
@@ -183,7 +183,7 @@
 <context>
     <name>GUI::D_LAN_GUI</name>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="+159"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="+184"/>
         <source>Show the user interface</source>
         <translation>Grafische Oberfläche anzeigen</translation>
     </message>
@@ -196,6 +196,16 @@
         <location line="+3"/>
         <source>Exit</source>
         <translation>Beenden</translation>
+    </message>
+    <message>
+        <location line="+30"/>
+        <source>D-LAN user interface closed</source>
+        <translation>Grafische Oberfläche von D-LAN geschlossen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>D-LAN Core is still running in background. Select &apos;exit&apos; from the contextual menu if you want to stop it.</source>
+        <translation>D-LAN Core läuft weiterhin im Hintergrund. Wählen Sie „Beenden“ im Kontextmenü, um ihn zu stoppen.</translation>
     </message>
 </context>
 <context>
@@ -251,7 +261,7 @@
 <context>
     <name>GUI::DownloadsModel</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="+97"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="+98"/>
         <source>Source peer offline (%1)</source>
         <translation>Quellknoten offline (%1)</translation>
     </message>
@@ -642,7 +652,7 @@
 <context>
     <name>GUI::SearchModel</name>
     <message>
-        <location filename="../GUI/Search/SearchModel.cpp" line="+139"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="+138"/>
         <source>Name</source>
         <translation>Name</translation>
     </message>
@@ -667,7 +677,7 @@
         <translation>Größe</translation>
     </message>
     <message>
-        <location line="+222"/>
+        <location line="+232"/>
         <location line="+54"/>
         <source>&lt;unknown&gt;</source>
         <translation>&lt;unbekannt&gt;</translation>
@@ -925,7 +935,7 @@
         <translation>Kern als Dienst gestartet</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="-87"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="-121"/>
         <source>D-LAN already launched</source>
         <translation>D-LAN läuft bereits</translation>
     </message>
