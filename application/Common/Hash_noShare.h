@@ -46,17 +46,10 @@ namespace Common
 
    public:
       Hash() noexcept;
-      Hash(const Hash&) = default;
-      Hash(Hash&&) = default;
 
       explicit Hash(const char* h); // It's too dangerous to construct an implicit Hash from a const char*.
       Hash(const std::string& str);
       Hash(const QByteArray& a);
-
-      ~Hash() = default;
-
-      Hash& operator=(const Hash&) = default;
-      Hash& operator=(Hash&&) = default;
 
       /**
         * Return a pointer to its internal data.
@@ -79,7 +72,6 @@ namespace Common
    private:
       friend QDataStream& operator>>(QDataStream&, Hash&);
       friend QDataStream& operator<<(QDataStream& stream, const Hash& hash);
-      friend bool operator==(const Hash& h1, const Hash& h2) noexcept;
       friend class Hasher;
 
       char data[HASH_SIZE];
@@ -112,11 +104,6 @@ namespace Common
    inline bool operator==(const Hash& h1, const Hash& h2) noexcept
    {
       return memcmp(h1.getData(), h2.getData(), Hash::HASH_SIZE) == 0;
-   }
-
-   inline bool operator!=(const Hash& h1, const Hash& h2) noexcept
-   {
-      return !(h1 == h2);
    }
 
    inline bool operator<(const Hash& h1, const Hash& h2) noexcept

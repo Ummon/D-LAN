@@ -24,7 +24,6 @@
 using namespace Common;
 
 #include <QtGlobal>
-#include <QTime>
 #include <QRandomGenerator64>
 
 namespace
