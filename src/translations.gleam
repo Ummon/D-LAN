@@ -580,59 +580,59 @@ pub fn faq_a2(l: Lang) -> element.Element(a) {
   case l {
     En ->
       "<ul>"
-      <> "<li>Check you have the latest version of D-LAN.</li>"
-      <> "<li>Be sure the ports 59486 (<i>UDP</i>) and 59487 (<i>UDP + TCP</i>) are opened in your firewall.</li>"
-      <> "<li>Be sure UDP multicast is allowed in your network. The address used is this one: 236.13.43.24.</li>"
-      <> "<li>All peers must use the same protocol: IPv4 or IPv6, look on <i>Settings &gt; Network</i>.</li>"
+      <> "<li>Check that you have the latest version of D-LAN.</li>"
+      <> "<li>Make sure ports 59486 (<i>UDP</i>) and 59487 (<i>UDP + TCP</i>) are open in your firewall.</li>"
+      <> "<li>Make sure UDP multicast is allowed on your network. The IPv6 address is <i>ff12:e726:318b:bc3f:d75a:c873:ec0d:2b18</i>, and the IPv4 address is <i>236.13.43.24</i>.</li>"
+      <> "<li>All peers must use the same protocol: IPv6 (the default) or IPv4. Check this under <i>Settings &gt; Network</i>.</li>"
       <> "</ul>"
     Fr ->
       "<ul>"
       <> "<li>Vérifier que la dernière version de D-LAN est installée.</li>"
       <> "<li>S'assurer que les ports 59486 (<i>UDP</i>) et 59487 (<i>UDP + TCP</i>) sont ouverts sur le pare-feu (<i>firewall</i>).</li>"
-      <> "<li>S'assurer que l'UDP multicast est autorisé sur le réseau. L'adresse utilisée est la suivante : 236.13.43.24.</li>"
-      <> "<li>Tous les pairs doivent utiliser le même protocole : IPv4 ou IPv6, voir <i>Paramètres &gt; Réseau</i>.</li>"
+      <> "<li>S'assurer que l'UDP multicast est autorisé sur le réseau. L'adresse IPv6 est <i>ff12:e726:318b:bc3f:d75a:c873:ec0d:2b18</i> et l'adresse IPv4 est <i>236.13.43.24</i>.</li>"
+      <> "<li>Tous les pairs doivent utiliser le même protocole : IPv6 (par défaut) ou IPv4. Vérifier ce réglage dans <i>Paramètres &gt; Réseau</i>.</li>"
       <> "</ul>"
     De ->
       "<ul>"
       <> "<li>Stellen Sie sicher, dass die neueste Version von D-LAN installiert ist.</li>"
       <> "<li>Stellen Sie sicher, dass die Ports 59486 (<i>UDP</i>) und 59487 (<i>UDP + TCP</i>) in Ihrer Firewall geöffnet sind.</li>"
-      <> "<li>Stellen Sie sicher, dass UDP-Multicast in Ihrem Netzwerk erlaubt ist. Die verwendete Adresse lautet: 236.13.43.24.</li>"
-      <> "<li>Alle Peers müssen dasselbe Protokoll verwenden: IPv4 oder IPv6, siehe <i>Einstellungen &gt; Netzwerk</i>.</li>"
+      <> "<li>Stellen Sie sicher, dass UDP-Multicast in Ihrem Netzwerk erlaubt ist. Die IPv6-Adresse lautet <i>ff12:e726:318b:bc3f:d75a:c873:ec0d:2b18</i> und die IPv4-Adresse <i>236.13.43.24</i>.</li>"
+      <> "<li>Alle Peers müssen dasselbe Protokoll verwenden: IPv6 (Standard) oder IPv4. Prüfen Sie dies unter <i>Einstellungen &gt; Netzwerk</i>.</li>"
       <> "</ul>"
     Es ->
       "<ul>"
       <> "<li>Compruebe que tiene la última versión de D-LAN.</li>"
       <> "<li>Asegúrese de que los puertos 59486 (<i>UDP</i>) y 59487 (<i>UDP + TCP</i>) están abiertos en su cortafuegos.</li>"
-      <> "<li>Asegúrese de que la multidifusión UDP está permitida en su red. La dirección utilizada es: 236.13.43.24.</li>"
-      <> "<li>Todos los pares deben usar el mismo protocolo: IPv4 o IPv6, véase <i>Configuración &gt; Red</i>.</li>"
+      <> "<li>Asegúrese de que la multidifusión UDP está permitida en su red. La dirección IPv6 es <i>ff12:e726:318b:bc3f:d75a:c873:ec0d:2b18</i> y la dirección IPv4 es <i>236.13.43.24</i>.</li>"
+      <> "<li>Todos los pares deben usar el mismo protocolo: IPv6 (predeterminado) o IPv4. Compruébelo en <i>Configuración &gt; Red</i>.</li>"
       <> "</ul>"
     It ->
       "<ul>"
       <> "<li>Verificate di avere l'ultima versione di D-LAN.</li>"
       <> "<li>Assicuratevi che le porte 59486 (<i>UDP</i>) e 59487 (<i>UDP + TCP</i>) siano aperte nel vostro firewall.</li>"
-      <> "<li>Assicuratevi che il multicast UDP sia consentito nella vostra rete. L'indirizzo utilizzato è: 236.13.43.24.</li>"
-      <> "<li>Tutti i peer devono usare lo stesso protocollo: IPv4 o IPv6, vedere <i>Impostazioni &gt; Rete</i>.</li>"
+      <> "<li>Assicuratevi che il multicast UDP sia consentito nella vostra rete. L'indirizzo IPv6 è <i>ff12:e726:318b:bc3f:d75a:c873:ec0d:2b18</i> e l'indirizzo IPv4 è <i>236.13.43.24</i>.</li>"
+      <> "<li>Tutti i peer devono usare lo stesso protocollo: IPv6 (predefinito) o IPv4. Verificatelo in <i>Impostazioni &gt; Rete</i>.</li>"
       <> "</ul>"
     Ru ->
       "<ul>"
       <> "<li>Убедитесь, что у вас установлена последняя версия D-LAN.</li>"
       <> "<li>Убедитесь, что порты 59486 (<i>UDP</i>) и 59487 (<i>UDP + TCP</i>) открыты в вашем брандмауэре.</li>"
-      <> "<li>Убедитесь, что в вашей сети разрешён UDP multicast. Используемый адрес: 236.13.43.24.</li>"
-      <> "<li>Все пиры должны использовать один и тот же протокол: IPv4 или IPv6, см. <i>Настройки &gt; Сеть</i>.</li>"
+      <> "<li>Убедитесь, что в вашей сети разрешён UDP multicast. Адрес IPv6: <i>ff12:e726:318b:bc3f:d75a:c873:ec0d:2b18</i>, адрес IPv4: <i>236.13.43.24</i>.</li>"
+      <> "<li>Все пиры должны использовать один и тот же протокол: IPv6 (по умолчанию) или IPv4. Проверьте этот параметр в разделе <i>Настройки &gt; Сеть</i>.</li>"
       <> "</ul>"
     Ko ->
       "<ul>"
       <> "<li>최신 버전의 D-LAN이 설치되어 있는지 확인하세요.</li>"
       <> "<li>방화벽에서 59486 (<i>UDP</i>) 및 59487 (<i>UDP + TCP</i>) 포트가 열려 있는지 확인하세요.</li>"
-      <> "<li>네트워크에서 UDP 멀티캐스트가 허용되어 있는지 확인하세요. 사용되는 주소는 236.13.43.24입니다.</li>"
-      <> "<li>모든 피어는 동일한 프로토콜(IPv4 또는 IPv6)을 사용해야 합니다. <i>설정 &gt; 네트워크</i>를 확인하세요.</li>"
+      <> "<li>네트워크에서 UDP 멀티캐스트가 허용되어 있는지 확인하세요. IPv6 주소는 <i>ff12:e726:318b:bc3f:d75a:c873:ec0d:2b18</i>이고 IPv4 주소는 <i>236.13.43.24</i>입니다.</li>"
+      <> "<li>모든 피어는 동일한 프로토콜(IPv6(기본값) 또는 IPv4)을 사용해야 합니다. <i>설정 &gt; 네트워크</i>에서 확인하세요.</li>"
       <> "</ul>"
     Ja ->
       "<ul>"
       <> "<li>D-LAN が最新バージョンであることを確認してください。</li>"
       <> "<li>ファイアウォールでポート 59486 (<i>UDP</i>) と 59487 (<i>UDP + TCP</i>) が開いていることを確認してください。</li>"
-      <> "<li>ネットワークで UDP マルチキャストが許可されていることを確認してください。使用されるアドレスは 236.13.43.24 です。</li>"
-      <> "<li>すべてのピアが同じプロトコル (IPv4 または IPv6) を使用する必要があります。<i>設定 &gt; ネットワーク</i>を確認してください。</li>"
+      <> "<li>ネットワークで UDP マルチキャストが許可されていることを確認してください。IPv6 アドレスは <i>ff12:e726:318b:bc3f:d75a:c873:ec0d:2b18</i>、IPv4 アドレスは <i>236.13.43.24</i> です。</li>"
+      <> "<li>すべてのピアが同じプロトコル（IPv6（デフォルト）または IPv4）を使用する必要があります。<i>設定 &gt; ネットワーク</i>で確認してください。</li>"
       <> "</ul>"
   }
   |> raw_div
@@ -661,34 +661,34 @@ pub fn faq_q3(l: Lang) -> element.Element(a) {
 pub fn faq_a3(l: Lang) -> element.Element(a) {
   case l {
     En ->
-      "Hashes are necessary to identify all the parts of a file. They allow multi-source downloading and data integrity verification. During the hashing process only one core is used, and almost all computers sold today are multi-core. All the shared files have to be read once, so it can slow down disk access a bit."
+      "Hashes are necessary to identify all the parts of a file. They allow multi-source downloading and data integrity verification. During the hashing process, only one core is used, and all computers sold today are multi-core. All shared files have to be read once, which can slow down disk access a bit."
     Fr ->
-      "Les empreintes servent à identifier les données des fichiers. Cela permet de télécharger un fichier chez plusieurs pairs simultanément. "
-      <> "Le calcul des empreintes n'utilise pas plus d'un cœur du processeur (la plupart des processeurs actuels sont multicœurs) "
-      <> "mais doit lire toutes les données partagées ce qui peut ralentir un peu l'accès au disque dur."
+      "Les empreintes servent à identifier toutes les parties d'un fichier. Elles permettent le téléchargement depuis plusieurs sources et la vérification de l'intégrité des données. "
+      <> "Le calcul des empreintes n'utilise qu'un seul cœur du processeur, et tous les ordinateurs vendus aujourd'hui sont multicœurs. "
+      <> "Tous les fichiers partagés doivent être lus une fois, ce qui peut ralentir un peu l'accès au disque."
     De ->
       "Hashes sind nötig, um alle Teile einer Datei zu identifizieren. Sie ermöglichen das Herunterladen aus mehreren Quellen sowie die Überprüfung der Datenintegrität. "
-      <> "Während der Berechnung wird nur ein Prozessorkern verwendet, und fast alle heute verkauften Computer haben mehrere Kerne. "
+      <> "Während der Berechnung wird nur ein Prozessorkern verwendet, und alle heute verkauften Computer haben mehrere Kerne. "
       <> "Alle freigegebenen Dateien müssen einmal gelesen werden, was den Festplattenzugriff etwas verlangsamen kann."
     Es ->
       "Los hashes son necesarios para identificar todas las partes de un archivo. Permiten la descarga desde múltiples fuentes y la verificación de la integridad de los datos. "
-      <> "Durante el cálculo solo se usa un núcleo, y casi todos los equipos que se venden hoy son multinúcleo. "
+      <> "Durante el cálculo solo se usa un núcleo, y todos los equipos que se venden hoy son multinúcleo. "
       <> "Todos los archivos compartidos deben leerse una vez, lo que puede ralentizar un poco el acceso al disco."
     It ->
       "Gli hash sono necessari per identificare tutte le parti di un file. Permettono il download da più fonti e la verifica dell'integrità dei dati. "
-      <> "Durante il calcolo degli hash viene usato un solo core, e quasi tutti i computer venduti oggi sono multi-core. "
+      <> "Durante il calcolo degli hash viene usato un solo core, e tutti i computer venduti oggi sono multi-core. "
       <> "Tutti i file condivisi devono essere letti una volta, il che può rallentare un po' l'accesso al disco."
     Ru ->
       "Хеши необходимы для идентификации всех частей файла. Они позволяют загружать файл из нескольких источников и проверять целостность данных. "
-      <> "При вычислении хешей используется только одно ядро процессора, а почти все продаваемые сегодня компьютеры многоядерные. "
+      <> "При вычислении хешей используется только одно ядро процессора, а все продаваемые сегодня компьютеры многоядерные. "
       <> "Все общие файлы должны быть прочитаны один раз, что может немного замедлить доступ к диску."
     Ko ->
       "해시는 파일의 각 부분을 식별하는 데 필요합니다. 이를 통해 다중 소스 다운로드와 데이터 무결성 검증이 가능합니다. "
-      <> "해시 계산에는 코어 하나만 사용되며, 요즘 판매되는 컴퓨터는 대부분 멀티 코어입니다. "
+      <> "해시 계산에는 코어 하나만 사용되며, 요즘 판매되는 컴퓨터는 모두 멀티 코어입니다. "
       <> "공유되는 모든 파일을 한 번씩 읽어야 하므로 디스크 접근이 다소 느려질 수 있습니다."
     Ja ->
       "ハッシュはファイルのすべての部分を識別するために必要です。これにより複数のソースからのダウンロードとデータの整合性の検証が可能になります。"
-      <> "ハッシュの計算にはコアが 1 つしか使われませんが、今日販売されているコンピューターのほとんどはマルチコアです。"
+      <> "ハッシュの計算にはコアが 1 つしか使われませんが、今日販売されているコンピューターはすべてマルチコアです。"
       <> "共有するすべてのファイルを一度読み込む必要があるため、ディスクアクセスが少し遅くなることがあります。"
   }
   |> html.text
