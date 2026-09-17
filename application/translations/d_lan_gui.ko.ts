@@ -166,8 +166,8 @@
         <translation>선택한 피어 탐색</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="925"/>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="987"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="927"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="989"/>
         <source>Chat</source>
         <translation>채팅</translation>
     </message>
@@ -183,19 +183,29 @@
 <context>
     <name>GUI::D_LAN_GUI</name>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="159"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="184"/>
         <source>Show the user interface</source>
         <translation>사용자 인터페이스 표시</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="163"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="188"/>
         <source>Stop the user interface</source>
         <translation>사용자 인터페이스 닫기</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="166"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="191"/>
         <source>Exit</source>
         <translation>종료</translation>
+    </message>
+    <message>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="221"/>
+        <source>D-LAN user interface closed</source>
+        <translation>D-LAN 사용자 인터페이스가 닫혔습니다</translation>
+    </message>
+    <message>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="222"/>
+        <source>D-LAN Core is still running in background. Select &apos;exit&apos; from the contextual menu if you want to stop it.</source>
+        <translation>D-LAN Core가 백그라운드에서 계속 실행 중입니다. 중지하려면 컨텍스트 메뉴에서 «종료»를 선택하세요.</translation>
     </message>
 </context>
 <context>
@@ -251,92 +261,92 @@
 <context>
     <name>GUI::DownloadsModel</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="97"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="98"/>
         <source>Source peer offline (%1)</source>
         <translation>소스 피어가 오프라인입니다 (%1)</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="101"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="102"/>
         <source>The source peer doesn&apos;t have the entry</source>
         <translation>소스 피어에 해당 항목이 없습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="104"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="105"/>
         <source>There is no source to download from</source>
         <translation>다운로드할 소스가 없습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="107"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="108"/>
         <source>No incoming directory</source>
         <translation>저장할 폴더가 없습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="111"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="112"/>
         <source>Not enough free space left</source>
         <translation>여유 공간이 부족합니다</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="114"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="115"/>
         <source>Unable to create the file</source>
         <translation>파일을 만들 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="119"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="120"/>
         <source>Unable to create the directory</source>
         <translation>폴더를 만들 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="120"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="121"/>
         <source>Unable to create the path of the file</source>
         <translation>파일 경로를 만들 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="123"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="124"/>
         <source>Unable to retrieve the hashes</source>
         <translation>해시를 가져올 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="127"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="128"/>
         <source>Transfer error</source>
         <translation>전송 오류</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="130"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="131"/>
         <source>Unable to open the file</source>
         <translation>파일을 열 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="133"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="134"/>
         <source>Unable to write the file</source>
         <translation>파일에 쓸 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="136"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="137"/>
         <source>The local file has been deleted</source>
         <translation>로컬 파일이 삭제되었습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="139"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="140"/>
         <source>Too much data received</source>
         <translation>너무 많은 데이터를 수신했습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="142"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="143"/>
         <source>Data received do not match the hash</source>
         <translation>수신한 데이터가 해시와 일치하지 않습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="146"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="147"/>
         <source>The remote entry is currently being scanned</source>
         <translation>원격 항목을 스캔하는 중입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="149"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="150"/>
         <source>The local directory is currently being scanned</source>
         <translation>로컬 폴더를 스캔하는 중입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="152"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="153"/>
         <source>Unable to retrieve the entries</source>
         <translation>항목을 가져올 수 없습니다</translation>
     </message>
@@ -642,33 +652,33 @@
 <context>
     <name>GUI::SearchModel</name>
     <message>
-        <location filename="../GUI/Search/SearchModel.cpp" line="139"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="138"/>
         <source>Name</source>
         <translation>이름</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchModel.cpp" line="140"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="139"/>
         <source>Directory</source>
         <translation>폴더</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchModel.cpp" line="141"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="140"/>
         <source>Relevance</source>
         <translation>관련성</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchModel.cpp" line="142"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="141"/>
         <source>Peer</source>
         <translation>피어</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchModel.cpp" line="143"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="142"/>
         <source>Size</source>
         <translation>크기</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchModel.cpp" line="365"/>
-        <location filename="../GUI/Search/SearchModel.cpp" line="419"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="374"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="428"/>
         <source>&lt;unknown&gt;</source>
         <translation>&lt;알 수 없음&gt;</translation>
     </message>
@@ -925,22 +935,22 @@
         <translation>코어 서비스가 시작되었습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="79"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="101"/>
         <source>D-LAN already launched</source>
         <translation>D-LAN이 이미 실행 중입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="80"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="102"/>
         <source>An instance of D-LAN is already launched</source>
         <translation>D-LAN 인스턴스가 이미 실행 중입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="82"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="104"/>
         <source>Quit</source>
         <translation>종료</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="83"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="105"/>
         <source>Launch anyway</source>
         <translation>무시하고 실행</translation>
     </message>

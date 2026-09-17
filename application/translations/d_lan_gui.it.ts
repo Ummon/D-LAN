@@ -166,8 +166,8 @@
         <translation>Sfoglia i peer selezionati</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="925"/>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="987"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="927"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="989"/>
         <source>Chat</source>
         <translation>Chat</translation>
     </message>
@@ -183,19 +183,29 @@
 <context>
     <name>GUI::D_LAN_GUI</name>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="159"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="184"/>
         <source>Show the user interface</source>
         <translation>Mostra l&apos;interfaccia utente</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="163"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="188"/>
         <source>Stop the user interface</source>
         <translation>Chiudi l&apos;interfaccia utente</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="166"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="191"/>
         <source>Exit</source>
         <translation>Esci</translation>
+    </message>
+    <message>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="221"/>
+        <source>D-LAN user interface closed</source>
+        <translation>Interfaccia utente di D-LAN chiusa</translation>
+    </message>
+    <message>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="222"/>
+        <source>D-LAN Core is still running in background. Select &apos;exit&apos; from the contextual menu if you want to stop it.</source>
+        <translation>D-LAN Core è ancora in esecuzione in background. Seleziona «Esci» dal menu contestuale per arrestarlo.</translation>
     </message>
 </context>
 <context>
@@ -251,92 +261,92 @@
 <context>
     <name>GUI::DownloadsModel</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="97"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="98"/>
         <source>Source peer offline (%1)</source>
         <translation>Peer sorgente offline (%1)</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="101"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="102"/>
         <source>The source peer doesn&apos;t have the entry</source>
         <translation>Il peer sorgente non possiede l&apos;elemento</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="104"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="105"/>
         <source>There is no source to download from</source>
         <translation>Nessuna sorgente da cui scaricare</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="107"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="108"/>
         <source>No incoming directory</source>
         <translation>Nessuna cartella di destinazione</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="111"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="112"/>
         <source>Not enough free space left</source>
         <translation>Spazio libero insufficiente</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="114"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="115"/>
         <source>Unable to create the file</source>
         <translation>Impossibile creare il file</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="119"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="120"/>
         <source>Unable to create the directory</source>
         <translation>Impossibile creare la cartella</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="120"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="121"/>
         <source>Unable to create the path of the file</source>
         <translation>Impossibile creare il percorso del file</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="123"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="124"/>
         <source>Unable to retrieve the hashes</source>
         <translation>Impossibile recuperare gli hash</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="127"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="128"/>
         <source>Transfer error</source>
         <translation>Errore di trasferimento</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="130"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="131"/>
         <source>Unable to open the file</source>
         <translation>Impossibile aprire il file</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="133"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="134"/>
         <source>Unable to write the file</source>
         <translation>Impossibile scrivere il file</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="136"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="137"/>
         <source>The local file has been deleted</source>
         <translation>Il file locale è stato eliminato</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="139"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="140"/>
         <source>Too much data received</source>
         <translation>Ricevuti troppi dati</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="142"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="143"/>
         <source>Data received do not match the hash</source>
         <translation>I dati ricevuti non corrispondono all&apos;hash</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="146"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="147"/>
         <source>The remote entry is currently being scanned</source>
         <translation>L&apos;elemento remoto è attualmente in fase di scansione</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="149"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="150"/>
         <source>The local directory is currently being scanned</source>
         <translation>La cartella locale è attualmente in fase di scansione</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="152"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="153"/>
         <source>Unable to retrieve the entries</source>
         <translation>Impossibile recuperare gli elementi</translation>
     </message>
@@ -642,33 +652,33 @@
 <context>
     <name>GUI::SearchModel</name>
     <message>
-        <location filename="../GUI/Search/SearchModel.cpp" line="139"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="138"/>
         <source>Name</source>
         <translation>Nome</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchModel.cpp" line="140"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="139"/>
         <source>Directory</source>
         <translation>Cartella</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchModel.cpp" line="141"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="140"/>
         <source>Relevance</source>
         <translation>Rilevanza</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchModel.cpp" line="142"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="141"/>
         <source>Peer</source>
         <translation>Peer</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchModel.cpp" line="143"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="142"/>
         <source>Size</source>
         <translation>Dimensione</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchModel.cpp" line="365"/>
-        <location filename="../GUI/Search/SearchModel.cpp" line="419"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="374"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="428"/>
         <source>&lt;unknown&gt;</source>
         <translation>&lt;sconosciuto&gt;</translation>
     </message>
@@ -905,22 +915,22 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="79"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="101"/>
         <source>D-LAN already launched</source>
         <translation>D-LAN è già in esecuzione</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="80"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="102"/>
         <source>An instance of D-LAN is already launched</source>
         <translation>Un&apos;istanza di D-LAN è già in esecuzione</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="82"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="104"/>
         <source>Quit</source>
         <translation>Esci</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="83"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="105"/>
         <source>Launch anyway</source>
         <translation>Avvia comunque</translation>
     </message>
