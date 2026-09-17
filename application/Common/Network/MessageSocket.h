@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include <atomic>
+
 #include <QString>
 #include <QTcpSocket>
 #include <QAbstractSocket>
@@ -123,6 +125,7 @@ namespace Common
 
       bool listening = false;
       bool processingData = false;
+      std::atomic<bool> disconnectPending {false};
 
       MessageHeader currentHeader;
 

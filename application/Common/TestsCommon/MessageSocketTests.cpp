@@ -1,9 +1,11 @@
 #include <QTest>
 #include <QPointer>
 #include <QThread>
+#include <QTcpServer>
 
 #include <cstring>
 #include <functional>
+#include <memory>
 
 #include <Common/Network/MessageSocket.h>
 
@@ -29,6 +31,12 @@ namespace
       qint64 bytesAvailable() const override { return QTcpSocket::bytesAvailable() + this->input.size(); }
       bool atEnd() const override { return this->bytesAvailable() == 0; }
       void notify() { emit readyRead(); }
+      void reconnect()
+      {
+         this->input.clear();
+         this->setOpenMode(QIODevice::ReadWrite | QIODevice::Unbuffered);
+         this->setSocketState(ConnectedState);
+      }
       void close() override
       {
          if (this->state() == UnconnectedState)
@@ -88,9 +96,12 @@ namespace
       };
 
    public:
-      explicit TestPeer(BufferedSocket* socket, QStringList* logs = nullptr) : MessageSocket(new Logger(logs), socket) {}
-      std::function<void()> dataHook, acceptHook, messageHook;
+      explicit TestPeer(QAbstractSocket* socket, QStringList* logs = nullptr,
+         const Common::Hash& localID = {}, const Common::Hash& remoteID = {}) :
+         MessageSocket(new Logger(logs), socket, localID, remoteID) {}
+      std::function<void()> dataHook, acceptHook, messageHook, disconnectHook;
       QList<MessageHeader::MessageType> receivedTypes;
+      int disconnections = 0;
 
    private:
       void onNewDataReceived() override
@@ -114,13 +125,21 @@ namespace
          if (hook)
             hook();
       }
+      void onDisconnected() override
+      {
+         ++this->disconnections;
+         const auto hook = this->disconnectHook;
+         if (hook)
+            hook();
+      }
    };
 
-   QByteArray frame(MessageHeader::MessageType type, const google::protobuf::Message* message = nullptr)
+   QByteArray frame(MessageHeader::MessageType type, const google::protobuf::Message* message = nullptr,
+      const Common::Hash& sender = {})
    {
       const auto size = message ? message->ByteSizeLong() : 0;
       QByteArray bytes(MessageHeader::HEADER_SIZE + size, Qt::Uninitialized);
-      Common::Message::writeMessageToBuffer(bytes.data(), bytes.size(), MessageHeader(type, size, Common::Hash()), message);
+      Common::Message::writeMessageToBuffer(bytes.data(), bytes.size(), MessageHeader(type, size, sender), message);
       return bytes;
    }
 
@@ -142,6 +161,120 @@ class MessageSocketTests : public QObject
    Q_OBJECT
 
 private slots:
+   void disconnectWhilePaused_data()
+   {
+      QTest::addColumn<bool>("fixedLocalID");
+      QTest::addColumn<bool>("fixedRemoteID");
+      for (bool local : {false, true})
+         for (bool remote : {false, true})
+            QTest::newRow(qPrintable(QString("fixed-local=%1-remote=%2").arg(local).arg(remote))) << local << remote;
+   }
+
+   void disconnectWhilePaused()
+   {
+      QFETCH(bool, fixedLocalID);
+      QFETCH(bool, fixedRemoteID);
+      QTcpServer server;
+      QVERIFY(server.listen(QHostAddress::LocalHost));
+      const Common::Hash firstID(QByteArray(Common::Hash::HASH_SIZE, 'a'));
+      const Common::Hash secondID(QByteArray(Common::Hash::HASH_SIZE, 'b'));
+      const auto localID = fixedLocalID ? secondID : Common::Hash();
+      const auto remoteID = fixedRemoteID ? firstID : Common::Hash();
+      auto* socket = new QTcpSocket;
+      TestPeer peer(socket, nullptr, localID, remoteID);
+      socket->connectToHost(QHostAddress::LocalHost, server.serverPort());
+      QTRY_VERIFY(peer.isConnected() && server.hasPendingConnections());
+      std::unique_ptr<QTcpSocket> remote(server.nextPendingConnection());
+      peer.startListening();
+      remote->write(frame(MessageHeader::GUI_REFRESH, nullptr, firstID));
+      QTRY_COMPARE(peer.receivedTypes.size(), 1);
+      QCOMPARE(peer.getRemoteID(), firstID);
+      QCOMPARE(peer.getLocalID(), fixedLocalID ? localID : firstID);
+
+      // Leave a parsed header waiting for its body in the old session.
+      int dataNotifications = 0;
+      peer.dataHook = [&] { ++dataNotifications; };
+      Protos::GUI::JoinRoom message;
+      message.set_name(std::string(1024, 'x'));
+      remote->write(frame(MessageHeader::GUI_JOIN_ROOM, &message, firstID).first(MessageHeader::HEADER_SIZE));
+      QTRY_VERIFY(dataNotifications > 0 && socket->bytesAvailable() == 0);
+      peer.stopListening();
+      peer.startListening();
+      peer.stopListening();
+      remote->abort();
+      QTRY_VERIFY(!peer.isConnected());
+      QCOMPARE(peer.disconnections, 1);
+      QCOMPARE(peer.getLocalID(), localID);
+      QCOMPARE(peer.getRemoteID(), remoteID);
+
+      socket->connectToHost(QHostAddress::LocalHost, server.serverPort());
+      QTRY_VERIFY(peer.isConnected() && server.hasPendingConnections());
+      remote.reset(server.nextPendingConnection());
+      peer.startListening();
+      const auto nextID = fixedRemoteID ? firstID : secondID;
+      remote->write(frame(MessageHeader::GUI_REFRESH, nullptr, nextID));
+      QTRY_COMPARE(peer.receivedTypes.size(), 2);
+      QVERIFY(peer.isConnected());
+      QCOMPARE(peer.getRemoteID(), nextID);
+      QCOMPARE(peer.getLocalID(), fixedLocalID ? localID : nextID);
+      QCOMPARE(peer.disconnections, 1);
+   }
+
+   void disconnectOnTransferThread_data()
+   {
+      QTest::addColumn<bool>("resumeBeforeNotification");
+      QTest::newRow("queued-cleanup") << false;
+      QTest::newRow("resume-before-queued-cleanup") << true;
+   }
+
+   void disconnectOnTransferThread()
+   {
+      QFETCH(bool, resumeBeforeNotification);
+      auto* socket = new BufferedSocket;
+      TestPeer peer(socket);
+      const Common::Hash firstID(QByteArray(Common::Hash::HASH_SIZE, 'a'));
+      const Common::Hash secondID(QByteArray(Common::Hash::HASH_SIZE, 'b'));
+      socket->input = frame(MessageHeader::GUI_REFRESH, nullptr, firstID);
+      peer.startListening();
+      peer.stopListening();
+      QThread* callbackThread = nullptr;
+      peer.disconnectHook = [&] { callbackThread = QThread::currentThread(); };
+
+      QThread worker;
+      worker.start();
+      auto* mainThread = QThread::currentThread();
+      const bool moved = socket->moveToThread(&worker);
+      bool restored = false;
+      if (moved)
+         QMetaObject::invokeMethod(socket, [&] {
+            socket->close();
+            restored = socket->moveToThread(mainThread);
+         }, Qt::BlockingQueuedConnection);
+      worker.quit();
+      worker.wait();
+      QVERIFY(moved);
+      QVERIFY(restored);
+      QCOMPARE(peer.disconnections, 0); // The worker must not run the callback.
+      if (!resumeBeforeNotification)
+      {
+         QCoreApplication::sendPostedEvents(&peer, QEvent::MetaCall);
+         QCOMPARE(peer.disconnections, 1);
+         QVERIFY(peer.getRemoteID().isNull());
+      }
+
+      socket->reconnect();
+      socket->input = frame(MessageHeader::GUI_REFRESH, nullptr, secondID);
+      peer.startListening();
+      QCOMPARE(callbackThread, mainThread);
+      QCOMPARE(peer.disconnections, 1);
+      QCOMPARE(peer.receivedTypes.size(), 2);
+      QCOMPARE(peer.getRemoteID(), secondID);
+      // An old queued notification must not clear the new session's identity.
+      QCoreApplication::sendPostedEvents(&peer, QEvent::MetaCall);
+      QCOMPARE(peer.disconnections, 1);
+      QCOMPARE(peer.getRemoteID(), secondID);
+   }
+
    void boundedDebugLogging_data()
    {
       QTest::addColumn<QByteArray>("body");

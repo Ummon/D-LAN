@@ -85,6 +85,12 @@ MessageSocket::MessageSocket(
       ? QString("New MessageSocket[%1] (connection from %2:%3)").arg(this->num).arg(socket->peerAddress().toString()).arg(socket->peerPort())
       : QString("New MessageSocket[%1] (not connected)").arg(this->num));
 #endif
+   // Keep tracking the connection while message reads are paused. Only record
+   // the event on a transfer thread; session state and callbacks belong here.
+   connect(this->socket, &QAbstractSocket::disconnected, this, [this] {
+      this->disconnectPending.store(true);
+      QMetaObject::invokeMethod(this, &MessageSocket::disconnectedSlot, Qt::AutoConnection);
+   }, Qt::DirectConnection);
 }
 
 /**
@@ -107,6 +113,8 @@ MessageSocket::MessageSocket(
 MessageSocket::~MessageSocket()
 {
    this->stopListening();
+   // Closing during destruction must not dispatch another lifecycle callback.
+   disconnect(this->socket, nullptr, this, nullptr);
 
    this->close();
    this->socket->deleteLater();
@@ -194,11 +202,15 @@ void MessageSocket::startListening()
    MESSAGE_SOCKET_LOG_DEBUG(QString("Socket[%1] starting to listen").arg(this->num));
 
    this->listening = true;
-
    connect(this->socket, &QAbstractSocket::readyRead, this, &MessageSocket::dataReceivedSlot, Qt::DirectConnection);
-   connect(this->socket, &QAbstractSocket::disconnected, this, &MessageSocket::disconnectedSlot, Qt::DirectConnection);
 
+   // A transfer thread may have disconnected and returned the socket before
+   // its queued notification runs. Clear that session before reading again.
    const QPointer<MessageSocket> self(this);
+   this->disconnectedSlot();
+   if (self.isNull() || !this->listening)
+      return;
+
    this->onStartListening();
    if (!self.isNull() && this->listening)
       this->dataReceivedSlot();
@@ -213,7 +225,6 @@ void MessageSocket::stopListening()
    MESSAGE_SOCKET_LOG_DEBUG(QString("Socket[%1] stopping to listen").arg(this->num));
 
    disconnect(this->socket, &QAbstractSocket::readyRead, this, &MessageSocket::dataReceivedSlot);
-   disconnect(this->socket, &QAbstractSocket::disconnected, this, &MessageSocket::disconnectedSlot);
 
    this->listening = false;
 }
@@ -331,6 +342,10 @@ void MessageSocket::dataReceivedSlot()
 
 void MessageSocket::disconnectedSlot()
 {
+   // startListening() may already have consumed a queued notification.
+   if (!this->disconnectPending.exchange(false))
+      return;
+
    if (!this->localIDDefined)
       this->localID = Common::Hash();
    if (!this->remoteIDDefined)
