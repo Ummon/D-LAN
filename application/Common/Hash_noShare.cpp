@@ -27,6 +27,20 @@ using namespace Common;
 #include <QTime>
 #include <QRandomGenerator64>
 
+namespace
+{
+   void writeHex(const char* data, int size, QChar* output)
+   {
+      constexpr char digits[] = "0123456789abcdef";
+      for (int i = 0; i < size; ++i)
+      {
+         const auto byte = static_cast<unsigned char>(data[i]);
+         output[2 * i] = QLatin1Char(digits[byte >> 4]);
+         output[2 * i + 1] = QLatin1Char(digits[byte & 0x0F]);
+      }
+   }
+}
+
 const char Hash::NULL_HASH[HASH_SIZE] {};
 
 /**
@@ -83,14 +97,7 @@ Hash::Hash(const QByteArray& a)
 QString Hash::toStr() const
 {
    QString ret(2 * HASH_SIZE, QChar());
-
-   for (int i = 0; i < HASH_SIZE; i++)
-   {
-      char p1 = (this->data[i] & 0xF0) >> 4;
-      char p2 = this->data[i] & 0x0F;
-      ret[i*2] = p1 <= 9 ? char('0' + p1) : char('a' + (p1-10));
-      ret[i*2 + 1] = p2 <= 9 ? char('0' + p2) : char('a' + (p2-10));
-   }
+   writeHex(this->data, HASH_SIZE, ret.data());
    return ret;
 }
 
@@ -100,16 +107,11 @@ QString Hash::toStr() const
   */
 QString Hash::toStrShort() const
 {
-   QString ret(2 * NB_BYTES_SHORT_STR, QChar());
-
-   for (int i = 0; i < NB_BYTES_SHORT_STR; ++i)
-   {
-      char p1 = (this->data[i] & 0xF0) >> 4;
-      char p2 = this->data[i] & 0x0F;
-      ret[i*2] = p1 <= 9 ? char('0' + p1) : char('a' + (p1-10));
-      ret[i*2 + 1] = p2 <= 9 ? char('0' + p2) : char('a' + (p2-10));
-   }
-   return "#" % ret;
+   QString ret(1 + 2 * NB_BYTES_SHORT_STR, QChar());
+   QChar* output = ret.data();
+   output[0] = QLatin1Char('#');
+   writeHex(this->data, NB_BYTES_SHORT_STR, output + 1);
+   return ret;
 }
 
 /**
