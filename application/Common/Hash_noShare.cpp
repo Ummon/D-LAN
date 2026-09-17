@@ -135,12 +135,16 @@ QString Hash::toStrShort() const
   */
 QString Hash::toStrCArray() const
 {
-   QString str("{");
-   for (int i = 0; i < HASH_SIZE; i++)
+   QString str;
+   str.reserve(3 + 6 * HASH_SIZE + (HASH_SIZE + 3) / 4);
+   str += QLatin1Char('{');
+   QChar byteText[] = {u'0', u'x', u'0', u'0', u',', u' '};
+   for (int i = 0; i < HASH_SIZE; ++i)
    {
       if (i % 4 == 0)
-         str += "\n";
-      str += QString("0x%1, ").arg((unsigned char)this->data[i], 2, 16, QLatin1Char('0'));
+         str += QLatin1Char('\n');
+      writeHex(this->data + i, 1, byteText + 2);
+      str.append(byteText, 6);
    }
    str += "\n}";
    return str;
