@@ -198,12 +198,12 @@
         <translation>Esci</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="221"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="220"/>
         <source>D-LAN user interface closed</source>
         <translation>Interfaccia utente di D-LAN chiusa</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="222"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="221"/>
         <source>D-LAN Core is still running in background. Select &apos;exit&apos; from the contextual menu if you want to stop it.</source>
         <translation>D-LAN Core è ancora in esecuzione in background. Seleziona «Esci» dal menu contestuale per arrestarlo.</translation>
     </message>

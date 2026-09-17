@@ -198,7 +198,7 @@
         <translation>Beenden</translation>
     </message>
     <message>
-        <location line="+30"/>
+        <location line="+29"/>
         <source>D-LAN user interface closed</source>
         <translation>Grafische Oberfläche von D-LAN geschlossen</translation>
     </message>
@@ -935,7 +935,7 @@
         <translation>Kern als Dienst gestartet</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="-121"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="-120"/>
         <source>D-LAN already launched</source>
         <translation>D-LAN läuft bereits</translation>
     </message>
