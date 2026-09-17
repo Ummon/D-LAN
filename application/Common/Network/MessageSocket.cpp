@@ -145,6 +145,13 @@ void MessageSocket::send(MessageHeader::MessageType type, const google::protobuf
    if (!this->listening || !this->socket->isOpen())
       return;
 
+   if (type == MessageHeader::NULL_MESS)
+   {
+      MESSAGE_SOCKET_LOG_ERROR("Cannot send NULL_MESS: invalid wire type; closing the socket");
+      this->socket->close();
+      return;
+   }
+
    const auto payloadSize = message ? message->ByteSizeLong() : 0;
    if (payloadSize > MAX_MESSAGE_PAYLOAD_SIZE)
    {

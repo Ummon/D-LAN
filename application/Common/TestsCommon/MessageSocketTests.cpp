@@ -192,6 +192,47 @@ private slots:
       QVERIFY(peer.isConnected());
    }
 
+   void rejectNullSend_data()
+   {
+      QTest::addColumn<bool>("withBody");
+      QTest::newRow("header-only") << false;
+      QTest::newRow("with-body") << true;
+   }
+
+   void rejectNullSend()
+   {
+      QFETCH(bool, withBody);
+      auto* socket = new BufferedSocket;
+      TestPeer peer(socket);
+      peer.startListening();
+      int disconnected = 0;
+      connect(socket, &QTcpSocket::disconnected, this, [&] { ++disconnected; });
+      Protos::GUI::JoinRoom message;
+      message.set_name("room");
+      if (withBody)
+         peer.send(MessageHeader::NULL_MESS, message);
+      else
+         peer.send(MessageHeader::NULL_MESS);
+
+      QVERIFY(socket->output.isEmpty());
+      QVERIFY(!peer.isConnected());
+      QCOMPARE(disconnected, 1);
+   }
+
+   void nullSendDisconnectDeletesPeer()
+   {
+      auto* socket = new BufferedSocket;
+      QPointer<TestPeer> peer = new TestPeer(socket);
+      peer->startListening();
+      const auto connection = connect(socket, &QTcpSocket::disconnected, this, [&] { delete peer.data(); });
+      peer->send(MessageHeader::NULL_MESS);
+      const bool deleted = peer.isNull();
+      disconnect(connection);
+      delete peer.data();
+      QVERIFY(deleted);
+      QVERIFY(socket->output.isEmpty());
+   }
+
    void oversizedSend()
    {
       auto* socket = new BufferedSocket;
