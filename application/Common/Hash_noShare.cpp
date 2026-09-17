@@ -29,6 +29,14 @@ using namespace Common;
 
 namespace
 {
+   Hash randomHash(QRandomGenerator& rng)
+   {
+      static_assert(Hash::HASH_SIZE % sizeof(quint32) == 0);
+      quint32 words[Hash::HASH_SIZE / sizeof(quint32)];
+      rng.fillRange(words);
+      return Hash(reinterpret_cast<const char*>(words));
+   }
+
    void writeHex(const char* data, int size, QChar* output)
    {
       constexpr char digits[] = "0123456789abcdef";
@@ -152,19 +160,13 @@ bool Hash::isNull() const noexcept
   */
 Hash Hash::rand()
 {
-   Hash hash;
-   for (int i = 0; i < HASH_SIZE; i++)
-      hash.data[i] = static_cast<char>(QRandomGenerator64::global()->bounded(256));
-   return hash;
+   return randomHash(*QRandomGenerator64::global());
 }
 
 Hash Hash::rand(quint32 seed)
 {
    QRandomGenerator64 rng(seed);
-   Hash hash;
-   for (int i = 0; i < HASH_SIZE; i++)
-      hash.data[i] = static_cast<char>(rng.bounded(256));
-   return hash;
+   return randomHash(rng);
 }
 
 std::optional<Hash> Hash::fromStr(const QString& str)
