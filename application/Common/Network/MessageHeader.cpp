@@ -169,10 +169,11 @@ MessageHeader MessageHeader::readHeader(const char* data)
    return MessageHeader::readHeader(QByteArray::fromRawData(data, HEADER_SIZE));
 }
 
-void MessageHeader::writeHeader(QIODevice& device, const MessageHeader& header)
+bool MessageHeader::writeHeader(QIODevice& device, const MessageHeader& header)
 {
    QDataStream stream(&device);
    MessageHeader::writeHeader(stream, header);
+   return stream.status() == QDataStream::Ok;
 }
 
 void MessageHeader::writeHeader(char* buffer, const MessageHeader& header)

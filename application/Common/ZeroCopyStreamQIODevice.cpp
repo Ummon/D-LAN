@@ -82,18 +82,18 @@ bool ZeroCopyOutputStreamQIODevice::Flush()
   * @class Common::ZeroCopyInputStreamQIODevice
   *
   * A bridge to read data from a QIODevice by a google::protobuf::message.
-  * Warning : The data will be effectively read when the object is destroyed.
+  * Consumes completed peek buffers as it advances. Destruction consumes only the
+  * used part of the final peek, leaving backed-up bytes available to the device.
   */
 
 ZeroCopyInputStreamQIODevice::ZeroCopyInputStreamQIODevice(QIODevice* device) :
-   device(device), nbLastRead(0), buffer(new char[Constants::PROTOBUF_STREAMING_BUFFER_SIZE]), pos(buffer), bytesRead(0)
+   device(device), nbLastRead(0), pos(buffer), bytesRead(0)
 {
 }
 
 ZeroCopyInputStreamQIODevice::~ZeroCopyInputStreamQIODevice()
 {
-   this->device->read(this->pos - this->buffer);
-   delete[] this->buffer;
+   this->device->skip(this->pos - this->buffer);
 }
 
 bool ZeroCopyInputStreamQIODevice::Next(const void** data, int* size)
@@ -155,9 +155,11 @@ bool ZeroCopyInputStreamQIODevice::Skip(int count)
    // The peeked data is still in the device, it must be taken out before skipping the bytes which follow it.
    this->consumeCurrentPeek();
 
-   const QByteArray data = this->device->read(count);
-   this->bytesRead += data.size();
-   return data.size() == count;
+   const qint64 skipped = this->device->skip(count);
+   if (skipped < 0)
+      return false;
+   this->bytesRead += skipped;
+   return skipped == count;
 }
 
 /**
@@ -167,7 +169,7 @@ void ZeroCopyInputStreamQIODevice::consumeCurrentPeek()
 {
    if (this->nbLastRead != 0)
    {
-      this->device->read(this->nbLastRead);
+      this->device->skip(this->nbLastRead);
       this->bytesRead += this->nbLastRead;
       this->nbLastRead = 0;
    }

@@ -122,7 +122,8 @@ namespace Common
       static MessageHeader readHeader(const QByteArray& data);
       static MessageHeader readHeader(const char* data);
 
-      static void writeHeader(QIODevice& device, const MessageHeader& header);
+      // Returns false on a failed or incomplete write; part of the header may have been written.
+      static bool writeHeader(QIODevice& device, const MessageHeader& header);
       static void writeHeader(char* buffer, const MessageHeader& header);
 
    private:

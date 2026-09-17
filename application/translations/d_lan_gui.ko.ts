@@ -198,12 +198,12 @@
         <translation>종료</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="221"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="220"/>
         <source>D-LAN user interface closed</source>
         <translation>D-LAN 사용자 인터페이스가 닫혔습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="222"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="221"/>
         <source>D-LAN Core is still running in background. Select &apos;exit&apos; from the contextual menu if you want to stop it.</source>
         <translation>D-LAN Core가 백그라운드에서 계속 실행 중입니다. 중지하려면 컨텍스트 메뉴에서 «종료»를 선택하세요.</translation>
     </message>

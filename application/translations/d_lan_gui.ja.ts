@@ -198,12 +198,12 @@
         <translation>終了</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="221"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="220"/>
         <source>D-LAN user interface closed</source>
         <translation>D-LANのユーザーインターフェースを閉じました</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="222"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="221"/>
         <source>D-LAN Core is still running in background. Select &apos;exit&apos; from the contextual menu if you want to stop it.</source>
         <translation>D-LAN Coreはバックグラウンドで引き続き動作しています。停止するには、コンテキストメニューから「終了」を選択してください。</translation>
     </message>

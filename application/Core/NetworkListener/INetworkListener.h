@@ -55,7 +55,7 @@ namespace NL
       };
 
       /**
-        * Send a message to a particular peer, if the peer ID isn't given the message is sent to everyone.
+        * Send a message (via UDP) to a particular peer, if the peer ID isn't given the message is sent to everyone.
         */
       virtual SendStatus send(
          Common::MessageHeader::MessageType type,

@@ -10,7 +10,6 @@ import "common.proto";
 
 package Protos.Core;
 
-/***** Multicast UDP messages. *****/
 // I'm alive.
 // This message is sent periodically to all other peers (for example each 5s).
 // It contains some information about the peer and an array of chunk hashes the peer wants to download.
@@ -18,7 +17,7 @@ package Protos.Core;
 // will reply with a 'ChunksOwned' message.
 // These hashes can come from different files.
 // Remember that the peer ID of the sender is in the message header, see 'Common::Network::MessageHeader' for more information.
-// a -> all
+// a -> all (multicast UDP)
 // id : 0x01
 message IMAlive {
    uint32 version = 1; // The version of the protocol used. If 'version' from another peer doesn't correspond to our own version, this peer is ignored.
@@ -40,7 +39,7 @@ message IMAlive {
 // This message is only sent if at least one requested chunks is known.
 // Return an array with a bool value for each
 // given chunks. 'true' means "I have this chunk".
-// all -> a
+// all -> a (unicast UDP)
 // id : 0x02
 message ChunksOwned {
    uint64 tag = 1; // The repeated number.
@@ -50,7 +49,7 @@ message ChunksOwned {
 
 // Goodbye, my people need me.
 // Sent by a peer leaving the network. Not mandatory.
-// a -> all
+// a -> all  (multicast UDP)
 // id : 0xFE
 // No data
 
@@ -58,7 +57,7 @@ message ChunksOwned {
 // Send a chat message to all other peers.
 // The field 'peer_id' is not set because it is already set in the header.
 // The field 'time' is not set because the receiver will set the time and not the sender.
-// a -> all
+// a -> all  (multicast UDP)
 // id : 0x11
 // Common.ChatMessages
 
@@ -66,7 +65,7 @@ message ChunksOwned {
 // Ask to a peer the 'n' last messages.
 // We can ask periodically to a random peer to be sure we got all the messages of the network.
 // For example the last 500 messages each second.
-// a -> b
+// a -> b (unicast UDP)
 // id : 0x18
 message GetLastChatMessages {
    uint32 number = 1; // Number of desired messages.
@@ -79,14 +78,14 @@ message GetLastChatMessages {
 
 // This message is only sent if 'b' has some messages not contained in the given list.
 // The fields 'peer_id' and 'time' must be set for all messages.
-// b -> a
+// b -> a (unicast UDP)
 // id : 0x11
 // Common.ChatMessages
 
 
 // Searching a file or a directory.
 // See http://dev.d-lan.net/projects/pmp/wiki/Algorithms#Searching-among-other-peers for more details.
-// a -> all
+// a -> all (multicast UDP)
 // id : 0x21
 message Find {
    uint64 tag = 1; // A tag to identify the search. All answers must have the same tag.
@@ -99,14 +98,13 @@ message Find {
 // Many of message can be sent by a peer for a given search. The core will only accept answers
 // for a limited duration. For example 3 seconds.
 // The file entries may or may not include the hashes depending of the core state and its policy.
-// all -> a
+// all -> a (unicast UDP)
 // id : 0x22
 // Common.FindResult (see common.proto)
 
 
-/***** Unicast TCP Messages. *****/
 // Browsing.
-// a -> b
+// a -> b (TCP)
 // id : 0x31
 message GetEntries {
    // The shared directories must have the field 'shared_entry' defined but 'shared_entry.shared_name' is not mandatory.
@@ -121,7 +119,7 @@ message GetEntries {
 }
 
 // The file entries may or may not include the hashes depending of the core state and its policy.
-// b -> a
+// b -> a (TCP)
 // id : 0x32
 message GetEntriesResult {
    message EntryResult {
@@ -145,14 +143,14 @@ message GetEntriesResult {
 // the hashes will be computed on the fly. Thus this request
 // can be a bit long (> 20s for example).
 // The given entry shall have some chunks set to null. The number of chunks ('GetHashes.file.chunk') must be be correct.
-// a -> b
+// a -> b (TCP)
 // id : 0x41
 message GetHashes {
    Common.Entry file = 1; // Must have the field 'shared_dir' set. If it already contains some chunk hashes only the next ones will be sent.
    repeated Common.Entry next_files = 2; // The next files for which we want to know their hashes in the future.
 }
 
-// b -> a
+// b -> a (TCP)
 // id : 0x42
 message GetHashesResult {
    enum Status {
@@ -169,7 +167,7 @@ message GetHashesResult {
 }
 
 // For each hash, this message is sent. Only if GetHashesResult.status == OK.
-// b -> a
+// b -> a (TCP)
 // id = 0x43
 message HashResult {
    uint32 num = 1; // Chunk number, first is 0.
@@ -177,7 +175,7 @@ message HashResult {
 }
 
 // Download one or more chunks.
-// a -> b
+// a -> b (TCP)
 // id : 0x51
 message GetChunks {
    message Chunk {
@@ -189,7 +187,7 @@ message GetChunks {
    repeated Chunk chunks = 1; // Must contain a least one chunk.
 }
 
-// b -> a
+// b -> a (TCP)
 // id : 0x52
 message GetChunksResult {
    enum Status {
@@ -215,5 +213,5 @@ message GetChunksResult {
    repeated ChunkResult results = 2; // The number of results must be the same as the asked chunks.
 }
 
-// b -> a : stream of data of each chunk in the same order as requested. Only if 'GetChunkResult.status == OK' and
+// b -> a (TCP): stream of data of each chunk in the same order as requested. Only if 'GetChunkResult.status == OK' and
 // only for the chunks with 'ChunkResult.status == OK').

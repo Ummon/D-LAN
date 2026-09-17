@@ -20,13 +20,30 @@
 using namespace Common;
 
 #include <QPointer>
-
-#include <Protos/common.pb.h>
-#include <Protos/core_protocol.pb.h>
-#include <Protos/gui_protocol.pb.h>
+#include <QScopeGuard>
 
 #include <ProtoHelper.h>
 #include <Global.h>
+
+#ifdef DEBUG
+namespace
+{
+   constexpr quint32 MAX_DEBUG_PAYLOAD_SIZE = 4 * 1024;
+   constexpr qsizetype MAX_DEBUG_TEXT_SIZE = 8 * 1024;
+
+   QString messageDebugStr(const google::protobuf::Message& message, quint32 payloadSize)
+   {
+      // Check before JSON conversion so large messages do not allocate huge log strings.
+      if (payloadSize > MAX_DEBUG_PAYLOAD_SIZE)
+         return QString("[message body omitted: %1 bytes]").arg(payloadSize);
+
+      const QString text = ProtoHelper::getDebugStr(message);
+      if (text.size() > MAX_DEBUG_TEXT_SIZE)
+         return QString("[message body omitted: debug text exceeds %1 characters]").arg(MAX_DEBUG_TEXT_SIZE);
+      return text;
+   }
+}
+#endif
 
 /**
   * @class Common::MessageSocket
@@ -40,22 +57,12 @@ using namespace Common;
   * Take ownership of 'logger'.
   */
 MessageSocket::MessageSocket(MessageSocket::ILogger* logger, const Hash& localID, const Hash& remoteID) :
-   logger(logger),
-   socket(new QTcpSocket()),
-   localID(localID),
-   remoteID(remoteID),
-   localIDDefined(!localID.isNull()),
-   remoteIDDefined(!remoteID.isNull()),
-   listening(false)
+   MessageSocket(logger, new QTcpSocket(), localID, remoteID)
 {
-#ifdef DEBUG
-   this->num = ++MessageSocket::currentNum;
-   MESSAGE_SOCKET_LOG_DEBUG(QString("New MessageSocket[%1] (not connected)").arg(this->num));
-#endif
 }
 
 /**
-  * Takes the ownership of 'socket'.
+  * Takes ownership of 'logger' and 'socket'.
   * If remoteID isn't given, it will be initialized by the ID of the first received message.
   * If localID isn't given, it will be set to the remoteID when the first message is received.
   */
@@ -70,12 +77,13 @@ MessageSocket::MessageSocket(
    localID(localID),
    remoteID(remoteID),
    localIDDefined(!localID.isNull()),
-   remoteIDDefined(!remoteID.isNull()),
-   listening(false)
+   remoteIDDefined(!remoteID.isNull())
 {
 #ifdef DEBUG
    this->num = ++MessageSocket::currentNum;
-   MESSAGE_SOCKET_LOG_DEBUG(QString("New MessageSocket[%1] (connection from %2:%3)").arg(this->num).arg(socket->peerAddress().toString()).arg(socket->peerPort()));
+   MESSAGE_SOCKET_LOG_DEBUG(socket->state() == QAbstractSocket::ConnectedState
+      ? QString("New MessageSocket[%1] (connection from %2:%3)").arg(this->num).arg(socket->peerAddress().toString()).arg(socket->peerPort())
+      : QString("New MessageSocket[%1] (not connected)").arg(this->num));
 #endif
 }
 
@@ -89,17 +97,9 @@ MessageSocket::MessageSocket(
    const Hash& localID,
    const Hash& remoteID
 ) :
-   logger(logger),
-   socket(new QTcpSocket()),
-   localID(localID), remoteID(remoteID),
-   localIDDefined(!localID.isNull()),
-   remoteIDDefined(!remoteID.isNull()),
-   listening(false)
+   MessageSocket(logger, localID, remoteID)
 {
-#ifdef DEBUG
-   this->num = ++MessageSocket::currentNum;
-   MESSAGE_SOCKET_LOG_DEBUG(QString("New MessageSocket[%1] (connection to %2:%3)").arg(this->num).arg(address.toString()).arg(port));
-#endif
+   MESSAGE_SOCKET_LOG_DEBUG(QString("Socket[%1] connecting to %2:%3").arg(this->num).arg(address.toString()).arg(port));
 
    this->socket->connectToHost(address, port);
 }
@@ -141,10 +141,26 @@ void MessageSocket::send(MessageHeader::MessageType type)
 
 void MessageSocket::send(MessageHeader::MessageType type, const google::protobuf::Message* message)
 {
-   if (!this->listening)
+   if (!this->listening || !this->socket->isOpen())
       return;
 
-   MessageHeader header(type, message ? message->ByteSizeLong() : 0, this->localID);
+   if (type == MessageHeader::NULL_MESS)
+   {
+      MESSAGE_SOCKET_LOG_ERROR("Cannot send NULL_MESS: invalid wire type; closing the socket");
+      this->socket->close();
+      return;
+   }
+
+   const auto payloadSize = message ? message->ByteSizeLong() : 0;
+   if (payloadSize > MAX_MESSAGE_PAYLOAD_SIZE)
+   {
+      MESSAGE_SOCKET_LOG_ERROR(QString("Outgoing message size too big (%1), size limit is %2 bytes; closing the socket")
+         .arg(static_cast<qulonglong>(payloadSize)).arg(MAX_MESSAGE_PAYLOAD_SIZE));
+      this->socket->close();
+      return;
+   }
+
+   MessageHeader header(type, static_cast<quint32>(payloadSize), this->localID);
 
    MESSAGE_SOCKET_LOG_DEBUG(
       QString("Socket[%1]::send: %2 to %3\n%4")
@@ -152,11 +168,18 @@ void MessageSocket::send(MessageHeader::MessageType type, const google::protobuf
          .arg(
             header.toStr(),
             this->remoteID.toStrShort(),
-            message ? ProtoHelper::getDebugStr(*message) : "<empty message>"
+            message ? messageDebugStr(*message, header.getSize()) : "<empty message>"
          )
    );
 
-   Message::writeMessageToDevice(this->socket, header, message);
+   // A write error can synchronously disconnect the socket and delete this object.
+   const QPointer<MessageSocket> self(this);
+   if (Message::writeMessageToDevice(this->socket, header, message) == 0 && self)
+   {
+      MESSAGE_SOCKET_LOG_ERROR(QString("Unable to write message (type %1); closing the socket").arg(type));
+      // A partial frame may already have been queued. Never append another message to it.
+      this->socket->close();
+   }
 }
 
 /**
@@ -220,19 +243,39 @@ bool MessageSocket::isListening() const
   */
 void MessageSocket::dataReceivedSlot()
 {
+   // A callback can restart listening or trigger readyRead synchronously. Let the
+   // active loop finish dispatching this message before reading the next frame.
+   if (this->processingData)
+      return;
+
+   this->processingData = true;
    // 'onNewDataReceived()', 'onNewMessage(..)' and the signal 'newMessage' may delete this object,
    // for instance by closing the connection. Once it happens no member may be accessed anymore.
    const QPointer<MessageSocket> self(this);
+   const auto resetProcessing = qScopeGuard([self] {
+      if (self)
+         self->processingData = false;
+   });
 
-   while (!this->socket->atEnd() && this->listening)
+   // A callback may stop listening and hand the socket to another thread.
+   while (this->listening && !this->socket->atEnd())
    {
       this->onNewDataReceived();
-      if (self.isNull())
+      if (self.isNull() || !this->listening)
          return;
 
       if (this->currentHeader.isNull() && this->socket->bytesAvailable() >= MessageHeader::HEADER_SIZE)
       {
          this->currentHeader = MessageHeader::readHeader(*this->socket);
+
+         // NULL_MESS is an internal sentinel, never a valid wire type. Reject it
+         // before its payload can be mistaken for the next message header.
+         if (this->currentHeader.getType() == MessageHeader::NULL_MESS)
+         {
+            MESSAGE_SOCKET_LOG_DEBUG(QString("Socket[%1]: Invalid NULL_MESS wire type, closing the socket").arg(this->num));
+            this->socket->close();
+            return;
+         }
 
          if (this->remoteID.isNull())
             this->remoteID = this->currentHeader.getSenderID();
@@ -280,8 +323,6 @@ void MessageSocket::dataReceivedSlot()
 
          if (self.isNull())
             return;
-
-         this->currentHeader.setNull();
       }
       else
          return;
@@ -308,12 +349,14 @@ bool MessageSocket::readMessage()
    try
    {
       const Message& message = Message::readMessageBodyFromDevice(this->currentHeader, this->socket);
+      // The frame has been consumed. Commit that state before invoking callbacks.
+      this->currentHeader.setNull();
 
       MESSAGE_SOCKET_LOG_DEBUG(QString("Socket[%1]: Data received from %2, %3\n%4").arg(
          QString::number(this->num),
          this->socket->peerAddress().toString(),
          message.getHeader().toStr(),
-         Common::ProtoHelper::getDebugStr(message.getMessage())
+         messageDebugStr(message.getMessage(), message.getHeader().getSize())
       ));
 
       // 'onNewMessage(..)' may delete this object, see 'dataReceivedSlot()'.

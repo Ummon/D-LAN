@@ -198,7 +198,7 @@
         <translation>Выход</translation>
     </message>
     <message>
-        <location line="+30"/>
+        <location line="+29"/>
         <source>D-LAN user interface closed</source>
         <translation>Пользовательский интерфейс D-LAN закрыт</translation>
     </message>
@@ -935,7 +935,7 @@
         <translation>Служба ядра запущена</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="-121"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="-120"/>
         <source>D-LAN already launched</source>
         <translation>D-LAN уже запущен</translation>
     </message>
