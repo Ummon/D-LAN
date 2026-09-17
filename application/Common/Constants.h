@@ -53,7 +53,7 @@ namespace Common
 
       static const QString SERVICE_NAME;
 
-      static const int PROTOBUF_STREAMING_BUFFER_SIZE;
+      static constexpr int PROTOBUF_STREAMING_BUFFER_SIZE = 4 * 1024;
 
       static const QString BINARY_PREFIXES[];
 

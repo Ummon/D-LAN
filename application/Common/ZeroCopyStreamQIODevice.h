@@ -25,6 +25,7 @@
 #include <google/protobuf/stubs/common.h>
 
 #include <Common/Uncopyable.h>
+#include <Common/Constants.h>
 
 namespace Common
 {
@@ -72,7 +73,7 @@ namespace Common
       QIODevice* device;
 
       int nbLastRead;
-      char* buffer;
+      char buffer[Constants::PROTOBUF_STREAMING_BUFFER_SIZE];
       char* pos; ///< Point on the remaining data, remaining data size is "buffer + nbLastRead - pos".
 
       google::protobuf::int64 bytesRead;

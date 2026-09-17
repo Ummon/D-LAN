@@ -48,6 +48,10 @@ add_executable(TestsZeroCopyOutputStreamQIODevice ZeroCopyOutputStreamQIODeviceT
 target_link_libraries(TestsZeroCopyOutputStreamQIODevice PRIVATE Common Qt6::Test)
 add_test(NAME TestsZeroCopyOutputStreamQIODevice COMMAND TestsZeroCopyOutputStreamQIODevice)
 
+add_executable(TestsZeroCopyInputStreamQIODevice ZeroCopyInputStreamQIODeviceTests.cpp)
+target_link_libraries(TestsZeroCopyInputStreamQIODevice PRIVATE Common Qt6::Test)
+add_test(NAME TestsZeroCopyInputStreamQIODevice COMMAND TestsZeroCopyInputStreamQIODevice)
+
 add_executable(TestsMessageSocket MessageSocketTests.cpp)
 target_link_libraries(TestsMessageSocket PRIVATE Common Qt6::Test)
 add_test(NAME TestsMessageSocket COMMAND TestsMessageSocket)

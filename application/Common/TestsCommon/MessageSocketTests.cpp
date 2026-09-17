@@ -79,12 +79,16 @@ namespace
    {
       class Logger : public ILogger
       {
-         void logDebug(const QString&) override {}
+      public:
+         explicit Logger(QStringList* messages = nullptr) : messages(messages) {}
+      private:
+         void logDebug(const QString& message) override { if (this->messages) this->messages->append(message); }
          void logError(const QString&) override {}
+         QStringList* messages;
       };
 
    public:
-      explicit TestPeer(BufferedSocket* socket) : MessageSocket(new Logger, socket) {}
+      explicit TestPeer(BufferedSocket* socket, QStringList* logs = nullptr) : MessageSocket(new Logger(logs), socket) {}
       std::function<void()> dataHook, acceptHook, messageHook;
       QList<MessageHeader::MessageType> receivedTypes;
 
@@ -138,6 +142,49 @@ class MessageSocketTests : public QObject
    Q_OBJECT
 
 private slots:
+   void boundedDebugLogging_data()
+   {
+      QTest::addColumn<QByteArray>("body");
+      QTest::addColumn<bool>("omitted");
+      QTest::newRow("small") << QByteArray("small diagnostic text") << false;
+      QTest::newRow("large-payload") << QByteArray(16384, 'x') << true;
+      QTest::newRow("expanded-json") << QByteArray(2048, '\x01') << true;
+   }
+
+   void boundedDebugLogging()
+   {
+#ifndef DEBUG
+      QSKIP("Debug logging is disabled in this build.");
+#else
+      QFETCH(QByteArray, body);
+      QFETCH(bool, omitted);
+      QStringList logs;
+      auto* socket = new BufferedSocket;
+      TestPeer peer(socket, &logs);
+      peer.startListening();
+      Protos::GUI::JoinRoom message;
+      message.set_name(body.toStdString());
+      logs.clear();
+      peer.send(MessageHeader::GUI_JOIN_ROOM, message);
+      QCOMPARE(logs.size(), 1);
+      const auto sentLog = logs.first();
+      logs.clear();
+      socket->input = socket->output;
+      socket->notify();
+      QCOMPARE(logs.size(), 1);
+      for (const auto& log : {sentLog, logs.first()})
+      {
+         QVERIFY(log.size() < 9 * 1024);
+         QVERIFY(log.contains("JOIN_ROOM"));
+         QVERIFY(log.contains(QString("size = %1").arg(message.ByteSizeLong())));
+         QCOMPARE(log.contains("message body omitted"), omitted);
+         if (!omitted)
+            QVERIFY(log.contains(QString::fromUtf8(body)));
+      }
+      QCOMPARE(peer.receivedTypes.size(), 1);
+#endif
+   }
+
    void sendWriteFailure_data()
    {
       QTest::addColumn<int>("failAfter");

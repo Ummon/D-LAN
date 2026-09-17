@@ -22,12 +22,28 @@ using namespace Common;
 #include <QPointer>
 #include <QScopeGuard>
 
-#include <Protos/common.pb.h>
-#include <Protos/core_protocol.pb.h>
-#include <Protos/gui_protocol.pb.h>
-
 #include <ProtoHelper.h>
 #include <Global.h>
+
+#ifdef DEBUG
+namespace
+{
+   constexpr quint32 MAX_DEBUG_PAYLOAD_SIZE = 4 * 1024;
+   constexpr qsizetype MAX_DEBUG_TEXT_SIZE = 8 * 1024;
+
+   QString messageDebugStr(const google::protobuf::Message& message, quint32 payloadSize)
+   {
+      // Check before JSON conversion so large messages do not allocate huge log strings.
+      if (payloadSize > MAX_DEBUG_PAYLOAD_SIZE)
+         return QString("[message body omitted: %1 bytes]").arg(payloadSize);
+
+      const QString text = ProtoHelper::getDebugStr(message);
+      if (text.size() > MAX_DEBUG_TEXT_SIZE)
+         return QString("[message body omitted: debug text exceeds %1 characters]").arg(MAX_DEBUG_TEXT_SIZE);
+      return text;
+   }
+}
+#endif
 
 /**
   * @class Common::MessageSocket
@@ -41,22 +57,12 @@ using namespace Common;
   * Take ownership of 'logger'.
   */
 MessageSocket::MessageSocket(MessageSocket::ILogger* logger, const Hash& localID, const Hash& remoteID) :
-   logger(logger),
-   socket(new QTcpSocket()),
-   localID(localID),
-   remoteID(remoteID),
-   localIDDefined(!localID.isNull()),
-   remoteIDDefined(!remoteID.isNull()),
-   listening(false)
+   MessageSocket(logger, new QTcpSocket(), localID, remoteID)
 {
-#ifdef DEBUG
-   this->num = ++MessageSocket::currentNum;
-   MESSAGE_SOCKET_LOG_DEBUG(QString("New MessageSocket[%1] (not connected)").arg(this->num));
-#endif
 }
 
 /**
-  * Takes the ownership of 'socket'.
+  * Takes ownership of 'logger' and 'socket'.
   * If remoteID isn't given, it will be initialized by the ID of the first received message.
   * If localID isn't given, it will be set to the remoteID when the first message is received.
   */
@@ -71,12 +77,13 @@ MessageSocket::MessageSocket(
    localID(localID),
    remoteID(remoteID),
    localIDDefined(!localID.isNull()),
-   remoteIDDefined(!remoteID.isNull()),
-   listening(false)
+   remoteIDDefined(!remoteID.isNull())
 {
 #ifdef DEBUG
    this->num = ++MessageSocket::currentNum;
-   MESSAGE_SOCKET_LOG_DEBUG(QString("New MessageSocket[%1] (connection from %2:%3)").arg(this->num).arg(socket->peerAddress().toString()).arg(socket->peerPort()));
+   MESSAGE_SOCKET_LOG_DEBUG(socket->state() == QAbstractSocket::ConnectedState
+      ? QString("New MessageSocket[%1] (connection from %2:%3)").arg(this->num).arg(socket->peerAddress().toString()).arg(socket->peerPort())
+      : QString("New MessageSocket[%1] (not connected)").arg(this->num));
 #endif
 }
 
@@ -90,17 +97,9 @@ MessageSocket::MessageSocket(
    const Hash& localID,
    const Hash& remoteID
 ) :
-   logger(logger),
-   socket(new QTcpSocket()),
-   localID(localID), remoteID(remoteID),
-   localIDDefined(!localID.isNull()),
-   remoteIDDefined(!remoteID.isNull()),
-   listening(false)
+   MessageSocket(logger, localID, remoteID)
 {
-#ifdef DEBUG
-   this->num = ++MessageSocket::currentNum;
-   MESSAGE_SOCKET_LOG_DEBUG(QString("New MessageSocket[%1] (connection to %2:%3)").arg(this->num).arg(address.toString()).arg(port));
-#endif
+   MESSAGE_SOCKET_LOG_DEBUG(QString("Socket[%1] connecting to %2:%3").arg(this->num).arg(address.toString()).arg(port));
 
    this->socket->connectToHost(address, port);
 }
@@ -169,7 +168,7 @@ void MessageSocket::send(MessageHeader::MessageType type, const google::protobuf
          .arg(
             header.toStr(),
             this->remoteID.toStrShort(),
-            message ? ProtoHelper::getDebugStr(*message) : "<empty message>"
+            message ? messageDebugStr(*message, header.getSize()) : "<empty message>"
          )
    );
 
@@ -357,7 +356,7 @@ bool MessageSocket::readMessage()
          QString::number(this->num),
          this->socket->peerAddress().toString(),
          message.getHeader().toStr(),
-         Common::ProtoHelper::getDebugStr(message.getMessage())
+         messageDebugStr(message.getMessage(), message.getHeader().getSize())
       ));
 
       // 'onNewMessage(..)' may delete this object, see 'dataReceivedSlot()'.

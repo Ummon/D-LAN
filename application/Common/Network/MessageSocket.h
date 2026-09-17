@@ -28,7 +28,6 @@
 #include <Common/Network/MessageHeader.h>
 #include <Common/Network/Message.h>
 #include <Common/Hash.h>
-#include <Common/Uncopyable.h>
 
 #ifdef DEBUG
    #define MESSAGE_SOCKET_LOG_DEBUG(mess) this->logger->logDebug(mess)
@@ -39,7 +38,7 @@
 
 namespace Common
 {
-   class MessageSocket : public QObject, Uncopyable
+   class MessageSocket : public QObject
    {
       Q_OBJECT
 
@@ -59,7 +58,7 @@ namespace Common
       MessageSocket(ILogger* logger, const QHostAddress& address, quint16 port, const Hash& localID = Hash(), const Hash& remoteID = Hash());
 
    public:
-      virtual ~MessageSocket();
+      ~MessageSocket() override;
 
    public:
       virtual Hash getLocalID() const;
@@ -122,7 +121,7 @@ namespace Common
       const bool localIDDefined;
       const bool remoteIDDefined;
 
-      bool listening;
+      bool listening = false;
       bool processingData = false;
 
       MessageHeader currentHeader;
