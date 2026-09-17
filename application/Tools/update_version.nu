@@ -6,3 +6,7 @@ open $version_file
     | str replace -r 'BUILD_TIME ".*"' ('BUILD_TIME "' + $current_date_formatted + '"')
     | str replace -r 'GIT_VERSION ".*"' ('GIT_VERSION "' + $current_git_head + '"')
     | save -f $version_file
+
+print "Values updated:"
+print $" - Current date: ($current_date_formatted)"
+print $" - Current git head: ($current_git_head)"

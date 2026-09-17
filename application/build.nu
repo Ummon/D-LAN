@@ -84,27 +84,7 @@ def "main run-tests" [] {
     print "=== RUN TESTS ==="
 
     let release_directory = get_release_directory
-
-    let exe_extension = ".exe" # No extension on Linux.
-
-    let tests = [
-        ($release_directory)/output/TestsCommon
-        ($release_directory)/output/TestsTransferRateCalculator
-        ($release_directory)/output/TestsSortedList
-        ($release_directory)/output/TestsChatSystem
-        ($release_directory)/output/TestsLogManager
-        ($release_directory)/output/TestsFileManager
-        ($release_directory)/output/TestsFilePool
-        ($release_directory)/output/TestsHashCache
-        ($release_directory)/output/TestsPeerManager
-        ($release_directory)/output/TestsUploadManager
-        ($release_directory)/output/TestsDownloadManager
-        ($release_directory)/output/TestsNetworkListener
-        ($release_directory)/output/TestsRemoteCoreController
-        ($release_directory)/output/TestsRemoteControlManager
-        ($release_directory)/output/TestsDownloadsTreeModel
-        ($release_directory)/output/TestsDownloadsFlatModel
-    ]
+    let tests = ls ($release_directory)/output | select name | where name =~ "Tests.*exe" | get name
 
     for $test in $tests {
         print $"Executing ($test)"
