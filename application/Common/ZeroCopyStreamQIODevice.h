@@ -19,29 +19,40 @@
 #pragma once
 
 #include <QIODevice>
-#include <QVector>
 
 #include <google/protobuf/io/zero_copy_stream.h>
+#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include <google/protobuf/stubs/common.h>
 
 #include <Common/Uncopyable.h>
 
 namespace Common
 {
-   class ZeroCopyOutputStreamQIODevice : public google::protobuf::io::ZeroCopyOutputStream, Uncopyable
+   class ZeroCopyOutputStreamQIODevice : public google::protobuf::io::ZeroCopyOutputStream
    {
    public:
-      ZeroCopyOutputStreamQIODevice(QIODevice* device);
-      ~ZeroCopyOutputStreamQIODevice();
-      bool Next(void** data, int* size);
-      void BackUp(int count);
-      google::protobuf::int64 ByteCount() const;
+      explicit ZeroCopyOutputStreamQIODevice(QIODevice* device);
+      bool Next(void** data, int* size) override;
+      void BackUp(int count) override;
+      google::protobuf::int64 ByteCount() const override;
+
+      // Writes pending bytes to the device, without waiting for the device itself to flush.
+      // Call after serialization to detect errors in the final buffered write.
+      bool Flush();
 
    private:
-      QIODevice* device;
-      char* buffer;
-      char* pos;
-      google::protobuf::int64 bytesWritten;
+      struct DeviceWriter : google::protobuf::io::CopyingOutputStream
+      {
+         explicit DeviceWriter(QIODevice* device) : device(device) {}
+         bool Write(const void* buffer, int size) override;
+
+         QIODevice* device;
+         bool failed = false;
+      };
+
+      DeviceWriter writer;
+      // Destroyed first, so its final flush can still use writer.
+      google::protobuf::io::CopyingOutputStreamAdaptor adapter;
    };
 
    class ZeroCopyInputStreamQIODevice : public google::protobuf::io::ZeroCopyInputStream, Uncopyable

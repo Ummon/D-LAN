@@ -44,6 +44,10 @@ add_executable(TestsTransferRateCalculator TransferRateCalculatorTests.cpp)
 target_link_libraries(TestsTransferRateCalculator PRIVATE Common Qt6::Test)
 add_test(NAME TestsTransferRateCalculator COMMAND TestsTransferRateCalculator)
 
+add_executable(TestsZeroCopyOutputStreamQIODevice ZeroCopyOutputStreamQIODeviceTests.cpp)
+target_link_libraries(TestsZeroCopyOutputStreamQIODevice PRIVATE Common Qt6::Test)
+add_test(NAME TestsZeroCopyOutputStreamQIODevice COMMAND TestsZeroCopyOutputStreamQIODevice)
+
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
    add_executable(TestsGlobalLinux GlobalLinuxTests.cpp)
    target_link_libraries(TestsGlobalLinux PRIVATE Common Qt6::Test)

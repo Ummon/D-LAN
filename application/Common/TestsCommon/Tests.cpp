@@ -2130,10 +2130,11 @@ void Tests::readAndWriteWithZeroCopyStreamQIODevice()
       ZeroCopyOutputStreamQIODevice outputStream(&file);
 
       hashMessage1.set_hash(hash1.getData(), Hash::HASH_SIZE);
-      hashMessage1.SerializeToZeroCopyStream(&outputStream);
+      QVERIFY(hashMessage1.SerializeToZeroCopyStream(&outputStream));
 
       hashMessage2.set_hash(hash2.getData(), Hash::HASH_SIZE);
-      hashMessage2.SerializeToZeroCopyStream(&outputStream);
+      QVERIFY(hashMessage2.SerializeToZeroCopyStream(&outputStream));
+      QVERIFY(outputStream.Flush());
    }
    file.close();
 

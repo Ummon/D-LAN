@@ -18,10 +18,12 @@
 
 #pragma once
 
+#include <atomic>
 #include <cstring>
 #include <optional>
 #include <span>
 #include <string>
+#include <utility>
 
 #include <QHash>
 #include <QString>
@@ -40,11 +42,13 @@ namespace Common
      * The alternative implementation of 'Hash', selected with 'SHARED_DATA' in "Hash.h".
      * The hash data is shared between the copies instead of being embedded in each object.
      *
-     * @remarks The reference counter isn't atomic: unlike 'Hash_noShare', an object of this implementation
-     *          must not be copied from two threads at the same time.
+     * @remarks Distinct objects sharing hash data may be used concurrently, including copying and destruction.
+     *          Reading or copying the same object concurrently is safe; modifying or destroying it while
+     *          another thread accesses it requires external synchronization.
      * @remarks Its observable behaviour must stay identical to the one of 'Hash_noShare', both are the same
      *          type for the rest of the application. In particular the hash values must be the same, thus
      *          the same hash function is used.
+     * @remarks The value of a moved-from hash is unspecified: it is null here while 'Hash_noShare' keeps its value.
      */
    class Hash
    {
@@ -104,7 +108,7 @@ namespace Common
 
       struct SharedData
       {
-         int nbRef;
+         std::atomic<int> nbRef { 1 };
          char hash[HASH_SIZE];
       };
 
@@ -121,18 +125,11 @@ namespace Common
          return stream;
 
       if (memcmp(Hash::NULL_HASH, data, Hash::HASH_SIZE) == 0)
-      {
-         if (hash.data)
-         {
-            hash.dereference();
-            hash.data = nullptr;
-         }
-      }
+         hash.dereference();
       else if (!hash.data || memcmp(hash.data->hash, data, Hash::HASH_SIZE) != 0)
       {
-         hash.dereference();
-         hash.newData();
-         memcpy(hash.data->hash, data, Hash::HASH_SIZE);
+         // Construct the replacement before releasing the current reference: allocation may throw.
+         hash = Hash(data);
       }
 
       return stream;
@@ -197,29 +194,22 @@ namespace Common
 }
 
 /**
-  * Removes the reference to the pointed data if it exists.
+  * Removes the reference to the pointed data if it exists, the hash becomes null.
   */
 inline void Common::Hash::dereference()
 {
-   if (this->data)
-   {
-      this->data->nbRef -= 1;
-      if (this->data->nbRef == 0)
-         delete this->data;
-   }
+   if (this->data && --this->data->nbRef == 0)
+      delete this->data;
+   this->data = nullptr;
 }
 
 inline void Common::Hash::newData()
 {
    this->data = new SharedData;
-   this->data->nbRef = 1;
 }
 
 inline void Common::Hash::releaseDataIfNull()
 {
    if (this->data && memcmp(this->data->hash, NULL_HASH, HASH_SIZE) == 0)
-   {
       this->dereference();
-      this->data = nullptr;
-   }
 }
