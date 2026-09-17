@@ -21,6 +21,7 @@ namespace
       qint64 maxWrite = std::numeric_limits<int>::max();
       qint64 failAfter = -1;
       qint64 failureResult = -1;
+      bool recoverAfterFailure = false;
       int writeCalls = 0;
 
    protected:
@@ -29,7 +30,11 @@ namespace
       {
          ++this->writeCalls;
          if (this->failAfter >= 0 && this->data.size() >= this->failAfter)
+         {
+            if (this->recoverAfterFailure)
+               this->failAfter = -1;
             return this->failureResult;
+         }
 
          qint64 written = qMin(size, this->maxWrite);
          if (this->failAfter >= 0)
@@ -45,6 +50,35 @@ class ZeroCopyOutputStreamQIODeviceTests : public QObject
    Q_OBJECT
 
 private slots:
+   void messageHeaderWriteFailure_data()
+   {
+      QTest::addColumn<int>("failAfter");
+      QTest::addColumn<int>("failureResult");
+      QTest::addColumn<bool>("withBody");
+      for (int after : {0, 1, 3, 8})
+         for (int result : {-1, 0})
+            for (bool body : {false, true})
+               QTest::newRow(qPrintable(QString("after=%1-result=%2-body=%3").arg(after).arg(result).arg(body)))
+                  << after << result << body;
+   }
+
+   void messageHeaderWriteFailure()
+   {
+      QFETCH(int, failAfter);
+      QFETCH(int, failureResult);
+      QFETCH(bool, withBody);
+      google::protobuf::Any message;
+      message.set_value("must not be written after a failed header");
+      const Common::MessageHeader header(Common::MessageHeader::GUI_REFRESH,
+         withBody ? message.ByteSizeLong() : 0, Common::Hash());
+      WriteDevice device;
+      device.failAfter = failAfter;
+      device.failureResult = failureResult;
+      device.recoverAfterFailure = true;
+      QCOMPARE(Common::Message::writeMessageToDevice(&device, header, withBody ? &message : nullptr), 0);
+      QCOMPARE(device.data.size(), failAfter);
+   }
+
    void byteCountAndBufferReuse()
    {
       WriteDevice device;

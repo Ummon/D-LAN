@@ -59,7 +59,8 @@ int Message::writeMessageToBuffer(
 
 int Message::writeMessageToDevice(QIODevice* ioDevice, const MessageHeader& header, const google::protobuf::Message* message)
 {
-   MessageHeader::writeHeader(*ioDevice, header);
+   if (!MessageHeader::writeHeader(*ioDevice, header))
+      return 0;
 
    if (message)
    {

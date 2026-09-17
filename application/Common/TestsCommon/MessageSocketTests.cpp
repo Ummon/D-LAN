@@ -14,7 +14,10 @@ namespace
    class BufferedSocket : public QTcpSocket
    {
    public:
-      QByteArray input;
+      QByteArray input, output;
+      qint64 failAfter = -1;
+      qint64 failureResult = -1;
+      bool disconnectOnWriteFailure = false;
 
       BufferedSocket()
       {
@@ -42,7 +45,18 @@ namespace
          this->input.remove(0, count);
          return count;
       }
-      qint64 writeData(const char*, qint64 size) override { return size; }
+      qint64 writeData(const char* data, qint64 size) override
+      {
+         if (this->failAfter >= 0 && this->output.size() >= this->failAfter)
+         {
+            if (this->disconnectOnWriteFailure)
+               this->close();
+            return this->failureResult;
+         }
+         const auto count = this->failAfter < 0 ? size : qMin(size, this->failAfter - this->output.size());
+         this->output.append(data, count);
+         return count;
+      }
    };
 
    class TestPeer : public Common::MessageSocket
@@ -108,6 +122,96 @@ class MessageSocketTests : public QObject
    Q_OBJECT
 
 private slots:
+   void sendWriteFailure_data()
+   {
+      QTest::addColumn<int>("failAfter");
+      QTest::addColumn<int>("failureResult");
+      QTest::addColumn<bool>("withBody");
+      for (int after : {0, 1, 3, 8, MessageHeader::HEADER_SIZE, MessageHeader::HEADER_SIZE + 3, MessageHeader::HEADER_SIZE + 4099})
+         for (int result : {-1, 0})
+            for (bool body : {false, true})
+            {
+               if (!body && after >= MessageHeader::HEADER_SIZE)
+                  continue;
+               QTest::newRow(qPrintable(QString("after=%1-result=%2-body=%3").arg(after).arg(result).arg(body)))
+                  << after << result << body;
+            }
+   }
+
+   void sendWriteFailure()
+   {
+      QFETCH(int, failAfter);
+      QFETCH(int, failureResult);
+      QFETCH(bool, withBody);
+      auto* socket = new BufferedSocket;
+      TestPeer peer(socket);
+      peer.startListening();
+      socket->failAfter = failAfter;
+      socket->failureResult = failureResult;
+      Protos::GUI::JoinRoom message;
+      message.set_name(std::string(8192, 'x'));
+      if (withBody)
+         peer.send(MessageHeader::GUI_JOIN_ROOM, message);
+      else
+         peer.send(MessageHeader::GUI_REFRESH);
+
+      QVERIFY(!peer.isConnected());
+      QCOMPARE(socket->output.size(), failAfter);
+      const auto incompleteFrame = socket->output;
+      socket->failAfter = -1;
+      peer.send(MessageHeader::GUI_REFRESH);
+      QCOMPARE(socket->output, incompleteFrame);
+   }
+
+   void successfulSends()
+   {
+      auto* socket = new BufferedSocket;
+      TestPeer peer(socket);
+      peer.startListening();
+      Protos::GUI::JoinRoom message;
+      message.set_name("room");
+      peer.send(MessageHeader::GUI_JOIN_ROOM, message);
+      peer.send(MessageHeader::GUI_REFRESH);
+      QCOMPARE(socket->output, frame(MessageHeader::GUI_JOIN_ROOM, &message) + frame(MessageHeader::GUI_REFRESH));
+      QVERIFY(peer.isConnected());
+   }
+
+   void oversizedSend()
+   {
+      auto* socket = new BufferedSocket;
+      TestPeer peer(socket);
+      peer.startListening();
+      Protos::GUI::JoinRoom message;
+      // The string alone reaches the limit; the protobuf tag and length exceed it.
+      message.mutable_name()->assign(100 * 1024 * 1024, 'x');
+      peer.send(MessageHeader::GUI_JOIN_ROOM, message);
+      QVERIFY(!peer.isConnected());
+      QVERIFY(socket->output.isEmpty());
+   }
+
+   void sendFailureDisconnectDeletesPeer_data()
+   {
+      QTest::addColumn<bool>("duringWrite");
+      QTest::newRow("close-after-failure") << false;
+      QTest::newRow("disconnect-during-write") << true;
+   }
+
+   void sendFailureDisconnectDeletesPeer()
+   {
+      QFETCH(bool, duringWrite);
+      auto* socket = new BufferedSocket;
+      QPointer<TestPeer> peer = new TestPeer(socket);
+      peer->startListening();
+      const auto connection = connect(socket, &QTcpSocket::disconnected, this, [&] { delete peer.data(); });
+      socket->failAfter = 0;
+      socket->disconnectOnWriteFailure = duringWrite;
+      peer->send(MessageHeader::GUI_REFRESH);
+      const bool deleted = peer.isNull();
+      disconnect(connection);
+      delete peer.data();
+      QVERIFY(deleted);
+   }
+
    void rejectNullWireType_data()
    {
       QTest::addColumn<quint32>("payloadSize");

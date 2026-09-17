@@ -142,10 +142,19 @@ void MessageSocket::send(MessageHeader::MessageType type)
 
 void MessageSocket::send(MessageHeader::MessageType type, const google::protobuf::Message* message)
 {
-   if (!this->listening)
+   if (!this->listening || !this->socket->isOpen())
       return;
 
-   MessageHeader header(type, message ? message->ByteSizeLong() : 0, this->localID);
+   const auto payloadSize = message ? message->ByteSizeLong() : 0;
+   if (payloadSize > MAX_MESSAGE_PAYLOAD_SIZE)
+   {
+      MESSAGE_SOCKET_LOG_ERROR(QString("Outgoing message size too big (%1), size limit is %2 bytes; closing the socket")
+         .arg(static_cast<qulonglong>(payloadSize)).arg(MAX_MESSAGE_PAYLOAD_SIZE));
+      this->socket->close();
+      return;
+   }
+
+   MessageHeader header(type, static_cast<quint32>(payloadSize), this->localID);
 
    MESSAGE_SOCKET_LOG_DEBUG(
       QString("Socket[%1]::send: %2 to %3\n%4")
@@ -157,7 +166,14 @@ void MessageSocket::send(MessageHeader::MessageType type, const google::protobuf
          )
    );
 
-   Message::writeMessageToDevice(this->socket, header, message);
+   // A write error can synchronously disconnect the socket and delete this object.
+   const QPointer<MessageSocket> self(this);
+   if (Message::writeMessageToDevice(this->socket, header, message) == 0 && self)
+   {
+      MESSAGE_SOCKET_LOG_ERROR(QString("Unable to write message (type %1); closing the socket").arg(type));
+      // A partial frame may already have been queued. Never append another message to it.
+      this->socket->close();
+   }
 }
 
 /**
