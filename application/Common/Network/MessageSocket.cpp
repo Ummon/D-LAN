@@ -251,7 +251,8 @@ void MessageSocket::dataReceivedSlot()
          self->processingData = false;
    });
 
-   while (!this->socket->atEnd() && this->listening)
+   // A callback may stop listening and hand the socket to another thread.
+   while (this->listening && !this->socket->atEnd())
    {
       this->onNewDataReceived();
       if (self.isNull())

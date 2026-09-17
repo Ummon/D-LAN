@@ -1,5 +1,6 @@
 #include <QTest>
 #include <QPointer>
+#include <QThread>
 
 #include <cstring>
 #include <functional>
@@ -56,6 +57,21 @@ namespace
          const auto count = this->failAfter < 0 ? size : qMin(size, this->failAfter - this->output.size());
          this->output.append(data, count);
          return count;
+      }
+   };
+
+   class ThreadCheckedSocket : public BufferedSocket
+   {
+   public:
+      mutable int foreignThreadReads = 0;
+      bool atEnd() const override
+      {
+         if (QThread::currentThread() != this->thread())
+         {
+            ++this->foreignThreadReads;
+            return true; // Record the violation without reading another thread's buffer.
+         }
+         return BufferedSocket::atEnd();
       }
    };
 
@@ -385,6 +401,48 @@ private slots:
       QCOMPARE(peer.receivedTypes.size(), 2);
       QCOMPARE(peer.receivedTypes.last(), MessageHeader::GUI_REFRESH_NETWORK_INTERFACES);
       QCOMPARE(socket->bytesAvailable(), 0);
+   }
+
+   void streamHandoff_data()
+   {
+      QTest::addColumn<QString>("stage");
+      QTest::addColumn<QByteArray>("trailingData");
+      for (const auto* stage : {"message", "signal"})
+      {
+         QTest::newRow(qPrintable(QString("%1-empty-buffer").arg(stage))) << QString(stage) << QByteArray();
+         QTest::newRow(qPrintable(QString("%1-buffered-stream").arg(stage))) << QString(stage) << QByteArray("raw chunk bytes");
+      }
+   }
+
+   void streamHandoff()
+   {
+      QFETCH(QString, stage);
+      QFETCH(QByteArray, trailingData);
+      QThread worker;
+      worker.start();
+      auto* socket = new ThreadCheckedSocket;
+      TestPeer peer(socket);
+      bool moved = false;
+      installHook(peer, stage, [&] {
+         peer.stopListening();
+         moved = socket->moveToThread(&worker);
+      });
+      socket->input = frame(MessageHeader::GUI_REFRESH) + trailingData;
+      peer.startListening();
+
+      // Restore ownership and stop the worker before any assertion can return.
+      bool restored = false;
+      auto* mainThread = QThread::currentThread();
+      if (moved)
+         QMetaObject::invokeMethod(socket, [&] { restored = socket->moveToThread(mainThread); }, Qt::BlockingQueuedConnection);
+      worker.quit();
+      worker.wait();
+
+      QVERIFY(moved);
+      QVERIFY(restored);
+      QCOMPARE(socket->foreignThreadReads, 0);
+      QCOMPARE(peer.receivedTypes, QList<MessageHeader::MessageType>{MessageHeader::GUI_REFRESH});
+      QCOMPARE(socket->readAll(), trailingData);
    }
 };
 
