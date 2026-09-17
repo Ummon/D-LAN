@@ -255,7 +255,7 @@ void MessageSocket::dataReceivedSlot()
    while (this->listening && !this->socket->atEnd())
    {
       this->onNewDataReceived();
-      if (self.isNull())
+      if (self.isNull() || !this->listening)
          return;
 
       if (this->currentHeader.isNull() && this->socket->bytesAvailable() >= MessageHeader::HEADER_SIZE)

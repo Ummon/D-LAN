@@ -403,6 +403,64 @@ private slots:
       QCOMPARE(socket->bytesAvailable(), 0);
    }
 
+   void stopFromDataHook_data()
+   {
+      QTest::addColumn<bool>("headerAlreadyRead");
+      QTest::newRow("before-header") << false;
+      QTest::newRow("waiting-for-body") << true;
+   }
+
+   void stopFromDataHook()
+   {
+      QFETCH(bool, headerAlreadyRead);
+      auto* socket = new BufferedSocket;
+      TestPeer peer(socket);
+      int accepted = 0;
+      QList<MessageHeader::MessageType> signaledTypes;
+      QString roomName;
+      peer.acceptHook = [&] { ++accepted; };
+      connect(&peer, &Common::MessageSocket::newMessage, this, [&](const Common::Message& message) {
+         signaledTypes.append(message.getHeader().getType());
+         if (message.getHeader().getType() == MessageHeader::GUI_JOIN_ROOM)
+            roomName = QString::fromStdString(message.getMessage<Protos::GUI::JoinRoom>().name());
+      });
+      Protos::GUI::JoinRoom message;
+      message.set_name("room");
+      const auto firstFrame = frame(MessageHeader::GUI_JOIN_ROOM, &message);
+      const auto secondFrame = frame(MessageHeader::GUI_REFRESH);
+      if (headerAlreadyRead)
+      {
+         socket->input = firstFrame.first(MessageHeader::HEADER_SIZE + 1);
+         peer.startListening();
+         QVERIFY(peer.receivedTypes.isEmpty());
+         socket->input += firstFrame.mid(MessageHeader::HEADER_SIZE + 1) + secondFrame;
+      }
+      else
+         socket->input = firstFrame + secondFrame;
+
+      peer.dataHook = [&] { peer.stopListening(); };
+      if (headerAlreadyRead)
+         socket->notify();
+      else
+         peer.startListening();
+
+      const auto unread = (headerAlreadyRead ? firstFrame.mid(MessageHeader::HEADER_SIZE) : firstFrame) + secondFrame;
+      QCOMPARE(accepted, 0);
+      QVERIFY(peer.receivedTypes.isEmpty());
+      QVERIFY(signaledTypes.isEmpty());
+      QCOMPARE(socket->bytesAvailable(), unread.size());
+      QCOMPARE(socket->peek(unread.size()), unread);
+
+      peer.dataHook = {};
+      peer.startListening();
+      const QList<MessageHeader::MessageType> expected {MessageHeader::GUI_JOIN_ROOM, MessageHeader::GUI_REFRESH};
+      QCOMPARE(peer.receivedTypes, expected);
+      QCOMPARE(signaledTypes, expected);
+      QCOMPARE(accepted, 2);
+      QCOMPARE(roomName, QString("room"));
+      QCOMPARE(socket->bytesAvailable(), 0);
+   }
+
    void streamHandoff_data()
    {
       QTest::addColumn<QString>("stage");
