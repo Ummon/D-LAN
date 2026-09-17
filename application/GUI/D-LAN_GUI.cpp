@@ -205,6 +205,16 @@ void D_LAN_GUI::loadLanguage(const QString& filename)
 
 void D_LAN_GUI::mainWindowClosed()
 {
+   // This slot is called by the window's destroyed signal.
+   this->mainWindow = nullptr;
+
+   // Check on every close, since tray support can change during the session.
+   if (!QSystemTrayIcon::isSystemTrayAvailable())
+   {
+      this->exit(true);
+      return;
+   }
+
    if (this->coreConnection->isConnected())
       // TODO: translate?
       this->trayIcon.showMessage(
@@ -212,7 +222,6 @@ void D_LAN_GUI::mainWindowClosed()
          "D-LAN Core is still running in background. Select 'exit' from the contextual menu if you want to stop it."
       );
    this->coreConnection->disconnectFromCore();
-   this->mainWindow = nullptr;
 }
 
 void D_LAN_GUI::showMainWindow()
