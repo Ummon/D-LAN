@@ -108,6 +108,75 @@ class MessageSocketTests : public QObject
    Q_OBJECT
 
 private slots:
+   void rejectNullWireType_data()
+   {
+      QTest::addColumn<quint32>("payloadSize");
+      QTest::addColumn<QByteArray>("bufferedData");
+      QTest::addColumn<bool>("fragmentedHeader");
+      const auto validFrame = frame(MessageHeader::GUI_REFRESH);
+      for (bool fragmented : {false, true})
+      {
+         const auto suffix = fragmented ? "-fragmented" : "";
+         QTest::newRow(qPrintable(QString("empty%1").arg(suffix))) << quint32(0) << QByteArray() << fragmented;
+         QTest::newRow(qPrintable(QString("missing-body%1").arg(suffix))) << quint32(123) << QByteArray() << fragmented;
+         QTest::newRow(qPrintable(QString("embedded-frame%1").arg(suffix)))
+            << quint32(validFrame.size()) << validFrame << fragmented;
+         QTest::newRow(qPrintable(QString("following-frame%1").arg(suffix))) << quint32(0) << validFrame << fragmented;
+      }
+   }
+
+   void rejectNullWireType()
+   {
+      QFETCH(quint32, payloadSize);
+      QFETCH(QByteArray, bufferedData);
+      QFETCH(bool, fragmentedHeader);
+      auto* socket = new BufferedSocket;
+      TestPeer peer(socket);
+      int accepted = 0;
+      int signaled = 0;
+      int disconnected = 0;
+      peer.acceptHook = [&] { ++accepted; };
+      connect(&peer, &Common::MessageSocket::newMessage, this, [&] { ++signaled; });
+      connect(socket, &QTcpSocket::disconnected, this, [&] { ++disconnected; });
+
+      QByteArray header(MessageHeader::HEADER_SIZE, Qt::Uninitialized);
+      MessageHeader::writeHeader(header.data(), MessageHeader(MessageHeader::NULL_MESS, payloadSize, Common::Hash()));
+      if (fragmentedHeader)
+      {
+         socket->input = header.first(header.size() - 1);
+         peer.startListening();
+         QVERIFY(peer.isConnected());
+         QCOMPARE(accepted, 0);
+         QCOMPARE(signaled, 0);
+         socket->input += header.last(1) + bufferedData;
+         socket->notify();
+      }
+      else
+      {
+         socket->input = header + bufferedData;
+         peer.startListening();
+      }
+
+      QVERIFY(!peer.isConnected());
+      QCOMPARE(disconnected, 1);
+      QCOMPARE(accepted, 0);
+      QCOMPARE(signaled, 0);
+      QVERIFY(peer.receivedTypes.isEmpty());
+   }
+
+   void nullWireTypeDisconnectDeletesPeer()
+   {
+      auto* socket = new BufferedSocket;
+      QPointer<TestPeer> peer = new TestPeer(socket);
+      const auto connection = connect(socket, &QTcpSocket::disconnected, this, [&] { delete peer.data(); });
+      socket->input = frame(MessageHeader::NULL_MESS);
+      peer->startListening();
+      const bool deleted = peer.isNull();
+      disconnect(connection);
+      delete peer.data();
+      QVERIFY(deleted);
+   }
+
    void restartDuringCallback_data()
    {
       QTest::addColumn<QString>("stage");

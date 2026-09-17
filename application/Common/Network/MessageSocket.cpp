@@ -245,6 +245,15 @@ void MessageSocket::dataReceivedSlot()
       {
          this->currentHeader = MessageHeader::readHeader(*this->socket);
 
+         // NULL_MESS is an internal sentinel, never a valid wire type. Reject it
+         // before its payload can be mistaken for the next message header.
+         if (this->currentHeader.getType() == MessageHeader::NULL_MESS)
+         {
+            MESSAGE_SOCKET_LOG_DEBUG(QString("Socket[%1]: Invalid NULL_MESS wire type, closing the socket").arg(this->num));
+            this->socket->close();
+            return;
+         }
+
          if (this->remoteID.isNull())
             this->remoteID = this->currentHeader.getSenderID();
          if (this->localID.isNull())
