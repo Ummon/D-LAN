@@ -161,6 +161,25 @@ class MessageSocketTests : public QObject
    Q_OBJECT
 
 private slots:
+   void adoptedSocketOutlivesPreviousParent()
+   {
+      auto previousOwner = std::make_unique<QObject>();
+      QPointer<BufferedSocket> socket = new BufferedSocket;
+      socket->setParent(previousOwner.get());
+      {
+         TestPeer peer(socket.data());
+         QVERIFY(socket->parent() == nullptr);
+         previousOwner.reset();
+         QVERIFY(!socket.isNull());
+
+         socket->input = frame(MessageHeader::GUI_REFRESH);
+         peer.startListening();
+         QCOMPARE(peer.receivedTypes, QList<MessageHeader::MessageType>{MessageHeader::GUI_REFRESH});
+      }
+      QCoreApplication::sendPostedEvents(socket.data(), QEvent::DeferredDelete);
+      QVERIFY(socket.isNull());
+   }
+
    void disconnectWhilePaused_data()
    {
       QTest::addColumn<bool>("fixedLocalID");
@@ -697,9 +716,11 @@ private slots:
    {
       QFETCH(QString, stage);
       QFETCH(QByteArray, trailingData);
+      QObject previousOwner;
       QThread worker;
       worker.start();
       auto* socket = new ThreadCheckedSocket;
+      socket->setParent(&previousOwner);
       TestPeer peer(socket);
       bool moved = false;
       installHook(peer, stage, [&] {

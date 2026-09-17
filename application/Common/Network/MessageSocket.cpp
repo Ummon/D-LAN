@@ -79,6 +79,10 @@ MessageSocket::MessageSocket(
    localIDDefined(!localID.isNull()),
    remoteIDDefined(!remoteID.isNull())
 {
+   // Own the socket independently of its former parent, while allowing raw
+   // transfers to move it to another thread without moving MessageSocket.
+   this->socket->setParent(nullptr);
+
 #ifdef DEBUG
    this->num = ++MessageSocket::currentNum;
    MESSAGE_SOCKET_LOG_DEBUG(socket->state() == QAbstractSocket::ConnectedState
