@@ -1,6 +1,8 @@
 #include <QtTest>
 #include <QTemporaryDir>
 #include <QItemSelectionModel>
+#include <QMimeData>
+#include <QDataStream>
 #include <limits>
 
 #include <Common/Global.h>
@@ -23,6 +25,7 @@ namespace
    public:
       using GUI::DownloadsFlatModel::DownloadsFlatModel;
       using GUI::DownloadsFlatModel::updateProgress;
+      using GUI::DownloadsFlatModel::dropMimeData;
    };
 
    struct Fixture
@@ -83,6 +86,86 @@ class TestsDownloadsFlatModel : public QObject
    Q_OBJECT
 
 private slots:
+   void emptyModelReleasesCapacity_data()
+   {
+      QTest::addColumn<int>("removal");
+      QTest::newRow("queue cleared") << 0;
+      QTest::newRow("all rows filtered") << 1;
+      QTest::newRow("all rows dragged") << 2;
+   }
+
+   void emptyModelReleasesCapacity()
+   {
+      QFETCH(int, removal);
+      Fixture f;
+      QList<quint64> ids;
+      for (int i = 0; i < 1000; ++i)
+         ids.append(i + 1);
+
+      for (int cycle = 0; cycle < 3; ++cycle)
+      {
+         f.filter.filtered.clear();
+         f.setDownloads(ids);
+         f.model.updateDownloads(f.state);
+         QCOMPARE(f.ids(), ids);
+         QVERIFY(f.model.downloads.capacity() >= ids.size());
+         QPersistentModelIndex index(f.model.index(0, 0));
+         QItemSelectionModel selection(&f.model);
+         selection.select(index, QItemSelectionModel::Select | QItemSelectionModel::Rows);
+         QSignalSpy removed(&f.model, &QAbstractItemModel::rowsRemoved);
+
+         if (removal == 2)
+         {
+            // Encode row indices without asking for decorations (this test uses QCoreApplication).
+            QByteArray encoded;
+            QDataStream stream(&encoded, QIODevice::WriteOnly);
+            for (int row = 0; row < f.model.rowCount(); ++row)
+               stream << row << 0 << QMap<int, QVariant>();
+            QMimeData mime;
+            mime.setData(f.model.mimeTypes().first(), encoded);
+            QVERIFY(f.model.dropMimeData(&mime, Qt::MoveAction, f.model.rowCount(), 0, QModelIndex()));
+         }
+         else
+         {
+            if (removal == 0)
+               f.state.clear_downloads();
+            else
+               f.filter.filtered.append(GUI::STATUS_DOWNLOADING);
+            f.model.updateDownloads(f.state);
+         }
+
+         QCOMPARE(f.model.rowCount(), 0);
+         QCOMPARE(f.model.downloads.capacity(), qsizetype(0));
+         QVERIFY(!index.isValid());
+         QVERIFY(selection.selectedRows().isEmpty());
+         QCOMPARE(removed.size(), 1);
+         QCOMPARE(removed[0][1].toInt(), 0);
+         QCOMPARE(removed[0][2].toInt(), ids.size() - 1);
+         f.state.clear_downloads();
+         f.model.updateDownloads(f.state);
+         QCOMPARE(f.model.downloads.capacity(), qsizetype(0));
+         QCOMPARE(removed.size(), 1);
+      }
+   }
+
+   void nonemptyModelKeepsCapacity()
+   {
+      Fixture f;
+      QList<quint64> ids;
+      for (int i = 0; i < 1000; ++i)
+         ids.append(i + 1);
+      f.setDownloads(ids);
+      f.model.updateDownloads(f.state);
+      const auto capacity = f.model.downloads.capacity();
+      QPersistentModelIndex first(f.model.index(0, 0));
+      f.setDownloads({1});
+      f.model.updateDownloads(f.state);
+      QCOMPARE(f.ids(), QList<quint64>{1});
+      QCOMPARE(f.model.downloads.capacity(), capacity);
+      QVERIFY(first.isValid());
+      QCOMPARE(first.row(), 0);
+   }
+
    void insertsWholeRanges_data()
    {
       QTest::addColumn<int>("oldCount");

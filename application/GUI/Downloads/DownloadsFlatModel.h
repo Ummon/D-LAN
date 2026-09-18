@@ -22,11 +22,14 @@
 
 #include <Downloads/DownloadsModel.h>
 
+class TestsDownloadsFlatModel;
+
 namespace GUI
 {
    class DownloadsFlatModel : public DownloadsModel
    {
       Q_OBJECT
+      friend class ::TestsDownloadsFlatModel; // Check retained storage after removing rows.
 
    public:
       DownloadsFlatModel(

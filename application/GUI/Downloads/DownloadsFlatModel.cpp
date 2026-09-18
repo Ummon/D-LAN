@@ -239,6 +239,9 @@ bool DownloadsFlatModel::dropMimeData(
       }
    }
 
+   if (this->downloads.isEmpty())
+      this->downloads.squeeze();
+
    this->coreConnection->moveDownloads(placeToMove, downloadIDs, position);
    return true;
 }
@@ -359,6 +362,11 @@ void DownloadsFlatModel::updateDownloads(const Protos::GUI::State& state)
       this->downloads.remove(i, this->downloads.size() - i);
       this->endRemoveRows();
    }
+
+   // QList keeps its allocation after removals. Release it once empty, while
+   // retaining capacity for ordinary updates to a nonempty queue.
+   if (this->downloads.isEmpty())
+      this->downloads.squeeze();
 }
 
 void DownloadsFlatModel::updateProgress(const Protos::GUI::State& state)
