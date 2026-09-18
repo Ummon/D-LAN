@@ -385,7 +385,18 @@ void DownloadsWidget::filterChanged()
 void DownloadsWidget::newState(const Protos::GUI::State& state)
 {
    this->latestDownloadState.mutable_downloads()->CopyFrom(state.downloads());
-   this->currentDownloadsModel->updateDownloads(this->latestDownloadState);
+   if (state.downloads_size() == 0)
+   {
+      // An inactive view normally catches up when selected, but an empty queue
+      // must also release its old downloads and saved directory expansion state.
+      if (this->downloadsFlatModel.rowCount() > 0)
+         this->downloadsFlatModel.updateDownloads(this->latestDownloadState);
+      if (this->downloadsTreeModel.rowCount() > 0)
+         this->downloadsTreeModel.updateDownloads(this->latestDownloadState);
+      this->treeViewState.deleteAllChildren();
+   }
+   else
+      this->currentDownloadsModel->updateDownloads(this->latestDownloadState);
    this->downloadsFlatModel.updateProgress(state);
 }
 

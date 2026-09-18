@@ -104,11 +104,69 @@ private slots:
       f.state.clear_downloads();
       f.send();
       QCOMPARE(tree->rowCount(), 0);
-      QCOMPARE(flat->rowCount(), 2);
+      QCOMPARE(flat->rowCount(), 0);
       QCOMPARE(flat->getTotalBytesInQueue(), quint64(0));
-      QVERIFY(flatChanges.isEmpty() && flatRemoves.isEmpty());
+      QVERIFY(flatChanges.isEmpty());
+      QCOMPARE(flatRemoves.size(), 1);
       f.switchView();
       QCOMPARE(flat->rowCount(), 0);
+   }
+
+   void emptyQueueReleasesBothModels_data()
+   {
+      QTest::addColumn<bool>("listActive");
+      QTest::newRow("clear from list") << true;
+      QTest::newRow("clear from tree") << false;
+   }
+
+   void emptyQueueReleasesBothModels()
+   {
+      QFETCH(bool, listActive);
+      Fixture f;
+      auto* flat = qobject_cast<GUI::DownloadsFlatModel*>(f.view->model());
+      QVERIFY(flat);
+      for (int i = 0; i < 250; ++i)
+         f.add(i + 1, "/directory/nested/");
+      f.send();
+      f.switchView();
+      auto* tree = qobject_cast<GUI::DownloadsTreeModel*>(f.view->model());
+      QVERIFY(tree);
+      QCOMPARE(flat->rowCount(), 250);
+      QCOMPARE(tree->getDownloadIDs(tree->index(0, 0)).size(), 250);
+      f.view->expandAll();
+      if (listActive)
+         f.switchView();
+
+      QAbstractItemModelTester flatTester(flat, QAbstractItemModelTester::FailureReportingMode::QtTest);
+      QAbstractItemModelTester treeTester(tree, QAbstractItemModelTester::FailureReportingMode::QtTest);
+      QPersistentModelIndex flatIndex(flat->index(0, 0));
+      QPersistentModelIndex treeIndex(tree->index(0, 0));
+      QSignalSpy flatRemoves(flat, &QAbstractItemModel::rowsRemoved);
+      QSignalSpy treeRemoves(tree, &QAbstractItemModel::rowsRemoved);
+      f.state.clear_downloads();
+      f.send();
+      QCOMPARE(flat->rowCount(), 0);
+      QCOMPARE(tree->rowCount(), 0);
+      QVERIFY(!flatIndex.isValid());
+      QVERIFY(!treeIndex.isValid());
+      QCOMPARE(flat->getTotalBytesInQueue(), quint64(0));
+      QCOMPARE(flatRemoves.size(), 1);
+      QCOMPARE(treeRemoves.size(), 1);
+
+      // Repeated empty states and view switches must not issue extra removals.
+      f.send();
+      f.switchView();
+      f.send();
+      QCOMPARE(f.view->model()->rowCount(), 0);
+      QCOMPARE(flatRemoves.size(), 1);
+      QCOMPARE(treeRemoves.size(), 1);
+
+      // Reusing an ID and path must recreate the rows without stale tree nodes.
+      f.add(1, "/directory/nested/");
+      f.send();
+      f.switchView();
+      QCOMPARE(flat->rowCount(), 1);
+      QCOMPARE(tree->getDownloadIDs(tree->index(0, 0)), QList<quint64>{1});
    }
 
    void progressAndEtaKeepSamplingWhileFlatIsInactive()
