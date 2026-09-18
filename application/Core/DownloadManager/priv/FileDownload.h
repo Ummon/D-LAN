@@ -21,6 +21,7 @@
 #include <QList>
 #include <QMap>
 #include <QSharedPointer>
+#include <QTimer>
 
 #include <Common/ThreadPool.h>
 
@@ -54,19 +55,19 @@ namespace DM
          Common::TransferRateCalculator& transferRateCalculator,
          Protos::Queue::Queue::Entry::Status status = Protos::Queue::Queue::Entry::QUEUED
       );
-      ~FileDownload();
+      ~FileDownload() override;
 
-      void start();
+      void start() override;
       void stop();
 
-      bool pause(bool pause);
+      bool pause(bool pause) override;
 
-      void peerSourceBecomesAvailable();
+      void peerSourceBecomesAvailable() override;
 
-      void populateQueueEntry(Protos::Queue::Queue::Entry* entry) const;
+      void populateQueueEntry(Protos::Queue::Queue::Entry* entry) const override;
 
-      quint64 getDownloadedBytes() const;
-      QSet<PM::IPeer*> getPeers() const;
+      quint64 getDownloadedBytes() const override;
+      QSet<PM::IPeer*> getPeers() const override;
 
       QSharedPointer<ChunkDownloader> getAChunkToDownload();
 
@@ -74,7 +75,7 @@ namespace DM
 
       inline qint64 getLastTimeGetAllUnfinishedChunks() const;
 
-      void remove();
+      void remove() override;
 
    public slots:
       bool retrieveHashes();
@@ -83,8 +84,12 @@ namespace DM
       void newHashKnown();
       void lastTimeGetAllUnfinishedChunksChanged(qint64 oldTime);
 
+   protected:
+      void setStatus(Protos::Common::DownloadStatus status) override;
+
    private slots:
-      bool updateStatus();
+      bool updateStatus() override;
+      void scheduleStatusUpdate();
       void result(const Protos::Core::GetHashesResult& result);
       void nextHash(const Protos::Core::HashResult&);
       void getHashTimeout();
@@ -121,6 +126,7 @@ namespace DM
       Common::TransferRateCalculator& transferRateCalculator;
 
       qint64 lastTimeGetAllUnfinishedChunks; // [ms] since epoch. Updated when ALL hashes are send via the method 'getUnfinishedChunks(..)'. 0 if never.
+      QTimer statusUpdateTimer;
    };
 }
 

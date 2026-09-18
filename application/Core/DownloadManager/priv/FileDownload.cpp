@@ -59,8 +59,13 @@ FileDownload::FileDownload(
    threadPool(threadPool),
    nbHashesKnown(0),
    transferRateCalculator(transferRateCalculator),
-   lastTimeGetAllUnfinishedChunks(0)
+   lastTimeGetAllUnfinishedChunks(0),
+   statusUpdateTimer(this)
 {
+   this->statusUpdateTimer.setSingleShot(true);
+   this->statusUpdateTimer.setInterval(0);
+   connect(&this->statusUpdateTimer, &QTimer::timeout, this, &FileDownload::updateStatus);
+
    // Invalid hashes are unknown, not occupied chunk slots. Normalize both entries so requests,
    // file creation and queue persistence cannot reuse malformed data.
    for (auto* entry : { &this->remoteEntry, &this->localEntry })
@@ -443,6 +448,7 @@ bool FileDownload::retrieveHashes()
   */
 bool FileDownload::updateStatus()
 {
+   this->statusUpdateTimer.stop();
    if (Download::updateStatus())
       return true;
 
@@ -526,6 +532,22 @@ bool FileDownload::updateStatus()
    this->setStatus(newStatus);
 
    return false;
+}
+
+void FileDownload::setStatus(Protos::Common::DownloadStatus status)
+{
+   // An explicit transition supersedes pending peer notifications. In particular,
+   // a delayed scan must not clear an error already consumed by updateStatus().
+   this->statusUpdateTimer.stop();
+   Download::setStatus(status);
+}
+
+void FileDownload::scheduleStatusUpdate()
+{
+   // Hash replies and discovery can update many chunks in one event-loop turn.
+   // Keep one pending scan; transfer start/finish and errors still update directly.
+   if (!Download::updateStatus() && !this->statusUpdateTimer.isActive())
+      this->statusUpdateTimer.start();
 }
 
 void FileDownload::result(const Protos::Core::GetHashesResult& result)
@@ -615,12 +637,12 @@ void FileDownload::nextHash(const Protos::Core::HashResult& hashResult)
       chunkDownloader->setChunk(chunk);
 
    // If we have all the chunk hashes.
-   if (++this->nbHashesKnown >= this->NB_CHUNK)
+   const bool allHashesKnown = ++this->nbHashesKnown >= this->NB_CHUNK;
+   if (allHashesKnown)
    {
       this->nbHashesKnown = this->NB_CHUNK;
       this->getHashesResult.clear();
       this->occupiedPeersAskingForHashes.setPeerAsFree(this->peerSource);
-      this->updateStatus();
    }
 
    this->connectChunkDownloaderSignals(chunkDownloader);
@@ -631,6 +653,12 @@ void FileDownload::nextHash(const Protos::Core::HashResult& hashResult)
 
    if (num < static_cast<quint32>(this->localEntry.chunks_size()))
       this->localEntry.mutable_chunks(num)->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
+
+   // Finish with the final chunk's source included. Adding it may already have
+   // started or failed a transfer and cancelled this pending scan; preserve that
+   // newer status instead of consuming a transfer error a second time.
+   if (allHashesKnown && this->statusUpdateTimer.isActive())
+      this->updateStatus();
 
    emit newHashKnown();
 }
@@ -770,7 +798,7 @@ void FileDownload::connectChunkDownloaderSignals(const QSharedPointer<ChunkDownl
       chunkDownloader.data(),
       &ChunkDownloader::numberOfPeersChanged,
       this,
-      &FileDownload::updateStatus,
+      &FileDownload::scheduleStatusUpdate,
       Qt::DirectConnection
    );
 }

@@ -67,6 +67,20 @@ namespace
       mutable int statusReads = 0;
    };
 
+   class StatusCountingFileDownload : public FileDownload
+   {
+   public:
+      using FileDownload::FileDownload;
+      int statusUpdates = 0;
+
+   protected:
+      void setStatus(Protos::Common::DownloadStatus status) override
+      {
+         ++this->statusUpdates;
+         FileDownload::setStatus(status);
+      }
+   };
+
    class EmptyHashCache : public HC::IHashCache
    {
    public:
@@ -696,6 +710,168 @@ void Tests::downloadWithOmittedHashes()
    QCOMPARE(chunks.size(), 10);
 }
 
+void Tests::coalescePeerStatusUpdates()
+{
+   HashPeer peer(this->fileManager);
+   LinkedPeers links;
+   OccupiedPeers asking, downloading;
+   Common::ThreadPool pool(1);
+   Common::TransferRateCalculator rate;
+   Protos::Common::Entry entry;
+   entry.set_type(Protos::Common::Entry::FILE);
+   entry.set_name("many-hashes.bin");
+   entry.set_size(quint64(128) * Common::Constants::CHUNK_SIZE);
+   StatusCountingFileDownload download(this->fileManager, links, asking, downloading, pool,
+      &peer, entry, entry, rate);
+   QVERIFY(download.retrieveHashes());
+   QSignalSpy newHashes(&download, &FileDownload::newHashKnown);
+   const auto sendHash = [&](int index)
+   {
+      const auto hash = Common::Hash::rand();
+      Protos::Core::HashResult result;
+      result.set_num(index);
+      result.mutable_hash()->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
+      emit peer.hashes->nextHash(result);
+   };
+
+   download.statusUpdates = 0;
+   for (int i = 0; i < 64; ++i)
+      sendHash(i);
+   QCOMPARE(newHashes.count(), 64);
+   QCOMPARE(download.statusUpdates, 0);
+   QTRY_COMPARE(download.statusUpdates, 1);
+   QCOMPARE(download.getStatus(), Protos::Common::DownloadStatus::GETTING_THE_HASHES);
+
+   download.statusUpdates = 0;
+   for (int i = 64; i < 127; ++i)
+      sendHash(i);
+   QCOMPARE(download.statusUpdates, 0);
+   sendHash(127);
+   QCOMPARE(newHashes.count(), 128);
+   // Finishing the hash request updates immediately, including the final source,
+   // and cancels the pending peer scan rather than running it again later.
+   QCOMPARE(download.statusUpdates, 1);
+   QCOMPARE(download.getStatus(), Protos::Common::DownloadStatus::QUEUED);
+   QVERIFY(asking.isPeerFree(&peer));
+   QCoreApplication::processEvents();
+   QCOMPARE(download.statusUpdates, 1);
+
+   QList<QSharedPointer<IChunkDownloader>> chunks;
+   download.getUnfinishedChunks(chunks, 128);
+   QCOMPARE(chunks.size(), 128);
+   download.statusUpdates = 0;
+   for (const auto& chunk : chunks)
+      chunk->rmPeer(&peer);
+   QCOMPARE(download.statusUpdates, 0);
+   QTRY_COMPARE(download.statusUpdates, 1);
+   QCOMPARE(download.getStatus(), Protos::Common::DownloadStatus::NO_SOURCE);
+
+   download.statusUpdates = 0;
+   for (const auto& chunk : chunks)
+      chunk->addPeer(&peer);
+   QCOMPARE(download.statusUpdates, 0);
+   QTRY_COMPARE(download.statusUpdates, 1);
+   QCOMPARE(download.getStatus(), Protos::Common::DownloadStatus::QUEUED);
+}
+
+void Tests::finalHashPreservesSchedulingError()
+{
+   class UnwritableFileManager : public MockFileManager
+   {
+      QList<QSharedPointer<FM::IChunk>> newFile(Protos::Common::Entry&) override
+      {
+         throw FM::NoWriteableDirectoryException();
+      }
+   };
+   QSharedPointer<FM::IFileManager> files(new UnwritableFileManager);
+   HashPeer peer(files);
+   LinkedPeers links;
+   OccupiedPeers asking, downloading;
+   Common::ThreadPool pool(1);
+   Common::TransferRateCalculator rate;
+   Protos::Common::Entry entry;
+   entry.set_type(Protos::Common::Entry::FILE);
+   entry.set_name("unwritable.bin");
+   entry.set_size(Common::Constants::CHUNK_SIZE);
+   StatusCountingFileDownload download(files, links, asking, downloading, pool,
+      &peer, entry, entry, rate);
+   QVERIFY(download.retrieveHashes());
+   connect(&downloading, &OccupiedPeers::newFreePeer, &download, [&]
+   {
+      QVERIFY(!download.getAChunkToDownload());
+   });
+   download.statusUpdates = 0;
+   const auto hash = Common::Hash::rand();
+   Protos::Core::HashResult result;
+   result.set_num(0);
+   result.mutable_hash()->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
+   emit peer.hashes->nextHash(result);
+   QCOMPARE(download.getStatus(), Protos::Common::DownloadStatus::NO_SHARED_DIRECTORY_TO_WRITE);
+   QCOMPARE(download.statusUpdates, 1);
+   QCoreApplication::processEvents();
+   QCOMPARE(download.getStatus(), Protos::Common::DownloadStatus::NO_SHARED_DIRECTORY_TO_WRITE);
+   QCOMPARE(download.statusUpdates, 1);
+}
+
+void Tests::pendingPeerStatusUpdateIsCancelled_data()
+{
+   QTest::addColumn<QString>("transition");
+   QTest::addColumn<int>("expectedStatus");
+   QTest::newRow("hash-timeout") << QString("timeout") << int(Protos::Common::DownloadStatus::UNABLE_TO_RETRIEVE_THE_HASHES);
+   QTest::newRow("hash-error") << QString("error") << int(Protos::Common::DownloadStatus::ENTRY_NOT_FOUND);
+   QTest::newRow("paused") << QString("pause") << int(Protos::Common::DownloadStatus::PAUSED);
+   QTest::newRow("deleted") << QString("delete") << int(Protos::Common::DownloadStatus::DELETED);
+   QTest::newRow("destroyed") << QString("destroy") << -1;
+}
+
+void Tests::pendingPeerStatusUpdateIsCancelled()
+{
+   QFETCH(QString, transition);
+   QFETCH(int, expectedStatus);
+   HashPeer peer(this->fileManager);
+   LinkedPeers links;
+   OccupiedPeers asking, downloading;
+   Common::ThreadPool pool(1);
+   Common::TransferRateCalculator rate;
+   Protos::Common::Entry entry;
+   entry.set_type(Protos::Common::Entry::FILE);
+   entry.set_name("pending-status.bin");
+   entry.set_size(quint64(2) * Common::Constants::CHUNK_SIZE);
+   auto download = std::make_unique<StatusCountingFileDownload>(this->fileManager, links,
+      asking, downloading, pool, &peer, entry, entry, rate);
+   QVERIFY(download->retrieveHashes());
+   const auto hash = Common::Hash::rand();
+   Protos::Core::HashResult result;
+   result.set_num(0);
+   result.mutable_hash()->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
+   emit peer.hashes->nextHash(result);
+   download->statusUpdates = 0;
+
+   if (transition == "timeout")
+      emit peer.hashes->timeout();
+   else if (transition == "error")
+   {
+      Protos::Core::GetHashesResult error;
+      error.set_status(Protos::Core::GetHashesResult::DONT_HAVE);
+      emit peer.hashes->result(error);
+   }
+   else if (transition == "pause")
+      QVERIFY(download->pause(true));
+   else if (transition == "delete")
+      download->setAsDeleted();
+   else
+   {
+      download.reset();
+      QCoreApplication::processEvents(); // No callback may outlive its download.
+      return;
+   }
+   QCOMPARE(int(download->getStatus()), expectedStatus);
+   QCOMPARE(download->statusUpdates, 1);
+   QCoreApplication::processEvents();
+   QCOMPARE(int(download->getStatus()), expectedStatus);
+   QCOMPARE(download->statusUpdates, 1);
+}
+
 void Tests::rejectInvalidChunkHashes_data()
 {
    QTest::addColumn<bool>("inEntry");
@@ -796,7 +972,7 @@ void Tests::chunkErrorTakesPrecedence()
       entry.add_chunks()->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
       files->chunks << QSharedPointer<FM::IChunk>(new FailingChunk(i, hash));
    }
-   CheckpointPeer peer(files), otherPeer(files);
+   CheckpointPeer peer(files), otherPeer(files), latePeer(files);
    LinkedPeers links;
    OccupiedPeers asking, downloading;
    Common::ThreadPool pool(1);
@@ -828,11 +1004,15 @@ void Tests::chunkErrorTakesPrecedence()
       QCOMPARE(download.getStatus(), Protos::Common::DownloadStatus::DOWNLOADING);
       QCOMPARE(errors.count(), 0);
       QCOMPARE(failed->getLastTransferStatus(), Protos::Common::DownloadStatus::FILE_IO_ERROR);
+      other->addPeer(&latePeer); // Leave a peer scan pending when the last transfer ends.
       other->stop();
    }
    QCOMPARE(download.getStatus(), Protos::Common::DownloadStatus::FILE_IO_ERROR);
    QCOMPARE(errors.count(), 1);
    QCOMPARE(failed->getLastTransferStatus(), Protos::Common::DownloadStatus::QUEUED);
+   QCoreApplication::processEvents();
+   QCOMPARE(download.getStatus(), Protos::Common::DownloadStatus::FILE_IO_ERROR);
+   QCOMPARE(errors.count(), 1);
 }
 
 void Tests::resetPreservesDestination_data()
