@@ -2,7 +2,7 @@
 
 #include <QString>
 #include <QList>
-#include <QSet>
+#include <QHash>
 
 namespace Common
 {
@@ -40,6 +40,7 @@ namespace Common
       static void add(ExtensionCategory cat, const QString& extension);
       static QHash<QString, ExtensionCategory> extensions;
       static QList<QList<QString>> extensionsByCategory;
+      static qsizetype maxExtensionLength;
 
       static struct Init { Init(); } initializer;
    };

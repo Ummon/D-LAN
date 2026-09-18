@@ -53,6 +53,10 @@ add_executable(TestsPersistentData PersistentDataTests.cpp)
 target_link_libraries(TestsPersistentData PRIVATE Common Qt6::Test)
 add_test(NAME TestsPersistentData COMMAND TestsPersistentData)
 
+add_executable(TestsKnownExtensions KnownExtensionsTests.cpp)
+target_link_libraries(TestsKnownExtensions PRIVATE Common Qt6::Test)
+add_test(NAME TestsKnownExtensions COMMAND TestsKnownExtensions)
+
 add_executable(TestsZeroCopyOutputStreamQIODevice ZeroCopyOutputStreamQIODeviceTests.cpp)
 target_link_libraries(TestsZeroCopyOutputStreamQIODevice PRIVATE Common Qt6::Test)
 add_test(NAME TestsZeroCopyOutputStreamQIODevice COMMAND TestsZeroCopyOutputStreamQIODevice)

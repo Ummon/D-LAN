@@ -1,4 +1,5 @@
 #include <Common/KnownExtensions.h>
+#include <QStringView>
 using namespace Common;
 
 bool KnownExtensions::exists(const QString& extension)
@@ -30,14 +31,27 @@ ExtensionCategory KnownExtensions::getCategoryFrom(const QString& extension)
 
 int KnownExtensions::getBeginningExtension(const QString& filename)
 {
-   int i = 0;
-   while ((i = filename.indexOf('.', i + 1)) != -1)
+   // Only the final maxExtensionLength characters can be a known extension.
+   // As before, a leading dot alone does not introduce an extension.
+   qsizetype i = filename.indexOf('.', qMax(qsizetype(1), filename.size() - maxExtensionLength - 1));
+   if (i == -1 || i == filename.size() - 1)
+      return -1;
+
+   const QString normalized = filename.mid(i + 1).toLower();
+   QStringView suffix(normalized);
+   while (true)
    {
-      if (i == filename.length() - 1)
+      // This temporary QString borrows normalized's storage without allocating.
+      if (extensions.contains(QString::fromRawData(suffix.data(), suffix.size())))
+         return static_cast<int>(i + 1);
+
+      i = filename.indexOf('.', i + 1);
+      if (i == -1 || i == filename.size() - 1)
          break;
 
-      if (exists(filename.right(filename.length() - 1 - i)))
-         return i + 1;
+      // Lowercasing can expand Unicode characters, so advance through the
+      // original and normalized strings independently to preserve the index.
+      suffix = suffix.sliced(suffix.indexOf('.') + 1);
    }
 
    return -1;
@@ -67,6 +81,7 @@ QString KnownExtensions::getExtension(const QString& filename)
 void KnownExtensions::add(ExtensionCategory cat, const QString& extension)
 {
    extensions.insert(extension, cat);
+   maxExtensionLength = qMax(maxExtensionLength, extension.size());
 
    int i = (int)cat;
    while (i >= extensionsByCategory.length())
@@ -175,7 +190,7 @@ KnownExtensions::Init::Init()
 
 QHash<QString, ExtensionCategory> KnownExtensions::extensions;
 QList<QList<QString>> KnownExtensions::extensionsByCategory;
+qsizetype KnownExtensions::maxExtensionLength = 0;
 
 KnownExtensions::Init KnownExtensions::initializer;
-
 
