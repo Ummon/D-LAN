@@ -21,7 +21,7 @@ using namespace Common;
 
 #include <QFile>
 #include <QDir>
-#include <QTextStream>
+#include <QStringConverter>
 #include <QtDebug>
 
 #include <google/protobuf/text_format.h>
@@ -129,8 +129,9 @@ try
          if (status.code() != absl::StatusCode::kOk)
             throw PersistentDataIOException(QString("Unable to transform the message into JSON: %1").arg(status.ToString()));
 
-         QTextStream stream(&file);
-         stream << QString::fromStdString(json);
+         const auto size = static_cast<qint64>(json.size());
+         if (file.write(json.data(), size) != size || !file.flush())
+            throw PersistentDataIOException(QString("Unable to write JSON into the file: %1, error: %2").arg(TEMP_FILEPATH, file.errorString()));
 #if !DEBUG
       }
       else
@@ -162,13 +163,27 @@ try
    if (humanReadable)
    {
 #endif
-      QTextStream stream(&file);
-      std::string json = stream.readAll().toStdString();
+      QByteArray json = file.readAll();
+      if (file.error() != QFileDevice::NoError)
+         throw PersistentDataIOException(QString("Unable to read JSON from the file: %1, error: %2").arg(filepath, file.errorString()));
+
+      // Keep QTextStream's support for files saved by an editor as UTF-16/32
+      // with a BOM. Normal UTF-8 files need no intermediate string conversion.
+      const auto encoding = QStringConverter::encodingForData(json);
+      if (encoding && *encoding != QStringConverter::Utf8)
+      {
+         QStringDecoder decoder(*encoding);
+         const QString decoded = decoder(json);
+         json = decoded.toUtf8();
+      }
+      absl::string_view jsonView(json.constData(), static_cast<size_t>(json.size()));
+      if (json.startsWith("\xef\xbb\xbf"))
+         jsonView.remove_prefix(3);
 
       google::protobuf::util::JsonParseOptions jsonOptions;
       jsonOptions.ignore_unknown_fields = true;
 
-      auto status = google::protobuf::util::JsonStringToMessage(json, &data, jsonOptions);
+      auto status = google::protobuf::util::JsonStringToMessage(jsonView, &data, jsonOptions);
       if (!status.ok())
          throw PersistentDataIOException(QString::fromStdString(std::string(status.message())));
 

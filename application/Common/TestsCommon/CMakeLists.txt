@@ -49,6 +49,10 @@ target_link_libraries(TestsSettings PRIVATE Common Qt6::Test)
 add_test(NAME TestsSettings COMMAND TestsSettings)
 set_tests_properties(TestsSettings PROPERTIES TIMEOUT 30)
 
+add_executable(TestsPersistentData PersistentDataTests.cpp)
+target_link_libraries(TestsPersistentData PRIVATE Common Qt6::Test)
+add_test(NAME TestsPersistentData COMMAND TestsPersistentData)
+
 add_executable(TestsZeroCopyOutputStreamQIODevice ZeroCopyOutputStreamQIODeviceTests.cpp)
 target_link_libraries(TestsZeroCopyOutputStreamQIODevice PRIVATE Common Qt6::Test)
 add_test(NAME TestsZeroCopyOutputStreamQIODevice COMMAND TestsZeroCopyOutputStreamQIODevice)
