@@ -10,9 +10,12 @@ def main [] {
 # Build everything, it will not clean by default.
 def "main build-all" [
     --clean # Clean all previous compiled files.
+    --no-translations
 ] {
     print "=== BUILD ALL ==="
-    main translations
+    if not $no_translations {
+      main translations
+    }
     main compile --clean=$clean
     main run-tests
     main make-setup
