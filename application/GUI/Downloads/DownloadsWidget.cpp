@@ -384,9 +384,13 @@ void DownloadsWidget::filterChanged()
 
 void DownloadsWidget::newState(const Protos::GUI::State& state)
 {
-   this->latestDownloadState.mutable_downloads()->CopyFrom(state.downloads());
    if (state.downloads_size() == 0)
    {
+      // Clear()/CopyFrom(empty) retain Protobuf's allocated downloads and their
+      // nested buffers. Swap them into a temporary so they are destroyed here.
+      Protos::GUI::State empty;
+      this->latestDownloadState.Swap(&empty);
+
       // An inactive view normally catches up when selected, but an empty queue
       // must also release its old downloads and saved directory expansion state.
       if (this->downloadsFlatModel.rowCount() > 0)
@@ -396,7 +400,10 @@ void DownloadsWidget::newState(const Protos::GUI::State& state)
       this->treeViewState.deleteAllChildren();
    }
    else
+   {
+      this->latestDownloadState.mutable_downloads()->CopyFrom(state.downloads());
       this->currentDownloadsModel->updateDownloads(this->latestDownloadState);
+   }
    this->downloadsFlatModel.updateProgress(state);
 }
 

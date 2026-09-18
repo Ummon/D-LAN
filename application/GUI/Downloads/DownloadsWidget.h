@@ -41,6 +41,8 @@ namespace Ui {
    class DownloadsWidget;
 }
 
+class TestsDownloadsWidget;
+
 namespace GUI
 {
    class DownloadsDelegate : public QStyledItemDelegate
@@ -58,6 +60,7 @@ namespace GUI
    class DownloadsWidget : public QWidget
    {
       Q_OBJECT
+      friend class ::TestsDownloadsWidget; // Verify retained snapshot storage, not just visible rows.
    public:
       explicit DownloadsWidget(
          QSharedPointer<RCC::ICoreConnection> coreConnection,

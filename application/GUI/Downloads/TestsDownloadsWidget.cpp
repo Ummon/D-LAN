@@ -169,6 +169,50 @@ private slots:
       QCOMPARE(tree->getDownloadIDs(tree->index(0, 0)), QList<quint64>{1});
    }
 
+   void emptyQueueReleasesSnapshotStorage_data()
+   {
+      QTest::addColumn<bool>("listActive");
+      QTest::newRow("clear from list") << true;
+      QTest::newRow("clear from tree") << false;
+   }
+
+   void emptyQueueReleasesSnapshotStorage()
+   {
+      QFETCH(bool, listActive);
+      Fixture f;
+      if (!listActive)
+         f.switchView();
+      const auto& snapshot = f.widget.latestDownloadState;
+      const auto emptyBytes = snapshot.SpaceUsedLong();
+
+      // Repeat with different queue sizes to cover rebuilding after release.
+      for (int count : {512, 128, 512})
+      {
+         for (int i = 0; i < count; ++i)
+         {
+            f.add(i + 1);
+            auto* download = f.state.mutable_downloads(i);
+            download->mutable_local_entry()->set_name(std::string(2048, 'a') + std::to_string(i));
+            download->set_peer_source_nick(std::string(256, 'b'));
+            download->add_peer_ids()->set_hash(std::string(Common::Hash::HASH_SIZE, 'c'));
+         }
+         f.send();
+         QCOMPARE(snapshot.downloads_size(), count);
+         QVERIFY(snapshot.SpaceUsedLong() > emptyBytes + count * 2048);
+         QCOMPARE(snapshot.downloads(0).SerializeAsString(), f.state.downloads(0).SerializeAsString());
+         f.switchView();
+         QCOMPARE(f.view->model()->rowCount(), count);
+         f.switchView();
+
+         f.state.clear_downloads();
+         f.send();
+         QCOMPARE(snapshot.downloads_size(), 0);
+         QCOMPARE(snapshot.SpaceUsedLong(), emptyBytes);
+         f.send(); // Already empty: no retained buffers should reappear.
+         QCOMPARE(snapshot.SpaceUsedLong(), emptyBytes);
+      }
+   }
+
    void progressAndEtaKeepSamplingWhileFlatIsInactive()
    {
       Fixture f;
