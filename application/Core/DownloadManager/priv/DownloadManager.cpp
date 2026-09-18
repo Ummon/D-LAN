@@ -503,6 +503,9 @@ void DownloadManager::peerNoLongerDownloadingChunk(PM::IPeer* peer)
   */
 void DownloadManager::scanTheQueue()
 {
+   if (this->numberOfDownloadThreadRunning >= NUMBER_OF_DOWNLOADER)
+      return;
+
    L_DEBU("Scanning the queue . . .");
 
    int numberOfDownloadThreadRunningCopy = this->numberOfDownloadThreadRunning;
