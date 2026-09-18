@@ -288,14 +288,11 @@ Directory* Directory::getSubDir(const QString& name) const
 {
    QMutexLocker locker(&this->mutex);
 
-   for (QListIterator<Directory*> i(this->subDirs.getList()); i.hasNext();)
-   {
-      Directory* d = i.next();
-      if (d->getName() == name)
-         return d;
-   }
-
-   return nullptr;
+   return
+      this->subDirs.getItem(
+         name.toLower(),
+         [&name](const Directory* const& dir) { return dir->getName() == name; }
+      ).value_or(nullptr);
 }
 
 QList<Directory*> Directory::getSubDirs() const

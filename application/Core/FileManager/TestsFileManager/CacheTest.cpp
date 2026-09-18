@@ -1021,6 +1021,53 @@ void CacheTest::directoryFileLookupFollowsChanges()
    cache.deleteEntry(files[1]);
 }
 
+void CacheTest::subdirectoryLookupFollowsChanges()
+{
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   auto source = root->getRootDir()->createSubDir("source");
+   auto destination = root->getRootDir()->createSubDir("destination");
+   QVERIFY(!source->getSubDir("missing"));
+
+   // These are cache entries only, so case variants work on every filesystem.
+   const QStringList names { "z", "Folder", "folder", "FOLDER", "a",
+      QString::fromUtf8("\xc3\x84"), QString::fromUtf8("\xc3\xa4") };
+   QList<FM::Directory*> directories;
+   for (const auto& name : names)
+      directories.append(source->createSubDir(name));
+   for (int i = 0; i < names.size(); ++i)
+   {
+      QCOMPARE(source->getSubDir(names[i]), directories[i]);
+      QCOMPARE(source->createSubDir(names[i]), directories[i]);
+   }
+   QCOMPARE(source->getSubDirs().size(), names.size());
+   QVERIFY(!source->getSubDir("FoLdEr"));
+   QVERIFY(!source->getSubDir("0"));
+   QVERIFY(!source->getSubDir("middle"));
+   QVERIFY(!source->getSubDir(QString::fromUtf8("\xc3\xb6")));
+
+   auto renamed = directories.first();
+   renamed->rename("Folder");
+   QVERIFY(!source->getSubDir("z"));
+   QCOMPARE(source->getSubDir("Folder"), directories[1]);
+   directories[1]->rename("Folder");
+   QCOMPARE(source->getSubDir("Folder"), renamed);
+
+   renamed->moveInto(destination);
+   QCOMPARE(source->getSubDir("Folder"), directories[1]);
+   QCOMPARE(destination->getSubDir("Folder"), renamed);
+   destination->stealContent(source);
+   QVERIFY(source->getSubDirs().isEmpty());
+   QCOMPARE(destination->getSubDir("Folder"), renamed);
+   renamed->del(false);
+   cache.deleteEntry(renamed);
+   QCOMPARE(destination->getSubDir("Folder"), directories[1]);
+}
+
 void CacheTest::directoryFileLookupDuringRenameRemoval()
 {
    QTemporaryDir temp;
