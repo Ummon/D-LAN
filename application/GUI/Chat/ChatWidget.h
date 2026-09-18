@@ -25,6 +25,7 @@
 #include <QTextCharFormat>
 #include <QUrl>
 #include <QMap>
+#include <QByteArray>
 
 #include <Common/Containers/SortedList.h>
 #include <Common/RemoteCoreController/ICoreConnection.h>
@@ -40,6 +41,8 @@
 namespace Ui {
   class ChatWidget;
 }
+
+class TestsChatCompletion;
 
 namespace GUI
 {
@@ -76,6 +79,7 @@ namespace GUI
    class ChatWidget : public MdiWidget
    {
       Q_OBJECT
+      friend class ::TestsChatCompletion;
    public:
       explicit ChatWidget(
          QSharedPointer<RCC::ICoreConnection> coreConnection,
@@ -181,11 +185,12 @@ namespace GUI
       };
       QList<AnswerCursors> answerCursors; // In the same order as answers.
       struct AnswerState {
-         QString text;
+         QByteArray textFingerprint;
          QList<Answer> answers;
       };
       QMap<int, AnswerState> answerHistory;
       QString previousMessageText;
+      QByteArray previousMessageFingerprint;
       bool peerNameInsertionMode;
       Answer currentAnswer;
       AutoComplete* autoComplete;

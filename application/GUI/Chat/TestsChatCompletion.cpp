@@ -86,6 +86,116 @@ class TestsChatCompletion : public QObject
    Q_OBJECT
 
 private slots:
+   void draftHistoryDoesNotRetainFullText()
+   {
+      Fixture f;
+      // Avoid measuring layout of a large draft; contentsChange still updates reply history.
+      f.editor->document()->setLayoutEnabled(false);
+      QTextCursor cursor = f.editor->textCursor();
+      const QString chunk = QString(1023, QChar('x')) + '\n';
+      for (int i = 0; i < 200; ++i)
+      {
+         cursor.beginEditBlock();
+         cursor.insertText(chunk);
+         cursor.endEditBlock();
+      }
+      QCOMPARE(f.editor->toPlainText(), chunk.repeated(200));
+      QVERIFY(f.widget.answerHistory.size() >= 200);
+      qsizetype retainedBytes = 0;
+      for (const auto& state : f.widget.answerHistory)
+      {
+         retainedBytes += state.textFingerprint.size();
+         QVERIFY(state.answers.isEmpty());
+      }
+      // The old full-text snapshots retained 41,164,800 bytes for this 400 KiB draft.
+      QVERIFY(retainedBytes < 16 * 1024);
+
+      for (int i = 0; i < 200; ++i)
+         f.editor->undo();
+      QVERIFY(f.editor->toPlainText().isEmpty());
+      for (int i = 0; i < 200; ++i)
+         f.editor->redo();
+      QCOMPARE(f.editor->toPlainText(), chunk.repeated(200));
+      f.editor->clear();
+      QCOMPARE(f.widget.answerHistory.size(), 1);
+      QVERIFY(f.widget.previousMessageText.isEmpty());
+      QVERIFY(f.widget.getPeerAnswers().isEmpty());
+   }
+
+   void replyReferencesSurviveUndoRedo()
+   {
+      const QString nick = QString::fromUcs4(U"Alice\U0001f600");
+      Fixture f({ nick });
+      f.type("@Ali");
+      f.key(Qt::Key_Tab);
+      const auto peers = f.widget.getPeerAnswers();
+      QCOMPARE(peers.size(), 1);
+      const QString completed = f.editor->toPlainText();
+
+      QTextCursor cursor = f.editor->textCursor();
+      cursor.setPosition(0);
+      cursor.beginEditBlock();
+      cursor.insertText("prefix ");
+      cursor.endEditBlock();
+      QCOMPARE(f.widget.getPeerAnswers(), peers);
+      f.editor->undo();
+      QCOMPARE(f.editor->toPlainText(), completed);
+      QCOMPARE(f.widget.getPeerAnswers(), peers);
+      f.editor->redo();
+      QCOMPARE(f.widget.getPeerAnswers(), peers);
+
+      // Formatting changes preserve the text and its reply reference.
+      cursor.select(QTextCursor::Document);
+      QTextCharFormat format;
+      format.setFontWeight(QFont::Bold);
+      cursor.mergeCharFormat(format);
+      QCOMPARE(f.widget.getPeerAnswers(), peers);
+      f.editor->undo();
+      QCOMPARE(f.widget.getPeerAnswers(), peers);
+      f.editor->redo();
+      QCOMPARE(f.widget.getPeerAnswers(), peers);
+
+      // Replace one character inside the mention, leaving the draft length unchanged.
+      cursor.setPosition(8);
+      cursor.setPosition(9, QTextCursor::KeepAnchor);
+      cursor.insertText("Z");
+      QVERIFY(f.widget.getPeerAnswers().isEmpty());
+      f.editor->undo();
+      QCOMPARE(f.widget.getPeerAnswers(), peers);
+      f.editor->redo();
+      QVERIFY(f.widget.getPeerAnswers().isEmpty());
+      f.editor->undo();
+      QCOMPARE(f.widget.getPeerAnswers(), peers);
+      f.editor->clear();
+      QVERIFY(f.widget.getPeerAnswers().isEmpty());
+      QCOMPARE(f.widget.answerHistory.size(), 1);
+   }
+
+   void replacingRedoBranchDoesNotRestoreReplies()
+   {
+      Fixture f;
+      f.type("@Ali");
+      f.key(Qt::Key_Tab);
+      QCOMPARE(f.widget.getPeerAnswers().size(), 1);
+      f.editor->undo();
+      QCOMPARE(f.editor->toPlainText(), QString("@Ali"));
+      QVERIFY(f.widget.getPeerAnswers().isEmpty());
+
+      // Recreate exactly the discarded completion's text as an ordinary edit.
+      QTextCursor cursor = f.editor->textCursor();
+      cursor.setPosition(1);
+      cursor.movePosition(QTextCursor::End, QTextCursor::KeepAnchor);
+      cursor.insertText("Alice ");
+      QCOMPARE(f.editor->toPlainText(), QString("@Alice "));
+      QVERIFY(!f.editor->document()->isRedoAvailable());
+      QVERIFY(f.widget.getPeerAnswers().isEmpty());
+      f.editor->undo();
+      QVERIFY(f.widget.getPeerAnswers().isEmpty());
+      f.editor->redo();
+      QCOMPARE(f.editor->toPlainText(), QString("@Alice "));
+      QVERIFY(f.widget.getPeerAnswers().isEmpty());
+   }
+
    void chatDocumentsReuseAndRelayout()
    {
       GUI::Emoticons emoticons("nonexistent-test-emoticons");

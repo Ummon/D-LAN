@@ -40,12 +40,24 @@ using namespace GUI;
 #include <QIcon>
 #include <QDesktopServices>
 #include <QScopedPointer>
+#include <QCryptographicHash>
 #include <QtMath>
 
 #include <Log.h>
 #include <Common/Settings.h>
 
 Q_DECLARE_METATYPE(QHostAddress)
+
+namespace
+{
+   QByteArray messageFingerprint(const QString& text)
+   {
+      // Hash the UTF-16 buffer directly; these fingerprints only live in this widget.
+      return QCryptographicHash::hash(
+         QByteArrayView(reinterpret_cast<const char*>(text.constData()), text.size() * sizeof(QChar)),
+         QCryptographicHash::Sha256);
+   }
+}
 
 void PeerListChatDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
@@ -640,13 +652,14 @@ void ChatWidget::documentChanged(int position, int charsRemoved, int charsAdded)
    const QString previousText = this->previousMessageText;
    const QString messageText = this->ui->txtMessage->document()->toRawText();
    this->previousMessageText = messageText;
+   this->previousMessageFingerprint = messageFingerprint(messageText);
    auto* document = this->ui->txtMessage->document();
    if (!document->isUndoAvailable() && !document->isRedoAvailable())
       this->answerHistory.clear();
 
    // New commands discard their old branch in undoCommandAdded; an existing state is an undo/redo target.
    const auto saved = this->answerHistory.constFind(document->availableUndoSteps());
-   if (saved != this->answerHistory.constEnd() && saved->text == messageText)
+   if (saved != this->answerHistory.constEnd() && saved->textFingerprint == this->previousMessageFingerprint)
    {
       this->answers.clear();
       this->answers.insert(saved->answers);
@@ -680,7 +693,8 @@ void ChatWidget::documentChanged(int position, int charsRemoved, int charsAdded)
 void ChatWidget::rememberAnswers()
 {
    auto* document = this->ui->txtMessage->document();
-   this->answerHistory.insert(document->availableUndoSteps(), { this->previousMessageText, this->answers.getList() });
+   // Keep a fixed-size text check per undo state instead of retaining every full draft.
+   this->answerHistory.insert(document->availableUndoSteps(), { this->previousMessageFingerprint, this->answers.getList() });
 
    // Undo snapshots keep fixed positions; only the current answers have live cursors.
    if (!document->isUndoRedoEnabled() && !this->answerCursors.isEmpty())
@@ -1037,6 +1051,7 @@ void ChatWidget::init()
    connect(this->ui->txtMessage->document()->documentLayout(), &QAbstractTextDocumentLayout::documentSizeChanged,
       this, &ChatWidget::updateMessageHeight, Qt::QueuedConnection);
    this->previousMessageText = this->ui->txtMessage->document()->toRawText();
+   this->previousMessageFingerprint = messageFingerprint(this->previousMessageText);
    this->rememberAnswers();
    connect(this->ui->txtMessage->document(), &QTextDocument::undoCommandAdded, this, [this]() {
       // A new edit after undo replaces the redo branch, including its reply references.
