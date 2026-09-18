@@ -98,6 +98,14 @@ void TaskbarImplWin::winEvent(MSG* message, qintptr* /*result*/)
 
 void TaskbarImplWin::initTaskbarButton()
 {
+   // Windows can announce a recreated taskbar button. Drop the previous COM
+   // reference before CoCreateInstance overwrites it, even if creation fails.
+   if (this->taskbarInterface)
+   {
+      this->taskbarInterface->Release();
+      this->taskbarInterface = nullptr;
+   }
+
    static const GUID IID_ITaskbarList3 = {0xea1afb91, 0x9e28, 0x4b86, {0x90, 0xE9, 0x9e, 0x9f, 0x8a, 0x5e, 0xef, 0xaf}};
    HRESULT hr = CoCreateInstance(CLSID_TaskbarList, NULL, CLSCTX_INPROC_SERVER, IID_ITaskbarList3, reinterpret_cast<void**>(&(this->taskbarInterface)));
 
@@ -112,4 +120,3 @@ void TaskbarImplWin::initTaskbarButton()
       }
    }
 }
-
