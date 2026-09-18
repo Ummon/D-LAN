@@ -19,6 +19,7 @@
 #include <TableLogModel.h>
 
 #include <QTextStream>
+#include <QElapsedTimer>
 
 #include <Common/LogManager/LogMacros.h>
 #include <Common/LogManager/Builder.h>
@@ -34,22 +35,25 @@ TableLogModel::TableLogModel() :
    source(nullptr), showMultipleLines(false)
 {
    this->timer.setInterval(500);
-   connect(&this->timer, &QTimer::timeout, this, &TableLogModel::fileChanged);
+   connect(&this->timer, &QTimer::timeout, this, &TableLogModel::refresh);
+   this->readTimer.setSingleShot(true);
+   this->readTimer.setInterval(0);
+   connect(&this->readTimer, &QTimer::timeout, this, &TableLogModel::readLines);
 }
 
 int TableLogModel::rowCount(const QModelIndex& parent) const
 {
-   return this->filteredEntries.count();
+   return parent.isValid() ? 0 : this->filteredEntries.count();
 }
 
 int TableLogModel::columnCount(const QModelIndex& parent) const
 {
-   return 6;
+   return parent.isValid() ? 0 : 6;
 }
 
 QVariant TableLogModel::data(const QModelIndex& index, int role) const
 {
-   if (index.row() >= this->filteredEntries.count())
+   if (!index.isValid() || index.row() < 0 || index.row() >= this->filteredEntries.count())
       return QVariant();
 
    switch (role)
@@ -119,7 +123,10 @@ void TableLogModel::setDataSource(QFile* source)
 {
    this->clear();
    this->source = source;
-   this->readLines();
+   this->stream.setDevice(source);
+   this->stream.setEncoding(QStringConverter::Utf8);
+   if (source)
+      this->readTimer.start();
 }
 
 void TableLogModel::setShowMultipleLines(bool enabled)
@@ -128,7 +135,8 @@ void TableLogModel::setShowMultipleLines(bool enabled)
       return;
 
    this->showMultipleLines = enabled;
-   emit(dataChanged(this->index(0, 5), this->index(this->filteredEntries.size()-1, 5)));
+   if (!this->filteredEntries.isEmpty())
+      emit dataChanged(this->index(0, MESSAGE), this->index(this->filteredEntries.size() - 1, MESSAGE));
 }
 
 void TableLogModel::removeDataSource()
@@ -139,7 +147,7 @@ void TableLogModel::removeDataSource()
 
 LM::Severity TableLogModel::getSeverity(int row) const
 {
-   if (row >= this->filteredEntries.count())
+   if (row < 0 || row >= this->filteredEntries.count())
       return LM::SV_UNKNOWN;
    return this->filteredEntries[row]->getSeverity();
 }
@@ -163,9 +171,9 @@ void TableLogModel::setFilter(const QStringList& severities, const QStringList& 
 {
    this->beginResetModel();
 
-   this->severitiesFilter = severities;
-   this->modulesFilter = modules;
-   this->threadsFilter = threads;
+   this->severitiesFilter = QSet<QString>(severities.begin(), severities.end());
+   this->modulesFilter = QSet<QString>(modules.begin(), modules.end());
+   this->threadsFilter = QSet<QString>(threads.begin(), threads.end());
 
    this->filteredEntries.clear();
 
@@ -175,8 +183,7 @@ void TableLogModel::setFilter(const QStringList& severities, const QStringList& 
          this->filteredEntries << entry;
    }
 
-   if (!this->currentSearch.isEmpty())
-      this->search(this->currentSearch);
+   this->rebuildSearch();
 
    this->endResetModel();
 }
@@ -188,12 +195,21 @@ void TableLogModel::resetFilter()
 
 void TableLogModel::search(const QString& word)
 {
+   this->currentSearch = word;
+   this->rebuildSearch();
+   if (!this->filteredEntries.isEmpty())
+      emit dataChanged(this->index(0, MESSAGE), this->index(this->filteredEntries.size() - 1, MESSAGE));
+}
+
+void TableLogModel::rebuildSearch()
+{
    this->indexesFound.clear();
-   this->currentSearch = word.toLower();
+   if (this->currentSearch.isEmpty())
+      return;
 
    for (int row = 0; row < this->filteredEntries.size(); ++row)
    {
-      if (this->filteredEntries[row]->getMessage().toLower().contains(this->currentSearch))
+      if (this->filteredEntries[row]->getMessage().contains(this->currentSearch, Qt::CaseInsensitive))
          this->indexesFound.append(row);
    }
 }
@@ -275,9 +291,10 @@ void TableLogModel::setWatchingPause(bool pause)
       this->timer.start();
 }
 
-void TableLogModel::fileChanged()
+void TableLogModel::refresh()
 {
-   this->readLines();
+   if (this->source && !this->readTimer.isActive())
+      this->readTimer.start();
 }
 
 bool TableLogModel::isFiltered(const QSharedPointer<LM::IEntry>& entry) const
@@ -295,15 +312,16 @@ void TableLogModel::readLines()
    if (!this->source)
       return;
 
-   QTextStream stream(this->source);
-   stream.setEncoding(QStringConverter::Utf8);
-
-   const int count = this->filteredEntries.count();
-
-   QString line;
-   while (line = stream.readLine(), !line.isNull())
+   // Keep the stream between batches: QTextStream can buffer beyond QFile::pos().
+   // Bound both parsing time and batch size, then return to the event loop.
+   QElapsedTimer elapsed;
+   elapsed.start();
+   QVector<QSharedPointer<LM::IEntry>> visible;
+   int linesRead = 0;
+   while (!this->stream.atEnd() && linesRead < 256 && elapsed.elapsed() < 8)
    {
-      line = line.trimmed();
+      QString line = this->stream.readLine().trimmed();
+      ++linesRead;
       if (line.isEmpty())
          continue;
 
@@ -337,7 +355,7 @@ void TableLogModel::readLines()
          }
 
          if (!this->isFiltered(entry))
-            this->filteredEntries << entry;
+            visible << entry;
       }
       catch (LM::MalformedEntryLog&)
       {
@@ -345,21 +363,31 @@ void TableLogModel::readLines()
       }
    }
 
-   if (this->filteredEntries.count() - count <= 0)
-      return;
+   if (!visible.isEmpty())
+   {
+      const int first = this->filteredEntries.size();
+      this->beginInsertRows(QModelIndex(), first, first + visible.size() - 1);
+      this->filteredEntries << visible;
+      if (!this->currentSearch.isEmpty())
+         for (int row = first; row < this->filteredEntries.size(); ++row)
+            if (this->filteredEntries[row]->getMessage().contains(this->currentSearch, Qt::CaseInsensitive))
+               this->indexesFound.append(row);
+      this->endInsertRows();
+      emit newLogEntries(visible.size());
+   }
 
-   this->beginInsertRows(QModelIndex(), count, this->filteredEntries.count() - 1);
-   this->endInsertRows();
-
-   emit(newLogEntries(this->filteredEntries.count() - count));
+   if (!this->stream.atEnd())
+      this->readTimer.start();
+   else
+      emit loadingFinished();
 }
 
 void TableLogModel::clear()
 {
-   if (this->entries.empty())
-      return;
-
-   this->beginRemoveRows(QModelIndex(), 0, this->filteredEntries.count() - 1);
+   this->readTimer.stop();
+   this->stream.setDevice(nullptr);
+   this->source = nullptr;
+   this->beginResetModel();
    this->severities.clear();
    this->modules.clear();
    this->threads.clear();
@@ -370,5 +398,6 @@ void TableLogModel::clear()
 
    this->entries.clear();
    this->filteredEntries.clear();
-   this->endRemoveRows();
+   this->indexesFound.clear();
+   this->endResetModel();
 }

@@ -151,7 +151,7 @@
      </layout>
     </item>
     <item>
-     <widget class="QTableView" name="tblLog">
+     <widget class="LogTableView" name="tblLog">
       <property name="toolTip">
        <string notr="true"/>
       </property>
@@ -360,6 +360,13 @@
   <tabstop>tblLog</tabstop>
   <tabstop>butFilterAll</tabstop>
  </tabstops>
+ <customwidgets>
+  <customwidget>
+   <class>LogTableView</class>
+   <extends>QTableView</extends>
+   <header>LogTableView.h</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="resources.qrc"/>
  </resources>

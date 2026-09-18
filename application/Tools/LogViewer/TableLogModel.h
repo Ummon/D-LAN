@@ -23,8 +23,8 @@
 #include <QVector>
 #include <QSharedPointer>
 #include <QStringList>
-#include <QFileSystemWatcher>
-#include <QSocketNotifier>
+#include <QTextStream>
+#include <QSet>
 #include <QTimer>
 
 #include <Common/LogManager/IEntry.h>
@@ -62,7 +62,6 @@ public:
 
    void setFilter(const QStringList& severities, const QStringList& modules, const QStringList& threads);
    void resetFilter();
-   // bool isFiltered(int num, const QStringList& severities, const QStringList& modules, const QStringList& threads) const;
 
    void search(const QString& word);
    std::pair<int, QModelIndex> nextResult(const QModelIndex& from, bool reverse = false) const;
@@ -75,6 +74,7 @@ public:
 
 public slots:
    void setWatchingPause(bool pause);
+   void refresh();
 
 signals:
    /**
@@ -85,27 +85,28 @@ signals:
    void newSeverity(QString);
    void newModule(QString);
    void newThread(QString);
-
-private slots:
-   void fileChanged();
+   void loadingFinished();
 
 private:
    bool isFiltered(const QSharedPointer<LM::IEntry>& entry) const;
    void readLines();
 
    void clear();
+   void rebuildSearch();
 
    QFile* source;
    QTimer timer;
+   QTimer readTimer;
+   QTextStream stream;
 
    QVector<QSharedPointer<LM::IEntry>> entries;
    QVector<QSharedPointer<LM::IEntry>> filteredEntries;
 
    bool showMultipleLines;
 
-   QStringList severitiesFilter;
-   QStringList modulesFilter;
-   QStringList threadsFilter;
+   QSet<QString> severitiesFilter;
+   QSet<QString> modulesFilter;
+   QSet<QString> threadsFilter;
 
    QStringList severities;
    QStringList modules;

@@ -18,15 +18,13 @@
   
 #pragma once
 
-#include <QMap>
+#include <QCache>
+#include <QSharedPointer>
 #include <QTextDocument>
 #include <QStyledItemDelegate>
 
 class TableLogItemDelegate : public QStyledItemDelegate
 {
-   static const QString OPEN_HTML_FOUND_TERM;
-   static const QString CLOSE_HTML_FOUND_TERM;
-
 public:
    TableLogItemDelegate(QObject* parent = nullptr);
 
@@ -36,7 +34,12 @@ public:
    void resetSizesCache();
 
 private:
-   void configureDoc(QTextDocument& doc, const QStyleOptionViewItem& option, const QModelIndex& index) const;
-
-   mutable QMap<QModelIndex, QSize> sizesCache;
+   struct CachedDocument
+   {
+      QString text;
+      QFont font;
+      QSharedPointer<QTextDocument> document;
+   };
+   QSharedPointer<QTextDocument> document(const QStyleOptionViewItem& option, const QModelIndex& index) const;
+   mutable QCache<QModelIndex, CachedDocument> documents;
 };

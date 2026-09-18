@@ -21,143 +21,107 @@
 #include <QApplication>
 #include <QPainter>
 #include <QAbstractTextDocumentLayout>
-
-#include <Common/LogManager/IEntry.h>
+#include <QTextCursor>
+#include <cmath>
 
 #include <TableLogModel.h>
 
-/**
-  * @class TableLogItemDelegate
-  *
-  * Override the paint method for table log items and
-  * draw them in function of their severity.
-  */
-
-
-const QString TableLogItemDelegate::OPEN_HTML_FOUND_TERM("<span style=\"font-weight: bold;color: #FFFF00;background-color: #21218B;\">");
-const QString TableLogItemDelegate::CLOSE_HTML_FOUND_TERM("</span>");
-
 TableLogItemDelegate::TableLogItemDelegate(QObject* parent) :
-   QStyledItemDelegate(parent)
+   QStyledItemDelegate(parent), documents(4 * 1024 * 1024)
 {
 }
 
 void TableLogItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-   const TableLogModel* model = static_cast<const TableLogModel*>(index.model());
+   const auto* model = static_cast<const TableLogModel*>(index.model());
+   QStyleOptionViewItem opt = option;
+   this->initStyleOption(&opt, index);
+   QStyle* style = opt.widget ? opt.widget->style() : QApplication::style();
 
-   QStyleOptionViewItem styleOption = option;
-   this->initStyleOption(&styleOption, index); // Pulls in selection state, etc.
-   QStyle* style = styleOption.widget ? styleOption.widget->style() : QApplication::style();
-
-   QTextDocument doc;
-   this->configureDoc(doc, option, index);
-
-   // Draw the styled background/selection but suppress the default text.
-   styleOption.text.clear();
-   style->drawControl(QStyle::CE_ItemViewItem, &styleOption, painter, styleOption.widget);
-
-   painter->save();
-
-   if (index.column() == TableLogModel::SEVERITY)
+   if (index.column() != TableLogModel::MESSAGE)
    {
-      switch (model->getSeverity(index.row()))
+      if (index.column() == TableLogModel::SEVERITY)
       {
-      case LM::SV_END_USER :
-         painter->fillRect(styleOption.rect, QColor(41, 33, 53));
-         break;
-      case LM::SV_WARNING :
-         painter->fillRect(styleOption.rect, QColor(0, 47, 28));
-         break;
-      case LM::SV_ERROR :
-         painter->fillRect(styleOption.rect, QColor(200, 0, 0));
-         // newOption.palette.setColor(QPalette::Text, QColor(255, 255, 255));
-         break;
-      case LM::SV_FATAL_ERROR :
-         painter->fillRect(styleOption.rect, QColor(50, 0, 0));
-         // newOption.palette.setColor(QPalette::Text, QColor(255, 255, 0));
-         break;
-      // No special color for these cases.
-      case LM::SV_DEBUG :
-      case LM::SV_UNKNOWN :
-      default:;
+         switch (model->getSeverity(index.row()))
+         {
+         case LM::SV_END_USER: opt.backgroundBrush = QColor(41, 33, 53); break;
+         case LM::SV_WARNING: opt.backgroundBrush = QColor(0, 47, 28); break;
+         case LM::SV_ERROR: opt.backgroundBrush = QColor(200, 0, 0); break;
+         case LM::SV_FATAL_ERROR: opt.backgroundBrush = QColor(50, 0, 0); break;
+         default: break;
+         }
+      }
+      style->drawControl(QStyle::CE_ItemViewItem, &opt, painter, opt.widget);
+      return;
+   }
+
+   const auto doc = this->document(opt, index);
+   opt.text.clear();
+   style->drawControl(QStyle::CE_ItemViewItem, &opt, painter, opt.widget);
+
+   QAbstractTextDocumentLayout::PaintContext ctx;
+   ctx.palette = opt.palette;
+   if (opt.state & QStyle::State_Selected)
+      ctx.palette.setColor(QPalette::Text, opt.palette.color(QPalette::Active, QPalette::HighlightedText));
+
+   // Highlight rendered text, without injecting markup into the log's HTML.
+   if (!model->currentSearchTerm().isEmpty() && model->inSearchResult(index))
+   {
+      QTextCursor cursor(doc.data());
+      while (!(cursor = doc->find(model->currentSearchTerm(), cursor)).isNull())
+      {
+         QAbstractTextDocumentLayout::Selection selection;
+         selection.cursor = cursor;
+         selection.format.setForeground(QColor("#FFFF00"));
+         selection.format.setBackground(QColor("#21218B"));
+         ctx.selections.append(selection);
       }
    }
 
-   // Use the correct text colour for the selected/normal state.
-   QAbstractTextDocumentLayout::PaintContext ctx;
-   if (styleOption.state & QStyle::State_Selected)
-      ctx.palette.setColor(QPalette::Text, styleOption.palette.color(QPalette::Active, QPalette::HighlightedText));
-
-   QRect textRect = style->subElementRect(QStyle::SE_ItemViewItemText, &styleOption, styleOption.widget);
+   const QRect textRect = style->subElementRect(QStyle::SE_ItemViewItemText, &opt, opt.widget);
+   painter->save();
    painter->translate(textRect.topLeft());
-   painter->setClipRect(textRect.translated(-textRect.topLeft()));
-
+   painter->setClipRect(QRect(QPoint(0, 0), textRect.size()));
    ctx.clip = QRectF(0, 0, textRect.width(), textRect.height());
-   doc.documentLayout()->draw(painter, ctx);
-
+   doc->documentLayout()->draw(painter, ctx);
    painter->restore();
 }
 
 QSize TableLogItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-   const auto& i = this->sizesCache.find(index);
-   if (i != this->sizesCache.constEnd())
-      return i.value();
+   if (index.column() != TableLogModel::MESSAGE)
+      return QStyledItemDelegate::sizeHint(option, index);
 
    QStyleOptionViewItem opt = option;
    this->initStyleOption(&opt, index);
-
-   QTextDocument doc;
-   this->configureDoc(doc, option, index);
-
-   QSize size(int(doc.idealWidth()), int(doc.size().height()));
-
-   this->sizesCache.insert(index, size);
-
-   return size;
+   const auto doc = this->document(opt, index);
+   return QSize(int(std::ceil(doc->idealWidth())) + 4, int(std::ceil(doc->size().height())) + 4);
 }
 
 void TableLogItemDelegate::resetSizesCache()
 {
-   this->sizesCache.clear();
+   this->documents.clear();
 }
 
-void TableLogItemDelegate::configureDoc(QTextDocument& doc, const QStyleOptionViewItem& option, const QModelIndex& index) const
+QSharedPointer<QTextDocument> TableLogItemDelegate::document(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-   const TableLogModel* model = static_cast<const TableLogModel*>(index.model());
+   if (const auto* cached = this->documents.object(index))
+      if (cached->text == option.text && cached->font == option.font)
+         return cached->document;
 
-   QStyleOptionViewItem styleOption = option;
-   this->initStyleOption(&styleOption, index); // Pulls in selection state, etc.
-
-   QTextOption textOption = doc.defaultTextOption();
+   auto doc = QSharedPointer<QTextDocument>::create();
+   doc->setDocumentMargin(2);
+   doc->setDefaultFont(option.font);
+   QTextOption textOption;
    textOption.setWrapMode(QTextOption::NoWrap);
-   doc.setDefaultTextOption(textOption);
+   doc->setDefaultTextOption(textOption);
+   doc->setHtml(option.text);
+   doc->setTextWidth(-1); // Intrinsic, unwrapped layout is independent of column width.
 
-   if (index.column() == TableLogModel::MESSAGE)
-   {
-      QString message = styleOption.text;
-      if (model->inSearchResult(index))
-      {
-         const QString& term = model->currentSearchTerm();
-         int i = 0;
-         while ((i = message.indexOf(term, i, Qt::CaseInsensitive)) != -1)
-         {
-            message.insert(i, OPEN_HTML_FOUND_TERM);
-            i += term.size() + OPEN_HTML_FOUND_TERM.size();
-            message.insert(i, CLOSE_HTML_FOUND_TERM);
-            i += CLOSE_HTML_FOUND_TERM.size();
-         }
-         // message.replace(QChar::LineSeparator, "<br>");
-         // message.replace("\n", "<br>");
-      }
-      doc.setHtml(message);
-   }
-   else
-   {
-      doc.setPlainText(styleOption.text);
-   }
-
-   doc.setDefaultFont(styleOption.font);
-   doc.setTextWidth(styleOption.rect.width());
+   // Approximate layout cost, including text/formatting overhead. Oversized messages
+   // are rendered but not retained. Shared ownership keeps cache eviction safe.
+   const qint64 cost = 1024 + qint64(option.text.size()) * 2 + qint64(doc->characterCount()) * 64;
+   if (cost <= this->documents.maxCost())
+      this->documents.insert(index, new CachedDocument{option.text, option.font, doc}, int(cost));
+   return doc;
 }

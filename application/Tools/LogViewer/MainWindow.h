@@ -28,7 +28,6 @@
 #include <Common/LogManager/LogMacros.h>
 
 #include <TableLogModel.h>
-#include <TableLogItemDelegate.h>
 #include <TooglableList/TooglableList.h>
 
 namespace Ui { class MainWindow; }
@@ -52,7 +51,7 @@ private slots:
    void filtersChange();
    void checkAll();
 
-   void reloadAll();
+   void refresh();
    void newLogEntries(int n);
 
    void setWatchingPause(bool pause);
@@ -65,7 +64,7 @@ private:
    LOG_INIT_H("LogViewer")
 
    void setCurrentDir(const QString& dir);
-   void readCurrentDir();
+   void readCurrentDir(bool selectNewest = true);
    void closeCurrentFile();
    void refreshFilters();
 
@@ -80,7 +79,7 @@ private:
    Ui::MainWindow* ui;
 
    TableLogModel model;
-   TableLogItemDelegate delegate;
+   QTimer followTimer;
 
    QDir currentDir;
    QFile* currentFile;

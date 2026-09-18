@@ -44,14 +44,13 @@ MainWindow::MainWindow(QWidget *parent) :
    connect(this->ui->actOpen, &QAction::triggered, this, &MainWindow::openDir);
    connect(this->ui->actShowMultipleLines, &QAction::triggered, this, &MainWindow::setShowMultipleLines);
    connect(this->ui->butFilterAll, &QPushButton::clicked, this, &MainWindow::checkAll);
-   connect(this->ui->butRefresh, &QPushButton::clicked, this, &MainWindow::reloadAll);
+   connect(this->ui->butRefresh, &QPushButton::clicked, this, &MainWindow::refresh);
 
    connect(this->ui->txtSearch, &QLineEdit::returnPressed, this, &MainWindow::search);
 
    this->currentDir.setSorting(QDir::Name);
    this->ui->tblLog->setWordWrap(false);
    this->ui->tblLog->setModel(&this->model);
-   this->ui->tblLog->setItemDelegate(&this->delegate);
 
    this->ui->tblLog->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
    this->ui->tblLog->horizontalHeader()->resizeSection(TableLogModel::DATE_TIME, 140);
@@ -59,10 +58,8 @@ MainWindow::MainWindow(QWidget *parent) :
    this->ui->tblLog->horizontalHeader()->resizeSection(TableLogModel::MODULE_NAME, 150);
    this->ui->tblLog->horizontalHeader()->resizeSection(TableLogModel::THREAD_NAME, 120);
    this->ui->tblLog->horizontalHeader()->resizeSection(TableLogModel::SOURCE, 200);
-   this->ui->tblLog->horizontalHeader()->setSectionResizeMode(TableLogModel::MESSAGE, QHeaderView::ResizeToContents);
+   this->ui->tblLog->horizontalHeader()->resizeSection(TableLogModel::MESSAGE, 600);
    this->ui->tblLog->verticalHeader()->setDefaultAlignment(Qt::AlignTop);
-   this->ui->tblLog->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-   this->ui->tblLog->verticalHeader()->setDefaultSectionSize(17);
    this->ui->tblLog->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
    this->ui->tblLog->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
    this->ui->tblLog->setAutoScroll(false);
@@ -81,14 +78,20 @@ MainWindow::MainWindow(QWidget *parent) :
    this->lblStatus = new QLabel(this->ui->statusBar);
    this->ui->statusBar->addWidget(this->lblStatus);
 
+   // Coalesce tail scrolling while the loader supplies small batches.
+   this->followTimer.setSingleShot(true);
+   this->followTimer.setInterval(50);
+   connect(&this->followTimer, &QTimer::timeout, this->ui->tblLog, &QTableView::scrollToBottom);
+   connect(&this->model, &TableLogModel::newLogEntries, this, &MainWindow::newLogEntries);
+
    connect(this->ui->butPause, &QPushButton::toggled, this, &MainWindow::setWatchingPause);
    this->setWatchingPause(false);
 }
 
 MainWindow::~MainWindow()
 {
-    delete this->ui;
     this->closeCurrentFile();
+    delete this->ui;
 }
 
 void MainWindow::changeEvent(QEvent *e)
@@ -150,8 +153,8 @@ void MainWindow::openDir()
 
 void MainWindow::setShowMultipleLines(bool checked)
 {
-   this->delegate.resetSizesCache();
    this->model.setShowMultipleLines(checked);
+   this->ui->tblLog->setShowMultipleLines(checked);
 }
 
 /**
@@ -160,7 +163,6 @@ void MainWindow::setShowMultipleLines(bool checked)
 void MainWindow::setCurrentFile(QString file)
 {
    this->closeCurrentFile();
-   disconnect(&this->model, &TableLogModel::newLogEntries, nullptr, nullptr);
 
    this->currentFile = new QFile(this->currentDir.absolutePath() + '/' + file);
    if (currentFile->exists() && this->currentFile->open(QIODevice::ReadOnly))
@@ -172,9 +174,6 @@ void MainWindow::setCurrentFile(QString file)
       connect(&this->model, &TableLogModel::newSeverity, this->severities, &TooglableList::addItem);
       connect(&this->model, &TableLogModel::newModule, this->modules, &TooglableList::addItem);
       connect(&this->model, &TableLogModel::newThread, this->threads, &TooglableList::addItem);
-
-      this->ui->tblLog->scrollToBottom();
-      connect(&this->model, &TableLogModel::newLogEntries, this, &MainWindow::newLogEntries);
    }
 }
 
@@ -203,27 +202,28 @@ void MainWindow::checkAll()
 }
 
 /**
-  * Reread the current directory and reload the current file.
+  * Update the file list and read only new entries in the selected file.
   */
-void MainWindow::reloadAll()
+void MainWindow::refresh()
 {
    if (!this->currentFile || !this->currentDir.exists())
       return;
 
-   this->delegate.resetSizesCache();
+   this->readCurrentDir(false);
+   if (!this->currentFile)
+      return;
 
-   this->readCurrentDir();
-
-   this->ui->cmbFile->setCurrentIndex(this->ui->cmbFile->findText(QFileInfo(this->currentFile->fileName()).fileName()));
-   this->currentFile->reset();
-   this->model.setDataSource(this->currentFile);
-
-   this->refreshFilters();
+   // A truncated file no longer contains the entries represented by the model.
+   if (this->currentFile->size() < this->currentFile->pos())
+      this->setCurrentFile(this->ui->cmbFile->currentText());
+   else
+      this->model.refresh();
 }
 
-void MainWindow::newLogEntries(int n)
+void MainWindow::newLogEntries(int /*n*/)
 {
-   this->ui->tblLog->scrollToBottom();
+   if (!this->followTimer.isActive())
+      this->followTimer.start();
 }
 
 void MainWindow::setWatchingPause(bool pause)
@@ -310,10 +310,11 @@ void MainWindow::setCurrentDir(const QString& dir)
 
 /**
   * Read or refresh the current directory set with 'setCurrentDirectory'.
-  * The newest file will become the current file and be automatically loaded.
+  * Follow the newest file by default; manual refresh preserves the selection.
   */
-void MainWindow::readCurrentDir()
+void MainWindow::readCurrentDir(bool selectNewest)
 {
+   const QString selectedFile = this->currentFile ? QFileInfo(this->currentFile->fileName()).fileName() : QString();
    this->currentDir.refresh();
    QStringList entries(this->currentDir.entryList());
    disconnect(this->ui->cmbFile, &QComboBox::currentTextChanged, 0, 0);
@@ -326,10 +327,20 @@ void MainWindow::readCurrentDir()
          this->ui->cmbFile->addItem(d);
       }
    }
-   this->ui->cmbFile->setCurrentIndex(this->ui->cmbFile->count() - 1);
+   const int selectedIndex = selectNewest ? -1 : this->ui->cmbFile->findText(selectedFile);
+   this->ui->cmbFile->setCurrentIndex(selectedIndex >= 0 ? selectedIndex : this->ui->cmbFile->count() - 1);
 
    if (this->ui->cmbFile->count() > 0)
-      this->setCurrentFile(this->ui->cmbFile->itemText(this->ui->cmbFile->count() - 1));
+   {
+      const QString file = this->ui->cmbFile->currentText();
+      if (!this->currentFile || this->currentFile->fileName() != this->currentDir.absoluteFilePath(file))
+         this->setCurrentFile(file);
+   }
+   else
+   {
+      this->closeCurrentFile();
+      this->refreshFilters();
+   }
 
    connect(
       this->ui->cmbFile,
@@ -341,6 +352,7 @@ void MainWindow::readCurrentDir()
 
 void MainWindow::closeCurrentFile()
 {
+   this->followTimer.stop();
    disconnect(&this->model, &TableLogModel::newSeverity, this->severities, &TooglableList::addItem);
    disconnect(&this->model, &TableLogModel::newModule, this->modules, &TooglableList::addItem);
    disconnect(&this->model, &TableLogModel::newThread, this->threads, &TooglableList::addItem);
