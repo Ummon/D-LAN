@@ -156,9 +156,19 @@ bool StringUtils::isKorean(const QString& str)
   */
 bool StringUtils::isJapanese(const QString& str)
 {
-   // Some kana are outside the Basic Multilingual Plane, so inspect full code points.
-   for (const char32_t c : str.toUcs4())
+   // Decode supplementary kana in place, without allocating a UTF-32 copy.
+   for (qsizetype i = 0; i < str.size(); ++i)
    {
+      const QChar first = str.at(i);
+      char32_t c = first.unicode();
+      if (first.isHighSurrogate() && i + 1 < str.size() && str.at(i + 1).isLowSurrogate())
+      {
+         c = QChar::surrogateToUcs4(first, str.at(i + 1));
+         ++i;
+      }
+      else if (first.isSurrogate())
+         continue; // Unpaired surrogates cannot identify Japanese.
+
       const QChar::Script script = QChar::script(c);
       if (script == QChar::Script_Hiragana || script == QChar::Script_Katakana)
          return true;

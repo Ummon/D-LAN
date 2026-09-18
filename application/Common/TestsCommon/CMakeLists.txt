@@ -57,6 +57,10 @@ add_executable(TestsKnownExtensions KnownExtensionsTests.cpp)
 target_link_libraries(TestsKnownExtensions PRIVATE Common Qt6::Test)
 add_test(NAME TestsKnownExtensions COMMAND TestsKnownExtensions)
 
+add_executable(TestsStringUtils StringUtilsTests.cpp)
+target_link_libraries(TestsStringUtils PRIVATE Common Qt6::Test)
+add_test(NAME TestsStringUtils COMMAND TestsStringUtils)
+
 add_executable(TestsZeroCopyOutputStreamQIODevice ZeroCopyOutputStreamQIODeviceTests.cpp)
 target_link_libraries(TestsZeroCopyOutputStreamQIODevice PRIVATE Common Qt6::Test)
 add_test(NAME TestsZeroCopyOutputStreamQIODevice COMMAND TestsZeroCopyOutputStreamQIODevice)
