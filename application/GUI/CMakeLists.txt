@@ -230,6 +230,16 @@ if(DLAN_BUILD_TESTS)
    add_test(NAME TestsDownloadsWidget COMMAND TestsDownloadsWidget)
    set_tests_properties(TestsDownloadsWidget PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 30)
 
+   add_executable(TestsBrowseModel
+      Browse/TestsBrowseModel.cpp Browse/BrowseModel.cpp Settings/SharedEntryListModel.cpp
+      IconProvider.cpp Log.cpp resources.qrc
+   )
+   set_target_properties(TestsBrowseModel PROPERTIES AUTORCC ON)
+   target_include_directories(TestsBrowseModel PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+   target_link_libraries(TestsBrowseModel PRIVATE RemoteCoreController LogManager Common Qt6::Widgets Qt6::Svg Qt6::Test)
+   add_test(NAME TestsBrowseModel COMMAND TestsBrowseModel)
+   set_tests_properties(TestsBrowseModel PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 30)
+
    add_executable(TestsSearchModel
       Search/TestsSearchModel.cpp Search/SearchModel.cpp Browse/BrowseModel.cpp
       Peers/PeerListModel.cpp Settings/SharedEntryListModel.cpp

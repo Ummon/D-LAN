@@ -98,6 +98,8 @@ namespace GUI
          virtual ~Tree();
 
          virtual void insertChildren(const Protos::Common::Entries& entries);
+         void insertChildren(const Protos::Common::Entries& entries, int first, int count, int position);
+         void removeChildren(int first, int count);
          virtual void setItem(const Protos::Common::Entry& entry) override;
          virtual bool hasUnloadedChildren() const;
          virtual QVariant data(int column) const;

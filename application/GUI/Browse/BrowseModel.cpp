@@ -21,6 +21,8 @@ using namespace GUI;
 
 #include <QPixmap>
 #include <QFileInfo>
+#include <QHash>
+#include <vector>
 #include <IconProvider.h>
 
 #include <Common/Global.h>
@@ -329,20 +331,42 @@ void BrowseModel::synchronize(BrowseModel::Tree* tree, const Protos::Common::Ent
 
    int i = 0; // Children of 'Tree'.
    int j = 0; // Entries.
+   int firstModified = -1;
+   auto flushModified = [&]()
+   {
+      if (firstModified >= 0)
+      {
+         emit dataChanged(this->createIndex(firstModified, 0, tree->getChild(firstModified)),
+            this->createIndex(i - 1, this->columnCount() - 1, tree->getChild(i - 1)));
+         firstModified = -1;
+      }
+   };
 
    while (i < tree->getNbChildren() || j < entries.entries_size())
    {
       // New entry.
       if (i >= tree->getNbChildren() || j < entries.entries_size() && tree->getChild(i)->getItem() > entries.entries(j))
       {
-         this->beginInsertRows(parentIndex, i, i);
-         tree->insertChild(entries.entries(j++), i++);
+         flushModified();
+         const int first = j++;
+         while (j < entries.entries_size() &&
+            (i >= tree->getNbChildren() || entries.entries(j) < tree->getChild(i)->getItem()))
+            j++;
+         const int count = j - first;
+         this->beginInsertRows(parentIndex, i, i + count - 1);
+         tree->insertChildren(entries, first, count, i);
          this->endInsertRows();
+         i += count;
       }
       else if (j >= entries.entries_size() || tree->getChild(i)->getItem() < entries.entries(j)) // Entry deleted.
       {
-         this->beginRemoveRows(parentIndex, i, i);
-         delete tree->getChild(i);
+         flushModified();
+         int last = i;
+         while (last + 1 < tree->getNbChildren() &&
+            (j >= entries.entries_size() || tree->getChild(last + 1)->getItem() < entries.entries(j)))
+            last++;
+         this->beginRemoveRows(parentIndex, i, last);
+         tree->removeChildren(i, last - i + 1);
          this->endRemoveRows();
       }
       else // Entry paths are equal.
@@ -350,12 +374,16 @@ void BrowseModel::synchronize(BrowseModel::Tree* tree, const Protos::Common::Ent
          if (!sameDisplayedContent(tree->getChild(i)->getItem(), entries.entries(j)))
          {
             tree->getChild(i)->setItem(entries.entries(j));
-            emit dataChanged(this->createIndex(i, 0, tree->getChild(i)), this->createIndex(i, 1, tree->getChild(i)));
+            if (firstModified < 0)
+               firstModified = i;
          }
+         else
+            flushModified();
          i++;
          j++;
       }
    }
+   flushModified();
 }
 
 /**
@@ -364,48 +392,53 @@ void BrowseModel::synchronize(BrowseModel::Tree* tree, const Protos::Common::Ent
   */
 void BrowseModel::synchronizeRoot(const Protos::Common::Entries& entries)
 {
-   QModelIndex parentIndex = QModelIndex();
-
-   int j = 0; // Root's children.
-   for (int i = 0 ; i < entries.entries_size(); i++)
+   const QModelIndex parentIndex;
+   QHash<QByteArray, Tree*> existing;
+   existing.reserve(this->root->getNbChildren());
+   auto id = [](const Protos::Common::Entry& entry) { return QByteArray::fromStdString(entry.shared_entry().id().hash()); };
+   for (int row = 0; row < this->root->getNbChildren(); ++row)
    {
-      // We've searching if the entry already exists.
-      for (int j2 = j; j2 < this->root->getNbChildren(); j2++)
-      {
-         // ID's are equal -> same entry.
-         if (entries.entries(i).shared_entry().id().hash() == this->root->getChild(j2)->getItem().shared_entry().id().hash())
-         {
-            // The entry data may have changed.
-            if (
-               entries.entries(i) != this->root->getChild(j2)->getItem() ||
-               entries.entries(i).shared_entry().shared_name() != this->root->getChild(j2)->getItem().shared_entry().shared_name()
-            )
-            {
-               this->root->getChild(j2)->setItem(entries.entries(i));
-               emit dataChanged(this->index(j2, 0), this->index(j2, this->columnCount() - 1));
-            }
-
-            if (j2 != j) // 'beginMoveRows(..)' crashes if j2 == j.
-            {
-               this->beginMoveRows(parentIndex, j2, j2, parentIndex, j);
-               this->root->moveChild(j2, j);
-               this->endMoveRows();
-            }
-            j++;
-            goto nextEntry;
-         }
-      }
-      // The entry doesn't exist, we create it.
-      this->beginInsertRows(parentIndex, j, j);
-      this->root->insertChild(entries.entries(i), j++);
-      this->endInsertRows();
-      nextEntry:;
+      auto* child = this->root->getChild(row);
+      existing.insert(id(child->getItem()), child);
    }
 
-   while (j < this->root->getNbChildren())
+   int row = 0;
+   while (row < entries.entries_size())
    {
-      this->beginRemoveRows(QModelIndex(), j, j);
-      delete this->root->getChild(j);
+      auto* child = existing.value(id(entries.entries(row)), nullptr);
+      if (child)
+      {
+         // Avoid a position scan for roots that are already in the right place.
+         if (this->root->getChild(row) != child)
+         {
+            const int previousRow = child->getOwnPosition();
+            this->beginMoveRows(parentIndex, previousRow, previousRow, parentIndex, row);
+            this->root->moveChild(previousRow, row);
+            this->endMoveRows();
+         }
+         if (entries.entries(row) != child->getItem() ||
+            entries.entries(row).shared_entry().shared_name() != child->getItem().shared_entry().shared_name())
+         {
+            child->setItem(entries.entries(row));
+            emit dataChanged(this->index(row, 0), this->index(row, this->columnCount() - 1));
+         }
+         ++row;
+      }
+      else
+      {
+         const int first = row++;
+         while (row < entries.entries_size() && !existing.contains(id(entries.entries(row))))
+            ++row;
+         this->beginInsertRows(parentIndex, first, row - 1);
+         this->root->insertChildren(entries, first, row - first, first);
+         this->endInsertRows();
+      }
+   }
+
+   if (row < this->root->getNbChildren())
+   {
+      this->beginRemoveRows(parentIndex, row, this->root->getNbChildren() - 1);
+      this->root->removeChildren(row, this->root->getNbChildren() - row);
       this->endRemoveRows();
    }
 }
@@ -453,8 +486,35 @@ BrowseModel::Tree::~Tree()
 
 void BrowseModel::Tree::insertChildren(const Protos::Common::Entries& entries)
 {
-   for (int i = 0; i < entries.entries_size(); i++)
-      this->insertChild(entries.entries(i));
+   this->insertChildren(entries, 0, entries.entries_size(), this->getNbChildren());
+}
+
+void BrowseModel::Tree::insertChildren(const Protos::Common::Entries& entries, int first, int count, int position)
+{
+   std::vector<std::unique_ptr<Tree>> nodes;
+   nodes.reserve(count);
+   for (int i = 0; i < count; ++i)
+      nodes.emplace_back(this->newTree(entries.entries(first + i)));
+
+   this->children.insert(position, count, nullptr);
+   for (int i = 0; i < count; ++i)
+      this->children[position + i] = nodes[i].release();
+   if (count > 0)
+      this->getItem().set_is_empty(false);
+}
+
+void BrowseModel::Tree::removeChildren(int first, int count)
+{
+   const auto removed = this->children.sliced(first, count);
+   this->children.remove(first, count);
+   // Detach before deletion to avoid a parent-list scan and shift per node.
+   for (auto* child : removed)
+   {
+      child->parent = nullptr;
+      delete child;
+   }
+   if (this->children.isEmpty())
+      this->getItem().set_is_empty(true);
 }
 
 void BrowseModel::Tree::setItem(const Protos::Common::Entry& entry)
