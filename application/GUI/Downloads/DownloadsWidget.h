@@ -92,6 +92,7 @@ namespace GUI
 
    private:
       void switchView(Protos::GUI::Settings::DownloadView view);
+      void setCurrentDownloadsModel(DownloadsModel* model);
       void updateCheckBoxElements();
       QPair<QList<quint64>, bool> getDownloadIDsToPause() const;
 

@@ -2,6 +2,8 @@
 #include <QAbstractItemModelTester>
 #include <QTemporaryDir>
 #include <QTreeView>
+#include <QHeaderView>
+#include <QPointer>
 #include <limits>
 
 #include <Common/Global.h>
@@ -67,6 +69,61 @@ private slots:
    void init()
    {
       SETTINGS.set("download_view", quint32(Protos::GUI::Settings::LIST_VIEW));
+   }
+
+   void switchingReleasesObsoleteSelectionModels_data()
+   {
+      QTest::addColumn<bool>("listInitiallyActive");
+      QTest::addColumn<bool>("populated");
+      QTest::newRow("list, empty") << true << false;
+      QTest::newRow("list, populated") << true << true;
+      QTest::newRow("tree, empty") << false << false;
+      QTest::newRow("tree, populated") << false << true;
+   }
+
+   void switchingReleasesObsoleteSelectionModels()
+   {
+      QFETCH(bool, listInitiallyActive);
+      QFETCH(bool, populated);
+      SETTINGS.set("download_view", quint32(listInitiallyActive ?
+         Protos::GUI::Settings::LIST_VIEW : Protos::GUI::Settings::TREE_VIEW));
+      Fixture f;
+      if (populated)
+      {
+         f.add(1);
+         f.add(2);
+         f.send();
+      }
+
+      for (int i = 0; i < 40; ++i)
+      {
+         auto* selection = f.view->selectionModel();
+         QVERIFY(selection);
+         QCOMPARE(selection->model(), f.view->model());
+         auto* headerSelection = f.view->header()->selectionModel();
+         QVERIFY(headerSelection);
+         QCOMPARE(headerSelection->model(), f.view->model());
+         const QSet<QItemSelectionModel*> active{selection, headerSelection};
+         QCOMPARE(f.view->findChildren<QItemSelectionModel*>().size(), active.size());
+         QVERIFY(selection->selectedRows().isEmpty());
+
+         if (populated)
+         {
+            const auto index = f.view->model()->index(1, 0);
+            selection->setCurrentIndex(index, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
+            QCOMPARE(selection->selectedRows(), QModelIndexList{index});
+            QCOMPARE(selection->currentIndex(), index);
+         }
+
+         const QPointer<QItemSelectionModel> oldSelection(selection);
+         const QPointer<QItemSelectionModel> oldHeaderSelection(headerSelection);
+         f.switchView();
+         // No event-loop cleanup is needed; obsolete models are destroyed immediately.
+         QVERIFY(oldSelection.isNull());
+         QVERIFY(oldHeaderSelection.isNull());
+      }
+      const QSet<QItemSelectionModel*> active{f.view->selectionModel(), f.view->header()->selectionModel()};
+      QCOMPARE(f.view->findChildren<QItemSelectionModel*>().size(), active.size());
    }
 
    void inactiveRowsStayUntouchedAndSwitchCatchesUp()

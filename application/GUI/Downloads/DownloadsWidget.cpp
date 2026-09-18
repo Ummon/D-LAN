@@ -22,6 +22,7 @@ using namespace GUI;
 
 #include <QMenu>
 #include <QMessageBox>
+#include <QItemSelectionModel>
 #include <QUrl>
 
 #include <Common/Global.h>
@@ -440,9 +441,7 @@ void DownloadsWidget::switchView(Protos::GUI::Settings::DownloadView view)
 
       if (this->currentDownloadsModel != &this->downloadsTreeModel)
       {
-         this->currentDownloadsModel = &this->downloadsTreeModel;
-         this->currentDownloadsModel->updateDownloads(this->latestDownloadState);
-         this->ui->tblDownloads->setModel(this->currentDownloadsModel);
+         this->setCurrentDownloadsModel(&this->downloadsTreeModel);
          this->restoreTreeViewState();
       }
    }
@@ -455,14 +454,29 @@ void DownloadsWidget::switchView(Protos::GUI::Settings::DownloadView view)
       if (this->currentDownloadsModel != &this->downloadsFlatModel)
       {
          this->saveTreeViewState();
-         this->currentDownloadsModel = &this->downloadsFlatModel;
-         this->currentDownloadsModel->updateDownloads(this->latestDownloadState);
-         this->ui->tblDownloads->setModel(this->currentDownloadsModel);
+         this->setCurrentDownloadsModel(&this->downloadsFlatModel);
       }
    }
 
    SETTINGS.set("download_view", static_cast<quint32>(view));
    SETTINGS.save();
+}
+
+void DownloadsWidget::setCurrentDownloadsModel(DownloadsModel* model)
+{
+   this->currentDownloadsModel = model;
+   model->updateDownloads(this->latestDownloadState);
+   auto* view = this->ui->tblDownloads;
+   view->setModel(model);
+
+   // Qt leaves replaced selection models alive. The header can also create a
+   // selection model that is then replaced by the tree view's selection model.
+   // These privately owned models are not shared with any other views.
+   const auto selectionModels = view->findChildren<QItemSelectionModel*>();
+   for (auto* selection : selectionModels)
+      if ((selection->parent() == view || selection->parent() == view->header()) &&
+          selection != view->selectionModel() && selection != view->header()->selectionModel())
+         delete selection;
 }
 
 void DownloadsWidget::updateCheckBoxElements()
