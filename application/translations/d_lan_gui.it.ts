@@ -156,6 +156,10 @@
         <translation>Copia IP: %1</translation>
     </message>
     <message>
+        <source>Copy selected messages</source>
+        <translation>Copia i messaggi selezionati</translation>
+    </message>
+    <message>
         <location filename="../GUI/Chat/ChatWidget.cpp" line="544"/>
         <source>Copy selected lines</source>
         <translation>Copia le righe selezionate</translation>

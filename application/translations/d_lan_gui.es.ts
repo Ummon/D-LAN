@@ -156,6 +156,10 @@
         <translation>Copiar IP: %1</translation>
     </message>
     <message>
+        <source>Copy selected messages</source>
+        <translation>Copiar los mensajes seleccionados</translation>
+    </message>
+    <message>
         <location line="+35"/>
         <source>Copy selected lines</source>
         <translation>Copiar las líneas seleccionadas</translation>

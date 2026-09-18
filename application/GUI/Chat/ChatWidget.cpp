@@ -42,6 +42,7 @@ using namespace GUI;
 #include <QScopedPointer>
 #include <QCryptographicHash>
 #include <QtMath>
+#include <algorithm>
 
 #include <Log.h>
 #include <Common/Settings.h>
@@ -308,6 +309,10 @@ static QList<ProtectedInlineText> protectInlineText(QTextDocument& document, con
             const QTextFragment fragment = i.fragment();
             const QTextCharFormat format = fragment.charFormat();
             bool needsProtection = format.fontUnderline();
+            // Qt can put emphasis delimiters outside a fragment's leading space
+            // after an image, producing literal Markdown such as "** asd**".
+            if (format.fontWeight() >= QFont::Bold || format.fontItalic() || format.fontStrikeOut())
+               needsProtection |= fragment.text().front().isSpace() || fragment.text().back().isSpace();
             for (const QChar c : fragment.text())
                if (c.unicode() < 128 && (c.isPunct() || c.isSymbol()))
                   needsProtection = true;
@@ -411,6 +416,30 @@ void ChatWidget::sendMessage()
    const QString originalContent = document->toRawText() + document->toHtml();
    while (originalContent.contains(lineBreakMarker))
       lineBreakMarker += 'X';
+   // Qt writes image alt text verbatim. Escape it only in the serialization copy:
+   // symbols such as ;], :\ and *w* must remain literal text when Markdown is read.
+   QList<QTextFragment> images;
+   for (auto block = document->begin(); block.isValid(); block = block.next())
+      for (auto it = block.begin(); !it.atEnd(); ++it)
+         if (it.fragment().charFormat().isImageFormat() &&
+             QUrl(it.fragment().charFormat().toImageFormat().name()).scheme() == "emoticons")
+            images.append(it.fragment());
+   for (const auto& image : images)
+   {
+      QString escaped;
+      for (const QChar c : image.charFormat().stringProperty(QTextFormat::ImageAltText))
+      {
+         if (c.unicode() < 0x80 && (c.isPunct() || c.isSymbol()))
+            escaped += '\\';
+         escaped += c;
+      }
+      QTextCursor cursor(document.data());
+      cursor.setPosition(image.position());
+      cursor.setPosition(image.position() + image.length(), QTextCursor::KeepAnchor);
+      QTextCharFormat format;
+      format.setProperty(QTextFormat::ImageAltText, escaped);
+      cursor.mergeCharFormat(format);
+   }
    preserveAutomaticLinks(*document);
    const auto inlineText = protectInlineText(*document, originalContent);
 
@@ -541,18 +570,31 @@ void ChatWidget::copyIPToClipboard()
 void ChatWidget::displayContextMenu(const QPoint& point)
 {
    QMenu menu;
+   menu.addAction(tr("Copy selected messages"), this, &ChatWidget::copySelectedMessagesToClipboard);
    menu.addAction(tr("Copy selected lines"), this, &ChatWidget::copySelectedLineToClipboard);
    menu.addAction(QIcon(":/icons/resources/folder.svg"), tr("Browse selected peers"), this, &ChatWidget::browseSelectedMessages);
    menu.exec(this->ui->tblChat->mapToGlobal(point));
 }
 
+void ChatWidget::copySelectedMessagesToClipboard()
+{
+   this->copySelectionToClipboard(false);
+}
+
 void ChatWidget::copySelectedLineToClipboard()
+{
+   this->copySelectionToClipboard(true);
+}
+
+void ChatWidget::copySelectionToClipboard(bool includeSender)
 {
    QString lines;
    QModelIndexList selection = this->ui->tblChat->selectionModel()->selectedRows();
-   for (QListIterator<QModelIndex> i(selection); i.hasNext();)
+   std::sort(selection.begin(), selection.end(), [](const QModelIndex& left, const QModelIndex& right) { return left.row() < right.row(); });
+   for (const auto& index : selection)
    {
-      lines.append(this->chatModel.getLineStr(i.next().row())).append('\n');
+      const QString markdown = includeSender ? this->chatModel.getLineStr(index.row()) : this->chatModel.getMessageStr(index.row());
+      lines.append(EmoticonTextDocument::toClipboardMarkdown(markdown, this->emoticons)).append('\n');
    }
    QApplication::clipboard()->setText(lines);
 }
@@ -765,6 +807,7 @@ void ChatWidget::messageWordTyped(int position, const QString& word)
 
       QTextImageFormat format;
       format.setName(buildUrlEmoticon(themeAndSmile.first, themeAndSmile.second).toString());
+      format.setProperty(QTextFormat::ImageAltText, word);
       format.setVerticalAlignment(QTextCharFormat::AlignMiddle);
       cursor.insertImage(format);
       this->ui->txtMessage->setCurrentCharFormat(textFormat);
@@ -797,6 +840,7 @@ void ChatWidget::insertEmoticon(const QString& theme, const QString& emoticonNam
    QTextCursor cursor = this->ui->txtMessage->textCursor();
    QTextImageFormat format;
    format.setName(buildUrlEmoticon(theme, emoticonName).toString());
+   format.setProperty(QTextFormat::ImageAltText, this->emoticons.getSmileSymbols(theme, emoticonName).value(0));
    format.setVerticalAlignment(QTextCharFormat::AlignMiddle);
    cursor.insertImage(format);
 

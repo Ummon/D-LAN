@@ -59,6 +59,7 @@ namespace GUI
       QString getNick(const Common::Hash& id) const;
 
       QString getLineStr(int row) const;
+      QString getMessageStr(int row) const;
       Common::Hash getPeerID(int row) const;
       bool isMessageIsOurs(int row) const;
 

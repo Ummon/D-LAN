@@ -94,21 +94,30 @@ void ChatTextEdit::documentContentsChange(int position, int charsRemoved, int ch
    this->previousUndoSteps = undoSteps;
    if (textChanged && charsAdded > 0 && !undoOrRedo)
    {
-      if (!this->document()->characterAt(position).isSpace())
-      {
-         int i = position + charsAdded - 1;
-         if (this->document()->characterAt(i).isSpace())
-            i--;
+      // A paste can insert several words, including leading whitespace and line breaks.
+      // Include words crossing the edit boundaries, then replace from right to left so
+      // shrinking a word to an image cannot invalidate the remaining positions.
+      const auto isBoundary = [&](int index) {
+         return documentText.at(index).isSpace() || documentText.at(index) == QChar::ObjectReplacementCharacter;
+      };
+      int begin = qMin(position, int(documentText.size()));
+      int end = qMin(position + charsAdded, int(documentText.size()));
+      while (begin > 0 && !isBoundary(begin - 1))
+         --begin;
+      while (end < documentText.size() && !isBoundary(end))
+         ++end;
 
-         QString word;
-         while (i >= 0 && !this->document()->characterAt(i).isSpace())
-            word.prepend(this->document()->characterAt(i--));
-         if (!word.isEmpty())
-         {
-            emit wordTyped(i + 1, word);
-            // A receiver may synchronously replace the word with an emoticon.
-            this->previousDocumentText = this->document()->toRawText();
-         }
+      while (end > begin)
+      {
+         while (end > begin && isBoundary(end - 1))
+            --end;
+         const int wordEnd = end;
+         while (end > begin && !isBoundary(end - 1))
+            --end;
+         if (end < wordEnd)
+            emit wordTyped(end, documentText.mid(end, wordEnd - end));
       }
+      // A receiver may synchronously replace words with emoticons.
+      this->previousDocumentText = this->document()->toRawText();
    }
 }

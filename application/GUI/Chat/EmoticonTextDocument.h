@@ -28,6 +28,8 @@ namespace GUI
    {
    public:
       EmoticonTextDocument(const Emoticons& emoticons, QObject* parent = nullptr);
+      void setMarkdown(const QString& markdown);
+      static QString toClipboardMarkdown(const QString& markdown, const Emoticons& emoticons);
 
    protected:
       QVariant loadResource(int type, const QUrl& name) override;

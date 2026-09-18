@@ -192,6 +192,13 @@ QString ChatModel::getLineStr(int row) const
    return result;
 }
 
+QString ChatModel::getMessageStr(int row) const
+{
+   if (row < 0 || row >= this->messages.size())
+      return QString();
+   return this->messages[row].message;
+}
+
 Common::Hash ChatModel::getPeerID(int row) const
 {
    if (row < 0 || row >= this->messages.size())

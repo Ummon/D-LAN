@@ -8,6 +8,10 @@
 #include <QStandardItemModel>
 #include <QTableView>
 #include <QTextBlock>
+#include <QClipboard>
+#include <QPushButton>
+#include <QMenu>
+#include <QTimer>
 
 #include <Common/Global.h>
 #include <Common/Settings.h>
@@ -28,12 +32,14 @@ namespace
    {
    public:
       int sentMessages = 0;
+      QString lastMessage;
       QList<Common::Hash> answers;
 
       QSharedPointer<RCC::ISendChatMessageResult> sendChatMessage(
-         const QString&, const QString&, const QList<Common::Hash>& answers) override
+         const QString& message, const QString&, const QList<Common::Hash>& answers) override
       {
          ++this->sentMessages;
+         this->lastMessage = message;
          this->answers = answers;
          return QSharedPointer<PendingResult>::create();
       }
@@ -42,13 +48,14 @@ namespace
    struct Fixture
    {
       QSharedPointer<Connection> connection = QSharedPointer<Connection>::create();
-      GUI::Emoticons emoticons { "nonexistent-test-emoticons" };
+      GUI::Emoticons emoticons;
       GUI::ChatWidget widget { connection, emoticons };
       GUI::ChatTextEdit* editor = widget.findChild<GUI::ChatTextEdit*>("txtMessage");
       GUI::AutoComplete* completion = widget.findChild<GUI::AutoComplete*>();
       QListView* list = completion->findChild<QListView*>();
 
-      Fixture(const QStringList& peers = { "Alice", "Alex", "Bob" })
+      Fixture(const QStringList& peers = { "Alice", "Alex", "Bob" }, const QString& emoticonDirectory = "nonexistent-test-emoticons") :
+         emoticons(emoticonDirectory, "default")
       {
          Protos::Common::ChatMessages messages;
          for (const auto& nick : peers)
@@ -78,6 +85,17 @@ namespace
          for (const auto c : text)
             key(c == ' ' ? Qt::Key_Space : 0, QString(c));
       }
+
+      void receiveMessage(const QString& text)
+      {
+         Protos::Common::ChatMessages messages;
+         auto* message = messages.add_messages();
+         message->set_id(widget.findChild<QTableView*>("tblChat")->model()->rowCount() + 1);
+         message->set_time(QDateTime::currentMSecsSinceEpoch());
+         message->set_peer_nick("Alice");
+         message->set_message(text.toStdString());
+         emit connection->newChatMessages(messages);
+      }
    };
 }
 
@@ -86,6 +104,410 @@ class TestsChatCompletion : public QObject
    Q_OBJECT
 
 private slots:
+   void copiedHtmlBreaksBecomeNewlines_data()
+   {
+      QTest::addColumn<QString>("markdown");
+      QTest::addColumn<QString>("expected");
+      QTest::newRow("consecutive") << QString("first<br/><br/>last") << QString("first\n\nlast");
+      QTest::newRow("edges") << QString("<br/>first<br/>") << QString("\nfirst\n");
+      QTest::newRow("variants") << QString("first<BR>second<br />third") << QString("first\nsecond\nthird");
+      QTest::newRow("inline-code") << QString("first<br/>`<br/>`") << QString("first\n`<br/>`");
+      QTest::newRow("code-block") << QString("first<br/>second\n\n```html\n<br/>\n```") << QString("first\nsecond\n\n```html\n<br/>\n```");
+      QTest::newRow("escaped") << QString("\\<br/> &lt;br/&gt;") << QString("\\<br/> &lt;br/&gt;");
+   }
+
+   void copiedHtmlBreaksBecomeNewlines()
+   {
+      QFETCH(QString, markdown);
+      QFETCH(QString, expected);
+      GUI::Emoticons emoticons("nonexistent-test-emoticons");
+      QCOMPARE(GUI::EmoticonTextDocument::toClipboardMarkdown(markdown, emoticons), expected);
+   }
+
+   void copyAndPasteMultilineMessage()
+   {
+      Fixture f({}, QFINDTESTDATA("../resources/emoticons"));
+      f.type("first :D");
+      QTest::keyClick(f.editor, Qt::Key_Return, Qt::ShiftModifier);
+      QTest::keyClick(f.editor, Qt::Key_Return, Qt::ShiftModifier);
+      f.type("last :D");
+      f.widget.sendMessage();
+      f.receiveMessage(f.connection->lastMessage);
+      f.widget.findChild<QTableView*>("tblChat")->selectRow(0);
+      f.widget.copySelectedMessagesToClipboard();
+      QCOMPARE(QApplication::clipboard()->text(), QString("first :D\n\nlast :D\n"));
+      f.editor->clear();
+      f.editor->paste();
+      const QString image(QChar::ObjectReplacementCharacter);
+      QCOMPARE(f.editor->toPlainText(), "first " + image + "\n\nlast " + image + '\n');
+      f.widget.copySelectedLineToClipboard();
+      QVERIFY(QApplication::clipboard()->text().endsWith("*Alice*: first :D\n\nlast :D\n"));
+   }
+
+   void copiedEmoticonsStayOnOneLine_data()
+   {
+      QTest::addColumn<QString>("text");
+      for (const QString& text : { ":D :D :D", ":D asd :D", "asd :D asd :D asd", "one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen" })
+         QTest::newRow(qPrintable(text)) << text;
+   }
+
+   void copiedEmoticonsStayOnOneLine()
+   {
+      QFETCH(QString, text);
+      Fixture f({}, QFINDTESTDATA("../resources/emoticons"));
+      f.type(text);
+      f.widget.sendMessage();
+      f.receiveMessage(f.connection->lastMessage);
+      f.widget.findChild<QTableView*>("tblChat")->selectRow(0);
+      f.widget.copySelectedMessagesToClipboard();
+      QCOMPARE(QApplication::clipboard()->text().trimmed(), text);
+      f.widget.copySelectedLineToClipboard();
+      const QString line = QApplication::clipboard()->text().trimmed();
+      QVERIFY2(line.endsWith("*Alice*: " + text), qPrintable(line));
+      QVERIFY(!line.contains('\n'));
+   }
+
+   void copiedSoftWrapsPreserveMarkdownStructure()
+   {
+      GUI::Emoticons emoticons("nonexistent-test-emoticons");
+      const QString image = "![\\:D](emoticons://default/biggrin.png)";
+      const QString paragraph = image + " **bold**\ntext " + image;
+      const QString copiedParagraph = ":D **bold** text :D";
+      const QString structure = "\n\n# Heading\n## Subheading\n\n- first\n- second\n\n```text\nfirst\nsecond\n```\n\n> quote\n> next\n\nfirst  \nsecond<br/>third\n\nfourth\\\nfifth";
+      QCOMPARE(GUI::EmoticonTextDocument::toClipboardMarkdown(paragraph + structure + "\n\n" + paragraph, emoticons),
+         copiedParagraph + QString(structure).replace("<br/>", "\n") + "\n\n" + copiedParagraph);
+   }
+
+   void copyingLargeCodeBlock()
+   {
+      GUI::Emoticons emoticons("nonexistent-test-emoticons");
+      const QString code = "```text\n" + QString("some code that must retain its newline\n").repeated(1000) + "```";
+      QElapsedTimer timer;
+      timer.start();
+      QCOMPARE(GUI::EmoticonTextDocument::toClipboardMarkdown("before\nwrapped\n\n" + code + "\n\nafter\nwrapped", emoticons),
+         "before wrapped\n\n" + code + "\n\nafter wrapped");
+      qInfo() << "Copying 1000 code lines took" << timer.elapsed() << "ms";
+   }
+
+   void copiedInlineFormattingPreservesHardBreaks()
+   {
+      GUI::Emoticons emoticons("nonexistent-test-emoticons");
+      const QString body = "first<br/>second";
+      const QString underlined = "<u style=\"white-space: pre-wrap\">" + body + "</u>";
+      QCOMPARE(GUI::EmoticonTextDocument::toClipboardMarkdown(underlined, emoticons), QString("first\nsecond"));
+      const QString bold = "<span style=\"white-space: pre-wrap\"><b>" + body + "</b></span>";
+      const QString copied = GUI::EmoticonTextDocument::toClipboardMarkdown(bold, emoticons);
+      QCOMPARE(copied, QString("**first\nsecond**"));
+      QTextDocument parsed;
+      parsed.setMarkdown(copied);
+      QVERIFY(parsed.find("first").charFormat().fontWeight() >= QFont::Bold);
+      QVERIFY(parsed.find("second").charFormat().fontWeight() >= QFont::Bold);
+      const QString code = "`" + underlined + "`";
+      QCOMPARE(GUI::EmoticonTextDocument::toClipboardMarkdown(code, emoticons), code);
+   }
+
+   void sendingOrdinaryImageDoesNotDuplicateIt()
+   {
+      Fixture f(QStringList{});
+      QTextImageFormat image;
+      image.setName("photo.png");
+      image.setProperty(QTextFormat::ImageAltText, "photo!");
+      f.editor->textCursor().insertImage(image);
+      f.widget.sendMessage();
+      GUI::EmoticonTextDocument received(f.emoticons);
+      received.setMarkdown(f.connection->lastMessage);
+      QCOMPARE(received.toPlainText(), QString(QChar::ObjectReplacementCharacter));
+      QCOMPARE(received.begin().begin().fragment().charFormat().stringProperty(QTextFormat::ImageAltText), QString("photo!"));
+   }
+
+   void copyingAdjacentFormattingPreservesEmphasis_data()
+   {
+      QTest::addColumn<QString>("markdown");
+      for (const QString& text : {
+            "<u style=\"white-space: pre-wrap\"><b>one</b></u>**two**",
+            "**one**<u style=\"white-space: pre-wrap\"><b>two</b></u>",
+            "<u style=\"white-space: pre-wrap\"><b>one</b></u><span style=\"white-space: pre-wrap\"><b>two</b></span>" })
+         QTest::newRow(qPrintable(text)) << text;
+   }
+
+   void copyingAdjacentFormattingPreservesEmphasis()
+   {
+      QFETCH(QString, markdown);
+      GUI::Emoticons emoticons("nonexistent-test-emoticons");
+      const QString copied = GUI::EmoticonTextDocument::toClipboardMarkdown(markdown, emoticons);
+      QTextDocument parsed;
+      parsed.setMarkdown(copied);
+      QCOMPARE(parsed.toPlainText(), QString("onetwo"));
+      QVERIFY(parsed.find("onetwo").charFormat().fontWeight() >= QFont::Bold);
+   }
+
+   void copiedEmoticonsPreserveIntentionalBreaks_data()
+   {
+      QTest::addColumn<QString>("gap");
+      QTest::addColumn<QString>("copiedGap");
+      QTest::newRow("soft-wrap") << QString("\n") << QString(" ");
+      QTest::newRow("wrap-after-space") << QString(" \n") << QString(" ");
+      QTest::newRow("paragraph") << QString("\n\n") << QString("\n\n");
+      QTest::newRow("hard-break-spaces") << QString("  \n") << QString("  \n");
+      QTest::newRow("hard-break-backslash") << QString("\\\n") << QString("\\\n");
+      QTest::newRow("html-break") << QString("<br/>") << QString("\n");
+   }
+
+   void copiedEmoticonsPreserveIntentionalBreaks()
+   {
+      QFETCH(QString, gap);
+      QFETCH(QString, copiedGap);
+      GUI::Emoticons emoticons("nonexistent-test-emoticons");
+      const QString image = "![\\:D](emoticons://default/biggrin.png)";
+      const QString markdown = image + gap + image;
+      QCOMPARE(GUI::EmoticonTextDocument::toClipboardMarkdown(markdown, emoticons), ":D" + copiedGap + ":D");
+      const QString code = "```markdown\n" + markdown + "\n```";
+      QCOMPARE(GUI::EmoticonTextDocument::toClipboardMarkdown(code, emoticons), code);
+   }
+
+   void copySelectedMessagesFromContextMenu()
+   {
+      Fixture f(QStringList{});
+      const QStringList bodies {
+         "**First** ![O\\_o](emoticons://missing/andy.png)",
+         "Unselected message",
+         "[12:34:56] *Body*: message\n\n<u style=\"white-space: pre-wrap\"><b>second</b></u>"
+      };
+      Protos::Common::ChatMessages messages;
+      for (int row = 0; row < bodies.size(); ++row)
+      {
+         auto* message = messages.add_messages();
+         message->set_id(row + 1);
+         message->set_time(1000 + row);
+         message->set_peer_nick("SenderNick");
+         message->set_message(bodies[row].toStdString());
+      }
+      emit f.connection->newChatMessages(messages);
+      auto* view = f.widget.findChild<QTableView*>("tblChat");
+      view->clearSelection();
+      // Select in reverse order; both copy actions should follow the chat's order.
+      for (const int row : { 2, 0 })
+         view->selectionModel()->select(view->model()->index(row, 0), QItemSelectionModel::Select | QItemSelectionModel::Rows);
+      QStringList labels;
+      QTimer::singleShot(0, &f.widget, [&]() {
+         if (auto* menu = qobject_cast<QMenu*>(QApplication::activePopupWidget()))
+         {
+            for (auto* action : menu->actions())
+               labels.append(action->text());
+            menu->actions().first()->trigger();
+            menu->close();
+         }
+      });
+      f.widget.displayContextMenu(QPoint());
+      QCOMPARE(labels.mid(0, 2), QStringList({ "Copy selected messages", "Copy selected lines" }));
+      QCOMPARE(QApplication::clipboard()->text(), QString("**First** O_o\n[12:34:56] *Body*: message\n\n**second**\n"));
+
+      f.widget.copySelectedLineToClipboard();
+      QString expectedLines;
+      for (const int row : { 0, 2 })
+         expectedLines += GUI::EmoticonTextDocument::toClipboardMarkdown(f.widget.chatModel.getLineStr(row), f.emoticons) + '\n';
+      QCOMPARE(QApplication::clipboard()->text(), expectedLines);
+      QVERIFY(expectedLines.contains("*SenderNick*:"));
+      view->clearSelection();
+      f.widget.copySelectedMessagesToClipboard();
+      QVERIFY(QApplication::clipboard()->text().isEmpty());
+   }
+
+   void formattingAroundEmoticons_data()
+   {
+      QTest::addColumn<int>("styles");
+      QTest::addColumn<QString>("text");
+      for (const int styles : { 1, 2, 3, 4, 5, 6, 7 })
+         for (const QString& text : { "asd", ":D asd", "asd :D", "asd :D xyz" })
+            QTest::newRow(qPrintable(QString::number(styles) + ' ' + text)) << styles << text;
+   }
+
+   void formattingAroundEmoticons()
+   {
+      QFETCH(int, styles);
+      QFETCH(QString, text);
+      Fixture f({}, QFINDTESTDATA("../resources/emoticons"));
+      f.widget.findChild<QPushButton*>("butBold")->setChecked(styles & 1);
+      f.widget.findChild<QPushButton*>("butItalic")->setChecked(styles & 2);
+      f.widget.findChild<QPushButton*>("butUnderline")->setChecked(styles & 4);
+      f.type(text);
+      const QString expected = QString(text).replace(":D", QString(QChar::ObjectReplacementCharacter));
+      QCOMPARE(f.editor->toPlainText(), expected);
+      const QString draft = f.editor->toHtml();
+      f.key(Qt::Key_Return);
+      QCOMPARE(f.connection->sentMessages, 1);
+      QCOMPARE(f.editor->toHtml(), draft);
+      GUI::EmoticonTextDocument received(f.emoticons);
+      received.setMarkdown(f.connection->lastMessage);
+      QVERIFY2(received.toPlainText() == expected, qPrintable(f.connection->lastMessage));
+      for (const QString& word : { "asd", "xyz" })
+      {
+         const auto cursor = received.find(word);
+         if (cursor.isNull())
+            continue;
+         QCOMPARE(cursor.charFormat().fontWeight() >= QFont::Bold, bool(styles & 1));
+         QCOMPARE(cursor.charFormat().fontItalic(), bool(styles & 2));
+         QCOMPARE(cursor.charFormat().fontUnderline(), bool(styles & 4));
+      }
+      const QString copied = GUI::EmoticonTextDocument::toClipboardMarkdown(f.connection->lastMessage, f.emoticons);
+      QVERIFY2(!copied.contains('<'), qPrintable(copied));
+      QString expectedMarkdown = text;
+      const QString emphasis = QString(styles & 1 ? "**" : "") + (styles & 2 ? "*" : "");
+      for (const QString& word : { "asd", "xyz" })
+         expectedMarkdown.replace(word, emphasis + word + emphasis);
+      QCOMPARE(copied.trimmed(), expectedMarkdown);
+      QTextDocument parsedCopy;
+      parsedCopy.setMarkdown(copied);
+      QCOMPARE(parsedCopy.toPlainText(), text);
+      const auto format = parsedCopy.find("asd").charFormat();
+      QCOMPARE(format.fontWeight() >= QFont::Bold, bool(styles & 1));
+      QCOMPARE(format.fontItalic(), bool(styles & 2));
+      QVERIFY(!format.fontUnderline()); // No standard Markdown underline syntax.
+   }
+
+   void copiedInlineFormattingKeepsCodeAndWhitespace()
+   {
+      GUI::Emoticons emoticons("nonexistent-test-emoticons");
+      const QString html = "<span style=\"white-space: pre-wrap\"><b> asd</b></span>";
+      const QString code = "`" + html + "`\n\n```html\n" + html + "\n```\n\n    " + html;
+      const QString message = "[00:37:05] *Greg*: ![\\:D](emoticons://default/biggrin.png)" + html;
+      const QString copied = GUI::EmoticonTextDocument::toClipboardMarkdown(message + "\n\n" + code, emoticons);
+      QCOMPARE(copied, "[00:37:05] *Greg*: :D **asd**\n\n" + code);
+      QCOMPARE(GUI::EmoticonTextDocument::toClipboardMarkdown(
+         "<span style=\"white-space: pre-wrap\"><s><b><i>  asd  </i></b></s></span>", emoticons), QString("  ~~***asd***~~  "));
+      const QString underline = "<u style=\"white-space: pre-wrap\">asd</u>";
+      QCOMPARE(GUI::EmoticonTextDocument::toClipboardMarkdown(underline + " `" + underline + "`", emoticons), "asd `" + underline + "`");
+   }
+
+   void emoticonAltTextEscapesMarkdown_data()
+   {
+      QTest::addColumn<QString>("symbol");
+      for (const QString& symbol : { "O_o", ";]", ":[", ":[[", ":\\", ":-\\", "(*_*)", "*w*", ":'(", ">:)", "<3" })
+         QTest::newRow(qPrintable(symbol)) << symbol;
+   }
+
+   void emoticonAltTextEscapesMarkdown()
+   {
+      QFETCH(QString, symbol);
+      Fixture f({}, QFINDTESTDATA("../resources/emoticons"));
+      f.editor->insertPlainText(symbol);
+      QCOMPARE(f.editor->toPlainText(), QString(QChar::ObjectReplacementCharacter));
+      f.widget.sendMessage();
+      GUI::EmoticonTextDocument received(f.emoticons);
+      received.setMarkdown(f.connection->lastMessage);
+      QCOMPARE(received.toPlainText(), QString(QChar::ObjectReplacementCharacter));
+      const auto format = received.begin().begin().fragment().charFormat();
+      QVERIFY2(format.isImageFormat(), qPrintable(f.connection->lastMessage));
+      QCOMPARE(format.stringProperty(QTextFormat::ImageAltText), symbol);
+
+      f.receiveMessage(f.connection->lastMessage);
+      f.widget.findChild<QTableView*>("tblChat")->selectRow(0);
+      f.widget.copySelectedLineToClipboard();
+      const QString copied = QApplication::clipboard()->text();
+      QVERIFY2(copied.trimmed().endsWith("*Alice*: " + symbol), qPrintable(copied));
+   }
+
+   void emoticonSymbolsSurviveSendCopyAndPaste()
+   {
+      Fixture f({}, QFINDTESTDATA("../resources/emoticons"));
+      const QString symbols = "O_o o_O :) :-) <3";
+      f.type(symbols);
+      QCOMPARE(f.editor->toPlainText().count(QChar::ObjectReplacementCharacter), 5);
+      f.widget.sendMessage();
+      GUI::EmoticonTextDocument received(f.emoticons);
+      received.setMarkdown(f.connection->lastMessage);
+      QStringList altText;
+      for (auto block = received.begin(); block.isValid(); block = block.next())
+         for (auto it = block.begin(); !it.atEnd(); ++it)
+            if (it.fragment().charFormat().isImageFormat())
+               altText.append(it.fragment().charFormat().stringProperty(QTextFormat::ImageAltText));
+      QCOMPARE(altText, symbols.split(' '));
+
+      f.receiveMessage("**before** " + f.connection->lastMessage.trimmed() + " [after](https://example.com)");
+      auto* view = f.widget.findChild<QTableView*>("tblChat");
+      view->selectRow(0);
+      f.widget.copySelectedLineToClipboard();
+      const QString copied = QApplication::clipboard()->text();
+      QVERIFY2(copied.simplified().contains("**before** " + symbols + " [after](https://example.com)"), qPrintable(copied));
+      QVERIFY(!copied.contains("emoticons://"));
+
+      f.editor->clear();
+      f.editor->paste();
+      QCOMPARE(f.editor->toPlainText().count(QChar::ObjectReplacementCharacter), 5);
+      const QString pasted = f.editor->toHtml();
+      int steps = 0;
+      while (f.editor->document()->isUndoAvailable() && ++steps < 20)
+         f.editor->undo();
+      QVERIFY(f.editor->toPlainText().isEmpty());
+      while (f.editor->document()->isRedoAvailable())
+         f.editor->redo();
+      QCOMPARE(f.editor->toHtml(), pasted);
+   }
+
+   void pasteConvertsEveryEmoticonWord()
+   {
+      Fixture f({}, QFINDTESTDATA("../resources/emoticons"));
+      f.editor->insertPlainText("prefix suffix");
+      auto cursor = f.editor->textCursor();
+      cursor.setPosition(7);
+      f.editor->setTextCursor(cursor);
+      QApplication::clipboard()->setText("  O_o\t:)\n:-) <3 ");
+      f.editor->paste();
+      const QString image(QChar::ObjectReplacementCharacter);
+      QCOMPARE(f.editor->toPlainText(), "prefix   " + image + '\t' + image + '\n' + image + ' ' + image + " suffix");
+      QCOMPARE(f.editor->textCursor().position(), f.editor->toPlainText().indexOf("suffix"));
+
+      f.editor->clear();
+      f.editor->insertPlainText("O_");
+      f.editor->moveCursor(QTextCursor::End);
+      QApplication::clipboard()->setText("o");
+      f.editor->paste();
+      QCOMPARE(f.editor->toPlainText(), image);
+   }
+
+   void pickedEmoticonIncludesDefaultSymbol()
+   {
+      Fixture f({}, QFINDTESTDATA("../resources/emoticons"));
+      f.widget.insertEmoticon("default", "andy.png");
+      f.widget.sendMessage();
+      GUI::EmoticonTextDocument received(f.emoticons);
+      received.setMarkdown(f.connection->lastMessage);
+      const auto format = received.begin().begin().fragment().charFormat();
+      QVERIFY(format.isImageFormat());
+      QCOMPARE(format.stringProperty(QTextFormat::ImageAltText), QString("o_O"));
+   }
+
+   void copyingEmoticonsPreservesOtherMarkdown()
+   {
+      GUI::Emoticons emoticons(QFINDTESTDATA("../resources/emoticons"), "default");
+      const QString link = "![O\\_o](emoticons://missing/andy.png)";
+      const QString literal = "`" + link + "`\n\n```markdown\n" + link + "\n```\n\n    " + link;
+      const QString surrounding = "**bold** [link](https://example.com) ![photo](photo.png) &#x20;\n\n";
+      const QString markdown = surrounding + link + "\n\n" + literal;
+      QCOMPARE(GUI::EmoticonTextDocument::toClipboardMarkdown(markdown, emoticons), surrounding + "O_o\n\n" + literal);
+      GUI::EmoticonTextDocument rendered(emoticons);
+      rendered.setMarkdown(markdown);
+      QCOMPARE(rendered.toPlainText().count(QChar::ObjectReplacementCharacter), 2);
+      QCOMPARE(rendered.toPlainText().count(link), 3);
+      QVERIFY(!rendered.toPlainText().contains("DLANEMOTICON"));
+
+      QCOMPARE(GUI::EmoticonTextDocument::toClipboardMarkdown("![image](emoticons://default/andy.png)", emoticons), QString("o_O"));
+      const QString unknown = "![image](emoticons://missing/andy.png)";
+      QCOMPARE(GUI::EmoticonTextDocument::toClipboardMarkdown(unknown, emoticons), unknown);
+   }
+
+   void emoticonMarkersDoNotReplaceUserText()
+   {
+      GUI::Emoticons emoticons("nonexistent-test-emoticons");
+      GUI::EmoticonTextDocument document(emoticons);
+      const QString literal = "dlanemoticon0";
+      document.setMarkdown(literal + " ![O\\_o](emoticons://missing/andy.png)");
+      QCOMPARE(document.toPlainText(), literal + ' ' + QChar::ObjectReplacementCharacter);
+      const QString code = "![O\\_o](emoticons://missing/andy.png)";
+      document.setMarkdown(literal + " `" + code + "`");
+      QCOMPARE(document.toPlainText(), literal + ' ' + code);
+   }
+
    void draftHistoryDoesNotRetainFullText()
    {
       Fixture f;

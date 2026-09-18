@@ -156,6 +156,10 @@
         <translation>IP をコピー: %1</translation>
     </message>
     <message>
+        <source>Copy selected messages</source>
+        <translation>選択したメッセージをコピー</translation>
+    </message>
+    <message>
         <location filename="../GUI/Chat/ChatWidget.cpp" line="544"/>
         <source>Copy selected lines</source>
         <translation>選択した行をコピー</translation>

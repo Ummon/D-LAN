@@ -156,6 +156,10 @@
         <translation>IP 복사: %1</translation>
     </message>
     <message>
+        <source>Copy selected messages</source>
+        <translation>선택한 메시지 복사</translation>
+    </message>
+    <message>
         <location filename="../GUI/Chat/ChatWidget.cpp" line="544"/>
         <source>Copy selected lines</source>
         <translation>선택한 줄 복사</translation>

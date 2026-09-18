@@ -111,6 +111,7 @@ namespace GUI
       void copyIPToClipboard();
 
       void displayContextMenu(const QPoint& point);
+      void copySelectedMessagesToClipboard();
       void copySelectedLineToClipboard();
       void browseSelectedMessages();
 
@@ -147,6 +148,7 @@ namespace GUI
 
    private:
       void init();
+      void copySelectionToClipboard(bool includeSender);
       void applyCurrentFormat();
       void connectFormatWidgets();
       void disconnectFormatWidgets();
