@@ -1422,6 +1422,102 @@ void Tests::oldestChunksVisitFilesOnce()
    }
 }
 
+void Tests::discoveryIndexTracksRemoval_data()
+{
+   QTest::addColumn<QString>("state");
+   QTest::newRow("unrequested") << QString("unrequested");
+   QTest::newRow("updated") << QString("updated");
+   QTest::newRow("completed-pruned") << QString("completed");
+   QTest::newRow("deleted-pruned") << QString("deleted");
+}
+
+void Tests::discoveryIndexTracksRemoval()
+{
+   QFETCH(QString, state);
+   ResumePeer peer(this->fileManager);
+   LinkedPeers links;
+   OccupiedPeers asking, downloading;
+   Common::ThreadPool pool(1);
+   Common::TransferRateCalculator rate;
+   DownloadQueue queue;
+   QList<FileDownload*> files;
+   QSet<Common::Hash> expectedHashes;
+   // Start with a shared timestamp, and enough files to grow the handle table.
+   for (int i = 0; i < 128; ++i)
+   {
+      const auto hash = Common::Hash::rand();
+      expectedHashes.insert(hash);
+      Protos::Common::Entry entry;
+      entry.set_type(Protos::Common::Entry::FILE);
+      entry.set_name(QString("file-%1").arg(i).toStdString());
+      entry.set_size(Common::Constants::CHUNK_SIZE);
+      entry.add_chunks()->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
+      auto file = new FileDownload(this->fileManager, links, asking, downloading, pool,
+         &peer, entry, entry, rate, i == 0 && state == "completed" ?
+            Protos::Queue::Queue::Entry::COMPLETE : Protos::Queue::Queue::Entry::QUEUED);
+      queue.insert(queue.size(), file);
+      files.append(file);
+   }
+
+   auto target = files.first();
+   const Common::Hash targetHash(target->getLocalEntry().chunks(0).hash());
+   const bool pruned = state == "completed" || state == "deleted";
+   if (state == "updated")
+   {
+      // This is also the path used by first-in-queue discovery, outside traversal
+      // of the timestamp index. Repeated notifications must replace one entry.
+      for (int attempt = 0; attempt < 3; ++attempt)
+      {
+         QList<QSharedPointer<IChunkDownloader>> chunks;
+         target->getUnfinishedChunks(chunks, 1);
+         QCOMPARE(chunks.size(), 1);
+      }
+   }
+   else if (pruned)
+   {
+      if (state == "deleted")
+         target->setAsDeleted();
+      QCOMPARE(queue.getTheOldestUnfinishedChunks(256).size(), 127);
+   }
+
+   queue.remove(0);
+   std::unique_ptr<FileDownload> removed(target);
+   expectedHashes.remove(targetHash);
+   // A removed download can remain alive. Its notifications must not put it
+   // back into discovery, including after its old index entry was pruned.
+   QList<QSharedPointer<IChunkDownloader>> detachedChunks;
+   target->getUnfinishedChunks(detachedChunks, 1);
+   auto chunks = queue.getTheOldestUnfinishedChunks(256);
+   QCOMPARE(chunks.size(), expectedHashes.size());
+   QSet<Common::Hash> actualHashes;
+   for (const auto& chunk : chunks)
+      actualHashes.insert(chunk->getHash());
+   QCOMPARE(actualHashes, expectedHashes);
+
+   if (!pruned)
+   {
+      // Reinsertion must install one fresh handle and one signal connection.
+      queue.insert(0, removed.release());
+      detachedChunks.clear();
+      target->getUnfinishedChunks(detachedChunks, 1);
+      expectedHashes.insert(targetHash);
+      chunks = queue.getTheOldestUnfinishedChunks(256);
+      QCOMPARE(chunks.size(), expectedHashes.size());
+      actualHashes.clear();
+      for (const auto& chunk : chunks)
+         actualHashes.insert(chunk->getHash());
+      QCOMPARE(actualHashes, expectedHashes);
+      queue.remove(0);
+      removed.reset(target);
+   }
+
+   QList<quint64> remainingIDs;
+   for (int i = 0; i < queue.size(); ++i)
+      remainingIDs.append(queue[i]->getID());
+   QVERIFY(queue.removeDownloads(IsContainedInAList(remainingIDs)));
+   QVERIFY(queue.getTheOldestUnfinishedChunks(1).isEmpty());
+}
+
 void Tests::resumeMissingFile_data()
 {
    QTest::addColumn<bool>("removeFile");

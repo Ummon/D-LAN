@@ -80,7 +80,7 @@ void DownloadQueue::insert(int position, Download* download)
    if (FileDownload* fileDownload = dynamic_cast<FileDownload*>(download))
    {
       this->downloadsIndexedByName.insert(download->getLocalEntry().name(), download);
-      this->downloadsSortedByTime.insert(0, fileDownload);
+      this->downloadTimePositions.insert(fileDownload, this->downloadsSortedByTime.insert(0, fileDownload));
 
       // The connection must be direct: a queued one would be delivered after the download has possibly been removed
       // and deleted, 'sender()' would then return a null pointer and 'downloadsSortedByTime' would keep a dangling
@@ -107,7 +107,10 @@ void DownloadQueue::remove(int position)
    Download* download = (*this)[position];
 
    if (FileDownload* fileDownload = dynamic_cast<FileDownload*>(download))
-      this->downloadsSortedByTime.remove(fileDownload->getLastTimeGetAllUnfinishedChunks(), fileDownload);
+   {
+      this->removeFromTimeIndex(fileDownload);
+      disconnect(fileDownload, &FileDownload::lastTimeGetAllUnfinishedChunksChanged, this, &DownloadQueue::fileDownloadTimeChanged);
+   }
 
    this->downloadsIndexedByName.remove(download->getLocalEntry().name(), download);
    this->downloadsIndexedBySourcePeer.remove(download->getPeerSource(), download);
@@ -187,6 +190,11 @@ bool DownloadQueue::removeDownloads(const DownloadPredicate& predicate)
          downloadsToDelete.append(download);
          removed.insert(download);
          this->updateMarkersRemove(retained);
+         if (FileDownload* fileDownload = dynamic_cast<FileDownload*>(download))
+         {
+            this->removeFromTimeIndex(fileDownload);
+            disconnect(fileDownload, &FileDownload::lastTimeGetAllUnfinishedChunksChanged, this, &DownloadQueue::fileDownloadTimeChanged);
+         }
       }
       else
          this->downloads[retained++] = download;
@@ -199,7 +207,7 @@ bool DownloadQueue::removeDownloads(const DownloadPredicate& predicate)
    this->erroneousDownloads.removeIf([&removed](Download* download) { return removed.contains(download); });
 
    // Erase each index entry at most once. Removing individual values repeatedly
-   // also becomes quadratic when many downloads share a peer, name or timestamp.
+   // also becomes quadratic when many downloads share a peer or name.
    const auto removeFromIndex = [&removed](auto& index)
    {
       for (auto i = index.begin(); i != index.end();)
@@ -210,7 +218,6 @@ bool DownloadQueue::removeDownloads(const DownloadPredicate& predicate)
    };
    removeFromIndex(this->downloadsIndexedBySourcePeer);
    removeFromIndex(this->downloadsIndexedByName);
-   removeFromIndex(this->downloadsSortedByTime);
 
    // Removing a file can trigger queue scans. Finish compaction and index cleanup
    // before any of those callbacks can run.
@@ -301,6 +308,7 @@ QList<QSharedPointer<IChunkDownloader>> DownloadQueue::getTheOldestUnfinishedChu
       FileDownload* download = i.value();
       if (download->getStatus() == Protos::Common::DownloadStatus::COMPLETE || download->getStatus() == Protos::Common::DownloadStatus::DELETED)
       {
+         this->downloadTimePositions.remove(download);
          i = this->downloadsSortedByTime.erase(i);
          continue;
       }
@@ -386,11 +394,27 @@ bool DownloadQueue::saveToFile() const
 /**
   * Called by 'FileDownload::getUnfinishedChunks(..)' via a direct connection, see 'insert(..)'.
   */
-void DownloadQueue::fileDownloadTimeChanged(qint64 oldTime)
+void DownloadQueue::fileDownloadTimeChanged()
 {
    FileDownload* fileDownload = static_cast<FileDownload*>(this->sender());
-   this->downloadsSortedByTime.remove(oldTime, fileDownload);
-   this->downloadsSortedByTime.insert(fileDownload->getLastTimeGetAllUnfinishedChunks(), fileDownload);
+   auto position = this->downloadTimePositions.find(fileDownload);
+   if (position == this->downloadTimePositions.end())
+      return;
+
+   // Most newly queued files share timestamp zero. Erasing by iterator avoids
+   // scanning that entire group for every file whose discovery round finishes.
+   this->downloadsSortedByTime.erase(position.value());
+   position.value() = this->downloadsSortedByTime.insert(fileDownload->getLastTimeGetAllUnfinishedChunks(), fileDownload);
+}
+
+void DownloadQueue::removeFromTimeIndex(FileDownload* download)
+{
+   auto position = this->downloadTimePositions.find(download);
+   if (position == this->downloadTimePositions.end())
+      return; // Discovery may already have pruned a completed or deleted file.
+
+   this->downloadsSortedByTime.erase(position.value());
+   this->downloadTimePositions.erase(position);
 }
 
 void DownloadQueue::updateMarkersInsert(int position, Download* download)

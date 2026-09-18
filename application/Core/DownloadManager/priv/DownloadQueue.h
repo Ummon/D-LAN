@@ -21,6 +21,7 @@
 #include <typeinfo>
 
 #include <QList>
+#include <QHash>
 #include <QMultiHash>
 #include <QMultiMap>
 
@@ -71,7 +72,7 @@ namespace DM
       bool saveToFile() const;
 
    private slots:
-      void fileDownloadTimeChanged(qint64 oldTime);
+      void fileDownloadTimeChanged();
 
    private:
       struct Marker;
@@ -94,6 +95,7 @@ namespace DM
       void updateMarkersInsert(int position, Download* download);
       void updateMarkersRemove(int position);
       void rebuildMarkers();
+      void removeFromTimeIndex(FileDownload* download);
 
       struct Marker { Marker(DownloadPredicate* p) : predicate(p), position(0) {} DownloadPredicate* predicate; int position; };
       QList<Marker> markers; ///< Saved some positions like the first downloadable file or the first directory. The goal is to speed up the scan. See the class 'ScanningIterator'.
@@ -101,6 +103,8 @@ namespace DM
       QList<Download*> downloads; ///< All downloads, it also includes erroneous downloads.
       QList<Download*> erroneousDownloads;
       QMultiMap<qint64, FileDownload*> downloadsSortedByTime; // Key: [ms] since epoch, 0 if never. See 'FileDownload::lastTimeGetAllUnfinishedChunks'.
+      // The time map must not be copied: its stored iterators rely on it remaining unshared.
+      QHash<FileDownload*, QMultiMap<qint64, FileDownload*>::iterator> downloadTimePositions;
       QMultiHash<PM::IPeer*, Download*> downloadsIndexedBySourcePeer;
       QMultiMap<std::string, Download*> downloadsIndexedByName;
    };

@@ -66,6 +66,8 @@ private slots:
    void oldestChunksStopAtBudget();
    void oldestChunksVisitFilesOnce_data();
    void oldestChunksVisitFilesOnce();
+   void discoveryIndexTracksRemoval_data();
+   void discoveryIndexTracksRemoval();
    void checkpointDownloadProgress_data();
    void checkpointDownloadProgress();
    void retryFailedQueueSave();
