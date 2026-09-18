@@ -59,6 +59,7 @@ private slots:
 
    void search();
    void selectNextSearch(bool reverse = false);
+   void updateSearchStats();
 
 private:
    LOG_INIT_H("LogViewer")
@@ -80,6 +81,7 @@ private:
 
    TableLogModel model;
    QTimer followTimer;
+   bool followTail = true;
 
    QDir currentDir;
    QFile* currentFile;

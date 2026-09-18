@@ -61,6 +61,13 @@ private slots:
    void visibleRowSizing();
    void documentCacheTracksContentAndFont();
    void refreshButtonKeepsExistingRows();
+   void incompleteRecords();
+   void pauseDuringLoading();
+   void automaticTruncation();
+   void searchNavigation();
+   void searchPreservesLayout();
+   void decodedTimestamps_data();
+   void decodedTimestamps();
 };
 
 void TestsLogViewer::incrementalLoading()
@@ -78,7 +85,7 @@ void TestsLogViewer::incrementalLoading()
    int heartbeats = 0;
    QTimer heartbeat;
    connect(&heartbeat, &QTimer::timeout, [&] { ++heartbeats; });
-   heartbeat.start(1);
+   heartbeat.start(0); // Check event-loop interleaving without a wall-clock assumption.
    model.setDataSource(&file);
    QCOMPARE(model.rowCount(), 0);
    QTRY_VERIFY_WITH_TIMEOUT(!finished.isEmpty(), 10000);
@@ -105,6 +112,14 @@ void TestsLogViewer::switchingFilesCancelsBatches()
    second.flush();
    second.seek(0);
    TableLogModel model;
+   bool switched = false;
+   connect(&model, &TableLogModel::newLogEntries, &model, [&](int) {
+      if (!switched)
+      {
+         switched = true;
+         model.setWatchingPause(true);
+      }
+   });
    model.setDataSource(&first);
    QTRY_VERIFY(model.rowCount() > 0);
    QVERIFY(model.rowCount() < 1000);
@@ -244,6 +259,8 @@ void TestsLogViewer::refreshButtonKeepsExistingRows()
    newer.close();
 
    MainWindow window;
+   window.resize(1000, 600);
+   window.show();
    auto* pause = window.findChild<QPushButton*>("butPause");
    auto* refresh = window.findChild<QPushButton*>("butRefresh");
    auto* files = window.findChild<QComboBox*>("cmbFile");
@@ -258,6 +275,7 @@ void TestsLogViewer::refreshButtonKeepsExistingRows()
    model->search("needle");
    QCOMPARE(model->rowCount(), 50);
    view->setCurrentIndex(model->index(0, TableLogModel::MESSAGE));
+   view->scrollToTop();
    const QPersistentModelIndex selected(view->currentIndex());
    QSignalSpy resets(model, &QAbstractItemModel::modelReset);
    QSignalSpy inserted(model, &QAbstractItemModel::rowsInserted);
@@ -282,6 +300,16 @@ void TestsLogViewer::refreshButtonKeepsExistingRows()
    QVERIFY(selected.isValid());
    QCOMPARE(view->currentIndex(), QModelIndex(selected));
    QVERIFY(pause->isChecked());
+   QTest::qWait(100); // Allow any delayed follow timer to fire.
+   QCOMPARE(view->verticalScrollBar()->value(), 0);
+
+   QFile newest(dir.filePath("003.log"));
+   QVERIFY(newest.open(QIODevice::WriteOnly));
+   newest.write(line("newest"));
+   newest.close();
+   QVERIFY(QMetaObject::invokeMethod(&window, "directoryChanged"));
+   QCOMPARE(files->currentText(), QString("001.log"));
+   QCOMPARE(resets.size(), 0);
 
    // A smaller, rewritten file genuinely requires a fresh model.
    QVERIFY(writer.resize(0));
@@ -292,6 +320,178 @@ void TestsLogViewer::refreshButtonKeepsExistingRows()
    QTRY_COMPARE(model->rowCount(), 1);
    QVERIFY(!resets.isEmpty());
    QCOMPARE(model->data(model->index(0, TableLogModel::MESSAGE)).toString(), QString("replacement"));
+}
+
+void TestsLogViewer::incompleteRecords()
+{
+   QTemporaryFile file;
+   QVERIFY(file.open());
+   QByteArray message = "caf\xc3\xa9  ";
+   const QByteArray record = line(message);
+   const int split = record.indexOf('\xc3') + 1;
+   file.write(record.left(split)); // Stop in the middle of a UTF-8 codepoint.
+   file.flush();
+   file.seek(0);
+   TableLogModel model;
+   QSignalSpy finished(&model, &TableLogModel::loadingFinished);
+   model.setDataSource(&file);
+   QTRY_COMPARE(finished.size(), 1);
+   QCOMPARE(model.rowCount(), 0);
+   QFile writer(file.fileName());
+   QVERIFY(writer.open(QIODevice::Append));
+   writer.write(record.mid(split));
+   writer.flush();
+   model.refresh();
+   QTRY_COMPARE(model.rowCount(), 1);
+   QCOMPARE(model.data(model.index(0, TableLogModel::MESSAGE)).toString(), QString::fromUtf8(message));
+
+   const QByteArray largeMessage(200000, 'x');
+   writer.write(line(largeMessage));
+   writer.flush();
+   model.refresh();
+   QTRY_COMPARE(model.rowCount(), 2);
+   QCOMPARE(model.data(model.index(1, TableLogModel::MESSAGE)).toString(), QString::fromUtf8(largeMessage));
+
+   writer.write("\r\n" + line("last").trimmed());
+   writer.flush();
+   finished.clear();
+   model.refresh();
+   QTRY_VERIFY(!finished.isEmpty());
+   QCOMPARE(model.rowCount(), 2);
+   writer.write("\r\n");
+   writer.flush();
+   model.refresh();
+   QTRY_COMPARE(model.rowCount(), 3);
+   QCOMPARE(model.data(model.index(2, TableLogModel::MESSAGE)).toString(), QString("last"));
+}
+
+void TestsLogViewer::pauseDuringLoading()
+{
+   QTemporaryFile file;
+   QVERIFY(file.open());
+   for (int i = 0; i < 2000; ++i)
+      file.write(line("entry"));
+   file.flush();
+   file.seek(0);
+   TableLogModel model;
+   bool paused = false;
+   connect(&model, &TableLogModel::newLogEntries, &model, [&](int) {
+      if (!paused)
+      {
+         paused = true;
+         model.setWatchingPause(true);
+      }
+   });
+   model.setDataSource(&file);
+   QTRY_VERIFY(paused);
+   const int count = model.rowCount();
+   QVERIFY(count > 0 && count < 2000);
+   QTest::qWait(30);
+   QCOMPARE(model.rowCount(), count);
+   model.refresh(); // A one-time refresh remains available while paused.
+   QTRY_COMPARE(model.rowCount(), 2000);
+}
+
+void TestsLogViewer::automaticTruncation()
+{
+   QTemporaryFile file;
+   QVERIFY(file.open());
+   file.write(line("old message") + line("another old message"));
+   file.flush();
+   file.seek(0);
+   TableLogModel model;
+   QAbstractItemModelTester tester(&model, QAbstractItemModelTester::FailureReportingMode::QtTest);
+   model.setDataSource(&file);
+   QTRY_COMPARE(model.rowCount(), 2);
+   QFile writer(file.fileName());
+   QVERIFY(writer.open(QIODevice::WriteOnly | QIODevice::Truncate));
+   writer.write(line("new"));
+   writer.flush();
+   model.setWatchingPause(false);
+   QTRY_COMPARE(model.rowCount(), 1);
+   QCOMPARE(model.data(model.index(0, TableLogModel::MESSAGE)).toString(), QString("new"));
+}
+
+void TestsLogViewer::searchNavigation()
+{
+   QTemporaryFile file;
+   QVERIFY(file.open());
+   for (int row = 0; row < 8; ++row)
+      file.write(line(row == 1 || row == 4 || row == 6 ? "match" : row == 3 ? "unique" : "other"));
+   file.flush();
+   file.seek(0);
+   TableLogModel model;
+   model.setDataSource(&file);
+   QTRY_COMPARE(model.rowCount(), 8);
+   model.search("match");
+   const auto index = [&](int row) { return model.index(row, TableLogModel::MESSAGE); };
+   QCOMPARE(model.nextResult({}).second.row(), 1);
+   QCOMPARE(model.nextResult({}, true).second.row(), 6);
+   QCOMPARE(model.nextResult(index(1)).second.row(), 4);
+   QCOMPARE(model.nextResult(index(6)).second.row(), 1);
+   QCOMPARE(model.nextResult(index(0), true).second.row(), 6);
+   QCOMPARE(model.nextResult(index(7), true).second.row(), 6);
+   QCOMPARE(model.nextResult(index(4), true).second.row(), 1);
+   QVERIFY(!model.inSearchResult({}));
+   QVERIFY(!model.inSearchResult(index(3)));
+   QCOMPARE(model.searchResultNumber(index(4)), 2);
+   model.search("unique");
+   QCOMPARE(model.nextResult(index(3)).second.row(), 3);
+   QCOMPARE(model.nextResult(index(3), true).second.row(), 3);
+   model.search("");
+   QVERIFY(!model.nextResult({}).second.isValid());
+}
+
+void TestsLogViewer::searchPreservesLayout()
+{
+   QTemporaryFile file;
+   QVERIFY(file.open());
+   file.write(line("<pre>first<lf>second<lf>third</pre>"));
+   file.flush();
+   file.seek(0);
+   TableLogModel model;
+   model.setShowMultipleLines(true);
+   model.setDataSource(&file);
+   QTRY_COMPARE(model.rowCount(), 1);
+   LogTableView view;
+   view.setModel(&model);
+   view.setShowMultipleLines(true);
+   view.show();
+   QTRY_VERIFY(view.rowHeight(0) > view.verticalHeader()->defaultSectionSize());
+   const int height = view.rowHeight(0);
+   QSignalSpy changes(&model, &QAbstractItemModel::dataChanged);
+   QSignalSpy resets(&model, &QAbstractItemModel::modelReset);
+   QSignalSpy searches(&model, &TableLogModel::searchResultsChanged);
+   model.search("first");
+   QCOMPARE(searches.size(), 1);
+   QCOMPARE(changes.size(), 0);
+   QCOMPARE(view.rowHeight(0), height);
+   model.search("first");
+   model.resetFilter();
+   QCOMPARE(searches.size(), 1);
+   QCOMPARE(resets.size(), 0);
+   QVERIFY(!model.data(model.index(0, TableLogModel::DATE_TIME), Qt::ToolTipRole).isValid());
+}
+
+void TestsLogViewer::decodedTimestamps_data()
+{
+   QTest::addColumn<QString>("timestamp");
+   for (const auto& timestamp : {
+      "2026-09-18 10:00:00.001", "2024-02-29 23:59:59.999", "2000-01-01 00:00:00.000",
+      "2026-03-29 01:59:59.999", "2026-03-29 02:30:00.123", "2026-03-29 03:00:00.000",
+      "2026-10-25 02:30:00.500", "2026-03-08 02:30:00.123", "2026-11-01 01:30:00.500",
+      "2025-02-29 12:00:00.000", "2026-09-18 25:00:00.000", "0099-01-01 00:00:00.000"})
+      QTest::newRow(timestamp) << QString(timestamp);
+}
+
+void TestsLogViewer::decodedTimestamps()
+{
+   QFETCH(QString, timestamp);
+   const QDateTime expected = QDateTime::fromString(timestamp.left(19), "yyyy-MM-dd HH:mm:ss").addMSecs(timestamp.right(3).toInt());
+   const auto entry = LM::Builder::decode(timestamp + " [Debug] {Module} (main) : message");
+   QCOMPARE(entry->getDate().isValid(), expected.isValid());
+   QCOMPARE(entry->getDate(), expected);
+   QCOMPARE(entry->getDateStr(), expected.toString("yyyy-MM-dd HH:mm:ss.zzz"));
 }
 
 QTEST_MAIN(TestsLogViewer)

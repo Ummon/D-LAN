@@ -31,6 +31,8 @@ void LogTableView::setModel(QAbstractItemModel* model)
       this->modelConnections << connect(model, &QAbstractItemModel::dataChanged, this, &LogTableView::invalidateLayout);
       this->modelConnections << connect(model, &QAbstractItemModel::rowsInserted, this, [this] { this->layoutTimer.start(); });
       this->modelConnections << connect(model, &QAbstractItemModel::rowsAboutToBeRemoved, this, &LogTableView::invalidateLayout);
+      if (const auto* logModel = qobject_cast<TableLogModel*>(model))
+         this->modelConnections << connect(logModel, &TableLogModel::searchResultsChanged, this, [this] { this->viewport()->update(); });
    }
 }
 

@@ -24,6 +24,7 @@
 #include <QFileInfo>
 #include <QClipboard>
 #include <QMessageBox>
+#include <QScrollBar>
 
 #include <Common/Global.h>
 
@@ -70,6 +71,12 @@ MainWindow::MainWindow(QWidget *parent) :
    connect(this->severities, &TooglableList::stateChanged, this, &MainWindow::filtersChange);
    connect(this->modules, &TooglableList::stateChanged, this, &MainWindow::filtersChange);
    connect(this->threads, &TooglableList::stateChanged, this, &MainWindow::filtersChange);
+   connect(&this->model, &TableLogModel::newSeverity, this->severities, &TooglableList::addItem);
+   connect(&this->model, &TableLogModel::newModule, this->modules, &TooglableList::addItem);
+   connect(&this->model, &TableLogModel::newThread, this->threads, &TooglableList::addItem);
+   connect(&this->model, &TableLogModel::dataSourceReset, this, &MainWindow::refreshFilters);
+   connect(&this->model, &TableLogModel::searchResultsChanged, this, &MainWindow::updateSearchStats);
+   connect(this->ui->tblLog->selectionModel(), &QItemSelectionModel::currentChanged, this, &MainWindow::updateSearchStats);
 
    this->ui->laySeverity->addWidget(this->severities);
    this->ui->layModule->addWidget(this->modules);
@@ -83,6 +90,15 @@ MainWindow::MainWindow(QWidget *parent) :
    this->followTimer.setInterval(50);
    connect(&this->followTimer, &QTimer::timeout, this->ui->tblLog, &QTableView::scrollToBottom);
    connect(&this->model, &TableLogModel::newLogEntries, this, &MainWindow::newLogEntries);
+   connect(&this->model, &QAbstractItemModel::modelAboutToBeReset, &this->followTimer, &QTimer::stop);
+   connect(&this->model, &QAbstractItemModel::rowsAboutToBeInserted, this, [this] {
+      const auto* bar = this->ui->tblLog->verticalScrollBar();
+      this->followTail = this->followTimer.isActive() || bar->value() == bar->maximum();
+   });
+   connect(this->ui->tblLog->verticalScrollBar(), &QScrollBar::valueChanged, this, [this](int value) {
+      if (value < this->ui->tblLog->verticalScrollBar()->maximum())
+         this->followTimer.stop();
+   });
 
    connect(this->ui->butPause, &QPushButton::toggled, this, &MainWindow::setWatchingPause);
    this->setWatchingPause(false);
@@ -166,15 +182,7 @@ void MainWindow::setCurrentFile(QString file)
 
    this->currentFile = new QFile(this->currentDir.absolutePath() + '/' + file);
    if (currentFile->exists() && this->currentFile->open(QIODevice::ReadOnly))
-   {
       this->model.setDataSource(this->currentFile);
-      this->refreshFilters();
-
-      // New messages can be logged after the file is loaded, thus some new severities/modules/threads can appear.
-      connect(&this->model, &TableLogModel::newSeverity, this->severities, &TooglableList::addItem);
-      connect(&this->model, &TableLogModel::newModule, this->modules, &TooglableList::addItem);
-      connect(&this->model, &TableLogModel::newThread, this->threads, &TooglableList::addItem);
-   }
 }
 
 /**
@@ -206,23 +214,19 @@ void MainWindow::checkAll()
   */
 void MainWindow::refresh()
 {
-   if (!this->currentFile || !this->currentDir.exists())
+   if (!this->currentDir.exists())
       return;
 
    this->readCurrentDir(false);
    if (!this->currentFile)
       return;
 
-   // A truncated file no longer contains the entries represented by the model.
-   if (this->currentFile->size() < this->currentFile->pos())
-      this->setCurrentFile(this->ui->cmbFile->currentText());
-   else
-      this->model.refresh();
+   this->model.refresh();
 }
 
 void MainWindow::newLogEntries(int /*n*/)
 {
-   if (!this->followTimer.isActive())
+   if (this->followTail && !this->followTimer.isActive())
       this->followTimer.start();
 }
 
@@ -231,17 +235,21 @@ void MainWindow::setWatchingPause(bool pause)
    if (pause)
       disconnect(&this->watcher, &QFileSystemWatcher::directoryChanged, this, &MainWindow::directoryChanged);
    else
-      connect(&this->watcher, &QFileSystemWatcher::directoryChanged, this, &MainWindow::directoryChanged);
+      connect(&this->watcher, &QFileSystemWatcher::directoryChanged, this, &MainWindow::directoryChanged, Qt::UniqueConnection);
 
    this->model.setWatchingPause(pause);
+   if (pause)
+      this->followTimer.stop();
 }
 
 void MainWindow::directoryChanged()
 {
-   if (!this->currentFile || !this->currentDir.exists())
+   if (!this->currentDir.exists())
       return;
 
-   this->readCurrentDir();
+   const bool followingNewest = !this->currentFile ||
+      QFileInfo(this->currentFile->fileName()).fileName() == this->ui->cmbFile->itemText(this->ui->cmbFile->count() - 1);
+   this->readCurrentDir(followingNewest);
 }
 
 void MainWindow::search()
@@ -262,24 +270,14 @@ void MainWindow::search()
 
 void MainWindow::selectNextSearch(bool reverse)
 {
-   const std::pair<int, QModelIndex> index =
-      this->model.nextResult(
-         this->ui->tblLog->currentIndex().siblingAtRow(
-            this->ui->tblLog->currentIndex().row() + (reverse ? -1 : 1)
-         ),
-         reverse
-      );
+   const auto index = this->model.nextResult(this->ui->tblLog->currentIndex(), reverse);
 
-   if (index.second.isValid() && index.second != this->ui->tblLog->currentIndex())
+   if (index.second.isValid())
    {
-      this->ui->lblSearchStats->setText(
-         QString("%1/%2").arg(index.first + 1).arg(this->model.currentNbFoundItems())
-      );
-
-      int col = this->ui->tblLog->selectionModel()->currentIndex().column();
-
-      this->ui->tblLog->selectRow(index.second.row());
-      this->ui->tblLog->scrollTo(index.second.siblingAtColumn(col));
+      this->followTimer.stop();
+      this->ui->tblLog->selectionModel()->setCurrentIndex(index.second, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
+      this->ui->tblLog->scrollTo(index.second);
+      this->updateSearchStats();
    }
    else
    {
@@ -289,6 +287,16 @@ void MainWindow::selectNextSearch(bool reverse)
       msgBox.setText("Not found");
       msgBox.exec();
    }
+}
+
+void MainWindow::updateSearchStats()
+{
+   if (this->model.currentSearchTerm().isEmpty())
+      this->ui->lblSearchStats->clear();
+   else
+      this->ui->lblSearchStats->setText(QString("%1/%2")
+         .arg(this->model.searchResultNumber(this->ui->tblLog->currentIndex()))
+         .arg(this->model.currentNbFoundItems()));
 }
 
 /**
@@ -333,7 +341,7 @@ void MainWindow::readCurrentDir(bool selectNewest)
    if (this->ui->cmbFile->count() > 0)
    {
       const QString file = this->ui->cmbFile->currentText();
-      if (!this->currentFile || this->currentFile->fileName() != this->currentDir.absoluteFilePath(file))
+      if (!this->currentFile || !this->currentFile->isOpen() || this->currentFile->fileName() != this->currentDir.absoluteFilePath(file))
          this->setCurrentFile(file);
    }
    else
@@ -353,10 +361,8 @@ void MainWindow::readCurrentDir(bool selectNewest)
 void MainWindow::closeCurrentFile()
 {
    this->followTimer.stop();
-   disconnect(&this->model, &TableLogModel::newSeverity, this->severities, &TooglableList::addItem);
-   disconnect(&this->model, &TableLogModel::newModule, this->modules, &TooglableList::addItem);
-   disconnect(&this->model, &TableLogModel::newThread, this->threads, &TooglableList::addItem);
    this->model.removeDataSource();
+   this->refreshFilters();
    if (this->currentFile)
    {
       delete this->currentFile;

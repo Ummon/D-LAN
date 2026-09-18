@@ -18,8 +18,8 @@
   
 #include <TableLogModel.h>
 
-#include <QTextStream>
 #include <QElapsedTimer>
+#include <algorithm>
 
 #include <Common/LogManager/LogMacros.h>
 #include <Common/LogManager/Builder.h>
@@ -60,7 +60,7 @@ QVariant TableLogModel::data(const QModelIndex& index, int role) const
    {
    case Qt::DisplayRole:
       {
-         QSharedPointer<LM::IEntry> entry = this->filteredEntries[index.row()];
+         const auto& entry = this->filteredEntries[index.row()];
 
          switch (index.column())
          {
@@ -89,10 +89,11 @@ QVariant TableLogModel::data(const QModelIndex& index, int role) const
       {
          if (index.column() == MESSAGE)
          {
-            QSharedPointer<LM::IEntry> entry = this->filteredEntries[index.row()];
+            const auto& entry = this->filteredEntries[index.row()];
             // Force HTML detection with <qt> tag.
             return QVariant("<qt>" + entry->getMessageWithLF() + "</qt>");
          }
+         return {};
       }
 
    case Qt::TextAlignmentRole:
@@ -123,10 +124,8 @@ void TableLogModel::setDataSource(QFile* source)
 {
    this->clear();
    this->source = source;
-   this->stream.setDevice(source);
-   this->stream.setEncoding(QStringConverter::Utf8);
-   if (source)
-      this->readTimer.start();
+   emit dataSourceReset();
+   this->refresh();
 }
 
 void TableLogModel::setShowMultipleLines(bool enabled)
@@ -169,11 +168,16 @@ const QStringList& TableLogModel::getThreads() const
 
 void TableLogModel::setFilter(const QStringList& severities, const QStringList& modules, const QStringList& threads)
 {
+   const QSet<QString> newSeverities(severities.begin(), severities.end());
+   const QSet<QString> newModules(modules.begin(), modules.end());
+   const QSet<QString> newThreads(threads.begin(), threads.end());
+   if (this->severitiesFilter == newSeverities && this->modulesFilter == newModules && this->threadsFilter == newThreads)
+      return;
    this->beginResetModel();
 
-   this->severitiesFilter = QSet<QString>(severities.begin(), severities.end());
-   this->modulesFilter = QSet<QString>(modules.begin(), modules.end());
-   this->threadsFilter = QSet<QString>(threads.begin(), threads.end());
+   this->severitiesFilter = newSeverities;
+   this->modulesFilter = newModules;
+   this->threadsFilter = newThreads;
 
    this->filteredEntries.clear();
 
@@ -186,6 +190,7 @@ void TableLogModel::setFilter(const QStringList& severities, const QStringList& 
    this->rebuildSearch();
 
    this->endResetModel();
+   emit searchResultsChanged();
 }
 
 void TableLogModel::resetFilter()
@@ -195,10 +200,12 @@ void TableLogModel::resetFilter()
 
 void TableLogModel::search(const QString& word)
 {
+   if (this->currentSearch == word)
+      return;
    this->currentSearch = word;
    this->rebuildSearch();
-   if (!this->filteredEntries.isEmpty())
-      emit dataChanged(this->index(0, MESSAGE), this->index(this->filteredEntries.size() - 1, MESSAGE));
+   // Highlighting changes painting only; do not invalidate document layouts/heights.
+   emit searchResultsChanged();
 }
 
 void TableLogModel::rebuildSearch()
@@ -220,42 +227,36 @@ std::pair<int, QModelIndex> TableLogModel::nextResult(const QModelIndex& from, b
    if (s == 0)
       return std::make_pair(0, QModelIndex());
 
-   const int fromRow = !from.isValid() ? 0 : from.row();
-
-   int start = 0;
-   int end = s;
-
-   while (start < end) {
-      const int i = (end - start) / 2 + start;
-      const int currentRow = this->indexesFound[i];
-      if (currentRow == fromRow)
-      {
-         int pos = i % s;
-         return std::make_pair(pos, this->createIndex(this->indexesFound[pos], MESSAGE));
-      }
-      else if (currentRow > fromRow)
-         end = i;
-      else
-         start = i + 1;
-   }
-
-   if (!reverse && start < s && this->indexesFound[start] < fromRow)
-      start += 1;
-
-   if (reverse && start < s && this->indexesFound[start] > fromRow)
+   const auto begin = this->indexesFound.cbegin();
+   const auto end = this->indexesFound.cend();
+   int pos = reverse ? s - 1 : 0;
+   if (from.isValid())
    {
-      start -= 1;
-      if (start < 0)
-         start = s - 1;
+      if (reverse)
+      {
+         const auto found = std::lower_bound(begin, end, from.row());
+         pos = found == begin ? s - 1 : int(found - begin) - 1;
+      }
+      else
+      {
+         const auto found = std::upper_bound(begin, end, from.row());
+         pos = found == end ? 0 : int(found - begin);
+      }
    }
+   return std::make_pair(pos, this->index(this->indexesFound[pos], MESSAGE));
+}
 
-   int pos = start % s;
-   return std::make_pair(pos, this->createIndex(this->indexesFound[start % s], MESSAGE));
+int TableLogModel::searchResultNumber(const QModelIndex& index) const
+{
+   if (!index.isValid())
+      return 0;
+   const auto found = std::lower_bound(this->indexesFound.cbegin(), this->indexesFound.cend(), index.row());
+   return found != this->indexesFound.cend() && *found == index.row() ? int(found - this->indexesFound.cbegin()) + 1 : 0;
 }
 
 bool TableLogModel::inSearchResult(const QModelIndex& index) const
 {
-   return this->nextResult(index).second.row() == index.row();
+   return this->searchResultNumber(index) != 0;
 }
 
 const QString& TableLogModel::currentSearchTerm() const
@@ -286,15 +287,25 @@ QString TableLogModel::rowAsText(int row) const
 void TableLogModel::setWatchingPause(bool pause)
 {
    if (pause)
+   {
       this->timer.stop();
+      this->readTimer.stop();
+      this->readRequested = false;
+   }
    else
+   {
       this->timer.start();
+      this->refresh();
+   }
 }
 
 void TableLogModel::refresh()
 {
-   if (this->source && !this->readTimer.isActive())
+   if (this->source && this->source->isOpen() && !this->readTimer.isActive())
+   {
+      this->readRequested = true;
       this->readTimer.start();
+   }
 }
 
 bool TableLogModel::isFiltered(const QSharedPointer<LM::IEntry>& entry) const
@@ -309,20 +320,43 @@ bool TableLogModel::isFiltered(const QSharedPointer<LM::IEntry>& entry) const
 
 void TableLogModel::readLines()
 {
-   if (!this->source)
+   if (!this->source || !this->source->isOpen() || !this->readRequested)
       return;
 
-   // Keep the stream between batches: QTextStream can buffer beyond QFile::pos().
-   // Bound both parsing time and batch size, then return to the event loop.
+   // Detect truncation for automatic updates as well as manual refresh.
+   if (this->source->size() < this->source->pos())
+   {
+      QFile* source = this->source.data();
+      if (source->seek(0))
+         this->setDataSource(source);
+      return;
+   }
+
+   // Read complete UTF-8 records. A writer may stop in the middle of a line or a
+   // codepoint; retain those bytes until the newline arrives. Chunk large records
+   // as well, so reading an unfinished message does not monopolize the UI thread.
    QElapsedTimer elapsed;
    elapsed.start();
    QVector<QSharedPointer<LM::IEntry>> visible;
    int linesRead = 0;
-   while (!this->stream.atEnd() && linesRead < 256 && elapsed.elapsed() < 8)
+   while (!this->source->atEnd() && linesRead < 256 && elapsed.elapsed() < 8)
    {
-      QString line = this->stream.readLine().trimmed();
+      const QByteArray bytes = this->source->readLine(64 * 1024);
+      if (bytes.isEmpty())
+      {
+         this->readRequested = false;
+         break;
+      }
+      this->pendingLine += bytes;
       ++linesRead;
-      if (line.isEmpty())
+      if (!this->pendingLine.endsWith('\n'))
+         continue;
+      this->pendingLine.chop(1);
+      if (this->pendingLine.endsWith('\r'))
+         this->pendingLine.chop(1);
+      QString line = QString::fromUtf8(this->pendingLine);
+      this->pendingLine.clear();
+      if (line.trimmed().isEmpty())
          continue;
 
       try
@@ -330,24 +364,27 @@ void TableLogModel::readLines()
          QSharedPointer<LM::IEntry> entry = LM::Builder::decode(line);
          this->entries << entry;
 
-         if (!this->severities.contains(entry->getSeverityStr()))
+         if (!this->knownSeverities.contains(entry->getSeverityStr()))
          {
+            this->knownSeverities.insert(entry->getSeverityStr());
             this->severities << entry->getSeverityStr();
             this->severitiesFilter << this->severities.constLast();
 
             emit newSeverity(entry->getSeverityStr());
          }
 
-         if (!this->modules.contains(entry->getName()))
+         if (!this->knownModules.contains(entry->getName()))
          {
+            this->knownModules.insert(entry->getName());
             this->modules << entry->getName();
             this->modulesFilter << this->modules.constLast();
 
             emit newModule(entry->getName());
          }
 
-         if (!this->threads.contains(entry->getThread()))
+         if (!this->knownThreads.contains(entry->getThread()))
          {
+            this->knownThreads.insert(entry->getThread());
             this->threads << entry->getThread();
             this->threadsFilter << this->threads.constLast();
 
@@ -374,23 +411,32 @@ void TableLogModel::readLines()
                this->indexesFound.append(row);
       this->endInsertRows();
       emit newLogEntries(visible.size());
+      if (!this->currentSearch.isEmpty())
+         emit searchResultsChanged();
    }
 
-   if (!this->stream.atEnd())
+   if (this->readRequested && this->source && !this->source->atEnd())
       this->readTimer.start();
    else
+   {
+      this->readRequested = false;
       emit loadingFinished();
+   }
 }
 
 void TableLogModel::clear()
 {
    this->readTimer.stop();
-   this->stream.setDevice(nullptr);
+   this->readRequested = false;
+   this->pendingLine.clear();
    this->source = nullptr;
    this->beginResetModel();
    this->severities.clear();
    this->modules.clear();
    this->threads.clear();
+   this->knownSeverities.clear();
+   this->knownModules.clear();
+   this->knownThreads.clear();
 
    this->severitiesFilter.clear();
    this->modulesFilter.clear();
@@ -400,4 +446,5 @@ void TableLogModel::clear()
    this->filteredEntries.clear();
    this->indexesFound.clear();
    this->endResetModel();
+   emit searchResultsChanged();
 }

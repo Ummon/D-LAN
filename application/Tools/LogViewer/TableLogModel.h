@@ -23,7 +23,7 @@
 #include <QVector>
 #include <QSharedPointer>
 #include <QStringList>
-#include <QTextStream>
+#include <QPointer>
 #include <QSet>
 #include <QTimer>
 
@@ -64,8 +64,10 @@ public:
    void resetFilter();
 
    void search(const QString& word);
+   // Move strictly past 'from', wrapping around. An invalid index starts at
+   // the first result (or last when searching backwards).
    std::pair<int, QModelIndex> nextResult(const QModelIndex& from, bool reverse = false) const;
-   QModelIndex previousResult(const QModelIndex& from) const;
+   int searchResultNumber(const QModelIndex& index) const;
    bool inSearchResult(const QModelIndex& from) const;
    const QString& currentSearchTerm() const;
    int currentNbFoundItems() const;
@@ -86,6 +88,8 @@ signals:
    void newModule(QString);
    void newThread(QString);
    void loadingFinished();
+   void dataSourceReset();
+   void searchResultsChanged();
 
 private:
    bool isFiltered(const QSharedPointer<LM::IEntry>& entry) const;
@@ -94,10 +98,11 @@ private:
    void clear();
    void rebuildSearch();
 
-   QFile* source;
+   QPointer<QFile> source;
    QTimer timer;
    QTimer readTimer;
-   QTextStream stream;
+   QByteArray pendingLine;
+   bool readRequested = false;
 
    QVector<QSharedPointer<LM::IEntry>> entries;
    QVector<QSharedPointer<LM::IEntry>> filteredEntries;
@@ -111,6 +116,9 @@ private:
    QStringList severities;
    QStringList modules;
    QStringList threads;
+   QSet<QString> knownSeverities;
+   QSet<QString> knownModules;
+   QSet<QString> knownThreads;
 
    // Search.
    QList<int> indexesFound; // Ordered from top to bottom, only rows are stored.

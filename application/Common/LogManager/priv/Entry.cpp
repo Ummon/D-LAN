@@ -42,7 +42,14 @@ Entry::Entry(const QString& line) :
    if (capturedTexts.count() < 7)
       return;
 
-   this->date = QDateTime::fromString(capturedTexts[1], Entry::DATE_TIME_FORMAT);
+   // Parsing a combined local datetime is expensive on Windows. Parse the fixed
+   // date/time fields separately, then let QDateTime resolve local time once.
+   const QDate parsedDate = QDate::fromString(capturedTexts[1].left(10), QStringLiteral("yyyy-MM-dd"));
+   const QTime parsedTime = QTime::fromString(capturedTexts[1].mid(11), QStringLiteral("HH:mm:ss"));
+   if (parsedDate.isValid() && parsedDate.year() >= 100 && parsedTime.isValid())
+      this->date = QDateTime(parsedDate, parsedTime);
+   else
+      this->date = QDateTime::fromString(capturedTexts[1], Entry::DATE_TIME_FORMAT);
    this->date = this->date.addMSecs(capturedTexts[2].toInt());
 
    this->severity = Entry::severityFromStr(capturedTexts[3]);
