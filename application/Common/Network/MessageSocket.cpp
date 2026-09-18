@@ -83,6 +83,15 @@ MessageSocket::MessageSocket(
    // transfers to move it to another thread without moving MessageSocket.
    this->socket->setParent(nullptr);
 
+   // The native socket must exist before setting options. Apply this to
+   // accepted connections now, and to outgoing connections on every reconnect.
+   const auto enableLowDelay = [socket] {
+      socket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
+   };
+   connect(socket, &QAbstractSocket::connected, socket, enableLowDelay);
+   if (socket->state() == QAbstractSocket::ConnectedState)
+      enableLowDelay();
+
 #ifdef DEBUG
    this->num = ++MessageSocket::currentNum;
    MESSAGE_SOCKET_LOG_DEBUG(socket->state() == QAbstractSocket::ConnectedState
