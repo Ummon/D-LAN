@@ -243,20 +243,8 @@ bool DownloadsFlatModel::dropMimeData(
    return true;
 }
 
-void DownloadsFlatModel::onNewState(const Protos::GUI::State& state)
+void DownloadsFlatModel::updateDownloads(const Protos::GUI::State& state)
 {
-   const quint64 oldTotalBytesInQueue = this->totalBytesInQueue;
-   const quint64 oldTotalBytesDownloadedInQueue = this->totalBytesDownloadedInQueue;
-
-   this->totalBytesInQueue = 0;
-   this->totalBytesDownloadedInQueue = 0;
-
-   for (int i = 0; i < state.downloads_size(); i++)
-   {
-      this->totalBytesInQueue += state.downloads(i).local_entry().size();
-      this->totalBytesDownloadedInQueue += state.downloads(i).downloaded_bytes();
-   }
-
    const QList<int> activeDownloadIndices = this->getNonFilteredDownloadIndices(state);
 
    QSet<quint64> newIDs;
@@ -364,6 +352,19 @@ void DownloadsFlatModel::onNewState(const Protos::GUI::State& state)
       this->beginRemoveRows(QModelIndex(), i, this->downloads.size() - 1);
       this->downloads.remove(i, this->downloads.size() - i);
       this->endRemoveRows();
+   }
+}
+
+void DownloadsFlatModel::updateProgress(const Protos::GUI::State& state)
+{
+   const quint64 oldTotalBytesInQueue = this->totalBytesInQueue;
+   const quint64 oldTotalBytesDownloadedInQueue = this->totalBytesDownloadedInQueue;
+   this->totalBytesInQueue = 0;
+   this->totalBytesDownloadedInQueue = 0;
+   for (const auto& download : state.downloads())
+   {
+      this->totalBytesInQueue += download.local_entry().size();
+      this->totalBytesDownloadedInQueue += download.downloaded_bytes();
    }
 
    // ETA computation.

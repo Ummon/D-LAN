@@ -33,8 +33,8 @@ using namespace GUI;
   *
   * This model shows the download queue as a tree and is designed to be used with a 'QTreeView'.
   * Each node is a directory and the leaves are the queued files or directories.
-  * The method 'onNewState(..)' is automatically and periodically called by 'DownloadsModel' each time a
-  * new state is sent by the core.
+  * The widget calls 'updateDownloads(..)' for new states while this view is active,
+  * and with the latest snapshot when switching back to it.
   */
 
 DownloadsTreeModel::DownloadsTreeModel(
@@ -367,7 +367,7 @@ bool DownloadsTreeModel::dropMimeData(
   * every remaining top level entry would otherwise be moved above the removed ones, one 'beginMoveRows(..)' at a time, which
   * is very slow for the view.
   */
-void DownloadsTreeModel::onNewState(const Protos::GUI::State& state)
+void DownloadsTreeModel::updateDownloads(const Protos::GUI::State& state)
 {
    const QList<int> activeDownloadIndices = this->getNonFilteredDownloadIndices(state);
 

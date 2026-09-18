@@ -41,6 +41,8 @@ namespace GUI
       );
       ~DownloadsTreeModel() override;
 
+      void updateDownloads(const Protos::GUI::State& state) override;
+
       QList<quint64> getDownloadIDs(const QModelIndex& index) const override;
 
       bool isDownloadPaused(const QModelIndex& index) const override;
@@ -68,9 +70,6 @@ namespace GUI
          int column,
          const QModelIndex& parent
       ) override;
-
-   protected slots:
-      void onNewState(const Protos::GUI::State& state) override;
 
    private:
       class Tree : public Common::Tree<Protos::GUI::State::Download, Tree>

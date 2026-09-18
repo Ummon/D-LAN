@@ -210,6 +210,18 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 endif()
 
 if(DLAN_BUILD_TESTS)
+   add_executable(TestsDownloadsWidget
+      Downloads/TestsDownloadsWidget.cpp Downloads/DownloadsWidget.cpp
+      Downloads/DownloadsFlatModel.cpp Downloads/DownloadsTreeModel.cpp Downloads/DownloadsModel.cpp
+      Peers/PeerListModel.cpp Settings/SharedEntryListModel.cpp
+      CheckBoxList.cpp IconProvider.cpp Log.cpp resources.qrc
+   )
+   set_target_properties(TestsDownloadsWidget PROPERTIES AUTOUIC ON AUTORCC ON)
+   target_include_directories(TestsDownloadsWidget PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+   target_link_libraries(TestsDownloadsWidget PRIVATE RemoteCoreController LogManager Common Qt6::Widgets Qt6::Svg Qt6::Test)
+   add_test(NAME TestsDownloadsWidget COMMAND TestsDownloadsWidget)
+   set_tests_properties(TestsDownloadsWidget PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 30)
+
    add_executable(TestsSearchModel
       Search/TestsSearchModel.cpp Search/SearchModel.cpp Browse/BrowseModel.cpp
       Peers/PeerListModel.cpp Settings/SharedEntryListModel.cpp

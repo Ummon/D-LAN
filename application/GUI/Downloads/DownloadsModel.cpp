@@ -42,7 +42,6 @@ DownloadsModel::DownloadsModel(
    // Not needed in Qt6: https://stackoverflow.com/questions/76590735/qregistermetatypestreamoperators-missing-in-qt6
    // qRegisterMetaTypeStreamOperators<Progress>("Progress"); // Don't know where to put this call . . .
 
-   connect(this->coreConnection.data(), &RCC::ICoreConnection::newState, this, &DownloadsModel::onNewState);
 }
 
 int DownloadsModel::columnCount(const QModelIndex& /*parent*/) const

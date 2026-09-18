@@ -20,7 +20,7 @@ namespace
    {
    public:
       using GUI::DownloadsFlatModel::DownloadsFlatModel;
-      using GUI::DownloadsFlatModel::onNewState;
+      using GUI::DownloadsFlatModel::updateProgress;
    };
 
    struct Fixture
@@ -47,7 +47,7 @@ namespace
       quint64 update(quint32 rate)
       {
          this->state.mutable_stats()->set_download_rate(rate);
-         this->model.onNewState(this->state);
+         this->model.updateProgress(this->state);
          return this->model.getEta();
       }
    };

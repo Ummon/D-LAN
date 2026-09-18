@@ -124,6 +124,8 @@ DownloadsWidget::DownloadsWidget(
 {
    this->ui->setupUi(this);
 
+   connect(this->coreConnection.data(), &RCC::ICoreConnection::newState, this, &DownloadsWidget::newState);
+
    this->switchView(static_cast<Protos::GUI::Settings::DownloadView>(SETTINGS.get<quint32>("download_view")));
 
    this->ui->tblDownloads->setItemDelegate(&this->downloadsDelegate);
@@ -307,9 +309,9 @@ void DownloadsWidget::moveSelectedEntriesToTop()
    }
 
    // Search a download which is not selected
-   for (int r = 0; r < this->downloadsFlatModel.rowCount(); r++)
+   for (int i : this->currentDownloadsModel->getNonFilteredDownloadIndices(this->latestDownloadState))
    {
-      const quint64 id = this->downloadsFlatModel.getDownloadIDs(this->downloadsFlatModel.index(r, 0)).constFirst();
+      const quint64 id = this->latestDownloadState.downloads(i).id();
       if (!downloadIDs.contains(id))
       {
          this->coreConnection->moveDownloads(QList<quint64>() << id, downloadIDs.values());
@@ -377,7 +379,14 @@ void DownloadsWidget::pauseSelectedEntries()
 
 void DownloadsWidget::filterChanged()
 {
-   this->coreConnection->refresh();
+   this->currentDownloadsModel->updateDownloads(this->latestDownloadState);
+}
+
+void DownloadsWidget::newState(const Protos::GUI::State& state)
+{
+   this->latestDownloadState.mutable_downloads()->CopyFrom(state.downloads());
+   this->currentDownloadsModel->updateDownloads(this->latestDownloadState);
+   this->downloadsFlatModel.updateProgress(state);
 }
 
 void DownloadsWidget::updateGlobalProgressBar()
@@ -414,6 +423,7 @@ void DownloadsWidget::switchView(Protos::GUI::Settings::DownloadView view)
       if (this->currentDownloadsModel != &this->downloadsTreeModel)
       {
          this->currentDownloadsModel = &this->downloadsTreeModel;
+         this->currentDownloadsModel->updateDownloads(this->latestDownloadState);
          this->ui->tblDownloads->setModel(this->currentDownloadsModel);
          this->restoreTreeViewState();
       }
@@ -428,6 +438,7 @@ void DownloadsWidget::switchView(Protos::GUI::Settings::DownloadView view)
       {
          this->saveTreeViewState();
          this->currentDownloadsModel = &this->downloadsFlatModel;
+         this->currentDownloadsModel->updateDownloads(this->latestDownloadState);
          this->ui->tblDownloads->setModel(this->currentDownloadsModel);
       }
    }

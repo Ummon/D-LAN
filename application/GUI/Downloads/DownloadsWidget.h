@@ -75,6 +75,7 @@ namespace GUI
       void keyPressEvent(QKeyEvent* event) override;
 
    private slots:
+      void newState(const Protos::GUI::State& state);
       void displayContextMenuDownloads(const QPoint& point);
       void downloadDoubleClicked(const QModelIndex& index);
       void openLocationSelectedEntries();
@@ -108,6 +109,7 @@ namespace GUI
       DownloadsFlatModel downloadsFlatModel;
       DownloadsTreeModel downloadsTreeModel;
       DownloadsModel* currentDownloadsModel;
+      Protos::GUI::State latestDownloadState; // Only downloads; used for switching views and queue actions.
 
       DownloadsDelegate downloadsDelegate;
 

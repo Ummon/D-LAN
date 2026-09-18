@@ -40,20 +40,24 @@ namespace GUI
       quint64 getTotalBytesDownloadedInQueue() const;
       quint64 getEta() const;
 
-      QList<quint64> getDownloadIDs(const QModelIndex& index) const;
+      void updateDownloads(const Protos::GUI::State& state) override;
+      // One rate sample per incoming state, independent of visible rows and filters.
+      void updateProgress(const Protos::GUI::State& state);
 
-      bool isDownloadPaused(const QModelIndex& index) const;
-      bool isEntryLocationKnown(const QModelIndex& index) const;
-      bool isFileComplete(const QModelIndex& index) const;
-      bool isSourceAlive(const QModelIndex& index) const;
-      Protos::Common::Entry::Type getType(const QModelIndex& index) const;
+      QList<quint64> getDownloadIDs(const QModelIndex& index) const override;
 
-      QString getPath(const QModelIndex& index, bool appendFilename = true) const;
+      bool isDownloadPaused(const QModelIndex& index) const override;
+      bool isEntryLocationKnown(const QModelIndex& index) const override;
+      bool isFileComplete(const QModelIndex& index) const override;
+      bool isSourceAlive(const QModelIndex& index) const override;
+      Protos::Common::Entry::Type getType(const QModelIndex& index) const override;
 
-      int rowCount(const QModelIndex& parent = QModelIndex()) const;
-      QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
-      Qt::DropActions supportedDropActions() const;
-      Qt::ItemFlags flags(const QModelIndex& index) const;
+      QString getPath(const QModelIndex& index, bool appendFilename = true) const override;
+
+      int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+      QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+      Qt::DropActions supportedDropActions() const override;
+      Qt::ItemFlags flags(const QModelIndex& index) const override;
 
    signals:
       void globalProgressChanged();
@@ -65,10 +69,7 @@ namespace GUI
          int row,
          int column,
          const QModelIndex & parent
-      );
-
-   protected slots:
-      void onNewState(const Protos::GUI::State& state);
+      ) override;
 
    private:
       quint64 totalBytesInQueue;

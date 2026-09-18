@@ -18,7 +18,7 @@ namespace
    {
    public:
       using GUI::DownloadsTreeModel::DownloadsTreeModel;
-      using GUI::DownloadsTreeModel::onNewState;
+      using GUI::DownloadsTreeModel::updateDownloads;
    };
 
    struct Fixture
@@ -73,14 +73,14 @@ private slots:
          addDownload(state, i + 1, QString("file-%1.bin").arg(i, 6, 10, QChar('0')), grouped ? "/directory/" : "/");
       QElapsedTimer timer;
       timer.start();
-      f.model.onNewState(state);
+      f.model.updateDownloads(state);
       const double initialMs = timer.nsecsElapsed() / 1e6;
       const QModelIndex parent = grouped ? f.model.index(0, 0) : QModelIndex();
       QCOMPARE(f.model.rowCount(parent), count);
       QSignalSpy changes(&f.model, &QAbstractItemModel::dataChanged);
       QSignalSpy moves(&f.model, &QAbstractItemModel::rowsMoved);
       timer.restart();
-      f.model.onNewState(state);
+      f.model.updateDownloads(state);
       const double unchangedMs = timer.nsecsElapsed() / 1e6;
       QCOMPARE(changes.size(), 0);
       QCOMPARE(moves.size(), 0);
@@ -90,7 +90,7 @@ private slots:
          download.set_status(Protos::Common::DOWNLOADING);
       }
       timer.restart();
-      f.model.onNewState(state);
+      f.model.updateDownloads(state);
       const double progressMs = timer.nsecsElapsed() / 1e6;
       qInfo("%d downloads: initial %.3f ms, unchanged %.3f ms, progress %.3f ms, %lld dataChanged signals",
          count, initialMs, unchangedMs, progressMs, static_cast<long long>(changes.size()));
@@ -106,7 +106,7 @@ private slots:
       if (grouped)
          QCOMPARE(f.model.index(0, GUI::DownloadsModel::PROGRESS).data().value<GUI::Progress>().progress, quint32(5000));
       changes.clear();
-      f.model.onNewState(state);
+      f.model.updateDownloads(state);
       QCOMPARE(changes.size(), 0);
    }
 
@@ -119,7 +119,7 @@ private slots:
       addDownload(state, 2, "a", "/A/");
       addDownload(state, 3, "b", "/B/deep/");
       addDownload(state, 4, "loose");
-      f.model.onNewState(state);
+      f.model.updateDownloads(state);
       QCOMPARE(names(f.model), (QStringList { "A", "B", "loose" }));
       QPersistentModelIndex aDirectory = f.model.index(0, 0);
       QPersistentModelIndex bDirectory = f.model.index(1, 0);
@@ -143,7 +143,7 @@ private slots:
       state.mutable_downloads(2)->set_status(Protos::Common::COMPLETE);
       state.mutable_downloads(3)->set_status(Protos::Common::PAUSED);
       QSignalSpy changes(&f.model, &QAbstractItemModel::dataChanged);
-      f.model.onNewState(state);
+      f.model.updateDownloads(state);
       QCOMPARE(names(f.model), (QStringList { "loose", "B", "A" }));
       QCOMPARE(names(f.model, aDirectory), (QStringList { "deep", "a", "m" }));
       QVERIFY(!removedFile.isValid());
@@ -166,22 +166,22 @@ private slots:
       }
 
       f.filter.values = { GUI::STATUS_COMPLETE };
-      f.model.onNewState(state);
+      f.model.updateDownloads(state);
       QVERIFY(!aFile.isValid());
       QCOMPARE(names(f.model, aDirectory), (QStringList { "deep", "m" }));
       QCOMPARE(f.model.index(2, GUI::DownloadsModel::PROGRESS).data().value<GUI::Progress>().progress, quint32(0));
       f.filter.values.clear();
-      f.model.onNewState(state);
+      f.model.updateDownloads(state);
       QCOMPARE(names(f.model, aDirectory), (QStringList { "deep", "a", "m" }));
 
       state.clear_downloads();
-      f.model.onNewState(state);
+      f.model.updateDownloads(state);
       QCOMPARE(f.model.rowCount(), 0);
       QVERIFY(!aDirectory.isValid());
       QVERIFY(!bFile.isValid());
       QVERIFY(!loose.isValid());
       addDownload(state, 7, "new", "/fresh/sub/");
-      f.model.onNewState(state);
+      f.model.updateDownloads(state);
       QCOMPARE(names(f.model), (QStringList { "fresh" }));
       QCOMPARE(f.model.getDownloadIDs(f.model.index(0, 0)), (QList<quint64> { 7 }));
    }
@@ -194,14 +194,14 @@ private slots:
       addDownload(state, 1, "a", "/A/");
       addDownload(state, 2, "b", "/B/");
       addDownload(state, 3, "c", "/C/");
-      f.model.onNewState(state);
+      f.model.updateDownloads(state);
       QPersistentModelIndex b = f.model.index(1, 0);
       state.clear_downloads();
       addDownload(state, 4, "new", "/B/");
       addDownload(state, 2, "b", "/B/");
       addDownload(state, 1, "a", "/A/");
       addDownload(state, 3, "c", "/C/");
-      f.model.onNewState(state);
+      f.model.updateDownloads(state);
       QCOMPARE(names(f.model), (QStringList { "B", "A", "C" }));
       QCOMPARE(b.row(), 0);
       QCOMPARE(names(f.model, b), (QStringList { "b", "new" }));
@@ -216,21 +216,21 @@ private slots:
       for (int i = 0; i < input.size(); ++i)
          addDownload(state, i + 1, input[i], "/folder/");
       addDownload(state, 6, "child", "/folder/sub/");
-      f.model.onNewState(state);
+      f.model.updateDownloads(state);
       const auto folder = f.model.index(0, 0);
       QCOMPARE(names(f.model, folder), (QStringList { "sub", "0", "a", "Alpha", "ALPHA", "Zulu" }));
       state.mutable_downloads(0)->set_status(Protos::Common::NO_SOURCE);
-      f.model.onNewState(state);
+      f.model.updateDownloads(state);
       QCOMPARE(f.model.index(0, GUI::DownloadsModel::PROGRESS).data().value<GUI::Progress>().status, Protos::Common::NO_SOURCE);
       state.mutable_downloads(0)->set_status(Protos::Common::PAUSED);
-      f.model.onNewState(state);
+      f.model.updateDownloads(state);
       QCOMPARE(f.model.index(0, GUI::DownloadsModel::PROGRESS).data().value<GUI::Progress>().status, Protos::Common::PAUSED);
       for (auto& download : *state.mutable_downloads())
       {
          download.set_status(Protos::Common::COMPLETE);
          download.set_downloaded_bytes(100);
       }
-      f.model.onNewState(state);
+      f.model.updateDownloads(state);
       QVERIFY(f.model.isFileComplete(folder));
       const auto progress = f.model.index(0, GUI::DownloadsModel::PROGRESS).data().value<GUI::Progress>();
       QCOMPARE(progress.status, Protos::Common::COMPLETE);

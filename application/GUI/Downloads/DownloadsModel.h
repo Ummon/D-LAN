@@ -72,12 +72,12 @@ namespace GUI
 
       int columnCount(const QModelIndex& parent = QModelIndex()) const;
 
-   protected slots:
-      virtual void onNewState(const Protos::GUI::State& state) = 0;
+      // The widget routes snapshots only to the displayed model.
+      virtual void updateDownloads(const Protos::GUI::State& state) = 0;
+      QList<int> getNonFilteredDownloadIndices(const Protos::GUI::State& state) const;
 
    protected:
       QVariant getData(const Protos::GUI::State::Download& download, const QModelIndex& index, int role) const;
-      QList<int> getNonFilteredDownloadIndices(const Protos::GUI::State& state) const;
       QList<int> getDraggedRows(const QMimeData* data);
 
       static QString getExistingPathOrParentDirectory(const Common::Path& filePath, bool appendFilename);
