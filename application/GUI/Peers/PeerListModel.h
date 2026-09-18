@@ -101,6 +101,8 @@ namespace GUI
       void coreDisconnected(bool forced);
 
    private:
+      static bool peerLessThan(const Peer* first, const Peer* second, Protos::GUI::Settings::PeerSortType sortType);
+      int insertionPosition(Peer* peer) const;
       void updatePeers(
          const google::protobuf::RepeatedPtrField<Protos::GUI::State::Peer>& peers,
          const QSet<Common::Hash>& peersDownloadingOurData = QSet<Common::Hash>(),

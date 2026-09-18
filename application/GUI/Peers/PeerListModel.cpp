@@ -24,6 +24,7 @@ using namespace GUI;
 #include <QtAlgorithms>
 #include <QStringBuilder>
 #include <QSet>
+#include <utility>
 
 #include <Common/ProtoHelper.h>
 #include <Common/Global.h>
@@ -60,6 +61,9 @@ const QColor PeerListModel::COLOR_PEER_BLUE(0, 0, 108);
 
 PeerListModel::PeerListModel(QSharedPointer<RCC::ICoreConnection> coreConnection) :
    coreConnection(coreConnection),
+   orderedPeers([](const Peer* first, const Peer* second) {
+      return peerLessThan(first, second, Protos::GUI::Settings::BY_SHARING_AMOUNT);
+   }),
    currentSortType(Protos::GUI::Settings::BY_SHARING_AMOUNT),
    displayOnlyPeersWithStatusOK(false),
    toolTipEnabled(true)
@@ -121,47 +125,52 @@ Protos::GUI::State::Peer::PeerStatus PeerListModel::getStatus(int rowNum) const
    return this->orderedPeers.getFromIndex(rowNum)->status;
 }
 
+bool PeerListModel::peerLessThan(const Peer* first, const Peer* second, Protos::GUI::Settings::PeerSortType sortType)
+{
+   if (!first || !second)
+      return false;
+   if (sortType == Protos::GUI::Settings::BY_SHARING_AMOUNT && first->sharingAmount != second->sharingAmount)
+      return first->sharingAmount > second->sharingAmount;
+   const QString firstNick = Common::StringUtils::toLowerAndRemoveAccents(first->nick);
+   const QString secondNick = Common::StringUtils::toLowerAndRemoveAccents(second->nick);
+   if (firstNick != secondNick)
+      return firstNick < secondNick;
+   if (first->sharingAmount != second->sharingAmount)
+      return first->sharingAmount > second->sharingAmount;
+   return first->peerID < second->peerID;
+}
+
+// Find the insertion boundary without copying or modifying the sorted collection.
+int PeerListModel::insertionPosition(Peer* peer) const
+{
+   const int previous = this->orderedPeers.indexOfNearest(peer);
+   if (previous < 0)
+      return 0;
+   return previous + (peerLessThan(this->orderedPeers.getFromIndex(previous), peer, this->currentSortType) ? 1 : 0);
+}
+
 void PeerListModel::setSortType(Protos::GUI::Settings::PeerSortType sortType)
 {
-   this->currentSortType = sortType;
+   if ((sortType != Protos::GUI::Settings::BY_NICK && sortType != Protos::GUI::Settings::BY_SHARING_AMOUNT) ||
+       sortType == this->currentSortType)
+      return;
 
    emit layoutAboutToBeChanged();
-   switch (this->currentSortType)
-   {
-   case Protos::GUI::Settings::BY_NICK:
-      this->orderedPeers.setSortedFunction([](const Peer* p1, const Peer* p2) {
-         if (!p1 || !p2)
-            return false;
-         const QString& nick1 = Common::StringUtils::toLowerAndRemoveAccents(p1->nick);
-         const QString& nick2 = Common::StringUtils::toLowerAndRemoveAccents(p2->nick);
-         if (nick1 == nick2)
-         {
-            if (p1->sharingAmount == p2->sharingAmount)
-               return p1->peerID < p2->peerID;
-            return p1->sharingAmount > p2->sharingAmount;
-         }
-         return nick1 < nick2;
-      });
-      break;
+   // A view can create persistent indexes in response to the signal above.
+   const QModelIndexList oldIndexes = this->persistentIndexList();
+   QList<Peer*> indexed;
+   for (const auto& index : oldIndexes)
+      indexed.append(this->orderedPeers.getFromIndex(index.row()));
 
-   case Protos::GUI::Settings::BY_SHARING_AMOUNT:
-      this->orderedPeers.setSortedFunction([](const Peer* p1, const Peer* p2) {
-         if (!p1 || !p2)
-            return false;
-         if (p1->sharingAmount == p2->sharingAmount)
-         {
-            const QString& nick1 = Common::StringUtils::toLowerAndRemoveAccents(p1->nick);
-            const QString& nick2 = Common::StringUtils::toLowerAndRemoveAccents(p2->nick);
-            if (nick1 == nick2)
-               return p1->peerID < p2->peerID;
-            return nick1 < nick2;
-         }
-         return p1->sharingAmount > p2->sharingAmount;
-      });
-      break;
+   this->currentSortType = sortType;
+   this->orderedPeers.setSortedFunction([sortType](const Peer* first, const Peer* second) {
+      return peerLessThan(first, second, sortType);
+   });
 
-   default:;
-   }
+   QModelIndexList newIndexes;
+   for (int i = 0; i < oldIndexes.size(); ++i)
+      newIndexes.append(this->index(this->orderedPeers.indexOf(indexed[i]), oldIndexes[i].column()));
+   this->changePersistentIndexList(oldIndexes, newIndexes);
    emit layoutChanged();
 }
 
@@ -195,12 +204,12 @@ void PeerListModel::rmRoom()
 
 int PeerListModel::rowCount(const QModelIndex& parent) const
 {
-   return this->orderedPeers.size();
+   return parent.isValid() ? 0 : this->orderedPeers.size();
 }
 
 int PeerListModel::columnCount(const QModelIndex& parent) const
 {
-   return 3;
+   return parent.isValid() ? 0 : 3;
 }
 
 QVariant PeerListModel::data(const QModelIndex& index, int role) const
@@ -278,9 +287,7 @@ void PeerListModel::colorize(const Common::Hash& peerID, const QColor& color)
 {
    if (Peer* peer = this->indexedPeers.value(peerID, 0))
    {
-      emit layoutAboutToBeChanged();
-      this->peersToColorize[peer->peerID] = color;
-      emit layoutChanged();
+      this->colorize(this->index(this->orderedPeers.indexOf(peer), 0), color);
    }
    else
       this->peersToColorize.insert(peerID, color);
@@ -343,14 +350,7 @@ void PeerListModel::updatePeers(
    const QSet<Common::Hash>& peersToDisplay
 )
 {
-   bool dataChanged = false;
-   auto setDataChanged =
-      [&dataChanged, this]()
-      {
-         if (!dataChanged)
-            emit layoutAboutToBeChanged(QList<QPersistentModelIndex>(), QAbstractItemModel::VerticalSortHint);
-         dataChanged = true;
-      };
+   QSet<Peer*> changedPeers;
 
    auto peersList = this->indexedPeers.keys();
    QSet<Common::Hash> peersToRemove(peersList.begin(), peersList.end());
@@ -385,27 +385,39 @@ void PeerListModel::updatePeers(
          peersToRemove.remove(peerID);
 
          // 'nick' and 'sharingAmount' are the only fields the order depends on, see 'setSortType(..)'.
-         const bool orderChanged = peer->nick != nick || peer->sharingAmount != sharingAmount;
+         const bool sortFieldsChanged = peer->nick != nick || peer->sharingAmount != sharingAmount;
 
          // Every field shown by 'data(..)', in a column or in the tool tip. Without 'status' and 'coreVersion'
          // here a peer going out of date keeps its normal colour and its old version until something else
          // changes. 'ip' is absent on purpose: it's never displayed, only read by 'getPeerIP(..)'.
          const bool displayChanged =
-            orderChanged ||
+            sortFieldsChanged ||
             peer->transferInformation != transferInformation ||
             peer->status != status ||
             peer->coreVersion != coreVersion;
 
          if (displayChanged)
-            setDataChanged();
+            changedPeers.insert(peer);
 
-         if (orderChanged)
+         if (sortFieldsChanged)
          {
-            // The peer has to be removed before its sorting fields are modified, otherwise it can't be found.
+            Peer updated = *peer;
+            updated.nick = nick;
+            updated.sharingAmount = sharingAmount;
+            const int oldRow = this->orderedPeers.indexOf(peer);
+            int newRow = this->insertionPosition(&updated);
+            if (newRow > oldRow)
+               --newRow; // The insertion boundary still includes the old entry.
+            if (oldRow != newRow)
+               this->beginMoveRows(QModelIndex(), oldRow, oldRow, QModelIndex(), newRow > oldRow ? newRow + 1 : newRow);
+
+            // Remove before modifying the sort key so the entry can still be found.
             this->orderedPeers.remove(peer);
             peer->nick = nick;
             peer->sharingAmount = sharingAmount;
             this->orderedPeers.insert(peer);
+            if (oldRow != newRow)
+               this->endMoveRows();
          }
 
          peer->transferInformation = transferInformation;
@@ -415,26 +427,54 @@ void PeerListModel::updatePeers(
       }
       else
       {
-         setDataChanged();
          Peer* p = new Peer { peerID, nick, coreVersion, sharingAmount, ip, transferInformation, status };
+         const int row = this->insertionPosition(p);
+         this->beginInsertRows(QModelIndex(), row, row);
          this->indexedPeers.insert(peerID, p);
          this->orderedPeers.insert(p);
+         this->endInsertRows();
       }
    }
 
    QList<Common::Hash> peerIDsRemoved;
    for (auto i = peersToRemove.begin(); i != peersToRemove.end(); ++i)
    {
-      setDataChanged();
       Peer* peer = this->indexedPeers[*i];
+      const int row = this->orderedPeers.indexOf(peer);
+      this->beginRemoveRows(QModelIndex(), row, row);
       peerIDsRemoved << peer->peerID;
       this->indexedPeers.remove(peer->peerID);
       this->orderedPeers.remove(peer);
       delete peer;
+      this->endRemoveRows();
    }
 
-   if (dataChanged)
-      emit layoutChanged(QList<QPersistentModelIndex>(), QAbstractItemModel::VerticalSortHint);
+   // Walk the final order once, avoiding a sorted lookup (and nickname folding)
+   // for every changed peer. Adjacent rows share one notification.
+   if (!changedPeers.isEmpty())
+   {
+      int first = -1;
+      int row = 0;
+      const auto flush = [&](int last) {
+         if (first >= 0)
+         {
+            emit dataChanged(this->index(first, 0), this->index(last, this->columnCount() - 1));
+            first = -1;
+         }
+      };
+      for (Peer* peer : std::as_const(this->orderedPeers))
+      {
+         if (changedPeers.contains(peer))
+         {
+            if (first < 0)
+               first = row;
+         }
+         else
+            flush(row - 1);
+         ++row;
+      }
+      flush(row - 1);
+   }
 
    if (!peerIDsRemoved.isEmpty())
       emit peersRemoved(peerIDsRemoved);

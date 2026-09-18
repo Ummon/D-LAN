@@ -210,6 +210,12 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 endif()
 
 if(DLAN_BUILD_TESTS)
+   add_executable(TestsPeerListModel Peers/TestsPeerListModel.cpp Peers/PeerListModel.cpp)
+   target_include_directories(TestsPeerListModel PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+   target_link_libraries(TestsPeerListModel PRIVATE RemoteCoreController LogManager Common Qt6::Widgets Qt6::Test)
+   add_test(NAME TestsPeerListModel COMMAND TestsPeerListModel)
+   set_tests_properties(TestsPeerListModel PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 30)
+
    add_executable(TestsDownloadsWidget
       Downloads/TestsDownloadsWidget.cpp Downloads/DownloadsWidget.cpp
       Downloads/DownloadsFlatModel.cpp Downloads/DownloadsTreeModel.cpp Downloads/DownloadsModel.cpp
