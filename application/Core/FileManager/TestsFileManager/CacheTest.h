@@ -19,6 +19,7 @@ private slots:
    void watcherRecovery();
    void updaterWatcherRecovery_data();
    void updaterWatcherRecovery();
+   void pendingScansFollowQueueTransitions();
    void recoveryDetectsRootTypeReplacement_data();
    void recoveryDetectsRootTypeReplacement();
    void watchedFileRename_data();

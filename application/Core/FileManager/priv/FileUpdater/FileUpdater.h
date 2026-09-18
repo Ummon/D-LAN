@@ -29,6 +29,7 @@
 #include <QRecursiveMutex>
 #include <QString>
 #include <QList>
+#include <QSet>
 #include <QElapsedTimer>
 #include <QFileInfo>
 
@@ -89,6 +90,8 @@ namespace FM
       void stopScanning(Entry* entry = nullptr);
 
       void deleteEntry(Entry* entry);
+      void enqueueEntryToScan(Entry* entry);
+      Entry* takeEntryToScan(bool oldestFirst);
       void removeFromEntriesToScan(Entry* entry);
       void removeFromHashingQueue(Entry* entry);
 
@@ -109,6 +112,7 @@ namespace FM
       QElapsedTimer timerScanUnwatchable;
 
       QList<Entry*> entriesToScan; ///< When something change in a directory or in a file we put it in this list until it is scanned.
+      QSet<Entry*> pendingScanEntries; ///< Membership of entriesToScan; both are protected by mutex.
       Entry* currentScanningEntry;
 
       QWaitCondition scanningStopped;      

@@ -765,8 +765,8 @@ void CacheTest::cancelledReplacementLeavesNoHashingJob()
    physical.close();
    auto file = new FM::File(root->getRoot(), "cancelled.bin", 3, false, QFileInfo(path).lastModified(), root);
    auto& updater = manager.fileUpdater;
-   updater.entriesToScan.clear();
-   updater.entriesToScan << file;
+   updater.stopScanning();
+   updater.enqueueEntryToScan(file);
    updater.hashingQueue.enqueue(file, 3, queue == "priority");
    if (queue == "retry")
       updater.hashingQueue.finishPass(file, 3, true, 0, 3000);
@@ -2965,7 +2965,7 @@ void CacheTest::browseNewSharedDirectory()
    QCOMPARE(deliveries, 0);
    QVERIFY(!dir->isScanned());
 
-   updater.scan(updater.entriesToScan.takeFirst());
+   updater.scan(updater.takeEntryToScan(true));
    QVERIFY(dir->isScanned());
    QCoreApplication::sendPostedEvents(&request, QEvent::MetaCall);
    QCOMPARE(deliveries, 1);
@@ -3386,6 +3386,88 @@ void CacheTest::updaterWatcherRecovery()
    QVERIFY(updater.unwatchableEntries.isEmpty());
 }
 
+void CacheTest::pendingScansFollowQueueTransitions()
+{
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   const auto saved = SETTINGS.getRepeated<Protos::Common::SharedEntry>("shared_entries");
+   const auto restore = qScopeGuard([&] { SETTINGS.set("shared_entries", saved); });
+   SETTINGS.rm("shared_entries");
+   FM::FileManager manager(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   auto& updater = manager.fileUpdater;
+   updater.stop(); // Deliver events explicitly, without a concurrent scan consuming them.
+   manager.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::Directory*>(manager.getEntry(Common::Path(temp.path() + '/')));
+   QVERIFY(root);
+   QCOMPARE(updater.entriesToScan, QList<FM::Entry*> { root });
+   QCOMPARE(updater.pendingScanEntries, QSet<FM::Entry*> { root });
+   updater.stopScanning();
+
+   QList<FM::Entry*> expected;
+   QList<FM::WatcherEvent> events;
+   for (int i = 0; i < 128; ++i)
+   {
+      const QString name = QString("file-%1.txt").arg(i);
+      auto file = new FM::File(root->getRoot(), name, 0, false, QDateTime(), root);
+      expected.append(file);
+      const FM::WatcherEvent event(FM::WatcherEvent::CONTENT_CHANGED, temp.filePath(name), false);
+      events.append(event);
+      events.append(event);
+   }
+   updater.processEvents(events);
+   QCOMPARE(updater.entriesToScan, expected);
+   QCOMPARE(updater.pendingScanEntries.size(), expected.size());
+   updater.processEvents(events);
+   QCOMPARE(updater.entriesToScan, expected);
+
+   // Both consumption orders release membership before scanning. Another event
+   // for the active entry must be able to schedule a follow-up scan.
+   FM::Entry* first = expected.takeFirst();
+   QCOMPARE(updater.takeEntryToScan(true), first);
+   QVERIFY(!updater.pendingScanEntries.contains(first));
+   FM::Entry* last = expected.takeLast();
+   QCOMPARE(updater.takeEntryToScan(false), last);
+   QVERIFY(!updater.pendingScanEntries.contains(last));
+   updater.processEvents({ events.first(), events.last() });
+   expected.append(first);
+   expected.append(last);
+   QCOMPARE(updater.entriesToScan, expected);
+
+   updater.stopScanning(first);
+   expected.removeOne(first);
+   QVERIFY(!updater.pendingScanEntries.contains(first));
+   QCOMPARE(updater.entriesToScan, expected);
+   updater.processEvents({ events.first() });
+   expected.append(first);
+   QCOMPARE(updater.entriesToScan, expected);
+
+   auto branch = root->createSubDir("branch");
+   auto child = branch->createSubDir("child");
+   auto leaf = new FM::File(root->getRoot(), "leaf.txt", 0, false, QDateTime(), child);
+   updater.enqueueEntryToScan(branch);
+   updater.enqueueEntryToScan(leaf);
+   updater.enqueueEntryToScan(child);
+   // Retirement removes every pending descendant but leaves unrelated ordering intact.
+   updater.prepareToDeleteEntry(branch);
+   QCOMPARE(updater.entriesToScan, expected);
+   QVERIFY(!updater.pendingScanEntries.contains(branch));
+   QVERIFY(!updater.pendingScanEntries.contains(child));
+   QVERIFY(!updater.pendingScanEntries.contains(leaf));
+   updater.enqueueEntryToScan(leaf);
+   QCOMPARE(updater.takeEntryToScan(false), static_cast<FM::Entry*>(leaf));
+   QCOMPARE(updater.entriesToScan, expected);
+
+   updater.stopScanning();
+   QVERIFY(updater.entriesToScan.isEmpty());
+   QVERIFY(updater.pendingScanEntries.isEmpty());
+   QVERIFY(!updater.takeEntryToScan(true));
+   QVERIFY(!updater.takeEntryToScan(false));
+   updater.processEvents({ events.first(), events.first() });
+   QCOMPARE(updater.takeEntryToScan(true), first);
+   QVERIFY(updater.entriesToScan.isEmpty());
+   QVERIFY(updater.pendingScanEntries.isEmpty());
+}
+
 void CacheTest::recoveryDetectsRootTypeReplacement_data()
 {
    QTest::addColumn<bool>("wasDirectory");
@@ -3425,7 +3507,7 @@ void CacheTest::recoveryDetectsRootTypeReplacement()
    QVERIFY(entry);
    const qint64 oldSize = entry->getSize();
    auto& updater = manager.fileUpdater;
-   updater.entriesToScan.clear();
+   updater.stopScanning();
    if (auto file = dynamic_cast<FM::File*>(entry))
       updater.hashingQueue.enqueue(file, file->getRemainingBytesToHash());
 
@@ -3451,7 +3533,7 @@ void CacheTest::recoveryDetectsRootTypeReplacement()
    {
       updater.processEvents({ FM::WatcherEvent(static_cast<FM::WatcherEvent::Type>(eventType), path, !wasDirectory) });
       QCOMPARE(updater.entriesToScan, QList<FM::Entry*> { entry });
-      updater.scan(updater.entriesToScan.takeFirst());
+      updater.scan(updater.takeEntryToScan(true));
    }
    QCOMPARE(removals.size(), 1);
    QCOMPARE(entry->getSize(), oldSize); // Never copy directory metadata into a cached File.
@@ -3554,12 +3636,12 @@ void CacheTest::entryTypeReplacement()
    updater.scan(root);
    auto oldEntry = manager.getEntry(Common::Path(path + (wasDirectory ? "/" : "")));
    QVERIFY(oldEntry);
-   updater.entriesToScan << oldEntry;
+   updater.enqueueEntryToScan(oldEntry);
    if (wasDirectory)
    {
       auto child = manager.getEntry(Common::Path(path + "/child"));
       QVERIFY(child);
-      updater.entriesToScan << child;
+      updater.enqueueEntryToScan(child);
       QVERIFY(QFile::remove(path + "/child"));
       QVERIFY(QDir().rmdir(path));
       QVERIFY(writeFile(path));

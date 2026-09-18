@@ -137,7 +137,7 @@ void FileUpdater::addRoot(SharedEntry* sharedEntry)
       }
    }
 
-   this->entriesToScan << sharedEntry->getRootEntry();
+   this->enqueueEntryToScan(sharedEntry->getRootEntry());
 
    if (!watchable)
    {
@@ -274,7 +274,7 @@ void FileUpdater::run()
          QMutexLocker locker(&this->mutex);
          if (this->entriesToScan.isEmpty())
             break;
-         entry = this->entriesToScan.takeFirst();
+         entry = this->takeEntryToScan(true);
          this->currentScanningEntry = entry;
       }
       this->scan(entry, true);
@@ -329,7 +329,7 @@ void FileUpdater::run()
             QMutexLocker locker(&this->mutex);
             if (!this->entriesToScan.isEmpty())
             {
-               nextEntryToScan = this->entriesToScan.takeLast();
+               nextEntryToScan = this->takeEntryToScan(false);
                this->currentScanningEntry = nextEntryToScan;
             }
          }
@@ -699,9 +699,15 @@ void FileUpdater::stopScanning(Entry* entry)
 
    QMutexLocker locker(&this->mutex);
    if (entry)
-      this->entriesToScan.removeOne(entry);
+   {
+      if (this->pendingScanEntries.remove(entry))
+         this->entriesToScan.removeOne(entry);
+   }
    else
+   {
       this->entriesToScan.clear();
+      this->pendingScanEntries.clear();
+   }
 }
 
 /**
@@ -722,6 +728,28 @@ void FileUpdater::deleteEntry(Entry* entry)
    entry->del();
 }
 
+void FileUpdater::enqueueEntryToScan(Entry* entry)
+{
+   QMutexLocker locker(&this->mutex);
+   if (!entry || this->pendingScanEntries.contains(entry))
+      return;
+
+   this->pendingScanEntries.insert(entry);
+   this->entriesToScan.append(entry);
+}
+
+Entry* FileUpdater::takeEntryToScan(bool oldestFirst)
+{
+   QMutexLocker locker(&this->mutex);
+   if (this->entriesToScan.isEmpty())
+      return nullptr;
+
+   // Initial scans keep insertion order; subsequent scans prefer recent events.
+   Entry* entry = oldestFirst ? this->entriesToScan.takeFirst() : this->entriesToScan.takeLast();
+   this->pendingScanEntries.remove(entry);
+   return entry;
+}
+
 /**
   * Remove a directory and its sub entries from 'this->entriesToScan'.
   */
@@ -729,14 +757,21 @@ void FileUpdater::removeFromEntriesToScan(Entry* entry)
 {
    QMutexLocker locker(&this->mutex);
 
-   this->entriesToScan.removeOne(entry);
+   if (this->entriesToScan.isEmpty())
+      return;
+
+   bool removed = this->pendingScanEntries.remove(entry);
 
    if (Directory* dir = dynamic_cast<Directory*>(entry))
    {
       DirIterator i(dir);
       while (Entry* entry = i.next())
-         this->entriesToScan.removeOne(entry);
+         removed |= this->pendingScanEntries.remove(entry);
    }
+
+   // Compact once after subtree removal, preserving the remaining scan order.
+   if (removed)
+      this->entriesToScan.removeIf([this](Entry* queued) { return !this->pendingScanEntries.contains(queued); });
 }
 
 /**
@@ -777,26 +812,20 @@ bool FileUpdater::processEvents(const QList<WatcherEvent>& events)
 
             Directory* parent = this->fileManager->getFittestDirectory(Common::Path(path).removeLastElement());
             this->deleteEntry(entry);
-            QMutexLocker locker(&this->mutex);
-            if (parent && !this->entriesToScan.contains(parent))
-               this->entriesToScan << parent;
+            this->enqueueEntryToScan(parent);
             return;
          }
 
          File* file = dynamic_cast<File*>(entry);
          if (file)
          {
-            QMutexLocker locker(&this->mutex);
-            if (!this->entriesToScan.contains(file))
-               this->entriesToScan << file;
+            this->enqueueEntryToScan(file);
          }
          else
          {
             Directory* dir = this->fileManager->getFittestDirectory(path);
 
-            QMutexLocker locker(&this->mutex);
-            if (dir && !this->entriesToScan.contains(dir))
-               this->entriesToScan << dir;
+            this->enqueueEntryToScan(dir);
          }
       };
 
@@ -821,8 +850,8 @@ bool FileUpdater::processEvents(const QList<WatcherEvent>& events)
          if (entry)
          {
             QMutexLocker locker(&this->mutex);
-            if (!this->entriesToScan.contains(entry) && !this->rootEntriesToRemove.contains(entry))
-               this->entriesToScan << entry;
+            if (!this->rootEntriesToRemove.contains(entry))
+               this->enqueueEntryToScan(entry);
             if (event.type == WatcherEvent::WATCH_LOST &&
                 !this->unwatchableEntries.contains(entry) && !this->rootEntriesToRemove.contains(entry))
                this->unwatchableEntries << entry;
@@ -867,9 +896,7 @@ bool FileUpdater::processEvents(const QList<WatcherEvent>& events)
                      // The entry of a shared file isn't transferred, the destination is rescanned to find the file.
                      if (dynamic_cast<File*>(entryToMove))
                      {
-                        QMutexLocker locker(&this->mutex);
-                        if (!this->entriesToScan.contains(destination))
-                           this->entriesToScan << destination;
+                        this->enqueueEntryToScan(destination);
                      }
                   }
                   else
