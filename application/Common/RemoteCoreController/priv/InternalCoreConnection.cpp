@@ -149,7 +149,10 @@ void InternalCoreConnection::disconnectFromCore()
       this->socket->abort();
    else
       this->close();
-   this->forcedToClose = false;
+   // Pending writes can delay onDisconnected(), which still needs the reason.
+   // An idle or aborted socket must not retain the flag for the next connection.
+   if (this->socket->state() == QAbstractSocket::UnconnectedState)
+      this->forcedToClose = false;
 }
 
 QSharedPointer<ISendChatMessageResult> InternalCoreConnection::sendChatMessage(
@@ -621,6 +624,7 @@ void InternalCoreConnection::onDisconnected()
 {
    this->authenticated = false;
    this->sendChatMessageResultWithoutReply.clear();
-   emit disconnected(this->forcedToClose);
+   const bool asked = this->forcedToClose;
    this->forcedToClose = false;
+   emit disconnected(asked);
 }

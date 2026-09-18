@@ -13,6 +13,17 @@ class TestConnection : public RCC::InternalCoreConnection
 public:
    using InternalCoreConnection::InternalCoreConnection;
    void connectSocket(quint16 port) { this->socket->connectToHost(QHostAddress::LocalHost, port); }
+   bool deferNextClose = false;
+   void close() override
+   {
+      if (this->deferNextClose)
+      {
+         this->deferNextClose = false;
+         QTimer::singleShot(0, this, [this] { this->MessageSocket::close(); });
+      }
+      else
+         this->MessageSocket::close();
+   }
 };
 
 class TestPeer : public Common::MessageSocket
@@ -262,9 +273,29 @@ private slots:
       QVERIFY(!core.isConnecting());
       QCOMPARE(errors.size(), 0);
       core.disconnectFromCore();
-      QCOMPARE(disconnected.size(), 1);
+      QTRY_COMPARE(disconnected.size(), 1);
       QCOMPARE(disconnected[0][0].toBool(), true);
       QVERIFY(!core.isConnected());
+   }
+
+   void deferredDisconnection()
+   {
+      QSignalSpy disconnected(&this->connection, &RCC::InternalCoreConnection::disconnected);
+      // Make shutdown asynchronous regardless of how quickly localhost drains writes.
+      this->connection.deferNextClose = true;
+      this->connection.disconnectFromCore();
+      QCOMPARE(disconnected.size(), 0);
+      QTRY_COMPARE(disconnected.size(), 1);
+      QCOMPARE(disconnected[0][0].toBool(), true);
+      QVERIFY(!this->connection.isConnected());
+
+      // Cancelling an idle connection must not mark a later remote close as requested.
+      this->connection.disconnectFromCore();
+      QCOMPARE(disconnected.size(), 1);
+      this->connectSession();
+      this->peer->close();
+      QTRY_COMPARE(disconnected.size(), 2);
+      QCOMPARE(disconnected[1][0].toBool(), false);
    }
 
    void browseReplies()
