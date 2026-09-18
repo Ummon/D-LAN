@@ -299,6 +299,17 @@ void DownloadsFlatModel::updateDownloads(const Protos::GUI::State& state)
    };
 
    bool orderChanged = false;
+   this->downloads.reserve(activeDownloadIndices.size());
+   auto insertRange = [&](int first, int last)
+   {
+      this->beginInsertRows(QModelIndex(), first, last);
+      // Open the entire gap at once so the existing suffix is shifted only once
+      // per range, then fill the new slots directly from the state.
+      this->downloads.insert(first, last - first + 1, Protos::GUI::State::Download());
+      for (int row = first; row <= last; row++)
+         this->downloads[row].CopyFrom(state.downloads(activeDownloadIndices[row]));
+      this->endInsertRows();
+   };
    int i = 0; // Current position, 'this->downloads' and 'activeDownloadIndices' are kept synchronized below 'i'.
    while (i < activeDownloadIndices.size())
    {
@@ -317,10 +328,7 @@ void DownloadsFlatModel::updateDownloads(const Protos::GUI::State& state)
          while (last + 1 < activeDownloadIndices.size() && !oldIDs.contains(state.downloads(activeDownloadIndices[last + 1]).id()))
             last++;
 
-         this->beginInsertRows(QModelIndex(), i, last);
-         for (int j = i; j <= last; j++)
-            this->downloads.insert(j, state.downloads(activeDownloadIndices[j]));
-         this->endInsertRows();
+         insertRange(i, last);
 
          i = last + 1;
       }
@@ -337,10 +345,8 @@ void DownloadsFlatModel::updateDownloads(const Protos::GUI::State& state)
          {
             flushModified(i - 1);
 
-            this->beginInsertRows(QModelIndex(), i, activeDownloadIndices.size() - 1);
-            for (; i < activeDownloadIndices.size(); i++)
-               this->downloads << state.downloads(activeDownloadIndices[i]);
-            this->endInsertRows();
+            insertRange(i, activeDownloadIndices.size() - 1);
+            i = activeDownloadIndices.size();
          }
       }
    }
