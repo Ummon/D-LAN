@@ -62,6 +62,11 @@ namespace Common
       static Message readMessageBody(const MessageHeader& header, T source);
 
    private:
+      friend class MessageSocket;
+      // Only used after MessageSocket::send has computed ByteSizeLong(). The
+      // message (including its submessages) must remain unchanged until written.
+      static int writeMessageToDeviceWithCachedSizes(QIODevice* ioDevice, const MessageHeader& header, const google::protobuf::Message* message);
+
       static MessageHeader::MessageType getType(const google::protobuf::Message& message);
 
       template <typename T>

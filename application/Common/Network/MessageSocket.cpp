@@ -195,7 +195,7 @@ void MessageSocket::send(MessageHeader::MessageType type, const google::protobuf
 
    // A write error can synchronously disconnect the socket and delete this object.
    const QPointer<MessageSocket> self(this);
-   if (Message::writeMessageToDevice(this->socket, header, message) == 0 && self)
+   if (Message::writeMessageToDeviceWithCachedSizes(this->socket, header, message) == 0 && self)
    {
       MESSAGE_SOCKET_LOG_ERROR(QString("Unable to write message (type %1); closing the socket").arg(type));
       // A partial frame may already have been queued. Never append another message to it.

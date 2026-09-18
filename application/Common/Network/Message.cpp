@@ -20,6 +20,7 @@
 using namespace Common;
 
 #include <QIODevice>
+#include <google/protobuf/io/coded_stream.h>
 
 /**
   * The 'Message' object take the ownership of the given protobuf message.
@@ -66,6 +67,34 @@ int Message::writeMessageToDevice(QIODevice* ioDevice, const MessageHeader& head
    {
       ZeroCopyOutputStreamQIODevice outputStream(ioDevice);
       if (!message->SerializeToZeroCopyStream(&outputStream) || !outputStream.Flush())
+         return 0;
+   }
+
+   return MessageHeader::HEADER_SIZE + header.getSize();
+}
+
+int Message::writeMessageToDeviceWithCachedSizes(QIODevice* ioDevice, const MessageHeader& header, const google::protobuf::Message* message)
+{
+   // Cached-size serialization bypasses protobuf's usual initialization check.
+   if (message && !message->IsInitialized())
+      return 0;
+
+   if (!MessageHeader::writeHeader(*ioDevice, header))
+      return 0;
+
+   if (message)
+   {
+      ZeroCopyOutputStreamQIODevice outputStream(ioDevice);
+      {
+         google::protobuf::io::CodedOutputStream codedStream(&outputStream);
+         message->SerializeWithCachedSizes(&codedStream);
+         // Return unused bytes before flushing the QIODevice adapter. Otherwise
+         // the final buffer could include bytes beyond the serialized message.
+         codedStream.Trim();
+         if (codedStream.HadError() || codedStream.ByteCount() != header.getSize())
+            return 0;
+      }
+      if (!outputStream.Flush())
          return 0;
    }
 

@@ -6,7 +6,12 @@
 #include <cstring>
 #include <functional>
 #include <memory>
+#include <limits>
 
+#include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/dynamic_message.h>
+
+#include <Common/Constants.h>
 #include <Common/Network/MessageSocket.h>
 
 namespace
@@ -20,6 +25,7 @@ namespace
       QByteArray input, output;
       qint64 failAfter = -1;
       qint64 failureResult = -1;
+      qint64 maxWrite = std::numeric_limits<qint64>::max();
       bool disconnectOnWriteFailure = false;
 
       BufferedSocket()
@@ -62,7 +68,8 @@ namespace
                this->close();
             return this->failureResult;
          }
-         const auto count = this->failAfter < 0 ? size : qMin(size, this->failAfter - this->output.size());
+         const auto available = qMin(size, this->maxWrite);
+         const auto count = this->failAfter < 0 ? available : qMin(available, this->failAfter - this->output.size());
          this->output.append(data, count);
          return count;
       }
@@ -389,6 +396,98 @@ private slots:
       peer.send(MessageHeader::GUI_REFRESH);
       QCOMPARE(socket->output, frame(MessageHeader::GUI_JOIN_ROOM, &message) + frame(MessageHeader::GUI_REFRESH));
       QVERIFY(peer.isConnected());
+   }
+
+   void cachedSerializationMatchesWireFormat_data()
+   {
+      QTest::addColumn<int>("payloadSize");
+      QTest::addColumn<bool>("shortWrites");
+      for (const int size : { 0, 1, 127, 128, Common::Constants::PROTOBUF_STREAMING_BUFFER_SIZE,
+                              3 * Common::Constants::PROTOBUF_STREAMING_BUFFER_SIZE + 17 })
+         for (const bool shortWrites : { false, true })
+            QTest::newRow(qPrintable(QString("size=%1-short=%2").arg(size).arg(shortWrites))) << size << shortWrites;
+   }
+
+   void cachedSerializationMatchesWireFormat()
+   {
+      QFETCH(int, payloadSize);
+      QFETCH(bool, shortWrites);
+      auto* socket = new BufferedSocket;
+      const auto sender = Common::Hash::rand();
+      TestPeer peer(socket, nullptr, sender);
+      peer.startListening();
+      // Each header field must fit in a write; larger protobuf buffers will
+      // exercise the adapter's short-write handling.
+      Protos::GUI::State message;
+      if (payloadSize > 0)
+      {
+         auto* download = message.add_downloads();
+         download->set_id(123);
+         download->mutable_local_entry()->set_name(std::string(payloadSize, 'x'));
+         download->mutable_local_entry()->mutable_shared_entry()->mutable_id()->set_hash(sender.getData(), Common::Hash::HASH_SIZE);
+         message.mutable_stats()->set_download_rate(456);
+      }
+      const QByteArray expected = frame(MessageHeader::GUI_STATE, &message, sender);
+      if (shortWrites)
+         socket->maxWrite = Common::Hash::HASH_SIZE; // Large enough for each header field.
+      peer.send(MessageHeader::GUI_STATE, message);
+      peer.send(MessageHeader::GUI_REFRESH);
+      QCOMPARE(socket->output, expected + frame(MessageHeader::GUI_REFRESH, nullptr, sender));
+      QVERIFY(peer.isConnected());
+      const auto decoded = Common::Message::readMessage(socket->output.constData(), expected.size());
+      QCOMPARE(decoded.getMessage<Protos::GUI::State>().SerializeAsString(), message.SerializeAsString());
+   }
+
+   void sizesAreRefreshedAfterNestedMutation()
+   {
+      auto* socket = new BufferedSocket;
+      TestPeer peer(socket);
+      peer.startListening();
+      Protos::GUI::State message;
+      message.add_downloads()->mutable_local_entry()->set_name("small");
+      peer.send(MessageHeader::GUI_STATE, message);
+      QCOMPARE(socket->output, frame(MessageHeader::GUI_STATE, &message));
+      socket->output.clear();
+
+      // Compute an old size, then modify a nested field. send() must refresh
+      // every nested cache, rather than relying on GetCachedSize() from before.
+      (void)message.ByteSizeLong();
+      message.mutable_downloads(0)->mutable_local_entry()->set_name(std::string(17000, 'y'));
+      peer.send(MessageHeader::GUI_STATE, message);
+      QCOMPARE(socket->output, frame(MessageHeader::GUI_STATE, &message));
+      socket->output.clear();
+      message.clear_downloads();
+      peer.send(MessageHeader::GUI_STATE, message);
+      QCOMPARE(socket->output, frame(MessageHeader::GUI_STATE, &message));
+      QVERIFY(peer.isConnected());
+   }
+
+   void rejectsUninitializedMessageBeforeWriting()
+   {
+      // D-LAN's schemas use proto3, so build a proto2 message to verify that
+      // bypassing the normal serializer does not bypass required-field checks.
+      google::protobuf::FileDescriptorProto file;
+      file.set_name("required-field-test.proto");
+      file.set_syntax("proto2");
+      auto* descriptor = file.add_message_type();
+      descriptor->set_name("RequiredMessage");
+      auto* field = descriptor->add_field();
+      field->set_name("name");
+      field->set_number(1);
+      field->set_type(google::protobuf::FieldDescriptorProto::TYPE_STRING);
+      field->set_label(google::protobuf::FieldDescriptorProto::LABEL_REQUIRED);
+      google::protobuf::DescriptorPool pool;
+      const auto* built = pool.BuildFile(file);
+      QVERIFY(built);
+      google::protobuf::DynamicMessageFactory factory;
+      std::unique_ptr<google::protobuf::Message> message(factory.GetPrototype(built->message_type(0))->New());
+      QVERIFY(!message->IsInitialized());
+      auto* socket = new BufferedSocket;
+      TestPeer peer(socket);
+      peer.startListening();
+      peer.send(MessageHeader::GUI_JOIN_ROOM, *message);
+      QVERIFY(socket->output.isEmpty());
+      QVERIFY(!peer.isConnected());
    }
 
    void rejectNullSend_data()
