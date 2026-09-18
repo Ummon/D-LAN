@@ -45,6 +45,8 @@ namespace Common
       Q_OBJECT
 
       static constexpr quint32 MAX_MESSAGE_PAYLOAD_SIZE = 100 * 1024 * 1024; // 100 MB.
+      // All pending frames share this budget; one maximum-sized frame must still fit.
+      static constexpr qint64 MAX_QUEUED_OUTGOING_BYTES = qint64(MAX_MESSAGE_PAYLOAD_SIZE) + MessageHeader::HEADER_SIZE;
 
    protected:
       class ILogger

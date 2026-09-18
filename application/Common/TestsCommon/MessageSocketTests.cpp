@@ -90,6 +90,13 @@ namespace
       }
    };
 
+   class BackloggedSocket : public BufferedSocket
+   {
+   public:
+      qint64 queuedBytes = 0;
+      qint64 bytesToWrite() const override { return this->queuedBytes + this->output.size(); }
+   };
+
    class TestPeer : public Common::MessageSocket
    {
       class Logger : public ILogger
@@ -542,6 +549,113 @@ private slots:
       peer.send(MessageHeader::GUI_JOIN_ROOM, message);
       QVERIFY(!peer.isConnected());
       QVERIFY(socket->output.isEmpty());
+   }
+
+   void outgoingBufferLimit_data()
+   {
+      QTest::addColumn<bool>("hasBody");
+      QTest::addColumn<qint64>("remainingBytes");
+      for (const bool hasBody : { false, true })
+         for (const qint64 remaining : { qint64(-1), qint64(0), qint64(1), std::numeric_limits<qint64>::max() })
+            QTest::newRow(qPrintable(QString("body=%1-remaining=%2").arg(hasBody).arg(remaining))) << hasBody << remaining;
+   }
+
+   void outgoingBufferLimit()
+   {
+      QFETCH(bool, hasBody);
+      QFETCH(qint64, remainingBytes);
+      constexpr qint64 limit = 100 * 1024 * 1024 + MessageHeader::HEADER_SIZE;
+      auto* socket = new BackloggedSocket;
+      TestPeer peer(socket);
+      peer.startListening();
+      Protos::GUI::JoinRoom message;
+      message.set_name("room");
+      const auto type = hasBody ? MessageHeader::GUI_JOIN_ROOM : MessageHeader::GUI_REFRESH;
+      const auto expected = frame(type, hasBody ? &message : nullptr);
+      // Include an already excessive backlog to exercise overflow-safe accounting.
+      socket->queuedBytes = remainingBytes == std::numeric_limits<qint64>::max()
+         ? remainingBytes : limit - expected.size() - remainingBytes;
+      if (hasBody)
+         peer.send(type, message);
+      else
+         peer.send(type);
+
+      const bool fits = remainingBytes == 0 || remainingBytes == 1;
+      QCOMPARE(peer.isConnected(), fits);
+      QCOMPARE(socket->output, fits ? expected : QByteArray());
+      QCOMPARE(peer.disconnections, fits ? 0 : 1);
+      if (!fits)
+      {
+         // Rejected frames must not leave even a header or permit later writes.
+         peer.send(MessageHeader::GUI_REFRESH);
+         QVERIFY(socket->output.isEmpty());
+      }
+   }
+
+   void outgoingBufferLimitDisconnectDeletesPeer()
+   {
+      auto* socket = new BackloggedSocket;
+      QPointer<TestPeer> peer = new TestPeer(socket);
+      peer->startListening();
+      socket->queuedBytes = 100 * 1024 * 1024 + MessageHeader::HEADER_SIZE;
+      const auto connection = connect(socket, &QTcpSocket::disconnected, this, [&] { delete peer.data(); });
+      peer->send(MessageHeader::GUI_REFRESH);
+      const bool deleted = peer.isNull();
+      disconnect(connection);
+      delete peer.data();
+      QVERIFY(deleted);
+      QVERIFY(socket->output.isEmpty());
+   }
+
+   void outgoingBufferLimitOnTcpSocket_data()
+   {
+      QTest::addColumn<bool>("drain");
+      QTest::newRow("client-stops-reading") << false;
+      QTest::newRow("client-keeps-reading") << true;
+   }
+
+   void outgoingBufferLimitOnTcpSocket()
+   {
+      QFETCH(bool, drain);
+      constexpr qint64 limit = 100 * 1024 * 1024 + MessageHeader::HEADER_SIZE;
+      QTcpServer server;
+      QVERIFY(server.listen(QHostAddress::LocalHost));
+      QTcpSocket receiver;
+      // Stop Qt from absorbing an unread stream into the receiver's own buffer.
+      receiver.setReadBufferSize(drain ? 0 : 1);
+      qint64 received = 0;
+      if (drain)
+         connect(&receiver, &QTcpSocket::readyRead, this, [&] { received += receiver.readAll().size(); });
+      receiver.connectToHost(QHostAddress::LocalHost, server.serverPort());
+      QTRY_VERIFY(receiver.state() == QAbstractSocket::ConnectedState && server.hasPendingConnections());
+      auto* socket = server.nextPendingConnection();
+      TestPeer peer(socket);
+      peer.startListening();
+      Protos::GUI::EventLogMessages message;
+      message.add_messages()->set_message(std::string(1024 * 1024, 'x'));
+      const qint64 frameSize = MessageHeader::HEADER_SIZE + message.ByteSizeLong();
+      for (int i = 0; i < 128 && peer.isConnected(); ++i)
+      {
+         peer.send(MessageHeader::GUI_EVENT_LOG_MESSAGES, message);
+         QVERIFY(socket->bytesToWrite() <= limit);
+         if (drain)
+            QTRY_COMPARE_WITH_TIMEOUT(received, frameSize * (i + 1), 2000);
+         else
+            QTest::qWait(1);
+      }
+      if (drain)
+      {
+         QVERIFY(peer.isConnected());
+         QCOMPARE(received, frameSize * 128); // Total traffic may exceed the pending-byte budget.
+         QCOMPARE(peer.disconnections, 0);
+      }
+      else
+      {
+         QVERIFY(!peer.isConnected());
+         QCOMPARE(socket->state(), QAbstractSocket::UnconnectedState);
+         QCOMPARE(socket->bytesToWrite(), 0); // Abort must release the backlog, not wait for it to drain.
+         QCOMPARE(peer.disconnections, 1);
+      }
    }
 
    void sendFailureDisconnectDeletesPeer_data()
