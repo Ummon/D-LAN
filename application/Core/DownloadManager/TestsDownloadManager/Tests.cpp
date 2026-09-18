@@ -1069,6 +1069,154 @@ void Tests::removeErroneousDownload()
    QVERIFY(!queue.getAnErroneousDownload());
 }
 
+void Tests::moveDownloads_data()
+{
+   QTest::addColumn<QList<int>>("references");
+   QTest::addColumn<QList<int>>("selection");
+   QTest::addColumn<bool>("after");
+   QTest::addColumn<QList<int>>("expected");
+   QTest::newRow("before-up") << QList<int>{ 1 } << QList<int>{ 4, 2 } << false << QList<int>{ 0, 2, 4, 1, 3, 5 };
+   QTest::newRow("after-down") << QList<int>{ 4 } << QList<int>{ 2, 0 } << true << QList<int>{ 1, 3, 4, 0, 2, 5 };
+   QTest::newRow("before-down") << QList<int>{ 4 } << QList<int>{ 2, 0 } << false << QList<int>{ 1, 3, 0, 2, 4, 5 };
+   QTest::newRow("after-up") << QList<int>{ 0 } << QList<int>{ 4, 2 } << true << QList<int>{ 0, 2, 4, 1, 3, 5 };
+   QTest::newRow("before-both-sides") << QList<int>{ 3 } << QList<int>{ 5, 0, 2 } << false << QList<int>{ 1, 0, 2, 5, 3, 4 };
+   QTest::newRow("after-both-sides") << QList<int>{ 3 } << QList<int>{ 5, 0, 2 } << true << QList<int>{ 1, 3, 0, 2, 5, 4 };
+   QTest::newRow("before-reference-set") << QList<int>{ 4, 1, 3 } << QList<int>{ 5, 2 } << false << QList<int>{ 0, 2, 5, 1, 3, 4 };
+   QTest::newRow("after-reference-set") << QList<int>{ 3, 1, 4 } << QList<int>{ 2, 0 } << true << QList<int>{ 1, 3, 4, 0, 2, 5 };
+   QTest::newRow("before-selected-reference") << QList<int>{ 3 } << QList<int>{ 5, 3, 0 } << false << QList<int>{ 1, 2, 0, 3, 5, 4 };
+   QTest::newRow("after-selected-reference") << QList<int>{ 3 } << QList<int>{ 5, 3, 0 } << true << QList<int>{ 1, 2, 0, 3, 5, 4 };
+   QTest::newRow("duplicates") << QList<int>{ 3, 3 } << QList<int>{ 4, 0, 4 } << true << QList<int>{ 1, 2, 3, 0, 4, 5 };
+   QTest::newRow("missing-reference") << QList<int>{ -1 } << QList<int>{ 0, 2 } << false << QList<int>{ 0, 1, 2, 3, 4, 5 };
+   QTest::newRow("partly-missing-reference") << QList<int>{ -1, 3 } << QList<int>{ 0, 2 } << true << QList<int>{ 1, 3, 0, 2, 4, 5 };
+   QTest::newRow("missing-selection") << QList<int>{ 0 } << QList<int>{ -1 } << false << QList<int>{ 0, 1, 2, 3, 4, 5 };
+   QTest::newRow("partly-missing-selection") << QList<int>{ 0 } << QList<int>{ -1, 2 } << false << QList<int>{ 2, 0, 1, 3, 4, 5 };
+   QTest::newRow("empty-reference") << QList<int>{} << QList<int>{ 0 } << false << QList<int>{ 0, 1, 2, 3, 4, 5 };
+   QTest::newRow("empty-selection") << QList<int>{ 0 } << QList<int>{} << true << QList<int>{ 0, 1, 2, 3, 4, 5 };
+   QTest::newRow("all-selected") << QList<int>{ 2 } << QList<int>{ 5, 4, 3, 2, 1, 0 } << true << QList<int>{ 0, 1, 2, 3, 4, 5 };
+}
+
+void Tests::moveDownloads()
+{
+   QFETCH(QList<int>, references);
+   QFETCH(QList<int>, selection);
+   QFETCH(bool, after);
+   QFETCH(QList<int>, expected);
+   ResumePeer peer(this->fileManager);
+   DownloadQueue queue;
+   QList<Download*> original;
+   for (int i = 0; i < 6; ++i)
+   {
+      auto download = new RetryDownload(this->fileManager, &peer);
+      if (i == 2 || i == 5)
+         download->setStatus(Protos::Common::DownloadStatus::COMPLETE);
+      original.append(download);
+      queue.insert(queue.size(), download);
+   }
+   // Prime both a marker past the start and an exhausted marker before moving.
+   QCOMPARE(DownloadQueue::ScanningIterator<IsComplete>(queue).next(), original[2]);
+   QVERIFY(!DownloadQueue::ScanningIterator<IsADirectory>(queue).next());
+   const auto IDs = [&original](const QList<int>& indices)
+   {
+      QList<quint64> result;
+      for (int index : indices)
+         result.append(index < 0 ? 0 : original[index]->getID());
+      return result;
+   };
+   queue.moveDownloads(IDs(references), IDs(selection), after ? Protos::GUI::MoveDownloads::AFTER : Protos::GUI::MoveDownloads::BEFORE);
+   QCOMPARE(queue.size(), original.size());
+   for (int i = 0; i < expected.size(); ++i)
+      QCOMPARE(queue[i], original[expected[i]]);
+
+   DownloadQueue::ScanningIterator<IsComplete> completed(queue);
+   for (int index : expected)
+      if (index == 2 || index == 5)
+         QCOMPARE(completed.next(), original[index]);
+   QVERIFY(!completed.next());
+   QVERIFY(!DownloadQueue::ScanningIterator<IsADirectory>(queue).next());
+   QVERIFY(queue.isAPeerSource(&peer));
+}
+
+void Tests::bulkRemovalPreservesQueueState()
+{
+   ResumePeer removedPeer(this->fileManager), retainedPeer(this->fileManager);
+   LinkedPeers links;
+   OccupiedPeers asking, downloading;
+   Common::ThreadPool pool(1);
+   Common::TransferRateCalculator rate;
+   DownloadQueue queue;
+   QList<Download*> retained;
+   QList<quint64> removedIDs;
+   QList<Protos::Common::Entry> removedEntries;
+   QList<Protos::Common::Entry> retainedEntries;
+   int deletionCallbacks = 0;
+   const Common::Hash hash = Common::Hash::rand();
+   for (int i = 0; i < 64; ++i)
+   {
+      const bool remove = i % 2 == 0 || i == 63;
+      Protos::Common::Entry entry;
+      entry.set_type(Protos::Common::Entry::FILE);
+      entry.set_name("same-name.bin");
+      entry.set_path(QString("/%1/").arg(i).toStdString());
+      entry.set_size(Common::Constants::CHUNK_SIZE);
+      entry.add_chunks()->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
+      auto file = new FileDownload(this->fileManager, links, asking, downloading, pool,
+         remove ? &removedPeer : &retainedPeer, entry, entry, rate,
+         i < 2 ? Protos::Queue::Queue::Entry::COMPLETE : Protos::Queue::Queue::Entry::QUEUED);
+      queue.insert(queue.size(), file);
+      queue.setDownloadAsErroneous(file);
+      if (remove)
+      {
+         removedIDs.append(file->getID());
+         removedEntries.append(entry);
+         connect(file, &QObject::destroyed, &queue, [&]
+         {
+            ++deletionCallbacks;
+            QCOMPARE(queue.size(), retained.size());
+            QVERIFY(!queue.isAPeerSource(&removedPeer));
+            for (int j = 0; j < retained.size(); ++j)
+               QCOMPARE(queue[j], retained[j]);
+            for (const auto& removedEntry : removedEntries)
+               QVERIFY(!queue.isEntryAlreadyQueued(removedEntry));
+         });
+      }
+      else
+      {
+         retained.append(file);
+         retainedEntries.append(entry);
+      }
+   }
+   QCOMPARE(DownloadQueue::ScanningIterator<IsDownloadable>(queue).next(), queue[2]);
+   QVERIFY(!DownloadQueue::ScanningIterator<IsADirectory>(queue).next());
+
+   QVERIFY(!queue.removeDownloads(IsContainedInAList({ 0 })));
+   QVERIFY(queue.removeDownloads(IsContainedInAList(removedIDs)));
+   QCOMPARE(deletionCallbacks, removedIDs.size());
+   QVERIFY(!queue.removeDownloads(IsContainedInAList(removedIDs)));
+   QVERIFY(queue.isAPeerSource(&retainedPeer));
+   for (const auto& entry : retainedEntries)
+      QVERIFY(queue.isEntryAlreadyQueued(entry));
+   for (Download* download : retained)
+      QCOMPARE(queue.getAnErroneousDownload(), download);
+   QVERIFY(!queue.getAnErroneousDownload());
+   DownloadQueue::ScanningIterator<IsDownloadable> unfinished(queue);
+   for (Download* download : retained)
+      if (download->getStatus() != Protos::Common::DownloadStatus::COMPLETE)
+         QCOMPARE(unfinished.next(), download);
+   QVERIFY(!unfinished.next());
+   QVERIFY(!DownloadQueue::ScanningIterator<IsADirectory>(queue).next());
+   QCOMPARE(queue.getTheOldestUnfinishedChunks(64).size(), retained.size() - 1);
+
+   QList<quint64> remainingIDs;
+   for (Download* download : retained)
+      remainingIDs.append(download->getID());
+   QVERIFY(queue.removeDownloads(IsContainedInAList(remainingIDs)));
+   QCOMPARE(queue.size(), 0);
+   QVERIFY(!queue.isAPeerSource(&retainedPeer));
+   QVERIFY(queue.getTheOldestUnfinishedChunks(1).isEmpty());
+   QVERIFY(!DownloadQueue::ScanningIterator<IsDownloadable>(queue).next());
+   QVERIFY(!queue.removeDownloads(IsContainedInAList(remainingIDs)));
+}
+
 void Tests::oldestChunksSkipUnavailableDownloads_data()
 {
    QTest::addColumn<bool>("paused");

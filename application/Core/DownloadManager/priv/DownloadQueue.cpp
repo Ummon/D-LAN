@@ -20,6 +20,7 @@
 using namespace DM;
 
 #include <QSet>
+#include <utility>
 
 #include <Common/PersistentData.h>
 #include <Common/Constants.h>
@@ -130,127 +131,93 @@ void DownloadQueue::moveDownloads(const QList<quint64>& downloadIDRefs, const QL
    if (downloadIDRefs.isEmpty() || downloadIDs.isEmpty())
       return;
 
-   QList<quint64> downloadIDsCopy(downloadIDs);
-   QList<quint64> downloadIDRefsCopy(downloadIDRefs);
+   const QSet<quint64> IDsToMove(downloadIDs.cbegin(), downloadIDs.cend());
+   const QSet<quint64> referenceIDs(downloadIDRefs.cbegin(), downloadIDRefs.cend());
+   QList<Download*> moved;
+   QList<Download*> remaining;
+   remaining.reserve(this->downloads.size());
+   int insertionPosition = -1;
 
-   quint64 downloadIDRef = downloadIDRefsCopy.size() == 1 ? downloadIDRefsCopy.first() : 0;
-   int iRef = -1; // Index of the download reference, -1 if unknown.
-   QList<int> iToMove;
-
-   for (int i = 0; i < this->downloads.size(); i++)
+   // Use the first reference for BEFORE and the last for AFTER. Measure the
+   // boundary in the retained queue, even when a reference is itself selected.
+   for (Download* download : std::as_const(this->downloads))
    {
-      int j;
-      if ((j = downloadIDsCopy.indexOf(this->downloads[i]->getID())) != -1)
-      {
-         if (iRef != -1)
-         {
-            const int whereToInsert = position == Protos::GUI::MoveDownloads::BEFORE ? iRef++ : ++iRef;
-            const int whereToRemove = i + 1;
+      const bool isReference = referenceIDs.contains(download->getID());
+      if (isReference && position == Protos::GUI::MoveDownloads::BEFORE && insertionPosition == -1)
+         insertionPosition = remaining.size();
 
-            this->updateMarkersMove(whereToInsert, whereToRemove, this->downloads[i]);
+      if (IDsToMove.contains(download->getID()))
+         moved.append(download);
+      else
+         remaining.append(download);
 
-            this->downloads.insert(whereToInsert, this->downloads[i]);
-            this->downloads.removeAt(whereToRemove);
-            continue;
-         }
-         else
-            iToMove << i;
-
-         downloadIDsCopy.removeAt(j);
-      }
-
-      // If the download reference isn't defined we have to search one among 'downloadIDRefsCopy'.
-      int k;
-      if (downloadIDRef == 0 && (k = downloadIDRefsCopy.indexOf(this->downloads[i]->getID())) != -1)
-      {
-         if (position == Protos::GUI::MoveDownloads::BEFORE)
-         {
-            downloadIDRef = this->downloads[i]->getID();
-         }
-         else
-         {
-            if (downloadIDRefsCopy.size() == 1)
-               downloadIDRef = downloadIDRefsCopy.first();
-            else
-               downloadIDRefsCopy.removeAt(k);
-         }
-      }
-
-      if (this->downloads[i]->getID() == downloadIDRef)
-      {
-         iRef = i;
-         int shift = 0;
-         for (int j = 0; j < iToMove.size(); j++)
-         {
-            if (iToMove[j] == iRef && position == Protos::GUI::MoveDownloads::BEFORE)
-               iRef++;
-            else
-            {
-               const int whereToInsert = position == Protos::GUI::MoveDownloads::AFTER ? iRef + 1 : iRef;
-               const int whereToRemove = iToMove[j] + shift;
-
-               this->updateMarkersMove(whereToInsert, whereToRemove, this->downloads[whereToRemove]);
-
-               this->downloads.insert(whereToInsert, this->downloads[whereToRemove]);
-               this->downloads.removeAt(whereToRemove);
-               shift--;
-            }
-         }
-         iToMove.clear();
-      }
+      if (isReference && position == Protos::GUI::MoveDownloads::AFTER)
+         insertionPosition = remaining.size();
    }
+
+   if (insertionPosition == -1 || moved.isEmpty())
+      return;
+
+   // Rebuild once, preserving the queue order of both groups regardless of the
+   // order (or duplicates) in the supplied ID lists.
+   this->downloads.clear();
+   for (int i = 0; i < insertionPosition; ++i)
+      this->downloads.append(remaining[i]);
+   this->downloads.append(moved);
+   for (int i = insertionPosition; i < remaining.size(); ++i)
+      this->downloads.append(remaining[i]);
+   this->rebuildMarkers();
 }
 
 /**
   * Remove all download for which the given predicate is true.
-  * It uses QList::erase(iterator begin, iterator end) to improve the performance.
   * @return Returns 'true' is the list has been altered.
   */
 bool DownloadQueue::removeDownloads(const DownloadPredicate& predicate)
 {
-   bool queueChanged = false;
    QList<Download*> downloadsToDelete;
-   QList<Download*>::iterator i = this->downloads.begin();
-   QList<Download*>::iterator j = i;
-   int position = 0; // Only used to update the markers.
-   while (j != this->downloads.end())
+   QSet<Download*> removed;
+   int retained = 0;
+   for (int i = 0; i < this->downloads.size(); ++i)
    {
-      if (predicate(*j))
+      Download* download = this->downloads[i];
+      if (predicate(download))
       {
-         queueChanged = true;
-         (*j)->setAsDeleted();
-         if (FileDownload* fileDownload = dynamic_cast<FileDownload*>(*j))
-         {
-            this->downloadsIndexedByName.remove((*j)->getLocalEntry().name(), *j);
-            this->downloadsSortedByTime.remove(fileDownload->getLastTimeGetAllUnfinishedChunks(), fileDownload);
-         }
-         this->downloadsIndexedBySourcePeer.remove((*j)->getPeerSource(), *j);
-         downloadsToDelete << *j;
-         this->erroneousDownloads.removeAll(*j);
-         ++j;
-
-         this->updateMarkersRemove(position);
-      }
-      else if (i != j)
-      {
-         j = this->downloads.erase(i, j);
-         i = j;
+         download->setAsDeleted();
+         downloadsToDelete.append(download);
+         removed.insert(download);
+         this->updateMarkersRemove(retained);
       }
       else
-      {
-         ++j;
-         ++i;
-         position++;
-      }
+         this->downloads[retained++] = download;
    }
 
-   if (i != j)
-      this->downloads.erase(i, j);
+   if (removed.isEmpty())
+      return false;
 
-   for (QListIterator<Download*> k(downloadsToDelete); k.hasNext();)
-      k.next()->remove();
+   this->downloads.resize(retained);
+   this->erroneousDownloads.removeIf([&removed](Download* download) { return removed.contains(download); });
 
-   return queueChanged;
+   // Erase each index entry at most once. Removing individual values repeatedly
+   // also becomes quadratic when many downloads share a peer, name or timestamp.
+   const auto removeFromIndex = [&removed](auto& index)
+   {
+      for (auto i = index.begin(); i != index.end();)
+         if (removed.contains(i.value()))
+            i = index.erase(i);
+         else
+            ++i;
+   };
+   removeFromIndex(this->downloadsIndexedBySourcePeer);
+   removeFromIndex(this->downloadsIndexedByName);
+   removeFromIndex(this->downloadsSortedByTime);
+
+   // Removing a file can trigger queue scans. Finish compaction and index cleanup
+   // before any of those callbacks can run.
+   for (Download* download : std::as_const(downloadsToDelete))
+      download->remove();
+
+   return true;
 }
 
 /**
@@ -447,24 +414,12 @@ void DownloadQueue::updateMarkersRemove(int position)
    }
 }
 
-void DownloadQueue::updateMarkersMove(int insertPosition, int removePosition, Download* download)
+void DownloadQueue::rebuildMarkers()
 {
-   for (QMutableListIterator<Marker> i(this->markers); i.hasNext();)
+   for (Marker& marker : this->markers)
    {
-      Marker& m = i.next();
-      if (!(*m.predicate)(download))
-      {
-         if (insertPosition <= m.position)
-            m.position++;
-         if (removePosition < m.position)
-            m.position--;
-      }
-      else
-      {
-         if (removePosition > m.position && insertPosition < m.position)
-            m.position = insertPosition;
-         if (removePosition < m.position && insertPosition > m.position)
-            m.position--;
-      }
+      marker.position = 0;
+      while (marker.position < this->downloads.size() && !(*marker.predicate)(this->downloads[marker.position]))
+         ++marker.position;
    }
 }

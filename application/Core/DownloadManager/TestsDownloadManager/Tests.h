@@ -57,6 +57,9 @@ private slots:
    void erroneousDownloadsAreUnique();
    void removeErroneousDownload_data();
    void removeErroneousDownload();
+   void moveDownloads_data();
+   void moveDownloads();
+   void bulkRemovalPreservesQueueState();
    void oldestChunksSkipUnavailableDownloads_data();
    void oldestChunksSkipUnavailableDownloads();
    void checkpointDownloadProgress_data();
