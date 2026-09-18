@@ -67,8 +67,8 @@ void PeerListChatDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
   * To be able to select some message text via a QLineEdit and copy it.
   */
 
-ChatDelegate::ChatDelegate(EmoticonTextDocument& textDocument)
-   : textDocument(textDocument)
+ChatDelegate::ChatDelegate(const Emoticons& emoticons)
+   : emoticons(emoticons), documents(emoticons)
 {
 }
 
@@ -82,22 +82,7 @@ void ChatDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, 
    QStyle* style = newOption.widget ? newOption.widget->style() : QApplication::style();
 
    // initStyleOption() converts newlines to line separators, which turns Markdown soft wraps into hard breaks.
-   this->textDocument.setMarkdown(index.data(Qt::DisplayRole).toString());
-   this->textDocument.setTextWidth(newOption.rect.width());
-
-   // Aligne all emoticons at the middle.
-   QTextCursor cur(&this->textDocument);
-   for (QTextBlock b = this->textDocument.begin(); b.isValid(); b = b.next())
-      for (auto it = b.begin(); !it.atEnd(); ++it) {
-         const QTextFragment frag = it.fragment();
-         if (frag.charFormat().isImageFormat()) {
-            QTextCharFormat fmt;
-            fmt.setVerticalAlignment(QTextCharFormat::AlignMiddle);
-            cur.setPosition(frag.position());
-            cur.setPosition(frag.position() + frag.length(), QTextCursor::KeepAnchor);
-            cur.mergeCharFormat(fmt);
-         }
-      }
+   auto& document = this->documents.get(index.data(Qt::DisplayRole).toString(), newOption.font, newOption.rect.width());
 
    newOption.text = QString();
    style->drawControl(QStyle::CE_ItemViewItem, &newOption, painter, newOption.widget);
@@ -109,11 +94,11 @@ void ChatDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, 
    if (newOption.state & QStyle::State_Selected && newOption.state & QStyle::State_Active)
       ctx.palette.setColor(QPalette::Text, newOption.palette.color(QPalette::Active, QPalette::HighlightedText));
 
-   QRect textRect = style->subElementRect(QStyle::SE_ItemViewItemText, &newOption);
+   QRect textRect = style->subElementRect(QStyle::SE_ItemViewItemText, &newOption, newOption.widget);
    painter->save();
    painter->translate(textRect.topLeft());
    painter->setClipRect(textRect.translated(-textRect.topLeft()));
-   this->textDocument.documentLayout()->draw(painter, ctx);
+   document.documentLayout()->draw(painter, ctx);
    painter->restore();
 }
 
@@ -123,23 +108,22 @@ void ChatDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, 
   */
 QSize	ChatDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-   ChatModel* model = const_cast<ChatModel*>(static_cast<const ChatModel*>(index.model()));
-   QSize cachedSize = model->getCachedSize(index);
-   if (cachedSize.isValid())
-   {
-      if (cachedSize.width() == option.rect.width())
-         return cachedSize;
-      else
-         model->removeCachedSize(index);
-   }
-
    QStyleOptionViewItem newOption = option;
    initStyleOption(&newOption, index);
+   const QString markdown = index.data(Qt::DisplayRole).toString();
+   const QString theme = this->emoticons.getDefaultTheme();
+   auto* model = const_cast<ChatModel*>(qobject_cast<const ChatModel*>(index.model()));
+   if (model)
+   {
+      const QSize cachedSize = model->getCachedSize(index, markdown, newOption.font, theme, newOption.rect.width());
+      if (cachedSize.isValid())
+         return cachedSize;
+   }
 
-   this->textDocument.setMarkdown(index.data(Qt::DisplayRole).toString());
-   this->textDocument.setTextWidth(newOption.rect.width());
-   QSize size(newOption.rect.width(), this->textDocument.size().height()); // Width should be "doc.idealWidth()".
-   model->insertCachedSize(index, size);
+   auto& document = this->documents.get(markdown, newOption.font, newOption.rect.width());
+   const QSize size(newOption.rect.width(), qCeil(document.size().height()));
+   if (model)
+      model->insertCachedSize(index, size, markdown, newOption.font, theme);
    return size;
 }
 
@@ -182,6 +166,8 @@ bool ChatDelegate::eventFilter(QObject* watched, QEvent* event)
       if (index.isValid())
       {
          QStyleOptionViewItem opt;
+         opt.initFrom(view);
+         opt.font = view->font();
          opt.widget = view;
          opt.rect = view->visualRect(index);
          href = this->anchorAt(opt, index, pos);
@@ -225,14 +211,15 @@ QString ChatDelegate::anchorAt(
    this->initStyleOption(&opt, index);
 
    // Lay the document out exactly as paint() does.
-   this->textDocument.setMarkdown(index.data(Qt::DisplayRole).toString());
-   this->textDocument.setTextWidth(opt.rect.width());
+   auto& document = this->documents.get(index.data(Qt::DisplayRole).toString(), opt.font, opt.rect.width());
+   opt.state &= ~QStyle::State_HasFocus;
+   opt.text.clear();
 
    QStyle* style = opt.widget ? opt.widget->style() : QApplication::style();
    const QRect textRect = style->subElementRect(QStyle::SE_ItemViewItemText, &opt, opt.widget);
 
    // Map the viewport point into document coordinates (paint translates by textRect.topLeft()).
-   return this->textDocument.documentLayout()->anchorAt(QPointF(pos - textRect.topLeft()));
+   return document.documentLayout()->anchorAt(QPointF(pos - textRect.topLeft()));
 }
 
 
@@ -241,12 +228,11 @@ QString ChatDelegate::anchorAt(
 ChatWidget::ChatWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, Emoticons& emoticons, QWidget* parent) :
    MdiWidget(parent),
    ui(new Ui::ChatWidget),
-   textDocument(emoticons),
    coreConnection(coreConnection),
    emoticons(emoticons),
    peerListModel(coreConnection),
    chatModel(coreConnection, this->peerListModel),
-   chatDelegate(textDocument)
+   chatDelegate(emoticons)
 {
    this->init();
 }
@@ -259,12 +245,11 @@ ChatWidget::ChatWidget(
 ) :
    MdiWidget(parent),
    ui(new Ui::ChatWidget),
-   textDocument(emoticons),
    coreConnection(coreConnection),
    emoticons(emoticons),
    peerListModel(coreConnection),
    chatModel(coreConnection, this->peerListModel, roomName),
-   chatDelegate(textDocument)
+   chatDelegate(emoticons)
 {
    this->init();
    this->peerListModel.setRoom(roomName);

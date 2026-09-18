@@ -31,7 +31,7 @@
 
 #include <Peers/PeerListModel.h>
 #include <Chat/ChatModel.h>
-#include <Chat/EmoticonTextDocument.h>
+#include <Chat/ChatDocumentCache.h>
 #include <MDI/MdiWidget.h>
 #include <Emoticons/Emoticons.h>
 #include <Emoticons/EmoticonsWidget.h>
@@ -53,7 +53,7 @@ namespace GUI
    class ChatDelegate : public QStyledItemDelegate
    {
    public:
-      ChatDelegate(EmoticonTextDocument& textDocument);
+      ChatDelegate(const Emoticons& emoticons);
       void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
       QSize	sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
       bool editorEvent(
@@ -69,7 +69,8 @@ namespace GUI
    private:
       QString anchorAt(const QStyleOptionViewItem& option, const QModelIndex& index, const QPoint& pos) const;
 
-      EmoticonTextDocument& textDocument;
+      const Emoticons& emoticons;
+      mutable ChatDocumentCache documents;
    };
 
    class ChatWidget : public MdiWidget
@@ -163,7 +164,6 @@ namespace GUI
 
       Ui::ChatWidget* ui;
       EmoticonsWidget* emoticonsWidget;
-      EmoticonTextDocument textDocument;
 
       // Current peers answered.
       struct Answer {

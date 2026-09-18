@@ -24,6 +24,7 @@
 #include <QDateTime>
 #include <QList>
 #include <QSize>
+#include <QFont>
 // #include <QRegularExpression>
 #include <QPair>
 
@@ -66,16 +67,19 @@ namespace GUI
       QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
       //Qt::ItemFlags flags(const QModelIndex& index) const;
 
-      inline QSize getCachedSize(const QModelIndex& index)
+      inline QSize getCachedSize(const QModelIndex& index, const QString& markdown, const QFont& font, const QString& theme, int width) const
       {
-         return this->isValidMessageIndex(index) ? this->messages[index.row()].size : QSize();
+         if (!this->isValidMessageIndex(index))
+            return QSize();
+         const auto& cached = this->messages[index.row()].renderedSize;
+         return cached.size.width() == width && cached.markdown == markdown && cached.font == font && cached.theme == theme
+            ? cached.size : QSize();
       }
-      inline void insertCachedSize(const QModelIndex& index, const QSize& size)
+      inline void insertCachedSize(const QModelIndex& index, const QSize& size, const QString& markdown, const QFont& font, const QString& theme)
       {
          if (this->isValidMessageIndex(index))
-            this->messages[index.row()].size = size;
+            this->messages[index.row()].renderedSize = { size, markdown, font, theme };
       }
-      inline void removeCachedSize(const QModelIndex& index) { this->insertCachedSize(index, QSize()); }
 
       enum SendMessageStatus
       {
@@ -112,7 +116,14 @@ namespace GUI
          QString nick;
          QDateTime dateTime;
          QString message;
-         QSize size; // Ugly hack, we cache the rendered size to speed-up the method 'ChatDelegate::sizeHint'.
+         // Keep lightweight size results even after the parsed document is evicted.
+         struct RenderedSize
+         {
+            QSize size;
+            QString markdown;
+            QFont font;
+            QString theme;
+         } renderedSize;
          bool separateSenderLine = false;
       };
 

@@ -11,6 +11,7 @@
 add_executable(DLanGUI WIN32
    main.cpp
    Chat/EmoticonTextDocument.cpp
+   Chat/ChatDocumentCache.cpp
    RemoteBrowseDialog/RemoteBrowseDialog.cpp
    RemoteBrowseDialog/RemoteBrowseModel.cpp
    MainWindow.cpp
@@ -66,6 +67,7 @@ add_executable(DLanGUI WIN32
 
    MainWindow.h
    Chat/EmoticonTextDocument.h
+   Chat/ChatDocumentCache.h
    RemoteBrowseDialog/RemoteBrowseDialog.h
    RemoteBrowseDialog/RemoteBrowseModel.h
    Settings/SharedEntryListDelegate.h
@@ -241,6 +243,7 @@ if(DLAN_BUILD_TESTS)
 
    add_executable(TestsChatCompletion
       Chat/TestsChatCompletion.cpp Chat/ChatWidget.cpp Chat/ChatModel.cpp Chat/ChatTextEdit.cpp Chat/EmoticonTextDocument.cpp
+      Chat/ChatDocumentCache.cpp
       AutoComplete/AutoComplete.cpp AutoComplete/AutoCompleteModel.cpp
       Emoticons/Emoticons.cpp Emoticons/EmoticonsWidget.cpp Emoticons/SingleEmoticonWidget.cpp
       Peers/PeerListModel.cpp MDI/MdiWidget.cpp Log.cpp resources.qrc
