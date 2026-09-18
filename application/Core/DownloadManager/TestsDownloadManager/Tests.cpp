@@ -55,6 +55,18 @@ namespace
       using Download::setStatus;
    };
 
+   class CountingFileDownload : public FileDownload
+   {
+   public:
+      using FileDownload::FileDownload;
+      Protos::Common::DownloadStatus getStatus() const override
+      {
+         ++this->statusReads;
+         return FileDownload::getStatus();
+      }
+      mutable int statusReads = 0;
+   };
+
    class EmptyHashCache : public HC::IHashCache
    {
    public:
@@ -1285,6 +1297,128 @@ void Tests::oldestChunksSkipUnavailableDownloads()
       const auto chunks = queue.getTheOldestUnfinishedChunks(1);
       QCOMPARE(chunks.size(), 1);
       QCOMPARE(chunks[0]->getHash(), blockedHash);
+   }
+}
+
+void Tests::oldestChunksStopAtBudget_data()
+{
+   QTest::addColumn<int>("budget");
+   QTest::newRow("one-chunk") << 1;
+   QTest::newRow("whole-file") << 2;
+   QTest::newRow("several-files") << 5;
+}
+
+void Tests::oldestChunksStopAtBudget()
+{
+   QFETCH(int, budget);
+   ResumePeer peer(this->fileManager);
+   LinkedPeers links;
+   OccupiedPeers asking, downloading;
+   Common::ThreadPool pool(1);
+   Common::TransferRateCalculator rate;
+   DownloadQueue queue;
+   QList<CountingFileDownload*> files;
+   QSet<Common::Hash> expectedHashes;
+   for (int i = 0; i < 32; ++i)
+   {
+      Protos::Common::Entry entry;
+      entry.set_type(Protos::Common::Entry::FILE);
+      entry.set_name(QString("file-%1").arg(i).toStdString());
+      entry.set_size(2 * Common::Constants::CHUNK_SIZE);
+      for (int j = 0; j < 2; ++j)
+      {
+         const auto hash = Common::Hash::rand();
+         expectedHashes.insert(hash);
+         entry.add_chunks()->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
+      }
+      auto file = new CountingFileDownload(this->fileManager, links, asking, downloading, pool,
+         &peer, entry, entry, rate);
+      queue.insert(queue.size(), file);
+      files.append(file);
+      file->statusReads = 0;
+   }
+
+   QVERIFY(queue.getTheOldestUnfinishedChunks(0).isEmpty());
+   QVERIFY(queue.getTheOldestUnfinishedChunks(-1).isEmpty());
+   for (auto file : files)
+      QCOMPARE(file->statusReads, 0);
+
+   QSet<Common::Hash> discovered;
+   const int requests = (expectedHashes.size() + budget - 1) / budget;
+   for (int request = 0; request < requests; ++request)
+   {
+      for (auto file : files)
+         file->statusReads = 0;
+      const auto chunks = queue.getTheOldestUnfinishedChunks(budget);
+      QCOMPARE(chunks.size(), budget);
+      QSet<Common::Hash> thisRequest;
+      for (const auto& chunk : chunks)
+      {
+         QVERIFY(expectedHashes.contains(chunk->getHash()));
+         QVERIFY(!thisRequest.contains(chunk->getHash()));
+         thisRequest.insert(chunk->getHash());
+         discovered.insert(chunk->getHash());
+      }
+      int inspected = 0;
+      for (auto file : files)
+         if (file->statusReads != 0)
+            ++inspected;
+      // A small request must not inspect or snapshot the entire queue.
+      QVERIFY(inspected <= budget);
+   }
+   // Partial-file requests resume at the next chunk, and finishing a file moves
+   // it behind the files whose chunks have not yet been announced.
+   QCOMPARE(discovered, expectedHashes);
+}
+
+void Tests::oldestChunksVisitFilesOnce_data()
+{
+   QTest::addColumn<bool>("knownHashes");
+   QTest::newRow("known-hashes") << true;
+   QTest::newRow("unknown-hashes") << false;
+}
+
+void Tests::oldestChunksVisitFilesOnce()
+{
+   QFETCH(bool, knownHashes);
+   ResumePeer peer(this->fileManager);
+   LinkedPeers links;
+   OccupiedPeers asking, downloading;
+   Common::ThreadPool pool(1);
+   Common::TransferRateCalculator rate;
+   QList<int> timestampChanges(3, 0);
+   DownloadQueue queue;
+   for (int i = 0; i < timestampChanges.size(); ++i)
+   {
+      Protos::Common::Entry entry;
+      entry.set_type(Protos::Common::Entry::FILE);
+      entry.set_name(QString("file-%1").arg(i).toStdString());
+      entry.set_size(Common::Constants::CHUNK_SIZE);
+      auto chunk = entry.add_chunks();
+      if (knownHashes)
+      {
+         const auto hash = Common::Hash::rand();
+         chunk->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
+      }
+      auto file = new FileDownload(this->fileManager, links, asking, downloading, pool,
+         &peer, entry, entry, rate);
+      queue.insert(queue.size(), file);
+      connect(file, &FileDownload::lastTimeGetAllUnfinishedChunksChanged, &queue,
+         [&, i](qint64) { ++timestampChanges[i]; });
+   }
+   for (int request = 0; request < 3; ++request)
+   {
+      timestampChanges.fill(0);
+      // Ask for more than the queue can provide. Reinsertion at the end of the
+      // timestamp index must neither duplicate chunks nor loop on empty files.
+      const auto chunks = queue.getTheOldestUnfinishedChunks(10);
+      QCOMPARE(chunks.size(), knownHashes ? 3 : 0);
+      QSet<Common::Hash> hashes;
+      for (const auto& chunk : chunks)
+         hashes.insert(chunk->getHash());
+      QCOMPARE(hashes.size(), chunks.size());
+      for (int changes : timestampChanges)
+         QCOMPARE(changes, 1);
    }
 }
 

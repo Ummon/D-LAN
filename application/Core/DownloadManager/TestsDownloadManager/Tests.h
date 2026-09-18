@@ -62,6 +62,10 @@ private slots:
    void bulkRemovalPreservesQueueState();
    void oldestChunksSkipUnavailableDownloads_data();
    void oldestChunksSkipUnavailableDownloads();
+   void oldestChunksStopAtBudget_data();
+   void oldestChunksStopAtBudget();
+   void oldestChunksVisitFilesOnce_data();
+   void oldestChunksVisitFilesOnce();
    void checkpointDownloadProgress_data();
    void checkpointDownloadProgress();
    void retryFailedQueueSave();

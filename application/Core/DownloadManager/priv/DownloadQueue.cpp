@@ -84,8 +84,8 @@ void DownloadQueue::insert(int position, Download* download)
 
       // The connection must be direct: a queued one would be delivered after the download has possibly been removed
       // and deleted, 'sender()' would then return a null pointer and 'downloadsSortedByTime' would keep a dangling
-      // entry indexed by the old time. 'getTheOldestUnfinishedChunks(..)' takes care to not iterate
-      // 'downloadsSortedByTime' while the signal may be emitted.
+      // entry indexed by the old time. 'getTheOldestUnfinishedChunks(..)' advances its iterator
+      // before asking for chunks, since this signal can erase the current file's index entry.
       connect(fileDownload, &FileDownload::lastTimeGetAllUnfinishedChunksChanged, this, &DownloadQueue::fileDownloadTimeChanged, Qt::DirectConnection);
    }
 }
@@ -293,23 +293,30 @@ QList<QSharedPointer<IChunkDownloader>> DownloadQueue::getTheOldestUnfinishedChu
    if (n <= 0)
       return {};
 
-   // First pass: 'getUnfinishedChunks(..)' re-indexes the downloads in 'downloadsSortedByTime' (see
-   // 'fileDownloadTimeChanged(..)'), it can't be called while iterating it.
-   // Snapshot all eligible files: a file may yield no chunks, so limiting the number of files to 'n'
-   // could prevent later files from filling the chunk budget.
-   QList<FileDownload*> oldestDownloads;
-   for (QMutableMultiMapIterator<qint64, FileDownload*> i(this->downloadsSortedByTime); i.hasNext();)
-   {
-      i.next();
-      if (i.value()->getStatus() == Protos::Common::DownloadStatus::COMPLETE || i.value()->getStatus() == Protos::Common::DownloadStatus::DELETED)
-         i.remove();
-      else if (i.value()->getStatus() != Protos::Common::DownloadStatus::PAUSED)
-         oldestDownloads << i.value();
-   }
-
    QList<QSharedPointer<IChunkDownloader>> unfinishedChunks;
-   for (QListIterator<FileDownload*> i(oldestDownloads); i.hasNext() && unfinishedChunks.size() < n;)
-      i.next()->getUnfinishedChunks(unfinishedChunks, n - unfinishedChunks.size());
+   QSet<FileDownload*> visited;
+   auto i = this->downloadsSortedByTime.begin();
+   while (i != this->downloadsSortedByTime.end() && unfinishedChunks.size() < n)
+   {
+      FileDownload* download = i.value();
+      if (download->getStatus() == Protos::Common::DownloadStatus::COMPLETE || download->getStatus() == Protos::Common::DownloadStatus::DELETED)
+      {
+         i = this->downloadsSortedByTime.erase(i);
+         continue;
+      }
+
+      // Collecting chunks can erase and reinsert this file with a new timestamp.
+      // Other QMultiMap iterators remain valid; advance before the signal fires.
+      // Skip reinserted files so each file contributes at most once per request,
+      // including when several files receive the same millisecond timestamp.
+      ++i;
+      if (download->getStatus() == Protos::Common::DownloadStatus::PAUSED || visited.contains(download))
+         continue;
+      visited.insert(download);
+      download->getUnfinishedChunks(unfinishedChunks, n - unfinishedChunks.size());
+      // Files with unknown or completed chunks may contribute nothing. Keep
+      // scanning until the chunk budget is filled or the index is exhausted.
+   }
 
    return unfinishedChunks;
 }
