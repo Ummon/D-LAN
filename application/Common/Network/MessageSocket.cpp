@@ -86,10 +86,10 @@ MessageSocket::MessageSocket(
    // The native socket must exist before setting options. Apply this to
    // accepted connections now, and to outgoing connections on every reconnect.
    const auto enableLowDelay = [socket] {
-      socket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
+      socket->setSocketOption(QAbstractSocket::LowDelayOption, true);
    };
-   connect(socket, &QAbstractSocket::connected, socket, enableLowDelay);
-   if (socket->state() == QAbstractSocket::ConnectedState)
+   connect(this->socket, &QAbstractSocket::connected, this->socket, enableLowDelay);
+   if (this->socket->state() == QAbstractSocket::ConnectedState)
       enableLowDelay();
 
 #ifdef DEBUG
