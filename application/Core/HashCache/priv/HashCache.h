@@ -30,6 +30,8 @@
 #include <IHashCache.h>
 #include <priv/Constants.h>
 
+class Tests;
+
 namespace HC
 {
    class HashCache : public IHashCache
@@ -46,8 +48,10 @@ namespace HC
       void rmHashes(const QString& filePath) override;
 
    private:
+      friend class ::Tests; // Drive individual maintenance batches deterministically.
       class Database;
       void flushPendingHashes(); // Called only on databaseThread.
+      int checkFiles(); // Called only on databaseThread; returns the next timer delay.
 
       // SQL objects and the maintenance timer belong to databaseThread.
       // Reads block for their result; writes own their arguments and are queued.

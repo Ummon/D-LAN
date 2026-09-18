@@ -67,10 +67,26 @@ namespace
          QSqlDatabase::removeDatabase(name);
       }
    };
+
+   bool maintenanceCompleted(const QSqlDatabase& db)
+   {
+      QSqlQuery query(db);
+      return query.exec("SELECT [value] FROM [Settings] WHERE [key] = 'last_check_time'") && query.first();
+   }
 }
 
 Tests::Tests()
 {
+}
+
+int Tests::runMaintenanceBatch(HC::HashCache& cache)
+{
+   int delay = 0;
+   QMetaObject::invokeMethod(cache.databaseContext, [&] {
+      cache.checkDeletedFileTimer->stop();
+      delay = cache.checkFiles();
+   }, Qt::BlockingQueuedConnection);
+   return delay;
 }
 
 void Tests::init()
@@ -400,7 +416,8 @@ void Tests::cleanupMissingFiles()
    SETTINGS.set("hashcache_nb_of_files_deleted_before_vacuum", minDeleted);
    {
       auto cache = newTestHashCache(folder.path());
-      QCOMPARE(cache->getHashes(present, 1), hashes); // Wait for startup cleanup.
+      QCOMPARE(cache->getHashes(present, 1), hashes);
+      QTRY_VERIFY_WITH_TIMEOUT(maintenanceCompleted(inspector.db), 5000);
    }
    QVERIFY(query.exec("SELECT COUNT(*) FROM [File]"));
    QVERIFY(query.first());
@@ -440,6 +457,7 @@ void Tests::cleanupMissingFiles()
       {
          auto cache = newTestHashCache(folder.path());
          QVERIFY(cache->getHashes(present, 1).isEmpty());
+         QTRY_VERIFY_WITH_TIMEOUT(maintenanceCompleted(inspector.db), 5000);
       }
       QVERIFY(query.exec("SELECT [value] FROM [Settings] WHERE [key] = 'nb_deleted_files'"));
       QVERIFY(query.first());
@@ -482,6 +500,194 @@ void Tests::cleanupRollsBackOnFailure()
    }
 }
 
+void Tests::maintenanceYieldsBetweenBatches()
+{
+   QTest::failOnWarning();
+   QTemporaryDir folder;
+   QVERIFY(folder.isValid());
+   SETTINGS.set("hashcache_nb_of_files_before_check", quint32(0));
+   HC::HashCache cache(folder.path(), 60000); // Advance one batch at a time below.
+   const QList<Common::Hash> hashes { Common::Hash::rand() };
+   constexpr int count = 1025;
+   for (int i = 0; i < count; ++i)
+      cache.setHashes(folder.filePath(QString("missing-%1").arg(i)), hashes, 1);
+   const QString lastPath = folder.filePath("missing-1024");
+   QCOMPARE(cache.getHashes(lastPath, 1), hashes);
+   TestDatabase inspector(folder.path());
+
+   QCOMPARE(this->runMaintenanceBatch(cache), 1);
+   QSqlQuery query(inspector.db);
+   QVERIFY(query.exec("SELECT COUNT(*) FROM [File]"));
+   QVERIFY(query.first());
+   const int remaining = query.value(0).toInt();
+   QVERIFY(remaining >= count - 128 && remaining < count);
+   query.finish();
+   QVERIFY(!maintenanceCompleted(inspector.db));
+
+   // Normal operations must be serviced before the rest of the sweep.
+   QCOMPARE(cache.getHashes(lastPath, 1), hashes);
+   QFile restored(lastPath);
+   QVERIFY(restored.open(QIODevice::WriteOnly));
+   QCOMPARE(restored.write("x", 1), qint64(1));
+   restored.close();
+   const QList<Common::Hash> replacement { Common::Hash::rand() };
+   cache.setHashes(lastPath, replacement, 1);
+   cache.rmHashes(folder.filePath("missing-1000"));
+   // A newly appended row is outside this sweep's fixed upper ID bound.
+   const QString added = folder.filePath("added-during-sweep");
+   cache.setHashes(added, hashes, 1);
+   QCOMPARE(cache.getHashes(added, 1), hashes);
+
+   int delay = 1;
+   for (int batch = 0; delay == 1 && batch < count; ++batch)
+      delay = this->runMaintenanceBatch(cache);
+   QVERIFY(delay > 1);
+   QVERIFY(maintenanceCompleted(inspector.db));
+   QCOMPARE(cache.getHashes(lastPath, 1), replacement);
+   QCOMPARE(cache.getHashes(added, 1), hashes);
+   QVERIFY(query.exec("SELECT COUNT(*) FROM [File]"));
+   QVERIFY(query.first());
+   QCOMPARE(query.value(0).toInt(), 2);
+   QVERIFY(query.exec("SELECT [value] FROM [Settings] WHERE [key] = 'nb_deleted_files'"));
+   QVERIFY(query.first());
+   QCOMPARE(query.value(0).toInt(), count - 1);
+}
+
+void Tests::maintenanceWithPresentFiles()
+{
+   QTest::failOnWarning();
+   QTemporaryDir folder;
+   QVERIFY(folder.isValid());
+   SETTINGS.set("hashcache_nb_of_files_before_check", quint32(0));
+   HC::HashCache cache(folder.path(), 60000);
+   const QList<Common::Hash> hashes { Common::Hash::rand() };
+   for (int i = 0; i < 257; ++i)
+   {
+      const QString path = folder.filePath(QString("present-%1").arg(i));
+      QFile file(path);
+      QVERIFY(file.open(QIODevice::WriteOnly));
+      QCOMPARE(file.write("x", 1), qint64(1));
+      cache.setHashes(path, hashes, 1);
+   }
+   TestDatabase inspector(folder.path());
+   QSqlQuery query(inspector.db);
+   // A batch with no removals must advance without rewriting the deletion counter.
+   QVERIFY(query.exec("CREATE TRIGGER no_settings_write BEFORE INSERT ON [Settings] BEGIN SELECT RAISE(ABORT, 'unexpected write'); END"));
+   query.finish();
+   QCOMPARE(this->runMaintenanceBatch(cache), 1);
+   QVERIFY(!maintenanceCompleted(inspector.db));
+   QCOMPARE(cache.getHashes(folder.filePath("present-256"), 1), hashes);
+   QVERIFY(query.exec("DROP TRIGGER no_settings_write"));
+   query.finish();
+   int delay = 1;
+   for (int batch = 0; delay == 1 && batch < 257; ++batch)
+      delay = this->runMaintenanceBatch(cache);
+   QVERIFY(delay > 1);
+   QVERIFY(maintenanceCompleted(inspector.db));
+   QVERIFY(query.exec("SELECT COUNT(*) FROM [File]"));
+   QVERIFY(query.first());
+   QCOMPARE(query.value(0).toInt(), 257);
+   QVERIFY(query.exec("SELECT [value] FROM [Settings] WHERE [key] = 'nb_deleted_files'"));
+   QVERIFY(query.first());
+   QCOMPARE(query.value(0).toInt(), 0);
+}
+
+void Tests::interruptedMaintenanceRestarts()
+{
+   QTest::failOnWarning();
+   QTemporaryDir folder;
+   QVERIFY(folder.isValid());
+   SETTINGS.set("hashcache_nb_of_files_before_check", quint32(0));
+   const QList<Common::Hash> hashes { Common::Hash::rand() };
+   {
+      HC::HashCache cache(folder.path(), 60000);
+      for (int i = 0; i < 257; ++i)
+         cache.setHashes(folder.filePath(QString("missing-%1").arg(i)), hashes, 1);
+      QCOMPARE(this->runMaintenanceBatch(cache), 1);
+      // Destruction must not drain the remaining maintenance batches.
+   }
+   TestDatabase inspector(folder.path());
+   QVERIFY(!maintenanceCompleted(inspector.db));
+   QSqlQuery query(inspector.db);
+   QVERIFY(query.exec("SELECT COUNT(*) FROM [File]"));
+   QVERIFY(query.first());
+   QVERIFY(query.value(0).toInt() >= 257 - 128);
+   query.finish();
+   {
+      auto cache = newTestHashCache(folder.path());
+      QTRY_VERIFY_WITH_TIMEOUT(maintenanceCompleted(inspector.db), 5000);
+      QVERIFY(cache->getHashes(folder.filePath("missing-256"), 1).isEmpty());
+   }
+   QVERIFY(query.exec("SELECT COUNT(*) FROM [File]"));
+   QVERIFY(query.first());
+   QCOMPARE(query.value(0).toInt(), 0);
+   QVERIFY(query.exec("SELECT [value] FROM [Settings] WHERE [key] = 'nb_deleted_files'"));
+   QVERIFY(query.first());
+   QCOMPARE(query.value(0).toInt(), 257);
+}
+
+void Tests::maintenanceBatchRollsBack()
+{
+   QTest::failOnWarning();
+   QTemporaryDir folder;
+   QVERIFY(folder.isValid());
+   SETTINGS.set("hashcache_nb_of_files_before_check", quint32(0));
+   HC::HashCache cache(folder.path(), 60000);
+   const QList<Common::Hash> hashes { Common::Hash::rand() };
+   for (int i = 0; i < 257; ++i)
+      cache.setHashes(folder.filePath(QString("missing-%1").arg(i)), hashes, 1);
+   QCOMPARE(this->runMaintenanceBatch(cache), 1);
+   TestDatabase inspector(folder.path());
+   QSqlQuery query(inspector.db);
+   QVERIFY(query.exec("SELECT COUNT(*) FROM [File]"));
+   QVERIFY(query.first());
+   const int remaining = query.value(0).toInt();
+   query.finish();
+   QVERIFY(query.exec("CREATE TRIGGER fail_batch BEFORE INSERT ON [Settings] BEGIN SELECT RAISE(ABORT, 'test failure'); END"));
+   query.finish();
+   QVERIFY(this->runMaintenanceBatch(cache) > 1);
+   QVERIFY(!maintenanceCompleted(inspector.db));
+   QVERIFY(query.exec("SELECT COUNT(*) FROM [File]"));
+   QVERIFY(query.first());
+   QCOMPARE(query.value(0).toInt(), remaining);
+   QVERIFY(query.exec("SELECT [value] FROM [Settings] WHERE [key] = 'nb_deleted_files'"));
+   QVERIFY(query.first());
+   QCOMPARE(query.value(0).toInt(), 257 - remaining);
+   query.finish();
+   QVERIFY(query.exec("DROP TRIGGER fail_batch"));
+   query.finish();
+   int delay = 1;
+   for (int batch = 0; delay == 1 && batch < 257; ++batch)
+      delay = this->runMaintenanceBatch(cache);
+   QVERIFY(delay > 1);
+   QVERIFY(maintenanceCompleted(inspector.db));
+   QVERIFY(query.exec("SELECT [value] FROM [Settings] WHERE [key] = 'nb_deleted_files'"));
+   QVERIFY(query.first());
+   QCOMPARE(query.value(0).toInt(), 257);
+}
+
+void Tests::automaticMultiBatchMaintenance()
+{
+   QTest::failOnWarning();
+   QTemporaryDir folder;
+   QVERIFY(folder.isValid());
+   SETTINGS.set("hashcache_nb_of_files_before_check", quint32(0));
+   const QList<Common::Hash> hashes { Common::Hash::rand() };
+   {
+      HC::HashCache cache(folder.path(), 60000);
+      for (int i = 0; i < 513; ++i)
+         cache.setHashes(folder.filePath(QString("missing-%1").arg(i)), hashes, 1);
+   }
+   TestDatabase inspector(folder.path());
+   const auto cache = newTestHashCache(folder.path());
+   QTRY_VERIFY_WITH_TIMEOUT(maintenanceCompleted(inspector.db), 5000);
+   QVERIFY(cache->getHashes(folder.filePath("missing-512"), 1).isEmpty());
+   QSqlQuery query(inspector.db);
+   QVERIFY(query.exec("SELECT COUNT(*) FROM [File]"));
+   QVERIFY(query.first());
+   QCOMPARE(query.value(0).toInt(), 0);
+}
+
 void Tests::vacuumCompactsDatabase()
 {
    QTest::failOnWarning();
@@ -511,6 +717,7 @@ void Tests::vacuumCompactsDatabase()
    SETTINGS.set("hashcache_nb_of_files_before_check", quint32(0));
    SETTINGS.set("hashcache_nb_of_files_deleted_before_vacuum", quint32(1));
    auto cache = newTestHashCache(folder.path());
+   QTRY_VERIFY_WITH_TIMEOUT(maintenanceCompleted(inspector.db), 5000);
    QVERIFY(cache->getHashes("barrier", 1).isEmpty());
    // Verify physical shrinking without closing the cache connection.
    QVERIFY(QFile(databasePath).size() < bytesBefore);

@@ -23,6 +23,8 @@
 #include <Builder.h>
 using namespace HC;
 
+namespace HC { class HashCache; }
+
 class Tests : public QObject
 {
    Q_OBJECT
@@ -43,9 +45,17 @@ private slots:
    void cleanupMissingFiles_data();
    void cleanupMissingFiles();
    void cleanupRollsBackOnFailure();
+   void maintenanceYieldsBetweenBatches();
+   void maintenanceWithPresentFiles();
+   void interruptedMaintenanceRestarts();
+   void maintenanceBatchRollsBack();
+   void automaticMultiBatchMaintenance();
    void vacuumCompactsDatabase();
    void periodicCleanupWithoutCallerEventLoop();
    void restartKeepsMaintenanceDeadline();
    void defaultsSurviveOlderSettings();
    void firstCheckIsDelayed();
+
+private:
+   int runMaintenanceBatch(HC::HashCache& cache);
 };

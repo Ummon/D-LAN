@@ -30,6 +30,7 @@ using namespace HC;
 #include <QSqlQuery>
 #include <QUuid>
 #include <QSqlError>
+#include <QElapsedTimer>
 
 #include <Common/Global.h>
 #include <Common/Hash.h>
@@ -65,6 +66,14 @@ private:
    QList<HashUpdate> pendingHashes;
    qint64 pendingHashBytes = 0;
 
+   struct FileCheck
+   {
+      QDateTime started;
+      qint64 lastId = 0;
+      qint64 maxId = 0;
+   };
+   std::optional<FileCheck> fileCheck;
+
    template <typename T>
    std::optional<T> getSettings(const QString& key);
 
@@ -89,7 +98,7 @@ private:
    std::optional<QSqlQuery> querySetHashes;
    std::optional<QSqlQuery> queryRemoveHashes;
    std::optional<QSqlQuery> queryNbOfFiles;
-   std::optional<QSqlQuery> queryAllFiles;
+   std::optional<QSqlQuery> queryFilesToCheck;
    std::optional<QSqlQuery> queryGetSettings;
    std::optional<QSqlQuery> querySetSettings;
 
@@ -125,8 +134,7 @@ HashCache::HashCache(const QString& databaseFolder, int initialFileCheckDelay) :
             this->checkDeletedFileTimer->setSingleShot(true);
             const auto checkFiles = [this]
             {
-               this->flushPendingHashes();
-               this->checkDeletedFileTimer->start(this->database->checkFilesExist());
+               this->checkDeletedFileTimer->start(this->checkFiles());
             };
             this->checkDeletedFileTimer->callOnTimeout(this->databaseContext, checkFiles);
             if (initialFileCheckDelay == 0)
@@ -197,6 +205,12 @@ void HashCache::flushPendingHashes()
    this->database->flushHashes();
 }
 
+int HashCache::checkFiles()
+{
+   this->flushPendingHashes();
+   return this->database->checkFilesExist();
+}
+
 void HashCache::setHashes(const QString& filePath, const QList<Common::Hash>& hashes, qint64 size, QDateTime dateTime)
 {
    QMetaObject::invokeMethod(
@@ -232,7 +246,7 @@ HashCache::Database::Database(const QString& databaseFolder) :
    querySetHashes(this->db),
    queryRemoveHashes(this->db),
    queryNbOfFiles(this->db),
-   queryAllFiles(this->db),
+   queryFilesToCheck(this->db),
    queryGetSettings(this->db),
    querySetSettings(this->db)
 {
@@ -271,7 +285,9 @@ UPDATE SET [path] = $1, [size] = $2, [date_last_modified] = $3, [hashes] = $4
 
    this->queryNbOfFiles->prepare("SELECT COUNT(*) FROM [File]");
 
-   this->queryAllFiles->prepare("SELECT [id], [path] FROM [File]");
+   this->queryFilesToCheck->prepare(
+      "SELECT [id], [path] FROM [File] WHERE [id] > ? AND [id] <= ? ORDER BY [id] LIMIT 128"
+   );
 
    this->queryGetSettings->prepare(
       "SELECT [value] FROM [Settings] WHERE [key] = $1 LIMIT 1"
@@ -292,7 +308,7 @@ HashCache::Database::~Database()
    this->querySetHashes.reset();
    this->queryRemoveHashes.reset();
    this->queryNbOfFiles.reset();
-   this->queryAllFiles.reset();
+   this->queryFilesToCheck.reset();
    this->queryGetSettings.reset();
    this->querySetSettings.reset();
 
@@ -454,12 +470,12 @@ int HashCache::Database::checkFilesExist()
 
    try
    {
-      const QDateTime lastCheck = this->getLastCheckTime();
-      if (lastCheck.isValid() && lastCheck <= now && lastCheck.msecsTo(now) < periodMs)
-         return timerDelay(periodMs - lastCheck.msecsTo(now));
-
-      QList<qint64> idsToDelete;
+      if (!this->fileCheck)
       {
+         const QDateTime lastCheck = this->getLastCheckTime();
+         if (lastCheck.isValid() && lastCheck <= now && lastCheck.msecsTo(now) < periodMs)
+            return timerDelay(periodMs - lastCheck.msecsTo(now));
+
          QSqlQuery& count = *this->queryNbOfFiles;
          const auto finish = qScopeGuard([&count] { count.finish(); });
          if (!count.exec() || !count.first())
@@ -467,23 +483,53 @@ int HashCache::Database::checkFilesExist()
          const quint64 nbFiles = count.value(0).toULongLong();
          count.finish();
 
+         qint64 maxId = 0;
          if (nbFiles > minFiles)
          {
-            QSqlQuery& files = *this->queryAllFiles;
-            const auto finishFiles = qScopeGuard([&files] { files.finish(); });
-            if (!files.exec())
-               throw DatabaseException(files.lastError());
-            while (files.next())
+            // Do not chase appended rows beyond the initial largest ID.
+            QSqlQuery last(this->db);
+            if (!last.exec("SELECT MAX([id]) FROM [File]") || !last.first())
+               throw DatabaseException(last.lastError());
+            maxId = last.value(0).toLongLong();
+         }
+         this->fileCheck = FileCheck { now, 0, maxId };
+      }
+
+      QList<qint64> idsToDelete;
+      qint64 nextId = this->fileCheck->lastId;
+      bool finished = nextId >= this->fileCheck->maxId;
+      if (!finished)
+      {
+         QElapsedTimer budget;
+         budget.start();
+         QSqlQuery& files = *this->queryFilesToCheck;
+         const auto finishFiles = qScopeGuard([&files] { files.finish(); });
+         files.bindValue(0, nextId);
+         files.bindValue(1, this->fileCheck->maxId);
+         if (!files.exec())
+            throw DatabaseException(files.lastError());
+         for (int checked = 0; checked < 128; ++checked)
+         {
+            if (!files.next())
             {
-               if (!QFile::exists(files.value(1).toString()))
-                  idsToDelete << files.value(0).toLongLong();
+               if (files.lastError().isValid())
+                  throw DatabaseException(files.lastError());
+               finished = true;
+               break;
             }
-            if (files.lastError().isValid())
-               throw DatabaseException(files.lastError());
+            nextId = files.value(0).toLongLong();
+            if (!QFile::exists(files.value(1).toString()))
+               idsToDelete << nextId;
+            finished = nextId >= this->fileCheck->maxId;
+            // A single filesystem call cannot be interrupted. Yield after it if slow.
+            if (finished || budget.elapsed() >= 10)
+               break;
          }
       }
 
-      quint64 filesDeletedTotal;
+      quint64 filesDeletedTotal = 0;
+      // Most batches find only existing files and need no write transaction.
+      if (finished || !idsToDelete.isEmpty())
       {
          if (!this->db.transaction())
             throw DatabaseException(this->db.lastError());
@@ -491,7 +537,7 @@ int HashCache::Database::checkFilesExist()
          filesDeletedTotal = this->getNbDeletedFiles();
          if (!idsToDelete.isEmpty())
          {
-            // Finish the scan before modifying File. Reusing a single bound
+            // Finish the batch cursor before modifying File. Reusing a single bound
             // parameter also avoids SQLite's limit on parameters in an IN list.
             QSqlQuery remove(this->db);
             if (!remove.prepare("DELETE FROM [File] WHERE [id] = ?"))
@@ -505,11 +551,20 @@ int HashCache::Database::checkFilesExist()
             }
          }
          this->setNbDeletedFiles(filesDeletedTotal);
-         this->setLastCheckTime(now);
+         if (finished)
+            this->setLastCheckTime(this->fileCheck->started);
          if (!this->db.commit())
             throw DatabaseException(this->db.lastError());
          rollback.dismiss();
       }
+
+      // No cursor, transaction or filesystem result survives this yield. Normal
+      // reads/writes can run, and the next batch sees fresh rows after the last ID.
+      this->fileCheck->lastId = nextId;
+      if (!finished)
+         return 1;
+      const QDateTime started = this->fileCheck->started;
+      this->fileCheck.reset();
 
       // Vacuum outside the transaction, with all queries finished. Check even
       // below minFiles: previous deletions may already warrant compaction.
@@ -529,10 +584,13 @@ int HashCache::Database::checkFilesExist()
          if (checkpoint.value(0).toInt() != 0)
             L_WARN("[checkFilesExist] WAL checkpoint is busy; disk space reclamation is deferred");
       }
-      return timerDelay(periodMs - now.msecsTo(QDateTime::currentDateTimeUtc()));
+      return timerDelay(periodMs - started.msecsTo(QDateTime::currentDateTimeUtc()));
    }
    catch (DatabaseException& e)
    {
+      // Completed batches remain committed with their counters. If a batch failed,
+      // restart the unfinished sweep next time without advancing its completion date.
+      this->fileCheck.reset();
       L_ERRO(QString("[checkFilesExist] SQL Error: %1").arg(e.error.text()));
    }
    return timerDelay(periodMs);
