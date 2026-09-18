@@ -43,7 +43,7 @@ namespace
       QSharedPointer<FM::IDataReader> getDataReader() override { ++this->opens; return this->reader; }
       QSharedPointer<FM::IDataWriter> getDataWriter() override { return {}; }
       void removeItsIncompleteFile() override {}
-      bool populateEntry(Protos::Common::Entry*) const override { return false; }
+      bool populateEntry(Protos::Common::Entry*, bool = true) const override { return false; }
       Common::Path getFilePath() const override { return {}; }
       int getNum() const override { return 0; }
       int getNbTotalChunk() const override { return 1; }

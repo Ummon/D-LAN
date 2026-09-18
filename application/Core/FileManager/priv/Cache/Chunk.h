@@ -52,7 +52,7 @@ namespace FM
       QString toStringLog() const override;
 
       void removeItsIncompleteFile() override;
-      bool populateEntry(Protos::Common::Entry* entry) const override;
+      bool populateEntry(Protos::Common::Entry* entry, bool includeHashes = true) const override;
 
       Common::Path getFilePath() const override;
 

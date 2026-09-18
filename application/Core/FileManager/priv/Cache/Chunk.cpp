@@ -100,12 +100,15 @@ void Chunk::removeItsIncompleteFile()
    }
 }
 
-bool Chunk::populateEntry(Protos::Common::Entry* entry) const
+bool Chunk::populateEntry(Protos::Common::Entry* entry, bool includeHashes) const
 {
    QMutexLocker locker(this->fileMutex.data());
    if (this->file)
    {
-      this->file->populateEntry(entry);
+      if (includeHashes)
+         this->file->populateEntry(entry);
+      else
+         this->file->populateEntryMetadata(entry, false);
       return true;
    }
    return false;

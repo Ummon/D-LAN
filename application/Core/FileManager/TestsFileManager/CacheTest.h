@@ -79,6 +79,7 @@ private slots:
    void chunkAccessExcludesRetirement_data();
    void chunkAccessExcludesRetirement();
    void concurrentChunkMetadata();
+   void chunkEntryWithoutHashes();
    void metadataReadersAvoidStructuralLocks();
    void concurrentEntryMetadata();
    void invalidDownloadEntries_data();

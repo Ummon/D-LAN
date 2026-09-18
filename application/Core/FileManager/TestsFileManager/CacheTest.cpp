@@ -78,6 +78,54 @@ CacheTest::CacheTest(QObject *parent) :
 {
 }
 
+void CacheTest::chunkEntryWithoutHashes()
+{
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   QSharedPointer<FM::IChunk> chunk;
+   {
+      FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+      const auto shared = cache.addASharedPath(temp.path() + '/');
+      auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+      QVERIFY(root);
+      auto dir = root->getRootDir()->createSubDir("nested", false);
+      const QList<Common::Hash> hashes { Common::Hash::rand(), Common::Hash(), Common::Hash::rand() };
+      auto file = new FM::File(root, "large.bin", 2LL * FM::Chunk::CHUNK_SIZE + 7, true,
+         QDateTime::currentDateTime(), dir, hashes);
+      chunk = file->getChunks().first();
+
+      Protos::Common::Entry full;
+      QVERIFY(chunk->populateEntry(&full));
+      QCOMPARE(full.chunks_size(), hashes.size());
+      QVERIFY(!full.chunks(0).hash().empty());
+      QVERIFY(full.chunks(1).hash().empty());
+      QVERIFY(full.hidden());
+      QCOMPARE(full.name(), std::string("large.bin"));
+      QCOMPARE(full.path(), std::string("nested/"));
+
+      auto metadata = full; // Reusing an entry must clear old chunk records too.
+      QVERIFY(chunk->populateEntry(&metadata, false));
+      full.clear_chunks();
+      QCOMPARE(metadata.SerializeAsString(), full.SerializeAsString());
+
+      // Browsing with a zero hash limit must retain its existing placeholders.
+      file->populateEntry(&full, false, 0);
+      QCOMPARE(full.chunks_size(), hashes.size());
+      for (const auto& hash : full.chunks())
+         QVERIFY(hash.hash().empty());
+
+      Protos::Common::Entry fresh;
+      QVERIFY(chunk->populateEntry(&fresh, false));
+      QCOMPARE(fresh.SerializeAsString(), metadata.SerializeAsString());
+      QVERIFY(chunk->populateEntry(&full));
+      QCOMPARE(full.chunks_size(), hashes.size());
+      QVERIFY(!full.chunks(0).hash().empty());
+   }
+   Protos::Common::Entry detached;
+   QVERIFY(!chunk->populateEntry(&detached, false));
+}
+
 void CacheTest::failedSharedFileCreation()
 {
    FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;

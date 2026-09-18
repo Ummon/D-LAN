@@ -47,6 +47,27 @@ using namespace RCM;
 #include <priv/UploadProgress.h>
 #include <priv/LocalBrowse.h>
 
+namespace
+{
+   // Keep aligned with Common.Entry in common.proto. GUI state omits chunks;
+   // copying fields directly avoids allocating every hash only to discard it.
+   void copyEntryMetadata(const Protos::Common::Entry& source, Protos::Common::Entry* destination)
+   {
+      destination->Clear();
+      destination->set_type(source.type());
+      destination->set_path(source.path());
+      destination->set_name(source.name());
+      destination->set_size(source.size());
+      destination->set_hidden(source.hidden());
+      destination->set_exists(source.exists());
+      destination->set_is_empty(source.is_empty());
+      if (source.has_shared_entry())
+         destination->mutable_shared_entry()->CopyFrom(source.shared_entry());
+      destination->GetReflection()->MutableUnknownFields(destination)->MergeFrom(
+         source.GetReflection()->GetUnknownFields(source));
+   }
+}
+
 void RemoteConnection::Logger::logDebug(const QString& message)
 {
    L_DEBU(message);
@@ -229,8 +250,7 @@ void RemoteConnection::refresh()
       DM::IDownload* download = i.next();
       Protos::GUI::State_Download* protoDownload = state.add_downloads();
       protoDownload->set_id(download->getID());
-      protoDownload->mutable_local_entry()->CopyFrom(download->getLocalEntry());
-      protoDownload->mutable_local_entry()->mutable_chunks()->Clear(); // We don't need to send the hashes.
+      copyEntryMetadata(download->getLocalEntry(), protoDownload->mutable_local_entry());
       protoDownload->set_status(download->getStatus());
       protoDownload->set_downloaded_bytes(download->getDownloadedBytes());
 
@@ -254,10 +274,8 @@ void RemoteConnection::refresh()
       for (const auto& chunk : chunksUploader->getChunks())
       {
          Protos::Common::Entry entry;
-         if (!chunk.getChunk()->populateEntry(&entry))
+         if (!chunk.getChunk()->populateEntry(&entry, false))
             continue;
-
-         entry.mutable_chunks()->Clear();
 
          const int progress = uploadProgress(entry.size(), chunk.getFileBytesOwnedByPeer(), chunk.getOffset());
 

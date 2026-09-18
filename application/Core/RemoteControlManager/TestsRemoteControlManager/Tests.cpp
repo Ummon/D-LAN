@@ -13,6 +13,7 @@
 #include <Common/Global.h>
 #include <Common/ProtoHelper.h>
 #include <Core/PeerManager/Builder.h>
+#include <Core/DownloadManager/IDownload.h>
 #include <Protos/core_settings.pb.h>
 #include "Mocks.h"
 
@@ -39,6 +40,76 @@ private slots:
       SETTINGS.set("peer_id", Common::Hash::rand());
       SETTINGS.set("remote_password", Common::Hash::rand());
       SETTINGS.set("salt", quint64(123));
+   }
+
+   void downloadStateWithoutHashes_data()
+   {
+      QTest::addColumn<bool>("directory");
+      QTest::addColumn<bool>("shared");
+      QTest::newRow("file-shared") << false << true;
+      QTest::newRow("file-pending") << false << false;
+      QTest::newRow("directory-shared") << true << true;
+      QTest::newRow("directory-pending") << true << false;
+   }
+
+   void downloadStateWithoutHashes()
+   {
+      QFETCH(bool, directory);
+      QFETCH(bool, shared);
+      struct Download : DM::IDownload
+      {
+         Protos::Common::Entry entry;
+         PM::IPeer* peer = nullptr;
+         quint64 getID() const override { return 42; }
+         Protos::Common::DownloadStatus getStatus() const override { return Protos::Common::DOWNLOADING; }
+         quint64 getDownloadedBytes() const override { return 123; }
+         PM::IPeer* getPeerSource() const override { return this->peer; }
+         QSet<PM::IPeer*> getPeers() const override { return { this->peer }; }
+         const Protos::Common::Entry& getLocalEntry() const override { return this->entry; }
+      } download;
+      auto& entry = download.entry;
+      entry.set_type(directory ? Protos::Common::Entry::DIR : Protos::Common::Entry::FILE);
+      entry.set_path("nested/path/");
+      entry.set_name("entry");
+      entry.set_size(1ULL << 40);
+      entry.set_hidden(true);
+      entry.set_exists(true);
+      entry.set_is_empty(directory);
+      if (shared)
+      {
+         entry.mutable_shared_entry()->mutable_id()->set_hash(std::string(Common::Hash::HASH_SIZE, 's'));
+         entry.mutable_shared_entry()->set_shared_name("share");
+         entry.mutable_shared_entry()->set_path("/shared/");
+      }
+      if (!directory)
+         for (int i = 0; i < 16384; ++i)
+            entry.add_chunks()->set_hash(std::string(Common::Hash::HASH_SIZE, 'h'));
+      entry.GetReflection()->MutableUnknownFields(&entry)->AddVarint(100, 456);
+      const auto original = entry.SerializeAsString();
+      auto expected = entry;
+      expected.clear_chunks();
+
+      auto peers = QSharedPointer<BrowsePeerManager>::create();
+      download.peer = &peers->peer;
+      auto downloads = QSharedPointer<DownloadManager>::create();
+      downloads->downloads << &download;
+      auto* socket = new BufferedSocket;
+      QScopedPointer<RCM::RemoteConnection> connection(this->newConnection(socket, {}, peers, {}, downloads));
+      connection->startListening();
+      socket->output.clear();
+      socket->receive(Common::MessageHeader::GUI_REFRESH, Protos::Common::Null());
+      const auto messages = socket->messages();
+      QCOMPARE(messages.size(), 1);
+      QCOMPARE(messages[0].getHeader().getType(), Common::MessageHeader::GUI_STATE);
+      const auto& state = messages[0].getMessage<Protos::GUI::State>();
+      QCOMPARE(state.downloads_size(), 1);
+      const auto& result = state.downloads(0);
+      QCOMPARE(result.local_entry().SerializeAsString(), expected.SerializeAsString());
+      QCOMPARE(entry.SerializeAsString(), original);
+      QCOMPARE(result.id(), quint64(42));
+      QCOMPARE(result.downloaded_bytes(), quint64(123));
+      QCOMPARE(result.status(), Protos::Common::DOWNLOADING);
+      QCOMPARE(result.peer_ids_size(), 1);
    }
 
    void bufferedLocalAuthentication()
@@ -717,12 +788,13 @@ private:
    QTemporaryDir dataDirectory;
 
    RCM::RemoteConnection* newConnection(BufferedSocket* socket, QSharedPointer<NL::INetworkListener> network = {},
-      QSharedPointer<PM::IPeerManager> peers = {}, QSharedPointer<FileManager> files = {})
+      QSharedPointer<PM::IPeerManager> peers = {}, QSharedPointer<FileManager> files = {},
+      QSharedPointer<DownloadManager> downloads = {})
    {
       if (!files)
          files = QSharedPointer<FileManager>::create();
       return new RCM::RemoteConnection(files, peers ? peers : PM::Builder::newPeerManager(files),
-         QSharedPointer<UploadManager>::create(), QSharedPointer<DownloadManager>::create(),
+         QSharedPointer<UploadManager>::create(), downloads ? downloads : QSharedPointer<DownloadManager>::create(),
          network, QSharedPointer<ChatSystem>::create(), socket);
    }
 };

@@ -108,9 +108,10 @@ public:
 class DownloadManager : public DM::IDownloadManager
 {
 public:
+   QList<DM::IDownload*> downloads;
    void addDownload(const Protos::Common::Entry&, PM::IPeer*, const Common::Hash&, const QString&) override {}
    void addDownload(const Protos::Common::Entry&, PM::IPeer*, const QString&) override {}
-   QList<DM::IDownload*> getDownloads() const override { return {}; }
+   QList<DM::IDownload*> getDownloads() const override { return this->downloads; }
    void moveDownloads(const QList<quint64>&, const QList<quint64>&, Protos::GUI::MoveDownloads::Position) override {}
    void removeAllCompleteDownloads() override {}
    void removeDownloads(QList<quint64>) override {}

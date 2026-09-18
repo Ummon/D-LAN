@@ -113,6 +113,8 @@ namespace FM
       friend class FileHasher; // Publish validated hashes while excluding generation retirement.
       QSharedPointer<QRecursiveMutex> getChunkMutex() const { return this->mutexStorage; }
       void setAsComplete();
+      // Caller holds the file mutex. Unlike a zero hash limit, omit even unknown chunk records.
+      void populateEntryMetadata(Protos::Common::Entry* entry, bool setSharedDir) const;
       void deleteAllChunks();
       void closePhysicalFiles();
       bool openReadHandle();
