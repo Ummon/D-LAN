@@ -65,6 +65,30 @@ namespace
          this->savedDate = date;
       }
    };
+
+   class BatchHashCache : public MockHashCache
+   {
+   public:
+      int singleReads = 0;
+      QList<QList<FileMetadata>> batches;
+      QHash<QString, QList<Common::Hash>> savedHashes;
+      std::function<void()> onBatch;
+      QList<Common::Hash> getHashes(const QString&, qint64, QDateTime) override
+      {
+         ++this->singleReads;
+         return {};
+      }
+      QList<QList<Common::Hash>> getHashesBatch(const QList<FileMetadata>& files) override
+      {
+         this->batches.append(files);
+         QList<QList<Common::Hash>> result;
+         for (const auto& file : files)
+            result.append(this->savedHashes.value(file.path));
+         if (this->onBatch)
+            this->onBatch();
+         return result;
+      }
+   };
 }
 
 /**
@@ -2905,6 +2929,97 @@ void CacheTest::browseNewSharedDirectory()
       QCOMPARE(response.entries().entries(0).name(), std::string("child"));
       QCOMPARE(response.entries().entries(1).name(), std::string("complete.txt"));
    }
+}
+
+void CacheTest::scanLoadsHashesInBatches()
+{
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   auto hashCache = QSharedPointer<BatchHashCache>::create();
+   for (int i = 0; i < 301; ++i)
+   {
+      const QString path = temp.filePath(QString("file-%1.bin").arg(i));
+      QFile file(path);
+      QVERIFY(file.open(QIODevice::WriteOnly));
+      if (i != 300)
+         QCOMPARE(file.write("abc", 3), qint64(3));
+      if (i % 2 == 0 && i != 300)
+         hashCache->savedHashes.insert(path, { Common::Hash::rand() });
+   }
+   FM::Cache cache(hashCache);
+   FM::FileUpdater updater(nullptr);
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   auto dir = root->getRootDir();
+   updater.scan(dir);
+   QVERIFY(dir->isScanned());
+   QCOMPARE(dir->getFiles().size(), qsizetype(301));
+   QCOMPARE(hashCache->singleReads, 0); // Empty misses must not trigger individual retries.
+   QCOMPARE(hashCache->batches.size(), qsizetype(3));
+   int total = 0;
+   for (const auto& batch : std::as_const(hashCache->batches))
+   {
+      QVERIFY(!batch.isEmpty() && batch.size() <= 128);
+      total += batch.size();
+      for (const auto& request : batch)
+      {
+         const QFileInfo info(request.path);
+         QCOMPARE(request.size, info.size());
+         QCOMPARE(request.timeLastModified, info.lastModified());
+         auto file = dir->getFile(info.fileName());
+         QVERIFY(file);
+         const auto expected = hashCache->savedHashes.value(request.path);
+         QCOMPARE(file->hasAllHashes(), !expected.isEmpty());
+         QCOMPARE(file->getRemainingBytesToHash(), expected.isEmpty() ? info.size() : qint64(0));
+         if (!expected.isEmpty())
+            QCOMPARE(file->getChunks().first()->getHash(), expected.first());
+      }
+   }
+   QCOMPARE(total, 301);
+
+   hashCache->batches.clear();
+   updater.scan(dir);
+   QVERIFY(hashCache->batches.isEmpty()); // Unchanged cached files need no database work.
+   QFile added(temp.filePath("new.bin"));
+   QVERIFY(added.open(QIODevice::WriteOnly));
+   QCOMPARE(added.write("new", 3), qint64(3));
+   added.close();
+   updater.scan(dir);
+   QCOMPARE(hashCache->batches.size(), qsizetype(1));
+   QCOMPARE(hashCache->batches.first().size(), qsizetype(1));
+   QCOMPARE(hashCache->batches.first().first().path, added.fileName());
+   QCOMPARE(hashCache->singleReads, 0);
+   QVERIFY(dir->getFile("new.bin"));
+}
+
+void CacheTest::scanCanStopDuringHashLookup()
+{
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   QFile file(temp.filePath("file.bin"));
+   QVERIFY(file.open(QIODevice::WriteOnly));
+   QCOMPARE(file.write("abc", 3), qint64(3));
+   file.close();
+   auto hashCache = QSharedPointer<BatchHashCache>::create();
+   FM::Cache cache(hashCache);
+   FM::FileUpdater updater(nullptr);
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   auto dir = root->getRootDir();
+   dir->setScanned(false);
+   hashCache->onBatch = [&] { updater.scanAbortRequested = true; };
+   updater.scan(dir);
+   QVERIFY(!updater.isScanning());
+   QVERIFY(!dir->isScanned());
+   QVERIFY(dir->getFiles().isEmpty());
+   hashCache->onBatch = {};
+   updater.scan(dir);
+   QVERIFY(dir->isScanned());
+   QVERIFY(dir->getFile("file.bin"));
 }
 
 void CacheTest::scanDirectoryIncrementally_data()

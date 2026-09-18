@@ -34,6 +34,10 @@ private slots:
    void independentConnections_data();
    void independentConnections();
    void lookupRequiresMatchingSize();
+   void batchLookupPreservesOrderAndMetadata();
+   void batchedWritesPreserveOrderingAndShutdown();
+   void pendingWritesFlushWithoutRead();
+   void failedWriteBatchKeepsOtherUpdates();
    void concurrentAccess();
    void destructionFromAnotherThread();
    void cleanupMissingFiles_data();

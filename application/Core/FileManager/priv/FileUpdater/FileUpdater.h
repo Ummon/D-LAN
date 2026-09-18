@@ -19,6 +19,7 @@
 #pragma once
 
 #include <Common/Path.h>
+#include <Common/Hash.h>
 
 #include <atomic>
 
@@ -82,7 +83,8 @@ namespace FM
 
       void scan(Entry* entry, bool addUnfinished = false);
 
-      File* addScannedFile(const QFileInfo& fileInfo, File* file, Directory* parentDirectory = nullptr);
+      File* addScannedFile(const QFileInfo& fileInfo, File* file, Directory* parentDirectory = nullptr,
+         const QList<Common::Hash>* cachedHashes = nullptr);
 
       void stopScanning(Entry* entry = nullptr);
 

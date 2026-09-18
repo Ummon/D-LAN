@@ -169,6 +169,114 @@ void Tests::lookupRequiresMatchingSize()
    QCOMPARE(cache->getHashes("file", 3, date), replacement);
 }
 
+void Tests::batchLookupPreservesOrderAndMetadata()
+{
+   QTest::failOnWarning();
+   QTemporaryDir folder;
+   QVERIFY(folder.isValid());
+   const auto cache = newTestHashCache(folder.path());
+   const QList<Common::Hash> first { Common::Hash::rand() };
+   const QList<Common::Hash> second { Common::Hash::rand(), Common::Hash() };
+   const QDateTime date = QDateTime::fromMSecsSinceEpoch(123456789);
+   const qint64 secondSize = qint64(Common::Constants::CHUNK_SIZE) + 1;
+   cache->setHashes("first", first, 2, date);
+   cache->setHashes("second", second, secondSize, date);
+   const QList<IHashCache::FileMetadata> requests {
+      { "second", secondSize, date }, { "missing", 2, date },
+      { "first", 2, date.addMSecs(1) }, { "first", 3, date },
+      { "first", 2, {} }, { "second", secondSize, date }, { "first", 2, date }
+   };
+   const QList<QList<Common::Hash>> expected { second, {}, {}, {}, first, second, first };
+   QCOMPARE(cache->getHashesBatch(requests), expected);
+   QVERIFY(cache->getHashesBatch({}).isEmpty());
+   for (int i = 0; i < requests.size(); ++i)
+      QCOMPARE(cache->getHashes(requests[i].path, requests[i].size, requests[i].timeLastModified), expected[i]);
+}
+
+void Tests::batchedWritesPreserveOrderingAndShutdown()
+{
+   QTest::failOnWarning();
+   QTemporaryDir folder;
+   QVERIFY(folder.isValid());
+   const QList<Common::Hash> first { Common::Hash::rand() };
+   const QList<Common::Hash> second { Common::Hash::rand() };
+   {
+      auto cache = newTestHashCache(folder.path());
+      cache->setHashes("replace", first, 1);
+      cache->setHashes("replace", second, 1);
+      QCOMPARE(cache->getHashes("replace", 1), second);
+      cache->setHashes("remove", first, 1);
+      cache->rmHashes("remove");
+      QVERIFY(cache->getHashesBatch({ { "remove", 1, {} } }).first().isEmpty());
+      cache->setHashes("replace", first, 1);
+      cache->rmHashes("replace");
+      cache->setHashes("replace", second, 1);
+      // Exceed the row limit and leave a final partial batch for destruction.
+      for (int i = 0; i < 513; ++i)
+         cache->setHashes(QString("file-%1").arg(i), first, 1);
+   }
+   const auto reopened = newTestHashCache(folder.path());
+   QCOMPARE(reopened->getHashes("replace", 1), second);
+   QVERIFY(reopened->getHashes("remove", 1).isEmpty());
+   QList<IHashCache::FileMetadata> requests;
+   for (int i = 0; i < 513; ++i)
+      requests.append({ QString("file-%1").arg(i), 1, {} });
+   const auto results = reopened->getHashesBatch(requests);
+   QCOMPARE(results.size(), requests.size());
+   for (const auto& hashes : results)
+      QCOMPARE(hashes, first);
+}
+
+void Tests::pendingWritesFlushWithoutRead()
+{
+   QTest::failOnWarning();
+   QTemporaryDir folder;
+   QVERIFY(folder.isValid());
+   const auto cache = newTestHashCache(folder.path());
+   TestDatabase inspector(folder.path());
+   const QList<Common::Hash> hashes { Common::Hash::rand() };
+   cache->setHashes("file", hashes, 1);
+   QElapsedTimer deadline;
+   deadline.start();
+   bool committed = false;
+   while (!committed && deadline.elapsed() < 3000)
+   {
+      QSqlQuery query(inspector.db);
+      QVERIFY(query.exec("SELECT COUNT(*) FROM [File] WHERE [path] = 'file'"));
+      QVERIFY(query.first());
+      committed = query.value(0).toInt() == 1;
+      query.finish();
+      if (!committed)
+         QThread::msleep(10); // Deliberately do not run the caller's event loop.
+   }
+   QVERIFY(committed);
+}
+
+void Tests::failedWriteBatchKeepsOtherUpdates()
+{
+   QTest::failOnWarning();
+   QTemporaryDir folder;
+   QVERIFY(folder.isValid());
+   const auto cache = newTestHashCache(folder.path());
+   const QList<Common::Hash> original { Common::Hash::rand() };
+   const QList<Common::Hash> replacement { Common::Hash::rand() };
+   cache->setHashes("bad", original, 1);
+   QCOMPARE(cache->getHashes("bad", 1), original);
+   TestDatabase inspector(folder.path());
+   QSqlQuery query(inspector.db);
+   QVERIFY(query.exec("CREATE TRIGGER fail_write BEFORE INSERT ON [File] WHEN NEW.path = 'bad' BEGIN SELECT RAISE(ABORT, 'test failure'); END"));
+   query.finish();
+   cache->setHashes("before", replacement, 1);
+   cache->setHashes("bad", replacement, 1);
+   cache->setHashes("after", replacement, 1);
+   const QList<QList<Common::Hash>> expected { replacement, original, replacement };
+   QCOMPARE(cache->getHashesBatch({ { "before", 1, {} }, { "bad", 1, {} }, { "after", 1, {} } }), expected);
+   QVERIFY(query.exec("DROP TRIGGER fail_write"));
+   query.finish();
+   cache->setHashes("bad", replacement, 1);
+   QCOMPARE(cache->getHashes("bad", 1), replacement);
+}
+
 void Tests::concurrentAccess()
 {
    QTest::failOnWarning();

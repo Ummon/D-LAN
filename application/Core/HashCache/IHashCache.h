@@ -33,6 +33,13 @@ namespace HC
    public:
       virtual ~IHashCache() {}
 
+      struct FileMetadata
+      {
+         QString path;
+         qint64 size;
+         QDateTime timeLastModified;
+      };
+
       /**
         * Retrieve hashes matching the file path and current size in bytes.
         * If supplied, the modification time must also match.
@@ -43,6 +50,19 @@ namespace HC
          qint64 size,
          QDateTime timeLastModified = QDateTime()
       ) = 0;
+
+      /**
+        * Retrieve hashes for a batch, in request order (including empty results for misses).
+        * Like getHashes(), waits for preceding writes. The default supports simple backends.
+        */
+      virtual QList<QList<Common::Hash>> getHashesBatch(const QList<FileMetadata>& files)
+      {
+         QList<QList<Common::Hash>> result;
+         result.reserve(files.size());
+         for (const auto& file : files)
+            result.append(this->getHashes(file.path, file.size, file.timeLastModified));
+         return result;
+      }
 
       /**
         * Set all hashes for the given file path.

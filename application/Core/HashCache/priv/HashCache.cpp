@@ -21,6 +21,7 @@ using namespace HC;
 
 #include <optional>
 #include <algorithm>
+#include <utility>
 
 #include <QFile>
 #include <QScopeGuard>
@@ -46,11 +47,23 @@ public:
 
    QList<Common::Hash> getHashes(const QString& filePath, qint64 size, QDateTime timeLastModified);
    void setHashes(const QString& filePath, const QList<Common::Hash>& hashes, qint64 size, QDateTime dateTime);
+   void flushHashes();
    void rmHashes(const QString& filePath);
    int checkFilesExist(); // Returns the delay in milliseconds until the next check.
 
 private:
    LOG_INIT_H("HashCache")
+
+   struct HashUpdate
+   {
+      QString path;
+      QList<Common::Hash> hashes;
+      qint64 size;
+      QDateTime dateTime;
+   };
+   void writeHashes(const HashUpdate& update);
+   QList<HashUpdate> pendingHashes;
+   qint64 pendingHashBytes = 0;
 
    template <typename T>
    std::optional<T> getSettings(const QString& key);
@@ -100,6 +113,10 @@ HashCache::HashCache(const QString& databaseFolder, int initialFileCheckDelay) :
       [this, &databaseFolder, initialFileCheckDelay]
       {
          this->database = std::make_unique<Database>(databaseFolder);
+         this->flushHashesTimer = new QTimer(this->databaseContext);
+         this->flushHashesTimer->setSingleShot(true);
+         this->flushHashesTimer->setInterval(10);
+         this->flushHashesTimer->callOnTimeout(this->databaseContext, [this] { this->flushPendingHashes(); });
          const quint32 period = SETTINGS.get<quint32>("hashcache_period_verify_files_exist");
          if (period > 0)
          {
@@ -108,6 +125,7 @@ HashCache::HashCache(const QString& databaseFolder, int initialFileCheckDelay) :
             this->checkDeletedFileTimer->setSingleShot(true);
             const auto checkFiles = [this]
             {
+               this->flushPendingHashes();
                this->checkDeletedFileTimer->start(this->database->checkFilesExist());
             };
             this->checkDeletedFileTimer->callOnTimeout(this->databaseContext, checkFiles);
@@ -127,6 +145,8 @@ HashCache::~HashCache()
       this->databaseContext,
       [this]
       {
+         this->flushPendingHashes();
+         delete this->flushHashesTimer;
          delete this->checkDeletedFileTimer;
          this->database.reset();
       },
@@ -145,12 +165,36 @@ QList<Common::Hash> HashCache::getHashes(const QString& filePath, qint64 size, Q
       this->databaseContext,
       [this, &filePath, size, timeLastModified, &result]
       {
+         this->flushPendingHashes();
          result = this->database->getHashes(filePath, size, timeLastModified);
       },
       Qt::BlockingQueuedConnection
    );
 
    return result;
+}
+
+QList<QList<Common::Hash>> HashCache::getHashesBatch(const QList<FileMetadata>& files)
+{
+   QList<QList<Common::Hash>> result;
+   result.reserve(files.size());
+   QMetaObject::invokeMethod(
+      this->databaseContext,
+      [this, &files, &result]
+      {
+         this->flushPendingHashes();
+         for (const auto& file : files)
+            result.append(this->database->getHashes(file.path, file.size, file.timeLastModified));
+      },
+      Qt::BlockingQueuedConnection
+   );
+   return result;
+}
+
+void HashCache::flushPendingHashes()
+{
+   this->flushHashesTimer->stop();
+   this->database->flushHashes();
 }
 
 void HashCache::setHashes(const QString& filePath, const QList<Common::Hash>& hashes, qint64 size, QDateTime dateTime)
@@ -160,6 +204,8 @@ void HashCache::setHashes(const QString& filePath, const QList<Common::Hash>& ha
       [this, filePath, hashes, size, dateTime]
       {
          this->database->setHashes(filePath, hashes, size, dateTime);
+         if (!this->flushHashesTimer->isActive())
+            this->flushHashesTimer->start();
       },
       Qt::QueuedConnection
    );
@@ -170,6 +216,7 @@ void HashCache::rmHashes(const QString& filePath)
    QMetaObject::invokeMethod(
       this->databaseContext, [this, filePath]
       {
+         this->flushPendingHashes();
          this->database->rmHashes(filePath);
       },
       Qt::QueuedConnection
@@ -302,27 +349,70 @@ QList<Common::Hash> HashCache::Database::getHashes(const QString& filePath, qint
 
 void HashCache::Database::setHashes(const QString& filePath, const QList<Common::Hash>& hashes, qint64 size, QDateTime dateTime)
 {
-   L_DEBU(QString("[setHashes] filePath: %1").arg(filePath));
+   this->pendingHashes.append({ filePath, hashes, size, dateTime });
+   this->pendingHashBytes += qint64(hashes.size()) * Common::Hash::HASH_SIZE;
+   // Bound both transaction work and retained hash data, even when the event queue is busy.
+   if (this->pendingHashes.size() >= 128 || this->pendingHashBytes >= 1024 * 1024)
+      this->flushHashes();
+}
+
+void HashCache::Database::flushHashes()
+{
+   if (this->pendingHashes.isEmpty())
+      return;
+
+   const auto updates = std::exchange(this->pendingHashes, {});
+   this->pendingHashBytes = 0;
+   try
+   {
+      if (!this->db.transaction())
+         throw DatabaseException(this->db.lastError());
+      auto rollback = qScopeGuard([this] { this->db.rollback(); });
+      for (const auto& update : updates)
+         this->writeHashes(update);
+      if (!this->db.commit())
+         throw DatabaseException(this->db.lastError());
+      rollback.dismiss();
+      return;
+   }
+   catch (DatabaseException& e)
+   {
+      L_ERRO(QString("[flushHashes] SQL Error: %1").arg(e.error.text()));
+   }
+
+   // One failing update must not discard unrelated writes. The batch was rolled back;
+   // retry its operations individually, in order, as before batching was introduced.
+   for (const auto& update : updates)
+      try
+      {
+         this->writeHashes(update);
+      }
+      catch (DatabaseException& e)
+      {
+         L_ERRO(QString("[setHashes] SQL Error: %1").arg(e.error.text()));
+      }
+}
+
+void HashCache::Database::writeHashes(const HashUpdate& update)
+{
+   L_DEBU(QString("[setHashes] filePath: %1").arg(update.path));
 
    QByteArray hashesBlob;
-   hashesBlob.reserve(hashes.size() * Common::Hash::HASH_SIZE);
-   for (int i = 0; i < hashes.size(); ++i)
+   hashesBlob.reserve(update.hashes.size() * Common::Hash::HASH_SIZE);
+   for (int i = 0; i < update.hashes.size(); ++i)
    {
-      hashesBlob.append(hashes[i].getData(), Common::Hash::HASH_SIZE);
+      hashesBlob.append(update.hashes[i].getData(), Common::Hash::HASH_SIZE);
    }
 
    QSqlQuery& query = *this->querySetHashes;
 
-   query.bindValue(0, filePath);
-   query.bindValue(1, size);
-   query.bindValue(2, dateTime.isNull() ? 0 : dateTime.toMSecsSinceEpoch());
+   const auto finish = qScopeGuard([&query] { query.finish(); });
+   query.bindValue(0, update.path);
+   query.bindValue(1, update.size);
+   query.bindValue(2, update.dateTime.isNull() ? 0 : update.dateTime.toMSecsSinceEpoch());
    query.bindValue(3, hashesBlob);
-   query.exec();
-
-   if (!query.isActive())
-      L_ERRO(QString("[setHashes] SQL Error: %1").arg(query.lastError().text()));
-
-   query.finish();
+   if (!query.exec())
+      throw DatabaseException(query.lastError());
 }
 
 void HashCache::Database::rmHashes(const QString& filePath)

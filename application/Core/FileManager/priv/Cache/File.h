@@ -52,7 +52,8 @@ namespace FM
          const QDateTime& dateLastModified,
          Directory* parentDirectory = nullptr,
          const QList<Common::Hash>& hashes = QList<Common::Hash>(),
-         bool createPhysically = false
+         bool createPhysically = false,
+         bool loadCachedHashes = true
       );
 
       ~File() override;

@@ -70,6 +70,7 @@ using namespace FM;
   * @param dateLastModified The date of the last modification of the file.
   * @param hashes Optional hashes, if given it must contain ALL hashes.
   * @param createPhysically If 'true' the file will be created. Default is 'false'.
+  * @param loadCachedHashes False when hashes came from a batch lookup, including an empty cache miss.
   * @exception UnableToCreateNewFileException
   */
 File::File(
@@ -80,7 +81,8 @@ File::File(
    const QDateTime& dateLastModified,
    Directory* parentDirectory,
    const QList<Common::Hash>& hashes,
-   bool createPhysically
+   bool createPhysically,
+   bool loadCachedHashes
 ) :
    Entry(
       root,
@@ -111,8 +113,13 @@ File::File(
 
    if (auto cache = this->getCache())
    {
-      if (!createPhysically && hashes.isEmpty())
-         this->loadHashes();
+      if (!createPhysically)
+      {
+         if (!loadCachedHashes)
+            this->setHashes(hashes);
+         else if (hashes.isEmpty())
+            this->loadHashes();
+      }
 
       cache->onEntryAdded(this);
    }

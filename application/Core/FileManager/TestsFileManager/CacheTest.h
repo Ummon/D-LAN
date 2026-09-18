@@ -94,6 +94,8 @@ private slots:
    void browseNewSharedDirectory();
    void scanDirectoryIncrementally_data();
    void scanDirectoryIncrementally();
+   void scanLoadsHashesInBatches();
+   void scanCanStopDuringHashLookup();
    void partialWrites_data();
    void partialWrites();
    void corruptedWrites_data();

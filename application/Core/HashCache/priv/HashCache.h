@@ -39,6 +39,7 @@ namespace HC
       ~HashCache();
 
       QList<Common::Hash> getHashes(const QString& filePath, qint64 size, QDateTime timeLastModified = QDateTime()) override;
+      QList<QList<Common::Hash>> getHashesBatch(const QList<FileMetadata>& files) override;
 
       void setHashes(const QString& filePath, const QList<Common::Hash>& hashes, qint64 size, QDateTime dateTime = QDateTime()) override;
 
@@ -46,6 +47,7 @@ namespace HC
 
    private:
       class Database;
+      void flushPendingHashes(); // Called only on databaseThread.
 
       // SQL objects and the maintenance timer belong to databaseThread.
       // Reads block for their result; writes own their arguments and are queued.
@@ -54,5 +56,6 @@ namespace HC
       std::unique_ptr<Database> database;
 
       QTimer* checkDeletedFileTimer = nullptr;
+      QTimer* flushHashesTimer = nullptr;
    };
 }

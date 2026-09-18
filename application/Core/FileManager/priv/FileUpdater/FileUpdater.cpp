@@ -522,7 +522,36 @@ void FileUpdater::scan(Entry* entry, bool addUnfinished)
          QSet<Directory*> unseenSubDirs(currentSubDirs.cbegin(), currentSubDirs.cend());
          QSet<File*> unseenFiles(currentFiles.cbegin(), currentFiles.cend());
 
-         // Stream metadata instead of retaining a QFileInfo for every entry.
+         // Only new files need hash-cache lookups. Keep a bounded metadata batch;
+         // neither cache nor scheduler locks may be held while waiting for the database.
+         constexpr int HASH_LOOKUP_BATCH_SIZE = 128;
+         QList<QFileInfo> newFiles;
+         const auto addNewFiles = [&]()
+         {
+            if (newFiles.isEmpty())
+               return true;
+            if (abortIfRequested(currentDir))
+               return false;
+
+            QList<HC::IHashCache::FileMetadata> requests;
+            requests.reserve(newFiles.size());
+            for (const auto& info : std::as_const(newFiles))
+               requests.append({ info.absoluteFilePath(), info.size(), info.lastModified() });
+            const auto hashes = currentDir->getCache()->getHashCache()->getHashesBatch(requests);
+            for (int i = 0; i < newFiles.size(); ++i)
+            {
+               if (abortIfRequested(currentDir))
+                  return false;
+               const auto& info = newFiles.at(i);
+               // Resolve again after the blocking lookup; another caller may have created the file.
+               if (File* file = this->addScannedFile(info, currentDir->getFile(info.fileName()), currentDir, &hashes.at(i)))
+                  unseenFiles.remove(file);
+            }
+            newFiles.clear();
+            return true;
+         };
+
+         // Stream metadata instead of retaining a QFileInfo for every entry in the directory.
          // Directory::add maintains cache ordering independently of enumeration order.
          // TODO: Add an option to follow or not symlinks.
          QDirIterator entries(currentDir->getAbsolutePath(),
@@ -542,10 +571,18 @@ void FileUpdater::scan(Entry* entry, bool addUnfinished)
             }
             else if (addUnfinished || !Global::isFileUnfinished(fileInfo.fileName()))
             {
-               if (File* file = this->addScannedFile(fileInfo, currentDir->getFile(fileInfo.fileName()), currentDir))
-                  unseenFiles.remove(file);
+               if (File* file = currentDir->getFile(fileInfo.fileName()))
+                  unseenFiles.remove(this->addScannedFile(fileInfo, file, currentDir));
+               else
+               {
+                  newFiles.append(fileInfo);
+                  if (newFiles.size() == HASH_LOOKUP_BATCH_SIZE && !addNewFiles())
+                     return;
+               }
             }
          }
+         if (!addNewFiles())
+            return;
 
          // Delete cached entries not encountered on the file system.
          for (File* f : currentFiles)
@@ -579,7 +616,8 @@ void FileUpdater::scan(Entry* entry, bool addUnfinished)
   * may be given.
   * TODO: re-read carefully this method and think about all possible cases.
   */
-File* FileUpdater::addScannedFile(const QFileInfo& fileInfo, File* file, Directory* parentDirectory)
+File* FileUpdater::addScannedFile(const QFileInfo& fileInfo, File* file, Directory* parentDirectory,
+   const QList<Common::Hash>* cachedHashes)
 {
    QMutexLocker locker(&this->mutex);
 
@@ -598,6 +636,10 @@ File* FileUpdater::addScannedFile(const QFileInfo& fileInfo, File* file, Directo
       }
       else
       {
+         // A directory may have moved while the batch was being fetched. In that
+         // case retain the normal lookup using the file's current cache path.
+         if (cachedHashes && parentDirectory->getAbsolutePath().setFilename(fileInfo.fileName()) != Common::Path(fileInfo.absoluteFilePath()))
+            cachedHashes = nullptr;
          file =
             new File(
                parentDirectory->getRoot(),
@@ -605,7 +647,10 @@ File* FileUpdater::addScannedFile(const QFileInfo& fileInfo, File* file, Directo
                fileInfo.size(),
                fileInfo.isHidden(),
                fileInfo.lastModified(),
-               parentDirectory
+               parentDirectory,
+               cachedHashes ? *cachedHashes : QList<Common::Hash>(),
+               false,
+               cachedHashes == nullptr
          );
       }
    }
