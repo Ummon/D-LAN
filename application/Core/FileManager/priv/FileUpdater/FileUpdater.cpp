@@ -20,6 +20,7 @@
 using namespace FM;
 
 #include <QList>
+#include <QSet>
 #include <QDir>
 #include <QDirIterator>
 #include <QElapsedTimer>
@@ -514,8 +515,12 @@ void FileUpdater::scan(Entry* entry, bool addUnfinished)
          if (abortIfRequested(currentDir))
             return;
 
-         QList<Directory*> currentSubDirs = currentDir->getSubDirs();
-         QList<File*> currentFiles = currentDir->getCompleteFiles(); // We don't care about the unfinished files.
+         const QList<Directory*> currentSubDirs = currentDir->getSubDirs();
+         const QList<File*> currentFiles = currentDir->getCompleteFiles(); // We don't care about the unfinished files.
+         // Track unseen entries without repeatedly searching and shrinking the lists.
+         // Keep the snapshots to preserve deletion order after enumeration.
+         QSet<Directory*> unseenSubDirs(currentSubDirs.cbegin(), currentSubDirs.cend());
+         QSet<File*> unseenFiles(currentFiles.cbegin(), currentFiles.cend());
 
          // Stream metadata instead of retaining a QFileInfo for every entry.
          // Directory::add maintains cache ordering independently of enumeration order.
@@ -533,21 +538,23 @@ void FileUpdater::scan(Entry* entry, bool addUnfinished)
                Directory* subDir = currentDir->createSubDir(fileInfo.fileName(), false, fileInfo.isHidden());
                subDir->setScanned(false);
                dirsToVisit << subDir;
-               currentSubDirs.removeOne(subDir);
+               unseenSubDirs.remove(subDir);
             }
             else if (addUnfinished || !Global::isFileUnfinished(fileInfo.fileName()))
             {
                if (File* file = this->addScannedFile(fileInfo, currentDir->getFile(fileInfo.fileName()), currentDir))
-                  currentFiles.removeOne(file);
+                  unseenFiles.remove(file);
             }
          }
 
-         // Deletes all the files and directories which doesn't exist on the file system.
-         foreach (File* f, currentFiles)
-            this->deleteEntry(f);
+         // Delete cached entries not encountered on the file system.
+         for (File* f : currentFiles)
+            if (unseenFiles.contains(f))
+               this->deleteEntry(f);
 
-         foreach (Directory* d, currentSubDirs)
-            this->deleteEntry(d);
+         for (Directory* d : currentSubDirs)
+            if (unseenSubDirs.contains(d))
+               this->deleteEntry(d);
 
          currentDir->setScanned(true);
       }
