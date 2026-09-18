@@ -61,6 +61,11 @@ AutoComplete::AutoComplete(QWidget* parent) :
       this, &AutoComplete::updateHeight, Qt::QueuedConnection);
 }
 
+AutoComplete::~AutoComplete()
+{
+   delete this->ui;
+}
+
 void AutoComplete::setValues(const QList<QPair<Common::Hash, QString>>& values)
 {
    this->model.setValues(values);

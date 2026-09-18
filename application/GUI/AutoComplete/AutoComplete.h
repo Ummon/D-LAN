@@ -38,6 +38,7 @@ namespace GUI
       Q_OBJECT
    public:
       explicit AutoComplete(QWidget* parent = 0);
+      ~AutoComplete() override;
 
       void setValues(const QList<QPair<Common::Hash, QString>>& values);
       void setPattern(const QString& pattern);
