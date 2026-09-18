@@ -248,15 +248,9 @@ quint64 FileDownload::getDownloadedBytes() const
 QSet<PM::IPeer*> FileDownload::getPeers() const
 {
    QSet<PM::IPeer*> peers;
-   for (QListIterator<QSharedPointer<ChunkDownloader>> i(this->chunkDownloaders); i.hasNext();)
-   {
-      auto chunkDownloader = i.next();
+   for (const auto& chunkDownloader : std::as_const(this->chunkDownloaders))
       if (!chunkDownloader.isNull())
-      {
-         auto peersFromChunkDownloader = chunkDownloader->getPeers();
-         peers += QSet(peersFromChunkDownloader.begin(), peersFromChunkDownloader.end());
-      }
-   }
+         chunkDownloader->appendPeersTo(peers);
    return peers;
 }
 

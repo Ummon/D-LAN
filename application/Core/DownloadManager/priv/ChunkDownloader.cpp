@@ -430,7 +430,7 @@ bool ChunkDownloader::isPartiallyDownloaded() const
 
 bool ChunkDownloader::hasAtLeastAPeer()
 {
-   return !this->getPeers().isEmpty();
+   return this->collectAvailablePeers(nullptr);
 }
 
 /**
@@ -464,19 +464,30 @@ int ChunkDownloader::getDownloadedBytes() const
 /**
   * @remarks This method may remove dead peers from the list.
   */
-QList<PM::IPeer*> ChunkDownloader::getPeers()
+void ChunkDownloader::appendPeersTo(QSet<PM::IPeer*>& peers)
+{
+   this->collectAvailablePeers(&peers);
+}
+
+/**
+  * Prune unavailable peers and optionally collect the available ones. Even a
+  * presence-only query must visit every peer to keep link counts up to date.
+  */
+bool ChunkDownloader::collectAvailablePeers(QSet<PM::IPeer*>* peers)
 {
    QMutexLocker locker(&this->mutex);
 
-   QList<PM::IPeer*> peers;
-   peers.reserve(this->peers.size());
-
+   bool hasAvailablePeer = false;
    bool isTheNumberOfPeersHasChanged = false;
    for (QMutableListIterator<PM::IPeer*> i(this->peers); i.hasNext();)
    {
       PM::IPeer* peer = i.next();
       if (peer->isAvailable())
-         peers << peer;
+      {
+         hasAvailablePeer = true;
+         if (peers)
+            peers->insert(peer);
+      }
       else
       {
          i.remove();
@@ -486,7 +497,7 @@ QList<PM::IPeer*> ChunkDownloader::getPeers()
    }
    if (isTheNumberOfPeersHasChanged)
       emit numberOfPeersChanged();
-   return peers;
+   return hasAvailablePeer;
 }
 
 /**

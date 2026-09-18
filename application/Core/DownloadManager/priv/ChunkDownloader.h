@@ -20,6 +20,7 @@
 
 #include <QSharedPointer>
 #include <QList>
+#include <QSet>
 #include <QThread>
 #include <QRecursiveMutex>
 #include <QElapsedTimer>
@@ -94,7 +95,7 @@ namespace DM
       void resetLastTransferStatus();
 
       int getDownloadedBytes() const;
-      QList<PM::IPeer*> getPeers();
+      void appendPeersTo(QSet<PM::IPeer*>& peers);
 
       PM::IPeer* startDownloading(quint64 downloadedBytes = 0);
       void tryToRemoveItsIncompleteFile();
@@ -116,6 +117,7 @@ namespace DM
       void downloadingEnded();
 
    private:
+      bool collectAvailablePeers(QSet<PM::IPeer*>* peers);
       PM::IPeer* getTheFastestFreePeer(bool removeDeadPeers = true);
       int getNumberOfFreePeer();
 

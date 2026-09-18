@@ -55,6 +55,9 @@ private slots:
    void resumeMissingFile_data();
    void resumeMissingFile();
    void erroneousDownloadsAreUnique();
+   void chunkPeerQueriesPruneUnavailable_data();
+   void chunkPeerQueriesPruneUnavailable();
+   void filePeersAreAggregated();
    void removeErroneousDownload_data();
    void removeErroneousDownload();
    void moveDownloads_data();

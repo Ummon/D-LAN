@@ -1202,6 +1202,116 @@ void Tests::checkpointDownloadProgress()
    QCOMPARE(saved.entries(0).status(), complete ? Protos::Queue::Queue::Entry::COMPLETE : Protos::Queue::Queue::Entry::QUEUED);
 }
 
+void Tests::chunkPeerQueriesPruneUnavailable_data()
+{
+   QTest::addColumn<bool>("collect");
+   QTest::newRow("collect") << true;
+   QTest::newRow("presence-only") << false;
+}
+
+void Tests::chunkPeerQueriesPruneUnavailable()
+{
+   QFETCH(bool, collect);
+   CheckpointPeer available(this->fileManager), sharedOffline(this->fileManager),
+      offline(this->fileManager), existing(this->fileManager);
+   LinkedPeers links;
+   OccupiedPeers downloading;
+   Common::ThreadPool pool(1);
+   Common::TransferRateCalculator rate;
+   auto first = (new ChunkDownloader(links, downloading, rate, pool, Common::Hash::rand()))->grabStrongRef();
+   auto second = (new ChunkDownloader(links, downloading, rate, pool, Common::Hash::rand()))->grabStrongRef();
+   // Put unavailable peers after an available one: presence queries must still
+   // remove them, and shared links must survive until the other chunk prunes them.
+   first->addPeer(&available);
+   first->addPeer(&sharedOffline);
+   first->addPeer(&offline);
+   second->addPeer(&sharedOffline);
+   sharedOffline.available = offline.available = false;
+   QSignalSpy firstChanges(first.data(), &ChunkDownloader::numberOfPeersChanged);
+   QSignalSpy secondChanges(second.data(), &ChunkDownloader::numberOfPeersChanged);
+
+   const auto query = [&](ChunkDownloader* chunk)
+   {
+      if (!collect)
+         return chunk->hasAtLeastAPeer();
+      QSet<PM::IPeer*> peers { &existing };
+      chunk->appendPeersTo(peers);
+      // Appending must retain entries supplied by the caller.
+      if (!peers.remove(&existing))
+         QTest::qFail("Peer collection cleared the destination set", __FILE__, __LINE__);
+      return !peers.isEmpty();
+   };
+   QVERIFY(query(first.data()));
+   QCOMPARE(firstChanges.count(), 1);
+   QCOMPARE(secondChanges.count(), 0);
+   QVERIFY(links.getPeers().contains(&available));
+   QVERIFY(links.getPeers().contains(&sharedOffline));
+   QVERIFY(!links.getPeers().contains(&offline));
+   QVERIFY(query(first.data()));
+   QCOMPARE(firstChanges.count(), 1); // No repeated notification for already-pruned peers.
+
+   available.available = false;
+   QVERIFY(!query(first.data()));
+   QCOMPARE(firstChanges.count(), 2);
+   QVERIFY(!links.getPeers().contains(&available));
+   QVERIFY(!query(second.data()));
+   QCOMPARE(secondChanges.count(), 1);
+   QVERIFY(links.getPeers().isEmpty());
+   QVERIFY(!query(first.data()));
+   QCOMPARE(firstChanges.count(), 2);
+
+   // A peer can be rediscovered, and removing one chunk must retain the other's link.
+   sharedOffline.available = true;
+   first->addPeer(&sharedOffline);
+   second->addPeer(&sharedOffline);
+   QVERIFY(query(first.data()));
+   QVERIFY(query(second.data()));
+   first.clear();
+   QCOMPARE(links.getPeers(), QList<PM::IPeer*> { &sharedOffline });
+   second.clear();
+   QVERIFY(links.getPeers().isEmpty());
+}
+
+void Tests::filePeersAreAggregated()
+{
+   CheckpointPeer source(this->fileManager), shared(this->fileManager),
+      other(this->fileManager), offline(this->fileManager);
+   LinkedPeers links;
+   OccupiedPeers asking, downloading;
+   Common::ThreadPool pool(1);
+   Common::TransferRateCalculator rate;
+   Protos::Common::Entry entry;
+   entry.set_type(Protos::Common::Entry::FILE);
+   entry.set_name("peers.bin");
+   entry.set_size(quint64(4) * Common::Constants::CHUNK_SIZE);
+   for (int i = 0; i < 3; ++i)
+   {
+      const auto hash = Common::Hash::rand();
+      entry.add_chunks()->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
+   }
+   FileDownload download(this->fileManager, links, asking, downloading, pool,
+      &source, entry, entry, rate);
+   QList<QSharedPointer<IChunkDownloader>> chunks;
+   download.getUnfinishedChunks(chunks, 4);
+   QCOMPARE(chunks.size(), 3); // The unknown fourth hash has no chunk downloader.
+   for (const auto& chunk : chunks)
+   {
+      chunk->addPeer(&shared);
+      chunk->addPeer(&offline);
+   }
+   chunks.last()->addPeer(&other);
+   offline.available = false;
+   const QSet<PM::IPeer*> expected { &shared, &other };
+   QCOMPARE(download.getPeers(), expected);
+   QCOMPARE(download.getPeers(), expected);
+   QVERIFY(!links.getPeers().contains(&offline));
+   QCOMPARE(links.getPeers().size(), 2);
+
+   shared.available = other.available = false;
+   QVERIFY(download.getPeers().isEmpty());
+   QVERIFY(links.getPeers().isEmpty());
+}
+
 void Tests::erroneousDownloadsAreUnique()
 {
    ResumePeer peer(this->fileManager);
