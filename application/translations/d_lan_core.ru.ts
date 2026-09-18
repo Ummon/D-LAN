@@ -63,7 +63,7 @@
         <translation>Готов</translation>
     </message>
     <message>
-        <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="364"/>
+        <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="346"/>
         <source>The version (%1) of the queue file &quot;%2&quot; doesn&apos;t match the current version (%3). Queue will be reset.</source>
         <translation>Версия (%1) файла очереди &quot;%2&quot; не соответствует текущей версии (%3). Очередь будет сброшена.</translation>
     </message>

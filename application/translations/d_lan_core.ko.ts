@@ -58,7 +58,7 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="364"/>
+        <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="346"/>
         <source>The version (%1) of the queue file &quot;%2&quot; doesn&apos;t match the current version (%3). Queue will be reset.</source>
         <translation>대기열 파일 &quot;%2&quot;의 버전(%1)이 현재 버전(%3)과 일치하지 않습니다. 대기열이 초기화됩니다.</translation>
     </message>

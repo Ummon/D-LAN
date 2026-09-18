@@ -64,7 +64,7 @@
         <translation>Bereit</translation>
     </message>
     <message>
-        <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="364"/>
+        <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="346"/>
         <source>The version (%1) of the queue file &quot;%2&quot; doesn&apos;t match the current version (%3). Queue will be reset.</source>
         <translation>Die Version (%1) der Warteschlangen-Datei &quot;%2&quot; entspricht nicht der aktuellen Version (%3). Die Warteschlange wird zurückgesetzt.</translation>
     </message>

@@ -63,7 +63,7 @@
         <translation>Prêt à servir</translation>
     </message>
     <message>
-        <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="364"/>
+        <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="346"/>
         <source>The version (%1) of the queue file &quot;%2&quot; doesn&apos;t match the current version (%3). Queue will be reset.</source>
         <translation>La version (%1) du fichier contenant la file d’attente &quot;%2&quot; ne correspond pas à la version actuelle (%3). La file d’attente va être réinitialisée.</translation>
     </message>

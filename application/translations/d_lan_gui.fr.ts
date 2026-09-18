@@ -130,7 +130,7 @@
 <context>
     <name>GUI::ChatWidget</name>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="+486"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="+483"/>
         <location line="+4"/>
         <source>Unable to send message</source>
         <translation>Impossible d&apos;envoyer le message</translation>
@@ -166,7 +166,7 @@
         <translation>Explorer les pairs sélectionnés</translation>
     </message>
     <message>
-        <location line="+379"/>
+        <location line="+381"/>
         <location line="+62"/>
         <source>Chat</source>
         <translation>Chat</translation>
@@ -229,7 +229,7 @@
 <context>
     <name>GUI::DownloadsDelegate</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+56"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+57"/>
         <source>Queued</source>
         <translation>Dans la file d&apos;attente</translation>
     </message>
@@ -261,7 +261,7 @@
 <context>
     <name>GUI::DownloadsModel</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="+98"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="+97"/>
         <source>Source peer offline (%1)</source>
         <translation>Le pair source n&apos;est pas en ligne (%1)</translation>
     </message>
@@ -354,7 +354,7 @@
 <context>
     <name>GUI::DownloadsWidget</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+162"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+164"/>
         <source>Open location</source>
         <translation>Ouvrir le dossier</translation>
     </message>
@@ -384,17 +384,17 @@
         <translation>Êtes-vous sûr de vouloir enlever les téléchargements sélectionnés ? Un ou plusieurs téléchargements ne sont pas terminés.</translation>
     </message>
     <message>
-        <location line="+53"/>
+        <location line="+78"/>
         <source>Switch to file list view</source>
         <translation>Basculer vers la liste des fichiers</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location line="+12"/>
         <source>Switch to tree view</source>
         <translation>Basculer vers la vue en arbre</translation>
     </message>
     <message>
-        <location line="+27"/>
+        <location line="+43"/>
         <source>&lt;All&gt;</source>
         <translation>&lt;Tous&gt;</translation>
     </message>
@@ -512,7 +512,7 @@
 <context>
     <name>GUI::PeerListModel</name>
     <message>
-        <location filename="../GUI/Peers/PeerListModel.cpp" line="+258"/>
+        <location filename="../GUI/Peers/PeerListModel.cpp" line="+267"/>
         <source>Their protocol version is more recent and incompatible with ours. Upgrade you version!</source>
         <translation>La version du protocole de ce pair est plus récente et incompatible avec la nôtre. Mettez à jour votre version !</translation>
     </message>

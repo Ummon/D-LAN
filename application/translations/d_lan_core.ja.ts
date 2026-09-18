@@ -58,7 +58,7 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="364"/>
+        <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="346"/>
         <source>The version (%1) of the queue file &quot;%2&quot; doesn&apos;t match the current version (%3). Queue will be reset.</source>
         <translation>キューファイル &quot;%2&quot; のバージョン (%1) が現在のバージョン (%3) と一致しません。キューをリセットします。</translation>
     </message>

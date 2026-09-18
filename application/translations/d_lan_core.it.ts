@@ -73,7 +73,7 @@
         <translation>Arresto</translation>
     </message>
     <message>
-        <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="364"/>
+        <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="346"/>
         <source>The version (%1) of the queue file &quot;%2&quot; doesn&apos;t match the current version (%3). Queue will be reset.</source>
         <translation>La versione (%1) del file di coda &quot;%2&quot; non corrisponde alla versione attuale (%3). La coda verrà reimpostata.</translation>
     </message>

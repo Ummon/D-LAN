@@ -130,44 +130,44 @@
 <context>
     <name>GUI::ChatWidget</name>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="486"/>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="490"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="483"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="487"/>
         <source>Unable to send message</source>
         <translation>メッセージを送信できません</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="486"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="483"/>
         <source>The message is too long</source>
         <translation>メッセージが長すぎます</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="490"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="487"/>
         <source>The message can&apos;t be send, unknown error</source>
         <translation>メッセージを送信できません。原因不明のエラーです</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="508"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="505"/>
         <source>Browse</source>
         <translation>閲覧</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="512"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="509"/>
         <source>Copy IP: %1</source>
         <translation>IP をコピー: %1</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="547"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="544"/>
         <source>Copy selected lines</source>
         <translation>選択した行をコピー</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="548"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="545"/>
         <source>Browse selected peers</source>
         <translation>選択したピアを閲覧</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="927"/>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="989"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="926"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="988"/>
         <source>Chat</source>
         <translation>チャット</translation>
     </message>
@@ -229,27 +229,27 @@
 <context>
     <name>GUI::DownloadsDelegate</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="56"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="57"/>
         <source>Queued</source>
         <translation>キュー待ち</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="59"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="60"/>
         <source>Getting hashes..</source>
         <translation>ハッシュを取得中..</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="69"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="70"/>
         <source>Complete</source>
         <translation>完了</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="72"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="73"/>
         <source>Paused</source>
         <translation>一時停止</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="75"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="76"/>
         <source>Waiting..</source>
         <translation>待機中..</translation>
     </message>
@@ -257,92 +257,92 @@
 <context>
     <name>GUI::DownloadsModel</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="98"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="97"/>
         <source>Source peer offline (%1)</source>
         <translation>送信元のピアがオフラインです (%1)</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="102"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="101"/>
         <source>The source peer doesn&apos;t have the entry</source>
         <translation>送信元のピアにこの項目がありません</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="105"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="104"/>
         <source>There is no source to download from</source>
         <translation>ダウンロード元がありません</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="108"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="107"/>
         <source>No incoming directory</source>
         <translation>受信ディレクトリが設定されていません</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="112"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="111"/>
         <source>Not enough free space left</source>
         <translation>空き容量が不足しています</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="115"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="114"/>
         <source>Unable to create the file</source>
         <translation>ファイルを作成できません</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="120"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="119"/>
         <source>Unable to create the directory</source>
         <translation>ディレクトリを作成できません</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="121"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="120"/>
         <source>Unable to create the path of the file</source>
         <translation>ファイルのパスを作成できません</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="124"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="123"/>
         <source>Unable to retrieve the hashes</source>
         <translation>ハッシュを取得できません</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="128"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="127"/>
         <source>Transfer error</source>
         <translation>転送エラー</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="131"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="130"/>
         <source>Unable to open the file</source>
         <translation>ファイルを開けません</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="134"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="133"/>
         <source>Unable to write the file</source>
         <translation>ファイルに書き込めません</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="137"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="136"/>
         <source>The local file has been deleted</source>
         <translation>ローカルファイルが削除されました</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="140"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="139"/>
         <source>Too much data received</source>
         <translation>受信したデータが多すぎます</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="143"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="142"/>
         <source>Data received do not match the hash</source>
         <translation>受信したデータがハッシュと一致しません</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="147"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="146"/>
         <source>The remote entry is currently being scanned</source>
         <translation>リモートの項目は現在スキャン中です</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="150"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="149"/>
         <source>The local directory is currently being scanned</source>
         <translation>ローカルディレクトリは現在スキャン中です</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="153"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="152"/>
         <source>Unable to retrieve the entries</source>
         <translation>項目を取得できません</translation>
     </message>
@@ -350,67 +350,67 @@
 <context>
     <name>GUI::DownloadsWidget</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="237"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="240"/>
         <source>Open location</source>
         <translation>場所を開く</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="246"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="249"/>
         <source>Move to top</source>
         <translation>先頭に移動</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="269"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="272"/>
         <source>Pause selected entries</source>
         <translation>選択した項目を一時停止</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="269"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="272"/>
         <source>Unpause selected entries</source>
         <translation>選択した項目を再開</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="357"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="360"/>
         <source>Remove selected downloads</source>
         <translation>選択したダウンロードを削除</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="358"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="361"/>
         <source>Are you sure to remove the selected downloads? There is one or more unfinished download.</source>
         <translation>選択したダウンロードを削除してもよろしいですか？未完了のダウンロードが含まれています。</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="411"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="439"/>
         <source>Switch to file list view</source>
         <translation>ファイル一覧表示に切り替え</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="424"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="451"/>
         <source>Switch to tree view</source>
         <translation>ツリー表示に切り替え</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="451"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="494"/>
         <source>&lt;All&gt;</source>
         <translation>&lt;すべて&gt;</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="451"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="494"/>
         <source>Complete</source>
         <translation>完了</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="451"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="494"/>
         <source>Downloading</source>
         <translation>ダウンロード中</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="451"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="494"/>
         <source>Queued</source>
         <translation>キュー待ち</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="451"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="494"/>
         <source>Inactive</source>
         <translation>停止中</translation>
     </message>
@@ -508,29 +508,29 @@
 <context>
     <name>GUI::PeerListModel</name>
     <message>
-        <location filename="../GUI/Peers/PeerListModel.cpp" line="258"/>
+        <location filename="../GUI/Peers/PeerListModel.cpp" line="267"/>
         <source>Their protocol version is more recent and incompatible with ours. Upgrade you version!</source>
         <translation>相手のプロトコルバージョンが新しく、こちらと互換性がありません。バージョンを更新してください！</translation>
     </message>
     <message>
-        <location filename="../GUI/Peers/PeerListModel.cpp" line="260"/>
+        <location filename="../GUI/Peers/PeerListModel.cpp" line="269"/>
         <source>Their protocol version is outdated and incompatible with ours. They should upgrade their version!</source>
         <translation>相手のプロトコルバージョンが古く、こちらと互換性がありません。相手にバージョンの更新を依頼してください！</translation>
     </message>
     <message>
-        <location filename="../GUI/Peers/PeerListModel.cpp" line="263"/>
+        <location filename="../GUI/Peers/PeerListModel.cpp" line="272"/>
         <source>Version %1
 </source>
         <translation>バージョン %1
 </translation>
     </message>
     <message>
-        <location filename="../GUI/Peers/PeerListModel.cpp" line="265"/>
+        <location filename="../GUI/Peers/PeerListModel.cpp" line="274"/>
         <source>Download rate: </source>
         <translation>ダウンロード速度: </translation>
     </message>
     <message>
-        <location filename="../GUI/Peers/PeerListModel.cpp" line="266"/>
+        <location filename="../GUI/Peers/PeerListModel.cpp" line="275"/>
         <source>Upload rate: </source>
         <translation>アップロード速度: </translation>
     </message>

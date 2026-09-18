@@ -130,44 +130,44 @@
 <context>
     <name>GUI::ChatWidget</name>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="486"/>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="490"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="483"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="487"/>
         <source>Unable to send message</source>
         <translation>Impossibile inviare il messaggio</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="486"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="483"/>
         <source>The message is too long</source>
         <translation>Il messaggio è troppo lungo</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="490"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="487"/>
         <source>The message can&apos;t be send, unknown error</source>
         <translation>Impossibile inviare il messaggio, errore sconosciuto</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="508"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="505"/>
         <source>Browse</source>
         <translation>Sfoglia</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="512"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="509"/>
         <source>Copy IP: %1</source>
         <translation>Copia IP: %1</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="547"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="544"/>
         <source>Copy selected lines</source>
         <translation>Copia le righe selezionate</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="548"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="545"/>
         <source>Browse selected peers</source>
         <translation>Sfoglia i peer selezionati</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="927"/>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="989"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="926"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="988"/>
         <source>Chat</source>
         <translation>Chat</translation>
     </message>
@@ -229,7 +229,7 @@
 <context>
     <name>GUI::DownloadsDelegate</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="56"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="57"/>
         <source>Queued</source>
         <translation>In coda</translation>
     </message>
@@ -238,22 +238,22 @@
         <translation type="vanished">Recupero degli hash..</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="59"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="60"/>
         <source>Getting hashes..</source>
         <translation>Recupero degli hash..</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="69"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="70"/>
         <source>Complete</source>
         <translation>Completato</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="72"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="73"/>
         <source>Paused</source>
         <translation>In pausa</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="75"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="76"/>
         <source>Waiting..</source>
         <translation>In attesa..</translation>
     </message>
@@ -261,92 +261,92 @@
 <context>
     <name>GUI::DownloadsModel</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="98"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="97"/>
         <source>Source peer offline (%1)</source>
         <translation>Peer sorgente offline (%1)</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="102"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="101"/>
         <source>The source peer doesn&apos;t have the entry</source>
         <translation>Il peer sorgente non possiede l&apos;elemento</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="105"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="104"/>
         <source>There is no source to download from</source>
         <translation>Nessuna sorgente da cui scaricare</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="108"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="107"/>
         <source>No incoming directory</source>
         <translation>Nessuna cartella di destinazione</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="112"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="111"/>
         <source>Not enough free space left</source>
         <translation>Spazio libero insufficiente</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="115"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="114"/>
         <source>Unable to create the file</source>
         <translation>Impossibile creare il file</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="120"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="119"/>
         <source>Unable to create the directory</source>
         <translation>Impossibile creare la cartella</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="121"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="120"/>
         <source>Unable to create the path of the file</source>
         <translation>Impossibile creare il percorso del file</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="124"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="123"/>
         <source>Unable to retrieve the hashes</source>
         <translation>Impossibile recuperare gli hash</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="128"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="127"/>
         <source>Transfer error</source>
         <translation>Errore di trasferimento</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="131"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="130"/>
         <source>Unable to open the file</source>
         <translation>Impossibile aprire il file</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="134"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="133"/>
         <source>Unable to write the file</source>
         <translation>Impossibile scrivere il file</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="137"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="136"/>
         <source>The local file has been deleted</source>
         <translation>Il file locale è stato eliminato</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="140"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="139"/>
         <source>Too much data received</source>
         <translation>Ricevuti troppi dati</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="143"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="142"/>
         <source>Data received do not match the hash</source>
         <translation>I dati ricevuti non corrispondono all&apos;hash</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="147"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="146"/>
         <source>The remote entry is currently being scanned</source>
         <translation>L&apos;elemento remoto è attualmente in fase di scansione</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="150"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="149"/>
         <source>The local directory is currently being scanned</source>
         <translation>La cartella locale è attualmente in fase di scansione</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="153"/>
+        <location filename="../GUI/Downloads/DownloadsModel.cpp" line="152"/>
         <source>Unable to retrieve the entries</source>
         <translation>Impossibile recuperare gli elementi</translation>
     </message>
@@ -354,67 +354,67 @@
 <context>
     <name>GUI::DownloadsWidget</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="237"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="240"/>
         <source>Open location</source>
         <translation>Apri percorso</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="246"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="249"/>
         <source>Move to top</source>
         <translation>Sposta in cima</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="269"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="272"/>
         <source>Pause selected entries</source>
         <translation>Metti in pausa gli elementi selezionati</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="269"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="272"/>
         <source>Unpause selected entries</source>
         <translation>Riprendi gli elementi selezionati</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="357"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="360"/>
         <source>Remove selected downloads</source>
         <translation>Rimuovi i download selezionati</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="358"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="361"/>
         <source>Are you sure to remove the selected downloads? There is one or more unfinished download.</source>
         <translation>Rimuovere i download selezionati? Uno o più download non sono ancora completati.</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="411"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="439"/>
         <source>Switch to file list view</source>
         <translation>Passa alla vista elenco file</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="424"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="451"/>
         <source>Switch to tree view</source>
         <translation>Passa alla vista ad albero</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="451"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="494"/>
         <source>&lt;All&gt;</source>
         <translation>&lt;Tutti&gt;</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="451"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="494"/>
         <source>Complete</source>
         <translation>Completato</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="451"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="494"/>
         <source>Downloading</source>
         <translation>In scaricamento</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="451"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="494"/>
         <source>Queued</source>
         <translation>In coda</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="451"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="494"/>
         <source>Inactive</source>
         <translation>Inattivo</translation>
     </message>
@@ -512,29 +512,29 @@
 <context>
     <name>GUI::PeerListModel</name>
     <message>
-        <location filename="../GUI/Peers/PeerListModel.cpp" line="258"/>
+        <location filename="../GUI/Peers/PeerListModel.cpp" line="267"/>
         <source>Their protocol version is more recent and incompatible with ours. Upgrade you version!</source>
         <translation>La versione del protocollo di questo peer è più recente e incompatibile con la nostra. Aggiorna la tua versione!</translation>
     </message>
     <message>
-        <location filename="../GUI/Peers/PeerListModel.cpp" line="260"/>
+        <location filename="../GUI/Peers/PeerListModel.cpp" line="269"/>
         <source>Their protocol version is outdated and incompatible with ours. They should upgrade their version!</source>
         <translation>La versione del protocollo di questo peer è obsoleta e incompatibile con la nostra. Il peer dovrebbe aggiornare la propria versione!</translation>
     </message>
     <message>
-        <location filename="../GUI/Peers/PeerListModel.cpp" line="263"/>
+        <location filename="../GUI/Peers/PeerListModel.cpp" line="272"/>
         <source>Version %1
 </source>
         <translation>Versione %1
 </translation>
     </message>
     <message>
-        <location filename="../GUI/Peers/PeerListModel.cpp" line="265"/>
+        <location filename="../GUI/Peers/PeerListModel.cpp" line="274"/>
         <source>Download rate: </source>
         <translation>Velocità di download: </translation>
     </message>
     <message>
-        <location filename="../GUI/Peers/PeerListModel.cpp" line="266"/>
+        <location filename="../GUI/Peers/PeerListModel.cpp" line="275"/>
         <source>Upload rate: </source>
         <translation>Velocità di upload: </translation>
     </message>
