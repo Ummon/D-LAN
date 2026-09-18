@@ -21,6 +21,11 @@ target_link_libraries(TestsLogManager PRIVATE
 
 add_test(NAME TestsLogManager COMMAND TestsLogManager)
 
+add_executable(TestsBufferedLogger BufferedLoggerTests.cpp)
+target_link_libraries(TestsBufferedLogger PRIVATE LogManager Common Qt6::Test)
+add_test(NAME TestsBufferedLogger COMMAND TestsBufferedLogger)
+set_tests_properties(TestsBufferedLogger PROPERTIES TIMEOUT 30)
+
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
    add_executable(TestsCrashHandlerLinux CrashHandlerLinuxTests.cpp)
    target_link_libraries(TestsCrashHandlerLinux PRIVATE LogManager Common Qt6::Test)

@@ -36,6 +36,9 @@ namespace LM
    public:
       virtual ~ILogger() {}
 
+      // Ordinary entries are buffered (up to 250 ms under normal scheduling).
+      // Success means accepted; use Builder::flush() to check the final write.
+      // Fatal entries flush synchronously, including any preceding entries.
       virtual bool log(const QString& message, Severity severity, const char* filename = nullptr, int line = 0) const = 0;
       virtual bool log(const ILoggable& object, Severity severity, const char* filename = nullptr, int line = 0) const = 0;
    };

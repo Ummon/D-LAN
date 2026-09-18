@@ -30,6 +30,8 @@ namespace LM
    {
    public:
       static void setLogDirName(const QString& logDirName);
+      // Flush all buffered log entries to the file; returns false on a write error.
+      static bool flush();
       static QSharedPointer<ILogger> newLogger(const QString& name);
       static QSharedPointer<ILoggerHook> newLoggerHook(Severity severities);
 

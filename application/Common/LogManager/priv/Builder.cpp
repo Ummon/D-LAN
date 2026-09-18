@@ -33,6 +33,11 @@ void Builder::setLogDirName(const QString& logDirName)
    Logger::setLogDirName(logDirName);
 }
 
+bool Builder::flush()
+{
+   return Logger::flush();
+}
+
 /**
   * Create a new logger, the name may correspond to a module name.
   * @exception LoggerAlreadyExistsException

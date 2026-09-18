@@ -20,7 +20,10 @@
 using namespace LM;
 
 #include <algorithm>
+#include <cstdlib>
+#include <mutex>
 
+#include <QCoreApplication>
 #include <QtDebug>
 #include <QThread>
 #include <QSharedPointer>
@@ -67,8 +70,62 @@ Logger::State& Logger::getState()
 {
    // Built on the first use: no dependency on the initialization order of the static objects of the other
    // compilation units. Never deleted, see the declaration.
-   static State* const state = new State();
+   static State* const state = [] {
+      auto* state = new State();
+      // Stop the worker before Qt application teardown. The exit callback also
+      // covers programs without a QCoreApplication and calls to std::exit().
+      qAddPostRoutine(&Logger::shutdown);
+      std::atexit(&Logger::shutdown);
+      return state;
+   }();
    return *state;
+}
+
+bool Logger::State::flush()
+{
+   if (!this->file.isOpen())
+      return true;
+   this->out.flush();
+   const bool success = this->file.flush() && this->out.status() == QTextStream::Ok;
+   this->pendingCharacters = 0;
+   return success;
+}
+
+void Logger::State::runFlusher()
+{
+   std::unique_lock lock(this->mutex);
+   while (!this->synchronous)
+   {
+      this->flushReady.wait(lock, [this] { return this->synchronous || this->pendingCharacters > 0; });
+      if (this->synchronous)
+         break;
+      // Wake on the first entry's deadline, not 250 ms after the latest entry.
+      const auto deadline = this->flushDeadline;
+      this->flushReady.wait_until(lock, deadline, [this] { return this->synchronous; });
+      if (this->pendingCharacters > 0)
+         this->flush();
+   }
+   this->flush();
+}
+
+bool Logger::flush()
+{
+   State& state = Logger::getState();
+   QMutexLocker locker(&state.mutex);
+   return state.flush();
+}
+
+void Logger::shutdown()
+{
+   State& state = Logger::getState();
+   {
+      QMutexLocker locker(&state.mutex);
+      state.synchronous = true;
+      state.flushReady.notify_one();
+      state.flush();
+   }
+   if (state.flusher.joinable())
+      state.flusher.join();
 }
 
 void Logger::setLogDirName(const QString& logDirName)
@@ -126,9 +183,22 @@ bool Logger::log(const QString& message, Severity severity, const char* filename
    if (!Logger::createFileLog())
       return false;
 
-   state.out << entry->toStrLine() << Qt::endl;
+   const QString lineText = entry->toStrLine();
+   state.out << lineText << '\n';
+   const bool wasEmpty = state.pendingCharacters == 0;
+   state.pendingCharacters += lineText.size() + 1;
 
-   return true;
+   if (state.synchronous || (severity & SV_FATAL_ERROR) || state.pendingCharacters >= 16 * 1024)
+      return state.flush();
+
+   if (wasEmpty)
+   {
+      state.flushDeadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(250);
+      if (!state.flusher.joinable())
+         state.flusher = std::thread([&state] { state.runFlusher(); });
+      state.flushReady.notify_one();
+   }
+   return state.out.status() == QTextStream::Ok;
 }
 
 bool Logger::log(const ILoggable& object, Severity severity, const char* filename, int line) const

@@ -18,6 +18,10 @@
   
 #pragma once
 
+#include <chrono>
+#include <condition_variable>
+#include <thread>
+
 #include <QString>
 #include <QTextStream>
 #include <QDir>
@@ -53,11 +57,19 @@ namespace LM
    {
       struct State
       {
+         bool flush(); // Caller holds mutex.
+         void runFlusher();
+
          QTextStream out;
          QFile file;
          QRecursiveMutex mutex;
          QString logDirName;
          LoggerHooks loggerHooks;
+         std::condition_variable_any flushReady;
+         std::thread flusher;
+         std::chrono::steady_clock::time_point flushDeadline;
+         qsizetype pendingCharacters = 0;
+         bool synchronous = false; // Set during shutdown; late logging remains supported.
       };
 
       /**
@@ -72,6 +84,7 @@ namespace LM
       static void setLogDirName(const QString& logDirName);
       static QString getLogDirName();
       static void addALoggerHook(QSharedPointer<LoggerHook> loggerHook);
+      static bool flush();
 
       Logger(const QString& name);
       ~Logger();
@@ -80,6 +93,7 @@ namespace LM
       bool log(const ILoggable& object, Severity severity, const char* filename = nullptr, int line = 0) const;
 
    private:
+      static void shutdown();
       static bool createFileLog();
       static void deleteOldestLog(const QDir& logDir);
 
