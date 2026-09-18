@@ -106,20 +106,24 @@ QIcon IconProvider::getIconCache(const QString& filename, bool withWarning)
 
 QIcon IconProvider::getIconCacheByType(const QString& type, bool withWarning)
 {
-   QMap<QString, QIcon>& cache = withWarning ? IconProvider::cachedIconsWithWarning : IconProvider::cachedIcons;
+   auto& cache = withWarning ? IconProvider::cachedIconsWithWarning : IconProvider::cachedIcons;
+#ifdef Q_OS_WIN32
+   const QString key = type.toLower(); // Windows file extensions are case-insensitive.
+#else
+   const QString& key = type; // Linux keys are MIME types, not filename extensions.
+#endif
 
    // 'getIconNative(..)' may legitimately return a null icon and the
    // result has to be recognised as cached, otherwise the native lookup is redone at each call.
-   const auto i = cache.constFind(type);
-   if (i != cache.constEnd())
-      return *i;
+   if (const auto* icon = cache.object(key))
+      return *icon;
 
    const QIcon icon =
       withWarning ?
-           IconProvider::drawWarning(IconProvider::getIconNative(type))
-         : IconProvider::getIconNative(type);
+           IconProvider::drawWarning(IconProvider::getIconNative(key))
+         : IconProvider::getIconNative(key);
 
-   cache.insert(type, icon);
+   cache.insert(key, new QIcon(icon));
    return icon;
 }
 
@@ -182,7 +186,7 @@ QIcon IconProvider::drawWarning(const QIcon& icon)
 }
 
 QFileIconProvider IconProvider::iconProvider;
-QMap<QString, QIcon> IconProvider::cachedIcons;
-QMap<QString, QIcon> IconProvider::cachedIconsWithWarning;
+QCache<QString, QIcon> IconProvider::cachedIcons { MAX_CACHED_ICONS };
+QCache<QString, QIcon> IconProvider::cachedIconsWithWarning { MAX_CACHED_ICONS };
 QIcon IconProvider::fileIconWithWarning;
 QIcon IconProvider::folderIconWithWarning;

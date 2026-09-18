@@ -25,6 +25,8 @@
 
 #include <IconProvider.h>
 
+using GUI::IconProvider;
+
 class TestsIconProvider : public QObject
 {
    Q_OBJECT
@@ -41,6 +43,21 @@ private:
    }
 
 private slots:
+   void init()
+   {
+      IconProvider::cachedIcons.clear();
+      IconProvider::cachedIconsWithWarning.clear();
+      IconProvider::cachedIcons.setMaxCost(IconProvider::MAX_CACHED_ICONS);
+      IconProvider::cachedIconsWithWarning.setMaxCost(IconProvider::MAX_CACHED_ICONS);
+   }
+
+   void cleanupTestCase()
+   {
+      IconProvider::cachedIcons.clear();
+      IconProvider::cachedIconsWithWarning.clear();
+   }
+
+#ifdef Q_OS_LINUX
    void initTestCase()
    {
       QVERIFY(themeDirectory.isValid());
@@ -92,16 +109,75 @@ private slots:
       QCOMPARE(GUI::IconProvider::getIcon(Common::Path(filename)).pixmap(16, 16).toImage().pixelColor(2, 2), expected);
    }
 
-   void reusesMimeTypeCache()
-   {
-      QCOMPARE(fileIcon("one.pdf").cacheKey(), fileIcon("two.PDF").cacheKey());
-   }
-
    void unknownFileFallback()
    {
       const QImage expected = QFileIconProvider().icon(QFileIconProvider::File).pixmap(16, 16).toImage();
       QVERIFY(!expected.isNull());
       QCOMPARE(fileIcon("file.dlan-unknown-extension").pixmap(16, 16).toImage(), expected);
+   }
+#endif
+
+   void reusesTypeCache()
+   {
+      QCOMPARE(fileIcon("one.pdf").cacheKey(), fileIcon("two.PDF").cacheKey());
+      QCOMPARE(fileIcon("one.pdf", true).cacheKey(), fileIcon("two.PDF", true).cacheKey());
+      QCOMPARE(IconProvider::cachedIcons.size(), 1);
+      QCOMPARE(IconProvider::cachedIconsWithWarning.size(), 1);
+   }
+
+   void boundedCache_data()
+   {
+      QTest::addColumn<bool>("warning");
+      QTest::newRow("normal") << false;
+      QTest::newRow("warning") << true;
+   }
+
+   void boundedCache()
+   {
+      QFETCH(bool, warning);
+      auto& cache = warning ? IconProvider::cachedIconsWithWarning : IconProvider::cachedIcons;
+      auto& otherCache = warning ? IconProvider::cachedIcons : IconProvider::cachedIconsWithWarning;
+      QCOMPARE(cache.maxCost(), 256);
+
+      // A caller's QIcon must remain usable after the cache evicts its copy.
+      const QIcon held = fileIcon("held.pdf", warning);
+      const QImage heldImage = held.pixmap(16, 16).toImage();
+      QVERIFY(!heldImage.isNull());
+      const QString heldKey = cache.keys().first();
+      for (int i = 0; i < cache.maxCost() + 8; ++i)
+      {
+#ifdef Q_OS_LINUX
+         const QString type = QString("application/x-dlan-cache-test-%1").arg(i);
+#else
+         const QString type = QString(".dlan-cache-test-%1").arg(i);
+#endif
+         IconProvider::getIconCacheByType(type, warning);
+         QVERIFY(cache.size() <= cache.maxCost());
+      }
+      QCOMPARE(cache.size(), cache.maxCost());
+      QVERIFY(!cache.contains(heldKey));
+      QVERIFY(otherCache.isEmpty());
+      QCOMPARE(held.pixmap(16, 16).toImage(), heldImage);
+      QCOMPARE(fileIcon("held.pdf", warning).pixmap(16, 16).toImage(), heldImage);
+      QCOMPARE(cache.size(), cache.maxCost());
+   }
+
+   void cacheHitsRefreshRecencyAndRetainNullIcons()
+   {
+      auto& cache = IconProvider::cachedIcons;
+      cache.setMaxCost(2);
+      // Null native lookups must still count as hits, including for LRU order.
+      cache.insert(".dlan-null", new QIcon());
+      cache.insert(".dlan-old", new QIcon());
+      const auto* cachedNull = cache.object(".dlan-null");
+      cache.object(".dlan-old"); // Make the null entry least recently used again.
+      QVERIFY(IconProvider::getIconCacheByType(".dlan-null", false).isNull());
+      IconProvider::getIconCacheByType(".dlan-new", false);
+      QVERIFY(cache.contains(".dlan-null"));
+      QCOMPARE(cache.object(".dlan-null"), cachedNull);
+      QVERIFY(!cache.contains(".dlan-old"));
+      QVERIFY(cache.contains(".dlan-new"));
+      QCOMPARE(cache.size(), 2);
    }
 
    void warningBadge()

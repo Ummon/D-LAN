@@ -19,17 +19,20 @@
 #pragma once
 
 #include <QIcon>
-#include <QMap>
+#include <QCache>
 #include <QFileIconProvider>
 
 #include <Protos/common.pb.h>
 
 #include <Common/Path.h>
 
+class TestsIconProvider;
+
 namespace GUI
 {
    class IconProvider
    {
+      friend class ::TestsIconProvider;
    public:
       /**
         * Returns an icon for a directory or a file type, determined from its name.
@@ -52,8 +55,10 @@ namespace GUI
       static QIcon drawWarning(const QIcon& icon);
 
       static QFileIconProvider iconProvider;
-      static QMap<QString, QIcon> cachedIcons;
-      static QMap<QString, QIcon> cachedIconsWithWarning;
+      // GUI-thread only. Limit each variant to 256 recently used file types.
+      static constexpr int MAX_CACHED_ICONS = 256;
+      static QCache<QString, QIcon> cachedIcons;
+      static QCache<QString, QIcon> cachedIconsWithWarning;
       static QIcon fileIconWithWarning;
       static QIcon folderIconWithWarning;
    };
