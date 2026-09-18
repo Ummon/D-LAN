@@ -19,6 +19,7 @@
 #pragma once
 
 #include <QString>
+#include <QHash>
 #include <QMutex>
 #include <QRecursiveMutex>
 #include <QLocale>
@@ -108,7 +109,9 @@ namespace Common
       google::protobuf::Message* settings;
       mutable QRecursiveMutex mutex;
 
-      const google::protobuf::Descriptor* descriptor; ///< Set together with 'settings', both are null or both are set.
+      // Built from the current settings schema, replaced with the message, and
+      // accessed under mutex. Unknown names never grow the cache.
+      QHash<QString, const google::protobuf::FieldDescriptor*> fields;
    };
 }
 
@@ -124,7 +127,7 @@ void Common::Settings::set(const QString& name, const QList<T>& values)
    if (!this->settings)
       return;
 
-   const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
+   const google::protobuf::FieldDescriptor* fieldDescriptor = this->fields.value(name, nullptr);
    if (!fieldDescriptor)
    {
       printErrorNameNotFound(name);
@@ -154,7 +157,7 @@ T Common::Settings::get(const QString& name) const
    if (!this->settings)
       return T();
 
-   const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
+   const google::protobuf::FieldDescriptor* fieldDescriptor = this->fields.value(name, nullptr);
    if (!fieldDescriptor)
    {
       printErrorNameNotFound(name);
@@ -174,7 +177,7 @@ QList<T> Common::Settings::getRepeated(const QString& name) const
    if (!this->settings)
       return QList<T>();
 
-   const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
+   const google::protobuf::FieldDescriptor* fieldDescriptor = this->fields.value(name, nullptr);
    if (!fieldDescriptor)
    {
       printErrorNameNotFound(name);

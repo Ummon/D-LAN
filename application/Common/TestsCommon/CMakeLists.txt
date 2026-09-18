@@ -44,6 +44,11 @@ add_executable(TestsTransferRateCalculator TransferRateCalculatorTests.cpp)
 target_link_libraries(TestsTransferRateCalculator PRIVATE Common Qt6::Test)
 add_test(NAME TestsTransferRateCalculator COMMAND TestsTransferRateCalculator)
 
+add_executable(TestsSettings SettingsTests.cpp)
+target_link_libraries(TestsSettings PRIVATE Common Qt6::Test)
+add_test(NAME TestsSettings COMMAND TestsSettings)
+set_tests_properties(TestsSettings PROPERTIES TIMEOUT 30)
+
 add_executable(TestsZeroCopyOutputStreamQIODevice ZeroCopyOutputStreamQIODeviceTests.cpp)
 target_link_libraries(TestsZeroCopyOutputStreamQIODevice PRIVATE Common Qt6::Test)
 add_test(NAME TestsZeroCopyOutputStreamQIODevice COMMAND TestsZeroCopyOutputStreamQIODevice)

@@ -21,6 +21,7 @@ using namespace Common;
 
 #include <QMutexLocker>
 #include <QTextStream>
+#include <utility>
 
 #include <Protos/common.pb.h>
 
@@ -50,8 +51,7 @@ Settings& Settings::getInstance()
 
 Settings::Settings() :
    filename("settings.json"), // The default name.
-   settings(nullptr),
-   descriptor(nullptr)
+   settings(nullptr)
 {
 }
 
@@ -59,7 +59,6 @@ Settings::~Settings()
 {
    if (this->settings)
       delete this->settings;
-   this->descriptor = nullptr;
 }
 
 void Settings::setFilename(const QString& filename)
@@ -82,11 +81,21 @@ void Settings::setSettingsMessage(google::protobuf::Message* settings)
 
    Q_ASSERT(settings);
 
+   QHash<QString, const google::protobuf::FieldDescriptor*> fields;
+   const auto* descriptor = settings->GetDescriptor();
+   fields.reserve(descriptor->field_count());
+   for (int i = 0; i < descriptor->field_count(); ++i)
+   {
+      const auto* field = descriptor->field(i);
+      const auto& name = field->name();
+      fields.insert(QString::fromUtf8(name.data(), static_cast<qsizetype>(name.size())), field);
+   }
+
    if (this->settings)
       delete this->settings;
 
    this->settings = settings;
-   this->descriptor = this->settings->GetDescriptor();
+   this->fields = std::move(fields);
 }
 
 bool Settings::save() const
@@ -211,7 +220,7 @@ bool Settings::isSet(const QString& name) const
    if (!this->settings)
       return false;
 
-   const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
+   const google::protobuf::FieldDescriptor* fieldDescriptor = this->fields.value(name, nullptr);
    if (!fieldDescriptor)
       return false;
 
@@ -228,7 +237,7 @@ void Settings::set(const QString& name, quint32 value)
    if (!this->settings)
       return;
 
-   const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
+   const google::protobuf::FieldDescriptor* fieldDescriptor = this->fields.value(name, nullptr);
    if (!fieldDescriptor)
    {
       printErrorNameNotFound(name);
@@ -267,7 +276,7 @@ void Settings::set(const QString& name, quint64 value)
    if (!this->settings)
       return;
 
-   const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
+   const google::protobuf::FieldDescriptor* fieldDescriptor = this->fields.value(name, nullptr);
    if (!fieldDescriptor)
    {
       printErrorNameNotFound(name);
@@ -292,7 +301,7 @@ void Settings::set(const QString& name, bool value)
    if (!this->settings)
       return;
 
-   const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
+   const google::protobuf::FieldDescriptor* fieldDescriptor = this->fields.value(name, nullptr);
    if (!fieldDescriptor)
    {
       printErrorNameNotFound(name);
@@ -317,7 +326,7 @@ void Settings::set(const QString& name, double value)
    if (!this->settings)
       return;
 
-   const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
+   const google::protobuf::FieldDescriptor* fieldDescriptor = this->fields.value(name, nullptr);
    if (!fieldDescriptor)
    {
       printErrorNameNotFound(name);
@@ -342,7 +351,7 @@ void Settings::set(const QString& name, const QString& value)
    if (!this->settings)
       return;
 
-   const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
+   const google::protobuf::FieldDescriptor* fieldDescriptor = this->fields.value(name, nullptr);
    if (!fieldDescriptor)
    {
       printErrorNameNotFound(name);
@@ -366,7 +375,7 @@ void Settings::set(const QString& name, const QByteArray& value)
    if (!this->settings)
       return;
 
-   const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
+   const google::protobuf::FieldDescriptor* fieldDescriptor = this->fields.value(name, nullptr);
    if (!fieldDescriptor)
    {
       printErrorNameNotFound(name);
@@ -393,7 +402,7 @@ void Settings::set(const QString& name, const Hash& hash)
    if (!this->settings)
       return;
 
-   const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
+   const google::protobuf::FieldDescriptor* fieldDescriptor = this->fields.value(name, nullptr);
    if (!fieldDescriptor)
    {
       printErrorNameNotFound(name);
@@ -421,7 +430,7 @@ void Settings::set(const QString& name, const QLocale& lang)
    if (!this->settings)
       return;
 
-   const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
+   const google::protobuf::FieldDescriptor* fieldDescriptor = this->fields.value(name, nullptr);
    if (!fieldDescriptor)
    {
       printErrorNameNotFound(name);
@@ -452,7 +461,7 @@ void Settings::set(const QString& name, const google::protobuf::Message& message
    if (!this->settings)
       return;
 
-   const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
+   const google::protobuf::FieldDescriptor* fieldDescriptor = this->fields.value(name, nullptr);
    if (!fieldDescriptor)
    {
       printErrorNameNotFound(name);
@@ -481,7 +490,7 @@ void Settings::set(const QString& name, const QList<quint32>& values)
    if (!this->settings)
       return;
 
-   const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
+   const google::protobuf::FieldDescriptor* fieldDescriptor = this->fields.value(name, nullptr);
    if (!fieldDescriptor)
    {
       printErrorNameNotFound(name);
@@ -523,7 +532,7 @@ void Settings::set(const QString& name, const QList<QString>& values)
    if (!this->settings)
       return;
 
-   const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
+   const google::protobuf::FieldDescriptor* fieldDescriptor = this->fields.value(name, nullptr);
    if (!fieldDescriptor)
    {
       printErrorNameNotFound(name);
@@ -558,7 +567,7 @@ void Settings::set(const QString& name, int index, quint32 value)
    if (!this->settings)
       return;
 
-   const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
+   const google::protobuf::FieldDescriptor* fieldDescriptor = this->fields.value(name, nullptr);
    if (!fieldDescriptor)
    {
       printErrorNameNotFound(name);
@@ -622,14 +631,16 @@ void Settings::get(const google::protobuf::FieldDescriptor* fieldDescriptor, dou
 void Settings::get(const google::protobuf::FieldDescriptor* fieldDescriptor, QString& value) const
 {
    Q_ASSERT(fieldDescriptor);
-   // 'fromStdString(..)' and not 'fromUtf8(data())': the latter stops at the first null character.
-   value = QString::fromStdString(this->settings->GetReflection()->GetString(*this->settings, fieldDescriptor));
+   std::string scratch;
+   const auto& valueStr = this->settings->GetReflection()->GetStringReference(*this->settings, fieldDescriptor, &scratch);
+   value = QString::fromStdString(valueStr); // Preserve embedded null characters.
 }
 
 void Settings::get(const google::protobuf::FieldDescriptor* fieldDescriptor, QByteArray& value) const
 {
    Q_ASSERT(fieldDescriptor);
-   const std::string valueStr = this->settings->GetReflection()->GetString(*this->settings, fieldDescriptor);
+   std::string scratch;
+   const auto& valueStr = this->settings->GetReflection()->GetStringReference(*this->settings, fieldDescriptor, &scratch);
    value = QByteArray(valueStr.data(), static_cast<qsizetype>(valueStr.size()));
 }
 
@@ -643,7 +654,7 @@ void Settings::get(const google::protobuf::FieldDescriptor* fieldDescriptor, QLo
 {
    Q_ASSERT(fieldDescriptor);
 
-   Protos::Common::Language langMess = static_cast<const Protos::Common::Language&>(this->settings->GetReflection()->GetMessage(*this->settings, fieldDescriptor));
+   const auto& langMess = static_cast<const Protos::Common::Language&>(this->settings->GetReflection()->GetMessage(*this->settings, fieldDescriptor));
 
    lang = ProtoHelper::getLang(langMess);
 }
@@ -658,16 +669,19 @@ void Settings::get(const google::protobuf::FieldDescriptor* fieldDescriptor, goo
 void Settings::getRepeated(const google::protobuf::FieldDescriptor* fieldDescriptor, QList<quint32>& values) const
 {
    Q_ASSERT(fieldDescriptor);
+   const auto* reflection = this->settings->GetReflection();
+   const int count = reflection->FieldSize(*this->settings, fieldDescriptor);
+   values.reserve(count);
 
    if (fieldDescriptor->type() == google::protobuf::FieldDescriptor::TYPE_ENUM)
    {
-      for (int i = 0; i < this->settings->GetReflection()->FieldSize(*this->settings, fieldDescriptor); i++)
-         values << this->settings->GetReflection()->GetRepeatedEnumValue(*this->settings, fieldDescriptor, i);
+      for (int i = 0; i < count; ++i)
+         values << reflection->GetRepeatedEnumValue(*this->settings, fieldDescriptor, i);
    }
    else
    {
-      for (int i = 0; i < this->settings->GetReflection()->FieldSize(*this->settings, fieldDescriptor); i++)
-         values << this->settings->GetReflection()->GetRepeatedUInt32(*this->settings, fieldDescriptor, i);
+      for (int i = 0; i < count; ++i)
+         values << reflection->GetRepeatedUInt32(*this->settings, fieldDescriptor, i);
    }
 }
 
@@ -675,15 +689,21 @@ void Settings::getRepeated(const google::protobuf::FieldDescriptor* fieldDescrip
 {
    Q_ASSERT(fieldDescriptor);
 
-   for (int i = 0; i < this->settings->GetReflection()->FieldSize(*this->settings, fieldDescriptor); i++)
-      values << QString::fromStdString(this->settings->GetReflection()->GetRepeatedString(*this->settings, fieldDescriptor, i));
+   const auto* reflection = this->settings->GetReflection();
+   const int count = reflection->FieldSize(*this->settings, fieldDescriptor);
+   values.reserve(count);
+   std::string scratch;
+   for (int i = 0; i < count; ++i)
+      values << QString::fromStdString(reflection->GetRepeatedStringReference(*this->settings, fieldDescriptor, i, &scratch));
 }
 
 void Settings::getRepeated(const google::protobuf::FieldDescriptor* fieldDescriptor, QList<Protos::Common::SharedEntry>& values) const
 {
    Q_ASSERT(fieldDescriptor);
 
-   for (auto& entry : this->settings->GetReflection()->GetRepeatedFieldRef<Protos::Common::SharedEntry>(*this->settings, fieldDescriptor))
+   const auto entries = this->settings->GetReflection()->GetRepeatedFieldRef<Protos::Common::SharedEntry>(*this->settings, fieldDescriptor);
+   values.reserve(entries.size());
+   for (const auto& entry : entries)
       values << entry;
 }
 
@@ -697,7 +717,7 @@ void Settings::rm(const QString& name)
    if (!this->settings)
       return;
 
-   const google::protobuf::FieldDescriptor* fieldDescriptor = this->descriptor->FindFieldByName(name.toStdString());
+   const google::protobuf::FieldDescriptor* fieldDescriptor = this->fields.value(name, nullptr);
    if (!fieldDescriptor)
    {
       printErrorNameNotFound(name);
