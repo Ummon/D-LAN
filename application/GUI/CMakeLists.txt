@@ -212,6 +212,12 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 endif()
 
 if(DLAN_BUILD_TESTS)
+   add_executable(TestsRoomsModel Chat/TestsRoomsModel.cpp Chat/RoomsModel.cpp)
+   target_include_directories(TestsRoomsModel PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+   target_link_libraries(TestsRoomsModel PRIVATE RemoteCoreController LogManager Common Qt6::Widgets Qt6::Test)
+   add_test(NAME TestsRoomsModel COMMAND TestsRoomsModel)
+   set_tests_properties(TestsRoomsModel PROPERTIES TIMEOUT 30)
+
    add_executable(TestsPeerListModel Peers/TestsPeerListModel.cpp Peers/PeerListModel.cpp)
    target_include_directories(TestsPeerListModel PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
    target_link_libraries(TestsPeerListModel PRIVATE RemoteCoreController LogManager Common Qt6::Widgets Qt6::Test)

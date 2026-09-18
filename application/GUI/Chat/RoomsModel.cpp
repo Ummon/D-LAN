@@ -107,6 +107,23 @@ QString RoomsModel::getRoomName(const QModelIndex& index)
    return QString();
 }
 
+bool RoomsModel::roomLessThan(const Room* first, const Room* second, Protos::GUI::Settings::RoomSortType sortType)
+{
+   if (!first || !second)
+      return false;
+   if (sortType == Protos::GUI::Settings::BY_NB_PEERS && first->peerCount() != second->peerCount())
+      return first->peerCount() > second->peerCount();
+   return first->name < second->name;
+}
+
+int RoomsModel::insertionPosition(Room* room) const
+{
+   const int previous = this->orderedRooms.indexOfNearest(room);
+   if (previous < 0)
+      return 0;
+   return previous + (roomLessThan(this->orderedRooms.getFromIndex(previous), room, this->currentSortType) ? 1 : 0);
+}
+
 void RoomsModel::setSortType(Protos::GUI::Settings::RoomSortType sortType)
 {
    if (sortType != Protos::GUI::Settings::BY_NAME && sortType != Protos::GUI::Settings::BY_NB_PEERS)
@@ -120,28 +137,9 @@ void RoomsModel::setSortType(Protos::GUI::Settings::RoomSortType sortType)
       indexedRooms.append(this->orderedRooms.getFromIndex(index.row()));
 
    this->currentSortType = sortType;
-   switch (this->currentSortType)
-   {
-   case Protos::GUI::Settings::BY_NAME:
-      this->orderedRooms.setSortedFunction([](const Room* r1, const Room* r2) {
-         if (!r1 || !r2)
-            return false;
-         return r1->name < r2->name;
-      });
-      break;
-
-   case Protos::GUI::Settings::BY_NB_PEERS:
-      this->orderedRooms.setSortedFunction([](const Room* r1, const Room* r2) {
-         if (!r1 || !r2)
-            return false;
-         if (r1->peerCount() == r2->peerCount())
-            return r1->name < r2->name;
-         return r1->peerCount() > r2->peerCount();
-      });
-      break;
-
-   default:;
-   }
+   this->orderedRooms.setSortedFunction([sortType](const Room* first, const Room* second) {
+      return roomLessThan(first, second, sortType);
+   });
 
    QModelIndexList newIndexes;
    for (int i = 0; i < oldIndexes.size(); ++i)
@@ -190,9 +188,9 @@ void RoomsModel::updateRooms(const google::protobuf::RepeatedPtrField<Protos::GU
             const int oldRow = this->orderedRooms.indexOf(room);
             Room updatedRoom { name, peerIDs, joined };
             // Calculate the destination without changing the live model before beginMoveRows.
-            auto updatedOrder = this->orderedRooms;
-            updatedOrder.remove(room);
-            const int newRow = updatedOrder.insert(&updatedRoom);
+            int newRow = this->insertionPosition(&updatedRoom);
+            if (newRow > oldRow)
+               --newRow; // The insertion boundary still includes the old entry.
             if (oldRow != newRow)
                this->beginMoveRows(QModelIndex(), oldRow, oldRow, QModelIndex(), newRow > oldRow ? newRow + 1 : newRow);
 
@@ -209,11 +207,10 @@ void RoomsModel::updateRooms(const google::protobuf::RepeatedPtrField<Protos::GU
       else
       {
          Room* r = new Room { name, peerIDs, joined };
-         auto updatedOrder = this->orderedRooms;
-         const int row = updatedOrder.insert(r);
+         const int row = this->insertionPosition(r);
          this->beginInsertRows(QModelIndex(), row, row);
          this->indexedRooms.insert(name, r);
-         this->orderedRooms = updatedOrder;
+         this->orderedRooms.insert(r);
          this->endInsertRows();
       }
    }

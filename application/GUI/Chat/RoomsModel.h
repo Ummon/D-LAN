@@ -59,6 +59,8 @@ namespace GUI
       void coreDisconnected(bool force);
 
    private:
+      static bool roomLessThan(const Room* first, const Room* second, Protos::GUI::Settings::RoomSortType sortType);
+      int insertionPosition(Room* room) const;
       void updateRooms(const google::protobuf::RepeatedPtrField<Protos::GUI::State::Room>& rooms);
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;
