@@ -22,10 +22,16 @@ using namespace RCC;
 #include <priv/Log.h>
 #include <priv/InternalCoreConnection.h>
 
-LocalBrowseResult::LocalBrowseResult(InternalCoreConnection* coreConnection, const QString& path, int socketTimeout) :
+LocalBrowseResult::LocalBrowseResult(
+   InternalCoreConnection* coreConnection,
+   const QString& path,
+   bool onlyDirectories,
+   int socketTimeout
+) :
    ILocalBrowseResult(socketTimeout), coreConnection(coreConnection)
 {   
    this->browseMessage.set_path(path.toStdString());
+   this->browseMessage.set_onlydirectories(onlyDirectories);
    this->browseMessage.set_tag(QRandomGenerator64::global()->generate64());
    connect(this->coreConnection, &InternalCoreConnection::localBrowseResult, this, &LocalBrowseResult::browseResult);
 }

@@ -229,9 +229,9 @@ void RemoteBrowseModel::browse(Tree* tree)
    if (!this->localBrowseResult.isNull())
       this->localBrowseResult->disconnect();
 
-   L_DEBU(QString("### Browse: %1").arg(tree->path()));
+   // L_DEBU(QString("### Browse: %1").arg(tree->path()));
 
-   this->localBrowseResult = this->coreConnection->localBrowse(tree->path());
+   this->localBrowseResult = this->coreConnection->localBrowse(tree->path(), !this->filters.testAnyFlag(FILE));
    connect(this->localBrowseResult.data(), &RCC::ILocalBrowseResult::result, this, &RemoteBrowseModel::result);
    connect(this->localBrowseResult.data(), &Common::Timeoutable::timeout, this, &RemoteBrowseModel::resultTimeout);
    this->localBrowseResult->start();

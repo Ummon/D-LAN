@@ -33,12 +33,13 @@ namespace
       QRunnable* queuedRunnable = nullptr; // Protected by BrowsePool::mutex.
    };
 
-   constexpr QDir::Filters FILTERS = QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot | QDir::Hidden;
-
    void enumerate(const Protos::GUI::LocalBrowse& request, QPromise<Protos::GUI::LocalBrowseResult>& promise)
    {
       if (promise.isCanceled())
          return;
+
+      const QDir::Filters FILTERS =
+         QDir::Dirs | QDir::NoDotAndDotDot | QDir::Hidden | (request.onlydirectories() ? static_cast<QDir::Filter>(0) : QDir::Files);
 
       Protos::GUI::LocalBrowseResult result;
       quint64 resultSize = 32; // Tag and protobuf envelope overhead.

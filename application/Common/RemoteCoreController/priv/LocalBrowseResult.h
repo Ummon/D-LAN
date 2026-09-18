@@ -35,7 +35,12 @@ namespace RCC
    {
       Q_OBJECT
    public:
-      LocalBrowseResult(InternalCoreConnection* coreConnection, const QString& path, int socketTimeout);
+      LocalBrowseResult(
+         InternalCoreConnection* coreConnection,
+         const QString& path,
+         bool onlyDirectories,
+         int socketTimeout
+      );
       void start();
 
    private slots:

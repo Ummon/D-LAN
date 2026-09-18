@@ -250,9 +250,9 @@ QSharedPointer<IBrowseResult> InternalCoreConnection::browse(const Common::Hash&
    return browseResult;
 }
 
-QSharedPointer<ILocalBrowseResult> InternalCoreConnection::localBrowse(const QString& path, int socketTimeout)
+QSharedPointer<ILocalBrowseResult> InternalCoreConnection::localBrowse(const QString& path, bool onlyDirectories, int socketTimeout)
 {
-   QSharedPointer<LocalBrowseResult> browseResult = QSharedPointer<LocalBrowseResult>(new LocalBrowseResult(this, path, socketTimeout));
+   QSharedPointer<LocalBrowseResult> browseResult = QSharedPointer<LocalBrowseResult>(new LocalBrowseResult(this, path, onlyDirectories, socketTimeout));
    this->localBrowseResults << browseResult.toWeakRef();
    return browseResult;
 }

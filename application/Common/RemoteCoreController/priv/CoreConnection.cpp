@@ -182,9 +182,9 @@ QSharedPointer<IBrowseResult> CoreConnection::browse(const Common::Hash& peerID,
    return this->current().browse(peerID, entries, withRoots, this->SOCKET_TIMEOUT);
 }
 
-QSharedPointer<ILocalBrowseResult> CoreConnection::localBrowse(const QString& path)
+QSharedPointer<ILocalBrowseResult> CoreConnection::localBrowse(const QString& path, bool onlyDirectories)
 {
-   return this->current().localBrowse(path, this->SOCKET_TIMEOUT);
+   return this->current().localBrowse(path, onlyDirectories, this->SOCKET_TIMEOUT);
 }
 
 QSharedPointer<ILocalBrowseQuickAccessResult> CoreConnection::localBrowseQuickAccess()

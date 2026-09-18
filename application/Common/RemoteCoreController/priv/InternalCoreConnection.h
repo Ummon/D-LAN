@@ -105,7 +105,7 @@ namespace RCC
          bool withRoots, int socketTimeout
       );
 
-      QSharedPointer<ILocalBrowseResult> localBrowse(const QString& path, int socketTimeout);
+      QSharedPointer<ILocalBrowseResult> localBrowse(const QString& path, bool onlyDirectories, int socketTimeout);
       QSharedPointer<ILocalBrowseQuickAccessResult> localBrowseQuickAccess(int socketTimeout);
 
       QSharedPointer<ISearchResult> search(const Protos::Common::FindPattern& findPattern, bool local, int socketTimeout);

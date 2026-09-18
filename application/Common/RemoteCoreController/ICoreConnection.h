@@ -187,7 +187,7 @@ namespace RCC
       /**
         * Get files and directories from the remote path, if 'path' is empty then the roots (drives) are returned.
         */
-      virtual QSharedPointer<ILocalBrowseResult> localBrowse(const QString& path) = 0;
+      virtual QSharedPointer<ILocalBrowseResult> localBrowse(const QString& path, bool onlyDirectories = false) = 0;
 
       /**
         * Get special directories.
