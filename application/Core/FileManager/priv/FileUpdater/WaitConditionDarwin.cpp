@@ -17,35 +17,73 @@
   */
   
 #include <priv/FileUpdater/WaitConditionDarwin.h>
-#include <climits>
 using namespace FM;
 
-WaitConditionDarwin::WaitConditionDarwin() :
-   released(false)
+#include <QDeadlineTimer>
+#include <QDebug>
+#include <cerrno>
+#include <fcntl.h>
+#include <poll.h>
+#include <system_error>
+#include <unistd.h>
+
+WaitConditionDarwin::WaitConditionDarwin() : pfd{-1, -1}
 {
+   if (pipe(this->pfd) < 0)
+      throw std::system_error(errno, std::generic_category(), "Unable to create wait-condition pipe");
+   // Darwin has no pipe2(). Both ends must be nonblocking and not inherited
+   // by subprocesses. Close both descriptors on partial initialization failure.
+   for (int fd : this->pfd)
+      if (fcntl(fd, F_SETFL, O_NONBLOCK) < 0 || fcntl(fd, F_SETFD, FD_CLOEXEC) < 0)
+      {
+         const int error = errno;
+         close(this->pfd[0]);
+         close(this->pfd[1]);
+         throw std::system_error(error, std::generic_category(), "Unable to configure wait-condition pipe");
+      }
 }
 
 WaitConditionDarwin::~WaitConditionDarwin()
 {
+   close(this->pfd[0]);
+   close(this->pfd[1]);
 }
 
 void WaitConditionDarwin::release()
 {
-   this->mutex.lock();
-   this->released = true;
-   this->waitCondition.wakeOne();
-   this->mutex.unlock();
+   ssize_t written;
+   do
+      written = write(this->pfd[1], "", 1);
+   while (written < 0 && errno == EINTR);
+   // A full pipe already represents a pending release.
+   if (written < 0 && errno != EAGAIN && errno != EWOULDBLOCK)
+      qWarning("Unable to signal Darwin wait-condition pipe");
 }
 
 bool WaitConditionDarwin::wait(int timeout)
 {
-   bool timeouted = false;
+   pollfd fd{this->pfd[0], POLLIN, 0};
+   QDeadlineTimer deadline(timeout);
+   int ready;
+   do
+      ready = poll(&fd, 1, static_cast<int>(deadline.remainingTime()));
+   while (ready < 0 && errno == EINTR);
+   if (ready == 0)
+      return true;
+   if (ready > 0 && (fd.revents & POLLIN))
+   {
+      char buffer[4096];
+      ssize_t count;
+      do
+         count = read(this->pfd[0], buffer, sizeof(buffer));
+      while (count > 0 || (count < 0 && errno == EINTR));
+   }
+   else
+      qWarning("Unable to poll Darwin wait-condition pipe");
+   return false;
+}
 
-   this->mutex.lock();
-   if (!this->released)
-      timeouted = !this->waitCondition.wait(&this->mutex, timeout == -1 ? ULONG_MAX : timeout);
-
-   this->released = false;
-   this->mutex.unlock();
-   return timeouted;
+int WaitConditionDarwin::getFd() const
+{
+   return this->pfd[0];
 }

@@ -73,7 +73,10 @@ elseif(APPLE)
    target_sources(FileManager PRIVATE
       priv/FileUpdater/WaitConditionDarwin.cpp
       priv/FileUpdater/WaitConditionDarwin.h
+      priv/FileUpdater/DirWatcherDarwin.cpp
+      priv/FileUpdater/DirWatcherDarwin.h
    )
+   target_link_libraries(FileManager PRIVATE "-framework CoreServices")
 elseif(UNIX)
    target_sources(FileManager PRIVATE
       priv/FileUpdater/WaitConditionLinux.cpp

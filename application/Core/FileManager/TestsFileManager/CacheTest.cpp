@@ -6,6 +6,7 @@
 #include <QThread>
 #include <QSignalSpy>
 #include <QScopeGuard>
+#include <QSaveFile>
 
 #include <algorithm>
 #include <atomic>
@@ -100,6 +101,45 @@ namespace
 CacheTest::CacheTest(QObject *parent) :
    QObject(parent)
 {
+}
+
+void CacheTest::darwinWatcherUpdatesCache()
+{
+#ifdef Q_OS_DARWIN
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   const auto savedShares = SETTINGS.getRepeated<Protos::Common::SharedEntry>("shared_entries");
+   const auto savedPeriod = SETTINGS.get<quint32>("scan_period_unwatchable_dirs");
+   const auto restore = qScopeGuard([&] {
+      SETTINGS.set("shared_entries", savedShares);
+      SETTINGS.set("scan_period_unwatchable_dirs", savedPeriod);
+   });
+   SETTINGS.set("shared_entries", QList<Protos::Common::SharedEntry>());
+   SETTINGS.set("scan_period_unwatchable_dirs", quint32(3600000));
+   FM::FileManager manager(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   manager.addASharedPath(temp.path() + '/');
+   QTRY_COMPARE(manager.getCacheStatus(), FM::IFileManager::UP_TO_DATE);
+   const auto writeFile = [](const QString& path, const QByteArray& bytes) {
+      QSaveFile file(path);
+      return file.open(QIODevice::WriteOnly) && file.write(bytes) == bytes.size() && file.commit();
+   };
+   QVERIFY(QDir().mkpath(temp.filePath("one/two")));
+   const QString path = temp.filePath("one/two/file.txt");
+   QVERIFY(writeFile(path, "first"));
+   QTRY_VERIFY_WITH_TIMEOUT(manager.getEntry(Common::Path(path)), 5000);
+   QTRY_COMPARE_WITH_TIMEOUT(manager.getAmount(), qint64(5), 5000);
+   QVERIFY(writeFile(path, "replacement"));
+   QTRY_COMPARE_WITH_TIMEOUT(manager.getAmount(), qint64(11), 5000);
+   const QString renamed = temp.filePath("one/two/renamed.txt");
+   QVERIFY(QFile::rename(path, renamed));
+   QTRY_VERIFY_WITH_TIMEOUT(manager.getEntry(Common::Path(renamed)), 5000);
+   QTRY_VERIFY_WITH_TIMEOUT(!manager.getEntry(Common::Path(path)), 5000);
+   QVERIFY(QDir(temp.filePath("one")).removeRecursively());
+   QTRY_VERIFY_WITH_TIMEOUT(!manager.getEntry(Common::Path(temp.filePath("one") + '/')), 5000);
+   QTRY_COMPARE_WITH_TIMEOUT(manager.getAmount(), qint64(0), 5000);
+#else
+   QSKIP("macOS FSEvents integration");
+#endif
 }
 
 void CacheTest::chunkEntryWithoutHashes()

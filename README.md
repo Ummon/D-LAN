@@ -148,6 +148,19 @@ Build on the oldest Linux environment you intend to support, and test the result
 on your target distributions: bundled libraries do not remove the host glibc
 requirement.
 
+### macOS filesystem monitoring
+
+Shared directories and individually shared files are monitored with FSEvents.
+Changes trigger scans of affected directories; bursts of changes are coalesced.
+Dropped notifications trigger a full rescan. If a watched root or its ancestor
+is moved, or its volume is unmounted, the updater falls back to periodic scanning
+of the original path. Missing shared roots are removed by the existing scanner.
+Symlinked directories are not traversed.
+
+The macOS build includes `TestsDirWatcherDarwin`, registered with CTest. Its
+filesystem tests require access to the system FSEvents service; a restrictive
+process sandbox can prevent watch registration.
+
 ### Linux settings and data
 
 Settings (`ROAMING`) use `~/.config/d-lan/`, and local data (`LOCAL`), including

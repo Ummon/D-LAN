@@ -45,6 +45,13 @@ add_executable(TestsFilePool FilePoolTests.cpp)
 target_link_libraries(TestsFilePool PRIVATE FileManager Qt6::Test)
 add_test(NAME TestsFilePool COMMAND TestsFilePool)
 
+if(APPLE)
+   add_executable(TestsDirWatcherDarwin DirWatcherDarwinTests.cpp)
+   target_link_libraries(TestsDirWatcherDarwin PRIVATE FileManager Qt6::Test)
+   add_test(NAME TestsDirWatcherDarwin COMMAND TestsDirWatcherDarwin)
+   set_tests_properties(TestsDirWatcherDarwin PROPERTIES TIMEOUT 120)
+endif()
+
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
    add_executable(TestsDirWatcherLinux DirWatcherLinuxTests.cpp)
    target_link_libraries(TestsDirWatcherLinux PRIVATE FileManager Qt6::Test)

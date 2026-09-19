@@ -18,9 +18,6 @@
   
 #pragma once
 
-#include <QMutex>
-#include <QWaitCondition>
-
 #include <priv/FileUpdater/WaitCondition.h>
 
 namespace FM
@@ -29,14 +26,16 @@ namespace FM
    {
    public:
       WaitConditionDarwin();
-      ~WaitConditionDarwin();
+      ~WaitConditionDarwin() override;
+      WaitConditionDarwin(const WaitConditionDarwin&) = delete;
+      WaitConditionDarwin& operator=(const WaitConditionDarwin&) = delete;
 
-      void release();
-      bool wait(int timeout = -1);
+      void release() override;
+      bool wait(int timeout = -1) override;
+      int getFd() const;
 
    private:
-      bool released;
-      QMutex mutex;
-      QWaitCondition waitCondition;
+      // Readability is the release state, also consumed by DirWatcherDarwin.
+      int pfd[2];
    };
 }

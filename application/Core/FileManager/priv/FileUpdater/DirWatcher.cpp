@@ -27,6 +27,8 @@ using namespace FM;
    #include <priv/FileUpdater/DirWatcherWin.h>
 #elif defined(Q_OS_LINUX)
    #include <priv/FileUpdater/DirWatcherLinux.h>
+#elif defined(Q_OS_DARWIN)
+   #include <priv/FileUpdater/DirWatcherDarwin.h>
 #endif
 
 DirWatcher* DirWatcher::getNewWatcher()
@@ -35,6 +37,8 @@ DirWatcher* DirWatcher::getNewWatcher()
    return new DirWatcherWin();
 #elif defined(Q_OS_LINUX)
    return new DirWatcherLinux();
+#elif defined(Q_OS_DARWIN)
+   return new DirWatcherDarwin();
 #else
    L_WARN("Cannot create a watcher for the current platform, no implementation.");
    return nullptr;
