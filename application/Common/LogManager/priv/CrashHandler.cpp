@@ -454,7 +454,7 @@ void CrashHandler::install(bool writeMiniDumpToo)
 
    try
    {
-      QDir appDir(Common::Global::getDataFolder(Common::Global::DataFolderType::LOCAL));
+      QDir appDir(Common::Global::getLogFolder());
       const QString logDirName = Logger::getLogDirName();
       if (!appDir.exists(logDirName))
          appDir.mkdir(logDirName);

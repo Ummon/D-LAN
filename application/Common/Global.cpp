@@ -353,6 +353,21 @@ bool Global::isLocal(const QHostAddress& address)
 
 QString Global::dataFolders[2]; // The two folders (roaming and local), see DataFolderType enum.
 
+#ifdef Q_OS_DARWIN
+namespace
+{
+   QString macApplicationFolder(const QString& basePath, bool create)
+   {
+      if (basePath.isEmpty() || !QDir::isAbsolutePath(basePath))
+         throw Global::UnableToGetFolder("Unable to locate the user application directory");
+      const QString folder = QDir(basePath).absoluteFilePath(Constants::APPLICATION_FOLDER_NAME);
+      if (create && !QDir().mkpath(folder))
+         throw Global::UnableToGetFolder(QString("Unable to create the directory %1").arg(folder));
+      return folder;
+   }
+}
+#endif
+
 /**
   * Returns the absolute path to the requested data folder.
   * For example under Windows :
@@ -360,6 +375,8 @@ QString Global::dataFolders[2]; // The two folders (roaming and local), see Data
   * - type == LOCAL : "C:/Users/john/AppData/Local/D-LAN"
   * On Linux, ROAMING uses $XDG_CONFIG_HOME/d-lan (default ~/.config/d-lan)
   * and LOCAL uses $XDG_DATA_HOME/d-lan (default ~/.local/share/d-lan).
+  * On macOS, both use ~/Library/Application Support/D-LAN. Configuration and
+  * persistent local state must survive deletion of disposable caches.
   * Creates the folder if requested.
   * @exception UnableToGetFolder
   */
@@ -400,6 +417,9 @@ QString Global::getDataFolder(DataFolderType type, bool create)
       if (create && !QDir().mkpath(folder))
          throw UnableToGetFolder(QString("Unable to create the directory %1").arg(folder));
       return folder;
+#elif defined(Q_OS_DARWIN)
+      // Use a fixed app directory so GUI, core and tools share the same data.
+      return macApplicationFolder(QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation), create);
 #else
       if (create && !QDir::home().exists(Constants::APPLICATION_FOLDER_NAME))
          if (!QDir::home().mkdir(Constants::APPLICATION_FOLDER_NAME))
@@ -408,6 +428,32 @@ QString Global::getDataFolder(DataFolderType type, bool create)
       return QDir::home().absoluteFilePath(Constants::APPLICATION_FOLDER_NAME);
 #endif
    }
+}
+
+QString Global::getCacheFolder(bool create)
+{
+#ifdef Q_OS_DARWIN
+   if (Global::dataFolders[static_cast<int>(DataFolderType::LOCAL)].isEmpty())
+      return macApplicationFolder(QStandardPaths::writableLocation(QStandardPaths::GenericCacheLocation), create);
+#endif
+   // Keep command-line overrides and test isolation consistent with LOCAL.
+   return Global::getDataFolder(DataFolderType::LOCAL, create);
+}
+
+QString Global::getLogFolder(bool create)
+{
+#ifdef Q_OS_DARWIN
+   if (Global::dataFolders[static_cast<int>(DataFolderType::LOCAL)].isEmpty())
+   {
+      const QString support = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
+      if (support.isEmpty() || !QDir::isAbsolutePath(support))
+         throw UnableToGetFolder("Unable to locate the user Library directory");
+      // Qt has no LogsLocation. On macOS, Logs is a sibling of Application
+      // Support in the user Library (also respecting Qt's test-mode root).
+      return macApplicationFolder(QDir(QFileInfo(support).absolutePath()).filePath("Logs"), create);
+   }
+#endif
+   return Global::getDataFolder(DataFolderType::LOCAL, create);
 }
 
 /**

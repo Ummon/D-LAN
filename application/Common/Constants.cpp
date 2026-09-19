@@ -23,7 +23,7 @@ const quint32 Constants::PROTOCOL_VERSION { 5 };
 
 const quint16 Constants::DEFAULT_CORE_REMOTE_CONTROL_PORT { 59485 };
 
-#ifdef Q_OS_WIN32
+#if defined(Q_OS_WIN32) || defined(Q_OS_DARWIN)
    const QString Constants::APPLICATION_FOLDER_NAME("D-LAN");
 #elif defined(Q_OS_LINUX)
    const QString Constants::APPLICATION_FOLDER_NAME("d-lan");

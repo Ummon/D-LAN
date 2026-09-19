@@ -136,7 +136,7 @@ void Logger::setLogDirName(const QString& logDirName)
 }
 
 /**
-  * The name of the folder, relative to the local data folder, where the log files are written.
+  * The name of the folder, relative to Global::getLogFolder(), where the log files are written.
   * Mirrors the default applied lazily by 'createFileLog()'.
   */
 QString Logger::getLogDirName()
@@ -235,7 +235,7 @@ bool Logger::createFileLog()
 
       try
       {
-         QDir appDir(Common::Global::getDataFolder(Common::Global::DataFolderType::LOCAL));
+         QDir appDir(Common::Global::getLogFolder());
 
          if (!appDir.exists(state.logDirName) && !appDir.mkdir(state.logDirName))
          {

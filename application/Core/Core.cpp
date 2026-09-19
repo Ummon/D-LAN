@@ -106,7 +106,7 @@ void Core::start()
 
    L_USER(QObject::tr("D-LAN Core version %1 is starting . . .").arg(Common::Global::getVersionFull()));
 
-   this->hashCache = HC::Builder::newHashCache(Common::Global::getDataFolder(Common::Global::DataFolderType::LOCAL));
+   this->hashCache = HC::Builder::newHashCache(Common::Global::getCacheFolder());
    this->fileManager = FM::Builder::newFileManager(this->hashCache);
    this->peerManager = PM::Builder::newPeerManager(this->fileManager);
    this->uploadManager = UM::Builder::newUploadManager(this->peerManager);

@@ -60,6 +60,8 @@ namespace Common
 
       // Linux defaults: ROAMING = ~/.config/d-lan, LOCAL = ~/.local/share/d-lan.
       // XDG_CONFIG_HOME and XDG_DATA_HOME override the respective base directories.
+      // macOS: both types use ~/Library/Application Support/D-LAN. LOCAL is
+      // persistent state, not disposable cache; see getCacheFolder/getLogFolder.
       enum class DataFolderType { ROAMING = 0, LOCAL = 1 };
 
    private:
@@ -74,6 +76,10 @@ namespace Common
       };
 
       static QString getDataFolder(DataFolderType type, bool create = true);
+      // macOS defaults: ~/Library/Caches/D-LAN and ~/Library/Logs/D-LAN.
+      // Elsewhere, or with a LOCAL override, these use the LOCAL data folder.
+      static QString getCacheFolder(bool create = true);
+      static QString getLogFolder(bool create = true);
       static void setDataFolder(DataFolderType type, const QString& folder);
       static void setDataFolderToDefault(DataFolderType type);
 

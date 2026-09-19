@@ -2,6 +2,7 @@
 #include <QFile>
 #include <QTemporaryDir>
 #include <QTest>
+#include <QStandardPaths>
 
 #include <Common/Global.h>
 #include <Common/PersistentData.h>
@@ -51,6 +52,19 @@ class GlobalDarwinTests : public QObject
    Q_OBJECT
 
 private slots:
+   void nativeDataLocations()
+   {
+      using Global = Common::Global;
+      using Folder = Global::DataFolderType;
+      Global::setDataFolderToDefault(Folder::ROAMING);
+      Global::setDataFolderToDefault(Folder::LOCAL);
+      const QString library = QDir::homePath() + "/Library";
+      QCOMPARE(Global::getDataFolder(Folder::ROAMING, false), library + "/Application Support/D-LAN");
+      QCOMPARE(Global::getDataFolder(Folder::LOCAL, false), library + "/Application Support/D-LAN");
+      QCOMPARE(Global::getCacheFolder(false), library + "/Caches/D-LAN");
+      QCOMPARE(Global::getLogFolder(false), library + "/Logs/D-LAN");
+   }
+
    void init()
    {
       mockQuery = true;

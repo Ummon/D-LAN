@@ -213,7 +213,7 @@ void LM::CrashHandler::install(bool)
       descriptionSize = description->size();
       try
       {
-         QDir directory(Common::Global::getDataFolder(Common::Global::DataFolderType::LOCAL));
+         QDir directory(Common::Global::getLogFolder());
          const QString name = Logger::getLogDirName();
          if (directory.mkpath(name))
             reportDirectory = open(QFile::encodeName(directory.filePath(name)).constData(), O_RDONLY | O_DIRECTORY | O_CLOEXEC);

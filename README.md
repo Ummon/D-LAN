@@ -161,6 +161,23 @@ The macOS build includes `TestsDirWatcherDarwin`, registered with CTest. Its
 filesystem tests require access to the system FSEvents service; a restrictive
 process sandbox can prevent watch registration.
 
+### macOS settings, data, caches and logs
+
+`DataFolderType` keeps its two values, `ROAMING` and `LOCAL`. On macOS both
+default to `~/Library/Application Support/D-LAN/`: configuration uses `ROAMING`,
+while the download queue and chat history use `LOCAL`. These are persistent
+files, not disposable caches.
+
+The rebuildable hash database and its SQLite sidecar files use
+`~/Library/Caches/D-LAN/`. GUI and core logs use
+`~/Library/Logs/D-LAN/log_gui/` and `~/Library/Logs/D-LAN/log_core/`.
+The core, GUI and tools share these locations regardless of executable name.
+
+The core's `-r` option overrides `ROAMING`; `-l` overrides `LOCAL` and keeps the
+hash database and logs within that chosen directory as well. Override
+directories must already exist. Files in the old `~/.d-lan/` directory are
+neither migrated nor loaded automatically.
+
 ### macOS disk space
 
 Disk-space checks use the target volume's available allocation blocks, excluding
