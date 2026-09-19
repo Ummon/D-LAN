@@ -12,6 +12,7 @@ Unless stated otherwise, paths are relative to the repository root.
 * [macOS application packaging](#macos-application-packaging)
 * [Linux AppImage](#linux-appimage)
 * [Profiling](#profiling)
+* [IPv6 peer discovery](#ipv6-peer-discovery)
 * [macOS filesystem monitoring](#macos-filesystem-monitoring)
 * [macOS settings, data, caches and logs](#macos-settings-data-caches-and-logs)
 * [macOS disk space](#macos-disk-space)
@@ -245,6 +246,25 @@ Keep the PDB from the exact build used for the recording.
 
 For gprof output (`gmon.out`), use a toolchain with working gprof support and
 matching Qt and third-party libraries, then enable `DLAN_PROFILING`.
+
+## IPv6 peer discovery
+
+D-LAN uses UDP multicast on port 59486 by default. Peers must select the same
+IP protocol; IPv6 peers must also use the same discovery channel. The default
+`main` channel uses `ff12:0:318b:bc3f:d75a:c873:ec0d:2b18`.
+
+The second 16-bit word is zero on every platform. Darwin temporarily stores
+the interface scope there and clears it before transmission; see Apple's
+[scope handling in XNU](https://github.com/apple-oss-distributions/xnu/blob/main/bsd/netinet6/scope6.c).
+Previously, D-LAN placed channel-hash bytes in that word, so Windows sent to
+`ff12:e726:318b:bc3f:d75a:c873:ec0d:2b18` while macOS sent to the address above.
+Local multicast loopback tests could pass despite this difference.
+
+**Rebuild the Windows and Linux peers as well as macOS after this change.**
+Older builds on those platforms still use the old IPv6 group. IPv4 discovery
+and the message format are unchanged. `TestsNetworkListener` checks the exact
+group address and verifies that a received IPv6 datagram retains the intended
+destination group after the kernel processes it.
 
 ## macOS filesystem monitoring
 

@@ -50,6 +50,7 @@ private slots:
    // Utils.
    void multicastGroupIPv4();
    void multicastGroupIPv6();
+   void multicastDestinationIPv6();
    void addressToListenTo();
    void networkConfigurationSnapshot();
 

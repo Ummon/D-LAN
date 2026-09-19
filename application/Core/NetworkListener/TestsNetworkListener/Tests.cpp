@@ -21,6 +21,7 @@
 #include <QTest>
 #include <QHostAddress>
 #include <QAbstractSocket>
+#include <QNetworkDatagram>
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QScopeGuard>
@@ -176,10 +177,15 @@ void Tests::multicastGroupIPv6()
 
    const QHostAddress group = Utils::getMulticastGroup(QAbstractSocket::IPv6Protocol);
    QCOMPARE(group.protocol(), QAbstractSocket::IPv6Protocol);
+   // This address must be identical on Windows, Linux and Darwin, including
+   // after the kernel embeds and clears a link-local interface scope.
+   QCOMPARE(group, QHostAddress("ff12:0:318b:bc3f:d75a:c873:ec0d:2b18"));
 
    const Q_IPV6ADDR address = group.toIPv6Address();
    QCOMPARE(address[0], 0xFF); // Multicast.
    QCOMPARE(address[1], 0x12); // Scope: link-local, transient.
+   QCOMPARE(address[2], 0);
+   QCOMPARE(address[3], 0);
 
    // The last four bytes are the IPv4 group.
    QCOMPARE(address[12], 0xEC);
@@ -192,6 +198,33 @@ void Tests::multicastGroupIPv6()
    QVERIFY(Utils::getMulticastGroup(QAbstractSocket::IPv6Protocol) != group);
    SETTINGS.set("channel", QString("main"));
    QCOMPARE(Utils::getMulticastGroup(QAbstractSocket::IPv6Protocol), group);
+}
+
+void Tests::multicastDestinationIPv6()
+{
+   const auto iface = Utils::getCurrentInterfaceToListenTo();
+   if (!iface.isValid())
+      QSKIP("No active multicast interface for IPv6");
+
+   const auto group = Utils::getMulticastGroup(QAbstractSocket::IPv6Protocol);
+   QUdpSocket receiver;
+   QVERIFY(receiver.bind(QHostAddress::AnyIPv6, 0));
+   QVERIFY(receiver.joinMulticastGroup(group, iface));
+
+   QUdpSocket sender;
+   QVERIFY(sender.bind(QHostAddress::AnyIPv6, 0));
+   sender.setMulticastInterface(iface);
+   sender.setSocketOption(QAbstractSocket::MulticastLoopbackOption, 1);
+   const QByteArray payload("IPv6 multicast destination regression");
+   QCOMPARE(sender.writeDatagram(payload, group, receiver.localPort()), qint64(payload.size()));
+   QTRY_VERIFY_WITH_TIMEOUT(receiver.hasPendingDatagrams(), 2000);
+   const auto datagram = receiver.receiveDatagram();
+   QCOMPARE(datagram.data(), payload);
+   auto destination = datagram.destinationAddress();
+   destination.setScopeId(QString()); // Interface scope is not part of the group ID.
+   // Merely receiving our own packet is insufficient: Darwin can deliver it
+   // locally even when the destination differs from the requested group.
+   QCOMPARE(destination, group);
 }
 
 void Tests::addressToListenTo()

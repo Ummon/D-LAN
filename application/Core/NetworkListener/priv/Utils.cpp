@@ -141,14 +141,18 @@ QHostAddress Utils::getMulticastGroup(QAbstractSocket::NetworkLayerProtocol prot
    }
    else // Default is IPv6.
    {
-      QByteArray channelHash = Common::Hasher::hash(SETTINGS.get<QString>("channel")).getByteArray();
+      const QByteArray channelHash = Common::Hasher::hash(SETTINGS.get<QString>("channel")).getByteArray();
 
-      Q_IPV6ADDR groupIPv6;
+      Q_IPV6ADDR groupIPv6 {};
       // Scope: link-local, transient.
       groupIPv6[0] = 0xFF;
       groupIPv6[1] = 0x12;
 
-      for (int i = 0; i < 10 && i < channelHash.size(); ++i)
+      // Darwin embeds the interface scope in bytes 2..3 of link-local
+      // addresses and clears them on output (XNU in6_setscope/in6_clearscope).
+      // Keep that word zero on every platform. Preserve the remaining hash
+      // bytes so the address matches what Darwin previously sent on the wire.
+      for (int i = 2; i < 10 && i < channelHash.size(); ++i)
          groupIPv6[i+2] = channelHash[i];
 
       groupIPv6[12] = (group & 0xFF000000) >> 24;
