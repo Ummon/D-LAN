@@ -38,6 +38,8 @@ namespace Ui {
    class SearchWidget;
 }
 
+class QTextDocument;
+
 namespace GUI
 {
    class SearchDelegate : public QStyledItemDelegate
@@ -51,6 +53,7 @@ namespace GUI
       void setTerms(const QString& terms);
 
    private:
+      void initTextDocument(QTextDocument& doc, const QStyleOptionViewItem& option) const;
       QString toHtmlText(const QString& text) const;
       QStringList currentTerms;
    };

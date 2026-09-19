@@ -28,6 +28,7 @@ using namespace GUI;
 #include <QMenu>
 #include <QIcon>
 #include <QUrl>
+#include <QtMath>
 
 #include <Common/StringUtils.h>
 #include <Common/Settings.h>
@@ -50,19 +51,21 @@ void SearchDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option
 
    switch (index.column())
    {
-   case 0: // Item name.
+   case SearchModel::NAME:
       {
          QTextDocument doc;
-         doc.setHtml(this->toHtmlText(newOption.text));
+         this->initTextDocument(doc, newOption);
+         QStyle* style = newOption.widget ? newOption.widget->style() : QApplication::style();
 
          // Painting item without text.
-         newOption.text = QString();
-         QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &newOption, painter, newOption.widget);
+         newOption.text.clear();
+         newOption.features &= ~QStyleOptionViewItem::WrapText;
+         style->drawControl(QStyle::CE_ItemViewItem, &newOption, painter, newOption.widget);
 
          QAbstractTextDocumentLayout::PaintContext ctx;
          ctx.palette = newOption.palette;
 
-         const QRect textRect = QApplication::style()->subElementRect(QStyle::SE_ItemViewItemText, &newOption);
+         const QRect textRect = style->subElementRect(QStyle::SE_ItemViewItemText, &newOption, newOption.widget);
          painter->save();
          painter->translate(textRect.topLeft());
          painter->setClipRect(textRect.translated(-textRect.topLeft()));
@@ -106,25 +109,37 @@ void SearchDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option
    }
 }
 
-QSize SearchDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index ) const
+QSize SearchDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-   switch (index.column())
-   {
-   case 1:
-      {
-         QStyleOptionViewItem optionV4 = option;
-         initStyleOption(&optionV4, index);
-
-         QTextDocument doc;
-         doc.setHtml(this->toHtmlText(optionV4.text));
-         //doc.setTextWidth(optionV4.rect.width());
-         return QSize(doc.idealWidth() + 20, doc.size().height()); // + 20 is for the icon, TODO: find a better way to obtain this value.
-      }
-      break;
-
-   default:
+   if (index.column() != SearchModel::NAME)
       return QStyledItemDelegate::sizeHint(option, index);
-   }
+
+   const QVariant sizeHint = index.data(Qt::SizeHintRole);
+   if (sizeHint.isValid())
+      return qvariant_cast<QSize>(sizeHint);
+
+   QStyleOptionViewItem newOption = option;
+   this->initStyleOption(&newOption, index);
+   QTextDocument doc;
+   this->initTextDocument(doc, newOption);
+
+   // Let the widget's style size the icon, check indicator and spacing, then
+   // add the rich text that paint() draws in the remaining text rectangle.
+   newOption.text.clear();
+   newOption.features &= ~QStyleOptionViewItem::WrapText;
+   QStyle* style = newOption.widget ? newOption.widget->style() : QApplication::style();
+   const QSize itemSize = style->sizeFromContents(QStyle::CT_ItemViewItem, &newOption, QSize(), newOption.widget);
+   return QSize(itemSize.width() + qCeil(doc.idealWidth()), qMax(itemSize.height(), qCeil(doc.size().height())));
+}
+
+void SearchDelegate::initTextDocument(QTextDocument& doc, const QStyleOptionViewItem& option) const
+{
+   doc.setDefaultFont(option.font);
+   // Search results use a single line, clipped to the column when painting.
+   QTextOption textOption = doc.defaultTextOption();
+   textOption.setWrapMode(QTextOption::NoWrap);
+   doc.setDefaultTextOption(textOption);
+   doc.setHtml(this->toHtmlText(option.text));
 }
 
 void SearchDelegate::setTerms(const QString& terms)
