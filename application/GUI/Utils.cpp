@@ -16,6 +16,8 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
 
+#include <Common/Global.h>
+
 #include <Utils.h>
 using namespace GUI;
 
@@ -69,7 +71,7 @@ QString Utils::askForADirectoryToDownloadTo(QWidget* parent, QSharedPointer<RCC:
 
 QString Utils::emoticonsDirectoryPath()
 {
-   QString defaultPath = QCoreApplication::applicationDirPath() % "/" % Constants::EMOTICONS_DIRECTORY;
+   QString defaultPath = Common::Global::getResourceFolder() % "/" % Constants::EMOTICONS_DIRECTORY;
 #if DEBUG
    if (!QDir(defaultPath).exists())
       return QCoreApplication::applicationDirPath() % "/../../resources/emoticons";

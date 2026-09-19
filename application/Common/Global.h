@@ -80,6 +80,8 @@ namespace Common
       // Elsewhere, or with a LOCAL override, these use the LOCAL data folder.
       static QString getCacheFolder(bool create = true);
       static QString getLogFolder(bool create = true);
+      // Bundled read-only assets: Contents/Resources on macOS, executable folder otherwise.
+      static QString getResourceFolder();
       static void setDataFolder(DataFolderType type, const QString& folder);
       static void setDataFolderToDefault(DataFolderType type);
 

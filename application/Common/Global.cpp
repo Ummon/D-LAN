@@ -22,6 +22,7 @@ using namespace Common;
 #include <limits>
 
 #include <QDir>
+#include <QCoreApplication>
 #include <QDirIterator>
 #include <QStringBuilder>
 #include <QByteArray>
@@ -840,4 +841,16 @@ QString Global::getQObjectHierarchy(const QObject* root, std::function<QString(c
    }
 
    return result;
+}
+
+QString Global::getResourceFolder()
+{
+   const QString executableDirectory = QCoreApplication::applicationDirPath();
+#ifdef Q_OS_DARWIN
+   QDir bundle(executableDirectory);
+   if (bundle.dirName() == "MacOS" && bundle.cdUp() && bundle.dirName() == "Contents" &&
+       bundle.exists("Info.plist") && bundle.exists("Resources"))
+      return bundle.filePath("Resources");
+#endif
+   return executableDirectory;
 }

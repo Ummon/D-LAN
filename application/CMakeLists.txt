@@ -10,6 +10,13 @@
 
 cmake_minimum_required(VERSION 3.21)
 
+# Set the deployment target before enabling the compiler so building with a
+# newer SDK does not silently raise the minimum macOS version. Respect an
+# explicit CMake or environment setting.
+if(CMAKE_HOST_APPLE AND NOT CMAKE_OSX_DEPLOYMENT_TARGET AND NOT DEFINED ENV{MACOSX_DEPLOYMENT_TARGET})
+   set(CMAKE_OSX_DEPLOYMENT_TARGET "26.0" CACHE STRING "Minimum macOS version" FORCE)
+endif()
+
 project(D-LAN LANGUAGES CXX)
 
 if(WIN32)

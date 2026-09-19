@@ -1,0 +1,177 @@
+#!/bin/bash
+# Invoked by build.nu with a configured Release directory and its Qt SDK.
+set -euo pipefail
+
+fail() { echo "macOS packaging: $*" >&2; exit 1; }
+[[ $(uname -s) == Darwin ]] || fail "Run this script on macOS."
+[[ $# == 2 ]] || fail "Usage: package.sh <release-build> <qt-sdk>"
+build_dir=$(cd "$1" && pwd)
+qt_dir=$(cd "$2" && pwd)
+application_dir=$(cd "$(dirname "$0")/../.." && pwd)
+macdeployqt="$qt_dir/bin/macdeployqt"
+[[ -x "$macdeployqt" ]] || fail "macdeployqt not found in the selected Qt SDK."
+
+bin_dir="$build_dir/output"
+[[ ! -d "$bin_dir/Release" ]] || bin_dir="$bin_dir/Release"
+for executable in D-LAN.GUI D-LAN.Core; do
+    [[ -x "$bin_dir/$executable" ]] || fail "Build $executable in Release mode first."
+    /usr/bin/lipo -verify_arch arm64 "$bin_dir/$executable" || fail "$executable has no arm64 slice."
+done
+
+version=$(sed -n 's/^#define VERSION "\([^"]*\)"/\1/p' "$application_dir/Common/Version.h")
+tag=$(sed -n 's/^#define VERSION_TAG "\([^"]*\)"/\1/p' "$application_dir/Common/Version.h")
+build_time=$(sed -n 's/^#define BUILD_TIME "\([^"]*\)"/\1/p' "$application_dir/Common/Version.h")
+[[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || fail "Invalid VERSION."
+[[ "$tag" =~ ^[a-zA-Z0-9._-]*$ && "$build_time" =~ ^[0-9_-]+$ ]] || fail "Invalid version tag/build time."
+
+# Never package a binary carrying a stale version from before Version.h changed.
+expected_version="$version${tag:+ $tag} $build_time"
+[[ $("$bin_dir/D-LAN.Core" --version) == "$expected_version" ]] || fail "Binary version differs from Version.h; rebuild first."
+
+output_dir="$application_dir/Setups/macOS/Installations"
+mkdir -p "$output_dir" "$application_dir/build/macos"
+stage=$(mktemp -d "$application_dir/build/macos/package.XXXXXX")
+trap 'rm -rf "$stage"' EXIT
+app="$stage/D-LAN.app"
+contents="$app/Contents"
+resources="$contents/Resources"
+mkdir -p "$contents/MacOS" "$resources/languages" "$contents/PlugIns"
+cp "$bin_dir/D-LAN.GUI" "$bin_dir/D-LAN.Core" "$contents/MacOS/"
+# Keep the optional PasswordHasher tool alongside the core when built.
+if [[ -x "$bin_dir/PasswordHasher" ]]; then
+    cp "$bin_dir/PasswordHasher" "$contents/MacOS/"
+fi
+cp -R "$application_dir/styles" "$resources/styles"
+cp -R "$application_dir/GUI/resources/emoticons" "$resources/emoticons"
+cp "$application_dir/../COPYING" "$resources/COPYING"
+shopt -s nullglob
+translations=("$build_dir"/d_lan_*.qm)
+[[ ${#translations[@]} -gt 0 ]] || fail "No translations found; install Qt LinguistTools and build dlan_translations."
+cp "${translations[@]}" "$resources/languages/"
+
+# Use the project's existing 256px icon, converted to Apple's icon container.
+iconset="$stage/D-LAN.iconset"
+mkdir "$iconset"
+sips -s format png "$application_dir/Common/resources/icon.ico" --out "$stage/icon.png" >/dev/null
+for size in 16 32 128 256 512; do
+    sips -z "$size" "$size" "$stage/icon.png" --out "$iconset/icon_${size}x${size}.png" >/dev/null
+done
+for size in 16 32 128 256 512; do
+    pixels=$((size * 2))
+    sips -z "$pixels" "$pixels" "$stage/icon.png" --out "$iconset/icon_${size}x${size}@2x.png" >/dev/null
+done
+iconutil -c icns "$iconset" -o "$resources/D-LAN.icns"
+
+cp "$application_dir/Setups/macOS/Info.plist" "$contents/Info.plist"
+plutil -replace CFBundleShortVersionString -string "$version" "$contents/Info.plist"
+plutil -replace CFBundleVersion -string "$version" "$contents/Info.plist"
+plutil -insert DLANBuildTime -string "$build_time" "$contents/Info.plist"
+plutil -insert DLANVersionTag -string "$tag" "$contents/Info.plist"
+printf 'APPL????' > "$contents/PkgInfo"
+
+# Select plugins explicitly: deploying every SQL driver adds unrelated external
+# database dependencies. D-LAN uses SQLite. Fusion needs no native style plugin.
+plugins=("$qt_dir/plugins/platforms/libqcocoa.dylib" "$qt_dir/plugins/sqldrivers/libqsqlite.dylib"
+         "$qt_dir"/plugins/imageformats/*.dylib "$qt_dir"/plugins/iconengines/*.dylib)
+extra_executables=()
+for executable in "$contents"/MacOS/*; do
+    [[ "$executable" == "$contents/MacOS/D-LAN.GUI" ]] || extra_executables+=("-executable=$executable")
+done
+for plugin in "${plugins[@]}"; do
+    [[ -f "$plugin" ]] || fail "Missing Qt plugin: $plugin"
+    category=$(basename "$(dirname "$plugin")")
+    mkdir -p "$contents/PlugIns/$category"
+    destination="$contents/PlugIns/$category/$(basename "$plugin")"
+    cp "$plugin" "$destination"
+    extra_executables+=("-executable=$destination")
+done
+"$macdeployqt" "$app" -no-plugins -no-codesign -no-strip -always-overwrite "${extra_executables[@]}"
+# Qt looks for qt.conf in the bundle Resources directory for each executable.
+printf '[Paths]\nPlugins = PlugIns\n' > "$resources/qt.conf"
+
+# Thin *every* Mach-O, including Qt frameworks/plugins, before signing. Leave the
+# SDK and the original build products untouched. Reject any Intel-only library.
+machos=()
+while IFS= read -r -d '' binary; do
+    case $(/usr/bin/file -b "$binary") in
+        *Mach-O*) machos+=("$binary") ;;
+    esac
+done < <(find "$contents" -type f -print0)
+[[ ${#machos[@]} -gt 0 ]] || fail "No Mach-O files in the bundle."
+for binary in "${machos[@]}"; do
+    architectures=$(/usr/bin/lipo -archs "$binary")
+    /usr/bin/lipo -verify_arch arm64 "$binary" || fail "Dependency has no arm64 slice: $binary"
+    if [[ "$architectures" != arm64 ]]; then
+        /usr/bin/lipo "$binary" -thin arm64 -output "$binary.arm64"
+        chmod "$(stat -f %Lp "$binary")" "$binary.arm64"
+        mv "$binary.arm64" "$binary"
+    fi
+    # Remove development-machine search paths left by the build/deployment tool.
+    while IFS= read -r rpath; do
+        case "$rpath" in
+            /*) install_name_tool -delete_rpath "$rpath" "$binary" ;;
+        esac
+    done < <(otool -l "$binary" | awk '/cmd LC_RPATH/ {r=1; next} r && /path / {sub(/^ *path /, ""); sub(/ \(offset.*$/, ""); print; r=0}')
+done
+
+# Verify that every dependency resolves inside this bundle or to a system library.
+for binary in "${machos[@]}"; do
+    install_id=$(otool -D "$binary" | sed -n '2p')
+    while IFS= read -r dependency; do
+        [[ "$dependency" != "$install_id" ]] || continue
+        case "$dependency" in
+            /System/Library/*|/usr/lib/*) continue ;;
+            @rpath/*) resolved="$contents/Frameworks/${dependency#@rpath/}" ;;
+            @executable_path/*) resolved="$contents/MacOS/${dependency#@executable_path/}" ;;
+            @loader_path/*) resolved="$(dirname "$binary")/${dependency#@loader_path/}" ;;
+            *) fail "Non-relocatable dependency in $binary: $dependency" ;;
+        esac
+        [[ -f "$resolved" ]] || fail "Unresolved dependency in $binary: $dependency"
+    done < <(otool -L "$binary" | tail -n +2 | sed -E 's/^[[:space:]]+//; s/ \(compatibility version.*$//')
+done
+
+# Advertise the actual minimum OS across the shipped binaries, never the SDK
+# version or an arbitrary lower value that the executable cannot run on.
+minimum_os=$(
+    for binary in "${machos[@]}"; do
+        otool -l "$binary" | awk '/cmd LC_VERSION_MIN_MACOSX/ {old=1} /minos / {print $2} old && /version / {print $2; old=0}'
+    done | awk '{split($1,v,"."); n=v[1]*1000000+v[2]*1000+v[3]; if(n>max){max=n; version=$1}} END {print version}'
+)
+[[ -n "$minimum_os" ]] || fail "Cannot determine minimum macOS version."
+# This distribution promises macOS 26.0 compatibility. Do not merely relabel a
+# bundle built for a newer OS; rebuild the application/dependencies instead.
+if ! awk -v version="$minimum_os" 'BEGIN {split(version,v,"."); exit !(v[1]*1000000+v[2]*1000+v[3] <= 26000000)}'; then
+    fail "Bundle requires macOS $minimum_os. Rebuild D-LAN and its dependencies with CMAKE_OSX_DEPLOYMENT_TARGET=26.0."
+fi
+plutil -replace LSMinimumSystemVersion -string "$minimum_os" "$contents/Info.plist"
+plutil -lint "$contents/Info.plist"
+
+# Ad-hoc signing permits local use on Apple Silicon. A Developer ID can be
+# supplied for distribution; notarization is a separate credentialed operation.
+identity=${DLAN_MACOS_SIGN_IDENTITY:--}
+sign_options=(--force --sign "$identity")
+if [[ "$identity" != - ]]; then sign_options+=(--options runtime --timestamp); fi
+for binary in "${machos[@]}"; do codesign "${sign_options[@]}" "$binary"; done
+while IFS= read -r -d '' framework; do codesign "${sign_options[@]}" "$framework"; done < <(find "$contents/Frameworks" -depth -name '*.framework' -type d -print0)
+codesign "${sign_options[@]}" "$app"
+codesign --verify --deep --strict "$app"
+
+# Check helper loading using only the deployed frameworks before packaging.
+[[ $(env -u DYLD_LIBRARY_PATH -u DYLD_FRAMEWORK_PATH "$contents/MacOS/D-LAN.Core" --version) == "$expected_version" ]] || fail "Packaged core failed to start."
+
+# Include only the signed app and an Applications shortcut in the disk image.
+# Users drag the app into Applications, then eject the read-only image.
+image_root="$stage/image"
+mkdir "$image_root"
+mv "$app" "$image_root/"
+ln -s /Applications "$image_root/Applications"
+disk_image="$stage/package.dmg"
+hdiutil create -volname "D-LAN" -srcfolder "$image_root" -fs HFS+ -format UDZO "$disk_image"
+if [[ "$identity" != - ]]; then
+    codesign --force --sign "$identity" --timestamp "$disk_image"
+    codesign --verify --strict "$disk_image"
+fi
+hdiutil verify "$disk_image"
+package="$output_dir/D-LAN-$version${tag:+-$tag}-$build_time-arm64.dmg"
+mv -f "$disk_image" "$package"
+echo "Created $package (arm64 only, macOS $minimum_os or newer)"

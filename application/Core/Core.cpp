@@ -16,6 +16,8 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
 
+#include <Common/Global.h>
+
 #include <Core.h>
 using namespace CoreSpace;
 
@@ -155,11 +157,11 @@ void Core::setLanguage(QLocale locale, bool load)
 {
    if (load)
    {
-      Common::Languages languages(QCoreApplication::applicationDirPath() + "/" + Common::Constants::LANGUAGE_DIRECTORY);
+      Common::Languages languages(Common::Global::getResourceFolder() + "/" + Common::Constants::LANGUAGE_DIRECTORY);
       Common::Language lang = languages.getBestMatchLanguage(Common::Languages::ExeType::CORE, locale);
       SETTINGS.set("language", lang.locale);
       SETTINGS.save();
-      const QString directory = QCoreApplication::applicationDirPath() + "/" + Common::Constants::LANGUAGE_DIRECTORY;
+      const QString directory = Common::Global::getResourceFolder() + "/" + Common::Constants::LANGUAGE_DIRECTORY;
       if (!this->translator.load(lang.filename, directory) && !lang.filename.isEmpty())
       {
          L_WARN(QString("Can't load translation file '%1' from directory '%2'").arg(lang.filename, directory));

@@ -9,6 +9,7 @@ Unless stated otherwise, paths are relative to the repository root.
 * [CMake options](#cmake-options)
 * [Build a release](#build-a-release)
 * [macOS release testing](#macos-release-testing)
+* [macOS application packaging](#macos-application-packaging)
 * [Linux AppImage](#linux-appimage)
 * [Profiling](#profiling)
 * [macOS filesystem monitoring](#macos-filesystem-monitoring)
@@ -36,6 +37,13 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20 -DCMAKE_P
 cmake --build build --parallel
 cmake --install build
 ```
+
+For macOS packages, add `-DCMAKE_OSX_ARCHITECTURES=arm64` and
+`-DCMAKE_OSX_DEPLOYMENT_TARGET=26.0` to **both** dependency configure commands.
+Use fresh build directories when rebuilding dependencies that previously targeted
+a newer macOS version. Protobuf's bundled Abseil and utf8_range must be rebuilt
+with the same settings. Changing only D-LAN's deployment target does not make
+previously compiled static libraries compatible with macOS 26.
 
 ## CMake options
 
@@ -85,7 +93,7 @@ build prerequisites in README. Configure a separate Release build with tests
 enabled. From the repository root, adjust the dependency paths:
 
 ```sh
-cmake -S application -B application/build/release -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="/path/to/Qt" -DDLAN_BLAKE3_ROOT="/path/to/blake3/c" -DDLAN_PROTOBUF_ROOT="/path/to/protobuf" -DDLAN_BUILD_TESTS=ON
+cmake -S application -B application/build/release -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=26.0 -DCMAKE_PREFIX_PATH="/path/to/Qt" -DDLAN_BLAKE3_ROOT="/path/to/blake3/c" -DDLAN_PROTOBUF_ROOT="/path/to/protobuf" -DDLAN_BUILD_TESTS=ON
 cd application
 nu build.nu release-test --build-dir build/release
 ```
@@ -102,10 +110,9 @@ LinguistTools is required for translations; use `--no-translations` to skip that
 step when it is unavailable. Add `--clean` to clean the selected build first.
 Builds use at most eight parallel jobs; override this with `--jobs 4` (or `-j 4`),
 for example on machines with less memory.
-On macOS, `nu build.nu` runs this workflow with a clean build; `build-all` runs
-it without cleaning unless requested. These commands finish after testing.
-macOS packaging is not implemented; an explicit `make-setup` request fails with
-an explanatory message.
+`release-test` finishes after testing and remains useful for development and CI.
+On macOS, `nu build.nu` runs a clean build, tests, then packaging; `build-all`
+does the same without cleaning unless requested. A failed test prevents packaging.
 
 To rerun the tests without rebuilding:
 
@@ -125,6 +132,67 @@ the build directory's `Testing/Temporary/LastTest.log` and `LastTestsFailed.log`
 Run from a normal macOS developer session with access to FSEvents and local
 network sockets. A restrictive sandbox can prevent some integration tests from
 running. The workflow reports these failures rather than skipping them.
+
+## macOS application packaging
+
+The package targets **macOS 26.0 or newer, Apple Silicon (arm64) only**. It is a
+compressed, read-only DMG containing `D-LAN.app` and an Applications shortcut.
+Open the DMG, drag D-LAN onto Applications, then eject the image and launch D-LAN
+from Applications. The bundle contains the GUI, core, optional PasswordHasher
+tool, Qt frameworks and plugins
+(including Cocoa and SQLite), translations, styles, emoticons and the license.
+Read-only assets live in `Contents/Resources`; the GUI launches the adjacent
+core in `Contents/MacOS`. Configuration and logs retain their usual Library paths.
+
+Configure a Release build with `-DCMAKE_OSX_ARCHITECTURES=arm64` and
+`-DCMAKE_OSX_DEPLOYMENT_TARGET=26.0`, using dependencies built for macOS 26.0 or
+earlier. D-LAN defaults to 26.0 when no deployment target is specified. Use a
+fresh D-LAN build directory when switching dependency installations so cached
+library paths cannot select the old versions. The packager records the highest
+minimum macOS version required by the bundled binaries and rejects a bundle
+requiring anything newer than 26.0. This check cannot detect the original target
+of a static library after linking; rebuilding those dependencies is essential.
+Runtime compatibility should also be tested on a macOS 26 machine.
+
+If Qt Creator reports that a library was built for a newer macOS version, check
+the library path in the warning. Set `DLAN_PROTOBUF_ROOT` and `DLAN_BLAKE3_ROOT`
+to the rebuilt dependencies in each build configuration. For an existing build,
+also clear the cached `protobuf_DIR`, `absl_DIR`, `utf8_range_DIR`, `DLAN_PROTOC`,
+`DLAN_BLAKE3_LIBRARY` and `DLAN_BLAKE3_INCLUDE_DIR` entries before reconfiguring;
+changing the root paths alone does not replace cached lookup results. Keep the
+deployment target at 26.0 to retain compatibility with macOS 26.
+
+The packager uses `macdeployqt` and plugins from the Qt SDK selected by the build's
+`Qt6_DIR`, plus Apple's command-line tools (`lipo`, `otool`, `codesign`, `sips`,
+`iconutil`, `plutil` and `hdiutil`). Qt LinguistTools is required for translations.
+From `application`, build, test and package with:
+
+```sh
+nu build.nu build-all --build-dir build/release --jobs 4
+```
+
+To package an already-built release independently of the test workflow:
+
+```sh
+nu build.nu make-setup --build-dir build/release
+```
+
+The result is
+`application/Setups/macOS/Installations/D-LAN-<version>-<build-time>-arm64.dmg`
+(the version includes its tag, if any). Packaging uses a temporary staging
+directory, leaving the SDK and build outputs unchanged. Universal dependencies
+are thinned to arm64, Intel-only binaries are rejected, and dependency paths and
+code signatures are checked before the disk image is created. The image checksum
+is verified before publishing the output file. No downloads occur.
+
+By default, the app is **ad-hoc signed, not notarized**. For public distribution,
+set `DLAN_MACOS_SIGN_IDENTITY` to your installed Developer ID Application identity
+before packaging; this enables hardened-runtime signing of the app and signs
+both the app and disk image with a secure timestamp.
+Notarization and stapling remain separate steps requiring your Apple credentials.
+An ad-hoc signature does not establish Gatekeeper trust for downloaded apps.
+See [Qt deployment](https://doc.qt.io/qt-6/macos-deployment.html) for the deployment
+tool and signing options.
 
 ## Linux AppImage
 

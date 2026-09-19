@@ -122,7 +122,7 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
 
    if (!SETTINGS.get<QString>("style").isEmpty())
       this->loadCustomStyle(
-         QCoreApplication::applicationDirPath() % "/" %
+         Common::Global::getResourceFolder() % "/" %
          Common::Constants::STYLE_DIRECTORY % "/" %
          SETTINGS.get<QString>("style") % "/" % Common::Constants::STYLE_FILE_NAME
       );
@@ -260,7 +260,7 @@ void MainWindow::loadCustomStyle(const QString& filepath)
    if (!filepath.isEmpty())
    {
       // The css images are search from the current path.
-      QDir::setCurrent(QCoreApplication::applicationDirPath());
+      QDir::setCurrent(Common::Global::getResourceFolder());
 
       QFile file(filepath);
       if (file.open(QIODevice::ReadOnly))

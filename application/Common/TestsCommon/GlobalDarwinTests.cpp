@@ -3,6 +3,8 @@
 #include <QTemporaryDir>
 #include <QTest>
 #include <QStandardPaths>
+#include <QProcess>
+#include <QTextStream>
 
 #include <Common/Global.h>
 #include <Common/PersistentData.h>
@@ -52,6 +54,33 @@ class GlobalDarwinTests : public QObject
    Q_OBJECT
 
 private slots:
+   void resourceFolder()
+   {
+      QCOMPARE(Common::Global::getResourceFolder(), QCoreApplication::applicationDirPath());
+      QTemporaryDir temporary;
+      QVERIFY(temporary.isValid());
+      const QString contents = QDir(temporary.path()).canonicalPath() + "/D-LAN.app/Contents";
+      QVERIFY(QDir().mkpath(contents + "/MacOS"));
+      const QString executable = contents + "/MacOS/resource-probe";
+      QVERIFY(QFile::copy(QCoreApplication::applicationFilePath(), executable));
+      auto probe = [&]()
+      {
+         QProcess child;
+         child.start(executable, {"--print-resource-folder"});
+         if (!child.waitForFinished(10000) || child.exitStatus() != QProcess::NormalExit || child.exitCode() != 0)
+            return QString();
+         return QString::fromUtf8(child.readAllStandardOutput());
+      };
+      // A folder that only resembles a bundle must retain ordinary build paths.
+      QCOMPARE(probe(), contents + "/MacOS");
+      QVERIFY(QDir().mkpath(contents + "/Resources"));
+      QFile plist(contents + "/Info.plist");
+      QVERIFY(plist.open(QIODevice::WriteOnly));
+      plist.write("<?xml version=\"1.0\"?><plist version=\"1.0\"><dict/></plist>");
+      plist.close();
+      QCOMPARE(probe(), contents + "/Resources");
+   }
+
    void nativeDataLocations()
    {
       using Global = Common::Global;
@@ -231,5 +260,15 @@ private slots:
    }
 };
 
-QTEST_GUILESS_MAIN(GlobalDarwinTests)
+int main(int argc, char** argv)
+{
+   QCoreApplication app(argc, argv);
+   if (app.arguments().contains("--print-resource-folder"))
+   {
+      QTextStream(stdout) << Common::Global::getResourceFolder();
+      return 0;
+   }
+   GlobalDarwinTests tests;
+   return QTest::qExec(&tests, argc, argv);
+}
 #include "GlobalDarwinTests.moc"

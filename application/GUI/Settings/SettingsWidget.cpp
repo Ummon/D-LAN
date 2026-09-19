@@ -16,6 +16,8 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
 
+#include <Common/Global.h>
+
 #include <Settings/SettingsWidget.h>
 #include <ui_SettingsWidget.h>
 using namespace GUI;
@@ -218,7 +220,7 @@ void SettingsWidget::fillComboBoxLanguages()
 
    bool exactMatchFound = false;
 
-   Common::Languages langs(QCoreApplication::applicationDirPath() + "/" + Common::Constants::LANGUAGE_DIRECTORY);
+   Common::Languages langs(Common::Global::getResourceFolder() + "/" + Common::Constants::LANGUAGE_DIRECTORY);
    for (QListIterator<Common::Language> i(langs.getAvailableLanguages(Common::Languages::ExeType::GUI)); i.hasNext();)
    {
       Common::Language lang = i.next();
@@ -242,7 +244,7 @@ void SettingsWidget::fillComboBoxStyles()
    this->ui->cmbStyles->clear();
    this->ui->cmbStyles->addItem(tr("Default"));
 
-   const QDir styleDir(QCoreApplication::applicationDirPath() + "/" + Common::Constants::STYLE_DIRECTORY);
+   const QDir styleDir(Common::Global::getResourceFolder() + "/" + Common::Constants::STYLE_DIRECTORY);
    for (QStringListIterator i(styleDir.entryList(QDir::Dirs | QDir::NoSymLinks | QDir::NoDotAndDotDot, QDir::Name)); i.hasNext();)
    {
       const QString& dirname = i.next();
@@ -588,7 +590,7 @@ void SettingsWidget::cmbLanguageChanged(int cmbIndex)
 void SettingsWidget::cmbStyleChanged(int cmbIndex)
 {
    const QString& dirname = this->ui->cmbStyles->itemData(cmbIndex).toString();
-   emit styleChanged(dirname.isEmpty() ? QString() : QCoreApplication::applicationDirPath() % "/" % Common::Constants::STYLE_DIRECTORY % "/" % dirname % "/" % Common::Constants::STYLE_FILE_NAME);
+   emit styleChanged(dirname.isEmpty() ? QString() : Common::Global::getResourceFolder() % "/" % Common::Constants::STYLE_DIRECTORY % "/" % dirname % "/" % Common::Constants::STYLE_FILE_NAME);
    SETTINGS.set("style", dirname);
    SETTINGS.save();
 }
@@ -596,7 +598,7 @@ void SettingsWidget::cmbStyleChanged(int cmbIndex)
 void SettingsWidget::reloadCurrentStyle()
 {
    const QString& dirname = this->ui->cmbStyles->itemData(this->ui->cmbStyles->currentIndex()).toString();
-   emit styleChanged(dirname.isEmpty() ? QString() : QCoreApplication::applicationDirPath() % "/" % Common::Constants::STYLE_DIRECTORY % "/" % dirname % "/" % Common::Constants::STYLE_FILE_NAME);
+   emit styleChanged(dirname.isEmpty() ? QString() : Common::Global::getResourceFolder() % "/" % Common::Constants::STYLE_DIRECTORY % "/" % dirname % "/" % Common::Constants::STYLE_FILE_NAME);
 }
 
 void SettingsWidget::changePassword()

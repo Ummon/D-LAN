@@ -41,7 +41,7 @@ namespace Common
 
    private:
       bool lockAcquired;
-      const qint64 nbBytesLocked;
+      [[maybe_unused]] const qint64 nbBytesLocked; // Used by the Windows locking implementation.
 
 #ifdef Q_OS_WIN32
       HANDLE fileHandle;

@@ -16,6 +16,7 @@ def "main build-all" [
 ] {
     if $nu.os-info.name == "macos" {
         main release-test --clean=$clean --no-translations=$no_translations --build-dir=$build_dir --jobs=$jobs
+        main make-setup --build-dir=$build_dir
         return
     }
     print "=== BUILD ALL ==="
@@ -123,9 +124,19 @@ def "main make-setup" [--build-dir: path] {
     match $nu.os-info.name {
         "windows" => { make_windows_setup $build_dir }
         "linux" => { make_linux_app_image $build_dir }
-        "macos" => { error make {msg: "macOS packaging is not implemented. Use 'release-test' to build and test the release."} }
+        "macos" => { make_macos_app $build_dir }
         $other => { error make {msg: $"Unsupported OS: ($other)"} }
     }
+}
+
+# Package only Apple Silicon slices, including the deployed Qt dependencies.
+def make_macos_app [build_dir?: path] {
+    let release_directory = get_release_directory $build_dir
+    let qt_directory = cache_value $release_directory Qt6_DIR
+    if ($qt_directory | is-empty) { error make {msg: "Qt6_DIR is missing from this build's CMake cache."} }
+    let qt_sdk = $qt_directory | path join "../../.." | path expand
+    run_checked cmake --build $release_directory --config Release --target dlan_translations
+    run_checked /bin/bash Setups/macOS/package.sh $release_directory $qt_sdk
 }
 
 def make_windows_setup [build_dir?: path] {

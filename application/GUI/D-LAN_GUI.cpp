@@ -16,6 +16,8 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
 
+#include <Common/Global.h>
+
 #include <D-LAN_GUI.h>
 using namespace GUI;
 
@@ -66,7 +68,7 @@ D_LAN_GUI::D_LAN_GUI(int& argc, char* argv[]) :
    QLocale current = QLocale::system();
    if (SETTINGS.isSet("language"))
       current = SETTINGS.get<QLocale>("language");
-   Common::Languages langs(QCoreApplication::applicationDirPath() + "/" + Common::Constants::LANGUAGE_DIRECTORY);
+   Common::Languages langs(Common::Global::getResourceFolder() + "/" + Common::Constants::LANGUAGE_DIRECTORY);
    this->loadLanguage(langs.getBestMatchLanguage(Common::Languages::ExeType::GUI, current).filename);
 
    // Keep the instance marker alive for the lifetime of the application.
@@ -196,7 +198,7 @@ void D_LAN_GUI::updateTrayIconMenu()
   */
 void D_LAN_GUI::loadLanguage(const QString& filename)
 {
-   const QString directory = QCoreApplication::applicationDirPath() + "/" + Common::Constants::LANGUAGE_DIRECTORY;
+   const QString directory = Common::Global::getResourceFolder() + "/" + Common::Constants::LANGUAGE_DIRECTORY;
    if (!this->translator.load(filename, directory) && !filename.isEmpty())
    {
       L_WARN(QString("Can't load translation file '%1' from directory '%2").arg(filename, directory));
