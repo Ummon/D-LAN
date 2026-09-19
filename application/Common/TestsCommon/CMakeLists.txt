@@ -91,4 +91,8 @@ if(APPLE)
    add_executable(TestsGlobalDarwin GlobalDarwinTests.cpp)
    target_link_libraries(TestsGlobalDarwin PRIVATE Common Qt6::Test)
    add_test(NAME TestsGlobalDarwin COMMAND TestsGlobalDarwin)
+
+   add_executable(TestsGlobalDarwinIdentity GlobalDarwinIdentityTests.cpp)
+   target_link_libraries(TestsGlobalDarwinIdentity PRIVATE Common Qt6::Test)
+   add_test(NAME TestsGlobalDarwinIdentity COMMAND TestsGlobalDarwinIdentity)
 endif()

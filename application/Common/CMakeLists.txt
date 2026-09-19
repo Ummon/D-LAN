@@ -74,6 +74,10 @@ target_link_libraries(Common PUBLIC
    blake3
 )
 
+if(APPLE)
+   target_link_libraries(Common PRIVATE "-framework SystemConfiguration" "-framework CoreFoundation")
+endif()
+
 if(DLAN_BUILD_TESTS)
    add_subdirectory(TestsCommon)
 endif()

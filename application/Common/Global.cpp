@@ -42,8 +42,11 @@ using namespace Common;
    #include <sys/utsname.h>
    #include <unistd.h>
 #elif defined(Q_OS_DARWIN)
+   #include <SystemConfiguration/SystemConfiguration.h>
    #include <cerrno>
+   #include <pwd.h>
    #include <sys/mount.h>
+   #include <unistd.h>
 #endif
 
 #include <Constants.h>
@@ -484,6 +487,8 @@ QString Global::getDataSystemFolder(DataFolderType type)
 #endif
 }
 
+// Return the short account name. On macOS this is the effective user running
+// the process, including when launched by Finder or as a background service.
 QString Global::getCurrentUserName()
 {
 #if defined(Q_OS_WIN32)
@@ -504,6 +509,23 @@ QString Global::getCurrentUserName()
       return QString::fromUtf8(login);
    else
       return QString();
+#elif defined(Q_OS_DARWIN)
+   // getlogin() requires a login session and getpwuid() uses shared storage.
+   // The reentrant lookup works without a terminal and is safe across threads.
+   QByteArray buffer(1024, Qt::Uninitialized);
+   const uid_t uid = geteuid();
+   constexpr qsizetype maximumBufferSize = 1024 * 1024;
+   for (;;)
+   {
+      struct passwd account {};
+      struct passwd* result = nullptr;
+      const int error = getpwuid_r(uid, &account, buffer.data(), buffer.size(), &result);
+      if (error == 0)
+         return result && result->pw_name ? QString::fromUtf8(result->pw_name) : QString();
+      if (error != ERANGE || buffer.size() >= maximumBufferSize)
+         return QString();
+      buffer.resize(buffer.size() * 2);
+   }
 #else
    return "Bob";
 #endif
@@ -523,7 +545,17 @@ QString Global::getCurrentMachineName()
 
    // 'machineNameSize' receives the number of characters copied, terminating null character excluded.
    return QString::fromWCharArray(machineName, machineNameSize);
-#elif defined(Q_OS_LINUX)
+#elif defined(Q_OS_LINUX) || defined(Q_OS_DARWIN)
+#ifdef Q_OS_DARWIN
+   // Prefer the user-visible name from macOS settings over a DNS hostname.
+   if (CFStringRef computerName = SCDynamicStoreCopyComputerName(nullptr, nullptr))
+   {
+      const QString name = QString::fromCFString(computerName);
+      CFRelease(computerName);
+      if (!name.isEmpty())
+         return name;
+   }
+#endif
    char machineName[256];
    if (gethostname(machineName, sizeof(machineName)) != 0)
       return QString();
