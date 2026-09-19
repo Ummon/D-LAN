@@ -37,7 +37,6 @@ namespace FM
       virtual ~FileNotFoundException() throw () {}
    };
 
-   // TODO: check if still used.
    class DirNotFoundException : public FileSystemEntryNotFoundException
    {
    public :
