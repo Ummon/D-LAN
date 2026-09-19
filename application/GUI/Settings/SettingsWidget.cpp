@@ -514,9 +514,6 @@ void SettingsWidget::coreConnected()
    this->ui->butResetCoreAddress->setDisabled(false);
 
    this->ui->butChangePassword->setDisabled(false);
-
-   // TODO: needed?
-   // this->ui->butOpenFolder->setDisabled(!this->coreConnection->isLocal());
 }
 
 void SettingsWidget::coreDisconnected()

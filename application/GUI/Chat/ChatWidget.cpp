@@ -1049,7 +1049,7 @@ void ChatWidget::init()
       this->ui->tblRoomPeers->hideColumn(2);
       this->ui->tblRoomPeers->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
       this->ui->tblRoomPeers->horizontalHeader()->setVisible(false);
-      this->ui->tblRoomPeers->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed); // TODO: is there an another way to reduce the row size?
+      this->ui->tblRoomPeers->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
       this->ui->tblRoomPeers->verticalHeader()->setDefaultSectionSize(QFontMetrics(QApplication::font()).height() + 4);
       this->ui->tblRoomPeers->verticalHeader()->setVisible(false);
       this->ui->tblRoomPeers->setSelectionBehavior(QAbstractItemView::SelectRows);
