@@ -101,7 +101,6 @@ void TabButton::paintEvent(QPaintEvent* pe)
 TabCloseButton::TabCloseButton(QWidget* widget, QWidget* parent, std::function<QString()> tooltipFun) :
    TabButton(parent), widget(widget), tooltipFun(tooltipFun)
 {
-   // TODO: replace by an event?
    connect(this, &QAbstractButton::clicked, this, &TabCloseButton::buttonClicked);
    this->setToolTipTranslate();
 }

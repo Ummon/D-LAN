@@ -57,7 +57,6 @@ MdiArea::MdiArea(
    this->setDocumentMode(true);
    this->setOption(QMdiArea::DontMaximizeSubWindowOnActivation, true);
 
-   // TODO: replace by an event?
    connect(this, &QMdiArea::subWindowActivated, this, &MdiArea::subWindowActivated);
 
    this->mdiAreaTabBar = this->findChild<QTabBar*>();
