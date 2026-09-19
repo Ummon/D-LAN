@@ -30,6 +30,7 @@ private slots:
    void failedHashingIsQueuedOnce();
    void hashingSchedulerTransitions();
    void hashingWorkFollowsFileChanges();
+   void scanWaitsForRedownload();
    void cancelledReplacementLeavesNoHashingJob_data();
    void cancelledReplacementLeavesNoHashingJob();
    void retirementWaitsForSelectedHashingJob();

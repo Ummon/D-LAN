@@ -736,6 +736,68 @@ void CacheTest::hashingWorkFollowsFileChanges()
    QCOMPARE(file->getRemainingBytesToHash(), qint64(0));
 }
 
+void CacheTest::scanWaitsForRedownload()
+{
+   class LockedFile : public FM::File
+   {
+   public:
+      using FM::File::File;
+      QRecursiveMutex& metadataMutex() { return this->mutex; }
+   };
+
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   const QString path = temp.filePath("redownload.bin");
+   {
+      QFile physical(path);
+      QVERIFY(physical.open(QIODevice::WriteOnly));
+      QCOMPARE(physical.write("old", 3), qint64(3));
+   }
+   const QFileInfo info(path);
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   FM::FileUpdater updater(nullptr);
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   auto file = new LockedFile(root, "redownload.bin", info.size(), false, info.lastModified(), root->getRootDir());
+   updater.addScannedFile(info, file);
+   QVERIFY(updater.isHashing());
+
+   // Hold metadata while the scanner enters with a completed file. Re-download
+   // wins the lock and replaces its chunks before the scanner can inspect them.
+   QMutexLocker metadataLocker(&file->metadataMutex());
+   QSemaphore scanning, scanned;
+   std::exception_ptr scanError;
+   std::thread scanner([&] {
+      scanning.release();
+      try { updater.addScannedFile(info, file); }
+      catch (...) { scanError = std::current_exception(); }
+      scanned.release();
+   });
+   scanning.acquire();
+   const bool scannedWhileLocked = scanned.tryAcquire(1, 100);
+   const QList<Common::Hash> hashes { Common::Hash::rand() };
+   file->setToUnfinished(7, hashes);
+   const auto chunks = file->getChunks();
+   const auto date = file->getDateLastModified();
+   metadataLocker.unlock();
+   if (!scannedWhileLocked && !scanned.tryAcquire(1, 5000))
+      qFatal("Scan deadlocked with re-download");
+   scanner.join();
+
+   QVERIFY(!scanError);
+   QVERIFY(!scannedWhileLocked);
+   QVERIFY(!file->isComplete());
+   QCOMPARE(file->getSize(), qint64(7));
+   QCOMPARE(file->getDateLastModified(), date);
+   QCOMPARE(file->getChunks(), chunks);
+   QCOMPARE(chunks.first()->getHash(), hashes.first());
+   QCOMPARE(chunks.first()->getKnownBytes(), 0);
+   QVERIFY(chunks.first()->isOwnedBy(file));
+   QVERIFY(updater.hashingQueue.isEmpty());
+}
+
 void CacheTest::cancelledReplacementLeavesNoHashingJob_data()
 {
    QTest::addColumn<QString>("queue");

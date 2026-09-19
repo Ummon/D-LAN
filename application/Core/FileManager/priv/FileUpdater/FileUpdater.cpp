@@ -621,8 +621,8 @@ File* FileUpdater::addScannedFile(const QFileInfo& fileInfo, File* file, Directo
 {
    QMutexLocker locker(&this->mutex);
 
-   if (file && file->isComplete() && !file->correspondTo(fileInfo))
-      file->fileHasChangedOnDisk(fileInfo);
+   if (file)
+      file->updateFromScan(fileInfo);
 
    if (parentDirectory && !file)
    {

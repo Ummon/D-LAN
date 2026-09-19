@@ -332,6 +332,15 @@ bool File::correspondTo(const QFileInfo& fileInfo, bool checkTheDateToo) const
       (!checkTheDateToo || this->getDateLastModified() == fileInfo.lastModified());
 }
 
+void File::updateFromScan(const QFileInfo& fileInfo)
+{
+   // Re-download changes completeness and replaces chunks under this same lock.
+   // Keep the check and reset together so old scan metadata cannot reset a download.
+   QMutexLocker locker(&this->mutex);
+   if (this->isComplete() && !this->correspondTo(fileInfo))
+      this->fileHasChangedOnDisk(fileInfo);
+}
+
 void File::fileHasChangedOnDisk(const QFileInfo fileInfo)
 {
    // L_DEBU(QString("~~~ File::fileHasChangedOnDisk, chunks size: %1").arg(this->chunks.size()));

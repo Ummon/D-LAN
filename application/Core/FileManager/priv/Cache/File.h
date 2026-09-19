@@ -70,6 +70,7 @@ namespace FM
       bool matchesEntry(const Protos::Common::Entry& entry) const;
 
       bool correspondTo(const QFileInfo& fileInfo, bool checkTheDateToo = true) const;
+      void updateFromScan(const QFileInfo& fileInfo);
       void fileHasChangedOnDisk(const QFileInfo fileInfo);
 
       Common::Path getRelativePath() const override;
