@@ -45,7 +45,7 @@ SearchDock::SearchDock(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
 
 #ifdef Q_OS_DARWIN
    this->ui->butSearch->setMaximumWidth(24);
-   this->ui->butSearchOwnFiles->setMaximumWidth(24);
+   // this->ui->butSearchOwnFiles->setMaximumWidth(24);
 #endif
 
    auto sizeValidator = new QIntValidator(this);
