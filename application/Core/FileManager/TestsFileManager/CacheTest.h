@@ -97,6 +97,9 @@ private slots:
    void browseNewSharedDirectory();
    void scanDirectoryIncrementally_data();
    void scanDirectoryIncrementally();
+   void scanReplacementFiles_data();
+   void scanReplacementFiles();
+   void scanFileWithUnfinishedDirectory();
    void scanLoadsHashesInBatches();
    void scanCanStopDuringHashLookup();
    void partialWrites_data();

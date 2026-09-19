@@ -3040,6 +3040,115 @@ void CacheTest::browseNewSharedDirectory()
    }
 }
 
+void CacheTest::scanReplacementFiles_data()
+{
+   QTest::addColumn<QString>("order");
+   QTest::addColumn<bool>("cancel");
+   for (const auto& order : { "complete-first", "unfinished-first", "initial-scan" })
+      for (bool cancel : { false, true })
+         QTest::newRow(qPrintable(QString("%1-%2").arg(order, cancel ? "cancel" : "complete"))) << QString(order) << cancel;
+}
+
+void CacheTest::scanReplacementFiles()
+{
+   QFETCH(QString, order);
+   QFETCH(bool, cancel);
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   const QString path = temp.filePath("replacement.bin");
+   const QString unfinishedPath = path + SETTINGS.get<QString>("unfinished_suffix_term");
+   const QByteArray replacement("newdata");
+   {
+      QFile original(path), unfinished(unfinishedPath);
+      QVERIFY(original.open(QIODevice::WriteOnly));
+      QCOMPARE(original.write("old"), qint64(3));
+      QVERIFY(unfinished.open(QIODevice::WriteOnly));
+      QVERIFY(unfinished.resize(replacement.size()));
+   }
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   FM::FileUpdater updater(nullptr);
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   auto dir = root->getRootDir();
+   if (order == "initial-scan")
+      updater.scan(dir, true);
+   else
+   {
+      // Drive both enumeration orders explicitly, including the empty batch-cache result.
+      const QList<Common::Hash> hashes;
+      const auto scanFile = [&](const QString& scannedPath) {
+         const QFileInfo info(scannedPath);
+         updater.addScannedFile(info, dir->getFile(info.fileName()), dir, &hashes);
+      };
+      scanFile(order == "complete-first" ? path : unfinishedPath);
+      scanFile(order == "complete-first" ? unfinishedPath : path);
+   }
+   auto file = dir->getFile(QFileInfo(unfinishedPath).fileName());
+   QVERIFY(file);
+   QVERIFY(!file->isComplete());
+   QVERIFY(!dir->getFile("replacement.bin"));
+   QCOMPARE(dir->getFiles().size(), qsizetype(1));
+   QCOMPARE(dir->getSize(), qint64(replacement.size()));
+   QVERIFY(dir->getCompleteFiles().isEmpty());
+   QVERIFY(updater.hashingQueue.isEmpty());
+   updater.scan(dir); // Rescanning must also keep the old physical file out of the cache.
+   QCOMPARE(dir->getFiles(), QList<FM::File*> { file });
+   QVERIFY(QFileInfo::exists(path));
+
+   if (cancel)
+   {
+      updater.deleteEntry(file);
+      QCoreApplication::sendPostedEvents(&cache, QEvent::MetaCall);
+      updater.scan(dir);
+      file = dir->getFile("replacement.bin");
+      QVERIFY(file);
+      QCOMPARE(file->getSize(), qint64(3));
+   }
+   else
+   {
+      auto chunk = file->getChunks().first();
+      Common::Hasher hasher;
+      hasher.addData(std::span<const char>(replacement));
+      chunk->setHash(hasher.getResult(), false);
+      auto writer = chunk->getDataWriter();
+      QVERIFY(writer->write(replacement.constData(), replacement.size()));
+      QVERIFY(file->isComplete());
+      QCOMPARE(dir->getFile("replacement.bin"), file);
+      updater.scan(dir);
+   }
+   QCOMPARE(dir->getFiles(), QList<FM::File*> { file });
+   QCOMPARE(dir->getCompleteFiles(), QList<FM::File*> { file });
+   QCOMPARE(dir->getSize(), cancel ? qint64(3) : qint64(replacement.size()));
+   QVERIFY(!QFileInfo::exists(unfinishedPath));
+   QFile physical(path);
+   QVERIFY(physical.open(QIODevice::ReadOnly));
+   QCOMPARE(physical.readAll(), cancel ? QByteArray("old") : replacement);
+}
+
+void CacheTest::scanFileWithUnfinishedDirectory()
+{
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   QFile physical(temp.filePath("ordinary.bin"));
+   QVERIFY(physical.open(QIODevice::WriteOnly));
+   QCOMPARE(physical.write("abc"), qint64(3));
+   physical.close();
+   QVERIFY(QDir(temp.path()).mkdir("ordinary.bin" + SETTINGS.get<QString>("unfinished_suffix_term")));
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   FM::FileUpdater updater(nullptr);
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   auto dir = root->getRootDir();
+   updater.scan(dir, true);
+   QCOMPARE(dir->getCompleteFiles().size(), qsizetype(1));
+   QVERIFY(dir->getFile("ordinary.bin"));
+   QCOMPARE(dir->getSubDirs().size(), qsizetype(1));
+}
+
 void CacheTest::scanLoadsHashesInBatches()
 {
    FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;

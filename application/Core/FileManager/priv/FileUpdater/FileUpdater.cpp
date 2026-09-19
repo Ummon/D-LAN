@@ -629,13 +629,24 @@ File* FileUpdater::addScannedFile(const QFileInfo& fileInfo, File* file, Directo
       // Very special case: there is a file 'a' without File* in cache and a file 'a.unfinished'.
       // This case occurs when a file is redownloaded, the File* 'a' is renamed as 'a.unfinished' but the physical file 'a'
       // is not deleted.
-      File* unfinishedFile = parentDirectory->getFile(fileInfo.fileName().append(Global::getUnfinishedSuffix()));
+      const QString unfinishedName = fileInfo.fileName() + Global::getUnfinishedSuffix();
+      File* unfinishedFile = parentDirectory->getFile(unfinishedName);
       if (unfinishedFile)
       {
          return unfinishedFile;
       }
       else
       {
+         // During the initial scan the replacement may not be cached yet. Suppress
+         // the old completed file regardless of enumeration or hash-batch order.
+         // Match the scanner's file filtering: directories and symlinks don't count.
+         if (!Global::isFileUnfinished(fileInfo.fileName()))
+         {
+            const QFileInfo unfinishedInfo(parentDirectory->getAbsolutePath().setFilename(unfinishedName).toString());
+            if (unfinishedInfo.isFile() && !unfinishedInfo.isSymLink())
+               return nullptr;
+         }
+
          // A directory may have moved while the batch was being fetched. In that
          // case retain the normal lookup using the file's current cache path.
          if (cachedHashes && parentDirectory->getAbsolutePath().setFilename(fileInfo.fileName()) != Common::Path(fileInfo.absoluteFilePath()))
