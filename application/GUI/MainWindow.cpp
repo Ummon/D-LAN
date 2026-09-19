@@ -332,12 +332,6 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
          this->searchDock->setFocusToLineEdit();
          event->accept();
          return;
-
-      // Close the current window.
-      case Qt::Key_W:
-         this->mdiArea->closeCurrentWindow();
-         event->accept();
-         return;
       }
    }
    // ALT.

@@ -85,6 +85,7 @@ namespace GUI
       void onGlobalProgressChanged(quint64 completed, quint64 total);
 
    private:
+      void closeTab(int index);
       QString getBusyIndicatorToolTip() const;
 
       void addMdiWindow(QWidget* widget);

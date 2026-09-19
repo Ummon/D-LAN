@@ -21,6 +21,7 @@ using namespace GUI;
 
 #include <QMdiSubWindow>
 #include <QCoreApplication>
+#include <QShortcut>
 #include <QStringBuilder>
 
 #include <Common/Settings.h>
@@ -64,6 +65,10 @@ MdiArea::MdiArea(
    this->mdiAreaTabBar->installEventFilter(this);
    connect(this->mdiAreaTabBar, &QTabBar::tabMoved, this, &MdiArea::tabMoved);
 
+   QShortcut* closeShortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_W), this);
+   closeShortcut->setAutoRepeat(false);
+   connect(closeShortcut, &QShortcut::activated, this, &MdiArea::closeCurrentWindow);
+
    this->addSettingsWindow();
 
    connect(this->coreConnection.data(), &RCC::ICoreConnection::newState, this, &MdiArea::newState);
@@ -90,15 +95,7 @@ void MdiArea::focusNthWindow(int num)
   */
 void MdiArea::closeCurrentWindow()
 {
-   if (this->currentSubWindow())
-   {
-      QWidget* widget = this->currentSubWindow()->widget();
-
-      if (dynamic_cast<BrowseWidget*>(widget) || dynamic_cast<SearchWidget*>(widget))
-         this->removeWidget(widget);
-      else if (dynamic_cast<ChatWidget*>(widget) && !dynamic_cast<ChatWidget*>(widget)->isGeneral())
-         this->leaveRoom(widget);
-   }
+   this->closeTab(this->mdiAreaTabBar->currentIndex());
 }
 
 void MdiArea::openBrowseWindow(const Common::Hash& peerID)
@@ -150,20 +147,42 @@ void MdiArea::changeEvent(QEvent* event)
 
 bool MdiArea::eventFilter(QObject* obj, QEvent* event)
 {
-   if // Prohibits the user to close tab with the middle button or with the contextual menu.
-   (
-      obj == this->mdiAreaTabBar &&
-      (
-         (
-            (event->type() == QEvent::MouseButtonPress || event->type() == QEvent::MouseButtonDblClick) &&
-            static_cast<QMouseEvent*>(event)->button() == Qt::MiddleButton
-         ) ||
-         event->type() == QEvent::ContextMenu
-      )
-   )
-      return true;
+   if (obj == this->mdiAreaTabBar)
+   {
+      // Keep Qt's context menu from closing permanent windows.
+      if (event->type() == QEvent::ContextMenu)
+         return true;
+
+      if (event->type() == QEvent::MouseButtonPress || event->type() == QEvent::MouseButtonDblClick || event->type() == QEvent::MouseButtonRelease)
+      {
+         QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
+         if (mouseEvent->button() == Qt::MiddleButton)
+         {
+            if (event->type() == QEvent::MouseButtonRelease)
+               this->closeTab(this->mdiAreaTabBar->tabAt(mouseEvent->position().toPoint()));
+            return true;
+         }
+      }
+   }
 
    return QMdiArea::eventFilter(obj, event);
+}
+
+void MdiArea::closeTab(int index)
+{
+   if (index < 0 || index >= this->mdiAreaTabBar->count())
+      return;
+
+   QWidget* buttons = this->mdiAreaTabBar->tabButton(index, QTabBar::RightSide);
+   if (!buttons)
+      return;
+
+   // Browse tabs wrap the close and refresh buttons in a container.
+   TabCloseButton* closeButton = qobject_cast<TabCloseButton*>(buttons);
+   if (!closeButton)
+      closeButton = buttons->findChild<TabCloseButton*>();
+   if (closeButton)
+      closeButton->click();
 }
 
 void MdiArea::newState(const Protos::GUI::State& state)
