@@ -177,7 +177,6 @@ namespace
          {
          case 1: throw FM::NoWriteableDirectoryException();
          case 2: throw FM::UnableToCreateNewDirException();
-         case 3: throw FM::ScanningException();
          }
          this->cache.newDirectory(entry);
       }
@@ -519,7 +518,7 @@ void Tests::directoryBecomesEmpty_data()
    QTest::addColumn<bool>("explicitEntries");
    QTest::addColumn<int>("failure");
    for (bool explicitEntries : { false, true })
-      for (int failure : { 0, 1, 2, 3 })
+      for (int failure : { 0, 1, 2 })
       {
          const auto name = QString("%1-failure-%2").arg(explicitEntries ? "empty-entries" : "omitted-entries").arg(failure).toUtf8();
          QTest::newRow(name.constData()) << explicitEntries << failure;
@@ -562,8 +561,7 @@ void Tests::directoryBecomesEmpty()
       QCOMPARE(manager.getDownloads().size(), 1);
       QCOMPARE(manager.getDownloads().first()->getID(), download->getID());
       const auto expected = failure == 1 ? Protos::Common::DownloadStatus::NO_SHARED_DIRECTORY_TO_WRITE
-         : failure == 2 ? Protos::Common::DownloadStatus::UNABLE_TO_CREATE_THE_DIRECTORY
-         : Protos::Common::DownloadStatus::LOCAL_SCANNING_IN_PROGRESS;
+         : Protos::Common::DownloadStatus::UNABLE_TO_CREATE_THE_DIRECTORY;
       QCOMPARE(download->getStatus(), expected);
       QVERIFY(!QFileInfo::exists(destination));
       // A failed retry must keep the entry; a later retry must recreate the directory.

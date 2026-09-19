@@ -470,11 +470,8 @@ QList<QSharedPointer<IChunk>> Cache::newFile(Protos::Common::Entry& fileEntry)
 }
 
 /**
-  * @exception ScanningException The entry or one of their parents is currently being scanned
   * @exception NoWriteableDirectoryException
   * @exception UnableToCreateNewDirException
-  *
-  * TODO: throw ScanningException if needed.
   */
 void Cache::newDirectory(Protos::Common::Entry& dirEntry)
 {

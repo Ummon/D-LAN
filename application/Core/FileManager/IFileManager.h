@@ -117,7 +117,6 @@ namespace FM
       virtual QList<QSharedPointer<IChunk>> newFile(Protos::Common::Entry& entry) = 0;
 
       /**
-        * @exception ScanningException The entry or one of their parents is currently being scanned
         * @exception NoWriteableDirectoryException
         * @exception UnableToCreateNewDirException
         */
