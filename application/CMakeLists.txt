@@ -35,6 +35,11 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+if(APPLE)
+   # Keep D-LAN frames walkable from a fatal signal's machine context.
+   add_compile_options(-fno-omit-frame-pointer)
+endif()
+
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
    # Keep all targets, including static libraries, position-independent. LTO
    # also needs -fPIC at link time to avoid copies of Qt globals such as

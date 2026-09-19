@@ -501,11 +501,11 @@ QString CrashHandler::stackTrace(int framesToSkip)
    return QString::fromLatin1(buffer.data, buffer.size);
 }
 
-#elif !defined(Q_OS_LINUX)
+#elif !defined(Q_OS_LINUX) && !defined(Q_OS_DARWIN)
 
 void CrashHandler::install(bool)
 {
-   // Implemented separately for Linux in CrashHandlerLinux.cpp.
+   // Linux and macOS have separate native implementations.
 }
 
 QString CrashHandler::stackTrace(int)

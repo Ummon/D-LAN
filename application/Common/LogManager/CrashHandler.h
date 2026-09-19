@@ -41,6 +41,15 @@ namespace LM
      * terminates with the original signal (system core-dump policy still applies).
      * writeMiniDump is Windows-only. Install before starting worker threads;
      * the alternate signal stack protects only the thread calling install().
+     *
+     * macOS: the same fatal signals plus SIGTRAP produce a standalone report
+     * beside the logs and stderr output. Reports include the faulting thread's
+     * machine context, raw frame addresses and a startup snapshot of Mach-O
+     * load addresses/UUIDs for offline symbolication with atos. No Qt, logger,
+     * allocator or symbol lookup is used in the signal handler. Apple Silicon
+     * and Intel are supported. Native system crash reporting remains enabled.
+     * Install before worker threads; the alternate stack is thread-local, and
+     * libraries loaded after installation are absent from the image snapshot.
      */
    class CrashHandler
    {
