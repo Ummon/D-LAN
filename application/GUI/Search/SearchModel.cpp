@@ -198,54 +198,44 @@ bool entryLessThan(
    Qt::SortOrder order
 )
 {
-   // TODO: check if correct.
-   const QString& path1 = Common::ProtoHelper::getPath(e1, !Common::ProtoHelper::isRoot(e1)).toString(false).toLower();
-   const QString& path2 = Common::ProtoHelper::getPath(e2, !Common::ProtoHelper::isRoot(e2)).toString(false).toLower();
-
-   // The names aren't transformed to 'QString', 'strcmpi(..)' compares the UTF-8 bytes directly and without
-   // copying them. It's the same comparison as the one used to sort the downloads, see 'GUI::operator<(..)'.
-   const int nameComparison = Common::StringUtils::strcmpi(e1.name(), e2.name());
-
-   switch (column)
+   const auto compare = [&](SearchModel::Column key) -> int
    {
+      switch (key)
+      {
       case SearchModel::NAME:
-         if (nameComparison != 0)
-            return order == Qt::AscendingOrder ? nameComparison < 0 : nameComparison > 0;
-         break;
+         // Compare UTF-8 bytes as in the download model; this is not Unicode case folding.
+         return Common::StringUtils::strcmpi(e1.name(), e2.name());
 
       case SearchModel::DIRECTORY:
-         if (path1 != path2)
-            return order == Qt::AscendingOrder ? path1 < path2 : path1 > path2;
-         break;
+      {
+         const QString path1 = Common::ProtoHelper::getPath(e1, !Common::ProtoHelper::isRoot(e1)).toString(false).toLower();
+         const QString path2 = Common::ProtoHelper::getPath(e2, !Common::ProtoHelper::isRoot(e2)).toString(false).toLower();
+         return path1.compare(path2);
+      }
 
       case SearchModel::RELEVANCE:
-         if (level1 != level2)
-            return order == Qt::AscendingOrder ? level1 < level2 : level1 > level2;
-         break;
+         // A lower level means a better match.
+         return (level1 > level2) - (level1 < level2);
 
       case SearchModel::PEER:
-         if (peerNick1 != peerNick2)
-            return order == Qt::AscendingOrder ? peerNick1 < peerNick2 : peerNick1 > peerNick2;
-         break;
+         return peerNick1.compare(peerNick2);
 
       case SearchModel::SIZE:
-         if (e1.size() != e2.size())
-            return order == Qt::AscendingOrder ? e1.size() < e2.size() : e1.size() > e2.size();
+         return (e1.size() > e2.size()) - (e1.size() < e2.size());
+      }
+      return 0;
+   };
+
+   // Selected column first, then the same tie-breakers for every column.
+   int comparison = compare(column);
+   for (const auto key : { SearchModel::RELEVANCE, SearchModel::DIRECTORY, SearchModel::NAME, SearchModel::PEER, SearchModel::SIZE })
+   {
+      if (comparison != 0)
+         break;
+      if (key != column)
+         comparison = compare(key);
    }
-
-   if (column != SearchModel::RELEVANCE && level1 != level2)
-      return order == Qt::AscendingOrder ? level1 < level2 : level1 > level2;
-
-   if (column != SearchModel::DIRECTORY && path1 != path2)
-      return order == Qt::AscendingOrder ? path1 < path2 : path1 > path2;
-
-   if (column != SearchModel::NAME && nameComparison != 0)
-      return order == Qt::AscendingOrder ? nameComparison < 0 : nameComparison > 0;
-
-   if (column != SearchModel::PEER && peerNick1 != peerNick2)
-      return order == Qt::AscendingOrder ? peerNick1 < peerNick2 : peerNick1 > peerNick2;
-
-   return order == Qt::AscendingOrder ? e1.size() < e2.size() : e1.size() > e2.size();
+   return order == Qt::AscendingOrder ? comparison < 0 : comparison > 0;
 }
 
 /**

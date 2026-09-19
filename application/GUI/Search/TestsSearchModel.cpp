@@ -2,11 +2,19 @@
 #include <QAbstractItemModelTester>
 #include <QSignalSpy>
 
+#include <limits>
+
 #include <Common/Constants.h>
 #include <Common/Global.h>
 #include <Common/RemoteCoreController/Builder.h>
 #include <Common/Settings.h>
 #include <Search/SearchModel.h>
+
+bool entryLessThan(
+   const Protos::Common::Entry& e1, int level1, const QString& peerNick1,
+   const Protos::Common::Entry& e2, int level2, const QString& peerNick2,
+   GUI::SearchModel::Column column, Qt::SortOrder order
+);
 
 namespace
 {
@@ -47,6 +55,67 @@ class TestsSearchModel : public QObject
 {
    Q_OBJECT
 private slots:
+   void entryOrdering_data()
+   {
+      QTest::addColumn<int>("column");
+      QTest::addColumn<QList<int>>("expected");
+      // Entries 0..4 each lower one key (name, directory, level, peer, size).
+      // Entries 5 and 6 have equivalent keys, including case-insensitive name/path.
+      QTest::newRow("name") << int(Model::NAME) << QList<int>{0, 2, 1, 3, 4, 5, 6};
+      QTest::newRow("directory") << int(Model::DIRECTORY) << QList<int>{1, 2, 0, 3, 4, 5, 6};
+      QTest::newRow("relevance") << int(Model::RELEVANCE) << QList<int>{2, 1, 0, 3, 4, 5, 6};
+      QTest::newRow("peer") << int(Model::PEER) << QList<int>{3, 2, 1, 0, 4, 5, 6};
+      QTest::newRow("size") << int(Model::SIZE) << QList<int>{4, 2, 1, 0, 3, 5, 6};
+   }
+
+   void entryOrdering()
+   {
+      QFETCH(int, column);
+      QFETCH(QList<int>, expected);
+      struct Entry
+      {
+         Protos::Common::Entry item;
+         int level = std::numeric_limits<int>::max();
+         QString peer = "b";
+      };
+      QList<Entry> entries;
+      for (int i = 0; i < 7; ++i)
+      {
+         Entry entry;
+         entry.item.set_type(Protos::Common::Entry::FILE);
+         entry.item.set_name("B");
+         entry.item.set_path("/b/");
+         entry.item.mutable_shared_entry()->set_path("/share/");
+         entry.item.set_size(std::numeric_limits<quint64>::max());
+         entries.append(entry);
+      }
+      entries[0].item.set_name("A");
+      entries[1].item.set_path("/a/");
+      entries[2].level = 0;
+      entries[3].peer = "A";
+      entries[4].item.set_size(0);
+      entries[6].item.set_name("b");
+      entries[6].item.set_path("/B/");
+
+      for (const auto order : { Qt::AscendingOrder, Qt::DescendingOrder })
+      {
+         for (int i = 0; i < expected.size(); ++i)
+         {
+            for (int j = 0; j < expected.size(); ++j)
+            {
+               const auto& left = entries[expected[i]];
+               const auto& right = entries[expected[j]];
+               const bool equivalent = expected[i] >= 5 && expected[j] >= 5;
+               QCOMPARE(
+                  entryLessThan(left.item, left.level, left.peer, right.item, right.level, right.peer,
+                     static_cast<Model::Column>(column), order),
+                  !equivalent && (order == Qt::AscendingOrder ? i < j : i > j)
+               );
+            }
+         }
+      }
+   }
+
    void emptySearch()
    {
       Fixture f;
