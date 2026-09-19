@@ -161,6 +161,13 @@ The macOS build includes `TestsDirWatcherDarwin`, registered with CTest. Its
 filesystem tests require access to the system FSEvents service; a restrictive
 process sandbox can prevent watch registration.
 
+### macOS disk space
+
+Disk-space checks use the target volume's available allocation blocks, excluding
+reserved blocks. Destinations that do not exist yet use their nearest existing
+parent directory. If the filesystem query fails, D-LAN retains its existing
+unknown-space fallback; normal write errors still apply.
+
 ### Linux settings and data
 
 Settings (`ROAMING`) use `~/.config/d-lan/`, and local data (`LOCAL`), including

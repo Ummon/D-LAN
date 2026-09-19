@@ -41,6 +41,9 @@ using namespace Common;
    #include <sys/statvfs.h>
    #include <sys/utsname.h>
    #include <unistd.h>
+#elif defined(Q_OS_DARWIN)
+   #include <cerrno>
+   #include <sys/mount.h>
 #endif
 
 #include <Constants.h>
@@ -265,6 +268,8 @@ QString Global::formatIP(const QHostAddress& address, quint16 port)
 
 /**
   * Return the remaining free space for the given path.
+  * On macOS, paths not yet created use the nearest existing parent directory.
+  * A failed query returns the maximum qint64 (unknown space).
   */
 qint64 Global::availableDiskSpace(const QString& path)
 {
@@ -280,11 +285,42 @@ qint64 Global::availableDiskSpace(const QString& path)
    if (!GetDiskFreeSpaceEx(StringUtils::towcharList(pathToDir).constData(), &space, NULL, NULL))
       return std::numeric_limits<qint64>::max();
    return space.QuadPart;
-#elif defined(Q_OS_LINUX)
+#elif defined(Q_OS_LINUX) || defined(Q_OS_DARWIN)
+#ifdef Q_OS_DARWIN
+   // Darwin's statvfs has 32-bit block counts even in 64-bit builds. statfs
+   // retains the full counts needed for large volumes.
+   struct statfs info;
+   int result = statfs(pathToDir.toUtf8().constData(), &info);
+   // Settings and download destinations may not exist yet. Only ENOENT is
+   // recoverable this way: permission/I/O errors must retain the unknown-space
+   // fallback rather than accidentally reporting space on a different volume.
+   while (result != 0 && errno == ENOENT)
+   {
+      const QString parent = QFileInfo(pathToDir).absolutePath();
+      if (parent == pathToDir)
+         break;
+      pathToDir = parent;
+      result = statfs(pathToDir.toUtf8().constData(), &info);
+   }
+#else
    struct statvfs info;
-   if (statvfs(pathToDir.toUtf8().constData(), &info) == 0)
-      // Available blocks are measured in fragment-size units, not I/O block size.
-      return static_cast<qint64>(info.f_frsize) * info.f_bavail;
+   const int result = statvfs(pathToDir.toUtf8().constData(), &info);
+#endif
+   if (result == 0)
+   {
+      // f_bavail excludes reserved blocks. Use the allocation unit, not the
+      // preferred I/O size (statfs.f_iosize / statvfs.f_bsize).
+#ifdef Q_OS_DARWIN
+      const quint64 fragmentSize = info.f_bsize;
+#else
+      const quint64 fragmentSize = info.f_frsize;
+#endif
+      const quint64 availableBlocks = info.f_bavail;
+      const auto maximum = std::numeric_limits<qint64>::max();
+      if (fragmentSize != 0 && availableBlocks > quint64(maximum) / fragmentSize)
+         return maximum;
+      return static_cast<qint64>(fragmentSize * availableBlocks);
+   }
 #endif
 
    return std::numeric_limits<qint64>::max();
