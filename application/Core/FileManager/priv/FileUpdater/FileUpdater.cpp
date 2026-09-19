@@ -544,7 +544,7 @@ void FileUpdater::scan(Entry* entry, bool addUnfinished)
                   return false;
                const auto& info = newFiles.at(i);
                // Resolve again after the blocking lookup; another caller may have created the file.
-               if (File* file = this->addScannedFile(info, currentDir->getFile(info.fileName()), currentDir, &hashes.at(i)))
+               if (File* file = this->addScannedFile(info, currentDir->getFile(info.fileName()), currentDir, &hashes.at(i), addUnfinished))
                   unseenFiles.remove(file);
             }
             newFiles.clear();
@@ -614,10 +614,9 @@ void FileUpdater::scan(Entry* entry, bool addUnfinished)
 /**
   * Add a scanned file from the filesystem, the cached file ('file') and its parent directory ('parentDirectory')
   * may be given.
-  * TODO: re-read carefully this method and think about all possible cases.
   */
 File* FileUpdater::addScannedFile(const QFileInfo& fileInfo, File* file, Directory* parentDirectory,
-   const QList<Common::Hash>* cachedHashes)
+   const QList<Common::Hash>* cachedHashes, bool addUnfinished)
 {
    QMutexLocker locker(&this->mutex);
 
@@ -639,10 +638,12 @@ File* FileUpdater::addScannedFile(const QFileInfo& fileInfo, File* file, Directo
       {
          // During the initial scan the replacement may not be cached yet. Suppress
          // the old completed file regardless of enumeration or hash-batch order.
+         // Other scans never cache unfinished files, so an uncached sibling is stale.
          // Match the scanner's file filtering: directories and symlinks don't count.
-         if (!Global::isFileUnfinished(fileInfo.fileName()))
+         // Use the scanned location; the cached directory may have moved meanwhile.
+         if (addUnfinished && !Global::isFileUnfinished(fileInfo.fileName()))
          {
-            const QFileInfo unfinishedInfo(parentDirectory->getAbsolutePath().setFilename(unfinishedName).toString());
+            const QFileInfo unfinishedInfo(fileInfo.dir(), unfinishedName);
             if (unfinishedInfo.isFile() && !unfinishedInfo.isSymLink())
                return nullptr;
          }

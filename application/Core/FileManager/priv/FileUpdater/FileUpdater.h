@@ -85,7 +85,7 @@ namespace FM
       void scan(Entry* entry, bool addUnfinished = false);
 
       File* addScannedFile(const QFileInfo& fileInfo, File* file, Directory* parentDirectory = nullptr,
-         const QList<Common::Hash>* cachedHashes = nullptr);
+         const QList<Common::Hash>* cachedHashes = nullptr, bool addUnfinished = false);
 
       void stopScanning(Entry* entry = nullptr);
 

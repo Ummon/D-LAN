@@ -3080,7 +3080,7 @@ void CacheTest::scanReplacementFiles()
       const QList<Common::Hash> hashes;
       const auto scanFile = [&](const QString& scannedPath) {
          const QFileInfo info(scannedPath);
-         updater.addScannedFile(info, dir->getFile(info.fileName()), dir, &hashes);
+         updater.addScannedFile(info, dir->getFile(info.fileName()), dir, &hashes, true);
       };
       scanFile(order == "complete-first" ? path : unfinishedPath);
       scanFile(order == "complete-first" ? unfinishedPath : path);
@@ -3147,6 +3147,32 @@ void CacheTest::scanFileWithUnfinishedDirectory()
    QCOMPARE(dir->getCompleteFiles().size(), qsizetype(1));
    QVERIFY(dir->getFile("ordinary.bin"));
    QCOMPARE(dir->getSubDirs().size(), qsizetype(1));
+}
+
+void CacheTest::scanKeepsFileWithStaleUnfinished()
+{
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   const QString path = temp.filePath("stale.bin");
+   {
+      QFile physical(path), unfinished(path + SETTINGS.get<QString>("unfinished_suffix_term"));
+      QVERIFY(physical.open(QIODevice::WriteOnly));
+      QCOMPARE(physical.write("abc"), qint64(3));
+      QVERIFY(unfinished.open(QIODevice::WriteOnly));
+   }
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   FM::FileUpdater updater(nullptr);
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   auto dir = root->getRootDir();
+   // Rescans never cache unfinished files, so the stale sibling must not hide the file.
+   updater.scan(dir);
+   auto file = dir->getFile("stale.bin");
+   QVERIFY(file);
+   QCOMPARE(dir->getFiles(), QList<FM::File*> { file });
+   QCOMPARE(dir->getCompleteFiles(), QList<FM::File*> { file });
 }
 
 void CacheTest::scanLoadsHashesInBatches()

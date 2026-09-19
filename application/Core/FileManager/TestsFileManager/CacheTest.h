@@ -100,6 +100,7 @@ private slots:
    void scanReplacementFiles_data();
    void scanReplacementFiles();
    void scanFileWithUnfinishedDirectory();
+   void scanKeepsFileWithStaleUnfinished();
    void scanLoadsHashesInBatches();
    void scanCanStopDuringHashLookup();
    void partialWrites_data();
