@@ -87,7 +87,7 @@ def "main run-tests" [] {
     print "=== RUN TESTS ==="
 
     let release_directory = get_release_directory
-    let tests = ls ($release_directory)/output | select name | where name =~ "Tests.*exe" | get name
+    let tests = ls ($release_directory)/output | where name =~ "Tests.*exe" | get name
 
     for $test in $tests {
         print $"Executing ($test)"
