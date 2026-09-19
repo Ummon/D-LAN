@@ -37,6 +37,9 @@ __attribute__((noinline)) void crashTestOverflow(int depth)
 {
    volatile char space[8192];
    space[0] = 1;
+   // Retain the entire allocation in optimized/LTO builds; otherwise only the
+   // two accessed bytes may remain and the recursion never exhausts the stack.
+   asm volatile("" : : "r"(space) : "memory");
    if (depth < 100000)
       crashTestOverflow(depth + 1);
    space[8191] = space[0]; // Prevent tail-call optimization.

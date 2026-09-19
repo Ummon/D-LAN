@@ -62,6 +62,6 @@ Tests and tools are enabled by default. Set `DLAN_BUILD_TESTS=OFF` or
 
 ## Further documentation
 
-See the [development reference](doc/DEVELOPMENT.md) for release packaging (Windows
+See the [development reference](doc/DEVELOPMENT.md) for macOS release testing, release packaging (Windows
 installer and Linux AppImage), profiling, platform-specific behavior, storage
 locations, and crash reports and stack traces.

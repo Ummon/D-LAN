@@ -8,6 +8,7 @@ Unless stated otherwise, paths are relative to the repository root.
 * [Build Protobuf](#build-protobuf)
 * [CMake options](#cmake-options)
 * [Build a release](#build-a-release)
+* [macOS release testing](#macos-release-testing)
 * [Linux AppImage](#linux-appimage)
 * [Profiling](#profiling)
 * [macOS filesystem monitoring](#macos-filesystem-monitoring)
@@ -76,6 +77,54 @@ Keep `DLAN_BUILD_TESTS` and `DLAN_BUILD_TOOLS` enabled for the full release work
 * Create the Windows installer.
 
 Release executables are written to `application/build/release/output`, and installers to `application/Setups/Windows/Installations`.
+
+## macOS release testing
+
+Install [Nushell](https://www.nushell.sh/) (`nu` on `PATH`) in addition to the
+build prerequisites in README. Configure a separate Release build with tests
+enabled. From the repository root, adjust the dependency paths:
+
+```sh
+cmake -S application -B application/build/release -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="/path/to/Qt" -DDLAN_BLAKE3_ROOT="/path/to/blake3/c" -DDLAN_PROTOBUF_ROOT="/path/to/protobuf" -DDLAN_BUILD_TESTS=ON
+cd application
+nu build.nu release-test --build-dir build/release
+```
+
+You can also configure a Release kit in Qt Creator and pass its build directory.
+Without `--build-dir`, the script inspects CMake caches under `application/build/`
+and selects the sole Release build, including lowercase `build/release`. It
+rejects Debug builds and asks for an explicit selection if several Release
+builds exist. Multi-configuration generators use the `Release` configuration.
+
+The command builds the configured targets, compiles translations without editing
+the source `.ts` files, and runs all registered tests through CTest. Qt
+LinguistTools is required for translations; use `--no-translations` to skip that
+step when it is unavailable. Add `--clean` to clean the selected build first.
+Builds use at most eight parallel jobs; override this with `--jobs 4` (or `-j 4`),
+for example on machines with less memory.
+On macOS, `nu build.nu` runs this workflow with a clean build; `build-all` runs
+it without cleaning unless requested. These commands finish after testing.
+macOS packaging is not implemented; an explicit `make-setup` request fails with
+an explanatory message.
+
+To rerun the tests without rebuilding:
+
+```sh
+nu build.nu run-tests --build-dir build/release
+```
+
+`run-tests` uses CTest on every platform, including macOS executables without
+an `.exe` suffix. It preserves registered test environments and working
+directories, prints failing test output, and fails if tests are disabled, no
+tests are registered, or any test fails. Build and translation failures also
+stop the workflow. Tests run sequentially with a default timeout of 300 seconds;
+individual CTest timeout properties take precedence. Results are available in
+the build directory's `Testing/Temporary/LastTest.log` and `LastTestsFailed.log`
+(when tests fail).
+
+Run from a normal macOS developer session with access to FSEvents and local
+network sockets. A restrictive sandbox can prevent some integration tests from
+running. The workflow reports these failures rather than skipping them.
 
 ## Linux AppImage
 

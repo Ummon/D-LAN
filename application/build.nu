@@ -3,22 +3,45 @@
 # By default will build everything and clean all previous build.
 #
 # See the build-all subcommand.
-def main [] {
-    main build-all --clean
+def main [--build-dir: path, --jobs (-j): int = 8] {
+    main build-all --clean --build-dir=$build_dir --jobs=$jobs
 }
 
 # Build everything, it will not clean by default.
 def "main build-all" [
     --clean # Clean all previous compiled files.
     --no-translations
+    --jobs (-j): int = 8
+    --build-dir: path # Configured Release build; auto-detected when omitted.
 ] {
+    if $nu.os-info.name == "macos" {
+        main release-test --clean=$clean --no-translations=$no_translations --build-dir=$build_dir --jobs=$jobs
+        return
+    }
     print "=== BUILD ALL ==="
     if not $no_translations {
-      main translations
+      main translations --build-dir=$build_dir
     }
-    main compile --clean=$clean
-    main run-tests
-    main make-setup
+    main compile --clean=$clean --build-dir=$build_dir --jobs=$jobs
+    main run-tests --build-dir=$build_dir
+    main make-setup --build-dir=$build_dir
+}
+
+# Build and test a configured Release tree without packaging or editing .ts files.
+def "main release-test" [
+    --build-dir: path # Defaults to the sole Release build under build/.
+    --jobs (-j): int = 8 # Maximum parallel build jobs.
+    --clean
+    --no-translations # Allow Qt installations without LinguistTools.
+] {
+    let release_directory = get_release_directory $build_dir
+    require_tests $release_directory
+    main compile --clean=$clean --build-dir=$release_directory --jobs=$jobs
+    if not $no_translations {
+        run_checked cmake --build $release_directory --config Release --target dlan_translations
+    }
+    main run-tests --build-dir=$release_directory
+    print "Release build and tests completed successfully"
 }
 
 # Update Common/Version.h:
@@ -32,16 +55,16 @@ def "main update-version" [] {
 #
 # It will then generate the compiled files .qm.
 # If you have edited a ts file, re-run this subcommand to update the .qm files.
-def "main translations" [] {
+def "main translations" [--build-dir: path] {
     print "=== TRANSLATIONS ==="
 
-    let release_directory = get_release_directory
+    let release_directory = get_release_directory $build_dir
 
     # Extracts the strings from the sources into the .ts files ('update_translations' is
     # the global target created by the 'qt_add_lupdate' calls in CMakeLists.txt) then
     # compiles them into .qm files (built in 'build/release').
-    cmake --build $release_directory --target update_translations
-    cmake --build $release_directory --target dlan_translations
+    run_checked cmake --build $release_directory --config Release --target update_translations
+    run_checked cmake --build $release_directory --config Release --target dlan_translations
 
     for $project in [GUI Core] {
         mkdir ($project)/output/debug/languages
@@ -57,10 +80,13 @@ def "main translations" [] {
 
 def "main compile" [
     --clean # Clean all previous compiled files.
+    --jobs (-j): int = 8
+    --build-dir: path
 ] {
+    if $jobs < 1 { error make {msg: "--jobs must be at least 1"} }
     print "=== COMPILATION ==="
 
-    let release_directory = get_release_directory
+    let release_directory = get_release_directory $build_dir
 
     print $"Release directory: ($release_directory)"
 
@@ -72,10 +98,10 @@ def "main compile" [
     # rm -f build/release/GUI/CMakeFiles/DLanGUI.dir/DialogAbout.cpp.obj
 
     if $clean {
-        cmake --build $release_directory --target clean --parallel
+        run_checked cmake --build $release_directory --config Release --target clean --parallel ($jobs | into string)
     }
 
-    cmake --build $release_directory --parallel
+    run_checked cmake --build $release_directory --config Release --parallel ($jobs | into string)
 }
 
 def update_version [] {
@@ -83,42 +109,34 @@ def update_version [] {
     nu update_version.nu
 }
 
-def "main run-tests" [] {
+# Use CTest's registered commands, environments, timeouts and working directories.
+def "main run-tests" [--build-dir: path] {
     print "=== RUN TESTS ==="
-
-    let release_directory = get_release_directory
-    let tests = ls ($release_directory)/output | where name =~ "Tests.*exe" | get name
-
-    for $test in $tests {
-        print $"Executing ($test)"
-        do {
-            cd ($test | path dirname)
-            ./($test | path basename)
-        }
-    }
-
+    let release_directory = get_release_directory $build_dir
+    require_tests $release_directory
+    run_checked ctest --test-dir $release_directory --build-config Release --parallel 1 --output-on-failure --no-tests=error --timeout 300
     print "All tests finished successfully"
 }
 
-def "main make-setup" [] {
+def "main make-setup" [--build-dir: path] {
     print "=== MAKE SETUP ==="
-
     match $nu.os-info.name {
-        "windows" => { make_windows_setup }
-        "linux" => { make_linux_app_image }
-        $other => { print $"Unsupported OS: ($other)" }
+        "windows" => { make_windows_setup $build_dir }
+        "linux" => { make_linux_app_image $build_dir }
+        "macos" => { error make {msg: "macOS packaging is not implemented. Use 'release-test' to build and test the release."} }
+        $other => { error make {msg: $"Unsupported OS: ($other)"} }
     }
 }
 
-def make_windows_setup [] {
-    let release_directory = get_release_directory
+def make_windows_setup [build_dir?: path] {
+    let release_directory = get_release_directory $build_dir
 
     cd Setups/Windows
     mkdir setup_bundle
 
-    cp ../../($release_directory)/output/D-LAN.Core.exe setup_bundle
-    cp ../../($release_directory)/output/D-LAN.GUI.exe setup_bundle
-    cp ../../($release_directory)/output/PasswordHasher.exe setup_bundle
+    for executable in [D-LAN.Core.exe D-LAN.GUI.exe PasswordHasher.exe] {
+        cp ($release_directory | path join "output" $executable) setup_bundle
+    }
 
     cd setup_bundle
     cp C:/Qt/Tools/llvm-mingw1706_64/bin/libwinpthread-1.dll .
@@ -134,8 +152,8 @@ def make_windows_setup [] {
     iscc windows_setup.iss
 }
 
-def make_linux_app_image [] {
-    let release_directory = get_release_directory
+def make_linux_app_image [build_dir?: path] {
+    let release_directory = get_release_directory $build_dir
     let release_directory = $release_directory | path expand
     let application_directory = pwd
     let architecture = match $nu.os-info.arch {
@@ -259,11 +277,52 @@ def make_linux_app_image [] {
     print $"Created ($output)"
 }
 
-def get_release_directory [] {
-    let release_directories = ls build | where name =~ Release
-    if ($release_directories | is-empty) {
-        error make {msg:"Cannot find the release directory, try to configure a release build with Qt Creator"}
+# Explicit checking also covers Nushell versions that continue after externals fail.
+def --wrapped run_checked [program: string, ...arguments: string] {
+    ^$program ...$arguments
+    if $env.LAST_EXIT_CODE != 0 {
+        error make {msg: $"($program) failed with exit code ($env.LAST_EXIT_CODE)"}
     }
+}
 
-    $release_directories | first | get name
+def cache_value [directory: path, key: string] {
+    open --raw ($directory | path join "CMakeCache.txt")
+        | lines | parse '{key}:{type}={value}' | where key == $key
+        | get value | get -o 0 | default ""
+}
+
+def is_release_directory [directory: path] {
+    if not ($directory | path join "CMakeCache.txt" | path exists) { return false }
+    let configurations = cache_value $directory CMAKE_CONFIGURATION_TYPES
+    if not ($configurations | is-empty) {
+        "Release" in ($configurations | split row ";")
+    } else {
+        (cache_value $directory CMAKE_BUILD_TYPE) == "Release"
+    }
+}
+
+def require_tests [directory: path] {
+    if not ((cache_value $directory DLAN_BUILD_TESTS) =~ '^(?i:ON|TRUE|YES|1)$') {
+        error make {msg: "Release testing requires DLAN_BUILD_TESTS=ON. Reconfigure this build with tests enabled."}
+    }
+}
+
+def get_release_directory [directory?: path] {
+    if $directory != null {
+        let directory = $directory | path expand
+        if not (is_release_directory $directory) {
+            error make {msg: $"Not a configured Release build: ($directory)"}
+        }
+        return $directory
+    }
+    let directories = (glob "build/*/CMakeCache.txt"
+        | each {|cache| $cache | path dirname }
+        | where {|directory| is_release_directory $directory })
+    if ($directories | is-empty) {
+        error make {msg: "No configured Release build found. Configure one with CMake or Qt Creator, or pass --build-dir."}
+    }
+    if ($directories | length) > 1 {
+        error make {msg: $"Multiple Release builds found; select one with --build-dir: ($directories | str join ', ')"}
+    }
+    $directories | first
 }

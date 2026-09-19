@@ -20,16 +20,25 @@
 #include <QTest>
 #include <QString>
 #include <QStringList>
+#include <QTemporaryDir>
 
 #include <google/protobuf/stubs/common.h>
 
 #include <Common/Settings.h>
+#include <Common/Global.h>
 #include <Tests.h>
 #include <TreeTests.h>
 #include <BenchmarkTests.h>
 
 int main(int argc, char* argv[])
 {
+   QCoreApplication application(argc, argv);
+   QTemporaryDir data;
+   if (!data.isValid())
+      return 1;
+   Common::Global::setDataFolder(Common::Global::DataFolderType::ROAMING, data.path());
+   Common::Global::setDataFolder(Common::Global::DataFolderType::LOCAL, data.path());
+
    QStringList args;
    for (int i = 1; i < argc; i++)
       args << argv[i];
