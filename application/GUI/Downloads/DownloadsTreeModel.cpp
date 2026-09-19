@@ -294,7 +294,8 @@ bool DownloadsTreeModel::dropMimeData(
    if (rows.isEmpty())
       return false;
 
-   std::sort(rows.begin(), rows.end()); // TODO: is 'getDraggedRows(..)' returns a sorted list?
+   // The range calculation and traversal below require ascending row order.
+   std::sort(rows.begin(), rows.end());
 
    const int first = rows.first();
    const int last = rows.last();
