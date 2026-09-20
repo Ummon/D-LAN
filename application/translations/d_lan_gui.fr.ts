@@ -415,7 +415,7 @@
     <message>
         <location line="+0"/>
         <source>Queued</source>
-        <translation>Dans la file d&apos;attente</translation>
+        <translation type="unfinished">En attente</translation>
     </message>
     <message>
         <location line="+0"/>
