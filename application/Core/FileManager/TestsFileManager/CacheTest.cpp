@@ -3398,6 +3398,70 @@ void CacheTest::scanDirectoryIncrementally()
 }
 
 #ifdef Q_OS_MACOS
+void CacheTest::downloadedHiddenFilesDarwin_data()
+{
+   QTest::addColumn<bool>("hidden");
+   QTest::addColumn<bool>("empty");
+   QTest::addColumn<bool>("sharedParent");
+   for (bool hidden : {false, true})
+      for (bool empty : {false, true})
+         for (bool sharedParent : {false, true})
+            QTest::addRow("hidden=%d,empty=%d,shared=%d", hidden, empty, sharedParent)
+               << hidden << empty << sharedParent;
+}
+
+void CacheTest::downloadedHiddenFilesDarwin()
+{
+   QFETCH(bool, hidden);
+   QFETCH(bool, empty);
+   QFETCH(bool, sharedParent);
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   if (sharedParent)
+      cache.addASharedPath(temp.path() + '/');
+   const QString name = QString::fromUtf8("download-é.bin");
+   const QString path = temp.filePath(name);
+   const QByteArray content = empty ? QByteArray() : QByteArray("download data");
+   Protos::Common::Entry entry;
+   entry.set_type(Protos::Common::Entry::FILE);
+   entry.set_name(name.toStdString());
+   entry.set_size(content.size());
+   entry.set_hidden(hidden);
+   entry.mutable_shared_entry()->set_path(path.toStdString());
+   if (!empty)
+   {
+      Common::Hasher hasher;
+      hasher.addData(std::span<const char>(content));
+      const auto hash = hasher.getResult();
+      entry.add_chunks()->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
+   }
+   const auto chunks = cache.newFile(entry);
+   QCOMPARE(chunks.size(), empty ? 0 : 1);
+   if (!empty)
+   {
+      // Completion must add UF_HIDDEN without clearing unrelated native flags.
+      const QByteArray unfinished = QFile::encodeName(path + ".unfinished");
+      struct stat before {};
+      QCOMPARE(stat(unfinished.constData(), &before), 0);
+      QCOMPARE(chflags(unfinished.constData(), before.st_flags | UF_NODUMP), 0);
+      auto writer = chunks.first()->getDataWriter();
+      QVERIFY(writer->write(content.constData(), content.size()));
+   }
+   QCoreApplication::sendPostedEvents();
+   struct stat after {};
+   QCOMPARE(stat(QFile::encodeName(path).constData(), &after), 0);
+   QCOMPARE(bool(after.st_flags & UF_HIDDEN), hidden);
+   if (!empty)
+      QVERIFY(after.st_flags & UF_NODUMP);
+   QCOMPARE(QFileInfo(path).isHidden(), hidden);
+   QVERIFY(!QFileInfo::exists(path + ".unfinished"));
+   QFile completed(path);
+   QVERIFY(completed.open(QIODevice::ReadOnly));
+   QCOMPARE(completed.readAll(), content);
+}
+
 void CacheTest::scanHiddenEntriesDarwin_data()
 {
    QTest::addColumn<bool>("directory");

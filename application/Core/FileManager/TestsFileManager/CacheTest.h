@@ -99,6 +99,8 @@ private slots:
    void scanDirectoryIncrementally_data();
    void scanDirectoryIncrementally();
 #ifdef Q_OS_MACOS
+   void downloadedHiddenFilesDarwin_data();
+   void downloadedHiddenFilesDarwin();
    void scanHiddenEntriesDarwin_data();
    void scanHiddenEntriesDarwin();
 #endif

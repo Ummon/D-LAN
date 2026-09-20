@@ -26,6 +26,9 @@ using namespace FM;
 #else
    #include <unistd.h>
 #endif
+#ifdef Q_OS_MACOS
+   #include <sys/stat.h>
+#endif
 
 #include <QString>
 #include <QFile>
@@ -904,6 +907,11 @@ void File::createPhysicalFile()
          throw UnableToCreateNewFileException();
       }
       this->setFileAsSparse(file);
+#ifdef Q_OS_MACOS
+      // Empty downloads are complete at creation and never call setAsComplete().
+      if (this->getSize() == 0 && this->hidden)
+         this->setFileAsHidden(file.fileName());
+#endif
       this->dateLastModified = QFileInfo(file).lastModified();
    }
 }
@@ -930,6 +938,12 @@ void File::setFileAsHidden(const QString& filepath)
       attrs == INVALID_FILE_ATTRIBUTES ||
       !SetFileAttributesW((LPCWSTR)filepath.utf16(), attrs | FILE_ATTRIBUTE_HIDDEN)
    )
+      L_WARN(QString("Unable to set the hidden attribute on %1").arg(filepath));
+#elif defined(Q_OS_MACOS)
+   const QByteArray path = QFile::encodeName(filepath);
+   struct stat info {};
+   // Preserve unrelated flags, such as UF_NODUMP, when adding Finder's hidden flag.
+   if (stat(path.constData(), &info) != 0 || chflags(path.constData(), info.st_flags | UF_HIDDEN) != 0)
       L_WARN(QString("Unable to set the hidden attribute on %1").arg(filepath));
 #else
    Q_UNUSED(filepath)
