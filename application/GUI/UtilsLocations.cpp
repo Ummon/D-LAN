@@ -115,6 +115,7 @@ void Utils::openLocations(const QStringList& paths, QWidget* parent)
       Utils::openLocation(path, parent);
 }
 
+#ifndef Q_OS_MACOS
 /**
   * Open a directory, or select a file in its containing directory.
   * If the desktop does not support selection, open the containing directory.
@@ -144,3 +145,4 @@ void Utils::openLocation(const QString& path, QWidget* parent)
 #endif
 #endif
 }
+#endif

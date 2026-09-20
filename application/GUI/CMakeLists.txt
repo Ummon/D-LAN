@@ -182,6 +182,12 @@ target_link_libraries(DLanGUI PRIVATE
    Qt6::SvgWidgets
 )
 
+if(APPLE)
+   target_sources(DLanGUI PRIVATE UtilsLocationsMac.mm)
+   set_target_properties(DLanGUI PROPERTIES OBJCXX_STANDARD 20 OBJCXX_STANDARD_REQUIRED ON)
+   target_link_libraries(DLanGUI PRIVATE "-framework AppKit")
+endif()
+
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
    find_package(Qt6 REQUIRED COMPONENTS DBus)
    # Qt's Wayland activation-token interface is declared in private headers,
