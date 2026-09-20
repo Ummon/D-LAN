@@ -308,11 +308,10 @@ static QList<ProtectedInlineText> protectInlineText(QTextDocument& document, con
          {
             const QTextFragment fragment = i.fragment();
             const QTextCharFormat format = fragment.charFormat();
-            bool needsProtection = format.fontUnderline();
-            // Qt can put emphasis delimiters outside a fragment's leading space
-            // after an image, producing literal Markdown such as "** asd**".
-            if (format.fontWeight() >= QFont::Bold || format.fontItalic() || format.fontStrikeOut())
-               needsProtection |= fragment.text().front().isSpace() || fragment.text().back().isSpace();
+            // Qt can omit emphasis when the font backend cannot resolve the style,
+            // misnest combined styles, or put delimiters outside leading whitespace.
+            bool needsProtection = format.fontUnderline() || format.fontWeight() >= QFont::Bold ||
+               format.fontItalic() || format.fontStrikeOut();
             for (const QChar c : fragment.text())
                if (c.unicode() < 128 && (c.isPunct() || c.isSymbol()))
                   needsProtection = true;
