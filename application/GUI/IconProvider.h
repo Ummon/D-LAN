@@ -36,7 +36,8 @@ namespace GUI
    public:
       /**
         * Returns an icon for a directory or a file type, determined from its name.
-        * Linux uses MIME types and the desktop icon theme; remote files need not exist locally.
+        * Uses native file-type icons on Windows/macOS and MIME theme icons on Linux.
+        * Remote files need not exist locally.
         * @param entry The entry
         * @param withWarning If 'true' a little warning image is added to the returned icon
         * @return The corresponding icon

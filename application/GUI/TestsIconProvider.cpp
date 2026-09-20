@@ -117,6 +117,53 @@ private slots:
    }
 #endif
 
+#ifdef Q_OS_MACOS
+   void nativeFileTypes()
+   {
+      // Ensure this exercises AppKit, rather than Qt's offscreen fallback.
+      QCOMPARE(QGuiApplication::platformName(), QString("cocoa"));
+      QTemporaryDir directory;
+      QVERIFY(directory.isValid());
+      const QString pdfPath = directory.filePath("remote-report.pdf");
+      QVERIFY(!QFile::exists(pdfPath));
+      const QIcon pdf = fileIcon(pdfPath);
+      const QIcon png = fileIcon(directory.filePath("remote-image.png"));
+      const QImage generic = QFileIconProvider().icon(QFileIconProvider::File).pixmap(32, 32).toImage();
+      QVERIFY(!pdf.isNull());
+      QVERIFY(!png.isNull());
+      QVERIFY(pdf.pixmap(32, 32).toImage() != generic);
+      QVERIFY(png.pixmap(32, 32).toImage() != pdf.pixmap(32, 32).toImage());
+      QCOMPARE(IconProvider::getIcon(Common::Path(pdfPath)).cacheKey(), pdf.cacheKey());
+      QVERIFY(!QFile::exists(pdfPath));
+
+      for (const bool warning : {false, true})
+      {
+         const QPixmap retina = fileIcon(pdfPath, warning).pixmap(QSize(16, 16), 2.0);
+         QCOMPARE(retina.size(), QSize(32, 32));
+         QCOMPARE(retina.devicePixelRatio(), 2.0);
+      }
+   }
+
+   void genericFileFallbacks_data()
+   {
+      QTest::addColumn<QString>("filename");
+      QTest::newRow("unknown") << QString("file.dlan-unknown-extension");
+      QTest::newRow("extensionless") << QString("README");
+      QTest::newRow("trailing-dot") << QString("file.");
+   }
+
+   void genericFileFallbacks()
+   {
+      QFETCH(QString, filename);
+      const QImage generic = QFileIconProvider().icon(QFileIconProvider::File).pixmap(32, 32).toImage();
+      QVERIFY(!generic.isNull());
+      QCOMPARE(fileIcon(filename).pixmap(32, 32).toImage(), generic);
+      const QImage warning = fileIcon(filename, true).pixmap(32, 32).toImage();
+      QVERIFY(!warning.isNull());
+      QVERIFY(warning != generic);
+   }
+#endif
+
    void reusesTypeCache()
    {
       QCOMPARE(fileIcon("one.pdf").cacheKey(), fileIcon("two.PDF").cacheKey());
@@ -203,7 +250,9 @@ private slots:
 
 int main(int argc, char** argv)
 {
+#ifndef Q_OS_MACOS
    QApplication::setDesktopSettingsAware(false);
+#endif
    QApplication app(argc, argv);
    TestsIconProvider tests;
    return QTest::qExec(&tests, argc, argv);

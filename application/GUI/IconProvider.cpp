@@ -23,8 +23,6 @@ using namespace GUI;
 
 #include <Common/ProtoHelper.h>
 
-#include <Log.h>
-
 #if defined(Q_OS_WIN32)
    #include <shlobj.h>
    #include <shellapi.h>
@@ -107,8 +105,8 @@ QIcon IconProvider::getIconCache(const QString& filename, bool withWarning)
 QIcon IconProvider::getIconCacheByType(const QString& type, bool withWarning)
 {
    auto& cache = withWarning ? IconProvider::cachedIconsWithWarning : IconProvider::cachedIcons;
-#ifdef Q_OS_WIN32
-   const QString key = type.toLower(); // Windows file extensions are case-insensitive.
+#if defined(Q_OS_WIN32) || defined(Q_OS_MACOS)
+   const QString key = type.toLower(); // File-type associations are case-insensitive.
 #else
    const QString& key = type; // Linux keys are MIME types, not filename extensions.
 #endif
@@ -128,8 +126,10 @@ QIcon IconProvider::getIconCacheByType(const QString& type, bool withWarning)
 }
 
 /**
-  * 'type' is a MIME type on Linux and a file extension on Windows.
+  * 'type' is a MIME type on Linux and a file extension on Windows/macOS.
+  * The macOS implementation is in IconProviderMac.mm.
   */
+#ifndef Q_OS_MACOS
 QIcon IconProvider::getIconNative(const QString& type)
 {
    QIcon icon;
@@ -159,6 +159,7 @@ QIcon IconProvider::getIconNative(const QString& type)
 #endif
    return icon;
 }
+#endif
 
 QIcon IconProvider::drawWarning(const QIcon& icon)
 {

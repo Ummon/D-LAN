@@ -8,6 +8,17 @@
 #  - The NVWA leak detector block was not ported.
 # ==============================================================================
 
+add_library(GUIIconProvider STATIC IconProvider.cpp IconProvider.h)
+target_include_directories(GUIIconProvider PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+target_link_libraries(GUIIconProvider PUBLIC Common Qt6::Widgets)
+if(APPLE)
+   enable_language(OBJCXX)
+   set_target_properties(GUIIconProvider PROPERTIES OBJCXX_STANDARD 20 OBJCXX_STANDARD_REQUIRED ON)
+   target_sources(GUIIconProvider PRIVATE IconProviderMac.mm)
+   target_link_libraries(GUIIconProvider PRIVATE
+      "-framework AppKit" "-framework UniformTypeIdentifiers" "-framework CoreGraphics")
+endif()
+
 add_executable(DLanGUI WIN32
    main.cpp
    Chat/EmoticonTextDocument.cpp
@@ -31,7 +42,6 @@ add_executable(DLanGUI WIN32
    DownloadMenu.cpp
    D-LAN_GUI.cpp
    ProgressBar.cpp
-   IconProvider.cpp
    Utils.cpp
    UtilsLocations.cpp
    Settings/AskNewPasswordDialog.cpp
@@ -162,6 +172,7 @@ set_target_properties(DLanGUI PROPERTIES
 target_include_directories(DLanGUI PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 
 target_link_libraries(DLanGUI PRIVATE
+   GUIIconProvider
    RemoteCoreController
    LogManager
    Common
@@ -189,11 +200,11 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
    if(DLAN_BUILD_TESTS)
       add_executable(TestsFileLocations
          TestsFileLocations.cpp UtilsLocations.cpp Browse/BrowseModel.cpp
-         Settings/SharedEntryListModel.cpp IconProvider.cpp Log.cpp
+         Settings/SharedEntryListModel.cpp Log.cpp
       )
       target_include_directories(TestsFileLocations PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
       target_include_directories(TestsFileLocations SYSTEM PRIVATE ${DLAN_QT_NATIVE_INCLUDE_DIRS})
-      target_link_libraries(TestsFileLocations PRIVATE RemoteCoreController LogManager Common Qt6::Widgets Qt6::DBus Qt6::Test)
+      target_link_libraries(TestsFileLocations PRIVATE GUIIconProvider RemoteCoreController LogManager Common Qt6::Widgets Qt6::DBus Qt6::Test)
       find_program(DLAN_DBUS_RUN_SESSION dbus-run-session)
       if(DLAN_DBUS_RUN_SESSION)
          add_test(NAME TestsFileLocations COMMAND "${DLAN_DBUS_RUN_SESSION}" -- $<TARGET_FILE:TestsFileLocations>)
@@ -203,14 +214,18 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 endif()
 
 if(DLAN_BUILD_TESTS)
-   add_executable(TestsIconProvider TestsIconProvider.cpp IconProvider.cpp resources.qrc)
+   add_executable(TestsIconProvider TestsIconProvider.cpp resources.qrc)
    set_target_properties(TestsIconProvider PROPERTIES AUTORCC ON)
    target_include_directories(TestsIconProvider PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
-   target_link_libraries(TestsIconProvider PRIVATE Common Qt6::Widgets Qt6::Svg Qt6::Test)
+   target_link_libraries(TestsIconProvider PRIVATE GUIIconProvider Common Qt6::Widgets Qt6::Svg Qt6::Test)
    add_test(NAME TestsIconProvider COMMAND TestsIconProvider)
    set_tests_properties(TestsIconProvider PROPERTIES
       ENVIRONMENT "QT_QPA_PLATFORM=offscreen;QT_QPA_PLATFORMTHEME=;DBUS_SESSION_BUS_ADDRESS=unix:path=/nonexistent/dlan-icon-tests"
       TIMEOUT 30)
+   if(APPLE)
+      # Exercise native file and folder icons, including Retina rendering.
+      set_tests_properties(TestsIconProvider PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=cocoa;QT_QPA_PLATFORMTHEME=")
+   endif()
 
    add_executable(TestsRoomsModel Chat/TestsRoomsModel.cpp Chat/RoomsModel.cpp)
    target_include_directories(TestsRoomsModel PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -228,32 +243,32 @@ if(DLAN_BUILD_TESTS)
       Downloads/TestsDownloadsWidget.cpp Downloads/DownloadsWidget.cpp
       Downloads/DownloadsFlatModel.cpp Downloads/DownloadsTreeModel.cpp Downloads/DownloadsModel.cpp
       Peers/PeerListModel.cpp Settings/SharedEntryListModel.cpp
-      CheckBoxList.cpp IconProvider.cpp Log.cpp resources.qrc
+      CheckBoxList.cpp Log.cpp resources.qrc
    )
    set_target_properties(TestsDownloadsWidget PROPERTIES AUTOUIC ON AUTORCC ON)
    target_include_directories(TestsDownloadsWidget PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
-   target_link_libraries(TestsDownloadsWidget PRIVATE RemoteCoreController LogManager Common Qt6::Widgets Qt6::Svg Qt6::Test)
+   target_link_libraries(TestsDownloadsWidget PRIVATE GUIIconProvider RemoteCoreController LogManager Common Qt6::Widgets Qt6::Svg Qt6::Test)
    add_test(NAME TestsDownloadsWidget COMMAND TestsDownloadsWidget)
    set_tests_properties(TestsDownloadsWidget PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 30)
 
    add_executable(TestsBrowseModel
       Browse/TestsBrowseModel.cpp Browse/BrowseModel.cpp Settings/SharedEntryListModel.cpp
-      IconProvider.cpp Log.cpp resources.qrc
+      Log.cpp resources.qrc
    )
    set_target_properties(TestsBrowseModel PROPERTIES AUTORCC ON)
    target_include_directories(TestsBrowseModel PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
-   target_link_libraries(TestsBrowseModel PRIVATE RemoteCoreController LogManager Common Qt6::Widgets Qt6::Svg Qt6::Test)
+   target_link_libraries(TestsBrowseModel PRIVATE GUIIconProvider RemoteCoreController LogManager Common Qt6::Widgets Qt6::Svg Qt6::Test)
    add_test(NAME TestsBrowseModel COMMAND TestsBrowseModel)
    set_tests_properties(TestsBrowseModel PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 30)
 
    add_executable(TestsSearchModel
       Search/TestsSearchModel.cpp Search/SearchModel.cpp Browse/BrowseModel.cpp
       Peers/PeerListModel.cpp Settings/SharedEntryListModel.cpp
-      IconProvider.cpp Log.cpp resources.qrc
+      Log.cpp resources.qrc
    )
    set_target_properties(TestsSearchModel PROPERTIES AUTORCC ON)
    target_include_directories(TestsSearchModel PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
-   target_link_libraries(TestsSearchModel PRIVATE RemoteCoreController LogManager Common Qt6::Widgets Qt6::Svg Qt6::Test)
+   target_link_libraries(TestsSearchModel PRIVATE GUIIconProvider RemoteCoreController LogManager Common Qt6::Widgets Qt6::Svg Qt6::Test)
    add_test(NAME TestsSearchModel COMMAND TestsSearchModel)
    set_tests_properties(TestsSearchModel PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 30)
 
@@ -274,11 +289,11 @@ if(DLAN_BUILD_TESTS)
       Downloads/TestsDownloadsTreeModel.cpp
       Downloads/DownloadsTreeModel.cpp Downloads/DownloadsModel.cpp
       Peers/PeerListModel.cpp Settings/SharedEntryListModel.cpp
-      IconProvider.cpp Log.cpp resources.qrc
+      Log.cpp resources.qrc
    )
    set_target_properties(TestsDownloadsTreeModel PROPERTIES AUTORCC ON)
    target_include_directories(TestsDownloadsTreeModel PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
-   target_link_libraries(TestsDownloadsTreeModel PRIVATE RemoteCoreController LogManager Common Qt6::Widgets Qt6::Svg Qt6::Test)
+   target_link_libraries(TestsDownloadsTreeModel PRIVATE GUIIconProvider RemoteCoreController LogManager Common Qt6::Widgets Qt6::Svg Qt6::Test)
    add_test(NAME TestsDownloadsTreeModel COMMAND TestsDownloadsTreeModel)
    set_tests_properties(TestsDownloadsTreeModel PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 60)
 
@@ -286,11 +301,11 @@ if(DLAN_BUILD_TESTS)
       Downloads/TestsDownloadsFlatModel.cpp
       Downloads/DownloadsFlatModel.cpp Downloads/DownloadsModel.cpp
       Peers/PeerListModel.cpp Settings/SharedEntryListModel.cpp
-      IconProvider.cpp Log.cpp resources.qrc
+      Log.cpp resources.qrc
    )
    set_target_properties(TestsDownloadsFlatModel PROPERTIES AUTORCC ON)
    target_include_directories(TestsDownloadsFlatModel PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
-   target_link_libraries(TestsDownloadsFlatModel PRIVATE RemoteCoreController LogManager Common Qt6::Widgets Qt6::Svg Qt6::Test)
+   target_link_libraries(TestsDownloadsFlatModel PRIVATE GUIIconProvider RemoteCoreController LogManager Common Qt6::Widgets Qt6::Svg Qt6::Test)
    add_test(NAME TestsDownloadsFlatModel COMMAND TestsDownloadsFlatModel)
    set_tests_properties(TestsDownloadsFlatModel PROPERTIES TIMEOUT 60)
 endif()
