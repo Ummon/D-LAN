@@ -176,6 +176,7 @@ namespace RCC
       QTimer connectionTimeoutTimer;
 
       quint64 attemptGeneration = 0;
+      bool connectingToHost = false;
 
       // When a name is resolved many addresses can be returned, we will try all of
       // them until a connection is successfully established.

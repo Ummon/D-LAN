@@ -60,6 +60,11 @@ void CoreController::setCoreExecutableDirectory(const QString& dir)
   */
 void CoreController::startCore(int port)
 {
+   // A running subprocess may still be initializing its TCP listener. Retrying
+   // the connection must not attempt service installation or launch it again.
+   if (this->coreProcess.state() != QProcess::NotRunning)
+      return;
+
    const bool debug =
       #if defined(DEBUG)
          true;

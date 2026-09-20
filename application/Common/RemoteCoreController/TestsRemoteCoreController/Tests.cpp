@@ -1,6 +1,7 @@
 #include <QTest>
 #include <QSignalSpy>
 #include <QTcpServer>
+#include <QScopeGuard>
 #include <memory>
 
 #include <priv/InternalCoreConnection.h>
@@ -151,6 +152,92 @@ class Tests : public QObject
    }
 
 private slots:
+   void delayedCoreStartup_data()
+   {
+      QTest::addColumn<QString>("outcome");
+      QTest::addColumn<bool>("multipleAddresses");
+      QTest::newRow("listener-starts-later") << QString("connected") << false;
+      QTest::newRow("ipv6-to-ipv4-fallback") << QString("connected") << true;
+      QTest::newRow("listener-never-starts") << QString("timeout") << false;
+      QTest::newRow("disconnect-during-authentication") << QString("disconnect") << false;
+   }
+
+   void delayedCoreStartup()
+   {
+      QFETCH(QString, outcome);
+      QFETCH(bool, multipleAddresses);
+#ifdef Q_OS_UNIX
+      RCC::CoreConnection core;
+      auto& process = core.coreController.coreProcess;
+      process.start("/bin/cat", QStringList());
+      QVERIFY(process.waitForStarted());
+      const auto cleanup = qScopeGuard([&] { process.kill(); process.waitForFinished(); });
+
+      QTcpServer delayedServer;
+      QVERIFY(delayedServer.listen(QHostAddress::LocalHost));
+      const quint16 port = delayedServer.serverPort();
+      delayedServer.close();
+      QSignalSpy errors(&core, &RCC::ICoreConnection::connectingError);
+      QSignalSpy connected(&core, &RCC::ICoreConnection::connected);
+      auto& pending = core.temp();
+      QVERIFY(core.connectToCorePrepare("127.0.0.1"));
+      pending.connectionInfo = {"127.0.0.1", port, Common::Hash()};
+      if (multipleAddresses)
+         pending.addressesToTry << QHostAddress::LocalHostIPv6;
+      pending.addressesToTry << QHostAddress::LocalHost;
+      pending.tryToConnectToTheNextAddress();
+      QTRY_VERIFY(pending.retryTimer.isActive());
+      QVERIFY(core.isConnecting());
+      QCOMPARE(errors.count(), 0);
+      // A refused TCP connection must not become a public timeout, regardless
+      // of whether the platform emits disconnected for that failed attempt.
+      pending.onDisconnected();
+      QCOMPARE(errors.count(), 0);
+      QVERIFY(core.isConnecting());
+
+      if (outcome == "timeout")
+      {
+         QTRY_COMPARE_WITH_TIMEOUT(errors.count(), 1, 5000);
+         QCOMPARE(errors[0][0].value<RCC::ICoreConnection::ConnectionErrorCode>(), RCC::ICoreConnection::RCC_ERROR_HOST_TIMEOUT);
+         QVERIFY(!core.isConnecting());
+         QVERIFY(!pending.retryTimer.isActive());
+         QVERIFY(!pending.connectionTimeoutTimer.isActive());
+         QTest::qWait(300);
+         QCOMPARE(errors.count(), 1);
+         QCOMPARE(connected.count(), 0);
+         return;
+      }
+
+      QTest::qWait(550); // More than one refused connection while the core starts.
+      QCOMPARE(errors.count(), 0);
+      QVERIFY(core.isConnecting());
+      QVERIFY(delayedServer.listen(QHostAddress::LocalHost, port));
+      QTRY_VERIFY(delayedServer.hasPendingConnections());
+      auto* remote = delayedServer.nextPendingConnection();
+      TestPeer delayedPeer(remote);
+      if (outcome == "disconnect")
+      {
+         QTRY_COMPARE(pending.socket->state(), QAbstractSocket::ConnectedState);
+         remote->abort();
+         QTRY_COMPARE(errors.count(), 1);
+         QVERIFY(!core.isConnecting());
+         QVERIFY(!pending.retryTimer.isActive());
+         QCOMPARE(connected.count(), 0);
+         return;
+      }
+      Protos::GUI::AuthenticationResult auth;
+      auth.set_status(Protos::GUI::AuthenticationResult::AUTH_OK);
+      delayedPeer.send(MessageHeader::GUI_AUTHENTICATION_RESULT, auth);
+      QTRY_COMPARE(connected.count(), 1);
+      QCOMPARE(errors.count(), 0);
+      QVERIFY(core.isConnected());
+      QVERIFY(!pending.connectionTimeoutTimer.isActive());
+      core.disconnectFromCore();
+#else
+      QSKIP("Uses a Unix subprocess fixture");
+#endif
+   }
+
    void subprocessDestructionDoesNotEmitStatus()
    {
 #ifdef Q_OS_UNIX

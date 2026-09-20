@@ -95,6 +95,7 @@ void InternalCoreConnection::cancelConnectionAttempt()
    }
    this->retryTimer.stop();
    this->connectionTimeoutTimer.stop();
+   this->connectingToHost = false;
    // Closing a connecting socket must not schedule another address or retry.
    disconnect(this->socket, &QAbstractSocket::stateChanged, this, &InternalCoreConnection::stateChanged);
    this->addressesToTry.clear();
@@ -418,8 +419,11 @@ void InternalCoreConnection::tryToConnectToTheNextAddress()
 
    connect(this->socket, &QAbstractSocket::stateChanged, this, &InternalCoreConnection::stateChanged);
    this->addressesToRetry << address;
-   this->socket->connectToHost(address, this->connectionInfo.port);
+   this->connectingToHost = true;
+   // Arm before connectToHost: a synchronous failure/success must be able to
+   // stop the timeout without it being restarted after the callback returns.
    this->connectionTimeoutTimer.start();
+   this->socket->connectToHost(address, this->connectionInfo.port);
 }
 
 void InternalCoreConnection::connectionTimedOut()
@@ -439,21 +443,24 @@ void InternalCoreConnection::stateChanged(QAbstractSocket::SocketState socketSta
       this->connectionTimeoutTimer.stop();
       if (!this->addressesToTry.isEmpty())
       {
-         this->tryToConnectToTheNextAddress();
+         // Finish the old socket's notifications before starting another address.
+         this->retryTimer.start(0);
       }
       else if (this->nbRetries++ < NB_RETRIES_MAX)
       {
          this->addressesToTry = this->addressesToRetry;
          this->addressesToRetry.clear();
-         this->retryTimer.start();
+         this->retryTimer.start(TIME_BETWEEN_RETRIES);
       }
       else
       {
+         this->connectingToHost = false;
          emit connectingError(ICoreConnection::RCC_ERROR_HOST_TIMEOUT);
       }
       break;
 
    case QAbstractSocket::ConnectedState:
+      this->connectingToHost = false;
       disconnect(this->socket, &QAbstractSocket::stateChanged, this, &InternalCoreConnection::stateChanged);
       this->connectionTimeoutTimer.stop();
       // Now we wait a message 'Protos.GUI.AskForAuthentication' from the Core before being authenticated.
@@ -626,5 +633,8 @@ void InternalCoreConnection::onDisconnected()
    this->sendChatMessageResultWithoutReply.clear();
    const bool asked = this->forcedToClose;
    this->forcedToClose = false;
-   emit disconnected(asked);
+   // Some platforms report disconnected even when TCP was never established.
+   // stateChanged owns retries/timeouts until a transport connection succeeds.
+   if (!this->connectingToHost)
+      emit disconnected(asked);
 }
