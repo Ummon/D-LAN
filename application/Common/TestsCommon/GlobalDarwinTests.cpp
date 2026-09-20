@@ -54,6 +54,28 @@ class GlobalDarwinTests : public QObject
    Q_OBJECT
 
 private slots:
+   void quickAccessFolders()
+   {
+      // Exercise the real macOS QStandardPaths implementation in a headless core.
+      // In Qt 6.11, displayName(TemplatesLocation) crashes for its empty location list.
+      const auto folders = Common::Global::getQuickAccessFolders();
+      QVERIFY(!folders.isEmpty());
+      QCOMPARE(folders.first().path, QDir::cleanPath(QDir::homePath()));
+      QStringList paths;
+      for (const auto& folder : folders)
+      {
+         QVERIFY(!folder.name.isEmpty());
+         QVERIFY(QDir::isAbsolutePath(folder.path));
+         QVERIFY(QFileInfo(folder.path).isDir());
+         QVERIFY(!paths.contains(folder.path));
+         paths.append(folder.path);
+      }
+      // Keep real shortcuts, rather than fixing the crash by returning only home.
+      const QString documents = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+      if (QFileInfo(documents).isDir())
+         QVERIFY(paths.contains(QDir::cleanPath(documents)));
+   }
+
    void resourceFolder()
    {
       QCOMPARE(Common::Global::getResourceFolder(), QCoreApplication::applicationDirPath());

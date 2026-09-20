@@ -616,8 +616,9 @@ QString Global::getCurrentMachineName()
 
 /**
   * Returns the folders which may be shown as shortcuts by a file browser: the home folder of the current
-  * user followed by Windows Explorer "Quick Access" folders or Linux standard user folders.
-  * On Linux, QStandardPaths honours the XDG user directory configuration.
+  * user followed by Windows Explorer "Quick Access" folders or Linux/macOS standard user folders.
+  * QStandardPaths supplies native paths and display names on macOS and honours the XDG user
+  * directory configuration on Linux.
   * Missing folders and duplicates are removed; the home folder is always first.
   * @remarks When the core runs as a service the quick access folders are the ones of the service account,
   *          thus there is usually none and only the home folder is returned.
@@ -700,7 +701,7 @@ QList<Global::QuickAccessFolder> Global::getQuickAccessFolders()
 
    if (COMResult != RPC_E_CHANGED_MODE)
       CoUninitialize();
-#elif defined(Q_OS_LINUX)
+#elif defined(Q_OS_LINUX) || defined(Q_OS_MACOS)
    for (const auto location : {
       QStandardPaths::DesktopLocation,
       QStandardPaths::DocumentsLocation,
@@ -711,7 +712,13 @@ QList<Global::QuickAccessFolder> Global::getQuickAccessFolders()
       QStandardPaths::PublicShareLocation,
       QStandardPaths::TemplatesLocation
    })
-      append(QStandardPaths::displayName(location), QStandardPaths::writableLocation(location));
+   {
+      const QString path = QStandardPaths::writableLocation(location);
+      // Qt's macOS displayName() assumes a nonempty standardLocations() list.
+      // Unsupported locations (such as Templates) must be skipped before calling it.
+      if (!path.isEmpty())
+         append(QStandardPaths::displayName(location), path);
+   }
 #endif
 
    return folders;
