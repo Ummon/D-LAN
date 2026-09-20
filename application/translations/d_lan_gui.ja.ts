@@ -130,48 +130,49 @@
 <context>
     <name>GUI::ChatWidget</name>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="483"/>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="487"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="511"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="515"/>
         <source>Unable to send message</source>
         <translation>メッセージを送信できません</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="483"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="511"/>
         <source>The message is too long</source>
         <translation>メッセージが長すぎます</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="487"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="515"/>
         <source>The message can&apos;t be send, unknown error</source>
         <translation>メッセージを送信できません。原因不明のエラーです</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="505"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="533"/>
         <source>Browse</source>
         <translation>閲覧</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="509"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="537"/>
         <source>Copy IP: %1</source>
         <translation>IP をコピー: %1</translation>
     </message>
     <message>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="572"/>
         <source>Copy selected messages</source>
         <translation>選択したメッセージをコピー</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="544"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="573"/>
         <source>Copy selected lines</source>
         <translation>選択した行をコピー</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="545"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="574"/>
         <source>Browse selected peers</source>
         <translation>選択したピアを閲覧</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="926"/>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="988"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="969"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="1031"/>
         <source>Chat</source>
         <translation>チャット</translation>
     </message>
@@ -187,27 +188,27 @@
 <context>
     <name>GUI::D_LAN_GUI</name>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="184"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="211"/>
         <source>Show the user interface</source>
         <translation>ユーザーインターフェースを表示</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="188"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="215"/>
         <source>Stop the user interface</source>
         <translation>ユーザーインターフェースを終了</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="191"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="218"/>
         <source>Exit</source>
         <translation>終了</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="220"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="249"/>
         <source>D-LAN user interface closed</source>
         <translation>D-LANのユーザーインターフェースを閉じました</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="221"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="250"/>
         <source>D-LAN Core is still running in background. Select &apos;exit&apos; from the contextual menu if you want to stop it.</source>
         <translation>D-LAN Coreはバックグラウンドで引き続き動作しています。停止するには、コンテキストメニューから「終了」を選択してください。</translation>
     </message>
@@ -499,12 +500,12 @@
 <context>
     <name>GUI::MdiArea</name>
     <message>
-        <location filename="../GUI/MDI/MdiArea.cpp" line="340"/>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="358"/>
         <source>Waiting the initial scanning process is finished before loading the download queue</source>
         <translation>ダウンロードキューを読み込む前に、初回スキャンの完了を待っています</translation>
     </message>
     <message>
-        <location filename="../GUI/MDI/MdiArea.cpp" line="529"/>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="547"/>
         <source>Leave room</source>
         <translation>ルームを退出</translation>
     </message>
@@ -677,8 +678,8 @@
         <translation>サイズ</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchModel.cpp" line="374"/>
-        <location filename="../GUI/Search/SearchModel.cpp" line="428"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="364"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="418"/>
         <source>&lt;unknown&gt;</source>
         <translation>&lt;不明&gt;</translation>
     </message>
@@ -719,57 +720,57 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="243"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="245"/>
         <source>Default</source>
         <translation>既定</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="301"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="303"/>
         <source>Interface not active</source>
         <translation>インターフェースが有効ではありません</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="437"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="439"/>
         <source>Change the password</source>
         <translation>パスワードを変更</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="441"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="443"/>
         <source>No password defined</source>
         <translation>パスワードが設定されていません</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="443"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="445"/>
         <source>Define a password</source>
         <translation>パスワードを設定</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="489"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="797"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="491"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="796"/>
         <source>Connecting . . .</source>
         <translation>接続中 . . .</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="497"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="512"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="530"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="797"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="499"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="514"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="529"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="796"/>
         <source>Connect</source>
         <translation>接続</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="624"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="623"/>
         <source>Select one or more directories and/or files to share</source>
         <translation>共有するディレクトリやファイルを1つ以上選択してください</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="645"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="710"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="644"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="709"/>
         <source>Remove selected shared entries</source>
         <translation>選択した共有項目を削除</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="646"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="645"/>
         <source>Are you sure you want to remove the selected shared files and directories?</source>
         <translation>選択した共有ファイルとフォルダーを削除してもよろしいですか？</translation>
     </message>
@@ -786,17 +787,17 @@
         <translation type="vanished">共有ディレクトリを削除</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="718"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="717"/>
         <source>Move up</source>
         <translation>上へ移動</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="726"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="725"/>
         <source>Move down</source>
         <translation>下へ移動</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="734"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="733"/>
         <source>Open location</source>
         <translation>場所を開く</translation>
     </message>
@@ -870,7 +871,7 @@
 <context>
     <name>GUI::TabCloseButton</name>
     <message>
-        <location filename="../GUI/MDI/TabButtons.cpp" line="132"/>
+        <location filename="../GUI/MDI/TabButtons.cpp" line="131"/>
         <source>Close tab</source>
         <translation>タブを閉じる</translation>
     </message>
@@ -878,7 +879,7 @@
 <context>
     <name>GUI::TabRefreshButton</name>
     <message>
-        <location filename="../GUI/MDI/TabButtons.cpp" line="169"/>
+        <location filename="../GUI/MDI/TabButtons.cpp" line="168"/>
         <source>Refresh</source>
         <translation>更新</translation>
     </message>
@@ -915,22 +916,22 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="66"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="78"/>
         <source>D-LAN Core cannot be installed as a service</source>
         <translation>D-LAN Core をサービスとしてインストールできません</translation>
     </message>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="84"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="96"/>
         <source>Core launched as subprocess</source>
         <translation>Core をサブプロセスとして起動しました</translation>
     </message>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="86"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="98"/>
         <source>Unable to launch the Core as subprocess</source>
         <translation>Core をサブプロセスとして起動できません</translation>
     </message>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="91"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="103"/>
         <source>Core service launched</source>
         <translation>Core サービスを起動しました</translation>
     </message>
@@ -940,32 +941,32 @@
         <translation>D-LAN GUI バージョン %1</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="101"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="106"/>
         <source>D-LAN already launched</source>
         <translation>D-LAN はすでに起動しています</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="102"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="107"/>
         <source>An instance of D-LAN is already launched</source>
         <translation>D-LAN のインスタンスがすでに起動しています</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="104"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="109"/>
         <source>Quit</source>
         <translation>終了</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="105"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="110"/>
         <source>Launch anyway</source>
         <translation>それでも起動する</translation>
     </message>
     <message>
-        <location filename="../GUI/Utils.cpp" line="48"/>
+        <location filename="../GUI/Utils.cpp" line="50"/>
         <source>Select one or more directories and/or files</source>
         <translation>ディレクトリやファイルを1つ以上選択してください</translation>
     </message>
     <message>
-        <location filename="../GUI/Utils.cpp" line="58"/>
+        <location filename="../GUI/Utils.cpp" line="60"/>
         <source>Select a directory where to download to</source>
         <translation>ダウンロード先のディレクトリを選択してください</translation>
     </message>

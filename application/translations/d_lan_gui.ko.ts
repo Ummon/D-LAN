@@ -130,48 +130,49 @@
 <context>
     <name>GUI::ChatWidget</name>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="483"/>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="487"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="511"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="515"/>
         <source>Unable to send message</source>
         <translation>메시지를 보낼 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="483"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="511"/>
         <source>The message is too long</source>
         <translation>메시지가 너무 깁니다</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="487"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="515"/>
         <source>The message can&apos;t be send, unknown error</source>
         <translation>메시지를 보낼 수 없습니다. 알 수 없는 오류입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="505"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="533"/>
         <source>Browse</source>
         <translation>탐색</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="509"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="537"/>
         <source>Copy IP: %1</source>
         <translation>IP 복사: %1</translation>
     </message>
     <message>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="572"/>
         <source>Copy selected messages</source>
         <translation>선택한 메시지 복사</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="544"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="573"/>
         <source>Copy selected lines</source>
         <translation>선택한 줄 복사</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="545"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="574"/>
         <source>Browse selected peers</source>
         <translation>선택한 피어 탐색</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="926"/>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="988"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="969"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="1031"/>
         <source>Chat</source>
         <translation>채팅</translation>
     </message>
@@ -187,27 +188,27 @@
 <context>
     <name>GUI::D_LAN_GUI</name>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="184"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="211"/>
         <source>Show the user interface</source>
         <translation>사용자 인터페이스 표시</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="188"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="215"/>
         <source>Stop the user interface</source>
         <translation>사용자 인터페이스 닫기</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="191"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="218"/>
         <source>Exit</source>
         <translation>종료</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="220"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="249"/>
         <source>D-LAN user interface closed</source>
         <translation>D-LAN 사용자 인터페이스가 닫혔습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="221"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="250"/>
         <source>D-LAN Core is still running in background. Select &apos;exit&apos; from the contextual menu if you want to stop it.</source>
         <translation>D-LAN Core가 백그라운드에서 계속 실행 중입니다. 중지하려면 컨텍스트 메뉴에서 «종료»를 선택하세요.</translation>
     </message>
@@ -503,12 +504,12 @@
 <context>
     <name>GUI::MdiArea</name>
     <message>
-        <location filename="../GUI/MDI/MdiArea.cpp" line="340"/>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="358"/>
         <source>Waiting the initial scanning process is finished before loading the download queue</source>
         <translation>초기 스캔이 완료될 때까지 기다린 후 다운로드 대기열을 불러옵니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MDI/MdiArea.cpp" line="529"/>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="547"/>
         <source>Leave room</source>
         <translation>대화방 나가기</translation>
     </message>
@@ -681,8 +682,8 @@
         <translation>크기</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchModel.cpp" line="374"/>
-        <location filename="../GUI/Search/SearchModel.cpp" line="428"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="364"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="418"/>
         <source>&lt;unknown&gt;</source>
         <translation>&lt;알 수 없음&gt;</translation>
     </message>
@@ -723,57 +724,57 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="243"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="245"/>
         <source>Default</source>
         <translation>기본값</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="301"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="303"/>
         <source>Interface not active</source>
         <translation>인터페이스가 비활성 상태입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="437"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="439"/>
         <source>Change the password</source>
         <translation>비밀번호 변경</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="441"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="443"/>
         <source>No password defined</source>
         <translation>비밀번호가 설정되어 있지 않습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="443"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="445"/>
         <source>Define a password</source>
         <translation>비밀번호 설정</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="489"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="797"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="491"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="796"/>
         <source>Connecting . . .</source>
         <translation>연결하는 중 . . .</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="497"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="512"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="530"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="797"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="499"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="514"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="529"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="796"/>
         <source>Connect</source>
         <translation>연결</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="624"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="623"/>
         <source>Select one or more directories and/or files to share</source>
         <translation>공유할 폴더 및/또는 파일을 하나 이상 선택하십시오</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="645"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="710"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="644"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="709"/>
         <source>Remove selected shared entries</source>
         <translation>선택한 공유 항목 제거</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="646"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="645"/>
         <source>Are you sure you want to remove the selected shared files and directories?</source>
         <translation>선택한 공유 파일과 폴더를 제거하시겠습니까?</translation>
     </message>
@@ -790,17 +791,17 @@
         <translation type="vanished">공유 폴더 제거</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="718"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="717"/>
         <source>Move up</source>
         <translation>위로 이동</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="726"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="725"/>
         <source>Move down</source>
         <translation>아래로 이동</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="734"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="733"/>
         <source>Open location</source>
         <translation>위치 열기</translation>
     </message>
@@ -874,7 +875,7 @@
 <context>
     <name>GUI::TabCloseButton</name>
     <message>
-        <location filename="../GUI/MDI/TabButtons.cpp" line="132"/>
+        <location filename="../GUI/MDI/TabButtons.cpp" line="131"/>
         <source>Close tab</source>
         <translation>탭 닫기</translation>
     </message>
@@ -882,7 +883,7 @@
 <context>
     <name>GUI::TabRefreshButton</name>
     <message>
-        <location filename="../GUI/MDI/TabButtons.cpp" line="169"/>
+        <location filename="../GUI/MDI/TabButtons.cpp" line="168"/>
         <source>Refresh</source>
         <translation>새로 고침</translation>
     </message>
@@ -919,42 +920,42 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="66"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="78"/>
         <source>D-LAN Core cannot be installed as a service</source>
         <translation>D-LAN 코어를 서비스로 설치할 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="84"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="96"/>
         <source>Core launched as subprocess</source>
         <translation>코어가 하위 프로세스로 시작되었습니다</translation>
     </message>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="86"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="98"/>
         <source>Unable to launch the Core as subprocess</source>
         <translation>코어를 하위 프로세스로 시작할 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="91"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="103"/>
         <source>Core service launched</source>
         <translation>코어 서비스가 시작되었습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="101"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="106"/>
         <source>D-LAN already launched</source>
         <translation>D-LAN이 이미 실행 중입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="102"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="107"/>
         <source>An instance of D-LAN is already launched</source>
         <translation>D-LAN 인스턴스가 이미 실행 중입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="104"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="109"/>
         <source>Quit</source>
         <translation>종료</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="105"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="110"/>
         <source>Launch anyway</source>
         <translation>무시하고 실행</translation>
     </message>
@@ -1020,12 +1021,12 @@
         <translation>로컬</translation>
     </message>
     <message>
-        <location filename="../GUI/Utils.cpp" line="48"/>
+        <location filename="../GUI/Utils.cpp" line="50"/>
         <source>Select one or more directories and/or files</source>
         <translation>폴더 및/또는 파일을 하나 이상 선택하십시오</translation>
     </message>
     <message>
-        <location filename="../GUI/Utils.cpp" line="58"/>
+        <location filename="../GUI/Utils.cpp" line="60"/>
         <source>Select a directory where to download to</source>
         <translation>다운로드할 폴더를 선택하십시오</translation>
     </message>

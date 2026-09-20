@@ -59,7 +59,7 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../Core/Core.cpp" line="125"/>
+        <location filename="../Core/Core.cpp" line="127"/>
         <source>Ready to serve</source>
         <translation>Bereit</translation>
     </message>
@@ -74,7 +74,7 @@
         <translation>Beenden</translation>
     </message>
     <message>
-        <location filename="../Core/Core.cpp" line="107"/>
+        <location filename="../Core/Core.cpp" line="109"/>
         <source>D-LAN Core version %1 is starting . . .</source>
         <translation>D-LAN Core Version %1 wird gestartet . . .</translation>
     </message>

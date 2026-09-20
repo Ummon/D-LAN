@@ -130,7 +130,7 @@
 <context>
     <name>GUI::ChatWidget</name>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="+483"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="+511"/>
         <location line="+4"/>
         <source>Unable to send message</source>
         <translation>Не удалось отправить сообщение</translation>
@@ -156,11 +156,12 @@
         <translation>Копировать IP: %1</translation>
     </message>
     <message>
+        <location line="+35"/>
         <source>Copy selected messages</source>
         <translation>Копировать выделенные сообщения</translation>
     </message>
     <message>
-        <location line="+35"/>
+        <location line="+1"/>
         <source>Copy selected lines</source>
         <translation>Копировать выделенные строки</translation>
     </message>
@@ -170,7 +171,7 @@
         <translation>Открыть выделенных пиров</translation>
     </message>
     <message>
-        <location line="+381"/>
+        <location line="+395"/>
         <location line="+62"/>
         <source>Chat</source>
         <translation>Чат</translation>
@@ -187,7 +188,7 @@
 <context>
     <name>GUI::D_LAN_GUI</name>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="+184"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="+211"/>
         <source>Show the user interface</source>
         <translation>Открыть пользовательский интерфейс</translation>
     </message>
@@ -202,7 +203,7 @@
         <translation>Выход</translation>
     </message>
     <message>
-        <location line="+29"/>
+        <location line="+31"/>
         <source>D-LAN user interface closed</source>
         <translation>Пользовательский интерфейс D-LAN закрыт</translation>
     </message>
@@ -503,7 +504,7 @@
 <context>
     <name>GUI::MdiArea</name>
     <message>
-        <location filename="../GUI/MDI/MdiArea.cpp" line="+340"/>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="+358"/>
         <source>Waiting the initial scanning process is finished before loading the download queue</source>
         <translation>Ожидание завершения первоначального сканирования перед загрузкой очереди загрузок</translation>
     </message>
@@ -681,7 +682,7 @@
         <translation>Размер</translation>
     </message>
     <message>
-        <location line="+232"/>
+        <location line="+222"/>
         <location line="+54"/>
         <source>&lt;unknown&gt;</source>
         <translation>&lt;неизвестно&gt;</translation>
@@ -723,7 +724,7 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+243"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+245"/>
         <source>Default</source>
         <translation>Стандартный</translation>
     </message>
@@ -749,14 +750,14 @@
     </message>
     <message>
         <location line="+46"/>
-        <location line="+308"/>
+        <location line="+305"/>
         <source>Connecting . . .</source>
         <translation>Подключение...</translation>
     </message>
     <message>
-        <location line="-300"/>
+        <location line="-297"/>
         <location line="+15"/>
-        <location line="+18"/>
+        <location line="+15"/>
         <location line="+267"/>
         <source>Connect</source>
         <translation>Подключиться</translation>
@@ -874,7 +875,7 @@
 <context>
     <name>GUI::TabCloseButton</name>
     <message>
-        <location filename="../GUI/MDI/TabButtons.cpp" line="+132"/>
+        <location filename="../GUI/MDI/TabButtons.cpp" line="+131"/>
         <source>Close tab</source>
         <translation>Закрыть вкладку</translation>
     </message>
@@ -919,7 +920,7 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="+66"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="+78"/>
         <source>D-LAN Core cannot be installed as a service</source>
         <translation>Не удалось установить D-LAN Core как службу</translation>
     </message>
@@ -939,7 +940,7 @@
         <translation>Служба ядра запущена</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="-120"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="-144"/>
         <source>D-LAN already launched</source>
         <translation>D-LAN уже запущен</translation>
     </message>
@@ -1025,7 +1026,7 @@
         <translation>Локальный</translation>
     </message>
     <message>
-        <location filename="../GUI/Utils.cpp" line="+48"/>
+        <location filename="../GUI/Utils.cpp" line="+50"/>
         <source>Select one or more directories and/or files</source>
         <translation>Выберите одну или несколько папок и/или файлов</translation>
     </message>
