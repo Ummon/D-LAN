@@ -160,6 +160,9 @@ private slots:
       QTest::newRow("ipv6-to-ipv4-fallback") << QString("connected") << true;
       QTest::newRow("listener-never-starts") << QString("timeout") << false;
       QTest::newRow("disconnect-during-authentication") << QString("disconnect") << false;
+      QTest::newRow("authentication-never-arrives") << QString("silent") << false;
+      QTest::newRow("authentication-refused") << QString("refused") << false;
+      QTest::newRow("unknown-authentication-status") << QString("invalid-status") << false;
    }
 
    void delayedCoreStartup()
@@ -180,12 +183,9 @@ private slots:
       QSignalSpy errors(&core, &RCC::ICoreConnection::connectingError);
       QSignalSpy connected(&core, &RCC::ICoreConnection::connected);
       auto& pending = core.temp();
-      QVERIFY(core.connectToCorePrepare("127.0.0.1"));
-      pending.connectionInfo = {"127.0.0.1", port, Common::Hash()};
-      if (multipleAddresses)
-         pending.addressesToTry << QHostAddress::LocalHostIPv6;
-      pending.addressesToTry << QHostAddress::LocalHost;
-      pending.tryToConnectToTheNextAddress();
+      if (outcome == "silent")
+         pending.connectionTimeoutTimer.setInterval(100);
+      core.connectToCore(multipleAddresses ? "localhost" : "127.0.0.1", port, Common::Hash());
       QTRY_VERIFY(pending.retryTimer.isActive());
       QVERIFY(core.isConnecting());
       QCOMPARE(errors.count(), 0);
@@ -214,20 +214,42 @@ private slots:
       QVERIFY(delayedServer.listen(QHostAddress::LocalHost, port));
       QTRY_VERIFY(delayedServer.hasPendingConnections());
       auto* remote = delayedServer.nextPendingConnection();
-      TestPeer delayedPeer(remote);
+      QScopedPointer<TestPeer> delayedPeer(new TestPeer(remote));
       if (outcome == "disconnect")
       {
          QTRY_COMPARE(pending.socket->state(), QAbstractSocket::ConnectedState);
          remote->abort();
-         QTRY_COMPARE(errors.count(), 1);
+         QTRY_VERIFY(pending.retryTimer.isActive());
+         QCOMPARE(errors.count(), 0);
+         QVERIFY(core.isConnecting());
+         QTRY_VERIFY(delayedServer.hasPendingConnections());
+         delayedPeer.reset(new TestPeer(delayedServer.nextPendingConnection()));
+      }
+      if (outcome == "silent" || outcome == "refused" || outcome == "invalid-status")
+      {
+         if (outcome != "silent")
+         {
+            Protos::GUI::AuthenticationResult refusal;
+            refusal.set_status(outcome == "refused" ? Protos::GUI::AuthenticationResult::AUTH_BAD_PASSWORD :
+               static_cast<decltype(refusal.status())>(999));
+            delayedPeer->send(MessageHeader::GUI_AUTHENTICATION_RESULT, refusal);
+         }
+         QTRY_COMPARE_WITH_TIMEOUT(errors.count(), 1, 5000);
+         QCOMPARE(errors[0][0].value<RCC::ICoreConnection::ConnectionErrorCode>(),
+            outcome == "silent" ? RCC::ICoreConnection::RCC_ERROR_HOST_TIMEOUT :
+            outcome == "refused" ? RCC::ICoreConnection::RCC_ERROR_WRONG_PASSWORD : RCC::ICoreConnection::RCC_ERROR_UNKNOWN);
          QVERIFY(!core.isConnecting());
          QVERIFY(!pending.retryTimer.isActive());
+         QVERIFY(!pending.connectionTimeoutTimer.isActive());
          QCOMPARE(connected.count(), 0);
+         remote->abort();
+         QTest::qWait(300);
+         QCOMPARE(errors.count(), 1);
          return;
       }
       Protos::GUI::AuthenticationResult auth;
       auth.set_status(Protos::GUI::AuthenticationResult::AUTH_OK);
-      delayedPeer.send(MessageHeader::GUI_AUTHENTICATION_RESULT, auth);
+      delayedPeer->send(MessageHeader::GUI_AUTHENTICATION_RESULT, auth);
       QTRY_COMPARE(connected.count(), 1);
       QCOMPARE(errors.count(), 0);
       QVERIFY(core.isConnected());

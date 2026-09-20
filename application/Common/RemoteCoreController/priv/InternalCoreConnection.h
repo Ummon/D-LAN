@@ -172,11 +172,11 @@ namespace RCC
       int currentHostLookupID;
       QTimer retryTimer;
 
-      // Qt aborts a connection attempt only after 30 s, this timer enforces a shorter delay.
+      // Bound both TCP connection establishment and the authentication exchange.
       QTimer connectionTimeoutTimer;
 
       quint64 attemptGeneration = 0;
-      bool connectingToHost = false;
+      bool connectionAttemptActive = false;
 
       // When a name is resolved many addresses can be returned, we will try all of
       // them until a connection is successfully established.

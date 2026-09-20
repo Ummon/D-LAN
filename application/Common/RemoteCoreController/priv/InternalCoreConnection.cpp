@@ -95,7 +95,7 @@ void InternalCoreConnection::cancelConnectionAttempt()
    }
    this->retryTimer.stop();
    this->connectionTimeoutTimer.stop();
-   this->connectingToHost = false;
+   this->connectionAttemptActive = false;
    // Closing a connecting socket must not schedule another address or retry.
    disconnect(this->socket, &QAbstractSocket::stateChanged, this, &InternalCoreConnection::stateChanged);
    this->addressesToTry.clear();
@@ -419,7 +419,7 @@ void InternalCoreConnection::tryToConnectToTheNextAddress()
 
    connect(this->socket, &QAbstractSocket::stateChanged, this, &InternalCoreConnection::stateChanged);
    this->addressesToRetry << address;
-   this->connectingToHost = true;
+   this->connectionAttemptActive = true;
    // Arm before connectToHost: a synchronous failure/success must be able to
    // stop the timeout without it being restarted after the callback returns.
    this->connectionTimeoutTimer.start();
@@ -428,7 +428,8 @@ void InternalCoreConnection::tryToConnectToTheNextAddress()
 
 void InternalCoreConnection::connectionTimedOut()
 {
-   L_DEBU(QString("Connection to %1 timed out after %2 ms").arg(this->socket->peerAddress().toString()).arg(CONNECTION_TIMEOUT));
+   L_DEBU(QString("Connection/authentication with %1:%2 timed out after %3 ms")
+      .arg(this->connectionInfo.address).arg(this->connectionInfo.port).arg(this->connectionTimeoutTimer.interval()));
 
    // 'abort()' puts the socket in 'UnconnectedState', 'stateChanged(..)' then tries the next address or retries.
    this->socket->abort();
@@ -454,16 +455,18 @@ void InternalCoreConnection::stateChanged(QAbstractSocket::SocketState socketSta
       }
       else
       {
-         this->connectingToHost = false;
+         this->connectionAttemptActive = false;
          emit connectingError(ICoreConnection::RCC_ERROR_HOST_TIMEOUT);
       }
       break;
 
    case QAbstractSocket::ConnectedState:
-      this->connectingToHost = false;
-      disconnect(this->socket, &QAbstractSocket::stateChanged, this, &InternalCoreConnection::stateChanged);
-      this->connectionTimeoutTimer.stop();
-      // Now we wait a message 'Protos.GUI.AskForAuthentication' from the Core before being authenticated.
+      L_DEBU("Core TCP connection opened; waiting for authentication");
+      // TCP alone is not success: macOS can report ConnectedState immediately
+      // before closing an unavailable endpoint. Keep retries and the timeout
+      // active until the core completes authentication.
+      this->connectionTimeoutTimer.start();
+      break;
 
    default:;
    }
@@ -471,6 +474,7 @@ void InternalCoreConnection::stateChanged(QAbstractSocket::SocketState socketSta
 
 void InternalCoreConnection::connectedAndAuthenticated()
 {
+   this->cancelConnectionAttempt();
    // If we were previously connected we announce it.
    if (this->authenticated)
       emit disconnected(this->forcedToClose);
@@ -529,6 +533,9 @@ void InternalCoreConnection::onNewMessage(const Common::Message& message)
          }
          else
          {
+            // An explicit authentication refusal is final, unlike a transient
+            // disconnect before the handshake finishes.
+            this->cancelConnectionAttempt();
             switch (authenticationResult.status())
             {
             case Protos::GUI::AuthenticationResult::AUTH_PASSWORD_NOT_DEFINED:
@@ -540,10 +547,9 @@ void InternalCoreConnection::onNewMessage(const Common::Message& message)
                break;
 
             case Protos::GUI::AuthenticationResult::AUTH_ERROR:
+            default:
                emit connectingError(ICoreConnection::RCC_ERROR_UNKNOWN);
                break;
-
-            default:;
             }
          }
       }
@@ -633,8 +639,8 @@ void InternalCoreConnection::onDisconnected()
    this->sendChatMessageResultWithoutReply.clear();
    const bool asked = this->forcedToClose;
    this->forcedToClose = false;
-   // Some platforms report disconnected even when TCP was never established.
-   // stateChanged owns retries/timeouts until a transport connection succeeds.
-   if (!this->connectingToHost)
+   // A connection is established only after authentication. Until then,
+   // stateChanged owns retries and the final timeout notification.
+   if (!this->connectionAttemptActive)
       emit disconnected(asked);
 }
