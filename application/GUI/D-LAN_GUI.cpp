@@ -22,6 +22,7 @@
 using namespace GUI;
 
 #include <QMessageBox>
+#include <QIcon>
 #include <QPushButton>
 #ifdef Q_OS_LINUX
 #include <QDir>
@@ -42,14 +43,16 @@ const QString D_LAN_GUI::SHARED_MEMORY_KEYNAME("D-LAN GUI instance");
 
 /**
   * @class GUI::D_LAN_GUI
-  * This class control the trayIcon and create the main window.
-  * The main window can be hid and deleted, the tray icon will still remain and will permit to relaunch the main window.
+  * Creates the main window and, on platforms other than macOS, the tray icon.
+  * With a tray icon, closing the main window allows it to be reopened from the tray.
   */
 
 D_LAN_GUI::D_LAN_GUI(int& argc, char* argv[]) :
    QApplication(argc, argv),
    mainWindow(0),
+#ifndef Q_OS_MACOS
    trayIcon(QIcon(":/icons/resources/icon.svg")),
+#endif
    coreConnection(RCC::Builder::newCoreConnection(SETTINGS.get<quint32>("socket_timeout")))
 {
    // The style must be set before any widget is created. 'MainWindow::loadCustomStyle(..)' sets it again but
@@ -58,7 +61,7 @@ D_LAN_GUI::D_LAN_GUI(int& argc, char* argv[]) :
    // 'QPalette::Base' background. See 'MainWindow::loadCustomStyle(..)' about why Fusion is used.
    this->setStyle("Fusion");
 
-   this->setWindowIcon(this->trayIcon.icon());
+   this->setWindowIcon(QIcon(":/icons/resources/icon.svg"));
 #ifdef Q_OS_LINUX
    // Match the desktop entry installed by the Linux package.
    this->setDesktopFileName("d-lan");
@@ -127,6 +130,15 @@ D_LAN_GUI::D_LAN_GUI(int& argc, char* argv[]) :
 
    this->showMainWindow();
 
+#ifdef Q_OS_MACOS
+   // Cocoa also sends this signal when the Dock icon is clicked while the
+   // application is already active but has no windows.
+   connect(this, &QGuiApplication::applicationStateChanged, this, [this](Qt::ApplicationState state)
+   {
+      if (state == Qt::ApplicationActive && !this->mainWindow)
+         this->showMainWindow();
+   }, Qt::QueuedConnection);
+#else
    RCC::ICoreConnection* coreConnectionPointer = this->coreConnection.data();
    connect(coreConnectionPointer, &RCC::ICoreConnection::localCoreStatusChanged, this, &D_LAN_GUI::updateTrayIconMenu);
    connect(coreConnectionPointer, &RCC::ICoreConnection::connected, this, &D_LAN_GUI::updateTrayIconMenu);
@@ -139,6 +151,7 @@ D_LAN_GUI::D_LAN_GUI(int& argc, char* argv[]) :
    this->trayIcon.setContextMenu(&this->trayIconMenu);
    this->trayIcon.setToolTip("D-LAN");
    this->trayIcon.show();
+#endif
 }
 
 D_LAN_GUI::~D_LAN_GUI()
@@ -174,6 +187,7 @@ bool D_LAN_GUI::notify(QObject* receiver, QEvent* event)
    return false;
 }
 
+#ifndef Q_OS_MACOS
 bool D_LAN_GUI::event(QEvent* event)
 {
    if (event->type() == QEvent::LanguageChange)
@@ -203,6 +217,7 @@ void D_LAN_GUI::updateTrayIconMenu()
    this->trayIconMenu.addSeparator();
    this->trayIconMenu.addAction(tr("Exit"), this, [this]() { this->D_LAN_GUI::exit(true); });
 }
+#endif
 
 /**
   * Load a translation file. If 'filename' is empty the default language is loaded.
@@ -221,6 +236,7 @@ void D_LAN_GUI::mainWindowClosed()
    // This slot is called by the window's destroyed signal.
    this->mainWindow = nullptr;
 
+#ifndef Q_OS_MACOS
    // Check on every close, since tray support can change during the session.
    if (!QSystemTrayIcon::isSystemTrayAvailable())
    {
@@ -233,6 +249,9 @@ void D_LAN_GUI::mainWindowClosed()
          tr("D-LAN user interface closed"),
          tr("D-LAN Core is still running in background. Select 'exit' from the contextual menu if you want to stop it.")
       );
+#endif
+   // Keep the application and core running. The Dock (macOS) or tray can
+   // recreate the window, whose constructor reconnects to the core.
    this->coreConnection->disconnectFromCore();
 }
 
@@ -277,7 +296,9 @@ void D_LAN_GUI::shutdown(bool stopTheCore)
       return;
    this->shuttingDown = true;
 
+#ifndef Q_OS_MACOS
    this->trayIcon.hide();
+#endif
    this->coreConnection->disconnect(this);
 
    if (this->mainWindow)
