@@ -101,6 +101,7 @@ namespace NL
       quint16 unicastPort; // Same as the TCP port, it may change when the sockets are rebound.
       const quint16 MULTICAST_PORT;
       QHostAddress multicastGroup;
+      QList<QNetworkInterface> multicastInterfaces;
 
       QSharedPointer<FM::IFileManager> fileManager;
       QSharedPointer<PM::IPeerManager> peerManager;

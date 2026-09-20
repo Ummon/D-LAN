@@ -144,13 +144,22 @@ INetworkListener::SendStatus UDPListener::send(
       L_DEBU(logMess);
 #endif
 
-   if (this->multicastSocket.writeDatagram(this->buffer, messageSize, this->multicastGroup, MULTICAST_PORT) == -1)
+   bool sent = false;
+   for (const auto& networkInterface : this->multicastInterfaces)
    {
-      L_WARN(QString("Unable to send datagram (multicast): error: %1").arg(this->multicastSocket.errorString()));
-      return INetworkListener::SendStatus::UNABLE_TO_SEND;
+      this->multicastSocket.setMulticastInterface(networkInterface);
+      // setMulticastInterface() has no return value. Do not send on the previous
+      // adapter if selecting this one failed (for example, after unplugging it).
+      if (this->multicastSocket.multicastInterface().index() != networkInterface.index() ||
+          this->multicastSocket.writeDatagram(this->buffer, messageSize, this->multicastGroup, MULTICAST_PORT) == -1)
+         L_WARN(QString("Unable to send datagram (multicast) on %1: %2")
+            .arg(networkInterface.humanReadableName(), this->multicastSocket.errorString()));
+      else
+         sent = true;
    }
 
-   return INetworkListener::SendStatus::OK;
+   // A failing adapter must not prevent searches and discovery on working ones.
+   return sent ? INetworkListener::SendStatus::OK : INetworkListener::SendStatus::UNABLE_TO_SEND;
 }
 
 void UDPListener::sendIMAliveMessage()
@@ -249,6 +258,7 @@ void UDPListener::closeSockets()
    this->timerIMAlive.stop();
    this->timerInitialIMAlive.stop();
    this->multicastSocket.close();
+   this->multicastInterfaces.clear();
    this->unicastSocket.close();
    this->unicastPort = 0;
    this->currentIMAliveTag = 0;
@@ -467,6 +477,7 @@ void UDPListener::processPendingUnicastDatagrams()
 bool UDPListener::initMulticastUDPSocket()
 {
    this->multicastSocket.close();
+   this->multicastInterfaces.clear();
 
    QHostAddress currentAddressToListenTo = Utils::getCurrentAddressToListenTo();
 
@@ -497,22 +508,23 @@ bool UDPListener::initMulticastUDPSocket()
    this->multicastSocket.setSocketOption(QAbstractSocket::MulticastLoopbackOption, loop);
    this->multicastSocket.setSocketOption(QAbstractSocket::MulticastTtlOption, SETTINGS.get<quint32>("multicast_ttl"));
 
-   const QNetworkInterface networkInterface = Utils::getCurrentInterfaceToListenTo();
-   if (!networkInterface.isValid())
+   for (const auto& networkInterface : Utils::getCurrentInterfacesToListenTo())
+   {
+      if (!this->multicastSocket.joinMulticastGroup(this->multicastGroup, networkInterface))
+      {
+         L_WARN(QString("Unable to join multicast group %1 on %2: %3")
+            .arg(this->multicastGroup.toString(), networkInterface.humanReadableName(), this->multicastSocket.errorString()));
+         continue;
+      }
+      this->multicastInterfaces << networkInterface;
+      L_DEBU(QString("Joined multicast group %1 on %2 (%3)")
+         .arg(this->multicastGroup.toString(), networkInterface.humanReadableName()).arg(networkInterface.index()));
+   }
+   if (this->multicastInterfaces.isEmpty())
    {
       L_ERRO("No usable multicast interface; discovery is disabled");
       return false;
    }
-   // Select the same explicit adapter for membership and outgoing datagrams.
-   this->multicastSocket.setMulticastInterface(networkInterface);
-   if (!this->multicastSocket.joinMulticastGroup(this->multicastGroup, networkInterface))
-   {
-      L_ERRO(QString("Unable to join multicast group %1 on %2: %3")
-         .arg(this->multicastGroup.toString(), networkInterface.humanReadableName(), this->multicastSocket.errorString()));
-      return false;
-   }
-   L_DEBU(QString("Joined multicast group %1 on %2 (%3)")
-      .arg(this->multicastGroup.toString(), networkInterface.humanReadableName()).arg(networkInterface.index()));
 
    // This settings cannot change dynamically -> static.
    static const quint32 BUFFER_SIZE_UDP = SETTINGS.get<quint32>("udp_buffer_size");

@@ -202,9 +202,10 @@ void Tests::multicastGroupIPv6()
 
 void Tests::multicastDestinationIPv6()
 {
-   const auto iface = Utils::getCurrentInterfaceToListenTo();
-   if (!iface.isValid())
+   const auto interfaces = Utils::getCurrentInterfacesToListenTo();
+   if (interfaces.isEmpty())
       QSKIP("No active multicast interface for IPv6");
+   const auto iface = interfaces.first();
 
    const auto group = Utils::getMulticastGroup(QAbstractSocket::IPv6Protocol);
    QUdpSocket receiver;
@@ -252,6 +253,67 @@ void Tests::addressToListenTo()
    QCOMPARE(SETTINGS.get<QString>("listen_address"), loopback);
 
    SETTINGS.set("listen_address", QString(""));
+}
+
+void Tests::ipv6LoopbackFallback()
+{
+   const QString originalAddress = SETTINGS.get<QString>("listen_address");
+   const quint32 originalProtocol = SETTINGS.get<quint32>("listen_any");
+   const auto restore = qScopeGuard([&]() {
+      SETTINGS.set("listen_address", originalAddress);
+      SETTINGS.set("listen_any", originalProtocol);
+   });
+   const quint32 ipv6 = Protos::Common::Interface::Address::IPv6;
+   const quint32 ipv4 = Protos::Common::Interface::Address::IPv4;
+   SETTINGS.set("listen_address", QString());
+   SETTINGS.set("listen_any", ipv6);
+
+   QList<QNetworkInterface> loopbackInterfaces;
+   QList<QNetworkInterface> ipv6LANInterfaces;
+   QString loopbackIPv6;
+   for (const auto& interface : QNetworkInterface::allInterfaces())
+      for (const auto& entry : interface.addressEntries())
+         if (entry.ip().protocol() == QAbstractSocket::IPv6Protocol)
+         {
+            if (interface.flags().testFlag(QNetworkInterface::IsLoopBack))
+            {
+               loopbackInterfaces << interface;
+               loopbackIPv6 = entry.ip().toString();
+            }
+            else if (interface.flags().testFlags(QNetworkInterface::IsUp | QNetworkInterface::IsRunning | QNetworkInterface::CanMulticast))
+               ipv6LANInterfaces << interface;
+            break;
+         }
+   if (loopbackInterfaces.isEmpty())
+      QSKIP("No IPv6 loopback interface to exercise loopback-only fallback");
+
+   // Supply interface snapshots without changing the host's adapters. IPv6
+   // loopback must not keep discovery on IPv6 after the LAN adapter disappears.
+   if (!ipv6LANInterfaces.isEmpty())
+      QCOMPARE(Utils::getCurrentAddressToListenTo(ipv6LANInterfaces), QHostAddress(QHostAddress::AnyIPv6));
+   QCOMPARE(Utils::getCurrentAddressToListenTo(loopbackInterfaces), QHostAddress(QHostAddress::AnyIPv4));
+   QCOMPARE(Utils::getCurrentAddressToListenTo({}), QHostAddress(QHostAddress::AnyIPv4));
+   QCOMPARE(SETTINGS.get<quint32>("listen_any"), ipv6); // Automatic rebinding preserves the preference.
+   if (!ipv6LANInterfaces.isEmpty())
+      QCOMPARE(Utils::getCurrentAddressToListenTo(ipv6LANInterfaces), QHostAddress(QHostAddress::AnyIPv6));
+
+   Utils::sanitizeListenSettings(loopbackInterfaces);
+   QCOMPARE(SETTINGS.get<quint32>("listen_any"), ipv4);
+
+   // Explicit IPv6 loopback remains valid even without a multicast LAN adapter.
+   SETTINGS.set("listen_any", ipv6);
+   SETTINGS.set("listen_address", loopbackIPv6);
+   Utils::sanitizeListenSettings(loopbackInterfaces);
+   QCOMPARE(SETTINGS.get<QString>("listen_address"), loopbackIPv6);
+   QCOMPARE(SETTINGS.get<quint32>("listen_any"), ipv6);
+   QCOMPARE(Utils::getCurrentAddressToListenTo(loopbackInterfaces), QHostAddress(loopbackIPv6));
+
+   // Losing an explicitly selected address also applies the corrected fallback.
+   SETTINGS.set("listen_address", QString("198.51.100.42"));
+   Utils::sanitizeListenSettings(loopbackInterfaces);
+   QVERIFY(SETTINGS.get<QString>("listen_address").isEmpty());
+   QCOMPARE(SETTINGS.get<quint32>("listen_any"), ipv4);
+   QCOMPARE(Utils::getCurrentAddressToListenTo(loopbackInterfaces), QHostAddress(QHostAddress::AnyIPv4));
 }
 
 void Tests::networkConfigurationSnapshot()
@@ -351,16 +413,33 @@ void Tests::peerDiscovery()
    QVERIFY(advertisedPorts[0] != advertisedPorts[1]);
 }
 
+void Tests::multicastOnLANInterface_data()
+{
+   QTest::addColumn<quint32>("protocol");
+   QTest::newRow("IPv4") << quint32(Protos::Common::Interface::Address::IPv4);
+   QTest::newRow("IPv6") << quint32(Protos::Common::Interface::Address::IPv6);
+}
+
 void Tests::multicastOnLANInterface()
 {
 #if !DEBUG
    QSKIP("The multicast loopback is only enabled in debug; this test sends and receives on the same host");
 #endif
 
+   QFETCH(quint32, protocol);
    const QString originalAddress = SETTINGS.get<QString>("listen_address");
-   const auto restore = qScopeGuard([&]() { SETTINGS.set("listen_address", originalAddress); });
+   const quint32 originalProtocol = SETTINGS.get<quint32>("listen_any");
+   const auto restore = qScopeGuard([&]() {
+      SETTINGS.set("listen_address", originalAddress);
+      SETTINGS.set("listen_any", originalProtocol);
+   });
    SETTINGS.set("listen_address", QString());
+   SETTINGS.set("listen_any", protocol);
    const QHostAddress address = Utils::getCurrentAddressToListenTo();
+   if (protocol == Protos::Common::Interface::Address::IPv6 && address.protocol() != QAbstractSocket::IPv6Protocol)
+      QSKIP("IPv6 is unavailable");
+   if (Utils::getCurrentInterfacesToListenTo().isEmpty())
+      QSKIP("No active multicast LAN interface for this protocol");
    const auto group = Utils::getMulticastGroup(address.protocol());
    const auto& instance = this->instances[0];
    // This temporary listener must not advertise another instance's ID on its temporary port.
@@ -391,6 +470,35 @@ void Tests::multicastOnLANInterface()
          continue;
       ++checked;
 
+      // An explicit address must still select only its own adapter.
+      SETTINGS.set("listen_address", sourceAddress.toString());
+      const auto selected = Utils::getCurrentInterfacesToListenTo();
+      QCOMPARE(selected.size(), 1);
+      QCOMPARE(selected.first().index(), iface.index());
+      SETTINGS.set("listen_address", QString());
+
+      // Observe outgoing packets on this specific adapter. Checking the receive
+      // interface avoids accepting a packet looped back through another adapter.
+      QUdpSocket observer;
+      QVERIFY(observer.bind(address, SETTINGS.get<quint32>("multicast_port"),
+         QUdpSocket::ShareAddress | QUdpSocket::ReuseAddressHint));
+      QVERIFY(observer.joinMulticastGroup(group, iface));
+      QCOMPARE(listener.send(Common::MessageHeader::CORE_GOODBYE), INetworkListener::SendStatus::OK);
+      bool observed = false;
+      const auto sentOnInterface = [&]() {
+         while (observer.hasPendingDatagrams())
+         {
+            const auto packet = observer.receiveDatagram();
+            if (packet.interfaceIndex() != uint(iface.index()) || packet.data().size() < Common::MessageHeader::HEADER_SIZE)
+               continue;
+            const auto header = Common::MessageHeader::readHeader(packet.data().constData());
+            if (header.getType() == Common::MessageHeader::CORE_GOODBYE && header.getSenderID() == peerManager->getSelf()->getID())
+               observed = true;
+         }
+         return observed;
+      };
+      QTRY_VERIFY_WITH_TIMEOUT(sentOnInterface(), 2000);
+
       QUdpSocket sender;
       QVERIFY(sender.bind(sourceAddress, 0));
       sender.setMulticastInterface(iface);
@@ -413,10 +521,8 @@ void Tests::multicastOnLANInterface()
       QCOMPARE(sender.writeDatagram(datagram.constData(), size, group, SETTINGS.get<quint32>("multicast_port")), size);
       QTRY_VERIFY_WITH_TIMEOUT(received, 2000);
       QVERIFY(peerManager->getPeer(ID)->isAvailable());
-      // "Any" selects the first usable LAN adapter, rather than the OS default.
-      QCOMPARE(Utils::getCurrentInterfaceToListenTo().index(), iface.index());
-      break;
    }
+   qInfo() << "Checked multicast reception and transmission on" << checked << "LAN adapters";
    if (checked == 0)
       QSKIP("No active multicast LAN interface for this protocol");
 }

@@ -52,6 +52,7 @@ private slots:
    void multicastGroupIPv6();
    void multicastDestinationIPv6();
    void addressToListenTo();
+   void ipv6LoopbackFallback();
    void networkConfigurationSnapshot();
 
    // Sending without any known peer.
@@ -62,6 +63,7 @@ private slots:
 
    // Between the two instances.
    void peerDiscovery();
+   void multicastOnLANInterface_data();
    void multicastOnLANInterface();
    void unicastReception();
    void search();

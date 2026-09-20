@@ -27,15 +27,15 @@ namespace NL
    class Utils
    {
    public:
-      static QNetworkInterface getCurrentInterfaceToListenTo();
-      static void sanitizeListenSettings();
-      static QHostAddress getCurrentAddressToListenTo();
+      static QList<QNetworkInterface> getCurrentInterfacesToListenTo();
+      static void sanitizeListenSettings(const QList<QNetworkInterface>& interfaces = QNetworkInterface::allInterfaces());
+      static QHostAddress getCurrentAddressToListenTo(const QList<QNetworkInterface>& interfaces = QNetworkInterface::allInterfaces());
       static QHostAddress getMulticastGroup(QAbstractSocket::NetworkLayerProtocol protocol);
       // Stable across enumeration order; excludes changing address lifetimes.
       static QStringList getNetworkConfiguration(const QList<QNetworkInterface>& interfaces = QNetworkInterface::allInterfaces());
 
    private:
-      static bool addressExists(const QString& address);
-      static bool hasIPv6();
+      static bool addressExists(const QString& address, const QList<QNetworkInterface>& interfaces);
+      static bool hasIPv6(const QList<QNetworkInterface>& interfaces);
    };
 }
