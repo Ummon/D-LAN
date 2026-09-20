@@ -31,7 +31,18 @@ expected_version="$version${tag:+ $tag} $build_time"
 output_dir="$application_dir/Setups/macOS/Installations"
 mkdir -p "$output_dir" "$application_dir/build/macos"
 stage=$(mktemp -d "$application_dir/build/macos/package.XXXXXX")
-trap 'rm -rf "$stage"' EXIT
+image_mount="$stage/mount"
+image_attached=false
+cleanup() {
+    if $image_attached; then
+        if ! diskutil eject "$image_mount"; then
+            echo "macOS packaging: Cannot eject $image_mount; preserving $stage for cleanup." >&2
+            return
+        fi
+    fi
+    rm -rf "$stage"
+}
+trap cleanup EXIT
 app="$stage/D-LAN.app"
 contents="$app/Contents"
 resources="$contents/Resources"
@@ -159,19 +170,42 @@ codesign --verify --deep --strict "$app"
 # Check helper loading using only the deployed frameworks before packaging.
 [[ $(env -u DYLD_LIBRARY_PATH -u DYLD_FRAMEWORK_PATH "$contents/MacOS/D-LAN.Core" --version) == "$expected_version" ]] || fail "Packaged core failed to start."
 
-# Include only the signed app and an Applications shortcut in the disk image.
-# Users drag the app into Applications, then eject the read-only image.
-image_root="$stage/image"
-mkdir "$image_root"
-mv "$app" "$image_root/"
-ln -s /Applications "$image_root/Applications"
+# Configure Finder on a writable volume so its background reference remains
+# valid when the final image is mounted on another machine.
+writable_image="$stage/layout.dmg"
 disk_image="$stage/package.dmg"
-# Newer macOS versions deprecate hdiutil create. diskutil creates an APFS
-# volume from the folder; retain hdiutil for hosts without the replacement.
+# Allow room for filesystem metadata and Finder's view settings.
+image_size_mb=$(( $(du -sk "$app" | awk '{print $1}') / 1024 * 12 / 10 + 256 ))
+modern_diskutil=false
 if diskutil image create from --help >/dev/null 2>&1; then
-    diskutil image create from --volumeName "D-LAN" --format UDZO "$image_root" "$disk_image"
+    modern_diskutil=true
+    diskutil image create blank --volumeName "D-LAN" --format RAW --size "${image_size_mb}m" "$writable_image"
 else
-    hdiutil create -volname "D-LAN" -srcfolder "$image_root" -fs HFS+ -format UDZO "$disk_image"
+    hdiutil create -volname "D-LAN" -size "${image_size_mb}m" -fs HFS+ -format UDRW "$writable_image"
+fi
+image_attached=true
+if $modern_diskutil; then
+    diskutil image attach --nobrowse --mountPoint "$image_mount" "$writable_image"
+else
+    hdiutil attach -nobrowse -mountpoint "$image_mount" "$writable_image"
+fi
+ditto "$app" "$image_mount/D-LAN.app"
+ln -s /Applications "$image_mount/Applications"
+mkdir "$image_mount/.background"
+xcrun swift -module-cache-path "$stage/swift-cache" \
+    "$application_dir/Setups/macOS/dmg-background.swift" "$image_mount/.background/install.tiff"
+osascript "$application_dir/Setups/macOS/dmg-layout.applescript" "$image_mount" \
+    || fail "Cannot save the disk image layout. Run in a logged-in desktop session and allow your terminal to control Finder."
+[[ -s "$image_mount/.DS_Store" ]] || fail "Finder did not save the disk image layout."
+sync
+diskutil eject "$image_mount"
+image_attached=false
+
+# Convert the configured volume itself, preserving Finder's background alias.
+if $modern_diskutil; then
+    diskutil image create from --format UDZO "$writable_image" "$disk_image"
+else
+    hdiutil convert "$writable_image" -format UDZO -o "$disk_image"
 fi
 if [[ "$identity" != - ]]; then
     codesign --force --sign "$identity" --timestamp "$disk_image"

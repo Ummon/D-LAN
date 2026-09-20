@@ -166,6 +166,10 @@ deployment target at 26.0 to retain compatibility with macOS 26.
 The packager uses `macdeployqt` and plugins from the Qt SDK selected by the build's
 `Qt6_DIR`, plus Apple's command-line tools (`lipo`, `otool`, `codesign`, `sips`,
 `iconutil`, `plutil` and `hdiutil`). Qt LinguistTools is required for translations.
+The DMG opens in icon view with large app and Applications icons and an install
+arrow. Packaging renders its background using Swift/AppKit and saves the layout
+through Finder. Run it in a logged-in macOS desktop session and allow the terminal
+to control Finder if macOS requests Automation permission.
 From `application`, build, test and package with:
 
 ```sh
