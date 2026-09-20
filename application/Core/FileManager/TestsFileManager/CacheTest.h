@@ -98,6 +98,10 @@ private slots:
    void browseNewSharedDirectory();
    void scanDirectoryIncrementally_data();
    void scanDirectoryIncrementally();
+#ifdef Q_OS_MACOS
+   void scanHiddenEntriesDarwin_data();
+   void scanHiddenEntriesDarwin();
+#endif
    void scanReplacementFiles_data();
    void scanReplacementFiles();
    void scanFileWithUnfinishedDirectory();

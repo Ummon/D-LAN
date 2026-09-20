@@ -33,6 +33,9 @@
 #ifdef Q_OS_WIN32
 #include <priv/FileUpdater/DirWatcherWin.h>
 #endif
+#ifdef Q_OS_MACOS
+#include <sys/stat.h>
+#endif
 
 namespace
 {
@@ -3393,6 +3396,60 @@ void CacheTest::scanDirectoryIncrementally()
    // A normal rescan neither discovers new unfinished files nor removes known ones.
    QCOMPARE(dir->getFile(unfinished) != nullptr, addUnfinished);
 }
+
+#ifdef Q_OS_MACOS
+void CacheTest::scanHiddenEntriesDarwin_data()
+{
+   QTest::addColumn<bool>("directory");
+   QTest::addColumn<bool>("dotName");
+   QTest::addColumn<bool>("nativeHidden");
+   QTest::addColumn<bool>("initialScan");
+   for (bool directory : {false, true})
+      for (bool dotName : {false, true})
+         for (bool nativeHidden : {false, true})
+            for (bool initialScan : {false, true})
+               QTest::addRow("directory=%d,dot=%d,native=%d,initial=%d", directory, dotName, nativeHidden, initialScan)
+                  << directory << dotName << nativeHidden << initialScan;
+}
+
+void CacheTest::scanHiddenEntriesDarwin()
+{
+   QFETCH(bool, directory);
+   QFETCH(bool, dotName);
+   QFETCH(bool, nativeHidden);
+   QFETCH(bool, initialScan);
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   FM::FileUpdater updater(nullptr);
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   if (!initialScan)
+      updater.scan(root->getRootDir());
+
+   const QString name = dotName ? ".entry" : "entry";
+   const QString path = temp.filePath(name);
+   if (directory)
+      QVERIFY(QDir().mkdir(path));
+   else
+   {
+      QFile file(path);
+      QVERIFY(file.open(QIODevice::WriteOnly));
+      QCOMPARE(file.write("data"), qint64(4));
+   }
+   if (nativeHidden)
+      QCOMPARE(chflags(QFile::encodeName(path).constData(), UF_HIDDEN), 0);
+
+   updater.scan(root->getRootDir());
+   FM::Entry* entry = cache.getEntry(Common::Path(directory ? path + '/' : path));
+   QVERIFY(entry);
+   Protos::Common::Entry result;
+   entry->populateEntry(&result);
+   QCOMPARE(result.hidden(), dotName || nativeHidden);
+}
+#endif
 
 void CacheTest::browseDirectoryLifetime_data()
 {

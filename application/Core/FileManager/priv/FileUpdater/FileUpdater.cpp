@@ -40,6 +40,17 @@ using namespace FM;
 
 namespace
 {
+   bool isHiddenEntry(const QFileInfo& info)
+   {
+#ifdef Q_OS_MACOS
+      // Qt's macOS iterator metadata reports native hidden flags but can omit
+      // dot-prefixed names. Preserve both without refreshing all scan metadata.
+      if (info.fileName().startsWith('.'))
+         return true;
+#endif
+      return info.isHidden();
+   }
+
    bool entryTypeChanged(const Entry* entry, const QFileInfo& info)
    {
       return entry &&
@@ -564,7 +575,7 @@ void FileUpdater::scan(Entry* entry, bool addUnfinished)
             const QFileInfo fileInfo = entries.nextFileInfo();
             if (fileInfo.isDir())
             {
-               Directory* subDir = currentDir->createSubDir(fileInfo.fileName(), false, fileInfo.isHidden());
+               Directory* subDir = currentDir->createSubDir(fileInfo.fileName(), false, isHiddenEntry(fileInfo));
                subDir->setScanned(false);
                dirsToVisit << subDir;
                unseenSubDirs.remove(subDir);
@@ -657,7 +668,7 @@ File* FileUpdater::addScannedFile(const QFileInfo& fileInfo, File* file, Directo
                parentDirectory->getRoot(),
                fileInfo.fileName(),
                fileInfo.size(),
-               fileInfo.isHidden(),
+               isHiddenEntry(fileInfo),
                fileInfo.lastModified(),
                parentDirectory,
                cachedHashes ? *cachedHashes : QList<Common::Hash>(),
