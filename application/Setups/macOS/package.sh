@@ -166,7 +166,13 @@ mkdir "$image_root"
 mv "$app" "$image_root/"
 ln -s /Applications "$image_root/Applications"
 disk_image="$stage/package.dmg"
-hdiutil create -volname "D-LAN" -srcfolder "$image_root" -fs HFS+ -format UDZO "$disk_image"
+# Newer macOS versions deprecate hdiutil create. diskutil creates an APFS
+# volume from the folder; retain hdiutil for hosts without the replacement.
+if diskutil image create from --help >/dev/null 2>&1; then
+    diskutil image create from --volumeName "D-LAN" --format UDZO "$image_root" "$disk_image"
+else
+    hdiutil create -volname "D-LAN" -srcfolder "$image_root" -fs HFS+ -format UDZO "$disk_image"
+fi
 if [[ "$identity" != - ]]; then
     codesign --force --sign "$identity" --timestamp "$disk_image"
     codesign --verify --strict "$disk_image"

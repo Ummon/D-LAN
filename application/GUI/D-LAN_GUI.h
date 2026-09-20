@@ -46,6 +46,7 @@ namespace GUI
       class AbortException {};
 
       D_LAN_GUI(int& argc, char* argv[]);
+      ~D_LAN_GUI() override;
 
       bool notify(QObject* receiver, QEvent* event) override;
 
@@ -62,6 +63,9 @@ namespace GUI
       void exit(bool stopTheCore = true);
 
    private:
+      void shutdown(bool stopTheCore = true);
+      bool shuttingDown = false;
+
 #ifdef Q_OS_LINUX
       QScopedPointer<QLockFile> instanceLock;
 #else

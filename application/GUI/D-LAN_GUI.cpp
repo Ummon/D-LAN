@@ -122,6 +122,8 @@ D_LAN_GUI::D_LAN_GUI(int& argc, char* argv[]) :
    }
 
    this->setQuitOnLastWindowClosed(false);
+   // Native Quit (including the macOS menu) bypasses our tray Exit action.
+   connect(this, &QCoreApplication::aboutToQuit, this, [this] { this->shutdown(); });
 
    this->showMainWindow();
 
@@ -137,6 +139,12 @@ D_LAN_GUI::D_LAN_GUI(int& argc, char* argv[]) :
    this->trayIcon.setContextMenu(&this->trayIconMenu);
    this->trayIcon.setToolTip("D-LAN");
    this->trayIcon.show();
+}
+
+D_LAN_GUI::~D_LAN_GUI()
+{
+   // Also cover destruction when the event loop was never entered.
+   this->shutdown();
 }
 
 bool D_LAN_GUI::notify(QObject* receiver, QEvent* event)
@@ -182,6 +190,9 @@ void D_LAN_GUI::trayIconActivated(QSystemTrayIcon::ActivationReason reason)
 
 void D_LAN_GUI::updateTrayIconMenu()
 {
+   if (this->shuttingDown)
+      return;
+
    this->trayIconMenu.clear();
    this->trayIconMenu.addAction(tr("Show the user interface"), this, &D_LAN_GUI::showMainWindow);
 
@@ -227,6 +238,9 @@ void D_LAN_GUI::mainWindowClosed()
 
 void D_LAN_GUI::showMainWindow()
 {
+   if (this->shuttingDown)
+      return;
+
    if (this->mainWindow)
    {
       // Restore a minimized window without losing its maximized state.
@@ -253,16 +267,30 @@ void D_LAN_GUI::exitGUI()
 
 void D_LAN_GUI::exit(bool stopTheCore)
 {
-   this->trayIcon.hide();
+   this->shutdown(stopTheCore);
+   this->quit();
+}
 
-   if (stopTheCore)
-      this->coreConnection->stopLocalCore();
+void D_LAN_GUI::shutdown(bool stopTheCore)
+{
+   if (this->shuttingDown)
+      return;
+   this->shuttingDown = true;
+
+   this->trayIcon.hide();
+   this->coreConnection->disconnect(this);
 
    if (this->mainWindow)
    {
-      disconnect(this->mainWindow, &MainWindow::destroyed, this, &D_LAN_GUI::mainWindowClosed);
-      delete this->mainWindow;
+      auto* window = this->mainWindow;
+      this->mainWindow = nullptr;
+      window->disconnect(this);
+      delete window;
    }
 
-   this->quit();
+   // Tear down widgets before disconnecting/stopping the core can emit signals
+   // or process events. Repeated Quit must also preserve exitGUI's service mode.
+   this->coreConnection->disconnectFromCore();
+   if (stopTheCore)
+      this->coreConnection->stopLocalCore();
 }

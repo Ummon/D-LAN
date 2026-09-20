@@ -40,6 +40,13 @@ CoreController::CoreController() :
    connect(&this->coreProcess, &QProcess::stateChanged, this, &CoreController::statusChanged);
 }
 
+CoreController::~CoreController()
+{
+   // QProcess can emit stateChanged from its destructor, after the service
+   // controller has been destroyed. Do not expose a partially destroyed owner.
+   this->coreProcess.disconnect(this);
+}
+
 void CoreController::setCoreExecutableDirectory(const QString& dir)
 {
    this->coreDirectory = dir;

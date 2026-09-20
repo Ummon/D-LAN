@@ -25,6 +25,8 @@
 
 #include <Types.h>
 
+class Tests;
+
 namespace RCC
 {
    class CoreController : public QObject
@@ -37,6 +39,7 @@ namespace RCC
 
    public:
       CoreController();
+      ~CoreController() override;
 
       void setCoreExecutableDirectory(const QString& dir);
       void startCore(int port = -1);
@@ -48,6 +51,8 @@ namespace RCC
       void statusChanged();
 
    private:
+      friend class ::Tests; // Exercise subprocess teardown without installing a service.
+
       void setProgramPath();
 
       QProcess coreProcess; ///< Only used when unable to launch the core as a service.

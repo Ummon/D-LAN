@@ -1,6 +1,7 @@
 #include <QTest>
 #include <QSignalSpy>
 #include <QTcpServer>
+#include <memory>
 
 #include <priv/InternalCoreConnection.h>
 #include <priv/CoreConnection.h>
@@ -150,6 +151,23 @@ class Tests : public QObject
    }
 
 private slots:
+   void subprocessDestructionDoesNotEmitStatus()
+   {
+#ifdef Q_OS_UNIX
+      auto connection = std::make_unique<RCC::CoreConnection>(1000);
+      auto& process = connection->coreController.coreProcess;
+      // Keep a harmless subprocess alive without touching the user's core/service.
+      process.start("/bin/cat", QStringList());
+      QVERIFY(process.waitForStarted());
+      QSignalSpy status(connection.get(), &RCC::CoreConnection::localCoreStatusChanged);
+      connection.reset();
+      // A status callback here could query members already destroyed by teardown.
+      QCOMPARE(status.count(), 0);
+#else
+      QSKIP("Uses a Unix subprocess fixture");
+#endif
+   }
+
    void init()
    {
       QVERIFY(this->server.listen(QHostAddress::LocalHost));
