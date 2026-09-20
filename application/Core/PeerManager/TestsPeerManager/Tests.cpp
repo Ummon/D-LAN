@@ -674,10 +674,18 @@ void Tests::endpointChanges()
 {
    QFETCH(int, change);
    QFETCH(bool, active);
+   const QHostAddress address(change == 2 ? QHostAddress::LocalHostIPv6 : QHostAddress::LocalHost);
    QTcpServer originalServer;
    QTcpServer replacementServer;
-   QVERIFY(originalServer.listen(QHostAddress::AnyIPv4, 0));
-   QVERIFY(replacementServer.listen(QHostAddress::LocalHost, 0));
+   QVERIFY(originalServer.listen(QHostAddress::LocalHost, 0));
+   // macOS does not route 127.0.0.2 to loopback by default. Use IPv6 loopback
+   // on the same port so the address-change rows still change only the address.
+   const bool listening = replacementServer.listen(address, change == 2 ? originalServer.serverPort() : 0);
+   if (!listening && change == 2 &&
+       (replacementServer.serverError() == QAbstractSocket::SocketAddressNotAvailableError ||
+        replacementServer.serverError() == QAbstractSocket::UnsupportedSocketOperationError))
+      QSKIP(qPrintable(QString("IPv6 loopback unavailable: %1").arg(replacementServer.errorString())));
+   QVERIFY2(listening, qPrintable(replacementServer.errorString()));
    PM::ConnectionPool pool(static_cast<PM::PeerManager*>(this->peerManagers[0].data()),
       this->fileManagers[0], this->peerIDs[1]);
    pool.setIP(QHostAddress::LocalHost, originalServer.serverPort());
@@ -689,7 +697,6 @@ void Tests::endpointChanges()
    else
       previous->finished();
 
-   const QHostAddress address = change == 2 ? QHostAddress("127.0.0.2") : QHostAddress(QHostAddress::LocalHost);
    const quint16 port = change == 1 ? replacementServer.serverPort() : originalServer.serverPort();
    pool.setIP(address, port);
    QCOMPARE(previous->isClosing(), change != 0 && !active);
@@ -713,9 +720,8 @@ void Tests::endpointChanges()
    QScopedPointer<QTcpSocket> nextRemote;
    if (change != 0)
    {
-      auto& server = change == 1 ? replacementServer : originalServer;
-      QTRY_VERIFY(server.hasPendingConnections());
-      nextRemote.reset(server.nextPendingConnection());
+      QTRY_VERIFY(replacementServer.hasPendingConnections());
+      nextRemote.reset(replacementServer.nextPendingConnection());
       QCOMPARE(nextRemote->localAddress(), address);
       QCOMPARE(nextRemote->localPort(), port);
    }
