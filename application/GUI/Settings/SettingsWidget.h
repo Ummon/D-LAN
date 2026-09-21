@@ -65,6 +65,7 @@ namespace GUI
       void connectAllAddressButtons();
       void disconnectAllAddressButtons();
       void updateNetworkInterfaces(const Protos::GUI::State& state);
+      void updateNetworkInterfaceVisibility();
       bool updateAddresses(const Protos::Common::Interface& interfaceMess, QWidget* container);
 
    private slots:

@@ -53,6 +53,7 @@ private slots:
    void multicastDestinationIPv6();
    void addressToListenTo();
    void ipv6LoopbackFallback();
+   void macOSInterfaceSelection();
    void networkConfigurationSnapshot();
 
    // Sending without any known peer.

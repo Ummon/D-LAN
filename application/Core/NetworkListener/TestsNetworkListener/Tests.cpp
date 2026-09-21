@@ -35,6 +35,7 @@
 #include <Common/Settings.h>
 #include <Common/LogManager/Builder.h>
 #include <Common/Network/MessageHeader.h>
+#include <Common/Network/InterfacePolicy.h>
 
 #include <Core/FileManager/Builder.h>
 #include <Core/FileManager/IDataWriter.h>
@@ -280,7 +281,7 @@ void Tests::ipv6LoopbackFallback()
                loopbackInterfaces << interface;
                loopbackIPv6 = entry.ip().toString();
             }
-            else if (interface.flags().testFlags(QNetworkInterface::IsUp | QNetworkInterface::IsRunning | QNetworkInterface::CanMulticast))
+            else if (Common::isDefaultMulticastInterface(interface))
                ipv6LANInterfaces << interface;
             break;
          }
@@ -314,6 +315,52 @@ void Tests::ipv6LoopbackFallback()
    QVERIFY(SETTINGS.get<QString>("listen_address").isEmpty());
    QCOMPARE(SETTINGS.get<quint32>("listen_any"), ipv4);
    QCOMPARE(Utils::getCurrentAddressToListenTo(loopbackInterfaces), QHostAddress(QHostAddress::AnyIPv4));
+}
+
+void Tests::macOSInterfaceSelection()
+{
+#ifndef Q_OS_MACOS
+   QSKIP("macOS interface policy");
+#else
+   const QString originalAddress = SETTINGS.get<QString>("listen_address");
+   const quint32 originalProtocol = SETTINGS.get<quint32>("listen_any");
+   const auto restore = qScopeGuard([&]() {
+      SETTINGS.set("listen_address", originalAddress);
+      SETTINGS.set("listen_any", originalProtocol);
+   });
+   SETTINGS.set("listen_address", QString());
+   SETTINGS.set("listen_any", quint32(Protos::Common::Interface::Address::IPv6));
+   const auto selected = Utils::getCurrentInterfacesToListenTo();
+   QList<QNetworkInterface> excluded;
+   for (const auto& interface : QNetworkInterface::allInterfaces())
+   {
+      const auto name = interface.name();
+      if (!name.startsWith("awdl") && !name.startsWith("llw") && !name.startsWith("utun") &&
+          !name.startsWith("gif") && !name.startsWith("stf") &&
+          !interface.flags().testFlag(QNetworkInterface::IsPointToPoint))
+         continue;
+      excluded << interface;
+      for (const auto& chosen : selected)
+         QVERIFY(chosen.index() != interface.index());
+
+      // An existing explicit tunnel selection must remain usable.
+      if (name.startsWith("utun") && !interface.addressEntries().isEmpty())
+      {
+         SETTINGS.set("listen_address", interface.addressEntries().first().ip().toString());
+         Utils::sanitizeListenSettings();
+         const auto explicitSelection = Utils::getCurrentInterfacesToListenTo();
+         QCOMPARE(explicitSelection.size(), 1);
+         QCOMPARE(explicitSelection.first().index(), interface.index());
+         SETTINGS.set("listen_address", QString());
+      }
+   }
+   if (excluded.isEmpty())
+      QSKIP("No macOS auxiliary or tunnel interfaces available");
+   // Auxiliary/tunnel IPv6 addresses alone must not enable IPv6 LAN discovery.
+   QCOMPARE(Utils::getCurrentAddressToListenTo(excluded), QHostAddress(QHostAddress::AnyIPv4));
+   Utils::sanitizeListenSettings(excluded);
+   QCOMPARE(SETTINGS.get<quint32>("listen_any"), quint32(Protos::Common::Interface::Address::IPv4));
+#endif
 }
 
 void Tests::networkConfigurationSnapshot()
@@ -456,8 +503,7 @@ void Tests::multicastOnLANInterface()
    int checked = 0;
    for (const auto& iface : QNetworkInterface::allInterfaces())
    {
-      if (!iface.flags().testFlags(QNetworkInterface::IsUp | QNetworkInterface::IsRunning | QNetworkInterface::CanMulticast) ||
-          iface.flags().testFlag(QNetworkInterface::IsLoopBack))
+      if (!Common::isDefaultMulticastInterface(iface))
          continue;
       QHostAddress sourceAddress;
       for (const auto& entry : iface.addressEntries())

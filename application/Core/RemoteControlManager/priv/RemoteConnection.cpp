@@ -31,6 +31,7 @@ using namespace RCM;
 #include <QHash>
 
 #include <Common/Settings.h>
+#include <Common/Network/InterfacePolicy.h>
 #include <Common/ProtoHelper.h>
 #include <Common/Constants.h>
 #include <Common/Hash.h>
@@ -324,7 +325,6 @@ void RemoteConnection::refresh()
 
    // Network interfaces.
    const QString& addressToListenStr = SETTINGS.get<QString>("listen_address");
-   const QHostAddress addressToListen(addressToListenStr);
    if (addressToListenStr.isEmpty())
       state.set_listen_any(static_cast<Protos::Common::Interface::Address::Protocol>(SETTINGS.get<quint32>("listen_any")));
    for (QListIterator<QNetworkInterface> i(this->interfaces); i.hasNext();)
@@ -333,6 +333,7 @@ void RemoteConnection::refresh()
       if (
          interface.flags().testFlag(QNetworkInterface::CanMulticast) &&
          !interface.flags().testFlag(QNetworkInterface::IsLoopBack) &&
+         Common::getInterfaceKind(interface) != Common::InterfaceKind::Auxiliary &&
          interface.isValid()
       )
       {
@@ -342,6 +343,7 @@ void RemoteConnection::refresh()
             Protos::Common::Interface* interfaceMess = state.add_interfaces();
             interfaceMess->set_id(interface.index() == 0 ? Common::StringUtils::hashStringToInt(interface.name()) : interface.index());
             interfaceMess->set_name(interface.humanReadableName().toStdString());
+            interfaceMess->set_is_tunnel(Common::getInterfaceKind(interface) == Common::InterfaceKind::Tunnel);
             interfaceMess->set_is_up(interface.flags().testFlag(QNetworkInterface::IsUp) && interface.flags().testFlag(QNetworkInterface::IsRunning));
             for (QListIterator<QNetworkAddressEntry> j(addresses); j.hasNext();)
             {
@@ -349,7 +351,8 @@ void RemoteConnection::refresh()
                Protos::Common::Interface::Address* addressMess = interfaceMess->add_addresses();
                addressMess->set_address(address.toString().toStdString());
                addressMess->set_protocol(address.protocol() == QAbstractSocket::IPv6Protocol ? Protos::Common::Interface::Address::IPv6 : Protos::Common::Interface::Address::IPv4);
-               addressMess->set_listened(address == addressToListen);
+               // Include the IPv6 scope: different tunnels can share the same link-local IP.
+               addressMess->set_listened(address.toString() == addressToListenStr);
             }
          }
       }

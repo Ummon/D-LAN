@@ -288,6 +288,16 @@
            </widget>
           </item>
           <item>
+           <widget class="QCheckBox" name="chkShowTunnelInterfaces">
+            <property name="text">
+             <string>Show tunnel interfaces</string>
+            </property>
+            <property name="toolTip">
+             <string>Tunnels are excluded from automatic discovery. Select a tunnel address to use it. The selected interface always remains visible.</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QPushButton" name="butRefreshInterfaces">
             <property name="text">
              <string>Refresh interfaces</string>

@@ -257,6 +257,16 @@ D-LAN uses UDP multicast on port 59486 by default. Peers must select the same
 IP protocol; IPv6 peers must also use the same discovery channel. The default
 `main` channel uses `ff12:0:318b:bc3f:d75a:c873:ec0d:2b18`.
 
+On macOS, automatic discovery excludes Apple's `awdl*` and `llw*` interfaces
+and tunnel interfaces (`utun*`, `gif*`, `stf*`, and point-to-point adapters).
+These interfaces also do not count when deciding whether IPv6 LAN discovery
+is available. In Settings, enable **Show tunnel interfaces** and select a
+tunnel address to use it explicitly; the selected tunnel stays visible even
+when the checkbox is cleared. Tunnel discovery requires multicast support.
+The core classifies interfaces, so the same policy applies when controlled
+by a GUI on another platform. Wildcard TCP and unicast UDP listening remain
+unchanged; this discovery filter is not an incoming-connection access rule.
+
 The second 16-bit word is zero on every platform. Darwin temporarily stores
 the interface scope there and clears it before transmission; see Apple's
 [scope handling in XNU](https://github.com/apple-oss-distributions/xnu/blob/main/bsd/netinet6/scope6.c).

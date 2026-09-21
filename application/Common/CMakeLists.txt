@@ -46,6 +46,7 @@ add_library(Common STATIC
    StringUtils.h
    BloomFilter.h
    Network/Message.h
+   Network/InterfacePolicy.h
    KnownExtensions.h
    Containers/Tree.h
    Containers/SortedList.h

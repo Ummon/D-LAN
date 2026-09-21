@@ -28,17 +28,9 @@ using namespace NL;
 
 #include <Common/Settings.h>
 #include <Common/ProtoHelper.h>
+#include <Common/Network/InterfacePolicy.h>
 
 #include <priv/Log.h>
-
-namespace
-{
-   bool isMulticastLANInterface(const QNetworkInterface& interface)
-   {
-      return interface.flags().testFlags(QNetworkInterface::IsUp | QNetworkInterface::IsRunning | QNetworkInterface::CanMulticast) &&
-         !interface.flags().testFlag(QNetworkInterface::IsLoopBack);
-   }
-}
 
 QStringList Utils::getNetworkConfiguration(const QList<QNetworkInterface>& interfaces)
 {
@@ -64,13 +56,15 @@ QList<QNetworkInterface> Utils::getCurrentInterfacesToListenTo()
    const auto protocol = Utils::getCurrentAddressToListenTo(allInterfaces).protocol();
    for (const auto& interface : allInterfaces)
    {
-      // An explicit address may select loopback. "Any" must use LAN adapters,
+      // An explicit address may select loopback or a tunnel. "Any" must use LAN adapters,
       // not the OS default multicast interface, which can be loopback on Windows.
-      if (addressToListen.isEmpty() && !isMulticastLANInterface(interface))
+      if (addressToListen.isEmpty() && !Common::isDefaultMulticastInterface(interface))
          continue;
       for (const auto& entry : interface.addressEntries())
       {
-         if (addressToListen.isEmpty() ? entry.ip().protocol() == protocol : entry.ip() == QHostAddress(addressToListen))
+         // QHostAddress equality ignores IPv6 scope IDs. Match the full address
+         // so tunnels sharing a link-local address are selected independently.
+         if (addressToListen.isEmpty() ? entry.ip().protocol() == protocol : entry.ip().toString() == addressToListen)
          {
             interfaces << interface;
             break; // Join each adapter once, even if it has several matching addresses.
@@ -94,12 +88,12 @@ bool Utils::addressExists(const QString& address, const QList<QNetworkInterface>
 
 /**
   * @return true if IPv6 is available on an active multicast LAN adapter.
-  * Loopback and inactive adapters cannot support discovery in "Any" mode.
+  * Only adapters eligible for automatic discovery count, excluding macOS auxiliary interfaces and tunnels.
   */
 bool Utils::hasIPv6(const QList<QNetworkInterface>& interfaces)
 {
    for (const auto& interface : interfaces)
-      if (isMulticastLANInterface(interface))
+      if (Common::isDefaultMulticastInterface(interface))
          for (const auto& entry : interface.addressEntries())
             if (entry.ip().protocol() == QAbstractSocket::IPv6Protocol)
                return true;

@@ -220,6 +220,17 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 endif()
 
 if(DLAN_BUILD_TESTS)
+   add_executable(TestsSettingsWidget
+      Settings/TestsSettingsWidget.cpp Settings/SettingsWidget.cpp
+      Settings/SharedEntryListModel.cpp Settings/SharedEntryListDelegate.cpp
+      Settings/AskNewPasswordDialog.cpp MDI/MdiWidget.cpp Log.cpp resources.qrc
+   )
+   set_target_properties(TestsSettingsWidget PROPERTIES AUTOUIC ON AUTORCC ON)
+   target_include_directories(TestsSettingsWidget PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+   target_link_libraries(TestsSettingsWidget PRIVATE GUIIconProvider RemoteCoreController LogManager Common Qt6::Widgets Qt6::Test)
+   add_test(NAME TestsSettingsWidget COMMAND TestsSettingsWidget)
+   set_tests_properties(TestsSettingsWidget PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 30)
+
    add_executable(TestsIconProvider TestsIconProvider.cpp resources.qrc)
    set_target_properties(TestsIconProvider PROPERTIES AUTORCC ON)
    target_include_directories(TestsIconProvider PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")

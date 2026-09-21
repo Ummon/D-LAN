@@ -42,6 +42,59 @@ private slots:
       SETTINGS.set("salt", quint64(123));
    }
 
+   void macOSInterfaceState()
+   {
+#ifndef Q_OS_MACOS
+      QSKIP("macOS interface policy");
+#else
+      const QString originalAddress = SETTINGS.get<QString>("listen_address");
+      const auto restore = qScopeGuard([&]() { SETTINGS.set("listen_address", originalAddress); });
+      QString selectedAddress;
+      for (const auto& interface : QNetworkInterface::allInterfaces())
+         if (interface.name().startsWith("utun"))
+            for (const auto& entry : interface.addressEntries())
+               if (!entry.ip().scopeId().isEmpty())
+                  selectedAddress = entry.ip().toString();
+      SETTINGS.set("listen_address", selectedAddress);
+      auto* socket = new BufferedSocket;
+      QScopedPointer<RCM::RemoteConnection> connection(this->newConnection(socket));
+      connection->startListening();
+      socket->output.clear();
+      socket->receive(Common::MessageHeader::GUI_REFRESH, Protos::Common::Null());
+      const auto messages = socket->messages();
+      QCOMPARE(messages.size(), 1);
+      const auto& state = messages[0].getMessage<Protos::GUI::State>();
+      int listened = 0;
+      for (const auto& reported : state.interfaces())
+         for (const auto& address : reported.addresses())
+         {
+            QCOMPARE(address.listened(), QString::fromStdString(address.address()) == selectedAddress);
+            listened += address.listened();
+         }
+      if (!selectedAddress.isEmpty())
+         QCOMPARE(listened, 1);
+      for (const auto& interface : QNetworkInterface::allInterfaces())
+      {
+         const QString name = interface.name();
+         const bool auxiliary = name.startsWith("awdl") || name.startsWith("llw");
+         const bool tunnel = name.startsWith("utun") || name.startsWith("gif") || name.startsWith("stf") ||
+            interface.flags().testFlag(QNetworkInterface::IsPointToPoint);
+         bool found = false;
+         for (const auto& reported : state.interfaces())
+            if (reported.id() == quint32(interface.index()))
+            {
+               QVERIFY(!auxiliary);
+               QCOMPARE(reported.is_tunnel(), tunnel);
+               found = true;
+            }
+         if (!auxiliary && interface.isValid() && !interface.addressEntries().isEmpty() &&
+             interface.flags().testFlag(QNetworkInterface::CanMulticast) &&
+             !interface.flags().testFlag(QNetworkInterface::IsLoopBack))
+            QVERIFY(found);
+      }
+#endif
+   }
+
    void downloadStateWithoutHashes_data()
    {
       QTest::addColumn<bool>("directory");

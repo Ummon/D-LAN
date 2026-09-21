@@ -86,6 +86,8 @@ SettingsWidget::SettingsWidget(
    connect(this->ui->txtNick, &QLineEdit::editingFinished, this, &SettingsWidget::saveCoreSettings);
 
    connect(this->ui->butRefreshInterfaces, &QPushButton::clicked, this, &SettingsWidget::refreshNetworkInterfaces);
+   this->ui->chkShowTunnelInterfaces->hide();
+   connect(this->ui->chkShowTunnelInterfaces, &QCheckBox::toggled, this, &SettingsWidget::updateNetworkInterfaceVisibility);
 
    this->connectAllAddressButtons();
 
@@ -287,6 +289,7 @@ void SettingsWidget::updateNetworkInterfaces(const Protos::GUI::State& state)
          if (lblInterface && lblInterface->property("id").toUInt() == state.interfaces(i).id())
          {
             interfaceNotUpdated.removeOne(lblInterface);
+            lblInterface->setProperty("isTunnel", state.interfaces(i).is_tunnel());
 
             if (state.interfaces(i).is_up())
             {
@@ -319,6 +322,7 @@ void SettingsWidget::updateNetworkInterfaces(const Protos::GUI::State& state)
          // Interface not found -> add a new one.
          QLabel* label = new QLabel(interfaceName, this->ui->scoInterfacesContent);
          label->setProperty("id", state.interfaces(i).id());
+         label->setProperty("isTunnel", state.interfaces(i).is_tunnel());
          this->ui->layInterfaces->addWidget(label);
          QWidget* addressesContainer = new QWidget(this->ui->scoInterfacesContent);
          this->ui->layInterfaces->addWidget(addressesContainer);
@@ -357,7 +361,30 @@ void SettingsWidget::updateNetworkInterfaces(const Protos::GUI::State& state)
          this->ui->radIPv4->setChecked(true);
    }
 
+   this->updateNetworkInterfaceVisibility();
    this->connectAllAddressButtons();
+}
+
+void SettingsWidget::updateNetworkInterfaceVisibility()
+{
+   bool hasTunnels = false;
+   for (QListIterator<QObject*> i(this->ui->scoInterfacesContent->children()); i.hasNext();)
+   {
+      auto* label = qobject_cast<QLabel*>(i.next());
+      if (!label || !label->property("id").isValid())
+         continue;
+      auto* addresses = i.hasNext() ? qobject_cast<QWidget*>(i.next()) : nullptr;
+      if (!addresses)
+         continue;
+      const bool tunnel = label->property("isTunnel").toBool();
+      hasTunnels |= tunnel;
+      const auto buttons = addresses->findChildren<QRadioButton*>();
+      const bool selected = std::any_of(buttons.begin(), buttons.end(), [](const QRadioButton* button) { return button->isChecked(); });
+      const bool visible = !tunnel || this->ui->chkShowTunnelInterfaces->isChecked() || selected;
+      label->setVisible(visible);
+      addresses->setVisible(visible);
+   }
+   this->ui->chkShowTunnelInterfaces->setVisible(hasTunnels);
 }
 
 /**
@@ -774,7 +801,10 @@ void SettingsWidget::openLocation()
 void SettingsWidget::buttonAddressToggled(bool checked)
 {
    if (checked)
+   {
+      this->updateNetworkInterfaceVisibility();
       this->saveCoreSettings();
+   }
 }
 
 bool SettingsWidget::eventFilter(QObject* obj, QEvent* event)

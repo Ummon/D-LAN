@@ -178,4 +178,5 @@ message Interface {
    string name = 2;
    repeated Address addresses = 3;
    bool is_up = 4;
+   bool is_tunnel = 5; // Excluded from automatic discovery; available for explicit selection.
 }
