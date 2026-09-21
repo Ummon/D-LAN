@@ -471,32 +471,37 @@
     </message>
     <message>
         <location filename="../GUI/MainWindow.cpp" line="185"/>
+        <source>Unable to establish a trusted encrypted connection. The Core&apos;s certificate may have changed or TLS may be unavailable. See the log for details.</source>
+        <translation>Impossibile stabilire una connessione crittografata attendibile. Il certificato del Core potrebbe essere cambiato oppure TLS potrebbe non essere disponibile. Consultare il log per ulteriori dettagli.</translation>
+    </message>
+    <message>
+        <location filename="../GUI/MainWindow.cpp" line="188"/>
         <source>Error unknown</source>
         <translation>Errore sconosciuto</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="191"/>
+        <location filename="../GUI/MainWindow.cpp" line="194"/>
         <source>Unable to connect to the core</source>
         <translation>Impossibile connettersi al Core</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="194"/>
-        <location filename="../GUI/MainWindow.cpp" line="218"/>
+        <location filename="../GUI/MainWindow.cpp" line="197"/>
+        <location filename="../GUI/MainWindow.cpp" line="221"/>
         <source>Core address:</source>
         <translation>Indirizzo del Core:</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="204"/>
+        <location filename="../GUI/MainWindow.cpp" line="207"/>
         <source>Connected to the core</source>
         <translation>Connesso al Core</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="213"/>
+        <location filename="../GUI/MainWindow.cpp" line="216"/>
         <source>Connection lost</source>
         <translation>Connessione persa</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="217"/>
+        <location filename="../GUI/MainWindow.cpp" line="220"/>
         <source>The connection to the core has been lost</source>
         <translation>La connessione al Core è stata persa</translation>
     </message>
@@ -605,17 +610,17 @@
 <context>
     <name>GUI::RemoteBrowseDialog</name>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="69"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="64"/>
         <source>Ok</source>
         <translation>OK</translation>
     </message>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="70"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="65"/>
         <source>Cancel</source>
         <translation>Annulla</translation>
     </message>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="176"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="315"/>
         <source>Open location</source>
         <translation>Apri percorso</translation>
     </message>
@@ -623,7 +628,7 @@
 <context>
     <name>GUI::RemoteBrowseModel</name>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseModel.cpp" line="392"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseModel.cpp" line="520"/>
         <source>free</source>
         <translation>liberi</translation>
     </message>

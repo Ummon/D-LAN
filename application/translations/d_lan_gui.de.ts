@@ -471,6 +471,11 @@
     </message>
     <message>
         <location line="+3"/>
+        <source>Unable to establish a trusted encrypted connection. The Core&apos;s certificate may have changed or TLS may be unavailable. See the log for details.</source>
+        <translation>Es konnte keine vertrauenswürdige verschlüsselte Verbindung hergestellt werden. Das Zertifikat des Kerns wurde möglicherweise geändert oder TLS ist nicht verfügbar. Weitere Informationen finden Sie im Log.</translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>Error unknown</source>
         <translation>Unbekannter Fehler</translation>
     </message>
@@ -605,7 +610,7 @@
 <context>
     <name>GUI::RemoteBrowseDialog</name>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="+69"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="+64"/>
         <source>Ok</source>
         <translation>OK</translation>
     </message>
@@ -615,7 +620,7 @@
         <translation>Abbrechen</translation>
     </message>
     <message>
-        <location line="+106"/>
+        <location line="+250"/>
         <source>Open location</source>
         <translation>Ordner anzeigen</translation>
     </message>
@@ -623,7 +628,7 @@
 <context>
     <name>GUI::RemoteBrowseModel</name>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseModel.cpp" line="+392"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseModel.cpp" line="+520"/>
         <source>free</source>
         <translation>frei</translation>
     </message>
