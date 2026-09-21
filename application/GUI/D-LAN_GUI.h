@@ -50,12 +50,16 @@ namespace GUI
 
       bool notify(QObject* receiver, QEvent* event) override;
 
+#ifndef Q_OS_MACOS
    protected:
       bool event(QEvent* event) override;
+#endif
 
    private slots:
+#ifndef Q_OS_MACOS
       void trayIconActivated(QSystemTrayIcon::ActivationReason reason);
       void updateTrayIconMenu();
+#endif
       void loadLanguage(const QString& filename);
       void mainWindowClosed();
       void showMainWindow();
