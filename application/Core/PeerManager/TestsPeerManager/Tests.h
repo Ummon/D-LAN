@@ -43,7 +43,6 @@ using namespace PM;
 class Tests : public QObject
 {
    Q_OBJECT
-   static const int PORT;
 
 public:
    Tests();
@@ -95,7 +94,7 @@ private:
    QList<QSharedPointer<IPeerManager>> peerManagers;
    QList<TestServer*> servers;
 
-   PeerUpdater* peerUpdater;
+   PeerUpdater* peerUpdater = nullptr;
 
    ResultListener resultListener;
 
