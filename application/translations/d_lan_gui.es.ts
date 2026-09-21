@@ -724,17 +724,17 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+245"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+247"/>
         <source>Default</source>
         <translation>Por defecto</translation>
     </message>
     <message>
-        <location line="+58"/>
+        <location line="+59"/>
         <source>Interface not active</source>
         <translation>Interfaz desactivada</translation>
     </message>
     <message>
-        <location line="+136"/>
+        <location line="+160"/>
         <source>Change the password</source>
         <translation>Cambiar la contraseña</translation>
     </message>
@@ -750,20 +750,20 @@
     </message>
     <message>
         <location line="+46"/>
-        <location line="+305"/>
+        <location line="+308"/>
         <source>Connecting . . .</source>
         <translation>Conectando . . .</translation>
     </message>
     <message>
-        <location line="-297"/>
+        <location line="-300"/>
         <location line="+15"/>
         <location line="+15"/>
-        <location line="+267"/>
+        <location line="+270"/>
         <source>Connect</source>
         <translation>Conectar</translation>
     </message>
     <message>
-        <location line="-173"/>
+        <location line="-176"/>
         <source>Select one or more directories and/or files to share</source>
         <translation>Seleccione uno o más directorios y/o archivos para compartir</translation>
     </message>
@@ -1214,6 +1214,16 @@
     </message>
     <message>
         <location line="+17"/>
+        <source>Show tunnel interfaces</source>
+        <translation>Mostrar interfaces de túnel</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Tunnels are excluded from automatic discovery. Select a tunnel address to use it. The selected interface always remains visible.</source>
+        <translation>Los túneles están excluidos de la detección automática. Seleccione la dirección de un túnel para utilizarlo. La interfaz seleccionada siempre permanece visible.</translation>
+    </message>
+    <message>
+        <location line="+7"/>
         <source>Refresh interfaces</source>
         <translation>Refrescar interfaces</translation>
     </message>

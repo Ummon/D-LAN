@@ -724,17 +724,17 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+245"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+247"/>
         <source>Default</source>
         <translation>Стандартный</translation>
     </message>
     <message>
-        <location line="+58"/>
+        <location line="+59"/>
         <source>Interface not active</source>
         <translation>Интерфейс не активен</translation>
     </message>
     <message>
-        <location line="+136"/>
+        <location line="+160"/>
         <source>Change the password</source>
         <translation>Сменить пароль</translation>
     </message>
@@ -750,20 +750,20 @@
     </message>
     <message>
         <location line="+46"/>
-        <location line="+305"/>
+        <location line="+308"/>
         <source>Connecting . . .</source>
         <translation>Подключение...</translation>
     </message>
     <message>
-        <location line="-297"/>
+        <location line="-300"/>
         <location line="+15"/>
         <location line="+15"/>
-        <location line="+267"/>
+        <location line="+270"/>
         <source>Connect</source>
         <translation>Подключиться</translation>
     </message>
     <message>
-        <location line="-173"/>
+        <location line="-176"/>
         <source>Select one or more directories and/or files to share</source>
         <translation>Выберите одну или несколько папок и/или файлов для общего доступа</translation>
     </message>
@@ -1188,6 +1188,16 @@
     </message>
     <message>
         <location line="+17"/>
+        <source>Show tunnel interfaces</source>
+        <translation>Показывать туннельные интерфейсы</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Tunnels are excluded from automatic discovery. Select a tunnel address to use it. The selected interface always remains visible.</source>
+        <translation>Туннели исключены из автоматического обнаружения. Чтобы использовать туннель, выберите его адрес. Выбранный интерфейс всегда остаётся видимым.</translation>
+    </message>
+    <message>
+        <location line="+7"/>
         <source>Refresh interfaces</source>
         <translation>Обновить список интерфейсов</translation>
     </message>
@@ -1200,7 +1210,7 @@
         <translation type="vanished">Проверять целостность данных</translation>
     </message>
     <message>
-        <location line="-233"/>
+        <location line="-243"/>
         <source>Shared folders and files</source>
         <translation>Общие папки и файлы</translation>
     </message>
@@ -1226,7 +1236,7 @@
         <translation type="vanished">Открыть расположение выбранной общей папки или файла</translation>
     </message>
     <message>
-        <location line="+254"/>
+        <location line="+264"/>
         <source>Graphic User Interface</source>
         <translation>Пользовательский интерфейс</translation>
     </message>

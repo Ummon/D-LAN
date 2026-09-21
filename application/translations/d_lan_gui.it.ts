@@ -724,57 +724,57 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="245"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="247"/>
         <source>Default</source>
         <translation>Predefinito</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="303"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="306"/>
         <source>Interface not active</source>
         <translation>Interfaccia non attiva</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="439"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="466"/>
         <source>Change the password</source>
         <translation>Cambia la password</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="443"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="470"/>
         <source>No password defined</source>
         <translation>Non è stata impostata alcuna password</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="445"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="472"/>
         <source>Define a password</source>
         <translation>Imposta una password</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="491"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="796"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="518"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="826"/>
         <source>Connecting . . .</source>
         <translation>Connessione in corso . . .</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="499"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="514"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="529"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="796"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="526"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="541"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="556"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="826"/>
         <source>Connect</source>
         <translation>Connetti</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="623"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="650"/>
         <source>Select one or more directories and/or files to share</source>
         <translation>Seleziona una o più cartelle e/o file da condividere</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="644"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="709"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="671"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="736"/>
         <source>Remove selected shared entries</source>
         <translation>Rimuovi gli elementi condivisi selezionati</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="645"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="672"/>
         <source>Are you sure you want to remove the selected shared files and directories?</source>
         <translation>Rimuovere i file e le cartelle condivisi selezionati?</translation>
     </message>
@@ -791,17 +791,17 @@
         <translation type="vanished">Rimuovi la cartella condivisa</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="717"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="744"/>
         <source>Move up</source>
         <translation>Sposta su</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="725"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="752"/>
         <source>Move down</source>
         <translation>Sposta giù</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="733"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="760"/>
         <source>Open location</source>
         <translation>Apri percorso</translation>
     </message>
@@ -1214,6 +1214,16 @@
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="293"/>
+        <source>Show tunnel interfaces</source>
+        <translation>Mostra le interfacce tunnel</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="296"/>
+        <source>Tunnels are excluded from automatic discovery. Select a tunnel address to use it. The selected interface always remains visible.</source>
+        <translation>I tunnel sono esclusi dal rilevamento automatico. Per utilizzare un tunnel, selezionane l’indirizzo. L’interfaccia selezionata rimane sempre visibile.</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="303"/>
         <source>Refresh interfaces</source>
         <translation>Aggiorna le interfacce</translation>
     </message>
@@ -1226,62 +1236,62 @@
         <translation type="vanished">Verifica dell&apos;integrità dei dati</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="320"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="330"/>
         <source>User interface</source>
         <translation>Interfaccia utente</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="323"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="333"/>
         <source>Graphic User Interface</source>
         <translation>Interfaccia grafica</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="329"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="339"/>
         <source>Language</source>
         <translation>Lingua</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="339"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="349"/>
         <source>Style</source>
         <translation>Stile</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="360"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="370"/>
         <source>Reload the current style</source>
         <translation>Ricarica lo stile corrente</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="382"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="392"/>
         <source>Core connection</source>
         <translation>Connessione al Core</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="390"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="400"/>
         <source>Address</source>
         <translation>Indirizzo</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="400"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="410"/>
         <source>Reset to local</source>
         <translation>Ripristina connessione locale</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="407"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="417"/>
         <source>Password</source>
         <translation>Password</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="465"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="475"/>
         <source>Disconnect</source>
         <translation>Disconnetti</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="479"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="489"/>
         <source>Change the password</source>
         <translation>Cambia la password</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="486"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="496"/>
         <source>Reset the password</source>
         <translation>Reimposta la password</translation>
     </message>
