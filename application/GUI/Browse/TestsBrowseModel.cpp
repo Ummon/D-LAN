@@ -13,6 +13,9 @@ namespace
    {
    public:
       using GUI::BrowseModel::BrowseModel;
+      using GUI::BrowseModel::result;
+      using GUI::BrowseModel::resultRefresh;
+      using GUI::BrowseModel::resultTimeout;
       using GUI::BrowseModel::synchronizeRoot;
       void update(const QModelIndex& parent, const Protos::Common::Entries& entries)
       {
@@ -75,6 +78,65 @@ class TestsBrowseModel : public QObject
 {
    Q_OBJECT
 private slots:
+   void emptyRootsHaveNoPlaceholder_data()
+   {
+      QTest::addColumn<int>("completion");
+      QTest::newRow("initial") << 0;
+      QTest::newRow("empty-reply") << 1;
+      QTest::newRow("empty-root-list") << 2;
+      QTest::newRow("timeout") << 3;
+      QTest::newRow("refresh-reset") << 4;
+   }
+
+   void emptyRootsHaveNoPlaceholder()
+   {
+      QFETCH(int, completion);
+      auto connection = RCC::Builder::newCoreConnection(1000);
+      GUI::SharedEntryListModel shares;
+      Model model(connection, shares, Common::Hash(), false);
+      google::protobuf::RepeatedPtrField<Protos::Common::Entries> reply;
+      switch (completion)
+      {
+      case 1: model.result(reply); break;
+      case 2: reply.Add(); model.result(reply); break;
+      case 3: model.resultTimeout(); break;
+      case 4:
+         model.synchronizeRoot(roots({ "share" }));
+         model.resultRefresh(reply);
+         break;
+      }
+
+      // Navigation iterates these rows and calls getEntry(index(row, 0)).
+      // Advertising a nonexistent root would hand it a null tree pointer.
+      QCOMPARE(model.rowCount(), 0);
+      QVERIFY(!model.index(0, 0).isValid());
+      QAbstractItemModelTester tester(&model, QAbstractItemModelTester::FailureReportingMode::QtTest);
+
+      model.synchronizeRoot(roots({ "share" }));
+      QCOMPARE(model.rowCount(), 1);
+      const auto root = model.index(0, 0);
+      QVERIFY(root.isValid());
+      QCOMPARE(model.getEntry(root).shared_entry().id().hash(), std::string("share"));
+   }
+
+   void unloadedDirectoriesStillHavePlaceholder()
+   {
+      auto connection = RCC::Builder::newCoreConnection(1000);
+      GUI::SharedEntryListModel shares;
+      Model model(connection, shares, Common::Hash(), false);
+      auto entries = roots({ "share" });
+      entries.mutable_entries(0)->set_is_empty(false);
+      model.synchronizeRoot(entries);
+      const auto root = model.index(0, 0);
+      QVERIFY(root.isValid());
+      QCOMPARE(model.rowCount(root), 1);
+      model.update(root, files({ "child" }));
+      QCOMPARE(model.rowCount(root), 1);
+      const auto child = model.index(0, 0, root);
+      QVERIFY(child.isValid());
+      QCOMPARE(model.getEntry(child).name(), std::string("child"));
+   }
+
    void batchesDirectoryChangesAndPreservesNodes()
    {
       Fixture f;
