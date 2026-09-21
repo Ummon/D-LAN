@@ -13,6 +13,7 @@ Unless stated otherwise, paths are relative to the repository root.
 * [Linux AppImage](#linux-appimage)
 * [Profiling](#profiling)
 * [IPv6 peer discovery](#ipv6-peer-discovery)
+* [Remote-control TLS](#remote-control-tls)
 * [macOS filesystem monitoring](#macos-filesystem-monitoring)
 * [macOS settings, data, caches and logs](#macos-settings-data-caches-and-logs)
 * [macOS disk space](#macos-disk-space)
@@ -56,6 +57,62 @@ previously compiled static libraries compatible with macOS 26.
 | `DLAN_PDB` | `ON` | Windows Clang: emit PDB symbols in non-Debug builds for crash reports and profiling |
 | `DLAN_BLAKE3_ROOT` | `C:/BLAKE3-1.8.7/c` | BLAKE3 location |
 | `DLAN_PROTOBUF_ROOT` | `C:/protobuf-36.1` | protobuf location |
+| `OPENSSL_ROOT_DIR` | CMake search paths | OpenSSL 3 headers and libraries |
+| `DLAN_OPENSSL_RUNTIME_DIR` | Inferred from the crypto library's installation | Windows packaging: directory containing the matching libcrypto and libssl DLLs |
+
+## Remote-control TLS
+
+The GUI/Core control connection uses TLS 1.2 or later for non-local addresses on
+the existing remote-control port. Local connections remain plaintext, using
+`Common::Global::isLocal()` (loopback and this machine's interface addresses).
+There is no remote plaintext fallback; older clients need updating. Peer file
+transfers are independent of this control connection.
+
+On startup, the Core generates a self-signed RSA-3072/SHA-256 identity if none
+exists, and saves its private key and certificate together in
+`remote-control-tls/core.pem` under `Global::getDataFolder(DataFolderType::ROAMING)`.
+Generation uses libcrypto directly; no `openssl` command is required. The file
+is written atomically with owner read/write permissions on Unix. On Windows,
+the roaming directory's ACL must restrict access to the account running the
+Core (the service account when running as a service). Keep this private file
+out of shared folders. The Core logs the certificate's SHA-256 fingerprint.
+
+Certificates last ten years and are reused across restarts. An unreadable,
+invalid, expired or mismatched existing identity disables remote access and is
+logged; it is never silently overwritten. Local access still works.
+
+The GUI uses trust on first use: it remembers the certificate after a successful
+password login in its own roaming folder, as
+`remote-control-tls/peer-<endpoint SHA-256>.pem`. The endpoint is the normalized
+entered hostname/IP and port, so aliases have separate pins. Subsequent
+connections must present exactly that certificate, including certificates
+otherwise trusted by a public CA. A persistence failure aborts the connection.
+
+Make the first connection over a trusted network: the password challenge does
+not independently verify the Core, and first-use trust cannot detect an active
+interceptor during pairing. To verify a fingerprint out of band, compare the
+Core's logged fingerprint with the saved peer certificate, for example using
+`openssl x509 -in <peer-file> -noout -fingerprint -sha256`.
+
+For an intentional identity replacement, stop the Core, back up/remove its
+`core.pem`, and restart it to generate a new identity. Verify the new fingerprint
+through a trusted channel before replacing the affected GUI pin (the refusal
+log identifies its path) with the new public certificate. Do not copy the
+private key to GUI machines. Deleting a pin instead repeats first-use trust.
+
+The build requires OpenSSL 3 development libraries. Windows packaging copies
+libcrypto/libssl DLLs alongside Qt's TLS plugins; set `DLAN_OPENSSL_RUNTIME_DIR`
+when they are not in the installation's `bin` directory. macOS packaging uses
+Qt's Secure Transport plugin and deploys the linked libcrypto dependency.
+Linux AppImage packaging explicitly includes Qt's OpenSSL plugin and the shared
+libssl library, which Qt loads dynamically. Use dependencies for the target
+compiler/architecture; do not add another toolchain's system headers to the
+compiler search path when configuring `OPENSSL_INCLUDE_DIR`.
+
+`TestsRemoteControlTls` exercises real TLS and plaintext sockets, persistence,
+certificate changes, authentication failures, cancellation and handshake limits.
+It uses Qt's default backend; set `DLAN_TEST_TLS_BACKEND` to a backend name to
+exercise another installed backend explicitly.
 
 ## Build a release
 
