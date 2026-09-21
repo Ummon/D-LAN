@@ -92,6 +92,11 @@ RemoteBrowseDialog::RemoteBrowseDialog(QSharedPointer<RCC::ICoreConnection> core
    connect(this->ui->txtPath, &QLineEdit::textEdited, this, &RemoteBrowseDialog::pathEdited);
    connect(this->ui->butPrevious, &QPushButton::clicked, this, [this]() { this->navigateHistory(-1); });
    connect(this->ui->butNext, &QPushButton::clicked, this, [this]() { this->navigateHistory(1); });
+   connect(this->ui->butRefresh, &QPushButton::clicked, this, &RemoteBrowseDialog::refresh);
+   connect(&this->model, &RemoteBrowseModel::refreshingChanged, this, [this](bool refreshing) {
+      this->ui->butRefresh->setEnabled(!refreshing);
+   });
+   connect(&this->model, &QAbstractItemModel::rowsRemoved, this, [this]() { this->updateNavigation(); });
    connect(this->ui->butUp, &QPushButton::clicked, this, [this]() {
       auto folder = this->ui->treeView->currentIndex();
       if (!this->model.isDirectory(folder))
@@ -201,9 +206,15 @@ void RemoteBrowseDialog::selectIndex(const QModelIndex &index)
 
 void RemoteBrowseDialog::treeSelectionChanged(const QModelIndex& index)
 {
-   if (this->selectingPath || !index.isValid())
+   if (this->selectingPath)
       return;
    this->model.cancelPathLookup();
+   if (!index.isValid())
+   {
+      this->setPathValid(false);
+      this->updateNavigation();
+      return;
+   }
    this->ui->txtPath->setText(this->model.getPath(index));
    this->visit(index);
 }
@@ -212,6 +223,32 @@ void RemoteBrowseDialog::pathEdited(const QString& path)
 {
    this->setPathValid(false);
    this->model.getIndexFromPath(path);
+}
+
+void RemoteBrowseDialog::refresh()
+{
+   QModelIndexList folders;
+   QModelIndexList parents {QModelIndex()};
+   while (!parents.isEmpty())
+   {
+      const auto parent = parents.takeFirst();
+      for (int row = 0; row < this->model.rowCount(parent); ++row)
+      {
+         const auto index = this->model.index(row, 0, parent);
+         if (this->model.isDirectory(index) && this->ui->treeView->isExpanded(index))
+         {
+            folders.append(index);
+            parents.append(index);
+         }
+      }
+   }
+   // An empty selected folder has no expansion arrow but still needs refreshing.
+   auto currentFolder = this->ui->treeView->currentIndex();
+   if (!this->model.isDirectory(currentFolder))
+      currentFolder = currentFolder.parent();
+   if (currentFolder.isValid() && !folders.contains(currentFolder))
+      folders.append(currentFolder);
+   this->model.refresh(folders);
 }
 
 void RemoteBrowseDialog::visit(const QModelIndex& index)
@@ -242,6 +279,15 @@ void RemoteBrowseDialog::navigateHistory(int offset)
 
 void RemoteBrowseDialog::updateNavigation()
 {
+   for (int i = this->history.size() - 1; i >= 0; --i)
+   {
+      if (!this->history[i].isValid())
+      {
+         this->history.removeAt(i);
+         if (i <= this->historyPosition)
+            --this->historyPosition;
+      }
+   }
    this->ui->butPrevious->setEnabled(this->historyPosition > 0);
    this->ui->butNext->setEnabled(this->historyPosition + 1 < this->history.size());
    auto folder = this->ui->treeView->currentIndex();

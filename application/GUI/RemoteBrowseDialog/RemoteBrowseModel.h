@@ -71,10 +71,13 @@ namespace GUI
       bool isDirectory(const QModelIndex& index) const;
       void getIndexFromPath(const QString& path);
       void cancelPathLookup();
+      // Reload each opened folder once, retaining unchanged entries and their indexes.
+      void refresh(const QModelIndexList& folders);
 
    signals:
       // An invalid index means that the path was not found or its lookup timed out.
       void indexFromPath(const QModelIndex& index);
+      void refreshingChanged(bool refreshing);
 
    private slots:
       void result(const google::protobuf::RepeatedPtrField<Protos::GUI::LocalBrowseResult::Entry>& entries);
@@ -84,6 +87,7 @@ namespace GUI
       void browse(Tree* tree);
       void loadChildren(const QPersistentModelIndex &index);
       void loadPendingChildren();
+      void synchronize(Tree* tree, const google::protobuf::RepeatedPtrField<Protos::GUI::LocalBrowseResult::Entry>& entries);
 
       void exploreDirectories();
       QModelIndex indexFromTree(Tree* tree) const;
@@ -111,6 +115,8 @@ namespace GUI
       QPersistentModelIndex currentBrowseIndex;
       QSharedPointer<RCC::ILocalBrowseResult> localBrowseResult;
       QList<QPersistentModelIndex> pendingBrowseIndexes;
+      QList<QPersistentModelIndex> pendingRefreshIndexes;
+      bool refreshing = false;
 
       // Used when we want to display a specific path with the method 'getIndexFromPath'.
       QString pathToExplore;

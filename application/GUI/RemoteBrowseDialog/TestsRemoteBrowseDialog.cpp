@@ -59,6 +59,7 @@ namespace
    public:
       struct Request { QString path; QSharedPointer<BrowseResult> result; };
       QList<Request> requests;
+      QStringList requestedPaths;
       QSharedPointer<QuickAccessResult> quickAccess = QSharedPointer<QuickAccessResult>::create();
       QMap<QString, Entries> filesystem {
          { "", entries({ "/" }) },
@@ -72,6 +73,7 @@ namespace
       {
          auto result = QSharedPointer<BrowseResult>::create();
          this->requests.append({path, result});
+         this->requestedPaths.append(path);
          return result;
       }
       QSharedPointer<RCC::ILocalBrowseQuickAccessResult> localBrowseQuickAccess() override { return this->quickAccess; }
@@ -108,6 +110,7 @@ namespace
       QPushButton* back = dialog.findChild<QPushButton*>("butPrevious");
       QPushButton* next = dialog.findChild<QPushButton*>("butNext");
       QPushButton* up = dialog.findChild<QPushButton*>("butUp");
+      QPushButton* refresh = dialog.findChild<QPushButton*>("butRefresh");
       QPushButton* ok = dialog.findChild<QDialogButtonBox*>("buttonBox")->button(QDialogButtonBox::Ok);
       GUI::RemoteBrowseModel* model = static_cast<GUI::RemoteBrowseModel*>(tree->model());
       Fixture()
@@ -265,6 +268,121 @@ private slots:
       connection->drain();
       QCOMPARE(resolved.size(), 1);
       QCOMPARE(model.getPath(resolved.takeFirst()[0].value<QModelIndex>()), "C:/Users/File.txt");
+   }
+
+   void refreshOpenedFoldersAndPreserveSelection()
+   {
+      Fixture f;
+      f.edit("/home/child/");
+      f.connection->drain();
+      const QPersistentModelIndex child = f.tree->currentIndex();
+      f.edit("/other/");
+      f.connection->drain();
+      f.tree->collapse(f.tree->currentIndex());
+      f.edit("/home/a.txt");
+      const QPersistentModelIndex selected = f.tree->currentIndex();
+      const QPersistentModelIndex home = selected.parent();
+      const QPersistentModelIndex removed = f.model->index(2, 0, home);
+      f.tree->selectionModel()->select(child, QItemSelectionModel::Select | QItemSelectionModel::Rows);
+      QAbstractItemModelTester tester(f.model, QAbstractItemModelTester::FailureReportingMode::QtTest);
+      tester.setUseFetchMore(false);
+      f.connection->drain();
+      QSignalSpy reset(f.model, &QAbstractItemModel::modelReset);
+      QSignalSpy changed(f.model, &QAbstractItemModel::dataChanged);
+
+      f.connection->filesystem["/home/"] = entries({"aaa", "child"}, {"a.txt", "new.txt"});
+      f.connection->filesystem["/home/"].Mutable(2)->set_size(42);
+      f.connection->filesystem["/home/child/"] = entries({}, {"fresh.txt"});
+      f.connection->requestedPaths.clear();
+      f.refresh->click();
+      QVERIFY(!f.refresh->isEnabled());
+      f.refresh->click(); // Repeated clicks cannot duplicate the active refresh.
+      f.connection->drain();
+      QCOMPARE(f.connection->requestedPaths, QStringList({"/", "/home/", "/home/child/"}));
+      QVERIFY(f.refresh->isEnabled());
+      QVERIFY(selected.isValid());
+      QCOMPARE(f.tree->currentIndex(), QModelIndex(selected));
+      auto selectedPaths = f.dialog.getSelectedPaths();
+      selectedPaths.sort();
+      QCOMPARE(selectedPaths, QStringList({"/home/a.txt", "/home/child/"}));
+      QCOMPARE(selected.row(), 2);
+      QVERIFY(!removed.isValid());
+      QCOMPARE(f.model->index(0, 0, child).data().toString(), "fresh.txt");
+      QVERIFY(f.tree->isExpanded(home));
+      QVERIFY(f.tree->isExpanded(child));
+      QVERIFY(!changed.isEmpty());
+      QVERIFY(reset.isEmpty());
+      f.back->click();
+      QCOMPARE(f.selected(), "/home/child/");
+   }
+
+   void refreshEmptyFolderAndReplaceEntryType()
+   {
+      Fixture f;
+      f.edit("/empty/");
+      f.connection->drain();
+      const QPersistentModelIndex empty = f.tree->currentIndex();
+      f.connection->filesystem["/empty/"] = entries({}, {"created.txt"});
+      f.connection->requestedPaths.clear();
+      f.refresh->click();
+      f.connection->drain();
+      QCOMPARE(f.connection->requestedPaths.count("/empty/"), 1);
+      QCOMPARE(f.model->index(0, 0, empty).data().toString(), "created.txt");
+      f.edit("/home/child/");
+      f.connection->drain();
+      const QPersistentModelIndex oldChild = f.tree->currentIndex();
+      const QPersistentModelIndex home = oldChild.parent();
+      f.connection->filesystem["/home/"] = entries({}, {"a.txt", "child"});
+      f.connection->requestedPaths.clear();
+      f.refresh->click();
+      f.connection->drain();
+      QVERIFY(!oldChild.isValid());
+      QCOMPARE(f.connection->requestedPaths.count("/home/child/"), 0);
+      QCOMPARE(f.model->rowCount(home), 2);
+      QVERIFY(!f.model->isDirectory(f.model->index(1, 0, home)));
+      QVERIFY(f.refresh->isEnabled());
+   }
+
+   void refreshCoalescesInflightRequestsAndContinuesAfterTimeout()
+   {
+      Fixture f;
+      f.connection->requestedPaths.clear();
+      f.edit("/home/child/"); // Expanding starts a request which has not replied yet.
+      QCOMPARE(f.connection->requestedPaths, QStringList({"/home/child/"}));
+      f.refresh->click();
+      f.connection->drain();
+      QCOMPARE(f.connection->requestedPaths, QStringList({"/home/child/", "/", "/home/"}));
+      QVERIFY(f.refresh->isEnabled());
+
+      f.connection->requestedPaths.clear();
+      f.refresh->click();
+      const auto request = f.connection->requests.takeFirst();
+      emit request.result->timeout();
+      // A late reply to a timed-out request must not populate the next folder.
+      emit request.result->result(entries({}, {"stale.txt"}));
+      f.connection->drain();
+      QCOMPARE(f.connection->requestedPaths, QStringList({"/", "/home/", "/home/child/"}));
+      QVERIFY(f.refresh->isEnabled());
+      QCOMPARE(f.selected(), "/home/child/");
+      QCOMPARE(f.model->index(0, 0, f.tree->currentIndex()).data().toString(), "nested.txt");
+   }
+
+   void refreshDeletesFolderWithPendingPathLookup()
+   {
+      Fixture f;
+      f.connection->requestedPaths.clear();
+      f.refresh->click();
+      f.connection->reply(); // The listing for /home/ is now in flight.
+      QCOMPARE(f.connection->requests.first().path, "/home/");
+      f.edit("/home/child/new.txt"); // Its lazy request waits behind the refresh.
+      f.connection->filesystem["/home/"] = entries({}, {"a.txt"});
+      f.connection->drain();
+      QCOMPARE(f.connection->requestedPaths, QStringList({"/", "/home/"}));
+      QVERIFY(!f.ok->isEnabled());
+      QVERIFY(f.path->styleSheet().contains("red"));
+      QVERIFY(f.refresh->isEnabled());
+      f.edit("/home/a.txt");
+      QVERIFY(f.ok->isEnabled());
    }
 };
 

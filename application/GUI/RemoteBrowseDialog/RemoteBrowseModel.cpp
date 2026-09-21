@@ -30,6 +30,16 @@ using namespace GUI;
 
 #include <Log.h>
 
+namespace
+{
+   bool entryLess(const Protos::GUI::LocalBrowseResult::Entry& left, const Protos::GUI::LocalBrowseResult::Entry& right)
+   {
+      if (left.type() != right.type())
+         return left.type() == Protos::GUI::LocalBrowseResult::DIR;
+      return left.name() < right.name();
+   }
+}
+
 /**
   * @class GUI::BrowseModel
   *
@@ -120,7 +130,7 @@ bool RemoteBrowseModel::canFetchMore(const QModelIndex& parent) const
    const Tree* tree = parent.isValid() ? static_cast<Tree*>(parent.internalPointer()) : this->root;
    return tree->hasUnloadedChildren() &&
       (this->localBrowseResult.isNull() || parent != this->currentBrowseIndex) &&
-      !this->pendingBrowseIndexes.contains(parent);
+      !this->pendingBrowseIndexes.contains(parent) && !this->pendingRefreshIndexes.contains(parent);
 }
 
 void RemoteBrowseModel::fetchMore(const QModelIndex& parent)
@@ -215,6 +225,26 @@ void RemoteBrowseModel::cancelPathLookup()
    this->pathToExplore.clear();
 }
 
+void RemoteBrowseModel::refresh(const QModelIndexList& folders)
+{
+   if (this->refreshing)
+      return;
+
+   for (const auto& index : folders)
+   {
+      if (index.model() != this || !this->isDirectory(index))
+         continue;
+      const auto folder = index.siblingAtColumn(0);
+      this->pendingBrowseIndexes.removeAll(folder);
+      if ((this->localBrowseResult.isNull() || folder != this->currentBrowseIndex) &&
+          !this->pendingRefreshIndexes.contains(folder))
+         this->pendingRefreshIndexes.append(folder);
+   }
+   this->refreshing = true;
+   emit refreshingChanged(true);
+   this->loadPendingChildren();
+}
+
 void RemoteBrowseModel::result(const google::protobuf::RepeatedPtrField<Protos::GUI::LocalBrowseResult::Entry>& entries)
 {
    google::protobuf::RepeatedPtrField<Protos::GUI::LocalBrowseResult::Entry> sortedEntries;
@@ -227,27 +257,17 @@ void RemoteBrowseModel::result(const google::protobuf::RepeatedPtrField<Protos::
          sortedEntries.Add()->CopyFrom(entry);
    }
 
-   std::sort(
-      sortedEntries.begin(),
-      sortedEntries.end(),
-      [](const auto& e1, const auto& e2)
-      {
-         if (e1.type() != e2.type())
-            return e1.type() == Protos::GUI::LocalBrowseResult::DIR;
-         return e1.name() < e2.name();
-      }
-   );
+   std::sort(sortedEntries.begin(), sortedEntries.end(), entryLess);
 
    Tree* tree = this->currentBrowseIndex.isValid() ? static_cast<Tree*>(this->currentBrowseIndex.internalPointer()) : this->root;
    tree->childrenLoaded = true;
-   if (sortedEntries.size() > 0)
-   {
-      this->beginInsertRows(this->currentBrowseIndex, 0, sortedEntries.size() - 1);
-      tree->insertChildren(sortedEntries);
-      this->endInsertRows();
-   }
+   // A refresh can delete the node at which a pending path lookup was paused.
+   if (this->currentTreeExploring)
+      this->currentTreeExploring = this->root;
+   this->synchronize(tree, sortedEntries);
 
    this->currentBrowseIndex = QModelIndex();
+   this->localBrowseResult->disconnect(this);
    this->localBrowseResult.clear();
 
    this->exploreDirectories();
@@ -258,6 +278,7 @@ void RemoteBrowseModel::resultTimeout()
 {
    L_WARN("Asking for local entries message timed out");
    this->currentBrowseIndex = QModelIndex();
+   this->localBrowseResult->disconnect(this);
    this->localBrowseResult.clear();
    const bool resolvingPath = this->currentTreeExploring != nullptr;
    this->cancelPathLookup();
@@ -279,6 +300,8 @@ void RemoteBrowseModel::loadChildren(const QPersistentModelIndex &index)
    Tree* tree = index.isValid() ? static_cast<Tree*>(index.internalPointer()) : this->root;
    if (!tree->hasUnloadedChildren())
       return;
+   if (this->pendingRefreshIndexes.contains(index))
+      return;
    if (!this->localBrowseResult.isNull())
    {
       // Expanding the view must not cancel the request needed by a path lookup.
@@ -292,8 +315,74 @@ void RemoteBrowseModel::loadChildren(const QPersistentModelIndex &index)
 
 void RemoteBrowseModel::loadPendingChildren()
 {
+   while (this->localBrowseResult.isNull() && !this->pendingRefreshIndexes.isEmpty())
+   {
+      const auto index = this->pendingRefreshIndexes.takeFirst();
+      // A parent refresh may have removed this folder in the meantime.
+      if (!index.isValid())
+         continue;
+      this->currentBrowseIndex = index;
+      this->browse(static_cast<Tree*>(index.internalPointer()));
+   }
    while (this->localBrowseResult.isNull() && !this->pendingBrowseIndexes.isEmpty())
-      this->loadChildren(this->pendingBrowseIndexes.takeFirst());
+   {
+      const auto index = this->pendingBrowseIndexes.takeFirst();
+      if (index.isValid())
+         this->loadChildren(index);
+   }
+   if (this->refreshing && this->localBrowseResult.isNull())
+   {
+      this->refreshing = false;
+      emit refreshingChanged(false);
+   }
+}
+
+void RemoteBrowseModel::synchronize(Tree* tree, const google::protobuf::RepeatedPtrField<Protos::GUI::LocalBrowseResult::Entry>& entries)
+{
+   const auto parent = this->indexFromTree(tree);
+   int row = 0;
+   int entry = 0;
+   while (row < tree->getNbChildren() || entry < entries.size())
+   {
+      if (row < tree->getNbChildren() &&
+          (entry == entries.size() || entryLess(tree->getChild(row)->getItem(), entries.Get(entry))))
+      {
+         int count = 1;
+         while (row + count < tree->getNbChildren() &&
+                (entry == entries.size() || entryLess(tree->getChild(row + count)->getItem(), entries.Get(entry))))
+            ++count;
+         this->beginRemoveRows(parent, row, row + count - 1);
+         for (int i = 0; i < count; ++i)
+            delete tree->getChild(row);
+         this->endRemoveRows();
+      }
+      else if (entry < entries.size() &&
+               (row == tree->getNbChildren() || entryLess(entries.Get(entry), tree->getChild(row)->getItem())))
+      {
+         int count = 1;
+         while (entry + count < entries.size() &&
+                (row == tree->getNbChildren() || entryLess(entries.Get(entry + count), tree->getChild(row)->getItem())))
+            ++count;
+         this->beginInsertRows(parent, row, row + count - 1);
+         for (int i = 0; i < count; ++i)
+            tree->insertChild(entries.Get(entry + i), row + i);
+         this->endInsertRows();
+         row += count;
+         entry += count;
+      }
+      else
+      {
+         auto* child = tree->getChild(row);
+         const auto& updated = entries.Get(entry);
+         if (child->getItem().SerializeAsString() != updated.SerializeAsString())
+         {
+            child->setItem(updated);
+            emit dataChanged(this->index(row, 0, parent), this->index(row, this->columnCount() - 1, parent));
+         }
+         ++row;
+         ++entry;
+      }
+   }
 }
 
 void RemoteBrowseModel::exploreDirectories()
