@@ -72,8 +72,6 @@ QModelIndex RemoteBrowseModel::index(int row, int column, const QModelIndex& par
 
    if (childTree)
       return this->createIndex(row, column, childTree);
-   else if (parentTree->hasUnloadedChildren()) // The view want some not yet loaded children . . . so we will load them.
-      const_cast<RemoteBrowseModel*>(this)->loadChildren(parent);
 
    return QModelIndex();
 }
@@ -104,14 +102,31 @@ int RemoteBrowseModel::rowCount(const QModelIndex& parent) const
    else
       parentTree = static_cast<Tree*>(parent.internalPointer());
 
-   int nbLoadedChildren = parentTree->getNbChildren();
-   if (nbLoadedChildren > 0)
-      return nbLoadedChildren;
+   return parentTree->getNbChildren();
+}
 
-   if (parentTree->hasUnloadedChildren())
-      return 1; // We lie and tell there is a child.
-   else
-      return 0;
+bool RemoteBrowseModel::hasChildren(const QModelIndex& parent) const
+{
+   if (parent.column() > 0)
+      return false;
+   const Tree* tree = parent.isValid() ? static_cast<Tree*>(parent.internalPointer()) : this->root;
+   return tree->getNbChildren() > 0 || tree->hasUnloadedChildren();
+}
+
+bool RemoteBrowseModel::canFetchMore(const QModelIndex& parent) const
+{
+   if (parent.column() > 0)
+      return false;
+   const Tree* tree = parent.isValid() ? static_cast<Tree*>(parent.internalPointer()) : this->root;
+   return tree->hasUnloadedChildren() &&
+      (this->localBrowseResult.isNull() || parent != this->currentBrowseIndex) &&
+      !this->pendingBrowseIndexes.contains(parent);
+}
+
+void RemoteBrowseModel::fetchMore(const QModelIndex& parent)
+{
+   if (this->canFetchMore(parent))
+      this->loadChildren(parent);
 }
 
 int RemoteBrowseModel::columnCount(const QModelIndex&) const
@@ -164,14 +179,40 @@ void RemoteBrowseModel::setFilters(Filters filters)
   */
 QString RemoteBrowseModel::getPath(const QModelIndex& index, bool appendFilename) const
 {
+   if (!index.isValid())
+      return QString();
+   if (!appendFilename && !this->isDirectory(index))
+      return this->getPath(index.parent());
    return static_cast<Tree*>(index.internalPointer())->path();
+}
+
+bool RemoteBrowseModel::isDirectory(const QModelIndex& index) const
+{
+   return index.isValid() &&
+      static_cast<Tree*>(index.internalPointer())->getItem().type() == Protos::GUI::LocalBrowseResult::DIR;
 }
 
 void RemoteBrowseModel::getIndexFromPath(const QString& path)
 {
-   this->directoriesToExplore = QDir::cleanPath(path).split('/');
+   this->cancelPathLookup();
+   // Accept either path separator, regardless of the core's OS or path prefix.
+   QString normalized = path;
+   normalized.replace('\\', '/');
+   this->pathRequiresDirectory = normalized.endsWith('/');
+   this->pathToExplore = QDir::cleanPath(normalized);
+   if (!normalized.startsWith('/') && !(normalized.size() >= 3 && normalized[1] == ':' && normalized[2] == '/'))
+   {
+      emit indexFromPath(QModelIndex());
+      return;
+   }
    this->currentTreeExploring = this->root;
    this->exploreDirectories();
+}
+
+void RemoteBrowseModel::cancelPathLookup()
+{
+   this->currentTreeExploring = nullptr;
+   this->pathToExplore.clear();
 }
 
 void RemoteBrowseModel::result(const google::protobuf::RepeatedPtrField<Protos::GUI::LocalBrowseResult::Entry>& entries)
@@ -197,15 +238,12 @@ void RemoteBrowseModel::result(const google::protobuf::RepeatedPtrField<Protos::
       }
    );
 
+   Tree* tree = this->currentBrowseIndex.isValid() ? static_cast<Tree*>(this->currentBrowseIndex.internalPointer()) : this->root;
+   tree->childrenLoaded = true;
    if (sortedEntries.size() > 0)
    {
       this->beginInsertRows(this->currentBrowseIndex, 0, sortedEntries.size() - 1);
-
-      if (this->currentBrowseIndex.internalPointer())
-         static_cast<Tree*>(this->currentBrowseIndex.internalPointer())->insertChildren(sortedEntries);
-      else
-         this->root->insertChildren(sortedEntries);
-
+      tree->insertChildren(sortedEntries);
       this->endInsertRows();
    }
 
@@ -213,6 +251,7 @@ void RemoteBrowseModel::result(const google::protobuf::RepeatedPtrField<Protos::
    this->localBrowseResult.clear();
 
    this->exploreDirectories();
+   this->loadPendingChildren();
 }
 
 void RemoteBrowseModel::resultTimeout()
@@ -220,17 +259,15 @@ void RemoteBrowseModel::resultTimeout()
    L_WARN("Asking for local entries message timed out");
    this->currentBrowseIndex = QModelIndex();
    this->localBrowseResult.clear();
-   this->currentTreeExploring = nullptr;
-   this->directoriesToExplore.clear();
+   const bool resolvingPath = this->currentTreeExploring != nullptr;
+   this->cancelPathLookup();
+   if (resolvingPath)
+      emit indexFromPath(QModelIndex());
+   this->loadPendingChildren();
 }
 
 void RemoteBrowseModel::browse(Tree* tree)
 {
-   if (!this->localBrowseResult.isNull())
-      this->localBrowseResult->disconnect();
-
-   // L_DEBU(QString("### Browse: %1").arg(tree->path()));
-
    this->localBrowseResult = this->coreConnection->localBrowse(tree->path(), !this->filters.testAnyFlag(FILE));
    connect(this->localBrowseResult.data(), &RCC::ILocalBrowseResult::result, this, &RemoteBrowseModel::result);
    connect(this->localBrowseResult.data(), &Common::Timeoutable::timeout, this, &RemoteBrowseModel::resultTimeout);
@@ -239,66 +276,68 @@ void RemoteBrowseModel::browse(Tree* tree)
 
 void RemoteBrowseModel::loadChildren(const QPersistentModelIndex &index)
 {
-   if (index == this->currentBrowseIndex)
+   Tree* tree = index.isValid() ? static_cast<Tree*>(index.internalPointer()) : this->root;
+   if (!tree->hasUnloadedChildren())
       return;
-
+   if (!this->localBrowseResult.isNull())
+   {
+      // Expanding the view must not cancel the request needed by a path lookup.
+      if (index != this->currentBrowseIndex && !this->pendingBrowseIndexes.contains(index))
+         this->pendingBrowseIndexes.append(index);
+      return;
+   }
    this->currentBrowseIndex = index;
-   this->browse(static_cast<Tree*>(index.internalPointer()));
+   this->browse(tree);
+}
+
+void RemoteBrowseModel::loadPendingChildren()
+{
+   while (this->localBrowseResult.isNull() && !this->pendingBrowseIndexes.isEmpty())
+      this->loadChildren(this->pendingBrowseIndexes.takeFirst());
 }
 
 void RemoteBrowseModel::exploreDirectories()
 {
-   if (!this->currentTreeExploring)
-      return;
-
-
-   L_DEBU(QString("### exploreDirectories: %1").arg(this->directoriesToExplore.join('/')));
-
-
-   // int row = 0;
-   while (!this->directoriesToExplore.empty())
+   const Qt::CaseSensitivity sensitivity =
+      (this->pathToExplore.size() >= 2 && this->pathToExplore[1] == ':') || this->pathToExplore.startsWith("//")
+         ? Qt::CaseInsensitive : Qt::CaseSensitive;
+   while (this->currentTreeExploring)
    {
-      const int nbChildren = this->currentTreeExploring->getNbChildren();
-
-      // No children loaded -> we will load children with 'loadChildren()'.
-      if (nbChildren == 0)
-         break;
-
-      const auto& directory = this->directoriesToExplore.first();
-      bool directoryFound = false;
-
-      for (int i = 0; i < nbChildren; i++)
+      if (this->currentTreeExploring != this->root &&
+          QDir::cleanPath(this->currentTreeExploring->path()).compare(this->pathToExplore, sensitivity) == 0)
       {
-         const auto& name = QString::fromStdString(this->currentTreeExploring->getChild(i)->getItem().name());
-         if (name == directory || name == directory + '/')
-         {
-            this->currentTreeExploring = this->currentTreeExploring->getChild(i);
-            this->directoriesToExplore.removeFirst();
-            // row = i;
-            directoryFound = true;
-            break;
-         }
-      }
-
-      // The children are loaded but the directory isn't found, the exploration is aborted.
-      if (!directoryFound)
-      {
-         this->currentTreeExploring = nullptr;
-         this->directoriesToExplore.clear();
+         const QModelIndex index = this->indexFromTree(this->currentTreeExploring);
+         const bool valid = !this->pathRequiresDirectory || this->isDirectory(index);
+         this->cancelPathLookup();
+         emit indexFromPath(valid ? index : QModelIndex());
          return;
       }
-   }
-
-   // If the path is already loaded we emit the signal 'indexFromPath'.
-   if (this->directoriesToExplore.empty())
-   {
-      const QModelIndex index = this->indexFromTree(this->currentTreeExploring);
-      this->currentTreeExploring = nullptr;
-      emit indexFromPath(index);
-   }
-   else
-   {
-      this->loadChildren(this->indexFromTree(this->currentTreeExploring));
+      if (this->currentTreeExploring->hasUnloadedChildren())
+      {
+         this->loadChildren(this->indexFromTree(this->currentTreeExploring));
+         return;
+      }
+      Tree* match = nullptr;
+      qsizetype longestMatch = -1;
+      for (int i = 0; i < this->currentTreeExploring->getNbChildren(); ++i)
+      {
+         Tree* child = this->currentTreeExploring->getChild(i);
+         const QString childPath = QDir::cleanPath(child->path());
+         const QString prefix = childPath.endsWith('/') ? childPath : childPath + '/';
+         if ((this->pathToExplore.compare(childPath, sensitivity) == 0 ||
+              (child->getItem().type() == Protos::GUI::LocalBrowseResult::DIR && this->pathToExplore.startsWith(prefix, sensitivity))) &&
+             childPath.size() > longestMatch)
+         {
+            match = child;
+            longestMatch = childPath.size();
+         }
+      }
+      this->currentTreeExploring = match;
+      if (!match)
+      {
+         this->cancelPathLookup();
+         emit indexFromPath(QModelIndex());
+      }
    }
 }
 
@@ -349,8 +388,8 @@ bool RemoteBrowseModel::Tree::hasUnloadedChildren() const
 {
    return
       this->getItem().type() == Protos::GUI::LocalBrowseResult::DIR  &&
-      this->getNbChildren() == 0 &&
-      this->getItem().size() > 0;
+      !this->childrenLoaded &&
+      (!this->getParent() || this->getItem().size() > 0);
 }
 
 QVariant RemoteBrowseModel::Tree::data(int column) const

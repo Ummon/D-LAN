@@ -220,6 +220,18 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 endif()
 
 if(DLAN_BUILD_TESTS)
+   add_executable(TestsRemoteBrowseDialog
+      RemoteBrowseDialog/TestsRemoteBrowseDialog.cpp
+      RemoteBrowseDialog/RemoteBrowseDialog.cpp RemoteBrowseDialog/RemoteBrowseModel.cpp
+      RemoteBrowseDialog/RemoteBrowseQuickAccessModel.cpp Log.cpp resources.qrc
+   )
+   set_target_properties(TestsRemoteBrowseDialog PROPERTIES
+      AUTOUIC ON AUTORCC ON AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}")
+   target_include_directories(TestsRemoteBrowseDialog PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+   target_link_libraries(TestsRemoteBrowseDialog PRIVATE GUIIconProvider RemoteCoreController LogManager Common Qt6::Widgets Qt6::Svg Qt6::Test)
+   add_test(NAME TestsRemoteBrowseDialog COMMAND TestsRemoteBrowseDialog)
+   set_tests_properties(TestsRemoteBrowseDialog PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 30)
+
    add_executable(TestsSettingsWidget
       Settings/TestsSettingsWidget.cpp Settings/SettingsWidget.cpp
       Settings/SharedEntryListModel.cpp Settings/SharedEntryListDelegate.cpp

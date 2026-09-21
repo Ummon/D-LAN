@@ -60,6 +60,8 @@ namespace GUI
       void quickAccessSelectionChanged(const QModelIndex &current, const QModelIndex &previous);
       void quickAccessClicked(const QModelIndex &index);
       void selectIndex(const QModelIndex &index);
+      void treeSelectionChanged(const QModelIndex& index);
+      void pathEdited(const QString& path);
 
       void displayContextMenuDownload(const QPoint& point);
       void openLocation();
@@ -68,11 +70,21 @@ namespace GUI
       void reject() override;
 
    private:
+      void visit(const QModelIndex& index);
+      void navigateHistory(int offset);
+      void updateNavigation();
+      void setPathValid(bool valid);
+
       Ui::RemoteBrowseDialog *ui;
 
       RemoteBrowseModel model;
       RemoteBrowseQuickAccessModel modelQuickAccess;
       RemoteBrowseDialogDelegate delegate;
+      QList<QPersistentModelIndex> history;
+      int historyPosition = -1;
+      bool navigatingHistory = false;
+      bool selectingPath = false;
+      bool pathValid = false;
    };
 
    Q_DECLARE_OPERATORS_FOR_FLAGS(RemoteBrowseDialog::Modes);

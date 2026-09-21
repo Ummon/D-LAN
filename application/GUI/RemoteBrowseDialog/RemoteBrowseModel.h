@@ -60,14 +60,20 @@ namespace GUI
       virtual QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
       virtual QModelIndex parent(const QModelIndex& child) const override;
       virtual int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+      bool hasChildren(const QModelIndex& parent = QModelIndex()) const override;
+      bool canFetchMore(const QModelIndex& parent) const override;
+      void fetchMore(const QModelIndex& parent) override;
       virtual int columnCount(const QModelIndex& parent = QModelIndex()) const override;
       virtual QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
       void setFilters(Filters filters);
       QString getPath(const QModelIndex& index, bool appendFilename = true) const;
+      bool isDirectory(const QModelIndex& index) const;
       void getIndexFromPath(const QString& path);
+      void cancelPathLookup();
 
    signals:
+      // An invalid index means that the path was not found or its lookup timed out.
       void indexFromPath(const QModelIndex& index);
 
    private slots:
@@ -77,6 +83,7 @@ namespace GUI
    private:
       void browse(Tree* tree);
       void loadChildren(const QPersistentModelIndex &index);
+      void loadPendingChildren();
 
       void exploreDirectories();
       QModelIndex indexFromTree(Tree* tree) const;
@@ -93,6 +100,7 @@ namespace GUI
          QVariant data(int column) const;
 
          QString path() const;
+         bool childrenLoaded = false;
       };
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;
@@ -102,9 +110,11 @@ namespace GUI
       // When we receive some entries after a browse query, they will be added as children to this index.
       QPersistentModelIndex currentBrowseIndex;
       QSharedPointer<RCC::ILocalBrowseResult> localBrowseResult;
+      QList<QPersistentModelIndex> pendingBrowseIndexes;
 
       // Used when we want to display a specific path with the method 'getIndexFromPath'.
-      QList<QString> directoriesToExplore;
+      QString pathToExplore;
+      bool pathRequiresDirectory = false;
       Tree* currentTreeExploring;
 
       Tree* root; // The corresponding index is null: QModelIndex().

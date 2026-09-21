@@ -43,11 +43,6 @@ RemoteBrowseDialog::RemoteBrowseDialog(QSharedPointer<RCC::ICoreConnection> core
 {
    this->ui->setupUi(this);
 
-   this->ui->butNext->hide();
-   this->ui->butPrevious->hide();
-   this->ui->butUp->hide();
-   this->ui->txtPath->hide();
-
    this->ui->treeView->setModel(&this->model);
    this->ui->treeView->setItemDelegate(&this->delegate);
 
@@ -87,6 +82,29 @@ RemoteBrowseDialog::RemoteBrowseDialog(QSharedPointer<RCC::ICoreConnection> core
       }
    );
    connect(&this->model, &RemoteBrowseModel::indexFromPath, this, &RemoteBrowseDialog::selectIndex);
+   connect(this->ui->treeView->selectionModel(), &QItemSelectionModel::currentRowChanged,
+      this, &RemoteBrowseDialog::treeSelectionChanged);
+   connect(this->ui->treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, [this]() {
+      this->ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(
+         this->pathValid && this->ui->treeView->selectionModel()->hasSelection());
+   });
+   connect(this->ui->treeView, &QTreeView::clicked, this, &RemoteBrowseDialog::treeSelectionChanged);
+   connect(this->ui->txtPath, &QLineEdit::textEdited, this, &RemoteBrowseDialog::pathEdited);
+   connect(this->ui->butPrevious, &QPushButton::clicked, this, [this]() { this->navigateHistory(-1); });
+   connect(this->ui->butNext, &QPushButton::clicked, this, [this]() { this->navigateHistory(1); });
+   connect(this->ui->butUp, &QPushButton::clicked, this, [this]() {
+      auto folder = this->ui->treeView->currentIndex();
+      if (!this->model.isDirectory(folder))
+         folder = folder.parent();
+      this->model.cancelPathLookup();
+      this->ui->txtPath->setText(this->model.getPath(folder.parent()));
+      this->selectIndex(folder.parent());
+   });
+   const auto selectDefault = [this]() {
+      if (!this->ui->quickAccessListView->currentIndex().isValid() && this->modelQuickAccess.rowCount() > 0)
+         this->ui->quickAccessListView->setCurrentIndex(this->modelQuickAccess.index(0, 0));
+   };
+   connect(&this->modelQuickAccess, &QAbstractItemModel::rowsInserted, this, selectDefault);
 
    connect(
       this->ui->treeView,
@@ -96,6 +114,10 @@ RemoteBrowseDialog::RemoteBrowseDialog(QSharedPointer<RCC::ICoreConnection> core
    );
 
    this->setModes(FILE | DIR | SELECT_MULTIPLE);
+   this->setPathValid(false);
+   this->ui->txtPath->setStyleSheet(QString());
+   this->updateNavigation();
+   selectDefault();
 }
 
 RemoteBrowseDialog::~RemoteBrowseDialog()
@@ -129,7 +151,8 @@ QStringList RemoteBrowseDialog::getSelectedPaths() const
 
 void RemoteBrowseDialog::accept()
 {
-   QDialog::accept();
+   if (this->pathValid && this->ui->treeView->selectionModel()->hasSelection())
+      QDialog::accept();
 }
 
 void RemoteBrowseDialog::reject()
@@ -149,20 +172,90 @@ void RemoteBrowseDialog::quickAccessClicked(const QModelIndex &index)
       const auto path = this->modelQuickAccess.getPath(index);
       if (!path.isEmpty())
       {
-         this->model.getIndexFromPath(path);
+         this->ui->txtPath->setText(path);
+         this->pathEdited(path);
       }
    }
 }
 
 void RemoteBrowseDialog::selectIndex(const QModelIndex &index)
 {
+   if (!index.isValid())
+   {
+      this->setPathValid(false);
+      return;
+   }
+
+   this->selectingPath = true;
    for (QModelIndex parent = index.parent(); parent.isValid(); parent = parent.parent())
       this->ui->treeView->expand(parent);
 
    this->ui->treeView->expand(index);
 
-   this->ui->treeView->setCurrentIndex(index);
+   this->ui->treeView->selectionModel()->setCurrentIndex(index,
+      QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
    this->ui->treeView->scrollTo(index, QAbstractItemView::PositionAtCenter);
+   this->selectingPath = false;
+   this->visit(index);
+}
+
+void RemoteBrowseDialog::treeSelectionChanged(const QModelIndex& index)
+{
+   if (this->selectingPath || !index.isValid())
+      return;
+   this->model.cancelPathLookup();
+   this->ui->txtPath->setText(this->model.getPath(index));
+   this->visit(index);
+}
+
+void RemoteBrowseDialog::pathEdited(const QString& path)
+{
+   this->setPathValid(false);
+   this->model.getIndexFromPath(path);
+}
+
+void RemoteBrowseDialog::visit(const QModelIndex& index)
+{
+   this->setPathValid(true);
+   if (!this->navigatingHistory && this->model.isDirectory(index) &&
+       (this->historyPosition < 0 || this->history[this->historyPosition] != index))
+   {
+      this->history.resize(this->historyPosition + 1);
+      this->history.append(index);
+      this->historyPosition = this->history.size() - 1;
+   }
+   this->updateNavigation();
+}
+
+void RemoteBrowseDialog::navigateHistory(int offset)
+{
+   const int position = this->historyPosition + offset;
+   if (position < 0 || position >= this->history.size())
+      return;
+   this->model.cancelPathLookup();
+   this->historyPosition = position;
+   this->navigatingHistory = true;
+   this->ui->txtPath->setText(this->model.getPath(this->history[position]));
+   this->selectIndex(this->history[position]);
+   this->navigatingHistory = false;
+}
+
+void RemoteBrowseDialog::updateNavigation()
+{
+   this->ui->butPrevious->setEnabled(this->historyPosition > 0);
+   this->ui->butNext->setEnabled(this->historyPosition + 1 < this->history.size());
+   auto folder = this->ui->treeView->currentIndex();
+   if (!this->model.isDirectory(folder))
+      folder = folder.parent();
+   this->ui->butUp->setEnabled(folder.parent().isValid());
+}
+
+void RemoteBrowseDialog::setPathValid(bool valid)
+{
+   this->pathValid = valid;
+   this->ui->txtPath->setStyleSheet(valid ? QString() : QStringLiteral("QLineEdit { border: 1px solid red; }"));
+   this->ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(
+      valid && this->ui->treeView->selectionModel()->hasSelection());
 }
 
 void RemoteBrowseDialog::displayContextMenuDownload(const QPoint& point)
