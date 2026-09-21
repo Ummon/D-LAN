@@ -21,6 +21,9 @@
     <layout class="QHBoxLayout" name="horizontalLayoutHeader">
      <item>
       <widget class="QPushButton" name="butPrevious">
+       <property name="toolTip">
+        <string>Back</string>
+       </property>
        <property name="text">
         <string notr="true"/>
        </property>
@@ -38,6 +41,9 @@
      </item>
      <item>
       <widget class="QPushButton" name="butNext">
+       <property name="toolTip">
+        <string>Forward</string>
+       </property>
        <property name="text">
         <string notr="true"/>
        </property>
@@ -55,6 +61,9 @@
      </item>
      <item>
       <widget class="QPushButton" name="butUp">
+       <property name="toolTip">
+        <string>Go to parent directory</string>
+       </property>
        <property name="text">
         <string notr="true"/>
        </property>
@@ -72,6 +81,9 @@
      </item>
      <item>
       <widget class="QPushButton" name="butRefresh">
+       <property name="toolTip">
+        <string>Refresh</string>
+       </property>
        <property name="text">
         <string/>
        </property>

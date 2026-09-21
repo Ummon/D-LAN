@@ -601,17 +601,17 @@
 <context>
     <name>GUI::RemoteBrowseDialog</name>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="69"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="64"/>
         <source>Ok</source>
         <translation>OK</translation>
     </message>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="70"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="65"/>
         <source>Cancel</source>
         <translation>キャンセル</translation>
     </message>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="176"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="315"/>
         <source>Open location</source>
         <translation>場所を開く</translation>
     </message>
@@ -619,7 +619,7 @@
 <context>
     <name>GUI::RemoteBrowseModel</name>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseModel.cpp" line="392"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseModel.cpp" line="520"/>
         <source>free</source>
         <translation>空き</translation>
     </message>
@@ -1038,6 +1038,26 @@
         <location filename="../GUI/RemoteBrowseDialog.ui" line="14"/>
         <source>Select some directories and/or files</source>
         <translation>ディレクトリまたはファイルを選択してください</translation>
+    </message>
+    <message>
+        <location filename="../GUI/RemoteBrowseDialog.ui" line="25"/>
+        <source>Back</source>
+        <translation>戻る</translation>
+    </message>
+    <message>
+        <location filename="../GUI/RemoteBrowseDialog.ui" line="45"/>
+        <source>Forward</source>
+        <translation>進む</translation>
+    </message>
+    <message>
+        <location filename="../GUI/RemoteBrowseDialog.ui" line="65"/>
+        <source>Go to parent directory</source>
+        <translation>親ディレクトリに移動</translation>
+    </message>
+    <message>
+        <location filename="../GUI/RemoteBrowseDialog.ui" line="85"/>
+        <source>Refresh</source>
+        <translation>更新</translation>
     </message>
 </context>
 <context>

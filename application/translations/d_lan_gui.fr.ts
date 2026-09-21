@@ -605,7 +605,7 @@
 <context>
     <name>GUI::RemoteBrowseDialog</name>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="+69"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="+64"/>
         <source>Ok</source>
         <translation>Ok</translation>
     </message>
@@ -615,7 +615,7 @@
         <translation>Annuler</translation>
     </message>
     <message>
-        <location line="+106"/>
+        <location line="+250"/>
         <source>Open location</source>
         <translation>Ouvrir le dossier</translation>
     </message>
@@ -623,7 +623,7 @@
 <context>
     <name>GUI::RemoteBrowseModel</name>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseModel.cpp" line="+392"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseModel.cpp" line="+520"/>
         <source>free</source>
         <translation>libre</translation>
     </message>
@@ -1042,6 +1042,26 @@
         <location filename="../GUI/RemoteBrowseDialog.ui" line="+14"/>
         <source>Select some directories and/or files</source>
         <translation>Sélectionnez des dossiers et/ou fichiers</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Back</source>
+        <translation>Précédent</translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Forward</source>
+        <translation>Suivant</translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Go to parent directory</source>
+        <translation>Aller au dossier parent</translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Refresh</source>
+        <translation>Rafraichir</translation>
     </message>
 </context>
 <context>

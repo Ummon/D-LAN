@@ -605,17 +605,17 @@
 <context>
     <name>GUI::RemoteBrowseDialog</name>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="69"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="64"/>
         <source>Ok</source>
         <translation>OK</translation>
     </message>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="70"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="65"/>
         <source>Cancel</source>
         <translation>Annulla</translation>
     </message>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="176"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="315"/>
         <source>Open location</source>
         <translation>Apri percorso</translation>
     </message>
@@ -623,7 +623,7 @@
 <context>
     <name>GUI::RemoteBrowseModel</name>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseModel.cpp" line="392"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseModel.cpp" line="520"/>
         <source>free</source>
         <translation>liberi</translation>
     </message>
@@ -1042,6 +1042,26 @@
         <location filename="../GUI/RemoteBrowseDialog.ui" line="14"/>
         <source>Select some directories and/or files</source>
         <translation>Seleziona cartelle e/o file</translation>
+    </message>
+    <message>
+        <location filename="../GUI/RemoteBrowseDialog.ui" line="25"/>
+        <source>Back</source>
+        <translation>Indietro</translation>
+    </message>
+    <message>
+        <location filename="../GUI/RemoteBrowseDialog.ui" line="45"/>
+        <source>Forward</source>
+        <translation>Avanti</translation>
+    </message>
+    <message>
+        <location filename="../GUI/RemoteBrowseDialog.ui" line="65"/>
+        <source>Go to parent directory</source>
+        <translation>Vai alla cartella superiore</translation>
+    </message>
+    <message>
+        <location filename="../GUI/RemoteBrowseDialog.ui" line="85"/>
+        <source>Refresh</source>
+        <translation>Aggiorna</translation>
     </message>
 </context>
 <context>
