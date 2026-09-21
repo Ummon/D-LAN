@@ -6,6 +6,7 @@ Unless stated otherwise, paths are relative to the repository root.
 
 * [Build BLAKE3](#build-blake3)
 * [Build Protobuf](#build-protobuf)
+* [Build OpenSSL for macOS](#build-openssl-for-macos)
 * [CMake options](#cmake-options)
 * [Build a release](#build-a-release)
 * [macOS release testing](#macos-release-testing)
@@ -46,6 +47,48 @@ Use fresh build directories when rebuilding dependencies that previously targete
 a newer macOS version. Protobuf's bundled Abseil and utf8_range must be rebuilt
 with the same settings. Changing only D-LAN's deployment target does not make
 previously compiled static libraries compatible with macOS 26.
+
+## Build OpenSSL for macOS
+
+Homebrew libraries can require a newer macOS version than D-LAN's deployment
+target. For example, a `libcrypto.3.dylib` built for macOS 27 produces linker
+warnings when building D-LAN for macOS 26. Build a separate OpenSSL 3 installation
+with the same minimum version as D-LAN.
+
+Download and verify an [OpenSSL 3 source release](https://openssl-library.org/source/),
+then run these commands from its extracted source directory, choosing an absolute
+installation path:
+
+```sh
+./Configure darwin64-arm64-cc shared -mmacosx-version-min=26.0 --prefix=/absolute/path/to/openssl-macos26 --libdir=lib
+make -j8
+make test
+make install_sw
+```
+
+In each Qt Creator build configuration, set `OPENSSL_ROOT_DIR` to that installation
+path. Clear the cached `OPENSSL_CRYPTO_LIBRARY`, `OPENSSL_SSL_LIBRARY` and
+`OPENSSL_INCLUDE_DIR` entries, then run CMake again and rebuild. Alternatively,
+update an existing build from the repository root:
+
+```sh
+cmake -S application -B application/build/Qt_6_11_2_for_macOS_Debug -U 'OPENSSL_*' -DOPENSSL_ROOT_DIR=/absolute/path/to/openssl-macos26
+```
+
+Each build directory has its own CMake cache. If using
+`nu build.nu --build-dir build/release` from `application`, also reconfigure
+`application/build/release` with the command above, replacing the `-B` path.
+The default `build.nu` command already cleans compiled files; cleaning does not
+reset cached dependency paths.
+
+Verify the actual minimum OS version (the `minos` field, not `sdk`):
+
+```sh
+xcrun vtool -show-build /absolute/path/to/openssl-macos26/lib/libcrypto.3.dylib
+```
+
+Changing D-LAN's deployment target or suppressing linker warnings does not make
+an existing OpenSSL binary compatible with macOS 26.
 
 ## CMake options
 
@@ -219,6 +262,9 @@ also clear the cached `protobuf_DIR`, `absl_DIR`, `utf8_range_DIR`, `DLAN_PROTOC
 `DLAN_BLAKE3_LIBRARY` and `DLAN_BLAKE3_INCLUDE_DIR` entries before reconfiguring;
 changing the root paths alone does not replace cached lookup results. Keep the
 deployment target at 26.0 to retain compatibility with macOS 26.
+For warnings naming `libcrypto` or `libssl`, follow
+[Build OpenSSL for macOS](#build-openssl-for-macos) and clear the OpenSSL cache
+entries listed there.
 
 The packager uses `macdeployqt` and plugins from the Qt SDK selected by the build's
 `Qt6_DIR`, plus Apple's command-line tools (`lipo`, `otool`, `codesign`, `sips`,
