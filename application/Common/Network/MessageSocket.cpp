@@ -21,6 +21,7 @@ using namespace Common;
 
 #include <QPointer>
 #include <QScopeGuard>
+#include <QSslSocket>
 
 #include <ProtoHelper.h>
 #include <Global.h>
@@ -182,7 +183,8 @@ void MessageSocket::send(MessageHeader::MessageType type, const google::protobuf
    }
 
    const qint64 frameSize = MessageHeader::HEADER_SIZE + qint64(payloadSize);
-   const qint64 queuedBytes = this->socket->bytesToWrite();
+   const auto* ssl = qobject_cast<QSslSocket*>(this->socket);
+   const qint64 queuedBytes = this->socket->bytesToWrite() + (ssl ? ssl->encryptedBytesToWrite() : 0);
    if (queuedBytes > MAX_QUEUED_OUTGOING_BYTES - frameSize)
    {
       MESSAGE_SOCKET_LOG_ERROR(QString("Outgoing buffer limit exceeded (%1 bytes queued, %2-byte frame, limit %3); aborting the socket")

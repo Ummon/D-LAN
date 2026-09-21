@@ -153,6 +153,7 @@ namespace RCC
 
    private:      
       void cancelConnectionAttempt();
+      void tlsFailed(const QString& reason);
       void connectedAndAuthenticated();
 
       void sendCurrentLanguage();
@@ -177,6 +178,8 @@ namespace RCC
 
       quint64 attemptGeneration = 0;
       bool connectionAttemptActive = false;
+      bool tlsRequired = false;
+      bool tlsFailureReported = false;
 
       // When a name is resolved many addresses can be returned, we will try all of
       // them until a connection is successfully established.

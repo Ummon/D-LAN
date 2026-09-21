@@ -12,6 +12,7 @@ add_library(RemoteControlManager STATIC
 
    IRemoteControlManager.h
    priv/RemoteControlManager.h
+   priv/RemoteControlServer.h
    priv/RemoteConnection.h
    priv/UploadProgress.h
    priv/LocalBrowse.h
@@ -34,4 +35,9 @@ if(DLAN_BUILD_TESTS)
    target_include_directories(TestsRemoteControlManager PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
    target_link_libraries(TestsRemoteControlManager PRIVATE RemoteControlManager PeerManager FileManager NetworkListener ChatSystem Qt6::Test)
    add_test(NAME TestsRemoteControlManager COMMAND TestsRemoteControlManager)
+
+   add_executable(TestsRemoteControlTls TestsRemoteControlManager/TlsTests.cpp)
+   target_link_libraries(TestsRemoteControlTls PRIVATE RemoteControlManager RemoteCoreController PeerManager FileManager NetworkListener ChatSystem Qt6::Test)
+   add_test(NAME TestsRemoteControlTls COMMAND TestsRemoteControlTls)
+   set_tests_properties(TestsRemoteControlTls PROPERTIES TIMEOUT 90)
 endif()

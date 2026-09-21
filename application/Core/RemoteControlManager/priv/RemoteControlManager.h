@@ -34,7 +34,10 @@
 
 #include <IRemoteControlManager.h>
 #include <priv/RemoteConnection.h>
+#include <priv/RemoteControlServer.h>
 #include <priv/Log.h>
+
+class Tests;
 
 namespace RCM
 {
@@ -58,6 +61,7 @@ namespace RCM
       void connectionDeleted(RemoteConnection* sender);
 
    private:      
+      friend class ::Tests; // Real socket integration tests with simulated remote peer addresses.
       LOG_INIT_H("RemoteControlManager")
 
       QSharedPointer<FM::IFileManager> fileManager;
@@ -67,8 +71,9 @@ namespace RCM
       QSharedPointer<NL::INetworkListener> networkListener;
       QSharedPointer<CS::IChatSystem> chatSystem;
 
-      QTcpServer tcpServerIPv4;
-      QTcpServer tcpServerIPv6;
+      QSslConfiguration tlsConfiguration;
+      RemoteControlServer tcpServerIPv4;
+      RemoteControlServer tcpServerIPv6;
       QList<RemoteConnection*> connections;
    };
 }

@@ -12,6 +12,7 @@ add_library(Common STATIC
    Timeoutable.cpp
    PersistentData.cpp
    Network/MessageSocket.cpp
+   Network/RemoteControlTls.cpp
    Network/MessageHeader.cpp
    ThreadPool.cpp
    Languages.cpp
@@ -37,6 +38,7 @@ add_library(Common STATIC
    Version.h
    PersistentData.h
    Network/MessageSocket.h
+   Network/RemoteControlTls.h
    Network/MessageHeader.h
    ThreadPool.h
    IRunnable.h
@@ -74,6 +76,11 @@ target_link_libraries(Common PUBLIC
    dlan_protos
    blake3
 )
+
+# Qt handles TLS transport; libcrypto generates and validates the persistent
+# self-signed Core identity without invoking an external openssl executable.
+find_package(OpenSSL 3 REQUIRED COMPONENTS Crypto SSL)
+target_link_libraries(Common PRIVATE OpenSSL::Crypto)
 
 if(APPLE)
    target_link_libraries(Common PRIVATE "-framework SystemConfiguration" "-framework CoreFoundation")
