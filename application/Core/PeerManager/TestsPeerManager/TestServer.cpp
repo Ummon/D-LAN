@@ -20,7 +20,6 @@
 
 #include <QSharedPointer>
 #include <QtDebug>
-#include <QTest>
 
 #include <Common/Constants.h>
 
@@ -31,11 +30,10 @@
   * This class is also used by /Core/DownloadManager/tests
   */
 
-TestServer::TestServer(QSharedPointer<PM::IPeerManager> peerManager, int port) :
+TestServer::TestServer(QSharedPointer<PM::IPeerManager> peerManager) :
    peerManager(peerManager)
 {
    connect(&this->server, &QTcpServer::newConnection, this, &TestServer::newConnection);
-   QVERIFY(this->server.listen(QHostAddress::Any, port));
 }
 
 void TestServer::newConnection()

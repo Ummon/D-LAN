@@ -28,7 +28,10 @@ class TestServer : public QObject
    Q_OBJECT
 
 public:
-   TestServer(QSharedPointer<PM::IPeerManager> peerManager, int port);
+   TestServer(QSharedPointer<PM::IPeerManager> peerManager);
+   bool listen() { return this->server.listen(QHostAddress::LocalHost, 0); }
+   quint16 port() const { return this->server.serverPort(); }
+   QString errorString() const { return this->server.errorString(); }
 
 private slots:
    void newConnection();

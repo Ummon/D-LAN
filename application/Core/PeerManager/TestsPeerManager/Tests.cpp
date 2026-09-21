@@ -46,8 +46,6 @@ using namespace PM;
 #include <priv/GetEntriesResult.h>
 #include <priv/GetHashesResult.h>
 
-const int Tests::PORT = 59487;
-
 /**
   * @class Tests
   *
@@ -106,14 +104,18 @@ void Tests::initTestCase()
       );
    }
 
-   // 3) Create the peer update (to simulate the periodic update).
-   this->peerUpdater = new PeerUpdater(this->fileManagers, this->peerManagers, PORT);
-
-   // 4) Create the servers to listen new TCP connections and forward them to the right peer manager.
+   // 3) Keep OS-assigned ports open so other processes cannot claim them.
+   QList<quint16> ports;
    for (int i = 0; i < this->peerIDs.size(); i++)
    {
-      this->servers << new TestServer(this->peerManagers[i], PORT + i);
+      auto* server = new TestServer(this->peerManagers[i]);
+      this->servers << server;
+      QVERIFY2(server->listen(), qPrintable(server->errorString()));
+      ports << server->port();
    }
+
+   // 4) Advertise the actual listening ports in simulated peer updates.
+   this->peerUpdater = new PeerUpdater(this->fileManagers, this->peerManagers, ports);
 }
 
 void Tests::updatePeers()
@@ -377,7 +379,7 @@ void Tests::peerAvailabilityTransitions()
          notifications << peer;
       });
    auto update = [&](quint32 version) {
-      manager->updatePeer(id, QHostAddress::LocalHost, PORT, "remote", 0, QString(), 0, 0, version);
+      manager->updatePeer(id, QHostAddress::LocalHost, this->servers[0]->port(), "remote", 0, QString(), 0, 0, version);
    };
 
    update(incompatible);
@@ -422,7 +424,7 @@ void Tests::peerBlockDeadline()
 {
    QFETCH(bool, staleTimeout);
    auto manager = Builder::newPeerManager(this->fileManagers[0]);
-   manager->updatePeer(this->peerIDs[0], QHostAddress::LocalHost, PORT, "remote",
+   manager->updatePeer(this->peerIDs[0], QHostAddress::LocalHost, this->servers[0]->port(), "remote",
       0, QString(), 0, 0, Common::Constants::PROTOCOL_VERSION);
    auto* peer = static_cast<PM::Peer*>(manager->getPeer(this->peerIDs[0]));
    QVERIFY(peer);
@@ -619,7 +621,7 @@ void Tests::closedSocketIsNotReused()
    QFETCH(bool, finishTransfer);
    PM::ConnectionPool pool(static_cast<PM::PeerManager*>(this->peerManagers[0].data()),
       this->fileManagers[0], this->peerIDs[1]);
-   pool.setIP(QHostAddress::LocalHost, PORT + 1);
+   pool.setIP(QHostAddress::LocalHost, this->servers[1]->port());
    auto previous = pool.getASocket();
    QVERIFY(previous);
    QSignalSpy closed(previous.data(), &PM::PeerMessageSocket::closed);

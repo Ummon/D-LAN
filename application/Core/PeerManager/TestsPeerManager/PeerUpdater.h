@@ -44,7 +44,7 @@ public:
    PeerUpdater(
       QList<QSharedPointer<FM::IFileManager>> fileManagers,
       QList<QSharedPointer<PM::IPeerManager>> peerManagers,
-      int port
+      QList<quint16> ports
    );
 
    void start();
@@ -57,7 +57,7 @@ private:
    QList<QSharedPointer<FM::IFileManager>> fileManagers;
    QList<QSharedPointer<PM::IPeerManager>> peerManagers;
    QTimer timer;
-   const int port;
+   const QList<quint16> ports;
 };
 
 #endif

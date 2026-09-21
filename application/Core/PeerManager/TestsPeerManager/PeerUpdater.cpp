@@ -30,8 +30,8 @@
   * This class is also used by /Core/DownloadManager/tests
   */
 
-PeerUpdater::PeerUpdater(QList<QSharedPointer<FM::IFileManager>> fileManagers, QList<QSharedPointer<PM::IPeerManager>> peerManagers, int port) :
-   fileManagers(fileManagers), peerManagers(peerManagers), port(port)
+PeerUpdater::PeerUpdater(QList<QSharedPointer<FM::IFileManager>> fileManagers, QList<QSharedPointer<PM::IPeerManager>> peerManagers, QList<quint16> ports) :
+   fileManagers(fileManagers), peerManagers(peerManagers), ports(ports)
 {
    this->timer.setInterval(1000);
    connect(&this->timer, &QTimer::timeout, this, &PeerUpdater::update);
@@ -67,7 +67,7 @@ void PeerUpdater::update()
             this->peerManagers[i]->updatePeer(
                this->peerManagers[j]->getSelf()->getID(),
                QHostAddress::LocalHost,
-               this->port + j,
+               this->ports[j],
                this->peerManagers[j]->getSelf()->getNick(),
                this->fileManagers[j]->getAmount(),
                QString(),
