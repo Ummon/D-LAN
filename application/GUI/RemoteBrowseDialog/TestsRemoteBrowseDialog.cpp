@@ -134,6 +134,11 @@ private slots:
    void defaultAndFolderHistory()
    {
       Fixture f;
+      f.dialog.show();
+      QVERIFY(QTest::qWaitForWindowActive(&f.dialog));
+      QVERIFY(f.path->hasFocus());
+      QCOMPARE(f.path->cursorPosition(), f.path->text().size());
+      QTRY_VERIFY(!f.path->hasSelectedText());
       QCOMPARE(f.dialog.findChild<QListView*>("quickAccessListView")->currentIndex().row(), 0);
       QCOMPARE(f.selected(), "/home/");
       QCOMPARE(f.path->text(), "/home/");
@@ -294,12 +299,15 @@ private slots:
       f.connection->filesystem["/home/"].Mutable(2)->set_size(42);
       f.connection->filesystem["/home/child/"] = entries({}, {"fresh.txt"});
       f.connection->requestedPaths.clear();
-      f.refresh->click();
-      QVERIFY(!f.refresh->isEnabled());
+      f.dialog.show();
+      QVERIFY(QTest::qWaitForWindowActive(&f.dialog));
+      QTest::mouseClick(f.refresh, Qt::LeftButton);
+      QVERIFY(f.refresh->hasFocus());
       f.refresh->click(); // Repeated clicks cannot duplicate the active refresh.
       f.connection->drain();
       QCOMPARE(f.connection->requestedPaths, QStringList({"/", "/home/", "/home/child/"}));
       QVERIFY(f.refresh->isEnabled());
+      QVERIFY(f.refresh->hasFocus());
       QVERIFY(selected.isValid());
       QCOMPARE(f.tree->currentIndex(), QModelIndex(selected));
       auto selectedPaths = f.dialog.getSelectedPaths();

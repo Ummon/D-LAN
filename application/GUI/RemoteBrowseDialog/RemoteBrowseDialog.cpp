@@ -17,6 +17,7 @@
   */
 
 #include <RemoteBrowseDialog/RemoteBrowseDialog.h>
+#include <QTimer>
 #include <qmenu.h>
 #include <ui_RemoteBrowseDialog.h>
 using namespace GUI;
@@ -92,10 +93,8 @@ RemoteBrowseDialog::RemoteBrowseDialog(QSharedPointer<RCC::ICoreConnection> core
    connect(this->ui->txtPath, &QLineEdit::textEdited, this, &RemoteBrowseDialog::pathEdited);
    connect(this->ui->butPrevious, &QPushButton::clicked, this, [this]() { this->navigateHistory(-1); });
    connect(this->ui->butNext, &QPushButton::clicked, this, [this]() { this->navigateHistory(1); });
+   // Keep refresh enabled so it retains focus; the model ignores refreshes already in progress.
    connect(this->ui->butRefresh, &QPushButton::clicked, this, &RemoteBrowseDialog::refresh);
-   connect(&this->model, &RemoteBrowseModel::refreshingChanged, this, [this](bool refreshing) {
-      this->ui->butRefresh->setEnabled(!refreshing);
-   });
    connect(&this->model, &QAbstractItemModel::rowsRemoved, this, [this]() { this->updateNavigation(); });
    connect(this->ui->butUp, &QPushButton::clicked, this, [this]() {
       auto folder = this->ui->treeView->currentIndex();
@@ -128,6 +127,17 @@ RemoteBrowseDialog::RemoteBrowseDialog(QSharedPointer<RCC::ICoreConnection> core
 RemoteBrowseDialog::~RemoteBrowseDialog()
 {
    delete this->ui;
+}
+
+void RemoteBrowseDialog::showEvent(QShowEvent* event)
+{
+   QDialog::showEvent(event);
+   this->ui->txtPath->setFocus();
+   // QDialog selects the initial focus widget's text after showEvent returns.
+   QTimer::singleShot(0, this, [this]() {
+      if (this->focusWidget() == this->ui->txtPath)
+         this->ui->txtPath->end(false);
+   });
 }
 
 void RemoteBrowseDialog::setModes(Modes modes)

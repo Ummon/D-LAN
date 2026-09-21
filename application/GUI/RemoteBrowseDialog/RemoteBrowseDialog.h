@@ -56,6 +56,9 @@ namespace GUI
       void setModes(Modes modes);
       QStringList getSelectedPaths() const;      
 
+   protected:
+      void showEvent(QShowEvent* event) override;
+
    private slots:
       void quickAccessSelectionChanged(const QModelIndex &current, const QModelIndex &previous);
       void quickAccessClicked(const QModelIndex &index);
