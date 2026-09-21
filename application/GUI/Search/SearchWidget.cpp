@@ -208,9 +208,16 @@ QString SearchDelegate::toHtmlText(const QString& text) const
 
 /////
 
+void SearchMenu::show(const QPoint& globalPosition, bool browseVisible)
+{
+   this->browseVisible = browseVisible;
+   DownloadMenu::show(globalPosition);
+}
+
 void SearchMenu::onShowMenu(QMenu& menu)
 {
-   menu.addAction(QIcon(":/icons/resources/folder.svg"), tr("Browse"), this, &SearchMenu::browse);
+   if (this->browseVisible)
+      menu.addAction(QIcon(":/icons/resources/folder.svg"), tr("Browse"), this, &SearchMenu::browse);
 }
 
 /////
@@ -326,30 +333,23 @@ void SearchWidget::keyPressEvent(QKeyEvent* event)
 void SearchWidget::displayContextMenuDownload(const QPoint& point)
 {
    QPoint globalPosition = this->ui->treeView->viewport()->mapToGlobal(point);
+   const QModelIndexList selectedRows = this->ui->treeView->selectionModel()->selectedRows();
+   const bool canBrowse = std::any_of(selectedRows.cbegin(), selectedRows.cend(), [](const QModelIndex& index)
+   {
+      return !SearchModel::isNonTerminalFile(index);
+   });
 
    // Special case: one of a selected entries is a remote peer.
-   if (this->atLeastOneRemotePeer(this->ui->treeView->selectionModel()->selectedRows()))
+   if (this->atLeastOneRemotePeer(selectedRows))
    {
-      this->downloadMenu.show(globalPosition);
+      this->downloadMenu.show(globalPosition, canBrowse);
    }
-   else if (this->coreConnection->isLocal())
+   else if (this->coreConnection->isLocal() && canBrowse)
    {
-      bool allSelectedEntriesAreTerminalFiles = true;
-      const QModelIndexList& selectedRows = this->ui->treeView->selectionModel()->selectedRows();
-      for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
-         if (!SearchModel::isNonTerminalFile(i.next()))
-         {
-            allSelectedEntriesAreTerminalFiles = false;
-            break;
-         }
-
-      if (!allSelectedEntriesAreTerminalFiles)
-      {
-         QMenu menu;
-         menu.addAction(QIcon(":/icons/resources/explore_folder.svg"), tr("Open location"), this, &SearchWidget::openLocation);
-         menu.addAction(QIcon(":/icons/resources/folder.svg"), tr("Browse"), this, &SearchWidget::browseCurrents);
-         menu.exec(globalPosition);
-      }
+      QMenu menu;
+      menu.addAction(QIcon(":/icons/resources/explore_folder.svg"), tr("Open location"), this, &SearchWidget::openLocation);
+      menu.addAction(QIcon(":/icons/resources/folder.svg"), tr("Browse"), this, &SearchWidget::browseCurrents);
+      menu.exec(globalPosition);
    }
 }
 
@@ -408,10 +408,14 @@ void SearchWidget::openLocation()
 
 void SearchWidget::browseCurrents()
 {
-   // We can only browse one item.
-   QModelIndexList indexes = this->ui->treeView->selectionModel()->selectedRows();
-   if (!indexes.isEmpty() && !SearchModel::isNonTerminalFile(indexes.first()))
-      emit browse(this->searchModel.getPeerID(indexes.first()), this->searchModel.getEntry(indexes.first()));
+   // Browse the first individual entry, skipping groups with multiple sources.
+   const QModelIndexList indexes = this->ui->treeView->selectionModel()->selectedRows();
+   for (const auto& index : indexes)
+      if (!SearchModel::isNonTerminalFile(index))
+      {
+         emit browse(this->searchModel.getPeerID(index), this->searchModel.getEntry(index));
+         break;
+      }
 }
 
 void SearchWidget::progress(int value)

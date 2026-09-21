@@ -63,10 +63,12 @@ namespace GUI
       Q_OBJECT
    public:
       SearchMenu(const SharedEntryListModel& sharedEntryListModel) : DownloadMenu(sharedEntryListModel) {}
+      void show(const QPoint& globalPosition, bool browseVisible);
    signals:
       void browse();
    private:
-      virtual void onShowMenu(QMenu& menu);
+      void onShowMenu(QMenu& menu) override;
+      bool browseVisible = false;
    };
 
    class SearchWidget : public QWidget
