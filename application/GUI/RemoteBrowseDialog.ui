@@ -71,6 +71,17 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="butRefresh">
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="resources.qrc">
+         <normaloff>:/icons/resources/refresh.svg</normaloff>:/icons/resources/refresh.svg</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QLineEdit" name="txtPath"/>
      </item>
     </layout>
