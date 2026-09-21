@@ -22,10 +22,13 @@ using namespace RCC;
 #include <QHostAddress>
 #include <QCoreApplication>
 #include <QRandomGenerator64>
+#include <QSslSocket>
+#include <QSslError>
 
 #include <Common/ProtoHelper.h>
 #include <Common/Constants.h>
 #include <Common/Global.h>
+#include <Common/Network/RemoteControlTls.h>
 
 #include <LogManager/Builder.h>
 
@@ -62,7 +65,7 @@ void InternalCoreConnection::Logger::logError(const QString& message)
 }
 
 InternalCoreConnection::InternalCoreConnection(CoreController& coreController) :
-   Common::MessageSocket(new InternalCoreConnection::Logger()),
+   Common::MessageSocket(new InternalCoreConnection::Logger(), new QSslSocket()),
    coreController(coreController),
    currentHostLookupID(-1),
    nbRetries(0),
@@ -77,7 +80,53 @@ InternalCoreConnection::InternalCoreConnection(CoreController& coreController) :
    this->connectionTimeoutTimer.setSingleShot(true);
    this->connectionTimeoutTimer.setInterval(CONNECTION_TIMEOUT);
    connect(&this->connectionTimeoutTimer, &QTimer::timeout, this, &InternalCoreConnection::connectionTimedOut);
-   this->startListening();
+   auto* ssl = static_cast<QSslSocket*>(this->socket);
+   connect(ssl, &QSslSocket::connected, this, [this] {
+      if (!this->tlsRequired)
+         this->startListening();
+   });
+   connect(ssl, &QSslSocket::sslErrors, this, [this, ssl](const QList<QSslError>& errors) {
+      if (!this->tlsRequired || this->tlsFailureReported)
+         return;
+      try
+      {
+         Common::RemoteControlTls::checkPeer(this->connectionInfo.address, this->connectionInfo.port, ssl->peerCertificate());
+         // A per-endpoint certificate pin replaces CA/hostname trust. All
+         // other verification errors (expiry, bad signatures, etc.) are fatal.
+         for (const auto& error : errors)
+            if (error.error() != QSslError::SelfSignedCertificate &&
+                error.error() != QSslError::CertificateUntrusted &&
+                error.error() != QSslError::HostNameMismatch)
+               throw error.errorString();
+         ssl->ignoreSslErrors(errors);
+      }
+      catch (const QString& error)
+      {
+         this->tlsFailed(error);
+      }
+   });
+   connect(ssl, &QSslSocket::encrypted, this, [this, ssl] {
+      if (!this->tlsRequired || this->tlsFailureReported)
+         return;
+      try
+      {
+         // Also enforce pins when the presented certificate has a valid CA
+         // chain and therefore does not produce sslErrors().
+         Common::RemoteControlTls::checkPeer(this->connectionInfo.address, this->connectionInfo.port, ssl->peerCertificate());
+         this->connectionTimeoutTimer.start();
+         this->startListening();
+      }
+      catch (const QString& error)
+      {
+         this->tlsFailed(error);
+      }
+   });
+   connect(ssl, &QSslSocket::errorOccurred, this, [this, ssl](QAbstractSocket::SocketError error) {
+      if (this->tlsRequired && !this->tlsFailureReported &&
+          (error == QAbstractSocket::SslHandshakeFailedError || error == QAbstractSocket::SslInternalError ||
+           error == QAbstractSocket::SslInvalidUserDataError))
+         this->tlsFailed(ssl->errorString());
+   });
 }
 
 InternalCoreConnection::~InternalCoreConnection()
@@ -423,7 +472,46 @@ void InternalCoreConnection::tryToConnectToTheNextAddress()
    // Arm before connectToHost: a synchronous failure/success must be able to
    // stop the timeout without it being restarted after the callback returns.
    this->connectionTimeoutTimer.start();
-   this->socket->connectToHost(address, this->connectionInfo.port);
+   this->stopListening();
+   this->tlsRequired = !Common::Global::isLocal(address);
+   this->tlsFailureReported = false;
+   auto* ssl = static_cast<QSslSocket*>(this->socket);
+   // Reset any exceptions remembered by QSslSocket from an earlier handshake.
+   ssl->ignoreSslErrors(QList<QSslError>());
+   if (this->tlsRequired)
+   {
+      if (!QSslSocket::supportsSsl())
+      {
+         this->tlsFailed("No Qt TLS backend is available");
+         return;
+      }
+      QSslConfiguration configuration = QSslConfiguration::defaultConfiguration();
+      configuration.setProtocol(QSsl::TlsV1_2OrLater);
+      configuration.setPeerVerifyMode(QSslSocket::VerifyPeer);
+      ssl->setSslConfiguration(configuration);
+      ssl->connectToHostEncrypted(address.toString(), this->connectionInfo.port, this->connectionInfo.address);
+   }
+   else
+      ssl->connectToHost(address, this->connectionInfo.port);
+}
+
+void InternalCoreConnection::tlsFailed(const QString& reason)
+{
+   if (this->tlsFailureReported)
+      return;
+   this->tlsFailureReported = true;
+   const bool wasAuthenticated = this->authenticated;
+   L_WARN(QString("Remote-control TLS connection refused: %1").arg(reason));
+   this->cancelConnectionAttempt();
+   // Abort without reporting a second, misleading timeout via disconnected().
+   this->connectionAttemptActive = true;
+   this->stopListening();
+   this->socket->abort();
+   this->connectionAttemptActive = false;
+   if (wasAuthenticated)
+      emit disconnected(false);
+   else
+      emit connectingError(ICoreConnection::RCC_ERROR_TLS);
 }
 
 void InternalCoreConnection::connectionTimedOut()
@@ -474,6 +562,26 @@ void InternalCoreConnection::stateChanged(QAbstractSocket::SocketState socketSta
 
 void InternalCoreConnection::connectedAndAuthenticated()
 {
+   if (this->tlsRequired)
+   {
+      auto* ssl = static_cast<QSslSocket*>(this->socket);
+      if (!ssl->isEncrypted())
+      {
+         this->tlsFailed("The remote connection is not encrypted");
+         return;
+      }
+      try
+      {
+         Common::RemoteControlTls::rememberPeer(this->connectionInfo.address, this->connectionInfo.port, ssl->peerCertificate());
+         L_DEBU(QString("Trusted Core TLS certificate SHA-256: %1")
+            .arg(Common::RemoteControlTls::fingerprint(ssl->peerCertificate())));
+      }
+      catch (const QString& error)
+      {
+         this->tlsFailed(error);
+         return;
+      }
+   }
    this->cancelConnectionAttempt();
    // If we were previously connected we announce it.
    if (this->authenticated)

@@ -143,8 +143,44 @@ def make_macos_app [build_dir?: path] {
     run_checked /bin/bash Setups/macOS/package.sh $release_directory $qt_sdk
 }
 
+def windows_openssl_dlls [release_directory: path] {
+    # Qt deploys its TLS plugins, but does not reliably copy dynamically loaded
+    # OpenSSL DLLs. Also ship libcrypto, used directly for certificate creation.
+    let configured_openssl = cache_value $release_directory DLAN_OPENSSL_RUNTIME_DIR
+    let openssl_root = cache_value $release_directory OPENSSL_ROOT_DIR
+    let openssl_bin = if not ($configured_openssl | is-empty) {
+        $configured_openssl | path expand
+    } else if not ($openssl_root | is-empty) {
+        $openssl_root | path join "bin" | path expand
+    } else {
+        # FindOpenSSL exposes OPENSSL_CRYPTO_LIBRARY as a result variable, but
+        # its Windows cache entries depend on the compiler and configuration.
+        let crypto_library = (["OPENSSL_CRYPTO_LIBRARY" "LIB_EAY" "LIB_EAY_RELEASE" "LIB_EAY_DEBUG"]
+            | each {|key| cache_value $release_directory $key }
+            | where {|value| not ($value | is-empty) and not ($value | str ends-with "-NOTFOUND") }
+            | get -o 0 | default "")
+        if ($crypto_library | is-empty) {
+            error make {msg: "Cannot locate the OpenSSL installation. Set DLAN_OPENSSL_RUNTIME_DIR to its bin directory."}
+        }
+        $crypto_library | path dirname | path join "../bin" | path expand
+    }
+    if not ($openssl_bin | path exists) {
+        error make {msg: $"OpenSSL runtime directory does not exist: ($openssl_bin). Set DLAN_OPENSSL_RUNTIME_DIR to its bin directory."}
+    }
+    ["libcrypto*.dll" "libssl*.dll"] | each {|pattern|
+        # Windows path separators are glob escapes. Match just the filename in
+        # a scoped directory, also keeping metacharacters in paths literal.
+        let matches = do { cd $openssl_bin; glob --no-dir $pattern }
+        if ($matches | length) != 1 {
+            error make {msg: $"Set DLAN_OPENSSL_RUNTIME_DIR to the OpenSSL 3 bin directory: expected one ($pattern) in ($openssl_bin)."}
+        }
+        $matches | first
+    }
+}
+
 def make_windows_setup [build_dir?: path] {
     let release_directory = get_release_directory $build_dir
+    let openssl_dlls = windows_openssl_dlls $release_directory
 
     cd Setups/Windows
     mkdir setup_bundle
@@ -155,16 +191,17 @@ def make_windows_setup [build_dir?: path] {
 
     cd setup_bundle
     cp C:/Qt/Tools/llvm-mingw1706_64/bin/libwinpthread-1.dll .
+    cp ...$openssl_dlls .
 
     mkdir styles
     cp -r ../../../styles/* styles/
     cp -r ../../../GUI/resources/emoticons .
 
-    windeployqt.exe --no-translations  PasswordHasher.exe D-LAN.Core.exe D-LAN.GUI.exe
+    run_checked windeployqt.exe --force-openssl --no-translations PasswordHasher.exe D-LAN.Core.exe D-LAN.GUI.exe
 
     cd ..
 
-    iscc windows_setup.iss
+    run_checked iscc windows_setup.iss
 }
 
 def make_linux_app_image [build_dir?: path] {
@@ -251,6 +288,12 @@ def make_linux_app_image [build_dir?: path] {
     let output = $output_directory | path join $"D-LAN-($package_version)-($build_time)-($architecture).AppImage"
     let linuxdeploy = $tools_directory | path join $"linuxdeploy-($architecture).AppImage"
     let qt_plugin = $tools_directory | path join $"linuxdeploy-plugin-qt-($architecture).AppImage"
+    let ssl_library = cache_value $release_directory OPENSSL_SSL_LIBRARY
+    if ($ssl_library | is-empty) or not ($ssl_library | path exists) or ($ssl_library | str ends-with ".a") {
+        error make {msg: "AppImage packaging requires a shared OpenSSL SSL library (OPENSSL_SSL_LIBRARY)."}
+    }
+    let tls_plugin = $plugins.stdout | str trim | path join "tls/libqopensslbackend.so"
+    if not ($tls_plugin | path exists) { error make {msg: "Qt's OpenSSL TLS plugin is required for the AppImage."} }
     # D-LAN uses SQLite only. Other SDK SQL plugins may need unavailable
     # database client libraries, so exclude them before dependency scanning.
     let sql_exclusions = (glob ($plugins.stdout | str trim | path join "sqldrivers/libqsql*.so")
@@ -267,10 +310,16 @@ def make_linux_app_image [build_dir?: path] {
         OUTPUT: $output
     } {
         cd $output_directory
-        ^$linuxdeploy --appdir $appdir --executable ($bin_directory | path join "D-LAN.GUI") --executable ($bin_directory | path join "D-LAN.Core") --desktop-file $desktop --icon-file $icon
+        ^$linuxdeploy --appdir $appdir --executable ($bin_directory | path join "D-LAN.GUI") --executable ($bin_directory | path join "D-LAN.Core") --library $ssl_library --desktop-file $desktop --icon-file $icon
         if $env.LAST_EXIT_CODE != 0 { error make {msg: "AppImage dependency deployment failed"} }
         ^$qt_plugin --appdir $appdir ...$sql_exclusions
         if $env.LAST_EXIT_CODE != 0 { error make {msg: "Qt plugin deployment failed"} }
+
+        let tls_directory = $appdir | path join "usr/plugins/tls"
+        mkdir $tls_directory
+        cp $tls_plugin $tls_directory
+        ^$linuxdeploy --appdir $appdir --deploy-deps-only ($tls_directory | path join "libqopensslbackend.so")
+        if $env.LAST_EXIT_CODE != 0 { error make {msg: "TLS plugin deployment failed"} }
 
         # Qt's GTK integration supplies the desktop palette on Cinnamon/GNOME.
         # linuxdeploy-plugin-qt does not deploy it automatically. Use the same

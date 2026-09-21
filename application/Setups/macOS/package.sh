@@ -83,6 +83,7 @@ printf 'APPL????' > "$contents/PkgInfo"
 # Select plugins explicitly: deploying every SQL driver adds unrelated external
 # database dependencies. D-LAN uses SQLite. Fusion needs no native style plugin.
 plugins=("$qt_dir/plugins/platforms/libqcocoa.dylib" "$qt_dir/plugins/sqldrivers/libqsqlite.dylib"
+         "$qt_dir/plugins/tls/libqsecuretransportbackend.dylib"
          "$qt_dir"/plugins/imageformats/*.dylib "$qt_dir"/plugins/iconengines/*.dylib)
 extra_executables=()
 for executable in "$contents"/MacOS/*; do

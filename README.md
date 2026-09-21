@@ -33,6 +33,7 @@ contains shared infrastructure. CMake builds the core, GUI, tools and tests.
 
 * CMake 3.21 or newer, Ninja, and a C++20 compiler compatible with your Qt installation. Use LLVM-MinGW on Windows, Xcode Command Line Tools on macOS, or GCC/Clang on Linux.
 * [Qt 6](https://www.qt.io/development/download) with Core, Network, Xml, Sql, Widgets, SvgWidgets, and Test. Install LinguistTools and Qt 6.7 or newer to build translations.
+* OpenSSL 3 development libraries for automatic remote-control certificate generation, and a Qt TLS backend at runtime. Set `OPENSSL_ROOT_DIR` when OpenSSL is outside the usual search paths.
 * On Linux: Qt DBus and the matching Qt Core/Gui private headers (commonly packaged as `qt6-base-private-dev`), plus `dbus-run-session` for file-manager integration tests. Build against the Qt version used at runtime.
 * macOS packages target macOS 26.0 or newer on Apple Silicon (arm64); build dependencies for macOS 26.0 or earlier.
 * [BLAKE3](https://github.com/BLAKE3-team/BLAKE3)'s C library and [Protobuf](https://github.com/protocolbuffers/protobuf) with a matching `protoc` compiler. If Protobuf has no CMake package configuration, install pkg-config and its `.pc` file.

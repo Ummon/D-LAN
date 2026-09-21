@@ -471,32 +471,37 @@
     </message>
     <message>
         <location filename="../GUI/MainWindow.cpp" line="185"/>
+        <source>Unable to establish a trusted encrypted connection. The Core&apos;s certificate may have changed or TLS may be unavailable. See the log for details.</source>
+        <translation>신뢰할 수 있는 암호화된 연결을 설정할 수 없습니다. 코어의 인증서가 변경되었거나 TLS를 사용할 수 없는 상태일 수 있습니다. 자세한 내용은 로그를 확인하세요.</translation>
+    </message>
+    <message>
+        <location filename="../GUI/MainWindow.cpp" line="188"/>
         <source>Error unknown</source>
         <translation>알 수 없는 오류</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="191"/>
+        <location filename="../GUI/MainWindow.cpp" line="194"/>
         <source>Unable to connect to the core</source>
         <translation>코어에 연결할 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="194"/>
-        <location filename="../GUI/MainWindow.cpp" line="218"/>
+        <location filename="../GUI/MainWindow.cpp" line="197"/>
+        <location filename="../GUI/MainWindow.cpp" line="221"/>
         <source>Core address:</source>
         <translation>코어 주소:</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="204"/>
+        <location filename="../GUI/MainWindow.cpp" line="207"/>
         <source>Connected to the core</source>
         <translation>코어에 연결되었습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="213"/>
+        <location filename="../GUI/MainWindow.cpp" line="216"/>
         <source>Connection lost</source>
         <translation>연결이 끊어졌습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="217"/>
+        <location filename="../GUI/MainWindow.cpp" line="220"/>
         <source>The connection to the core has been lost</source>
         <translation>코어와의 연결이 끊어졌습니다</translation>
     </message>

@@ -467,32 +467,37 @@
     </message>
     <message>
         <location filename="../GUI/MainWindow.cpp" line="185"/>
+        <source>Unable to establish a trusted encrypted connection. The Core&apos;s certificate may have changed or TLS may be unavailable. See the log for details.</source>
+        <translation>信頼できる暗号化接続を確立できません。Core の証明書が変更されたか、TLS が利用できない可能性があります。詳細はログを確認してください。</translation>
+    </message>
+    <message>
+        <location filename="../GUI/MainWindow.cpp" line="188"/>
         <source>Error unknown</source>
         <translation>原因不明のエラー</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="191"/>
+        <location filename="../GUI/MainWindow.cpp" line="194"/>
         <source>Unable to connect to the core</source>
         <translation>Core に接続できません</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="194"/>
-        <location filename="../GUI/MainWindow.cpp" line="218"/>
+        <location filename="../GUI/MainWindow.cpp" line="197"/>
+        <location filename="../GUI/MainWindow.cpp" line="221"/>
         <source>Core address:</source>
         <translation>Core のアドレス:</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="204"/>
+        <location filename="../GUI/MainWindow.cpp" line="207"/>
         <source>Connected to the core</source>
         <translation>Core に接続しました</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="213"/>
+        <location filename="../GUI/MainWindow.cpp" line="216"/>
         <source>Connection lost</source>
         <translation>接続が切断されました</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="217"/>
+        <location filename="../GUI/MainWindow.cpp" line="220"/>
         <source>The connection to the core has been lost</source>
         <translation>Core との接続が切断されました</translation>
     </message>

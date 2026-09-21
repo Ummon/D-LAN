@@ -34,6 +34,7 @@ option(DLAN_PDB         "Emit CodeView debug info and a .pdb so LM::CrashHandler
 # Third-party locations (were hardcoded in blake3.pri / protobuf.pri).
 set(DLAN_BLAKE3_ROOT   "C:/BLAKE3-1.8.7/c" CACHE PATH "Root of the BLAKE3 C library (contains blake3.h and lib/)")
 set(DLAN_PROTOBUF_ROOT "C:/protobuf-36.1" CACHE PATH "Root of the protobuf installation")
+set(DLAN_OPENSSL_RUNTIME_DIR "" CACHE PATH "OpenSSL bin directory for Windows packaging (libcrypto and libssl DLLs)")
 
 # ------------------------------------------------------------------------------
 # Global compiler / Qt configuration (was common.pri).

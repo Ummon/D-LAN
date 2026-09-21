@@ -471,6 +471,11 @@
     </message>
     <message>
         <location line="+3"/>
+        <source>Unable to establish a trusted encrypted connection. The Core&apos;s certificate may have changed or TLS may be unavailable. See the log for details.</source>
+        <translation>No se pudo establecer una conexión cifrada de confianza. Es posible que el certificado del núcleo haya cambiado o que TLS no esté disponible. Consulte la bitácora para obtener más detalles.</translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>Error unknown</source>
         <translation>Error desconocido</translation>
     </message>

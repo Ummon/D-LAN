@@ -65,6 +65,7 @@ namespace RCC
          RCC_ERROR_NO_REMOTE_PASSWORD_DEFINED = 5,
          RCC_ERROR_WRONG_PASSWORD = 6,
          RCC_ERROR_INVALID_ADDRESS = 7,
+         RCC_ERROR_TLS = 8,
          RCC_ERROR_UNKNOWN = 255
       };
 

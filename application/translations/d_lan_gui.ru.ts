@@ -471,6 +471,11 @@
     </message>
     <message>
         <location line="+3"/>
+        <source>Unable to establish a trusted encrypted connection. The Core&apos;s certificate may have changed or TLS may be unavailable. See the log for details.</source>
+        <translation>Не удалось установить доверенное зашифрованное соединение. Возможно, сертификат ядра изменился или TLS недоступен. Подробности см. в журнале.</translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>Error unknown</source>
         <translation>Неизвестная ошибка</translation>
     </message>

@@ -20,6 +20,8 @@
 using namespace RCM;
 
 #include <Common/Settings.h>
+#include <Common/Global.h>
+#include <Common/Network/RemoteControlTls.h>
 
 LOG_INIT_CPP(RemoteControlManager)
 
@@ -38,6 +40,16 @@ RemoteControlManager::RemoteControlManager(
    networkListener(networkListener),
    chatSystem(chatSystem)
 {
+   try
+   {
+      this->tlsConfiguration = Common::RemoteControlTls::serverConfiguration();
+      L_USER(QString("Remote-control TLS certificate SHA-256: %1")
+         .arg(Common::RemoteControlTls::fingerprint(this->tlsConfiguration.localCertificate())));
+   }
+   catch (const QString& error)
+   {
+      L_ERRO(QString("Remote TLS access disabled: %1. Local access remains available.").arg(error));
+   }
    const quint32 PORT = SETTINGS.get<quint32>("remote_control_port");
 
    const bool okIPv4 = this->tcpServerIPv4.listen(QHostAddress::AnyIPv4, PORT);
@@ -72,10 +84,18 @@ RemoteControlManager::~RemoteControlManager()
 
 void RemoteControlManager::newConnection()
 {
-   QTcpSocket* socket = static_cast<QTcpServer*>(this->sender())->nextPendingConnection();
+   auto* socket = static_cast<QSslSocket*>(static_cast<QTcpServer*>(this->sender())->nextPendingConnection());
 
    if (!socket)
       return;
+
+   const bool local = Common::Global::isLocal(socket->peerAddress());
+   if (!local && this->tlsConfiguration.isNull())
+   {
+      socket->abort();
+      socket->deleteLater();
+      return;
+   }
 
    if (socket->state() != QAbstractSocket::ConnectedState)
    {
@@ -112,7 +132,26 @@ void RemoteControlManager::newConnection()
    connect(remoteConnection, &RemoteConnection::deleted, this, &RemoteControlManager::connectionDeleted, Qt::DirectConnection);
    connect(remoteConnection, &RemoteConnection::languageDefined, this, &RemoteControlManager::languageDefined);
    this->connections << remoteConnection;
-   remoteConnection->startListening();
+   if (local)
+      remoteConnection->startListening();
+   else
+   {
+      // Count connections during TLS too, and bound clients that never finish
+      // the handshake. No protocol messages are sent before encrypted().
+      auto* timeout = new QTimer(remoteConnection);
+      timeout->setSingleShot(true);
+      connect(timeout, &QTimer::timeout, socket, &QSslSocket::abort);
+      connect(socket, &QSslSocket::encrypted, remoteConnection, [remoteConnection, timeout] {
+         timeout->stop();
+         remoteConnection->startListening();
+      });
+      connect(socket, &QSslSocket::errorOccurred, remoteConnection, [socket](QAbstractSocket::SocketError) {
+         L_WARN(QString("Remote TLS connection failed: %1").arg(socket->errorString()));
+      });
+      socket->setSslConfiguration(this->tlsConfiguration);
+      timeout->start(10000);
+      socket->startServerEncryption();
+   }
 }
 
 void RemoteControlManager::connectionDeleted(RemoteConnection* connection)
