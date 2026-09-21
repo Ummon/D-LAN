@@ -55,6 +55,7 @@ fi
 cp -R "$application_dir/styles" "$resources/styles"
 cp -R "$application_dir/GUI/resources/emoticons" "$resources/emoticons"
 cp "$application_dir/../COPYING" "$resources/COPYING"
+cp -R "$application_dir/Setups/macOS/licenses" "$resources/licenses"
 shopt -s nullglob
 translations=("$build_dir"/d_lan_*.qm)
 [[ ${#translations[@]} -gt 0 ]] || fail "No translations found; install Qt LinguistTools and build dlan_translations."
@@ -97,6 +98,8 @@ for plugin in "${plugins[@]}"; do
     cp "$plugin" "$destination"
     extra_executables+=("-executable=$destination")
 done
+# Include each helper so macdeployqt also deploys its linked libcrypto dependency.
+# Qt TLS uses Secure Transport here; no OpenSSL TLS plugin/libssl is needed.
 "$macdeployqt" "$app" -no-plugins -no-codesign -no-strip -always-overwrite "${extra_executables[@]}"
 # Qt looks for qt.conf in the bundle Resources directory for each executable.
 printf '[Paths]\nPlugins = PlugIns\n' > "$resources/qt.conf"
