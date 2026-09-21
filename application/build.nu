@@ -3,16 +3,20 @@
 # By default will build everything and clean all previous build.
 #
 # See the build-all subcommand.
-def main [--build-dir: path, --jobs (-j): int = 8] {
-    main build-all --clean --build-dir=$build_dir --jobs=$jobs
+def main [
+    --build-dir: path
+    --no-translations
+    --jobs (-j): int = 8
+] {
+    main build-all --clean --no-translations=$no_translations --build-dir=$build_dir --jobs=$jobs
 }
 
 # Build everything, it will not clean by default.
 def "main build-all" [
     --clean # Clean all previous compiled files.
+    --build-dir: path # Configured Release build; auto-detected when omitted.
     --no-translations
     --jobs (-j): int = 8
-    --build-dir: path # Configured Release build; auto-detected when omitted.
 ] {
     if $nu.os-info.name == "macos" {
         main release-test --clean=$clean --no-translations=$no_translations --build-dir=$build_dir --jobs=$jobs
