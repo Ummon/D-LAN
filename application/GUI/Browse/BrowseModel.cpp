@@ -108,7 +108,9 @@ int BrowseModel::rowCount(const QModelIndex& parent) const
    if (nbLoadedChildren > 0)
       return nbLoadedChildren;
 
-   if (parentTree->hasUnloadedChildren())
+   // Only actual directories need a placeholder for lazy expansion. Shared roots
+   // are loaded explicitly; a placeholder here would have no valid model index.
+   if (parent.isValid() && parentTree->hasUnloadedChildren())
       return 1; // We lie and tell there is a child.
    else
       return 0;
