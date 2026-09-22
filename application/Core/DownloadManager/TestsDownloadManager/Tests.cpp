@@ -214,6 +214,20 @@ namespace
       }
    };
 
+   class FailingNewFileManager : public MockFileManager
+   {
+   public:
+      bool fail = true;
+      int creations = 0;
+      QList<QSharedPointer<FM::IChunk>> newFile(Protos::Common::Entry& entry) override
+      {
+         ++this->creations;
+         if (this->fail)
+            throw FM::UnableToCreateNewFileException();
+         return MockFileManager::newFile(entry);
+      }
+   };
+
    class SwitchableHashPeer : public HashPeer
    {
    public:
@@ -837,6 +851,43 @@ void Tests::freedPeerAsksItsOwnHashes()
    QCOMPARE(freedPeer.nbRequests, 2);
    QCOMPARE(second->getStatus(), Protos::Common::DownloadStatus::GETTING_THE_HASHES);
    QCOMPARE(otherPeer.nbRequests, 0);
+}
+
+/**
+  * Every erroneous download is retried at each period, not one per period.
+  */
+void Tests::restartAllErroneousDownloads()
+{
+   QSharedPointer<FailingNewFileManager> files(new FailingNewFileManager);
+   ResumePeer peer(files);
+   Common::PersistentData::rmValue(Common::Constants::FILE_QUEUE, Common::Global::DataFolderType::LOCAL);
+   DownloadManager manager(files, this->peerManager);
+
+   // Empty files are created as soon as they are started, here the creation fails.
+   QList<Download*> downloads;
+   Protos::Common::Entry entry;
+   entry.set_type(Protos::Common::Entry::FILE);
+   entry.set_size(0);
+   for (const char* name : { "first.bin", "second.bin", "third.bin" })
+   {
+      entry.set_name(name);
+      downloads << manager.addDownload(entry, entry, &peer, Protos::Queue::Queue::Entry::QUEUED);
+      QVERIFY(downloads.last());
+      QCOMPARE(downloads.last()->getStatus(), Protos::Common::DownloadStatus::UNABLE_TO_CREATE_THE_FILE);
+   }
+   QCOMPARE(files->creations, 3);
+
+   // All are retried; failing again, all are retried at the next period too.
+   for (int period = 1; period <= 2; period++)
+   {
+      QVERIFY(QMetaObject::invokeMethod(&manager, "restartErroneousDownloads", Qt::DirectConnection));
+      QCOMPARE(files->creations, 3 + 3 * period);
+   }
+
+   files->fail = false;
+   QVERIFY(QMetaObject::invokeMethod(&manager, "restartErroneousDownloads", Qt::DirectConnection));
+   for (Download* download : downloads)
+      QVERIFY(!download->isStatusErroneous());
 }
 
 void Tests::coalescePeerStatusUpdates()

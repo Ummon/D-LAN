@@ -21,6 +21,7 @@ using namespace DM;
 
 #include <QStringBuilder>
 #include <QDir>
+#include <QPointer>
 
 #include <Protos/queue.pb.h>
 
@@ -531,23 +532,27 @@ void DownloadManager::scanTheQueue()
 }
 
 /**
-  * Restart the first erroneous download.
+  * Restart all the erroneous downloads, each one is retried once per period.
   */
 void DownloadManager::restartErroneousDownloads()
 {
+   // Taken first: a restarted download failing again puts itself back in the list, to be retried at the next period.
+   // 'QPointer': a download removed from the queue while the others are restarted is skipped.
+   QList<QPointer<Download>> downloads;
    while (Download* download = this->downloadQueue.getAnErroneousDownload())
-   {
-      if (download->isStatusErroneous())
+      downloads << download;
+
+   for (const auto& download : std::as_const(downloads))
+      if (download && download->isStatusErroneous())
       {
-         download->start(); // We restart the download.
-         L_DEBU(
-            QString("Rescan timer timedout, the queue will be rescanned. File restarted: %1")
-               .arg(Common::ProtoHelper::getPath(download->getLocalEntry()))
-         );
-         this->startErroneousDownloadTimer.start();
-         break;
+         L_DEBU(QString("Restarting an erroneous download: %1").arg(Common::ProtoHelper::getPath(download->getLocalEntry())));
+         download->start();
       }
-   }
+
+   // A download still erroneous without having notified it again must not be forgotten.
+   for (const auto& download : std::as_const(downloads))
+      if (download && download->isStatusErroneous())
+         this->downloadStatusBecomeErroneous(download);
 }
 
 /**
