@@ -52,6 +52,15 @@ namespace
          emit received(Common::Message::readMessageBody(
             Common::MessageHeader(Common::MessageHeader::CORE_GET_LAST_CHAT_MESSAGES, bytes.size(), Common::Hash::rand()), bytes.data()));
       }
+      void receiveIMAlive(const Common::Hash& peerID, const QStringList& rooms)
+      {
+         Protos::Core::IMAlive IMAlive;
+         for (const auto& room : rooms)
+            IMAlive.add_chat_rooms(room.toStdString());
+         const auto bytes = IMAlive.SerializeAsString();
+         emit received(Common::Message::readMessageBody(
+            Common::MessageHeader(Common::MessageHeader::CORE_IM_ALIVE, bytes.size(), peerID), bytes.data()));
+      }
    };
 
    QString roomFile(const QString& room)
@@ -190,11 +199,7 @@ private slots:
       // A remote peer stays in the room, so the room is still known after we leave it.
       const auto peerID = Common::Hash::rand();
       peers->updatePeer(peerID, QHostAddress::LocalHost, 1, "peer", 0, QString(), 0, 0, Common::Constants::PROTOCOL_VERSION);
-      Protos::Core::IMAlive IMAlive;
-      IMAlive.add_chat_rooms("General");
-      const auto bytes = IMAlive.SerializeAsString();
-      emit network->received(Common::Message::readMessageBody(
-         Common::MessageHeader(Common::MessageHeader::CORE_IM_ALIVE, bytes.size(), peerID), bytes.data()));
+      network->receiveIMAlive(peerID, { "General" });
 
       chat.joinRoom("General");
       QCOMPARE(chat.send("hello", "General"), CS::IChatSystem::SendStatus::OK);
@@ -213,6 +218,33 @@ private slots:
       Protos::Common::ChatMessages messages;
       chat.getLastChatMessages(messages, std::numeric_limits<int>::max(), "General");
       QCOMPARE(messages.messages_size(), 0);
+   }
+
+   void roomsFollowPeerIMAlive()
+   {
+      const auto peers = PM::Builder::newPeerManager({});
+      const auto network = QSharedPointer<NetworkListener>::create();
+      CS::ChatSystem chat(peers, network);
+      chat.joinRoom("Joined");
+
+      const auto peerID = Common::Hash::rand();
+      peers->updatePeer(peerID, QHostAddress::LocalHost, 1, "peer", 0, QString(), 0, 0, Common::Constants::PROTOCOL_VERSION);
+      auto numberOfPeersByRoom = [&] {
+         QMap<QString, int> result;
+         for (const auto& room : chat.getRooms())
+            result[room.name] = room.peers.size();
+         return result;
+      };
+
+      network->receiveIMAlive(peerID, { "Joined", "A", "B" });
+      QCOMPARE(numberOfPeersByRoom(), (QMap<QString, int> { { "Joined", 1 }, { "A", 1 }, { "B", 1 } }));
+
+      // The peer left 'B': it's forgotten because we haven't joined it, unlike 'Joined'.
+      network->receiveIMAlive(peerID, { "A" });
+      QCOMPARE(numberOfPeersByRoom(), (QMap<QString, int> { { "Joined", 0 }, { "A", 1 } }));
+
+      network->receiveIMAlive(peerID, {});
+      QCOMPARE(numberOfPeersByRoom(), (QMap<QString, int> { { "Joined", 0 } }));
    }
 
    void joinRoomEmitsSavedHistory()

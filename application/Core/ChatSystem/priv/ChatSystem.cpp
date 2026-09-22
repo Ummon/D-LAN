@@ -247,15 +247,19 @@ void ChatSystem::received(const Common::Message& message)
                room.peers.insert(peer);
             }
 
-            // We remove the peer from the rooms he is not.
+            // We remove the peer from the rooms it is not in, and remove the rooms left empty that we haven't joined.
+            // The dead peers are removed periodically, see 'retrieveLastChatMessages()'.
             for (QMutableHashIterator<QString, Room> i(this->rooms); i.hasNext();)
             {
-               auto room = i.next();
-               if (!roomsWithPeer.remove(room.key()))
-                  room.value().peers.remove(peer);
-            }
+               i.next();
+               if (roomsWithPeer.contains(i.key()))
+                  continue;
 
-            this->removeDeadPeersFromRooms();
+               Room& room = i.value();
+               room.peers.remove(peer);
+               if (room.peers.isEmpty() && !room.joined)
+                  i.remove();
+            }
          }
       }
       break;
