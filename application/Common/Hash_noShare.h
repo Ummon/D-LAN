@@ -30,16 +30,14 @@
 
 #include <blake3.h>
 
-#include <Common/Uncopyable.h>
-
 namespace Common
 {
    class Hasher;
    class Hash
    {
    public:
-      static const int HASH_SIZE = 28;
-      static const int NB_BYTES_SHORT_STR = 3;
+      static constexpr int HASH_SIZE = 28;
+      static constexpr int NB_BYTES_SHORT_STR = 3;
 
    private:
       static const char NULL_HASH[HASH_SIZE];
@@ -119,14 +117,17 @@ namespace Common
       return qHashBits(h.getData(), Hash::HASH_SIZE, seed);
    }
 
-   class Hasher : Uncopyable
+   /**
+     * Copyable: a copy continues independently from the same hashed prefix.
+     */
+   class Hasher
    {
    public:
       Hasher();
       void addSalt(quint64 salt);
       // Hashes a valid byte span. Empty spans are a no-op.
       void addData(std::span<const char> data);
-      Hash getResult();
+      Hash getResult() const; // Does not modify the state, more data can be added afterwards.
       void reset();
 
       static Common::Hash hash(const QString& str);

@@ -30,6 +30,7 @@
 #include <Protos/queue.pb.h>
 
 #include <Common/Hash.h>
+#include <Common/Uncopyable.h>
 
 #include <IDownload.h>
 #include <IChunkDownloader.h>

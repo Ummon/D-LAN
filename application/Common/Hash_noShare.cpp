@@ -24,6 +24,7 @@
 using namespace Common;
 
 #include <QtGlobal>
+#include <QtEndian>
 #include <QRandomGenerator64>
 
 namespace
@@ -218,10 +219,8 @@ Hasher::Hasher()
 void Hasher::addSalt(quint64 salt)
 {
    // Keep the salt encoding little-endian on every platform.
-   unsigned char saltArray[8];
-   for (int i = 0; i < 8; ++i)
-      saltArray[i] = static_cast<unsigned char>((salt >> (8 * i)) & 0xFF);
-   blake3_hasher_update(&this->hasher, saltArray, sizeof(saltArray));
+   const quint64 saltLittleEndian = qToLittleEndian(salt);
+   blake3_hasher_update(&this->hasher, &saltLittleEndian, sizeof(saltLittleEndian));
 }
 
 void Hasher::addData(std::span<const char> data)
@@ -232,7 +231,7 @@ void Hasher::addData(std::span<const char> data)
    blake3_hasher_update(&this->hasher, data.data(), data.size());
 }
 
-Hash Hasher::getResult()
+Hash Hasher::getResult() const
 {
    Hash result;
    blake3_hasher_finalize(&this->hasher, (uint8_t*)result.data, Hash::HASH_SIZE);

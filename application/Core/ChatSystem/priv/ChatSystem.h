@@ -28,6 +28,7 @@
 
 #include <Common/Network/MessageHeader.h>
 #include <Common/Hash.h>
+#include <Common/Uncopyable.h>
 
 #include <Core/PeerManager/IPeerManager.h>
 #include <Core/NetworkListener/INetworkListener.h>
