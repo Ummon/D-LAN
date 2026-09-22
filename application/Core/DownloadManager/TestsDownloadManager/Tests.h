@@ -88,6 +88,7 @@ private slots:
    void downloadWithOmittedHashes_data();
    void downloadWithOmittedHashes();
    void dontAskHashesToBusyPeer();
+   void noRequestWhileDestroyingQueue();
    void validateChunkResponse_data();
    void validateChunkResponse();
    void directoryBecomesEmpty_data();

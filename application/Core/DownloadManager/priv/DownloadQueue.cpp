@@ -47,6 +47,11 @@ DownloadQueue::DownloadQueue()
 
 DownloadQueue::~DownloadQueue()
 {
+   // Deleting a download frees its peer, which may synchronously ask the queue for a new request to send.
+   // Every download is marked as deleted first, so none is started while the queue is torn down.
+   for (Download* download : std::as_const(this->downloads))
+      download->setAsDeleted();
+
    while (!this->downloads.isEmpty())
       delete this->downloads.takeFirst();
 

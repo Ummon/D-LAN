@@ -737,6 +737,44 @@ void Tests::dontAskHashesToBusyPeer()
    QCOMPARE(second.getStatus(), Protos::Common::DownloadStatus::QUEUED);
 }
 
+/**
+  * Deleting a download frees its peer. While the queue is destroyed, this must not start a request for the next download.
+  */
+void Tests::noRequestWhileDestroyingQueue()
+{
+   HashPeer peer(this->fileManager);
+   LinkedPeers links;
+   OccupiedPeers asking, downloading;
+   Common::ThreadPool pool(1);
+   Common::TransferRateCalculator rate;
+   Protos::Common::Entry entry;
+   entry.set_type(Protos::Common::Entry::FILE);
+   entry.set_size(Common::Constants::CHUNK_SIZE);
+
+   // A raw pointer: it must still be usable by the slot below while the queue is being deleted.
+   DownloadQueue* queue = new DownloadQueue();
+   for (const char* name : { "first.bin", "second.bin" })
+   {
+      entry.set_name(name);
+      queue->insert(queue->size(), new FileDownload(this->fileManager, links, asking, downloading, pool, &peer, entry, entry,
+         rate, Protos::Queue::Queue::Entry::QUEUED));
+   }
+
+   // Same as 'DownloadManager::peerNoLongerAskingForHashes()'.
+   const auto connection = connect(&asking, &OccupiedPeers::newFreePeer, [&queue] {
+      for (int i = 0; i < queue->size(); i++)
+         if (static_cast<FileDownload*>((*queue)[i])->retrieveHashes())
+            break;
+   });
+
+   QVERIFY(static_cast<FileDownload*>((*queue)[0])->retrieveHashes());
+   QCOMPARE(peer.nbRequests, 1);
+
+   delete queue;
+   disconnect(connection);
+   QCOMPARE(peer.nbRequests, 1);
+}
+
 void Tests::coalescePeerStatusUpdates()
 {
    HashPeer peer(this->fileManager);
