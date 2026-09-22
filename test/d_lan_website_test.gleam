@@ -5,10 +5,12 @@ import app/pages/admin
 import app/router
 import app/web
 import gleam/http
+import gleam/list
 import gleam/option.{Some}
 import gleam/string
 import gleam/time/calendar
 import lustre/element
+import simplifile
 import translations as tr
 import wisp
 import wisp/simulate
@@ -112,6 +114,42 @@ pub fn localized_date_test() {
     == "5 janvier 2026"
   assert tr.format_date(tr.Ru, calendar.Date(2026, calendar.December, 25))
     == "25 декабря 2026 г."
+}
+
+pub fn download_button_release_formats_test() {
+  [
+    #("windows", "Setup.exe", "windows", "exe"),
+    #("mac", "Installer.dmg", "mac", "dmg"),
+    #("linux", "amd64.deb", "linux amd64", "deb"),
+    #("linux", "x86_64.AppImage", "linux x86_64", "AppImage"),
+  ]
+  |> list.each(fn(release) {
+    let #(platform, suffix, platform_text, extension) = release
+    let releases_directory = "build/download_button_release_formats_test"
+    let directory = releases_directory <> "/" <> platform
+    let filename = "D-LAN-1.2.0Beta1-2026-09-08_17-54-" <> suffix
+    let path = directory <> "/" <> filename
+    let assert Ok(_) = simplifile.create_directory_all(directory)
+    let assert Ok(_) = simplifile.write(path, "test installer")
+    let ctx =
+      web.Context(
+        app: web.AppContext("static", releases_directory, db_stub(), "", False),
+        lang: tr.En,
+        is_admin: False,
+        params: web.NoParams,
+      )
+
+    let button = download_button.element(ctx, platform)
+    let assert Ok(_) = simplifile.delete_file(path)
+    let assert Ok(button) = button
+    let html = element.to_string(button)
+    assert string.contains(
+      html,
+      "Version 1.2.0 Beta1 for " <> platform_text <> "<br",
+    )
+    assert string.contains(html, "Released on September 8, 2026")
+    assert string.contains(html, "download " <> extension <> " " <> platform)
+  })
 }
 
 pub fn latest_release_test() {

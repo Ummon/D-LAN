@@ -36,7 +36,7 @@ pub fn element(
     |> latest_release,
   )
 
-  let extension = string.slice(filename, string.length(filename) - 3, 3)
+  let assert Ok(extension) = filename |> string.split(".") |> list.last
 
   let assert Ok(re) =
     regexp.from_string(case extension {
@@ -52,13 +52,15 @@ pub fn element(
         Some(year),
         Some(month),
         Some(day),
-        // We may extract the architecture here if needed (x86_64, armf, etc..).
-        archi,
-        ..
+        ..architecture
       ],
       ..,
     ),
   ] = regexp.scan(re, filename)
+  let archi = case architecture {
+    [archi, ..] -> archi
+    [] -> None
+  }
   let version_full = case version_tag {
     Some(tag) -> version <> " " <> tag
     None -> version
