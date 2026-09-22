@@ -93,6 +93,7 @@ private slots:
    void noRequestWhileDestroyingQueue();
    void freedPeerAsksItsOwnHashes();
    void restartAllErroneousDownloads();
+   void retryHashesAfterDontHave();
    void validateChunkResponse_data();
    void validateChunkResponse();
    void directoryBecomesEmpty_data();

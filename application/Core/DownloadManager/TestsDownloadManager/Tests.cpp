@@ -41,8 +41,10 @@ using namespace DM;
 #include <priv/FileDownload.h>
 #include <priv/DownloadQueue.h>
 #include <priv/DownloadManager.h>
+#include <priv/Constants.h>
 #include <Common/PersistentData.h>
 #include <memory>
+#include <algorithm>
 
 namespace
 {
@@ -888,6 +890,60 @@ void Tests::restartAllErroneousDownloads()
    QVERIFY(QMetaObject::invokeMethod(&manager, "restartErroneousDownloads", Qt::DirectConnection));
    for (Download* download : downloads)
       QVERIFY(!download->isStatusErroneous());
+}
+
+/**
+  * A file the peer source doesn't have is asked again after a period and when the peer comes back.
+  */
+void Tests::retryHashesAfterDontHave()
+{
+   HashPeer peer(this->fileManager);
+   LinkedPeers links;
+   OccupiedPeers asking, downloading;
+   Common::ThreadPool pool(1);
+   Common::TransferRateCalculator rate;
+   Protos::Common::Entry entry;
+   entry.set_type(Protos::Common::Entry::FILE);
+   entry.set_name("dont-have.bin");
+   entry.set_size(Common::Constants::CHUNK_SIZE);
+   FileDownload download(this->fileManager, links, asking, downloading, pool, &peer, entry, entry,
+      rate, Protos::Queue::Queue::Entry::QUEUED);
+
+   Protos::Core::GetHashesResult dontHave;
+   dontHave.set_status(Protos::Core::GetHashesResult::DONT_HAVE);
+   const auto dontHaveAnswer = [&]
+   {
+      emit peer.hashes->result(dontHave);
+      peer.hashes = QSharedPointer<PendingHashesResult>::create(); // Each request has its own result.
+      QCOMPARE(download.getStatus(), Protos::Common::DownloadStatus::ENTRY_NOT_FOUND);
+      QVERIFY(asking.isPeerFree(&peer));
+   };
+
+   QVERIFY(download.retrieveHashes());
+   dontHaveAnswer();
+   QVERIFY(!download.retrieveHashes()); // Not asked again straight away.
+   QCOMPARE(peer.nbRequests, 1);
+
+   const auto timers = download.findChildren<QTimer*>();
+   QVERIFY(std::any_of(timers.begin(), timers.end(), [](const QTimer* timer) {
+      return timer->isActive() && timer->interval() == RETRY_PEER_GET_HASHES_PERIOD;
+   }));
+   QVERIFY(QMetaObject::invokeMethod(&download, "retryToGetHashes", Qt::DirectConnection)); // The period has elapsed.
+   QCOMPARE(peer.nbRequests, 2);
+   QCOMPARE(download.getStatus(), Protos::Common::DownloadStatus::GETTING_THE_HASHES);
+
+   dontHaveAnswer();
+   download.peerSourceBecomesAvailable();
+   QCOMPARE(download.getStatus(), Protos::Common::DownloadStatus::QUEUED);
+   QVERIFY(download.retrieveHashes());
+   QCOMPARE(peer.nbRequests, 3);
+
+   // A paused download isn't asked again.
+   emit peer.hashes->result(dontHave);
+   QVERIFY(download.pause(true));
+   QVERIFY(QMetaObject::invokeMethod(&download, "retryToGetHashes", Qt::DirectConnection));
+   QCOMPARE(peer.nbRequests, 3);
+   QCOMPARE(download.getStatus(), Protos::Common::DownloadStatus::PAUSED);
 }
 
 void Tests::coalescePeerStatusUpdates()

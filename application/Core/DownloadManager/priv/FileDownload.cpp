@@ -60,11 +60,16 @@ FileDownload::FileDownload(
    nbHashesKnown(0),
    transferRateCalculator(transferRateCalculator),
    lastTimeGetAllUnfinishedChunks(0),
-   statusUpdateTimer(this)
+   statusUpdateTimer(this),
+   retryToGetHashesTimer(this)
 {
    this->statusUpdateTimer.setSingleShot(true);
    this->statusUpdateTimer.setInterval(0);
    connect(&this->statusUpdateTimer, &QTimer::timeout, this, &FileDownload::updateStatus);
+
+   this->retryToGetHashesTimer.setSingleShot(true);
+   this->retryToGetHashesTimer.setInterval(RETRY_PEER_GET_HASHES_PERIOD);
+   connect(&this->retryToGetHashesTimer, &QTimer::timeout, this, &FileDownload::retryToGetHashes);
 
    // Invalid hashes are unknown, not occupied chunk slots. Normalize both entries so requests,
    // file creation and queue persistence cannot reuse malformed data.
@@ -191,7 +196,11 @@ bool FileDownload::pause(bool pause)
 
 void FileDownload::peerSourceBecomesAvailable()
 {
-   if (this->status == Protos::Common::DownloadStatus::UNKNOWN_PEER_SOURCE)
+   // The peer may have been restarted, its files can have changed: the hashes will be asked again.
+   if (
+      this->status == Protos::Common::DownloadStatus::UNKNOWN_PEER_SOURCE ||
+      this->status == Protos::Common::DownloadStatus::ENTRY_NOT_FOUND
+   )
       this->setStatus(Protos::Common::DownloadStatus::QUEUED);
 
    for (QListIterator<QSharedPointer<ChunkDownloader>> i(this->chunkDownloaders); i.hasNext();)
@@ -556,6 +565,8 @@ void FileDownload::result(const Protos::Core::GetHashesResult& result)
       {
          L_DEBU("Unable to retrieve the hashes: DONT_HAVE");
          this->setStatus(Protos::Common::DownloadStatus::ENTRY_NOT_FOUND);
+         // The file may be only temporarily unavailable, for example being moved or its shared directory being rescanned.
+         this->retryToGetHashesTimer.start();
       }
       else
       {
@@ -657,6 +668,16 @@ void FileDownload::getHashTimeout()
    this->getHashesResult.clear();
    this->setStatus(Protos::Common::DownloadStatus::UNABLE_TO_RETRIEVE_THE_HASHES);
    this->occupiedPeersAskingForHashes.setPeerAsFree(this->peerSource);
+}
+
+void FileDownload::retryToGetHashes()
+{
+   // The status may have changed in the meantime, for example the download has been paused or the hashes asked again.
+   if (this->status != Protos::Common::DownloadStatus::ENTRY_NOT_FOUND)
+      return;
+
+   this->setStatus(Protos::Common::DownloadStatus::QUEUED);
+   this->retrieveHashes(); // If the peer source is busy, it will be asked when it's free, see 'DownloadManager::peerNoLongerAskingForHashes(..)'.
 }
 
 void FileDownload::chunkDownloaderStarted()

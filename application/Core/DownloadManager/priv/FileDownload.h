@@ -93,6 +93,7 @@ namespace DM
       void result(const Protos::Core::GetHashesResult& result);
       void nextHash(const Protos::Core::HashResult&);
       void getHashTimeout();
+      void retryToGetHashes();
 
       void chunkDownloaderStarted();
       void chunkDownloaderFinished();
@@ -127,6 +128,7 @@ namespace DM
 
       qint64 lastTimeGetAllUnfinishedChunks; // [ms] since epoch. Updated when ALL hashes are send via the method 'getUnfinishedChunks(..)'. 0 if never.
       QTimer statusUpdateTimer;
+      QTimer retryToGetHashesTimer; // When the peer source doesn't have the file, it's asked again periodically.
    };
 }
 
