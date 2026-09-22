@@ -261,11 +261,7 @@ QSet<PM::IPeer*> FileDownload::getPeers() const
   */
 QSharedPointer<ChunkDownloader> FileDownload::getAChunkToDownload()
 {
-   if (
-      this->status == Protos::Common::DownloadStatus::COMPLETE ||
-      this->status == Protos::Common::DownloadStatus::DELETED ||
-      this->status == Protos::Common::DownloadStatus::PAUSED
-   )
+   if (this->isStatusFrozen())
       return QSharedPointer<ChunkDownloader>();
 
    // Choose a chunk with the less number of peer. (rarest first).
@@ -335,11 +331,7 @@ QSharedPointer<ChunkDownloader> FileDownload::getAChunkToDownload()
   */
 void FileDownload::getUnfinishedChunks(QList<QSharedPointer<IChunkDownloader>>& chunks, int nMax, bool notAlreadyAsked)
 {
-   if (
-      this->status == Protos::Common::DownloadStatus::COMPLETE ||
-      this->status == Protos::Common::DownloadStatus::DELETED ||
-      this->status == Protos::Common::DownloadStatus::PAUSED
-   )
+   if (this->isStatusFrozen())
       return;
 
    auto isUnfinished = [this](int i) { return !this->chunkDownloaders[i].isNull() && !this->chunkDownloaders[i]->isComplete(); };
@@ -400,9 +392,7 @@ bool FileDownload::retrieveHashes()
    // If we've already got all the chunk hashes it's unnecessary to re-ask them.
    if (
       this->nbHashesKnown == this->NB_CHUNK ||
-      this->status == Protos::Common::DownloadStatus::COMPLETE ||
-      this->status == Protos::Common::DownloadStatus::DELETED ||
-      this->status == Protos::Common::DownloadStatus::PAUSED ||
+      this->isStatusFrozen() ||
       this->status == Protos::Common::DownloadStatus::GETTING_THE_HASHES ||
       this->status == Protos::Common::DownloadStatus::ENTRY_NOT_FOUND
    )
@@ -544,7 +534,7 @@ void FileDownload::scheduleStatusUpdate()
 {
    // Hash replies and discovery can update many chunks in one event-loop turn.
    // Keep one pending scan; transfer start/finish and errors still update directly.
-   if (!Download::updateStatus() && !this->statusUpdateTimer.isActive())
+   if (!this->isStatusFrozen() && !this->statusUpdateTimer.isActive())
       this->statusUpdateTimer.start();
 }
 

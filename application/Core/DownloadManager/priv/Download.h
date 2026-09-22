@@ -67,6 +67,17 @@ namespace DM
 
       inline bool isStatusErroneous() const { return this->status >= 0x20; }
 
+      /**
+        * Complete, paused or deleted: the download is inactive and 'updateStatus()' doesn't change its status.
+        */
+      inline bool isStatusFrozen() const
+      {
+         return
+            this->status == Protos::Common::DownloadStatus::COMPLETE ||
+            this->status == Protos::Common::DownloadStatus::PAUSED ||
+            this->status == Protos::Common::DownloadStatus::DELETED;
+      }
+
       virtual quint64 getDownloadedBytes() const override;
       PM::IPeer* getPeerSource() const override;
       QSet<PM::IPeer*> getPeers() const override;

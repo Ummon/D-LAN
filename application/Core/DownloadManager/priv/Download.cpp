@@ -115,13 +115,7 @@ void Download::remove()
   */
 bool Download::updateStatus()
 {
-   if (
-      this->status == Protos::Common::DownloadStatus::DELETED ||
-      this->status == Protos::Common::DownloadStatus::COMPLETE ||
-      this->status == Protos::Common::DownloadStatus::PAUSED
-   )
-      return true;
-   return false;
+   return this->isStatusFrozen();
 }
 
 void Download::setStatus(Protos::Common::DownloadStatus newStatus)

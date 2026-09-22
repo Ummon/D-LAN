@@ -76,7 +76,7 @@ ChunkDownloader::~ChunkDownloader()
 }
 
 /**
-  * Return true if the chunk was downloading.
+  * Abort the current transfer, if any, and wait for its thread to finish.
   */
 void ChunkDownloader::stop()
 {
