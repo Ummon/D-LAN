@@ -2,6 +2,7 @@ import gleam/float
 import gleam/http/request
 import gleam/int
 import gleam/list
+import gleam/option.{type Option, None, Some}
 import gleam/result
 import gleam/string
 import gleam/time/calendar
@@ -1428,7 +1429,13 @@ pub fn download_button_version(
   l: Lang,
   version: String,
   platform: String,
+  archi: Option(String),
 ) -> element.Element(a) {
+  let platform = case archi {
+    Some(archi) -> platform <> " " <> archi
+    None -> platform
+  }
+
   case l {
     En -> "Version " <> version <> " for " <> platform
     Fr -> "Version " <> version <> " pour " <> platform

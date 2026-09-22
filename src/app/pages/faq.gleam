@@ -22,11 +22,12 @@ pub fn page(ctx: web.Context) -> element.Element(a) {
       html.div([attr.class("question")], [html.em([], [tr.faq_q4(ctx.lang)])]),
       html.div([attr.class("answer")], [tr.faq_a4(ctx.lang)]),
     ]),
-    html.div([attr.class("qa")], [
-      html.div([attr.class("question")], [html.em([], [tr.faq_q6(ctx.lang)])]),
-      html.div([attr.class("answer")], [tr.faq_a6(ctx.lang)]),
-    ]),
-    // Comment out: D-LAN doesn't install a service anymore.
+    // Comment out: DMG is now signed an notorized.
+  // html.div([attr.class("qa")], [
+  //   html.div([attr.class("question")], [html.em([], [tr.faq_q6(ctx.lang)])]),
+  //   html.div([attr.class("answer")], [tr.faq_a6(ctx.lang)]),
+  // ]),
+  // Comment out: D-LAN doesn't install a service anymore.
   // Maybe that would be re-enabled in the future.
   // html.div([attr.class("qa")], [
   //   html.div([attr.class("question")], [html.em([], [tr.faq_q5(ctx.lang)])]),

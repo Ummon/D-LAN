@@ -53,6 +53,7 @@ pub fn element(
         Some(month),
         Some(day),
         // We may extract the architecture here if needed (x86_64, armf, etc..).
+        archi,
         ..
       ],
       ..,
@@ -93,7 +94,7 @@ pub fn element(
           html.text(" (" <> utils.file_size_mib(file_info.size) <> " MiB)"),
         ]),
         html.br([]),
-        tr.download_button_version(ctx.lang, version_full, platform),
+        tr.download_button_version(ctx.lang, version_full, platform, archi),
         html.br([]),
         tr.download_button_released(ctx.lang, released_date),
       ],
