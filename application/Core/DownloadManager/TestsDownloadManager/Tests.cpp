@@ -97,6 +97,21 @@ namespace
          const QList<Common::Hash>&) const override { return this->chunks; }
    };
 
+   class ChunksByHashFileManager : public MockFileManager
+   {
+   public:
+      QList<QSharedPointer<FM::IChunk>> chunks;
+      QList<QSharedPointer<FM::IChunk>> getAllChunks(const Protos::Common::Entry&,
+         const QList<Common::Hash>& hashes) const override
+      {
+         QList<QSharedPointer<FM::IChunk>> result;
+         for (const auto& chunk : this->chunks)
+            if (hashes.contains(chunk->getHash()))
+               result << chunk;
+         return result;
+      }
+   };
+
    class ResumePeer : public PM::Peer
    {
    public:
@@ -1265,6 +1280,50 @@ void Tests::checkpointDownloadProgress()
    QCOMPARE(saved.entries(0).known_bytes_size(), 1);
    QCOMPARE(saved.entries(0).known_bytes(0), finalBytes);
    QCOMPARE(saved.entries(0).status(), complete ? Protos::Queue::Queue::Entry::COMPLETE : Protos::Queue::Queue::Entry::QUEUED);
+}
+
+/**
+  * The number of transfers is limited to 'number_of_downloader' (1 in these tests) and a slot is freed when a transfer ends.
+  */
+void Tests::downloadSlotFreedWhenTransferEnds()
+{
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new EmptyHashCache));
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   QSharedPointer<ChunksByHashFileManager> files(new ChunksByHashFileManager);
+   // One peer per file: a peer serves one transfer at a time, only the limit may hold back the second one.
+   CheckpointPeer firstPeer(files), secondPeer(files);
+   Common::PersistentData::rmValue(Common::Constants::FILE_QUEUE, Common::Global::DataFolderType::LOCAL);
+   DownloadManager manager(files, this->peerManager);
+   emit files->fileCacheScanningComplete();
+
+   QList<Download*> downloads;
+   for (const auto& [name, peer] : { std::pair { "first.bin", &firstPeer }, std::pair { "second.bin", &secondPeer } })
+   {
+      auto file = new FM::File(root, name, 100, false, QDateTime::currentDateTime(),
+         root->getRootDir(), { Common::Hash::rand() }, true);
+      files->chunks << file->getChunks().first();
+      Protos::Common::Entry entry;
+      file->populateEntry(&entry, true);
+      downloads << manager.addDownload(entry, entry, peer, Protos::Queue::Queue::Entry::QUEUED);
+      QVERIFY(downloads.last());
+   }
+   QCOMPARE(downloads[0]->getStatus(), Protos::Common::DownloadStatus::DOWNLOADING);
+   QVERIFY(downloads[1]->getStatus() != Protos::Common::DownloadStatus::DOWNLOADING);
+
+   const auto unfinished = manager.getTheFirstUnfinishedChunks(1);
+   QCOMPARE(unfinished.size(), 1);
+   const auto downloader = qSharedPointerDynamicCast<ChunkDownloader>(unfinished.first());
+   QVERIFY(downloader);
+   QVERIFY(downloader->isDownloading());
+
+   firstPeer.available = false; // The ended transfer must not restart and take the freed slot back.
+   downloader->stop();
+   QCOMPARE(downloads[1]->getStatus(), Protos::Common::DownloadStatus::DOWNLOADING);
 }
 
 void Tests::chunkPeerQueriesPruneUnavailable_data()

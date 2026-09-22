@@ -73,6 +73,7 @@ private slots:
    void discoveryIndexTracksRemoval();
    void checkpointDownloadProgress_data();
    void checkpointDownloadProgress();
+   void downloadSlotFreedWhenTransferEnds();
    void retryFailedQueueSave();
    void skipRejectedSourceWhenLoadingQueue();
    void resetPreservesDestination_data();

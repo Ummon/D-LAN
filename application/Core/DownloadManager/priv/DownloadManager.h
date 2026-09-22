@@ -128,7 +128,6 @@ namespace DM
 
       void scanTheQueue();
       void restartErroneousDownloads();
-      void chunkDownloaderFinished();
       void downloadStatusBecomeErroneous(DM::Download* download);
 
    private:
@@ -157,8 +156,6 @@ namespace DM
       Common::ThreadPool threadPool;
 
       DownloadQueue downloadQueue;
-
-      int numberOfDownloadThreadRunning;
 
       QTimer startErroneousDownloadTimer; // When one or more downloads are in error state, we try to relaunch them periodically.
 

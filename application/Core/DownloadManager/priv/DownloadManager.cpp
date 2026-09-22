@@ -43,7 +43,6 @@ DownloadManager::DownloadManager(QSharedPointer<FM::IFileManager> fileManager, Q
    fileManager(fileManager),
    peerManager(peerManager),
    threadPool(NUMBER_OF_DOWNLOADER),
-   numberOfDownloadThreadRunning(0),
    queueChanged(false),
    queueLoaded(false)
 {
@@ -493,8 +492,10 @@ void DownloadManager::peerNoLongerDownloadingChunk(PM::IPeer* peer)
    L_DEBU(
       QString("A peer is free from downloading: %1, number of downloading thread: %2")
          .arg(peer->toStringLog())
-         .arg(this->numberOfDownloadThreadRunning)
+         .arg(this->occupiedPeersDownloadingChunk.nbOccupiedPeers())
    );
+   // A transfer may have just ended: persist its final bytes and status even when no transfer remains at the next save tick.
+   this->setQueueChanged();
    this->scanTheQueue();
 }
 
@@ -503,12 +504,12 @@ void DownloadManager::peerNoLongerDownloadingChunk(PM::IPeer* peer)
   */
 void DownloadManager::scanTheQueue()
 {
-   if (this->numberOfDownloadThreadRunning >= NUMBER_OF_DOWNLOADER)
+   // Each transfer occupies its own peer, from 'ChunkDownloader::startDownloading(..)' to 'ChunkDownloader::downloadingEnded()'.
+   int numberOfDownloadThreadRunning = this->occupiedPeersDownloadingChunk.nbOccupiedPeers();
+   if (numberOfDownloadThreadRunning >= NUMBER_OF_DOWNLOADER)
       return;
 
    L_DEBU("Scanning the queue . . .");
-
-   int numberOfDownloadThreadRunningCopy = this->numberOfDownloadThreadRunning;
 
    QSharedPointer<ChunkDownloader> chunkDownloader;
    FileDownload* fileDownload = nullptr;
@@ -520,7 +521,7 @@ void DownloadManager::scanTheQueue()
 
    DownloadQueue::ScanningIterator<IsDownloadable> i(this->downloadQueue);
 
-   while (numberOfDownloadThreadRunningCopy < NUMBER_OF_DOWNLOADER && !linkedPeersNotOccupied.isEmpty())
+   while (numberOfDownloadThreadRunning < NUMBER_OF_DOWNLOADER && !linkedPeersNotOccupied.isEmpty())
    {
       if (chunkDownloader.isNull()) // We can ask many chunks to download from the same file.
          if (!(fileDownload = static_cast<FileDownload*>(i.next())))
@@ -539,17 +540,8 @@ void DownloadManager::scanTheQueue()
 
       if (PM::IPeer* currentPeer = chunkDownloader->startDownloading(fileDownload->getDownloadedBytes()))
       {
-         connect(
-            chunkDownloader.data(),
-            &ChunkDownloader::downloadFinished,
-            this,
-            &DownloadManager::chunkDownloaderFinished,
-            Qt::ConnectionType(Qt::DirectConnection | Qt::SingleShotConnection)
-         );
-
          linkedPeersNotOccupied -= currentPeer;
-         this->numberOfDownloadThreadRunning++;
-         numberOfDownloadThreadRunningCopy = this->numberOfDownloadThreadRunning;
+         numberOfDownloadThreadRunning++;
       }
       else
       {
@@ -579,20 +571,6 @@ void DownloadManager::restartErroneousDownloads()
          break;
       }
    }
-}
-
-/**
-  * It must be called before 'peerNoLongerDownloadingChunk' when a download is finished.
-  */
-void DownloadManager::chunkDownloaderFinished()
-{
-   L_DEBU(
-      QString("DownloadManager::chunkDownloaderFinished, numberOfDownloadThreadRunning = %1")
-         .arg(this->numberOfDownloadThreadRunning)
-   );
-   this->numberOfDownloadThreadRunning--;
-   // Persist the final bytes and status even when no transfer remains at the next save tick.
-   this->setQueueChanged();
 }
 
 /**
@@ -645,7 +623,7 @@ void DownloadManager::saveQueueToFile()
 {
    // Chunk byte counts change without queue edits or new hashes. Checkpoint active transfers
    // at every save tick; their completion also marks the queue dirty for the final checkpoint.
-   if (this->queueLoaded && (this->queueChanged || this->numberOfDownloadThreadRunning > 0))
+   if (this->queueLoaded && (this->queueChanged || this->occupiedPeersDownloadingChunk.nbOccupiedPeers() > 0))
    {
       L_DEBU("Persisting queue . . .");
 
