@@ -72,22 +72,8 @@ namespace DM
          PM::IPeer* peerSource,
          const Common::Hash& destinationDirectoryID,
          const QString& localRelativePath,
-         Protos::Queue::Queue::Entry::Status status
-      );
-
-      Download* addDownload(
-         const Protos::Common::Entry& remoteEntry,
-         PM::IPeer* peerSource,
-         const Common::Hash& destinationDirectoryID,
-         const QString& localRelativePath,
-         Protos::Queue::Queue::Entry::Status status, int position
-      );
-
-      Download* addDownload(
-         const Protos::Common::Entry& remoteEntry,
-         const Protos::Common::Entry& localEntry,
-         PM::IPeer* peerSource,
-         Protos::Queue::Queue::Entry::Status status
+         Protos::Queue::Queue::Entry::Status status,
+         int position = -1
       );
 
       Download* addDownload(
@@ -95,7 +81,7 @@ namespace DM
          const Protos::Common::Entry& localEntry,
          PM::IPeer* peerSource,
          Protos::Queue::Queue::Entry::Status status,
-         int position
+         int position = -1
       );
 
       QList<IDownload*> getDownloads() const override;
@@ -131,6 +117,8 @@ namespace DM
       void downloadStatusBecomeErroneous(DM::Download* download);
 
    private:
+      bool addDownloadIntoASharedDirectory(const Protos::Common::Entry& remoteEntry, PM::IPeer* peerSource, const Common::Path& destination);
+
       void loadQueueFromFile();
 
    private slots:

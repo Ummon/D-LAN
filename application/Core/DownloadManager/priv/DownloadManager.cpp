@@ -89,8 +89,7 @@ void DownloadManager::addDownload(
       peerSource,
       destinationDirectoryID,
       relativePath,
-      Protos::Queue::Queue::Entry::QUEUED,
-      this->downloadQueue.size()
+      Protos::Queue::Queue::Entry::QUEUED
    );
 }
 
@@ -107,8 +106,7 @@ void DownloadManager::addDownload(
          peerSource,
          Common::Hash(),
          "",
-         Protos::Queue::Queue::Entry::QUEUED,
-         this->downloadQueue.size()
+         Protos::Queue::Queue::Entry::QUEUED
       );
    }
    else
@@ -124,14 +122,8 @@ void DownloadManager::addDownload(
          // A pending file destination is kept in the queue without sharing its parent.
          localEntry.mutable_shared_entry()->set_path(
             QDir(absolutePath).absoluteFilePath(QString::fromStdString(localEntry.name())).toStdString());
-         const Common::Path destination(QString::fromStdString(localEntry.shared_entry().path()));
-         for (const auto& shared : this->fileManager->getSharedEntries())
-            if (!shared.path.isFile() && destination.isSubOf(shared.path))
-            {
-               const auto relative = destination.removeLastElement().toString().mid(shared.path.toString().size());
-               this->addDownload(remoteEntry, peerSource, shared.ID, '/' + relative);
-               return;
-            }
+         if (this->addDownloadIntoASharedDirectory(remoteEntry, peerSource, Common::Path(QString::fromStdString(localEntry.shared_entry().path()))))
+            return;
          this->addDownload(remoteEntry, localEntry, peerSource, Protos::Queue::Queue::Entry::QUEUED);
          return;
       }
@@ -142,14 +134,8 @@ void DownloadManager::addDownload(
          name.contains('\\') || name.contains(':') || name.contains(QChar::Null))
          return;
       const QString destination = QDir(absolutePath).absoluteFilePath(name) + '/';
-      const Common::Path destinationPath(destination);
-      for (const auto& shared : this->fileManager->getSharedEntries())
-         if (!shared.path.isFile() && destinationPath.isSubOf(shared.path))
-         {
-            const auto relative = destinationPath.removeLastElement().toString().mid(shared.path.toString().size());
-            this->addDownload(remoteEntry, peerSource, shared.ID, '/' + relative);
-            return;
-         }
+      if (this->addDownloadIntoASharedDirectory(remoteEntry, peerSource, Common::Path(destination)))
+         return;
       if (!QDir(absolutePath).exists() || !QDir().mkpath(destination))
       {
          L_WARN(QString("Unable to create the following directory: %1").arg(destination));
@@ -188,26 +174,8 @@ void DownloadManager::addDownload(
    }
 }
 
-Download* DownloadManager::addDownload(
-   const Protos::Common::Entry& remoteEntry,
-   PM::IPeer* peerSource,
-   const Common::Hash& destinationDirectoryID,
-   const QString& localRelativePath,
-   Protos::Queue::Queue::Entry::Status status
-)
-{
-   return this->addDownload(
-      remoteEntry,
-      peerSource,
-      destinationDirectoryID,
-      localRelativePath,
-      status,
-      this->downloadQueue.size()
-   );
-}
-
 /**
-  * Insert a new download at the given position.
+  * Insert a new download at the given position, -1 to append it.
   */
 Download* DownloadManager::addDownload(
    const Protos::Common::Entry& remoteEntry,
@@ -233,16 +201,9 @@ Download* DownloadManager::addDownload(
    return this->addDownload(remoteEntry, localEntry, peerSource, status, position);
 }
 
-Download* DownloadManager::addDownload(
-   const Protos::Common::Entry& remoteEntry,
-   const Protos::Common::Entry& localEntry,
-   PM::IPeer* peerSource,
-   Protos::Queue::Queue::Entry::Status status
-)
-{
-   return this->addDownload(remoteEntry, localEntry, peerSource, status, this->downloadQueue.size());
-}
-
+/**
+  * Insert a new download at the given position, -1 to append it.
+  */
 Download* DownloadManager::addDownload(
    const Protos::Common::Entry& remoteEntry,
    const Protos::Common::Entry& localEntry,
@@ -305,12 +266,28 @@ Download* DownloadManager::addDownload(
    // A download may leave its erroneous state by itself (for example when its peers change), the queue must be rescanned
    // otherwise it may wait until the next free peer. Queued: the status may change from within a scan or a mutex.
    connect(newDownload, &Download::noLongerErroneous, this, &DownloadManager::scanTheQueue, Qt::QueuedConnection);
-   this->downloadQueue.insert(position, newDownload);
+   this->downloadQueue.insert(position == -1 ? this->downloadQueue.size() : position, newDownload);
    newDownload->start();
 
    this->setQueueChanged();
 
    return newDownload;
+}
+
+/**
+  * If 'destination' (a file or a directory) is inside a shared directory, the download is added there.
+  * @return 'true' if the download has been added.
+  */
+bool DownloadManager::addDownloadIntoASharedDirectory(const Protos::Common::Entry& remoteEntry, PM::IPeer* peerSource, const Common::Path& destination)
+{
+   for (const auto& shared : this->fileManager->getSharedEntries())
+      if (!shared.path.isFile() && destination.isSubOf(shared.path))
+      {
+         const auto relative = destination.removeLastElement().toString().mid(shared.path.toString().size());
+         this->addDownload(remoteEntry, peerSource, shared.ID, '/' + relative);
+         return true;
+      }
+   return false;
 }
 
 QList<IDownload*> DownloadManager::getDownloads() const
