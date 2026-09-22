@@ -40,6 +40,11 @@ target_include_directories(TestsSortedArrayAllocation PRIVATE "${CMAKE_CURRENT_S
 target_link_libraries(TestsSortedArrayAllocation PRIVATE Qt6::Test)
 add_test(NAME TestsSortedArrayAllocation COMMAND TestsSortedArrayAllocation)
 
+add_executable(TestsSortedArrayInvariants SortedArrayInvariantTests.cpp)
+target_include_directories(TestsSortedArrayInvariants PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
+target_link_libraries(TestsSortedArrayInvariants PRIVATE Qt6::Test)
+add_test(NAME TestsSortedArrayInvariants COMMAND TestsSortedArrayInvariants)
+
 add_executable(TestsTransferRateCalculator TransferRateCalculatorTests.cpp)
 target_link_libraries(TestsTransferRateCalculator PRIVATE Common Qt6::Test)
 add_test(NAME TestsTransferRateCalculator COMMAND TestsTransferRateCalculator)

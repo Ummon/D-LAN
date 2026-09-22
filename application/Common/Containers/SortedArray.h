@@ -71,9 +71,13 @@
 
 namespace Common
 {
+   struct SortedArrayTestAccess; // Lets the tests check the B-tree invariants.
+
    template<typename T, int M = 7>
    class SortedArray
    {
+      friend struct SortedArrayTestAccess;
+
       static_assert(M >= 3 && M % 2 == 1, "SortedArray order M must be odd and at least 3");
 
       struct Node;
@@ -157,7 +161,6 @@ namespace Common
 
       int getM() const;
 
-      //void sort();
       void setSortedFunction(const std::function<bool(const T&, const T&)>& lesserThan);
 
    private:
@@ -216,9 +219,6 @@ namespace Common
          const std::vector<std::unique_ptr<Node>>& nodes, std::size_t& availableNodes, Node* child = nullptr);
 
       static void split(Node* node, Node* rightNode, const T& value, const std::function<bool(const T&, const T&)>& lesserThan, Node* child = nullptr);
-
-      //static void quickSort(const Position& first, const Position& last);
-      static Position partition(const Position& first, const Position& last, const Position& pivot);
 
       struct SortedArrayData : public QSharedData
       {
@@ -543,22 +543,6 @@ int Common::SortedArray<T, M>::getM() const
 {
    return M;
 }
-
-/**
-  * Must be call after data used to compare an element is modified.
-  * Not implemented.
-  */
-/*template <typename T, int M>
-void Common::SortedArray<T, M>::sort()
-{
-   if (this->size() < 2)
-      return;
-   Position start { getLeftmostNode(this->d->root), 0 };
-   Position last { getRightmostNode(this->d->root), 0 };
-   last.p = last.node->nbItems - 1;
-
-   quickSort(start, last);
-}*/
 
 /**
   * Defines custom function used to define the order of the values.
@@ -1402,20 +1386,3 @@ void Common::SortedArray<T, M>::split(Node* node, Node* rightNode, const T& valu
       }
 }
 
-/**
-  * Not implemented
-  */
-/*
-template <typename T, int M>
-void Common::SortedArray<T, M>::quickSort(const Position& first, const Position& last)
-{
-   if (getNextPosition(first) == last)
-      return;
-
-   Position pivot;
-}
-template <typename T, int M>
-typename Common::SortedArray<T, M>::Position Common::SortedArray<T, M>::partition(const Position& first, const Position& last, const Position& pivot)
-{
-
-}*/
