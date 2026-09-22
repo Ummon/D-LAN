@@ -214,6 +214,20 @@ namespace
       }
    };
 
+   class SwitchableHashPeer : public HashPeer
+   {
+   public:
+      using HashPeer::HashPeer;
+      bool available = true;
+      bool isAvailable() const override { return this->available; }
+      QSharedPointer<PM::IGetHashesResult> getHashes(const Protos::Common::Entry& entry) override
+      {
+         if (!this->available)
+            return {};
+         return HashPeer::getHashes(entry);
+      }
+   };
+
    class CheckpointPeer : public ResumePeer
    {
    public:
@@ -788,6 +802,41 @@ void Tests::noRequestWhileDestroyingQueue()
    delete queue;
    disconnect(connection);
    QCOMPARE(peer.nbRequests, 1);
+}
+
+/**
+  * When a peer is freed from asking hashes, its next file must be asked, even if a file from another free peer comes first in the queue.
+  */
+void Tests::freedPeerAsksItsOwnHashes()
+{
+   SwitchableHashPeer freedPeer(this->fileManager), otherPeer(this->fileManager);
+   Common::PersistentData::rmValue(Common::Constants::FILE_QUEUE, Common::Global::DataFolderType::LOCAL);
+   DownloadManager manager(this->fileManager, this->peerManager);
+
+   Protos::Common::Entry entry;
+   entry.set_type(Protos::Common::Entry::FILE);
+   entry.set_size(Common::Constants::CHUNK_SIZE);
+   const auto add = [&](const char* name, PM::IPeer* peer)
+   {
+      entry.set_name(name);
+      return manager.addDownload(entry, entry, peer, Protos::Queue::Queue::Entry::QUEUED);
+   };
+
+   // Unavailable when queued, then available without any notification: this file waits in first position.
+   otherPeer.available = false;
+   QVERIFY(add("other.bin", &otherPeer));
+   otherPeer.available = true;
+
+   auto first = add("first.bin", &freedPeer);
+   auto second = add("second.bin", &freedPeer);
+   QVERIFY(first && second);
+   QCOMPARE(first->getStatus(), Protos::Common::DownloadStatus::GETTING_THE_HASHES);
+   QCOMPARE(freedPeer.nbRequests, 1);
+
+   emit freedPeer.hashes->timeout(); // Frees 'freedPeer'.
+   QCOMPARE(freedPeer.nbRequests, 2);
+   QCOMPARE(second->getStatus(), Protos::Common::DownloadStatus::GETTING_THE_HASHES);
+   QCOMPARE(otherPeer.nbRequests, 0);
 }
 
 void Tests::coalescePeerStatusUpdates()

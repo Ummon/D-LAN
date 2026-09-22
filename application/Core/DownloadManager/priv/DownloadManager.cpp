@@ -432,7 +432,7 @@ void DownloadManager::newEntries(const Protos::Common::Entries& remoteEntries)
 }
 
 /**
-  * Search for a new file to asking hashes.
+  * Search for a new file to ask hashes from 'peer'. The other peers are handled by their own notifications.
   */
 void DownloadManager::peerNoLongerAskingForHashes(PM::IPeer* peer)
 {
@@ -444,12 +444,12 @@ void DownloadManager::peerNoLongerAskingForHashes(PM::IPeer* peer)
    // We can't use 'downloadsIndexedBySourcePeerID' because the order matters.
    DownloadQueue::ScanningIterator<IsDownloadable> i(this->downloadQueue);
    while (FileDownload* fileDownload = static_cast<FileDownload*>(i.next()))
-      if (!fileDownload->isStatusErroneous() && fileDownload->retrieveHashes())
+      if (fileDownload->getPeerSource() == peer && !fileDownload->isStatusErroneous() && fileDownload->retrieveHashes())
          break;
 }
 
 /**
-  * Search a directory to explore in the download queue.
+  * Search a directory to explore from 'peer' in the download queue. The other peers are handled by their own notifications.
   */
 void DownloadManager::peerNoLongerAskingForEntries(PM::IPeer* peer)
 {
@@ -460,7 +460,7 @@ void DownloadManager::peerNoLongerAskingForEntries(PM::IPeer* peer)
 
    DownloadQueue::ScanningIterator<IsADirectory> i(this->downloadQueue);
    while (DirDownload* dirDownload = static_cast<DirDownload*>(i.next()))
-      if (!dirDownload->isStatusErroneous() && dirDownload->retrieveEntries())
+      if (dirDownload->getPeerSource() == peer && !dirDownload->isStatusErroneous() && dirDownload->retrieveEntries())
          break;
 }
 
