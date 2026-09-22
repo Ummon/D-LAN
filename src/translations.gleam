@@ -780,6 +780,81 @@ pub fn faq_a5(l: Lang) -> element.Element(a) {
   |> raw_span
 }
 
+pub fn faq_q6(l: Lang) -> element.Element(a) {
+  case l {
+    En ->
+      "After installing D-LAN on macOS, I see a warning that Apple could not verify the application. What should I do?"
+    Fr ->
+      "Après avoir installé D-LAN sur macOS, un avertissement indique qu'Apple n'a pas pu vérifier l'application. Que dois-je faire ?"
+    De ->
+      "Nach der Installation von D-LAN unter macOS erscheint eine Warnung, dass Apple die Anwendung nicht überprüfen konnte. Was soll ich tun?"
+    Es ->
+      "Después de instalar D-LAN en macOS, aparece una advertencia de que Apple no ha podido verificar la aplicación. ¿Qué debo hacer?"
+    It ->
+      "Dopo aver installato D-LAN su macOS, compare un avviso che indica che Apple non ha potuto verificare l'applicazione. Cosa devo fare?"
+    Ru ->
+      "После установки D-LAN на macOS появляется предупреждение о том, что Apple не удалось проверить приложение. Что делать?"
+    Ko -> "macOS에 D-LAN을 설치한 후 Apple이 앱을 확인할 수 없다는 경고가 표시됩니다. 어떻게 해야 하나요?"
+    Ja ->
+      "macOS に D-LAN をインストールした後、Apple がアプリケーションを検証できなかったという警告が表示されます。どうすればよいですか？"
+  }
+  |> raw_div
+}
+
+pub fn faq_a6(l: Lang) -> element.Element(a) {
+  case l {
+    En ->
+      "The application is self-signed. After copying D-LAN to the <i>Applications</i> folder, you can add an exception by following these steps:<ul>"
+      <> "<li>Try opening D-LAN, then dismiss the warning.</li>"
+      <> "<li>Open System Settings → Privacy & Security.</li>"
+      <> "<li>Scroll to the message about D-LAN and click Open Anyway.</li>"
+      <> "<li>Authenticate, then click Open to confirm.</li></ul>"
+    Fr ->
+      "L'application est signée avec un certificat autosigné. Après avoir copié D-LAN dans le dossier <i>Applications</i>, vous pouvez ajouter une exception en suivant ces étapes :<ul>"
+      <> "<li>Essayez d'ouvrir D-LAN, puis fermez l'avertissement.</li>"
+      <> "<li>Ouvrez Réglages Système → Confidentialité et sécurité.</li>"
+      <> "<li>Faites défiler la page jusqu'au message concernant D-LAN et cliquez sur Ouvrir quand même.</li>"
+      <> "<li>Authentifiez-vous, puis cliquez sur Ouvrir pour confirmer.</li></ul>"
+    De ->
+      "Die Anwendung ist mit einem selbstsignierten Zertifikat signiert. Nachdem Sie D-LAN in den Ordner <i>Programme</i> kopiert haben, können Sie mit den folgenden Schritten eine Ausnahme hinzufügen:<ul>"
+      <> "<li>Versuchen Sie, D-LAN zu öffnen, und schließen Sie dann die Warnmeldung.</li>"
+      <> "<li>Öffnen Sie Systemeinstellungen → Datenschutz & Sicherheit.</li>"
+      <> "<li>Scrollen Sie zur Meldung über D-LAN und klicken Sie auf Dennoch öffnen.</li>"
+      <> "<li>Authentifizieren Sie sich und klicken Sie zur Bestätigung auf Öffnen.</li></ul>"
+    Es ->
+      "La aplicación está firmada con un certificado autofirmado. Después de copiar D-LAN en la carpeta <i>Aplicaciones</i>, puede añadir una excepción siguiendo estos pasos:<ul>"
+      <> "<li>Intente abrir D-LAN y luego cierre la advertencia.</li>"
+      <> "<li>Abra Ajustes del Sistema → Privacidad y seguridad.</li>"
+      <> "<li>Desplácese hasta el mensaje sobre D-LAN y haga clic en Abrir igualmente.</li>"
+      <> "<li>Autentíquese y luego haga clic en Abrir para confirmar.</li></ul>"
+    It ->
+      "L'applicazione è firmata con un certificato autofirmato. Dopo aver copiato D-LAN nella cartella <i>Applicazioni</i>, potete aggiungere un'eccezione seguendo questi passaggi:<ul>"
+      <> "<li>Provate ad aprire D-LAN, poi chiudete l'avviso.</li>"
+      <> "<li>Aprite Impostazioni di Sistema → Privacy e sicurezza.</li>"
+      <> "<li>Scorrete fino al messaggio relativo a D-LAN e fate clic su Apri comunque.</li>"
+      <> "<li>Autenticatevi, poi fate clic su Apri per confermare.</li></ul>"
+    Ru ->
+      "Приложение подписано самоподписанным сертификатом. После копирования D-LAN в папку <i>Программы</i> вы можете добавить исключение, выполнив следующие действия:<ul>"
+      <> "<li>Попробуйте открыть D-LAN, затем закройте предупреждение.</li>"
+      <> "<li>Откройте Системные настройки → Конфиденциальность и безопасность.</li>"
+      <> "<li>Прокрутите страницу до сообщения о D-LAN и нажмите Всё равно открыть.</li>"
+      <> "<li>Пройдите аутентификацию, затем нажмите Открыть для подтверждения.</li></ul>"
+    Ko ->
+      "이 앱은 자체 서명된 인증서로 서명되어 있습니다. D-LAN을 <i>응용 프로그램</i> 폴더에 복사한 후 다음 단계에 따라 예외를 추가할 수 있습니다:<ul>"
+      <> "<li>D-LAN을 열어 본 다음 경고 창을 닫으세요.</li>"
+      <> "<li>시스템 설정 → 개인정보 보호 및 보안을 여세요.</li>"
+      <> "<li>D-LAN에 대한 메시지가 나올 때까지 스크롤한 다음 확인 없이 열기를 클릭하세요.</li>"
+      <> "<li>인증을 완료한 다음 열기를 클릭하여 확인하세요.</li></ul>"
+    Ja ->
+      "このアプリケーションは自己署名証明書で署名されています。D-LAN を<i>アプリケーション</i>フォルダにコピーした後、次の手順で例外を追加できます：<ul>"
+      <> "<li>D-LAN を開こうとして、表示された警告を閉じます。</li>"
+      <> "<li>システム設定 → プライバシーとセキュリティを開きます。</li>"
+      <> "<li>D-LAN に関するメッセージが表示されるまでスクロールし、「このまま開く」をクリックします。</li>"
+      <> "<li>認証を行い、「開く」をクリックして確定します。</li></ul>"
+  }
+  |> raw_div
+}
+
 pub fn about_author(l: Lang, name: element.Element(a)) -> element.Element(a) {
   element.fragment([
     case l {
