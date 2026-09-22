@@ -40,7 +40,7 @@ pub fn element(
 
   let assert Ok(re) =
     regexp.from_string(case extension {
-      "deb" | "AppImage" ->
+      "dmg" | "AppImage" ->
         "D-LAN-((?:\\d|\\.)+)([^-]*)-(\\d+)-(\\d+)-(\\d+)_.*-(\\w+)\\..*"
       _ -> "D-LAN-((?:\\d|\\.)+)([^-]*)-(\\d+)-(\\d+)-(\\d+).*\\..*"
     })

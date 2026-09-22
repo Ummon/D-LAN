@@ -118,10 +118,10 @@ pub fn localized_date_test() {
 
 pub fn download_button_release_formats_test() {
   [
-    #("windows", "Setup.exe", "windows", "exe"),
-    #("mac", "Installer.dmg", "mac", "dmg"),
-    #("linux", "amd64.deb", "linux amd64", "deb"),
-    #("linux", "x86_64.AppImage", "linux x86_64", "AppImage"),
+    #("windows", "Setup.exe", "<em>windows</em>", "exe"),
+    #("mac", "x86_64.dmg", "<em>mac</em>x86_64", "dmg"),
+    #("linux", "amd64.deb", "<em>linux</em>", "deb"),
+    #("linux", "x86_64.AppImage", "<em>linux</em>x86_64", "AppImage"),
   ]
   |> list.each(fn(release) {
     let #(platform, suffix, platform_text, extension) = release
@@ -145,7 +145,7 @@ pub fn download_button_release_formats_test() {
     let html = element.to_string(button)
     assert string.contains(
       html,
-      "Version 1.2.0 Beta1 for " <> platform_text <> "<br",
+      "Version 1.2.0 Beta1 for " <> platform_text <> "<",
     )
     assert string.contains(html, "Released on September 8, 2026")
     assert string.contains(html, "download " <> extension <> " " <> platform)

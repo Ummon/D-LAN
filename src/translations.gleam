@@ -1431,22 +1431,27 @@ pub fn download_button_version(
   platform: String,
   archi: Option(String),
 ) -> element.Element(a) {
-  let platform = case archi {
-    Some(archi) -> platform <> " " <> archi
-    None -> platform
+  let architecture = case archi {
+    Some(archi) -> " " <> archi
+    None -> ""
   }
 
-  case l {
-    En -> "Version " <> version <> " for " <> platform
-    Fr -> "Version " <> version <> " pour " <> platform
-    De -> "Version " <> version <> " für " <> platform
-    Es -> "Versión " <> version <> " para " <> platform
-    It -> "Versione " <> version <> " per " <> platform
-    Ru -> "Версия " <> version <> " для " <> platform
-    Ko -> "버전 " <> version <> " (" <> platform <> "용)"
-    Ja -> "バージョン " <> version <> " (" <> platform <> " 用)"
+  let #(prefix, suffix) = case l {
+    En -> #("Version " <> version <> " for ", "")
+    Fr -> #("Version " <> version <> " pour ", "")
+    De -> #("Version " <> version <> " für ", "")
+    Es -> #("Versión " <> version <> " para ", "")
+    It -> #("Versione " <> version <> " per ", "")
+    Ru -> #("Версия " <> version <> " для ", "")
+    Ko -> #("버전 " <> version <> " (", "용)")
+    Ja -> #("バージョン " <> version <> " (", " 用)")
   }
-  |> html.text
+
+  element.fragment([
+    html.text(prefix),
+    html.em([], [html.text(platform)]),
+    html.text(architecture <> suffix),
+  ])
 }
 
 /// Formats a display date using the selected language's month names and order.
