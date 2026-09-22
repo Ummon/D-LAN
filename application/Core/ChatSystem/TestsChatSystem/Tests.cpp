@@ -42,10 +42,12 @@ namespace
             this->historyRequestRecipients << peerID;
          return SendStatus::OK;
       }
-      void requestHistory()
+      void requestHistory(const QString& room = QString())
       {
          Protos::Core::GetLastChatMessages request;
          request.set_number(500);
+         if (!room.isEmpty())
+            request.set_chat_room(room.toStdString());
          const auto bytes = request.SerializeAsString();
          emit received(Common::Message::readMessageBody(
             Common::MessageHeader(Common::MessageHeader::CORE_GET_LAST_CHAT_MESSAGES, bytes.size(), Common::Hash::rand()), bytes.data()));
@@ -79,12 +81,15 @@ private slots:
       this->directory = std::make_unique<QTemporaryDir>();
       QVERIFY(this->directory->isValid());
       Common::Global::setDataFolder(FOLDER, this->directory->path());
+      // Joining or leaving a room saves the settings.
+      Common::Global::setDataFolder(Common::Global::DataFolderType::ROAMING, this->directory->path());
       QVERIFY(QDir(this->directory->path()).mkpath(Common::Constants::DIR_CHAT_MESSAGES));
    }
 
    void cleanup()
    {
       Common::Global::setDataFolderToDefault(FOLDER);
+      Common::Global::setDataFolderToDefault(Common::Global::DataFolderType::ROAMING);
       this->directory.reset();
    }
 
@@ -172,6 +177,40 @@ private slots:
       QCOMPARE(network->historyRequestRecipients.size(), 30);
       for (const auto& recipient : network->historyRequestRecipients)
          QCOMPARE(recipient, available);
+   }
+
+   void leftRoomHistoryNotShared()
+   {
+      const auto peers = PM::Builder::newPeerManager({});
+      const auto network = QSharedPointer<NetworkListener>::create();
+      CS::ChatSystem chat(peers, network);
+
+      // A remote peer stays in the room, so the room is still known after we leave it.
+      const auto peerID = Common::Hash::rand();
+      peers->updatePeer(peerID, QHostAddress::LocalHost, 1, "peer", 0, QString(), 0, 0, Common::Constants::PROTOCOL_VERSION);
+      Protos::Core::IMAlive IMAlive;
+      IMAlive.add_chat_rooms("General");
+      const auto bytes = IMAlive.SerializeAsString();
+      emit network->received(Common::Message::readMessageBody(
+         Common::MessageHeader(Common::MessageHeader::CORE_IM_ALIVE, bytes.size(), peerID), bytes.data()));
+
+      chat.joinRoom("General");
+      QCOMPARE(chat.send("hello", "General"), CS::IChatSystem::SendStatus::OK);
+      network->sent.clear();
+      network->requestHistory("General");
+      QCOMPARE(network->sent.size(), 1);
+
+      chat.leaveRoom("General");
+      const auto rooms = chat.getRooms();
+      QCOMPARE(rooms.size(), 1);
+      QVERIFY(!rooms.first().joined);
+
+      network->sent.clear();
+      network->requestHistory("General");
+      QVERIFY(network->sent.isEmpty());
+      Protos::Common::ChatMessages messages;
+      chat.getLastChatMessages(messages, std::numeric_limits<int>::max(), "General");
+      QCOMPARE(messages.messages_size(), 0);
    }
 
    void validateIncomingTimestamps()

@@ -149,7 +149,7 @@ void ChatSystem::getLastChatMessages(
    else
    {
       const auto room = this->rooms.constFind(roomName);
-      if (room != this->rooms.cend())
+      if (room != this->rooms.cend() && room->joined)
          room->messages.fillProtoChatMessages(chatMessages, number);
    }
 }
@@ -310,7 +310,8 @@ void ChatSystem::received(const Common::Message& message)
 
          QHash<QString, Room>::Iterator i = roomName.isEmpty() ? this->rooms.end() : this->rooms.find(roomName);
 
-         if (!roomName.isEmpty() && i == this->rooms.end()) // We don't have any messages from the provided room.
+         // We only answer for the joined rooms: the messages of a left room are no longer updated.
+         if (!roomName.isEmpty() && (i == this->rooms.end() || !i.value().joined))
             break;
 
          QList<QSharedPointer<ChatMessage>> messages =
