@@ -260,7 +260,7 @@ Download* DownloadManager::addDownload(
       break;
 
    default:
-      return 0;
+      return nullptr;
    }
 
    connect(newDownload, &Download::becomeErroneous, this, &DownloadManager::downloadStatusBecomeErroneous);
@@ -319,8 +319,7 @@ void DownloadManager::moveDownloads(
 }
 
 /**
-  * Use the method "QList::erase(..)" to remove many downloads in one call.
-  * The goal is to be more efficient than using only 'Download::remove()'.
+  * The completed downloads are all removed in one pass, see 'DownloadQueue::removeDownloads(..)'.
   */
 void DownloadManager::removeAllCompleteDownloads()
 {
@@ -493,8 +492,7 @@ void DownloadManager::scanTheQueue()
    FileDownload* fileDownload = nullptr;
 
    // To know the number of peers not occupied that own at least one chunk in the queue.
-   auto peers = this->linkedPeers.getPeers();
-   QSet<PM::IPeer*> linkedPeersNotOccupied(peers.begin(), peers.end());
+   QSet<PM::IPeer*> linkedPeersNotOccupied = this->linkedPeers.getPeers();
    linkedPeersNotOccupied -= this->occupiedPeersDownloadingChunk.getOccupiedPeers();
 
    DownloadQueue::ScanningIterator<IsDownloadable> i(this->downloadQueue);
@@ -539,7 +537,7 @@ void DownloadManager::restartErroneousDownloads()
    // Taken first: a restarted download failing again puts itself back in the list, to be retried at the next period.
    // 'QPointer': a download removed from the queue while the others are restarted is skipped.
    QList<QPointer<Download>> downloads;
-   while (Download* download = this->downloadQueue.getAnErroneousDownload())
+   for (Download* download : this->downloadQueue.takeErroneousDownloads())
       downloads << download;
 
    for (const auto& download : std::as_const(downloads))

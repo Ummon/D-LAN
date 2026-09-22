@@ -1575,7 +1575,7 @@ void Tests::chunkPeerQueriesPruneUnavailable()
    QVERIFY(query(first.data()));
    QVERIFY(query(second.data()));
    first.clear();
-   QCOMPARE(links.getPeers(), QList<PM::IPeer*> { &sharedOffline });
+   QCOMPARE(links.getPeers(), QSet<PM::IPeer*> { &sharedOffline });
    second.clear();
    QVERIFY(links.getPeers().isEmpty());
 }
@@ -1636,15 +1636,14 @@ void Tests::erroneousDownloadsAreUnique()
    // Recovery followed by another error before the retry timer consumes the entry.
    first->start();
    first->setStatus(Protos::Common::DownloadStatus::TRANSFER_ERROR);
-   QCOMPARE(queue.getAnErroneousDownload(), first);
-   QCOMPARE(queue.getAnErroneousDownload(), second);
-   QVERIFY(!queue.getAnErroneousDownload());
+   QCOMPARE(queue.takeErroneousDownloads(), (QList<Download*> { first, second }));
+   QVERIFY(queue.takeErroneousDownloads().isEmpty());
 
    // Once consumed, a failed retry must be eligible for scheduling again.
    first->start();
    first->setStatus(Protos::Common::DownloadStatus::TRANSFER_ERROR);
-   QCOMPARE(queue.getAnErroneousDownload(), first);
-   QVERIFY(!queue.getAnErroneousDownload());
+   QCOMPARE(queue.takeErroneousDownloads(), QList<Download*> { first });
+   QVERIFY(queue.takeErroneousDownloads().isEmpty());
 }
 
 void Tests::removeErroneousDownload_data()
@@ -1676,7 +1675,7 @@ void Tests::removeErroneousDownload()
 
    QCOMPARE(queue.size(), 0);
    // Never dereference the result: before the fix it points to the deleted download.
-   QVERIFY(!queue.getAnErroneousDownload());
+   QVERIFY(queue.takeErroneousDownloads().isEmpty());
 }
 
 void Tests::moveDownloads_data()
@@ -1836,9 +1835,8 @@ void Tests::bulkRemovalPreservesQueueState()
    QVERIFY(queue.isAPeerSource(&retainedPeer));
    for (const auto& entry : retainedEntries)
       QVERIFY(queue.isEntryAlreadyQueued(entry));
-   for (Download* download : retained)
-      QCOMPARE(queue.getAnErroneousDownload(), download);
-   QVERIFY(!queue.getAnErroneousDownload());
+   QCOMPARE(queue.takeErroneousDownloads(), retained);
+   QVERIFY(queue.takeErroneousDownloads().isEmpty());
    DownloadQueue::ScanningIterator<IsDownloadable> unfinished(queue);
    for (Download* download : retained)
       if (download->getStatus() != Protos::Common::DownloadStatus::COMPLETE)

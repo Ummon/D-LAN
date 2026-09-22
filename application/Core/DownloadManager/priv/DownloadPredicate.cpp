@@ -35,7 +35,7 @@ bool IsDownloadable::operator() (const Download* download) const
 
 bool IsADirectory::operator() (const Download* download) const
 {
-   return dynamic_cast<const DirDownload*>(download) != 0;
+   return dynamic_cast<const DirDownload*>(download) != nullptr;
 }
 
 bool IsComplete::operator() (const Download* download) const

@@ -68,7 +68,7 @@ namespace DM
       bool isEntryAlreadyQueued(const Protos::Common::Entry& localEntry);
 
       void setDownloadAsErroneous(Download* download);
-      Download* getAnErroneousDownload();
+      QList<Download*> takeErroneousDownloads();
 
       QList<QSharedPointer<IChunkDownloader>> getTheOldestUnfinishedChunks(int n);
 
@@ -140,7 +140,7 @@ DM::DownloadQueue::ScanningIterator<P>::ScanningIterator(DM::DownloadQueue& queu
 }
 
 /**
-  * @return Return 0 at the end of the list.
+  * @return 'nullptr' at the end of the list.
   */
 template <typename P>
 DM::Download* DM::DownloadQueue::ScanningIterator<P>::next()
@@ -157,5 +157,5 @@ DM::Download* DM::DownloadQueue::ScanningIterator<P>::next()
 
       return download;
    }
-   return 0;
+   return nullptr;
 }

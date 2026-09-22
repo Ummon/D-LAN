@@ -19,7 +19,7 @@
 #pragma once
 
 #include <QMap>
-#include <QList>
+#include <QSet>
 
 #include <Core/PeerManager/IPeer.h>
 
@@ -34,9 +34,9 @@ namespace DM
    class LinkedPeers : private QMap<PM::IPeer*, quint32>
    {
    public:
-      inline QList<PM::IPeer*> getPeers()
+      inline QSet<PM::IPeer*> getPeers() const
       {
-         return this->keys();
+         return QSet<PM::IPeer*>(this->keyBegin(), this->keyEnd());
       }
 
       inline void addLink(PM::IPeer* peer)

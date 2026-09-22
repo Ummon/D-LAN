@@ -295,13 +295,11 @@ void DownloadQueue::setDownloadAsErroneous(Download* download)
 }
 
 /**
-  * If a erroneous download is returns it is removed from the erroneous list.
+  * Return the erroneous downloads, in the order they became erroneous, and empty the list.
   */
-Download* DownloadQueue::getAnErroneousDownload()
+QList<Download*> DownloadQueue::takeErroneousDownloads()
 {
-   if (!this->erroneousDownloads.isEmpty())
-      return this->erroneousDownloads.takeFirst();
-   return 0;
+   return std::exchange(this->erroneousDownloads, {});
 }
 
 QList<QSharedPointer<IChunkDownloader>> DownloadQueue::getTheOldestUnfinishedChunks(int n)
