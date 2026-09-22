@@ -365,15 +365,25 @@ void Tests::macOSInterfaceSelection()
 
 void Tests::networkConfigurationSnapshot()
 {
+   const QString originalAddress = SETTINGS.get<QString>("listen_address");
+   const auto restore = qScopeGuard([&]() { SETTINGS.set("listen_address", originalAddress); });
+   SETTINGS.set("listen_address", QString());
+
    auto interfaces = QNetworkInterface::allInterfaces();
    const auto configuration = Utils::getNetworkConfiguration(interfaces);
    std::reverse(interfaces.begin(), interfaces.end());
    QCOMPARE(Utils::getNetworkConfiguration(interfaces), configuration);
-   QVERIFY(Utils::getNetworkConfiguration({}).isEmpty());
-   if (!interfaces.isEmpty())
+   QCOMPARE(Utils::getNetworkConfiguration({}), QStringList { QHostAddress(QHostAddress::AnyIPv4).toString() });
+
+   // Interfaces not listened to, like loopback or virtual adapters that are down, must not trigger a rebinding.
+   QList<QNetworkInterface> selected = Utils::getCurrentInterfacesToListenTo(interfaces);
+   QCOMPARE(Utils::getNetworkConfiguration(selected), configuration);
+
+   // Losing a listened interface must.
+   if (!selected.isEmpty())
    {
-      interfaces.removeLast();
-      QVERIFY(Utils::getNetworkConfiguration(interfaces) != configuration);
+      selected.removeLast();
+      QVERIFY(Utils::getNetworkConfiguration(selected) != configuration);
    }
 }
 

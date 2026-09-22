@@ -32,26 +32,32 @@ using namespace NL;
 
 #include <priv/Log.h>
 
+/**
+  * A rebinding drops all the peers and aborts their transfers. The configuration is then limited to what
+  * the sockets depend on: the address to bind to and the interfaces joining the multicast group. Changes
+  * on other interfaces (virtual adapters, VPN, etc.) or on unused IPv6 addresses are ignored.
+  */
 QStringList Utils::getNetworkConfiguration(const QList<QNetworkInterface>& interfaces)
 {
-   QStringList configuration;
-   for (const auto& interface : interfaces)
+   const QHostAddress address = Utils::getCurrentAddressToListenTo(interfaces);
+   QStringList configuration { address.toString() };
+   for (const auto& interface : Utils::getCurrentInterfacesToListenTo(interfaces))
    {
-      const QString identity = QString("%1|%2|%3|%4")
-         .arg(interface.index()).arg(interface.name()).arg(static_cast<int>(interface.flags())).arg(interface.hardwareAddress());
+      const QString identity = QString("%1|%2").arg(interface.index()).arg(interface.name());
       configuration << identity;
-      for (const auto& entry : interface.addressEntries())
-         configuration << QString("%1|%2|%3|%4")
-            .arg(identity, entry.ip().toString(), entry.netmask().toString(), entry.broadcast().toString());
+      // An IPv6 membership is bound to the interface index. An IPv4 one may be bound to the interface address (Windows).
+      if (address.protocol() == QAbstractSocket::IPv4Protocol)
+         for (const auto& entry : interface.addressEntries())
+            if (entry.ip().protocol() == QAbstractSocket::IPv4Protocol)
+               configuration << QString("%1|%2").arg(identity, entry.ip().toString());
    }
    configuration.sort();
    return configuration;
 }
 
-QList<QNetworkInterface> Utils::getCurrentInterfacesToListenTo()
+QList<QNetworkInterface> Utils::getCurrentInterfacesToListenTo(const QList<QNetworkInterface>& allInterfaces)
 {
    QList<QNetworkInterface> interfaces;
-   const auto allInterfaces = QNetworkInterface::allInterfaces();
    const QString addressToListen = SETTINGS.get<QString>("listen_address");
    const auto protocol = Utils::getCurrentAddressToListenTo(allInterfaces).protocol();
    for (const auto& interface : allInterfaces)

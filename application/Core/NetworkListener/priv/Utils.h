@@ -27,11 +27,11 @@ namespace NL
    class Utils
    {
    public:
-      static QList<QNetworkInterface> getCurrentInterfacesToListenTo();
+      static QList<QNetworkInterface> getCurrentInterfacesToListenTo(const QList<QNetworkInterface>& interfaces = QNetworkInterface::allInterfaces());
       static void sanitizeListenSettings(const QList<QNetworkInterface>& interfaces = QNetworkInterface::allInterfaces());
       static QHostAddress getCurrentAddressToListenTo(const QList<QNetworkInterface>& interfaces = QNetworkInterface::allInterfaces());
       static QHostAddress getMulticastGroup(QAbstractSocket::NetworkLayerProtocol protocol);
-      // Stable across enumeration order; excludes changing address lifetimes.
+      // Stable across enumeration order; only covers what the sockets depend on.
       static QStringList getNetworkConfiguration(const QList<QNetworkInterface>& interfaces = QNetworkInterface::allInterfaces());
 
    private:
