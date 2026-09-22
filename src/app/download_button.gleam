@@ -22,7 +22,6 @@ pub fn element(
   ctx: web.Context,
   platform: String,
 ) -> Result(element.Element(a), Nil) {
-  let platform_formatted = string.capitalise(platform)
   let release_platform_folder = ctx.app.releases_directory <> "/" <> platform
   use filenames <- result.try(
     simplifile.read_directory(release_platform_folder)
@@ -94,7 +93,7 @@ pub fn element(
           html.text(" (" <> utils.file_size_mib(file_info.size) <> " MiB)"),
         ]),
         html.br([]),
-        tr.download_button_version(ctx.lang, version_full, platform_formatted),
+        tr.download_button_version(ctx.lang, version_full, platform),
         html.br([]),
         tr.download_button_released(ctx.lang, released_date),
       ],

@@ -232,15 +232,15 @@ select {
          background-color: rgba(255, 255, 255, consts.$opacity2);
          margin: 15px 15px 0px 15px;
 
-         &.windows {
+         &.Windows {
             background-image: url("img/download_for_windows.png");
          }
 
-         &.dmg {
+         &.macOS {
             background-image: url("img/download_for_mac.png");
          }
 
-         &.linux {
+         &.Linux {
             background-image: url("img/download_for_linux.png");
          }
 
