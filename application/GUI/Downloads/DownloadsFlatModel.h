@@ -79,7 +79,8 @@ namespace GUI
       quint64 totalBytesDownloadedInQueue;
       quint64 eta;
 
-      static constexpr int NB_OF_DL_RATE_VALUES = 10;
+      static constexpr int NB_OF_DL_RATE_VALUES = 20;
+      int nbOfDlRateValues;
       int nbOfNonZeroDlRateValues;
       quint64 sumDlRateValues;
       quint32 dlRateValues[NB_OF_DL_RATE_VALUES]{};

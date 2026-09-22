@@ -49,6 +49,7 @@ DownloadsFlatModel::DownloadsFlatModel(
    totalBytesInQueue(0),
    totalBytesDownloadedInQueue(0),
    eta(0),
+   nbOfDlRateValues(0),
    nbOfNonZeroDlRateValues(0),
    sumDlRateValues(0),
    currentDlRateValueIndex(0)
@@ -395,11 +396,14 @@ void DownloadsFlatModel::updateProgress(const Protos::GUI::State& state)
 
    this->dlRateValues[this->currentDlRateValueIndex] = newRate;
    this->currentDlRateValueIndex = (this->currentDlRateValueIndex + 1) % NB_OF_DL_RATE_VALUES;
+   if (this->nbOfDlRateValues < NB_OF_DL_RATE_VALUES)
+      ++this->nbOfDlRateValues;
 
    const quint64 oldEta = this->eta;
-   const quint64 averageDlRate = this->sumDlRateValues / NB_OF_DL_RATE_VALUES;
+   // Include received zero-rate samples, but exclude unused slots during startup.
+   const quint64 averageDlRate = this->sumDlRateValues / this->nbOfDlRateValues;
 
-   if (this->nbOfNonZeroDlRateValues < NB_OF_DL_RATE_VALUES || averageDlRate == 0)
+   if (this->nbOfNonZeroDlRateValues < (NB_OF_DL_RATE_VALUES / 2) || averageDlRate == 0)
       this->eta = ETA_UNKNOWN;
    else
       this->eta = (this->totalBytesInQueue - this->totalBytesDownloadedInQueue) / averageDlRate;
