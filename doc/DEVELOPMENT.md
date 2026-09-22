@@ -147,6 +147,12 @@ The build requires OpenSSL 3 development libraries. Windows packaging copies
 libcrypto/libssl DLLs alongside Qt's TLS plugins; set `DLAN_OPENSSL_RUNTIME_DIR`
 when they are not in the installation's `bin` directory. macOS packaging uses
 Qt's Secure Transport plugin and deploys the linked libcrypto dependency.
+`macdeployqt` copies `libcrypto.3.dylib` into `Contents/Frameworks` and rewrites
+the executable dependencies to the bundled copy. No Homebrew installation is
+needed on the destination machine. The macOS bundle includes the OpenSSL license
+in `Contents/Resources/licenses/OpenSSL.txt`. The RSA/SHA-256 certificate code
+uses OpenSSL's built-in default provider, so it needs no external provider module
+or `openssl` executable; `libssl` is not needed with Secure Transport.
 Linux AppImage packaging explicitly includes Qt's OpenSSL plugin and the shared
 libssl library, which Qt loads dynamically. Use dependencies for the target
 compiler/architecture; do not add another toolchain's system headers to the
