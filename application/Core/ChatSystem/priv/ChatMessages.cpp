@@ -33,10 +33,6 @@ using namespace CS;
 
 #include <priv/Log.h>
 
-ChatMessages::ChatMessages() :
-   d(new ChatMessagesData)
-{}
-
 /**
   * @return 'true' if the message has been inserted.
   */
@@ -90,7 +86,7 @@ QList<quint64> ChatMessages::getLastMessageIDs(int nMax) const
 {
    QList<quint64> result;
 
-   QListIterator<QSharedPointer<ChatMessage>> i(this->d->messages);
+   QListIterator<QSharedPointer<ChatMessage>> i(this->messages);
    i.toBack();
    int n = 0;
    while (i.hasPrevious() && n++ < nMax)
@@ -101,7 +97,7 @@ QList<quint64> ChatMessages::getLastMessageIDs(int nMax) const
 
 QList<QSharedPointer<ChatMessage>> ChatMessages::getMessages() const
 {
-   return this->d->messages;
+   return this->messages;
 }
 
 /**
@@ -118,10 +114,10 @@ QList<QSharedPointer<ChatMessage>> ChatMessages::getUnknownMessages(
       knownIDs.insert(getLastChatMessage.message_ids(i));
 
    QList<QSharedPointer<ChatMessage>> result;
-   for (int i = this->d->messages.size() - 1; i >= 0 && this->d->messages.size() - i <= int(getLastChatMessage.number()); i--)
+   for (int i = this->messages.size() - 1; i >= 0 && this->messages.size() - i <= int(getLastChatMessage.number()); i--)
    {
-      if (!knownIDs.remove(this->d->messages[i]->getID()))
-         result.prepend(this->d->messages[i]);
+      if (!knownIDs.remove(this->messages[i]->getID()))
+         result.prepend(this->messages[i]);
    }
 
    return result;
@@ -129,9 +125,9 @@ QList<QSharedPointer<ChatMessage>> ChatMessages::getUnknownMessages(
 
 void ChatMessages::fillProtoChatMessages(Protos::Common::ChatMessages& chatMessages, int number) const
 {
-   int i = number > this->d->messages.size() ? 0 : this->d->messages.size() - number;
-   while (i < this->d->messages.size())
-      this->d->messages[i++]->fillProtoChatMessage(*chatMessages.add_messages());
+   int i = number > this->messages.size() ? 0 : this->messages.size() - number;
+   while (i < this->messages.size())
+      this->messages[i++]->fillProtoChatMessage(*chatMessages.add_messages());
 }
 
 /**
@@ -203,10 +199,10 @@ void ChatMessages::loadForRoom(const QString& roomName)
       if (filtered)
          L_WARN(QString("Ignored %1 saved chat messages belonging to another room in %2").arg(originalSize - messages->size()).arg(filename));
 
-      const bool wasChanged = this->d->changed;
+      const bool wasChanged = this->changed;
       bool timestampsChanged;
       this->add(chatMessages, timestampsChanged);
-      this->d->changed = wasChanged || filtered || timestampsChanged;
+      this->changed = wasChanged || filtered || timestampsChanged;
    }
    catch (Common::UnknownValueException&)
    {
@@ -223,7 +219,7 @@ void ChatMessages::loadForRoom(const QString& roomName)
   */
 void ChatMessages::saveForRoom(const QString& roomName) const
 {
-   if (!this->d->changed)
+   if (!this->changed)
       return;
 
    try
@@ -236,7 +232,7 @@ void ChatMessages::saveForRoom(const QString& roomName) const
       Protos::Common::ChatMessages chatMessages;
       this->fillProtoChatMessages(chatMessages);
       Common::PersistentData::setValue(filename, chatMessages, FOLDER_TYPE_MESSAGES_SAVED);
-      this->d->changed = false;
+      this->changed = false;
    }
    catch (Common::PersistentDataIOException& err)
    {
@@ -272,44 +268,44 @@ QList<QSharedPointer<ChatMessage>> ChatMessages::insert(const QList<QSharedPoint
    QListIterator<QSharedPointer<ChatMessage>> i(sortedMessages);
    i.toBack();
 
-   int j = this->d->messages.size();
+   int j = this->messages.size();
    while (i.hasPrevious())
    {
       const QSharedPointer<ChatMessage>& mess = i.previous();
 
-      if (this->d->messageIDs.contains(mess->getID()))
+      if (this->messageIDs.contains(mess->getID()))
          continue;
 
-      while (j > 0 && this->d->messages[j-1]->getTime() > mess->getTime())
+      while (j > 0 && this->messages[j-1]->getTime() > mess->getTime())
          j--;
 
       // The list is full and the message is older than all the others: it would be removed right after.
       // The remaining messages are even older so we can stop here.
-      if (this->d->messages.size() >= MAX_NUMBER_OF_STORED_CHAT_MESSAGES && j == 0)
+      if (this->messages.size() >= MAX_NUMBER_OF_STORED_CHAT_MESSAGES && j == 0)
          break;
 
       insertedMessages.prepend(mess);
-      this->d->messageIDs.insert(mess->getID());
-      this->d->messages.insert(j, mess);
+      this->messageIDs.insert(mess->getID());
+      this->messages.insert(j, mess);
    }
 
-   if (this->d->messages.size() > MAX_NUMBER_OF_STORED_CHAT_MESSAGES)
+   if (this->messages.size() > MAX_NUMBER_OF_STORED_CHAT_MESSAGES)
    {
       QSet<quint64> removedIDs;
-      const auto begin = this->d->messages.begin();
-      const auto end = this->d->messages.begin() + (this->d->messages.size() - MAX_NUMBER_OF_STORED_CHAT_MESSAGES);
+      const auto begin = this->messages.begin();
+      const auto end = this->messages.begin() + (this->messages.size() - MAX_NUMBER_OF_STORED_CHAT_MESSAGES);
       for (auto m = begin; m != end; m++)
          removedIDs.insert((*m)->getID());
-      this->d->messages.erase(begin, end);
+      this->messages.erase(begin, end);
 
-      this->d->messageIDs.subtract(removedIDs);
+      this->messageIDs.subtract(removedIDs);
 
       // A message inserted and removed right after isn't reported as inserted.
       insertedMessages.removeIf([&](const QSharedPointer<ChatMessage>& m) { return removedIDs.contains(m->getID()); });
    }
 
-   if (!this->d->changed)
-      this->d->changed = !insertedMessages.isEmpty();
+   if (!this->changed)
+      this->changed = !insertedMessages.isEmpty();
 
    return insertedMessages;
 }

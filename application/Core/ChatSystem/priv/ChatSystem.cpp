@@ -146,11 +146,8 @@ QList<IChatSystem::ChatRoom> ChatSystem::getRooms() const
 {
    QList<ChatRoom> result;
 
-   for (QHashIterator<QString, Room> i(this->rooms); i.hasNext();)
-   {
-      auto room = i.next();
-      result << ChatRoom { room.key(), room.value().peers, room.value().joined };
-   }
+   for (auto [name, room] : this->rooms.asKeyValueRange())
+      result << ChatRoom { name, room.peers, room.joined };
 
    return result;
 }
@@ -326,12 +323,9 @@ void ChatSystem::received(const Common::Message& message)
   */
 void ChatSystem::IMAliveMessageToBeSend(Protos::Core::IMAlive& IMAliveMessage)
 {
-   for (QHashIterator<QString, Room> i(this->rooms); i.hasNext();)
-   {
-      auto room = i.next();
-      if (room.value().joined)
-         IMAliveMessage.add_chat_rooms(room.key().toStdString());
-   }
+   for (auto [name, room] : std::as_const(this->rooms).asKeyValueRange())
+      if (room.joined)
+         IMAliveMessage.add_chat_rooms(name.toStdString());
 }
 
 /**
@@ -344,12 +338,9 @@ void ChatSystem::retrieveLastChatMessages()
 
    this->retrieveLastChatMessagesFromPeers(this->peerManager->getPeers());
 
-   for (QHashIterator<QString, Room> i(this->rooms); i.hasNext();)
-   {
-      auto room = i.next();
-      if (room.value().joined)
-         this->retrieveLastChatMessagesFromPeers(room.value().peers.values(), room.key());
-   }
+   for (auto [name, room] : std::as_const(this->rooms).asKeyValueRange())
+      if (room.joined)
+         this->retrieveLastChatMessagesFromPeers(room.peers.values(), name);
 }
 
 /**
@@ -361,9 +352,7 @@ void ChatSystem::removeDeadPeersFromRooms()
    {
       Room& room = i.next().value();
 
-      for (QMutableSetIterator<PM::IPeer*> j(room.peers); j.hasNext();)
-         if (!j.next()->isAlive())
-            j.remove();
+      room.peers.removeIf([](PM::IPeer* peer) { return !peer->isAlive(); });
 
       if (room.peers.isEmpty() && !room.joined)
          i.remove();
@@ -375,7 +364,7 @@ void ChatSystem::removeDeadPeersFromRooms()
   */
 void ChatSystem::loadRoomListFromSettings()
 {
-   foreach (QString roomName, SETTINGS.getRepeated<QString>("joined_chat_rooms"))
+   for (const QString& roomName : SETTINGS.getRepeated<QString>("joined_chat_rooms"))
       this->join(roomName);
 }
 
@@ -385,12 +374,9 @@ void ChatSystem::loadRoomListFromSettings()
 void ChatSystem::saveRoomListToSettings()
 {
    QList<QString> joinedRoomNames;
-   for (QHashIterator<QString, Room> i(this->rooms); i.hasNext();)
-   {
-      i.next();
-      if (i.value().joined)
-         joinedRoomNames << i.key();
-   }
+   for (auto [name, room] : std::as_const(this->rooms).asKeyValueRange())
+      if (room.joined)
+         joinedRoomNames << name;
 
    SETTINGS.set("joined_chat_rooms", joinedRoomNames);
    SETTINGS.save();
@@ -400,12 +386,9 @@ void ChatSystem::saveAllChatMessages()
 {
    this->messages.saveForRoom();
 
-   for (QHashIterator<QString, Room> i(this->rooms); i.hasNext();)
-   {
-      i.next();
-      if (i.value().joined)
-         i.value().messages.saveForRoom(i.key());
-   }
+   for (auto [name, room] : std::as_const(this->rooms).asKeyValueRange())
+      if (room.joined)
+         room.messages.saveForRoom(name);
 }
 
 /**

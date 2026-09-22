@@ -24,8 +24,6 @@
 #include <QList>
 #include <QSet>
 #include <QSharedPointer>
-#include <QSharedDataPointer>
-#include <QSharedData>
 
 #include <Protos/common.pb.h>
 #include <Protos/core_protocol.pb.h>
@@ -41,8 +39,6 @@ namespace CS
    {
    public:
       const static Common::Global::DataFolderType FOLDER_TYPE_MESSAGES_SAVED = Common::Global::DataFolderType::LOCAL;
-
-      ChatMessages();
 
       bool add(const QSharedPointer<ChatMessage>& message);
       QList<QSharedPointer<ChatMessage>> add(const Protos::Common::ChatMessages& chatMessages);
@@ -74,13 +70,8 @@ namespace CS
 
       QList<QSharedPointer<ChatMessage>> insert(const QList<QSharedPointer<ChatMessage>>& messages);
 
-      struct ChatMessagesData : public QSharedData
-      {
-         mutable bool changed = false;
-         QList<QSharedPointer<ChatMessage>> messages;
-         QSet<quint64> messageIDs;
-      };
-
-      QSharedDataPointer<ChatMessagesData> d;
+      mutable bool changed = false; // Some messages haven't been saved yet, 'saveForRoom()' clears it.
+      QList<QSharedPointer<ChatMessage>> messages; // Sorted from oldest to youngest.
+      QSet<quint64> messageIDs;
    };
 }

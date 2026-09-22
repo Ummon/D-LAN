@@ -26,9 +26,7 @@
 #include <QSet>
 #include <QHash>
 
-#include <Common/Network/MessageHeader.h>
 #include <Common/Hash.h>
-#include <Common/Uncopyable.h>
 
 #include <Core/PeerManager/IPeerManager.h>
 #include <Core/NetworkListener/INetworkListener.h>
@@ -39,7 +37,7 @@
 
 namespace CS
 {
-   class ChatSystem : public IChatSystem, Common::Uncopyable
+   class ChatSystem : public IChatSystem
    {
       Q_OBJECT
    public:
@@ -66,10 +64,11 @@ namespace CS
       void received(const Common::Message& message);
       void IMAliveMessageToBeSend(Protos::Core::IMAlive& IMAliveMessage);
       void retrieveLastChatMessages();
-      void removeDeadPeersFromRooms();
       void saveAllChatMessages();
 
    private:
+      void removeDeadPeersFromRooms();
+
       struct Room {
          ChatMessages messages; // We may not know the messages of not joined rooms.
          QSet<PM::IPeer*> peers; // Do not include our ID. Only alive peers, see 'removeDeadPeersFromRooms()'.
