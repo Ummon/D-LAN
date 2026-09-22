@@ -52,6 +52,12 @@ namespace
          emit received(Common::Message::readMessageBody(
             Common::MessageHeader(Common::MessageHeader::CORE_GET_LAST_CHAT_MESSAGES, bytes.size(), Common::Hash::rand()), bytes.data()));
       }
+      void receiveChatMessages(const Protos::Common::ChatMessages& messages)
+      {
+         const auto bytes = messages.SerializeAsString();
+         emit received(Common::Message::readMessageBody(
+            Common::MessageHeader(Common::MessageHeader::CORE_CHAT_MESSAGES, bytes.size(), Common::Hash::rand()), bytes.data()));
+      }
       void receiveIMAlive(const Common::Hash& peerID, const QStringList& rooms)
       {
          Protos::Core::IMAlive IMAlive;
@@ -220,6 +226,33 @@ private slots:
       QCOMPARE(messages.messages_size(), 0);
    }
 
+   void incomingMessagesOnlyForJoinedRooms()
+   {
+      const auto peers = PM::Builder::newPeerManager({});
+      const auto network = QSharedPointer<NetworkListener>::create();
+      CS::ChatSystem chat(peers, network);
+      QSignalSpy notifications(&chat, &CS::IChatSystem::newMessages);
+
+      // A message for an unknown room is ignored and doesn't create the room.
+      network->receiveChatMessages(message("General", 1));
+      QVERIFY(notifications.isEmpty());
+      QVERIFY(chat.getRooms().isEmpty());
+
+      chat.joinRoom("General");
+      network->receiveChatMessages(message("General", 2));
+      QCOMPARE(notifications.size(), 1);
+      const auto received = qvariant_cast<Protos::Common::ChatMessages>(notifications.first().at(0));
+      QCOMPARE(received.messages_size(), 1);
+      QCOMPARE(received.messages(0).id(), quint64(2));
+
+      Protos::Common::ChatMessages general;
+      chat.getLastChatMessages(general, std::numeric_limits<int>::max(), "General");
+      QCOMPARE(general.messages_size(), 1);
+      Protos::Common::ChatMessages mainChat;
+      chat.getLastChatMessages(mainChat);
+      QCOMPARE(mainChat.messages_size(), 0);
+   }
+
    void roomHistorySavedOnLeaveAndExit()
    {
       const auto peers = PM::Builder::newPeerManager({});
@@ -344,16 +377,11 @@ private slots:
          entry.mutable_messages(0)->set_time(future);
          batch.MergeFrom(entry);
       }
-      auto receive = [&](const Protos::Common::ChatMessages& entries) {
-         const auto bytes = entries.SerializeAsString();
-         emit network->received(Common::Message::readMessageBody(
-            Common::MessageHeader(Common::MessageHeader::CORE_CHAT_MESSAGES, bytes.size(), Common::Hash::rand()), bytes.data()));
-      };
-      receive(batch);
+      network->receiveChatMessages(batch);
       QVERIFY(notifications.isEmpty());
       auto live = message(QString(), 501);
       live.mutable_messages(0)->clear_time();
-      receive(live);
+      network->receiveChatMessages(live);
       QCOMPARE(notifications.size(), 1);
       Protos::Common::ChatMessages saved;
       chat.getLastChatMessages(saved);

@@ -78,6 +78,9 @@ namespace CS
 
       Room* join(const QString& roomName);
 
+      ChatMessages* joinedMessages(const QString& roomName);
+      const ChatMessages* joinedMessages(const QString& roomName) const;
+
       void retrieveLastChatMessagesFromPeers(const QList<PM::IPeer*>& peers, const QString& roomName = QString());
 
       void loadRoomListFromSettings();

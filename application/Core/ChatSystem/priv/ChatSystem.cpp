@@ -83,16 +83,11 @@ ChatSystem::SendStatus ChatSystem::send(
    const QList<Common::Hash>& peerIDsAnswer
 )
 {
-   ChatMessages* history = &this->messages; // Where the message is saved once sent.
-   if (!roomName.isEmpty())
+   ChatMessages* history = this->joinedMessages(roomName); // Where the message is saved once sent.
+   if (!history)
    {
-      const auto room = this->rooms.find(roomName);
-      if (room == this->rooms.end() || !room->joined)
-      {
-         L_WARN(QString("Unable to send a message to the room '%1': we haven't joined it").arg(roomName));
-         return SendStatus::UNABLE_TO_SEND;
-      }
-      history = &room->messages;
+      L_WARN(QString("Unable to send a message to the room '%1': we haven't joined it").arg(roomName));
+      return SendStatus::UNABLE_TO_SEND;
    }
 
    QSharedPointer<ChatMessage> chatMessage(
@@ -143,14 +138,8 @@ void ChatSystem::getLastChatMessages(
    const QString& roomName
 ) const
 {
-   if (roomName.isEmpty())
-      this->messages.fillProtoChatMessages(chatMessages, number);
-   else
-   {
-      const auto room = this->rooms.constFind(roomName);
-      if (room != this->rooms.cend() && room->joined)
-         room->messages.fillProtoChatMessages(chatMessages, number);
-   }
+   if (const ChatMessages* history = this->joinedMessages(roomName))
+      history->fillProtoChatMessages(chatMessages, number);
 }
 
 QList<IChatSystem::ChatRoom> ChatSystem::getRooms() const
@@ -286,22 +275,11 @@ void ChatSystem::received(const Common::Message& message)
                   Common::Hash::HASH_SIZE
                );
 
-         bool hasChatRoom = chatMessages.messages(0).chat_room().size() > 0;
-         QString chatRoomName =
-            hasChatRoom ?
-                 QString::fromStdString(chatMessages.messages(0).chat_room())
-               : QString();
-
-         // We don't use 'operator[]' here to avoid creating an empty room as a side effect.
-         QHash<QString, Room>::Iterator room = hasChatRoom ? this->rooms.find(chatRoomName) : this->rooms.end();
-
-         if (hasChatRoom && (room == this->rooms.end() || !room.value().joined))
+         ChatMessages* history = this->joinedMessages(QString::fromStdString(chatMessages.messages(0).chat_room()));
+         if (!history)
             break;
 
-         const QList<QSharedPointer<ChatMessage>>& messages =
-               hasChatRoom ?
-                  room.value().messages.add(chatMessages)
-                : this->messages.add(chatMessages);
+         const QList<QSharedPointer<ChatMessage>> messages = history->add(chatMessages);
 
          Protos::Common::ChatMessages filteredChatMessages;
          ChatMessages::fillProtoChatMessages(filteredChatMessages, messages);
@@ -315,20 +293,12 @@ void ChatSystem::received(const Common::Message& message)
       {
          const Protos::Core::GetLastChatMessages& getLastChatMessages = message.getMessage<Protos::Core::GetLastChatMessages>();
 
-         QString roomName;
-         if (getLastChatMessages.chat_room().size() > 0)
-            roomName = QString::fromStdString(getLastChatMessages.chat_room());
-
-         QHash<QString, Room>::Iterator i = roomName.isEmpty() ? this->rooms.end() : this->rooms.find(roomName);
-
          // We only answer for the joined rooms: the messages of a left room are no longer updated.
-         if (!roomName.isEmpty() && (i == this->rooms.end() || !i.value().joined))
+         const ChatMessages* history = this->joinedMessages(QString::fromStdString(getLastChatMessages.chat_room()));
+         if (!history)
             break;
 
-         QList<QSharedPointer<ChatMessage>> messages =
-            i != this->rooms.end() ?
-                 i.value().messages.getUnknownMessages(getLastChatMessages)
-               : this->messages.getUnknownMessages(getLastChatMessages);
+         QList<QSharedPointer<ChatMessage>> messages = history->getUnknownMessages(getLastChatMessages);
 
          if (messages.isEmpty())
             break;
@@ -439,6 +409,28 @@ void ChatSystem::saveAllChatMessages()
 }
 
 /**
+  * @return The messages of the main chat if 'roomName' is empty, of the room if we have joined it, 'nullptr' otherwise.
+  *         A room is never created.
+  */
+ChatMessages* ChatSystem::joinedMessages(const QString& roomName)
+{
+   if (roomName.isEmpty())
+      return &this->messages;
+
+   const auto room = this->rooms.find(roomName);
+   return room != this->rooms.end() && room->joined ? &room->messages : nullptr;
+}
+
+const ChatMessages* ChatSystem::joinedMessages(const QString& roomName) const
+{
+   if (roomName.isEmpty())
+      return &this->messages;
+
+   const auto room = this->rooms.constFind(roomName);
+   return room != this->rooms.cend() && room->joined ? &room->messages : nullptr;
+}
+
+/**
   * Ask a random available peer from the given peers their last known messages.
   * Alive peers may be blocked or have an incompatible protocol version, they are skipped.
   */
@@ -455,14 +447,8 @@ void ChatSystem::retrieveLastChatMessagesFromPeers(const QList<PM::IPeer*>& peer
    static const quint32 N = SETTINGS.get<quint32>("number_of_chat_messages_to_retrieve");
 
    QList<quint64> messageIDs;
-   if (roomName.isEmpty())
-      messageIDs = this->messages.getLastMessageIDs(N);
-   else
-   {
-      const auto room = this->rooms.constFind(roomName);
-      if (room != this->rooms.cend())
-         messageIDs = room->messages.getLastMessageIDs(N);
-   }
+   if (const ChatMessages* history = this->joinedMessages(roomName))
+      messageIDs = history->getLastMessageIDs(N);
 
    Protos::Core::GetLastChatMessages getLastChatMessages;
    getLastChatMessages.set_number(N);
