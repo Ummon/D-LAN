@@ -236,7 +236,7 @@
     <message>
         <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+57"/>
         <source>Queued</source>
-        <translation>Dans la file d&apos;attente</translation>
+        <translation>En file d&apos;attente</translation>
     </message>
     <message>
         <source>Getting the hashes..</source>
@@ -416,7 +416,7 @@
     <message>
         <location line="+0"/>
         <source>Queued</source>
-        <translation>En attente</translation>
+        <translation>En file d&apos;attente</translation>
     </message>
     <message>
         <location line="+0"/>
@@ -610,7 +610,7 @@
 <context>
     <name>GUI::RemoteBrowseDialog</name>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="+64"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="+65"/>
         <source>Ok</source>
         <translation>Ok</translation>
     </message>
@@ -620,7 +620,7 @@
         <translation>Annuler</translation>
     </message>
     <message>
-        <location line="+250"/>
+        <location line="+259"/>
         <source>Open location</source>
         <translation>Ouvrir le dossier</translation>
     </message>
@@ -654,7 +654,7 @@
 <context>
     <name>GUI::SearchMenu</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="+213"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="+220"/>
         <source>Browse</source>
         <translation>Explorer</translation>
     </message>
@@ -696,7 +696,7 @@
 <context>
     <name>GUI::SearchWidget</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="+136"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="+130"/>
         <source>Open location</source>
         <translation>Ouvrir le dossier</translation>
     </message>
@@ -706,7 +706,7 @@
         <translation>Explorer</translation>
     </message>
     <message>
-        <location line="+76"/>
+        <location line="+79"/>
         <source>1 directory</source>
         <translation>1 dossier</translation>
     </message>

@@ -610,7 +610,7 @@
 <context>
     <name>GUI::RemoteBrowseDialog</name>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="+64"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="+65"/>
         <source>Ok</source>
         <translation>OK</translation>
     </message>
@@ -620,7 +620,7 @@
         <translation>Abbrechen</translation>
     </message>
     <message>
-        <location line="+250"/>
+        <location line="+259"/>
         <source>Open location</source>
         <translation>Ordner anzeigen</translation>
     </message>
@@ -654,7 +654,7 @@
 <context>
     <name>GUI::SearchMenu</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="+213"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="+220"/>
         <source>Browse</source>
         <translation>Durchsuchen</translation>
     </message>
@@ -696,7 +696,7 @@
 <context>
     <name>GUI::SearchWidget</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="+136"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="+130"/>
         <source>Open location</source>
         <translation>Ordner anzeigen</translation>
     </message>
@@ -706,7 +706,7 @@
         <translation>Durchsuchen</translation>
     </message>
     <message>
-        <location line="+76"/>
+        <location line="+79"/>
         <source>1 directory</source>
         <translation>1 Ordner</translation>
     </message>

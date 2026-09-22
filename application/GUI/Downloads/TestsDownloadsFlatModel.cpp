@@ -313,37 +313,51 @@ private slots:
    void startupAndRollingAverage()
    {
       Fixture f;
-      for (int i = 0; i < 12; ++i)
+      for (int i = 0; i < 9; ++i)
+         QCOMPARE(f.update(1000), ETA_UNKNOWN);
+      // Unused slots must not dilute the average while the window fills.
+      for (int i = 0; i < 11; ++i)
+         QCOMPARE(f.update(1000), quint64(10));
+      QCOMPARE(f.update(2000), quint64(9));
+      for (int i = 0; i < 19; ++i)
+         f.update(2000);
+      // The divisor stays at twenty after filling and wrapping the buffer.
+      for (int i = 0; i < 25; ++i)
+         QCOMPARE(f.update(2000), quint64(5));
+   }
+
+   void startupIncludesActualZeroSamples()
+   {
+      Fixture f;
+      for (int i = 0; i < 5; ++i)
          QCOMPARE(f.update(0), ETA_UNKNOWN);
       for (int i = 0; i < 9; ++i)
          QCOMPARE(f.update(1000), ETA_UNKNOWN);
-      QCOMPARE(f.update(1000), quint64(10));
-      // Replacing a positive sample must keep the nonzero count at ten.
-      QCOMPARE(f.update(2000), quint64(9));
-      for (int i = 0; i < 12; ++i)
-         QCOMPARE(f.update(0), ETA_UNKNOWN);
+      // Ten positive samples and five actual zeros: 10000 / 15 = 666 B/s.
+      QCOMPARE(f.update(1000), quint64(15));
    }
 
-   void zeroMustLeaveTheWindowBeforeEtaReturns()
+   void etaRequiresTenNonzeroSamplesInWindow()
    {
       Fixture f;
-      for (int i = 0; i < 10; ++i)
+      for (int i = 0; i < 20; ++i)
          f.update(1000);
+      for (int i = 0; i < 9; ++i)
+         QVERIFY(f.update(0) != ETA_UNKNOWN);
+      QCOMPARE(f.update(0), quint64(20));
       QCOMPARE(f.update(0), ETA_UNKNOWN);
       for (int i = 0; i < 9; ++i)
          QCOMPARE(f.update(1000), ETA_UNKNOWN);
-      QCOMPARE(f.update(1000), quint64(10));
+      QCOMPARE(f.update(1000), quint64(20));
    }
 
    void slowRecoveryDoesNotDivideByZero()
    {
       Fixture f;
-      for (int i = 0; i < 10; ++i)
-         f.update(1000);
-      for (int i = 0; i < 9; ++i)
+      for (int i = 0; i < 20; ++i)
          QCOMPARE(f.update(0), ETA_UNKNOWN);
-      // Nine bytes spread across ten samples round down to a zero average.
-      for (int i = 0; i < 9; ++i)
+      // Fewer than twenty bytes across twenty samples round down to zero.
+      for (int i = 0; i < 19; ++i)
          QCOMPARE(f.update(1), ETA_UNKNOWN);
       QCOMPARE(f.update(1), quint64(10000));
    }
