@@ -62,6 +62,7 @@ private slots:
    void removeErroneousDownload();
    void moveDownloads_data();
    void moveDownloads();
+   void scanSurvivesNewMarkers();
    void bulkRemovalPreservesQueueState();
    void oldestChunksSkipUnavailableDownloads_data();
    void oldestChunksSkipUnavailableDownloads();

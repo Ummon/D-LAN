@@ -54,9 +54,6 @@ DownloadQueue::~DownloadQueue()
 
    while (!this->downloads.isEmpty())
       delete this->downloads.takeFirst();
-
-   for (QListIterator<Marker> i(this->markers); i.hasNext();)
-      delete i.next().predicate;
 }
 
 int DownloadQueue::size() const
@@ -424,9 +421,8 @@ void DownloadQueue::removeFromTimeIndex(FileDownload* download)
 
 void DownloadQueue::updateMarkersInsert(int position, Download* download)
 {
-   for (QMutableListIterator<Marker> i(this->markers); i.hasNext();)
+   for (auto& [type, m] : this->markers)
    {
-      Marker& m = i.next();
       if (!(*m.predicate)(download))
       {
          if (position <= m.position)
@@ -442,17 +438,14 @@ void DownloadQueue::updateMarkersInsert(int position, Download* download)
 
 void DownloadQueue::updateMarkersRemove(int position)
 {
-   for (QMutableListIterator<Marker> i(this->markers); i.hasNext();)
-   {
-      Marker& m = i.next();
+   for (auto& [type, m] : this->markers)
       if (position < m.position)
          m.position--;
-   }
 }
 
 void DownloadQueue::rebuildMarkers()
 {
-   for (Marker& marker : this->markers)
+   for (auto& [type, marker] : this->markers)
    {
       marker.position = 0;
       while (marker.position < this->downloads.size() && !(*marker.predicate)(this->downloads[marker.position]))

@@ -1562,6 +1562,36 @@ void Tests::moveDownloads()
    QVERIFY(queue.isAPeerSource(&peer));
 }
 
+/**
+  * A scan keeps a pointer to its marker: adding the markers of other predicates during the scan must not invalidate it.
+  */
+void Tests::scanSurvivesNewMarkers()
+{
+   ResumePeer peer(this->fileManager);
+   LinkedPeers links;
+   OccupiedPeers asking, downloading;
+   Common::ThreadPool pool(1);
+   Common::TransferRateCalculator rate;
+   DownloadQueue queue;
+   Protos::Common::Entry entry;
+   entry.set_type(Protos::Common::Entry::FILE);
+   entry.set_size(Common::Constants::CHUNK_SIZE);
+   for (const char* name : { "first.bin", "second.bin", "third.bin" })
+   {
+      entry.set_name(name);
+      queue.insert(queue.size(), new FileDownload(this->fileManager, links, asking, downloading, pool, &peer, entry, entry,
+         rate, Protos::Queue::Queue::Entry::QUEUED));
+   }
+
+   DownloadQueue::ScanningIterator<IsDownloadable> i(queue);
+   QCOMPARE(i.next(), queue[0]);
+   QVERIFY(!DownloadQueue::ScanningIterator<IsComplete>(queue).next());
+   QVERIFY(!DownloadQueue::ScanningIterator<IsADirectory>(queue).next());
+   QCOMPARE(i.next(), queue[1]);
+   QCOMPARE(i.next(), queue[2]);
+   QVERIFY(!i.next());
+}
+
 void Tests::bulkRemovalPreservesQueueState()
 {
    ResumePeer removedPeer(this->fileManager), retainedPeer(this->fileManager);

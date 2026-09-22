@@ -18,6 +18,9 @@
 
 #pragma once
 
+#include <map>
+#include <memory>
+#include <typeindex>
 #include <typeinfo>
 
 #include <QList>
@@ -98,8 +101,11 @@ namespace DM
       void rebuildMarkers();
       void removeFromTimeIndex(FileDownload* download);
 
-      struct Marker { Marker(DownloadPredicate* p) : predicate(p), position(0) {} DownloadPredicate* predicate; int position; };
-      QList<Marker> markers; ///< Saved some positions like the first downloadable file or the first directory. The goal is to speed up the scan. See the class 'ScanningIterator'.
+      struct Marker { std::unique_ptr<DownloadPredicate> predicate; int position = 0; };
+
+      /// Saved some positions like the first downloadable file or the first directory, one per predicate type. The goal is to speed up the scan.
+      /// See the class 'ScanningIterator', which keeps a pointer to its marker: the container must not move them when a marker is added.
+      std::map<std::type_index, Marker> markers;
 
       QList<Download*> downloads; ///< All downloads, it also includes erroneous downloads.
       QList<Download*> erroneousDownloads;
@@ -118,20 +124,11 @@ namespace DM
   */
 template <typename P>
 DM::DownloadQueue::ScanningIterator<P>::ScanningIterator(DM::DownloadQueue& queue) :
+   marker(&queue.markers[typeid(P)]),
    queue(queue)
 {
-   // Search if a marker of type 'P' already exists.
-   for (QMutableListIterator<Marker> i(this->queue.markers); i.hasNext();)
-   {
-      this->marker = &i.next();
-      this->position = this->marker->position;
-      if (typeid(P) == typeid(*this->marker->predicate))
-         return;
-   }
-
-   // No marker found, we create a new one.
-   this->queue.markers << Marker(new P);
-   this->marker = &this->queue.markers.last();
+   if (!this->marker->predicate) // First scan with 'P'.
+      this->marker->predicate = std::make_unique<P>();
    this->position = this->marker->position;
 }
 
