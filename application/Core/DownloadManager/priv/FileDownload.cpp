@@ -408,6 +408,10 @@ bool FileDownload::retrieveHashes()
    )
       return false;
 
+   // Checked before asking the peer: 'getHashes(..)' takes a socket, opening a new connection if none is idle.
+   if (!this->occupiedPeersAskingForHashes.isPeerFree(this->peerSource))
+      return false;
+
    this->getHashesResult = this->peerSource->getHashes(this->remoteEntry);
 
    if (this->getHashesResult.isNull())

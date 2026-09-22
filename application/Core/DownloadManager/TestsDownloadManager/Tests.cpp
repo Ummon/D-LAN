@@ -189,9 +189,11 @@ namespace
    public:
       using ResumePeer::ResumePeer;
       Protos::Common::Entry requestedEntry;
+      int nbRequests = 0;
       QSharedPointer<PM::IGetHashesResult> hashes = QSharedPointer<PendingHashesResult>::create();
       QSharedPointer<PM::IGetHashesResult> getHashes(const Protos::Common::Entry& entry) override
       {
+         this->nbRequests++;
          this->requestedEntry = entry;
          return this->hashes;
       }
@@ -706,6 +708,33 @@ void Tests::downloadWithOmittedHashes()
    QList<QSharedPointer<IChunkDownloader>> chunks;
    download.getUnfinishedChunks(chunks, 10, false);
    QCOMPARE(chunks.size(), 10);
+}
+
+/**
+  * 'getHashes(..)' takes a socket from the peer; a busy peer must not be asked at all.
+  */
+void Tests::dontAskHashesToBusyPeer()
+{
+   HashPeer peer(this->fileManager);
+   LinkedPeers links;
+   OccupiedPeers asking, downloading;
+   Common::ThreadPool pool(1);
+   Common::TransferRateCalculator rate;
+   Protos::Common::Entry entry;
+   entry.set_type(Protos::Common::Entry::FILE);
+   entry.set_size(Common::Constants::CHUNK_SIZE);
+   entry.set_name("first.bin");
+   FileDownload first(this->fileManager, links, asking, downloading, pool, &peer, entry, entry,
+      rate, Protos::Queue::Queue::Entry::QUEUED);
+   entry.set_name("second.bin");
+   FileDownload second(this->fileManager, links, asking, downloading, pool, &peer, entry, entry,
+      rate, Protos::Queue::Queue::Entry::QUEUED);
+
+   QVERIFY(first.retrieveHashes());
+   QCOMPARE(peer.nbRequests, 1);
+   QVERIFY(!second.retrieveHashes());
+   QCOMPARE(peer.nbRequests, 1);
+   QCOMPARE(second.getStatus(), Protos::Common::DownloadStatus::QUEUED);
 }
 
 void Tests::coalescePeerStatusUpdates()
