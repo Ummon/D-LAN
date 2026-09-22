@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <functional>
 #include <iterator>
 #include <memory>
@@ -875,46 +876,11 @@ typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::getNode(Nod
 template <typename T, int M>
 inline int Common::SortedArray<T, M>::getPosition(Node* node, const T& value, bool& exists, const std::function<bool(const T&, const T&)>& lesserThan)
 {
-   exists = false;
-   if (node->nbItems == 0 || lesserThan(value, node->items[0]))
-      return 0;
-
-   if (lesserThan(node->items[node->nbItems-1], value))
-      return node->nbItems;
-
-   // Value is equal to the first item.
-   if (!lesserThan(node->items[0], value))
-   {
-      exists = true;
-      return 0;
-   }
-
-   // Values at 'i1' and 'i2' are never equal to 'value'.
-   int i1 = 0;
-   int i2 = node->nbItems;
-
-   forever
-   {
-      int i3 = (i2 + i1) >> 1;
-
-      if (lesserThan(value, node->items[i3]))
-      {
-         if (i1 + 1 == i3)
-            return i3;
-         i2 = i3;
-      }
-      else if (lesserThan(node->items[i3], value))
-      {
-         if (i3 + 1 == i2)
-            return i2;
-         i1 = i3;
-      }
-      else
-      {
-         exists = true;
-         return i3;
-      }
-   }
+   const T* first = node->items;
+   const T* last = node->items + node->nbItems;
+   const T* it = std::lower_bound(first, last, value, lesserThan);
+   exists = it != last && !lesserThan(value, *it);
+   return int(it - first);
 }
 
 template <typename T, int M>
