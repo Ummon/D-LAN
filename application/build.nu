@@ -5,28 +5,24 @@
 # See the build-all subcommand.
 def main [
     --build-dir: path
-    --no-translations
     --jobs (-j): int = 8
 ] {
-    main build-all --clean --no-translations=$no_translations --build-dir=$build_dir --jobs=$jobs
+    main build-all --clean --build-dir=$build_dir --jobs=$jobs
 }
 
 # Build everything, it will not clean by default.
 def "main build-all" [
     --clean # Clean all previous compiled files.
     --build-dir: path # Configured Release build; auto-detected when omitted.
-    --no-translations
     --jobs (-j): int = 8
 ] {
     if $nu.os-info.name == "macos" {
-        main release-test --clean=$clean --no-translations=$no_translations --build-dir=$build_dir --jobs=$jobs
+        main release-test --clean=$clean --build-dir=$build_dir --jobs=$jobs
         main make-setup --build-dir=$build_dir
         return
     }
     print "=== BUILD ALL ==="
-    if not $no_translations {
-      main translations --build-dir=$build_dir
-    }
+    main translations --build-dir=$build_dir
     main compile --clean=$clean --build-dir=$build_dir --jobs=$jobs
     main run-tests --build-dir=$build_dir
     main make-setup --build-dir=$build_dir
@@ -37,14 +33,11 @@ def "main release-test" [
     --build-dir: path # Defaults to the sole Release build under build/.
     --jobs (-j): int = 8 # Maximum parallel build jobs.
     --clean
-    --no-translations # Allow Qt installations without LinguistTools.
 ] {
     let release_directory = get_release_directory $build_dir
     require_tests $release_directory
     main compile --clean=$clean --build-dir=$release_directory --jobs=$jobs
-    if not $no_translations {
-        run_checked cmake --build $release_directory --config Release --target dlan_translations
-    }
+    run_checked cmake --build $release_directory --config Release --target dlan_translations
     main run-tests --build-dir=$release_directory
     print "Release build and tests completed successfully"
 }
