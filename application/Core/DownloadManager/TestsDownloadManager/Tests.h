@@ -94,6 +94,7 @@ private slots:
    void freedPeerAsksItsOwnHashes();
    void restartAllErroneousDownloads();
    void retryHashesAfterDontHave();
+   void pauseManyDownloads();
    void validateChunkResponse_data();
    void validateChunkResponse();
    void directoryBecomesEmpty_data();

@@ -167,7 +167,7 @@ void FileDownload::stop()
    }
 }
 
-bool FileDownload::pause(bool pause)
+bool FileDownload::pause(bool pause, bool stopTransfers)
 {
    if (this->status == Protos::Common::DownloadStatus::COMPLETE || this->status == Protos::Common::DownloadStatus::DELETED)
       return false;
@@ -175,7 +175,8 @@ bool FileDownload::pause(bool pause)
    if (pause && this->status != Protos::Common::DownloadStatus::PAUSED)
    {
       this->setStatus(Protos::Common::DownloadStatus::PAUSED);
-      this->stop();
+      if (stopTransfers)
+         this->stop();
       return true;
    }
    else if (!pause && this->status == Protos::Common::DownloadStatus::PAUSED)

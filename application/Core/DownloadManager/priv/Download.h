@@ -56,7 +56,18 @@ namespace DM
         */
       virtual void start() = 0;
 
-      virtual bool pause(bool) { return false; }
+      /**
+        * Pause or resume the download.
+        * @param stopTransfers When pausing, 'false' to only change the status: the transfers must then be stopped with 'stop()'.
+        *        Stopping frees peers, which may start a request for another download, see 'DownloadQueue::pauseDownloads(..)'.
+        * @return 'true' if the download has been paused or resumed.
+        */
+      virtual bool pause(bool, bool stopTransfers = true) { Q_UNUSED(stopTransfers); return false; }
+
+      /**
+        * Stop the transfers and the requests in progress.
+        */
+      virtual void stop() {}
 
       virtual void peerSourceBecomesAvailable() {}
 

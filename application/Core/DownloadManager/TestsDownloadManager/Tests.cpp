@@ -946,6 +946,34 @@ void Tests::retryHashesAfterDontHave()
    QCOMPARE(download.getStatus(), Protos::Common::DownloadStatus::PAUSED);
 }
 
+/**
+  * Pausing many downloads must not start a request for one of them while stopping another.
+  */
+void Tests::pauseManyDownloads()
+{
+   HashPeer peer(this->fileManager);
+   Common::PersistentData::rmValue(Common::Constants::FILE_QUEUE, Common::Global::DataFolderType::LOCAL);
+   DownloadManager manager(this->fileManager, this->peerManager);
+
+   QList<quint64> IDs;
+   Protos::Common::Entry entry;
+   entry.set_type(Protos::Common::Entry::FILE);
+   entry.set_size(Common::Constants::CHUNK_SIZE);
+   for (const char* name : { "first.bin", "second.bin" })
+   {
+      entry.set_name(name);
+      auto download = manager.addDownload(entry, entry, &peer, Protos::Queue::Queue::Entry::QUEUED);
+      QVERIFY(download);
+      IDs << download->getID();
+   }
+   QCOMPARE(peer.nbRequests, 1); // The second file waits for the peer to be free.
+
+   manager.pauseDownloads(IDs);
+   QCOMPARE(peer.nbRequests, 1);
+   for (IDownload* download : manager.getDownloads())
+      QCOMPARE(download->getStatus(), Protos::Common::DownloadStatus::PAUSED);
+}
+
 void Tests::coalescePeerStatusUpdates()
 {
    HashPeer peer(this->fileManager);

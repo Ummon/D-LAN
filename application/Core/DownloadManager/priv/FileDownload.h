@@ -58,9 +58,9 @@ namespace DM
       ~FileDownload() override;
 
       void start() override;
-      void stop();
+      void stop() override;
 
-      bool pause(bool pause) override;
+      bool pause(bool pause, bool stopTransfers = true) override;
 
       void peerSourceBecomesAvailable() override;
 

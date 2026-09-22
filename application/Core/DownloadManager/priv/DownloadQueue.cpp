@@ -237,16 +237,23 @@ bool DownloadQueue::pauseDownloads(QList<quint64> IDs, bool pause)
    QSet<quint64> IDsRemaining(IDs.begin(), IDs.end());
 
    bool stateChanged = false;
+   QList<Download*> pausedDownloads;
 
    for (QListIterator<Download*> i(this->downloads); i.hasNext() && !IDsRemaining.isEmpty();)
    {
       Download* download = i.next();
-      if (IDsRemaining.remove(download->getID()))
+      if (IDsRemaining.remove(download->getID()) && download->pause(pause, false))
       {
-         if (download->pause(pause))
-            stateChanged = true;
+         stateChanged = true;
+         if (pause)
+            pausedDownloads << download;
       }
    }
+
+   // Stopping a download frees its peers, which may start a request for the next download of the same peer.
+   // All the downloads are paused before any is stopped, so none of them is started only to be stopped right after.
+   for (Download* download : std::as_const(pausedDownloads))
+      download->stop();
 
    return stateChanged;
 }
