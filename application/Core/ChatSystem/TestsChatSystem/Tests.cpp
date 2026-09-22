@@ -3,6 +3,7 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+#include <QHostAddress>
 #include <QStringList>
 #include <QTemporaryDir>
 #include <QTest>
@@ -26,16 +27,19 @@ namespace
    public:
       int limit = 256;
       QList<Protos::Common::ChatMessages> sent;
+      QList<Common::Hash> historyRequestRecipients;
       QSharedPointer<NL::ISearch> newSearch() override { return {}; }
       void rebindSockets() override {}
       int getMaxUDPMessageSize() const override { return this->limit; }
       SendStatus send(Common::MessageHeader::MessageType type, const google::protobuf::Message& data,
-         const Common::Hash& = Common::Hash()) override
+         const Common::Hash& peerID = Common::Hash()) override
       {
          if (data.ByteSizeLong() > static_cast<size_t>(this->limit))
             return SendStatus::MESSAGE_TOO_LARGE;
          if (type == Common::MessageHeader::CORE_CHAT_MESSAGES)
             this->sent << static_cast<const Protos::Common::ChatMessages&>(data);
+         else if (type == Common::MessageHeader::CORE_GET_LAST_CHAT_MESSAGES)
+            this->historyRequestRecipients << peerID;
          return SendStatus::OK;
       }
       void requestHistory()
@@ -146,6 +150,28 @@ private slots:
       }
       QCOMPARE(count, 5);
       QVERIFY(network->sent.size() > 1);
+   }
+
+   void historyRequestedOnlyFromAvailablePeers()
+   {
+      const auto peers = PM::Builder::newPeerManager({});
+      const auto network = QSharedPointer<NetworkListener>::create();
+      auto addPeer = [&](quint32 version) {
+         const auto ID = Common::Hash::rand();
+         peers->updatePeer(ID, QHostAddress::LocalHost, 1, "peer", 0, QString(), 0, 0, version);
+         return ID;
+      };
+      const auto available = addPeer(Common::Constants::PROTOCOL_VERSION);
+      addPeer(Common::Constants::PROTOCOL_VERSION ^ 1u); // Incompatible.
+      peers->getPeer(addPeer(Common::Constants::PROTOCOL_VERSION))->block(60 * 1000);
+      QCOMPARE(peers->getPeers().size(), 3);
+
+      // The recipient is chosen randomly: repeat to make a wrong choice nearly certain to show up.
+      for (int i = 0; i < 30; ++i)
+         CS::ChatSystem chat(peers, network);
+      QCOMPARE(network->historyRequestRecipients.size(), 30);
+      for (const auto& recipient : network->historyRequestRecipients)
+         QCOMPARE(recipient, available);
    }
 
    void validateIncomingTimestamps()

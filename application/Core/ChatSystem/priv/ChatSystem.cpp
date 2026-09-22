@@ -462,11 +462,17 @@ void ChatSystem::emitNewMessages(const ChatMessages& messages)
 }
 
 /**
-  * Ask a random peer from the given peers their last known messages.
+  * Ask a random available peer from the given peers their last known messages.
+  * Alive peers may be blocked or have an incompatible protocol version, they are skipped.
   */
 void ChatSystem::retrieveLastChatMessagesFromPeers(const QList<PM::IPeer*>& peers, const QString& roomName)
 {
-   if (peers.isEmpty())
+   QList<PM::IPeer*> availablePeers;
+   for (PM::IPeer* peer : peers)
+      if (peer->isAvailable())
+         availablePeers << peer;
+
+   if (availablePeers.isEmpty())
       return;
 
    static const quint32 N = SETTINGS.get<quint32>("number_of_chat_messages_to_retrieve");
@@ -492,6 +498,6 @@ void ChatSystem::retrieveLastChatMessagesFromPeers(const QList<PM::IPeer*>& peer
    this->networkListener->send(
       Common::MessageHeader::CORE_GET_LAST_CHAT_MESSAGES,
       getLastChatMessages,
-      peers[QRandomGenerator64::global()->bounded(peers.size())]->getID()
+      availablePeers[QRandomGenerator64::global()->bounded(availablePeers.size())]->getID()
    );
 }
