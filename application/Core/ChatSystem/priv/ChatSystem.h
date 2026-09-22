@@ -70,15 +70,13 @@ namespace CS
       void saveAllChatMessages();
 
    private:
-      void saveChatMessages(const QString& roomName = QString());
-
       struct Room {
          ChatMessages messages; // We may not know the messages of not joined rooms.
          QSet<PM::IPeer*> peers; // Do not include our ID. Only alive peers, see 'removeDeadPeersFromRooms()'.
          bool joined = false;
       };
 
-      bool join(const QString& roomName);
+      Room* join(const QString& roomName);
 
       void retrieveLastChatMessagesFromPeers(const QList<PM::IPeer*>& peers, const QString& roomName = QString());
 

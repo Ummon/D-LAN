@@ -83,14 +83,16 @@ ChatSystem::SendStatus ChatSystem::send(
    const QList<Common::Hash>& peerIDsAnswer
 )
 {
+   ChatMessages* history = &this->messages; // Where the message is saved once sent.
    if (!roomName.isEmpty())
    {
-      const auto room = this->rooms.constFind(roomName);
-      if (room == this->rooms.cend() || !room->joined)
+      const auto room = this->rooms.find(roomName);
+      if (room == this->rooms.end() || !room->joined)
       {
          L_WARN(QString("Unable to send a message to the room '%1': we haven't joined it").arg(roomName));
          return SendStatus::UNABLE_TO_SEND;
       }
+      history = &room->messages;
    }
 
    QSharedPointer<ChatMessage> chatMessage(
@@ -122,11 +124,7 @@ ChatSystem::SendStatus ChatSystem::send(
    switch (status)
    {
    case NL::INetworkListener::SendStatus::OK:
-      if (roomName.isEmpty())
-         this->messages.add(chatMessage);
-      else
-         this->rooms[roomName].messages.add(chatMessage);
-
+      history->add(chatMessage);
       protochatMessage->set_time(time);
       emit newMessages(protoChatMessages);
       return SendStatus::OK;
@@ -173,11 +171,12 @@ QList<IChatSystem::ChatRoom> ChatSystem::getRooms() const
   */
 void ChatSystem::joinRoom(const QString& roomName)
 {
-   if (!this->join(roomName))
+   const Room* room = this->join(roomName);
+   if (!room)
       return;
 
    Protos::Common::ChatMessages protoChatMessages;
-   this->rooms[roomName].messages.fillProtoChatMessages(protoChatMessages);
+   room->messages.fillProtoChatMessages(protoChatMessages);
    if (protoChatMessages.messages_size() > 0)
       emit newMessages(protoChatMessages);
 
@@ -186,41 +185,38 @@ void ChatSystem::joinRoom(const QString& roomName)
 
 /**
   * Join the given room and load its saved messages without emitting any signal or saving the room list to the settings.
-  * @return 'true' if the room has been joined, 'false' if it was already joined.
+  * @return The joined room, or 'nullptr' if the name is empty or if the room was already joined.
   */
-bool ChatSystem::join(const QString& roomName)
+ChatSystem::Room* ChatSystem::join(const QString& roomName)
 {
    if (roomName.isEmpty())
-      return false;
+      return nullptr;
 
    Room& room = this->rooms[roomName];
 
    if (room.joined)
-      return false;
+      return nullptr;
 
    room.joined = true;
    room.messages.loadForRoom(roomName);
    this->retrieveLastChatMessagesFromPeers(room.peers.values(), roomName);
-   return true;
+   return &room;
 }
 
 void ChatSystem::leaveRoom(const QString& roomName)
 {
-   if (this->rooms.contains(roomName))
-   {
-      Room& room = this->rooms[roomName];
-      if (room.joined)
-      {
-         this->saveChatMessages(roomName);
+   const auto room = this->rooms.find(roomName);
+   if (room == this->rooms.end() || !room->joined)
+      return;
 
-         if (room.peers.isEmpty())
-            this->rooms.remove(roomName);
-         else
-            room.joined = false;
+   room->messages.saveForRoom(roomName);
 
-         this->saveRoomListToSettings();
-      }
-   }
+   if (room->peers.isEmpty())
+      this->rooms.erase(room);
+   else
+      room->joined = false;
+
+   this->saveRoomListToSettings();
 }
 
 /**
@@ -432,22 +428,14 @@ void ChatSystem::saveRoomListToSettings()
 
 void ChatSystem::saveAllChatMessages()
 {
-   this->saveChatMessages();
+   this->messages.saveForRoom();
 
    for (QHashIterator<QString, Room> i(this->rooms); i.hasNext();)
    {
       i.next();
       if (i.value().joined)
-         this->saveChatMessages(i.key());
+         i.value().messages.saveForRoom(i.key());
    }
-}
-
-void ChatSystem::saveChatMessages(const QString& roomName)
-{
-   if (roomName.isEmpty())
-      this->messages.saveForRoom();
-   else if (this->rooms.contains(roomName))
-      this->rooms[roomName].messages.saveForRoom(roomName);
 }
 
 /**

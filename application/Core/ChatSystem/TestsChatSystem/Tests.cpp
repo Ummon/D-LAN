@@ -220,6 +220,34 @@ private slots:
       QCOMPARE(messages.messages_size(), 0);
    }
 
+   void roomHistorySavedOnLeaveAndExit()
+   {
+      const auto peers = PM::Builder::newPeerManager({});
+      const auto network = QSharedPointer<NetworkListener>::create();
+      const auto exists = [&](const QString& file) { return QFile::exists(this->directory->filePath(file)); };
+      {
+         CS::ChatSystem chat(peers, network);
+         chat.joinRoom("Left");
+         chat.joinRoom("Kept");
+         QCOMPARE(chat.send("hello"), CS::IChatSystem::SendStatus::OK);
+         QCOMPARE(chat.send("bye", "Left"), CS::IChatSystem::SendStatus::OK);
+         QCOMPARE(chat.send("hi", "Kept"), CS::IChatSystem::SendStatus::OK);
+
+         chat.leaveRoom("Left");
+         QVERIFY(exists(roomFile("Left")));
+         QVERIFY(!exists(roomFile("Kept")));
+
+         // Nobody else is in the left room: it's forgotten.
+         const auto rooms = chat.getRooms();
+         QCOMPARE(rooms.size(), 1);
+         QCOMPARE(rooms.first().name, QString("Kept"));
+         QCOMPARE(chat.send("again", "Left"), CS::IChatSystem::SendStatus::UNABLE_TO_SEND);
+      }
+      // The main chat and the joined rooms are saved on exit.
+      QVERIFY(exists(roomFile("Kept")));
+      QVERIFY(exists(Common::Constants::DIR_CHAT_MESSAGES + '/' + Common::Constants::FILE_CHAT_MESSAGES));
+   }
+
    void roomsFollowPeerIMAlive()
    {
       const auto peers = PM::Builder::newPeerManager({});
