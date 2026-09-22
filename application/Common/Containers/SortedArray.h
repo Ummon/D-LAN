@@ -206,10 +206,10 @@ namespace Common
 
       static Node* duplicateNode(Node* node);
       static void deleteNode(Node* node);
+      static Node* build(T* items, int nbItems, int height, long long childWeight);
 
       template<typename U>
-      static Node* add(Node* node, U&& value, const std::function<bool(const T&, const T&)>& lesserThan,
-         std::vector<std::unique_ptr<Node>>* rebuildNodes = nullptr);
+      static Node* add(Node* node, U&& value, const std::function<bool(const T&, const T&)>& lesserThan);
 
       template<typename U>
       static Node* addPrepared(Node* node, U&& value, const std::function<bool(const T&, const T&)>& lesserThan,
@@ -565,35 +565,41 @@ void Common::SortedArray<T, M>::sort()
   * The array is automatically reordered after calling this method.
   * If values become equivalent, the last value in the old iteration order wins.
   * The original tree and comparator are retained if rebuilding throws.
+  * Complexity: O(n log n) comparisons for sorting, then O(n) to build the tree.
   */
 template <typename T, int M>
 void Common::SortedArray<T, M>::setSortedFunction(const std::function<bool(const T&, const T&)>& lesserThan)
 {
-   // For the moment we recreate an entire new tree and inserting all the elements in it.
-   // A better approach will be to re-sort the tree in place.
    QSharedDataPointer<SortedArrayData> newD(new SortedArrayData(lesserThan));
-   // Until rebuilding succeeds, own nodes independently of their child links:
-   // a throwing comparison or element operation can interrupt a split or shift.
-   std::vector<std::unique_ptr<Node>> rebuildNodes;
-   rebuildNodes.reserve(static_cast<std::size_t>(this->size()) + 1);
-   rebuildNodes.emplace_back(newD->root);
-   Node* root = std::exchange(newD->root, nullptr);
-   for (const T& value : *this)
-   {
-      int position;
-      Node* node = getNode(root, value, position, newD->lesserThanFun);
+   const auto& newLesserThan = newD.constData()->lesserThanFun;
 
-      if (position == -1)
-      {
-         if (Node* newRoot = add(node, value, newD->lesserThanFun, &rebuildNodes))
-            root = newRoot;
-      }
-      else
-         node->items[position] = value;
+   // Sorting and deduplicating a copy: a throwing comparator leaves the tree untouched.
+   std::vector<T> values;
+   values.reserve(static_cast<std::size_t>(this->size()));
+   for (const T& value : *this)
+      values.push_back(value);
+   std::stable_sort(values.begin(), values.end(), newLesserThan);
+
+   // The sort is stable, so keeping the first of each run in reverse keeps the last in old order.
+   auto firstKept = std::unique(values.rbegin(), values.rend(),
+      [&](const T& kept, const T& current) { return !newLesserThan(current, kept); }).base();
+   T* items = values.data() + (firstKept - values.begin());
+   const int nbItems = int(values.end() - firstKept);
+
+   // Use the lowest height that can hold every item; 'childWeight' is the minimum (items + 1)
+   // of a non-root subtree one level below the root.
+   int height = 0;
+   long long capacity = M; // Maximum (items + 1) at this height: M^(height + 1).
+   long long childWeight = 1;
+   while (capacity < nbItems + 1LL)
+   {
+      ++height;
+      capacity *= M;
+      childWeight *= M / 2 + 1;
    }
-   newD->root = root;
-   for (auto& node : rebuildNodes)
-      node.release();
+
+   Node* root = build(items, nbItems, height, childWeight);
+   deleteNode(std::exchange(newD->root, root));
    this->d = newD;
 }
 
@@ -1187,13 +1193,54 @@ void Common::SortedArray<T, M>::deleteNode(Node* node)
 }
 
 /**
+  * Build a subtree of the given height from 'nbItems' sorted and distinct items, moving them.
+  * Items and children are spread evenly: every child receives between 'childWeight' and
+  * M^height items plus one, which keeps each non-root node between M / 2 and M - 1 items.
+  * 'childWeight' is (M / 2 + 1)^height, the minimum items plus one of a non-root child subtree.
+  * An exception destroys the partial subtree.
+  */
+template <typename T, int M>
+typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::build(T* items, int nbItems, int height, long long childWeight)
+{
+   std::unique_ptr<Node, decltype(&deleteNode)> node(new Node(), &deleteNode);
+   node->size = nbItems;
+
+   if (height == 0)
+   {
+      node->nbItems = nbItems;
+      std::move(items, items + nbItems, node->items);
+      return node.release();
+   }
+
+   const long long weight = nbItems + 1LL;
+   const int nbChildren = int(std::min<long long>(M, weight / childWeight));
+   const long long childBaseWeight = weight / nbChildren;
+   const long long nbHeavierChildren = weight % nbChildren;
+   node->nbItems = nbChildren - 1;
+
+   for (int i = 0; i < nbChildren; ++i)
+   {
+      const int childNbItems = int(childBaseWeight + (i < nbHeavierChildren) - 1);
+      Node* child = build(items, childNbItems, height - 1, childWeight / (M / 2 + 1));
+      child->parent = node.get();
+      node->children[i] = child;
+      items += childNbItems;
+
+      if (i < node->nbItems)
+         node->items[i] = std::move(*items++);
+   }
+
+   return node.release();
+}
+
+/**
   * Allocate every sibling and any new root before the first split changes the tree.
   * @return the new root if a new root has been created, else returns 'nullptr'.
   */
 template<typename T, int M>
 template<typename U>
 typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::add(Node* node, U&& value,
-   const std::function<bool(const T&, const T&)>& lesserThan, std::vector<std::unique_ptr<Node>>* rebuildNodes)
+   const std::function<bool(const T&, const T&)>& lesserThan)
 {
    int nbNodes = 0;
    for (Node* current = node; current && current->nbItems == M - 1; current = current->parent)
@@ -1208,16 +1255,10 @@ typename Common::SortedArray<T, M>::Node* Common::SortedArray<T, M>::add(Node* n
    for (int i = 0; i < nbNodes; ++i)
       nodes.emplace_back(new Node());
 
-   // Reserve before mutation so transferring ownership after insertion cannot throw.
-   if (rebuildNodes)
-      rebuildNodes->reserve(rebuildNodes->size() + nodes.size());
    std::size_t availableNodes = nodes.size();
    Node* newRoot = addPrepared(node, std::forward<U>(value), lesserThan, nodes, availableNodes);
    for (auto& allocatedNode : nodes)
-      if (rebuildNodes)
-         rebuildNodes->push_back(std::move(allocatedNode));
-      else
-         allocatedNode.release();
+      allocatedNode.release();
    return newRoot;
 }
 
