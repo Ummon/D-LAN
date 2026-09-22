@@ -72,9 +72,6 @@ namespace CS
    private:
       void saveChatMessages(const QString& roomName = QString());
 
-      void loadChatMessages(const QString& roomName = QString());
-      void emitNewMessages(const ChatMessages& messages);
-
       struct Room {
          ChatMessages messages; // We may not know the messages of not joined rooms.
          QSet<PM::IPeer*> peers; // Do not include our ID. Only alive peers, see 'removeDeadPeersFromRooms()'.

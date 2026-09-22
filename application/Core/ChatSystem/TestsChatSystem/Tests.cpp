@@ -90,6 +90,7 @@ private slots:
    {
       Common::Global::setDataFolderToDefault(FOLDER);
       Common::Global::setDataFolderToDefault(Common::Global::DataFolderType::ROAMING);
+      SETTINGS.set("joined_chat_rooms", QList<QString>()); // Otherwise the next test's chat system would join them.
       this->directory.reset();
    }
 
@@ -172,8 +173,9 @@ private slots:
       QCOMPARE(peers->getPeers().size(), 3);
 
       // The recipient is chosen randomly: repeat to make a wrong choice nearly certain to show up.
+      CS::ChatSystem chat(peers, network);
       for (int i = 0; i < 30; ++i)
-         CS::ChatSystem chat(peers, network);
+         QVERIFY(QMetaObject::invokeMethod(&chat, "retrieveLastChatMessages")); // Normally called periodically.
       QCOMPARE(network->historyRequestRecipients.size(), 30);
       for (const auto& recipient : network->historyRequestRecipients)
          QCOMPARE(recipient, available);
@@ -211,6 +213,34 @@ private slots:
       Protos::Common::ChatMessages messages;
       chat.getLastChatMessages(messages, std::numeric_limits<int>::max(), "General");
       QCOMPARE(messages.messages_size(), 0);
+   }
+
+   void joinRoomEmitsSavedHistory()
+   {
+      QVERIFY(QDir(this->directory->path()).mkpath("chat/rooms"));
+      Common::PersistentData::setValue(Common::Constants::DIR_CHAT_MESSAGES + '/' + Common::Constants::FILE_CHAT_MESSAGES,
+         message(QString(), 1), FOLDER);
+      Common::PersistentData::setValue(roomFile("General"), message("General", 2), FOLDER);
+
+      const auto peers = PM::Builder::newPeerManager({});
+      const auto network = QSharedPointer<NetworkListener>::create();
+      CS::ChatSystem chat(peers, network);
+      QSignalSpy notifications(&chat, &CS::IChatSystem::newMessages);
+
+      Protos::Common::ChatMessages mainChat;
+      chat.getLastChatMessages(mainChat);
+      QCOMPARE(mainChat.messages_size(), 1);
+      QCOMPARE(mainChat.messages(0).id(), quint64(1));
+
+      chat.joinRoom("General");
+      QCOMPARE(notifications.size(), 1);
+      const auto roomHistory = qvariant_cast<Protos::Common::ChatMessages>(notifications.first().at(0));
+      QCOMPARE(roomHistory.messages_size(), 1);
+      QCOMPARE(roomHistory.messages(0).id(), quint64(2));
+
+      chat.joinRoom("General"); // Already joined.
+      chat.joinRoom("Empty"); // No saved history.
+      QCOMPARE(notifications.size(), 1);
    }
 
    void validateIncomingTimestamps()

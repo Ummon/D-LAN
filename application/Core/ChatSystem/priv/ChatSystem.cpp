@@ -49,7 +49,9 @@ ChatSystem::ChatSystem(
    peerManager(peerManager),
    networkListener(networkListener)
 {
-   this->loadChatMessages(); // The room messages are loaded when joining the rooms, see 'loadRoomListFromSettings()'.
+   // No signal is emitted for the loaded messages: nobody can be connected yet.
+   // The room messages are loaded when joining the rooms, see 'loadRoomListFromSettings()'.
+   this->messages.loadForRoom();
 
    connect(this->networkListener.data(), &NL::INetworkListener::received, this, &ChatSystem::received);
    connect(this->networkListener.data(), &NL::INetworkListener::IMAliveMessageToBeSend, this, &ChatSystem::IMAliveMessageToBeSend);
@@ -57,7 +59,6 @@ ChatSystem::ChatSystem(
    connect(&this->retrieveLastChatMessageTimer, &QTimer::timeout, this, &ChatSystem::retrieveLastChatMessages);
    this->retrieveLastChatMessageTimer.setInterval(SETTINGS.get<quint32>("get_last_chat_messages_period"));
    this->retrieveLastChatMessageTimer.start();
-   this->retrieveLastChatMessages();
 
    this->saveChatMessagesTimer.setInterval(SETTINGS.get<quint32>("save_chat_messages_period"));
    connect(&this->saveChatMessagesTimer, &QTimer::timeout, this, &ChatSystem::saveAllChatMessages);
@@ -167,14 +168,24 @@ QList<IChatSystem::ChatRoom> ChatSystem::getRooms() const
    return result;
 }
 
+/**
+  * Join the given room and emit 'newMessages' with its saved messages.
+  */
 void ChatSystem::joinRoom(const QString& roomName)
 {
-   if (this->join(roomName))
-      this->saveRoomListToSettings();
+   if (!this->join(roomName))
+      return;
+
+   Protos::Common::ChatMessages protoChatMessages;
+   this->rooms[roomName].messages.fillProtoChatMessages(protoChatMessages);
+   if (protoChatMessages.messages_size() > 0)
+      emit newMessages(protoChatMessages);
+
+   this->saveRoomListToSettings();
 }
 
 /**
-  * Join the given room without saving the room list to the settings.
+  * Join the given room and load its saved messages without emitting any signal or saving the room list to the settings.
   * @return 'true' if the room has been joined, 'false' if it was already joined.
   */
 bool ChatSystem::join(const QString& roomName)
@@ -188,7 +199,7 @@ bool ChatSystem::join(const QString& roomName)
       return false;
 
    room.joined = true;
-   this->loadChatMessages(roomName);
+   room.messages.loadForRoom(roomName);
    this->retrieveLastChatMessagesFromPeers(room.peers.values(), roomName);
    return true;
 }
@@ -433,33 +444,6 @@ void ChatSystem::saveChatMessages(const QString& roomName)
       this->messages.saveForRoom();
    else if (this->rooms.contains(roomName))
       this->rooms[roomName].messages.saveForRoom(roomName);
-}
-
-/**
-  * Load messages from a room or from the main if the room name is not given. Emit the signal 'newMessages' for each message loaded.
-  */
-void ChatSystem::loadChatMessages(const QString& roomName)
-{
-   if (!roomName.isEmpty())
-   {
-      if (this->rooms.contains(roomName))
-      {
-         this->rooms[roomName].messages.loadForRoom(roomName);
-         this->emitNewMessages(this->rooms[roomName].messages);
-      }
-   }
-   else
-   {
-      this->messages.loadForRoom();
-      this->emitNewMessages(this->messages);
-   }
-}
-
-void ChatSystem::emitNewMessages(const ChatMessages& messages)
-{
-   Protos::Common::ChatMessages protoChatMessages;
-   messages.fillProtoChatMessages(protoChatMessages);
-   emit newMessages(protoChatMessages);
 }
 
 /**
