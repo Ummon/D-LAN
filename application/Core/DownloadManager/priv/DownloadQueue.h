@@ -121,6 +121,13 @@ namespace DM
   * @class DM::DownloadQueue::ScanningIterator
   *
   * To iterate over the queue for all downloads which match a predicate 'P'.
+  *
+  * Each predicate type has a marker: the position before which no download matches, the scans begin there.
+  * A marker only moves forward past downloads not matching when they are scanned, it is never checked again behind it.
+  * Thus 'P' must be a predicate that a queued download can stop matching but never start matching again, like
+  * 'IsDownloadable' (COMPLETE and DELETED are final) or 'IsADirectory' (the type never changes).
+  * A predicate like 'IsComplete' would skip the downloads completed behind its marker.
+  * The insertions, removals and moves of downloads are handled, see 'updateMarkersInsert(..)', 'updateMarkersRemove(..)' and 'rebuildMarkers()'.
   */
 template <typename P>
 DM::DownloadQueue::ScanningIterator<P>::ScanningIterator(DM::DownloadQueue& queue) :

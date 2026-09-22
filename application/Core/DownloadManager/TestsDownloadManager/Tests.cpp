@@ -1723,6 +1723,7 @@ void Tests::moveDownloads()
       queue.insert(queue.size(), download);
    }
    // Prime both a marker past the start and an exhausted marker before moving.
+   // 'IsComplete' isn't a valid scanning predicate in general (see 'ScanningIterator'), here no status changes.
    QCOMPARE(DownloadQueue::ScanningIterator<IsComplete>(queue).next(), original[2]);
    QVERIFY(!DownloadQueue::ScanningIterator<IsADirectory>(queue).next());
    const auto IDs = [&original](const QList<int>& indices)
