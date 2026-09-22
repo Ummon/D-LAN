@@ -236,7 +236,7 @@
     <message>
         <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+57"/>
         <source>Queued</source>
-        <translation>Dans la file d&apos;attente</translation>
+        <translation>En file d&apos;attente</translation>
     </message>
     <message>
         <source>Getting the hashes..</source>
@@ -416,7 +416,7 @@
     <message>
         <location line="+0"/>
         <source>Queued</source>
-        <translation>En attente</translation>
+        <translation>En file d&apos;attente</translation>
     </message>
     <message>
         <location line="+0"/>
