@@ -97,7 +97,7 @@ namespace Common
       struct QuickAccessFolder
       {
          QString name; // Localized display name, for example "Téléchargements".
-         QString path; // Absolute path with '/' as separator and without trailing slash.
+         QString path; // Absolute path with '/' as separator and without trailing slash, except for a drive root ("C:/").
       };
 
       static QList<QuickAccessFolder> getQuickAccessFolders();

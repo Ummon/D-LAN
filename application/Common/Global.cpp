@@ -639,11 +639,12 @@ QString Global::getCurrentMachineName()
 }
 
 /**
-  * Returns the folders which may be shown as shortcuts by a file browser: the home folder of the current
-  * user followed by Windows Explorer "Quick Access" folders or Linux/macOS standard user folders.
+  * Returns the folders which may be shown as shortcuts by a file browser: on Windows the drive roots
+  * ("C:\", "D:\", ...), then the home folder of the current user followed by Windows Explorer "Quick Access"
+  * folders or Linux/macOS standard user folders.
   * QStandardPaths supplies native paths and display names on macOS and honours the XDG user
   * directory configuration on Linux.
-  * Missing folders and duplicates are removed; the home folder is always first.
+  * Missing folders and duplicates are removed; the home folder is always first on Linux/macOS.
   * @remarks When the core runs as a service the quick access folders are the ones of the service account,
   *          thus there is usually none and only the home folder is returned.
   */
@@ -673,6 +674,12 @@ QList<Global::QuickAccessFolder> Global::getQuickAccessFolders()
       knownPaths.insert(pathKey);
       folders << QuickAccessFolder { name, cleanedPath };
    };
+
+#ifdef Q_OS_WIN32
+   // The drives which aren't ready, for example an optical drive without disc, are discarded by 'append'.
+   for (const QFileInfo& drive : QDir::drives())
+      append(QDir::toNativeSeparators(drive.absolutePath()), drive.absolutePath());
+#endif
 
    const QString homePath = QDir::homePath();
    const QString homeName = QDir(homePath).dirName();
