@@ -75,6 +75,8 @@ private slots:
    void searchResultLimit();
    void unavailableMulticastPeer_data();
    void unavailableMulticastPeer();
+   void invalidIMAlivePort_data();
+   void invalidIMAlivePort();
    void heartbeatWithChatRooms_data();
    void heartbeatWithChatRooms();
    void sharedUnicastPort_data();

@@ -925,6 +925,51 @@ void Tests::unavailableMulticastPeer()
    QVERIFY(receivedType(Common::MessageHeader::CORE_GOODBYE));
 }
 
+void Tests::invalidIMAlivePort_data()
+{
+   QTest::addColumn<quint32>("invalidPort");
+   QTest::newRow("zero") << quint32(0);
+   QTest::newRow("above 65535") << quint32(65536 + 1234);
+}
+
+void Tests::invalidIMAlivePort()
+{
+#ifndef DEBUG
+   QSKIP("The multicast loopback is only enabled in debug");
+#endif
+   QFETCH(quint32, invalidPort);
+   QTRY_VERIFY_WITH_TIMEOUT(this->peersDiscovered(), DISCOVERY_TIMEOUT);
+   PM::IPeer* peer = this->instances[0].peerManager->getPeer(this->peerIDs[1]);
+   QVERIFY(peer);
+   const auto sender = this->instances[1].networkListener;
+   const quint16 port = peer->getPort();
+
+   auto receivedNick = [&](const std::string& nick) {
+      for (const Common::Message& message : std::as_const(this->receivedMessages))
+         if (message.getHeader().getSenderID() == peer->getID() &&
+             message.getHeader().getType() == Common::MessageHeader::CORE_IM_ALIVE &&
+             message.getMessage<Protos::Core::IMAlive>().nick() == nick)
+            return true;
+      return false;
+   };
+
+   Protos::Core::IMAlive heartbeat;
+   heartbeat.set_version(peer->getProtocolVersion());
+   heartbeat.set_nick("invalid port");
+   heartbeat.set_port(invalidPort);
+   this->receivedMessages.clear();
+   QCOMPARE(sender->send(Common::MessageHeader::CORE_IM_ALIVE, heartbeat), INetworkListener::SendStatus::OK);
+
+   // A valid heartbeat sent afterwards marks the end of the invalid one's processing.
+   heartbeat.set_nick("valid port");
+   heartbeat.set_port(port);
+   QCOMPARE(sender->send(Common::MessageHeader::CORE_IM_ALIVE, heartbeat), INetworkListener::SendStatus::OK);
+   QTRY_VERIFY_WITH_TIMEOUT(receivedNick("valid port"), DISCOVERY_TIMEOUT);
+
+   QVERIFY(!receivedNick("invalid port"));
+   QCOMPARE(peer->getPort(), port);
+}
+
 void Tests::heartbeatWithChatRooms_data()
 {
    QTest::addColumn<QStringList>("roomNames");

@@ -308,6 +308,16 @@ void UDPListener::processPendingMulticastDatagrams()
             {
                const Protos::Core::IMAlive& IMAliveMessage = message.getMessage<Protos::Core::IMAlive>();
 
+               // The port is an 'uint32' in the protocol, it would be truncated to a wrong port.
+               if (IMAliveMessage.port() == 0 || IMAliveMessage.port() > std::numeric_limits<quint16>::max())
+               {
+                  L_WARN(
+                     QString("IMAlive: invalid port (%1) from peer %2 %3, message ignored")
+                        .arg(IMAliveMessage.port()).arg(header.getSenderID().toStrShort(), peerAddress.toString())
+                  );
+                  continue;
+               }
+
                this->peerManager->updatePeer(
                   header.getSenderID(),
                   peerAddress,
