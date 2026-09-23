@@ -1,8 +1,8 @@
 #grip {
    background-color : #212121;
-   background-image: url(styles/Material/title.png);
-   background-repeat: no-repeat;
-   background-position: center left;   
+   /* An 'image' (not a 'background-image') for the SVG to be rendered sharply at any scale. */
+   image: url(styles/Material/title.svg);
+   image-position: left center;
 }
 
 #grip #butMinimize,

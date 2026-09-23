@@ -1,8 +1,8 @@
 #grip {
    background-color : qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #182430, stop:1 #6596c9);
-   background-image: url(styles/l33t/title.png);
-   background-repeat: no-repeat;
-   background-position: center left;   
+   /* An 'image' (not a 'background-image') for the SVG to be rendered sharply at any scale. */
+   image: url(styles/l33t/title.svg);
+   image-position: left center;
 }
 
 #grip #butMinimize,

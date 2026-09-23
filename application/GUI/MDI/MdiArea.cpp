@@ -19,6 +19,7 @@
 #include <MDI/MdiArea.h>
 using namespace GUI;
 
+#include <QFrame>
 #include <QMdiSubWindow>
 #include <QCoreApplication>
 #include <QShortcut>
@@ -474,7 +475,9 @@ BrowseWidget* MdiArea::addBrowseWindow(const Common::Hash& peerID)
    browseWindow->setWindowState(Qt::WindowMaximized);
    this->browseWidgets << browseWindow;
 
-   QWidget* buttons = new QWidget();
+   // A frame and not a plain widget: style sheets ignore plain widgets whose parent is a tab bar
+   // (Qt takes them for a moving tab), their close button would keep the default icon.
+   QFrame* buttons = new QFrame();
    buttons->setObjectName("tabWidget");
 
    TabCloseButton* closeButton = new TabCloseButton(browseWindow, buttons);

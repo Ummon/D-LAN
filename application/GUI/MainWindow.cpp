@@ -120,6 +120,11 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
    connect(this->ui->butMinimize, &QPushButton::clicked, this, &MainWindow::showMinimized);
    connect(this->ui->butMaximize, &QPushButton::clicked, this, &MainWindow::maximize);
 
+   // Create the native window with its normal frame before a custom style removes it. On Windows, a window created
+   // frameless keeps a client area covering the whole window when the frame is restored later (going back to
+   // the default style): the title bar and the borders would stay invisible.
+   this->winId();
+
    if (!SETTINGS.get<QString>("style").isEmpty())
       this->loadCustomStyle(
          Common::Global::getResourceFolder() % "/" %
