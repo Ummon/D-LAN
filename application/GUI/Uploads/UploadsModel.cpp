@@ -19,7 +19,10 @@
 #include <Uploads/UploadsModel.h>
 using namespace GUI;
 
+#include <algorithm>
+
 #include <QPixmap>
+#include <QVector>
 
 #include <Common/ProtoHelper.h>
 #include <Common/Global.h>
@@ -68,25 +71,43 @@ QVariant UploadsModel::data(const QModelIndex& index, int role) const
 
 void UploadsModel::newState(const Protos::GUI::State& state)
 {
-   int i = 0;
-   for (; i < state.uploads_size() && i < this->uploads.size(); i++)
+   // Sort by path and then by progress (most advanced first).
+   struct SortedUpload
    {
-      if (state.uploads(i) != this->uploads[i])
+      QString path;
+      const Protos::GUI::State_Upload* upload;
+   };
+   QVector<SortedUpload> sortedUploads;
+   sortedUploads.reserve(state.uploads_size());
+   for (const Protos::GUI::State_Upload& upload : state.uploads())
+      sortedUploads << SortedUpload { Common::ProtoHelper::getPath(upload.file()).toString(), &upload };
+
+   std::stable_sort(sortedUploads.begin(), sortedUploads.end(),
+      [](const SortedUpload& u1, const SortedUpload& u2)
       {
-         this->uploads[i].CopyFrom(state.uploads(i));
+         const int pathComparison = u1.path.compare(u2.path, Qt::CaseInsensitive);
+         if (pathComparison != 0)
+            return pathComparison < 0;
+         return u1.upload->progress() > u2.upload->progress();
+      }
+   );
+
+   int i = 0;
+   for (; i < sortedUploads.size() && i < this->uploads.size(); i++)
+   {
+      if (*sortedUploads[i].upload != this->uploads[i])
+      {
+         this->uploads[i].CopyFrom(*sortedUploads[i].upload);
          emit dataChanged(this->createIndex(i, 0), this->createIndex(i, 2));
       }
    }
 
    // Insert new elements.
-   if (i < state.uploads_size())
+   if (i < sortedUploads.size())
    {
-      this->beginInsertRows(QModelIndex(), i, state.uploads_size() - 1);
-      while (i < state.uploads_size())
-      {
-         const Protos::GUI::State_Upload& upload = state.uploads(i++);
-         this->uploads << upload;
-      }
+      this->beginInsertRows(QModelIndex(), i, sortedUploads.size() - 1);
+      while (i < sortedUploads.size())
+         this->uploads << *sortedUploads[i++].upload;
       this->endInsertRows();
    }
 
