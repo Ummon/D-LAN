@@ -1436,9 +1436,9 @@ void Tests::checkpointDownloadProgress()
    auto download = manager.addDownload(entry, entry, &peer, Protos::Queue::Queue::Entry::QUEUED);
    QVERIFY(download);
    QCOMPARE(download->getStatus(), Protos::Common::DownloadStatus::DOWNLOADING);
-   const auto unfinished = manager.getTheFirstUnfinishedChunks(1);
+   auto unfinished = manager.getTheFirstUnfinishedChunks(1);
    QCOMPARE(unfinished.size(), 1);
-   const auto downloader = qSharedPointerDynamicCast<ChunkDownloader>(unfinished.first());
+   auto downloader = qSharedPointerDynamicCast<ChunkDownloader>(unfinished.first());
    QVERIFY(downloader);
 
    // Exercise the timer's slot directly, without waiting a minute per checkpoint.
@@ -1464,6 +1464,22 @@ void Tests::checkpointDownloadProgress()
    QCOMPARE(saved.entries(0).known_bytes_size(), 1);
    QCOMPARE(saved.entries(0).known_bytes(0), finalBytes);
    QCOMPARE(saved.entries(0).status(), complete ? Protos::Queue::Queue::Entry::COMPLETE : Protos::Queue::Queue::Entry::QUEUED);
+
+   // Once the event loop runs, a complete download releases its chunk downloaders, the others keep them.
+   const QWeakPointer<ChunkDownloader> weakDownloader = downloader;
+   downloader.clear();
+   unfinished.clear();
+   QCoreApplication::processEvents();
+   QCOMPARE(weakDownloader.isNull(), complete);
+
+   // The persisted progress and hashes are the same.
+   Protos::Queue::Queue::Entry queueEntry;
+   download->populateQueueEntry(&queueEntry);
+   QCOMPARE(queueEntry.known_bytes_size(), 1);
+   QCOMPARE(queueEntry.known_bytes(0), finalBytes);
+   QCOMPARE(queueEntry.remote_entry().chunks_size(), 1);
+   QCOMPARE(queueEntry.remote_entry().chunks(0).hash(), entry.chunks(0).hash());
+   QCOMPARE(download->getDownloadedBytes(), static_cast<quint64>(finalBytes));
 }
 
 /**

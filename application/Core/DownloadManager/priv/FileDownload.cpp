@@ -25,6 +25,7 @@ using namespace DM;
 #include <QRandomGenerator64>
 #include <QFileInfo>
 
+#include <algorithm>
 #include <limits>
 
 #include <Common/Global.h>
@@ -59,18 +60,8 @@ FileDownload::FileDownload(
    threadPool(threadPool),
    nbHashesKnown(0),
    transferRateCalculator(transferRateCalculator),
-   lastTimeGetAllUnfinishedChunks(0),
-   statusUpdateTimer(this),
-   retryToGetHashesTimer(this)
+   lastTimeGetAllUnfinishedChunks(0)
 {
-   this->statusUpdateTimer.setSingleShot(true);
-   this->statusUpdateTimer.setInterval(0);
-   connect(&this->statusUpdateTimer, &QTimer::timeout, this, &FileDownload::updateStatus);
-
-   this->retryToGetHashesTimer.setSingleShot(true);
-   this->retryToGetHashesTimer.setInterval(RETRY_PEER_GET_HASHES_PERIOD);
-   connect(&this->retryToGetHashesTimer, &QTimer::timeout, this, &FileDownload::retryToGetHashes);
-
    // Invalid hashes are unknown, not occupied chunk slots. Normalize both entries so requests,
    // file creation and queue persistence cannot reuse malformed data.
    for (auto* entry : { &this->remoteEntry, &this->localEntry })
@@ -220,6 +211,16 @@ void FileDownload::populateQueueEntry(Protos::Queue::Queue::Entry* entry) const
    Download::populateQueueEntry(entry);
 
    entry->clear_known_bytes();
+
+   // Released once complete, see 'releaseChunkDownloaders()': all the chunks are known.
+   if (this->chunkDownloaders.isEmpty())
+   {
+      for (int i = 0; i < this->NB_CHUNK; i++)
+         entry->add_known_bytes(static_cast<quint32>(
+            std::min<qint64>(Common::Constants::CHUNK_SIZE, this->remoteEntry.size() - static_cast<qint64>(i) * Common::Constants::CHUNK_SIZE)
+         ));
+      return;
+   }
 
    for (int i = 0; i < this->chunkDownloaders.size() && i < entry->remote_entry().chunks_size(); i++)
    {
@@ -446,7 +447,7 @@ bool FileDownload::retrieveHashes()
   */
 bool FileDownload::updateStatus()
 {
-   this->statusUpdateTimer.stop();
+   this->statusUpdatePending = false;
    if (Download::updateStatus())
       return true;
 
@@ -536,16 +537,33 @@ void FileDownload::setStatus(Protos::Common::DownloadStatus status)
 {
    // An explicit transition supersedes pending peer notifications. In particular,
    // a delayed scan must not clear an error already consumed by updateStatus().
-   this->statusUpdateTimer.stop();
+   this->statusUpdatePending = false;
+
+   const bool wasComplete = this->status == Protos::Common::DownloadStatus::COMPLETE;
    Download::setStatus(status);
+
+   // Queued: the completion may be notified by a 'ChunkDownloader' still running, see 'ChunkDownloader::downloadingEnded()'.
+   if (!wasComplete && this->status == Protos::Common::DownloadStatus::COMPLETE)
+      QMetaObject::invokeMethod(this, &FileDownload::releaseChunkDownloaders, Qt::QueuedConnection);
 }
 
 void FileDownload::scheduleStatusUpdate()
 {
    // Hash replies and discovery can update many chunks in one event-loop turn.
    // Keep one pending scan; transfer start/finish and errors still update directly.
-   if (!this->isStatusFrozen() && !this->statusUpdateTimer.isActive())
-      this->statusUpdateTimer.start();
+   // A later 'updateStatus()' or 'setStatus(..)' cancels it by resetting the flag.
+   if (!this->isStatusFrozen() && !this->statusUpdatePending)
+   {
+      this->statusUpdatePending = true;
+      QMetaObject::invokeMethod(
+         this,
+         [this] {
+            if (this->statusUpdatePending)
+               this->updateStatus();
+         },
+         Qt::QueuedConnection
+      );
+   }
 }
 
 void FileDownload::result(const Protos::Core::GetHashesResult& result)
@@ -567,7 +585,14 @@ void FileDownload::result(const Protos::Core::GetHashesResult& result)
          L_DEBU("Unable to retrieve the hashes: DONT_HAVE");
          this->setStatus(Protos::Common::DownloadStatus::ENTRY_NOT_FOUND);
          // The file may be only temporarily unavailable, for example being moved or its shared directory being rescanned.
-         this->retryToGetHashesTimer.start();
+         if (!this->retryToGetHashesTimer)
+         {
+            this->retryToGetHashesTimer = new QTimer(this);
+            this->retryToGetHashesTimer->setSingleShot(true);
+            this->retryToGetHashesTimer->setInterval(RETRY_PEER_GET_HASHES_PERIOD);
+            connect(this->retryToGetHashesTimer, &QTimer::timeout, this, &FileDownload::retryToGetHashes);
+         }
+         this->retryToGetHashesTimer->start();
       }
       else
       {
@@ -657,7 +682,7 @@ void FileDownload::nextHash(const Protos::Core::HashResult& hashResult)
    // Finish with the final chunk's source included. Adding it may already have
    // started or failed a transfer and cancelled this pending scan; preserve that
    // newer status instead of consuming a transfer error a second time.
-   if (allHashesKnown && this->statusUpdateTimer.isActive())
+   if (allHashesKnown && this->statusUpdatePending)
       this->updateStatus();
 
    emit newHashKnown();
@@ -894,4 +919,21 @@ void FileDownload::reset()
    this->localEntry.set_exists(false);
    // Losing the cached file does not invalidate its destination share. Keep it for recreation
    // and queue persistence; FileManager handles a share that is no longer available.
+}
+
+/**
+  * A complete download is final (see 'Download::isStatusFrozen()'), its chunk downloaders and chunks are no longer needed.
+  * A queue can hold thousands of completed downloads until they are removed.
+  * The hashes are still in 'remoteEntry', they are persisted with the queue.
+  */
+void FileDownload::releaseChunkDownloaders()
+{
+   if (this->status != Protos::Common::DownloadStatus::COMPLETE)
+      return;
+
+   // Assigned rather than cleared: 'QList::clear()' keeps the capacity.
+   this->chunkDownloaders = {};
+   this->chunksWithoutDownloader.clear();
+   this->nbChunkAsked = 0;
+   this->localEntry.clear_chunks();
 }

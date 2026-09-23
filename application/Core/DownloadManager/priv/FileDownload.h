@@ -105,6 +105,7 @@ namespace DM
       bool prepareFileForResume();
       void giveChunksToDownloaders();
       void reset();
+      void releaseChunkDownloaders();
 
       LinkedPeers& linkedPeers;
 
@@ -127,8 +128,12 @@ namespace DM
       Common::TransferRateCalculator& transferRateCalculator;
 
       qint64 lastTimeGetAllUnfinishedChunks; // [ms] since epoch. Updated when ALL hashes are send via the method 'getUnfinishedChunks(..)'. 0 if never.
-      QTimer statusUpdateTimer;
-      QTimer retryToGetHashesTimer; // When the peer source doesn't have the file, it's asked again periodically.
+
+      // There can be a lot of downloads: a flag and a posted call instead of a 'QTimer' per download, see 'scheduleStatusUpdate()'.
+      bool statusUpdatePending = false;
+
+      // When the peer source doesn't have the file, it's asked again periodically. Created on the first need, rarely used.
+      QTimer* retryToGetHashesTimer = nullptr;
    };
 }
 

@@ -38,7 +38,7 @@ target_link_libraries(DLanCore PRIVATE
 )
 
 if(WIN32)
-   target_sources(DLanCore PRIVATE "${CMAKE_SOURCE_DIR}/Common/version.rc")
+   target_sources(DLanCore PRIVATE "${CMAKE_SOURCE_DIR}/Common/version.rc" DLanCore.rc)
    # Used by UDPListener::initMulticastUDPSocket().
    target_link_libraries(DLanCore PRIVATE wsock32)
 endif()
