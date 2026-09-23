@@ -265,9 +265,9 @@ void UDPListener::closeSockets()
    this->currentChunkDownloaders.clear();
 }
 
-bool UDPListener::startListening()
+bool UDPListener::startListening(const QList<QNetworkInterface>& interfaces)
 {
-   if (this->unicastPort == 0 || !this->initMulticastUDPSocket())
+   if (this->unicastPort == 0 || !this->initMulticastUDPSocket(interfaces))
    {
       this->closeSockets();
       return false;
@@ -484,19 +484,20 @@ void UDPListener::processPendingUnicastDatagrams()
    }
 }
 
-bool UDPListener::initMulticastUDPSocket()
+bool UDPListener::initMulticastUDPSocket(const QList<QNetworkInterface>& interfaces)
 {
    this->multicastSocket.close();
    this->multicastInterfaces.clear();
 
-   QHostAddress currentAddressToListenTo = Utils::getCurrentAddressToListenTo();
+   // Same protocol as the unicast socket, rather than a new lookup which may see other adapters.
+   const auto protocol = this->unicastSocket.localAddress().protocol();
 
-   this->multicastGroup = Utils::getMulticastGroup(currentAddressToListenTo.protocol());
+   this->multicastGroup = Utils::getMulticastGroup(protocol);
 
    if (
       !this->multicastSocket.bind(
          // Always bind to any, it seems there are some issue on Windows to bind multicast address to specific interface.
-         currentAddressToListenTo.protocol() == QAbstractSocket::IPv4Protocol ?
+         protocol == QAbstractSocket::IPv4Protocol ?
               QHostAddress::AnyIPv4
             : QHostAddress::AnyIPv6,
          MULTICAST_PORT,
@@ -518,7 +519,7 @@ bool UDPListener::initMulticastUDPSocket()
    this->multicastSocket.setSocketOption(QAbstractSocket::MulticastLoopbackOption, loop);
    this->multicastSocket.setSocketOption(QAbstractSocket::MulticastTtlOption, SETTINGS.get<quint32>("multicast_ttl"));
 
-   for (const auto& networkInterface : Utils::getCurrentInterfacesToListenTo())
+   for (const auto& networkInterface : interfaces)
    {
       if (!this->multicastSocket.joinMulticastGroup(this->multicastGroup, networkInterface))
       {

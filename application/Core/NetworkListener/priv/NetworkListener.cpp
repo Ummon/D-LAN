@@ -33,18 +33,18 @@ NetworkListener::NetworkListener(
    QSharedPointer<PM::IPeerManager> peerManager,
    QSharedPointer<UM::IUploadManager> uploadManager,
    QSharedPointer<DM::IDownloadManager> downloadManager,
-   std::function<QStringList()> networkConfigurationProvider
+   std::function<QStringList(const QList<QNetworkInterface>&)> networkConfigurationProvider
 ) :
    peerManager(peerManager),
    tCPListener(peerManager),
    uDPListener(fileManager, peerManager, uploadManager, downloadManager),
-   networkConfigurationProvider(networkConfigurationProvider ? networkConfigurationProvider : []() { return Utils::getNetworkConfiguration(); })
+   networkConfigurationProvider(networkConfigurationProvider ? networkConfigurationProvider : Utils::getNetworkConfiguration)
 {
    connect(&this->uDPListener, &UDPListener::received, this, &NetworkListener::received);
    connect(&this->uDPListener, &UDPListener::IMAliveMessageToBeSend, this, &NetworkListener::IMAliveMessageToBeSend);
 
    // Do not sanitize: the selected adapter may not be up yet at startup, keep the user's selection (see 'bindSockets(..)').
-   this->bindSockets(false);
+   this->bindSockets(QNetworkInterface::allInterfaces(), false);
    // Qt 6 has no portable notification for every interface/address change.
    connect(&this->timerNetworkConfiguration, &QTimer::timeout, this, &NetworkListener::checkNetworkConfiguration);
    this->timerNetworkConfiguration.start(2000);
@@ -64,27 +64,32 @@ QSharedPointer<ISearch> NetworkListener::newSearch()
 
 void NetworkListener::rebindSockets()
 {
-   this->bindSockets(true);
+   this->bindSockets(QNetworkInterface::allInterfaces(), true);
 }
 
 void NetworkListener::checkNetworkConfiguration()
 {
-   if (this->networkConfigurationProvider() != this->networkConfiguration || !this->socketsBound)
-      this->bindSockets(false);
+   const auto interfaces = QNetworkInterface::allInterfaces();
+   if (this->networkConfigurationProvider(interfaces) != this->networkConfiguration || !this->socketsBound)
+      this->bindSockets(interfaces, false);
 }
 
-void NetworkListener::bindSockets(bool sanitizeSettings)
+/**
+  * @param interfaces A single snapshot for the whole binding, the adapters may change meanwhile.
+  */
+void NetworkListener::bindSockets(const QList<QNetworkInterface>& interfaces, bool sanitizeSettings)
 {
-   this->networkConfiguration = this->networkConfigurationProvider();
    this->socketsBound = false;
    this->uDPListener.closeSockets();
    this->tCPListener.close();
    this->peerManager->setSelfAddress(QHostAddress(), 0);
    this->peerManager->removeAllPeers();
    if (sanitizeSettings)
-      Utils::sanitizeListenSettings();
+      Utils::sanitizeListenSettings(interfaces);
+   // Taken after sanitizing, which may change the address to listen to.
+   this->networkConfiguration = this->networkConfigurationProvider(interfaces);
 
-   const QHostAddress address = Utils::getCurrentAddressToListenTo();
+   const QHostAddress address = Utils::getCurrentAddressToListenTo(interfaces);
    // An adapter may disappear temporarily. Listen to any address meanwhile but keep the user's selection:
    // the network configuration changes when the address returns, which triggers a rebinding to it.
    const QString configuredAddress = SETTINGS.get<QString>("listen_address");
@@ -112,7 +117,7 @@ void NetworkListener::bindSockets(bool sanitizeSettings)
       if ((bound = bindBoth(0)))
          L_WARN(QString("Listening to TCP and UDP on OS-selected port %1").arg(this->tCPListener.getCurrentPort()));
 
-   this->socketsBound = bound && this->uDPListener.startListening();
+   this->socketsBound = bound && this->uDPListener.startListening(Utils::getCurrentInterfacesToListenTo(interfaces));
    if (!this->socketsBound)
    {
       this->uDPListener.closeSockets();

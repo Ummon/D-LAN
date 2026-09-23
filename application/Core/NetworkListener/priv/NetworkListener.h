@@ -46,7 +46,7 @@ namespace NL
          QSharedPointer<PM::IPeerManager> peerManager,
          QSharedPointer<UM::IUploadManager> uploadManager,
          QSharedPointer<DM::IDownloadManager> downloadManager,
-         std::function<QStringList()> networkConfigurationProvider = {}
+         std::function<QStringList(const QList<QNetworkInterface>&)> networkConfigurationProvider = {}
       );
 
       ~NetworkListener();
@@ -69,7 +69,7 @@ namespace NL
       void checkNetworkConfiguration();
 
    private:
-      void bindSockets(bool sanitizeSettings);
+      void bindSockets(const QList<QNetworkInterface>& interfaces, bool sanitizeSettings);
 
       LOG_INIT_H("NetworkListener")
 
@@ -77,7 +77,7 @@ namespace NL
 
       TCPListener tCPListener;
       UDPListener uDPListener;
-      std::function<QStringList()> networkConfigurationProvider;
+      std::function<QStringList(const QList<QNetworkInterface>&)> networkConfigurationProvider;
       QStringList networkConfiguration;
       QTimer timerNetworkConfiguration;
       bool socketsBound = false;

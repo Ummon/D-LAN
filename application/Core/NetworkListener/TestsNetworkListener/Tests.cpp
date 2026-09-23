@@ -508,7 +508,7 @@ void Tests::multicastOnLANInterface()
    QVERIFY(tcp.listen(address, 0));
    UDPListener listener(instance.fileManager, peerManager, instance.uploadManager, instance.downloadManager);
    QVERIFY(listener.bindUnicastSocket(address, tcp.serverPort()));
-   QVERIFY(listener.startListening());
+   QVERIFY(listener.startListening(Utils::getCurrentInterfacesToListenTo()));
 
    int checked = 0;
    for (const auto& iface : QNetworkInterface::allInterfaces())
@@ -732,7 +732,7 @@ void Tests::searchSendFailure()
    QTcpServer tcp;
    QVERIFY(tcp.listen(Utils::getCurrentAddressToListenTo(), 0));
    QVERIFY(listener.bindUnicastSocket(Utils::getCurrentAddressToListenTo(), tcp.serverPort()));
-   QVERIFY(listener.startListening());
+   QVERIFY(listener.startListening(Utils::getCurrentInterfacesToListenTo()));
    if (!oversized)
       listener.closeSockets();
 
@@ -755,7 +755,7 @@ void Tests::searchSendFailure()
    if (!oversized)
    {
       QVERIFY(listener.bindUnicastSocket(Utils::getCurrentAddressToListenTo(), tcp.serverPort()));
-      QVERIFY(listener.startListening());
+      QVERIFY(listener.startListening(Utils::getCurrentInterfacesToListenTo()));
    }
    pattern.set_pattern("something");
    const quint64 tag = search.search(pattern);
@@ -788,7 +788,7 @@ void Tests::searchResultLimit()
    QTcpServer tcp;
    QVERIFY(tcp.listen(Utils::getCurrentAddressToListenTo(), 0));
    QVERIFY(listener.bindUnicastSocket(Utils::getCurrentAddressToListenTo(), tcp.serverPort()));
-   QVERIFY(listener.startListening());
+   QVERIFY(listener.startListening(Utils::getCurrentInterfacesToListenTo()));
    Search search(listener);
    Protos::Common::FindPattern pattern;
    pattern.set_pattern("result limit test");
@@ -1164,7 +1164,7 @@ void Tests::bindFailureAndRecovery()
    UDPListener udp(instance.fileManager, instance.peerManager, instance.uploadManager, instance.downloadManager);
    QVERIFY(tcpProbe.listen(QHostAddress::AnyIPv4, 0));
    QVERIFY(udp.bindUnicastSocket(QHostAddress::AnyIPv4, tcpProbe.serverPort()));
-   QVERIFY(udp.startListening());
+   QVERIFY(udp.startListening(Utils::getCurrentInterfacesToListenTo()));
    int stoppedHeartbeats = 0;
    connect(&udp, &UDPListener::IMAliveMessageToBeSend, &context,
       [&](Protos::Core::IMAlive&) { ++stoppedHeartbeats; });
@@ -1181,7 +1181,7 @@ void Tests::rejectZeroUnicastPort()
    const Instance& instance = this->instances[1];
    UDPListener listener(instance.fileManager, instance.peerManager, instance.uploadManager, instance.downloadManager);
    QVERIFY(!listener.bindUnicastSocket(QHostAddress::AnyIPv4, 0));
-   QVERIFY(!listener.startListening());
+   QVERIFY(!listener.startListening(Utils::getCurrentInterfacesToListenTo()));
    QCOMPARE(listener.send(Common::MessageHeader::CORE_GOODBYE), INetworkListener::SendStatus::UNABLE_TO_SEND);
 }
 
@@ -1190,7 +1190,7 @@ void Tests::automaticRebinding()
    const Instance& instance = this->instances[1];
    QStringList configuration { "initial interface configuration" };
    NL::NetworkListener listener(instance.fileManager, instance.peerManager, instance.uploadManager,
-      instance.downloadManager, [&]() { return configuration; });
+      instance.downloadManager, [&](const QList<QNetworkInterface>&) { return configuration; });
    int heartbeats = 0;
    quint16 port = 0;
    connect(&listener, &INetworkListener::IMAliveMessageToBeSend, this,
@@ -1257,7 +1257,7 @@ void Tests::startupKeepsUnavailableAddress()
    // The selected adapter is not up yet when the core starts.
    QStringList configuration { "adapter not up yet" };
    NL::NetworkListener listener(instance.fileManager, instance.peerManager, instance.uploadManager,
-      instance.downloadManager, [&]() { return configuration; });
+      instance.downloadManager, [&](const QList<QNetworkInterface>&) { return configuration; });
    int heartbeats = 0;
    connect(&listener, &INetworkListener::IMAliveMessageToBeSend, this,
       [&](Protos::Core::IMAlive&) { ++heartbeats; });

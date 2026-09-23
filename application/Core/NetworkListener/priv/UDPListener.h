@@ -66,8 +66,8 @@ namespace NL
         * Reserve the same nonzero port as the TCP listener, without announcing it yet.
         */
       bool bindUnicastSocket(const QHostAddress& address, quint16 port);
-      // Join multicast and start heartbeats only after both unicast listeners are bound.
-      bool startListening();
+      // Join multicast on the given interfaces and start heartbeats only after both unicast listeners are bound.
+      bool startListening(const QList<QNetworkInterface>& interfaces);
       void closeSockets();
 
       int getMaxUDPMessageSize() const { return this->MAX_UDP_DATAGRAM_PAYLOAD_SIZE - Common::MessageHeader::HEADER_SIZE; }
@@ -86,7 +86,7 @@ namespace NL
       void processPendingUnicastDatagrams();
 
    private:
-      bool initMulticastUDPSocket();
+      bool initMulticastUDPSocket(const QList<QNetworkInterface>& interfaces);
       int writeMessageToBuffer(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);
       Common::MessageHeader readDatagramToBuffer(QUdpSocket& socket, QHostAddress& peerAddress);
 
