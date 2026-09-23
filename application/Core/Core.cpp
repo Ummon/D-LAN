@@ -248,7 +248,7 @@ Protos::Core::Settings* Core::createDefaultValuesSettings()
 
    ///// HashCache /////
    settings->set_hashcache_period_verify_files_exist(86400);
-   settings->set_hashcache_nb_of_files_before_check(100000);
+   settings->set_hashcache_nb_of_files_before_check(200000);
    settings->set_hashcache_nb_of_files_deleted_before_vacuum(10000);
 
    return settings;
