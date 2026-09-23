@@ -435,7 +435,7 @@
 <context>
     <name>GUI::MainWindow</name>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="+164"/>
+        <location filename="../GUI/MainWindow.cpp" line="+169"/>
         <source>Already connected to this address</source>
         <translation>Déjà connecté à cette adresse</translation>
     </message>
@@ -509,12 +509,12 @@
 <context>
     <name>GUI::MdiArea</name>
     <message>
-        <location filename="../GUI/MDI/MdiArea.cpp" line="+358"/>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="+359"/>
         <source>Waiting the initial scanning process is finished before loading the download queue</source>
         <translation>En attente de la fin du parcours des fichiers avant le chargement de la liste de téléchargement</translation>
     </message>
     <message>
-        <location line="+189"/>
+        <location line="+191"/>
         <source>Leave room</source>
         <translation>Quitter le salon</translation>
     </message>
@@ -729,7 +729,7 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+247"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+248"/>
         <source>Default</source>
         <translation>Par défaut</translation>
     </message>

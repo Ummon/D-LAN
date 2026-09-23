@@ -34,7 +34,7 @@
 <context>
     <name>DM::FileDownload</name>
     <message>
-        <location filename="../Core/DownloadManager/priv/FileDownload.cpp" line="519"/>
+        <location filename="../Core/DownloadManager/priv/FileDownload.cpp" line="520"/>
         <source>File completed: %1%2%3</source>
         <translation>File completato: %1%2%3</translation>
     </message>

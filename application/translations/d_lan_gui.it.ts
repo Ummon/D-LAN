@@ -435,73 +435,73 @@
 <context>
     <name>GUI::MainWindow</name>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="164"/>
+        <location filename="../GUI/MainWindow.cpp" line="169"/>
         <source>Already connected to this address</source>
         <translation>Già connesso a questo indirizzo</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="167"/>
+        <location filename="../GUI/MainWindow.cpp" line="172"/>
         <source>There is already a connection process in progress</source>
         <translation>Un tentativo di connessione è già in corso</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="170"/>
+        <location filename="../GUI/MainWindow.cpp" line="175"/>
         <source>The host is unknown</source>
         <translation>Host sconosciuto</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="173"/>
+        <location filename="../GUI/MainWindow.cpp" line="178"/>
         <source>Host has timed out</source>
         <translation>L&apos;host non risponde</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="176"/>
+        <location filename="../GUI/MainWindow.cpp" line="181"/>
         <source>The host hasn&apos;t defined any password</source>
         <translation>L&apos;host non ha impostato alcuna password</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="179"/>
+        <location filename="../GUI/MainWindow.cpp" line="184"/>
         <source>Wrong password</source>
         <translation>Password errata</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="182"/>
+        <location filename="../GUI/MainWindow.cpp" line="187"/>
         <source>Invalid address</source>
         <translation>Indirizzo non valido</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="185"/>
+        <location filename="../GUI/MainWindow.cpp" line="190"/>
         <source>Unable to establish a trusted encrypted connection. The Core&apos;s certificate may have changed or TLS may be unavailable. See the log for details.</source>
         <translation>Impossibile stabilire una connessione crittografata attendibile. Il certificato del Core potrebbe essere cambiato oppure TLS potrebbe non essere disponibile. Consultare il log per ulteriori dettagli.</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="188"/>
+        <location filename="../GUI/MainWindow.cpp" line="193"/>
         <source>Error unknown</source>
         <translation>Errore sconosciuto</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="194"/>
+        <location filename="../GUI/MainWindow.cpp" line="199"/>
         <source>Unable to connect to the core</source>
         <translation>Impossibile connettersi al Core</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="197"/>
-        <location filename="../GUI/MainWindow.cpp" line="221"/>
+        <location filename="../GUI/MainWindow.cpp" line="202"/>
+        <location filename="../GUI/MainWindow.cpp" line="226"/>
         <source>Core address:</source>
         <translation>Indirizzo del Core:</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="207"/>
+        <location filename="../GUI/MainWindow.cpp" line="212"/>
         <source>Connected to the core</source>
         <translation>Connesso al Core</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="216"/>
+        <location filename="../GUI/MainWindow.cpp" line="221"/>
         <source>Connection lost</source>
         <translation>Connessione persa</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="220"/>
+        <location filename="../GUI/MainWindow.cpp" line="225"/>
         <source>The connection to the core has been lost</source>
         <translation>La connessione al Core è stata persa</translation>
     </message>
@@ -509,12 +509,12 @@
 <context>
     <name>GUI::MdiArea</name>
     <message>
-        <location filename="../GUI/MDI/MdiArea.cpp" line="358"/>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="359"/>
         <source>Waiting the initial scanning process is finished before loading the download queue</source>
         <translation>In attesa del completamento della scansione iniziale prima di caricare la coda dei download</translation>
     </message>
     <message>
-        <location filename="../GUI/MDI/MdiArea.cpp" line="547"/>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="550"/>
         <source>Leave room</source>
         <translation>Esci dalla stanza</translation>
     </message>
@@ -729,57 +729,57 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="247"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="248"/>
         <source>Default</source>
         <translation>Predefinito</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="306"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="307"/>
         <source>Interface not active</source>
         <translation>Interfaccia non attiva</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="466"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="467"/>
         <source>Change the password</source>
         <translation>Cambia la password</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="470"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="471"/>
         <source>No password defined</source>
         <translation>Non è stata impostata alcuna password</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="472"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="473"/>
         <source>Define a password</source>
         <translation>Imposta una password</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="518"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="826"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="519"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="827"/>
         <source>Connecting . . .</source>
         <translation>Connessione in corso . . .</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="526"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="541"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="556"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="826"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="527"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="542"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="557"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="827"/>
         <source>Connect</source>
         <translation>Connetti</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="650"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="651"/>
         <source>Select one or more directories and/or files to share</source>
         <translation>Seleziona una o più cartelle e/o file da condividere</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="671"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="736"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="672"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="737"/>
         <source>Remove selected shared entries</source>
         <translation>Rimuovi gli elementi condivisi selezionati</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="672"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="673"/>
         <source>Are you sure you want to remove the selected shared files and directories?</source>
         <translation>Rimuovere i file e le cartelle condivisi selezionati?</translation>
     </message>
@@ -796,17 +796,17 @@
         <translation type="vanished">Rimuovi la cartella condivisa</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="744"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="745"/>
         <source>Move up</source>
         <translation>Sposta su</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="752"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="753"/>
         <source>Move down</source>
         <translation>Sposta giù</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="760"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="761"/>
         <source>Open location</source>
         <translation>Apri percorso</translation>
     </message>

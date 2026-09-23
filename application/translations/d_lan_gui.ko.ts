@@ -435,73 +435,73 @@
 <context>
     <name>GUI::MainWindow</name>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="164"/>
+        <location filename="../GUI/MainWindow.cpp" line="169"/>
         <source>Already connected to this address</source>
         <translation>이미 이 주소에 연결되어 있습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="167"/>
+        <location filename="../GUI/MainWindow.cpp" line="172"/>
         <source>There is already a connection process in progress</source>
         <translation>이미 연결을 시도하는 중입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="170"/>
+        <location filename="../GUI/MainWindow.cpp" line="175"/>
         <source>The host is unknown</source>
         <translation>알 수 없는 호스트입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="173"/>
+        <location filename="../GUI/MainWindow.cpp" line="178"/>
         <source>Host has timed out</source>
         <translation>호스트가 응답하지 않습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="176"/>
+        <location filename="../GUI/MainWindow.cpp" line="181"/>
         <source>The host hasn&apos;t defined any password</source>
         <translation>호스트에 비밀번호가 설정되어 있지 않습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="179"/>
+        <location filename="../GUI/MainWindow.cpp" line="184"/>
         <source>Wrong password</source>
         <translation>잘못된 비밀번호입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="182"/>
+        <location filename="../GUI/MainWindow.cpp" line="187"/>
         <source>Invalid address</source>
         <translation>잘못된 주소입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="185"/>
+        <location filename="../GUI/MainWindow.cpp" line="190"/>
         <source>Unable to establish a trusted encrypted connection. The Core&apos;s certificate may have changed or TLS may be unavailable. See the log for details.</source>
         <translation>신뢰할 수 있는 암호화된 연결을 설정할 수 없습니다. 코어의 인증서가 변경되었거나 TLS를 사용할 수 없는 상태일 수 있습니다. 자세한 내용은 로그를 확인하세요.</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="188"/>
+        <location filename="../GUI/MainWindow.cpp" line="193"/>
         <source>Error unknown</source>
         <translation>알 수 없는 오류</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="194"/>
+        <location filename="../GUI/MainWindow.cpp" line="199"/>
         <source>Unable to connect to the core</source>
         <translation>코어에 연결할 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="197"/>
-        <location filename="../GUI/MainWindow.cpp" line="221"/>
+        <location filename="../GUI/MainWindow.cpp" line="202"/>
+        <location filename="../GUI/MainWindow.cpp" line="226"/>
         <source>Core address:</source>
         <translation>코어 주소:</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="207"/>
+        <location filename="../GUI/MainWindow.cpp" line="212"/>
         <source>Connected to the core</source>
         <translation>코어에 연결되었습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="216"/>
+        <location filename="../GUI/MainWindow.cpp" line="221"/>
         <source>Connection lost</source>
         <translation>연결이 끊어졌습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="220"/>
+        <location filename="../GUI/MainWindow.cpp" line="225"/>
         <source>The connection to the core has been lost</source>
         <translation>코어와의 연결이 끊어졌습니다</translation>
     </message>
@@ -509,12 +509,12 @@
 <context>
     <name>GUI::MdiArea</name>
     <message>
-        <location filename="../GUI/MDI/MdiArea.cpp" line="358"/>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="359"/>
         <source>Waiting the initial scanning process is finished before loading the download queue</source>
         <translation>초기 스캔이 완료될 때까지 기다린 후 다운로드 대기열을 불러옵니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MDI/MdiArea.cpp" line="547"/>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="550"/>
         <source>Leave room</source>
         <translation>대화방 나가기</translation>
     </message>
@@ -729,57 +729,57 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="247"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="248"/>
         <source>Default</source>
         <translation>기본값</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="306"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="307"/>
         <source>Interface not active</source>
         <translation>인터페이스가 비활성 상태입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="466"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="467"/>
         <source>Change the password</source>
         <translation>비밀번호 변경</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="470"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="471"/>
         <source>No password defined</source>
         <translation>비밀번호가 설정되어 있지 않습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="472"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="473"/>
         <source>Define a password</source>
         <translation>비밀번호 설정</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="518"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="826"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="519"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="827"/>
         <source>Connecting . . .</source>
         <translation>연결하는 중 . . .</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="526"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="541"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="556"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="826"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="527"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="542"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="557"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="827"/>
         <source>Connect</source>
         <translation>연결</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="650"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="651"/>
         <source>Select one or more directories and/or files to share</source>
         <translation>공유할 폴더 및/또는 파일을 하나 이상 선택하십시오</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="671"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="736"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="672"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="737"/>
         <source>Remove selected shared entries</source>
         <translation>선택한 공유 항목 제거</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="672"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="673"/>
         <source>Are you sure you want to remove the selected shared files and directories?</source>
         <translation>선택한 공유 파일과 폴더를 제거하시겠습니까?</translation>
     </message>
@@ -796,17 +796,17 @@
         <translation type="vanished">공유 폴더 제거</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="744"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="745"/>
         <source>Move up</source>
         <translation>위로 이동</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="752"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="753"/>
         <source>Move down</source>
         <translation>아래로 이동</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="760"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="761"/>
         <source>Open location</source>
         <translation>위치 열기</translation>
     </message>

@@ -431,73 +431,73 @@
 <context>
     <name>GUI::MainWindow</name>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="164"/>
+        <location filename="../GUI/MainWindow.cpp" line="169"/>
         <source>Already connected to this address</source>
         <translation>このアドレスにはすでに接続しています</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="167"/>
+        <location filename="../GUI/MainWindow.cpp" line="172"/>
         <source>There is already a connection process in progress</source>
         <translation>すでに接続処理が進行中です</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="170"/>
+        <location filename="../GUI/MainWindow.cpp" line="175"/>
         <source>The host is unknown</source>
         <translation>ホストが見つかりません</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="173"/>
+        <location filename="../GUI/MainWindow.cpp" line="178"/>
         <source>Host has timed out</source>
         <translation>ホストがタイムアウトしました</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="176"/>
+        <location filename="../GUI/MainWindow.cpp" line="181"/>
         <source>The host hasn&apos;t defined any password</source>
         <translation>ホストにパスワードが設定されていません</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="179"/>
+        <location filename="../GUI/MainWindow.cpp" line="184"/>
         <source>Wrong password</source>
         <translation>パスワードが違います</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="182"/>
+        <location filename="../GUI/MainWindow.cpp" line="187"/>
         <source>Invalid address</source>
         <translation>無効なアドレスです</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="185"/>
+        <location filename="../GUI/MainWindow.cpp" line="190"/>
         <source>Unable to establish a trusted encrypted connection. The Core&apos;s certificate may have changed or TLS may be unavailable. See the log for details.</source>
         <translation>信頼できる暗号化接続を確立できません。Core の証明書が変更されたか、TLS が利用できない可能性があります。詳細はログを確認してください。</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="188"/>
+        <location filename="../GUI/MainWindow.cpp" line="193"/>
         <source>Error unknown</source>
         <translation>原因不明のエラー</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="194"/>
+        <location filename="../GUI/MainWindow.cpp" line="199"/>
         <source>Unable to connect to the core</source>
         <translation>Core に接続できません</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="197"/>
-        <location filename="../GUI/MainWindow.cpp" line="221"/>
+        <location filename="../GUI/MainWindow.cpp" line="202"/>
+        <location filename="../GUI/MainWindow.cpp" line="226"/>
         <source>Core address:</source>
         <translation>Core のアドレス:</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="207"/>
+        <location filename="../GUI/MainWindow.cpp" line="212"/>
         <source>Connected to the core</source>
         <translation>Core に接続しました</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="216"/>
+        <location filename="../GUI/MainWindow.cpp" line="221"/>
         <source>Connection lost</source>
         <translation>接続が切断されました</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="220"/>
+        <location filename="../GUI/MainWindow.cpp" line="225"/>
         <source>The connection to the core has been lost</source>
         <translation>Core との接続が切断されました</translation>
     </message>
@@ -505,12 +505,12 @@
 <context>
     <name>GUI::MdiArea</name>
     <message>
-        <location filename="../GUI/MDI/MdiArea.cpp" line="358"/>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="359"/>
         <source>Waiting the initial scanning process is finished before loading the download queue</source>
         <translation>ダウンロードキューを読み込む前に、初回スキャンの完了を待っています</translation>
     </message>
     <message>
-        <location filename="../GUI/MDI/MdiArea.cpp" line="547"/>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="550"/>
         <source>Leave room</source>
         <translation>ルームを退出</translation>
     </message>
@@ -725,57 +725,57 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="247"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="248"/>
         <source>Default</source>
         <translation>既定</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="306"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="307"/>
         <source>Interface not active</source>
         <translation>インターフェースが有効ではありません</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="466"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="467"/>
         <source>Change the password</source>
         <translation>パスワードを変更</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="470"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="471"/>
         <source>No password defined</source>
         <translation>パスワードが設定されていません</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="472"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="473"/>
         <source>Define a password</source>
         <translation>パスワードを設定</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="518"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="826"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="519"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="827"/>
         <source>Connecting . . .</source>
         <translation>接続中 . . .</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="526"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="541"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="556"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="826"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="527"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="542"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="557"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="827"/>
         <source>Connect</source>
         <translation>接続</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="650"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="651"/>
         <source>Select one or more directories and/or files to share</source>
         <translation>共有するディレクトリやファイルを1つ以上選択してください</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="671"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="736"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="672"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="737"/>
         <source>Remove selected shared entries</source>
         <translation>選択した共有項目を削除</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="672"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="673"/>
         <source>Are you sure you want to remove the selected shared files and directories?</source>
         <translation>選択した共有ファイルとフォルダーを削除してもよろしいですか？</translation>
     </message>
@@ -792,17 +792,17 @@
         <translation type="vanished">共有ディレクトリを削除</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="744"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="745"/>
         <source>Move up</source>
         <translation>上へ移動</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="752"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="753"/>
         <source>Move down</source>
         <translation>下へ移動</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="760"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="761"/>
         <source>Open location</source>
         <translation>場所を開く</translation>
     </message>
