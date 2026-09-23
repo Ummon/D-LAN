@@ -40,7 +40,6 @@ namespace FM
 
    class Directory : public Entry
    {
-      friend class DirIterator;
       friend class Entry;
 
    public:
@@ -111,17 +110,5 @@ namespace FM
       bool scanned;
       QRecursiveMutex retirementMutex; ///< Serializes subtree retirement without blocking metadata callbacks.
       bool deletingChildren = false; ///< Guards reentrant/concurrent del() while children are being retired.
-   };
-
-   class DirIterator
-   {
-   public:
-      DirIterator(Directory* dir, bool includeRoot = false);
-      virtual ~DirIterator() {}
-      Entry* next();
-
-   private:
-      QList<Directory*> dirsToVisit;
-      QList<File*> files;
    };
 }

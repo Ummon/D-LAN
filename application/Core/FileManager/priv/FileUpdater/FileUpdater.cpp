@@ -780,21 +780,17 @@ void FileUpdater::removeFromEntriesToScan(Entry* entry)
 {
    QMutexLocker locker(&this->mutex);
 
-   if (this->entriesToScan.isEmpty())
-      return;
-
-   bool removed = this->pendingScanEntries.remove(entry);
-
-   if (Directory* dir = dynamic_cast<Directory*>(entry))
-   {
-      DirIterator i(dir);
-      while (Entry* entry = i.next())
-         removed |= this->pendingScanEntries.remove(entry);
-   }
-
-   // Compact once after subtree removal, preserving the remaining scan order.
-   if (removed)
-      this->entriesToScan.removeIf([this](Entry* queued) { return !this->pendingScanEntries.contains(queued); });
+   // Walk the queue rather than the subtree: the queue is usually short, and the children of a directory
+   // may only be read under its own mutex because downloads and scans modify them concurrently.
+   this->entriesToScan.removeIf(
+      [this, entry](Entry* queued)
+      {
+         if (!isEntryUnder(queued, entry))
+            return false;
+         this->pendingScanEntries.remove(queued);
+         return true;
+      }
+   );
 }
 
 /**
