@@ -398,3 +398,18 @@ QStatusBar::item {
 GUI--BusyIndicator {
    selection-background-color: #a8bed4;
 }
+
+/* The about dialog paints its own gradient: everything on it is transparent and white, as with the default style. */
+#DialogAbout,
+#DialogAbout * {
+   background-color: transparent;
+   color: #ffffff;
+}
+
+#DialogAbout QPushButton:hover {
+   background-color: rgba(255, 255, 255, 40);
+}
+
+#DialogAbout QPushButton:pressed {
+   background-color: rgba(255, 255, 255, 70);
+}
