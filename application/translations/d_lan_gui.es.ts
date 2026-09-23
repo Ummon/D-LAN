@@ -1016,7 +1016,7 @@
         <translation>El núcleo de D-LAN no puede instalarse como servicio</translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location line="+16"/>
         <source>Core launched as subprocess</source>
         <translation>Núcleo ejecutado como subproceso</translation>
     </message>
@@ -1026,7 +1026,7 @@
         <translation>No se pudo ejecutar el núcleo como un subproceso</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+4"/>
         <source>Core service launched</source>
         <translation>Servicio del núcleo iniciado</translation>
     </message>

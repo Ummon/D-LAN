@@ -1016,17 +1016,17 @@
         <translation>Impossibile installare D-LAN Core come servizio</translation>
     </message>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="96"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="94"/>
         <source>Core launched as subprocess</source>
         <translation>Core avviato come sottoprocesso</translation>
     </message>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="98"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="96"/>
         <source>Unable to launch the Core as subprocess</source>
         <translation>Impossibile avviare il Core come sottoprocesso</translation>
     </message>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="103"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="100"/>
         <source>Core service launched</source>
         <translation>Servizio Core avviato</translation>
     </message>

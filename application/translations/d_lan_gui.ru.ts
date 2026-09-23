@@ -930,7 +930,7 @@
         <translation>Не удалось установить D-LAN Core как службу</translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location line="+16"/>
         <source>Core launched as subprocess</source>
         <translation>Core запущен как подпроцесс</translation>
     </message>
@@ -940,7 +940,7 @@
         <translation>Не удалось запустить Core как подпроцесс</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+4"/>
         <source>Core service launched</source>
         <translation>Служба ядра запущена</translation>
     </message>

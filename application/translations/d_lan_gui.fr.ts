@@ -930,7 +930,7 @@
         <translation>D-LAN Core ne peut pas être installé comme service</translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location line="+16"/>
         <source>Core launched as subprocess</source>
         <translation>Core lancé comme sous-processus</translation>
     </message>
@@ -940,7 +940,7 @@
         <translation>Incapable de lancer le Core comme sous-processus</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+4"/>
         <source>Core service launched</source>
         <translation>Core lancé comme service</translation>
     </message>

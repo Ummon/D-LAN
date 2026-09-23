@@ -926,17 +926,17 @@
         <translation>D-LAN Core をサービスとしてインストールできません</translation>
     </message>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="96"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="94"/>
         <source>Core launched as subprocess</source>
         <translation>Core をサブプロセスとして起動しました</translation>
     </message>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="98"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="96"/>
         <source>Unable to launch the Core as subprocess</source>
         <translation>Core をサブプロセスとして起動できません</translation>
     </message>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="103"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="100"/>
         <source>Core service launched</source>
         <translation>Core サービスを起動しました</translation>
     </message>
