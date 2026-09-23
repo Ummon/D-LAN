@@ -3,6 +3,7 @@
 #include <QTcpServer>
 #include <QScopeGuard>
 #include <memory>
+#include <utility>
 
 #include <priv/InternalCoreConnection.h>
 #include <priv/CoreConnection.h>
@@ -42,7 +43,7 @@ public:
 class Tests : public QObject
 {
    Q_OBJECT
-   enum Kind { Chat, Browse, Search };
+   enum Kind { Chat, Browse, Search, LocalBrowse };
    RCC::CoreController controller;
    TestConnection connection {controller};
    QTcpServer server;
@@ -51,6 +52,7 @@ class Tests : public QObject
    QList<MessageHeader::MessageType> requests;
    QList<Protos::GUI::Browse> browseRequests;
    QList<Protos::GUI::Search> searchRequests;
+   QList<Protos::GUI::LocalBrowse> localBrowseRequests;
    Kind kind;
 
    void connectSession()
@@ -65,6 +67,8 @@ class Tests : public QObject
             this->browseRequests << message.getMessage<Protos::GUI::Browse>();
          if (message.getHeader().getType() == MessageHeader::GUI_SEARCH)
             this->searchRequests << message.getMessage<Protos::GUI::Search>();
+         if (message.getHeader().getType() == MessageHeader::GUI_LOCAL_BROWSE)
+            this->localBrowseRequests << message.getMessage<Protos::GUI::LocalBrowse>();
       });
       Protos::GUI::AuthenticationResult auth;
       auth.set_status(Protos::GUI::AuthenticationResult::AUTH_OK);
@@ -95,6 +99,12 @@ class Tests : public QObject
          connect(result.data(), &RCC::ISearchResult::result, this, record);
          return result;
       }
+      case LocalBrowse:
+      {
+         auto result = this->connection.localBrowse("/", false, timeout);
+         connect(result.data(), &RCC::ILocalBrowseResult::result, this, record);
+         return result;
+      }
       }
       return {};
    }
@@ -106,6 +116,7 @@ class Tests : public QObject
       case Chat: qobject_cast<RCC::ISendChatMessageResult*>(request.data())->start(); break;
       case Browse: qobject_cast<RCC::IBrowseResult*>(request.data())->start(); break;
       case Search: qobject_cast<RCC::ISearchResult*>(request.data())->start(); break;
+      case LocalBrowse: qobject_cast<RCC::ILocalBrowseResult*>(request.data())->start(); break;
       }
    }
 
@@ -120,6 +131,11 @@ class Tests : public QObject
       {
          QVERIFY(index < this->searchRequests.size());
          this->reply(this->searchRequests[index].tag());
+      }
+      else if (this->kind == LocalBrowse)
+      {
+         QVERIFY(index < this->localBrowseRequests.size());
+         this->reply(this->localBrowseRequests[index].tag());
       }
       else
          this->reply(index);
@@ -145,6 +161,13 @@ class Tests : public QObject
          Protos::Common::FindResult result;
          result.set_tag(value);
          this->peer->send(MessageHeader::GUI_SEARCH_RESULT, result);
+         break;
+      }
+      case LocalBrowse:
+      {
+         Protos::GUI::LocalBrowseResult result;
+         result.set_tag(value);
+         this->peer->send(MessageHeader::GUI_LOCAL_BROWSE_RESULT, result);
          break;
       }
       }
@@ -284,6 +307,7 @@ private slots:
       this->requests.clear();
       this->browseRequests.clear();
       this->searchRequests.clear();
+      this->localBrowseRequests.clear();
       this->connectSession();
    }
 
@@ -425,6 +449,45 @@ private slots:
       QCOMPARE(disconnected[1][0].toBool(), false);
    }
 
+   void plainPasswordDoesNotOutliveItsAttempt()
+   {
+      RCC::CoreConnection core;
+      auto& pending = core.temp();
+      pending.connectToCore("localhost", this->server.serverPort(), QString("old"));
+      QCOMPARE(pending.password, QString("old"));
+
+      // The hash of the next attempt must not be replaced by the old salted plain password.
+      const Common::Hash hash = Common::Hash::rand();
+      pending.connectToCore("localhost", this->server.serverPort(), hash);
+      QVERIFY(pending.password.isEmpty());
+      QCOMPARE(pending.connectionInfo.password, hash);
+
+      pending.connectToCore("localhost", this->server.serverPort(), QString("new"));
+      core.disconnectFromCore();
+      QVERIFY(pending.password.isEmpty());
+   }
+
+   void connectingErrorHandlerCanRetry()
+   {
+      RCC::CoreConnection core;
+      QSignalSpy errors(&core, &RCC::ICoreConnection::connectingError);
+      bool retried = false;
+      connect(&core, &RCC::ICoreConnection::connectingError, this, [&] {
+         if (!std::exchange(retried, true))
+            QVERIFY(core.connectToCorePrepare("localhost"));
+      });
+
+      QVERIFY(core.connectToCorePrepare("localhost"));
+      emit core.temp().connectingError(RCC::ICoreConnection::RCC_ERROR_HOST_UNKOWN);
+      QVERIFY(retried);
+      QVERIFY(core.isConnecting());
+
+      // The retry must still be attached: its failure has to be reported.
+      emit core.temp().connectingError(RCC::ICoreConnection::RCC_ERROR_HOST_TIMEOUT);
+      QCOMPARE(errors.size(), 2);
+      QVERIFY(!core.isConnecting());
+   }
+
    void browseReplies()
    {
       this->kind = Browse;
@@ -502,8 +565,10 @@ private slots:
    void lateReplyAfterTimeout_data()
    {
       QTest::addColumn<int>("requestKind");
+      QTest::newRow("chat") << int(Chat);
       QTest::newRow("browse") << int(Browse);
       QTest::newRow("search") << int(Search);
+      QTest::newRow("local-browse") << int(LocalBrowse);
    }
 
    void lateReplyAfterTimeout()
@@ -522,7 +587,7 @@ private slots:
    {
       QTest::addColumn<int>("requestKind");
       QTest::addColumn<QString>("scenario");
-      for (int k : {Chat, Browse, Search})
+      for (int k : {Chat, Browse, Search, LocalBrowse})
          for (const auto& scenario : {"discarded", "unstarted", "reverse", "duplicate", "timeout", "reconnect"})
             QTest::newRow(qPrintable(QString::number(k) + "-" + scenario)) << k << QString(scenario);
    }
@@ -557,7 +622,8 @@ private slots:
       {
          QTRY_COMPARE(this->requests.size(), 1);
          const quint64 oldTag = this->kind == Browse ? this->browseRequests[0].tag() :
-            this->kind == Search ? this->searchRequests[0].tag() : 0;
+            this->kind == Search ? this->searchRequests[0].tag() :
+            this->kind == LocalBrowse ? this->localBrowseRequests[0].tag() : 0;
          // Keep both old request objects alive across a remote disconnect.
          this->peer->close();
          QTRY_VERIFY(!this->connection.isConnected());
@@ -565,6 +631,7 @@ private slots:
          this->requests.clear();
          this->browseRequests.clear();
          this->searchRequests.clear();
+         this->localBrowseRequests.clear();
          this->start(second); // An unstarted request from the old session must not be sent.
          auto third = this->request(3);
          this->start(third);

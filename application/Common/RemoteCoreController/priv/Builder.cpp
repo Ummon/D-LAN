@@ -19,7 +19,7 @@
 #include <Builder.h>
 using namespace RCC;
 
- #include <QMetaType>
+#include <QMetaType>
 
 #include <priv/CoreController.h>
 #include <priv/CoreConnection.h>
@@ -27,11 +27,11 @@ using namespace RCC;
 QSharedPointer<ICoreConnection> Builder::newCoreConnection()
 {
    qRegisterMetaType<RCC::ICoreConnection::ConnectionErrorCode>("RCC::ICoreConnection::ConnectionErrorCode");
-   return QSharedPointer<ICoreConnection>(new CoreConnection());
+   return QSharedPointer<CoreConnection>::create();
 }
 
 QSharedPointer<ICoreConnection> Builder::newCoreConnection(int socketTimeout)
 {
    qRegisterMetaType<RCC::ICoreConnection::ConnectionErrorCode>("RCC::ICoreConnection::ConnectionErrorCode");
-   return QSharedPointer<ICoreConnection>(new CoreConnection(socketTimeout));
+   return QSharedPointer<CoreConnection>::create(socketTimeout);
 }

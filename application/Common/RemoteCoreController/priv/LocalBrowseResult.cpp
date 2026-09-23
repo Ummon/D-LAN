@@ -19,7 +19,8 @@
 #include <priv/LocalBrowseResult.h>
 using namespace RCC;
 
-#include <priv/Log.h>
+#include <QRandomGenerator64>
+
 #include <priv/InternalCoreConnection.h>
 
 LocalBrowseResult::LocalBrowseResult(
@@ -29,24 +30,36 @@ LocalBrowseResult::LocalBrowseResult(
    int socketTimeout
 ) :
    ILocalBrowseResult(socketTimeout), coreConnection(coreConnection)
-{   
+{
    this->browseMessage.set_path(path.toStdString());
    this->browseMessage.set_onlydirectories(onlyDirectories);
    this->browseMessage.set_tag(QRandomGenerator64::global()->generate64());
-   connect(this->coreConnection, &InternalCoreConnection::localBrowseResult, this, &LocalBrowseResult::browseResult);
+   connect(coreConnection, &InternalCoreConnection::disconnected, this, [this] {
+      this->coreConnection.clear();
+      this->waitingForResult = false;
+   });
+   connect(coreConnection, &InternalCoreConnection::localBrowseResult, this, &LocalBrowseResult::browseResult);
 }
 
 void LocalBrowseResult::start()
 {
-   this->coreConnection->send(Common::MessageHeader::GUI_LOCAL_BROWSE, this->browseMessage);
+   if (this->started)
+      return;
+   this->started = true;
    this->startTimer();
+   if (!this->coreConnection || !this->coreConnection->isConnected())
+      return;
+
+   this->waitingForResult = true;
+   this->coreConnection->send(Common::MessageHeader::GUI_LOCAL_BROWSE, this->browseMessage);
 }
 
 void LocalBrowseResult::browseResult(const Protos::GUI::LocalBrowseResult& browseResult)
 {
-   if (browseResult.tag() != this->browseMessage.tag())
-      return;
-
-   this->stopTimer();
-   emit result(browseResult.entries());
+   if (this->waitingForResult && !this->isTimedout() && browseResult.tag() == this->browseMessage.tag()) // Is this message for us?
+   {
+      this->waitingForResult = false;
+      this->stopTimer();
+      emit result(browseResult.entries());
+   }
 }

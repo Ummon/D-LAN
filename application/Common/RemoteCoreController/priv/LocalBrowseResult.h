@@ -18,12 +18,9 @@
 
 #pragma once
 
-#include <QtCore>
+#include <QPointer>
 
-#include <Protos/common.pb.h>
 #include <Protos/gui_protocol.pb.h>
-
-#include <Common/Hash.h>
 
 #include <ILocalBrowseResult.h>
 
@@ -41,13 +38,16 @@ namespace RCC
          bool onlyDirectories,
          int socketTimeout
       );
-      void start();
+      void start() override;
 
    private slots:
       void browseResult(const Protos::GUI::LocalBrowseResult& browseResult);
 
    private:
-      InternalCoreConnection* coreConnection;
+      QPointer<InternalCoreConnection> coreConnection;
+      bool started = false;
       Protos::GUI::LocalBrowse browseMessage;
+
+      bool waitingForResult = false;
    };
 }

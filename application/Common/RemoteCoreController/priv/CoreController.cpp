@@ -86,17 +86,14 @@ void CoreController::startCore(int port)
 
       if (debug || !this->controller.start(arguments)) // FIXME: This call generates a zombie thread on Linux.
       {
-         if (this->coreProcess.state() == QProcess::NotRunning)
-         {
-            arguments.prepend("-e");
-            this->coreProcess.setArguments(arguments);
-            this->coreProcess.start();
+         arguments.prepend("-e");
+         this->coreProcess.setArguments(arguments);
+         this->coreProcess.start();
 
-            if (this->coreProcess.waitForStarted(TIMEOUT_SUBPROCESS_WAIT_FOR_STARTED))
-               L_USER(QObject::tr("Core launched as subprocess"));
-            else
-               L_WARN(QObject::tr("Unable to launch the Core as subprocess"));
-         }
+         if (this->coreProcess.waitForStarted(TIMEOUT_SUBPROCESS_WAIT_FOR_STARTED))
+            L_USER(QObject::tr("Core launched as subprocess"));
+         else
+            L_WARN(QObject::tr("Unable to launch the Core as subprocess"));
       }
       else
       {
@@ -123,7 +120,9 @@ void CoreController::stopCore()
 
 CoreStatus CoreController::getStatus() const
 {
-   return this->controller.isRunning() ? RUNNING_AS_SERVICE : (this->coreProcess.state() == QProcess::Running || this->coreProcess.state() == QProcess::Starting ? RUNNING_AS_SUB_PROCESS : NOT_RUNNING);
+   if (this->controller.isRunning())
+      return RUNNING_AS_SERVICE;
+   return this->coreProcess.state() != QProcess::NotRunning ? RUNNING_AS_SUB_PROCESS : NOT_RUNNING;
 }
 
 void CoreController::setProgramPath()

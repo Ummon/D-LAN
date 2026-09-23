@@ -138,7 +138,7 @@ namespace RCC
       /**
         * @remarks The signal 'newState' will be emitted right after a call.
         */
-      virtual void setCoreSettings(const Protos::GUI::CoreSettings settings) = 0;
+      virtual void setCoreSettings(const Protos::GUI::CoreSettings& settings) = 0;
 
       /**
         * Define the core language, as soon as a connection to a core is established the language
@@ -257,7 +257,7 @@ namespace RCC
       struct ConnectionInfo {
          void clear() { this->address.clear(); this->port = 0; this->password = Common::Hash(); }
          QString address;
-         quint16 port;
+         quint16 port = 0;
          Common::Hash password;
       };
 

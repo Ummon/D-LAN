@@ -28,7 +28,7 @@ private slots:
       {
       public:
          QList<Protos::GUI::CoreSettings> saved;
-         void setCoreSettings(const Protos::GUI::CoreSettings settings) override { this->saved << settings; }
+         void setCoreSettings(const Protos::GUI::CoreSettings& settings) override { this->saved << settings; }
       };
       auto connection = QSharedPointer<Connection>::create();
       GUI::SharedEntryListModel shares;

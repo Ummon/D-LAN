@@ -34,15 +34,12 @@ using namespace RCC;
 CoreConnection::CoreConnection(int socketTimeout) :
    connection1(this->coreController),
    connection2(this->coreController),
-   currentConnected(FIRST_CONNECTION),
+   currentConnection(&this->connection1),
+   tempConnection(&this->connection2),
    connectingInProgress(false),
    SOCKET_TIMEOUT(socketTimeout)
 {
    connect(&this->coreController, &CoreController::statusChanged, this, &CoreConnection::localCoreStatusChanged);
-}
-
-CoreConnection::~CoreConnection()
-{
 }
 
 void CoreConnection::setCoreExecutableDirectory(const QString& dir)
@@ -146,7 +143,7 @@ void CoreConnection::leaveRoom(const QString& room)
    this->current().leaveRoom(room);
 }
 
-void CoreConnection::setCoreSettings(const Protos::GUI::CoreSettings settings)
+void CoreConnection::setCoreSettings(const Protos::GUI::CoreSettings& settings)
 {
    this->current().setCoreSettings(settings);
 }
@@ -199,7 +196,7 @@ QSharedPointer<ISearchResult> CoreConnection::search(const Protos::Common::FindP
 
 void CoreConnection::download(const Common::Hash& peerID, const Protos::Common::Entry& entry)
 {
-   this->current().download(peerID, entry);
+   this->current().download(peerID, entry, Common::Hash());
 }
 
 void CoreConnection::download(
@@ -237,7 +234,7 @@ void CoreConnection::moveDownloads(
    Protos::GUI::MoveDownloads::Position position
 )
 {
-   this->moveDownloads(QList<quint64>() << downloadIDRef, downloadIDs, position);
+   this->moveDownloads(QList<quint64> { downloadIDRef }, downloadIDs, position);
 }
 
 void CoreConnection::moveDownloads(
@@ -271,9 +268,10 @@ ICoreConnection::ConnectionInfo CoreConnection::getConnectionInfoConnecting() co
 
 void CoreConnection::tempConnectingError(RCC::ICoreConnection::ConnectionErrorCode code)
 {
+   // Detach before emitting: a handler may start a new attempt, whose signals must stay connected.
    this->connectingInProgress = false;
-   emit connectingError(code);
    this->temp().disconnect(this);
+   emit connectingError(code);
 }
 
 void CoreConnection::tempConnected()
@@ -285,7 +283,7 @@ void CoreConnection::tempConnected()
 
    this->connectingInProgress = false;
 
-   this->swap();
+   std::swap(this->currentConnection, this->tempConnection);
 
    connect(&this->current(), &InternalCoreConnection::disconnected, this, &CoreConnection::disconnected);
    connect(&this->current(), &InternalCoreConnection::newState, this, &CoreConnection::newState);
@@ -315,7 +313,7 @@ bool CoreConnection::connectToCorePrepare(const QString& address)
       return false;
    }
 
-   if (address.isNull() || address.isEmpty())
+   if (address.isEmpty())
    {
       emit connectingError(RCC_ERROR_INVALID_ADDRESS);
       return false;
@@ -328,29 +326,4 @@ bool CoreConnection::connectToCorePrepare(const QString& address)
    connect(&this->temp(), &InternalCoreConnection::disconnected, this, &CoreConnection::tempDisconnected);
 
    return true;
-}
-
-InternalCoreConnection& CoreConnection::current()
-{
-   return this->currentConnected == FIRST_CONNECTION ? this->connection1 : this->connection2;
-}
-
-const InternalCoreConnection& CoreConnection::current() const
-{
-   return this->currentConnected == FIRST_CONNECTION ? this->connection1 : this->connection2;
-}
-
-InternalCoreConnection& CoreConnection::temp()
-{
-   return this->currentConnected == FIRST_CONNECTION ? this->connection2 : this->connection1;
-}
-
-const InternalCoreConnection& CoreConnection::temp() const
-{
-   return this->currentConnected == FIRST_CONNECTION ? this->connection2 : this->connection1;
-}
-
-void CoreConnection::swap()
-{
-   this->currentConnected = this->currentConnected == FIRST_CONNECTION ? SECOND_CONNECTION : FIRST_CONNECTION;
 }

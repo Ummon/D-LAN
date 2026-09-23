@@ -54,7 +54,6 @@ namespace RCC
 
    public:
       CoreConnection(int socketTimeout = DEFAULT_SOCKET_TIMEOUT);
-      ~CoreConnection();
 
       void setCoreExecutableDirectory(const QString& dir) override;
       void startLocalCore() override;
@@ -66,7 +65,6 @@ namespace RCC
       void connectToCore(const QString& address, quint16 port, Common::Hash password) override;
       void connectToCore(const QString& address, quint16 port, const QString& password) override;
 
-      Common::Hash getLocalID() const;
       Common::Hash getRemoteID() const override;
 
       bool isLocal() const override;
@@ -80,7 +78,7 @@ namespace RCC
       QSharedPointer<ISendChatMessageResult> sendChatMessage(const QString& message, const QString& roomName, const QList<Common::Hash>& peerIDsAnswered) override;
       void joinRoom(const QString& room) override;
       void leaveRoom(const QString& room) override;
-      void setCoreSettings(const Protos::GUI::CoreSettings settings) override;
+      void setCoreSettings(const Protos::GUI::CoreSettings& settings) override;
       void setCoreLanguage(const QLocale& locale) override;
       bool setCorePassword(const QString& newPassword, const QString& oldPassword = QString()) override;
       void resetCorePassword() override;
@@ -127,24 +125,19 @@ namespace RCC
 
       bool connectToCorePrepare(const QString& address);
 
-      InternalCoreConnection& current();
-      const InternalCoreConnection& current() const;
+      InternalCoreConnection& current() { return *this->currentConnection; }
+      const InternalCoreConnection& current() const { return *this->currentConnection; }
 
-      InternalCoreConnection& temp();
-      const InternalCoreConnection& temp() const;
-
-      void swap();
+      // The connection attempt runs on 'temp()' and replaces 'current()' only once it succeeds.
+      InternalCoreConnection& temp() { return *this->tempConnection; }
+      const InternalCoreConnection& temp() const { return *this->tempConnection; }
 
       CoreController coreController;
 
       InternalCoreConnection connection1;
       InternalCoreConnection connection2;
-      enum CoreConnectionNumber
-      {
-         FIRST_CONNECTION,
-         SECOND_CONNECTION
-      };
-      CoreConnectionNumber currentConnected;
+      InternalCoreConnection* currentConnection;
+      InternalCoreConnection* tempConnection;
 
       bool connectingInProgress;
 

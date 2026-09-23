@@ -154,26 +154,29 @@ void InternalCoreConnection::cancelConnectionAttempt()
 
 void InternalCoreConnection::connectToCore(const QString& address, quint16 port, Common::Hash password)
 {
-   this->connectionInfo.address = address;
-   this->connectionInfo.port = port;
-   this->connectionInfo.password = password;
-
-   if (this->isConnected() && this->connectionInfo.address == address)
-   {
-      emit connectingError(ICoreConnection::RCC_ERROR_ALREADY_CONNECTED_TO_THIS_CORE);
-      return;
-   }
-
-   this->cancelConnectionAttempt();
-
-   this->currentHostLookupID =
-      QHostInfo::lookupHost(this->connectionInfo.address, this, &InternalCoreConnection::addressResolved);
+   this->startConnection(address, port, password, QString());
 }
 
 void InternalCoreConnection::connectToCore(const QString& address, quint16 port, const QString& password)
 {
-   this->password = password;
-   this->connectToCore(address, port, Common::Hash());
+   this->startConnection(address, port, Common::Hash(), password);
+}
+
+/**
+  * Each attempt sets both passwords: a plain one left by a failed attempt would otherwise be salted
+  * and used in place of the hash given to the next one.
+  */
+void InternalCoreConnection::startConnection(const QString& address, quint16 port, const Common::Hash& password, const QString& plainPassword)
+{
+   this->cancelConnectionAttempt();
+
+   this->connectionInfo.address = address;
+   this->connectionInfo.port = port;
+   this->connectionInfo.password = password;
+   this->password = plainPassword;
+
+   this->currentHostLookupID =
+      QHostInfo::lookupHost(this->connectionInfo.address, this, &InternalCoreConnection::addressResolved);
 }
 
 bool InternalCoreConnection::isLocal() const
@@ -193,6 +196,7 @@ void InternalCoreConnection::disconnectFromCore()
 {
    this->cancelConnectionAttempt();
    this->connectionInfo.clear();
+   this->password.clear();
    this->forcedToClose = true;
    // close() can defer shutdown until an in-progress TCP connection completes.
    if (this->socket->state() == QAbstractSocket::HostLookupState || this->socket->state() == QAbstractSocket::ConnectingState)
@@ -212,12 +216,7 @@ QSharedPointer<ISendChatMessageResult> InternalCoreConnection::sendChatMessage(
    const QList<Common::Hash>& peerIDsAnswered
 )
 {
-   QSharedPointer<SendChatMessageResult> sendChatMessageResult =
-      QSharedPointer<SendChatMessageResult>(
-         new SendChatMessageResult(this, socketTimeout, message, roomName, peerIDsAnswered)
-      );
-
-   return sendChatMessageResult;
+   return QSharedPointer<SendChatMessageResult>::create(this, socketTimeout, message, roomName, peerIDsAnswered);
 }
 
 void InternalCoreConnection::joinRoom(const QString& room)
@@ -240,7 +239,7 @@ void InternalCoreConnection::leaveRoom(const QString& room)
    }
 }
 
-void InternalCoreConnection::setCoreSettings(const Protos::GUI::CoreSettings settings)
+void InternalCoreConnection::setCoreSettings(const Protos::GUI::CoreSettings& settings)
 {
    this->send(Common::MessageHeader::GUI_SETTINGS, settings);
 }
@@ -287,53 +286,32 @@ void InternalCoreConnection::resetCorePassword()
 
 QSharedPointer<IBrowseResult> InternalCoreConnection::browse(const Common::Hash& peerID, int socketTimeout)
 {
-   QSharedPointer<BrowseResult> browseResult = QSharedPointer<BrowseResult>(new BrowseResult(this, peerID, socketTimeout));
-   return browseResult;
+   return QSharedPointer<BrowseResult>::create(this, peerID, socketTimeout);
 }
 
 QSharedPointer<IBrowseResult> InternalCoreConnection::browse(const Common::Hash& peerID, const Protos::Common::Entry& entry, int socketTimeout)
 {
-   QSharedPointer<BrowseResult> browseResult = QSharedPointer<BrowseResult>(new BrowseResult(this, peerID, entry, socketTimeout));
-   return browseResult;
+   return QSharedPointer<BrowseResult>::create(this, peerID, entry, socketTimeout);
 }
 
 QSharedPointer<IBrowseResult> InternalCoreConnection::browse(const Common::Hash& peerID, const Protos::Common::Entries& entries, bool withRoots, int socketTimeout)
 {
-   QSharedPointer<BrowseResult> browseResult = QSharedPointer<BrowseResult>(new BrowseResult(this, peerID, entries, withRoots, socketTimeout));
-   return browseResult;
+   return QSharedPointer<BrowseResult>::create(this, peerID, entries, withRoots, socketTimeout);
 }
 
 QSharedPointer<ILocalBrowseResult> InternalCoreConnection::localBrowse(const QString& path, bool onlyDirectories, int socketTimeout)
 {
-   QSharedPointer<LocalBrowseResult> browseResult = QSharedPointer<LocalBrowseResult>(new LocalBrowseResult(this, path, onlyDirectories, socketTimeout));
-   this->localBrowseResults << browseResult.toWeakRef();
-   return browseResult;
+   return QSharedPointer<LocalBrowseResult>::create(this, path, onlyDirectories, socketTimeout);
 }
 
 QSharedPointer<ILocalBrowseQuickAccessResult> InternalCoreConnection::localBrowseQuickAccess(int socketTimeout)
 {
-   QSharedPointer<LocalBrowseQuickAccessResult> browseResult =
-      QSharedPointer<LocalBrowseQuickAccessResult>(new LocalBrowseQuickAccessResult(this, socketTimeout));
-   this->localBrowseQuickAccessResults << browseResult.toWeakRef();
-   return browseResult;
+   return QSharedPointer<LocalBrowseQuickAccessResult>::create(this, socketTimeout);
 }
 
 QSharedPointer<ISearchResult> InternalCoreConnection::search(const Protos::Common::FindPattern& findPattern, bool local, int socketTimeout)
 {
-   QSharedPointer<SearchResult> searchResult = QSharedPointer<SearchResult>(new SearchResult(this, findPattern, local, socketTimeout));
-   return searchResult;
-}
-
-void InternalCoreConnection::download(const Common::Hash& peerID, const Protos::Common::Entry& entry)
-{
-   // We cannot download our entries.
-   if (peerID == this->getLocalID())
-      return;
-
-   Protos::GUI::Download downloadMessage;
-   downloadMessage.mutable_peer_id()->set_hash(peerID.getData(), Common::Hash::HASH_SIZE);
-   downloadMessage.mutable_entry()->CopyFrom(entry);
-   this->send(Common::MessageHeader::GUI_DOWNLOAD, downloadMessage);
+   return QSharedPointer<SearchResult>::create(this, findPattern, local, socketTimeout);
 }
 
 void InternalCoreConnection::download(
@@ -359,8 +337,8 @@ void InternalCoreConnection::download(
 void InternalCoreConnection::cancelDownloads(const QList<quint64>& downloadIDs, bool complete)
 {
    Protos::GUI::CancelDownloads cancelDownloadsMessage;
-   for (QListIterator<quint64> i(downloadIDs); i.hasNext();)
-      cancelDownloadsMessage.add_ids(i.next());
+   for (const quint64 id : downloadIDs)
+      cancelDownloadsMessage.add_ids(id);
    cancelDownloadsMessage.set_complete(complete);
    this->send(Common::MessageHeader::GUI_CANCEL_DOWNLOADS, cancelDownloadsMessage);
 }
@@ -368,8 +346,8 @@ void InternalCoreConnection::cancelDownloads(const QList<quint64>& downloadIDs, 
 void InternalCoreConnection::pauseDownloads(const QList<quint64>& downloadIDs, bool pause)
 {
    Protos::GUI::PauseDownloads pauseDownloadsMessage;
-   for (QListIterator<quint64> i(downloadIDs); i.hasNext();)
-      pauseDownloadsMessage.add_ids(i.next());
+   for (const quint64 id : downloadIDs)
+      pauseDownloadsMessage.add_ids(id);
    pauseDownloadsMessage.set_pause(pause);
    this->send(Common::MessageHeader::GUI_PAUSE_DOWNLOADS, pauseDownloadsMessage);
 }
@@ -380,11 +358,11 @@ void InternalCoreConnection::moveDownloads(const QList<quint64>& downloadIDRefs,
       return;
 
    Protos::GUI::MoveDownloads moveDownloadsMessage;
-   for (QListIterator<quint64> i(downloadIDRefs); i.hasNext();)
-      moveDownloadsMessage.add_ids_ref(i.next());
+   for (const quint64 id : downloadIDRefs)
+      moveDownloadsMessage.add_ids_ref(id);
    moveDownloadsMessage.set_position(position);
-   for (QListIterator<quint64> i(downloadIDs); i.hasNext();)
-      moveDownloadsMessage.add_ids_to_move(i.next());
+   for (const quint64 id : downloadIDs)
+      moveDownloadsMessage.add_ids_to_move(id);
    this->send(Common::MessageHeader::GUI_MOVE_DOWNLOADS, moveDownloadsMessage);
 }
 
@@ -396,11 +374,6 @@ void InternalCoreConnection::refresh()
 void InternalCoreConnection::refreshNetworkInterfaces()
 {
    this->send(Common::MessageHeader::GUI_REFRESH_NETWORK_INTERFACES);
-}
-
-bool InternalCoreConnection::isRunningAsSubProcess() const
-{
-   return this->coreController.getStatus() == RUNNING_AS_SUB_PROCESS;
 }
 
 ICoreConnection::ConnectionInfo InternalCoreConnection::getConnectionInfo() const
@@ -433,22 +406,13 @@ void InternalCoreConnection::tryToConnectToTheNextAddress()
       return;
 
    const quint64 generation = this->attemptGeneration;
-   QHostAddress address;
 
-   // Search for an IPv6 address first.
-   for (QMutableListIterator<QHostAddress> i(this->addressesToTry); i.hasNext();)
-   {
-      QHostAddress currentAddress = i.next();
-      if (currentAddress.protocol() == QAbstractSocket::IPv6Protocol)
-      {
-         address = currentAddress;
-         i.remove();
-         break;
-      }
-   }
-
-   if (address.isNull())
-      address = this->addressesToTry.takeFirst();
+   // Try the IPv6 addresses first.
+   const auto ipv6 = std::find_if(this->addressesToTry.cbegin(), this->addressesToTry.cend(), [](const QHostAddress& address) {
+      return address.protocol() == QAbstractSocket::IPv6Protocol;
+   });
+   const QHostAddress address =
+      this->addressesToTry.takeAt(ipv6 == this->addressesToTry.cend() ? 0 : ipv6 - this->addressesToTry.cbegin());
 
    L_DEBU(QString("Trying to connect to %1 (nb retry: %2) ...").arg(address.toString()).arg(this->nbRetries));
 
@@ -685,14 +649,13 @@ void InternalCoreConnection::onNewMessage(const Common::Message& message)
          const Protos::GUI::EventLogMessages& eventLogMessages = message.getMessage<Protos::GUI::EventLogMessages>();
 
          QList<QSharedPointer<LM::IEntry>> entries;
-
-         for (int i = 0; i < eventLogMessages.messages_size(); i++)
-         {
-            const QDateTime dateTime = QDateTime::fromMSecsSinceEpoch(eventLogMessages.messages(i).time());
-            const QString& message = QString::fromStdString(eventLogMessages.messages(i).message());
-            const LM::Severity severity = LM::Severity(eventLogMessages.messages(i).severity());
-            entries << LM::Builder::newEntry(dateTime, severity, message);
-         }
+         entries.reserve(eventLogMessages.messages_size());
+         for (const auto& logMessage : eventLogMessages.messages())
+            entries << LM::Builder::newEntry(
+               QDateTime::fromMSecsSinceEpoch(logMessage.time()),
+               LM::Severity(logMessage.severity()),
+               QString::fromStdString(logMessage.message())
+            );
 
          emit newLogMessages(entries);
       }

@@ -51,14 +51,18 @@ void SendChatMessageResult::start()
    if (!this->roomName.isEmpty())
       chatMessage.set_room(this->roomName.toStdString());
 
-   for (QListIterator<Common::Hash> i(this->peerIDsAnswered); i.hasNext();)
-      chatMessage.add_peer_ids_answer()->set_hash(i.next().getData(), Common::Hash::HASH_SIZE);
+   for (const Common::Hash& peerID : this->peerIDsAnswered)
+      chatMessage.add_peer_ids_answer()->set_hash(peerID.getData(), Common::Hash::HASH_SIZE);
 
    this->coreConnection->send(Common::MessageHeader::GUI_CHAT_MESSAGE, chatMessage);
 }
 
 void SendChatMessageResult::setResult(const Protos::GUI::ChatMessageResult& chatMessageResult)
 {
+   // The timeout has already been reported.
+   if (this->isTimedout())
+      return;
+
    this->stopTimer();
    emit result(chatMessageResult);
 }

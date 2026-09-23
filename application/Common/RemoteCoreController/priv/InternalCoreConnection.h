@@ -50,8 +50,6 @@ class Tests;
 namespace RCC
 {
    class SendChatMessageResult;
-   class LocalBrowseResult;
-   class LocalBrowseQuickAccessResult;
 
    class InternalCoreConnection : public Common::MessageSocket
    {
@@ -88,7 +86,7 @@ namespace RCC
       );
       void joinRoom(const QString& room);
       void leaveRoom(const QString& room);
-      void setCoreSettings(const Protos::GUI::CoreSettings settings);
+      void setCoreSettings(const Protos::GUI::CoreSettings& settings);
       void setCoreLanguage(const QLocale& locale);
       bool setCorePassword(const QString& newPassword, const QString& oldPassword = QString());
       void resetCorePassword();
@@ -110,7 +108,6 @@ namespace RCC
 
       QSharedPointer<ISearchResult> search(const Protos::Common::FindPattern& findPattern, bool local, int socketTimeout);
 
-      void download(const Common::Hash& peerID, const Protos::Common::Entry& entry);
       void download(
          const Common::Hash& peerID,
          const Protos::Common::Entry& entry,
@@ -128,7 +125,6 @@ namespace RCC
       void refresh();
       void refreshNetworkInterfaces();
 
-      bool isRunningAsSubProcess() const;
       ICoreConnection::ConnectionInfo getConnectionInfo() const;
 
    signals:
@@ -151,7 +147,8 @@ namespace RCC
       void connectionTimedOut();
       void stateChanged(QAbstractSocket::SocketState socketState);
 
-   private:      
+   private:
+      void startConnection(const QString& address, quint16 port, const Common::Hash& password, const QString& plainPassword);
       void cancelConnectionAttempt();
       void tlsFailed(const QString& reason);
       void connectedAndAuthenticated();
@@ -188,9 +185,6 @@ namespace RCC
       int nbRetries;
 
       QList<QWeakPointer<SendChatMessageResult>> sendChatMessageResultWithoutReply;
-
-      QList<QWeakPointer<LocalBrowseResult>> localBrowseResults;
-      QList<QWeakPointer<LocalBrowseQuickAccessResult>> localBrowseQuickAccessResults;
 
       bool authenticated;
       bool forcedToClose;

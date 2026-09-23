@@ -19,32 +19,40 @@
 #include <priv/LocalBrowseQuickAccessResult.h>
 using namespace RCC;
 
-#include <priv/Log.h>
+#include <QRandomGenerator64>
+
 #include <priv/InternalCoreConnection.h>
 
 LocalBrowseQuickAccessResult::LocalBrowseQuickAccessResult(InternalCoreConnection* coreConnection, int socketTimeout) :
    ILocalBrowseQuickAccessResult(socketTimeout), coreConnection(coreConnection)
 {
    this->browseMessage.set_tag(QRandomGenerator64::global()->generate64());
-   connect(
-      this->coreConnection,
-      &InternalCoreConnection::localBrowseQuickAccessResult,
-      this,
-      &LocalBrowseQuickAccessResult::browseResult
-   );
+   connect(coreConnection, &InternalCoreConnection::disconnected, this, [this] {
+      this->coreConnection.clear();
+      this->waitingForResult = false;
+   });
+   connect(coreConnection, &InternalCoreConnection::localBrowseQuickAccessResult, this, &LocalBrowseQuickAccessResult::browseResult);
 }
 
 void LocalBrowseQuickAccessResult::start()
 {
-   this->coreConnection->send(Common::MessageHeader::GUI_LOCAL_BROWSE_QUICK_ACCESS, this->browseMessage);
+   if (this->started)
+      return;
+   this->started = true;
    this->startTimer();
+   if (!this->coreConnection || !this->coreConnection->isConnected())
+      return;
+
+   this->waitingForResult = true;
+   this->coreConnection->send(Common::MessageHeader::GUI_LOCAL_BROWSE_QUICK_ACCESS, this->browseMessage);
 }
 
 void LocalBrowseQuickAccessResult::browseResult(const Protos::GUI::LocalBrowseQuickAccessResult& browseResult)
 {
-   if (browseResult.tag() != this->browseMessage.tag())
-      return;
-
-   this->stopTimer();
-   emit result(browseResult.quick_access());
+   if (this->waitingForResult && !this->isTimedout() && browseResult.tag() == this->browseMessage.tag()) // Is this message for us?
+   {
+      this->waitingForResult = false;
+      this->stopTimer();
+      emit result(browseResult.quick_access());
+   }
 }

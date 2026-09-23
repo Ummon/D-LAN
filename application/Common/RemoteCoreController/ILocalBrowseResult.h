@@ -34,6 +34,8 @@ namespace RCC
 
    public:
       virtual ~ILocalBrowseResult() {}
+      // Sends once; repeated calls have no effect. Results belong to the session that created them.
+      // Sends once; repeated calls have no effect. Results belong to the session that created them.
       virtual void start() = 0;
 
    signals:
