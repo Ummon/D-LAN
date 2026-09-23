@@ -183,6 +183,13 @@ void Tests::lookupRequiresMatchingSize()
    cache->setHashes("file", replacement, 3, date);
    QVERIFY(cache->getHashes("file", 2, date).isEmpty());
    QCOMPARE(cache->getHashes("file", 3, date), replacement);
+
+   // A hash count that doesn't match the size is rejected and keeps the valid entry.
+   const qint64 twoChunks = qint64(Common::Constants::CHUNK_SIZE) + 1;
+   cache->setHashes("file", replacement, twoChunks, date);
+   cache->setHashes("file", { replacement.first(), replacement.first() }, 3, date);
+   QCOMPARE(cache->getHashes("file", 3, date), replacement);
+   QVERIFY(cache->getHashes("file", twoChunks, date).isEmpty());
 }
 
 void Tests::batchLookupPreservesOrderAndMetadata()

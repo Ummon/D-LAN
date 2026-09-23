@@ -92,15 +92,22 @@ private:
    void updateDatabaseScheme();
    bool updateToNextVersion(int currentVersion);
 
+   // Declared before db and the queries so it is destroyed after them: the
+   // connection is unregistered only once every handle to it is released.
+   struct Connection
+   {
+      const QString name = QUuid::createUuid().toString(QUuid::WithoutBraces);
+      ~Connection() { QSqlDatabase::removeDatabase(this->name); }
+   } connection;
+
    QSqlDatabase db;
-   std::optional<QSqlQuery> queryGetHashesWithDate;
-   std::optional<QSqlQuery> queryGetHashes;
-   std::optional<QSqlQuery> querySetHashes;
-   std::optional<QSqlQuery> queryRemoveHashes;
-   std::optional<QSqlQuery> queryNbOfFiles;
-   std::optional<QSqlQuery> queryFilesToCheck;
-   std::optional<QSqlQuery> queryGetSettings;
-   std::optional<QSqlQuery> querySetSettings;
+   QSqlQuery queryGetHashesWithDate;
+   QSqlQuery queryGetHashes;
+   QSqlQuery querySetHashes;
+   QSqlQuery queryRemoveHashes;
+   QSqlQuery queryFilesToCheck;
+   QSqlQuery queryGetSettings;
+   QSqlQuery querySetSettings;
 
    static const QStringList VERSION_1;
    static const QStringList VERSION_2;
@@ -240,12 +247,11 @@ void HashCache::rmHashes(const QString& filePath)
 /////
 
 HashCache::Database::Database(const QString& databaseFolder) :
-   db { QSqlDatabase::addDatabase("QSQLITE", QUuid::createUuid().toString(QUuid::WithoutBraces)) },
+   db { QSqlDatabase::addDatabase("QSQLITE", this->connection.name) },
    queryGetHashesWithDate(this->db),
    queryGetHashes(this->db),
    querySetHashes(this->db),
    queryRemoveHashes(this->db),
-   queryNbOfFiles(this->db),
    queryFilesToCheck(this->db),
    queryGetSettings(this->db),
    querySetSettings(this->db)
@@ -266,55 +272,38 @@ HashCache::Database::Database(const QString& databaseFolder) :
 
    this->updateDatabaseScheme();
 
-   this->queryGetHashesWithDate->prepare(
-      "SELECT [hashes], [size] FROM [File] WHERE [path] = $1 AND [size] = $2 AND [date_last_modified] = $3"
+   this->queryGetHashesWithDate.prepare(
+      "SELECT [hashes] FROM [File] WHERE [path] = $1 AND [size] = $2 AND [date_last_modified] = $3"
    );
 
-   this->queryGetHashes->prepare("SELECT [hashes], [size] FROM [File] WHERE [path] = $1 AND [size] = $2");
+   this->queryGetHashes.prepare("SELECT [hashes] FROM [File] WHERE [path] = $1 AND [size] = $2");
 
-   this->querySetHashes->prepare(
+   this->querySetHashes.prepare(
       R"(
 INSERT INTO [File] ([path], [size], [date_last_modified], [hashes])
 VALUES ($1, $2, $3, $4)
 ON CONFLICT([path]) DO
-UPDATE SET [path] = $1, [size] = $2, [date_last_modified] = $3, [hashes] = $4
+UPDATE SET [size] = excluded.[size], [date_last_modified] = excluded.[date_last_modified], [hashes] = excluded.[hashes]
       )"
    );
 
-   this->queryRemoveHashes->prepare("DELETE FROM [File] WHERE [path] = $1");
+   this->queryRemoveHashes.prepare("DELETE FROM [File] WHERE [path] = $1");
 
-   this->queryNbOfFiles->prepare("SELECT COUNT(*) FROM [File]");
-
-   this->queryFilesToCheck->prepare(
+   this->queryFilesToCheck.prepare(
       "SELECT [id], [path] FROM [File] WHERE [id] > ? AND [id] <= ? ORDER BY [id] LIMIT 128"
    );
 
-   this->queryGetSettings->prepare(
+   this->queryGetSettings.prepare(
       "SELECT [value] FROM [Settings] WHERE [key] = $1 LIMIT 1"
    );
 
-   this->querySetSettings->prepare(
+   this->querySetSettings.prepare(
       "INSERT INTO [Settings] ([key], [value]) VALUES($1, $2) ON CONFLICT([key]) DO UPDATE SET value = excluded.value"
    );
 }
 
 HashCache::Database::~Database()
 {
-   const QString connectionName = this->db.connectionName();
-
-   // Release every query and database handle before unregistering the connection.
-   this->queryGetHashesWithDate.reset();
-   this->queryGetHashes.reset();
-   this->querySetHashes.reset();
-   this->queryRemoveHashes.reset();
-   this->queryNbOfFiles.reset();
-   this->queryFilesToCheck.reset();
-   this->queryGetSettings.reset();
-   this->querySetSettings.reset();
-
-   this->db.close();
-   this->db = QSqlDatabase();
-   QSqlDatabase::removeDatabase(connectionName);
    L_DEBU("HashCache deleted");
 }
 
@@ -322,49 +311,44 @@ QList<Common::Hash> HashCache::Database::getHashes(const QString& filePath, qint
 {
    L_DEBU(QString("[getHashes] filePath: %1").arg(filePath));
 
-   QSqlQuery& query = timeLastModified.isNull() ? *this->queryGetHashes : *this->queryGetHashesWithDate;
+   QSqlQuery& query = timeLastModified.isNull() ? this->queryGetHashes : this->queryGetHashesWithDate;
+   const auto finish = qScopeGuard([&query] { query.finish(); });
    query.bindValue(0, filePath);
    query.bindValue(1, size);
 
    if (!timeLastModified.isNull())
       query.bindValue(2, timeLastModified.toMSecsSinceEpoch());
 
-   query.exec();
-
-   if (!query.isActive())
+   if (!query.exec())
    {
       L_ERRO(QString("[getHashes] SQL Error: %1").arg(query.lastError().text()));
-      query.finish();
-      return QList<Common::Hash>();
+      return {};
    }
 
-   if (query.first())
-   {
-      const QByteArray hashes = query.value(0).toByteArray();
-      const qint64 storedSize = query.value(1).toLongLong();
-      const int nbHashes = Common::Global::nbChunks(storedSize);
+   if (!query.first())
+      return {};
 
-      if (hashes.size() % Common::Hash::HASH_SIZE != 0 || hashes.size() / Common::Hash::HASH_SIZE != nbHashes)
-      {
-         query.finish();
-         return QList<Common::Hash>();
-      }
+   // The size matched the query; reject a stored blob that doesn't have one hash per chunk.
+   const QByteArray hashes = query.value(0).toByteArray();
+   const int nbHashes = Common::Global::nbChunks(size);
+   if (hashes.size() != qsizetype(nbHashes) * Common::Hash::HASH_SIZE)
+      return {};
 
-      QList<Common::Hash> result(nbHashes, Qt::Uninitialized);
-
-      for (int i = 0; i < nbHashes; ++i)
-         result[i] = Common::Hash(hashes.constData() + i * Common::Hash::HASH_SIZE);
-
-      query.finish();
-      return result;
-   }
-
-   query.finish();
-   return QList<Common::Hash>();
+   QList<Common::Hash> result(nbHashes, Qt::Uninitialized);
+   for (int i = 0; i < nbHashes; ++i)
+      result[i] = Common::Hash(hashes.constData() + i * Common::Hash::HASH_SIZE);
+   return result;
 }
 
 void HashCache::Database::setHashes(const QString& filePath, const QList<Common::Hash>& hashes, qint64 size, QDateTime dateTime)
 {
+   // Rejected here, an invalid list cannot replace a valid entry that getHashes() would then ignore.
+   if (hashes.size() != Common::Global::nbChunks(size))
+   {
+      L_WARN(QString("[setHashes] %1 hashes for %2 bytes, rejected: %3").arg(hashes.size()).arg(size).arg(filePath));
+      return;
+   }
+
    this->pendingHashes.append({ filePath, hashes, size, dateTime });
    this->pendingHashBytes += qint64(hashes.size()) * Common::Hash::HASH_SIZE;
    // Bound both transaction work and retained hash data, even when the event queue is busy.
@@ -415,12 +399,10 @@ void HashCache::Database::writeHashes(const HashUpdate& update)
 
    QByteArray hashesBlob;
    hashesBlob.reserve(update.hashes.size() * Common::Hash::HASH_SIZE);
-   for (int i = 0; i < update.hashes.size(); ++i)
-   {
-      hashesBlob.append(update.hashes[i].getData(), Common::Hash::HASH_SIZE);
-   }
+   for (const auto& hash : update.hashes)
+      hashesBlob.append(hash.getData(), Common::Hash::HASH_SIZE);
 
-   QSqlQuery& query = *this->querySetHashes;
+   QSqlQuery& query = this->querySetHashes;
 
    const auto finish = qScopeGuard([&query] { query.finish(); });
    query.bindValue(0, update.path);
@@ -440,7 +422,7 @@ void HashCache::Database::rmHashes(const QString& filePath)
       if (!this->db.transaction())
          throw DatabaseException(this->db.lastError());
       auto rollback = qScopeGuard([this] { this->db.rollback(); });
-      QSqlQuery& query = *this->queryRemoveHashes;
+      QSqlQuery& query = this->queryRemoveHashes;
       const auto finish = qScopeGuard([&query] { query.finish(); });
       query.bindValue(0, filePath);
       if (!query.exec())
@@ -476,22 +458,13 @@ int HashCache::Database::checkFilesExist()
          if (lastCheck.isValid() && lastCheck <= now && lastCheck.msecsTo(now) < periodMs)
             return timerDelay(periodMs - lastCheck.msecsTo(now));
 
-         QSqlQuery& count = *this->queryNbOfFiles;
-         const auto finish = qScopeGuard([&count] { count.finish(); });
-         if (!count.exec() || !count.first())
-            throw DatabaseException(count.lastError());
-         const quint64 nbFiles = count.value(0).toULongLong();
-         count.finish();
-
-         qint64 maxId = 0;
-         if (nbFiles > minFiles)
-         {
-            // Do not chase appended rows beyond the initial largest ID.
-            QSqlQuery last(this->db);
-            if (!last.exec("SELECT MAX([id]) FROM [File]") || !last.first())
-               throw DatabaseException(last.lastError());
-            maxId = last.value(0).toLongLong();
-         }
+         QSqlQuery stats(this->db);
+         if (!stats.exec("SELECT COUNT(*), IFNULL(MAX([id]), 0) FROM [File]") || !stats.first())
+            throw DatabaseException(stats.lastError());
+         const quint64 nbFiles = stats.value(0).toULongLong();
+         // Do not chase appended rows beyond the initial largest ID.
+         const qint64 maxId = nbFiles > minFiles ? stats.value(1).toLongLong() : 0;
+         stats.finish();
          this->fileCheck = FileCheck { now, 0, maxId };
       }
 
@@ -502,7 +475,7 @@ int HashCache::Database::checkFilesExist()
       {
          QElapsedTimer budget;
          budget.start();
-         QSqlQuery& files = *this->queryFilesToCheck;
+         QSqlQuery& files = this->queryFilesToCheck;
          const auto finishFiles = qScopeGuard([&files] { files.finish(); });
          files.bindValue(0, nextId);
          files.bindValue(1, this->fileCheck->maxId);
@@ -599,7 +572,7 @@ int HashCache::Database::checkFilesExist()
 template <typename T>
 std::optional<T> HashCache::Database::getSettings(const QString& key)
 {
-   QSqlQuery& query = *this->queryGetSettings;
+   QSqlQuery& query = this->queryGetSettings;
    const auto finish = qScopeGuard([&query] { query.finish(); });
    query.bindValue(0, key);
    if (!query.exec())
@@ -620,7 +593,7 @@ std::optional<T> HashCache::Database::getSettings(const QString& key)
 template <typename T>
 void HashCache::Database::setSettings(const QString& key, T value)
 {
-   QSqlQuery& query = *this->querySetSettings;
+   QSqlQuery& query = this->querySetSettings;
    const auto finish = qScopeGuard([&query] { query.finish(); });
 
    query.bindValue(0, key);
