@@ -43,7 +43,8 @@ NetworkListener::NetworkListener(
    connect(&this->uDPListener, &UDPListener::received, this, &NetworkListener::received);
    connect(&this->uDPListener, &UDPListener::IMAliveMessageToBeSend, this, &NetworkListener::IMAliveMessageToBeSend);
 
-   this->rebindSockets();
+   // Do not sanitize: the selected adapter may not be up yet at startup, keep the user's selection (see 'bindSockets(..)').
+   this->bindSockets(false);
    // Qt 6 has no portable notification for every interface/address change.
    connect(&this->timerNetworkConfiguration, &QTimer::timeout, this, &NetworkListener::checkNetworkConfiguration);
    this->timerNetworkConfiguration.start(2000);
@@ -84,10 +85,11 @@ void NetworkListener::bindSockets(bool sanitizeSettings)
       Utils::sanitizeListenSettings();
 
    const QHostAddress address = Utils::getCurrentAddressToListenTo();
-   // An adapter may disappear temporarily. Keep the user's selection and retry when it returns.
+   // An adapter may disappear temporarily. Listen to any address meanwhile but keep the user's selection:
+   // the network configuration changes when the address returns, which triggers a rebinding to it.
    const QString configuredAddress = SETTINGS.get<QString>("listen_address");
    if (!configuredAddress.isEmpty() && address != QHostAddress(configuredAddress))
-      return;
+      L_WARN(QString("The address to listen to (%1) is unavailable, listening to %2 until it returns").arg(configuredAddress, address.toString()));
    const quint32 basePort = SETTINGS.get<quint32>("unicast_base_port");
    constexpr int MAX_LISTEN_ATTEMPTS = 10;
    auto bindBoth = [&](quint16 port) {

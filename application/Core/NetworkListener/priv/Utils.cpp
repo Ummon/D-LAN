@@ -58,7 +58,9 @@ QStringList Utils::getNetworkConfiguration(const QList<QNetworkInterface>& inter
 QList<QNetworkInterface> Utils::getCurrentInterfacesToListenTo(const QList<QNetworkInterface>& allInterfaces)
 {
    QList<QNetworkInterface> interfaces;
-   const QString addressToListen = SETTINGS.get<QString>("listen_address");
+   QString addressToListen = SETTINGS.get<QString>("listen_address");
+   if (!Utils::addressExists(addressToListen, allInterfaces))
+      addressToListen.clear(); // Same fallback to "any" as 'getCurrentAddressToListenTo(..)'.
    const auto protocol = Utils::getCurrentAddressToListenTo(allInterfaces).protocol();
    for (const auto& interface : allInterfaces)
    {

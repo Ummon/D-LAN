@@ -1184,17 +1184,58 @@ void Tests::automaticRebinding()
    SETTINGS.set("listen_address", unavailableAddress);
    configuration.clear(); // Simulate an adapter disappearing with a selected address.
    QVERIFY(check());
+   // Listen to any address meanwhile, without losing the selection.
+   QTRY_COMPARE(heartbeats, 4);
    QCOMPARE(SETTINGS.get<QString>("listen_address"), unavailableAddress);
    QCOMPARE(listener.send(Common::MessageHeader::CORE_GOODBYE, Protos::Common::Null()),
-      INetworkListener::SendStatus::UNABLE_TO_SEND);
+      INetworkListener::SendStatus::OK);
    QVERIFY(check());
    QCoreApplication::processEvents();
-   QCOMPARE(heartbeats, 3);
+   QCOMPARE(heartbeats, 4);
 
    SETTINGS.set("listen_address", originalAddress);
    configuration << "interface restored";
    QVERIFY(check());
-   QTRY_COMPARE(heartbeats, 4);
+   QTRY_COMPARE(heartbeats, 5);
+   QCOMPARE(listener.send(Common::MessageHeader::CORE_GOODBYE, Protos::Common::Null()),
+      INetworkListener::SendStatus::OK);
+}
+
+void Tests::startupKeepsUnavailableAddress()
+{
+   const Instance& instance = this->instances[1];
+   const QString originalAddress = SETTINGS.get<QString>("listen_address");
+   const auto restore = qScopeGuard([&]() { SETTINGS.set("listen_address", originalAddress); });
+   const QString unavailableAddress("198.51.100.42");
+   SETTINGS.set("listen_address", unavailableAddress);
+
+   // The selected adapter is not up yet when the core starts.
+   QStringList configuration { "adapter not up yet" };
+   NL::NetworkListener listener(instance.fileManager, instance.peerManager, instance.uploadManager,
+      instance.downloadManager, [&]() { return configuration; });
+   int heartbeats = 0;
+   connect(&listener, &INetworkListener::IMAliveMessageToBeSend, this,
+      [&](Protos::Core::IMAlive&) { ++heartbeats; });
+   // Listen to any address meanwhile, without losing the selection.
+   QTRY_COMPARE(heartbeats, 1);
+   QCOMPARE(SETTINGS.get<QString>("listen_address"), unavailableAddress);
+   QCOMPARE(listener.send(Common::MessageHeader::CORE_GOODBYE, Protos::Common::Null()),
+      INetworkListener::SendStatus::OK);
+   auto indexes = [](const QList<QNetworkInterface>& interfaces) {
+      QList<int> result;
+      for (const auto& interface : interfaces)
+         result << interface.index();
+      return result;
+   };
+   const auto fallbackInterfaces = indexes(Utils::getCurrentInterfacesToListenTo());
+   SETTINGS.set("listen_address", QString());
+   QCOMPARE(fallbackInterfaces, indexes(Utils::getCurrentInterfacesToListenTo()));
+
+   // The adapter comes up with the selected address (simulated with the original one).
+   SETTINGS.set("listen_address", originalAddress);
+   configuration << "adapter up";
+   QVERIFY(QMetaObject::invokeMethod(&listener, "checkNetworkConfiguration", Qt::DirectConnection));
+   QTRY_COMPARE(heartbeats, 2);
    QCOMPARE(listener.send(Common::MessageHeader::CORE_GOODBYE, Protos::Common::Null()),
       INetworkListener::SendStatus::OK);
 }

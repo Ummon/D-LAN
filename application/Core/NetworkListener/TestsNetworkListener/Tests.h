@@ -82,6 +82,7 @@ private slots:
    void bindFailureAndRecovery();
    void rejectZeroUnicastPort();
    void automaticRebinding();
+   void startupKeepsUnavailableAddress();
    void downloadOwnChunks_data();
    void downloadOwnChunks();
 
