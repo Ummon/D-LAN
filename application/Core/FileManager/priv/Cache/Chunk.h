@@ -68,7 +68,7 @@ namespace FM
       void fileDeleted();
 
       inline int read(char* buffer, int offset);
-      inline bool write(const char* buffer, int nbBytes);
+      bool write(const char* buffer, int nbBytes);
 
       int getNum() const override;
       int getNbTotalChunk() const override;
@@ -134,41 +134,4 @@ inline int FM::Chunk::read(char* buffer, int offset)
    // from an unaligned offset (for example after switching to another peer).
    const int bytesRemaining = this->knownBytes - offset;
    return this->file->read(buffer, offset + static_cast<qint64>(this->num) * CHUNK_SIZE, bytesRemaining >= BUFFER_SIZE_READING ? BUFFER_SIZE_READING : bytesRemaining);
-}
-
-/**
-  * Write the given buffer after 'knownBytes'.
-  * @exception IOErrorException
-  * @exception ChunkDeletedException
-  * @exception TryToWriteBeyondTheEndOfChunkException
-  * @return 'true' if end of chunk reached.
-  */
-inline bool FM::Chunk::write(const char* buffer, int nbBytes)
-{
-   QMutexLocker locker(this->fileMutex.data());
-   if (!this->file)
-      throw ChunkDeletedException();
-
-   const int CURRENT_CHUNK_SIZE = this->getChunkSize();
-
-   if (this->knownBytes + nbBytes > CURRENT_CHUNK_SIZE)
-      throw TryToWriteBeyondTheEndOfChunkException();
-
-   this->knownBytes += this->file->write(buffer, nbBytes, this->knownBytes + static_cast<qint64>(this->num) * CHUNK_SIZE);
-
-   if (this->knownBytes > CURRENT_CHUNK_SIZE) // Should never be true.
-   {
-      L_ERRO("Chunk::write(..): this->knownBytes > getChunkSize");
-      this->knownBytes = CURRENT_CHUNK_SIZE;
-   }
-
-   const bool COMPLETE = this->knownBytes == CURRENT_CHUNK_SIZE;
-
-   if (COMPLETE)
-   {
-      this->file->flushWrittenData(); // To avoid a long flush when the file is closed.
-      this->file->chunkComplete(this);
-   }
-
-   return COMPLETE;
 }

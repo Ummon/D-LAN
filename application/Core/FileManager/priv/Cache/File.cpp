@@ -564,15 +564,18 @@ qint64 File::writePhysicalFile(const char* buffer, qint64 nbBytes)
   * Called by 'Chunk::write(..)' each time a chunk is complete: without this the whole cached data would be flushed
   * in one go when the file is closed in 'setAsComplete()', it can take several seconds for a big file and during
   * this time the peer is unable to answer to the other peers.
-  * Only the calling thread (a downloader) waits for the disk.
+  * Only the calling thread (a downloader) waits for the disk: it must not hold the file mutex.
   */
 void File::flushWrittenData()
 {
    QMutexLocker locker(&this->writeLock);
 
-   if (!this->fileInWriteMode)
-      return;
+   if (this->fileInWriteMode)
+      this->flushPhysicalFile();
+}
 
+void File::flushPhysicalFile()
+{
    const int fd = this->fileInWriteMode->handle();
    if (fd == -1)
       return;

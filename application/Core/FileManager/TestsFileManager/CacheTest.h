@@ -82,6 +82,8 @@ private slots:
    void retainedChunksAreDetached();
    void chunkAccessExcludesRetirement_data();
    void chunkAccessExcludesRetirement();
+   void chunkFlushReleasesFileMutex_data();
+   void chunkFlushReleasesFileMutex();
    void concurrentChunkMetadata();
    void chunkEntryWithoutHashes();
    void metadataReadersAvoidStructuralLocks();

@@ -1,6 +1,7 @@
 #include <CacheTest.h>
 
 #include <QTemporaryDir>
+#include <QDeadlineTimer>
 #include <QTest>
 #include <QSemaphore>
 #include <QThread>
@@ -2508,6 +2509,21 @@ namespace
          this->continueRetirement.acquire();
          FM::File::removeUnfinishedFiles();
       }
+
+      bool pauseFlush = false;
+      QSemaphore flushing;
+      QSemaphore resumeFlush;
+
+   protected:
+      void flushPhysicalFile() override
+      {
+         if (this->pauseFlush)
+         {
+            this->flushing.release();
+            this->resumeFlush.acquire();
+         }
+         FM::File::flushPhysicalFile();
+      }
    };
 }
 
@@ -2629,6 +2645,8 @@ void CacheTest::directoryCleanupAllowsCompletion()
    auto file = new RetiringFile(root, "download.bin", 1, false, QDateTime::currentDateTime(),
       leaf, QList<Common::Hash>(), true);
    const QString completedPath = leaf->getAbsolutePath().toString() + "download.bin";
+   const QString unfinishedPath = file->getAbsolutePath().toString();
+   file->pauseFlush = true;
    auto chunk = file->getChunks().first();
    auto writer = chunk->getDataWriter();
    std::exception_ptr writeError;
@@ -2649,8 +2667,17 @@ void CacheTest::directoryCleanupAllowsCompletion()
    // On a regression, abort the write instead of completing under an inverted parent lock,
    // so both workers can finish and the test reports a failure rather than deadlocking.
    file->abortWrite = !parentAvailable || !leafAvailable;
-   file->continueRetirement.release();
    file->resume.release();
+
+   // The completed chunk is flushed without the file mutex: the cleanup can go ahead meanwhile.
+   // It retires the chunk (or removes the unfinished data) and then waits for the flush to release the write handle.
+   const bool reachedFlush = file->flushing.tryAcquire(1, 5000);
+   file->continueRetirement.release();
+   QDeadlineTimer deadline(5000);
+   while (reachedFlush && file->canEnterCompletion() && !deadline.hasExpired())
+      QThread::msleep(1);
+   const bool cleanupEnteredDuringFlush = reachedFlush && !file->canEnterCompletion();
+   file->resumeFlush.release();
    downloading.join();
    cleanup.join();
    if (remove)
@@ -2664,13 +2691,22 @@ void CacheTest::directoryCleanupAllowsCompletion()
    QVERIFY(reachedRetirement);
    QVERIFY(parentAvailable);
    QVERIFY(leafAvailable);
-   QVERIFY(!writeError);
-   QVERIFY(QFileInfo::exists(completedPath));
+   QVERIFY(reachedFlush);
+   QVERIFY(cleanupEnteredDuringFlush);
+   QVERIFY(!QFileInfo::exists(completedPath));
    if (remove)
+   {
+      // The retired chunk can't complete a file that is leaving the cache.
+      QVERIFY(writeError);
+      QVERIFY_THROWS_EXCEPTION(FM::ChunkDeletedException, std::rethrow_exception(writeError));
       QVERIFY(chunk->getFilePath().isNull());
+   }
    else
    {
-      QVERIFY(chunk->isFileComplete());
+      // The chunk is still attached, but its unfinished data is gone: the completion can't rename it.
+      QVERIFY(!writeError);
+      QVERIFY(!QFileInfo::exists(unfinishedPath));
+      QVERIFY(!chunk->isFileComplete());
       QCOMPARE(leaf->getFiles().size(), 1);
       QCOMPARE(leaf->getSize(), qint64(1));
    }
@@ -2834,6 +2870,132 @@ void CacheTest::chunkAccessExcludesRetirement()
    QVERIFY(!chunk->isComplete());
    char buffer[1];
    QVERIFY_THROWS_EXCEPTION(FM::ChunkDeletedException, chunk->read(buffer, 0));
+   writer.clear();
+}
+
+namespace
+{
+   class PausedFlushFile : public FM::File
+   {
+   public:
+      using FM::File::File;
+
+      bool canLockMetadata()
+      {
+         if (!this->mutex.tryLock())
+            return false;
+         this->mutex.unlock();
+         return true;
+      }
+
+      QSemaphore flushing;
+      QSemaphore resume;
+
+   protected:
+      void flushPhysicalFile() override
+      {
+         this->flushing.release();
+         this->resume.acquire();
+         FM::File::flushPhysicalFile();
+      }
+   };
+}
+
+void CacheTest::chunkFlushReleasesFileMutex_data()
+{
+   QTest::addColumn<QString>("during");
+   QTest::newRow("nothing") << QString();
+   QTest::newRow("retire") << QString("retire");
+   QTest::newRow("delete") << QString("delete");
+}
+
+void CacheTest::chunkFlushReleasesFileMutex()
+{
+   QFETCH(QString, during);
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   const QByteArray content("abcdefghij");
+   Common::Hasher hasher;
+   hasher.addData(std::span<const char>(content));
+   auto file = new PausedFlushFile(root, "download.bin", content.size(), false,
+      QDateTime::currentDateTime(), root->getRootDir(), { hasher.getResult() }, true);
+   auto chunk = file->getChunks().first();
+   auto writer = chunk->getDataWriter();
+   std::atomic<int> completedChunks = 0;
+   connect(&cache, &FM::Cache::chunkHashKnown, &cache, [&](const auto&) { ++completedChunks; }, Qt::DirectConnection);
+   std::atomic<int> deletedEntries = 0;
+   connect(&cache, &FM::Cache::entryAboutToBeDeleted, &cache, [&](FM::Entry*) { ++deletedEntries; }, Qt::DirectConnection);
+
+   bool complete = false;
+   std::exception_ptr writeError;
+   std::thread download([&] {
+      try { complete = writer->write(content.constData(), content.size()); }
+      catch (...) { writeError = std::current_exception(); }
+   });
+
+   // The chunk progress and the file metadata stay available while the chunk data is flushed.
+   // Only use them once 'tryLock' has succeeded, so a regression fails instead of blocking the test.
+   const bool reachedFlush = file->flushing.tryAcquire(1, 5000);
+   const bool metadataAvailable = reachedFlush && file->canLockMetadata();
+   const int knownBytesDuringFlush = metadataAvailable ? chunk->getKnownBytes() : -1;
+
+   std::thread concurrent;
+   bool retirementEntered = false;
+   bool deleteDeferred = false;
+   if (metadataAvailable && during == "retire")
+   {
+      // Retirement detaches the chunk, then waits for the flush to release the write handle.
+      concurrent = std::thread([&] { file->del(false); });
+      QDeadlineTimer deadline(5000);
+      while (file->canLockMetadata() && !deadline.hasExpired())
+         QThread::msleep(1);
+      retirementEntered = !file->canLockMetadata();
+   }
+   else if (metadataAvailable && during == "delete")
+   {
+      // The flushing writer keeps the file alive: its destruction must wait for the write to finish.
+      QSemaphore deleted;
+      concurrent = std::thread([&] { cache.deleteEntry(file); deleted.release(); });
+      deleteDeferred = deleted.tryAcquire(1, 5000) && deletedEntries == 0;
+   }
+
+   file->resume.release();
+   download.join();
+   if (concurrent.joinable())
+      concurrent.join();
+
+   QVERIFY(reachedFlush);
+   QVERIFY(metadataAvailable);
+   QCOMPARE(knownBytesDuringFlush, content.size());
+   if (during == "retire")
+   {
+      QVERIFY(retirementEntered);
+      QVERIFY(writeError);
+      QVERIFY_THROWS_EXCEPTION(FM::ChunkDeletedException, std::rethrow_exception(writeError));
+      QCOMPARE(completedChunks, 0);
+      cache.deleteEntry(file);
+   }
+   else
+   {
+      QVERIFY(!writeError);
+      QVERIFY(complete);
+      QCOMPARE(completedChunks, 1);
+      QVERIFY(QFileInfo::exists(temp.filePath("download.bin")));
+      if (during == "delete")
+      {
+         QVERIFY(deleteDeferred);
+         file->del(false); // Detach it from its directory, as the deletion request normally would have.
+         QCoreApplication::sendPostedEvents(&cache, QEvent::MetaCall);
+         QCOMPARE(deletedEntries, 1);
+      }
+      else
+         QVERIFY(file->isComplete());
+   }
    writer.clear();
 }
 

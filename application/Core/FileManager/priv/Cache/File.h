@@ -133,6 +133,8 @@ namespace FM
 
       // Called with writeLock held. May return a short write, zero, or -1; must not acquire Entry::mutex.
       virtual qint64 writePhysicalFile(const char* buffer, qint64 nbBytes);
+      // Called with writeLock held and an open write handle; must not acquire Entry::mutex.
+      virtual void flushPhysicalFile();
 
       QList<QSharedPointer<Chunk>> chunks;
       QDateTime dateLastModified;

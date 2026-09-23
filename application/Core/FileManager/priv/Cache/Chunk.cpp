@@ -161,6 +161,54 @@ void Chunk::dataReaderDeleted()
 }
 
 /**
+  * Write the given buffer after 'knownBytes'.
+  * @exception IOErrorException
+  * @exception ChunkDeletedException
+  * @exception TryToWriteBeyondTheEndOfChunkException
+  * @return 'true' if end of chunk reached.
+  */
+bool Chunk::write(const char* buffer, int nbBytes)
+{
+   QMutexLocker locker(this->fileMutex.data());
+   if (!this->file)
+      throw ChunkDeletedException();
+
+   const int CURRENT_CHUNK_SIZE = this->getChunkSize();
+
+   if (this->knownBytes + nbBytes > CURRENT_CHUNK_SIZE)
+      throw TryToWriteBeyondTheEndOfChunkException();
+
+   this->knownBytes += this->file->write(buffer, nbBytes, this->knownBytes + static_cast<qint64>(this->num) * CHUNK_SIZE);
+
+   if (this->knownBytes > CURRENT_CHUNK_SIZE) // Should never be true.
+   {
+      L_ERRO("Chunk::write(..): this->knownBytes > getChunkSize");
+      this->knownBytes = CURRENT_CHUNK_SIZE;
+   }
+
+   if (this->knownBytes != CURRENT_CHUNK_SIZE)
+      return false;
+
+   // Flushing a whole chunk can take seconds. It only needs the file's write lock, so release the file mutex
+   // meanwhile: other threads (the main one included) read the chunk progress and the file metadata through it.
+   // The traversal guard defers the destruction of the file until the completion below is recorded.
+   File* const file = this->file;
+   const Cache::TraversalGuard lifetime(*file->getCache());
+   locker.unlock();
+   file->flushWrittenData(); // To avoid a long flush when the file is closed.
+   locker.relock();
+
+   // The file may have retired this chunk or reset its data while it was unlocked.
+   if (!this->file)
+      throw ChunkDeletedException();
+   if (!this->isComplete())
+      return false;
+
+   this->file->chunkComplete(this);
+   return true;
+}
+
+/**
   * Called when the owning file retires its chunks, including replacement after a disk change or re-download.
   */
 void Chunk::fileDeleted()
