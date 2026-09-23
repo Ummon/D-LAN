@@ -464,6 +464,38 @@ void CacheTest::sharedFileRenameUpdatesSearchIndexes()
    QCOMPARE(count("readable", {}), 0);
 }
 
+void CacheTest::setSharedPathsSavesDespiteMissingPaths()
+{
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   const auto savedShares = SETTINGS.getRepeated<Protos::Common::SharedEntry>("shared_entries");
+   const auto restoreShares = qScopeGuard([&] { SETTINGS.set("shared_entries", savedShares); });
+   SETTINGS.rm("shared_entries");
+   const QString existing = temp.path() + '/';
+   const QString missing = temp.filePath("missing") + '/';
+
+   FM::FileManager manager(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   manager.fileUpdater.stop();
+   try
+   {
+      manager.setSharedPaths({ { "  Movies  ", existing }, { QString(), missing } });
+      QFAIL("An exception must be thrown");
+   }
+   catch (FM::EntriesNotFoundException& e)
+   {
+      QCOMPARE(e.paths.size(), 1);
+      QCOMPARE(Common::Path(e.paths.first()), Common::Path(missing));
+   }
+
+   // The share that exists is applied and persisted, with the same trimmed name as a renamed share.
+   const auto shares = SETTINGS.getRepeated<Protos::Common::SharedEntry>("shared_entries");
+   QCOMPARE(shares.size(), 1);
+   QCOMPARE(Common::Path(QString::fromStdString(shares.first().path())), Common::Path(existing));
+   QCOMPARE(QString::fromStdString(shares.first().shared_name()), QString("Movies"));
+   QCOMPARE(manager.getSharedEntries().size(), 1);
+   QCOMPARE(manager.getSharedEntries().first().name, QString("Movies"));
+}
+
 void CacheTest::fittestDirectoryMatchesExistingPaths()
 {
    QTemporaryDir temp;

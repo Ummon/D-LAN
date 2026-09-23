@@ -528,10 +528,10 @@ void Cache::setSharedPaths(const QList<std::pair<QString, Common::Path>>& paths)
 
    int j = 0;
    for (int i = 0; i < pathsWithoutDuplicates.size(); i++) {
+      const QString trimmedName = pathsWithoutDuplicates[i].first.trimmed();
       for (int j2 = j; j2 < this->sharedEntries.size(); j2++) {
          if (pathsWithoutDuplicates[i].second == this->sharedEntries[j2]->getPath())
          {
-            const QString trimmedName = pathsWithoutDuplicates[i].first.trimmed();
             this->sharedEntries[j2]->setUserName(trimmedName);
             this->sharedEntries.move(j2, j++);
             goto nextEntry;
@@ -540,7 +540,7 @@ void Cache::setSharedPaths(const QList<std::pair<QString, Common::Path>>& paths)
       try
       {
          // dirs[i] not found -> we create a new one.
-         if (this->createSharedEntry(pathsWithoutDuplicates[i].second, Common::Hash(), j, pathsWithoutDuplicates[i].first))
+         if (this->createSharedEntry(pathsWithoutDuplicates[i].second, Common::Hash(), j, trimmedName))
             j++;
       }
       catch (PathNotFoundException& e)
@@ -556,10 +556,11 @@ void Cache::setSharedPaths(const QList<std::pair<QString, Common::Path>>& paths)
    for (int k = 0; k < this->sharedEntries.size(); k++)
       this->sharedEntries[k]->mergeSubSharedEntries();
 
+   // Persist the paths that were applied even if some others could not be found.
+   this->saveSharedEntries();
+
    if (!pathsNotFound.isEmpty())
       throw EntriesNotFoundException(pathsNotFound);
-
-   this->saveSharedEntries();
 }
 
 /**

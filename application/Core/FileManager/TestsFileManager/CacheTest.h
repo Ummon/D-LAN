@@ -124,4 +124,5 @@ private slots:
    void unfinishedFilesStayOutOfSearch_data();
    void unfinishedFilesStayOutOfSearch();
    void sharedFileRenameUpdatesSearchIndexes();
+   void setSharedPathsSavesDespiteMissingPaths();
 };
