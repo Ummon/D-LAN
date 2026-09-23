@@ -19,6 +19,8 @@
 #include <priv/PeerMessageSocket.h>
 using namespace PM;
 
+#include <algorithm>
+
 #include <QCoreApplication>
 
 #include <Protos/core_protocol.pb.h>
@@ -339,25 +341,7 @@ void PeerMessageSocket::nextAskedHash(Protos::Core::HashResult hash)
 
 void PeerMessageSocket::entriesResult(const Protos::Core::GetEntriesResult::EntryResult& result)
 {
-   if (this->closing || this->incomingTransaction != IncomingTransaction::Entries)
-      return;
-
-   bool resultEmpty = true;
-   for (int i = 0; i < this->entriesResultsToReceive.count(); i++)
-   {
-      if (this->entriesResultsToReceive[i] == this->sender())
-      {
-         this->entriesResultMessage.mutable_results(i)->CopyFrom(result);
-         this->entriesResultsToReceive[i].clear();
-      }
-      else if (!this->entriesResultsToReceive[i].isNull())
-      {
-         resultEmpty = false;
-      }
-   }
-
-   if (resultEmpty)
-      this->sendEntriesResultMessage();
+   this->storeEntriesResult(&result);
 }
 
 /**
@@ -365,28 +349,31 @@ void PeerMessageSocket::entriesResult(const Protos::Core::GetEntriesResult::Entr
   */
 void PeerMessageSocket::entriesResultTimeout()
 {
+   L_DEBU("PeerMessageSocket::entriesResultTimeout()");
+   this->storeEntriesResult(nullptr);
+}
+
+/**
+  * Store the result emitted by 'sender()', or a timeout status if 'result' is null,
+  * and send the whole answer once every asked directory has one.
+  */
+void PeerMessageSocket::storeEntriesResult(const Protos::Core::GetEntriesResult::EntryResult* result)
+{
    if (this->closing || this->incomingTransaction != IncomingTransaction::Entries)
       return;
 
-   L_DEBU("PeerMessageSocket::entriesResultTimeout()");
+   const qsizetype i = this->entriesResultsToReceive.indexOf(this->sender());
+   if (i < 0)
+      return;
 
-   bool resultEmpty = true;
-   for (int i = 0; i < this->entriesResultsToReceive.count(); i++)
-   {
-      if (this->entriesResultsToReceive[i] == this->sender())
-      {
-         this->entriesResultMessage.mutable_results(i)->set_status(
-            Protos::Core::GetEntriesResult::EntryResult::TIMEOUT_SCANNING_IN_PROGRESS
-         );
-         this->entriesResultsToReceive[i].clear();
-      }
-      else if (!this->entriesResultsToReceive[i].isNull())
-      {
-         resultEmpty = false;
-      }
-   }
+   Protos::Core::GetEntriesResult::EntryResult* entryResult = this->entriesResultMessage.mutable_results(static_cast<int>(i));
+   if (result)
+      entryResult->CopyFrom(*result);
+   else
+      entryResult->set_status(Protos::Core::GetEntriesResult::EntryResult::TIMEOUT_SCANNING_IN_PROGRESS);
+   this->entriesResultsToReceive[i].clear();
 
-   if (resultEmpty)
+   if (std::all_of(this->entriesResultsToReceive.cbegin(), this->entriesResultsToReceive.cend(), [](const auto& r) { return r.isNull(); }))
       this->sendEntriesResultMessage();
 }
 
@@ -485,8 +472,12 @@ void PeerMessageSocket::onNewMessage(const Common::Message& message)
          if (this->entriesResultsToReceive.isEmpty())
             this->sendEntriesResultMessage();
          else
-            foreach (QSharedPointer<FM::IGetEntriesResult> entriesResult, this->entriesResultsToReceive)
+         {
+            // Iterate a copy: 'start()' may emit its result synchronously and complete the transaction, which clears the list.
+            const QList<QSharedPointer<FM::IGetEntriesResult>> results = this->entriesResultsToReceive;
+            for (const QSharedPointer<FM::IGetEntriesResult>& entriesResult : results)
                entriesResult->start();
+         }
       }
       break;
 

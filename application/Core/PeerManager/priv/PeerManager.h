@@ -107,12 +107,14 @@ namespace PM
       );
 
    private slots:
-      void dataReceived(QTcpSocket* tcpSocket = nullptr);
-      void disconnected(QTcpSocket* tcpSocket = nullptr);
       void checkIdlePendingSockets();
       void peerUnblocked();
 
    private:
+      Peer* addPeer(const Common::Hash& ID, const QString& nick = QString());
+
+      void dataReceived(QTcpSocket* tcpSocket);
+      void disconnected(QTcpSocket* tcpSocket);
       void removeFromPending(QTcpSocket* socket);
 
       LOG_INIT_H("PeerManager")
@@ -122,6 +124,7 @@ namespace PM
       PeerSelf* self; // Ourself.
       QMap<Common::Hash, Peer*> peers; // The other peers.
 
+      const int pendingSocketTimeout; // [ms].
       QTimer timer; ///< Used to check periodically if some pending sockets have timeouted.
       QList<PendingSocket> pendingSockets;
       QMap<PeerMessageSocket*, Common::Hash> activeUploads;

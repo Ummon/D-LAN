@@ -112,24 +112,18 @@ void ConnectionPool::closeAllSocket()
    }
 }
 
-void ConnectionPool::socketBecomeIdle(PeerMessageSocket* socket)
+/**
+  * Close the idle sockets exceeding 'max_number_idle_socket'.
+  * 'close()' only queues the removal from the pool, see 'addNewSocket(..)', and the list iterated is a copy anyway.
+  */
+void ConnectionPool::socketBecomeIdle(PeerMessageSocket*)
 {
-   quint32 n = 0;
-   QList<QSharedPointer<PeerMessageSocket>> socketsToClose;
+   const quint32 maxNbIdleSockets = SETTINGS.get<quint32>("max_number_idle_socket");
+   quint32 nbIdleSockets = 0;
 
-   for (QListIterator<QSharedPointer<PeerMessageSocket>> i(this->getAllSockets()); i.hasNext();)
-   {
-     QSharedPointer<PeerMessageSocket> currentSocket = i.next();
-     if (!currentSocket->isActive() && !currentSocket->isClosing())
-     {
-        n += 1;
-        if (n > SETTINGS.get<quint32>("max_number_idle_socket"))
-           socketsToClose << currentSocket;
-     }
-   }
-
-   for (QListIterator<QSharedPointer<PeerMessageSocket>> i(socketsToClose); i.hasNext();)
-      i.next()->close();
+   for (const QSharedPointer<PeerMessageSocket>& socket : this->getAllSockets())
+      if (!socket->isActive() && !socket->isClosing() && ++nbIdleSockets > maxNbIdleSockets)
+         socket->close();
 }
 
 void ConnectionPool::socketClosed(PeerMessageSocket* socket)

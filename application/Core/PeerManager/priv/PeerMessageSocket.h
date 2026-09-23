@@ -129,6 +129,7 @@ namespace PM
       void onDisconnected() override;
       void initUnactiveTimer();
 
+      void storeEntriesResult(const Protos::Core::GetEntriesResult::EntryResult* result);
       void sendEntriesResultMessage();
 
       QList<QSharedPointer<FM::IGetEntriesResult>> entriesResultsToReceive;
