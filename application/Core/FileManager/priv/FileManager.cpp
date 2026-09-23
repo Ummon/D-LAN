@@ -102,7 +102,7 @@ FileManager::FileManager(QSharedPointer<HC::IHashCache> hashCache) :
       {
          this->cache.addExistingSharedEntry(entry);
       }
-      catch (EntriesNotFoundException e)
+      catch (const EntriesNotFoundException& e)
       {
          L_WARN(QString("Unable to add shared entry: %1").arg(e.paths.constFirst()));
       }

@@ -56,7 +56,8 @@ bool DirWatcherWin::addPath(const QString& path, const QString& filename)
 {
    QMutexLocker locker(&this->mutex);
 
-   if (this->dirs.size() > MAXIMUM_WAIT_OBJECTS - MAX_WAIT_CONDITION)
+   // Keep room for the wait conditions given to 'waitEvent(..)'.
+   if (this->dirs.size() >= MAXIMUM_WAIT_OBJECTS - MAX_WAIT_CONDITION)
       return false;
 
    HANDLE fileHandle =
@@ -133,9 +134,9 @@ const QList<WatcherEvent> DirWatcherWin::waitEvent(int timeout, QList<WaitCondit
          QString("DirWatcherWin::waitEvent: No more than %1 condition(s), some directory will not be watched any more.")
             .arg(MAX_WAIT_CONDITION)
       );
-      int n = this->dirs.size() + ws.size() - MAXIMUM_WAIT_OBJECTS;
-      while (n --> 0) // The best C++ operator!
-         this->dirsToDelete << this->dirs.takeLast();
+      // Leave them in 'dirs': the loop below deletes each dir of 'dirsToDelete' it finds there.
+      for (int i = qMax(0, int(MAXIMUM_WAIT_OBJECTS - ws.size())); i < this->dirs.size(); ++i)
+         this->dirsToDelete << this->dirs[i];
    }
 
    if (!this->dirsToDelete.isEmpty())
@@ -288,12 +289,7 @@ QList<WatcherEvent> DirWatcherWin::processCompletion(Dir* dir, DWORD bytesTransf
          }
          else if (!isWatchedFile || filename == dir->currentFilename)
          {
-
-            L_DEBU("---------");
-            L_DEBU(QString("action = %1").arg(notifyActionToString(notifyInformation->Action)));
-            L_DEBU(QString("path = %1").arg(path));
-            L_DEBU(QString("offset = %1").arg(notifyInformation->NextEntryOffset));
-            L_DEBU("---------");
+            L_DEBU(QString("Notification %1: %2").arg(notifyActionToString(notifyInformation->Action), path));
 
             switch (notifyInformation->Action)
             {

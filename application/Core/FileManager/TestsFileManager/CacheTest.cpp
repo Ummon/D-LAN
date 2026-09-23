@@ -33,6 +33,7 @@
 #include <priv/FileManager.h>
 #ifdef Q_OS_WIN32
 #include <priv/FileUpdater/DirWatcherWin.h>
+#include <priv/FileUpdater/WaitCondition.h>
 #endif
 #ifdef Q_OS_MACOS
 #include <sys/stat.h>
@@ -599,6 +600,102 @@ void CacheTest::watchedFileRename()
 #else
    QSKIP("Windows notification regression");
 #endif
+}
+
+void CacheTest::watcherLimitLeavesRoomForWaitConditions()
+{
+#ifdef Q_OS_WIN32
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::DirWatcherWin watcher;
+   const int maxDirs = MAXIMUM_WAIT_OBJECTS - FM::MAX_WAIT_CONDITION;
+   int accepted = 0;
+   for (int i = 0; i <= maxDirs; ++i)
+   {
+      const QString name = QString("dir%1").arg(i);
+      QVERIFY(QDir(temp.path()).mkdir(name));
+      accepted += watcher.addPath(temp.filePath(name) + '/') ? 1 : 0;
+   }
+   QCOMPARE(accepted, maxDirs);
+
+   QList<FM::WaitCondition*> conditions;
+   const auto deleteConditions = qScopeGuard([&] { qDeleteAll(conditions); });
+   for (int i = 0; i < FM::MAX_WAIT_CONDITION; ++i)
+      conditions << FM::WaitCondition::getNewWaitCondition();
+   // All the handles fit in a single wait.
+   auto events = watcher.waitEvent(0, conditions);
+   QCOMPARE(events.size(), 1);
+   QCOMPARE(events.first().type, FM::WatcherEvent::TIMEOUT);
+
+   // Too many conditions: the last directories stop being watched to make room for them.
+   conditions << FM::WaitCondition::getNewWaitCondition();
+   events = watcher.waitEvent(0, conditions);
+   QCOMPARE(events.size(), 1);
+   QCOMPARE(events.first().type, FM::WatcherEvent::TIMEOUT);
+   QCOMPARE(watcher.nbWatchedPath(), MAXIMUM_WAIT_OBJECTS - int(conditions.size()));
+#else
+   QSKIP("Windows watcher");
+#endif
+}
+
+void CacheTest::fileIteratorSkipsEmptyDirectories()
+{
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   const QDateTime date = QDateTime::currentDateTime();
+   QSet<FM::File*> expected { new FM::File(root, "top.bin", 0, false, date, root->getRootDir()) };
+   FM::Directory* dir = root->getRootDir();
+   for (int i = 0; i < 100; ++i)
+      dir = dir->createSubDir(QString("d%1").arg(i));
+   expected << new FM::File(root, "deep.bin", 0, false, date, dir);
+   root->getRootDir()->createSubDir("empty");
+
+   QSet<FM::File*> visited;
+   FM::FileIterator files(root->getRootDir());
+   while (FM::File* file = files.next())
+   {
+      QVERIFY(!visited.contains(file)); // Each file is returned once.
+      visited.insert(file);
+   }
+   QCOMPARE(visited, expected);
+}
+
+void CacheTest::sizeIndexKeepsFilesOfSameSize()
+{
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   const auto saved = SETTINGS.getRepeated<Protos::Common::SharedEntry>("shared_entries");
+   const auto restore = qScopeGuard([&] { SETTINGS.set("shared_entries", saved); });
+   SETTINGS.rm("shared_entries");
+   FM::FileManager manager(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   manager.fileUpdater.stop();
+   manager.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::Directory*>(manager.getEntry(Common::Path(temp.path() + '/')));
+   QVERIFY(root);
+   const auto countOfSize = [&](qint64 size) {
+      int hits = 0;
+      for (const auto& result : manager.find("", {}, size, size, Protos::Common::FindPattern::FILE, 100, 65536, true))
+         hits += result.entries_size();
+      return hits;
+   };
+
+   QList<FM::File*> files;
+   for (int i = 0; i < 10; ++i)
+      files << new FM::File(root->getRoot(), QString("f%1.bin").arg(i), 5, false, QDateTime::currentDateTime(), root);
+   new FM::File(root->getRoot(), "other.bin", 6, false, QDateTime::currentDateTime(), root);
+   QCOMPARE(countOfSize(5), 10);
+   QCOMPARE(countOfSize(6), 1);
+
+   // Removing one of several files of the same size leaves the others indexed.
+   files.takeAt(3)->del();
+   QCoreApplication::sendPostedEvents(&manager.cache, QEvent::MetaCall);
+   QCOMPARE(countOfSize(5), 9);
+   QCOMPARE(countOfSize(6), 1);
 }
 
 void CacheTest::updaterWaitsForEarliestTask_data()

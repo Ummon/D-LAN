@@ -40,6 +40,7 @@ private slots:
    void prefixGraphemeBoundaries_data();
    void prefixGraphemeBoundaries();
    void singleWordResultLimits();
+   void multiWordPredicateOncePerItem();
    void removalPreservesRemainingWords_data();
    void removalPreservesRemainingWords();
    void multiTermRanking();

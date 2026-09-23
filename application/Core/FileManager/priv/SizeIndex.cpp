@@ -12,7 +12,7 @@ SizeIndex::SizeIndex()
 {
    this->index.setSortedFunction([](ISizeItem* e1, ISizeItem* e2) {
       if (e1->getSize() == e2->getSize())
-         return e1->hash() < e2->hash();
+         return e1->uniqueKey() < e2->uniqueKey();
 
       return e1->getSize() < e2->getSize();
    });

@@ -215,7 +215,8 @@ QList<FM::NodeResult<T>> FM::WordIndex<T>::search(
       // An item can be indexed by several words matching the same prefix.
       // Count it once per query term, preferring an exact match if available.
       QHash<T, bool> termMatches;
-      for (const auto& node : this->search(words[term], -1, predicat))
+      // The predicate depends only on the item: it's applied once per matched item below.
+      for (const auto& node : this->search(words[term], -1))
       {
          auto it = termMatches.find(node.value);
          if (it == termMatches.end())
@@ -251,6 +252,9 @@ QList<FM::NodeResult<T>> FM::WordIndex<T>::search(
    finalResult.reserve(matches.size());
    for (auto it = matches.cbegin(); it != matches.cend(); ++it)
    {
+      if (predicat && !predicat(it.key()))
+         continue;
+
       const auto& match = it.value();
       const int count = match.terms.size();
       int rank = 0;

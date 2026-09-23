@@ -25,6 +25,9 @@ private slots:
    void recoveryDetectsRootTypeReplacement();
    void watchedFileRename_data();
    void watchedFileRename();
+   void watcherLimitLeavesRoomForWaitConditions();
+   void fileIteratorSkipsEmptyDirectories();
+   void sizeIndexKeepsFilesOfSameSize();
    void updaterWaitsForEarliestTask_data();
    void updaterWaitsForEarliestTask();
    void failedHashingIsQueuedOnce_data();

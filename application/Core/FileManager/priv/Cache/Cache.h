@@ -53,8 +53,6 @@ namespace FM
       Cache(QSharedPointer<HC::IHashCache> hashCache);
       ~Cache();
 
-      void forall(std::function<void(Entry*)> fun) const;
-
       Protos::Common::Entries getProtoSharedEntries() const;
       Protos::Common::Entries getProtoEntries(
          const Protos::Common::Entry& dir,
@@ -165,6 +163,7 @@ namespace FM
       QList<SharedEntry*> sharedEntries;
       // A removed shared file still owns its path until the updater destroys it.
       QHash<Entry*, Common::Path> retiringSharedFiles;
+      bool isRetiringSharedFile(const Common::Path& path) const;
 
       FilePool filePool;
 

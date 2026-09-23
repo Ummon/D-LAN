@@ -30,6 +30,8 @@ using namespace FM;
    #include <sys/stat.h>
 #endif
 
+#include <algorithm>
+
 #include <QString>
 #include <QFile>
 #include <QScopeGuard>
@@ -358,8 +360,7 @@ void File::fileHasChangedOnDisk(const QFileInfo fileInfo)
    this->getCache()->getHashCache()->rmHashes(this->getAbsolutePath());
 
    this->deleteAllChunks();
-   QList<Common::Hash> hashes((qsizetype)this->getNbChunks());
-   this->setHashes(hashes);
+   this->setHashes({});
 }
 
 Common::Path File::getRelativePath() const
@@ -689,17 +690,14 @@ void File::chunkComplete(const Chunk* chunk)
 {
    QMutexLocker locker(&this->mutex);
 
-   int nbChunkComplete = 0;
-   for (int i = 0; i < this->chunks.size(); ++i)
-   {
-      if (this->chunks[i].data() == chunk)
-         this->getCache()->onChunkHashKnown(this->chunks[i]);
+   const int num = chunk->getNum();
+   if (num >= 0 && num < this->chunks.size() && this->chunks[num].data() == chunk)
+      this->getCache()->onChunkHashKnown(this->chunks[num]);
 
-      if (this->chunks[i]->isComplete())
-         ++nbChunkComplete;
-   }
-
-   if (nbChunkComplete == this->getNbChunks())
+   if (
+      this->chunks.size() == this->getNbChunks() &&
+      std::all_of(this->chunks.cbegin(), this->chunks.cend(), [](const auto& c) { return c->isComplete(); })
+   )
       this->setAsComplete();
 }
 
@@ -729,33 +727,25 @@ void File::setSize(qint64 size)
 
 void File::deleteIfIncomplete()
 {
-   this->mutex.lock();
+   QMutexLocker locker(&this->mutex);
 
-   if (!this->complete)
+   if (this->complete || (this->isRoot() && this->removalPending.exchange(true)))
+      return;
+
+   this->removeUnfinishedFiles();
+   if (this->isRoot())
    {
-      if (this->isRoot() && this->removalPending.exchange(true))
-      {
-         this->mutex.unlock();
-         return;
-      }
-      this->removeUnfinishedFiles();
-      if (this->isRoot())
-      {
-         auto cache = this->getCache();
-         auto root = this->getRoot();
-         this->mutex.unlock();
-         // The updater owns root retirement: unregister the share and its pending
-         // work before deleting the File (which also destroys its SharedEntry).
-         // Queue this outside file/cache locks; repeated requests are harmless.
-         QMetaObject::invokeMethod(cache, [cache, root] { cache->removeSharedEntry(root); }, Qt::QueuedConnection);
-         return;
-      }
-      this->mutex.unlock();
-      this->del();
+      auto cache = this->getCache();
+      auto root = this->getRoot();
+      locker.unlock();
+      // The updater owns root retirement: unregister the share and its pending
+      // work before deleting the File (which also destroys its SharedEntry).
+      // Queue this outside file/cache locks; repeated requests are harmless.
+      QMetaObject::invokeMethod(cache, [cache, root] { cache->removeSharedEntry(root); }, Qt::QueuedConnection);
       return;
    }
-
-   this->mutex.unlock();
+   locker.unlock();
+   this->del();
 }
 
 /**
@@ -961,15 +951,12 @@ void File::setHashes(const QList<Common::Hash>& hashes)
 {
    QMutexLocker locker(&this->mutex);
 
-   this->chunks.reserve(this->getNbChunks());
-   for (int i = 0; i < this->getNbChunks(); i++)
+   const int nbChunks = this->getNbChunks();
+   const int lastChunkSize = nbChunks > 0 ? int(this->getSize() - qint64(nbChunks - 1) * Chunk::CHUNK_SIZE) : 0;
+   this->chunks.reserve(nbChunks);
+   for (int i = 0; i < nbChunks; i++)
    {
-      int chunkKnownBytes =
-         !this->isComplete()
-            ? 0
-            : i == this->getNbChunks() - 1 && this->getSize() % Chunk::CHUNK_SIZE != 0
-               ? this->getSize() % Chunk::CHUNK_SIZE
-               : Chunk::CHUNK_SIZE;
+      const int chunkKnownBytes = !this->isComplete() ? 0 : i == nbChunks - 1 ? lastChunkSize : Chunk::CHUNK_SIZE;
 
       if (i < hashes.size() && !hashes[i].isNull())
       {
@@ -1010,24 +997,20 @@ FileIterator::FileIterator(Entry* entry)
 }
 
 /**
-  * Return the next file, 0 if there is no more directory.
+  * Return the next file, nullptr if there is no more file.
   */
 File* FileIterator::next()
 {
-   if (!this->nextFiles.isEmpty())
+   // A loop rather than a recursion: a deep tree of directories without files could overflow the stack.
+   while (this->nextFiles.isEmpty())
    {
-      File* file = this->nextFiles.front();
-      this->nextFiles.removeFirst();
-      return file;
+      if (this->dirsToVisit.isEmpty())
+         return nullptr;
+
+      Directory* dir = this->dirsToVisit.takeFirst();
+      this->dirsToVisit << dir->getSubDirs();
+      this->nextFiles << dir->getFiles();
    }
 
-   if (this->dirsToVisit.isEmpty())
-      return nullptr;
-
-   Directory* dir = this->dirsToVisit.front();
-   this->dirsToVisit.removeFirst();
-   this->dirsToVisit << dir->getSubDirs();
-   this->nextFiles << dir->getFiles();
-
-   return this->next();
+   return this->nextFiles.takeFirst();
 }

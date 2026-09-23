@@ -150,6 +150,20 @@ void Directory::populateEntry(Protos::Common::Entry* dir, bool setSharedDir) con
 }
 
 /**
+  * Adds the sub-directories and the complete files to 'entries'.
+  * @param setSharedDirs Whether the sub-directories carry their shared entry.
+  */
+void Directory::populateContent(Protos::Common::Entries* entries, bool setSharedDirs, int maxNbHashesPerFile) const
+{
+   for (Directory* dir : this->getSubDirs())
+      dir->populateEntry(entries->add_entries(), setSharedDirs);
+
+   for (File* file : this->getFiles())
+      if (file->isComplete())
+         file->populateEntry(entries->add_entries(), false, maxNbHashesPerFile);
+}
+
+/**
   * Remove physically all unfinished file.
   */
 void Directory::removeUnfinishedFiles()

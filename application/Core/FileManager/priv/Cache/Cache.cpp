@@ -20,7 +20,7 @@
 using namespace FM;
 
 #include <QDir>
-#include <QQueue>
+#include <algorithm>
 #include <limits>
 #include <stdexcept>
 
@@ -147,32 +147,6 @@ Cache::~Cache()
 }
 
 /**
-  * Call the given lambda for each entries owned by the cache.
-  * It can be a a directory or a file.
-  */
-void Cache::forall(std::function<void(Entry*)> fun) const
-{
-   QQueue<Entry*> entries;
-   foreach (SharedEntry* entry, this->sharedEntries)
-      entries.enqueue(entry->getRootEntry());
-
-   while (!entries.isEmpty())
-   {
-      Entry* current = entries.dequeue();
-      fun(current);
-
-      Directory* dir = dynamic_cast<Directory*>(current);
-      if (dir)
-      {
-         foreach (File* file, dir->getFiles())
-            fun(file);
-         foreach (Directory* subDir, dir->getSubDirs())
-            entries.enqueue(subDir);
-      }
-   }
-}
-
-/**
   * Gets the roots shared entries (it can be a mix of files and directories).
   */
 Protos::Common::Entries Cache::getProtoSharedEntries() const
@@ -197,14 +171,7 @@ Protos::Common::Entries Cache::getProtoEntries(const Protos::Common::Entry& dir,
    Protos::Common::Entries result;
 
    if (Directory* directory = this->getDirectory(dir))
-   {
-      foreach (Directory* dir, directory->getSubDirs())
-         dir->populateEntry(result.add_entries(), true);
-
-      foreach (File* file, directory->getFiles())
-         if (file->isComplete())
-            file->populateEntry(result.add_entries(), false, maxNbHashesPerEntry);
-   }
+      directory->populateContent(&result, true, maxNbHashesPerEntry);
 
    return result;
 }
@@ -352,7 +319,7 @@ QList<QSharedPointer<IChunk>> Cache::newFile(Protos::Common::Entry& fileEntry)
 
    if (!destination.isNull())
    {
-      if (this->retiringSharedFiles.values().contains(destination))
+      if (this->isRetiringSharedFile(destination))
          throw UnableToCreateNewFileException();
       if (auto sharedDir = this->getSuperSharedDirectory(destination))
       {
@@ -395,7 +362,7 @@ QList<QSharedPointer<IChunk>> Cache::newFile(Protos::Common::Entry& fileEntry)
    // with the old completed file until the download finishes.
    if (dir)
    {
-      if (this->retiringSharedFiles.values().contains(dir->getAbsolutePath().setFilename(name)))
+      if (this->isRetiringSharedFile(dir->getAbsolutePath().setFilename(name)))
          throw UnableToCreateNewFileException();
       dir->populateSharedEntry(&fileEntry);
       file = dir->getFile(name + Global::getUnfinishedSuffix());
@@ -967,6 +934,11 @@ SharedEntry* Cache::createSharedEntry(
    }
 
    return nullptr;
+}
+
+bool Cache::isRetiringSharedFile(const Common::Path& path) const
+{
+   return std::find(this->retiringSharedFiles.cbegin(), this->retiringSharedFiles.cend(), path) != this->retiringSharedFiles.cend();
 }
 
 void Cache::saveSharedEntries() const

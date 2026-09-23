@@ -13,7 +13,8 @@ namespace FM
    {
    public:
       virtual qint64 getSize() const = 0;
-      virtual uint hash() const = 0;
+      // Orders items of the same size. It must be unique among the indexed items and greater than 0.
+      virtual quintptr uniqueKey() const = 0;
    };
 
    class SizeIndex
@@ -39,7 +40,7 @@ namespace FM
          ~FakeItem() {}
 
          qint64 getSize() const override { return this->size; }
-         uint hash() const override { return 0; }
+         quintptr uniqueKey() const override { return 0; } // Before all indexed items of the same size.
 
       private:
          qint64 size;

@@ -17,6 +17,8 @@
   */
 
 #include <WordIndexTests.h>
+
+#include <algorithm>
 using namespace FM;
 
 #include <priv/WordIndex/WordIndex.h>
@@ -234,6 +236,25 @@ void WordIndexTests::singleWordResultLimits()
    QCOMPARE(index.search(QString("alp"), 1).size(), 1);
    QCOMPARE(WordIndex<int>::resultToList(index.search(QString("alp"), 1, [](int item) { return item == 4; })),
       (QList<int> { 4 }));
+}
+
+void WordIndexTests::multiWordPredicateOncePerItem()
+{
+   WordIndex<int> index;
+   index.addItem(QStringList { "alpha", "beta" }, 1);
+   index.addItem(QString("alpha"), 2);
+   index.addItem(QString("alphabet"), 3);
+   index.addItem(QString("gamma"), 4);
+
+   // Item 1 matches both terms and item 3 matches 'alpha' as a prefix: each is filtered once.
+   QList<int> filtered;
+   const auto results = index.search(QStringList { "alpha", "beta" }, -1, [&](int item) {
+      filtered << item;
+      return item != 2;
+   });
+   std::sort(filtered.begin(), filtered.end());
+   QCOMPARE(filtered, (QList<int> { 1, 2, 3 }));
+   QCOMPARE(WordIndex<int>::resultToList(results), (QList<int> { 1, 3 }));
 }
 
 void WordIndexTests::removalPreservesRemainingWords_data()

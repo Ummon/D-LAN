@@ -55,6 +55,7 @@ namespace FM
       void del(bool invokeDelete = true) override;
 
       void populateEntry(Protos::Common::Entry* dir, bool setSharedDir = false) const override;
+      void populateContent(Protos::Common::Entries* entries, bool setSharedDirs, int maxNbHashesPerFile) const;
 
       void removeUnfinishedFiles() override;
 

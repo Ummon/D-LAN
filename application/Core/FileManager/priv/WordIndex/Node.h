@@ -40,7 +40,7 @@ namespace FM
    struct NodeResult
    {
       NodeResult() : level(0) {}
-      NodeResult(T v, bool level = 0) : value(v), level(level) {}
+      NodeResult(T v, int level = 0) : value(v), level(level) {}
 
       T value;
       int level;

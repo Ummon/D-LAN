@@ -73,11 +73,7 @@ void GetEntriesResult::tryBuildResult()
    else
    {
       res.set_status(Protos::Core::GetEntriesResult::EntryResult::OK);
-      for (Directory* child : dir->getSubDirs())
-         child->populateEntry(res.mutable_entries()->add_entries());
-      for (File* file : dir->getFiles())
-         if (file->isComplete())
-            file->populateEntry(res.mutable_entries()->add_entries(), false, this->maxNbHashesPerEntry);
+      dir->populateContent(res.mutable_entries(), false, this->maxNbHashesPerEntry);
    }
 
    this->finished = true;
