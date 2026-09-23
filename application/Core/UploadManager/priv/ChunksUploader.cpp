@@ -22,10 +22,11 @@ using namespace UM;
 #include <typeinfo>
 #include <utility>
 
-#include <QCoreApplication>
 #include <QElapsedTimer>
 
 #include <Common/Settings.h>
+#include <Core/FileManager/Exceptions.h>
+#include <Core/FileManager/IDataReader.h>
 
 #include <priv/Log.h>
 
@@ -33,6 +34,11 @@ using namespace UM;
   * Un chunk uploader will write a given chunk to a given socket.
   * This operation is threaded and must be run by a 'Common::ThreadPool'.
   */
+
+namespace
+{
+   const int STOP_POLL_INTERVAL = 100; // Maximum socket wait before checking cancellation again, in ms.
+}
 
 quint64 ChunksUploader::currentID(1);
 
@@ -47,6 +53,7 @@ ChunksUploader::ChunksUploader(
    chunks(std::move(chunksParams)),
    socket(socket),
    transferRateCalculator(transferRateCalculator),
+   socketTimeout(SETTINGS.get<quint32>("socket_timeout")),
    closeTheSocket(false),
    toStop(false)
 {
@@ -54,7 +61,6 @@ ChunksUploader::ChunksUploader(
 
 ChunksUploader::~ChunksUploader()
 {
-   this->stop();
    L_DEBU(QString("Upload#%1 deleted").arg(this->ID));
 }
 
@@ -87,219 +93,43 @@ void ChunksUploader::init(QThread* thread)
   */
 void ChunksUploader::run()
 {
-   static const quint32 BUFFER_SIZE = SETTINGS.get<quint32>("buffer_size_reading");
-   static const quint32 SOCKET_BUFFER_SIZE = SETTINGS.get<quint32>("socket_buffer_size");
-   const int SOCKET_TIMEOUT = SETTINGS.get<quint32>("socket_timeout");
-   const int STOP_POLL_INTERVAL = 100; // Maximum socket wait before checking cancellation again, in ms.
+   bool completed = false;
 
    try
    {
-      if (this->mustStop())
-         goto cancelled;
-      // Allocated once for all the chunks, 'buffer_size_reading' may be large.
-      QByteArray buffer(BUFFER_SIZE, Qt::Uninitialized);
-
-      // 'this->chunks' is never iterated by reference: 'getChunks()' may copy it from another thread at any
-      // moment, the detach occurring at the next write would then invalidate any reference into it. Only the
-      // current element is kept as a local copy, the shared list is written under the mutex.
-      for (int i = 0; i < this->chunks.size(); i++)
-      {
-         if (this->mustStop())
-            goto cancelled;
-         // Only this thread writes the elements, reading one without the mutex is safe.
-         PM::GetChunkParams chunk = this->chunks.at(i);
-
-         // Also guard internal callers: no invalid range may reach the reader or offset arithmetic.
-         if (chunk.getOffset() < 0 || chunk.getEndOffset() < chunk.getOffset())
-         {
-            L_WARN(QString("Invalid upload range [%1, %2), closing the socket.")
-               .arg(chunk.getOffset()).arg(chunk.getEndOffset()));
-            this->closeTheSocket = true;
-            goto end;
-         }
-
-         // An offset equal to the announced endpoint is a valid empty range.
-         if (chunk.getOffset() == chunk.getEndOffset())
-            continue;
-
-         L_DEBU(
-            QString("Starting uploading a chunk from offset %1: %2")
-               .arg(chunk.getOffset())
-               .arg(chunk.getChunk()->toStringLog()
-            )
-         );
-
-         QSharedPointer<FM::IDataReader> reader = chunk.getChunk()->getDataReader();
-
-         int bytesRead = 0;
-
-         // The reader's available data may grow beyond the announced endpoint. Once that
-         // endpoint is reached, even an EOF probe is unnecessary and could fail after success.
-         while (chunk.getOffset() < chunk.getEndOffset())
-         {
-            if (this->mustStop())
-               goto cancelled;
-
-            bytesRead = reader->read(buffer.data(), chunk.getOffset());
-            // A read may block; do not write its result if stop() was called meanwhile.
-            if (this->mustStop())
-               goto cancelled;
-            if (bytesRead == 0)
-               break;
-            // 'IChunk::getKnownBytes()', which bounds the reader, may have grown since the size was announced
-            // to the peer: a chunk may be uploaded while being downloaded. Only the announced amount may be
-            // sent, the peer reads exactly this many bytes and would take the next ones for a message header.
-            const int bytesRemaining = chunk.getEndOffset() - chunk.getOffset();
-            if (bytesRead > bytesRemaining)
-               bytesRead = bytesRemaining;
-
-            if (bytesRead <= 0)
-               break;
-
-            int bytesSent = this->socket->write(buffer.constData(), bytesRead);
-            QElapsedTimer writeStalled;
-            writeStalled.start();
-            while (bytesSent == 0)
-            {
-               if (this->mustStop())
-                  goto cancelled;
-
-               const qint64 remaining = SOCKET_TIMEOUT - writeStalled.elapsed();
-               if (remaining <= 0)
-               {
-                  L_WARN(QString("Socket: no data accepted before timeout: %1").arg(chunk.getChunk()->toStringLog()));
-                  this->closeTheSocket = true;
-                  goto end;
-               }
-
-               // Retry the same buffer, without rereading the file or advancing progress. Even if
-               // other queued bytes drain, this write must accept data within its timeout budget.
-               const int waitTime = qMin<qint64>(STOP_POLL_INTERVAL, remaining);
-               QElapsedTimer waitDuration;
-               waitDuration.start();
-               this->socket->waitForBytesWritten(waitTime);
-               const qint64 delay = waitTime - waitDuration.elapsed();
-               if (delay > 0 && !this->mustStop())
-                  QThread::msleep(static_cast<unsigned long>(delay));
-
-               if (this->mustStop())
-                  goto cancelled;
-               bytesSent = this->socket->write(buffer.constData(), bytesRead);
-            }
-
-            if (bytesSent == -1)
-            {
-               L_WARN(QString("Socket: cannot send data: %1").arg(chunk.getChunk()->toStringLog()));
-               this->closeTheSocket = true;
-               goto end;
-            }
-
-            this->transferRateCalculator.addData(bytesSent);
-
-            chunk.setOffset(chunk.getOffset() + bytesSent);
-
-            {
-               QMutexLocker locker(&this->mutex);
-               if (this->toStop)
-                  goto cancelled;
-
-               this->chunks[i].setOffset(chunk.getOffset());
-            }
-
-            QElapsedTimer noProgress;
-            noProgress.start();
-            while (socket->bytesToWrite() > SOCKET_BUFFER_SIZE)
-            {
-               // Checked here too: this loop may last as long as the whole chunk and 'stop()' expects the
-               // upload to end quickly, see 'UploadManager::~UploadManager()'.
-               if (this->mustStop())
-                  goto cancelled;
-
-               const qint64 remaining = SOCKET_TIMEOUT - noProgress.elapsed();
-               if (remaining <= 0)
-               {
-                  L_WARN(
-                     QString("Socket: cannot write data, error: \"%1\", chunk: %2")
-                        .arg(socket->errorString(), chunk.getChunk()->toStringLog()
-                     )
-                  );
-                  this->closeTheSocket = true;
-                  goto end;
-               }
-
-               // A short wait timing out is not an upload failure. Keep the full configured
-               // no-progress budget, restarting it only when bytes have actually been written.
-               const int waitTime = qMin<qint64>(STOP_POLL_INTERVAL, remaining);
-               QElapsedTimer waitDuration;
-               waitDuration.start();
-               if (socket->waitForBytesWritten(waitTime))
-                  noProgress.restart();
-               else
-               {
-                  // Some errors return immediately. Avoid a busy loop while retaining bounded
-                  // cancellation latency and the same no-progress deadline.
-                  const qint64 delay = waitTime - waitDuration.elapsed();
-                  if (delay > 0 && !this->mustStop())
-                     QThread::msleep(static_cast<unsigned long>(delay));
-               }
-            }
-         }
-
-         if (chunk.getOffset() < chunk.getEndOffset())
-         {
-            // The peer is waiting for the remaining bytes and there is no way to tell it the upload has been
-            // truncated: closing the socket is the only way to avoid it reading the next messages as data.
-            L_WARN(
-               QString("Only %1 of the %2 announced bytes could be read, closing the socket. Chunk: %3")
-                  .arg(chunk.getOffset())
-                  .arg(chunk.getEndOffset())
-                  .arg(chunk.getChunk()->toStringLog())
-            );
-            this->closeTheSocket = true;
-            goto end;
-         }
-      }
+      completed = this->uploadChunks();
    }
    catch (FM::UnableToOpenFileInReadModeException&)
    {
       L_WARN("UnableToOpenFileInReadModeException");
-      this->closeTheSocket = true;
    }
    catch (FM::IOErrorException&)
    {
       L_WARN("IOErrorException");
-      this->closeTheSocket = true;
    }
    catch (FM::ChunkDeletedException&)
    {
       L_WARN("ChunkDeletedException");
-      this->closeTheSocket = true;
    }
    catch (FM::ChunkDataUnknownException&)
    {
       L_WARN("ChunkDataUnknownException");
-      this->closeTheSocket = true;
    }
    // Nothing may leave this method: it is called from 'QThread::run()' by the thread pool, an escaping
    // exception would terminate the process and the socket would never be given back to the main thread.
    catch (const std::exception& e)
    {
       L_ERRO(QString("Unexpected exception, type: %1, what: %2").arg(typeid(e).name(), e.what()));
-      this->closeTheSocket = true;
    }
    catch (...)
    {
       L_ERRO("Unknown exception");
-      this->closeTheSocket = true;
    }
 
-   goto end;
+   // The peer was promised a raw stream of the announced size, there is no way to tell it the upload has been
+   // truncated: closing the socket is the only way to avoid it reading the next messages as chunk data.
+   this->closeTheSocket = !completed;
 
-cancelled:
-   // The peer was promised a raw stream; a truncated upload must never return an idle socket.
-   this->closeTheSocket = true;
-
-end:
    this->socket->moveToThread(this->mainThread);
 }
 
@@ -310,22 +140,204 @@ void ChunksUploader::finished()
 }
 
 /**
+  * Sends the announced range of each chunk.
+  * @return 'false' if the upload has been cancelled or has failed, the socket must then be closed.
+  */
+bool ChunksUploader::uploadChunks()
+{
+   static const quint32 BUFFER_SIZE = SETTINGS.get<quint32>("buffer_size_reading");
+
+   // Allocated once for all the chunks, 'buffer_size_reading' may be large.
+   QByteArray buffer(BUFFER_SIZE, Qt::Uninitialized);
+
+   // 'this->chunks' is never iterated by reference: 'getChunks()' may copy it from another thread at any
+   // moment, the detach occurring at the next write would then invalidate any reference into it. Only the
+   // current element is kept as a local copy, the shared list is written under the mutex.
+   for (int i = 0; i < this->chunks.size(); i++)
+   {
+      if (this->mustStop())
+         return false;
+      // Only this thread writes the elements, reading one without the mutex is safe.
+      PM::GetChunkParams chunk = this->chunks.at(i);
+
+      // Also guard internal callers: no invalid range may reach the reader or offset arithmetic.
+      if (chunk.getOffset() < 0 || chunk.getEndOffset() < chunk.getOffset())
+      {
+         L_WARN(QString("Invalid upload range [%1, %2), closing the socket.")
+            .arg(chunk.getOffset()).arg(chunk.getEndOffset()));
+         return false;
+      }
+
+      // An offset equal to the announced endpoint is a valid empty range.
+      if (chunk.getOffset() == chunk.getEndOffset())
+         continue;
+
+      L_DEBU(
+         QString("Starting uploading a chunk from offset %1: %2")
+            .arg(chunk.getOffset())
+            .arg(chunk.getChunk()->toStringLog()
+         )
+      );
+
+      QSharedPointer<FM::IDataReader> reader = chunk.getChunk()->getDataReader();
+
+      // The reader's available data may grow beyond the announced endpoint. Once that
+      // endpoint is reached, even an EOF probe is unnecessary and could fail after success.
+      while (chunk.getOffset() < chunk.getEndOffset())
+      {
+         if (this->mustStop())
+            return false;
+
+         int bytesRead = reader->read(buffer.data(), chunk.getOffset());
+         // A read may block; do not write its result if stop() was called meanwhile.
+         if (this->mustStop())
+            return false;
+         if (bytesRead <= 0)
+            break;
+         // 'IChunk::getKnownBytes()', which bounds the reader, may have grown since the size was announced
+         // to the peer: a chunk may be uploaded while being downloaded. Only the announced amount may be
+         // sent, the peer reads exactly this many bytes and would take the next ones for a message header.
+         bytesRead = qMin(bytesRead, chunk.getEndOffset() - chunk.getOffset());
+
+         const int bytesSent = this->writeToSocket(buffer.constData(), bytesRead, chunk);
+         if (bytesSent < 0)
+            return false;
+
+         this->transferRateCalculator.addData(bytesSent);
+
+         chunk.setOffset(chunk.getOffset() + bytesSent);
+         {
+            QMutexLocker locker(&this->mutex);
+            this->chunks[i].setOffset(chunk.getOffset());
+         }
+
+         if (!this->waitForSocketBufferRoom(chunk))
+            return false;
+      }
+
+      if (chunk.getOffset() < chunk.getEndOffset())
+      {
+         L_WARN(
+            QString("Only %1 of the %2 announced bytes could be read, closing the socket. Chunk: %3")
+               .arg(chunk.getOffset())
+               .arg(chunk.getEndOffset())
+               .arg(chunk.getChunk()->toStringLog())
+         );
+         return false;
+      }
+   }
+
+   return true;
+}
+
+/**
+  * Writes the given data, retrying while the socket accepts none of it.
+  * @return The number of bytes written, may be less than 'size', or -1 if the upload must be aborted.
+  */
+int ChunksUploader::writeToSocket(const char* data, int size, const PM::GetChunkParams& chunk)
+{
+   qint64 bytesSent = this->socket->write(data, size);
+
+   QElapsedTimer writeStalled;
+   writeStalled.start();
+   while (bytesSent == 0)
+   {
+      const qint64 remaining = this->socketTimeout - writeStalled.elapsed();
+      if (remaining <= 0)
+      {
+         L_WARN(QString("Socket: no data accepted before timeout: %1").arg(chunk.getChunk()->toStringLog()));
+         return -1;
+      }
+
+      // Retry the same buffer, without rereading the file or advancing progress. Even if
+      // other queued bytes drain, this write must accept data within its timeout budget.
+      this->waitForBytesWritten(remaining);
+      if (this->mustStop())
+         return -1;
+      bytesSent = this->socket->write(data, size);
+   }
+
+   if (bytesSent < 0)
+   {
+      L_WARN(QString("Socket: cannot send data: %1").arg(chunk.getChunk()->toStringLog()));
+      return -1;
+   }
+
+   return static_cast<int>(bytesSent);
+}
+
+/**
+  * Waits until the data queued in the socket is below 'socket_buffer_size'.
+  * @return 'false' if the upload has been cancelled or if no data could be written during 'socket_timeout'.
+  */
+bool ChunksUploader::waitForSocketBufferRoom(const PM::GetChunkParams& chunk)
+{
+   static const quint32 SOCKET_BUFFER_SIZE = SETTINGS.get<quint32>("socket_buffer_size");
+
+   QElapsedTimer noProgress;
+   noProgress.start();
+   while (this->socket->bytesToWrite() > SOCKET_BUFFER_SIZE)
+   {
+      // Checked here too: this loop may last as long as the whole chunk and 'stop()' expects the
+      // upload to end quickly, see 'UploadManager::~UploadManager()'.
+      if (this->mustStop())
+         return false;
+
+      const qint64 remaining = this->socketTimeout - noProgress.elapsed();
+      if (remaining <= 0)
+      {
+         L_WARN(
+            QString("Socket: cannot write data, error: \"%1\", chunk: %2")
+               .arg(this->socket->errorString(), chunk.getChunk()->toStringLog()
+            )
+         );
+         return false;
+      }
+
+      // A short wait timing out is not an upload failure. Keep the full configured
+      // no-progress budget, restarting it only when bytes have actually been written.
+      if (this->waitForBytesWritten(remaining))
+         noProgress.restart();
+   }
+
+   return true;
+}
+
+/**
+  * Waits at most 'STOP_POLL_INTERVAL' ms, or 'maxWait' if it is shorter, so that a cancellation is noticed quickly.
+  * Some socket errors make the wait return immediately: the rest of the period is then slept to avoid a busy loop.
+  * @return 'true' if some data has been written.
+  */
+bool ChunksUploader::waitForBytesWritten(qint64 maxWait)
+{
+   const int waitTime = static_cast<int>(qMin<qint64>(STOP_POLL_INTERVAL, maxWait));
+
+   QElapsedTimer waitDuration;
+   waitDuration.start();
+   if (this->socket->waitForBytesWritten(waitTime))
+      return true;
+
+   const qint64 delay = waitTime - waitDuration.elapsed();
+   if (delay > 0 && !this->mustStop())
+      QThread::msleep(static_cast<unsigned long>(delay));
+
+   return false;
+}
+
+/**
   * Returns 'true' if 'stop()' has been called, the upload must then be aborted.
   */
 bool ChunksUploader::mustStop() const
 {
-   QMutexLocker locker(&this->mutex);
    return this->toStop;
 }
 
 /**
-  * Stop the current upload. It returns immediately.
+  * Stop the current upload. It returns immediately and may be called from any thread.
   * Socket waits check this request every 100 ms. An in-progress synchronous file read must
   * return before cancellation can be observed; its data will then be discarded.
   */
 void ChunksUploader::stop()
 {
-   this->mutex.lock();
    this->toStop = true;
-   this->mutex.unlock();
 }

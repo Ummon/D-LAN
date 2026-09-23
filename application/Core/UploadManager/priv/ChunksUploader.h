@@ -18,15 +18,14 @@
   
 #pragma once
 
+#include <atomic>
+
 #include <QMutex>
 #include <QThread>
 
 #include <Common/Timeoutable.h>
 #include <Common/TransferRateCalculator.h>
 #include <Common/IRunnable.h>
-#include <Core/FileManager/Exceptions.h>
-#include <Core/FileManager/IChunk.h>
-#include <Core/FileManager/IDataReader.h>
 #include <Core/PeerManager/ISocket.h>
 #include <Core/PeerManager/GetChunkParams.h>
 
@@ -58,9 +57,14 @@ namespace UM
       void stop();
 
    private:
+      bool uploadChunks();
+      int writeToSocket(const char* data, int size, const PM::GetChunkParams& chunk);
+      bool waitForSocketBufferRoom(const PM::GetChunkParams& chunk);
+      bool waitForBytesWritten(qint64 maxWait);
+
       bool mustStop() const;
 
-      mutable QMutex mutex;
+      mutable QMutex mutex; ///< Protects 'chunks'.
 
       QThread* mainThread;
 
@@ -70,7 +74,9 @@ namespace UM
 
       Common::TransferRateCalculator& transferRateCalculator;
 
+      const int socketTimeout; ///< [ms].
+
       bool closeTheSocket;
-      bool toStop;
+      std::atomic_bool toStop;
    };
 }

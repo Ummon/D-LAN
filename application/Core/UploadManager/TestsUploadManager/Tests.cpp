@@ -9,6 +9,8 @@
 #include <algorithm>
 
 #include <Common/Settings.h>
+#include <Core/FileManager/Exceptions.h>
+#include <Core/FileManager/IDataReader.h>
 #include <Core/UploadManager/priv/ChunksUploader.h>
 #include <Protos/core_settings.pb.h>
 

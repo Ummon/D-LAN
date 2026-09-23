@@ -19,24 +19,20 @@
 #include <priv/UploadManager.h>
 using namespace UM;
 
-#include <QSharedPointer>
-
-#include <Protos/core_protocol.pb.h>
-
 #include <Common/Settings.h>
-#include <Core/FileManager/Exceptions.h>
-#include <Core/FileManager/IChunk.h>
 #include <Core/PeerManager/ISocket.h>
 
 #include <priv/ChunksUploader.h>
 
 /**
-  * @class UM::UploaderManager
+  * @class UM::UploadManager
   *
-  * Will listen the signal 'getChunk' of the peerManager, when this signal is received an Uploader is created and data is sent to the peer.
-  * After the chunk was sent to the peer the Uploader is deleted.
+  * Listens to the signal 'getChunks' of the peer manager, each time it is received a 'ChunksUploader' is created and
+  * sends the data to the peer. The uploader is kept 'upload_lifetime' ms after it has finished, so the GUI can show it,
+  * and is then deleted.
   *
-  * We cannot use a QThreadPool object instead of the class 'Uploader' because we have to use the method 'PM::ISocket::moveToThread' when using a socket in a thread. This isn't possible with the 'QRunnable' class.
+  * We cannot use a QThreadPool object instead of 'Common::ThreadPool' because we have to use the method 'PM::ISocket::moveToThread'
+  * when using a socket in a thread. This isn't possible with the 'QRunnable' class.
   */
 
 LOG_INIT_CPP(UploadManager)
@@ -61,16 +57,17 @@ UploadManager::~UploadManager()
    L_DEBU("UploadManager deleted");
 
    // We stop all uploads to avoid the thread pool to wait that all threads have finished their job.
-   for (QListIterator<QSharedPointer<ChunksUploader>> i(this->uploads); i.hasNext();)
-      i.next()->stop();
+   for (const auto& upload : this->uploads)
+      upload->stop();
 }
 
 QList<IChunksUploader*> UploadManager::getChunksUploaders() const
 {
    QList<IChunksUploader*> uploaders;
+   uploaders.reserve(this->uploads.size());
 
-   for (QListIterator<QSharedPointer<ChunksUploader>> i(this->uploads); i.hasNext();)
-      uploaders << i.next().data();
+   for (const auto& upload : this->uploads)
+      uploaders << upload.data();
 
    return uploaders;
 }
@@ -85,29 +82,25 @@ void UploadManager::getChunks(
    const QSharedPointer<PM::ISocket>& socket
 )
 {
-   QSharedPointer<ChunksUploader> upload(new ChunksUploader(chunksParams, socket, this->transferRateCalculator));
+   auto upload = QSharedPointer<ChunksUploader>::create(chunksParams, socket, this->transferRateCalculator);
 
-   // The connection must be queued: 'uploadTimeout()' releases the last reference to the uploader and thus
+   // The connection must be queued: 'removeUpload(..)' releases the last reference to the uploader and thus
    // deletes it. A direct call would run from 'Common::Timeoutable::timeoutSlot()', that is from within the
    // timer event of the very 'QTimer' emitting the signal, and would delete it under its own event handler.
-   connect(upload.data(), &Common::Timeoutable::timeout, this, &UploadManager::uploadTimeout, Qt::QueuedConnection);
+   connect(
+      upload.data(),
+      &Common::Timeoutable::timeout,
+      this,
+      [this, uploadPtr = upload.data()] { this->removeUpload(uploadPtr); },
+      Qt::QueuedConnection
+   );
 
    this->uploads << upload;
    this->threadPool.run(upload.toWeakRef());
 }
 
-/**
-  * Called by the event loop, see the queued connection in 'getChunks(..)'.
-  */
 // TODO: test timeout.
-void UploadManager::uploadTimeout()
+void UploadManager::removeUpload(const ChunksUploader* upload)
 {
-   ChunksUploader* upload = static_cast<ChunksUploader*>(this->sender());
-
-   for (QMutableListIterator<QSharedPointer<ChunksUploader>> i(this->uploads); i.hasNext();)
-      if (i.next().data() == upload)
-      {
-         i.remove();
-         break;
-      }
+   this->uploads.removeIf([upload](const QSharedPointer<ChunksUploader>& u) { return u.data() == upload; });
 }

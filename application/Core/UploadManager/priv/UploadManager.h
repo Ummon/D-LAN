@@ -47,15 +47,14 @@ namespace UM
 
       int getUploadRate() override;
 
-   private slots:
+   private:
       void getChunks(
          const QList<PM::GetChunkParams>& chunksParams,
          const QSharedPointer<PM::ISocket>& socket
       );
 
-      void uploadTimeout();
+      void removeUpload(const ChunksUploader* upload);
 
-   private:
       LOG_INIT_H("UploadManager")
 
       Common::TransferRateCalculator transferRateCalculator;
