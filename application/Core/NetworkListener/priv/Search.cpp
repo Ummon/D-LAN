@@ -96,8 +96,7 @@ void Search::newFindResult(const Protos::Common::FindResult& result)
    {
       // Keep the prefix that fits without changing the message seen by other searches.
       Protos::Common::FindResult limitedResult(result);
-      while (static_cast<quint32>(limitedResult.entries_size()) > remaining)
-         limitedResult.mutable_entries()->RemoveLast();
+      limitedResult.mutable_entries()->DeleteSubrange(remaining, limitedResult.entries_size() - remaining);
       this->nbResult += remaining;
       emit found(limitedResult);
    }

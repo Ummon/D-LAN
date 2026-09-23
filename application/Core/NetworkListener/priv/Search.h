@@ -35,8 +35,8 @@ namespace NL
       Q_OBJECT
    public:
       Search(UDPListener& uDPListener);
-      quint64 search(const Protos::Common::FindPattern& findPattern);
-      qint64 elapsed();
+      quint64 search(const Protos::Common::FindPattern& findPattern) override;
+      qint64 elapsed() override;
 
    private slots:
       void newFindResult(const Protos::Common::FindResult& result);

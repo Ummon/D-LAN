@@ -95,20 +95,28 @@ INetworkListener::SendStatus UDPListener::send(
    if (!peer)
       return INetworkListener::SendStatus::PEER_UNKNOWN;
 
+   return this->send(type, message, *peer);
+}
+
+/**
+  * Send an UDP unicast datagram to a peer already looked up.
+  */
+INetworkListener::SendStatus UDPListener::send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message, PM::IPeer& peer)
+{
    int messageSize;
    if (!(messageSize = this->writeMessageToBuffer(type, message)))
       return INetworkListener::SendStatus::MESSAGE_TOO_LARGE;
 
-   if (!this->timerIMAlive.isActive())
+   if (!this->isListening())
       return INetworkListener::SendStatus::UNABLE_TO_SEND;
 
    L_DEBU(QString("Send unicast UDP to %1, header.getType(): %2, message size: %3 \n%4").
-      arg(peer->toStringLog(), Common::MessageHeader::messToStr(type)).
+      arg(peer.toStringLog(), Common::MessageHeader::messToStr(type)).
       arg(messageSize).
       arg(Common::ProtoHelper::getDebugStr(message))
    );
 
-   if (this->unicastSocket.writeDatagram(this->buffer, messageSize, peer->getIP(), peer->getPort()) == -1)
+   if (this->unicastSocket.writeDatagram(this->buffer, messageSize, peer.getIP(), peer.getPort()) == -1)
    {
       L_WARN(QString("Unable to send datagram (unicast): error: %1").arg(this->unicastSocket.errorString()));
       return INetworkListener::SendStatus::UNABLE_TO_SEND;
@@ -129,7 +137,7 @@ INetworkListener::SendStatus UDPListener::send(
    if (!(messageSize = this->writeMessageToBuffer(type, message)))
       return INetworkListener::SendStatus::MESSAGE_TOO_LARGE;
 
-   if (!this->timerIMAlive.isActive())
+   if (!this->isListening())
       return INetworkListener::SendStatus::UNABLE_TO_SEND;
 
 #if DEBUG
@@ -164,7 +172,7 @@ INetworkListener::SendStatus UDPListener::send(
 
 void UDPListener::sendIMAliveMessage()
 {
-   if (!this->timerIMAlive.isActive())
+   if (!this->isListening())
       return;
 
    Protos::Core::IMAlive IMAliveMessage;
@@ -284,19 +292,16 @@ void UDPListener::processPendingMulticastDatagrams()
    while (this->multicastSocket.hasPendingDatagrams())
    {
       QHostAddress peerAddress;
-      const Common::MessageHeader& header = this->readDatagramToBuffer(this->multicastSocket, peerAddress);
+      const Common::MessageHeader header = this->readDatagramToBuffer(this->multicastSocket, peerAddress);
       if (header.isNull())
          continue;
 
-      // Discovery and departure still update peer state while a peer is unavailable.
+      // Discovery comes from any peer and departure from an alive peer, even if it is unavailable.
       // All other multicast traffic follows the same availability policy as unicast.
+      PM::IPeer* peer = nullptr;
       if (header.getType() != Common::MessageHeader::CORE_IM_ALIVE &&
-          header.getType() != Common::MessageHeader::CORE_GOODBYE)
-      {
-         PM::IPeer* peer = this->peerManager->getPeer(header.getSenderID());
-         if (!peer || !peer->isAvailable())
-            continue;
-      }
+          !(peer = this->getSender(header, peerAddress, header.getType() != Common::MessageHeader::CORE_GOODBYE)))
+         continue;
 
       try
       {
@@ -331,7 +336,7 @@ void UDPListener::processPendingMulticastDatagrams()
                );
 
                // We reply only to the peers we can collaborate with (alive, not blocked and with a compatible protocol version).
-               PM::IPeer* peer = this->peerManager->getPeer(header.getSenderID());
+               peer = this->peerManager->getPeer(header.getSenderID());
                if (peer && peer->isAvailable() && IMAliveMessage.chunks_size() > 0)
                {
                   QList<Common::Hash> hashes;
@@ -348,7 +353,7 @@ void UDPListener::processPendingMulticastDatagrams()
                      chunkOwnedMessage.mutable_chunk_state()->Reserve(bitArray.size());
                      for (int i = 0; i < bitArray.size(); i++)
                         chunkOwnedMessage.add_chunk_state(bitArray[i]);
-                     this->send(Common::MessageHeader::CORE_CHUNKS_OWNED, chunkOwnedMessage, header.getSenderID());
+                     this->send(Common::MessageHeader::CORE_CHUNKS_OWNED, chunkOwnedMessage, *peer);
                   }
                }
             }
@@ -360,37 +365,31 @@ void UDPListener::processPendingMulticastDatagrams()
 
          case Common::MessageHeader::CORE_FIND:
             {
-               PM::IPeer* peer = this->peerManager->getPeer(header.getSenderID());
+               static const quint32 MAX_NUMBER_OF_SEARCH_RESULT_TO_SEND =
+                  SETTINGS.get<quint32>("max_number_of_search_result_to_send");
 
-               if (peer && peer->isAvailable())
+               const Protos::Core::Find& findMessage = message.getMessage<Protos::Core::Find>();
+               QList<QString> extensions;
+               extensions.reserve(findMessage.pattern().extension_filters_size());
+               for (int i = 0; i < findMessage.pattern().extension_filters_size(); i++)
+                  extensions << QString::fromStdString(findMessage.pattern().extension_filters(i));
+
+               QList<Protos::Common::FindResult> results =
+                  this->fileManager->find(
+                     QString::fromStdString(findMessage.pattern().pattern()),
+                     extensions,
+                     findMessage.pattern().min_size() == 0 ? std::numeric_limits<qint64>::min() : (qint64)findMessage.pattern().min_size(), // According the protocol.
+                     findMessage.pattern().max_size() == 0 ? std::numeric_limits<qint64>::max() : (qint64)findMessage.pattern().max_size(), // According the protocol.
+                     findMessage.pattern().category(),
+                     MAX_NUMBER_OF_SEARCH_RESULT_TO_SEND,
+                     this->MAX_UDP_DATAGRAM_PAYLOAD_SIZE - Common::MessageHeader::HEADER_SIZE,
+                     false
+                  );
+
+               for (Protos::Common::FindResult& result : results)
                {
-                  static const quint32 MAX_NUMBER_OF_SEARCH_RESULT_TO_SEND =
-                     SETTINGS.get<quint32>("max_number_of_search_result_to_send");
-
-                  const Protos::Core::Find& findMessage = message.getMessage<Protos::Core::Find>();
-                  QList<QString> extensions;
-                  extensions.reserve(findMessage.pattern().extension_filters_size());
-                  for (int i = 0; i < findMessage.pattern().extension_filters_size(); i++)
-                     extensions << QString::fromStdString(findMessage.pattern().extension_filters(i));
-
-                  QList<Protos::Common::FindResult> results =
-                     this->fileManager->find(
-                        QString::fromStdString(findMessage.pattern().pattern()),
-                        extensions,
-                        findMessage.pattern().min_size() == 0 ? std::numeric_limits<qint64>::min() : (qint64)findMessage.pattern().min_size(), // According the protocol.
-                        findMessage.pattern().max_size() == 0 ? std::numeric_limits<qint64>::max() : (qint64)findMessage.pattern().max_size(), // According the protocol.
-                        findMessage.pattern().category(),
-                        MAX_NUMBER_OF_SEARCH_RESULT_TO_SEND,
-                        this->MAX_UDP_DATAGRAM_PAYLOAD_SIZE - Common::MessageHeader::HEADER_SIZE,
-                        false
-                     );
-
-                  for (QMutableListIterator<Protos::Common::FindResult> i(results); i.hasNext();)
-                  {
-                     Protos::Common::FindResult& result = i.next();
-                     result.set_tag(findMessage.tag());
-                     this->send(Common::MessageHeader::CORE_FIND_RESULT, result, header.getSenderID());
-                  }
+                  result.set_tag(findMessage.tag());
+                  this->send(Common::MessageHeader::CORE_FIND_RESULT, result, *peer);
                }
             }
             break;
@@ -418,16 +417,18 @@ void UDPListener::processPendingUnicastDatagrams()
    while (this->unicastSocket.hasPendingDatagrams())
    {
       QHostAddress peerAddress;
-      const Common::MessageHeader& header =  UDPListener::readDatagramToBuffer(this->unicastSocket, peerAddress);
+      const Common::MessageHeader header = this->readDatagramToBuffer(this->unicastSocket, peerAddress);
       if (header.isNull())
+         continue;
+
+      // Checked before parsing: datagrams from unavailable peers are not worth decoding.
+      PM::IPeer* peer = this->getSender(header, peerAddress, true);
+      if (!peer)
          continue;
 
       try
       {
          const Common::Message& message = Common::Message::readMessageBody(header, this->bodyBuffer);
-         PM::IPeer* peer = this->peerManager->getPeer(header.getSenderID());
-         if (!peer || !peer->isAvailable())
-            continue;
 
          switch (header.getType())
          {
@@ -623,37 +624,38 @@ Common::MessageHeader UDPListener::readDatagramToBuffer(QUdpSocket& socket, QHos
       return header;
    }
 
-   if (header.getSenderID() == this->peerManager->getSelf()->getID())
+   if (header.getSenderID() == this->getOwnID())
    {
       // L_WARN("We receive a datagram from ourself, skip"); // Don't care . . .
       header.setNull();
       return header;
    }
 
-   if (header.getType() != Common::MessageHeader::CORE_IM_ALIVE)
-   {
-      PM::IPeer* peer = this->peerManager->getPeer(header.getSenderID());
-      if (!peer)
-      {
-          L_WARN(QString("We receive a datagram from an unknown peer (%1), skip").arg(peerAddress.toString()));
-         header.setNull();
-         return header;
-      }
-
-      if (!peer->isAlive())
-      {
-          L_WARN(QString("We receive a datagram from a dead peer (%1), skip").arg(peerAddress.toString()));
-         header.setNull();
-         return header;
-      }
-
-      L_DEBU(QString("Receive a datagram UDP from %1: %2").arg(peer->toStringLog(), header.toStr()));
-   }
-   else
-   {
-      L_DEBU(QString("Receive a datagram UDP from %1: %2").arg(header.getSenderID().toStrShort(), header.toStr()));
-   }
+   L_DEBU(QString("Receive a datagram UDP from %1 (%2): %3").arg(header.getSenderID().toStrShort(), peerAddress.toString(), header.toStr()));
    return header;
+}
+
+/**
+  * @param mustBeAvailable If false, an alive peer is enough (it may be blocked or incompatible).
+  * @return The sender of the datagram or nullptr if it is unknown, dead or, if required, unavailable.
+  */
+PM::IPeer* UDPListener::getSender(const Common::MessageHeader& header, const QHostAddress& peerAddress, bool mustBeAvailable)
+{
+   PM::IPeer* peer = this->peerManager->getPeer(header.getSenderID());
+   if (!peer)
+   {
+      L_WARN(QString("We receive a datagram from an unknown peer (%1), skip").arg(peerAddress.toString()));
+      return nullptr;
+   }
+
+   if (!peer->isAlive())
+   {
+      L_WARN(QString("We receive a datagram from a dead peer (%1), skip").arg(peerAddress.toString()));
+      return nullptr;
+   }
+
+   // Blocked or incompatible peers are silently ignored.
+   return !mustBeAvailable || peer->isAvailable() ? peer : nullptr;
 }
 
 Common::Hash UDPListener::getOwnID() const

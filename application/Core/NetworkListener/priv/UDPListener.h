@@ -86,6 +86,9 @@ namespace NL
       void processPendingUnicastDatagrams();
 
    private:
+      INetworkListener::SendStatus send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message, PM::IPeer& peer);
+      bool isListening() const { return this->timerIMAlive.isActive(); } // The heartbeat timer runs only while all the sockets are bound.
+      PM::IPeer* getSender(const Common::MessageHeader& header, const QHostAddress& peerAddress, bool mustBeAvailable);
       bool initMulticastUDPSocket(const QList<QNetworkInterface>& interfaces, bool logFailures);
       int writeMessageToBuffer(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);
       Common::MessageHeader readDatagramToBuffer(QUdpSocket& socket, QHostAddress& peerAddress);
