@@ -18,6 +18,7 @@
 
 #include <priv/Cache/FilePool.h>
 #include <priv/Log.h>
+#include <Common/Global.h>
 #include <windows.h>
 #include <io.h>
 #include <fcntl.h>
@@ -59,9 +60,10 @@ namespace
 QFile* FilePool::openFile(const QString& path, QIODevice::OpenMode mode, bool* fileCreated)
 {
    // We use the 'CreateFileW' function to control the sharing mode of the file.
+   const QString win32Path = Common::Global::toWin32LongPath(path);
    HANDLE h =
       CreateFileW(
-         reinterpret_cast<LPCWSTR>(path.utf16()),
+         reinterpret_cast<LPCWSTR>(win32Path.utf16()),
          toCreateFileDesiredAccess(mode),
          FILE_SHARE_READ | FILE_SHARE_WRITE, // A file being downloaded (opened in write mode) must also be readable by us: to upload it and to check the integrity of a resumed chunk.
          nullptr,

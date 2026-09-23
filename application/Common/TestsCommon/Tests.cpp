@@ -168,6 +168,43 @@ void Tests::availableDiskSpace()
    qDebug() << "Available disk space [Mo] : " << Global::availableDiskSpace(".") / 1024 / 1024;
 }
 
+void Tests::toWin32LongPath()
+{
+#ifdef Q_OS_WIN32
+   QCOMPARE(Global::toWin32LongPath("D:/Videos/a b/file.mkv"), QString(R"(\\?\D:\Videos\a b\file.mkv)"));
+   QCOMPARE(Global::toWin32LongPath("D:/Videos/./x/../file.mkv"), QString(R"(\\?\D:\Videos\file.mkv)"));
+   QCOMPARE(Global::toWin32LongPath("//server/share/file"), QString(R"(\\?\UNC\server\share\file)"));
+   QCOMPARE(Global::toWin32LongPath(R"(\\?\D:\file)"), QString(R"(\\?\D:\file)"));
+   QCOMPARE(Global::toWin32LongPath("dir/file"), QString(R"(dir\file)"));
+#else
+   QSKIP("Windows only");
+#endif
+}
+
+/**
+  * Win32 functions fail beyond 'MAX_PATH' without the extended-length prefix.
+  * For example: a ".unfinished" download whose path length exceeds 260 characters.
+  */
+void Tests::renameLongPath()
+{
+#ifdef Q_OS_WIN32
+   const QString dir = QDir::current().absoluteFilePath("long_path_test/" + QString(120, 'd') + "/" + QString(120, 'e'));
+   QVERIFY(QDir().mkpath(dir));
+   const QString source = dir + "/" + QString(60, 'f') + ".unfinished";
+   const QString destination = dir + "/" + QString(60, 'f');
+   QVERIFY(source.size() > 260); // MAX_PATH.
+
+   QVERIFY(Global::createFile(source));
+   QVERIFY(Global::rename(source, destination));
+   QVERIFY(!QFile::exists(source));
+   QVERIFY(QFile::exists(destination));
+
+   QVERIFY(Global::recursiveDeleteDirectory(QDir::current().absoluteFilePath("long_path_test")));
+#else
+   QSKIP("Windows only");
+#endif
+}
+
 void Tests::splitInWords()
 {
    QCOMPARE(StringUtils::splitInWords("a"), QStringList() << "a");

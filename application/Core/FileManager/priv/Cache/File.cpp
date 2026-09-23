@@ -933,10 +933,11 @@ void File::setFileAsSparse(const QFile& file)
 void File::setFileAsHidden(const QString& filepath)
 {
 #ifdef Q_OS_WIN32
-   const DWORD attrs = GetFileAttributesW((LPCWSTR)filepath.utf16());
+   const QString win32Path = Common::Global::toWin32LongPath(filepath);
+   const DWORD attrs = GetFileAttributesW((LPCWSTR)win32Path.utf16());
    if (
       attrs == INVALID_FILE_ATTRIBUTES ||
-      !SetFileAttributesW((LPCWSTR)filepath.utf16(), attrs | FILE_ATTRIBUTE_HIDDEN)
+      !SetFileAttributesW((LPCWSTR)win32Path.utf16(), attrs | FILE_ATTRIBUTE_HIDDEN)
    )
       L_WARN(QString("Unable to set the hidden attribute on %1").arg(filepath));
 #elif defined(Q_OS_MACOS)

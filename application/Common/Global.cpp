@@ -341,11 +341,35 @@ bool Global::rename(const QString& existingFile, const QString& newFile)
    Q_ASSERT(!newFile.isEmpty());
 
 #ifdef Q_OS_WIN32
-   return MoveFileEx((LPCTSTR)existingFile.utf16(), (LPCTSTR)newFile.utf16(), MOVEFILE_REPLACE_EXISTING);
+   const QString existingPath = toWin32LongPath(existingFile);
+   const QString newPath = toWin32LongPath(newFile);
+   return MoveFileExW(reinterpret_cast<LPCWSTR>(existingPath.utf16()), reinterpret_cast<LPCWSTR>(newPath.utf16()), MOVEFILE_REPLACE_EXISTING);
 #else
    return std::rename(existingFile.toUtf8().constData(), newFile.toUtf8().constData()) == 0;
 #endif
 }
+
+#ifdef Q_OS_WIN32
+/**
+  * Return the extended-length form of an absolute path, for example "\\?\D:\dir\file" or "\\?\UNC\server\share\file".
+  * Win32 functions like 'CreateFileW(..)' fail on paths longer than 'MAX_PATH' (260) without this prefix,
+  * while 'QFile' succeeds because Qt adds it itself. Relative paths are only converted to native separators.
+  */
+QString Global::toWin32LongPath(const QString& path)
+{
+   const QString native = QDir::toNativeSeparators(path);
+   if (native.startsWith(R"(\\?\)") || native.startsWith(R"(\\.\)"))
+      return native;
+
+   // The prefix disables the Win32 path normalization: '.' and '..' must be resolved here.
+   const QString cleaned = QDir::toNativeSeparators(QDir::cleanPath(path));
+   if (cleaned.startsWith(R"(\\)"))
+      return R"(\\?\UNC\)" + cleaned.mid(2);
+   if (cleaned.size() >= 3 && cleaned[1] == ':' && cleaned[2] == '\\')
+      return R"(\\?\)" + cleaned;
+   return native;
+}
+#endif
 
 bool Global::isLocal(const QHostAddress& address)
 {

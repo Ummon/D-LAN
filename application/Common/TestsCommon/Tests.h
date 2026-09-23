@@ -39,6 +39,8 @@ private slots:
    void formatByteSize();
    void formatTime();
    void availableDiskSpace();
+   void toWin32LongPath();
+   void renameLongPath();
    void splitInWords();
    void splitInWordsUnicode();
    void normalizeSearchWords();

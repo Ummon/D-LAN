@@ -55,6 +55,9 @@ namespace Common
       static QString formatIP(const QHostAddress& address, quint16 port);
       static qint64 availableDiskSpace(const QString& path);
       static bool rename(const QString& existingFile, const QString& newFile);
+#ifdef Q_OS_WIN32
+      static QString toWin32LongPath(const QString& path);
+#endif
 
       static bool isLocal(const QHostAddress& address);
 

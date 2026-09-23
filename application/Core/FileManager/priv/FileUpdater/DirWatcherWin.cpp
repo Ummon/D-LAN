@@ -25,6 +25,7 @@ using namespace FM;
 #include <cstddef>
 
 #include <Common/StringUtils.h>
+#include <Common/Global.h>
 
 #include <priv/Exceptions.h>
 #include <priv/FileUpdater/WaitConditionWin.h>
@@ -60,7 +61,7 @@ bool DirWatcherWin::addPath(const QString& path, const QString& filename)
 
    HANDLE fileHandle =
       CreateFile(
-         Common::StringUtils::towcharList(path).constData(), // Pointer to the directory.
+         Common::StringUtils::towcharList(Common::Global::toWin32LongPath(path)).constData(), // Pointer to the directory.
          FILE_LIST_DIRECTORY, // Access (read/write) mode.
          FILE_SHARE_READ | FILE_SHARE_WRITE, // Share mode.
          NULL, // security descriptor
