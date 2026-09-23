@@ -240,23 +240,24 @@ void SettingsWidget::fillComboBoxLanguages()
 
 void SettingsWidget::fillComboBoxStyles()
 {
-   const int currentIndex = this->ui->cmbStyles->currentIndex();
-   const QString& currentStyleFilename = SETTINGS.get<QString>("style");
+   // Refilling (also done when the language changes) must not unload and reapply the current style.
+   const QSignalBlocker blocker(this->ui->cmbStyles);
+   const QString currentStyleDirname = SETTINGS.get<QString>("style");
 
    this->ui->cmbStyles->clear();
    this->ui->cmbStyles->addItem(tr("Default"));
 
    const QDir styleDir(Common::Global::getResourceFolder() + "/" + Common::Constants::STYLE_DIRECTORY);
-   for (QStringListIterator i(styleDir.entryList(QDir::Dirs | QDir::NoSymLinks | QDir::NoDotAndDotDot, QDir::Name)); i.hasNext();)
+   for (QStringListIterator i(styleDir.entryList(QDir::Dirs | QDir::NoSymLinks | QDir::NoDotAndDotDot, QDir::Name | QDir::IgnoreCase)); i.hasNext();)
    {
       const QString& dirname = i.next();
+      if (!styleDir.exists(dirname % "/" % Common::Constants::STYLE_FILE_NAME))
+         continue;
+
       this->ui->cmbStyles->addItem(dirname, dirname);
-      if (currentStyleFilename == dirname)
+      if (currentStyleDirname == dirname)
          this->ui->cmbStyles->setCurrentIndex(this->ui->cmbStyles->count() - 1);
    }
-
-   if (currentIndex != -1)
-      this->ui->cmbStyles->setCurrentIndex(currentIndex);
 }
 
 void SettingsWidget::connectAllAddressButtons()

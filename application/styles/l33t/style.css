@@ -1,14 +1,14 @@
 #grip {
    background-color : qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #182430, stop:1 #6596c9);
    background-image: url(styles/l33t/title.png);
-   background-repeat: none;
+   background-repeat: no-repeat;
    background-position: center left;   
 }
 
 #grip #butMinimize,
 #grip #butClose,
 #grip #butMaximize {
-   background-repeat: none;
+   background-repeat: no-repeat;
    background-position: center;
 }
 
@@ -109,7 +109,6 @@ QScrollBar::handle,
 QScrollBar::add-line,
 QScrollBar::sub-line,
 QMenu::separator,
-QMenu:selected,
 QProgressBar::chunk,
 QDockWidget::title {
    background-color: #37526e;
@@ -338,12 +337,12 @@ QCheckBox::indicator:unchecked {
 } 
 
 QMenu::indicator:exclusive:checked,
-QRadioButton::indicator::checked {
+QRadioButton::indicator:checked {
    image: url(styles/l33t/radiobox_checked.png);
 } 
 
 QMenu::indicator:exclusive:unchecked,
-QRadioButton::indicator::unchecked {
+QRadioButton::indicator:unchecked {
    image: url(styles/l33t/radiobox_unchecked.png);
 } 
 

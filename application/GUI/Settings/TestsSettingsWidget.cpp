@@ -1,5 +1,6 @@
 #include <QtTest>
 #include <QCheckBox>
+#include <QComboBox>
 #include <QLabel>
 #include <QRadioButton>
 #include <QTemporaryDir>
@@ -90,6 +91,29 @@ private slots:
       state.mutable_interfaces()->RemoveLast();
       emit connection->newState(state);
       QVERIFY(showTunnels->isHidden());
+   }
+
+   void languageChangeKeepsStyle()
+   {
+      auto connection = QSharedPointer<RCC::CoreConnection>::create();
+      GUI::SharedEntryListModel shares;
+      GUI::SettingsWidget widget(connection, shares);
+      auto* styles = widget.findChild<QComboBox*>("cmbStyles");
+      QVERIFY(styles);
+      if (styles->count() < 2)
+         QSKIP("No style deployed next to the executable");
+
+      QSignalSpy styleChanged(&widget, &GUI::SettingsWidget::styleChanged);
+      styles->setCurrentIndex(1);
+      QCOMPARE(styleChanged.size(), 1);
+      const QString style = styles->currentData().toString();
+      QCOMPARE(SETTINGS.get<QString>("style"), style);
+
+      // Refilling the style names must not unload and reapply the style.
+      emit widget.findChild<QComboBox*>("cmbLanguages")->currentIndexChanged(0);
+      QCOMPARE(styleChanged.size(), 1);
+      QCOMPARE(styles->currentData().toString(), style);
+      QCOMPARE(SETTINGS.get<QString>("style"), style);
    }
 };
 

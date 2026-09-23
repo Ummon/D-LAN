@@ -1,14 +1,14 @@
 #grip {
    background-color : #212121;
    background-image: url(styles/Material/title.png);
-   background-repeat: none;
+   background-repeat: no-repeat;
    background-position: center left;   
 }
 
 #grip #butMinimize,
 #grip #butClose,
 #grip #butMaximize {
-   background-repeat: none;
+   background-repeat: no-repeat;
    background-position: center;
 }
 
@@ -78,7 +78,7 @@ QTabBar::tab {
 QPushButton {
    border: 0;
    color: #33B5E5;
-   background-color: transparent !important;
+   background-color: transparent;
    text-transform: uppercase;
    font-weight: bold;
    margin: 2px;
@@ -104,8 +104,12 @@ QTabBar::tab:selected {
 
 *:disabled,
 QTabBar::tab:disabled {
-   color: #ffffff;
-   border: 1px solid #454545;
+   color: #757575;
+}
+
+QTabBar::tab:disabled,
+QLineEdit:disabled {
+   border-bottom-color: #454545;
 }
 
 QComboBox,
@@ -113,7 +117,6 @@ QScrollBar::handle,
 QScrollBar::add-line,
 QScrollBar::sub-line,
 QMenu::separator,
-QMenu:selected,
 QProgressBar::chunk {
    background-color: #303030;
 }
@@ -355,14 +358,14 @@ QCheckBox::indicator:unchecked {
 } 
 
 QMenu::indicator:exclusive:checked,
-QRadioButton::indicator::checked {
+QRadioButton::indicator:checked {
    image: url(styles/Material/ic_radio_button_checked_white_24dp_1x.png);
    width: 16px;
    height: auto;
 } 
 
 QMenu::indicator:exclusive:unchecked,
-QRadioButton::indicator::unchecked {
+QRadioButton::indicator:unchecked {
    image: url(styles/Material/ic_radio_button_unchecked_white_24dp_1x.png);
    width: 16px;
    height: auto;
