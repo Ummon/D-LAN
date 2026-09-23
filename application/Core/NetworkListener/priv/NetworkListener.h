@@ -69,7 +69,7 @@ namespace NL
       void checkNetworkConfiguration();
 
    private:
-      void bindSockets(const QList<QNetworkInterface>& interfaces, bool sanitizeSettings);
+      void bindSockets(const QList<QNetworkInterface>& interfaces, bool sanitizeSettings, bool retry = false);
 
       LOG_INIT_H("NetworkListener")
 

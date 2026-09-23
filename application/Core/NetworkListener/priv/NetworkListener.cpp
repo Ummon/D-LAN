@@ -70,14 +70,18 @@ void NetworkListener::rebindSockets()
 void NetworkListener::checkNetworkConfiguration()
 {
    const auto interfaces = QNetworkInterface::allInterfaces();
-   if (this->networkConfigurationProvider(interfaces) != this->networkConfiguration || !this->socketsBound)
+   if (this->networkConfigurationProvider(interfaces) != this->networkConfiguration)
       this->bindSockets(interfaces, false);
+   else if (!this->socketsBound)
+      this->bindSockets(interfaces, false, true);
 }
 
 /**
   * @param interfaces A single snapshot for the whole binding, the adapters may change meanwhile.
+  * @param retry The same configuration has already failed and been logged. Only the recovery is logged,
+  *              to avoid repeating the same errors every two seconds.
   */
-void NetworkListener::bindSockets(const QList<QNetworkInterface>& interfaces, bool sanitizeSettings)
+void NetworkListener::bindSockets(const QList<QNetworkInterface>& interfaces, bool sanitizeSettings, bool retry)
 {
    this->socketsBound = false;
    this->uDPListener.closeSockets();
@@ -93,7 +97,7 @@ void NetworkListener::bindSockets(const QList<QNetworkInterface>& interfaces, bo
    // An adapter may disappear temporarily. Listen to any address meanwhile but keep the user's selection:
    // the network configuration changes when the address returns, which triggers a rebinding to it.
    const QString configuredAddress = SETTINGS.get<QString>("listen_address");
-   if (!configuredAddress.isEmpty() && address != QHostAddress(configuredAddress))
+   if (!retry && !configuredAddress.isEmpty() && address != QHostAddress(configuredAddress))
       L_WARN(QString("The address to listen to (%1) is unavailable, listening to %2 until it returns").arg(configuredAddress, address.toString()));
    const quint32 basePort = SETTINGS.get<quint32>("unicast_base_port");
    constexpr int MAX_LISTEN_ATTEMPTS = 10;
@@ -117,15 +121,20 @@ void NetworkListener::bindSockets(const QList<QNetworkInterface>& interfaces, bo
       if ((bound = bindBoth(0)))
          L_WARN(QString("Listening to TCP and UDP on OS-selected port %1").arg(this->tCPListener.getCurrentPort()));
 
-   this->socketsBound = bound && this->uDPListener.startListening(Utils::getCurrentInterfacesToListenTo(interfaces));
+   this->socketsBound = bound && this->uDPListener.startListening(Utils::getCurrentInterfacesToListenTo(interfaces), !retry);
    if (!this->socketsBound)
    {
       this->uDPListener.closeSockets();
       this->tCPListener.close();
-      L_ERRO(QString("Unable to initialize network listeners on %1; discovery is disabled").arg(address.toString()));
+      if (!retry)
+         L_ERRO(QString("Unable to initialize network listeners on %1; discovery is disabled, retrying every two seconds").arg(address.toString()));
    }
    else
+   {
+      if (retry)
+         L_WARN(QString("Network listeners initialized on %1 after an earlier failure; discovery is enabled").arg(address.toString()));
       this->peerManager->setSelfAddress(address, this->tCPListener.getCurrentPort());
+   }
 }
 
 NetworkListener::SendStatus NetworkListener::send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message, const Common::Hash& peerID)

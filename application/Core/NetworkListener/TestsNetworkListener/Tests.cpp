@@ -1132,6 +1132,13 @@ void Tests::bindFailureAndRecovery()
    udpProbe.close();
    SETTINGS.set("unicast_base_port", quint32(port));
 
+   QStringList logged;
+   const auto hook = LM::Builder::newLoggerHook(LM::SV_WARNING | LM::SV_ERROR);
+   connect(hook.data(), &LM::ILoggerHook::newLogEntry, this, [&](const QSharedPointer<LM::IEntry>& entry) {
+      if (entry->getName().startsWith("NetworkListener"))
+         logged << entry->getMessage();
+   });
+
    const Instance& instance = this->instances[1];
    const auto listener = NL::Builder::newNetworkListener(
       instance.fileManager, instance.peerManager, instance.uploadManager, instance.downloadManager);
@@ -1141,6 +1148,13 @@ void Tests::bindFailureAndRecovery()
       [&](Protos::Core::IMAlive&) { ++heartbeats; });
    QCoreApplication::processEvents();
    QCOMPARE(heartbeats, 0);
+   QVERIFY(!logged.isEmpty()); // The first failure is logged.
+
+   // Retries with an unchanged configuration must not repeat it.
+   logged.clear();
+   for (int i = 0; i < 3; ++i)
+      QVERIFY(QMetaObject::invokeMethod(listener.data(), "checkNetworkConfiguration", Qt::DirectConnection));
+   QCOMPARE(logged, QStringList());
    QVERIFY(!instance.peerManager->getSelf()->isAvailable());
    QCOMPARE(listener->send(Common::MessageHeader::CORE_GOODBYE, Protos::Common::Null()),
       INetworkListener::SendStatus::UNABLE_TO_SEND);
@@ -1154,6 +1168,8 @@ void Tests::bindFailureAndRecovery()
    // Recover even when the interface configuration has not changed.
    QTRY_COMPARE_WITH_TIMEOUT(heartbeats, 1, 3500);
    QVERIFY(instance.peerManager->getSelf()->isAvailable());
+   QCOMPARE(logged.size(), 1); // Only the recovery.
+   QVERIFY(logged.first().contains("after an earlier failure"));
    listener->rebindSockets();
    listener->rebindSockets(); // Replace, rather than duplicate, the queued startup heartbeat.
    QTRY_COMPARE(heartbeats, 2);

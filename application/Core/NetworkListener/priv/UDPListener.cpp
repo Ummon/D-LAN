@@ -265,9 +265,9 @@ void UDPListener::closeSockets()
    this->currentChunkDownloaders.clear();
 }
 
-bool UDPListener::startListening(const QList<QNetworkInterface>& interfaces)
+bool UDPListener::startListening(const QList<QNetworkInterface>& interfaces, bool logFailures)
 {
-   if (this->unicastPort == 0 || !this->initMulticastUDPSocket(interfaces))
+   if (this->unicastPort == 0 || !this->initMulticastUDPSocket(interfaces, logFailures))
    {
       this->closeSockets();
       return false;
@@ -484,7 +484,7 @@ void UDPListener::processPendingUnicastDatagrams()
    }
 }
 
-bool UDPListener::initMulticastUDPSocket(const QList<QNetworkInterface>& interfaces)
+bool UDPListener::initMulticastUDPSocket(const QList<QNetworkInterface>& interfaces, bool logFailures)
 {
    this->multicastSocket.close();
    this->multicastInterfaces.clear();
@@ -505,7 +505,8 @@ bool UDPListener::initMulticastUDPSocket(const QList<QNetworkInterface>& interfa
       )
    )
    {
-      L_ERRO("Can't bind the multicast socket");
+      if (logFailures)
+         L_ERRO(QString("Can't bind the multicast socket: %1").arg(this->multicastSocket.errorString()));
       return false;
    }
 
@@ -523,8 +524,9 @@ bool UDPListener::initMulticastUDPSocket(const QList<QNetworkInterface>& interfa
    {
       if (!this->multicastSocket.joinMulticastGroup(this->multicastGroup, networkInterface))
       {
-         L_WARN(QString("Unable to join multicast group %1 on %2: %3")
-            .arg(this->multicastGroup.toString(), networkInterface.humanReadableName(), this->multicastSocket.errorString()));
+         if (logFailures)
+            L_WARN(QString("Unable to join multicast group %1 on %2: %3")
+               .arg(this->multicastGroup.toString(), networkInterface.humanReadableName(), this->multicastSocket.errorString()));
          continue;
       }
       this->multicastInterfaces << networkInterface;
@@ -533,7 +535,8 @@ bool UDPListener::initMulticastUDPSocket(const QList<QNetworkInterface>& interfa
    }
    if (this->multicastInterfaces.isEmpty())
    {
-      L_ERRO("No usable multicast interface; discovery is disabled");
+      if (logFailures)
+         L_ERRO("No usable multicast interface; discovery is disabled");
       return false;
    }
 
