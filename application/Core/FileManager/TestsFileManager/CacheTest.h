@@ -112,6 +112,8 @@ private slots:
    void scanKeepsFileWithStaleUnfinished();
    void scanLoadsHashesInBatches();
    void scanCanStopDuringHashLookup();
+   void scanHashLookupLeavesSchedulerUnlocked_data();
+   void scanHashLookupLeavesSchedulerUnlocked();
    void partialWrites_data();
    void partialWrites();
    void corruptedWrites_data();

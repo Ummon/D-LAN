@@ -129,6 +129,7 @@ namespace FM
    private:
       friend class Directory;
       friend class Chunk;
+      friend class FileUpdater;
       class TraversalGuard : Common::Uncopyable
       {
       public:

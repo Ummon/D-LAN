@@ -3503,6 +3503,99 @@ void CacheTest::scanCanStopDuringHashLookup()
    QVERIFY(dir->getFile("file.bin"));
 }
 
+void CacheTest::scanHashLookupLeavesSchedulerUnlocked_data()
+{
+   QTest::addColumn<bool>("changed");
+   QTest::newRow("new-file") << false; // Loads the cached hashes.
+   QTest::newRow("changed-file") << true; // Removes the outdated cached hashes.
+}
+
+void CacheTest::scanHashLookupLeavesSchedulerUnlocked()
+{
+   class BlockingHashCache : public MockHashCache
+   {
+   public:
+      std::atomic<bool> block { false };
+      QSemaphore entered;
+      QSemaphore resume;
+
+      QList<Common::Hash> getHashes(const QString& path, qint64 size, QDateTime date) override
+      {
+         this->wait();
+         return MockHashCache::getHashes(path, size, date);
+      }
+      void rmHashes(const QString& path) override
+      {
+         this->wait();
+         MockHashCache::rmHashes(path);
+      }
+
+   private:
+      void wait()
+      {
+         if (this->block.exchange(false))
+         {
+            this->entered.release();
+            this->resume.acquire();
+         }
+      }
+   };
+
+   QFETCH(bool, changed);
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   QFile physical(temp.filePath("file.bin"));
+   QVERIFY(physical.open(QIODevice::WriteOnly));
+   QCOMPARE(physical.write("abc", 3), qint64(3));
+   physical.close();
+   const QFileInfo info(physical.fileName());
+   auto hashCache = QSharedPointer<BlockingHashCache>::create();
+   FM::Cache cache(hashCache);
+   FM::FileUpdater updater(nullptr);
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   auto dir = root->getRootDir();
+   // A cached size that doesn't match the disk anymore.
+   auto cached = changed ? new FM::File(root, "file.bin", 1, false, info.lastModified(), dir) : nullptr;
+   auto other = new FM::File(root, "other.bin", 0, false, QDateTime::currentDateTime(), dir);
+   int deletedEntries = 0;
+   connect(&cache, &FM::Cache::entryAboutToBeDeleted, &cache, [&](FM::Entry*) { ++deletedEntries; });
+
+   hashCache->block = true;
+   FM::File* scanned = nullptr;
+   std::thread scanning([&] { scanned = updater.addScannedFile(info, cached, dir); });
+   const bool reachedLookup = hashCache->entered.tryAcquire(1, 5000);
+
+   // The status requests of the main thread need the scheduler mutex: it must be free during the lookup.
+   const bool schedulerAvailable = reachedLookup && updater.mutex.tryLock();
+   if (schedulerAvailable)
+      updater.mutex.unlock();
+   // Entries retired meanwhile are destroyed only once the scanned file has been enqueued.
+   if (reachedLookup)
+   {
+      other->del();
+      QCoreApplication::sendPostedEvents(&cache, QEvent::MetaCall);
+   }
+   const int deletedDuringLookup = deletedEntries;
+
+   hashCache->resume.release();
+   scanning.join();
+   QCoreApplication::sendPostedEvents(&cache, QEvent::MetaCall);
+
+   QVERIFY(reachedLookup);
+   QVERIFY(schedulerAvailable);
+   QCOMPARE(deletedDuringLookup, 0);
+   QCOMPARE(deletedEntries, 1);
+   QVERIFY(scanned);
+   if (changed)
+      QCOMPARE(scanned, cached);
+   QCOMPARE(scanned->getSize(), qint64(3));
+   QVERIFY(updater.hashingQueue.contains(scanned));
+   QCOMPARE(updater.hashingQueue.remainingBytes(), qint64(3));
+}
+
 void CacheTest::scanDirectoryIncrementally_data()
 {
    QTest::addColumn<bool>("addUnfinished");

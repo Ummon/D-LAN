@@ -629,7 +629,14 @@ void FileUpdater::scan(Entry* entry, bool addUnfinished)
 File* FileUpdater::addScannedFile(const QFileInfo& fileInfo, File* file, Directory* parentDirectory,
    const QList<Common::Hash>* cachedHashes, bool addUnfinished)
 {
-   QMutexLocker locker(&this->mutex);
+   Entry* const scannedEntry = file ? static_cast<Entry*>(file) : parentDirectory;
+   if (!scannedEntry)
+      return nullptr;
+
+   // Updating or creating the file may wait for the hash cache database: don't hold 'mutex' meanwhile, it
+   // would block the status requests of the main thread. Instead, defer the destruction of any entry until the
+   // file is enqueued: its removal from the hashing queue ('prepareToDeleteEntry(..)') can't happen before.
+   const Cache::TraversalGuard traversal(*scannedEntry->getCache());
 
    if (file)
       file->updateFromScan(fileInfo);
@@ -679,7 +686,10 @@ File* FileUpdater::addScannedFile(const QFileInfo& fileInfo, File* file, Directo
    }
 
    if (file)
+   {
+      QMutexLocker locker(&this->mutex);
       this->hashingQueue.enqueue(file, file->getRemainingBytesToHash());
+   }
 
    return file;
 }
@@ -805,7 +815,6 @@ void FileUpdater::removeFromHashingQueue(Entry* entry)
    // Deleting a directory detaches and queues its descendants before itself, so their own removal has already
    // dequeued them by the time the directory is destroyed. Only a non-empty directory needs the queue walk:
    // doing it for each directory of a large deleted tree would cost (directories x queued files).
-   // Scanned files are created and enqueued under 'mutex', so none can be added under 'entry' meanwhile.
    else if (Directory* dir = dynamic_cast<Directory*>(entry); dir && !dir->isEmpty())
       this->hashingQueue.removeIf([entry](File* file) { return isEntryUnder(file, entry); });
 }
