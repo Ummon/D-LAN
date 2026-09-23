@@ -802,7 +802,11 @@ void FileUpdater::removeFromHashingQueue(Entry* entry)
 
    if (File* file = dynamic_cast<File*>(entry))
       this->hashingQueue.remove(file);
-   else
+   // Deleting a directory detaches and queues its descendants before itself, so their own removal has already
+   // dequeued them by the time the directory is destroyed. Only a non-empty directory needs the queue walk:
+   // doing it for each directory of a large deleted tree would cost (directories x queued files).
+   // Scanned files are created and enqueued under 'mutex', so none can be added under 'entry' meanwhile.
+   else if (Directory* dir = dynamic_cast<Directory*>(entry); dir && !dir->isEmpty())
       this->hashingQueue.removeIf([entry](File* file) { return isEntryUnder(file, entry); });
 }
 

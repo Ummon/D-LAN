@@ -323,6 +323,16 @@ QList<File*> Directory::getCompleteFiles() const
 }
 
 /**
+  * Returns true if the directory has neither sub-directories nor files.
+  */
+bool Directory::isEmpty() const
+{
+   QMutexLocker locker(&this->mutex);
+
+   return this->subDirs.getList().isEmpty() && this->files.getList().isEmpty();
+}
+
+/**
   * Creates a new sub-directory if none exists already otherwise
   * returns an already existing.
   * @exception UnableToCreateNewDirException

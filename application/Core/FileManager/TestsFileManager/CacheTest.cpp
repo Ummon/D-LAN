@@ -4020,6 +4020,46 @@ void CacheTest::pendingScansFollowQueueTransitions()
    QVERIFY(updater.pendingScanEntries.isEmpty());
 }
 
+void CacheTest::directoryDeletionDequeuesHashingJobs()
+{
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   const auto saved = SETTINGS.getRepeated<Protos::Common::SharedEntry>("shared_entries");
+   const auto restore = qScopeGuard([&] { SETTINGS.set("shared_entries", saved); });
+   SETTINGS.rm("shared_entries");
+   FM::FileManager manager(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   auto& updater = manager.fileUpdater;
+   updater.stop();
+   manager.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::Directory*>(manager.getEntry(Common::Path(temp.path() + '/')));
+   QVERIFY(root);
+   updater.stopScanning();
+
+   const auto newQueuedFile = [&](const QString& name, FM::Directory* dir) {
+      auto file = new FM::File(root->getRoot(), name, 10, false, QDateTime::currentDateTime(), dir);
+      updater.hashingQueue.enqueue(file, file->getRemainingBytesToHash());
+      return file;
+   };
+   auto unrelated = newQueuedFile("unrelated.bin", root);
+   auto branch = root->createSubDir("branch");
+   auto child = branch->createSubDir("child");
+   newQueuedFile("a.bin", branch);
+   newQueuedFile("b.bin", child);
+   branch->createSubDir("empty");
+   QCOMPARE(updater.hashingQueue.size(), qsizetype(3));
+
+   // Retiring the tree queues each descendant's deletion before its directory's.
+   branch->del();
+   // A file a concurrent scan adds to the retired directory is only destroyed with it.
+   newQueuedFile("late.bin", branch);
+   QCOMPARE(updater.hashingQueue.size(), qsizetype(4));
+   QCoreApplication::sendPostedEvents(&manager.cache, QEvent::MetaCall);
+
+   QCOMPARE(updater.hashingQueue.size(), qsizetype(1));
+   QCOMPARE(updater.hashingQueue.next(), unrelated);
+   QCOMPARE(root->getSubDirs().size(), qsizetype(0));
+}
+
 void CacheTest::recoveryDetectsRootTypeReplacement_data()
 {
    QTest::addColumn<bool>("wasDirectory");

@@ -80,6 +80,7 @@ namespace FM
 
       QList<File*> getFiles() const;
       QList<File*> getCompleteFiles() const;
+      bool isEmpty() const;
 
       Directory* createSubDir(const QString& name, bool physically = false, bool isHidden = false);
       Directory* createSubDirs(const QStringList& names, bool physically = false);
