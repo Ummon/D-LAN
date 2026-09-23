@@ -44,6 +44,9 @@ namespace RCM
    class RemoteControlManager : public IRemoteControlManager, Common::Uncopyable
    {
       Q_OBJECT
+
+      static constexpr int TLS_HANDSHAKE_TIMEOUT = 10000; // [ms]. Remote clients which don't complete the TLS handshake within this delay are aborted.
+
    public:
       RemoteControlManager(
          QSharedPointer<FM::IFileManager> fileManager,

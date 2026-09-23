@@ -73,7 +73,8 @@ namespace RCM
          QSharedPointer<DM::IDownloadManager> downloadManager,
          QSharedPointer<NL::INetworkListener> networkListener,
          QSharedPointer<CS::IChatSystem> chatSystem,
-         QTcpSocket* socket
+         QTcpSocket* socket,
+         bool localTrusted // Local clients don't have to provide the password.
       );
       ~RemoteConnection();
 
@@ -89,25 +90,21 @@ namespace RCM
 
    private slots:
       void refresh();
-      void closeSocket();
 
       void newChatMessages(const Protos::Common::ChatMessages& messages);
       void searchFound(const Protos::Common::FindResult& result);
 
-      void getEntriesResult(const Protos::Core::GetEntriesResult&);
-      void getEntriesTimeout();
-
       void newLogEntry(QSharedPointer<LM::IEntry> entry);
       void sendLogMessages();
-
-      void sendNoPasswordDefinedResult();
-      void sendBadPasswordResult();
 
    private:
       bool isAuthorized() const;
       bool canBeSent(Common::MessageHeader::MessageType type) const;
 
       void askForAuthentication();
+      void refuseAuthentication(Protos::GUI::AuthenticationResult::Status status);
+
+      void getEntriesResult(const PM::IGetEntriesResult* getEntriesResult, quint64 tag, const Protos::Core::GetEntriesResult& entries);
       void removeGetEntriesResult(const PM::IGetEntriesResult* getEntriesResult);
       void sendLastChatMessages();
 

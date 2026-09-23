@@ -848,7 +848,7 @@ private:
          files = QSharedPointer<FileManager>::create();
       return new RCM::RemoteConnection(files, peers ? peers : PM::Builder::newPeerManager(files),
          QSharedPointer<UploadManager>::create(), downloads ? downloads : QSharedPointer<DownloadManager>::create(),
-         network, QSharedPointer<ChatSystem>::create(), socket);
+         network, QSharedPointer<ChatSystem>::create(), socket, Common::Global::isLocal(socket->peerAddress()));
    }
 };
 

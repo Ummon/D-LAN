@@ -19,6 +19,8 @@
 #include <priv/RemoteControlManager.h>
 using namespace RCM;
 
+#include <algorithm>
+
 #include <Common/Settings.h>
 #include <Common/Global.h>
 #include <Common/Network/RemoteControlTls.h>
@@ -72,9 +74,8 @@ RemoteControlManager::RemoteControlManager(
 
 RemoteControlManager::~RemoteControlManager()
 {
-   for (QListIterator<RemoteConnection*> i(this->connections); i.hasNext();)
+   for (RemoteConnection* connection : std::as_const(this->connections))
    {
-      RemoteConnection* connection = i.next();
       connection->disconnect(this);
       delete connection;
    }
@@ -106,12 +107,10 @@ void RemoteControlManager::newConnection()
 
    // A connection which has just been closed can still be in the list, it is waiting to be deleted,
    // see 'RemoteConnection::onDisconnected()'. Such a connection doesn't take a slot anymore.
-   quint32 nbCurrentConnections = 0;
-   for (QListIterator<RemoteConnection*> i(this->connections); i.hasNext();)
-      if (i.next()->isConnected())
-         nbCurrentConnections++;
+   const auto nbCurrentConnections = std::count_if(this->connections.cbegin(), this->connections.cend(),
+      [](const RemoteConnection* connection) { return connection->isConnected(); });
 
-   if (nbCurrentConnections >= SETTINGS.get<quint32>("remote_max_nb_connection"))
+   if (static_cast<quint64>(nbCurrentConnections) >= SETTINGS.get<quint32>("remote_max_nb_connection"))
    {
       L_WARN("Cannot handle new connection, too many connection");
       socket->close();
@@ -126,7 +125,8 @@ void RemoteControlManager::newConnection()
       this->downloadManager,
       this->networkListener,
       this->chatSystem,
-      socket
+      socket,
+      local
    );
 
    connect(remoteConnection, &RemoteConnection::deleted, this, &RemoteControlManager::connectionDeleted, Qt::DirectConnection);
@@ -146,10 +146,12 @@ void RemoteControlManager::newConnection()
          remoteConnection->startListening();
       });
       connect(socket, &QSslSocket::errorOccurred, remoteConnection, [socket](QAbstractSocket::SocketError) {
-         L_WARN(QString("Remote TLS connection failed: %1").arg(socket->errorString()));
+         // Once encrypted, an error is the end of a normal session (e.g. the GUI closing), not a TLS failure.
+         if (!socket->isEncrypted())
+            L_WARN(QString("Remote TLS connection failed: %1").arg(socket->errorString()));
       });
       socket->setSslConfiguration(this->tlsConfiguration);
-      timeout->start(10000);
+      timeout->start(TLS_HANDSHAKE_TIMEOUT);
       socket->startServerEncryption();
    }
 }

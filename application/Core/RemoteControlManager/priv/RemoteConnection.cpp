@@ -86,7 +86,8 @@ RemoteConnection::RemoteConnection(
    QSharedPointer<DM::IDownloadManager> downloadManager,
    QSharedPointer<NL::INetworkListener> networkListener,
    QSharedPointer<CS::IChatSystem> chatSystem,
-   QTcpSocket* socket
+   QTcpSocket* socket,
+   bool localTrusted
 ) :
    MessageSocket(new RemoteConnection::Logger(), socket, peerManager->getSelf()->getID()),
    fileManager(fileManager),
@@ -96,7 +97,7 @@ RemoteConnection::RemoteConnection(
    networkListener(networkListener),
    chatSystem(chatSystem),
    waitForStateResult(false),
-   localTrusted(this->isLocal()),
+   localTrusted(localTrusted),
    saltChallenge(0)
 {
    L_DEBU(QString("New RemoteConnection from %1").arg(socket->peerAddress().toString()));
@@ -113,7 +114,7 @@ RemoteConnection::RemoteConnection(
 
    this->timerCloseSocket.setInterval(MAX_DELAY_WAITING_AUTH_RES);
    this->timerCloseSocket.setSingleShot(true);
-   connect(&this->timerCloseSocket, &QTimer::timeout, this, &RemoteConnection::closeSocket);
+   connect(&this->timerCloseSocket, &QTimer::timeout, this, &RemoteConnection::close);
 
    connect(this->chatSystem.data(), &CS::IChatSystem::newMessages, this, &RemoteConnection::newChatMessages);
 
@@ -209,19 +210,19 @@ void RemoteConnection::refresh()
    state.set_password_defined(!SETTINGS.get<Common::Hash>("remote_password").isNull());
 
    // Ourself
+   PM::IPeer* selfPeer = this->peerManager->getSelf();
    Protos::GUI::State::Peer* self = state.add_peers();
-   self->mutable_peer_id()->set_hash(this->peerManager->getSelf()->getID().getData(), Common::Hash::HASH_SIZE);
+   self->mutable_peer_id()->set_hash(selfPeer->getID().getData(), Common::Hash::HASH_SIZE);
    self->set_sharing_amount(this->fileManager->getAmount());
    self->set_download_rate(downloadRate);
    self->set_upload_rate(uploadRate);
-   self->set_nick(this->peerManager->getSelf()->getNick().toStdString());
+   self->set_nick(selfPeer->getNick().toStdString());
    self->set_core_version(Common::Global::getVersionFull().toStdString());
 
    // Peers.
-   const QList<PM::IPeer*>& peers = this->peerManager->getPeers();
-   for (QListIterator<PM::IPeer*> i(peers); i.hasNext();)
+   const QList<PM::IPeer*> peers = this->peerManager->getPeers();
+   for (PM::IPeer* peer : peers)
    {
-      PM::IPeer* peer = i.next();
       Protos::GUI::State::Peer* protoPeer = state.add_peers();
       protoPeer->mutable_peer_id()->set_hash(peer->getID().getData(), Common::Hash::HASH_SIZE);
       protoPeer->set_nick(peer->getNick().toStdString());
@@ -234,21 +235,21 @@ void RemoteConnection::refresh()
       protoPeer->set_download_rate(peer->getDownloadRate());
       protoPeer->set_upload_rate(peer->getUploadRate());
 
-      const auto& peerIP = peer->getIP();
+      const QHostAddress peerIP = peer->getIP();
       if (!peerIP.isNull())
-         Common::ProtoHelper::setIP(*protoPeer->mutable_ip(), peer->getIP());
+         Common::ProtoHelper::setIP(*protoPeer->mutable_ip(), peerIP);
 
+      const quint32 protocolVersion = peer->getProtocolVersion();
       protoPeer->set_status(
-         peer->getProtocolVersion() == Common::Constants::PROTOCOL_VERSION ? Protos::GUI::State::Peer::OK :
-         (peer->getProtocolVersion() < Common::Constants::PROTOCOL_VERSION ? Protos::GUI::State::Peer::VERSION_OUTDATED : Protos::GUI::State::Peer::MORE_RECENT_VERSION)
+         protocolVersion == Common::Constants::PROTOCOL_VERSION ? Protos::GUI::State::Peer::OK :
+         (protocolVersion < Common::Constants::PROTOCOL_VERSION ? Protos::GUI::State::Peer::VERSION_OUTDATED : Protos::GUI::State::Peer::MORE_RECENT_VERSION)
       );
    }
 
    // Downloads.
-   const QList<DM::IDownload*>& downloads = this->downloadManager->getDownloads();
-   for (QListIterator<DM::IDownload*> i(downloads); i.hasNext();)
+   const QList<DM::IDownload*> downloads = this->downloadManager->getDownloads();
+   for (DM::IDownload* download : downloads)
    {
-      DM::IDownload* download = i.next();
       Protos::GUI::State_Download* protoDownload = state.add_downloads();
       protoDownload->set_id(download->getID());
       copyEntryMetadata(download->getLocalEntry(), protoDownload->mutable_local_entry());
@@ -258,10 +259,10 @@ void RemoteConnection::refresh()
       PM::IPeer* peerSource = download->getPeerSource();
       // The first hash must be the source.
       protoDownload->add_peer_ids()->set_hash(peerSource->getID().getData(), Common::Hash::HASH_SIZE);
-      QSet<PM::IPeer*> peers = download->getPeers();
-      peers.remove(peerSource);
-      for (QSetIterator<PM::IPeer*> j(peers); j.hasNext();)
-         protoDownload->add_peer_ids()->set_hash(j.next()->getID().getData(), Common::Hash::HASH_SIZE);
+      const QSet<PM::IPeer*> downloadPeers = download->getPeers();
+      for (PM::IPeer* peer : downloadPeers)
+         if (peer != peerSource)
+            protoDownload->add_peer_ids()->set_hash(peer->getID().getData(), Common::Hash::HASH_SIZE);
 
       if (!peerSource->getNick().isNull())
          protoDownload->set_peer_source_nick(peerSource->getNick().toStdString());
@@ -304,9 +305,9 @@ void RemoteConnection::refresh()
    }
 
    // Shared entries.
-   for (QListIterator<Common::SharedEntry> i(this->fileManager->getSharedEntries()); i.hasNext();)
+   const QList<Common::SharedEntry> sharedEntries = this->fileManager->getSharedEntries();
+   for (const Common::SharedEntry& sharedEntry : sharedEntries)
    {
-      Common::SharedEntry sharedEntry = i.next();
       Protos::GUI::State::SharedEntry* sharedEntryProto = state.add_shared_entries();
       sharedEntryProto->mutable_entry()->set_path(sharedEntry.path.toString().toStdString());
       sharedEntryProto->mutable_entry()->set_shared_name(sharedEntry.name.toStdString());
@@ -327,56 +328,48 @@ void RemoteConnection::refresh()
    const QString& addressToListenStr = SETTINGS.get<QString>("listen_address");
    if (addressToListenStr.isEmpty())
       state.set_listen_any(static_cast<Protos::Common::Interface::Address::Protocol>(SETTINGS.get<quint32>("listen_any")));
-   for (QListIterator<QNetworkInterface> i(this->interfaces); i.hasNext();)
+   for (const QNetworkInterface& interface : std::as_const(this->interfaces))
    {
-      const QNetworkInterface& interface = i.next();
-      if (
-         interface.flags().testFlag(QNetworkInterface::CanMulticast) &&
-         !interface.flags().testFlag(QNetworkInterface::IsLoopBack) &&
-         Common::getInterfaceKind(interface) != Common::InterfaceKind::Auxiliary &&
-         interface.isValid()
-      )
+      const QNetworkInterface::InterfaceFlags flags = interface.flags();
+      if (!interface.isValid() || !flags.testFlag(QNetworkInterface::CanMulticast) || flags.testFlag(QNetworkInterface::IsLoopBack))
+         continue;
+
+      const Common::InterfaceKind kind = Common::getInterfaceKind(interface);
+      const QList<QNetworkAddressEntry> addresses = interface.addressEntries();
+      if (kind == Common::InterfaceKind::Auxiliary || addresses.isEmpty())
+         continue;
+
+      Protos::Common::Interface* interfaceMess = state.add_interfaces();
+      interfaceMess->set_id(interface.index() == 0 ? Common::StringUtils::hashStringToInt(interface.name()) : interface.index());
+      interfaceMess->set_name(interface.humanReadableName().toStdString());
+      interfaceMess->set_is_tunnel(kind == Common::InterfaceKind::Tunnel);
+      interfaceMess->set_is_up(flags.testFlag(QNetworkInterface::IsUp) && flags.testFlag(QNetworkInterface::IsRunning));
+      for (const QNetworkAddressEntry& addressEntry : addresses)
       {
-         const QList<QNetworkAddressEntry>& addresses = interface.addressEntries();
-         if (!addresses.isEmpty())
-         {
-            Protos::Common::Interface* interfaceMess = state.add_interfaces();
-            interfaceMess->set_id(interface.index() == 0 ? Common::StringUtils::hashStringToInt(interface.name()) : interface.index());
-            interfaceMess->set_name(interface.humanReadableName().toStdString());
-            interfaceMess->set_is_tunnel(Common::getInterfaceKind(interface) == Common::InterfaceKind::Tunnel);
-            interfaceMess->set_is_up(interface.flags().testFlag(QNetworkInterface::IsUp) && interface.flags().testFlag(QNetworkInterface::IsRunning));
-            for (QListIterator<QNetworkAddressEntry> j(addresses); j.hasNext();)
-            {
-               QHostAddress address = j.next().ip();
-               Protos::Common::Interface::Address* addressMess = interfaceMess->add_addresses();
-               addressMess->set_address(address.toString().toStdString());
-               addressMess->set_protocol(address.protocol() == QAbstractSocket::IPv6Protocol ? Protos::Common::Interface::Address::IPv6 : Protos::Common::Interface::Address::IPv4);
-               // Include the IPv6 scope: different tunnels can share the same link-local IP.
-               addressMess->set_listened(address.toString() == addressToListenStr);
-            }
-         }
+         const QHostAddress address = addressEntry.ip();
+         // Include the IPv6 scope: different tunnels can share the same link-local IP.
+         const QString addressStr = address.toString();
+         Protos::Common::Interface::Address* addressMess = interfaceMess->add_addresses();
+         addressMess->set_address(addressStr.toStdString());
+         addressMess->set_protocol(address.protocol() == QAbstractSocket::IPv6Protocol ? Protos::Common::Interface::Address::IPv6 : Protos::Common::Interface::Address::IPv4);
+         addressMess->set_listened(addressStr == addressToListenStr);
       }
    }
 
    // Chat rooms.
-   for (QListIterator<CS::IChatSystem::ChatRoom> i(this->chatSystem->getRooms()); i.hasNext();)
+   const QList<CS::IChatSystem::ChatRoom> rooms = this->chatSystem->getRooms();
+   for (const CS::IChatSystem::ChatRoom& room : rooms)
    {
-      const CS::IChatSystem::ChatRoom& room = i.next();
       Protos::GUI::State::Room* roomMess = state.add_rooms();
 
       roomMess->set_name(room.name.toStdString());
-      for (QSetIterator<PM::IPeer*> j(room.peers); j.hasNext();)
-         roomMess->add_peer_ids()->set_hash(j.next()->getID().getData(), Common::Hash::HASH_SIZE);
+      for (PM::IPeer* peer : room.peers)
+         roomMess->add_peer_ids()->set_hash(peer->getID().getData(), Common::Hash::HASH_SIZE);
       roomMess->set_joined(room.joined);
    }
 
    this->waitForStateResult = true;
    this->send(Common::MessageHeader::GUI_STATE, state);
-}
-
-void RemoteConnection::closeSocket()
-{
-   this->close();
 }
 
 void RemoteConnection::newChatMessages(const Protos::Common::ChatMessages& messages)
@@ -387,30 +380,6 @@ void RemoteConnection::newChatMessages(const Protos::Common::ChatMessages& messa
 void RemoteConnection::searchFound(const Protos::Common::FindResult& result)
 {
    this->send(Common::MessageHeader::GUI_SEARCH_RESULT, result);
-}
-
-void RemoteConnection::getEntriesResult(const Protos::Core::GetEntriesResult& entries)
-{
-   PM::IGetEntriesResult* getEntriesResult = static_cast<PM::IGetEntriesResult*>(this->sender());
-
-   Protos::GUI::BrowseResult result;
-   for (int i = 0; i < entries.results_size(); i++)
-   {
-      Protos::Common::Entries* entriesResult = result.add_entries();
-      if (entries.results(i).has_entries())
-         entriesResult->CopyFrom(entries.results(i).entries());
-   }
-
-   result.set_tag(getEntriesResult->property("tag").toULongLong());
-   this->send(Common::MessageHeader::GUI_BROWSE_RESULT, result);
-
-   this->removeGetEntriesResult(getEntriesResult);
-}
-
-void RemoteConnection::getEntriesTimeout()
-{
-   PM::IGetEntriesResult* getEntriesResult = static_cast<PM::IGetEntriesResult*>(this->sender());
-   this->removeGetEntriesResult(getEntriesResult);
 }
 
 void RemoteConnection::newLogEntry(QSharedPointer<LM::IEntry> entry)
@@ -430,22 +399,6 @@ void RemoteConnection::sendLogMessages()
    this->eventLogMessages.Clear();
 }
 
-void RemoteConnection::sendNoPasswordDefinedResult()
-{
-   Protos::GUI::AuthenticationResult authResultMessage;
-   authResultMessage.set_status(Protos::GUI::AuthenticationResult::AUTH_PASSWORD_NOT_DEFINED);
-   this->send(Common::MessageHeader::GUI_AUTHENTICATION_RESULT, authResultMessage);
-   this->socket->close();
-}
-
-void RemoteConnection::sendBadPasswordResult()
-{
-   Protos::GUI::AuthenticationResult authResultMessage;
-   authResultMessage.set_status(Protos::GUI::AuthenticationResult::AUTH_BAD_PASSWORD);
-   this->send(Common::MessageHeader::GUI_AUTHENTICATION_RESULT, authResultMessage);
-   this->socket->close();
-}
-
 void RemoteConnection::askForAuthentication()
 {
    Protos::GUI::AskForAuthentication askForAuthenticationMessage;
@@ -460,11 +413,41 @@ void RemoteConnection::askForAuthentication()
    this->send(Common::MessageHeader::GUI_ASK_FOR_AUTHENTICATION, askForAuthenticationMessage);
 }
 
+/**
+  * The answer is delayed to slow down password guessing, the connection stays mute until then.
+  */
+void RemoteConnection::refuseAuthentication(Protos::GUI::AuthenticationResult::Status status)
+{
+   this->authenticationState = AuthenticationState::Refused;
+   QTimer::singleShot(SETTINGS.get<quint32>("delay_gui_connection_fail"), this, [this, status] {
+      Protos::GUI::AuthenticationResult authResultMessage;
+      authResultMessage.set_status(status);
+      this->send(Common::MessageHeader::GUI_AUTHENTICATION_RESULT, authResultMessage);
+      this->close();
+   });
+}
+
+void RemoteConnection::getEntriesResult(const PM::IGetEntriesResult* getEntriesResult, quint64 tag, const Protos::Core::GetEntriesResult& entries)
+{
+   Protos::GUI::BrowseResult result;
+   for (const auto& entriesResult : entries.results())
+   {
+      Protos::Common::Entries* resultEntries = result.add_entries();
+      if (entriesResult.has_entries())
+         resultEntries->CopyFrom(entriesResult.entries());
+   }
+
+   result.set_tag(tag);
+   this->send(Common::MessageHeader::GUI_BROWSE_RESULT, result);
+
+   this->removeGetEntriesResult(getEntriesResult);
+}
+
 void RemoteConnection::removeGetEntriesResult(const PM::IGetEntriesResult* getEntriesResult)
 {
-   for (QMutableListIterator<QSharedPointer<PM::IGetEntriesResult>> i(this->getEntriesResults); i.hasNext();)
-      if (i.next().data() == getEntriesResult)
-         i.remove();
+   this->getEntriesResults.removeIf([getEntriesResult](const QSharedPointer<PM::IGetEntriesResult>& result) {
+      return result.data() == getEntriesResult;
+   });
 }
 
 /**
@@ -478,7 +461,8 @@ void RemoteConnection::sendLastChatMessages()
       this->send(Common::MessageHeader::GUI_EVENT_CHAT_MESSAGES, chatMessages);
    }
 
-   foreach (CS::IChatSystem::ChatRoom room, this->chatSystem->getRooms())
+   const QList<CS::IChatSystem::ChatRoom> rooms = this->chatSystem->getRooms();
+   for (const CS::IChatSystem::ChatRoom& room : rooms)
       if (room.joined)
       {
          Protos::Common::ChatMessages chatMessages;
@@ -522,20 +506,17 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
 
          if (!this->localTrusted)
          {
-            Common::Hash passwordReceived(authenticationMessage.password_challenge().hash());
-            Common::Hash currentPassword = SETTINGS.get<Common::Hash>("remote_password");
-            static quint32 delayGuiConnectionFail = SETTINGS.get<quint32>("delay_gui_connection_fail");
+            const Common::Hash passwordReceived(authenticationMessage.password_challenge().hash());
+            const Common::Hash currentPassword = SETTINGS.get<Common::Hash>("remote_password");
 
             if (currentPassword.isNull())
             {
-               this->authenticationState = AuthenticationState::Refused;
-               QTimer::singleShot(delayGuiConnectionFail, this, &RemoteConnection::sendNoPasswordDefinedResult);
+               this->refuseAuthentication(Protos::GUI::AuthenticationResult::AUTH_PASSWORD_NOT_DEFINED);
                break;
             }
-            else if (passwordReceived != Common::Hasher::hashWithSalt(currentPassword, this->saltChallenge))
+            if (passwordReceived != Common::Hasher::hashWithSalt(currentPassword, this->saltChallenge))
             {
-               this->authenticationState = AuthenticationState::Refused;
-               QTimer::singleShot(delayGuiConnectionFail, this, &RemoteConnection::sendBadPasswordResult);
+               this->refuseAuthentication(Protos::GUI::AuthenticationResult::AUTH_BAD_PASSWORD);
                break;
             }
          }
@@ -607,7 +588,7 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
          }
          catch (FM::EntriesNotFoundException& e)
          {
-            foreach (QString path, e.paths)
+            for (const QString& path : e.paths)
                L_WARN(QString("Path not found: %1").arg(path));
          }
 
@@ -633,8 +614,6 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
          // Special syntax to search in your own files.
          if (searchMessage.local())
          {
-            static const quint32 MAX_NUMBER_OF_RESULT_SHOWN = SETTINGS.get<quint32>("max_number_of_result_shown");
-
             QList<QString> extensions;
             extensions.reserve(findPattern.extension_filters_size());
             for (int i = 0; i < findPattern.extension_filters_size(); ++i)
@@ -646,7 +625,7 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
                findPattern.min_size() == 0 ? std::numeric_limits<qint64>::min() : (qint64)findPattern.min_size(),
                findPattern.max_size() == 0 ? std::numeric_limits<qint64>::max() : (qint64)findPattern.max_size(),
                findPattern.category(),
-               MAX_NUMBER_OF_RESULT_SHOWN,
+               SETTINGS.get<quint32>("max_number_of_result_shown"),
                std::numeric_limits<int>::max(),
                true
             );
@@ -717,9 +696,12 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
                break;
             }
 
-            entries->setProperty("tag", QVariant::fromValue<quint64>(browseMessage.tag()));
-            connect(entries.data(), &PM::IGetEntriesResult::result, this, &RemoteConnection::getEntriesResult);
-            connect(entries.data(), &PM::IGetEntriesResult::timeout, this, &RemoteConnection::getEntriesTimeout);
+            const PM::IGetEntriesResult* entriesPtr = entries.data();
+            connect(entries.data(), &PM::IGetEntriesResult::result, this,
+               [this, entriesPtr, tag = browseMessage.tag()](const Protos::Core::GetEntriesResult& result) {
+                  this->getEntriesResult(entriesPtr, tag, result);
+               });
+            connect(entries.data(), &PM::IGetEntriesResult::timeout, this, [this, entriesPtr] { this->removeGetEntriesResult(entriesPtr); });
             this->getEntriesResults << entries;
             entries->start(); // Completion may be synchronous; ownership must already be registered.
          }
@@ -896,7 +878,7 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
 
    case Common::MessageHeader::GUI_JOIN_ROOM:
       {
-         const Protos::GUI::JoinRoom joinRoomMessage = message.getMessage<Protos::GUI::JoinRoom>();
+         const Protos::GUI::JoinRoom& joinRoomMessage = message.getMessage<Protos::GUI::JoinRoom>();
 
          this->chatSystem->joinRoom(QString::fromStdString(joinRoomMessage.name()));
       }
@@ -904,7 +886,7 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
 
    case Common::MessageHeader::GUI_LEAVE_ROOM:
       {
-         const Protos::GUI::LeaveRoom leaveRoomMessage = message.getMessage<Protos::GUI::LeaveRoom>();
+         const Protos::GUI::LeaveRoom& leaveRoomMessage = message.getMessage<Protos::GUI::LeaveRoom>();
 
          this->chatSystem->leaveRoom(QString::fromStdString(leaveRoomMessage.name()));
       }
