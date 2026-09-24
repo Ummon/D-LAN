@@ -119,9 +119,9 @@ pub fn localized_date_test() {
 pub fn download_button_release_formats_test() {
   [
     #("windows", "Setup.exe", "<em>windows</em>", "exe"),
-    #("mac", "x86_64.dmg", "<em>mac</em>x86_64", "dmg"),
+    #("mac", "x86_64.dmg", "<em>mac</em> x86_64", "dmg"),
     #("linux", "amd64.deb", "<em>linux</em>", "deb"),
-    #("linux", "x86_64.AppImage", "<em>linux</em>x86_64", "AppImage"),
+    #("linux", "x86_64.AppImage", "<em>linux</em> x86_64", "AppImage"),
   ]
   |> list.each(fn(release) {
     let #(platform, suffix, platform_text, extension) = release
