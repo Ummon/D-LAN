@@ -322,6 +322,10 @@ emoticons, and Qt dependencies (including SQLite, available Wayland platform
 plugins, and GTK desktop theme integration when the Qt SDK provides `libqgtk3.so`).
 Qt LinguistTools must be installed to compile translations.
 
+The AppImage starts `D-LAN.GUI`. To start `D-LAN.Core` instead, put `--core` as the
+first argument; the remaining arguments go to the Core, for example
+`./D-LAN-<...>.AppImage --core --help`.
+
 The first run requires `curl` and internet access to download the official
 linuxdeploy and Qt plugin continuous builds. Tools are cached under
 `application/build/appimage-tools`; remove that cache to download newer versions.

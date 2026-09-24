@@ -303,7 +303,7 @@ def make_linux_app_image [build_dir?: path] {
         OUTPUT: $output
     } {
         cd $output_directory
-        ^$linuxdeploy --appdir $appdir --executable ($bin_directory | path join "D-LAN.GUI") --executable ($bin_directory | path join "D-LAN.Core") --library $ssl_library --desktop-file $desktop --icon-file $icon
+        ^$linuxdeploy --appdir $appdir --executable ($bin_directory | path join "D-LAN.GUI") --executable ($bin_directory | path join "D-LAN.Core") --library $ssl_library --desktop-file $desktop --icon-file $icon --custom-apprun ($output_directory | path join "AppRun")
         if $env.LAST_EXIT_CODE != 0 { error make {msg: "AppImage dependency deployment failed"} }
         ^$qt_plugin --appdir $appdir ...$sql_exclusions
         if $env.LAST_EXIT_CODE != 0 { error make {msg: "Qt plugin deployment failed"} }
