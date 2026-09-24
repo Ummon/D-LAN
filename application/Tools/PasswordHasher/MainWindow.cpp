@@ -87,7 +87,7 @@ void MainWindow::computeHash()
       google::protobuf::TextFormat::PrintFieldValueToString(settings, passField, -1, &encodedHash);
       google::protobuf::TextFormat::PrintFieldValueToString(settings, saltField, -1, &encodedSalt);
 
-      this->ui->txtResult->setText("remote_password {\n " % QString::fromStdString(encodedHash) % "}\nsalt: " % QString::fromStdString(encodedSalt) % "\n");
+      this->ui->txtResult->setText("remote_password {\n " % QString::fromStdString(encodedHash) % "},\nsalt: " % QString::fromStdString(encodedSalt) % "\n");
    }
 }
 
