@@ -157,7 +157,12 @@ Reader::Reader()
 
 void Reader::readLine()
 {
-   emit lineRead(this->inputStream.readLine());
+   // At EOF (closed pipe, 'NUL', etc.) or on error, stop reading: nothing more will come
+   // and 'readLine()' would return immediately, spinning with 'ConsoleReader::nextLine(..)'.
+   // 'readLine()' can't be used, it doesn't tell an empty line from the end of the input.
+   QString line;
+   if (this->inputStream.readLineInto(&line))
+      emit lineRead(line);
 }
 
 #endif
