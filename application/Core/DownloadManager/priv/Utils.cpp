@@ -21,31 +21,58 @@ using namespace DM;
 
 #include <QRegularExpression>
 
-QString Utils::sharedName(QString userName)
+#include <Common/ProtoHelper.h>
+
+/**
+  * Make a file or directory name valid on every supported filesystem, the rules are the ones of Windows.
+  * A valid name is returned unchanged. The result may be empty, for example for "." or "..".
+  */
+QString Utils::portableName(QString name)
 {
-   // Shared names are labels, not filesystem paths. Use portable filename rules.
-   for (qsizetype i = 0; i < userName.size(); ++i)
-      if (userName.at(i).unicode() < 32 || QStringLiteral("<>:\"/\\|?*").contains(userName.at(i)))
-         userName[i] = '_';
+   for (qsizetype i = 0; i < name.size(); ++i)
+      if (name.at(i).unicode() < 32 || QStringLiteral("<>:\"/\\|?*").contains(name.at(i)))
+         name[i] = '_';
 
    // Bound both UTF-8 bytes and UTF-16 units without splitting a surrogate pair.
-   while (userName.toUtf8().size() > 240)
+   while (name.toUtf8().size() > 240)
    {
-      const bool pair = userName.back().isLowSurrogate() && userName.size() > 1 && userName.at(userName.size() - 2).isHighSurrogate();
-      userName.chop(pair ? 2 : 1);
+      const bool pair = name.back().isLowSurrogate() && name.size() > 1 && name.at(name.size() - 2).isHighSurrogate();
+      name.chop(pair ? 2 : 1);
    }
-   while (userName.endsWith(' ') || userName.endsWith('.'))
-      userName.chop(1);
-   if (userName.isEmpty())
-      return QStringLiteral("Shared directory");
+   while (name.endsWith(' ') || name.endsWith('.'))
+      name.chop(1);
+   if (name.isEmpty())
+      return name;
 
    // Windows reserves device names even when followed by a file extension.
    static const QRegularExpression reserved(
       QStringLiteral("^(CON|PRN|AUX|NUL|CONIN\\$|CONOUT\\$|COM[1-9\u00b9\u00b2\u00b3]|LPT[1-9\u00b9\u00b2\u00b3])$"),
       QRegularExpression::CaseInsensitiveOption);
-   if (reserved.match(userName.section('.', 0, 0).trimmed()).hasMatch())
-      userName.prepend('_');
-   return userName;
+   if (reserved.match(name.section('.', 0, 0).trimmed()).hasMatch())
+      name.prepend('_');
+   return name;
+}
+
+/**
+  * Shared names are labels, not filesystem paths. Use portable filename rules.
+  */
+QString Utils::sharedName(const QString& userName)
+{
+   const QString name = portableName(userName);
+   return name.isEmpty() ? QStringLiteral("Shared directory") : name;
+}
+
+/**
+  * The name given to the local entry of a remote one. The names come from other peers which may run
+  * on another OS: they are made portable here, once, so a local path built from them is always valid.
+  */
+QString Utils::localName(const Protos::Common::Entry& remoteEntry)
+{
+   if (Common::ProtoHelper::isRoot(remoteEntry))
+      return sharedName(Common::ProtoHelper::getName(remoteEntry));
+
+   const QString name = portableName(QString::fromStdString(remoteEntry.name()));
+   return name.isEmpty() ? QStringLiteral("_") : name;
 }
 
 #ifdef DEBUG

@@ -115,8 +115,7 @@ void DownloadManager::addDownload(
       if (remoteEntry.type() == Protos::Common::Entry::FILE)
       {
          Protos::Common::Entry localEntry(remoteEntry);
-         if (Common::ProtoHelper::isRoot(remoteEntry))
-            localEntry.set_name(Utils::sharedName(Common::ProtoHelper::getName(remoteEntry)).toStdString());
+         localEntry.set_name(Utils::localName(remoteEntry).toStdString());
          localEntry.clear_shared_entry();
          localEntry.clear_path();
          localEntry.set_exists(false);
@@ -128,9 +127,7 @@ void DownloadManager::addDownload(
          this->addDownload(remoteEntry, localEntry, peerSource, Protos::Queue::Queue::Entry::QUEUED);
          return;
       }
-      const QString name = Common::ProtoHelper::isRoot(remoteEntry)
-         ? Utils::sharedName(Common::ProtoHelper::getName(remoteEntry))
-         : QString::fromStdString(remoteEntry.name());
+      const QString name = Utils::localName(remoteEntry);
       if (name.isEmpty() || name == "." || name == ".." || name.contains('/') ||
          name.contains('\\') || name.contains(':') || name.contains(QChar::Null))
          return;
@@ -188,9 +185,7 @@ Download* DownloadManager::addDownload(
 )
 {
    Protos::Common::Entry localEntry(remoteEntry);
-
-   if (Common::ProtoHelper::isRoot(remoteEntry))
-      localEntry.set_name(Utils::sharedName(Common::ProtoHelper::getName(remoteEntry)).toStdString());
+   localEntry.set_name(Utils::localName(remoteEntry).toStdString());
 
    localEntry.clear_shared_entry();
    localEntry.set_exists(false);
@@ -587,9 +582,18 @@ void DownloadManager::loadQueueFromFile()
       // Give the chunk hashes, known bytes and remote entry attributes to the cache file.
       this->fileManager->updateFromQueueEntry(entry);
 
+      // Older versions kept the remote names of the non-root entries, see 'Utils::localName(..)'. A directory
+      // download has nothing on disk yet and can be renamed, a file keeps its name to not lose its data.
+      Protos::Common::Entry localEntry(entry.local_entry());
+      if (localEntry.type() == Protos::Common::Entry::DIR && !localEntry.name().empty())
+      {
+         const QString name = Utils::portableName(QString::fromStdString(localEntry.name()));
+         localEntry.set_name((name.isEmpty() ? QStringLiteral("_") : name).toStdString());
+      }
+
       this->addDownload(
          entry.remote_entry(),
-         entry.local_entry(),
+         localEntry,
          peerSource,
          entry.status()
       );

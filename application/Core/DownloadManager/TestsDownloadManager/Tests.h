@@ -52,6 +52,9 @@ private slots:
    void customDirectoryDestination();
    void sharedRootDownload_data();
    void sharedRootDownload();
+   void remoteNamesArePortable_data();
+   void remoteNamesArePortable();
+   void loadQueueMakesDirectoryNamesPortable();
    void resumeMissingFile_data();
    void resumeMissingFile();
    void erroneousDownloadsAreUnique();
