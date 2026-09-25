@@ -89,6 +89,7 @@ private slots:
    void chunkFlushReleasesFileMutex();
    void concurrentChunkMetadata();
    void chunkEntryWithoutHashes();
+   void addASharedPathInsideSharedDirectory();
    void metadataReadersAvoidStructuralLocks();
    void concurrentEntryMetadata();
    void invalidDownloadEntries_data();

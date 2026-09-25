@@ -551,10 +551,9 @@ QPair<Common::SharedEntry, QString> Cache::addASharedPath(const QString& absolut
    // returns a directory which strictly contains the given path).
    if (SharedDirectory* superDir = this->getSuperSharedDirectory(absolutePathCleaned))
    {
-      QString relativePath(absolutePathCleaned);
-      // TODO: Does it work in all cases?
-      relativePath.remove(0, superDir->getPath().toString().length());
-      relativePath.prepend('/');
+      // The directories of 'superDir' are a strict prefix of the ones of the given path, see 'Common::Path::isSuperOf(..)'.
+      const QStringList subDirs = absolutePathCleaned.getDirs().mid(superDir->getPath().getDirs().size());
+      const QString relativePath = '/' + subDirs.join('/') + (subDirs.isEmpty() ? "" : "/") + absolutePathCleaned.getFilename();
       return qMakePair(makeSharedEntry(superDir), relativePath);
    }
 

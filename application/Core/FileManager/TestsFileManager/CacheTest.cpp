@@ -147,6 +147,35 @@ void CacheTest::darwinWatcherUpdatesCache()
 #endif
 }
 
+void CacheTest::addASharedPathInsideSharedDirectory()
+{
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   QVERIFY(QDir().mkpath(temp.filePath("foo/a/b")));
+   QVERIFY(QDir().mkpath(temp.filePath("foobar")));
+
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = cache.addASharedPath(temp.filePath("foo") + '/');
+   QCOMPARE(shared.second, QString("/"));
+
+   const auto check = [&](const QString& path, const QString& expectedRelativePath) {
+      const auto result = cache.addASharedPath(path);
+      QCOMPARE(result.first.ID, shared.first.ID);
+      QCOMPARE(result.second, expectedRelativePath);
+   };
+   check(temp.filePath("foo") + '/', "/");
+   check(temp.filePath("foo/a") + '/', "/a/");
+   check(temp.filePath("foo/a/b") + '/', "/a/b/");
+   check(temp.filePath("foo/a/b/file.txt"), "/a/b/file.txt");
+   check(temp.filePath("foo/file.txt"), "/file.txt");
+   check(temp.filePath("foo/a/./b/../") + '/', "/a/");
+
+   // A sibling whose name starts with the shared directory name isn't inside it.
+   const auto sibling = cache.addASharedPath(temp.filePath("foobar") + '/');
+   QVERIFY(sibling.first.ID != shared.first.ID);
+   QCOMPARE(sibling.second, QString("/"));
+}
+
 void CacheTest::chunkEntryWithoutHashes()
 {
    FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
