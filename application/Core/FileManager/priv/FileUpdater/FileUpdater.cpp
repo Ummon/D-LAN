@@ -200,7 +200,6 @@ void FileUpdater::rmRoot(SharedEntry* sharedEntry, Directory* dir)
    this->fileHasher.stop();
    this->toStopHashing = true;
 
-   // TODO: Find a more elegant way!
    Directory* rootDirectory = dynamic_cast<Directory*>(root);
    if (dir && rootDirectory)
       dir->stealContent(rootDirectory);
