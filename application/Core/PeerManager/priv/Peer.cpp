@@ -54,7 +54,7 @@ Peer::Peer(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManage
 
    this->aliveTimer.setSingleShot(true);
    this->aliveTimer.setInterval(interval_ms);
-   connect(&this->aliveTimer, &QTimer::timeout, this, &Peer::consideredDead);
+   connect(&this->aliveTimer, &QTimer::timeout, this, &Peer::aliveTimeout);
 
    this->blockedTimer.setSingleShot(true);
    connect(&this->blockedTimer, &QTimer::timeout, this, &Peer::unblock);
@@ -269,6 +269,23 @@ void Peer::newConnexion(QTcpSocket* tcpSocket)
 {
    L_DEBU(QString("New Connection from %1").arg(this->toStringLog()));
    this->connectionPool.newConnexion(tcpSocket);
+}
+
+/**
+  * No 'IMAlive' message has been received during the whole period. They are multicast UDP datagrams, some can be
+  * lost, particularly on a wireless network when they are large and thus fragmented. The peer isn't considered
+  * dead as long as it talks to us through TCP: closing its sockets would abort the transfers in progress.
+  */
+void Peer::aliveTimeout()
+{
+   if (this->connectionPool.showsRemotePeerActivity(this->aliveTimer.interval()))
+   {
+      L_DEBU(QString("No IMAlive received but the peer is still active: %1").arg(this->toStringLog()));
+      this->aliveTimer.start();
+      return;
+   }
+
+   this->consideredDead();
 }
 
 void Peer::consideredDead()

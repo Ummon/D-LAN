@@ -82,6 +82,8 @@ private slots:
    void validateChunkOffsets();
    void uploadReservations();
    void rejectExcessUploads();
+   void socketShowsRemotePeerActivity();
+   void activePeerSurvivesAliveTimeout();
    void askForAChunk();
    void cleanupTestCase();
 

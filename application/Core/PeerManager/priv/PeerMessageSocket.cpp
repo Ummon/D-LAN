@@ -198,6 +198,22 @@ bool PeerMessageSocket::isClosing() const
    return this->closing;
 }
 
+/**
+  * Is the remote peer proven alive by this socket? It is if it has sent some data during the last 'period' ms
+  * or if a chunk is being transferred: both 'UM::ChunksUploader' and 'DM::ChunkDownloader' abort a transfer
+  * without progress during 'socket_timeout'.
+  */
+bool PeerMessageSocket::showsRemotePeerActivity(qint64 period) const
+{
+   if (this->closing)
+      return false;
+
+   return
+      this->incomingTransaction == IncomingTransaction::Chunks ||
+      this->outgoingTransaction == OutgoingTransaction::AwaitingCompletion ||
+      (this->lastDataReceived.isValid() && !this->lastDataReceived.hasExpired(period));
+}
+
 void PeerMessageSocket::retire()
 {
    this->retired = true;
@@ -625,6 +641,7 @@ void PeerMessageSocket::onNewMessage(const Common::Message& message)
 
 void PeerMessageSocket::onNewDataReceived()
 {
+   this->lastDataReceived.start();
    this->setActive();
 }
 

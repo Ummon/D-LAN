@@ -99,6 +99,7 @@ namespace PM
       void unblocked();
 
    protected slots:
+      void aliveTimeout();
       void consideredDead();
       void unblock();
 

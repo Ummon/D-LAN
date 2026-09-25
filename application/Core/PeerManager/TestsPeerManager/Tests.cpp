@@ -40,6 +40,7 @@ using namespace PM;
 #include <IGetEntriesResult.h>
 #include <IGetHashesResult.h>
 #include <priv/PeerManager.h>
+#include <priv/Peer.h>
 #include <priv/PeerMessageSocket.h>
 #include <priv/ConnectionPool.h>
 #include <priv/GetChunksResult.h>
@@ -1537,6 +1538,138 @@ void Tests::rejectExcessUploads()
       QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
       QCoreApplication::processEvents();
    }
+}
+
+void Tests::socketShowsRemotePeerActivity()
+{
+   // Downloading: from the chunks result until the transfer has finished.
+   {
+      QTcpServer server;
+      QVERIFY(server.listen(QHostAddress::LocalHost, 0));
+      PM::ConnectionPool pool(static_cast<PM::PeerManager*>(this->peerManagers[0].data()),
+         this->fileManagers[0], this->peerIDs[1]);
+      pool.setIP(QHostAddress::LocalHost, server.serverPort());
+      auto socket = pool.getASocket();
+      QTRY_VERIFY(server.hasPendingConnections());
+      QScopedPointer<QTcpSocket> remote(server.nextPendingConnection());
+      QVERIFY(!pool.showsRemotePeerActivity(60000)); // Nothing received yet.
+
+      Protos::Core::GetChunks request;
+      request.add_chunks()->mutable_hash()->set_hash(this->peerIDs[1].getData(), Common::Hash::HASH_SIZE);
+      auto result = QSharedPointer<PM::GetChunksResult>(new PM::GetChunksResult(request, socket),
+         &PM::GetChunksResult::doDeleteLater);
+      bool streaming = false;
+      QObject context;
+      connect(result.data(), &IGetChunksResult::stream, &context, [&](const QSharedPointer<PM::ISocket>&) { streaming = true; });
+      result->start();
+      QTRY_VERIFY(remote->bytesAvailable() >= Common::MessageHeader::HEADER_SIZE);
+      remote->readAll();
+
+      Protos::Core::GetChunksResult reply;
+      reply.set_status(Protos::Core::GetChunksResult::OK);
+      reply.add_results()->set_chunk_size(1);
+      Common::Message::writeMessageToDevice(remote.data(),
+         Common::MessageHeader(Common::MessageHeader::CORE_GET_CHUNKS_RESULT, reply.ByteSizeLong(), this->peerIDs[1]), &reply);
+      remote->flush();
+      QTRY_VERIFY(streaming);
+
+      QTest::qWait(20);
+      QVERIFY(pool.showsRemotePeerActivity(1)); // The transfer, not the received reply.
+
+      result->setStatus(false);
+      result.clear();
+      QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
+      QVERIFY(!socket->isActive());
+      QVERIFY(!pool.showsRemotePeerActivity(1));
+      QVERIFY(pool.showsRemotePeerActivity(60000)); // The reply is recent.
+
+      socket->close();
+      QVERIFY(!pool.showsRemotePeerActivity(60000));
+   }
+
+   // Uploading: from the chunks request until the uploader has finished.
+   {
+      const Common::Hash hash = this->resultListener.getLastReceivedHash();
+      const auto chunk = this->fileManagers[1]->getChunk(hash);
+      QVERIFY(!chunk.isNull());
+      Protos::Core::GetChunks request;
+      auto* requested = request.add_chunks();
+      requested->mutable_hash()->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
+      requested->set_offset(chunk->getKnownBytes());
+
+      QSharedPointer<PM::ISocket> upload;
+      QObject context;
+      connect(this->peerManagers[1].data(), &IPeerManager::getChunks, &context,
+         [&](const QList<PM::GetChunkParams>&, const QSharedPointer<PM::ISocket>& socket) { upload = socket; });
+      auto result = this->peerManagers[0]->getPeers()[0]->getChunks(request);
+      QVERIFY(!result.isNull());
+      result->start();
+      QTRY_VERIFY(upload);
+
+      auto* uploadSocket = dynamic_cast<PM::PeerMessageSocket*>(upload.data());
+      QVERIFY(uploadSocket);
+      QTest::qWait(20);
+      QVERIFY(uploadSocket->showsRemotePeerActivity(1));
+      upload->finished();
+      QVERIFY(!uploadSocket->showsRemotePeerActivity(1));
+
+      result->setStatus(true);
+      result.clear();
+      upload.clear();
+      QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
+      QCoreApplication::processEvents();
+   }
+}
+
+/**
+  * Some 'IMAlive' messages may be lost: a peer talking to us through TCP mustn't be considered dead.
+  */
+void Tests::activePeerSurvivesAliveTimeout()
+{
+   QTcpServer server;
+   QVERIFY(server.listen(QHostAddress::LocalHost, 0));
+   auto manager = Builder::newPeerManager(this->fileManagers[0]);
+   const Common::Hash id = this->peerIDs[0];
+   const auto update = [&] {
+      manager->updatePeer(id, QHostAddress::LocalHost, server.serverPort(), "remote",
+         0, QString(), 0, 0, Common::Constants::PROTOCOL_VERSION);
+   };
+   const auto aliveTimeout = [&](IPeer* peer) {
+      QVERIFY(QMetaObject::invokeMethod(static_cast<PM::Peer*>(peer), "aliveTimeout", Qt::DirectConnection));
+   };
+
+   update();
+   IPeer* peer = manager->getPeer(id);
+   QVERIFY(peer);
+   aliveTimeout(peer);
+   QVERIFY(!peer->isAlive()); // No socket at all.
+
+   update();
+   auto result = peer->getEntries(Protos::Core::GetEntries());
+   QVERIFY(result);
+   int results = 0;
+   QObject context;
+   connect(result.data(), &IGetEntriesResult::result, &context, [&](const Protos::Core::GetEntriesResult&) { ++results; });
+   result->start();
+   QTRY_VERIFY(server.hasPendingConnections());
+   QScopedPointer<QTcpSocket> remote(server.nextPendingConnection());
+   QTRY_VERIFY(remote->bytesAvailable() >= Common::MessageHeader::HEADER_SIZE);
+   remote->readAll();
+   const Protos::Core::GetEntriesResult reply;
+   Common::Message::writeMessageToDevice(remote.data(),
+      Common::MessageHeader(Common::MessageHeader::CORE_GET_ENTRIES_RESULT, reply.ByteSizeLong(), id), &reply);
+   remote->flush();
+   QTRY_COMPARE(results, 1);
+   result.clear();
+   QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
+
+   aliveTimeout(peer);
+   QVERIFY(peer->isAlive()); // Some data has just been received.
+   QCOMPARE(remote->state(), QAbstractSocket::ConnectedState);
+
+   // An explicit removal isn't a lost message.
+   manager->removePeer(id, QHostAddress::LocalHost);
+   QVERIFY(!peer->isAlive());
 }
 
 void Tests::askForAChunk()
