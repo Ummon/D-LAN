@@ -324,7 +324,8 @@ Qt LinguistTools must be installed to compile translations.
 
 The AppImage starts `D-LAN.GUI`. To start `D-LAN.Core` instead, put `--core` as the
 first argument; the remaining arguments go to the Core, for example
-`./D-LAN-<...>.AppImage --core --help`.
+`./D-LAN-<...>.AppImage --core --help`. `--help` lists the AppImage arguments and the
+Core arguments.
 
 The first run requires `curl` and internet access to download the official
 linuxdeploy and Qt plugin continuous builds. Tools are cached under
