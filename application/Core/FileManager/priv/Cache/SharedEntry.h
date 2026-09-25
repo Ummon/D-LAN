@@ -94,7 +94,6 @@ namespace FM
 
       void moveInto(Directory* directory);
 
-      // TODO: Common::Path should be used instead of QString.
       void setPath(const Common::Path& path);
       Common::Path getParentPath() const;
 

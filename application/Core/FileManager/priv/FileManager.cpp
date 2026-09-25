@@ -526,7 +526,7 @@ void FileManager::entryAdded(Entry* entry)
    if (File* file = dynamic_cast<File*>(entry))
    {
       this->extensionIndex.addItem(file->getExtension(), file);
-      this->sizeIndex.addItem(file); // TODO: Nedded?
+      this->sizeIndex.addItem(file);
    }
 }
 
