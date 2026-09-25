@@ -173,18 +173,17 @@ void FM::Node<T>::addItem(const QStringView& word, const T& item)
             }
             else if (p == child->part.size()) // The sub part is the beginning of the word.
             {
-               // TODO: Test this case and remove the commented code.
-               child->addItem(word.sliced(p), item);  // .string()->midRef(word.position() + p, word.size() - p), item);
+               child->addItem(word.sliced(p), item);
             }
             else
             {
                // The word and the sub part share at least one character from the beginning.
-               Node<T>* newNodeSplit = new Node<T>(word.sliced(0, p).toString()); //.string()->mid(word.position(), p));
+               Node<T>* newNodeSplit = new Node<T>(word.sliced(0, p).toString());
                child->part.remove(0, p);
                this->children.replace(i, newNodeSplit);
                newNodeSplit->children << child;
 
-               Node<T>* newNode = new Node<T>(word.sliced(p).toString(), item); // .string()->mid(word.position() + p, word.size() - p), item);
+               Node<T>* newNode = new Node<T>(word.sliced(p).toString(), item);
                newNodeSplit->children << newNode;
             }
             return;
