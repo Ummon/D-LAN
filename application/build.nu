@@ -263,6 +263,10 @@ def make_linux_app_image [build_dir?: path] {
         | save $desktop
     let icon = $appdir | path join "d-lan.svg"
     cp GUI/resources/icon.svg $icon
+    let apprun = $application_directory | path join "build/appimage/AppRun"
+    appimage_apprun | save --force $apprun
+    chmod +x $apprun
+    if $env.LAST_EXIT_CODE != 0 { error make {msg: "Could not make AppRun executable"} }
 
     # Include whichever Wayland platform plugins this Qt version provides.
     let plugins = (do { ^$qmake -query QT_INSTALL_PLUGINS } | complete)
@@ -303,7 +307,7 @@ def make_linux_app_image [build_dir?: path] {
         OUTPUT: $output
     } {
         cd $output_directory
-        ^$linuxdeploy --appdir $appdir --executable ($bin_directory | path join "D-LAN.GUI") --executable ($bin_directory | path join "D-LAN.Core") --library $ssl_library --desktop-file $desktop --icon-file $icon --custom-apprun ($output_directory | path join "AppRun")
+        ^$linuxdeploy --appdir $appdir --executable ($bin_directory | path join "D-LAN.GUI") --executable ($bin_directory | path join "D-LAN.Core") --library $ssl_library --desktop-file $desktop --icon-file $icon --custom-apprun $apprun
         if $env.LAST_EXIT_CODE != 0 { error make {msg: "AppImage dependency deployment failed"} }
         ^$qt_plugin --appdir $appdir ...$sql_exclusions
         if $env.LAST_EXIT_CODE != 0 { error make {msg: "Qt plugin deployment failed"} }
@@ -332,6 +336,57 @@ def make_linux_app_image [build_dir?: path] {
     }
     if not ($output | path exists) { error make {msg: "Packaging did not produce the expected AppImage"} }
     print $"Created ($output)"
+}
+
+# AppImage entry point, see its help ('--help') for the arguments.
+# The script starts on the next line because Nushell can't parse a raw string beginning with '#'.
+def appimage_apprun [] {
+    r#'
+#!/bin/sh
+# AppImage entry point. Starts D-LAN.GUI, or D-LAN.Core when the first argument is "--core":
+#  D-LAN.AppImage [GUI arguments]
+#  D-LAN.AppImage --core [Core arguments]
+#  D-LAN.AppImage --help
+this_dir=$(dirname "$(readlink -f "$0")")
+core="$this_dir/usr/bin/D-LAN.Core"
+# 'APPIMAGE' is set by the AppImage runtime, it's not defined when run from an extracted AppDir.
+name=$(basename "${APPIMAGE:-$0}")
+
+# Print the Core usage with the AppImage invocation instead of the Core executable name.
+print_core_usage() {
+    "$core" --help | sed -e "s|^ *D-LAN\.Core | $name --core |"
+}
+
+if [ "$1" = "--core" ]; then
+    shift
+    # Like D-LAN.Core, look for "-h" or "--help" anywhere.
+    for arg in "$@"; do
+        if [ "$arg" = "-h" ] || [ "$arg" = "--help" ]; then
+            print_core_usage
+            exit
+        fi
+    done
+    exec "$core" "$@"
+fi
+
+if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+    cat <<EOF
+Usage:
+ $name [--lang <language>]
+ $name --core [<Core arguments>]
+ $name --help
+  --lang <language> : Set the GUI language and save it to the settings file then quit. (ISO-639, two letters)
+  --core : Run D-LAN Core instead of the GUI, the following arguments are given to the Core. See below.
+  --help : Print this help.
+
+Core arguments:
+$(print_core_usage | sed 1d)
+EOF
+    exit
+fi
+
+exec "$this_dir/usr/bin/D-LAN.GUI" "$@"
+'# | str trim --left
 }
 
 # Explicit checking also covers Nushell versions that continue after externals fail.
