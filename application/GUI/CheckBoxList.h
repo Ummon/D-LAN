@@ -35,8 +35,12 @@ namespace GUI
       bool eventFilter(QObject* object, QEvent* event) override;
       void paintEvent(QPaintEvent* ) override;
       QSize sizeHint() const override;
+      QSize minimumSizeHint() const override;
 
       void mousePressEvent(QMouseEvent* e) override;
+
+   private:
+      QString label() const;
    };
 
 /////

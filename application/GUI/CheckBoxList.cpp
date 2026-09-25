@@ -49,6 +49,9 @@ CheckBoxList::CheckBoxList(QWidget* parent) :
 
    // It just cool to have it as default ;).
    this->view()->setAlternatingRowColors(true);
+
+   // Recompute the size hint each time the model changes, the label depends on the checked items.
+   this->setSizeAdjustPolicy(QComboBox::AdjustToContents);
 }
 
 bool CheckBoxList::eventFilter(QObject* object, QEvent* event)
@@ -75,32 +78,7 @@ void CheckBoxList::paintEvent(QPaintEvent*)
    QStyleOptionComboBox opt;
    initStyleOption(&opt);
 
-   if (this->model()->rowCount() > 0)
-   {
-      QString label;
-      if (this->model()->data(this->model()->index(0, 0), Qt::UserRole).toBool())
-         label = this->model()->data(this->model()->index(0, 0)).toString();
-      else
-      {
-         bool nothingChecked = true;
-         bool first = true;
-         for (int i = 1; i < this->count(); i++)
-         {
-            if (this->model()->data(this->model()->index(i, 0), Qt::UserRole).toBool())
-            {
-               nothingChecked = false;
-               if (first)
-                  first = false;
-               else
-                  label += " + ";
-               label += this->model()->data(this->model()->index(i, 0)).toString();
-            }
-         }
-         if (nothingChecked)
-            label = tr("<Nothing>");
-      }
-      opt.currentText = label;
-   }
+   opt.currentText = this->label();
 
    painter.drawComplexControl(QStyle::CC_ComboBox, opt);
 
@@ -108,24 +86,45 @@ void CheckBoxList::paintEvent(QPaintEvent*)
    painter.drawControl(QStyle::CE_ComboBoxLabel, opt);
 }
 
+/**
+  * Fit the label currently shown instead of the widest item, the popup still widens itself to show all the items.
+  */
 QSize CheckBoxList::sizeHint() const
 {
-   QSize size = QComboBox::sizeHint();
-   QFontMetrics fontMetrics = this->fontMetrics();
+   QStyleOptionComboBox opt;
+   initStyleOption(&opt);
+   opt.currentText = this->label();
 
-   QString label;
-   bool first = true;
+   const QSize textSize(this->fontMetrics().horizontalAdvance(opt.currentText), this->fontMetrics().height());
+   const QSize size = this->style()->sizeFromContents(QStyle::CT_ComboBox, &opt, textSize, this);
+   return QSize(size.width(), QComboBox::sizeHint().height());
+}
+
+/**
+  * 'QComboBox::minimumSizeHint()' is the width of the widest item, it would prevent the widget to shrink.
+  */
+QSize CheckBoxList::minimumSizeHint() const
+{
+   return this->sizeHint();
+}
+
+QString CheckBoxList::label() const
+{
+   if (this->model()->rowCount() == 0)
+      return QString();
+
+   if (this->model()->data(this->model()->index(0, 0), Qt::UserRole).toBool())
+      return this->model()->data(this->model()->index(0, 0)).toString();
+
+   QStringList checkedTexts;
    for (int i = 1; i < this->count(); i++)
-   {
-      if (first)
-         first = false;
-      else
-         label += " + ";
-      label += this->model()->data(this->model()->index(i, 0)).toString();
-   }
+      if (this->model()->data(this->model()->index(i, 0), Qt::UserRole).toBool())
+         checkedTexts << this->model()->data(this->model()->index(i, 0)).toString();
 
-   size.setWidth(fontMetrics.boundingRect(label).width());
-   return size;
+   if (checkedTexts.isEmpty())
+      return tr("<Nothing>");
+
+   return checkedTexts.join(" + ");
 }
 
 /**
