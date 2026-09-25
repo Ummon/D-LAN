@@ -552,9 +552,6 @@ void PeerMessageSocket::onNewMessage(const Common::Message& message)
          QList<GetChunkParams> chunksParams;
          Protos::Core::GetChunksResult chunksResult;
 
-         // TODO: implements:
-         // - 'GetChunkResult.ALREADY_DOWNLOADING'
-
          for (int i = 0; i < getChunksMessage.chunks_size(); i++)
          {
             const auto& chunkNeeded = getChunksMessage.chunks(i);
@@ -601,13 +598,9 @@ void PeerMessageSocket::onNewMessage(const Common::Message& message)
 
          if (!chunksParams.empty())
          {
-            if (this->peerManager->tryReserveUpload(this))
-               chunksResult.set_status(Protos::Core::GetChunksResult::OK);
-            else
-            {
-               chunksResult.set_status(Protos::Core::GetChunksResult::TOO_MANY_CONNECTIONS);
+            chunksResult.set_status(this->peerManager->tryReserveUpload(this));
+            if (chunksResult.status() != Protos::Core::GetChunksResult::OK)
                chunksParams.clear();
-            }
          }
          else
             chunksResult.set_status(Protos::Core::GetChunksResult::ERROR_UNKNOWN);

@@ -566,7 +566,7 @@ void Tests::socketOutlivesManager()
    auto socket = QSharedPointer<PM::PeerMessageSocket>(
       new PM::PeerMessageSocket(concrete, this->fileManagers[0], this->peerIDs[0], new QTcpSocket()));
    QPointer<PM::PeerMessageSocket> socketGuard(socket.data());
-   QVERIFY(concrete->tryReserveUpload(socket.data()));
+   QCOMPARE(concrete->tryReserveUpload(socket.data()), Protos::Core::GetChunksResult::OK);
 
    manager.clear();
    QVERIFY(managerGuard.isNull()); // Retaining a socket must not create an ownership cycle.
@@ -1338,7 +1338,7 @@ void Tests::rejectUnexpectedOutgoingMessages()
    QCOMPARE(uploads, 0);
    QVERIFY(socket->isClosing());
    // A rejected reverse request must not reserve upload capacity either.
-   const bool reserved = manager->tryReserveUpload(socket.data());
+   const bool reserved = manager->tryReserveUpload(socket.data()) == Protos::Core::GetChunksResult::OK;
    manager->releaseUpload(socket.data());
    QVERIFY(reserved);
    auto replacement = pool.getASocket();
@@ -1415,13 +1415,12 @@ void Tests::validateChunkOffsets()
 void Tests::uploadReservations()
 {
    const quint32 globalLimit = SETTINGS.get<quint32>("upload_max_nb_connections");
-   const quint32 peerLimit = SETTINGS.get<quint32>("upload_max_nb_connections_per_peer");
-   const auto restoreSettings = qScopeGuard([&] {
-      SETTINGS.set("upload_max_nb_connections", globalLimit);
-      SETTINGS.set("upload_max_nb_connections_per_peer", peerLimit);
-   });
+   const auto restoreSettings = qScopeGuard([&] { SETTINGS.set("upload_max_nb_connections", globalLimit); });
    SETTINGS.set("upload_max_nb_connections", quint32(2));
-   SETTINGS.set("upload_max_nb_connections_per_peer", quint32(1));
+
+   const auto OK = Protos::Core::GetChunksResult::OK;
+   const auto ALREADY_DOWNLOADING = Protos::Core::GetChunksResult::ALREADY_DOWNLOADING;
+   const auto TOO_MANY_CONNECTIONS = Protos::Core::GetChunksResult::TOO_MANY_CONNECTIONS;
 
    auto* manager = static_cast<PM::PeerManager*>(this->peerManagers[1].data());
    auto makeSocket = [&](const Common::Hash& peerID) {
@@ -1433,32 +1432,29 @@ void Tests::uploadReservations()
    auto otherPeer = makeSocket(this->peerIDs[1]);
    auto thirdPeer = makeSocket(Common::Hash(QByteArray(Common::Hash::HASH_SIZE, '\x33')));
 
-   QVERIFY(manager->tryReserveUpload(first.data()));
-   QVERIFY(!manager->tryReserveUpload(first.data())); // No double reservation.
-   QVERIFY(!manager->tryReserveUpload(samePeer.data())); // Per-peer limit.
-   QVERIFY(manager->tryReserveUpload(otherPeer.data())); // Another peer still has capacity.
-   QVERIFY(!manager->tryReserveUpload(thirdPeer.data())); // Global limit.
+   QCOMPARE(manager->tryReserveUpload(first.data()), OK);
+   QCOMPARE(manager->tryReserveUpload(first.data()), ALREADY_DOWNLOADING); // No double reservation.
+   QCOMPARE(manager->tryReserveUpload(samePeer.data()), ALREADY_DOWNLOADING); // One upload per peer.
+   QCOMPARE(manager->tryReserveUpload(otherPeer.data()), OK); // Another peer still has capacity.
+   QCOMPARE(manager->tryReserveUpload(thirdPeer.data()), TOO_MANY_CONNECTIONS); // Global limit.
 
    first->close();
-   QVERIFY(!manager->tryReserveUpload(samePeer.data())); // Closing must not free a running worker's slot.
+   QCOMPARE(manager->tryReserveUpload(samePeer.data()), ALREADY_DOWNLOADING); // Closing must not free a running worker's slot.
    first->finished(true);
-   QVERIFY(manager->tryReserveUpload(samePeer.data())); // Completion releases even an inactive socket.
+   QCOMPARE(manager->tryReserveUpload(samePeer.data()), OK); // Completion releases even an inactive socket.
    samePeer->finished();
-   samePeer->finished(); // Releasing twice must not decrement another upload's count.
-   QVERIFY(!manager->tryReserveUpload(makeSocket(this->peerIDs[1]).data()));
-   QVERIFY(manager->tryReserveUpload(thirdPeer.data()));
+   samePeer->finished(); // Releasing twice must not release another upload.
+   QCOMPARE(manager->tryReserveUpload(makeSocket(this->peerIDs[1]).data()), ALREADY_DOWNLOADING);
+   QCOMPARE(manager->tryReserveUpload(thirdPeer.data()), OK);
    otherPeer.clear(); // Destruction is a fallback if no uploader calls finished().
-   QVERIFY(manager->tryReserveUpload(first.data()));
+   QCOMPARE(manager->tryReserveUpload(first.data()), OK);
 }
 
 void Tests::rejectExcessUploads()
 {
    const quint32 globalLimit = SETTINGS.get<quint32>("upload_max_nb_connections");
-   const quint32 peerLimit = SETTINGS.get<quint32>("upload_max_nb_connections_per_peer");
-   const auto restoreSettings = qScopeGuard([&] {
-      SETTINGS.set("upload_max_nb_connections", globalLimit);
-      SETTINGS.set("upload_max_nb_connections_per_peer", peerLimit);
-   });
+   const auto restoreSettings = qScopeGuard([&] { SETTINGS.set("upload_max_nb_connections", globalLimit); });
+   auto* manager = static_cast<PM::PeerManager*>(this->peerManagers[1].data());
 
    const Common::Hash hash = this->resultListener.getLastReceivedHash();
    const auto chunk = this->fileManagers[1]->getChunk(hash);
@@ -1483,10 +1479,19 @@ void Tests::rejectExcessUploads()
    for (bool global : {false, true})
    {
       SETTINGS.set("upload_max_nb_connections", quint32(global ? 1 : 2));
-      SETTINGS.set("upload_max_nb_connections_per_peer", quint32(global ? 2 : 1));
       QList<QSharedPointer<IGetChunksResult>> results;
+      QSharedPointer<PM::PeerMessageSocket> otherPeerUpload;
       for (int attempt = 0; attempt < 3; ++attempt)
       {
+         if (attempt == 1 && global)
+         {
+            // The requesting peer isn't downloading anymore but another peer takes the only slot.
+            heldUploads.takeFirst()->finished(true);
+            otherPeerUpload = QSharedPointer<PM::PeerMessageSocket>(new PM::PeerMessageSocket(
+               manager, this->fileManagers[1], Common::Hash(QByteArray(Common::Hash::HASH_SIZE, '\x33')), new QTcpSocket()));
+            QCOMPARE(manager->tryReserveUpload(otherPeerUpload.data()), Protos::Core::GetChunksResult::OK);
+         }
+
          bool received = false;
          bool streamReceived = false;
          Protos::Core::GetChunksResult response;
@@ -1502,10 +1507,21 @@ void Tests::rejectExcessUploads()
          QTRY_VERIFY_WITH_TIMEOUT(received, 10000);
          if (attempt == 1)
          {
-            QCOMPARE(response.status(), Protos::Core::GetChunksResult::TOO_MANY_CONNECTIONS);
+            QCOMPARE(
+               response.status(),
+               global ? Protos::Core::GetChunksResult::TOO_MANY_CONNECTIONS : Protos::Core::GetChunksResult::ALREADY_DOWNLOADING
+            );
             QVERIFY(!streamReceived);
-            QCOMPARE(heldUploads.size(), 1); // No second uploader was dispatched.
-            heldUploads.takeFirst()->finished(global); // Test normal and error completion.
+            if (global)
+            {
+               QCOMPARE(heldUploads.size(), 0); // No uploader was dispatched.
+               otherPeerUpload.clear();
+            }
+            else
+            {
+               QCOMPARE(heldUploads.size(), 1); // No second uploader was dispatched.
+               heldUploads.takeFirst()->finished();
+            }
          }
          else
          {
