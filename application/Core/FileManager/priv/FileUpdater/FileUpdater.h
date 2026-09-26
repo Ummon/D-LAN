@@ -36,6 +36,7 @@
 #include <priv/FileUpdater/DirWatcher.h>
 #include <priv/FileUpdater/HashingQueue.h>
 #include <priv/Cache/FileHasher.h>
+#include <priv/HandOffMutex.h>
 
 class CacheTest;
 
@@ -119,7 +120,8 @@ namespace FM
       mutable QMutex scanningMutex;
       std::atomic<bool> scanAbortRequested { false };
 
-      mutable QMutex hashingMutex; ///< Protects selected-file lifetime through hashing and scheduler bookkeeping.
+      mutable HandOffMutex hashingMutex; ///< Protects selected-file lifetime through hashing and scheduler bookkeeping.
+      File* hashingFile = nullptr; ///< The file selected by 'computeSomeHashes()' until its pass is accounted, protected by mutex.
       std::atomic<bool> toStopHashing;
       FileHasher fileHasher;
 

@@ -27,6 +27,7 @@
 #include <Common/Uncopyable.h>
 
 #include <priv/Cache/FilePool.h>
+#include <priv/HandOffMutex.h>
 
 namespace FM
 {
@@ -63,7 +64,7 @@ namespace FM
       bool hashing;
       bool toStopHashing;
       QWaitCondition hashingStopped;
-      QMutex hashingMutex;
+      HandOffMutex hashingMutex;
 
       FilePool filePool;
    };

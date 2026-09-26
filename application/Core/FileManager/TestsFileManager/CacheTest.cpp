@@ -938,6 +938,66 @@ void CacheTest::hashingWorkFollowsFileChanges()
    QCOMPARE(file->getRemainingBytesToHash(), qint64(0));
 }
 
+/**
+  * The hashing thread holds its mutexes for a whole chunk, or a read, and releases them only for an instant.
+  * The cache thread deleting entries unrelated to the hashed file must not wait for the end of the hashing batch.
+  */
+void CacheTest::hashingDoesNotStarveEntryDeletion()
+{
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   const auto previousDuration = SETTINGS.get<quint32>("minimum_duration_when_hashing");
+   const auto restoreDuration = qScopeGuard([&] { SETTINGS.set("minimum_duration_when_hashing", previousDuration); });
+   SETTINGS.set("minimum_duration_when_hashing", quint32(30 * 1000));
+
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+
+   const QString path = temp.filePath("big.bin");
+   {
+      QFile physical(path);
+      QVERIFY(physical.open(QIODevice::WriteOnly));
+      QVERIFY(physical.resize(512LL * 1024 * 1024));
+   }
+   const QFileInfo info(path);
+   auto bigFile = new FM::File(root, "big.bin", info.size(), false, info.lastModified(), root->getRootDir());
+
+   QList<FM::File*> filesToDelete;
+   for (int i = 0; i < 10; ++i)
+      filesToDelete << new FM::File(root, QString("small%1.bin").arg(i), 10, false, QDateTime::currentDateTime(), root->getRootDir());
+
+   FM::FileUpdater updater(nullptr);
+   updater.addScannedFile(info, bigFile);
+
+   std::atomic<bool> hashingFinished { false };
+   std::thread hashing([&] {
+      updater.computeSomeHashes();
+      hashingFinished = true;
+   });
+   const auto joinHashing = qScopeGuard([&] {
+      updater.toStop = true;
+      hashing.join();
+   });
+
+   QDeadlineTimer hashingStarted(5000);
+   while (bigFile->getRemainingBytesToHash() == info.size() && !hashingStarted.hasExpired())
+      QThread::yieldCurrentThread();
+   QVERIFY(bigFile->getRemainingBytesToHash() < info.size());
+
+   // Same sequence as a deletion from the cache thread: 'del(..)' then 'Cache::destroyEntry(..)'.
+   for (FM::File* file : filesToDelete)
+   {
+      file->del(false);
+      updater.prepareToDeleteEntry(file);
+      delete file;
+   }
+
+   QVERIFY2(!hashingFinished, "The deletions waited for the hashing batch to end");
+}
+
 void CacheTest::scanWaitsForRedownload()
 {
    class LockedFile : public FM::File

@@ -55,6 +55,7 @@ add_library(FileManager STATIC
    priv/Global.h
    priv/Cache/FilePool.h
    priv/Cache/FileHasher.h
+   priv/HandOffMutex.h
    IGetEntriesResult.h
    priv/GetEntriesResult.h
    priv/ExtensionIndex.h

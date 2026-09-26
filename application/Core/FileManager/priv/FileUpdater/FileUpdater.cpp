@@ -230,10 +230,23 @@ void FileUpdater::prioritizeAFileToHash(File* file)
 
 }
 
+static bool isEntryUnder(Entry* entry, Entry* root);
+
 // Called on the cache thread immediately before destruction, outside entry locks.
 void FileUpdater::prepareToDeleteEntry(Entry* entry)
 {
    this->stopScanning(entry);
+   {
+      // Only the file being hashed must outlive its pass. Waiting for the pass (a whole chunk)
+      // for every other entry would stall the cache thread when deleting many files.
+      QMutexLocker locker(&this->mutex);
+      if (!this->hashingFile || !isEntryUnder(this->hashingFile, entry))
+      {
+         this->removeFromHashingQueue(entry);
+         this->removeFromEntriesToScan(entry);
+         return;
+      }
+   }
    QMutexLocker hashingLocker(&this->hashingMutex);
    QMutexLocker locker(&this->mutex);
    this->removeFromHashingQueue(entry);
@@ -432,6 +445,7 @@ void FileUpdater::computeSomeHashes()
          file = this->hashingQueue.next();
          if (!file)
             break;
+         this->hashingFile = file;
       }
 
       bool ioError = false;
@@ -446,11 +460,16 @@ void FileUpdater::computeSomeHashes()
 
       {
          QMutexLocker locker(&this->mutex);
+         this->hashingFile = nullptr;
          // Update only existing work; never resurrect a removed job.
          if (this->hashingQueue.contains(file))
             this->hashingQueue.finishPass(file, file->getRemainingBytesToHash(), ioError,
                this->schedulerClock.elapsed(), this->IO_ERROR_WAITING_BEFORE_RETRY);
       }
+
+      // Relocking at the next pass would otherwise starve an entry deletion waiting in the cache thread
+      // until the end of 'MINIMUM_DURATION_WHEN_HASHING'.
+      this->hashingMutex.yieldToWaiters();
 
       if (static_cast<quint32>(timer.elapsed()) >= MINIMUM_DURATION_WHEN_HASHING)
          break;
