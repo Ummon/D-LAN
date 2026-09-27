@@ -57,7 +57,7 @@ UploadManager::~UploadManager()
    L_DEBU("UploadManager deleted");
 
    // We stop all uploads to avoid the thread pool to wait that all threads have finished their job.
-   for (const auto& upload : this->uploads)
+   for (const auto& upload : std::as_const(this->uploads))
       upload->stop();
 }
 
@@ -99,7 +99,6 @@ void UploadManager::getChunks(
    this->threadPool.run(upload.toWeakRef());
 }
 
-// TODO: test timeout.
 void UploadManager::removeUpload(const ChunksUploader* upload)
 {
    this->uploads.removeIf([upload](const QSharedPointer<ChunksUploader>& u) { return u.data() == upload; });

@@ -338,7 +338,9 @@ private slots:
       QTRY_COMPARE(this->manager->connections.size(), 1);
       plaintext.write("This is not a TLS ClientHello");
       QTRY_COMPARE(disconnected.size(), 1);
-      QVERIFY(plaintext.readAll().isEmpty());
+      // OpenSSL may answer with a fatal TLS alert record; anything else would be a plaintext leak.
+      const QByteArray reply = plaintext.readAll();
+      QVERIFY2(reply.isEmpty() || (reply.size() == 7 && reply.startsWith("\x15\x03")), reply.toHex().constData());
       QTRY_VERIFY(this->manager->connections.isEmpty());
    }
 };

@@ -20,6 +20,7 @@ public:
    QList<QSharedPointer<FM::IChunk>> newFile(Protos::Common::Entry& entry) override;
    void newDirectory(Protos::Common::Entry& entry) override;
    QSharedPointer<FM::IGetHashesResult> getHashes(const Protos::Common::Entry& file) override;
+   void prioritizeEntriesToHash(const QList<Protos::Common::Entry>& files) override;
    QSharedPointer<FM::IGetEntriesResult> getScannedEntries(const Protos::Common::Entry& dir, int maxNbHashesPerEntry = std::numeric_limits<int>::max()) override;
    Protos::Common::Entries getEntries(const Protos::Common::Entry& dir, int maxNbHashesPerEntry = std::numeric_limits<int>::max()) override;
    Protos::Common::Entries getEntries() override;

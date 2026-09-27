@@ -147,6 +147,35 @@ void CacheTest::darwinWatcherUpdatesCache()
 #endif
 }
 
+void CacheTest::addASharedPathInsideSharedDirectory()
+{
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   QVERIFY(QDir().mkpath(temp.filePath("foo/a/b")));
+   QVERIFY(QDir().mkpath(temp.filePath("foobar")));
+
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = cache.addASharedPath(temp.filePath("foo") + '/');
+   QCOMPARE(shared.second, QString("/"));
+
+   const auto check = [&](const QString& path, const QString& expectedRelativePath) {
+      const auto result = cache.addASharedPath(path);
+      QCOMPARE(result.first.ID, shared.first.ID);
+      QCOMPARE(result.second, expectedRelativePath);
+   };
+   check(temp.filePath("foo") + '/', "/");
+   check(temp.filePath("foo/a") + '/', "/a/");
+   check(temp.filePath("foo/a/b") + '/', "/a/b/");
+   check(temp.filePath("foo/a/b/file.txt"), "/a/b/file.txt");
+   check(temp.filePath("foo/file.txt"), "/file.txt");
+   check(temp.filePath("foo/a/./b/../") + '/', "/a/");
+
+   // A sibling whose name starts with the shared directory name isn't inside it.
+   const auto sibling = cache.addASharedPath(temp.filePath("foobar") + '/');
+   QVERIFY(sibling.first.ID != shared.first.ID);
+   QCOMPARE(sibling.second, QString("/"));
+}
+
 void CacheTest::chunkEntryWithoutHashes()
 {
    FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
@@ -907,6 +936,66 @@ void CacheTest::hashingWorkFollowsFileChanges()
    updater.addScannedFile(QFileInfo(file->getAbsolutePath()), file);
    QVERIFY(updater.hashingQueue.isEmpty());
    QCOMPARE(file->getRemainingBytesToHash(), qint64(0));
+}
+
+/**
+  * The hashing thread holds its mutexes for a whole chunk, or a read, and releases them only for an instant.
+  * The cache thread deleting entries unrelated to the hashed file must not wait for the end of the hashing batch.
+  */
+void CacheTest::hashingDoesNotStarveEntryDeletion()
+{
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   const auto previousDuration = SETTINGS.get<quint32>("minimum_duration_when_hashing");
+   const auto restoreDuration = qScopeGuard([&] { SETTINGS.set("minimum_duration_when_hashing", previousDuration); });
+   SETTINGS.set("minimum_duration_when_hashing", quint32(30 * 1000));
+
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+
+   const QString path = temp.filePath("big.bin");
+   {
+      QFile physical(path);
+      QVERIFY(physical.open(QIODevice::WriteOnly));
+      QVERIFY(physical.resize(512LL * 1024 * 1024));
+   }
+   const QFileInfo info(path);
+   auto bigFile = new FM::File(root, "big.bin", info.size(), false, info.lastModified(), root->getRootDir());
+
+   QList<FM::File*> filesToDelete;
+   for (int i = 0; i < 10; ++i)
+      filesToDelete << new FM::File(root, QString("small%1.bin").arg(i), 10, false, QDateTime::currentDateTime(), root->getRootDir());
+
+   FM::FileUpdater updater(nullptr);
+   updater.addScannedFile(info, bigFile);
+
+   std::atomic<bool> hashingFinished { false };
+   std::thread hashing([&] {
+      updater.computeSomeHashes();
+      hashingFinished = true;
+   });
+   const auto joinHashing = qScopeGuard([&] {
+      updater.toStop = true;
+      hashing.join();
+   });
+
+   QDeadlineTimer hashingStarted(5000);
+   while (bigFile->getRemainingBytesToHash() == info.size() && !hashingStarted.hasExpired())
+      QThread::yieldCurrentThread();
+   QVERIFY(bigFile->getRemainingBytesToHash() < info.size());
+
+   // Same sequence as a deletion from the cache thread: 'del(..)' then 'Cache::destroyEntry(..)'.
+   for (FM::File* file : filesToDelete)
+   {
+      file->del(false);
+      updater.prepareToDeleteEntry(file);
+      delete file;
+   }
+
+   QVERIFY2(!hashingFinished, "The deletions waited for the hashing batch to end");
 }
 
 void CacheTest::scanWaitsForRedownload()

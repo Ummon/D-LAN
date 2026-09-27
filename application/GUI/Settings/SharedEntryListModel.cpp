@@ -31,7 +31,6 @@ void SharedEntryListModel::setEntries(const QList<Common::SharedEntry>& entries)
    if (this->currentEditingIndex.isValid())
       return;
 
-   // TODO: Try to factor this code with the one in BrowseModel::synchronizeRoot
    int j = 0;
    for (int i = 0; i < entries.size(); i++)
    {

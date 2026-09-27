@@ -201,6 +201,15 @@ namespace
       FM::Cache& cache;
    };
 
+   class SinglePeerManager : public MockPeerManager
+   {
+   public:
+      SinglePeerManager(PM::IPeer* peer) : peer(peer) {}
+      PM::IPeer* createPeer(const Common::Hash&, const QString&) override { return this->peer; }
+   private:
+      PM::IPeer* peer;
+   };
+
    class HashPeer : public ResumePeer
    {
    public:
@@ -433,6 +442,107 @@ void Tests::customDirectoryDestination()
    }
    else
       QVERIFY(manager.getDownloads().isEmpty());
+}
+
+void Tests::remoteNamesArePortable_data()
+{
+   QTest::addColumn<bool>("empty");
+   QTest::newRow("contents") << false;
+   QTest::newRow("empty") << true;
+}
+
+/**
+  * Names from a peer running on another OS may be invalid locally: they must be the same for
+  * a directory and in the paths of its content, whether it is empty or not.
+  */
+void Tests::remoteNamesArePortable()
+{
+   QFETCH(bool, empty);
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new EmptyHashCache));
+   cache.addASharedPath(temp.path() + '/');
+   QSharedPointer<DirectoryFileManager> files(new DirectoryFileManager(cache));
+   DirectoryPeer peer(files);
+   DownloadManager manager(files, this->peerManager);
+
+   Protos::Common::Entry remote;
+   remote.set_type(Protos::Common::Entry::DIR);
+   remote.set_is_empty(empty);
+   remote.set_path("/remote/");
+   remote.set_name("a:b");
+   manager.addDownload(remote, &peer, temp.path());
+   QCOMPARE(manager.getDownloads().size(), 1);
+   QCOMPARE(manager.getDownloads().first()->getLocalEntry().path(), std::string("/"));
+   QCOMPARE(manager.getDownloads().first()->getLocalEntry().name(), std::string("a_b"));
+
+   Protos::Core::GetEntriesResult response;
+   auto result = response.add_results();
+   result->set_status(Protos::Core::GetEntriesResult::EntryResult::OK);
+   if (!empty)
+   {
+      for (const char* name : { "c:d", ".." })
+      {
+         auto child = result->mutable_entries()->add_entries();
+         child->set_type(Protos::Common::Entry::DIR);
+         child->set_path("/remote/a:b/");
+         child->set_name(name);
+         child->set_is_empty(true);
+      }
+      auto child = result->mutable_entries()->add_entries();
+      child->set_type(Protos::Common::Entry::FILE);
+      child->set_path("/remote/a:b/");
+      child->set_name("x:y.txt");
+      child->set_size(100);
+   }
+   emit peer.entries->result(response);
+   QVERIFY(QFileInfo(temp.filePath("a_b")).isDir());
+   QVERIFY(!QFileInfo::exists(temp.filePath("a:b")));
+   if (empty)
+   {
+      QVERIFY(manager.getDownloads().isEmpty());
+      return;
+   }
+
+   QVERIFY(QFileInfo(temp.filePath("a_b/c_d")).isDir());
+   QVERIFY(QFileInfo(temp.filePath("a_b/_")).isDir());
+   QStringList names;
+   for (auto download : manager.getDownloads())
+   {
+      QCOMPARE(download->getLocalEntry().path(), std::string("/a_b/"));
+      names << QString::fromStdString(download->getLocalEntry().name());
+   }
+   names.sort();
+   QCOMPARE(names, (QStringList { "_", "c_d", "x_y.txt" }));
+}
+
+void Tests::loadQueueMakesDirectoryNamesPortable()
+{
+   QSharedPointer<MockFileManager> files(new MockFileManager);
+   DirectoryPeer peer(files);
+   QSharedPointer<SinglePeerManager> peers(new SinglePeerManager(&peer));
+   DownloadQueue emptyQueue;
+   QVERIFY(emptyQueue.saveToFile());
+   auto savedQueue = DownloadQueue::loadFromFile();
+   const auto addEntry = [&](Protos::Common::Entry::Type type, const std::string& name) {
+      auto* entry = savedQueue.add_entries();
+      entry->mutable_remote_entry()->set_type(type);
+      entry->mutable_remote_entry()->set_path("/");
+      entry->mutable_remote_entry()->set_name(name);
+      entry->mutable_local_entry()->CopyFrom(entry->remote_entry());
+      entry->set_status(Protos::Queue::Queue::Entry::PAUSED);
+   };
+   // Saved by an older version which kept the remote names.
+   addEntry(Protos::Common::Entry::DIR, "a:b");
+   addEntry(Protos::Common::Entry::FILE, "x:y.txt");
+   Common::PersistentData::setValue(Common::Constants::FILE_QUEUE, savedQueue,
+      Common::Global::DataFolderType::LOCAL);
+
+   DownloadManager manager(files, peers);
+   emit files->fileCacheScanningComplete();
+   QCOMPARE(manager.getDownloads().size(), 2);
+   QCOMPARE(manager.getDownloads()[0]->getLocalEntry().name(), std::string("a_b"));
+   QCOMPARE(manager.getDownloads()[1]->getLocalEntry().name(), std::string("x:y.txt")); // May already have data on disk.
 }
 
 void Tests::sharedRootDownload_data()

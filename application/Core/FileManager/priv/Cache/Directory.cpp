@@ -249,10 +249,6 @@ Common::Path Directory::getRelativePath() const
    return Common::Path();
 }
 
-/**
-  * TODO: benchmark the use of Common::Path instead of QString during searching
-  *   (See 'QSort(..)' in 'FileManager::find(..)').
-  */
 Common::Path Directory::getAbsolutePath() const
 {
    if (Directory* parent = this->parentDirectory.load())

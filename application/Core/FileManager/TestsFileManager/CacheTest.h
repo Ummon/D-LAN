@@ -34,6 +34,7 @@ private slots:
    void failedHashingIsQueuedOnce();
    void hashingSchedulerTransitions();
    void hashingWorkFollowsFileChanges();
+   void hashingDoesNotStarveEntryDeletion();
    void scanWaitsForRedownload();
    void cancelledReplacementLeavesNoHashingJob_data();
    void cancelledReplacementLeavesNoHashingJob();
@@ -89,6 +90,7 @@ private slots:
    void chunkFlushReleasesFileMutex();
    void concurrentChunkMetadata();
    void chunkEntryWithoutHashes();
+   void addASharedPathInsideSharedDirectory();
    void metadataReadersAvoidStructuralLocks();
    void concurrentEntryMetadata();
    void invalidDownloadEntries_data();

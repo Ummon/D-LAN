@@ -911,7 +911,6 @@ void File::createPhysicalFile()
 
 void File::setFileAsSparse(const QFile& file)
 {
-// TODO: Do we need that on linux? see 'fallocate(..)',
 #ifdef Q_OS_WIN32
    DWORD bytesWritten;
    HANDLE hdl = (HANDLE)_get_osfhandle(file.handle());
@@ -921,6 +920,13 @@ void File::setFileAsSparse(const QFile& file)
    if (!DeviceIoControl(hdl, FSCTL_SET_SPARSE, NULL, 0, NULL, 0, &bytesWritten, NULL))
       L_WARN("DeviceIoControl(...) failed");
 #endif
+   // Not needed on Linux:
+   // On Linux, QFile::resize() calls ftruncate().
+   // On the usual filesystems (ext4, btrfs, XFS, tmpfs)
+   // that makes the extended part a hole: nothing is allocated or written, and it happens instantly.
+   // A chunk written at any offset then only allocates the blocks it touches.
+   // The file is already sparse by default.
+   // macOS behaves the same way on APFS.
 }
 
 void File::setFileAsHidden(const QString& filepath)

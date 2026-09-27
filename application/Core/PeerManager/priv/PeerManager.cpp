@@ -208,24 +208,23 @@ bool PeerManager::isReadyToSendChunks() const
    return this->isSignalConnected(getChunksSignal);
 }
 
-bool PeerManager::tryReserveUpload(PeerMessageSocket* socket)
+/**
+  * A given peer can't download two chunks at the same time from us.
+  */
+Protos::Core::GetChunksResult::Status PeerManager::tryReserveUpload(PeerMessageSocket* socket)
 {
    Q_ASSERT(QThread::currentThread() == this->thread());
-   if (this->activeUploads.contains(socket) ||
-       this->activeUploads.size() >= SETTINGS.get<quint32>("upload_max_nb_connections"))
-      return false;
 
    const Common::Hash peerID = socket->getRemotePeerID();
-   quint32 uploadsFromPeer = 0;
-   for (auto i = this->activeUploads.cbegin(); i != this->activeUploads.cend(); ++i)
-      if (i.value() == peerID)
-         ++uploadsFromPeer;
+   // Also covers a second reservation for the same socket.
+   if (std::find(this->activeUploads.cbegin(), this->activeUploads.cend(), peerID) != this->activeUploads.cend())
+      return Protos::Core::GetChunksResult::ALREADY_DOWNLOADING;
 
-   if (uploadsFromPeer >= SETTINGS.get<quint32>("upload_max_nb_connections_per_peer"))
-      return false;
+   if (this->activeUploads.size() >= SETTINGS.get<quint32>("upload_max_nb_connections"))
+      return Protos::Core::GetChunksResult::TOO_MANY_CONNECTIONS;
 
    this->activeUploads.insert(socket, peerID);
-   return true;
+   return Protos::Core::GetChunksResult::OK;
 }
 
 void PeerManager::releaseUpload(PeerMessageSocket* socket)

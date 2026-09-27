@@ -38,7 +38,6 @@ using namespace GUI;
 
 /**
   * Ask the user to choose one or more directories/files.
-  * TODO: browse the remotes directories (Core) not the local ones.
   */
 QStringList Utils::askForDirectoriesOrFiles(
    QWidget* parent,

@@ -180,7 +180,7 @@
 <context>
     <name>GUI::CheckBoxList</name>
     <message>
-        <location filename="../GUI/CheckBoxList.cpp" line="100"/>
+        <location filename="../GUI/CheckBoxList.cpp" line="124"/>
         <source>&lt;Nothing&gt;</source>
         <translation>&lt;Niente&gt;</translation>
     </message>
@@ -654,7 +654,7 @@
 <context>
     <name>GUI::SearchMenu</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="220"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="235"/>
         <source>Browse</source>
         <translation>Sfoglia</translation>
     </message>
@@ -696,32 +696,32 @@
 <context>
     <name>GUI::SearchWidget</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="350"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="365"/>
         <source>Open location</source>
         <translation>Apri percorso</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="351"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="366"/>
         <source>Browse</source>
         <translation>Sfoglia</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="430"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="445"/>
         <source>1 directory</source>
         <translation>1 cartella</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="430"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="445"/>
         <source>%1 directories</source>
         <translation>%1 cartelle</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="431"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="446"/>
         <source>1 file</source>
         <translation>1 file</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="431"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="446"/>
         <source>%1 files</source>
         <translation>%1 file</translation>
     </message>
@@ -814,22 +814,22 @@
 <context>
     <name>GUI::SharedEntryListModel</name>
     <message>
-        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="285"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="284"/>
         <source>Name</source>
         <translation>Nome</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="286"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="285"/>
         <source>Path</source>
         <translation>Percorso</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="287"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="286"/>
         <source>Size</source>
         <translation>Dimensione</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="288"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="287"/>
         <source>Free space</source>
         <translation>Spazio libero</translation>
     </message>
@@ -896,7 +896,7 @@
 <context>
     <name>GUI::UploadsModel</name>
     <message>
-        <location filename="../GUI/Uploads/UploadsModel.cpp" line="57"/>
+        <location filename="../GUI/Uploads/UploadsModel.cpp" line="60"/>
         <source>&lt;unknown&gt;</source>
         <translation>&lt;sconosciuto&gt;</translation>
     </message>
@@ -1031,12 +1031,12 @@
         <translation>Servizio Core avviato</translation>
     </message>
     <message>
-        <location filename="../GUI/Utils.cpp" line="50"/>
+        <location filename="../GUI/Utils.cpp" line="49"/>
         <source>Select one or more directories and/or files</source>
         <translation>Seleziona una o più cartelle e/o file</translation>
     </message>
     <message>
-        <location filename="../GUI/Utils.cpp" line="60"/>
+        <location filename="../GUI/Utils.cpp" line="59"/>
         <source>Select a directory where to download to</source>
         <translation>Seleziona una cartella di destinazione per il download</translation>
     </message>

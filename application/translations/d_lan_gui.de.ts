@@ -180,7 +180,7 @@
 <context>
     <name>GUI::CheckBoxList</name>
     <message>
-        <location filename="../GUI/CheckBoxList.cpp" line="+100"/>
+        <location filename="../GUI/CheckBoxList.cpp" line="+124"/>
         <source>&lt;Nothing&gt;</source>
         <translation>&lt;Nichts&gt;</translation>
     </message>
@@ -654,7 +654,7 @@
 <context>
     <name>GUI::SearchMenu</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="+220"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="+235"/>
         <source>Browse</source>
         <translation>Durchsuchen</translation>
     </message>
@@ -814,7 +814,7 @@
 <context>
     <name>GUI::SharedEntryListModel</name>
     <message>
-        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="+285"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="+284"/>
         <source>Name</source>
         <translation>Name</translation>
     </message>
@@ -896,7 +896,7 @@
 <context>
     <name>GUI::UploadsModel</name>
     <message>
-        <location filename="../GUI/Uploads/UploadsModel.cpp" line="+57"/>
+        <location filename="../GUI/Uploads/UploadsModel.cpp" line="+60"/>
         <source>&lt;unknown&gt;</source>
         <translation>&lt;unbekannt&gt;</translation>
     </message>
@@ -1031,7 +1031,7 @@
         <translation>Lokal</translation>
     </message>
     <message>
-        <location filename="../GUI/Utils.cpp" line="+50"/>
+        <location filename="../GUI/Utils.cpp" line="+49"/>
         <source>Select one or more directories and/or files</source>
         <translation>Wählen Sie einen oder mehrere Ordner und/oder Dateien aus</translation>
     </message>

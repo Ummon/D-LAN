@@ -50,6 +50,7 @@ namespace PM
 
       QSharedPointer<PeerMessageSocket> getASocket();
       void closeAllSocket();
+      bool showsRemotePeerActivity(qint64 period) const;
 
    private slots:
       void socketBecomeIdle(PM::PeerMessageSocket* socket);

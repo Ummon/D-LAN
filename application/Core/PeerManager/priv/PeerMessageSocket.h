@@ -20,6 +20,7 @@
 
 #include <QTcpSocket>
 #include <QDateTime>
+#include <QElapsedTimer>
 #include <QHostAddress>
 #include <QTimer>
 #include <QQueue>
@@ -94,6 +95,7 @@ namespace PM
 
       bool isActive() const;
       bool isClosing() const;
+      bool showsRemotePeerActivity(qint64 period) const;
       void setActive();
       void retire(); // Close now if idle, otherwise when the current transaction finishes.
 
@@ -146,6 +148,7 @@ namespace PM
       OutgoingTransaction outgoingTransaction = OutgoingTransaction::None;
       quint64 transactionGeneration = 0;
       QTimer inactiveTimer;
+      QElapsedTimer lastDataReceived; // Invalid until some data is received.
 
       // Used when asking hashes to the fileManager.
       QSharedPointer<FM::IGetHashesResult> currentHashesResult;

@@ -27,7 +27,9 @@ namespace DM
    class Utils
    {
    public:
-      static QString sharedName(QString userName);
+      static QString portableName(QString name);
+      static QString sharedName(const QString& userName);
+      static QString localName(const Protos::Common::Entry& remoteEntry);
 #ifdef DEBUG
       static QString getStatusStr(Protos::Common::DownloadStatus status);
 #endif

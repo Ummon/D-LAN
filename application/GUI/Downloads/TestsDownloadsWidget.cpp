@@ -344,6 +344,27 @@ private slots:
       QVERIFY(f.view->isExpanded(directory));
       QCOMPARE(f.view->model()->rowCount(directory), 2);
    }
+
+   void filterStatusListFitsItsLabel()
+   {
+      Fixture f;
+      f.widget.resize(1000, 400);
+      f.widget.show();
+      QComboBox* filterList = f.widget.findChild<GUI::CheckBoxList*>();
+      auto* filter = filterList->model();
+
+      QTRY_COMPARE(filterList->width(), filterList->sizeHint().width());
+      const int allWidth = filterList->width();
+
+      QVERIFY(filter->setData(filter->index(0, 0), false, Qt::UserRole)); // "<Nothing>".
+      for (int row = 1; row <= 3; ++row)
+         QVERIFY(filter->setData(filter->index(row, 0), true, Qt::UserRole));
+      QTRY_VERIFY(filterList->width() > allWidth);
+      QCOMPARE(filterList->width(), filterList->sizeHint().width());
+
+      QVERIFY(filter->setData(filter->index(0, 0), true, Qt::UserRole)); // "<All>".
+      QTRY_COMPARE(filterList->width(), allWidth);
+   }
 };
 
 int main(int argc, char** argv)

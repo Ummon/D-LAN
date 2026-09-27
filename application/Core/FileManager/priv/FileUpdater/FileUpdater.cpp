@@ -200,7 +200,6 @@ void FileUpdater::rmRoot(SharedEntry* sharedEntry, Directory* dir)
    this->fileHasher.stop();
    this->toStopHashing = true;
 
-   // TODO: Find a more elegant way!
    Directory* rootDirectory = dynamic_cast<Directory*>(root);
    if (dir && rootDirectory)
       dir->stealContent(rootDirectory);
@@ -215,26 +214,54 @@ void FileUpdater::rmRoot(SharedEntry* sharedEntry, Directory* dir)
 
 void FileUpdater::prioritizeAFileToHash(File* file)
 {
+   this->prioritizeFilesToHash({ file });
+}
+
+/**
+  * Files are appended to the priority queue in the given order.
+  * A file already prioritized keeps its place.
+  */
+void FileUpdater::prioritizeFilesToHash(const QList<File*>& files)
+{
    QMutexLocker locker(&this->mutex);
 
-   L_DEBU(QString("FileUpdater::prioritizeAFileToHash: %1").arg(file->getAbsolutePath()));
-
-   const qint64 remaining = file->getRemainingBytesToHash();
-   if (remaining > 0)
+   bool prioritized = false;
+   for (File* file : files)
    {
-      this->hashingQueue.enqueue(file, remaining, true);
-      // Let the in-flight chunk finish. The next selection observes the new priority.
-      this->dirEvent->release();
-   }
-   else
-      L_DEBU(QString("FileUpdater::prioritizeAFileToHash, unable to prioritize: %1").arg(file->getAbsolutePath()));
+      L_DEBU(QString("FileUpdater::prioritizeFilesToHash: %1").arg(file->getAbsolutePath()));
 
+      const qint64 remaining = file->getRemainingBytesToHash();
+      if (remaining > 0)
+      {
+         this->hashingQueue.enqueue(file, remaining, true);
+         prioritized = true;
+      }
+      else
+         L_DEBU(QString("FileUpdater::prioritizeFilesToHash, unable to prioritize: %1").arg(file->getAbsolutePath()));
+   }
+
+   // Let the in-flight chunk finish. The next selection observes the new priority.
+   if (prioritized)
+      this->dirEvent->release();
 }
+
+static bool isEntryUnder(Entry* entry, Entry* root);
 
 // Called on the cache thread immediately before destruction, outside entry locks.
 void FileUpdater::prepareToDeleteEntry(Entry* entry)
 {
    this->stopScanning(entry);
+   {
+      // Only the file being hashed must outlive its pass. Waiting for the pass (a whole chunk)
+      // for every other entry would stall the cache thread when deleting many files.
+      QMutexLocker locker(&this->mutex);
+      if (!this->hashingFile || !isEntryUnder(this->hashingFile, entry))
+      {
+         this->removeFromHashingQueue(entry);
+         this->removeFromEntriesToScan(entry);
+         return;
+      }
+   }
    QMutexLocker hashingLocker(&this->hashingMutex);
    QMutexLocker locker(&this->mutex);
    this->removeFromHashingQueue(entry);
@@ -433,6 +460,7 @@ void FileUpdater::computeSomeHashes()
          file = this->hashingQueue.next();
          if (!file)
             break;
+         this->hashingFile = file;
       }
 
       bool ioError = false;
@@ -447,11 +475,16 @@ void FileUpdater::computeSomeHashes()
 
       {
          QMutexLocker locker(&this->mutex);
+         this->hashingFile = nullptr;
          // Update only existing work; never resurrect a removed job.
          if (this->hashingQueue.contains(file))
             this->hashingQueue.finishPass(file, file->getRemainingBytesToHash(), ioError,
                this->schedulerClock.elapsed(), this->IO_ERROR_WAITING_BEFORE_RETRY);
       }
+
+      // Relocking at the next pass would otherwise starve an entry deletion waiting in the cache thread
+      // until the end of 'MINIMUM_DURATION_WHEN_HASHING'.
+      this->hashingMutex.yieldToWaiters();
 
       if (static_cast<quint32>(timer.elapsed()) >= MINIMUM_DURATION_WHEN_HASHING)
          break;

@@ -76,6 +76,7 @@ namespace FM
       QList<QSharedPointer<IChunk>> newFile(Protos::Common::Entry& entry) override;
       void newDirectory(Protos::Common::Entry& entry) override;
       QSharedPointer<IGetHashesResult> getHashes(const Protos::Common::Entry& file) override;
+      void prioritizeEntriesToHash(const QList<Protos::Common::Entry>& files) override;
 
       QSharedPointer<IGetEntriesResult> getScannedEntries(
          const Protos::Common::Entry& dir,

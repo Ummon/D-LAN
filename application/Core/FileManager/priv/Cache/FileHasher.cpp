@@ -211,9 +211,8 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed, bool deferPers
       int bytesReadChunk = 0;
       while (bytesReadChunk < Chunk::CHUNK_SIZE)
       {
-         // See 'stopHashing()'.
-         locker.unlock();
-         locker.relock();
+         // Let 'stop()' and 'entryRemoved(..)' in: they may be waiting from another thread.
+         this->hashingMutex.yieldToWaiters();
          if (this->toStopHashing)
             return false;
 
@@ -330,7 +329,7 @@ void FileHasher::internalStop()
          QString("FileHasher::stop(): %1 . . .")
             .arg(this->currentFileCache ? this->currentFileCache->getAbsolutePath().toString() : "?")
       );
-      this->hashingStopped.wait(&this->hashingMutex);
+      this->hashingStopped.wait(this->hashingMutex.native());
       L_DEBU("File hashing stopped");
    }
 }

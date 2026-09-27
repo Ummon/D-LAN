@@ -26,6 +26,8 @@
 #include <QList>
 #include <QTcpSocket>
 
+#include <Protos/core_protocol.pb.h>
+
 #include <Common/Hash.h>
 #include <Common/Uncopyable.h>
 
@@ -98,7 +100,9 @@ namespace PM
 
       // Called in the manager's thread. Reserve before replying OK; release only after the
       // uploader has finished using its worker, or when the socket is destroyed.
-      bool tryReserveUpload(PeerMessageSocket* socket);
+      // Return the status to answer: 'OK' if the upload is reserved, 'ALREADY_DOWNLOADING' if the remote
+      // peer is already downloading a chunk from us or 'TOO_MANY_CONNECTIONS' if the global limit is reached.
+      Protos::Core::GetChunksResult::Status tryReserveUpload(PeerMessageSocket* socket);
       void releaseUpload(PeerMessageSocket* socket);
 
       void onGetChunks(

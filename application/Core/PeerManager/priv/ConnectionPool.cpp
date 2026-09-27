@@ -113,6 +113,17 @@ void ConnectionPool::closeAllSocket()
 }
 
 /**
+  * See 'PeerMessageSocket::showsRemotePeerActivity(..)'.
+  */
+bool ConnectionPool::showsRemotePeerActivity(qint64 period) const
+{
+   for (const QSharedPointer<PeerMessageSocket>& socket : this->getAllSockets())
+      if (socket->showsRemotePeerActivity(period))
+         return true;
+   return false;
+}
+
+/**
   * Close the idle sockets exceeding 'max_number_idle_socket'.
   * 'close()' only queues the removal from the pool, see 'addNewSocket(..)', and the list iterated is a copy anyway.
   */

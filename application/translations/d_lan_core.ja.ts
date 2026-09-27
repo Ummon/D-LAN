@@ -26,7 +26,7 @@
 <context>
     <name>DM::DownloadManager</name>
     <message>
-        <location filename="../Core/DownloadManager/priv/DownloadManager.cpp" line="223"/>
+        <location filename="../Core/DownloadManager/priv/DownloadManager.cpp" line="218"/>
         <source>The file &apos;%1&apos; is already in queue</source>
         <translation>ファイル &apos;%1&apos; はすでにキューにあります</translation>
     </message>
