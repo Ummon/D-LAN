@@ -180,7 +180,7 @@
 <context>
     <name>GUI::CheckBoxList</name>
     <message>
-        <location filename="../GUI/CheckBoxList.cpp" line="100"/>
+        <location filename="../GUI/CheckBoxList.cpp" line="124"/>
         <source>&lt;Nothing&gt;</source>
         <translation>&lt;없음&gt;</translation>
     </message>
@@ -654,7 +654,7 @@
 <context>
     <name>GUI::SearchMenu</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="220"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="235"/>
         <source>Browse</source>
         <translation>탐색</translation>
     </message>
@@ -696,32 +696,32 @@
 <context>
     <name>GUI::SearchWidget</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="350"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="365"/>
         <source>Open location</source>
         <translation>위치 열기</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="351"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="366"/>
         <source>Browse</source>
         <translation>탐색</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="430"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="445"/>
         <source>1 directory</source>
         <translation>폴더 1개</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="430"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="445"/>
         <source>%1 directories</source>
         <translation>폴더 %1개</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="431"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="446"/>
         <source>1 file</source>
         <translation>파일 1개</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="431"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="446"/>
         <source>%1 files</source>
         <translation>파일 %1개</translation>
     </message>
@@ -814,22 +814,22 @@
 <context>
     <name>GUI::SharedEntryListModel</name>
     <message>
-        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="285"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="284"/>
         <source>Name</source>
         <translation>이름</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="286"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="285"/>
         <source>Path</source>
         <translation>경로</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="287"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="286"/>
         <source>Size</source>
         <translation>크기</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="288"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="287"/>
         <source>Free space</source>
         <translation>여유 공간</translation>
     </message>
@@ -896,7 +896,7 @@
 <context>
     <name>GUI::UploadsModel</name>
     <message>
-        <location filename="../GUI/Uploads/UploadsModel.cpp" line="57"/>
+        <location filename="../GUI/Uploads/UploadsModel.cpp" line="60"/>
         <source>&lt;unknown&gt;</source>
         <translation>&lt;알 수 없음&gt;</translation>
     </message>
@@ -1026,12 +1026,12 @@
         <translation>로컬</translation>
     </message>
     <message>
-        <location filename="../GUI/Utils.cpp" line="50"/>
+        <location filename="../GUI/Utils.cpp" line="49"/>
         <source>Select one or more directories and/or files</source>
         <translation>폴더 및/또는 파일을 하나 이상 선택하십시오</translation>
     </message>
     <message>
-        <location filename="../GUI/Utils.cpp" line="60"/>
+        <location filename="../GUI/Utils.cpp" line="59"/>
         <source>Select a directory where to download to</source>
         <translation>다운로드할 폴더를 선택하십시오</translation>
     </message>
