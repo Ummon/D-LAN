@@ -130,6 +130,12 @@ namespace FM
       virtual QSharedPointer<IGetHashesResult> getHashes(const Protos::Common::Entry& file) = 0;
 
       /**
+        * Append the given files to the hashing priority queue, in the given order.
+        * Unknown or already hashed files are ignored, files already prioritized keep their place.
+        */
+      virtual void prioritizeEntriesToHash(const QList<Protos::Common::Entry>& files) = 0;
+
+      /**
         * Returns the directories and files contained in the given directory. It may wait a while ('get_entries_timeout') if the directory is being scanned.
         */
       virtual QSharedPointer<IGetEntriesResult> getScannedEntries(const Protos::Common::Entry& dir, int maxNbHashesPerEntry = std::numeric_limits<int>::max()) = 0;

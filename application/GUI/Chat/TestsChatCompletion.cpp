@@ -809,6 +809,44 @@ private slots:
       }
    }
 
+   void resentMessagesAreDisplayedOnce()
+   {
+      Fixture f(QStringList {});
+      const auto* model = qobject_cast<const GUI::ChatModel*>(f.widget.findChild<QTableView*>("tblChat")->model());
+      QVERIFY(model);
+
+      // Sorted from oldest to youngest, as the core sends them. The text of a message is its ID.
+      const auto chatMessages = [](const QList<QPair<quint64, quint64>>& idsAndTimes) {
+         Protos::Common::ChatMessages messages;
+         for (const auto& [id, time] : idsAndTimes)
+         {
+            auto* message = messages.add_messages();
+            message->set_id(id);
+            message->set_time(time);
+            message->set_peer_nick("Alice");
+            message->set_message(QString::number(id).toStdString());
+         }
+         return messages;
+      };
+      const auto displayedIDs = [model] {
+         QStringList result;
+         for (int row = 0; row < model->rowCount(); row++)
+            result << model->getMessageStr(row);
+         return result.join(' ');
+      };
+
+      emit f.connection->newChatMessages(chatMessages({ { 1, 1000 }, { 2, 2000 }, { 3, 3000 } }));
+      QCOMPARE(displayedIDs(), QString("1 2 3"));
+
+      // The history sent again after a reconnection, with a message we missed and a message repeated in the same
+      // batch. The oldest message is a duplicate: the missed one before it must still be inserted.
+      emit f.connection->newChatMessages(chatMessages({ { 1, 1000 }, { 4, 1500 }, { 2, 2000 }, { 3, 3000 }, { 3, 3000 } }));
+      QCOMPARE(displayedIDs(), QString("1 4 2 3"));
+
+      emit f.connection->newChatMessages(chatMessages({ { 3, 3000 } }));
+      QCOMPARE(displayedIDs(), QString("1 4 2 3"));
+   }
+
    void filtersAndAccepts_data()
    {
       QTest::addColumn<int>("acceptKey");

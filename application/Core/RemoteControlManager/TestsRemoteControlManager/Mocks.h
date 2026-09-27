@@ -84,6 +84,7 @@ public:
    QList<QSharedPointer<FM::IChunk>> newFile(Protos::Common::Entry&) override { return {}; }
    void newDirectory(Protos::Common::Entry&) override {}
    QSharedPointer<FM::IGetHashesResult> getHashes(const Protos::Common::Entry&) override { return {}; }
+   void prioritizeEntriesToHash(const QList<Protos::Common::Entry>&) override {}
    QSharedPointer<FM::IGetEntriesResult> getScannedEntries(const Protos::Common::Entry&, int) override { return {}; }
    Protos::Common::Entries getEntries(const Protos::Common::Entry&, int) override { return {}; }
    Protos::Common::Entries getEntries() override { return {}; }

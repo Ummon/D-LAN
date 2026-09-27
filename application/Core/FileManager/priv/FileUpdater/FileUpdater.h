@@ -59,6 +59,7 @@ namespace FM
 
       void stop();
       void prioritizeAFileToHash(File* file);
+      void prioritizeFilesToHash(const QList<File*>& files);
 
       bool isScanning() const;
       bool isHashing() const;

@@ -28,6 +28,7 @@ using namespace FM;
 #include <QVector>
 #include <QDir>
 #include <QMutableListIterator>
+#include <QThread>
 
 #include <google/protobuf/text_format.h>
 
@@ -257,6 +258,20 @@ void FileManager::newDirectory(Protos::Common::Entry& entry)
 QSharedPointer<IGetHashesResult> FileManager::getHashes(const Protos::Common::Entry& file)
 {
    return QSharedPointer<IGetHashesResult>(new GetHashesResult(file, this->cache, this->fileUpdater));
+}
+
+void FileManager::prioritizeEntriesToHash(const QList<Protos::Common::Entry>& files)
+{
+   // Physical deletion of entries runs on the cache thread: the looked-up files stay alive until enqueued.
+   Q_ASSERT(QThread::currentThread() == this->cache.thread());
+
+   QList<File*> filesToHash;
+   for (const auto& entry : files)
+      if (File* file = this->cache.getFile(entry))
+         filesToHash << file;
+
+   if (!filesToHash.isEmpty())
+      this->fileUpdater.prioritizeFilesToHash(filesToHash);
 }
 
 QSharedPointer<IGetEntriesResult> FileManager::getScannedEntries(const Protos::Common::Entry& dir, int maxNbHashesPerEntry)

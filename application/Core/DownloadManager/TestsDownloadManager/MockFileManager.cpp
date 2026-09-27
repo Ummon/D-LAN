@@ -59,6 +59,11 @@ QSharedPointer<FM::IGetHashesResult> MockFileManager::getHashes(const Protos::Co
    return QSharedPointer<FM::IGetHashesResult>();
 }
 
+void MockFileManager::prioritizeEntriesToHash(const QList<Protos::Common::Entry>& files)
+{
+
+}
+
 QSharedPointer<FM::IGetEntriesResult> MockFileManager::getScannedEntries(const Protos::Common::Entry& dir, int maxNbHashesPerEntry)
 {
    return QSharedPointer<FM::IGetEntriesResult>();

@@ -294,6 +294,12 @@ void ChatModel::newChatMessages(const Protos::Common::ChatMessages& messages)
 
    for (int i = messages.messages_size() - 1; i >= 0; i--)
    {
+      // The core sends its whole history again each time we authenticate: a message can be received
+      // several times and is displayed only once.
+      if (this->messageIDs.contains(messages.messages(i).id()))
+         continue;
+      this->messageIDs.insert(messages.messages(i).id());
+
       const Common::Hash peerID(messages.messages(i).peer_id().hash());
 
       bool isTheMessageAnsweringToUs = false;
@@ -328,15 +334,14 @@ void ChatModel::newChatMessages(const Protos::Common::ChatMessages& messages)
       }
 
       toInsert << message;
+   }
 
-      // Special case for the last message.
-      if (i == 0)
-      {
-         this->beginInsertRows(QModelIndex(), j, j + toInsert.size() - 1);
-         for (QListIterator<Message> k(toInsert); k.hasNext();)
-            this->messages.insert(j, k.next());
-         this->endInsertRows();
-      }
+   if (!toInsert.isEmpty())
+   {
+      this->beginInsertRows(QModelIndex(), j, j + toInsert.size() - 1);
+      for (QListIterator<Message> k(toInsert); k.hasNext();)
+         this->messages.insert(j, k.next());
+      this->endInsertRows();
    }
 
    static const quint32 MAX_NB_MESSAGES = SETTINGS.get<quint32>("max_chat_message_displayed");
@@ -344,6 +349,9 @@ void ChatModel::newChatMessages(const Protos::Common::ChatMessages& messages)
 
    if (nbMessageToDelete > 0)
    {
+      for (int i = 0; i < nbMessageToDelete; i++)
+         this->messageIDs.remove(this->messages[i].ID);
+
       this->beginRemoveRows(QModelIndex(), 0, nbMessageToDelete - 1);
       this->messages.erase(this->messages.begin(), this->messages.begin() + nbMessageToDelete);
       this->endRemoveRows();

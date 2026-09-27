@@ -23,6 +23,7 @@
 #include <QSharedPointer>
 #include <QDateTime>
 #include <QList>
+#include <QSet>
 #include <QSize>
 #include <QFont>
 // #include <QRegularExpression>
@@ -136,6 +137,7 @@ namespace GUI
 
       QString roomName; // Empty for main chat.
       QList<Message> messages; // Always sorted by date-time.
+      QSet<quint64> messageIDs; // The IDs of 'messages'.
       QList<Common::Hash> peersAnsweringToUs;
 
       // QRegularExpression regexMatchMessageContent;

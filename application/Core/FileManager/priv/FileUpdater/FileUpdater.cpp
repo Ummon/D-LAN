@@ -214,20 +214,35 @@ void FileUpdater::rmRoot(SharedEntry* sharedEntry, Directory* dir)
 
 void FileUpdater::prioritizeAFileToHash(File* file)
 {
+   this->prioritizeFilesToHash({ file });
+}
+
+/**
+  * Files are appended to the priority queue in the given order.
+  * A file already prioritized keeps its place.
+  */
+void FileUpdater::prioritizeFilesToHash(const QList<File*>& files)
+{
    QMutexLocker locker(&this->mutex);
 
-   L_DEBU(QString("FileUpdater::prioritizeAFileToHash: %1").arg(file->getAbsolutePath()));
-
-   const qint64 remaining = file->getRemainingBytesToHash();
-   if (remaining > 0)
+   bool prioritized = false;
+   for (File* file : files)
    {
-      this->hashingQueue.enqueue(file, remaining, true);
-      // Let the in-flight chunk finish. The next selection observes the new priority.
-      this->dirEvent->release();
-   }
-   else
-      L_DEBU(QString("FileUpdater::prioritizeAFileToHash, unable to prioritize: %1").arg(file->getAbsolutePath()));
+      L_DEBU(QString("FileUpdater::prioritizeFilesToHash: %1").arg(file->getAbsolutePath()));
 
+      const qint64 remaining = file->getRemainingBytesToHash();
+      if (remaining > 0)
+      {
+         this->hashingQueue.enqueue(file, remaining, true);
+         prioritized = true;
+      }
+      else
+         L_DEBU(QString("FileUpdater::prioritizeFilesToHash, unable to prioritize: %1").arg(file->getAbsolutePath()));
+   }
+
+   // Let the in-flight chunk finish. The next selection observes the new priority.
+   if (prioritized)
+      this->dirEvent->release();
 }
 
 static bool isEntryUnder(Entry* entry, Entry* root);
