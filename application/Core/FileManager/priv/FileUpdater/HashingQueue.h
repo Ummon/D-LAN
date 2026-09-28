@@ -14,7 +14,15 @@ namespace FM
    class HashingQueue
    {
    public:
-      void enqueue(File* file, qint64 remaining, bool prioritize = false)
+      // Ascending: a file waiting in a higher tier is always hashed first.
+      enum class Priority
+      {
+         Normal,
+         Hinted, // Files a peer will ask the hashes of soon, see 'IFileManager::prioritizeEntriesToHash(..)'.
+         Requested // Files a peer is currently asking the hashes of.
+      };
+
+      void enqueue(File* file, qint64 remaining, Priority priority = Priority::Normal)
       {
          if (remaining <= 0)
          {
@@ -25,23 +33,23 @@ namespace FM
          auto it = this->work.find(file);
          if (it == this->work.end())
          {
-            this->work.insert(file, Work { remaining, prioritize, -1 });
-            (prioritize ? this->priority : this->normal).append(file);
+            this->work.insert(file, Work { remaining, priority, -1 });
+            this->list(priority).append(file);
             this->remaining += remaining;
             return;
          }
 
          this->remaining += remaining - it->remaining;
          it->remaining = remaining;
-         if (prioritize && !it->priority)
+         if (priority > it->priority)
          {
-            it->priority = true;
             // Promotion changes priority, but never bypasses an I/O retry deadline.
             if (it->retryAt < 0)
             {
-               this->normal.removeOne(file);
-               this->priority.append(file);
+               this->list(it->priority).removeOne(file);
+               this->list(priority).append(file);
             }
+            it->priority = priority;
          }
       }
 
@@ -57,16 +65,16 @@ namespace FM
 
          if (ioError)
          {
-            (it->priority ? this->priority : this->normal).removeOne(file);
+            this->list(it->priority).removeOne(file);
             if (it->retryAt < 0)
                this->retries.append(file);
             it->retryAt = now + retryDelay;
          }
-         else if (it->priority && it->retryAt < 0)
+         else if (it->priority == Priority::Requested && it->retryAt < 0)
          {
-            // Share each hashing batch fairly between prioritized requests.
-            this->priority.removeOne(file);
-            this->priority.append(file);
+            // Share each hashing batch fairly between requests. Hinted files keep the order they were given.
+            this->requested.removeOne(file);
+            this->requested.append(file);
          }
       }
 
@@ -81,7 +89,7 @@ namespace FM
                continue;
             }
             job.retryAt = -1;
-            (job.priority ? this->priority : this->normal).append(*it);
+            this->list(job.priority).append(*it);
             it = this->retries.erase(it);
          }
       }
@@ -99,8 +107,10 @@ namespace FM
 
       File* next() const
       {
-         return !this->priority.isEmpty() ? this->priority.first() :
-            !this->normal.isEmpty() ? this->normal.first() : nullptr;
+         for (const QList<File*>* files : { &this->requested, &this->hinted, &this->normal })
+            if (!files->isEmpty())
+               return files->first();
+         return nullptr;
       }
 
       void remove(File* file)
@@ -112,7 +122,7 @@ namespace FM
          if (it->retryAt >= 0)
             this->retries.removeOne(file);
          else
-            (it->priority ? this->priority : this->normal).removeOne(file);
+            this->list(it->priority).removeOne(file);
          this->work.erase(it);
       }
 
@@ -128,7 +138,8 @@ namespace FM
                ++it;
          const auto removed = [this](File* file) { return !this->contains(file); };
          this->normal.removeIf(removed);
-         this->priority.removeIf(removed);
+         this->hinted.removeIf(removed);
+         this->requested.removeIf(removed);
          this->retries.removeIf(removed);
       }
 
@@ -138,15 +149,27 @@ namespace FM
       qint64 remainingBytes() const { return this->remaining; }
 
    private:
+      QList<File*>& list(Priority priority)
+      {
+         switch (priority)
+         {
+         case Priority::Requested: return this->requested;
+         case Priority::Hinted: return this->hinted;
+         case Priority::Normal: break;
+         }
+         return this->normal;
+      }
+
       struct Work
       {
          qint64 remaining;
-         bool priority;
+         Priority priority;
          qint64 retryAt;
       };
       QHash<File*, Work> work;
       QList<File*> normal;
-      QList<File*> priority;
+      QList<File*> hinted;
+      QList<File*> requested;
       QList<File*> retries;
       qint64 remaining = 0;
    };

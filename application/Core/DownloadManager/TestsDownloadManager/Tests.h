@@ -93,6 +93,8 @@ private slots:
    void downloadWithOmittedHashes_data();
    void downloadWithOmittedHashes();
    void dontAskHashesToBusyPeer();
+   void giveNextFilesToHash();
+   void limitNumberOfNextFilesToHash();
    void noRequestWhileDestroyingQueue();
    void freedPeerAsksItsOwnHashes();
    void restartAllErroneousDownloads();

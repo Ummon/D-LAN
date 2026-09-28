@@ -26,6 +26,7 @@ using namespace PM;
 #include <Protos/core_protocol.pb.h>
 #include <Protos/common.pb.h>
 
+#include <Common/Constants.h>
 #include <Common/Settings.h>
 #include <Common/ProtoHelper.h>
 
@@ -522,6 +523,14 @@ void PeerMessageSocket::onNewMessage(const Common::Message& message)
          );
          Protos::Core::GetHashesResult res = this->currentHashesResult->start();
          this->nbHash = res.nb_hash();
+
+         // After 'start()': the asked file is hashed before the next files.
+         // Limited here too, a peer can't prioritize all our files.
+         QList<Protos::Common::Entry> nextFiles;
+         for (int i = 0; i < getHashes.next_files_size() && i < Common::Constants::MAX_NB_NEXT_FILES_TO_HASH; i++)
+            nextFiles << getHashes.next_files(i);
+         if (!nextFiles.isEmpty())
+            this->fileManager->prioritizeEntriesToHash(nextFiles);
 
          this->send(Common::MessageHeader::CORE_GET_HASHES_RESULT, res);
 

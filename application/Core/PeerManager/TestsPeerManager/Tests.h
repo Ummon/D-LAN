@@ -77,6 +77,7 @@ private slots:
    void askForHashes();
    void incomingTransactions_data();
    void incomingTransactions();
+   void incomingNextFilesArePrioritized();
    void rejectUnexpectedOutgoingMessages_data();
    void rejectUnexpectedOutgoingMessages();
    void validateChunkOffsets();

@@ -321,7 +321,9 @@ void Tests::askForHashes()
       this->resultListener.getEntriesResultList().constFirst().results(0).entries().entries(0).shared_entry()
    );
 
-   QSharedPointer<IGetHashesResult> result = this->peerManagers[0]->getPeers()[0]->getHashes(fileEntry);
+   Protos::Core::GetHashes hashesRequest;
+   hashesRequest.mutable_file()->CopyFrom(fileEntry);
+   QSharedPointer<IGetHashesResult> result = this->peerManagers[0]->getPeers()[0]->getHashes(hashesRequest);
    QVERIFY(!result.isNull());
    connect(result.data(), &IGetHashesResult::result, &this->resultListener, &ResultListener::hashesResult);
    connect(result.data(), &IGetHashesResult::nextHash, &this->resultListener, &ResultListener::nextHashResult);
@@ -790,7 +792,7 @@ void Tests::requestSocketLifecycle()
    if (hashes)
    {
       hashResult = QSharedPointer<PM::GetHashesResult>(
-         new PM::GetHashesResult(Protos::Common::Entry(), previous), &PM::GetHashesResult::doDeleteLater);
+         new PM::GetHashesResult(Protos::Core::GetHashes(), previous), &PM::GetHashesResult::doDeleteLater);
       request = hashResult.data();
       connect(hashResult.data(), &IGetHashesResult::result, &context,
          [&](const Protos::Core::GetHashesResult&) { ++received; });
@@ -875,7 +877,7 @@ void Tests::requestSocketLifecycle()
    if (hashes)
    {
       nextHashes = QSharedPointer<PM::GetHashesResult>(
-         new PM::GetHashesResult(Protos::Common::Entry(), next), &PM::GetHashesResult::doDeleteLater);
+         new PM::GetHashesResult(Protos::Core::GetHashes(), next), &PM::GetHashesResult::doDeleteLater);
       connect(nextHashes.data(), &IGetHashesResult::result, &context,
          [&](const Protos::Core::GetHashesResult& value) {
             if (value.nb_hash() == 0) ++nextResponses;
@@ -980,7 +982,7 @@ void Tests::resultStartsOnlyOnce()
    }
    else if (kind == 1)
    {
-      hashes = QSharedPointer<PM::GetHashesResult>(new PM::GetHashesResult(Protos::Common::Entry(), socket),
+      hashes = QSharedPointer<PM::GetHashesResult>(new PM::GetHashesResult(Protos::Core::GetHashes(), socket),
          &PM::GetHashesResult::doDeleteLater);
       start = [&] { hashes->start(); };
       result = hashes.data();
@@ -1255,6 +1257,115 @@ void Tests::incomingTransactions()
       client.flush();
       QTRY_COMPARE(idle.count(), 3); // Message parsing resumes after the upload finishes.
    }
+}
+
+namespace
+{
+   /**
+     * Forwards to a real file manager and records the hashing requests.
+     */
+   class RecordingFileManager : public FM::IFileManager
+   {
+   public:
+      RecordingFileManager(QSharedPointer<FM::IFileManager> fileManager) : fileManager(fileManager) {}
+
+      QStringList calls;
+      QList<Protos::Common::Entry> prioritizedEntries;
+
+      void setSharedPaths(const QList<SharedPath>& paths) override { this->fileManager->setSharedPaths(paths); }
+      QPair<Common::SharedEntry, QString> addASharedPath(const QString& path) override { return this->fileManager->addASharedPath(path); }
+      QList<Common::SharedEntry> getSharedEntries() const override { return this->fileManager->getSharedEntries(); }
+      QString getSharedEntry(const Common::Hash& ID) const override { return this->fileManager->getSharedEntry(ID); }
+      QSharedPointer<FM::IChunk> getChunk(const Common::Hash& hash) const override { return this->fileManager->getChunk(hash); }
+      QList<QSharedPointer<FM::IChunk>> getAllChunks(const Protos::Common::Entry& entry, const QList<Common::Hash>& hashes) const override { return this->fileManager->getAllChunks(entry, hashes); }
+      void updateFromQueueEntry(const Protos::Queue::Queue_Entry& entry) override { this->fileManager->updateFromQueueEntry(entry); }
+      QList<QSharedPointer<FM::IChunk>> newFile(Protos::Common::Entry& entry) override { return this->fileManager->newFile(entry); }
+      void newDirectory(Protos::Common::Entry& entry) override { this->fileManager->newDirectory(entry); }
+      QSharedPointer<FM::IGetHashesResult> getHashes(const Protos::Common::Entry& file) override
+      {
+         this->calls << "getHashes";
+         return this->fileManager->getHashes(file);
+      }
+      void prioritizeEntriesToHash(const QList<Protos::Common::Entry>& files) override
+      {
+         this->calls << "prioritizeEntriesToHash";
+         this->prioritizedEntries << files;
+         this->fileManager->prioritizeEntriesToHash(files);
+      }
+      QSharedPointer<FM::IGetEntriesResult> getScannedEntries(const Protos::Common::Entry& dir, int maxNbHashesPerEntry) override { return this->fileManager->getScannedEntries(dir, maxNbHashesPerEntry); }
+      Protos::Common::Entries getEntries(const Protos::Common::Entry& dir, int maxNbHashesPerEntry) override { return this->fileManager->getEntries(dir, maxNbHashesPerEntry); }
+      Protos::Common::Entries getEntries() override { return this->fileManager->getEntries(); }
+      QList<Protos::Common::FindResult> find(const QString& words, int maxNbResult, int maxSize) override { return this->fileManager->find(words, maxNbResult, maxSize); }
+      QList<Protos::Common::FindResult> find(const QString& words, const QList<QString>& extensions, qint64 minFileSize, qint64 maxFileSize, Protos::Common::FindPattern_Category category, int maxNbResult, int maxSize, bool setSharedEntryPath) override
+      {
+         return this->fileManager->find(words, extensions, minFileSize, maxFileSize, category, maxNbResult, maxSize, setSharedEntryPath);
+      }
+      QBitArray haveChunks(const QList<Common::Hash>& hashes) override { return this->fileManager->haveChunks(hashes); }
+      qint64 getAmount() override { return this->fileManager->getAmount(); }
+      CacheStatus getCacheStatus() const override { return this->fileManager->getCacheStatus(); }
+      int getProgress() const override { return this->fileManager->getProgress(); }
+      QString getWordIndex_debug() const override { return this->fileManager->getWordIndex_debug(); }
+      QString getSimilarFiles_debug() const override { return this->fileManager->getSimilarFiles_debug(); }
+      QString getCacheTree_debug() const override { return this->fileManager->getCacheTree_debug(); }
+
+   private:
+      QSharedPointer<FM::IFileManager> fileManager;
+   };
+}
+
+void Tests::incomingNextFilesArePrioritized()
+{
+   auto* manager = static_cast<PM::PeerManager*>(this->peerManagers[1].data());
+   const auto sharedEntry = this->resultListener.getEntriesResultList().constFirst().results(0).entries().entries(0).shared_entry();
+
+   Protos::Core::GetHashes hashes;
+   auto* file = hashes.mutable_file();
+   file->set_type(Protos::Common::Entry::FILE);
+   file->set_path("/");
+   file->set_name("big.bin");
+   file->set_size(quint64(4) * Common::Constants::CHUNK_SIZE);
+   for (int i = 0; i < 4; ++i)
+      file->add_chunks();
+   file->mutable_shared_entry()->CopyFrom(sharedEntry);
+   const int NB_NEXT_FILES = Common::Constants::MAX_NB_NEXT_FILES_TO_HASH + 6;
+   for (int i = 0; i < NB_NEXT_FILES; ++i)
+   {
+      auto* next = hashes.add_next_files();
+      next->set_type(Protos::Common::Entry::FILE);
+      next->set_path("/");
+      next->set_name(QString("next-%1.bin").arg(i).toStdString());
+      next->set_size(1);
+      next->mutable_shared_entry()->CopyFrom(sharedEntry);
+   }
+
+   QByteArray request;
+   QBuffer buffer(&request);
+   QVERIFY(buffer.open(QIODevice::WriteOnly));
+   Common::Message::writeMessageToDevice(&buffer,
+      Common::MessageHeader(Common::MessageHeader::CORE_GET_HASHES, hashes.ByteSizeLong(), this->peerIDs[0]), &hashes);
+
+   QTcpServer server;
+   QVERIFY(server.listen(QHostAddress::LocalHost, 0));
+   QTcpSocket client;
+   client.connectToHost(QHostAddress::LocalHost, server.serverPort());
+   QTRY_COMPARE(client.state(), QAbstractSocket::ConnectedState);
+   QTRY_VERIFY(server.hasPendingConnections());
+   auto* accepted = server.nextPendingConnection();
+   accepted->setParent(nullptr);
+   auto fileManager = QSharedPointer<RecordingFileManager>::create(this->fileManagers[1]);
+   auto socket = QSharedPointer<PM::PeerMessageSocket>(
+      new PM::PeerMessageSocket(manager, fileManager, this->peerIDs[0], accepted));
+
+   QCOMPARE(client.write(request), qint64(request.size()));
+   client.flush();
+   QTRY_COMPARE(accepted->bytesAvailable(), qint64(request.size()));
+   socket->startListening();
+
+   // The asked file is queued first, it must be hashed before the next files.
+   QCOMPARE(fileManager->calls, QStringList({ "getHashes", "prioritizeEntriesToHash" }));
+   QCOMPARE(fileManager->prioritizedEntries.size(), Common::Constants::MAX_NB_NEXT_FILES_TO_HASH);
+   for (int i = 0; i < fileManager->prioritizedEntries.size(); ++i)
+      QCOMPARE(QString::fromStdString(fileManager->prioritizedEntries[i].name()), QString("next-%1.bin").arg(i));
 }
 
 void Tests::rejectUnexpectedOutgoingMessages_data()

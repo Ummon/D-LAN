@@ -215,12 +215,14 @@ namespace
    public:
       using ResumePeer::ResumePeer;
       Protos::Common::Entry requestedEntry;
+      Protos::Core::GetHashes lastRequest;
       int nbRequests = 0;
       QSharedPointer<PM::IGetHashesResult> hashes = QSharedPointer<PendingHashesResult>::create();
-      QSharedPointer<PM::IGetHashesResult> getHashes(const Protos::Common::Entry& entry) override
+      QSharedPointer<PM::IGetHashesResult> getHashes(const Protos::Core::GetHashes& request) override
       {
          this->nbRequests++;
-         this->requestedEntry = entry;
+         this->requestedEntry = request.file();
+         this->lastRequest = request;
          return this->hashes;
       }
    };
@@ -245,11 +247,11 @@ namespace
       using HashPeer::HashPeer;
       bool available = true;
       bool isAvailable() const override { return this->available; }
-      QSharedPointer<PM::IGetHashesResult> getHashes(const Protos::Common::Entry& entry) override
+      QSharedPointer<PM::IGetHashesResult> getHashes(const Protos::Core::GetHashes& request) override
       {
          if (!this->available)
             return {};
-         return HashPeer::getHashes(entry);
+         return HashPeer::getHashes(request);
       }
    };
 
@@ -890,6 +892,100 @@ void Tests::dontAskHashesToBusyPeer()
    QVERIFY(!second.retrieveHashes());
    QCOMPARE(peer.nbRequests, 1);
    QCOMPARE(second.getStatus(), Protos::Common::DownloadStatus::QUEUED);
+}
+
+namespace
+{
+   QStringList namesOfNextFilesToHash(const Protos::Core::GetHashes& request)
+   {
+      QStringList names;
+      for (const auto& entry : request.next_files())
+         names << QString::fromStdString(entry.name());
+      return names;
+   }
+}
+
+/**
+  * The files after the asked one with the same peer source and unknown hashes are given, in the queue order.
+  * A file which doesn't fit in the remaining size is skipped and a file is given only once.
+  */
+void Tests::giveNextFilesToHash()
+{
+   HashPeer peer(this->fileManager);
+   HashPeer otherPeer(this->fileManager);
+   LinkedPeers links;
+   OccupiedPeers asking, downloading;
+   Common::ThreadPool pool(1);
+   Common::TransferRateCalculator rate;
+   DownloadQueue queue;
+   const qint64 MiB = 1024 * 1024;
+
+   auto add = [&](const char* name, qint64 size, PM::IPeer* source = nullptr,
+                  Protos::Queue::Queue::Entry::Status status = Protos::Queue::Queue::Entry::QUEUED) {
+      Protos::Common::Entry entry;
+      entry.set_type(Protos::Common::Entry::FILE);
+      entry.set_path("/");
+      entry.set_name(name);
+      entry.set_size(size);
+      auto download = new FileDownload(this->fileManager, links, asking, downloading, pool, source ? source : &peer,
+         entry, entry, rate, status, &queue);
+      queue.insert(queue.size(), download);
+      return download;
+   };
+
+   FileDownload* asked = add("asked.bin", Common::Constants::CHUNK_SIZE);
+   add("other-peer.bin", 1, &otherPeer);
+   add("paused.bin", 1, nullptr, Protos::Queue::Queue::Entry::PAUSED);
+   add("empty.bin", 0); // No hash.
+   add("too-big.bin", Common::Constants::MAX_SIZE_NEXT_FILES_TO_HASH + 1);
+   add("a.bin", 20 * MiB);
+   add("b.bin", 20 * MiB);
+   add("c.bin", 20 * MiB);
+   FileDownload* skipped = add("skipped.bin", 20 * MiB);
+   add("fill.bin", Common::Constants::MAX_SIZE_NEXT_FILES_TO_HASH - 60 * MiB);
+   add("last.bin", 1);
+
+   QVERIFY(asked->retrieveHashes());
+   QCOMPARE(peer.nbRequests, 1);
+   QCOMPARE(peer.lastRequest.file().name(), std::string("asked.bin"));
+   QCOMPARE(namesOfNextFilesToHash(peer.lastRequest), QStringList({ "a.bin", "b.bin", "c.bin", "fill.bin" }));
+   for (const auto& entry : peer.lastRequest.next_files())
+      QCOMPARE(entry.chunks_size(), 0);
+
+   asking.setPeerAsFree(&peer);
+   QVERIFY(skipped->retrieveHashes());
+   QCOMPARE(peer.nbRequests, 2);
+   QCOMPARE(namesOfNextFilesToHash(peer.lastRequest), QStringList({ "last.bin" })); // Never given twice.
+
+   asking.setPeerAsFree(&peer);
+   QVERIFY(!asked->retrieveHashes()); // Still getting its hashes.
+}
+
+void Tests::limitNumberOfNextFilesToHash()
+{
+   HashPeer peer(this->fileManager);
+   LinkedPeers links;
+   OccupiedPeers asking, downloading;
+   Common::ThreadPool pool(1);
+   Common::TransferRateCalculator rate;
+   DownloadQueue queue;
+
+   for (int i = 0; i <= Common::Constants::MAX_NB_NEXT_FILES_TO_HASH + 1; i++)
+   {
+      Protos::Common::Entry entry;
+      entry.set_type(Protos::Common::Entry::FILE);
+      entry.set_path("/");
+      entry.set_name(QString("%1.bin").arg(i).toStdString());
+      entry.set_size(1);
+      queue.insert(queue.size(), new FileDownload(this->fileManager, links, asking, downloading, pool, &peer,
+         entry, entry, rate, Protos::Queue::Queue::Entry::QUEUED, &queue));
+   }
+
+   QVERIFY(static_cast<FileDownload*>(queue[0])->retrieveHashes());
+   const QStringList names = namesOfNextFilesToHash(peer.lastRequest);
+   QCOMPARE(names.size(), Common::Constants::MAX_NB_NEXT_FILES_TO_HASH);
+   QCOMPARE(names.first(), QString("1.bin"));
+   QCOMPARE(names.last(), QString("%1.bin").arg(Common::Constants::MAX_NB_NEXT_FILES_TO_HASH));
 }
 
 /**

@@ -247,7 +247,8 @@ Download* DownloadManager::addDownload(
             remoteEntry,
             localEntry,
             this->transferRateCalculator,
-            status
+            status,
+            &this->downloadQueue
          );
          newDownload = fileDownload;
          connect(fileDownload, &FileDownload::newHashKnown, this, &DownloadManager::setQueueChanged, Qt::DirectConnection);

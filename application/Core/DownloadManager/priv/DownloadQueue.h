@@ -61,6 +61,7 @@ namespace DM
 
       void peerBecomesAvailable(PM::IPeer* peer);
       bool isAPeerSource(PM::IPeer* peer) const;
+      QList<FileDownload*> getNextFilesToHash(const FileDownload* current);
 
       void moveDownloads(const QList<quint64>& downloadIDRefs, const QList<quint64>& downloadIDs, Protos::GUI::MoveDownloads::Position position);
       bool removeDownloads(const DownloadPredicate& predicate);

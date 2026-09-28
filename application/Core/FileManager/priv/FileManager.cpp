@@ -271,7 +271,7 @@ void FileManager::prioritizeEntriesToHash(const QList<Protos::Common::Entry>& fi
          filesToHash << file;
 
    if (!filesToHash.isEmpty())
-      this->fileUpdater.prioritizeFilesToHash(filesToHash);
+      this->fileUpdater.prioritizeFilesToHash(filesToHash, HashingQueue::Priority::Hinted);
 }
 
 QSharedPointer<IGetEntriesResult> FileManager::getScannedEntries(const Protos::Common::Entry& dir, int maxNbHashesPerEntry)

@@ -131,6 +131,37 @@ bool DownloadQueue::isAPeerSource(PM::IPeer* peer) const
    return this->downloadsIndexedBySourcePeer.contains(peer);
 }
 
+/**
+  * The files to give with the hashes request of 'current', see 'Protos::Core::GetHashes::next_files'.
+  * They have the same peer source and are taken from the top of the queue.
+  * A file too big to fit in the remaining size is skipped, the following ones may still fit.
+  */
+QList<FileDownload*> DownloadQueue::getNextFilesToHash(const FileDownload* current)
+{
+   QList<FileDownload*> files;
+   qint64 totalSize = 0;
+
+   ScanningIterator<IsDownloadable> i(*this);
+   while (files.size() < Common::Constants::MAX_NB_NEXT_FILES_TO_HASH && totalSize < Common::Constants::MAX_SIZE_NEXT_FILES_TO_HASH)
+   {
+      FileDownload* fileDownload = static_cast<FileDownload*>(i.next());
+      if (!fileDownload)
+         break;
+
+      if (fileDownload == current || fileDownload->getPeerSource() != current->getPeerSource() || !fileDownload->canBeGivenAsNextFileToHash())
+         continue;
+
+      const qint64 size = fileDownload->getRemoteEntry().size();
+      if (totalSize + size > Common::Constants::MAX_SIZE_NEXT_FILES_TO_HASH)
+         continue;
+
+      totalSize += size;
+      files << fileDownload;
+   }
+
+   return files;
+}
+
 void DownloadQueue::moveDownloads(const QList<quint64>& downloadIDRefs, const QList<quint64>& downloadIDs, Protos::GUI::MoveDownloads::Position position)
 {
    if (downloadIDRefs.isEmpty() || downloadIDs.isEmpty())

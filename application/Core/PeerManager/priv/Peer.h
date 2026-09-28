@@ -90,7 +90,7 @@ namespace PM
       virtual void setAsDead();
 
       virtual QSharedPointer<IGetEntriesResult> getEntries(const Protos::Core::GetEntries& dirs) override;
-      virtual QSharedPointer<IGetHashesResult> getHashes(const Protos::Common::Entry& file) override;
+      virtual QSharedPointer<IGetHashesResult> getHashes(const Protos::Core::GetHashes& request) override;
       virtual QSharedPointer<IGetChunksResult> getChunks(const Protos::Core::GetChunks& chunk) override;
 
       void newConnexion(QTcpSocket* tcpSocket);

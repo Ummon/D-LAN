@@ -23,8 +23,8 @@ using namespace PM;
 
 #include <priv/Log.h>
 
-GetHashesResult::GetHashesResult(const Protos::Common::Entry& file, QSharedPointer<PeerMessageSocket> socket) :
-   IGetHashesResult(SETTINGS.get<quint32>("get_hashes_timeout")), file(file), socket(socket)
+GetHashesResult::GetHashesResult(const Protos::Core::GetHashes& request, QSharedPointer<PeerMessageSocket> socket) :
+   IGetHashesResult(SETTINGS.get<quint32>("get_hashes_timeout")), request(request), socket(socket)
 {
 }
 
@@ -38,10 +38,8 @@ void GetHashesResult::start()
    // The socket may be null if the connection pool was unable to give one, in this case the request will simply time out.
    if (!this->socket.isNull())
    {
-      Protos::Core::GetHashes message;
-      message.mutable_file()->CopyFrom(this->file);
       connect(this->socket.data(), &PeerMessageSocket::newMessage, this, &GetHashesResult::newMessage, Qt::DirectConnection);
-      socket->send(Common::MessageHeader::CORE_GET_HASHES, message);
+      socket->send(Common::MessageHeader::CORE_GET_HASHES, this->request);
    }
 }
 

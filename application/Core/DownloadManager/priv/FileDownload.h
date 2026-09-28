@@ -38,6 +38,8 @@
 
 namespace DM
 {
+   class DownloadQueue;
+
    class FileDownload : public Download
    {
       Q_OBJECT
@@ -53,7 +55,8 @@ namespace DM
          const Protos::Common::Entry& remoteEntry,
          const Protos::Common::Entry& localEntry,
          Common::TransferRateCalculator& transferRateCalculator,
-         Protos::Queue::Queue::Entry::Status status = Protos::Queue::Queue::Entry::QUEUED
+         Protos::Queue::Queue::Entry::Status status = Protos::Queue::Queue::Entry::QUEUED,
+         DownloadQueue* downloadQueue = nullptr
       );
       ~FileDownload() override;
 
@@ -77,6 +80,8 @@ namespace DM
 
       void remove() override;
 
+      bool canBeGivenAsNextFileToHash() const;
+
    public slots:
       bool retrieveHashes();
 
@@ -99,6 +104,7 @@ namespace DM
       void chunkDownloaderFinished();
 
    private:
+      bool hasHashesToRetrieve() const;
       bool tryToLinkToAnExistingFile();
       void connectChunkDownloaderSignals(const QSharedPointer<ChunkDownloader>& chunkDownload);
       bool createFile();
@@ -124,6 +130,9 @@ namespace DM
 
       int nbHashesKnown;
       QSharedPointer<PM::IGetHashesResult> getHashesResult;
+
+      DownloadQueue* downloadQueue; // To give the next files to hash to the peer source, may be null.
+      bool givenAsNextFileToHash = false; // Not persisted, see 'canBeGivenAsNextFileToHash()'.
 
       Common::TransferRateCalculator& transferRateCalculator;
 

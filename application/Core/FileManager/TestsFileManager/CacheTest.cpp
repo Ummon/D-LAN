@@ -843,8 +843,8 @@ void CacheTest::hashingSchedulerTransitions()
    queue.enqueue(first, 100);
    queue.enqueue(second, 200);
    queue.enqueue(third, 300);
-   queue.enqueue(second, 200, true);
-   queue.enqueue(third, 300, true);
+   queue.enqueue(second, 200, FM::HashingQueue::Priority::Requested);
+   queue.enqueue(third, 300, FM::HashingQueue::Priority::Requested);
    QCOMPARE(queue.remainingBytes(), qint64(600));
    QCOMPARE(queue.next(), second);
 
@@ -856,7 +856,7 @@ void CacheTest::hashingSchedulerTransitions()
    QCOMPARE(queue.next(), first); // A failed priority request must not block ordinary work.
    QCOMPARE(queue.retryTimeout(1000), 2100);
 
-   queue.enqueue(third, 300, true);
+   queue.enqueue(third, 300, FM::HashingQueue::Priority::Requested);
    queue.releaseDueRetries(3099);
    QCOMPARE(queue.next(), first);
    QCOMPARE(queue.retryTimeout(3099), 1);
@@ -874,7 +874,7 @@ void CacheTest::hashingSchedulerTransitions()
    QCOMPARE(queue.size(), qsizetype(1));
    queue.enqueue(first, 400); // A changed file replaces its previous contribution.
    QCOMPARE(queue.remainingBytes(), qint64(400));
-   queue.enqueue(second, 200, true);
+   queue.enqueue(second, 200, FM::HashingQueue::Priority::Requested);
    queue.enqueue(third, 300);
    queue.finishPass(third, 300, true, 3400, 3000);
    queue.removeIf([first](FM::File* file) { return file != first; });
@@ -884,6 +884,50 @@ void CacheTest::hashingSchedulerTransitions()
    QVERIFY(queue.isEmpty());
    QVERIFY(!queue.next());
    QCOMPARE(queue.remainingBytes(), qint64(0));
+}
+
+void CacheTest::hashingQueueHintedTier()
+{
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   auto normal = new FM::File(root, "normal", 100, false, QDateTime(), root->getRootDir());
+   auto firstHint = new FM::File(root, "first-hint", 100, false, QDateTime(), root->getRootDir());
+   auto secondHint = new FM::File(root, "second-hint", 100, false, QDateTime(), root->getRootDir());
+   auto requested = new FM::File(root, "requested", 200, false, QDateTime(), root->getRootDir());
+   FM::HashingQueue queue;
+   queue.enqueue(normal, 100);
+   queue.enqueue(firstHint, 100, FM::HashingQueue::Priority::Hinted);
+   queue.enqueue(secondHint, 100, FM::HashingQueue::Priority::Hinted);
+   QCOMPARE(queue.next(), firstHint);
+
+   queue.enqueue(requested, 200, FM::HashingQueue::Priority::Requested);
+   QCOMPARE(queue.next(), requested);
+   queue.finishPass(requested, 100, false, 0, 3000);
+   QCOMPARE(queue.next(), requested); // A request isn't shared with the hinted files.
+
+   queue.enqueue(requested, 100, FM::HashingQueue::Priority::Hinted); // Never demoted.
+   queue.finishPass(requested, 0, false, 0, 3000);
+   QCOMPARE(queue.next(), firstHint);
+   queue.finishPass(firstHint, 50, false, 0, 3000);
+   QCOMPARE(queue.next(), firstHint); // Hinted files keep their order.
+
+   queue.enqueue(normal, 100, FM::HashingQueue::Priority::Hinted); // Promotion appends.
+   queue.finishPass(firstHint, 0, false, 0, 3000);
+   QCOMPARE(queue.next(), secondHint);
+   queue.finishPass(secondHint, 100, true, 0, 3000);
+   QCOMPARE(queue.next(), normal);
+   queue.finishPass(normal, 0, false, 0, 3000);
+   QVERIFY(!queue.next()); // The failed hint waits for its retry deadline.
+   queue.releaseDueRetries(3000);
+   QCOMPARE(queue.next(), secondHint);
+   queue.removeIf([](FM::File*) { return true; });
+   QVERIFY(queue.isEmpty());
+   QVERIFY(!queue.next());
 }
 
 void CacheTest::hashingWorkFollowsFileChanges()
@@ -1064,6 +1108,7 @@ void CacheTest::cancelledReplacementLeavesNoHashingJob_data()
 {
    QTest::addColumn<QString>("queue");
    QTest::newRow("normal") << QString("normal");
+   QTest::newRow("hinted") << QString("hinted");
    QTest::newRow("priority") << QString("priority");
    QTest::newRow("retry") << QString("retry");
 }
@@ -1091,7 +1136,13 @@ void CacheTest::cancelledReplacementLeavesNoHashingJob()
    auto& updater = manager.fileUpdater;
    updater.stopScanning();
    updater.enqueueEntryToScan(file);
-   updater.hashingQueue.enqueue(file, 3, queue == "priority");
+   updater.hashingQueue.enqueue(
+      file,
+      3,
+      queue == "priority" ? FM::HashingQueue::Priority::Requested :
+      queue == "hinted" ? FM::HashingQueue::Priority::Hinted :
+      FM::HashingQueue::Priority::Normal
+   );
    if (queue == "retry")
       updater.hashingQueue.finishPass(file, 3, true, 0, 3000);
    file->setToUnfinished(3, { Common::Hash::rand() });

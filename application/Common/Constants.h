@@ -59,5 +59,9 @@ namespace Common
 
       static const int MAX_NB_HASHES_PER_ENTRY_GUI_BROWSE;
       static const int CHUNK_SIZE;
+
+      // Limits of 'Protos::Core::GetHashes::next_files'.
+      static constexpr int MAX_NB_NEXT_FILES_TO_HASH = 64;
+      static constexpr qint64 MAX_SIZE_NEXT_FILES_TO_HASH = 64 * 1024 * 1024; // [byte], the sum of the file sizes.
    };
 }

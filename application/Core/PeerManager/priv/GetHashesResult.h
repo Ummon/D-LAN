@@ -38,7 +38,7 @@ namespace PM
    {
       Q_OBJECT
    public:
-      GetHashesResult(const Protos::Common::Entry& file, QSharedPointer<PeerMessageSocket> socket);
+      GetHashesResult(const Protos::Core::GetHashes& request, QSharedPointer<PeerMessageSocket> socket);
       void start();
       void doDeleteLater();
 
@@ -48,7 +48,7 @@ namespace PM
    private:
       void complete();
 
-      const Protos::Common::Entry file;
+      const Protos::Core::GetHashes request;
       QSharedPointer<PeerMessageSocket> socket;
       bool pending = false;
       bool started = false;

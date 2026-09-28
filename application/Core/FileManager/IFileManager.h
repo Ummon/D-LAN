@@ -130,7 +130,8 @@ namespace FM
       virtual QSharedPointer<IGetHashesResult> getHashes(const Protos::Common::Entry& file) = 0;
 
       /**
-        * Append the given files to the hashing priority queue, in the given order.
+        * Append the given files to the hinted hashing queue, in the given order: they will be hashed after the files
+        * asked by 'getHashes(..)' and before the others.
         * Unknown or already hashed files are ignored, files already prioritized keep their place.
         */
       virtual void prioritizeEntriesToHash(const QList<Protos::Common::Entry>& files) = 0;

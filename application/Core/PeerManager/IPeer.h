@@ -107,10 +107,10 @@ namespace PM
       virtual QSharedPointer<IGetEntriesResult> getEntries(const Protos::Core::GetEntries& dirs) = 0;
 
       /**
-        * Ask for the hashes of a given file.
+        * Ask for the hashes of a given file, see 'Protos::Core::GetHashes'.
         * Return a null pointer if the peer is not available.
         */
-      virtual QSharedPointer<IGetHashesResult> getHashes(const Protos::Common::Entry& file) = 0;
+      virtual QSharedPointer<IGetHashesResult> getHashes(const Protos::Core::GetHashes& request) = 0;
 
       /**
         * Ask to download a chunk.

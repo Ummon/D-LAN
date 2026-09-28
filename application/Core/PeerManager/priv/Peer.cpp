@@ -243,13 +243,13 @@ QSharedPointer<IGetEntriesResult> Peer::getEntries(const Protos::Core::GetEntrie
    );
 }
 
-QSharedPointer<IGetHashesResult> Peer::getHashes(const Protos::Common::Entry& file)
+QSharedPointer<IGetHashesResult> Peer::getHashes(const Protos::Core::GetHashes& request)
 {
    if (!this->isAvailable())
       return QSharedPointer<IGetHashesResult>();
 
    return QSharedPointer<IGetHashesResult>(
-      new GetHashesResult(file, this->connectionPool.getASocket()),
+      new GetHashesResult(request, this->connectionPool.getASocket()),
       &IGetHashesResult::doDeleteLater
    );
 }

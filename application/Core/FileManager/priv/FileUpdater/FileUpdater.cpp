@@ -214,14 +214,14 @@ void FileUpdater::rmRoot(SharedEntry* sharedEntry, Directory* dir)
 
 void FileUpdater::prioritizeAFileToHash(File* file)
 {
-   this->prioritizeFilesToHash({ file });
+   this->prioritizeFilesToHash({ file }, HashingQueue::Priority::Requested);
 }
 
 /**
-  * Files are appended to the priority queue in the given order.
-  * A file already prioritized keeps its place.
+  * Files are appended to the queue of the given priority in the given order.
+  * A file already at this priority or a higher one keeps its place.
   */
-void FileUpdater::prioritizeFilesToHash(const QList<File*>& files)
+void FileUpdater::prioritizeFilesToHash(const QList<File*>& files, HashingQueue::Priority priority)
 {
    QMutexLocker locker(&this->mutex);
 
@@ -233,7 +233,7 @@ void FileUpdater::prioritizeFilesToHash(const QList<File*>& files)
       const qint64 remaining = file->getRemainingBytesToHash();
       if (remaining > 0)
       {
-         this->hashingQueue.enqueue(file, remaining, true);
+         this->hashingQueue.enqueue(file, remaining, priority);
          prioritized = true;
       }
       else

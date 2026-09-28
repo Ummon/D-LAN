@@ -33,6 +33,7 @@ private slots:
    void failedHashingIsQueuedOnce_data();
    void failedHashingIsQueuedOnce();
    void hashingSchedulerTransitions();
+   void hashingQueueHintedTier();
    void hashingWorkFollowsFileChanges();
    void hashingDoesNotStarveEntryDeletion();
    void scanWaitsForRedownload();

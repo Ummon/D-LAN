@@ -38,6 +38,7 @@ using namespace DM;
 
 #include <priv/Log.h>
 #include <priv/Constants.h>
+#include <priv/DownloadQueue.h>
 
 FileDownload::FileDownload(
    QSharedPointer<FM::IFileManager> fileManager,
@@ -49,7 +50,8 @@ FileDownload::FileDownload(
    const Protos::Common::Entry& remoteEntry,
    const Protos::Common::Entry& localEntry,
    Common::TransferRateCalculator& transferRateCalculator,
-   Protos::Queue::Queue::Entry::Status status
+   Protos::Queue::Queue::Entry::Status status,
+   DownloadQueue* downloadQueue
 ) :
    Download(fileManager, peerSource, remoteEntry, localEntry),
    linkedPeers(linkedPeers),
@@ -59,6 +61,7 @@ FileDownload::FileDownload(
    occupiedPeersDownloadingChunk(occupiedPeersDownloadingChunk),
    threadPool(threadPool),
    nbHashesKnown(0),
+   downloadQueue(downloadQueue),
    transferRateCalculator(transferRateCalculator),
    lastTimeGetAllUnfinishedChunks(0)
 {
@@ -395,25 +398,38 @@ void FileDownload::remove()
 }
 
 /**
+  * A file is given once to its peer source as a next file to hash, see 'Protos::Core::GetHashes::next_files'.
+  */
+bool FileDownload::canBeGivenAsNextFileToHash() const
+{
+   return !this->givenAsNextFileToHash && !this->isStatusErroneous() && this->hasHashesToRetrieve();
+}
+
+/**
   * Send a request to the source peer of the download to ask it the hashes. Only sent if needed.
+  * The next files to download from the same peer are given with it, see 'DownloadQueue::getNextFilesToHash(..)'.
   * Return true if a 'GetHashes' request has been sent to the peer.
   */
 bool FileDownload::retrieveHashes()
 {
-   // If we've already got all the chunk hashes it's unnecessary to re-ask them.
-   if (
-      this->nbHashesKnown == this->NB_CHUNK ||
-      this->isStatusFrozen() ||
-      this->status == Protos::Common::DownloadStatus::GETTING_THE_HASHES ||
-      this->status == Protos::Common::DownloadStatus::ENTRY_NOT_FOUND
-   )
+   if (!this->hasHashesToRetrieve())
       return false;
 
    // Checked before asking the peer: 'getHashes(..)' takes a socket, opening a new connection if none is idle.
    if (!this->occupiedPeersAskingForHashes.isPeerFree(this->peerSource))
       return false;
 
-   this->getHashesResult = this->peerSource->getHashes(this->remoteEntry);
+   Protos::Core::GetHashes request;
+   request.mutable_file()->CopyFrom(this->remoteEntry);
+   const QList<FileDownload*> nextFiles = this->downloadQueue ? this->downloadQueue->getNextFilesToHash(this) : QList<FileDownload*>();
+   for (const FileDownload* nextFile : nextFiles)
+   {
+      Protos::Common::Entry* entry = request.add_next_files();
+      entry->CopyFrom(nextFile->remoteEntry);
+      entry->clear_chunks(); // Not needed to find the file.
+   }
+
+   this->getHashesResult = this->peerSource->getHashes(request);
 
    if (this->getHashesResult.isNull())
    {
@@ -427,6 +443,9 @@ bool FileDownload::retrieveHashes()
       return false;
    }
 
+   for (FileDownload* nextFile : nextFiles)
+      nextFile->givenAsNextFileToHash = true;
+
    this->setStatus(Protos::Common::DownloadStatus::GETTING_THE_HASHES);
    connect(this->getHashesResult.data(), &PM::IGetHashesResult::result, this, &FileDownload::result);
    connect(this->getHashesResult.data(), &PM::IGetHashesResult::nextHash, this, &FileDownload::nextHash);
@@ -434,6 +453,16 @@ bool FileDownload::retrieveHashes()
    this->getHashesResult->start();
 
    return true;
+}
+
+bool FileDownload::hasHashesToRetrieve() const
+{
+   // If we've already got all the chunk hashes it's unnecessary to re-ask them.
+   return
+      this->nbHashesKnown < this->NB_CHUNK &&
+      !this->isStatusFrozen() &&
+      this->status != Protos::Common::DownloadStatus::GETTING_THE_HASHES &&
+      this->status != Protos::Common::DownloadStatus::ENTRY_NOT_FOUND;
 }
 
 /**

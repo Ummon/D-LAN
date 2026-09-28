@@ -147,7 +147,10 @@ message GetEntriesResult {
 // id : 0x41
 message GetHashes {
    Common.Entry file = 1; // Must have the field 'shared_dir' set. If it already contains some chunk hashes only the next ones will be sent.
-   repeated Common.Entry next_files = 2; // The next files for which we want to know their hashes in the future.
+   // The next files for which we want to know their hashes in the future, in the order they will be asked.
+   // 'b' hashes them after the files currently asked and before its other files.
+   // At most 64 files with a total size of 64 MiB, each file is given only once. Their chunks aren't set.
+   repeated Common.Entry next_files = 2;
 }
 
 // b -> a (TCP)
