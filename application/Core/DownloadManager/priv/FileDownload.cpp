@@ -398,11 +398,21 @@ void FileDownload::remove()
 }
 
 /**
+  * Permanent hint eligibility: once false it cannot become true again. Pausing,
+  * errors and pending requests are checked separately so they don't lose their place.
+  */
+bool FileDownload::needsHashingHint() const
+{
+   return !this->givenAsNextFileToHash && this->nbHashesKnown < this->NB_CHUNK &&
+      this->remoteEntry.size() <= Common::Constants::MAX_SIZE_NEXT_FILES_TO_HASH;
+}
+
+/**
   * A file is given once to its peer source as a next file to hash, see 'Protos::Core::GetHashes::next_files'.
   */
 bool FileDownload::canBeGivenAsNextFileToHash() const
 {
-   return !this->givenAsNextFileToHash && !this->isStatusErroneous() && this->hasHashesToRetrieve();
+   return this->needsHashingHint() && !this->isStatusErroneous() && this->hasHashesToRetrieve();
 }
 
 /**

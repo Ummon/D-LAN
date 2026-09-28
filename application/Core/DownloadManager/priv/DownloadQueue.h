@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include <list>
 #include <map>
 #include <memory>
 #include <typeindex>
@@ -101,6 +102,9 @@ namespace DM
       void updateMarkersRemove(int position);
       void rebuildMarkers();
       void removeFromTimeIndex(FileDownload* download);
+      void insertHashingHintCandidate(FileDownload* download, int position);
+      void removeHashingHintCandidate(FileDownload* download);
+      void rebuildHashingHintCandidates();
 
       struct Marker { std::unique_ptr<DownloadPredicate> predicate; int position = 0; };
 
@@ -113,6 +117,10 @@ namespace DM
       QMultiMap<qint64, FileDownload*> downloadsSortedByTime; // Key: [ms] since epoch, 0 if never. See 'FileDownload::lastTimeGetAllUnfinishedChunks'.
       // The time map must not be copied: its stored iterators rely on it remaining unshared.
       QHash<FileDownload*, QMultiMap<qint64, FileDownload*>::iterator> downloadTimePositions;
+      // Queue order per peer, without files already hinted or with all hashes known.
+      // Stable iterators allow pruning and removal without scanning the remaining candidates.
+      std::map<PM::IPeer*, std::list<FileDownload*>> hashingHintCandidates;
+      QHash<FileDownload*, std::list<FileDownload*>::iterator> hashingHintPositions;
       QMultiHash<PM::IPeer*, Download*> downloadsIndexedBySourcePeer;
       QMultiMap<std::string, Download*> downloadsIndexedByName;
    };

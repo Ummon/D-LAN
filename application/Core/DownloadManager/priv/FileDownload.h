@@ -80,6 +80,7 @@ namespace DM
 
       void remove() override;
 
+      bool needsHashingHint() const;
       bool canBeGivenAsNextFileToHash() const;
 
    public slots:

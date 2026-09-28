@@ -61,6 +61,7 @@ namespace
    {
    public:
       using FileDownload::FileDownload;
+      using FileDownload::setStatus;
       Protos::Common::DownloadStatus getStatus() const override
       {
          ++this->statusReads;
@@ -986,6 +987,155 @@ void Tests::limitNumberOfNextFilesToHash()
    QCOMPARE(names.size(), Common::Constants::MAX_NB_NEXT_FILES_TO_HASH);
    QCOMPARE(names.first(), QString("1.bin"));
    QCOMPARE(names.last(), QString("%1.bin").arg(Common::Constants::MAX_NB_NEXT_FILES_TO_HASH));
+}
+
+void Tests::nextFilesToHashScanIsLinear()
+{
+   HashPeer peer(this->fileManager), otherPeer(this->fileManager);
+   LinkedPeers links;
+   OccupiedPeers asking, downloading;
+   Common::ThreadPool pool(1);
+   Common::TransferRateCalculator rate;
+   DownloadQueue queue;
+   QList<CountingFileDownload*> files, otherFiles;
+   const int count = 1024;
+   for (int i = 0; i < count; ++i)
+      for (auto* source : { &peer, &otherPeer })
+      {
+         Protos::Common::Entry entry;
+         entry.set_type(Protos::Common::Entry::FILE);
+         entry.set_path("/");
+         entry.set_name(QString::number(i).toStdString());
+         entry.set_size(1);
+         auto* file = new CountingFileDownload(this->fileManager, links, asking, downloading, pool,
+            source, entry, entry, rate, Protos::Queue::Queue::Entry::QUEUED, &queue);
+         queue.insert(queue.size(), file);
+         (source == &peer ? files : otherFiles).append(file);
+         file->statusReads = 0;
+      }
+
+   QStringList hinted;
+   for (auto* file : files)
+   {
+      QVERIFY(file->retrieveHashes());
+      hinted.append(namesOfNextFilesToHash(peer.lastRequest));
+      asking.setPeerAsFree(&peer);
+      // Leave the downloads unfinished, so the ordinary IsDownloadable marker
+      // cannot hide a repeated scan of the already-hinted prefix.
+   }
+   QStringList expected;
+   for (int i = 1; i < count; ++i)
+      expected.append(QString::number(i));
+   QCOMPARE(hinted, expected);
+
+   qint64 statusReads = 0;
+   for (auto* file : files)
+      statusReads += file->statusReads;
+   QVERIFY2(statusReads < 10 * count, qPrintable(QString("%1 status checks for %2 files").arg(statusReads).arg(count)));
+   for (auto* file : otherFiles)
+      QCOMPARE(file->statusReads, 0); // Another peer's candidates aren't scanned.
+}
+
+void Tests::nextFilesToHashTracksQueueChanges()
+{
+   HashPeer peer(this->fileManager), otherPeer(this->fileManager);
+   LinkedPeers links;
+   OccupiedPeers asking, downloading;
+   Common::ThreadPool pool(1);
+   Common::TransferRateCalculator rate;
+   DownloadQueue queue;
+   auto add = [&](const char* name, int position = -1, PM::IPeer* source = nullptr) {
+      Protos::Common::Entry entry;
+      entry.set_type(Protos::Common::Entry::FILE);
+      entry.set_path("/");
+      entry.set_name(name);
+      entry.set_size(1);
+      auto* file = new FileDownload(this->fileManager, links, asking, downloading, pool,
+         source ? source : &peer, entry, entry, rate, Protos::Queue::Queue::Entry::QUEUED, &queue);
+      queue.insert(position < 0 ? queue.size() : position, file);
+      return file;
+   };
+   auto* asked = add("asked");
+   auto* other = add("other", -1, &otherPeer);
+   auto* a = add("a");
+   auto* b = add("b");
+   auto* c = add("c");
+   QCOMPARE(queue.getNextFilesToHash(asked), QList<FileDownload*>({ a, b, c }));
+
+   auto* inserted = add("inserted", queue.find(b));
+   QCOMPARE(queue.getNextFilesToHash(asked), QList<FileDownload*>({ a, inserted, b, c }));
+   queue.moveDownloads({ a->getID() }, { c->getID() }, Protos::GUI::MoveDownloads::BEFORE);
+   QCOMPARE(queue.getNextFilesToHash(asked), QList<FileDownload*>({ c, a, inserted, b }));
+
+   queue.remove(queue.find(inserted));
+   delete inserted;
+   QCOMPARE(queue.getNextFilesToHash(asked), QList<FileDownload*>({ c, a, b }));
+   QVERIFY(queue.removeDownloads(IsContainedInAList({ a->getID(), b->getID() })));
+   QCOMPARE(queue.getNextFilesToHash(asked), QList<FileDownload*>({ c }));
+
+   QVERIFY(asked->retrieveHashes());
+   QCOMPARE(namesOfNextFilesToHash(peer.lastRequest), QStringList({ "c" }));
+   queue.moveDownloads({ asked->getID() }, { c->getID() }, Protos::GUI::MoveDownloads::BEFORE);
+   QVERIFY(queue.getNextFilesToHash(asked).isEmpty()); // Rebuilding doesn't restore a sent hint.
+   auto* first = add("first", 0);
+   auto* last = add("last");
+   QCOMPARE(queue.getNextFilesToHash(asked), QList<FileDownload*>({ first, last }));
+   QVERIFY(queue.removeDownloads(IsContainedInAList({ first->getID(), last->getID() })));
+   QVERIFY(queue.getNextFilesToHash(asked).isEmpty());
+
+   auto* otherFirst = add("other-first", 0, &otherPeer);
+   QVERIFY(queue.getNextFilesToHash(asked).isEmpty());
+   QCOMPARE(queue.getNextFilesToHash(other), QList<FileDownload*>({ otherFirst }));
+   queue.remove(queue.find(otherFirst));
+   delete otherFirst;
+   queue.remove(queue.find(other));
+   delete other;
+   auto* otherNew = add("other-new", -1, &otherPeer);
+   QVERIFY(queue.getNextFilesToHash(otherNew).isEmpty()); // Last removal and recreation of a peer's index.
+}
+
+void Tests::nextFilesToHashKeepsTemporaryExclusions()
+{
+   SwitchableHashPeer peer(this->fileManager);
+   LinkedPeers links;
+   OccupiedPeers asking, downloading;
+   Common::ThreadPool pool(1);
+   Common::TransferRateCalculator rate;
+   DownloadQueue queue;
+   auto add = [&](const char* name, qint64 size = 1) {
+      Protos::Common::Entry entry;
+      entry.set_type(Protos::Common::Entry::FILE);
+      entry.set_path("/");
+      entry.set_name(name);
+      entry.set_size(size);
+      auto* file = new CountingFileDownload(this->fileManager, links, asking, downloading, pool,
+         &peer, entry, entry, rate, Protos::Queue::Queue::Entry::QUEUED, &queue);
+      queue.insert(queue.size(), file);
+      return file;
+   };
+   auto* asked = add("asked");
+   auto* paused = add("paused");
+   paused->setStatus(Protos::Common::DownloadStatus::PAUSED);
+   auto* error = add("error");
+   error->setStatus(Protos::Common::DownloadStatus::UNABLE_TO_RETRIEVE_THE_HASHES);
+   auto* pending = add("pending");
+   pending->setStatus(Protos::Common::DownloadStatus::GETTING_THE_HASHES);
+   const qint64 MiB = 1024 * 1024;
+   add("large", 40 * MiB);
+   auto* skipped = add("skipped", 30 * MiB);
+   add("fill", 24 * MiB);
+
+   peer.available = false;
+   QVERIFY(!asked->retrieveHashes());
+   peer.available = true;
+   QVERIFY(asked->retrieveHashes());
+   QCOMPARE(namesOfNextFilesToHash(peer.lastRequest), QStringList({ "large", "fill" }));
+   QCOMPARE(queue.getNextFilesToHash(asked), QList<FileDownload*>({ skipped }));
+
+   paused->setStatus(Protos::Common::DownloadStatus::QUEUED);
+   error->setStatus(Protos::Common::DownloadStatus::QUEUED);
+   pending->setStatus(Protos::Common::DownloadStatus::QUEUED);
+   QCOMPARE(queue.getNextFilesToHash(asked), QList<FileDownload*>({ paused, error, pending, skipped }));
 }
 
 /**

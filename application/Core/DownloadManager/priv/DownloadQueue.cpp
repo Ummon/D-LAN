@@ -52,6 +52,8 @@ DownloadQueue::~DownloadQueue()
    for (Download* download : std::as_const(this->downloads))
       download->setAsDeleted();
 
+   this->hashingHintPositions.clear();
+   this->hashingHintCandidates.clear();
    while (!this->downloads.isEmpty())
       delete this->downloads.takeFirst();
 }
@@ -83,6 +85,7 @@ void DownloadQueue::insert(int position, Download* download)
    {
       this->downloadsIndexedByName.insert(download->getLocalEntry().name(), download);
       this->downloadTimePositions.insert(fileDownload, this->downloadsSortedByTime.insert(0, fileDownload));
+      this->insertHashingHintCandidate(fileDownload, position);
 
       // The connection must be direct: a queued one would be delivered after the download has possibly been removed
       // and deleted, 'sender()' would then return a null pointer and 'downloadsSortedByTime' would keep a dangling
@@ -111,6 +114,7 @@ void DownloadQueue::remove(int position)
    if (FileDownload* fileDownload = dynamic_cast<FileDownload*>(download))
    {
       this->removeFromTimeIndex(fileDownload);
+      this->removeHashingHintCandidate(fileDownload);
       disconnect(fileDownload, &FileDownload::lastTimeGetAllUnfinishedChunksChanged, this, &DownloadQueue::fileDownloadTimeChanged);
    }
 
@@ -141,14 +145,27 @@ QList<FileDownload*> DownloadQueue::getNextFilesToHash(const FileDownload* curre
    QList<FileDownload*> files;
    qint64 totalSize = 0;
 
-   ScanningIterator<IsDownloadable> i(*this);
-   while (files.size() < Common::Constants::MAX_NB_NEXT_FILES_TO_HASH && totalSize < Common::Constants::MAX_SIZE_NEXT_FILES_TO_HASH)
-   {
-      FileDownload* fileDownload = static_cast<FileDownload*>(i.next());
-      if (!fileDownload)
-         break;
+   auto peer = this->hashingHintCandidates.find(current->getPeerSource());
+   if (peer == this->hashingHintCandidates.end())
+      return files;
 
-      if (fileDownload == current || fileDownload->getPeerSource() != current->getPeerSource() || !fileDownload->canBeGivenAsNextFileToHash())
+   auto& candidates = peer->second;
+   IsDownloadable isDownloadable;
+   auto i = candidates.begin();
+   while (i != candidates.end() && files.size() < Common::Constants::MAX_NB_NEXT_FILES_TO_HASH && totalSize < Common::Constants::MAX_SIZE_NEXT_FILES_TO_HASH)
+   {
+      FileDownload* fileDownload = *i;
+      // Prune permanent exclusions, especially the growing prefix of already-hinted
+      // files. Paused files and other temporary exclusions keep their place below.
+      if (!isDownloadable(fileDownload) || !fileDownload->needsHashingHint())
+      {
+         this->hashingHintPositions.remove(fileDownload);
+         i = candidates.erase(i);
+         continue;
+      }
+      ++i;
+
+      if (fileDownload == current || !fileDownload->canBeGivenAsNextFileToHash())
          continue;
 
       const qint64 size = fileDownload->getRemoteEntry().size();
@@ -159,6 +176,8 @@ QList<FileDownload*> DownloadQueue::getNextFilesToHash(const FileDownload* curre
       files << fileDownload;
    }
 
+   if (candidates.empty())
+      this->hashingHintCandidates.erase(peer);
    return files;
 }
 
@@ -203,6 +222,7 @@ void DownloadQueue::moveDownloads(const QList<quint64>& downloadIDRefs, const QL
    for (int i = insertionPosition; i < remaining.size(); ++i)
       this->downloads.append(remaining[i]);
    this->rebuildMarkers();
+   this->rebuildHashingHintCandidates();
 }
 
 /**
@@ -226,6 +246,7 @@ bool DownloadQueue::removeDownloads(const DownloadPredicate& predicate)
          if (FileDownload* fileDownload = dynamic_cast<FileDownload*>(download))
          {
             this->removeFromTimeIndex(fileDownload);
+            this->removeHashingHintCandidate(fileDownload);
             disconnect(fileDownload, &FileDownload::lastTimeGetAllUnfinishedChunksChanged, this, &DownloadQueue::fileDownloadTimeChanged);
          }
       }
@@ -453,6 +474,52 @@ void DownloadQueue::removeFromTimeIndex(FileDownload* download)
 
    this->downloadsSortedByTime.erase(position.value());
    this->downloadTimePositions.erase(position);
+}
+
+void DownloadQueue::insertHashingHintCandidate(FileDownload* download, int position)
+{
+   if (!download->needsHashingHint())
+      return;
+
+   auto& candidates = this->hashingHintCandidates[download->getPeerSource()];
+   auto before = candidates.end();
+   // Appending is constant-time. For an insertion, find the next indexed file of
+   // the same peer so the hint order continues to match the download queue.
+   for (int i = position + 1; i < this->downloads.size(); ++i)
+   {
+      auto* next = dynamic_cast<FileDownload*>(this->downloads[i]);
+      if (next && next->getPeerSource() == download->getPeerSource())
+      {
+         auto nextPosition = this->hashingHintPositions.constFind(next);
+         if (nextPosition != this->hashingHintPositions.constEnd())
+         {
+            before = nextPosition.value();
+            break;
+         }
+      }
+   }
+   this->hashingHintPositions.insert(download, candidates.insert(before, download));
+}
+
+void DownloadQueue::removeHashingHintCandidate(FileDownload* download)
+{
+   auto position = this->hashingHintPositions.find(download);
+   if (position == this->hashingHintPositions.end())
+      return;
+   auto peer = this->hashingHintCandidates.find(download->getPeerSource());
+   peer->second.erase(position.value());
+   this->hashingHintPositions.erase(position);
+   if (peer->second.empty())
+      this->hashingHintCandidates.erase(peer);
+}
+
+void DownloadQueue::rebuildHashingHintCandidates()
+{
+   this->hashingHintPositions.clear();
+   this->hashingHintCandidates.clear();
+   for (Download* download : std::as_const(this->downloads))
+      if (auto* file = dynamic_cast<FileDownload*>(download))
+         this->insertHashingHintCandidate(file, this->downloads.size()); // Append in the new order.
 }
 
 void DownloadQueue::updateMarkersInsert(int position, Download* download)

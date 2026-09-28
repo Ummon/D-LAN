@@ -95,6 +95,9 @@ private slots:
    void dontAskHashesToBusyPeer();
    void giveNextFilesToHash();
    void limitNumberOfNextFilesToHash();
+   void nextFilesToHashScanIsLinear();
+   void nextFilesToHashTracksQueueChanges();
+   void nextFilesToHashKeepsTemporaryExclusions();
    void noRequestWhileDestroyingQueue();
    void freedPeerAsksItsOwnHashes();
    void restartAllErroneousDownloads();
