@@ -508,13 +508,19 @@ QPair<QList<quint64>, bool> DownloadsWidget::getDownloadIDsToPause() const
    for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
    {
       const QModelIndex& index = i.next();
-      foreach (quint64 ID, this->currentDownloadsModel->getDownloadIDs(index))
-         if (!this->currentDownloadsModel->isFileComplete(index))
-         {
-            downloadIDs.insert(ID);
-            if (!this->currentDownloadsModel->isDownloadPaused(index))
-               allPaused = false;
-         }
+
+      // 'isFileComplete(..)' and 'isDownloadPaused(..)' scan the whole subtree of a directory in the tree view,
+      // they must be called once per selected row and not once per contained download.
+      if (this->currentDownloadsModel->isFileComplete(index))
+         continue;
+
+      const QList<quint64> IDs = this->currentDownloadsModel->getDownloadIDs(index);
+      if (IDs.isEmpty())
+         continue;
+
+      downloadIDs.unite(QSet<quint64>(IDs.begin(), IDs.end()));
+      if (allPaused && !this->currentDownloadsModel->isDownloadPaused(index))
+         allPaused = false;
    }
 
    return qMakePair(downloadIDs.values(), !allPaused);
