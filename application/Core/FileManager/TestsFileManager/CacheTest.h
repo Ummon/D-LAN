@@ -34,6 +34,8 @@ private slots:
    void failedHashingIsQueuedOnce();
    void hashingSchedulerTransitions();
    void hashingQueueHintedTier();
+   void hashingHintsRespectSizeLimit_data();
+   void hashingHintsRespectSizeLimit();
    void hashingWorkFollowsFileChanges();
    void hashingDoesNotStarveEntryDeletion();
    void scanWaitsForRedownload();

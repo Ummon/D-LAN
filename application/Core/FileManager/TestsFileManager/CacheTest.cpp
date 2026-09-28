@@ -930,6 +930,84 @@ void CacheTest::hashingQueueHintedTier()
    QVERIFY(!queue.next());
 }
 
+void CacheTest::hashingHintsRespectSizeLimit_data()
+{
+   QTest::addColumn<bool>("localSize");
+   QTest::addColumn<quint64>("advertisedSize");
+   QTest::newRow("accurate-size") << true << quint64(0);
+   QTest::newRow("underreported-size") << false << quint64(1);
+   QTest::newRow("omitted-size") << false << quint64(0);
+   QTest::newRow("overreported-size") << false << std::numeric_limits<quint64>::max();
+}
+
+void CacheTest::hashingHintsRespectSizeLimit()
+{
+   QFETCH(bool, localSize);
+   QFETCH(quint64, advertisedSize);
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   const auto saved = SETTINGS.getRepeated<Protos::Common::SharedEntry>("shared_entries");
+   const auto restore = qScopeGuard([&] { SETTINGS.set("shared_entries", saved); });
+   SETTINGS.rm("shared_entries");
+   FM::FileManager manager(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   manager.fileUpdater.stop();
+   manager.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::Directory*>(manager.getEntry(Common::Path(temp.path() + '/')));
+   QVERIFY(root);
+   auto& queue = manager.fileUpdater.hashingQueue;
+   const qint64 limit = Common::Constants::MAX_SIZE_NEXT_FILES_TO_HASH;
+   const qint64 MiB = 1024 * 1024;
+   const auto add = [&](const QString& name, qint64 size) {
+      auto file = new FM::File(root->getRoot(), name, size, false, QDateTime(), root);
+      queue.enqueue(file, file->getRemainingBytesToHash());
+      return file;
+   };
+   const auto hint = [&](FM::File* file) {
+      Protos::Common::Entry entry;
+      file->populateEntry(&entry, true, 0);
+      if (!localSize)
+         entry.set_size(advertisedSize);
+      return entry;
+   };
+
+   auto normal = add("normal", 1);
+   auto oversized = add("oversized", limit + 1);
+   // The limit is the full file size, even if almost all of its hashes are known.
+   const auto chunks = oversized->getChunks();
+   for (int i = 0; i + 1 < chunks.size(); ++i)
+      chunks[i]->setHash(Common::Hash::rand(), false);
+   QVERIFY(oversized->getRemainingBytesToHash() < limit);
+   auto hashed = add("hashed", limit);
+   for (const auto& chunk : hashed->getChunks())
+      chunk->setHash(Common::Hash::rand(), false);
+   queue.remove(hashed);
+   auto unfinished = add("unfinished.unfinished", limit);
+   auto empty = add("empty", 0);
+   auto first = add("first", 20 * MiB);
+   auto second = add("second", 20 * MiB);
+   auto third = add("third", 20 * MiB);
+   auto skipped = add("skipped", 20 * MiB);
+   auto fill = add("fill", limit - 60 * MiB);
+   auto last = add("last", 1);
+   auto unknown = hint(first);
+   unknown.set_name("unknown");
+
+   manager.prioritizeEntriesToHash({ unknown, hint(oversized), hint(hashed), hint(unfinished), hint(empty),
+      hint(first), hint(first), hint(second), hint(third), hint(skipped), hint(fill), hint(last) });
+   for (auto expected : { first, second, third, fill })
+   {
+      QCOMPARE(queue.next(), expected);
+      queue.remove(expected);
+   }
+   QCOMPARE(queue.next(), normal); // Oversized and over-budget hints retain normal priority.
+
+   // Each request has its own budget, and actual hash requests retain their priority.
+   manager.prioritizeEntriesToHash({ hint(skipped) });
+   QCOMPARE(queue.next(), skipped);
+   manager.fileUpdater.prioritizeAFileToHash(oversized);
+   QCOMPARE(queue.next(), oversized);
+}
+
 void CacheTest::hashingWorkFollowsFileChanges()
 {
    FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;

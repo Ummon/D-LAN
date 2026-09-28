@@ -525,7 +525,7 @@ void PeerMessageSocket::onNewMessage(const Common::Message& message)
          this->nbHash = res.nb_hash();
 
          // After 'start()': the asked file is hashed before the next files.
-         // Limited here too, a peer can't prioritize all our files.
+         // Bound the number here; FileManager enforces the byte budget using local file sizes.
          QList<Protos::Common::Entry> nextFiles;
          for (int i = 0; i < getHashes.next_files_size() && i < Common::Constants::MAX_NB_NEXT_FILES_TO_HASH; i++)
             nextFiles << getHashes.next_files(i);

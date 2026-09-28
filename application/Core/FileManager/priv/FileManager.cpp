@@ -25,6 +25,7 @@ using namespace FM;
 #include <QStringList>
 #include <QStringBuilder>
 #include <QList>
+#include <QSet>
 #include <QVector>
 #include <QDir>
 #include <QMutableListIterator>
@@ -266,9 +267,20 @@ void FileManager::prioritizeEntriesToHash(const QList<Protos::Common::Entry>& fi
    Q_ASSERT(QThread::currentThread() == this->cache.thread());
 
    QList<File*> filesToHash;
+   QSet<File*> seen;
+   qint64 remainingSize = Common::Constants::MAX_SIZE_NEXT_FILES_TO_HASH;
    for (const auto& entry : files)
       if (File* file = this->cache.getFile(entry))
+      {
+         // Use our full file size: a peer's advertised size may be stale or forged.
+         // Skip files that don't fit, allowing later smaller hints to use the budget.
+         const qint64 size = file->getSize();
+         if (size <= 0 || size > remainingSize || seen.contains(file) || file->getRemainingBytesToHash() == 0)
+            continue;
+         seen.insert(file);
+         remainingSize -= size;
          filesToHash << file;
+      }
 
    if (!filesToHash.isEmpty())
       this->fileUpdater.prioritizeFilesToHash(filesToHash, HashingQueue::Priority::Hinted);

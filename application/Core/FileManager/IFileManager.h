@@ -132,7 +132,9 @@ namespace FM
       /**
         * Append the given files to the hinted hashing queue, in the given order: they will be hashed after the files
         * asked by 'getHashes(..)' and before the others.
-        * Unknown or already hashed files are ignored, files already prioritized keep their place.
+        * Unknown, unfinished, already hashed and duplicate files are ignored, files already prioritized keep their place.
+        * The total local file size is limited to 'Common::Constants::MAX_SIZE_NEXT_FILES_TO_HASH' per call.
+        * Files that don't fit are skipped so later, smaller files can still be prioritized.
         */
       virtual void prioritizeEntriesToHash(const QList<Protos::Common::Entry>& files) = 0;
 
