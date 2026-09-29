@@ -108,6 +108,8 @@ void WordIndexTests::shortPrefixMatching_data()
    QTest::newRow("supplementary-han") << QStringLiteral("\U00020000") << QStringLiteral("\U00020000\u65E5") << true;
    QTest::newRow("kana") << QStringLiteral("\u306B") << QStringLiteral("\u306B\u307B\u3093") << true;
    QTest::newRow("hangul") << QStringLiteral("\uD55C") << QStringLiteral("\uD55C\uAE00") << true;
+   QTest::newRow("one-devanagari") << QStringLiteral("कि") << QStringLiteral("किताब") << false;
+   QTest::newRow("two-devanagari") << QStringLiteral("किता") << QStringLiteral("किताब") << true;
    QTest::newRow("short-latin") << QString("al") << QString("alpha") << false;
    QTest::newRow("long-latin") << QString("alp") << QString("alpha") << true;
    QTest::newRow("two-graphemes-combining") << QStringLiteral("a\u0301b") << QStringLiteral("a\u0301bcd") << false;
@@ -166,6 +168,41 @@ void WordIndexTests::normalizedKanaAndHangul()
    QCOMPARE(search(QStringLiteral("\u1112\u1161\u11AB")), (QList<int> { 4 }));
    // A complete syllable must not match another syllable's decomposed prefix.
    QVERIFY(search(QStringLiteral("\uD558")).isEmpty());
+}
+
+void WordIndexTests::normalizedDevanagari()
+{
+   WordIndex<int> index;
+   const auto add = [&](const QString& word, int item) {
+      index.addItem(Common::StringUtils::splitInWords(word), item);
+   };
+   const auto search = [&](const QString& word) {
+      return WordIndex<int>::resultToList(index.search(Common::StringUtils::splitInWords(word)));
+   };
+   add(QStringLiteral("\u0915\u093E\u092E"), 1); // \u0915\u093E\u092E
+   add(QStringLiteral("\u0915\u092E"), 2); // \u0915\u092E
+   add(QStringLiteral("\u0915\u0940\u092E\u093E"), 3); // \u0915\u0940\u092E\u093E
+   add(QStringLiteral("\u0939\u093F\u0928\u094D\u0926\u0940.txt"), 4); // \u0939\u093F\u0928\u094D\u0926\u0940.txt
+   add(QStringLiteral("\u092B\u093C\u093F\u0932\u094D\u092E"), 5); // \u092B\u093C\u093F\u0932\u094D\u092E
+   add(QStringLiteral("\u0917\u093E\u0928\u093E \u0968\u0966\u0968\u096A"), 6); // \u0917\u093E\u0928\u093E \u0968\u0966\u0968\u096A
+
+   // Words differing only by their vowel signs are distinct.
+   QCOMPARE(search(QStringLiteral("\u0915\u093E\u092E")), (QList<int> { 1 }));
+   QCOMPARE(search(QStringLiteral("\u0915\u092E")), (QList<int> { 2 }));
+   QCOMPARE(search(QStringLiteral("\u0915\u0940\u092E\u093E")), (QList<int> { 3 }));
+   // A single syllable must match entirely.
+   QVERIFY(search(QStringLiteral("\u0915\u0940")).isEmpty());
+   QVERIFY(search(QStringLiteral("\u0915")).isEmpty());
+
+   // Spelling variants: \u0939\u093F\u0902\u0926\u0940, \u0939\u093F\u0928\u094D\u0926\u0940, \u092B\u093F\u0932\u094D\u092E, \u092B\u093C\u093F\u0932\u094D\u092E.
+   QCOMPARE(search(QStringLiteral("\u0939\u093F\u0902\u0926\u0940")), (QList<int> { 4 }));
+   QCOMPARE(search(QStringLiteral("\u0939\u093F\u0928\u094D\u0926\u0940")), (QList<int> { 4 }));
+   QCOMPARE(search(QStringLiteral("\u092B\u093F\u0932\u094D\u092E")), (QList<int> { 5 }));
+   QCOMPARE(search(QStringLiteral("\u095E\u093F\u0932\u094D\u092E")), (QList<int> { 5 }));
+
+   // Digits match across scripts.
+   QCOMPARE(search("2024"), (QList<int> { 6 }));
+   QCOMPARE(search(QStringLiteral("\u0917\u093E\u0928\u093E \u0968\u0966\u0968\u096A")), (QList<int> { 6 }));
 }
 
 void WordIndexTests::prefixGraphemeBoundaries_data()

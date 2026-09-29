@@ -35,6 +35,7 @@ namespace Common
 
       static bool isKorean(const QString& str);
       static bool isJapanese(const QString& str);
+      static bool isDevanagari(const QString& str);
 
       static int strcmpi(const std::string& s1, const std::string& s2);
 

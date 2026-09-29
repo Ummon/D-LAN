@@ -44,12 +44,15 @@ private slots:
    void splitInWords();
    void splitInWordsUnicode();
    void normalizeSearchWords();
+   void normalizeDevanagari();
    void normalizeSearchPositions_data();
    void normalizeSearchPositions();
    void isKorean_data();
    void isKorean();
    void isJapanese_data();
    void isJapanese();
+   void isDevanagari_data();
+   void isDevanagari();
    void hashStringToInt();
 
    // Path class.

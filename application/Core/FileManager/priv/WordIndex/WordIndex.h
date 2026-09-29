@@ -54,6 +54,7 @@ namespace FM
       static const int MIN_WORD_SIZE_PARTIAL_MATCH_KOREAN;
       static const int MIN_WORD_SIZE_PARTIAL_MATCH_JAPANESE;
       static const int MIN_WORD_SIZE_PARTIAL_MATCH_HAN; ///< Shared ideographs, including kanji-only queries.
+      static const int MIN_WORD_SIZE_PARTIAL_MATCH_DEVANAGARI; ///< A Devanagari grapheme is a whole syllable, e.g. 'कि'.
 
       WordIndex();
 
@@ -96,6 +97,9 @@ const int FM::WordIndex<T>::MIN_WORD_SIZE_PARTIAL_MATCH_JAPANESE(1);
 
 template<typename T>
 const int FM::WordIndex<T>::MIN_WORD_SIZE_PARTIAL_MATCH_HAN(1);
+
+template<typename T>
+const int FM::WordIndex<T>::MIN_WORD_SIZE_PARTIAL_MATCH_DEVANAGARI(2);
 
 template<typename T>
    FM::WordIndex<T>::WordIndex()
@@ -169,6 +173,8 @@ QList<FM::NodeResult<T>> FM::WordIndex<T>::search(
       minimumLength = MIN_WORD_SIZE_PARTIAL_MATCH_KOREAN;
    else if (Common::StringUtils::isJapanese(word))
       minimumLength = MIN_WORD_SIZE_PARTIAL_MATCH_JAPANESE;
+   else if (Common::StringUtils::isDevanagari(word))
+      minimumLength = MIN_WORD_SIZE_PARTIAL_MATCH_DEVANAGARI;
    else
       // Han characters need short prefix matching regardless of the text's language.
       for (const char32_t c : word.toUcs4())

@@ -25,18 +25,135 @@ using namespace Common;
 #include <QRegularExpression>
 #include <QTextBoundaryFinder>
 
+namespace
+{
+   const char16_t DEVANAGARI_CANDRABINDU = 0x0901;
+   const char16_t DEVANAGARI_ANUSVARA = 0x0902;
+   const char16_t DEVANAGARI_NUKTA = 0x093C;
+   const char16_t DEVANAGARI_VIRAMA = 0x094D;
+   const char16_t ZERO_WIDTH_NON_JOINER = 0x200C;
+   const char16_t ZERO_WIDTH_JOINER = 0x200D;
+
+   /**
+     * Whether the combining marks following a base character of the given script are optional for searching,
+     * like Latin accents or Hebrew and Arabic vowel points. Other scripts keep their marks because they
+     * distinguish words, e.g. the Devanagari vowel signs of काम and कम, or the kana dakuten.
+     * 'Common' covers marks without a base letter, e.g. at the beginning of the text.
+     */
+   bool hasOptionalMarks(QChar::Script script)
+   {
+      switch (script)
+      {
+      case QChar::Script_Common:
+      case QChar::Script_Inherited:
+      case QChar::Script_Latin:
+      case QChar::Script_Greek:
+      case QChar::Script_Cyrillic:
+      case QChar::Script_Armenian:
+      case QChar::Script_Hebrew:
+      case QChar::Script_Arabic:
+      case QChar::Script_Hangul: // Only the archaic tone marks.
+         return true;
+      default:
+         return false;
+      }
+   }
+
+   bool isVariationSelector(char32_t c)
+   {
+      return (c >= 0xFE00 && c <= 0xFE0F) || (c >= 0xE0100 && c <= 0xE01EF);
+   }
+
+   /**
+     * Whether 'nasal' is the nasal consonant of the class of 'consonant', e.g. न for द.
+     * The five classes (velar, palatal, retroflex, dental and labial) have four stops followed by their nasal.
+     */
+   bool isHomorganicNasal(QChar nasal, QChar consonant)
+   {
+      for (const char16_t classStart : { u'क', u'च', u'ट', u'त', u'प' })
+         if (nasal.unicode() == classStart + 4)
+            return consonant.unicode() >= classStart && consonant.unicode() < classStart + 4;
+      return false;
+   }
+
+   /**
+     * Replace each nasal consonant followed by a virama and a consonant of its class by an anusvara,
+     * both spellings are standard: e.g. हिन्दी => हिंदी.
+     * If given, 'positions' must have one entry per character of 'str' and is updated accordingly.
+     */
+   void foldDevanagariNasals(QString& str, QList<int>* positions = nullptr)
+   {
+      if (!str.contains(QChar(DEVANAGARI_VIRAMA)))
+         return;
+
+      qsizetype j = 0;
+      for (qsizetype i = 0; i < str.size(); ++i, ++j)
+      {
+         if (positions)
+            (*positions)[j] = (*positions)[i];
+
+         if (i + 2 < str.size() && str.at(i + 1) == QChar(DEVANAGARI_VIRAMA) && isHomorganicNasal(str.at(i), str.at(i + 2)))
+         {
+            str[j] = QChar(DEVANAGARI_ANUSVARA);
+            ++i; // Skip the virama.
+         }
+         else
+            str[j] = str.at(i);
+      }
+      str.truncate(j);
+      if (positions)
+         positions->resize(j);
+   }
+}
+
+/**
+  * Fold a text for searching:
+  *  - Lower case and compatibility decomposition (e.g. fullwidth 'Ａ' => 'a').
+  *  - Remove the optional marks, see 'hasOptionalMarks(..)', and the variation selectors.
+  *  - Remove the zero-width joiners, they only change the rendering of a word.
+  *  - Replace the non-ASCII decimal digits by their ASCII equivalent, e.g. '२०२४' => '2024'.
+  *  - Devanagari: remove the nukta, replace the candrabindu and the nasal conjuncts by an anusvara.
+  */
 QString StringUtils::toLowerAndRemoveAccents(const QString& str)
 {
    const QString decomposed = str.toLower().normalized(QString::NormalizationForm_KD);
    QString result;
    result.reserve(decomposed.size());
-   for (const QChar c : decomposed)
-      // Dakuten and handakuten distinguish kana, unlike accents folded for searching.
-      if (c.unicode() == 0x3099 || c.unicode() == 0x309A ||
-          (c.category() != QChar::Mark_NonSpacing && c.category() != QChar::Mark_SpacingCombining))
-         result.append(c);
+   QChar::Script baseScript = QChar::Script_Common; // Script of the last non-mark character.
+
+   // Decode supplementary characters in place, without allocating a UTF-32 copy.
+   for (qsizetype i = 0; i < decomposed.size(); ++i)
+   {
+      char32_t c = decomposed.at(i).unicode();
+      if (decomposed.at(i).isHighSurrogate() && i + 1 < decomposed.size() && decomposed.at(i + 1).isLowSurrogate())
+      {
+         c = QChar::surrogateToUcs4(decomposed.at(i), decomposed.at(i + 1));
+         ++i;
+      }
+
+      const QChar::Category category = QChar::category(c);
+      if (category == QChar::Mark_NonSpacing || category == QChar::Mark_SpacingCombining)
+      {
+         if (c == DEVANAGARI_NUKTA || isVariationSelector(c) || hasOptionalMarks(baseScript))
+            continue;
+         if (c == DEVANAGARI_CANDRABINDU)
+            c = DEVANAGARI_ANUSVARA;
+      }
+      else if (c == ZERO_WIDTH_NON_JOINER || c == ZERO_WIDTH_JOINER)
+         continue;
+      else
+      {
+         baseScript = QChar::script(c);
+         if (category == QChar::Number_DecimalDigit)
+            c = u'0' + QChar::digitValue(c);
+      }
+      result.append(QChar::fromUcs4(c));
+   }
+
    // Restore Hangul syllables and composed kana after compatibility decomposition.
-   return result.normalized(QString::NormalizationForm_C);
+   QString composed = result.normalized(QString::NormalizationForm_C);
+   foldDevanagariNasals(composed);
+   return composed;
 }
 
 /**
@@ -67,7 +184,7 @@ QString StringUtils::toLowerAndRemoveAccents(const QString& str, QList<int>& pos
 
    // Compatibility decomposition may join formerly separate graphemes: e.g. ㄱ + ㅏ
    // becomes conjoining Jamo, which must compose to 가 just as in whole-string folding.
-   const QString composed = folded.normalized(QString::NormalizationForm_C);
+   QString composed = folded.normalized(QString::NormalizationForm_C);
    if (composed != folded)
    {
       QList<int> composedPositions;
@@ -83,6 +200,9 @@ QString StringUtils::toLowerAndRemoveAccents(const QString& str, QList<int>& pos
       positions = std::move(composedPositions);
    }
 
+   // A nasal conjunct may also span two graphemes, e.g. न् + द without Indic conjunct grapheme clusters.
+   foldDevanagariNasals(composed, &positions);
+
    positions << str.size();
    return composed;
 }
@@ -91,11 +211,12 @@ QString StringUtils::toLowerAndRemoveAccents(const QString& str, QList<int>& pos
   * Take raw terms in a string and split, trim and filter to
   * return a list of lower case keywords without accents.
   * Some character or word can be removed.
+  * The preserved combining marks, like the Devanagari vowel signs, are part of the words.
   * @example " The little  DUCK " => ["the", "little", "duck"].
   */
 QStringList StringUtils::splitInWords(const QString& words)
 {
-   static const QRegularExpression regExp("(\\W+|_)", QRegularExpression::UseUnicodePropertiesOption);
+   static const QRegularExpression regExp("[^\\p{L}\\p{Mn}\\p{Mc}\\p{N}]+");
    return StringUtils::toLowerAndRemoveAccents(words).split(regExp, Qt::SkipEmptyParts);
 }
 
@@ -173,6 +294,17 @@ bool StringUtils::isJapanese(const QString& str)
       if (script == QChar::Script_Hiragana || script == QChar::Script_Katakana)
          return true;
    }
+   return false;
+}
+
+/**
+  * Return whether the string contains at least one character in the Devanagari script (Hindi, Marathi, Nepali, ...).
+  */
+bool StringUtils::isDevanagari(const QString& str)
+{
+   for (const QChar c : str)
+      if (c.script() == QChar::Script_Devanagari)
+         return true;
    return false;
 }
 

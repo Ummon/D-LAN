@@ -37,6 +37,7 @@ private slots:
    void shortPrefixMatching_data();
    void shortPrefixMatching();
    void normalizedKanaAndHangul();
+   void normalizedDevanagari();
    void prefixGraphemeBoundaries_data();
    void prefixGraphemeBoundaries();
    void singleWordResultLimits();

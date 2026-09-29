@@ -236,6 +236,52 @@ void Tests::splitInWordsUnicode()
       (QStringList { "abc", korean, hiragana, "123" }));
    QCOMPARE(StringUtils::splitInWords(QStringLiteral("\U0001B001")),
       QStringList { QStringLiteral("\U0001B001") });
+
+   // Devanagari vowel signs and virama belong to the words: "मेरी_किताब.pdf".
+   const QString devanagari = QStringLiteral("किताब");
+   QCOMPARE(StringUtils::splitInWords(QStringLiteral("मेरी_") + devanagari + ".pdf"),
+      (QStringList { QStringLiteral("मेरी"), devanagari, "pdf" }));
+   QCOMPARE(StringUtils::splitInWords(QStringLiteral("गंदा।स्तर")), // "गंदा।स्तर"
+      (QStringList { QStringLiteral("गंदा"), QStringLiteral("स्तर") }));
+}
+
+void Tests::normalizeDevanagari()
+{
+   // The vowel signs distinguish words: काम (work), कम (less) and कीमा (mince).
+   QCOMPARE(StringUtils::splitInWords(QStringLiteral("काम कम कीमा")),
+      (QStringList { QStringLiteral("काम"), QStringLiteral("कम"), QStringLiteral("कीमा") }));
+
+   // Nasal conjuncts are written with an anusvara: हिन्दी => हिंदी, सम्बन्ध => संबंध, गङ्गा => गंगा.
+   QCOMPARE(StringUtils::toLowerAndRemoveAccents(QStringLiteral("हिन्दी")), QStringLiteral("हिंदी"));
+   QCOMPARE(StringUtils::toLowerAndRemoveAccents(QStringLiteral("सम्बन्ध")), QStringLiteral("संबंध"));
+   QCOMPARE(StringUtils::toLowerAndRemoveAccents(QStringLiteral("गङ्गा")), QStringLiteral("गंगा"));
+
+   // Only before a consonant of the same class: अन्य, तुम्हारा and उन्नति are unchanged.
+   for (const QString& word : {
+      QStringLiteral("अन्य"),
+      QStringLiteral("तुम्हारा"),
+      QStringLiteral("उन्नति") })
+      QCOMPARE(StringUtils::toLowerAndRemoveAccents(word), word);
+
+   // Candrabindu: हँसी => हंसी.
+   QCOMPARE(StringUtils::toLowerAndRemoveAccents(QStringLiteral("हँसी")), QStringLiteral("हंसी"));
+
+   // Nukta, decomposed or precomposed: फ़िल्म => फिल्म.
+   const QString film = QStringLiteral("फिल्म");
+   QCOMPARE(StringUtils::toLowerAndRemoveAccents(QStringLiteral("फ़िल्म")), film);
+   QCOMPARE(StringUtils::toLowerAndRemoveAccents(QStringLiteral("फ़िल्म")), film);
+
+   // Zero-width joiners only change the rendering: क्‍ष => क्ष.
+   QCOMPARE(StringUtils::toLowerAndRemoveAccents(QStringLiteral("क्‍ष")), QStringLiteral("क्ष"));
+   QCOMPARE(StringUtils::splitInWords(QStringLiteral("क्‌ष")), QStringList { QStringLiteral("क्ष") });
+
+   // Decimal digits of any script: २०२४ => 2024, Arabic-Indic ١٢ => 12.
+   QCOMPARE(StringUtils::splitInWords(QStringLiteral("२०२४ ١٢")), (QStringList { "2024", "12" }));
+
+   // Other scripts also keep their marks: Thai กิ, Bengali কাজ. Variation selectors are removed.
+   QCOMPARE(StringUtils::toLowerAndRemoveAccents(QStringLiteral("กิ")), QStringLiteral("กิ"));
+   QCOMPARE(StringUtils::toLowerAndRemoveAccents(QStringLiteral("কাজ")), QStringLiteral("কাজ"));
+   QCOMPARE(StringUtils::toLowerAndRemoveAccents(QStringLiteral("葛\U000E0100")), QStringLiteral("葛"));
 }
 
 void Tests::normalizeSearchWords()
@@ -269,6 +315,10 @@ void Tests::normalizeSearchPositions_data()
    QTest::newRow("halfwidth-kana") << QStringLiteral("\uFF76\uFF9E") << QStringLiteral("\u30AC") << QList<int> { 0, 2 };
    QTest::newRow("latin-accent") << QStringLiteral("E\u0301") << QString("e") << QList<int> { 0, 2 };
    QTest::newRow("surrogate") << QStringLiteral("\U00010400") << QStringLiteral("\U00010428") << QList<int> { 0, 0, 2 };
+   QTest::newRow("devanagari-nukta") << QStringLiteral("फ़ि") << QStringLiteral("फि") << QList<int> { 0, 0, 2 };
+   QTest::newRow("devanagari-digits") << QStringLiteral("२०") << QString("20") << QList<int> { 0, 1, 2 };
+   // The conjunct न्दी is a single grapheme (Unicode 15.1 Indic conjunct break rule).
+   QTest::newRow("devanagari-nasal") << QStringLiteral("हिन्दी") << QStringLiteral("हिंदी") << QList<int> { 0, 0, 2, 2, 2, 6 };
 }
 
 void Tests::normalizeSearchPositions()
@@ -343,6 +393,27 @@ void Tests::isJapanese()
    QFETCH(QString, text);
    QFETCH(bool, expected);
    QCOMPARE(StringUtils::isJapanese(text), expected);
+}
+
+void Tests::isDevanagari_data()
+{
+   QTest::addColumn<QString>("text");
+   QTest::addColumn<bool>("expected");
+
+   QTest::newRow("empty") << QString() << false;
+   QTest::newRow("ascii") << QStringLiteral("abc 123") << false;
+   QTest::newRow("hindi") << QStringLiteral("हिंदी") << true;
+   QTest::newRow("digits") << QStringLiteral("२०") << true;
+   QTest::newRow("mixed") << QStringLiteral("abc क 123") << true;
+   QTest::newRow("bengali") << QStringLiteral("কাজ") << false;
+   QTest::newRow("hangul") << QStringLiteral("한글") << false;
+}
+
+void Tests::isDevanagari()
+{
+   QFETCH(QString, text);
+   QFETCH(bool, expected);
+   QCOMPARE(StringUtils::isDevanagari(text), expected);
 }
 
 void Tests::hashStringToInt()
