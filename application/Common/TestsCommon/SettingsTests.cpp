@@ -61,9 +61,9 @@ private slots:
       QCOMPARE(language.country(), std::string("CH"));
 
       SETTINGS.setSettingsMessage(new Protos::Core::Settings());
-      SETTINGS.set("salt", quint64(0xfedcba9876543210ULL));
+      SETTINGS.set("remote_password", QString("abc$123"));
       SETTINGS.set("time_recheck_chunk_factor", 1.25);
-      QCOMPARE(SETTINGS.get<quint64>("salt"), quint64(0xfedcba9876543210ULL));
+      QCOMPARE(SETTINGS.get<QString>("remote_password"), QString("abc$123"));
       QCOMPARE(SETTINGS.get<double>("time_recheck_chunk_factor"), 1.25);
    }
 

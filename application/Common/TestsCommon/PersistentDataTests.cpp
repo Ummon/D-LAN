@@ -1,11 +1,13 @@
 #include <QFile>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QRegularExpression>
 #include <QStringConverter>
 #include <QTemporaryDir>
 #include <QTest>
 
 #include <Common/PersistentData.h>
+#include <Protos/core_settings.pb.h>
 #include <Protos/gui_settings.pb.h>
 
 using Common::PersistentData;
@@ -108,6 +110,47 @@ private slots:
       Protos::GUI::Settings restored;
       PersistentData::getValue(directory.path(), "settings.json", restored, DataFolderType::ROAMING, true);
       QCOMPARE(QString::fromStdString(restored.core_address()), text);
+   }
+
+   void readWithInvalidFields()
+   {
+      QTemporaryDir directory;
+      QVERIFY(directory.isValid());
+      const QByteArray json = QJsonDocument(QJsonObject{
+         {"core_address", "address"}, {"main_window_width", QJsonObject{{"hash", "abc"}}}, {"language", 42}
+      }).toJson();
+      QFile file(directory.filePath("settings.json"));
+      QVERIFY(file.open(QIODevice::WriteOnly));
+      QCOMPARE(file.write(json), qint64(json.size()));
+      file.close();
+
+      Protos::GUI::Settings restored;
+      restored.set_main_window_width(800);
+      QTest::ignoreMessage(QtWarningMsg, QRegularExpression("main_window_width"));
+      QTest::ignoreMessage(QtWarningMsg, QRegularExpression("language"));
+      PersistentData::getValue(directory.path(), "settings.json", restored, DataFolderType::ROAMING, true);
+      QCOMPARE(restored.core_address(), std::string("address"));
+      QCOMPARE(restored.main_window_width(), 800u); // The value given before the reading is kept.
+      QVERIFY(!restored.has_language());
+   }
+
+   void readOldRemotePassword()
+   {
+      QTemporaryDir directory;
+      QVERIFY(directory.isValid());
+      const QByteArray json = QJsonDocument(QJsonObject{
+         {"nick", "Bob"}, {"remote_password", QJsonObject{{"hash", "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGw=="}}}, {"salt", "42"}
+      }).toJson();
+      QFile file(directory.filePath("core_settings.json"));
+      QVERIFY(file.open(QIODevice::WriteOnly));
+      QCOMPARE(file.write(json), qint64(json.size()));
+      file.close();
+
+      Protos::Core::Settings restored;
+      QTest::ignoreMessage(QtWarningMsg, QRegularExpression("remote_password"));
+      PersistentData::getValue(directory.path(), "core_settings.json", restored, DataFolderType::ROAMING, true);
+      QCOMPARE(restored.nick(), std::string("Bob"));
+      QVERIFY(restored.remote_password().empty());
    }
 
    void readFailures()

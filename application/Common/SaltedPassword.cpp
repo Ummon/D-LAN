@@ -15,44 +15,40 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
-
-#include <QMainWindow>
 
 #include <Common/SaltedPassword.h>
+using namespace Common;
 
-namespace Ui {
-   class MainWindow;
-}
+static const QChar SEPARATOR('$');
 
-namespace PasswordHasher
+/**
+  * @return "<hash>$<salt>" or an empty string if the hash is null.
+  */
+QString SaltedPassword::toStr() const
 {
-   class MainWindow : public QMainWindow
-   {
-      Q_OBJECT
-   public:
-      explicit MainWindow(QWidget *parent = 0);
-      ~MainWindow();
+   if (this->isNull())
+      return QString();
 
-   private slots:
-      void computeHash();
-      void savePasswordToCurrentUser();
-      void savePasswordToSystemUser();
-
-   private:
-      void savePassword(const QString& directory);
-      void setButtonText();
-      QString checkPasswords() const;
-
-   private:
-      const QString CORE_SETTINGS_PATH_CURRENT_USER;
-      const QString CORE_SETTINGS_PATH_SYSTEM_USER;
-
-      Ui::MainWindow* ui;
-      Common::SaltedPassword password;
-   };
+   return this->hash.toStr() + SEPARATOR + QString::number(this->salt);
 }
 
-#endif
+/**
+  * @return A null password if 'str' is empty or malformed.
+  */
+SaltedPassword SaltedPassword::fromStr(const QString& str)
+{
+   const qsizetype separatorPos = str.indexOf(SEPARATOR);
+   if (separatorPos < 0)
+      return SaltedPassword();
+
+   const auto hash = Hash::fromStr(str.left(separatorPos));
+   if (!hash)
+      return SaltedPassword();
+
+   bool ok = false;
+   const quint64 salt = str.mid(separatorPos + 1).toULongLong(&ok);
+   if (!ok)
+      return SaltedPassword();
+
+   return SaltedPassword { *hash, salt };
+}

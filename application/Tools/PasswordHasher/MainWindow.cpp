@@ -23,9 +23,6 @@ using namespace PasswordHasher;
 #include <QStringBuilder>
 #include <QRegularExpression>
 
-#include <google/protobuf/text_format.h>
-
-#include <Protos/common.pb.h>
 #include <Protos/core_settings.pb.h>
 
 #include <Common/Hash.h>
@@ -73,21 +70,8 @@ void MainWindow::computeHash()
    }
    else
    {
-      Common::Hash hash = Common::Hasher::hashWithRandomSalt(this->ui->txtPass1->text(), this->salt);
-
-      Protos::Core::Settings settings;
-      const google::protobuf::FieldDescriptor* passField = settings.GetDescriptor()->FindFieldByName("remote_password");
-      const google::protobuf::FieldDescriptor* saltField = settings.GetDescriptor()->FindFieldByName("salt");
-
-      settings.mutable_remote_password()->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
-      settings.set_salt(this->salt);
-
-      std::string encodedHash;
-      std::string encodedSalt;
-      google::protobuf::TextFormat::PrintFieldValueToString(settings, passField, -1, &encodedHash);
-      google::protobuf::TextFormat::PrintFieldValueToString(settings, saltField, -1, &encodedSalt);
-
-      this->ui->txtResult->setText("remote_password {\n " % QString::fromStdString(encodedHash) % "},\nsalt: " % QString::fromStdString(encodedSalt) % "\n");
+      this->password.hash = Common::Hasher::hashWithRandomSalt(this->ui->txtPass1->text(), this->password.salt);
+      this->ui->txtResult->setText("\"remote_password\": \"" % this->password.toStr() % "\"\n");
    }
 }
 
@@ -107,16 +91,15 @@ void MainWindow::savePassword(const QString& directory)
 
    if (!error.isNull())
    {
-      QMessageBox::warning(this, "Password cannot be saved", error);
+      QMessageBox::warning(this, "Password not saved", error);
    }
    else
    {
       SETTINGS.load();
-      SETTINGS.set("remote_password", Common::Hasher::hashWithSalt(this->ui->txtPass1->text(), this->salt));
-      SETTINGS.set("salt", this->salt);
+      SETTINGS.set("remote_password", this->password.toStr());
 
       if (!SETTINGS.saveToACustomDirectory(directory))
-         QMessageBox::warning(this, "Error", "Error during saving");
+         QMessageBox::warning(this, "Error", "The settings file could not be saved.");
       else
          QMessageBox::information(this, "Password saved", "Password has been saved.");
    }
@@ -129,7 +112,7 @@ void MainWindow::setButtonText()
 }
 
 /**
-  * Checks that password are not empty, are equal and do not contain any whitespace.
+  * Checks that the passwords are not empty, are equal and do not contain any whitespace.
   * @return An error message if there is an error or a null string if everything is fine.
   */
 QString MainWindow::checkPasswords() const
@@ -137,11 +120,11 @@ QString MainWindow::checkPasswords() const
    QRegularExpression spaces("\\s");
 
    if (this->ui->txtPass1->text() != this->ui->txtPass2->text())
-      return QString("Error: passwords aren't the same");
+      return QString("Error: the passwords do not match");
    else if (this->ui->txtPass1->text().isEmpty())
-      return QString("Error: password is empty");
+      return QString("Error: the password is empty");
    else if (spaces.match(this->ui->txtPass1->text()).hasMatch())
-      return QString("Error: password contains one or more whitespace");
+      return QString("Error: the password must not contain whitespace");
    else
       return QString();
 }

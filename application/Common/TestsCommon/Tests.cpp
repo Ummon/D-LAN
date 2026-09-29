@@ -49,6 +49,7 @@
 #include <Settings.h>
 #include <Global.h>
 #include <Path.h>
+#include <SaltedPassword.h>
 #include <StringUtils.h>
 #include <ZeroCopyStreamQIODevice.h>
 #include <ProtoHelper.h>
@@ -2157,6 +2158,24 @@ void Tests::hasherEmptyAndSegmentedData()
    QCOMPARE(Hasher::hash(whole), hasher.getResult());
    hasher.addSalt(42);
    QCOMPARE(Hasher::hashWithSalt(whole, 42), hasher.getResult());
+}
+
+void Tests::saltedPassword()
+{
+   const SaltedPassword password { Hash::rand(), 0xfedcba9876543210ULL };
+   const QString str = password.toStr();
+   QCOMPARE(str, password.hash.toStr() + "$18364758544493064720");
+
+   const SaltedPassword decoded = SaltedPassword::fromStr(str);
+   QCOMPARE(decoded.hash, password.hash);
+   QCOMPARE(decoded.salt, password.salt);
+
+   QVERIFY(SaltedPassword().toStr().isEmpty());
+   QVERIFY(SaltedPassword::fromStr("").isNull());
+   QVERIFY(SaltedPassword::fromStr(password.hash.toStr()).isNull()); // Without salt.
+   QVERIFY(SaltedPassword::fromStr(password.hash.toStr() + "$").isNull());
+   QVERIFY(SaltedPassword::fromStr(password.hash.toStr() + "$abc").isNull());
+   QVERIFY(SaltedPassword::fromStr("zz$42").isNull());
 }
 
 void Tests::bloomFilter()

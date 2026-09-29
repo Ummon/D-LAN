@@ -10,6 +10,7 @@
 #include <priv/LocalBrowse.h>
 
 #include <Common/Settings.h>
+#include <Common/SaltedPassword.h>
 #include <Common/Global.h>
 #include <Common/ProtoHelper.h>
 #include <Core/PeerManager/Builder.h>
@@ -19,6 +20,11 @@
 
 #include <Core/PeerManager/GetChunkParams.h>
 #include <priv/UploadProgress.h>
+
+static Common::SaltedPassword remotePassword()
+{
+   return Common::SaltedPassword::fromStr(SETTINGS.get<QString>("remote_password"));
+}
 
 class Tests : public QObject
 {
@@ -38,8 +44,7 @@ private slots:
       settings->set_delay_gui_connection_fail(10);
       SETTINGS.setSettingsMessage(settings);
       SETTINGS.set("peer_id", Common::Hash::rand());
-      SETTINGS.set("remote_password", Common::Hash::rand());
-      SETTINGS.set("salt", quint64(123));
+      SETTINGS.set("remote_password", Common::SaltedPassword { Common::Hash::rand(), 123 }.toStr());
    }
 
    void macOSInterfaceState()
@@ -338,8 +343,7 @@ private slots:
       QFETCH(bool, invalidNew);
       QFETCH(int, length);
       const auto original = Common::Hash::rand();
-      SETTINGS.set("remote_password", original);
-      SETTINGS.set("salt", quint64(123));
+      SETTINGS.set("remote_password", Common::SaltedPassword { original, 123 }.toStr());
       auto* socket = new BufferedSocket;
       QScopedPointer<RCM::RemoteConnection> connection(this->newConnection(socket));
       connection->startListening();
@@ -360,18 +364,17 @@ private slots:
             request.mutable_old_password()->set_hash(std::string(length, '\0'));
       }
       socket->receive(Common::MessageHeader::GUI_CHANGE_PASSWORD, request);
-      QCOMPARE(SETTINGS.get<Common::Hash>("remote_password"), original);
-      QCOMPARE(SETTINGS.get<quint64>("salt"), quint64(123));
+      QCOMPARE(remotePassword().hash, original);
+      QCOMPARE(remotePassword().salt, quint64(123));
       QVERIFY(socket->output.isEmpty());
    }
 
    void validPasswordChanges()
    {
       const auto restore = qScopeGuard([] {
-         SETTINGS.set("remote_password", Common::Hash::rand());
-         SETTINGS.set("salt", quint64(123));
+         SETTINGS.set("remote_password", Common::SaltedPassword { Common::Hash::rand(), 123 }.toStr());
       });
-      SETTINGS.set("remote_password", Common::Hash());
+      SETTINGS.rm("remote_password");
       auto* socket = new BufferedSocket;
       QScopedPointer<RCM::RemoteConnection> connection(this->newConnection(socket));
       connection->startListening();
@@ -380,26 +383,25 @@ private slots:
       request.mutable_new_password()->set_hash(first.getData(), Common::Hash::HASH_SIZE);
       request.set_new_salt(456);
       socket->receive(Common::MessageHeader::GUI_CHANGE_PASSWORD, request);
-      QCOMPARE(SETTINGS.get<Common::Hash>("remote_password"), first);
-      QCOMPARE(SETTINGS.get<quint64>("salt"), quint64(456));
+      QCOMPARE(remotePassword().hash, first);
+      QCOMPARE(remotePassword().salt, quint64(456));
 
       const auto second = Common::Hash::rand();
       request.mutable_new_password()->set_hash(second.getData(), Common::Hash::HASH_SIZE);
       request.mutable_old_password()->set_hash(second.getData(), Common::Hash::HASH_SIZE); // Wrong old password.
       request.set_new_salt(789);
       socket->receive(Common::MessageHeader::GUI_CHANGE_PASSWORD, request);
-      QCOMPARE(SETTINGS.get<Common::Hash>("remote_password"), first);
-      QCOMPARE(SETTINGS.get<quint64>("salt"), quint64(456));
+      QCOMPARE(remotePassword().hash, first);
+      QCOMPARE(remotePassword().salt, quint64(456));
       request.mutable_old_password()->set_hash(first.getData(), Common::Hash::HASH_SIZE);
       socket->receive(Common::MessageHeader::GUI_CHANGE_PASSWORD, request);
-      QCOMPARE(SETTINGS.get<Common::Hash>("remote_password"), second);
-      QCOMPARE(SETTINGS.get<quint64>("salt"), quint64(789));
+      QCOMPARE(remotePassword().hash, second);
+      QCOMPARE(remotePassword().salt, quint64(789));
 
       request.clear_old_password(); // Explicit reset does not require the old password.
       request.mutable_new_password()->set_hash(std::string(Common::Hash::HASH_SIZE, '\0'));
       socket->receive(Common::MessageHeader::GUI_CHANGE_PASSWORD, request);
-      QVERIFY(SETTINGS.get<Common::Hash>("remote_password").isNull());
-      QCOMPARE(SETTINGS.get<quint64>("salt"), quint64(0));
+      QVERIFY(SETTINGS.get<QString>("remote_password").isEmpty());
    }
 
    void remoteAuthentication_data()
@@ -413,7 +415,7 @@ private slots:
    {
       QFETCH(bool, early);
       auto socket = new BufferedSocket(false);
-      const auto password = SETTINGS.get<Common::Hash>("remote_password");
+      const auto password = remotePassword().hash;
       auto authenticate = [&](quint64 challenge) {
          Protos::GUI::Authentication authentication;
          const auto hash = Common::Hasher::hashWithSalt(password, challenge);
@@ -468,7 +470,7 @@ private slots:
       connection->startListening();
       const auto challenge = socket->messages()[0].getMessage<Protos::GUI::AskForAuthentication>().salt_challenge();
       Protos::GUI::Authentication authentication;
-      const auto hash = Common::Hasher::hashWithSalt(SETTINGS.get<Common::Hash>("remote_password"), challenge);
+      const auto hash = Common::Hasher::hashWithSalt(remotePassword().hash, challenge);
       authentication.mutable_password_challenge()->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
       socket->receive(Common::MessageHeader::GUI_AUTHENTICATION, authentication);
       QCOMPARE(socket->messages().size(), 4);
@@ -495,7 +497,7 @@ private slots:
       connection->startListening();
       const auto challenge = socket->messages()[0].getMessage<Protos::GUI::AskForAuthentication>().salt_challenge();
       Protos::GUI::Authentication valid;
-      const auto hash = Common::Hasher::hashWithSalt(SETTINGS.get<Common::Hash>("remote_password"), challenge);
+      const auto hash = Common::Hasher::hashWithSalt(remotePassword().hash, challenge);
       valid.mutable_password_challenge()->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
       QSignalSpy languageDefined(connection, &RCM::RemoteConnection::languageDefined);
       QList<Common::Message> finalMessages;

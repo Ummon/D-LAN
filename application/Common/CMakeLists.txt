@@ -25,6 +25,7 @@ add_library(Common STATIC
    Hash_noShare.cpp
    Hash_share.cpp
    Path.cpp
+   SaltedPassword.cpp
 
    Hash.h
    Constants.h
@@ -58,6 +59,7 @@ add_library(Common STATIC
    Hash_noShare.h
    Hash_share.h
    Path.h
+   SaltedPassword.h
    SharedEntry.h
 )
 

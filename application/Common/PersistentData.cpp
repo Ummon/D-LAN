@@ -19,8 +19,12 @@
 #include <Common/PersistentData.h>
 using namespace Common;
 
+#include <memory>
+
 #include <QFile>
 #include <QDir>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QStringConverter>
 #include <QtDebug>
 
@@ -30,6 +34,41 @@ using namespace Common;
 
 #include <Constants.h>
 #include <Global.h>
+
+namespace
+{
+   /**
+     * Returns 'json' without its top-level fields which can't be parsed into 'message', for example
+     * a field whose type has changed. Returns a null array if 'json' isn't a JSON object or if no field has been removed.
+     */
+   QByteArray removeInvalidFields(const QByteArray& json, const google::protobuf::Message& message, const google::protobuf::util::JsonParseOptions& options)
+   {
+      const QJsonDocument document = QJsonDocument::fromJson(json);
+      if (!document.isObject())
+         return QByteArray();
+
+      QJsonObject object = document.object();
+      const std::unique_ptr<google::protobuf::Message> scratch(message.New());
+      bool removed = false;
+
+      for (auto i = object.begin(); i != object.end();)
+      {
+         const QByteArray field = QJsonDocument(QJsonObject { { i.key(), i.value() } }).toJson(QJsonDocument::Compact);
+         if (google::protobuf::util::JsonStringToMessage(absl::string_view(field.constData(), static_cast<size_t>(field.size())), scratch.get(), options).ok())
+         {
+            ++i;
+         }
+         else
+         {
+            qWarning() << "PersistentData: the field" << i.key() << "can't be read and is reset to its default value";
+            i = object.erase(i);
+            removed = true;
+         }
+      }
+
+      return removed ? QJsonDocument(object).toJson(QJsonDocument::Compact) : QByteArray();
+   }
+}
 
 /**
   * @class Common::PersistentData
@@ -183,9 +222,22 @@ try
       google::protobuf::util::JsonParseOptions jsonOptions;
       jsonOptions.ignore_unknown_fields = true;
 
+      const std::unique_ptr<google::protobuf::Message> original(data.New());
+      original->CopyFrom(data);
+
       auto status = google::protobuf::util::JsonStringToMessage(jsonView, &data, jsonOptions);
       if (!status.ok())
-         throw PersistentDataIOException(QString::fromStdString(std::string(status.message())));
+      {
+         // Don't lose all the values because of some invalid fields: retry without them.
+         const QByteArray validJson = removeInvalidFields(QByteArray(jsonView.data(), static_cast<qsizetype>(jsonView.size())), data, jsonOptions);
+         if (validJson.isNull())
+            throw PersistentDataIOException(QString::fromStdString(std::string(status.message())));
+
+         data.CopyFrom(*original);
+         status = google::protobuf::util::JsonStringToMessage(absl::string_view(validJson.constData(), static_cast<size_t>(validJson.size())), &data, jsonOptions);
+         if (!status.ok())
+            throw PersistentDataIOException(QString::fromStdString(std::string(status.message())));
+      }
 
 #if !DEBUG
    }

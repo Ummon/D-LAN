@@ -112,6 +112,7 @@ private slots:
    void hasher();
    void hasherHashValue();
    void hasherEmptyAndSegmentedData();
+   void saltedPassword();
 
    // BloomFilter class.
    void bloomFilter();

@@ -9,6 +9,7 @@
 
 #include <Common/Global.h>
 #include <Common/Settings.h>
+#include <Common/SaltedPassword.h>
 #include <Common/Network/RemoteControlTls.h>
 #include <Common/RemoteCoreController/priv/InternalCoreConnection.h>
 #include <Core/RemoteControlManager/priv/RemoteControlManager.h>
@@ -76,7 +77,7 @@ class Tests : public QObject
    {
       client.connectionInfo.address = "test-core";
       client.connectionInfo.port = this->server.serverPort();
-      client.connectionInfo.password = correctPassword ? SETTINGS.get<Common::Hash>("remote_password") : Common::Hash::rand();
+      client.connectionInfo.password = correctPassword ? Common::SaltedPassword::fromStr(SETTINGS.get<QString>("remote_password")).hash : Common::Hash::rand();
       client.tlsRequired = remote;
       client.tlsFailureReported = false;
       client.connectionAttemptActive = true;
@@ -118,8 +119,7 @@ private slots:
       settings->set_peer_imalive_period(5000);
       SETTINGS.setSettingsMessage(settings);
       SETTINGS.set("peer_id", Common::Hash::rand());
-      SETTINGS.set("remote_password", Common::Hash::rand());
-      SETTINGS.set("salt", quint64(123));
+      SETTINGS.set("remote_password", Common::SaltedPassword { Common::Hash::rand(), 123 }.toStr());
       this->server.remote = true;
       QVERIFY(this->server.listen(QHostAddress::LocalHost));
       QVERIFY2(QSslSocket::supportsSsl(), "The integration tests require a deployed Qt TLS backend");

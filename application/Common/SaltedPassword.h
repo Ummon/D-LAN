@@ -15,44 +15,28 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
 
-#include <QMainWindow>
+#pragma once
 
-#include <Common/SaltedPassword.h>
+#include <QString>
 
-namespace Ui {
-   class MainWindow;
-}
+#include <Common/Hash.h>
 
-namespace PasswordHasher
+namespace Common
 {
-   class MainWindow : public QMainWindow
+   /**
+     * A password hashed with a salt: 'hash' = 'Hasher::hashWithSalt(password, salt)'.
+     * Stored in the settings as a string "<hash>$<salt>", where <hash> is in hexadecimal and <salt> in decimal.
+     * A null hash means no password is defined, its string form is empty.
+     */
+   struct SaltedPassword
    {
-      Q_OBJECT
-   public:
-      explicit MainWindow(QWidget *parent = 0);
-      ~MainWindow();
+      Hash hash;
+      quint64 salt = 0;
 
-   private slots:
-      void computeHash();
-      void savePasswordToCurrentUser();
-      void savePasswordToSystemUser();
+      bool isNull() const { return this->hash.isNull(); }
 
-   private:
-      void savePassword(const QString& directory);
-      void setButtonText();
-      QString checkPasswords() const;
-
-   private:
-      const QString CORE_SETTINGS_PATH_CURRENT_USER;
-      const QString CORE_SETTINGS_PATH_SYSTEM_USER;
-
-      Ui::MainWindow* ui;
-      Common::SaltedPassword password;
+      QString toStr() const;
+      static SaltedPassword fromStr(const QString& str);
    };
 }
-
-#endif

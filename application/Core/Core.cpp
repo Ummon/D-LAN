@@ -21,12 +21,12 @@
 #include <Core.h>
 using namespace CoreSpace;
 
-#include <QRandomGenerator64>
 #include <QRegularExpression>
 
 #include <Common/PersistentData.h>
 #include <Common/Constants.h>
 #include <Common/Hash.h>
+#include <Common/SaltedPassword.h>
 #include <Common/Languages.h>
 #include <HashCache/Builder.h>
 #include <FileManager/Builder.h>
@@ -139,17 +139,16 @@ void Core::printSimilarFiles() const
 
 void Core::changePassword(const QString& newPassword)
 {
-   quint64 salt = QRandomGenerator64::global()->generate64();
+   Common::SaltedPassword password;
+   password.hash = Common::Hasher::hashWithRandomSalt(newPassword, password.salt);
 
-   SETTINGS.set("remote_password", Common::Hasher::hashWithSalt(newPassword, salt));
-   SETTINGS.set("salt", salt);
+   SETTINGS.set("remote_password", password.toStr());
    SETTINGS.save();
 }
 
 void Core::removePassword()
 {
-   SETTINGS.set("remote_password", Common::Hash());
-   SETTINGS.rm("salt");
+   SETTINGS.rm("remote_password");
    SETTINGS.save();
 }
 
@@ -238,7 +237,6 @@ Protos::Core::Settings* Core::createDefaultValuesSettings()
 
    ///// RemoteControlManager /////
    settings->set_remote_control_port(59485);
-   settings->set_salt(42);
    settings->set_remote_refresh_rate(1000);
    settings->set_remote_max_nb_connection(5);
    settings->set_search_lifetime(5000);

@@ -9,8 +9,8 @@ import "common.proto";
 package Protos.Core;
 
 message Settings {
-   reserved 3, 25, 54;
-   reserved "chunk_size", "check_received_data_integrity", "upload_max_nb_connections_per_peer";
+   reserved 3, 25, 54, 90;
+   reserved "chunk_size", "check_received_data_integrity", "upload_max_nb_connections_per_peer", "salt";
 
    string nick = 1;
    Common.Hash peer_id = 2;
@@ -89,8 +89,7 @@ message Settings {
 
    ///// RemoteControlManager /////
    uint32 remote_control_port = 80; // [default = 59485].
-   Common.Hash remote_password = 81; // Hashed + salted. Only used for non-local connection. If defined salt field must be set.
-   uint64 salt = 90; // [default = 42]
+   string remote_password = 81; // "<hash>$<salt>", see 'Common::SaltedPassword'. Only used for non-local connection. Empty if not defined.
    uint32 remote_refresh_rate = 82; // [default = 1000] [ms].
    uint32 remote_max_nb_connection = 83; // [default = 5].
    uint32 search_lifetime = 84; // [default = 5000] [ms]. (5s)

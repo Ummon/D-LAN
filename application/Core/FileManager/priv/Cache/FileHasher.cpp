@@ -217,9 +217,7 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed, bool deferPers
             return false;
 
          int bytesRead = 0;
-         {
-            // A buffer need not divide the chunk size (and may even exceed it). Never consume
-            // bytes belonging to the next chunk when calculating this chunk's hash.
+         { // A buffer need not divide the chunk size (and may even exceed it). Never consume // bytes belonging to the next chunk when calculating this chunk's hash.
             bytesRead = this->read(*file, buffer.data(), qMin(BUFFER_SIZE, Chunk::CHUNK_SIZE - bytesReadChunk));
             switch (bytesRead)
             {

@@ -35,6 +35,7 @@ using namespace RCM;
 #include <Common/ProtoHelper.h>
 #include <Common/Constants.h>
 #include <Common/Hash.h>
+#include <Common/SaltedPassword.h>
 #include <Common/SharedEntry.h>
 #include <Common/Global.h>
 #include <Common/StringUtils.h>
@@ -207,7 +208,7 @@ void RemoteConnection::refresh()
 
    Protos::GUI::State state;
 
-   state.set_password_defined(!SETTINGS.get<Common::Hash>("remote_password").isNull());
+   state.set_password_defined(!Common::SaltedPassword::fromStr(SETTINGS.get<QString>("remote_password")).isNull());
 
    // Ourself
    PM::IPeer* selfPeer = this->peerManager->getSelf();
@@ -402,7 +403,7 @@ void RemoteConnection::sendLogMessages()
 void RemoteConnection::askForAuthentication()
 {
    Protos::GUI::AskForAuthentication askForAuthenticationMessage;
-   askForAuthenticationMessage.set_salt(SETTINGS.get<quint64>("salt"));
+   askForAuthenticationMessage.set_salt(Common::SaltedPassword::fromStr(SETTINGS.get<QString>("remote_password")).salt);
 
    do
       this->saltChallenge = QRandomGenerator64::global()->generate64();
@@ -507,7 +508,7 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
          if (!this->localTrusted)
          {
             const Common::Hash passwordReceived(authenticationMessage.password_challenge().hash());
-            const Common::Hash currentPassword = SETTINGS.get<Common::Hash>("remote_password");
+            const Common::Hash currentPassword = Common::SaltedPassword::fromStr(SETTINGS.get<QString>("remote_password")).hash;
 
             if (currentPassword.isNull())
             {
@@ -548,20 +549,18 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
             break;
 
          Common::Hash newPassword(passMessage.new_password().hash());
-         Common::Hash currentPassword = SETTINGS.get<Common::Hash>("remote_password");
+         Common::Hash currentPassword = Common::SaltedPassword::fromStr(SETTINGS.get<QString>("remote_password")).hash;
 
          if (newPassword.isNull()) // If the new password is null, the password is reset.
          {
-            SETTINGS.set("remote_password", Common::Hash());
-            SETTINGS.rm("salt");
+            SETTINGS.rm("remote_password");
             SETTINGS.save();
             this->refresh();
          }
          else if (currentPassword.isNull() ||
                   (passMessage.has_old_password() && currentPassword == Common::Hash(passMessage.old_password().hash())))
          {
-            SETTINGS.set("remote_password", newPassword);
-            SETTINGS.set("salt", static_cast<quint64>(passMessage.new_salt()));
+            SETTINGS.set("remote_password", Common::SaltedPassword { newPassword, passMessage.new_salt() }.toStr());
             SETTINGS.save();
             this->refresh();
          }
