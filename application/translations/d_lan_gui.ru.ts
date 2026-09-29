@@ -455,7 +455,7 @@
 <context>
     <name>GUI::MainWindow</name>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="+169"/>
+        <location filename="../GUI/MainWindow.cpp" line="+170"/>
         <source>Already connected to this address</source>
         <translation>Уже подключен к этому адресу</translation>
     </message>
@@ -529,7 +529,7 @@
 <context>
     <name>GUI::MdiArea</name>
     <message>
-        <location filename="../GUI/MDI/MdiArea.cpp" line="+359"/>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="+368"/>
         <source>Waiting the initial scanning process is finished before loading the download queue</source>
         <translation>Ожидание завершения первоначального сканирования перед загрузкой очереди загрузок</translation>
     </message>
@@ -857,7 +857,7 @@
 <context>
     <name>GUI::StatusBar</name>
     <message>
-        <location filename="../GUI/StatusBar.cpp" line="+119"/>
+        <location filename="../GUI/StatusBar.cpp" line="+134"/>
         <source>peers</source>
         <translation>пиры</translation>
     </message>
@@ -867,7 +867,7 @@
         <translation>пир</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location line="+15"/>
         <source>connected to %1</source>
         <translation>подключен к %1</translation>
     </message>
@@ -1375,6 +1375,16 @@
         <location line="+38"/>
         <source>Total sharing</source>
         <translation>Общий объём данных в общем доступе</translation>
+    </message>
+    <message>
+        <location line="+76"/>
+        <source>Connect to the core running on this computer</source>
+        <translation>Подключиться к ядру на этом компьютере</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Connect to local</source>
+        <translation>Подключиться локально</translation>
     </message>
 </context>
 <context>

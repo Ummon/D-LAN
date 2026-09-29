@@ -451,73 +451,73 @@
 <context>
     <name>GUI::MainWindow</name>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="169"/>
+        <location filename="../GUI/MainWindow.cpp" line="170"/>
         <source>Already connected to this address</source>
         <translation>このアドレスにはすでに接続しています</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="172"/>
+        <location filename="../GUI/MainWindow.cpp" line="173"/>
         <source>There is already a connection process in progress</source>
         <translation>すでに接続処理が進行中です</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="175"/>
+        <location filename="../GUI/MainWindow.cpp" line="176"/>
         <source>The host is unknown</source>
         <translation>ホストが見つかりません</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="178"/>
+        <location filename="../GUI/MainWindow.cpp" line="179"/>
         <source>Host has timed out</source>
         <translation>ホストがタイムアウトしました</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="181"/>
+        <location filename="../GUI/MainWindow.cpp" line="182"/>
         <source>The host hasn&apos;t defined any password</source>
         <translation>ホストにパスワードが設定されていません</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="184"/>
+        <location filename="../GUI/MainWindow.cpp" line="185"/>
         <source>Wrong password</source>
         <translation>パスワードが違います</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="187"/>
+        <location filename="../GUI/MainWindow.cpp" line="188"/>
         <source>Invalid address</source>
         <translation>無効なアドレスです</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="190"/>
+        <location filename="../GUI/MainWindow.cpp" line="191"/>
         <source>Unable to establish a trusted encrypted connection. The Core&apos;s certificate may have changed or TLS may be unavailable. See the log for details.</source>
         <translation>信頼できる暗号化接続を確立できません。Core の証明書が変更されたか、TLS が利用できない可能性があります。詳細はログを確認してください。</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="193"/>
+        <location filename="../GUI/MainWindow.cpp" line="194"/>
         <source>Error unknown</source>
         <translation>原因不明のエラー</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="199"/>
+        <location filename="../GUI/MainWindow.cpp" line="200"/>
         <source>Unable to connect to the core</source>
         <translation>Core に接続できません</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="202"/>
-        <location filename="../GUI/MainWindow.cpp" line="226"/>
+        <location filename="../GUI/MainWindow.cpp" line="203"/>
+        <location filename="../GUI/MainWindow.cpp" line="227"/>
         <source>Core address:</source>
         <translation>Core のアドレス:</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="212"/>
+        <location filename="../GUI/MainWindow.cpp" line="213"/>
         <source>Connected to the core</source>
         <translation>Core に接続しました</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="221"/>
+        <location filename="../GUI/MainWindow.cpp" line="222"/>
         <source>Connection lost</source>
         <translation>接続が切断されました</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="225"/>
+        <location filename="../GUI/MainWindow.cpp" line="226"/>
         <source>The connection to the core has been lost</source>
         <translation>Core との接続が切断されました</translation>
     </message>
@@ -525,12 +525,12 @@
 <context>
     <name>GUI::MdiArea</name>
     <message>
-        <location filename="../GUI/MDI/MdiArea.cpp" line="359"/>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="368"/>
         <source>Waiting the initial scanning process is finished before loading the download queue</source>
         <translation>ダウンロードキューを読み込む前に、初回スキャンの完了を待っています</translation>
     </message>
     <message>
-        <location filename="../GUI/MDI/MdiArea.cpp" line="550"/>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="559"/>
         <source>Leave room</source>
         <translation>ルームを退出</translation>
     </message>
@@ -853,42 +853,42 @@
 <context>
     <name>GUI::StatusBar</name>
     <message>
-        <location filename="../GUI/StatusBar.cpp" line="119"/>
+        <location filename="../GUI/StatusBar.cpp" line="134"/>
         <source>peers</source>
         <translation>ピア</translation>
     </message>
     <message>
-        <location filename="../GUI/StatusBar.cpp" line="119"/>
+        <location filename="../GUI/StatusBar.cpp" line="134"/>
         <source>peer</source>
         <translation>ピア</translation>
     </message>
     <message>
-        <location filename="../GUI/StatusBar.cpp" line="132"/>
+        <location filename="../GUI/StatusBar.cpp" line="149"/>
         <source>connected to %1</source>
         <translation>%1 に接続中</translation>
     </message>
     <message>
-        <location filename="../GUI/StatusBar.cpp" line="134"/>
+        <location filename="../GUI/StatusBar.cpp" line="151"/>
         <source>connected</source>
         <translation>接続済み</translation>
     </message>
     <message>
-        <location filename="../GUI/StatusBar.cpp" line="140"/>
+        <location filename="../GUI/StatusBar.cpp" line="157"/>
         <source>scanning in progress . . .</source>
         <translation>スキャン中 . . .</translation>
     </message>
     <message>
-        <location filename="../GUI/StatusBar.cpp" line="144"/>
+        <location filename="../GUI/StatusBar.cpp" line="161"/>
         <source>indexing in progress . . .</source>
         <translation>インデックス作成中 . . .</translation>
     </message>
     <message>
-        <location filename="../GUI/StatusBar.cpp" line="149"/>
+        <location filename="../GUI/StatusBar.cpp" line="166"/>
         <source>cache is up to date</source>
         <translation>キャッシュは最新です</translation>
     </message>
     <message>
-        <location filename="../GUI/StatusBar.cpp" line="160"/>
+        <location filename="../GUI/StatusBar.cpp" line="177"/>
         <source>disconnected</source>
         <translation>切断されました</translation>
     </message>
@@ -1371,6 +1371,16 @@
         <location filename="../GUI/StatusBar.ui" line="207"/>
         <source>Total sharing</source>
         <translation>共有容量の合計</translation>
+    </message>
+    <message>
+        <location filename="../GUI/StatusBar.ui" line="283"/>
+        <source>Connect to the core running on this computer</source>
+        <translation>このコンピューターで実行中の Core に接続</translation>
+    </message>
+    <message>
+        <location filename="../GUI/StatusBar.ui" line="286"/>
+        <source>Connect to local</source>
+        <translation>ローカルに接続</translation>
     </message>
 </context>
 <context>

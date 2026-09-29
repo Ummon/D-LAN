@@ -451,7 +451,7 @@
 <context>
     <name>GUI::MainWindow</name>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="+169"/>
+        <location filename="../GUI/MainWindow.cpp" line="+170"/>
         <source>Already connected to this address</source>
         <translation>इस पते से पहले से कनेक्ट है</translation>
     </message>
@@ -525,7 +525,7 @@
 <context>
     <name>GUI::MdiArea</name>
     <message>
-        <location filename="../GUI/MDI/MdiArea.cpp" line="+359"/>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="+368"/>
         <source>Waiting the initial scanning process is finished before loading the download queue</source>
         <translation>डाउनलोड कतार लोड करने से पहले प्रारंभिक स्कैनिंग पूरी होने की प्रतीक्षा की जा रही है</translation>
     </message>
@@ -841,7 +841,7 @@
 <context>
     <name>GUI::StatusBar</name>
     <message>
-        <location filename="../GUI/StatusBar.cpp" line="+119"/>
+        <location filename="../GUI/StatusBar.cpp" line="+134"/>
         <source>peers</source>
         <translation>पीयर</translation>
     </message>
@@ -851,7 +851,7 @@
         <translation>पीयर</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location line="+15"/>
         <source>connected to %1</source>
         <translation>%1 से कनेक्टेड</translation>
     </message>
@@ -1335,6 +1335,16 @@
         <location line="+38"/>
         <source>Total sharing</source>
         <translation>कुल साझा</translation>
+    </message>
+    <message>
+        <location line="+76"/>
+        <source>Connect to the core running on this computer</source>
+        <translation>इस कंप्यूटर पर चल रहे Core से कनेक्ट करें</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Connect to local</source>
+        <translation>स्थानीय से कनेक्ट करें</translation>
     </message>
 </context>
 <context>

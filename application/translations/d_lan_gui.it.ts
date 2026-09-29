@@ -455,73 +455,73 @@
 <context>
     <name>GUI::MainWindow</name>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="169"/>
+        <location filename="../GUI/MainWindow.cpp" line="170"/>
         <source>Already connected to this address</source>
         <translation>Già connesso a questo indirizzo</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="172"/>
+        <location filename="../GUI/MainWindow.cpp" line="173"/>
         <source>There is already a connection process in progress</source>
         <translation>Un tentativo di connessione è già in corso</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="175"/>
+        <location filename="../GUI/MainWindow.cpp" line="176"/>
         <source>The host is unknown</source>
         <translation>Host sconosciuto</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="178"/>
+        <location filename="../GUI/MainWindow.cpp" line="179"/>
         <source>Host has timed out</source>
         <translation>L&apos;host non risponde</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="181"/>
+        <location filename="../GUI/MainWindow.cpp" line="182"/>
         <source>The host hasn&apos;t defined any password</source>
         <translation>L&apos;host non ha impostato alcuna password</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="184"/>
+        <location filename="../GUI/MainWindow.cpp" line="185"/>
         <source>Wrong password</source>
         <translation>Password errata</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="187"/>
+        <location filename="../GUI/MainWindow.cpp" line="188"/>
         <source>Invalid address</source>
         <translation>Indirizzo non valido</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="190"/>
+        <location filename="../GUI/MainWindow.cpp" line="191"/>
         <source>Unable to establish a trusted encrypted connection. The Core&apos;s certificate may have changed or TLS may be unavailable. See the log for details.</source>
         <translation>Impossibile stabilire una connessione crittografata attendibile. Il certificato del Core potrebbe essere cambiato oppure TLS potrebbe non essere disponibile. Consultare il log per ulteriori dettagli.</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="193"/>
+        <location filename="../GUI/MainWindow.cpp" line="194"/>
         <source>Error unknown</source>
         <translation>Errore sconosciuto</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="199"/>
+        <location filename="../GUI/MainWindow.cpp" line="200"/>
         <source>Unable to connect to the core</source>
         <translation>Impossibile connettersi al Core</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="202"/>
-        <location filename="../GUI/MainWindow.cpp" line="226"/>
+        <location filename="../GUI/MainWindow.cpp" line="203"/>
+        <location filename="../GUI/MainWindow.cpp" line="227"/>
         <source>Core address:</source>
         <translation>Indirizzo del Core:</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="212"/>
+        <location filename="../GUI/MainWindow.cpp" line="213"/>
         <source>Connected to the core</source>
         <translation>Connesso al Core</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="221"/>
+        <location filename="../GUI/MainWindow.cpp" line="222"/>
         <source>Connection lost</source>
         <translation>Connessione persa</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="225"/>
+        <location filename="../GUI/MainWindow.cpp" line="226"/>
         <source>The connection to the core has been lost</source>
         <translation>La connessione al Core è stata persa</translation>
     </message>
@@ -529,12 +529,12 @@
 <context>
     <name>GUI::MdiArea</name>
     <message>
-        <location filename="../GUI/MDI/MdiArea.cpp" line="359"/>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="368"/>
         <source>Waiting the initial scanning process is finished before loading the download queue</source>
         <translation>In attesa del completamento della scansione iniziale prima di caricare la coda dei download</translation>
     </message>
     <message>
-        <location filename="../GUI/MDI/MdiArea.cpp" line="550"/>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="559"/>
         <source>Leave room</source>
         <translation>Esci dalla stanza</translation>
     </message>
@@ -857,42 +857,42 @@
 <context>
     <name>GUI::StatusBar</name>
     <message>
-        <location filename="../GUI/StatusBar.cpp" line="119"/>
+        <location filename="../GUI/StatusBar.cpp" line="134"/>
         <source>peers</source>
         <translation>peer</translation>
     </message>
     <message>
-        <location filename="../GUI/StatusBar.cpp" line="119"/>
+        <location filename="../GUI/StatusBar.cpp" line="134"/>
         <source>peer</source>
         <translation>peer</translation>
     </message>
     <message>
-        <location filename="../GUI/StatusBar.cpp" line="132"/>
+        <location filename="../GUI/StatusBar.cpp" line="149"/>
         <source>connected to %1</source>
         <translation>connesso a %1</translation>
     </message>
     <message>
-        <location filename="../GUI/StatusBar.cpp" line="134"/>
+        <location filename="../GUI/StatusBar.cpp" line="151"/>
         <source>connected</source>
         <translation>connesso</translation>
     </message>
     <message>
-        <location filename="../GUI/StatusBar.cpp" line="140"/>
+        <location filename="../GUI/StatusBar.cpp" line="157"/>
         <source>scanning in progress . . .</source>
         <translation>scansione in corso . . .</translation>
     </message>
     <message>
-        <location filename="../GUI/StatusBar.cpp" line="144"/>
+        <location filename="../GUI/StatusBar.cpp" line="161"/>
         <source>indexing in progress . . .</source>
         <translation>indicizzazione in corso . . .</translation>
     </message>
     <message>
-        <location filename="../GUI/StatusBar.cpp" line="149"/>
+        <location filename="../GUI/StatusBar.cpp" line="166"/>
         <source>cache is up to date</source>
         <translation>la cache è aggiornata</translation>
     </message>
     <message>
-        <location filename="../GUI/StatusBar.cpp" line="160"/>
+        <location filename="../GUI/StatusBar.cpp" line="177"/>
         <source>disconnected</source>
         <translation>disconnesso</translation>
     </message>
@@ -1375,6 +1375,16 @@
         <location filename="../GUI/StatusBar.ui" line="207"/>
         <source>Total sharing</source>
         <translation>Condivisione totale</translation>
+    </message>
+    <message>
+        <location filename="../GUI/StatusBar.ui" line="283"/>
+        <source>Connect to the core running on this computer</source>
+        <translation>Connetti al Core in esecuzione su questo computer</translation>
+    </message>
+    <message>
+        <location filename="../GUI/StatusBar.ui" line="286"/>
+        <source>Connect to local</source>
+        <translation>Connetti in locale</translation>
     </message>
 </context>
 <context>

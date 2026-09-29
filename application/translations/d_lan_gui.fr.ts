@@ -455,7 +455,7 @@
 <context>
     <name>GUI::MainWindow</name>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="+169"/>
+        <location filename="../GUI/MainWindow.cpp" line="+170"/>
         <source>Already connected to this address</source>
         <translation>Déjà connecté à cette adresse</translation>
     </message>
@@ -529,7 +529,7 @@
 <context>
     <name>GUI::MdiArea</name>
     <message>
-        <location filename="../GUI/MDI/MdiArea.cpp" line="+359"/>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="+368"/>
         <source>Waiting the initial scanning process is finished before loading the download queue</source>
         <translation>En attente de la fin du parcours des fichiers avant le chargement de la liste de téléchargement</translation>
     </message>
@@ -857,7 +857,7 @@
 <context>
     <name>GUI::StatusBar</name>
     <message>
-        <location filename="../GUI/StatusBar.cpp" line="+119"/>
+        <location filename="../GUI/StatusBar.cpp" line="+134"/>
         <source>peers</source>
         <translation>pairs</translation>
     </message>
@@ -867,7 +867,7 @@
         <translation>pair</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location line="+15"/>
         <source>connected to %1</source>
         <translation>connecté à %1</translation>
     </message>
@@ -1375,6 +1375,16 @@
         <location line="+38"/>
         <source>Total sharing</source>
         <translation>Partage total</translation>
+    </message>
+    <message>
+        <location line="+76"/>
+        <source>Connect to the core running on this computer</source>
+        <translation>Se connecter au core qui tourne sur cet ordinateur</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Connect to local</source>
+        <translation>Connexion locale</translation>
     </message>
 </context>
 <context>

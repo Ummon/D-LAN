@@ -455,73 +455,73 @@
 <context>
     <name>GUI::MainWindow</name>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="169"/>
+        <location filename="../GUI/MainWindow.cpp" line="170"/>
         <source>Already connected to this address</source>
         <translation>이미 이 주소에 연결되어 있습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="172"/>
+        <location filename="../GUI/MainWindow.cpp" line="173"/>
         <source>There is already a connection process in progress</source>
         <translation>이미 연결을 시도하는 중입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="175"/>
+        <location filename="../GUI/MainWindow.cpp" line="176"/>
         <source>The host is unknown</source>
         <translation>알 수 없는 호스트입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="178"/>
+        <location filename="../GUI/MainWindow.cpp" line="179"/>
         <source>Host has timed out</source>
         <translation>호스트가 응답하지 않습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="181"/>
+        <location filename="../GUI/MainWindow.cpp" line="182"/>
         <source>The host hasn&apos;t defined any password</source>
         <translation>호스트에 비밀번호가 설정되어 있지 않습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="184"/>
+        <location filename="../GUI/MainWindow.cpp" line="185"/>
         <source>Wrong password</source>
         <translation>잘못된 비밀번호입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="187"/>
+        <location filename="../GUI/MainWindow.cpp" line="188"/>
         <source>Invalid address</source>
         <translation>잘못된 주소입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="190"/>
+        <location filename="../GUI/MainWindow.cpp" line="191"/>
         <source>Unable to establish a trusted encrypted connection. The Core&apos;s certificate may have changed or TLS may be unavailable. See the log for details.</source>
         <translation>신뢰할 수 있는 암호화된 연결을 설정할 수 없습니다. 코어의 인증서가 변경되었거나 TLS를 사용할 수 없는 상태일 수 있습니다. 자세한 내용은 로그를 확인하세요.</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="193"/>
+        <location filename="../GUI/MainWindow.cpp" line="194"/>
         <source>Error unknown</source>
         <translation>알 수 없는 오류</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="199"/>
+        <location filename="../GUI/MainWindow.cpp" line="200"/>
         <source>Unable to connect to the core</source>
         <translation>코어에 연결할 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="202"/>
-        <location filename="../GUI/MainWindow.cpp" line="226"/>
+        <location filename="../GUI/MainWindow.cpp" line="203"/>
+        <location filename="../GUI/MainWindow.cpp" line="227"/>
         <source>Core address:</source>
         <translation>코어 주소:</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="212"/>
+        <location filename="../GUI/MainWindow.cpp" line="213"/>
         <source>Connected to the core</source>
         <translation>코어에 연결되었습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="221"/>
+        <location filename="../GUI/MainWindow.cpp" line="222"/>
         <source>Connection lost</source>
         <translation>연결이 끊어졌습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="225"/>
+        <location filename="../GUI/MainWindow.cpp" line="226"/>
         <source>The connection to the core has been lost</source>
         <translation>코어와의 연결이 끊어졌습니다</translation>
     </message>
@@ -529,12 +529,12 @@
 <context>
     <name>GUI::MdiArea</name>
     <message>
-        <location filename="../GUI/MDI/MdiArea.cpp" line="359"/>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="368"/>
         <source>Waiting the initial scanning process is finished before loading the download queue</source>
         <translation>초기 스캔이 완료될 때까지 기다린 후 다운로드 대기열을 불러옵니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MDI/MdiArea.cpp" line="550"/>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="559"/>
         <source>Leave room</source>
         <translation>대화방 나가기</translation>
     </message>
@@ -857,42 +857,42 @@
 <context>
     <name>GUI::StatusBar</name>
     <message>
-        <location filename="../GUI/StatusBar.cpp" line="119"/>
+        <location filename="../GUI/StatusBar.cpp" line="134"/>
         <source>peers</source>
         <translation>피어</translation>
     </message>
     <message>
-        <location filename="../GUI/StatusBar.cpp" line="119"/>
+        <location filename="../GUI/StatusBar.cpp" line="134"/>
         <source>peer</source>
         <translation>피어</translation>
     </message>
     <message>
-        <location filename="../GUI/StatusBar.cpp" line="132"/>
+        <location filename="../GUI/StatusBar.cpp" line="149"/>
         <source>connected to %1</source>
         <translation>%1에 연결됨</translation>
     </message>
     <message>
-        <location filename="../GUI/StatusBar.cpp" line="134"/>
+        <location filename="../GUI/StatusBar.cpp" line="151"/>
         <source>connected</source>
         <translation>연결됨</translation>
     </message>
     <message>
-        <location filename="../GUI/StatusBar.cpp" line="140"/>
+        <location filename="../GUI/StatusBar.cpp" line="157"/>
         <source>scanning in progress . . .</source>
         <translation>스캔 중 . . .</translation>
     </message>
     <message>
-        <location filename="../GUI/StatusBar.cpp" line="144"/>
+        <location filename="../GUI/StatusBar.cpp" line="161"/>
         <source>indexing in progress . . .</source>
         <translation>인덱싱 중 . . .</translation>
     </message>
     <message>
-        <location filename="../GUI/StatusBar.cpp" line="149"/>
+        <location filename="../GUI/StatusBar.cpp" line="166"/>
         <source>cache is up to date</source>
         <translation>캐시가 최신 상태입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/StatusBar.cpp" line="160"/>
+        <location filename="../GUI/StatusBar.cpp" line="177"/>
         <source>disconnected</source>
         <translation>연결 안 됨</translation>
     </message>
@@ -1375,6 +1375,16 @@
         <location filename="../GUI/StatusBar.ui" line="207"/>
         <source>Total sharing</source>
         <translation>전체 공유 크기</translation>
+    </message>
+    <message>
+        <location filename="../GUI/StatusBar.ui" line="283"/>
+        <source>Connect to the core running on this computer</source>
+        <translation>이 컴퓨터에서 실행 중인 코어에 연결</translation>
+    </message>
+    <message>
+        <location filename="../GUI/StatusBar.ui" line="286"/>
+        <source>Connect to local</source>
+        <translation>로컬에 연결</translation>
     </message>
 </context>
 <context>
