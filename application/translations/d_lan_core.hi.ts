@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1" language="ru_RU">
+<TS version="2.1" language="hi_IN">
 <context>
     <name>CoreSpace::CoreService</name>
     <message>
         <location filename="../Core/CoreService.cpp" line="32"/>
         <source>A LAN file sharing system</source>
-        <translation>Система файлообмена по локальной сети</translation>
+        <translation>LAN फ़ाइल साझाकरण सिस्टम</translation>
     </message>
 </context>
 <context>
@@ -15,12 +15,12 @@
         <location filename="../Core/DownloadManager/priv/ChunkDownloader.cpp" line="342"/>
         <source>Has sent corrupted data</source>
         <extracomment>A reason why the user has been blocked</extracomment>
-        <translation>Отправил поврежденные данные</translation>
+        <translation>दूषित डेटा भेजा है</translation>
     </message>
     <message>
         <location filename="../Core/DownloadManager/priv/ChunkDownloader.cpp" line="337"/>
         <source>Corrupted data received for the file &quot;%1&quot; from peer %2. Peer blocked for %3 ms</source>
-        <translation>От пира %2 получены повреждённые данные для файла &quot;%1&quot;. Пир заблокирован на %3 мс</translation>
+        <translation>पीयर %2 से फ़ाइल &quot;%1&quot; के लिए दूषित डेटा प्राप्त हुआ। पीयर को %3 ms के लिए ब्लॉक किया गया</translation>
     </message>
 </context>
 <context>
@@ -28,7 +28,7 @@
     <message>
         <location filename="../Core/DownloadManager/priv/DownloadManager.cpp" line="218"/>
         <source>The file &apos;%1&apos; is already in queue</source>
-        <translation>Файл &apos;%1&apos; уже в очереди</translation>
+        <translation>फ़ाइल &apos;%1&apos; पहले से कतार में है</translation>
     </message>
 </context>
 <context>
@@ -36,7 +36,7 @@
     <message>
         <location filename="../Core/DownloadManager/priv/FileDownload.cpp" line="559"/>
         <source>File completed: %1%2%3</source>
-        <translation>Файл завершён: %1%2%3</translation>
+        <translation>फ़ाइल पूर्ण: %1%2%3</translation>
     </message>
 </context>
 <context>
@@ -44,7 +44,7 @@
     <message>
         <location filename="../Core/FileManager/priv/Cache/FileHasher.cpp" line="158"/>
         <source>Indexing %1 . . .</source>
-        <translation>Индексация %1...</translation>
+        <translation>%1 की इंडेक्सिंग हो रही है . . .</translation>
     </message>
 </context>
 <context>
@@ -52,7 +52,7 @@
     <message>
         <location filename="../Core/PeerManager/priv/PeerSelf.cpp" line="36"/>
         <source>Our current ID: %1</source>
-        <translation>Наш текущий ID: %1</translation>
+        <translation>हमारी वर्तमान ID: %1</translation>
     </message>
 </context>
 <context>
@@ -60,23 +60,22 @@
     <message>
         <location filename="../Core/Core.cpp" line="127"/>
         <source>Ready to serve</source>
-        <translation>Готов</translation>
+        <translation>सेवा के लिए तैयार</translation>
     </message>
     <message>
         <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="405"/>
         <source>The version (%1) of the queue file &quot;%2&quot; doesn&apos;t match the current version (%3). Queue will be reset.</source>
-        <translation>Версия (%1) файла очереди &quot;%2&quot; не соответствует текущей версии (%3). Очередь будет сброшена.</translation>
+        <translation>कतार फ़ाइल &quot;%2&quot; का संस्करण (%1) वर्तमान संस्करण (%3) से मेल नहीं खाता। कतार रीसेट की जाएगी।</translation>
     </message>
     <message>
         <location filename="../Core/Core.h" line="78"/>
         <source>Shutdown</source>
-        <translatorcomment>Is it a verb, or a noun?</translatorcomment>
-        <translation>Завершить</translation>
+        <translation>शटडाउन</translation>
     </message>
     <message>
         <location filename="../Core/Core.cpp" line="109"/>
         <source>D-LAN Core version %1 is starting . . .</source>
-        <translation>D-LAN Core версии %1 запускается...</translation>
+        <translation>D-LAN Core संस्करण %1 शुरू हो रहा है . . .</translation>
     </message>
 </context>
 </TS>

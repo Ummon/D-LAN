@@ -749,7 +749,7 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+248"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+255"/>
         <source>Default</source>
         <translation>Стандартный</translation>
     </message>
@@ -759,7 +759,7 @@
         <translation>Интерфейс не активен</translation>
     </message>
     <message>
-        <location line="+160"/>
+        <location line="+224"/>
         <source>Change the password</source>
         <translation>Сменить пароль</translation>
     </message>
@@ -775,20 +775,20 @@
     </message>
     <message>
         <location line="+46"/>
-        <location line="+308"/>
+        <location line="+312"/>
         <source>Connecting . . .</source>
         <translation>Подключение...</translation>
     </message>
     <message>
-        <location line="-300"/>
+        <location line="-304"/>
         <location line="+15"/>
         <location line="+15"/>
-        <location line="+270"/>
+        <location line="+274"/>
         <source>Connect</source>
         <translation>Подключиться</translation>
     </message>
     <message>
-        <location line="-176"/>
+        <location line="-180"/>
         <source>Select one or more directories and/or files to share</source>
         <translation>Выберите одну или несколько папок и/или файлов для общего доступа</translation>
     </message>
@@ -950,7 +950,7 @@
         <translation>Не удалось установить D-LAN Core как службу</translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location line="+15"/>
         <source>Core launched as subprocess</source>
         <translation>Core запущен как подпроцесс</translation>
     </message>

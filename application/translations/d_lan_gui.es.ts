@@ -749,7 +749,7 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+248"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+255"/>
         <source>Default</source>
         <translation>Por defecto</translation>
     </message>
@@ -759,7 +759,7 @@
         <translation>Interfaz desactivada</translation>
     </message>
     <message>
-        <location line="+160"/>
+        <location line="+224"/>
         <source>Change the password</source>
         <translation>Cambiar la contraseña</translation>
     </message>
@@ -775,20 +775,20 @@
     </message>
     <message>
         <location line="+46"/>
-        <location line="+308"/>
+        <location line="+312"/>
         <source>Connecting . . .</source>
         <translation>Conectando . . .</translation>
     </message>
     <message>
-        <location line="-300"/>
+        <location line="-304"/>
         <location line="+15"/>
         <location line="+15"/>
-        <location line="+270"/>
+        <location line="+274"/>
         <source>Connect</source>
         <translation>Conectar</translation>
     </message>
     <message>
-        <location line="-176"/>
+        <location line="-180"/>
         <source>Select one or more directories and/or files to share</source>
         <translation>Seleccione uno o más directorios y/o archivos para compartir</translation>
     </message>
@@ -1036,7 +1036,7 @@
         <translation>El núcleo de D-LAN no puede instalarse como servicio</translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location line="+15"/>
         <source>Core launched as subprocess</source>
         <translation>Núcleo ejecutado como subproceso</translation>
     </message>

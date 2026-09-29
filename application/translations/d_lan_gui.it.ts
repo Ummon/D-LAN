@@ -749,57 +749,57 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="248"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="255"/>
         <source>Default</source>
         <translation>Predefinito</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="307"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="314"/>
         <source>Interface not active</source>
         <translation>Interfaccia non attiva</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="467"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="538"/>
         <source>Change the password</source>
         <translation>Cambia la password</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="471"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="542"/>
         <source>No password defined</source>
         <translation>Non è stata impostata alcuna password</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="473"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="544"/>
         <source>Define a password</source>
         <translation>Imposta una password</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="519"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="827"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="590"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="902"/>
         <source>Connecting . . .</source>
         <translation>Connessione in corso . . .</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="527"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="542"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="557"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="827"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="598"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="613"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="628"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="902"/>
         <source>Connect</source>
         <translation>Connetti</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="651"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="722"/>
         <source>Select one or more directories and/or files to share</source>
         <translation>Seleziona una o più cartelle e/o file da condividere</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="672"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="737"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="743"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="808"/>
         <source>Remove selected shared entries</source>
         <translation>Rimuovi gli elementi condivisi selezionati</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="673"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="744"/>
         <source>Are you sure you want to remove the selected shared files and directories?</source>
         <translation>Rimuovere i file e le cartelle condivisi selezionati?</translation>
     </message>
@@ -816,17 +816,17 @@
         <translation type="vanished">Rimuovi la cartella condivisa</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="745"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="816"/>
         <source>Move up</source>
         <translation>Sposta su</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="753"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="824"/>
         <source>Move down</source>
         <translation>Sposta giù</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="761"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="832"/>
         <source>Open location</source>
         <translation>Apri percorso</translation>
     </message>
@@ -1036,17 +1036,17 @@
         <translation>Impossibile installare D-LAN Core come servizio</translation>
     </message>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="94"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="93"/>
         <source>Core launched as subprocess</source>
         <translation>Core avviato come sottoprocesso</translation>
     </message>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="96"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="95"/>
         <source>Unable to launch the Core as subprocess</source>
         <translation>Impossibile avviare il Core come sottoprocesso</translation>
     </message>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="100"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="99"/>
         <source>Core service launched</source>
         <translation>Servizio Core avviato</translation>
     </message>

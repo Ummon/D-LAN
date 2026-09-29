@@ -745,57 +745,57 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="248"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="255"/>
         <source>Default</source>
         <translation>既定</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="307"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="314"/>
         <source>Interface not active</source>
         <translation>インターフェースが有効ではありません</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="467"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="538"/>
         <source>Change the password</source>
         <translation>パスワードを変更</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="471"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="542"/>
         <source>No password defined</source>
         <translation>パスワードが設定されていません</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="473"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="544"/>
         <source>Define a password</source>
         <translation>パスワードを設定</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="519"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="827"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="590"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="902"/>
         <source>Connecting . . .</source>
         <translation>接続中 . . .</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="527"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="542"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="557"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="827"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="598"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="613"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="628"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="902"/>
         <source>Connect</source>
         <translation>接続</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="651"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="722"/>
         <source>Select one or more directories and/or files to share</source>
         <translation>共有するディレクトリやファイルを1つ以上選択してください</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="672"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="737"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="743"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="808"/>
         <source>Remove selected shared entries</source>
         <translation>選択した共有項目を削除</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="673"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="744"/>
         <source>Are you sure you want to remove the selected shared files and directories?</source>
         <translation>選択した共有ファイルとフォルダーを削除してもよろしいですか？</translation>
     </message>
@@ -812,17 +812,17 @@
         <translation type="vanished">共有ディレクトリを削除</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="745"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="816"/>
         <source>Move up</source>
         <translation>上へ移動</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="753"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="824"/>
         <source>Move down</source>
         <translation>下へ移動</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="761"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="832"/>
         <source>Open location</source>
         <translation>場所を開く</translation>
     </message>
@@ -946,17 +946,17 @@
         <translation>D-LAN Core をサービスとしてインストールできません</translation>
     </message>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="94"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="93"/>
         <source>Core launched as subprocess</source>
         <translation>Core をサブプロセスとして起動しました</translation>
     </message>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="96"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="95"/>
         <source>Unable to launch the Core as subprocess</source>
         <translation>Core をサブプロセスとして起動できません</translation>
     </message>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="100"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="99"/>
         <source>Core service launched</source>
         <translation>Core サービスを起動しました</translation>
     </message>
