@@ -31,9 +31,12 @@ using namespace GUI;
 #include <QLabel>
 #include <QMenu>
 #include <QStringBuilder>
+#include <QDropEvent>
+#include <QUrl>
 
 #include <Common/Languages.h>
 #include <Common/Constants.h>
+#include <Common/Path.h>
 #include <Common/ProtoHelper.h>
 #include <Common/Settings.h>
 
@@ -103,6 +106,10 @@ SettingsWidget::SettingsWidget(
    connect(this->ui->butConnect, &QPushButton::clicked, this, &SettingsWidget::connectToCore);
    connect(this->ui->butDisconnect, &QPushButton::clicked, this, &SettingsWidget::disconnectFromTheCore);
    this->ui->tabAdvancedSettings->installEventFilter(this);
+
+   // Files and directories can be dropped from the file explorer to share them, see 'dragDropEventShared(..)'.
+   this->ui->tblShareDirs->viewport()->setAcceptDrops(true);
+   this->ui->tblShareDirs->viewport()->installEventFilter(this);
 
    this->ui->tblShareDirs->setContextMenuPolicy(Qt::CustomContextMenu);
    connect(this->ui->tblShareDirs, &QTableView::customContextMenuRequested, this, &SettingsWidget::displayContextMenuSharedDirs);
@@ -453,6 +460,70 @@ bool SettingsWidget::updateAddresses(const Protos::Common::Interface& interfaceM
    }
 
    return listenedTo;
+}
+
+/**
+  * The dropped paths come from the local file system, they are meaningless to a remote core.
+  */
+bool SettingsWidget::canDropShared(const QMimeData* mimeData) const
+{
+   if (!this->getAtLeastOneState || !this->coreConnection->isLocal() || !mimeData || !mimeData->hasUrls())
+      return false;
+
+   const QList<QUrl> urls = mimeData->urls();
+   return std::any_of(urls.constBegin(), urls.constEnd(), [](const QUrl& url) { return url.isLocalFile(); });
+}
+
+/**
+  * Handles the drag and drop events of the shared entries table viewport.
+  * Returns 'true' if the event has been handled.
+  */
+bool SettingsWidget::dragDropEventShared(QEvent* event)
+{
+   switch (event->type())
+   {
+   case QEvent::DragEnter:
+   case QEvent::DragMove:
+   case QEvent::Drop:
+      break;
+   default:
+      return false;
+   }
+
+   // 'QDragEnterEvent' inherits 'QDragMoveEvent' which inherits 'QDropEvent'.
+   auto* dropEvent = static_cast<QDropEvent*>(event);
+   if (!this->canDropShared(dropEvent->mimeData()))
+   {
+      dropEvent->ignore();
+      return true;
+   }
+
+   // The entries are only referenced, never copied nor moved: the source must not delete them.
+   dropEvent->setDropAction(dropEvent->possibleActions().testFlag(Qt::LinkAction) ? Qt::LinkAction : Qt::CopyAction);
+   dropEvent->accept();
+
+   if (event->type() == QEvent::Drop)
+   {
+      QStringList entries;
+      for (const QUrl& url : dropEvent->mimeData()->urls())
+      {
+         if (!url.isLocalFile())
+            continue;
+
+         // Directories must end with a '/' to be distinguished from files.
+         const Common::Path path = Common::Path::fromExistingPath(url.toLocalFile());
+         if (!path.isNull())
+            entries << path.toString();
+      }
+
+      // The already shared entries are ignored by 'addEntries(..)'.
+      const int nbEntries = this->sharedEntryListModel.rowCount();
+      this->sharedEntryListModel.addEntries(entries);
+      if (this->sharedEntryListModel.rowCount() != nbEntries)
+         this->saveCoreSettings();
+   }
+
+   return true;
 }
 
 void SettingsWidget::newState(const Protos::GUI::State& state)
@@ -814,6 +885,10 @@ bool SettingsWidget::eventFilter(QObject* obj, QEvent* event)
    {
       this->ui->txtPassword->clear();
       this->ui->txtCoreAddress->setText(SETTINGS.get<QString>("core_address"));
+   }
+   else if (obj == this->ui->tblShareDirs->viewport() && this->dragDropEventShared(event))
+   {
+      return true;
    }
 
    return QObject::eventFilter(obj, event);

@@ -23,6 +23,7 @@
 #include <QStyledItemDelegate>
 #include <QItemSelection>
 #include <QVBoxLayout>
+#include <QMimeData>
 
 #include <Common/RemoteCoreController/ICoreConnection.h>
 
@@ -67,6 +68,9 @@ namespace GUI
       void updateNetworkInterfaces(const Protos::GUI::State& state);
       void updateNetworkInterfaceVisibility();
       bool updateAddresses(const Protos::Common::Interface& interfaceMess, QWidget* container);
+
+      bool canDropShared(const QMimeData* mimeData) const;
+      bool dragDropEventShared(QEvent* event);
 
    private slots:
       void newState(const Protos::GUI::State& state);

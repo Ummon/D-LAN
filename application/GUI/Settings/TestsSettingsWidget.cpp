@@ -3,6 +3,8 @@
 #include <QComboBox>
 #include <QLabel>
 #include <QRadioButton>
+#include <QTableView>
+#include <QMimeData>
 #include <QTemporaryDir>
 
 #include <Common/Global.h>
@@ -91,6 +93,79 @@ private slots:
       state.mutable_interfaces()->RemoveLast();
       emit connection->newState(state);
       QVERIFY(showTunnels->isHidden());
+   }
+
+   void dropEntriesToShare()
+   {
+      class Connection : public RCC::CoreConnection
+      {
+      public:
+         bool local = true;
+         QList<Protos::GUI::CoreSettings> saved;
+         bool isLocal() const override { return this->local; }
+         void setCoreSettings(const Protos::GUI::CoreSettings& settings) override { this->saved << settings; }
+      };
+      auto connection = QSharedPointer<Connection>::create();
+      GUI::SharedEntryListModel shares;
+      GUI::SettingsWidget widget(connection, shares);
+      auto* viewport = widget.findChild<QTableView*>("tblShareDirs")->viewport();
+
+      QTemporaryDir root;
+      QVERIFY(root.isValid());
+      QVERIFY(QDir(root.path()).mkdir("dir"));
+      QFile file(root.filePath("file.txt"));
+      QVERIFY(file.open(QIODevice::WriteOnly));
+      file.close();
+
+      QMimeData mimeData;
+      mimeData.setUrls({
+         QUrl::fromLocalFile(root.filePath("dir")),
+         QUrl::fromLocalFile(root.filePath("file.txt")),
+         QUrl::fromLocalFile(root.filePath("missing")),
+         QUrl("https://example.com/a.txt")
+      });
+      // Returns the action of the drop, or 'IgnoreAction' if it was refused.
+      const auto drop = [&]()
+      {
+         for (const auto type : { QEvent::DragEnter, QEvent::Drop })
+         {
+            QDropEvent event(QPointF(1, 1), Qt::CopyAction | Qt::MoveAction | Qt::LinkAction, &mimeData, Qt::LeftButton, Qt::NoModifier, type);
+            QCoreApplication::sendEvent(viewport, &event);
+            if (!event.isAccepted())
+               return Qt::IgnoreAction;
+            if (type == QEvent::Drop)
+               return event.dropAction();
+         }
+         return Qt::IgnoreAction;
+      };
+
+      // Not connected yet.
+      QCOMPARE(drop(), Qt::IgnoreAction);
+
+      emit connection->connected(); // Enables the tab containing the shared entries.
+      Protos::GUI::State state;
+      state.add_peers()->set_nick("Test");
+      emit connection->newState(state);
+
+      QCOMPARE(drop(), Qt::LinkAction);
+      QCOMPARE(connection->saved.size(), 1);
+      const auto& sharedPaths = connection->saved.last().shared_paths();
+      QCOMPARE(sharedPaths.size(), 2);
+      QCOMPARE(QString::fromStdString(sharedPaths.Get(0).path()), QDir::cleanPath(root.path()) + "/dir/");
+      QCOMPARE(QString::fromStdString(sharedPaths.Get(1).path()), QDir::cleanPath(root.path()) + "/file.txt");
+
+      // Already shared entries aren't added again.
+      QCOMPARE(drop(), Qt::LinkAction);
+      QCOMPARE(shares.rowCount(), 2);
+      QCOMPARE(connection->saved.size(), 1);
+
+      // Local paths are meaningless to a remote core.
+      connection->local = false;
+      QVERIFY(QDir(root.path()).mkdir("other"));
+      mimeData.setUrls({ QUrl::fromLocalFile(root.filePath("other")) });
+      QCOMPARE(drop(), Qt::IgnoreAction);
+      QCOMPARE(shares.rowCount(), 2);
+      QCOMPARE(connection->saved.size(), 1);
    }
 
    void languageChangeKeepsStyle()
