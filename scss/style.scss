@@ -315,14 +315,23 @@ select {
             text-align: center;
          }
 
-         .bitcoin {
+         .logo {
             vertical-align: -10px;
             margin-right: 10px;
+
+            max-width: 32px;
+            max-height: 32px;
+            width: auto;
+            height: auto;
          }
 
-         .bitcoin-qr-code {
+         .qr-code {
             display: block;
             margin: 20px auto 10px auto;
+            max-width: 128px;
+            max-height: 128px;
+            width: auto;
+            height: auto;
          }
 
          input {

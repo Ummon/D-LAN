@@ -1265,6 +1265,20 @@ pub fn donate_bitcoin_address(l: Lang) -> element.Element(a) {
   |> html.text
 }
 
+pub fn donate_ethereum_address(l: Lang) -> element.Element(a) {
+  case l {
+    En -> "Ethereum address: "
+    Fr -> "Adresse ethereum : "
+    De -> "Ethereum-Adresse: "
+    Es -> "Dirección ethereum: "
+    It -> "Indirizzo ethereum: "
+    Ru -> "Эфириум-адрес: "
+    Ko -> "이더리움 주소: "
+    Ja -> "イーサリアムアドレス: "
+  }
+  |> html.text
+}
+
 pub fn gallery_browse(l: Lang) -> String {
   case l {
     En -> "Browsing"
