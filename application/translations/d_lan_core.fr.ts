@@ -34,7 +34,7 @@
 <context>
     <name>DM::FileDownload</name>
     <message>
-        <location filename="../Core/DownloadManager/priv/FileDownload.cpp" line="520"/>
+        <location filename="../Core/DownloadManager/priv/FileDownload.cpp" line="559"/>
         <source>File completed: %1%2%3</source>
         <translation>Fichier complet: %1%2%3</translation>
     </message>
@@ -63,7 +63,7 @@
         <translation>Prêt à servir</translation>
     </message>
     <message>
-        <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="353"/>
+        <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="405"/>
         <source>The version (%1) of the queue file &quot;%2&quot; doesn&apos;t match the current version (%3). Queue will be reset.</source>
         <translation>La version (%1) du fichier contenant la file d’attente &quot;%2&quot; ne correspond pas à la version actuelle (%3). La file d’attente va être réinitialisée.</translation>
     </message>

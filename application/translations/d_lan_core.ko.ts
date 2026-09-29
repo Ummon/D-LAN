@@ -34,7 +34,7 @@
 <context>
     <name>DM::FileDownload</name>
     <message>
-        <location filename="../Core/DownloadManager/priv/FileDownload.cpp" line="520"/>
+        <location filename="../Core/DownloadManager/priv/FileDownload.cpp" line="559"/>
         <source>File completed: %1%2%3</source>
         <translation>파일 완료: %1%2%3</translation>
     </message>
@@ -58,7 +58,7 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="353"/>
+        <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="405"/>
         <source>The version (%1) of the queue file &quot;%2&quot; doesn&apos;t match the current version (%3). Queue will be reset.</source>
         <translation>대기열 파일 &quot;%2&quot;의 버전(%1)이 현재 버전(%3)과 일치하지 않습니다. 대기열이 초기화됩니다.</translation>
     </message>

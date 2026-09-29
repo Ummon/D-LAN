@@ -34,7 +34,7 @@
 <context>
     <name>DM::FileDownload</name>
     <message>
-        <location filename="../Core/DownloadManager/priv/FileDownload.cpp" line="520"/>
+        <location filename="../Core/DownloadManager/priv/FileDownload.cpp" line="559"/>
         <source>File completed: %1%2%3</source>
         <translation>ファイルが完了しました: %1%2%3</translation>
     </message>
@@ -58,7 +58,7 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="353"/>
+        <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="405"/>
         <source>The version (%1) of the queue file &quot;%2&quot; doesn&apos;t match the current version (%3). Queue will be reset.</source>
         <translation>キューファイル &quot;%2&quot; のバージョン (%1) が現在のバージョン (%3) と一致しません。キューをリセットします。</translation>
     </message>
