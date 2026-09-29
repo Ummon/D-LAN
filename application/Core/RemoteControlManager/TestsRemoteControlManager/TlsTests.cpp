@@ -140,7 +140,10 @@ private slots:
       QVERIFY(!first.localCertificate().isNull());
       QVERIFY(!first.privateKey().isNull());
       QCOMPARE(first.privateKey().length(), 3072);
-      QVERIFY(first.localCertificate().subjectInfo(QSslCertificate::CommonName).isEmpty());
+      const QStringList commonName = first.localCertificate().subjectInfo(QSslCertificate::CommonName);
+      QCOMPARE(commonName.size(), 1);
+      QVERIFY(commonName.first().startsWith("D-LAN Core "));
+      QCOMPARE(first.localCertificate().issuerInfo(QSslCertificate::CommonName), commonName);
       QCOMPARE(first.localCertificate().subjectInfo(QSslCertificate::Organization), QStringList("D-LAN Core"));
       QCOMPARE(first.localCertificate().subjectInfo(QSslCertificate::Organization),
          first.localCertificate().issuerInfo(QSslCertificate::Organization));

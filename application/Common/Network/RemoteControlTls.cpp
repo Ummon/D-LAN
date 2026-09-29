@@ -87,11 +87,16 @@ namespace
          throw QString("Unable to initialize the remote-control TLS certificate");
 
       X509_NAME* name = X509_get_subject_name(cert.get());
-      // Qt's Schannel backend uses CN as a persisted Windows key-container
-      // name. With no CN it imports an ephemeral key instead. Our identity is
+      // Qt's Schannel backend uses the CN as the name of the Windows key container
+      // where it imports the private key. Without CN the key is ephemeral and Schannel,
+      // which runs in LSASS, can't use it: every handshake fails with SEC_E_UNKNOWN_CREDENTIALS.
+      // The CN is unique to not share a key container between identities. Our identity is
       // the certificate pin; hostname verification is not used for pairing.
+      const QByteArray commonName = "D-LAN Core " + QByteArray(reinterpret_cast<const char*>(serial), sizeof serial).toHex();
       if (!name || X509_NAME_add_entry_by_txt(name, "O", MBSTRING_ASC,
              reinterpret_cast<const unsigned char*>("D-LAN Core"), -1, -1, 0) != 1 ||
+          X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC,
+             reinterpret_cast<const unsigned char*>(commonName.constData()), -1, -1, 0) != 1 ||
           X509_set_issuer_name(cert.get(), name) != 1)
          throw QString("Unable to name the remote-control TLS certificate");
 
@@ -135,8 +140,18 @@ QSslConfiguration Common::RemoteControlTls::serverConfiguration()
       throw QString("Unable to lock the TLS identity: %1").arg(path);
    if (!QFile::exists(path))
       writeFile(path, generateIdentity());
-   const auto pem = readFile(path);
-   const QSslCertificate cert(pem);
+   auto pem = readFile(path);
+   QSslCertificate cert(pem);
+#ifdef Q_OS_WIN
+   // Identities generated without CN can't be used by Schannel (see 'generateIdentity()'), so no GUI
+   // has ever been able to pin them: they can be replaced.
+   if (!cert.isNull() && cert.subjectInfo(QSslCertificate::CommonName).isEmpty())
+   {
+      writeFile(path, generateIdentity());
+      pem = readFile(path);
+      cert = QSslCertificate(pem);
+   }
+#endif
    const QSslKey key(pem, QSsl::Rsa);
    validateCertificate(cert);
 
