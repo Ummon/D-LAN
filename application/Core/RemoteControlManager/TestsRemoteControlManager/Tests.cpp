@@ -334,7 +334,8 @@ private slots:
       QTest::addColumn<int>("length");
       for (bool invalidNew : {true, false})
          for (int length : {-1, 0, 1, Common::Hash::HASH_SIZE - 1, Common::Hash::HASH_SIZE + 1})
-            QTest::newRow(qPrintable(QString("%1-length-%2").arg(invalidNew ? "new" : "old").arg(length)))
+            if (invalidNew || length >= 0) // A missing old password isn't malformed, see 'passwordChangeWithoutOldPassword'.
+               QTest::newRow(qPrintable(QString("%1-length-%2").arg(invalidNew ? "new" : "old").arg(length)))
                << invalidNew << length;
    }
 
@@ -402,6 +403,40 @@ private slots:
       request.mutable_new_password()->set_hash(std::string(Common::Hash::HASH_SIZE, '\0'));
       socket->receive(Common::MessageHeader::GUI_CHANGE_PASSWORD, request);
       QVERIFY(SETTINGS.get<QString>("remote_password").isEmpty());
+   }
+
+   void passwordChangeWithoutOldPassword_data()
+   {
+      QTest::addColumn<bool>("local");
+      QTest::newRow("local-client-is-trusted") << true;
+      QTest::newRow("remote-client-must-give-old-password") << false;
+   }
+
+   void passwordChangeWithoutOldPassword()
+   {
+      QFETCH(bool, local);
+      const auto original = remotePassword();
+      const auto restore = qScopeGuard([original] { SETTINGS.set("remote_password", original.toStr()); });
+      auto* socket = new BufferedSocket(local);
+      QScopedPointer<RCM::RemoteConnection> connection(this->newConnection(socket));
+      connection->startListening();
+      if (!local)
+      {
+         const auto challenge = socket->messages()[0].getMessage<Protos::GUI::AskForAuthentication>().salt_challenge();
+         Protos::GUI::Authentication authentication;
+         const auto hash = Common::Hasher::hashWithSalt(original.hash, challenge);
+         authentication.mutable_password_challenge()->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
+         socket->receive(Common::MessageHeader::GUI_AUTHENTICATION, authentication);
+         QCOMPARE(socket->messages()[1].getMessage<Protos::GUI::AuthenticationResult>().status(), Protos::GUI::AuthenticationResult::AUTH_OK);
+      }
+
+      Protos::GUI::ChangePassword request;
+      const auto replacement = Common::Hash::rand();
+      request.mutable_new_password()->set_hash(replacement.getData(), Common::Hash::HASH_SIZE);
+      request.set_new_salt(456);
+      socket->receive(Common::MessageHeader::GUI_CHANGE_PASSWORD, request);
+      QCOMPARE(remotePassword().hash, local ? replacement : original.hash);
+      QCOMPARE(remotePassword().salt, local ? quint64(456) : original.salt);
    }
 
    void remoteAuthentication_data()

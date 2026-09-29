@@ -557,8 +557,9 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
             SETTINGS.save();
             this->refresh();
          }
+         // A local client is trusted and doesn't know the current password: it doesn't have to provide it. A given old password must match.
          else if (currentPassword.isNull() ||
-                  (passMessage.has_old_password() && currentPassword == Common::Hash(passMessage.old_password().hash())))
+                  (passMessage.has_old_password() ? currentPassword == Common::Hash(passMessage.old_password().hash()) : this->localTrusted))
          {
             SETTINGS.set("remote_password", Common::SaltedPassword { newPassword, passMessage.new_salt() }.toStr());
             SETTINGS.save();
