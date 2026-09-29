@@ -277,6 +277,16 @@
      </property>
     </widget>
    </item>
+   <item>
+    <widget class="QPushButton" name="butConnectToLocal">
+     <property name="toolTip">
+      <string>Connect to the core running on this computer</string>
+     </property>
+     <property name="text">
+      <string>Connect to local</string>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
  <customwidgets>

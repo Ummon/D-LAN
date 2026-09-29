@@ -32,6 +32,8 @@ StatusBar::StatusBar(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidge
    this->coreDisconnected();
 
    connect(this->coreConnection.data(), &RCC::ICoreConnection::newState, this, &StatusBar::newState);
+   connect(this->coreConnection.data(), &RCC::ICoreConnection::connecting, this, &StatusBar::coreConnecting);
+   connect(this->coreConnection.data(), &RCC::ICoreConnection::connectingError, this, &StatusBar::coreConnectingError);
    connect(this->coreConnection.data(), &RCC::ICoreConnection::connected, this, &StatusBar::coreConnected);
    connect(this->coreConnection.data(), &RCC::ICoreConnection::disconnected, this, &StatusBar::coreDisconnected);
 
@@ -43,6 +45,8 @@ StatusBar::StatusBar(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidge
    connect(this->ui->butHelp, &QPushButton::clicked, this, &StatusBar::showAbout);
 
    connect(this->ui->butLog, &QPushButton::toggled, this, &StatusBar::showDockLog);
+
+   connect(this->ui->butConnectToLocal, &QPushButton::clicked, this, &StatusBar::connectToLocalClicked);
 }
 
 StatusBar::~StatusBar()
@@ -69,8 +73,19 @@ void StatusBar::dockLogVisibilityChanged(bool visibility)
    this->ui->butLog->setChecked(visibility);
 }
 
+void StatusBar::coreConnecting()
+{
+   this->ui->butConnectToLocal->setDisabled(true);
+}
+
+void StatusBar::coreConnectingError()
+{
+   this->ui->butConnectToLocal->setDisabled(false);
+}
+
 void StatusBar::coreConnected()
 {
+   this->ui->butConnectToLocal->setDisabled(false);
    this->updateCoreStatus();
 }
 
@@ -125,6 +140,8 @@ void StatusBar::setTotalSharing(int nbPeer, qint64 amount)
 void StatusBar::updateCoreStatus(Protos::GUI::State_Stats_CacheStatus status, int progress)
 {
    QString statusMess("Core: ");
+
+   this->ui->butConnectToLocal->setVisible(this->coreConnection->isConnected() && !this->coreConnection->isLocal());
 
    if (this->coreConnection->isConnected())
    {

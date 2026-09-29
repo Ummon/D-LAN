@@ -62,6 +62,8 @@ namespace GUI
       void showDownloads();
       void showUploads();
 
+      void connectToLocalCore();
+
    signals:
       void languageChanged(const QString& filename);
       void styleChanged(const QString& path);

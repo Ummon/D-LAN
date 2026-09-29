@@ -84,6 +84,7 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
    connect(statusBar, &StatusBar::showDockLog, this->ui->dockLog, &QDockWidget::setVisible);
    connect(statusBar, &StatusBar::downloadClicked, this->mdiArea, &MdiArea::showDownloads);
    connect(statusBar, &StatusBar::uploadClicked, this->mdiArea, &MdiArea::showUploads);
+   connect(statusBar, &StatusBar::connectToLocalClicked, this->mdiArea, &MdiArea::connectToLocalCore);
 
    ///// Dockable widgets
    this->addDockWidget(Qt::LeftDockWidgetArea, this->searchDock);

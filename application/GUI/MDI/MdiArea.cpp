@@ -134,6 +134,15 @@ void MdiArea::showUploads()
       this->setActiveSubWindow(static_cast<QMdiSubWindow*>(this->uploadsWidget->parent()));
 }
 
+/**
+  * Same as the button "Reset to local" of the settings window.
+  */
+void MdiArea::connectToLocalCore()
+{
+   if (this->settingsWidget)
+      this->settingsWidget->resetCoreAddress();
+}
+
 void MdiArea::changeEvent(QEvent* event)
 {
    if (event->type() == QEvent::LanguageChange)

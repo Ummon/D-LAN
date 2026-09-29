@@ -45,11 +45,14 @@ namespace GUI
       void showDockLog(bool);
       void downloadClicked();
       void uploadClicked();
+      void connectToLocalClicked();
 
    public slots:
       void dockLogVisibilityChanged(bool);
 
    private slots:
+      void coreConnecting();
+      void coreConnectingError();
       void coreConnected();
       void coreDisconnected();
       void newState(const Protos::GUI::State& state);
