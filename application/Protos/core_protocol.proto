@@ -209,7 +209,7 @@ message GetChunksResult {
          ERROR_UNKNOWN = 255;
       }
       ChunkStatus status = 1;
-      uint32 chunk_size = 2; // This value must be between 1 and 'Proto.Core.Settings.chunk_size'.
+      uint32 chunk_size = 2; // This value must be between 1 and 'Common::Constants::CHUNK_SIZE'.
    }
 
    Status status = 1;

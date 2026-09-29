@@ -9,8 +9,8 @@ import "common.proto";
 package Protos.Core;
 
 message Settings {
-   reserved 25, 54;
-   reserved "check_received_data_integrity", "upload_max_nb_connections_per_peer";
+   reserved 3, 25, 54;
+   reserved "chunk_size", "check_received_data_integrity", "upload_max_nb_connections_per_peer";
 
    string nick = 1;
    Common.Hash peer_id = 2;
@@ -19,7 +19,6 @@ message Settings {
 
    repeated Common.SharedEntry shared_entries = 103;
 
-   uint32 chunk_size = 3; // [default = 67108864] (64 MiB).
    uint32 buffer_size_reading = 4; // [default = 131072] (128 KiB). Buffer used when reading files (uploading and computing hashes).
    uint32 buffer_size_writing = 5; // [default = 524288] (512 KiB). Buffer used when writing files (downloading).
    uint32 socket_buffer_size = 6; // [default = 131072] (128 KiB). Max size of the socket buffer, using when receiving or sending data over the sockets.
