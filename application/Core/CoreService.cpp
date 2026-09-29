@@ -27,26 +27,11 @@ using namespace CoreSpace;
 CoreService::CoreService(bool resetSettings, QLocale locale, int argc, char** argv) :
    QtService<CoreApplication>(argc, argv, Common::Constants::SERVICE_NAME),
    core(new Core(resetSettings, locale)),
-   consoleSupport(false),
    consoleReader(nullptr)
 {
    this->setServiceDescription(tr("A LAN file sharing system"));
    this->setStartupType(QtServiceController::ManualStartup);
    this->setServiceFlags(QtServiceBase::Default);
-
-   // If Core is launched from the console we read user input.
-   for (int i = 1; i < argc; i++)
-   {
-      QString currentArg = QString::fromLatin1(argv[i]);
-      if (currentArg == "-e" || currentArg == "--exec")
-      {
-         QTextStream out(stdout);
-         out << "D-LAN Core started with console support" << Qt::endl;
-         this->consoleSupport = true;
-         CoreService::printCommands();
-         break;
-      }
-   }
 }
 
 CoreService::~CoreService()
@@ -82,8 +67,13 @@ void CoreService::stop()
 
 int CoreService::executeApplication()
 {
-   if (this->consoleSupport)
+   // If Core is launched as a regular application we read user input.
+   if (!this->isRunningAsService())
    {
+      QTextStream out(stdout);
+      out << "D-LAN Core started with console support" << Qt::endl;
+      CoreService::printCommands();
+
       this->consoleReader = new Common::ConsoleReader(this);
       connect(this->consoleReader, &Common::ConsoleReader::newLine, this, &CoreService::processUserInput, Qt::QueuedConnection);
    }

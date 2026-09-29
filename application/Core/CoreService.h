@@ -52,7 +52,6 @@ namespace CoreSpace
 
       Core* core;
 
-      bool consoleSupport;
       Common::ConsoleReader* consoleReader;
    };
 }

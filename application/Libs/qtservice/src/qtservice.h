@@ -135,6 +135,8 @@ public:
 
     int exec();
 
+    bool isRunningAsService() const;
+
     void logMessage(const QString &message, MessageType type = Success,
                 int id = 0, uint category = 0, const QByteArray &data = QByteArray());
 

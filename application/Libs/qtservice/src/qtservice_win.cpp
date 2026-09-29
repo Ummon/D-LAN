@@ -198,6 +198,9 @@ QString QtServiceController::serviceFilePath() const
             if (pQueryServiceConfig(hService, (LPQUERY_SERVICE_CONFIG)data, 8 * 1024, &sizeNeeded)) {
                 LPQUERY_SERVICE_CONFIG config = (LPQUERY_SERVICE_CONFIG)data;
                 result = QString::fromWCharArray(config->lpBinaryPathName);
+                // The binary path is registered by install() as: "<file path>" -s
+                if (result.startsWith(QLatin1Char('"')))
+                    result = result.mid(1, result.indexOf(QLatin1Char('"'), 1) - 1);
             }
             pCloseServiceHandle(hService);
         }
@@ -773,19 +776,18 @@ bool myEventFilter(void* message, long* result)
 /* There are three ways we can be started:
 
    - By a service controller (e.g. the Services control panel), with
-   no (service-specific) arguments. ServiceBase::exec() will then call
-   start() below, and the service will start.
+   the -s(ervice) argument registered in the service binary path by install().
+   ServiceBase::exec() will then call start() below, and the service will start.
 
-   - From the console, but with no (service-specific) arguments. This
-   means we should ask a controller to start the service (i.e. another
-   instance of this executable), and then just terminate. We discover
-   this case (as different from the above) by the fact that
-   StartServiceCtrlDispatcher will return an error, instead of blocking.
+   - From the console, with the -s(ervice) argument. This means we should
+   ask a controller to start the service (i.e. another instance of this
+   executable), and then just terminate. We discover this case (as
+   different from the above) by the fact that StartServiceCtrlDispatcher
+   will return an error, instead of blocking.
 
-   - From the console, with -e(xec) argument. ServiceBase::exec() will
-   then call ServiceBasePrivate::exec(), which calls
-   ServiceBasePrivate::run(), which runs the application as a normal
-   program.
+   - From the console, with no (service-specific) arguments.
+   ServiceBase::exec() will then call ServiceBasePrivate::run(), which
+   runs the application as a normal program.
 */
 
 bool QtServiceBasePrivate::start()
@@ -883,12 +885,15 @@ bool QtServiceBasePrivate::install(const QString &account, const QString &passwo
         // Only set INTERACTIVE if act is LocalSystem. (and act should be 0 if it is LocalSystem).
         if (!act) dwServiceType |= SERVICE_INTERACTIVE_PROCESS;
 
+        // The service controller must launch the executable with -s(ervice), without argument it runs as a regular application.
+        const QString binaryPath = QLatin1Char('"') + filePath() + QLatin1String("\" -s");
+
         // Create the service
         SC_HANDLE hService = pCreateService(hSCM, (wchar_t *)controller.serviceName().utf16(),
                                             (wchar_t *)controller.serviceName().utf16(),
                                             SERVICE_ALL_ACCESS,
                                             dwServiceType, // QObject::inherits ( const char * className ) for no inter active ????
-                                            dwStartType, SERVICE_ERROR_NORMAL, (wchar_t *)filePath().utf16(),
+                                            dwStartType, SERVICE_ERROR_NORMAL, (wchar_t *)binaryPath.utf16(),
                                             0, 0, 0,
                                             act, pwd);
         if (hService) {

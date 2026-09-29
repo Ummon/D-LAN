@@ -86,7 +86,6 @@ void CoreController::startCore(int port)
 
       if (debug || !this->controller.start(arguments)) // FIXME: This call generates a zombie thread on Linux.
       {
-         arguments.prepend("-e");
          this->coreProcess.setArguments(arguments);
          this->coreProcess.start();
 

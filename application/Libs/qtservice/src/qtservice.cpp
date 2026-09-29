@@ -577,10 +577,7 @@ int QtServiceBasePrivate::run(bool asService, const QStringList &argList)
     \header \i Short \i Long \i Explanation
     \row \i -i \i -install \i Install the service.
     \row \i -u \i -uninstall \i Uninstall the service.
-    \row \i -e \i -exec
-         \i Execute the service as a standalone application (useful for debug purposes).
-            This is a blocking call, the service will be executed like a normal application.
-            In this mode you will not be able to communicate with the service from the contoller.
+    \row \i -s \i -service \i Start the service.
     \row \i -t \i -terminate \i Stop the service.
     \row \i -p \i -pause \i Pause the service.
     \row \i -r \i -resume \i Resume a paused service.
@@ -589,11 +586,11 @@ int QtServiceBasePrivate::run(bool asService, const QStringList &argList)
     \row \i -v \i -version \i Display version and status information.
     \endtable
 
-    If \e none of the arguments is recognized as service specific,
-    exec() will first call the createApplication() function, then
-    executeApplication() and finally the start() function. In the end,
-    exec() returns while the service continues in its own process
-    waiting for commands from the service controller.
+    If \e none of the arguments is recognized as service specific, the
+    service is executed as a standalone application. This is a blocking
+    call, the service will be executed like a normal application. In
+    this mode you will not be able to communicate with the service from
+    the controller.
 
     \sa QtService, QtServiceController
 */
@@ -763,10 +760,9 @@ QtServiceBase::ServiceFlags QtServiceBase::serviceFlags() const
     \c argv, perform the required actions, and exit.
 
     If none of the arguments is recognized as service specific, exec()
-    will first call the createApplication() function, then executeApplication() and
-    finally the start() function. In the end, exec()
-    returns while the service continues in its own process waiting for
-    commands from the service controller.
+    runs the service as a regular application: it calls the createApplication()
+    function, then executeApplication() and finally the start() function,
+    and returns when the application exits.
 
     \sa QtServiceController
 */
@@ -812,12 +808,13 @@ int QtServiceBase::exec()
             printf("is %s", (d_ptr->controller.isInstalled() ? "installed" : "not installed"));
             printf(" and %s\n\n", (d_ptr->controller.isRunning() ? "running" : "not running"));
             return 0;
-        } else if (a == QLatin1String("-e") || a == QLatin1String("-exec")) {
+        } else if (a == QLatin1String("-s") || a == QLatin1String("-service")) {
             d_ptr->args.removeAt(1);
-            int ec = d_ptr->run(false, d_ptr->args);
-            if (ec == -1)
-                qErrnoWarning("The service could not be executed.");
-            return ec;
+            if (!d_ptr->start()) {
+                fprintf(stderr, "The service %s could not start\n", serviceName().toLatin1().constData());
+                return -4;
+            }
+            return 0;
         } else if (a == QLatin1String("-t") || a == QLatin1String("-terminate")) {
             if (!d_ptr->controller.stop())
                 qErrnoWarning("The service could not be stopped.");
@@ -835,15 +832,15 @@ int QtServiceBase::exec()
             d_ptr->controller.sendCommand(code);
             return 0;
         } else  if (a == QLatin1String("-h") || a == QLatin1String("-help")) {
-            printf("\n%s -[i|u|e|s|v|h]\n"
+            printf("\n%s -[i|u|s|t|c|v|h]\n"
                    "\t-i(nstall) [account] [password]\t: Install the service, optionally using given account and password\n"
                    "\t-u(ninstall)\t: Uninstall the service.\n"
-                   "\t-e(xec)\t\t: Run as a regular application. Useful for debugging.\n"
+                   "\t-s(ervice)\t: Start the service.\n"
                    "\t-t(erminate)\t: Stop the service.\n"
                    "\t-c(ommand) num\t: Send command code num to the service.\n"
                    "\t-v(ersion)\t: Print version and status information.\n"
                    "\t-h(elp)   \t: Show this help\n"
-                   "\tNo arguments\t: Start the service.\n",
+                   "\tNo arguments\t: Run as a regular application.\n",
                    d_ptr->args.at(0).toLatin1().constData());
             return 0;
         }
@@ -857,11 +854,20 @@ int QtServiceBase::exec()
         return ec;
     }
 #endif
-    if (!d_ptr->start()) {
-        fprintf(stderr, "The service %s could not start\n", serviceName().toLatin1().constData());
-        return -4;
-    }
-    return 0;
+    int ec = d_ptr->run(false, d_ptr->args);
+    if (ec == -1)
+        qErrnoWarning("The service could not be executed.");
+    return ec;
+}
+
+/*!
+    Returns true if the service is running as a system service (Windows)
+    or as a detached daemon (Unix); returns false if it is running as a
+    regular application.
+*/
+bool QtServiceBase::isRunningAsService() const
+{
+    return d_ptr->sysd != 0;
 }
 
 /*!
@@ -1078,10 +1084,9 @@ void QtServiceBase::processCommand(int /*code*/)
     \c argv, perform the required actions, and exit.
 
     If none of the arguments is recognized as service specific, exec()
-    will first call the createApplication() function, then executeApplication() and
-    finally the start() function. In the end, exec()
-    returns while the service continues in its own process waiting for
-    commands from the service controller.
+    runs the service as a regular application: it calls the createApplication()
+    function, then executeApplication() and finally the start() function,
+    and returns when the application exits.
 
     \sa QtServiceBase, QtServiceController
 */

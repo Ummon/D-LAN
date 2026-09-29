@@ -232,7 +232,8 @@ bool QtServiceController::start(const QStringList &arguments)
         return false;
     if (isRunning())
         return false;
-    return QProcess::startDetached(serviceFilePath(), arguments);
+    // Without the -s(ervice) argument the executable runs as a regular application.
+    return QProcess::startDetached(serviceFilePath(), QStringList(QLatin1String("-s")) + arguments);
 }
 
 bool QtServiceController::stop()

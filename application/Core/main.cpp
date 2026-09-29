@@ -40,11 +40,12 @@ void printUsage(QString appName)
 {
    QTextStream out(stdout);
    out << "Usage:" << Qt::endl <<
-      " " << appName << " [-i|-u|-e|-t|-v] [-r <roaming data directory>] [-l <local data directory>] [--reset-settings] [--lang <language>] [--pass <password> | --rmpass] [--version]" << Qt::endl <<
-      "  -i, -u, -e, -t and -v must be the first argument." << Qt::endl <<
+      " " << appName << " [-i|-u|-s|-t|-v] [-r <roaming data directory>] [-l <local data directory>] [--reset-settings] [--lang <language>] [--pass <password> | --rmpass] [--version]" << Qt::endl <<
+      "  -i, -u, -s, -t and -v must be the first argument." << Qt::endl <<
+      "  Without -i, -u, -s, -t or -v the Core runs as a regular application." << Qt::endl <<
       "  -i [account] [password] : Install the service, optionally using given account and password" << Qt::endl <<
       "  -u : Uninstall the service." << Qt::endl <<
-      "  -e : Run as a regular application. Otherwise try to launch the installed service." << Qt::endl <<
+      "  -s : Launch the installed service." << Qt::endl <<
       "  -t : Stop the service." << Qt::endl <<
       "  -v : Print service status information." << Qt::endl <<
       "  <roaming data directory> : Where settings are put." << Qt::endl <<
