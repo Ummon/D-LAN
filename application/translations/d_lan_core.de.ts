@@ -44,8 +44,8 @@
     <name>FM::FileHasher</name>
     <message>
         <location filename="../Core/FileManager/priv/Cache/FileHasher.cpp" line="158"/>
-        <source>Computing hashes of %1 . . .</source>
-        <translation>Berechne Prüfsummen von %1 . . .</translation>
+        <source>Indexing %1 . . .</source>
+        <translation>Indiziere %1 . . .</translation>
     </message>
 </context>
 <context>

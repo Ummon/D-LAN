@@ -155,7 +155,7 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed, bool deferPers
 
    this->hashing = true;
 
-   L_USER(tr("Computing hashes of %1 . . .").arg(filePath));
+   L_USER(tr("Indexing %1 . . .").arg(filePath));
 
    // Same performance with or without "QIODevice::Unbuffered".
    AutoReleasedFile file(

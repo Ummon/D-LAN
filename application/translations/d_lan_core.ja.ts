@@ -43,8 +43,8 @@
     <name>FM::FileHasher</name>
     <message>
         <location filename="../Core/FileManager/priv/Cache/FileHasher.cpp" line="158"/>
-        <source>Computing hashes of %1 . . .</source>
-        <translation>%1 のハッシュを計算しています . . .</translation>
+        <source>Indexing %1 . . .</source>
+        <translation>%1 のインデックスを作成しています . . .</translation>
     </message>
 </context>
 <context>

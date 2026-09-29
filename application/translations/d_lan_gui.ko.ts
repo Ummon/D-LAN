@@ -883,8 +883,8 @@
     </message>
     <message>
         <location filename="../GUI/StatusBar.cpp" line="144"/>
-        <source>hashing in progress . . .</source>
-        <translation>해시 계산 중 . . .</translation>
+        <source>indexing in progress . . .</source>
+        <translation>인덱싱 중 . . .</translation>
     </message>
     <message>
         <location filename="../GUI/StatusBar.cpp" line="149"/>

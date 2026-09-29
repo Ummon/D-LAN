@@ -883,8 +883,8 @@
     </message>
     <message>
         <location line="+4"/>
-        <source>hashing in progress . . .</source>
-        <translation>подсчет контрольных сумм...</translation>
+        <source>indexing in progress . . .</source>
+        <translation>индексация...</translation>
     </message>
     <message>
         <location line="+5"/>

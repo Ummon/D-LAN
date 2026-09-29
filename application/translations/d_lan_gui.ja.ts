@@ -879,8 +879,8 @@
     </message>
     <message>
         <location filename="../GUI/StatusBar.cpp" line="144"/>
-        <source>hashing in progress . . .</source>
-        <translation>ハッシュ計算中 . . .</translation>
+        <source>indexing in progress . . .</source>
+        <translation>インデックス作成中 . . .</translation>
     </message>
     <message>
         <location filename="../GUI/StatusBar.cpp" line="149"/>

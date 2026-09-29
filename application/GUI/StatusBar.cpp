@@ -141,7 +141,7 @@ void StatusBar::updateCoreStatus(Protos::GUI::State_Stats_CacheStatus status, in
          this->ui->prgCurrentAction->setVisible(false);
          break;
       case Protos::GUI::State_Stats_CacheStatus_HASHING_IN_PROGRESS:
-         statusMess.append(" - ").append(tr("hashing in progress . . ."));
+         statusMess.append(" - ").append(tr("indexing in progress . . ."));
          this->ui->prgCurrentAction->setVisible(true);
          this->ui->prgCurrentAction->setValue(progress);
          break;
