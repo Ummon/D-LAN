@@ -32,11 +32,4 @@ public:
    CoreApplication(int& argc, char** argv);
 
    bool notify(QObject* receiver, QEvent* event) override;
-
-/*#ifdef Q_OS_WIN32
-   bool winEventFilter(MSG* msg, long* result);
-#endif*/
-
-/*signals:
-   void resumeFromLowPowerState();*/
 };

@@ -284,6 +284,8 @@ bool QtServiceController::uninstall()
             pCloseServiceHandle(hService);
         }
         pCloseServiceHandle(hSCM);
+    } else if (GetLastError() == ERROR_ACCESS_DENIED) {
+        fprintf(stderr, "Administrator rights are required to uninstall the service\n");
     }
     return result;
 }
@@ -899,6 +901,8 @@ bool QtServiceBasePrivate::install(const QString &account, const QString &passwo
             pCloseServiceHandle(hService);
         }
         pCloseServiceHandle(hSCM);
+    } else if (GetLastError() == ERROR_ACCESS_DENIED) {
+        fprintf(stderr, "Administrator rights are required to install the service\n");
     }
     return result;
 }
