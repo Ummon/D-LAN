@@ -289,6 +289,13 @@ def make_linux_app_image [build_dir?: path] {
     if ($ssl_library | is-empty) or not ($ssl_library | path exists) or ($ssl_library | str ends-with ".a") {
         error make {msg: "AppImage packaging requires a shared OpenSSL SSL library (OPENSSL_SSL_LIBRARY)."}
     }
+    # OPENSSL_SSL_LIBRARY is usually the development symlink libssl.so, and
+    # linuxdeploy keeps the given file name. Qt's TLS plugin loads libssl by its
+    # SONAME (libssl.so.3), so deploy the library under that name.
+    let ssl_library = $ssl_library | path expand | path dirname | path join "libssl.so.3"
+    if not ($ssl_library | path exists) {
+        error make {msg: $"Cannot find the OpenSSL 3 runtime library: ($ssl_library)"}
+    }
     let tls_plugin = $plugins.stdout | str trim | path join "tls/libqopensslbackend.so"
     if not ($tls_plugin | path exists) { error make {msg: "Qt's OpenSSL TLS plugin is required for the AppImage."} }
     # D-LAN uses SQLite only. Other SDK SQL plugins may need unavailable
@@ -317,6 +324,9 @@ def make_linux_app_image [build_dir?: path] {
         cp $tls_plugin $tls_directory
         ^$linuxdeploy --appdir $appdir --deploy-deps-only ($tls_directory | path join "libqopensslbackend.so")
         if $env.LAST_EXIT_CODE != 0 { error make {msg: "TLS plugin deployment failed"} }
+        if not ($appdir | path join "usr/lib/libssl.so.3" | path exists) {
+            error make {msg: "libssl.so.3 is missing from the AppImage; Qt would fall back to its cert-only TLS backend."}
+        }
 
         # Qt's GTK integration supplies the desktop palette on Cinnamon/GNOME.
         # linuxdeploy-plugin-qt does not deploy it automatically. Use the same
