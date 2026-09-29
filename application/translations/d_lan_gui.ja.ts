@@ -216,19 +216,39 @@
 <context>
     <name>GUI::DownloadMenu</name>
     <message>
-        <location filename="../GUI/DownloadMenu.cpp" line="50"/>
+        <location filename="../GUI/DownloadMenu.cpp" line="68"/>
         <source>Download selected items to the first directory folder with enough free space</source>
         <translation>選択した項目を、十分な空き容量がある最初のディレクトリにダウンロード</translation>
     </message>
     <message>
-        <location filename="../GUI/DownloadMenu.cpp" line="61"/>
+        <location filename="../GUI/DownloadMenu.cpp" line="83"/>
         <source>Download selected items to %1</source>
         <translation>選択した項目を %1 にダウンロード</translation>
     </message>
     <message>
-        <location filename="../GUI/DownloadMenu.cpp" line="71"/>
+        <location filename="../GUI/DownloadMenu.cpp" line="95"/>
         <source>Download selected items to . . .</source>
         <translation>選択した項目を . . . にダウンロード</translation>
+    </message>
+    <message>
+        <location filename="../GUI/DownloadMenu.cpp" line="124"/>
+        <source>Download here</source>
+        <translation>ここにダウンロード</translation>
+    </message>
+    <message>
+        <location filename="../GUI/DownloadMenu.cpp" line="131"/>
+        <source>Loading . . .</source>
+        <translation>読み込み中 . . .</translation>
+    </message>
+    <message>
+        <location filename="../GUI/DownloadMenu.cpp" line="195"/>
+        <source>%1 more folders . . .</source>
+        <translation>他 %1 個のフォルダー . . .</translation>
+    </message>
+    <message>
+        <location filename="../GUI/DownloadMenu.cpp" line="203"/>
+        <source>Unable to get the folders</source>
+        <translation>フォルダーを取得できません</translation>
     </message>
 </context>
 <context>
@@ -702,22 +722,22 @@
         <translation>閲覧</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="445"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="446"/>
         <source>1 directory</source>
         <translation>1 ディレクトリ</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="445"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="446"/>
         <source>%1 directories</source>
         <translation>%1 ディレクトリ</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="446"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="447"/>
         <source>1 file</source>
         <translation>1 ファイル</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="446"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="447"/>
         <source>%1 files</source>
         <translation>%1 ファイル</translation>
     </message>

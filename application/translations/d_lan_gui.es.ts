@@ -216,19 +216,39 @@
 <context>
     <name>GUI::DownloadMenu</name>
     <message>
-        <location filename="../GUI/DownloadMenu.cpp" line="+50"/>
+        <location filename="../GUI/DownloadMenu.cpp" line="+68"/>
         <source>Download selected items to the first directory folder with enough free space</source>
         <translation>Descargar los elementos seleccionados a la primera carpeta con suficiente espacio libre</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location line="+15"/>
         <source>Download selected items to %1</source>
         <translation>Descargar los elementos seleccionados a %1</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="+12"/>
         <source>Download selected items to . . .</source>
         <translation>Descargar los elementos seleccionados en . . .</translation>
+    </message>
+    <message>
+        <location line="+29"/>
+        <source>Download here</source>
+        <translation>Descargar aquí</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Loading . . .</source>
+        <translation>Cargando . . .</translation>
+    </message>
+    <message>
+        <location line="+64"/>
+        <source>%1 more folders . . .</source>
+        <translation>%1 carpetas más . . .</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Unable to get the folders</source>
+        <translation>No se pudieron obtener las carpetas</translation>
     </message>
 </context>
 <context>
@@ -706,7 +726,7 @@
         <translation>Navegar</translation>
     </message>
     <message>
-        <location line="+79"/>
+        <location line="+80"/>
         <source>1 directory</source>
         <translation>1 directorio</translation>
     </message>

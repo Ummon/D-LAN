@@ -23,9 +23,14 @@
 #include <QStringList>
 #include <QPoint>
 #include <QMenu>
+#include <QList>
+
+#include <Protos/common.pb.h>
 
 #include <Common/Hash.h>
 #include <Common/Path.h>
+#include <Common/RemoteCoreController/ICoreConnection.h>
+#include <Common/RemoteCoreController/IBrowseResult.h>
 
 #include <Settings/SharedEntryListModel.h>
 
@@ -35,7 +40,7 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      DownloadMenu(const SharedEntryListModel& sharedEntryListModel);
+      DownloadMenu(QSharedPointer<RCC::ICoreConnection> coreConnection, const SharedEntryListModel& sharedEntryListModel);
       void show(const QPoint& globalPosition);
 
    signals:
@@ -50,16 +55,26 @@ namespace GUI
       void downloadTo();
 
       /**
-        * Download the selected items to the shared directory.
+        * Download the selected items to a folder of a shared directory.
+        * @param relativePath The folder relative to the shared directory, empty for the shared directory itself.
         */
-      void downloadTo(const Common::Hash&);
-
-   private slots:
-      void actionTriggered();
+      void downloadTo(const Common::Hash& sharedDirID, const Common::Path& relativePath);
 
    private:
       virtual void onShowMenu(QMenu&) {}
 
+      QMenu* createFolderMenu(
+         const QString& title,
+         const Common::Hash& sharedDirID,
+         const QStringList& relativeDirs,
+         const Protos::Common::Entry& folder,
+         QWidget* parent
+      );
+      void loadSubFolders(QMenu* menu, QAction* actionLoading, const Common::Hash& sharedDirID, const QStringList& relativeDirs, const Protos::Common::Entry& folder);
+
+      QSharedPointer<RCC::ICoreConnection> coreConnection;
       const SharedEntryListModel& sharedEntryListModel;
+
+      QList<QSharedPointer<RCC::IBrowseResult>> browseResults; // Pending browses of the currently shown menu.
    };
 }

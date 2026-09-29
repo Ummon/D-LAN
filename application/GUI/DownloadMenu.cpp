@@ -19,20 +19,38 @@
 #include <DownloadMenu.h>
 using namespace GUI;
 
+#include <algorithm>
+
 #include <QAction>
+#include <QCollator>
+#include <QPointer>
 
 #include <Utils.h>
+
+namespace
+{
+   // Beyond this number the remaining sub-folders are not listed, the user can still choose one with 'Download selected items to . . .'.
+   const int MAX_NB_SUB_FOLDERS = 100;
+
+   // '&' is used by the menus to define a mnemonic.
+   QString escapeMenuText(QString text)
+   {
+      return text.replace('&', "&&");
+   }
+}
 
 /**
   * @class GUI::DownloadMenu
   *
   * Show the list of shared directory as a menu.
   * - The menu can be shown by calling 'show(..)'.
+  * - Each shared directory is a sub-menu whose folders can be browsed through sub-menus, they are fetched from the core when shown.
   * - When the user select an action, the signal 'downloadTo(..)' is emitted.
   * - Can be sub-classed to add some entries. In this case 'onShowMenu(..)' must be overridden.
   */
 
-DownloadMenu::DownloadMenu(const SharedEntryListModel& sharedEntryListModel) :
+DownloadMenu::DownloadMenu(QSharedPointer<RCC::ICoreConnection> coreConnection, const SharedEntryListModel& sharedEntryListModel) :
+   coreConnection(coreConnection),
    sharedEntryListModel(sharedEntryListModel)
 {
 }
@@ -56,14 +74,20 @@ void DownloadMenu::show(const QPoint& globalPosition)
 
    for (const auto& sharedDir : sharedDirs)
    {
-      QAction* action = new QAction(
-         QIcon(":/icons/resources/download.svg"),
-         QString(tr("Download selected items to %1")).arg(sharedDir.path.toString()),
+      // A shared directory is a folder with an empty path and an empty name.
+      Protos::Common::Entry root;
+      root.set_type(Protos::Common::Entry::DIR);
+      root.mutable_shared_entry()->mutable_id()->set_hash(sharedDir.ID.getData(), Common::Hash::HASH_SIZE);
+
+      QMenu* sharedDirMenu = this->createFolderMenu(
+         QString(tr("Download selected items to %1")).arg(escapeMenuText(sharedDir.path.toString())),
+         sharedDir.ID,
+         QStringList(),
+         root,
          &menu
       );
-      action->setData(QVariant::fromValue(sharedDir.ID));
-      connect(action, &QAction::triggered, this, &DownloadMenu::actionTriggered);
-      menu.addAction(action);
+      sharedDirMenu->setIcon(QIcon(":/icons/resources/download.svg"));
+      menu.addMenu(sharedDirMenu);
    }
 
    QAction* actionChooseAndDownload = new QAction(
@@ -77,11 +101,107 @@ void DownloadMenu::show(const QPoint& globalPosition)
    this->onShowMenu(menu);
 
    menu.exec(globalPosition);
+
+   // The menus waiting for these results no longer exist.
+   this->browseResults.clear();
 }
 
-void DownloadMenu::actionTriggered()
+/**
+  * Create a menu to download into 'folder', its sub-folders are loaded the first time the menu is shown.
+  * @param relativeDirs The path of 'folder' relative to its shared directory.
+  */
+QMenu* DownloadMenu::createFolderMenu(
+   const QString& title,
+   const Common::Hash& sharedDirID,
+   const QStringList& relativeDirs,
+   const Protos::Common::Entry& folder,
+   QWidget* parent
+)
 {
-   QAction* action = static_cast<QAction*>(this->sender());
-   if (!action->data().isNull())
-      emit downloadTo(action->data().value<Common::Hash>());
+   QMenu* menu = new QMenu(title, parent);
+   menu->setIcon(QIcon(":/icons/resources/folder.svg"));
+
+   QAction* actionDownloadHere = menu->addAction(QIcon(":/icons/resources/download.svg"), tr("Download here"));
+   connect(actionDownloadHere, &QAction::triggered, this, [this, sharedDirID, relativeDirs] {
+      emit downloadTo(sharedDirID, Common::Path(relativeDirs));
+   });
+
+   if (!folder.is_empty())
+   {
+      QAction* actionLoading = menu->addAction(tr("Loading . . ."));
+      actionLoading->setEnabled(false);
+      connect(
+         menu,
+         &QMenu::aboutToShow,
+         this,
+         [this, menu, actionLoading, sharedDirID, relativeDirs, folder] {
+            this->loadSubFolders(menu, actionLoading, sharedDirID, relativeDirs, folder);
+         },
+         Qt::SingleShotConnection
+      );
+   }
+
+   return menu;
+}
+
+/**
+  * Ask the core for the sub-folders of 'folder' and add them to 'menu' in place of 'actionLoading'.
+  */
+void DownloadMenu::loadSubFolders(
+   QMenu* menu,
+   QAction* actionLoading,
+   const Common::Hash& sharedDirID,
+   const QStringList& relativeDirs,
+   const Protos::Common::Entry& folder
+)
+{
+   const QSharedPointer<RCC::IBrowseResult> browseResult = this->coreConnection->browse(this->coreConnection->getRemoteID(), folder);
+   this->browseResults << browseResult;
+
+   const QPointer<QAction> loading(actionLoading);
+
+   connect(browseResult.data(), &RCC::IBrowseResult::result, menu,
+      [this, menu, loading, sharedDirID, relativeDirs](const google::protobuf::RepeatedPtrField<Protos::Common::Entries>& result)
+      {
+         delete loading.data();
+
+         QList<QPair<QString, const Protos::Common::Entry*>> subFolders;
+         if (!result.empty())
+            for (const auto& entry : result.Get(0).entries())
+               if (entry.type() == Protos::Common::Entry::DIR)
+                  subFolders << qMakePair(QString::fromStdString(entry.name()), &entry);
+
+         if (subFolders.isEmpty())
+            return;
+
+         QCollator collator;
+         collator.setNumericMode(true);
+         collator.setCaseSensitivity(Qt::CaseInsensitive);
+         std::sort(subFolders.begin(), subFolders.end(), [&collator](const auto& a, const auto& b) { return collator.compare(a.first, b.first) < 0; });
+
+         menu->addSeparator();
+
+         for (int i = 0; i < subFolders.size() && i < MAX_NB_SUB_FOLDERS; i++)
+            menu->addMenu(this->createFolderMenu(
+               escapeMenuText(subFolders[i].first),
+               sharedDirID,
+               relativeDirs + QStringList { subFolders[i].first },
+               *subFolders[i].second,
+               menu
+            ));
+
+         if (subFolders.size() > MAX_NB_SUB_FOLDERS)
+         {
+            QAction* actionMore = menu->addAction(tr("%1 more folders . . .").arg(subFolders.size() - MAX_NB_SUB_FOLDERS));
+            connect(actionMore, &QAction::triggered, this, qOverload<>(&DownloadMenu::downloadTo));
+         }
+      }
+   );
+
+   connect(browseResult.data(), &Common::Timeoutable::timeout, menu, [loading] {
+      if (loading)
+         loading->setText(DownloadMenu::tr("Unable to get the folders"));
+   });
+
+   browseResult->start();
 }

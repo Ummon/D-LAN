@@ -247,7 +247,7 @@ SearchWidget::SearchWidget(
 ) :
    QWidget(parent),
    ui(new Ui::SearchWidget),
-   downloadMenu(sharedEntryListModel),
+   downloadMenu(coreConnection, sharedEntryListModel),
    coreConnection(coreConnection),
    searchModel(coreConnection, peerListModel, sharedEntryListModel)
 {
@@ -309,9 +309,9 @@ SearchWidget::SearchWidget(
    );
    connect(
       &this->downloadMenu,
-      qOverload<const Common::Hash&>(&SearchMenu::downloadTo),
+      qOverload<const Common::Hash&, const Common::Path&>(&SearchMenu::downloadTo),
       this,
-      qOverload<const Common::Hash&>(&SearchWidget::downloadTo)
+      qOverload<const Common::Hash&, const Common::Path&>(&SearchWidget::downloadTo)
    );
    connect(&this->downloadMenu, &SearchMenu::browse, this, &SearchWidget::browseCurrents);
 
@@ -398,12 +398,13 @@ void SearchWidget::downloadTo(const Common::Path& path)
 }
 
 /**
-  * Download all selected items to the shared directory.
+  * Download all selected items to a folder of the shared directory.
+  * @param relativePath The folder relative to the shared directory, empty for the shared directory itself.
   */
-void SearchWidget::downloadTo(const Common::Hash& sharedDirID)
+void SearchWidget::downloadTo(const Common::Hash& sharedDirID, const Common::Path& relativePath)
 {
    for (const auto& index : this->ui->treeView->selectionModel()->selectedRows())
-      this->coreConnection->download(this->searchModel.getPeerID(index), this->searchModel.getEntry(index), sharedDirID);
+      this->coreConnection->download(this->searchModel.getPeerID(index), this->searchModel.getEntry(index), sharedDirID, relativePath);
 }
 
 void SearchWidget::openLocation()

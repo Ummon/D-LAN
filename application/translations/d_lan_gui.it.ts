@@ -216,19 +216,39 @@
 <context>
     <name>GUI::DownloadMenu</name>
     <message>
-        <location filename="../GUI/DownloadMenu.cpp" line="50"/>
+        <location filename="../GUI/DownloadMenu.cpp" line="68"/>
         <source>Download selected items to the first directory folder with enough free space</source>
         <translation>Scarica gli elementi selezionati nella prima cartella condivisa con spazio libero sufficiente</translation>
     </message>
     <message>
-        <location filename="../GUI/DownloadMenu.cpp" line="61"/>
+        <location filename="../GUI/DownloadMenu.cpp" line="83"/>
         <source>Download selected items to %1</source>
         <translation>Scarica gli elementi selezionati in %1</translation>
     </message>
     <message>
-        <location filename="../GUI/DownloadMenu.cpp" line="71"/>
+        <location filename="../GUI/DownloadMenu.cpp" line="95"/>
         <source>Download selected items to . . .</source>
         <translation>Scarica gli elementi selezionati in . . .</translation>
+    </message>
+    <message>
+        <location filename="../GUI/DownloadMenu.cpp" line="124"/>
+        <source>Download here</source>
+        <translation>Scarica qui</translation>
+    </message>
+    <message>
+        <location filename="../GUI/DownloadMenu.cpp" line="131"/>
+        <source>Loading . . .</source>
+        <translation>Caricamento . . .</translation>
+    </message>
+    <message>
+        <location filename="../GUI/DownloadMenu.cpp" line="195"/>
+        <source>%1 more folders . . .</source>
+        <translation>Altre %1 cartelle . . .</translation>
+    </message>
+    <message>
+        <location filename="../GUI/DownloadMenu.cpp" line="203"/>
+        <source>Unable to get the folders</source>
+        <translation>Impossibile ottenere le cartelle</translation>
     </message>
 </context>
 <context>
@@ -706,22 +726,22 @@
         <translation>Sfoglia</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="445"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="446"/>
         <source>1 directory</source>
         <translation>1 cartella</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="445"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="446"/>
         <source>%1 directories</source>
         <translation>%1 cartelle</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="446"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="447"/>
         <source>1 file</source>
         <translation>1 file</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="446"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="447"/>
         <source>%1 files</source>
         <translation>%1 file</translation>
     </message>

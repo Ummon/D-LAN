@@ -49,7 +49,7 @@ BrowseWidget::BrowseWidget(
 ) :
    QWidget(parent),
    ui(new Ui::BrowseWidget),
-   downloadMenu(sharedEntryListModel),
+   downloadMenu(coreConnection, sharedEntryListModel),
    coreConnection(coreConnection),
    peerID(peerID),
    browseModel(coreConnection, sharedEntryListModel, peerID),
@@ -79,9 +79,9 @@ BrowseWidget::BrowseWidget(
    connect(&this->downloadMenu, qOverload<>(&DownloadMenu::downloadTo), this, qOverload<>(&BrowseWidget::downloadTo));
    connect(
       &this->downloadMenu,
-      qOverload<const Common::Hash&>(&DownloadMenu::downloadTo),
+      qOverload<const Common::Hash&, const Common::Path&>(&DownloadMenu::downloadTo),
       this,
-      qOverload<const Common::Hash&>(&BrowseWidget::downloadTo)
+      qOverload<const Common::Hash&, const Common::Path&>(&BrowseWidget::downloadTo)
    );
 
    connect(&this->browseModel, &BrowseModel::loadingResultFinished, this, &BrowseWidget::tryToReachEntryToBrowse);
@@ -192,12 +192,13 @@ void BrowseWidget::downloadTo(const Common::Path& path)
 }
 
 /**
-  * Download all selected items to the shared directory.
+  * Download all selected items to a folder of the shared directory.
+  * @param relativePath The folder relative to the shared directory, empty for the shared directory itself.
   */
-void BrowseWidget::downloadTo(const Common::Hash& sharedDirID)
+void BrowseWidget::downloadTo(const Common::Hash& sharedDirID, const Common::Path& relativePath)
 {
    for (const auto& index : this->ui->treeView->selectionModel()->selectedRows())
-      this->coreConnection->download(this->peerID, this->browseModel.getEntry(index), sharedDirID);
+      this->coreConnection->download(this->peerID, this->browseModel.getEntry(index), sharedDirID, relativePath);
 }
 
 void BrowseWidget::openLocation()

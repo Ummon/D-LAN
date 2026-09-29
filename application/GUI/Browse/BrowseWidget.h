@@ -74,7 +74,7 @@ namespace GUI
 
       void downloadTo();
       void downloadTo(const Common::Path& path);
-      void downloadTo(const Common::Hash& sharedDirID);
+      void downloadTo(const Common::Hash& sharedDirID, const Common::Path& relativePath);
 
       void openLocation();
       void tryToReachEntryToBrowse();

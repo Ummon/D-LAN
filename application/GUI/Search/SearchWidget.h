@@ -62,7 +62,8 @@ namespace GUI
    {
       Q_OBJECT
    public:
-      SearchMenu(const SharedEntryListModel& sharedEntryListModel) : DownloadMenu(sharedEntryListModel) {}
+      SearchMenu(QSharedPointer<RCC::ICoreConnection> coreConnection, const SharedEntryListModel& sharedEntryListModel) :
+         DownloadMenu(coreConnection, sharedEntryListModel) {}
       void show(const QPoint& globalPosition, bool browseVisible);
    signals:
       void browse();
@@ -100,7 +101,7 @@ namespace GUI
 
       void downloadTo();
       void downloadTo(const Common::Path& path);
-      void downloadTo(const Common::Hash& sharedDirID);
+      void downloadTo(const Common::Hash& sharedDirID, const Common::Path& relativePath);
 
       void openLocation();
       void browseCurrents();

@@ -216,19 +216,39 @@
 <context>
     <name>GUI::DownloadMenu</name>
     <message>
-        <location filename="../GUI/DownloadMenu.cpp" line="50"/>
+        <location filename="../GUI/DownloadMenu.cpp" line="68"/>
         <source>Download selected items to the first directory folder with enough free space</source>
         <translation>선택한 항목을 여유 공간이 충분한 첫 번째 공유 폴더로 다운로드</translation>
     </message>
     <message>
-        <location filename="../GUI/DownloadMenu.cpp" line="61"/>
+        <location filename="../GUI/DownloadMenu.cpp" line="83"/>
         <source>Download selected items to %1</source>
         <translation>선택한 항목을 %1(으)로 다운로드</translation>
     </message>
     <message>
-        <location filename="../GUI/DownloadMenu.cpp" line="71"/>
+        <location filename="../GUI/DownloadMenu.cpp" line="95"/>
         <source>Download selected items to . . .</source>
         <translation>선택한 항목을 다음 위치로 다운로드 . . .</translation>
+    </message>
+    <message>
+        <location filename="../GUI/DownloadMenu.cpp" line="124"/>
+        <source>Download here</source>
+        <translation>여기에 다운로드</translation>
+    </message>
+    <message>
+        <location filename="../GUI/DownloadMenu.cpp" line="131"/>
+        <source>Loading . . .</source>
+        <translation>불러오는 중 . . .</translation>
+    </message>
+    <message>
+        <location filename="../GUI/DownloadMenu.cpp" line="195"/>
+        <source>%1 more folders . . .</source>
+        <translation>그 외 폴더 %1개 . . .</translation>
+    </message>
+    <message>
+        <location filename="../GUI/DownloadMenu.cpp" line="203"/>
+        <source>Unable to get the folders</source>
+        <translation>폴더를 가져올 수 없습니다</translation>
     </message>
 </context>
 <context>
@@ -706,22 +726,22 @@
         <translation>탐색</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="445"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="446"/>
         <source>1 directory</source>
         <translation>폴더 1개</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="445"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="446"/>
         <source>%1 directories</source>
         <translation>폴더 %1개</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="446"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="447"/>
         <source>1 file</source>
         <translation>파일 1개</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="446"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="447"/>
         <source>%1 files</source>
         <translation>파일 %1개</translation>
     </message>
