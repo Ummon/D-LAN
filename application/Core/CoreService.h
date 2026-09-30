@@ -32,7 +32,7 @@ namespace CoreSpace
    {
       Q_OBJECT
    public:
-      CoreService(bool resetSettings, QLocale locale, int argc, char** argv);
+      CoreService(bool resetSettings, QLocale locale, quint16 remoteControlPort, int argc, char** argv);
       virtual ~CoreService();
 
       void changePassword(const QString& newPassword);

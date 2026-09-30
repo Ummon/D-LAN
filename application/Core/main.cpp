@@ -40,7 +40,7 @@ void printUsage(QString appName)
 {
    QTextStream out(stdout);
    out << "Usage:" << Qt::endl <<
-      " " << appName << " [-i|-u|-s|-t|-v] [-r <roaming data directory>] [-l <local data directory>] [--reset-settings] [--lang <language>] [--pass <password> | --rmpass] [--version]" << Qt::endl <<
+      " " << appName << " [-i|-u|-s|-t|-v] [-r <roaming data directory>] [-l <local data directory>] [--port <remote control port>] [--reset-settings] [--lang <language>] [--pass <password> | --rmpass] [--version]" << Qt::endl <<
       "  -i, -u, -s, -t and -v must be the first argument." << Qt::endl <<
       "  Without -i, -u, -s, -t or -v the Core runs as a regular application." << Qt::endl <<
       "  -i [account] [password] : Install the service, optionally using given account and password" << Qt::endl <<
@@ -50,6 +50,7 @@ void printUsage(QString appName)
       "  -v : Print service status information." << Qt::endl <<
       "  <roaming data directory> : Where settings are put." << Qt::endl <<
       "  <local data directory> : Where logs, download queue, and files cache are put." << Qt::endl <<
+      "  --port <remote control port> : Listen to this port for remote control (GUI) instead of the one defined in the settings. It isn't saved in the settings." << Qt::endl <<
       "  --reset-settings : Remove all settings except \"nick\" and \"peerID\" and quit, other settings are set to their default values." << Qt::endl <<
       "  --lang <language> : set the language and save it to the settings file then quit. (ISO-639, two letters)" << Qt::endl <<
       "  --pass <password> : set a password then quit. The core can be remotely controlled." << Qt::endl <<
@@ -81,6 +82,7 @@ try
    bool resetSettings = false;
    QString newPassword;
    bool resetPassword = false;
+   quint16 remoteControlPort = 0; // 0 -> use the setting 'remote_control_port'.
    QLocale locale;
 
    for (int i = 1; i < argc; i++)
@@ -90,6 +92,15 @@ try
          Common::Global::setDataFolder(Common::Global::DataFolderType::ROAMING, QString::fromLatin1(argv[++i]));
       else if (arg == "-l" && i < argc - 1)
          Common::Global::setDataFolder(Common::Global::DataFolderType::LOCAL, QString::fromLatin1(argv[++i]));
+      else if (arg == "--port" && i < argc - 1)
+      {
+         bool ok = false;
+         const uint port = QString::fromLatin1(argv[++i]).toUInt(&ok);
+         if (ok && port > 0 && port <= 65535)
+            remoteControlPort = static_cast<quint16>(port);
+         else
+            std::cerr << "Invalid remote control port: " << argv[i] << std::endl;
+      }
       else if (arg == "--lang" && i < argc - 1)
          locale = QLocale(QString::fromLatin1(argv[++i]));
       else if (arg == "--reset-settings")
@@ -112,7 +123,7 @@ try
    // Must come after 'setLogDirName(..)': the crash reports are written next to the log files.
    LM::CrashHandler::install();
 
-   CoreSpace::CoreService core(resetSettings, locale, argc, argv);
+   CoreSpace::CoreService core(resetSettings, locale, remoteControlPort, argc, argv);
 
    if (!newPassword.isEmpty())
    {

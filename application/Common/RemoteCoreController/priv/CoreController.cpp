@@ -53,6 +53,16 @@ void CoreController::setCoreExecutableDirectory(const QString& dir)
    this->setProgramPath();
 }
 
+void CoreController::setAutoStart(bool autoStart)
+{
+   this->autoStart = autoStart;
+}
+
+bool CoreController::isAutoStart() const
+{
+   return this->autoStart;
+}
+
 /**
   * Try to start the core as a service if it fails then try to launch it as a sub-process.
   * When compiling with the DEBUG directive only the sub-process will be launched, not the service.

@@ -46,7 +46,7 @@ namespace CoreSpace
    {
       Q_OBJECT
    public:
-      Core(bool resetSettings, QLocale locale);
+      Core(bool resetSettings, QLocale locale, quint16 remoteControlPort = 0);
       void start();
 
       void dumpWordIndex() const;
@@ -64,6 +64,8 @@ namespace CoreSpace
 
       template <typename T>
       void checkSetting(const QString& name, T min, T max);
+
+      const quint16 remoteControlPort; ///< If 0, the setting 'remote_control_port' is used.
 
       // This object will be the last destroyed.
       struct Cleaner { ~Cleaner() {

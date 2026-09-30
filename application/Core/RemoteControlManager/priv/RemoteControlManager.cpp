@@ -33,7 +33,8 @@ RemoteControlManager::RemoteControlManager(
    QSharedPointer<UM::IUploadManager> uploadManager,
    QSharedPointer<DM::IDownloadManager> downloadManager,
    QSharedPointer<NL::INetworkListener> networkListener,
-   QSharedPointer<CS::IChatSystem> chatSystem
+   QSharedPointer<CS::IChatSystem> chatSystem,
+   quint16 port
 ) :
    fileManager(fileManager),
    peerManager(peerManager),
@@ -52,7 +53,8 @@ RemoteControlManager::RemoteControlManager(
    {
       L_ERRO(QString("Remote TLS access disabled: %1. Local access remains available.").arg(error));
    }
-   const quint32 PORT = SETTINGS.get<quint32>("remote_control_port");
+   // A port given explicitly (for example with the Core argument '--port') overrides the setting without being saved.
+   const quint32 PORT = port != 0 ? port : SETTINGS.get<quint32>("remote_control_port");
 
    const bool okIPv4 = this->tcpServerIPv4.listen(QHostAddress::AnyIPv4, PORT);
    const bool okIPv6 = this->tcpServerIPv6.listen(QHostAddress::AnyIPv6, PORT);

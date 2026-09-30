@@ -96,6 +96,10 @@ namespace FM
          const QList<Common::Hash>& hashes
       ) const = 0;
 
+      /**
+        * Give the chunk hashes and the known bytes of a saved file download to its unfinished file.
+        * A directory download is ignored.
+        */
       virtual void updateFromQueueEntry(const Protos::Queue::Queue_Entry& entry) = 0;
 
       /**

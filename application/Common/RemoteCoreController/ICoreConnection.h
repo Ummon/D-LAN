@@ -73,6 +73,12 @@ namespace RCC
 
       virtual void setCoreExecutableDirectory(const QString& dir) = 0;
 
+      /**
+        * By default (release build only), connecting to a local address launches the local core if it isn't running.
+        * Set to false when the core is launched by someone else, for example with a custom data directory.
+        */
+      virtual void setAutoStartLocalCore(bool autoStart) = 0;
+
       virtual void startLocalCore() = 0;
 
       virtual void stopLocalCore() = 0;

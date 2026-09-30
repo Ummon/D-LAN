@@ -42,6 +42,8 @@ namespace RCC
       ~CoreController() override;
 
       void setCoreExecutableDirectory(const QString& dir);
+      void setAutoStart(bool autoStart);
+      bool isAutoStart() const;
       void startCore(int port = -1);
       void stopCore();
 
@@ -58,5 +60,6 @@ namespace RCC
       QProcess coreProcess; ///< Only used when unable to launch the core as a service.
       QtServiceController controller;
       QString coreDirectory;
+      bool autoStart = true; ///< See 'ICoreConnection::setAutoStartLocalCore(..)'.
    };
 }

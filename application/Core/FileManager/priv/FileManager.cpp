@@ -215,6 +215,10 @@ QList<QSharedPointer<IChunk>> FileManager::getAllChunks(
 
 void FileManager::updateFromQueueEntry(const Protos::Queue::Queue_Entry& entry)
 {
+   // Only a file has chunks to restore. The whole queue is given, including the directory downloads.
+   if (entry.local_entry().type() != Protos::Common::Entry::FILE)
+      return;
+
    Protos::Common::Entry localEntryCopy(entry.local_entry());
    const QString entryName = QString::fromStdString(localEntryCopy.name());
    if (!Global::isFileUnfinished(entryName))

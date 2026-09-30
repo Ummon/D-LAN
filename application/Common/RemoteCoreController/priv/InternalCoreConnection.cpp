@@ -419,7 +419,7 @@ void InternalCoreConnection::tryToConnectToTheNextAddress()
    // The core is launched manually in debug mode.
 #if !defined(DEBUG)
    // If the address is local then check if the core is launched, if not try to launch it.
-   if (Common::Global::isLocal(address))
+   if (Common::Global::isLocal(address) && this->coreController.isAutoStart())
    {
       this->coreController.startCore(this->connectionInfo.port);
       L_DEBU(QString("Core controller status: %1").arg(this->coreController.getStatus()));

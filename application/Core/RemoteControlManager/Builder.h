@@ -40,7 +40,8 @@ namespace RCM
          QSharedPointer<UM::IUploadManager> uploadManager,
          QSharedPointer<DM::IDownloadManager> downloadManager,
          QSharedPointer<NL::INetworkListener> networkListener,
-         QSharedPointer<CS::IChatSystem> chatSystem
+         QSharedPointer<CS::IChatSystem> chatSystem,
+         quint16 port = 0 // If 0, the port is given by the setting 'remote_control_port'.
       );
    };
 }

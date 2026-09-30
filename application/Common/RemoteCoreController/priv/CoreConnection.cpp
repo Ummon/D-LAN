@@ -47,6 +47,11 @@ void CoreConnection::setCoreExecutableDirectory(const QString& dir)
    this->coreController.setCoreExecutableDirectory(dir);
 }
 
+void CoreConnection::setAutoStartLocalCore(bool autoStart)
+{
+   this->coreController.setAutoStart(autoStart);
+}
+
 void CoreConnection::startLocalCore()
 {
    this->coreController.startCore();

@@ -39,7 +39,8 @@ using namespace CoreSpace;
 
 LOG_INIT_CPP(Core)
 
-Core::Core(bool resetSettings, QLocale locale)
+Core::Core(bool resetSettings, QLocale locale, quint16 remoteControlPort) :
+   remoteControlPort(remoteControlPort)
 {
    GOOGLE_PROTOBUF_VERIFY_VERSION;
    SETTINGS.setFilename(Common::Constants::CORE_SETTINGS_FILENAME);
@@ -115,7 +116,7 @@ void Core::start()
    this->downloadManager = DM::Builder::newDownloadManager(this->fileManager, this->peerManager);
    this->networkListener = NL::Builder::newNetworkListener(this->fileManager, this->peerManager, this->uploadManager, this->downloadManager);
    this->chatSystem = CS::Builder::newChatSystem(this->peerManager, this->networkListener);
-   this->remoteControlManager = RCM::Builder::newRemoteControlManager(this->fileManager, this->peerManager, this->uploadManager, this->downloadManager, this->networkListener, this->chatSystem);
+   this->remoteControlManager = RCM::Builder::newRemoteControlManager(this->fileManager, this->peerManager, this->uploadManager, this->downloadManager, this->networkListener, this->chatSystem, this->remoteControlPort);
 
    connect(
       this->remoteControlManager.data(),

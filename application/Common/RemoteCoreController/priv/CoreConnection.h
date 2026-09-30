@@ -56,6 +56,7 @@ namespace RCC
       CoreConnection(int socketTimeout = DEFAULT_SOCKET_TIMEOUT);
 
       void setCoreExecutableDirectory(const QString& dir) override;
+      void setAutoStartLocalCore(bool autoStart) override;
       void startLocalCore() override;
       void stopLocalCore() override;
       CoreStatus getLocalCoreStatus() const override;
