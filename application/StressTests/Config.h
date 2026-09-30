@@ -19,7 +19,8 @@ namespace StressTests
       DELETE_ENTRY,
       JOIN_LEAVE_ROOM,
       SEND_CHAT_MESSAGE,
-      RESTART_CORE
+      RESTART_CORE,
+      SEARCH
    };
 
    QString actionName(Action action);
@@ -53,6 +54,8 @@ namespace StressTests
       int multicastPort = 59450;
 
       int numberOfRooms = 5; ///< Chat rooms are chosen among this number of room names.
+
+      double nonStoppableCoresRatio = 0.5; ///< This part of the Cores, chosen randomly, is never restarted by the action 'restart_core', to test long runs.
 
       int coreStopTimeoutS = 30; ///< A Core which doesn't stop within this delay after 'quit' is killed and counted as a failure.
 

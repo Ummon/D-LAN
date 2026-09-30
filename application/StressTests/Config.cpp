@@ -31,6 +31,7 @@ namespace
       { Action::JOIN_LEAVE_ROOM, "join_leave_room", 3 },
       { Action::SEND_CHAT_MESSAGE, "send_chat_message", 5 },
       { Action::RESTART_CORE, "restart_core", 1 },
+      { Action::SEARCH, "search", 3 },
    };
 
    void read(const QJsonObject& object, const QString& key, int& value, QStringList& errors)
@@ -119,6 +120,7 @@ QString Config::load(const QString& filepath)
    read(object, "channel", this->channel, errors);
    read(object, "multicast_port", this->multicastPort, errors);
    read(object, "number_of_rooms", this->numberOfRooms, errors);
+   read(object, "non_stoppable_cores_ratio", this->nonStoppableCoresRatio, errors);
    read(object, "core_stop_timeout_s", this->coreStopTimeoutS, errors);
    read(object, "core_executable", this->coreExecutable, errors);
 
@@ -183,6 +185,8 @@ QString Config::load(const QString& filepath)
       errors << "'multicast_port' must be in [1, 65535]";
    if (this->numberOfRooms < 1)
       errors << "'number_of_rooms' must be at least 1";
+   if (this->nonStoppableCoresRatio < 0 || this->nonStoppableCoresRatio > 1)
+      errors << "'non_stoppable_cores_ratio' must be in [0, 1]";
    if (this->coreStopTimeoutS < 1)
       errors << "'core_stop_timeout_s' must be at least 1";
 
@@ -211,7 +215,7 @@ QString Config::toString() const
    return QString(
       "number_of_cores=%1, duration_minutes=%2, tick=[%3, %4] ms, file size: mean=%5 MB std_dev=%6 MB max=%7 MB, "
       "max_total_size=%8 GB, remote_control_base_port=%9, unicast_base_port=%10 (step %11), channel='%12', multicast_port=%13, "
-      "number_of_rooms=%14, core_stop_timeout=%15 s, core_executable='%16', action_weights: %17"
+      "number_of_rooms=%14, non_stoppable_cores_ratio=%15, core_stop_timeout=%16 s, core_executable='%17', action_weights: %18"
    )
       .arg(this->numberOfCores)
       .arg(this->durationMinutes)
@@ -227,6 +231,7 @@ QString Config::toString() const
       .arg(this->channel)
       .arg(this->multicastPort)
       .arg(this->numberOfRooms)
+      .arg(this->nonStoppableCoresRatio)
       .arg(this->coreStopTimeoutS)
       .arg(this->coreExecutable)
       .arg(weights.join(", "));

@@ -18,6 +18,7 @@
    "multicast_port": 59450,
 
    "number_of_rooms": 5,
+   "non_stoppable_cores_ratio": 0.5,
    "core_stop_timeout_s": 30,
 
    "core_executable": "",
@@ -35,6 +36,7 @@
       "delete_entry": 2,
       "join_leave_room": 3,
       "send_chat_message": 5,
-      "restart_core": 1
+      "restart_core": 1,
+      "search": 3
    }
 }

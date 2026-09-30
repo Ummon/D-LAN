@@ -100,7 +100,16 @@ namespace FM
       Cache* getCache() const;
       Common::Hash getId() const;
       QString getUserName() const;
+
+      /**
+        * @param name If empty the entry isn't searchable anymore, see 'defaultUserName(..)' to restore the default name.
+        */
       void setUserName(const QString& name);
+
+      /**
+        * The name of a shared entry when the user doesn't give one: the directory name or the filename.
+        */
+      static QString defaultUserName(const Common::Path& path);
 
    protected:
 

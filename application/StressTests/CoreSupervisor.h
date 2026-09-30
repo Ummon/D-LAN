@@ -3,6 +3,7 @@
 #include <functional>
 #include <list>
 #include <memory>
+#include <optional>
 #include <vector>
 
 #include <QObject>
@@ -19,9 +20,11 @@
 #include <Common/RemoteCoreController/ICoreConnection.h>
 #include <Common/RemoteCoreController/IBrowseResult.h>
 #include <Common/RemoteCoreController/ISendChatMessageResult.h>
+#include <Common/RemoteCoreController/ISearchResult.h>
 
 #include <Config.h>
 #include <DiskBudget.h>
+#include <SearchCoordinator.h>
 
 namespace StressTests
 {
@@ -38,7 +41,10 @@ namespace StressTests
    {
       Q_OBJECT
    public:
-      CoreSupervisor(int number, const Config& config, DiskBudget& diskBudget, const QString& directory, quint64 seed);
+      /**
+        * @param stoppable If false the Core is never restarted by the action 'restart_core'.
+        */
+      CoreSupervisor(int number, bool stoppable, const Config& config, DiskBudget& diskBudget, SearchCoordinator& searchCoordinator, const QString& directory, quint64 seed);
       ~CoreSupervisor() override;
 
       int getNumber() const;
@@ -57,6 +63,11 @@ namespace StressTests
         * Emitted once the Core has been stopped after a call to 'stop()'.
         */
       void stopped(int number);
+
+      /**
+        * Emitted after each search, 'ok' is false if the result doesn't match what is expected. It isn't a failure.
+        */
+      void searchChecked(int number, bool ok);
 
    private:
       // Core process.
@@ -77,7 +88,7 @@ namespace StressTests
       // Actions.
       void scheduleNextTick();
       void tick();
-      Action pickAction();
+      std::optional<Action> pickAction();
       void executeAction(Action action);
 
       void createFile();
@@ -92,10 +103,34 @@ namespace StressTests
       void joinLeaveRoom();
       void sendChatMessage();
       void restartCore();
+      void search();
 
       void browse(const Common::Hash& peerID, const Protos::Common::Entry* entry, int depth);
       void browseResult(const Common::Hash& peerID, const Protos::Common::Entries& entries, int depth);
       void downloadEntry(const Common::Hash& peerID, const Protos::Common::Entry& entry);
+
+      // Search, see 'search()'.
+      struct CurrentSearch
+      {
+         QSharedPointer<RCC::ISearchResult> result;
+         std::unique_ptr<SearchCoordinator::FileLock> lock;
+         Protos::Common::FindPattern pattern;
+         bool expectedMatch;
+
+         // The searched file.
+         int coreNumber;
+         Common::Hash peerID;
+         Common::Hash sharedEntryID;
+         bool isSharedEntry; ///< The file is itself a shared entry.
+         QString relativeDirectory; ///< In the shared directory, empty for its root.
+         QString filepath;
+         qint64 size;
+
+         QList<Protos::Common::FindResult> results;
+      };
+      void checkSearch();
+      void abortSearch();
+      QString patternToStr(const Protos::Common::FindPattern& pattern) const;
 
       // File writing.
       struct PendingWrite
@@ -120,15 +155,16 @@ namespace StressTests
       qint64 randomFileSize();
       QStringList listDirectories(bool includeSharedRoot) const;
       QStringList listEntries() const;
-      static bool isSamePath(const QString& path1, const QString& path2);
 
       void log(const QString& message) const;
       void logWarning(const QString& message) const;
       void logError(const QString& message) const;
 
       const int number;
+      const bool stoppable;
       const Config config;
       DiskBudget& diskBudget;
+      SearchCoordinator& searchCoordinator;
       const quint16 remoteControlPort;
 
       const QString directory;
@@ -165,6 +201,11 @@ namespace StressTests
 
       QSharedPointer<RCC::IBrowseResult> currentBrowse;
       QList<QSharedPointer<RCC::ISendChatMessageResult>> chatMessageResults;
+
+      std::unique_ptr<CurrentSearch> currentSearch;
+      QTimer searchTimer;
+      int nbSearches = 0;
+      int nbSearchMismatches = 0;
 
       std::list<PendingWrite> pendingWrites;
       QTimer writeTimer;

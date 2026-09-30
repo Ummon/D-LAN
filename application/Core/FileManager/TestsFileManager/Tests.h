@@ -100,6 +100,7 @@ private slots:
    void findFilesBySizeRange();
    void findSharedEntry();
    void findSharedEntryAfterRename();
+   void findSharedEntriesAfterEmptyNames();
 
    // /***** Ask if the given hashes are known *****/
    void haveChunks();

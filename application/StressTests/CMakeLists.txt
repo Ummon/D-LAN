@@ -11,12 +11,16 @@ add_executable(StressTests
    DiskBudget.cpp
    CoreSupervisor.cpp
    StressRun.cpp
+   SearchCoordinator.cpp
+   Paths.cpp
 
    Log.h
    Config.h
    DiskBudget.h
    CoreSupervisor.h
    StressRun.h
+   SearchCoordinator.h
+   Paths.h
 )
 
 target_include_directories(StressTests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")

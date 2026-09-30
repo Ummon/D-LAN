@@ -499,7 +499,8 @@ void Cache::setSharedPaths(const QList<std::pair<QString, Common::Path>>& paths)
       for (int j2 = j; j2 < this->sharedEntries.size(); j2++) {
          if (pathsWithoutDuplicates[i].second == this->sharedEntries[j2]->getPath())
          {
-            this->sharedEntries[j2]->setUserName(trimmedName);
+            // As for a new shared entry, an empty name means the default one.
+            this->sharedEntries[j2]->setUserName(trimmedName.isEmpty() ? SharedEntry::defaultUserName(pathsWithoutDuplicates[i].second) : trimmedName);
             this->sharedEntries.move(j2, j++);
             goto nextEntry;
          }

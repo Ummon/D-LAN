@@ -1273,6 +1273,68 @@ void Tests::findSharedEntryAfterRename()
    this->compareExpectedResult(results.first(), expectedResult);
 }
 
+/**
+  * An empty name given to an already shared entry means its default name: the directory name or the filename.
+  * The shared entries must stay searchable by their default name.
+  */
+void Tests::findSharedEntriesAfterEmptyNames()
+{
+   qDebug() << "===== findSharedEntriesAfterEmptyNames() =====";
+
+   const auto sharedFile = std::find_if(this->sharedPaths.begin(), this->sharedPaths.end(), [](const IFileManager::SharedPath& sharedPath) {
+      return sharedPath.path == QDir::currentPath().append("/shared file.txt");
+   });
+   QVERIFY(sharedFile != this->sharedPaths.end());
+   sharedFile->name.clear();
+   this->sharedPaths.last().name.clear(); // "sharedRenamed", see 'findSharedEntryAfterRename()'.
+   this->fileManager->setSharedPaths(this->sharedPaths);
+
+   auto sharedEntries = this->fileManager->getSharedEntries();
+   QCOMPARE(sharedEntries.size(), 3);
+   QCOMPARE(sharedEntries[1].getName(), "shared file.txt");
+   QCOMPARE(sharedEntries[2].getName(), "sharedDirs");
+
+   auto find = [this](const QString& words) {
+      return this->fileManager->find(
+         words,
+         QList<QString>(),
+         0,
+         std::numeric_limits<qint64>::max(),
+         Protos::Common::FindPattern::FILE_DIR,
+         10000,
+         65536,
+         true
+      );
+   };
+
+   // The previous name shouldn't be found.
+   QVERIFY(find("sharedRenamed").isEmpty());
+
+   // The shared directory.
+   {
+      FindResult expectedResult;
+      expectedResult[0] << "sharedDirs";
+
+      const QList<Protos::Common::FindResult> results = find("sharedDirs");
+      QVERIFY(!results.isEmpty());
+      this->printSearch("sharedDirs", results.first());
+      this->compareExpectedResult(results.first(), expectedResult);
+   }
+
+   // The shared file: a shared entry has no name, its name is given by the shared entry.
+   {
+      const QList<Protos::Common::FindResult> results = find("shared file");
+      QVERIFY(!results.isEmpty());
+      this->printSearch("shared file", results.first());
+
+      bool found = false;
+      for (const auto& entry : results.first().entries())
+         if (entry.entry().type() == Protos::Common::Entry::FILE && entry.entry().name().empty() && entry.entry().shared_entry().shared_name() == "shared file.txt")
+            found = true;
+      QVERIFY(found);
+   }
+}
+
 void Tests::haveChunks()
 {
    qDebug() << "===== haveChunks() =====";

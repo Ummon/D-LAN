@@ -12,6 +12,7 @@
 
 #include <Config.h>
 #include <DiskBudget.h>
+#include <SearchCoordinator.h>
 #include <CoreSupervisor.h>
 
 namespace StressTests
@@ -42,9 +43,11 @@ namespace StressTests
       void supervisorCreated(int number);
       void supervisorFailure(int number, const QString& description);
       void supervisorStopped(int number);
+      void searchChecked(int number, bool ok);
       void measureDiskUsage();
       void logProgress();
       void report();
+      QString nonStoppableCoresToStr() const;
 
       struct Worker
       {
@@ -58,7 +61,9 @@ namespace StressTests
       const quint64 seed;
 
       DiskBudget diskBudget;
+      SearchCoordinator searchCoordinator;
       std::vector<std::unique_ptr<Worker>> workers;
+      QList<int> nonStoppableCores; ///< Sorted.
 
       std::atomic<bool> finishing = false;
       QElapsedTimer elapsedTimer;
@@ -67,5 +72,7 @@ namespace StressTests
       QTimer progressTimer;
 
       QStringList failures;
+      int nbSearches = 0;
+      int nbSearchMismatches = 0;
    };
 }

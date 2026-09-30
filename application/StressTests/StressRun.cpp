@@ -1,8 +1,10 @@
 #include <StressRun.h>
 using namespace StressTests;
 
+#include <algorithm>
 #include <chrono>
 
+#include <QRandomGenerator>
 #include <QTextStream>
 
 #include <Log.h>
@@ -28,7 +30,8 @@ StressRun::StressRun(const Config& config, const QString& rootDirectory, quint64
    config(config),
    rootDirectory(rootDirectory),
    seed(seed),
-   diskBudget(static_cast<qint64>(config.maxTotalSizeGB * 1024 * 1024 * 1024), config.numberOfCores)
+   diskBudget(static_cast<qint64>(config.maxTotalSizeGB * 1024 * 1024 * 1024), config.numberOfCores),
+   searchCoordinator(config.numberOfCores)
 {
    this->durationTimer.setSingleShot(true);
    connect(&this->durationTimer, &QTimer::timeout, this, &StressRun::finish);
@@ -54,6 +57,18 @@ void StressRun::start()
    L_USER(QString("Stress run started, seed: %1, directory: '%2'").arg(this->seed).arg(this->rootDirectory));
    L_USER(QString("Configuration: %1").arg(this->config.toString()));
 
+   // The non-stoppable Cores are chosen randomly, reproducible with the same seed.
+   {
+      QList<int> cores;
+      for (int i = 0; i < this->config.numberOfCores; i++)
+         cores << i;
+      QRandomGenerator random(this->seed);
+      std::shuffle(cores.begin(), cores.end(), random);
+      this->nonStoppableCores = cores.mid(0, qRound(this->config.numberOfCores * this->config.nonStoppableCoresRatio));
+      std::sort(this->nonStoppableCores.begin(), this->nonStoppableCores.end());
+   }
+   L_USER(QString("Non-stoppable Cores: %1").arg(this->nonStoppableCoresToStr()));
+
    this->measureDiskUsage();
    this->measureTimer.start(MEASURE_PERIOD);
    this->progressTimer.start(PROGRESS_PERIOD);
@@ -66,11 +81,13 @@ void StressRun::start()
       Worker* const workerPtr = worker.get();
       const QString directory = this->rootDirectory + "/" + QString::number(i);
       const quint64 supervisorSeed = this->seed + static_cast<quint64>(i);
+      const bool stoppable = !this->nonStoppableCores.contains(i);
 
       // No context object: the lambda is executed in the new thread, the supervisor then belongs to this thread.
-      connect(worker->thread.get(), &QThread::started, [this, workerPtr, i, directory, supervisorSeed]() {
-         auto supervisor = new CoreSupervisor(i, this->config, this->diskBudget, directory, supervisorSeed);
+      connect(worker->thread.get(), &QThread::started, [this, workerPtr, i, stoppable, directory, supervisorSeed]() {
+         auto supervisor = new CoreSupervisor(i, stoppable, this->config, this->diskBudget, this->searchCoordinator, directory, supervisorSeed);
          connect(supervisor, &CoreSupervisor::failure, this, &StressRun::supervisorFailure);
+         connect(supervisor, &CoreSupervisor::searchChecked, this, &StressRun::searchChecked);
          connect(supervisor, &CoreSupervisor::stopped, this, &StressRun::supervisorStopped);
          connect(QThread::currentThread(), &QThread::finished, supervisor, &QObject::deleteLater);
          workerPtr->supervisor = supervisor;
@@ -133,6 +150,25 @@ void StressRun::supervisorStopped(int number)
    emit finished(this->failures.isEmpty() ? 0 : 1);
 }
 
+void StressRun::searchChecked(int number, bool ok)
+{
+   Q_UNUSED(number);
+   this->nbSearches++;
+   if (!ok)
+      this->nbSearchMismatches++;
+}
+
+QString StressRun::nonStoppableCoresToStr() const
+{
+   if (this->nonStoppableCores.isEmpty())
+      return "none";
+
+   QStringList cores;
+   for (int core : this->nonStoppableCores)
+      cores << QString::number(core);
+   return cores.join(", ");
+}
+
 void StressRun::measureDiskUsage()
 {
    const int generation = this->diskBudget.beginMeasure();
@@ -142,12 +178,14 @@ void StressRun::measureDiskUsage()
 
 void StressRun::logProgress()
 {
-   const QString progress = QString("Progress: %1 / %2 min, disk usage (estimated): %3 / %4 GiB, failures: %5")
+   const QString progress = QString("Progress: %1 / %2 min, disk usage (estimated): %3 / %4 GiB, failures: %5, search mismatches: %6 / %7")
       .arg(this->elapsedTimer.elapsed() / 60000.0, 0, 'f', 1)
       .arg(this->config.durationMinutes)
       .arg(bytesToGiB(this->diskBudget.getUsedBytes()))
       .arg(bytesToGiB(this->diskBudget.getMaxBytes()))
-      .arg(this->failures.size());
+      .arg(this->failures.size())
+      .arg(this->nbSearchMismatches)
+      .arg(this->nbSearches);
    L_USER(progress);
    print(progress);
 }
@@ -157,8 +195,10 @@ void StressRun::report()
    QStringList lines;
    lines << "===== Stress run report =====";
    lines << QString("Duration: %1 min, number of Cores: %2, seed: %3").arg(this->elapsedTimer.elapsed() / 60000.0, 0, 'f', 1).arg(this->config.numberOfCores).arg(this->seed);
+   lines << QString("Non-stoppable Cores: %1").arg(this->nonStoppableCoresToStr());
    lines << QString("Disk usage (estimated): %1 / %2 GiB").arg(bytesToGiB(this->diskBudget.getUsedBytes()), bytesToGiB(this->diskBudget.getMaxBytes()));
    lines << QString("Directory: '%1'").arg(this->rootDirectory);
+   lines << QString("Searches checked: %1, mismatches: %2 (not counted as failures, see the warnings \"Search mismatch\" in the log)").arg(this->nbSearches).arg(this->nbSearchMismatches);
    if (this->failures.isEmpty())
    {
       lines << "Result: SUCCESS, no failure";

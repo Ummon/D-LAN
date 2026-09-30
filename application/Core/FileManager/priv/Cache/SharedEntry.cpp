@@ -184,6 +184,13 @@ void SharedEntry::setUserName(const QString& name)
    this->getCache()->onEntryRenamed(entry, entry->getName(), oldName);
 }
 
+QString SharedEntry::defaultUserName(const Common::Path& path)
+{
+   if (path.isFile())
+      return path.getFilename();
+   return path.getDirs().isEmpty() ? path.getRoot() : path.getDirs().constLast();
+}
+
 /////
 
 SharedDirectory::SharedDirectory(
@@ -196,9 +203,7 @@ SharedDirectory::SharedDirectory(
       cache,
       path,
       id,
-      userName.isEmpty()
-         ? (path.getDirs().isEmpty() ? path.getRoot() : path.getDirs().constLast())
-         : userName
+      userName.isEmpty() ? SharedEntry::defaultUserName(path) : userName
    ),
    directory(new Directory(this, path.getLastDir()))
 {
@@ -261,7 +266,7 @@ SharedFile::SharedFile(
       cache,
       path,
       id,
-      userName.isEmpty() ? path.getFilename() : userName
+      userName.isEmpty() ? SharedEntry::defaultUserName(path) : userName
    )
 {
    auto fileInfo = QFileInfo(path.toString());

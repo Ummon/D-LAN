@@ -10,12 +10,17 @@ using namespace StressTests;
 #include <QFileInfo>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QSet>
 #include <QThread>
 
 #include <Common/Constants.h>
+#include <Common/KnownExtensions.h>
 #include <Common/Path.h>
+#include <Common/StringUtils.h>
 #include <Common/LogManager/Builder.h>
 #include <Common/RemoteCoreController/Builder.h>
+
+#include <Paths.h>
 
 #if defined(Q_OS_UNIX)
    #include <unistd.h>
@@ -29,6 +34,14 @@ namespace
    const int RESTART_DELAY = 2000; // [ms]. After an unexpected end of the Core.
    const int MAX_BROWSE_DEPTH = 5;
    const QString CORE_OUTPUT_FILENAME("core_output.txt");
+
+   // Search.
+   const int SEARCH_DURATION = 7000; // [ms]. The Core forwards the results during 'search_lifetime' (5 s by default).
+   const qint64 SEARCH_MIN_CORE_AGE = 10000; // [ms]. The searched Core must be connected since at least this delay.
+   const qint64 SEARCH_MIN_FILE_AGE = 10000; // [ms]. The searched file must be unmodified since at least this delay to be indexed.
+   const int SEARCH_MIN_WORD_LENGTH = 5;
+   const QString UNFINISHED_SUFFIX(".unfinished");
+   const QStringList EXTENSION_FILTERS { "avi", "mkv", "mp3", "flac", "jpg", "png", "zip", "iso", "pdf", "txt", "bin", "mp4", "doc" };
 
    const QString NAME_CHARACTERS("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 _-");
    const QString NAME_SPECIAL_CHARACTERS = QString::fromUtf8("éèàüöçñøåßΩλπ日本語中文한국어");
@@ -56,10 +69,12 @@ namespace
    }
 }
 
-CoreSupervisor::CoreSupervisor(int number, const Config& config, DiskBudget& diskBudget, const QString& directory, quint64 seed) :
+CoreSupervisor::CoreSupervisor(int number, bool stoppable, const Config& config, DiskBudget& diskBudget, SearchCoordinator& searchCoordinator, const QString& directory, quint64 seed) :
    number(number),
+   stoppable(stoppable),
    config(config),
    diskBudget(diskBudget),
+   searchCoordinator(searchCoordinator),
    remoteControlPort(static_cast<quint16>(config.remoteControlBasePort + number)),
    directory(directory),
    roamingDirectory(directory + "/roaming_settings"),
@@ -83,6 +98,9 @@ CoreSupervisor::CoreSupervisor(int number, const Config& config, DiskBudget& dis
 
    connect(&this->writeTimer, &QTimer::timeout, this, &CoreSupervisor::writeNextChunk);
 
+   this->searchTimer.setSingleShot(true);
+   connect(&this->searchTimer, &QTimer::timeout, this, &CoreSupervisor::checkSearch);
+
    connect(&this->process, &QProcess::finished, this, &CoreSupervisor::coreFinished);
 
    // The Cores must not receive the Ctrl-C sent to the StressTests console, they are stopped with the 'quit' command.
@@ -100,6 +118,7 @@ CoreSupervisor::CoreSupervisor(int number, const Config& config, DiskBudget& dis
 CoreSupervisor::~CoreSupervisor()
 {
    this->abortPendingWrites();
+   this->abortSearch();
 
    // Should not happen: 'stop()' waits the end of the Core.
    if (this->process.state() != QProcess::NotRunning)
@@ -118,6 +137,9 @@ int CoreSupervisor::getNumber() const
 void CoreSupervisor::start()
 {
    QThread::currentThread()->setObjectName(QString("CoreSupervisor %1").arg(this->number));
+
+   if (!this->stoppable)
+      this->log("Non-stoppable Core: it's never restarted by the action 'restart_core' (but it's restarted after a crash)");
 
    if (!this->createDirectories() || !this->writeInitialSettings())
    {
@@ -146,8 +168,10 @@ void CoreSupervisor::stop()
    for (auto i = this->nbActions.cbegin(); i != this->nbActions.cend(); ++i)
       actions << QString("%1: %2").arg(actionName(i.key())).arg(i.value());
    this->log(QString("Stopping. Number of actions executed: %1").arg(actions.isEmpty() ? "none" : actions.join(", ")));
+   this->log(QString("Searches checked: %1, mismatches: %2").arg(this->nbSearches).arg(this->nbSearchMismatches));
 
    this->tickTimer.stop();
+   this->abortSearch();
    this->reconnectTimer.stop();
    this->coreRestartTimer.stop();
    this->abortPendingWrites();
@@ -247,6 +271,8 @@ void CoreSupervisor::stopCore(std::function<void()> afterStopped)
    this->coreStopping = true;
    this->afterCoreStopped = afterStopped;
 
+   this->searchCoordinator.setCoreUnavailable(this->number);
+   this->abortSearch();
    this->reconnectTimer.stop();
    this->stateReceived = false;
    this->sharedPathsKnown = false;
@@ -261,6 +287,8 @@ void CoreSupervisor::stopCore(std::function<void()> afterStopped)
 
 void CoreSupervisor::coreFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
+   this->searchCoordinator.setCoreUnavailable(this->number);
+   this->abortSearch();
    this->coreStopTimeoutTimer.stop();
    this->reconnectTimer.stop();
    this->stateReceived = false;
@@ -343,6 +371,7 @@ void CoreSupervisor::coreConnected()
 
 void CoreSupervisor::coreDisconnected(bool asked)
 {
+   this->abortSearch();
    this->stateReceived = false;
    this->sharedPathsKnown = false;
 
@@ -398,6 +427,11 @@ void CoreSupervisor::newState(const Protos::GUI::State& state)
       this->log(QString("Number of other peers: %1").arg(std::max(0, state.peers_size() - 1)));
    }
 
+   QList<SearchCoordinator::SharedEntry> sharedEntries;
+   for (const auto& sharedEntry : state.shared_entries())
+      sharedEntries << SearchCoordinator::SharedEntry { Common::Hash(sharedEntry.entry().id().hash()), QString::fromStdString(sharedEntry.entry().path()) };
+   this->searchCoordinator.setCoreAvailable(this->number, this->ownID, sharedEntries);
+
    qint64 pendingDownloadBytes = 0;
    for (const auto& download : state.downloads())
    {
@@ -421,27 +455,41 @@ void CoreSupervisor::tick()
 {
    if (this->connection && this->connection->isConnected() && this->stateReceived && this->sharedPathsKnown && !this->coreStopping)
    {
-      const Action action = this->pickAction();
-      this->nbActions[action]++;
-      this->executeAction(action);
+      if (const auto action = this->pickAction())
+      {
+         this->nbActions[*action]++;
+         this->executeAction(*action);
+      }
    }
    this->scheduleNextTick();
 }
 
-Action CoreSupervisor::pickAction()
+/**
+  * A non-stoppable Core never draws 'RESTART_CORE', the other actions keep their relative weights.
+  * @return Nothing if no action can be drawn.
+  */
+std::optional<Action> CoreSupervisor::pickAction()
 {
+   auto weightOf = [this](Action action, int weight) {
+      return action == Action::RESTART_CORE && !this->stoppable ? 0 : weight;
+   };
+
    int total = 0;
-   for (int weight : this->config.actionWeights)
-      total += weight;
+   for (auto i = this->config.actionWeights.cbegin(); i != this->config.actionWeights.cend(); ++i)
+      total += weightOf(i.key(), i.value());
+
+   if (total == 0)
+      return std::nullopt;
 
    int value = static_cast<int>(this->random.bounded(total));
    for (auto i = this->config.actionWeights.cbegin(); i != this->config.actionWeights.cend(); ++i)
    {
-      if (value < i.value())
+      const int weight = weightOf(i.key(), i.value());
+      if (value < weight)
          return i.key();
-      value -= i.value();
+      value -= weight;
    }
-   return Action::CREATE_FILE; // Not reachable.
+   return std::nullopt; // Not reachable.
 }
 
 void CoreSupervisor::executeAction(Action action)
@@ -460,6 +508,7 @@ void CoreSupervisor::executeAction(Action action)
    case Action::JOIN_LEAVE_ROOM: this->joinLeaveRoom(); break;
    case Action::SEND_CHAT_MESSAGE: this->sendChatMessage(); break;
    case Action::RESTART_CORE: this->restartCore(); break;
+   case Action::SEARCH: this->search(); break;
    }
 }
 
@@ -708,7 +757,14 @@ void CoreSupervisor::deleteEntry()
    const QFileInfo info(path);
    const bool isDir = info.isDir();
 
+   if (!this->searchCoordinator.beginDelete(path))
+   {
+      this->log(QString("Delete %1: '%2' is locked by a search").arg(isDir ? "directory" : "file", path));
+      return;
+   }
    const bool removed = isDir ? QDir(path).removeRecursively() : QFile::remove(path);
+   this->searchCoordinator.endDelete(path);
+
    if (removed)
       this->log(QString("Delete %1: '%2'").arg(isDir ? "directory" : "file", path));
    else
@@ -775,8 +831,302 @@ void CoreSupervisor::sendChatMessage()
 
 void CoreSupervisor::restartCore()
 {
+   if (!this->searchCoordinator.beginRestart(this->number))
+   {
+      this->log("Restart the Core: one of its files is locked by a search");
+      return;
+   }
+
    this->log("Restart the Core");
    this->stopCore([this]() { this->startCore(); });
+}
+
+/////////////////////////////////////////////////////// Search ///////////////////////////////////////////////////////
+
+/**
+  * Pick a file of another Core, lock it and search it with a random pattern built to match it or not.
+  * The result is checked after 'SEARCH_DURATION', see 'checkSearch()'. Our own files are never searched.
+  */
+void CoreSupervisor::search()
+{
+   if (this->currentSearch)
+      return;
+
+   const QDateTime now = QDateTime::currentDateTimeUtc();
+
+   // The other Cores, seen by our Core and connected since a while.
+   QList<Common::Hash> visiblePeers;
+   for (int i = 1; i < this->state.peers_size(); i++)
+      if (this->state.peers(i).status() == Protos::GUI::State::Peer::OK)
+         visiblePeers << Common::Hash(this->state.peers(i).peer_id().hash());
+
+   QList<std::pair<int, SearchCoordinator::CoreInfo>> cores;
+   for (int i = 0; i < this->config.numberOfCores; i++)
+   {
+      SearchCoordinator::CoreInfo info;
+      if (i != this->number && this->searchCoordinator.getCoreInfo(i, info) && info.availableSince.msecsTo(now) >= SEARCH_MIN_CORE_AGE && visiblePeers.contains(info.peerID))
+         cores << std::make_pair(i, info);
+   }
+
+   if (cores.isEmpty())
+      return;
+
+   const auto& [coreNumber, coreInfo] = cores[this->random.bounded(cores.size())];
+
+   // The complete files of this Core which are old enough to be indexed.
+   auto isEligible = [&](const QFileInfo& fileInfo) {
+      return !fileInfo.fileName().endsWith(UNFINISHED_SUFFIX) && fileInfo.lastModified().toUTC().msecsTo(now) >= SEARCH_MIN_FILE_AGE;
+   };
+
+   QList<std::pair<QString, int>> files; // Path, index of the shared entry.
+   for (int i = 0; i < coreInfo.sharedEntries.size(); i++)
+   {
+      const QString& sharedEntryPath = coreInfo.sharedEntries[i].path;
+      if (sharedEntryPath.endsWith('/'))
+      {
+         QDirIterator it(sharedEntryPath, QDir::Files | QDir::Hidden, QDirIterator::Subdirectories);
+         while (it.hasNext())
+         {
+            it.next();
+            if (isEligible(it.fileInfo()))
+               files << std::make_pair(it.filePath(), i);
+         }
+      }
+      else if (const QFileInfo fileInfo(sharedEntryPath); fileInfo.isFile() && isEligible(fileInfo))
+      {
+         files << std::make_pair(sharedEntryPath, i);
+      }
+   }
+
+   if (files.isEmpty())
+      return;
+
+   const auto& [filepath, sharedEntryIndex] = files[this->random.bounded(files.size())];
+   const SearchCoordinator::SharedEntry& sharedEntry = coreInfo.sharedEntries[sharedEntryIndex];
+
+   auto lock = this->searchCoordinator.lockFile(coreNumber, filepath);
+   if (!lock)
+      return;
+
+   // The file may have been deleted before being locked.
+   const QFileInfo fileInfo(filepath);
+   if (!fileInfo.isFile())
+      return;
+
+   const QString name = fileInfo.fileName();
+   const qint64 size = fileInfo.size();
+   const QString extension = Common::KnownExtensions::getExtension(name).toLower();
+
+   // A word of the name, long enough to be almost unique. The word index uses the same splitting.
+   QStringList words = Common::StringUtils::splitInWords(name);
+   words.removeIf([&](const QString& word) { return word.size() < SEARCH_MIN_WORD_LENGTH || word == extension; });
+   if (words.isEmpty())
+      return;
+
+   auto search = std::make_unique<CurrentSearch>();
+   search->lock = std::move(lock);
+   search->coreNumber = coreNumber;
+   search->peerID = coreInfo.peerID;
+   search->sharedEntryID = sharedEntry.id;
+   search->isSharedEntry = !sharedEntry.path.endsWith('/');
+   search->filepath = filepath;
+   search->size = size;
+   if (!search->isSharedEntry)
+   {
+      search->relativeDirectory = QDir(sharedEntry.path).relativeFilePath(fileInfo.absolutePath());
+      if (search->relativeDirectory == ".")
+         search->relativeDirectory.clear();
+   }
+
+   Protos::Common::FindPattern& pattern = search->pattern;
+   pattern.set_pattern(words[this->random.bounded(words.size())].toStdString());
+   pattern.set_category(Protos::Common::FindPattern::FILE); // Only the files for the moment.
+
+   // Minimum size, it may exclude the file. 0 means no minimum.
+   if (this->random.bounded(3) == 0)
+   {
+      if (this->random.bounded(2) == 0)
+      {
+         if (size > 0)
+            pattern.set_min_size(1 + this->random.bounded(size));
+      }
+      else
+      {
+         pattern.set_min_size(size + 1 + this->random.bounded(size + 1));
+      }
+   }
+
+   // Maximum size, it may exclude the file. 0 means no maximum.
+   if (this->random.bounded(3) == 0)
+   {
+      if (this->random.bounded(2) == 0 || size < 2)
+         pattern.set_max_size(size + this->random.bounded(size + 1));
+      else
+         pattern.set_max_size(1 + this->random.bounded(size - 1));
+   }
+
+   // Extensions, they may include the extension of the file or not. The Core must ignore the case.
+   if (this->random.bounded(3) == 0)
+   {
+      QStringList filters = EXTENSION_FILTERS;
+      filters.removeAll(extension);
+      std::shuffle(filters.begin(), filters.end(), this->random);
+      filters = filters.mid(0, 1 + this->random.bounded(3));
+      if (!extension.isEmpty() && this->random.bounded(2) == 0)
+         filters.insert(this->random.bounded(filters.size() + 1), extension);
+
+      for (const QString& filter : filters)
+         pattern.add_extension_filters((this->random.bounded(4) == 0 ? filter.toUpper() : filter).toStdString());
+   }
+
+   QStringList extensionFilters;
+   for (const auto& filter : pattern.extension_filters())
+      extensionFilters << QString::fromStdString(filter).toLower();
+
+   search->expectedMatch =
+      (pattern.min_size() == 0 || size >= static_cast<qint64>(pattern.min_size())) &&
+      (pattern.max_size() == 0 || size <= static_cast<qint64>(pattern.max_size())) &&
+      (extensionFilters.isEmpty() || !extension.isEmpty() && extensionFilters.contains(extension));
+
+   search->result = this->connection->search(pattern, false);
+   if (search->result.isNull())
+      return;
+
+   RCC::ISearchResult* const resultPtr = search->result.data();
+   connect(resultPtr, &RCC::ISearchResult::result, this, [this, resultPtr](const Protos::Common::FindResult& findResult) {
+      if (this->currentSearch && this->currentSearch->result.data() == resultPtr)
+         this->currentSearch->results << findResult;
+   });
+
+   this->log(QString("Search: %1, file: '%2' (%3 bytes) of Core %4, expected: %5")
+      .arg(this->patternToStr(pattern), filepath).arg(size).arg(coreNumber).arg(search->expectedMatch ? "found" : "not found"));
+
+   this->currentSearch = std::move(search);
+   this->currentSearch->result->start();
+   this->searchTimer.start(SEARCH_DURATION);
+}
+
+/**
+  * Check the received results:
+  *  - Inclusion: the searched file must be found if and only if it matches the pattern.
+  *  - Validity: each result must match the pattern.
+  * A mismatch is logged but isn't a failure: a UDP datagram may be lost.
+  */
+void CoreSupervisor::checkSearch()
+{
+   if (!this->currentSearch)
+      return;
+
+   const std::unique_ptr<CurrentSearch> search = std::move(this->currentSearch);
+   const Protos::Common::FindPattern& pattern = search->pattern;
+   const QString word = QString::fromStdString(pattern.pattern());
+   const QString filename = QFileInfo(search->filepath).fileName();
+
+   QStringList extensionFilters;
+   for (const auto& filter : pattern.extension_filters())
+      extensionFilters << QString::fromStdString(filter).toLower();
+
+   bool found = false;
+   int nbEntries = 0;
+   QSet<QByteArray> peers;
+   QStringList invalidEntries;
+
+   for (const Protos::Common::FindResult& findResult : search->results)
+   {
+      const Common::Hash peerID(findResult.peer_id().hash());
+      peers.insert(QByteArray::fromStdString(findResult.peer_id().hash()));
+
+      for (const auto& entryLevel : findResult.entries())
+      {
+         const Protos::Common::Entry& entry = entryLevel.entry();
+         nbEntries++;
+
+         // A shared entry has no name, its name is the one of the shared entry.
+         const QString entryName = QString::fromStdString(entry.name().empty() ? entry.shared_entry().shared_name() : entry.name());
+         QString entryDirectory = QString::fromStdString(entry.path());
+         while (entryDirectory.startsWith('/'))
+            entryDirectory.remove(0, 1);
+         while (entryDirectory.endsWith('/'))
+            entryDirectory.chop(1);
+
+         if (peerID == search->peerID && Common::Hash(entry.shared_entry().id().hash()) == search->sharedEntryID)
+         {
+            if (search->isSharedEntry ? entry.name().empty() : entryDirectory == search->relativeDirectory && entryName == filename)
+               found = true;
+         }
+
+         QStringList problems;
+         if (entry.type() != Protos::Common::Entry::FILE)
+            problems << "not a file";
+         if (pattern.min_size() != 0 && entry.size() < pattern.min_size())
+            problems << "size lesser than the minimum";
+         if (pattern.max_size() != 0 && entry.size() > pattern.max_size())
+            problems << "size greater than the maximum";
+         if (!extensionFilters.isEmpty() && !extensionFilters.contains(Common::KnownExtensions::getExtension(entryName).toLower()))
+            problems << "extension not in the filters";
+         if (!entryName.isEmpty())
+         {
+            const QStringList entryWords = Common::StringUtils::splitInWords(entryName);
+            if (std::none_of(entryWords.cbegin(), entryWords.cend(), [&](const QString& w) { return w.startsWith(word); }))
+               problems << "the name doesn't contain the searched word";
+         }
+
+         if (!problems.isEmpty())
+            invalidEntries << QString("'%1%2' (%3 bytes): %4")
+               .arg(entryDirectory.isEmpty() ? QString() : entryDirectory + "/", entryName).arg(entry.size()).arg(problems.join(", "));
+      }
+   }
+
+   const bool ok = found == search->expectedMatch && invalidEntries.isEmpty();
+   this->nbSearches++;
+
+   const QString summary = QString("%1, file: '%2' of Core %3, expected: %4, found: %5, %6 result(s) from %7 peer(s)")
+      .arg(this->patternToStr(pattern), search->filepath).arg(search->coreNumber)
+      .arg(search->expectedMatch ? "yes" : "no", found ? "yes" : "no").arg(nbEntries).arg(peers.size());
+
+   if (ok)
+   {
+      this->log(QString("Search OK: %1").arg(summary));
+   }
+   else
+   {
+      this->nbSearchMismatches++;
+      QString details;
+      if (found != search->expectedMatch)
+         details += search->expectedMatch ? " The file wasn't found (a UDP datagram may have been lost)." : " The file was found but it doesn't match the pattern.";
+      if (!invalidEntries.isEmpty())
+         details += QString(" %1 invalid result(s): %2").arg(invalidEntries.size()).arg(invalidEntries.mid(0, 10).join("; "));
+      this->logWarning(QString("Search mismatch: %1.%2").arg(summary, details));
+   }
+
+   emit searchChecked(this->number, ok);
+}
+
+/**
+  * The search result and the lock are released.
+  */
+void CoreSupervisor::abortSearch()
+{
+   this->searchTimer.stop();
+   if (this->currentSearch)
+   {
+      this->log(QString("Search aborted: %1").arg(this->patternToStr(this->currentSearch->pattern)));
+      this->currentSearch.reset();
+   }
+}
+
+QString CoreSupervisor::patternToStr(const Protos::Common::FindPattern& pattern) const
+{
+   QStringList extensions;
+   for (const auto& filter : pattern.extension_filters())
+      extensions << QString::fromStdString(filter);
+
+   return QString("pattern '%1', size: [%2, %3], extensions: [%4], category: %5")
+      .arg(QString::fromStdString(pattern.pattern()))
+      .arg(pattern.min_size() == 0 ? QString("-") : QString::number(pattern.min_size()))
+      .arg(pattern.max_size() == 0 ? QString("-") : QString::number(pattern.max_size()))
+      .arg(extensions.join(", "))
+      .arg(QString::fromStdString(Protos::Common::FindPattern::Category_Name(pattern.category())));
 }
 
 /////////////////////////////////////////////////////// File writing ///////////////////////////////////////////////////////
@@ -986,22 +1336,6 @@ QStringList CoreSupervisor::listEntries() const
    while (i.hasNext())
       entries << i.next();
    return entries;
-}
-
-bool CoreSupervisor::isSamePath(const QString& path1, const QString& path2)
-{
-   auto normalize = [](const QString& path) {
-      QString normalized = QDir::cleanPath(QDir::fromNativeSeparators(path));
-      while (normalized.size() > 1 && normalized.endsWith('/'))
-         normalized.chop(1);
-      return normalized;
-   };
-
-#if defined(Q_OS_WIN32) || defined(Q_OS_DARWIN)
-   return normalize(path1).compare(normalize(path2), Qt::CaseInsensitive) == 0;
-#else
-   return normalize(path1) == normalize(path2);
-#endif
 }
 
 void CoreSupervisor::log(const QString& message) const
