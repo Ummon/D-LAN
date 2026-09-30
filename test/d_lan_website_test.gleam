@@ -109,6 +109,7 @@ pub fn localized_date_test() {
   assert tr.format_date(tr.Ru, released) == "10 июля 2026 г."
   assert tr.format_date(tr.Ko, released) == "2026년 7월 10일"
   assert tr.format_date(tr.Ja, released) == "2026年7月10日"
+  assert tr.format_date(tr.Hi, released) == "10 जुलाई 2026"
 
   assert tr.format_date(tr.Fr, calendar.Date(2026, calendar.January, 5))
     == "5 janvier 2026"

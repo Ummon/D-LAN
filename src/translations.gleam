@@ -19,10 +19,11 @@ pub type Lang {
   Ru
   Ko
   Ja
+  Hi
 }
 
 pub fn all_langs() -> List(Lang) {
-  [En, Fr, De, Es, It, Ru, Ko, Ja]
+  [En, Fr, De, Es, It, Ru, Ko, Ja, Hi]
 }
 
 pub fn plain_lang(l: Lang) {
@@ -35,6 +36,7 @@ pub fn plain_lang(l: Lang) {
     Ru -> "Русский"
     Ko -> "한국어"
     Ja -> "日本語"
+    Hi -> "हिन्दी"
   }
 }
 
@@ -48,6 +50,7 @@ fn parse_lang(lang_str: String) -> Lang {
     "ru" -> Ru
     "ko" -> Ko
     "ja" -> Ja
+    "hi" -> Hi
     _ -> En
   }
 }
@@ -62,6 +65,7 @@ pub fn to_str(l: Lang) -> String {
     Ru -> "ru"
     Ko -> "ko"
     Ja -> "ja"
+    Hi -> "hi"
   }
 }
 
@@ -95,6 +99,7 @@ pub fn title(l: Lang) -> String {
     Ru -> "D-LAN - Программа для обмена файлами в локальной сети"
     Ko -> "D-LAN - LAN 파일 공유 소프트웨어"
     Ja -> "D-LAN - LAN ファイル共有ソフトウェア"
+    Hi -> "D-LAN - LAN फ़ाइल-साझाकरण सॉफ़्टवेयर"
   }
 }
 
@@ -108,6 +113,7 @@ pub fn header_support_us(l: Lang) -> element.Element(a) {
     Ru -> "поддержите нас!"
     Ko -> "후원해 주세요!"
     Ja -> "応援してください！"
+    Hi -> "हमारा समर्थन करें!"
   }
   |> html.text
 }
@@ -122,6 +128,7 @@ pub fn menu_home(l: Lang) -> element.Element(a) {
     Ru -> "ГЛАВНАЯ"
     Ko -> "홈"
     Ja -> "ホーム"
+    Hi -> "होम"
   }
   |> html.text
 }
@@ -136,6 +143,7 @@ pub fn menu_features(l: Lang) -> element.Element(a) {
     Ru -> "ВОЗМОЖНОСТИ"
     Ko -> "기능"
     Ja -> "機能"
+    Hi -> "विशेषताएँ"
   }
   |> html.text
 }
@@ -150,6 +158,7 @@ pub fn menu_faq(l: Lang) -> element.Element(a) {
     Ru -> "FAQ"
     Ko -> "FAQ"
     Ja -> "FAQ"
+    Hi -> "FAQ"
   }
   |> html.text
 }
@@ -164,6 +173,7 @@ pub fn menu_about(l: Lang) -> element.Element(a) {
     Ru -> "О ПРОЕКТЕ"
     Ko -> "소개"
     Ja -> "概要"
+    Hi -> "परिचय"
   }
   |> html.text
 }
@@ -186,6 +196,8 @@ pub fn home_title(l: Lang) -> element.Element(a) {
       "D-LAN - 오픈 소스 <abbr title=\"Local Area Network (근거리 통신망)\">LAN</abbr> 파일 공유 소프트웨어."
     Ja ->
       "D-LAN - オープンソースの <abbr title=\"Local Area Network (ローカルエリアネットワーク)\">LAN</abbr> ファイル共有ソフトウェア。"
+    Hi ->
+      "D-LAN - मुक्त <abbr title=\"Local Area Network (लोकल एरिया नेटवर्क)\">LAN</abbr> फ़ाइल-साझाकरण सॉफ़्टवेयर।"
   }
   |> raw_span
 }
@@ -224,6 +236,10 @@ pub fn home_description(l: Lang, features_url: String) -> element.Element(a) {
       "LAN パーティーのようなローカルネットワーク環境で、大量のデータを手軽にやり取りすることが目的です。D-LAN を起動すると、特別な設定をしなくてもネットワーク上の他のすべての利用者とその共有ファイルが自動的に表示されます。詳しくは<a href=\""
       <> features_url
       <> "\">機能一覧</a>をご覧ください。"
+    Hi ->
+      "इसका उद्देश्य LAN-पार्टी जैसे लोकल एरिया नेटवर्क वातावरण में बड़ी मात्रा में डेटा का आसानी से आदान-प्रदान करना है। D-LAN शुरू करने के बाद, बिना किसी विशेष कॉन्फ़िगरेशन के, नेटवर्क के अन्य सभी लोग और उनकी साझा की गई फ़ाइलें आपको अपने-आप दिखाई देंगी। अधिक जानकारी के लिए <a href=\""
+      <> features_url
+      <> "\">विशेषताओं की सूची</a> देखें।"
   }
   |> raw_span
 }
@@ -265,6 +281,10 @@ pub fn home_warning_beta(
       "<em>注意:</em> 現在のバージョンの D-LAN はベータ版であり、テスト目的のみに使用してください。不具合は<a href=\""
       <> bug_report_url
       <> "\">こちら</a>から報告できます。"
+    Hi ->
+      "<em>चेतावनी:</em> D-LAN का वर्तमान संस्करण बीटा है और केवल परीक्षण के लिए है। आप किसी भी त्रुटि की रिपोर्ट <a href=\""
+      <> bug_report_url
+      <> "\">यहाँ</a> कर सकते हैं।"
   }
   |> raw_span
 }
@@ -306,6 +326,10 @@ pub fn features_disclaimer(
       "<em>以下は現在のバージョンの主な機能です。</em> D-LAN は常に開発が続けられており、予定されている機能は<a href=\""
       <> planned_features_url
       <> "\">こちら</a>で確認できます。"
+    Hi ->
+      "<em>वर्तमान रिलीज़ की मुख्य विशेषताएँ ये हैं।</em> D-LAN का विकास लगातार जारी है, नियोजित विशेषताएँ आप <a href=\""
+      <> planned_features_url
+      <> "\">यहाँ</a> देख सकते हैं।"
   }
   |> raw_span
 }
@@ -320,6 +344,7 @@ pub fn features_feat_1(l: Lang) -> element.Element(a) {
     Ru -> "Обмен файлами и папками в локальной сети (LAN)."
     Ko -> "근거리 네트워크(LAN) 환경에서 파일과 폴더를 공유합니다."
     Ja -> "ローカルエリアネットワーク (LAN) 環境でファイルやフォルダーを共有します。"
+    Hi -> "लोकल एरिया नेटवर्क (LAN) में फ़ाइलें और फ़ोल्डर साझा करें।"
   }
   |> html.text
 }
@@ -336,6 +361,7 @@ pub fn features_feat_2(l: Lang) -> element.Element(a) {
     Ru -> "Распределённые передачи для повышения скорости и надёжности."
     Ko -> "분산 전송으로 성능과 안정성을 높입니다."
     Ja -> "分散転送によって性能と信頼性を高めます。"
+    Hi -> "बेहतर प्रदर्शन और विश्वसनीयता के लिए वितरित स्थानांतरण।"
   }
   |> html.text
 }
@@ -353,6 +379,7 @@ pub fn features_feat_3(l: Lang) -> element.Element(a) {
       "Очень прост в использовании: никакой настройки, никакого центрального сервера."
     Ko -> "매우 쉬운 사용법: 별도의 설정도, 중앙 서버도 필요 없습니다."
     Ja -> "とても簡単に使えます。設定も中央サーバーも不要です。"
+    Hi -> "उपयोग में बहुत आसान: न कोई कॉन्फ़िगरेशन, न कोई केंद्रीय सर्वर।"
   }
   |> html.text
 }
@@ -367,6 +394,7 @@ pub fn features_feat_4(l: Lang) -> element.Element(a) {
     Ru -> "Быстрый индексированный поиск по всем остальным пирам."
     Ko -> "모든 피어를 대상으로 한 빠른 색인 검색."
     Ja -> "他のすべてのピアを対象とした高速なインデックス検索。"
+    Hi -> "अन्य सभी पीयर्स में तेज़ अनुक्रमित खोज।"
   }
   |> html.text
 }
@@ -384,6 +412,7 @@ pub fn features_feat_5(l: Lang) -> element.Element(a) {
     Ru -> "Просмотр всех файлов и папок любого другого пира."
     Ko -> "다른 피어의 모든 파일과 폴더를 탐색할 수 있습니다."
     Ja -> "他のピアのすべてのファイルとフォルダーを閲覧できます。"
+    Hi -> "किसी भी अन्य पीयर की सभी फ़ाइलें और फ़ोल्डर ब्राउज़ करें।"
   }
   |> html.text
 }
@@ -404,6 +433,7 @@ pub fn features_feat_6(l: Lang) -> element.Element(a) {
       "Управление очередью загрузок: добавление, удаление и изменение порядка."
     Ko -> "다운로드 대기열 관리: 추가, 삭제, 순서 변경이 가능합니다."
     Ja -> "ダウンロードキューの管理。追加、削除、並べ替えができます。"
+    Hi -> "डाउनलोड कतार का प्रबंधन: जोड़ना, हटाना या क्रम बदलना।"
   }
   |> html.text
 }
@@ -418,6 +448,7 @@ pub fn features_feat_7(l: Lang) -> element.Element(a) {
     Ru -> "Общий чат и каналы общения."
     Ko -> "전체 채팅 및 대화 채널."
     Ja -> "全体チャットとチャットチャンネル。"
+    Hi -> "सामूहिक चैट और चर्चा चैनल।"
   }
   |> html.text
 }
@@ -438,6 +469,7 @@ pub fn features_feat_8(l: Lang) -> element.Element(a) {
       "D-LAN может работать без графического интерфейса (GUI) и управляться удалённо."
     Ko -> "D-LAN은 그래픽 인터페이스(GUI) 없이 실행할 수 있으며 원격으로 제어할 수 있습니다."
     Ja -> "D-LAN はグラフィカルインターフェース (GUI) なしで実行でき、リモートから操作できます。"
+    Hi -> "D-LAN ग्राफ़िकल इंटरफ़ेस (GUI) के बिना चल सकता है और इसे दूर से नियंत्रित किया जा सकता है।"
   }
   |> raw_span
 }
@@ -460,6 +492,8 @@ pub fn features_feat_9(l: Lang) -> element.Element(a) {
       "<a href=\"https://github.com/Ummon/D-LAN\">오픈 소스</a>. 소스 코드는 GPLv3 라이선스로 배포됩니다."
     Ja ->
       "<a href=\"https://github.com/Ummon/D-LAN\">オープンソース</a>。ソースコードは GPLv3 ライセンスで配布されています。"
+    Hi ->
+      "<a href=\"https://github.com/Ummon/D-LAN\">ओपन सोर्स</a>। सोर्स कोड GPLv3 लाइसेंस के अंतर्गत वितरित किया जाता है।"
   }
   |> raw_span
 }
@@ -482,6 +516,8 @@ pub fn features_feat_10(l: Lang) -> element.Element(a) {
       "어떠한 광고나 <a href=\"https://ko.wikipedia.org/wiki/%EC%95%85%EC%84%B1_%EC%86%8C%ED%94%84%ED%8A%B8%EC%9B%A8%EC%96%B4\">악성 소프트웨어</a>도 포함하지 않습니다."
     Ja ->
       "いかなる広告や<a href=\"https://ja.wikipedia.org/wiki/%E3%83%9E%E3%83%AB%E3%82%A6%E3%82%A7%E3%82%A2\">マルウェア</a>も含みません。"
+    Hi ->
+      "किसी भी प्रकार के विज्ञापन या <a href=\"https://hi.wikipedia.org/wiki/%E0%A4%AE%E0%A5%88%E0%A4%B2%E0%A4%B5%E0%A5%87%E0%A4%AF%E0%A4%B0\">मैलवेयर</a> से मुक्त।"
   }
   |> raw_span
 }
@@ -517,6 +553,10 @@ pub fn features_help_us(l: Lang, support_url: String) -> element.Element(a) {
       <> support_url
       <> "\">후원</a>도 잊지 마세요. 유지 보수와 새로운 기능 추가에 도움이 됩니다."
     Ja -> "<a href=\"" <> support_url <> "\">支援</a>もお忘れなく。保守や新機能の追加に役立ちます。"
+    Hi ->
+      "हमारा <a href=\""
+      <> support_url
+      <> "\">समर्थन</a> करना न भूलें। इससे रखरखाव और नई विशेषताएँ जोड़ने में मदद मिलेगी।"
   }
   |> raw_span
 }
@@ -537,6 +577,7 @@ pub fn faq_q1(l: Lang) -> element.Element(a) {
       "Какие преимущества даёт D-LAN по сравнению со стандартными средствами системы?"
     Ko -> "시스템 기본 도구 대신 D-LAN을 사용하면 어떤 이점이 있나요?"
     Ja -> "システム標準のツールの代わりに D-LAN を使う利点は何ですか？"
+    Hi -> "सिस्टम के डिफ़ॉल्ट टूल के बजाय D-LAN का उपयोग करने के क्या लाभ हैं?"
   }
   |> html.text
 }
@@ -559,6 +600,8 @@ pub fn faq_a1(l: Lang) -> element.Element(a) {
       "D-LAN은 대량 전송을 위해 설계되어 다운로드할 파일 대기열을 관리할 수 있습니다. 파일은 여러 피어로부터 동시에 자동으로 다운로드되어 전송 속도가 빨라지고 피어의 접속 종료에도 대비할 수 있습니다. 또한 시스템 기본 파일 공유에는 없는 빠른 전체 검색 기능이 있습니다. 자세한 내용은 <a href=\"features.html\">기능 페이지</a>를 참고하세요."
     Ja ->
       "D-LAN は大量の転送のために設計されており、ダウンロードするファイルのキューを管理できます。ファイルは複数のピアから同時に自動でダウンロードされるため、転送が速くなり、ピアの切断にも備えられます。また、システム標準のファイル共有にはない高速な全体検索機能があります。詳しくは<a href=\"features.html\">機能ページ</a>をご覧ください。"
+    Hi ->
+      "D-LAN बड़े पैमाने पर स्थानांतरण के लिए बनाया गया है, आप डाउनलोड की जाने वाली फ़ाइलों की कतार का प्रबंधन कर सकते हैं। स्थानांतरण को तेज़ करने और किसी पीयर के बंद हो जाने की स्थिति से निपटने के लिए, एक फ़ाइल एक साथ कई पीयर्स से अपने-आप डाउनलोड की जा सकती है। D-LAN में एक तेज़ वैश्विक खोज सुविधा भी है, जो सिस्टम के डिफ़ॉल्ट फ़ाइल साझाकरण में नहीं होती। अधिक जानकारी आपको <a href=\"features.html\">विशेषताओं के पृष्ठ</a> पर मिलेगी।"
   }
   |> raw_span
 }
@@ -573,6 +616,7 @@ pub fn faq_q2(l: Lang) -> element.Element(a) {
     Ru -> "Я не вижу другие компьютеры в своей сети."
     Ko -> "네트워크에서 다른 컴퓨터가 보이지 않습니다."
     Ja -> "ネットワーク上の他のコンピューターが見えません。"
+    Hi -> "मुझे अपने नेटवर्क में अन्य कंप्यूटर दिखाई नहीं देते।"
   }
   |> html.text
 }
@@ -635,6 +679,13 @@ pub fn faq_a2(l: Lang) -> element.Element(a) {
       <> "<li>ネットワークで UDP マルチキャストが許可されていることを確認してください。IPv6 アドレスは <i>ff12:0:318b:bc3f:d75a:c873:ec0d:2b18</i>、IPv4 アドレスは <i>236.13.43.24</i> です。</li>"
       <> "<li>すべてのピアが同じプロトコル（IPv6（デフォルト）または IPv4）を使用する必要があります。<i>設定 &gt; ネットワーク</i>で確認してください。</li>"
       <> "</ul>"
+    Hi ->
+      "<ul>"
+      <> "<li>जाँच लें कि आपके पास D-LAN का नवीनतम संस्करण है।</li>"
+      <> "<li>सुनिश्चित करें कि आपके फ़ायरवॉल में पोर्ट 59486 (<i>UDP</i>) और 59487 (<i>UDP + TCP</i>) खुले हैं।</li>"
+      <> "<li>सुनिश्चित करें कि आपके नेटवर्क पर UDP मल्टीकास्ट की अनुमति है। IPv6 पता <i>ff12:0:318b:bc3f:d75a:c873:ec0d:2b18</i> है और IPv4 पता <i>236.13.43.24</i> है।</li>"
+      <> "<li>सभी पीयर्स को एक ही प्रोटोकॉल का उपयोग करना चाहिए: IPv6 (डिफ़ॉल्ट) या IPv4। इसे <i>सेटिंग्स &gt; नेटवर्क</i> में जाँचें।</li>"
+      <> "</ul>"
   }
   |> raw_div
 }
@@ -655,6 +706,7 @@ pub fn faq_q3(l: Lang) -> element.Element(a) {
       "D-LAN замедляет мой компьютер при вычислении хешей. Что это такое и зачем это нужно?"
     Ko -> "해시 계산 중에 D-LAN이 컴퓨터를 느리게 합니다. 해시란 무엇이고 왜 필요한가요?"
     Ja -> "ハッシュの計算中に D-LAN がコンピューターを遅くします。ハッシュとは何で、なぜ必要なのですか？"
+    Hi -> "हैशिंग के दौरान D-LAN मेरे कंप्यूटर को धीमा कर देता है। यह क्या है और इसकी आवश्यकता क्यों है?"
   }
   |> html.text
 }
@@ -691,6 +743,10 @@ pub fn faq_a3(l: Lang) -> element.Element(a) {
       "ハッシュはファイルのすべての部分を識別するために必要です。これにより複数のソースからのダウンロードとデータの整合性の検証が可能になります。"
       <> "ハッシュの計算にはコアが 1 つしか使われませんが、今日販売されているコンピューターはすべてマルチコアです。"
       <> "共有するすべてのファイルを一度読み込む必要があるため、ディスクアクセスが少し遅くなることがあります。"
+    Hi ->
+      "किसी फ़ाइल के सभी भागों की पहचान करने के लिए हैश आवश्यक हैं। इनसे कई स्रोतों से डाउनलोड करना और डेटा की अखंडता का सत्यापन संभव होता है। "
+      <> "हैशिंग के दौरान केवल एक कोर का उपयोग होता है, और आज बिकने वाले सभी कंप्यूटर मल्टी-कोर हैं। "
+      <> "सभी साझा की गई फ़ाइलों को एक बार पढ़ना पड़ता है, जिससे डिस्क की पहुँच थोड़ी धीमी हो सकती है।"
   }
   |> html.text
 }
@@ -706,6 +762,7 @@ pub fn faq_q4(l: Lang) -> element.Element(a) {
     Ru -> "D-LAN использует слишком много ресурсов, как это исправить?"
     Ko -> "D-LAN이 리소스를 너무 많이 사용합니다. 어떻게 개선할 수 있나요?"
     Ja -> "D-LAN がリソースを使いすぎます。どうすれば改善できますか？"
+    Hi -> "D-LAN बहुत अधिक संसाधनों का उपयोग करता है, इसे कैसे कम किया जा सकता है?"
   }
   |> html.text
 }
@@ -735,6 +792,9 @@ pub fn faq_a4(l: Lang) -> element.Element(a) {
     Ja ->
       "<p>D-LAN がハッシュを計算している場合は、その処理が終わるまで待つ必要があります。前の質問を参照してください。"
       <> "そうでない場合は D-LAN のメインウィンドウを閉じることができます。GUI がコアから切り離され、消費するリソースが少なくなります。</p><p>キューに 10,000 個以上のファイルを入れないようにし、定期的にキューを整理してください。</p>"
+    Hi ->
+      "<p>यदि D-LAN इस समय हैश की गणना कर रहा है, तो आपको इस प्रक्रिया के पूरा होने तक प्रतीक्षा करनी होगी, पिछला प्रश्न देखें। "
+      <> "अन्यथा D-LAN की मुख्य विंडो बंद की जा सकती है, जिससे GUI कोर से अलग हो जाएगा और कम संसाधनों का उपयोग करेगा।</p><p>कतार में 10,000 से अधिक फ़ाइलें न रखने का प्रयास करें और समय-समय पर कतार को साफ़ करें।</p>"
   }
   |> raw_div
 }
@@ -755,6 +815,7 @@ pub fn faq_q5(l: Lang) -> element.Element(a) {
       "Можно ли настроить D-LAN так, чтобы он запускался автоматически при включении компьютера?"
     Ko -> "컴퓨터가 시작될 때 D-LAN이 자동으로 실행되도록 설정할 수 있나요?"
     Ja -> "コンピューターの起動時に D-LAN が自動的に起動するように設定できますか？"
+    Hi -> "क्या D-LAN को इस तरह कॉन्फ़िगर किया जा सकता है कि वह कंप्यूटर चालू होने पर अपने-आप शुरू हो जाए?"
   }
   |> html.text
 }
@@ -777,6 +838,8 @@ pub fn faq_a5(l: Lang) -> element.Element(a) {
       "<i>Windows 7</i>: <i>제어판</i> &gt; <i>관리 도구</i> &gt; <i>서비스</i>로 이동합니다. <i>D-LAN Core</i>의 속성을 열고 <i>시작 유형</i>을 <i>수동</i>에서 <i>자동</i>으로 변경하세요."
     Ja ->
       "<i>Windows 7</i>: <i>コントロールパネル</i> &gt; <i>管理ツール</i> &gt; <i>サービス</i> を開きます。<i>D-LAN Core</i> のプロパティを開き、<i>スタートアップの種類</i>を<i>手動</i>から<i>自動</i>に変更します。"
+    Hi ->
+      "<i>Windows 7</i>: <i>नियंत्रण कक्ष</i> &gt; <i>व्यवस्थापकीय उपकरण</i> &gt; <i>सेवाएँ</i> पर जाएँ। <i>D-LAN Core</i> के गुण खोलें और <i>स्टार्टअप प्रकार</i> को <i>मैन्युअल</i> से <i>स्वचालित</i> में बदलें।"
   }
   |> raw_span
 }
@@ -798,6 +861,8 @@ pub fn faq_q6(l: Lang) -> element.Element(a) {
     Ko -> "macOS에 D-LAN을 설치한 후 Apple이 앱을 확인할 수 없다는 경고가 표시됩니다. 어떻게 해야 하나요?"
     Ja ->
       "macOS に D-LAN をインストールした後、Apple がアプリケーションを検証できなかったという警告が表示されます。どうすればよいですか？"
+    Hi ->
+      "macOS पर D-LAN इंस्टॉल करने के बाद एक चेतावनी दिखाई देती है कि Apple ऐप्लिकेशन को सत्यापित नहीं कर सका। मुझे क्या करना चाहिए?"
   }
   |> raw_div
 }
@@ -852,6 +917,12 @@ pub fn faq_a6(l: Lang) -> element.Element(a) {
       <> "<li>システム設定 → プライバシーとセキュリティを開きます。</li>"
       <> "<li>D-LAN に関するメッセージが表示されるまでスクロールし、「このまま開く」をクリックします。</li>"
       <> "<li>認証を行い、「開く」をクリックして確定します。</li></ul>"
+    Hi ->
+      "यह ऐप्लिकेशन स्व-हस्ताक्षरित (self-signed) है। D-LAN को <i>ऐप्लिकेशन</i> फ़ोल्डर में कॉपी करने के बाद, आप इन चरणों का पालन करके एक अपवाद जोड़ सकते हैं:<ul>"
+      <> "<li>D-LAN खोलने का प्रयास करें, फिर चेतावनी बंद कर दें।</li>"
+      <> "<li>सिस्टम सेटिंग्ज़ → गोपनीयता और सुरक्षा खोलें।</li>"
+      <> "<li>D-LAN से संबंधित संदेश तक स्क्रॉल करें और फिर भी खोलें पर क्लिक करें।</li>"
+      <> "<li>प्रमाणीकरण करें, फिर पुष्टि करने के लिए खोलें पर क्लिक करें।</li></ul>"
   }
   |> raw_div
 }
@@ -867,6 +938,7 @@ pub fn about_author(l: Lang, name: element.Element(a)) -> element.Element(a) {
       Ru -> "Автор: "
       Ko -> "제작자: "
       Ja -> "作者: "
+      Hi -> "लेखक: "
     }
       |> html.text,
     name,
@@ -884,6 +956,7 @@ pub fn about_linux(l: Lang, name: element.Element(a)) -> element.Element(a) {
       Ru -> "Сопровождающий Linux: "
       Ko -> "Linux 담당자: "
       Ja -> "Linux メンテナー: "
+      Hi -> "Linux अनुरक्षक: "
     }
       |> html.text,
     name,
@@ -952,6 +1025,13 @@ pub fn about_thanks(
       name_2,
       html.text(" さんに感謝します。"),
     ]
+    Hi -> [
+      html.text("समर्थन के लिए "),
+      name_1,
+      html.text(" और "),
+      name_2,
+      html.text(" को धन्यवाद।"),
+    ]
   }
   |> element.fragment
 }
@@ -966,6 +1046,7 @@ pub fn about_tech(l: Lang) -> element.Element(a) {
     Ru -> "Используемые технологии и программы"
     Ko -> "사용된 기술 및 소프트웨어"
     Ja -> "使用している技術とソフトウェア"
+    Hi -> "प्रयुक्त तकनीकें और सॉफ़्टवेयर"
   }
   |> html.text
 }
@@ -980,6 +1061,7 @@ pub fn about_tech_used_d_lan_title(l: Lang) -> element.Element(a) {
     Ru -> "D-LAN"
     Ko -> "D-LAN"
     Ja -> "D-LAN"
+    Hi -> "D-LAN"
   }
   |> html.text
 }
@@ -1042,6 +1124,13 @@ pub fn about_tech_used_d_lan(l: Lang) -> element.Element(a) {
       <> "<li>メッセージのシリアライズ: <a href=\"https://protobuf.dev/\">Protocol Buffers</a></li>"
       <> "<li>暗号学的ハッシュ関数: <a href=\"https://github.com/BLAKE3-team/BLAKE3\">BLAKE3</a></li>"
       <> "<li>データベース: <a href=\"https://www.sqlite.org/\">SQLite</a></li>"
+    Hi ->
+      "<li>प्रोग्रामिंग भाषा: <a href=\"https://en.wikipedia.org/wiki/C%2B%2B\">C++</a></li>"
+      <> "<li>फ़्रेमवर्क और लाइब्रेरी: <a href=\"https://www.qt.io/development/qt-framework\">Qt 6</a></li>"
+      <> "<li>कंपाइलर: <a href=\"https://clang.llvm.org/\">Clang</a></li>"
+      <> "<li>संदेश सीरियलाइज़ेशन: <a href=\"https://protobuf.dev/\">Protocol Buffers</a></li>"
+      <> "<li>क्रिप्टोग्राफ़िक हैश फ़ंक्शन: <a href=\"https://github.com/BLAKE3-team/BLAKE3\">BLAKE3</a></li>"
+      <> "<li>डेटाबेस: <a href=\"https://www.sqlite.org/\">SQLite</a></li>"
   }
   |> raw_ul
 }
@@ -1056,6 +1145,7 @@ pub fn about_tech_used_tools_title(l: Lang) -> element.Element(a) {
     Ru -> "Инструменты разработки"
     Ko -> "개발 도구"
     Ja -> "開発ツール"
+    Hi -> "विकास उपकरण"
   }
   |> html.text
 }
@@ -1126,6 +1216,14 @@ pub fn about_tech_used_tools(l: Lang) -> element.Element(a) {
       <> "<li>ドキュメント生成: <a href=\"https://www.doxygen.org/\">Doxygen</a></li>"
       <> "<li>インストーラー作成: <a href=\"https://www.jrsoftware.org/isinfo.php\">Inno Setup</a></li>"
       <> "<li>ベクター画像・ビットマップ画像編集: <a href=\"https://www.affinity.studio/\">Affinity</a></li>"
+    Hi ->
+      "<li>विकास परिवेश: <a href=\"https://www.qt.io/development/tools/qt-creator-ide\">Qt Creator</a></li>"
+      <> "<li>संस्करण नियंत्रण प्रणाली: <a href=\"https://git-scm.com/\">git</a></li>"
+      <> "<li>स्क्रिप्टिंग: <a href=\"https://www.nushell.sh/\">Nushell</a></li>"
+      <> "<li>परियोजना प्रबंधन: <a href=\"https://www.redmine.org/\">Redmine</a></li>"
+      <> "<li>दस्तावेज़ीकरण जनरेटर: <a href=\"https://www.doxygen.org/\">Doxygen</a></li>"
+      <> "<li>इंस्टॉलर निर्माण: <a href=\"https://www.jrsoftware.org/isinfo.php\">Inno Setup</a></li>"
+      <> "<li>वेक्टर और बिटमैप ग्राफ़िक्स संपादक: <a href=\"https://www.affinity.studio/\">Affinity</a></li>"
   }
   |> raw_ul
 }
@@ -1140,6 +1238,7 @@ pub fn about_tech_used_website_title(l: Lang) -> element.Element(a) {
     Ru -> "Веб-сайт"
     Ko -> "웹 사이트"
     Ja -> "ウェブサイト"
+    Hi -> "वेबसाइट"
   }
   |> html.text
 }
@@ -1202,6 +1301,13 @@ pub fn about_tech_used_website(l: Lang) -> element.Element(a) {
       <> "<li>JavaScript ライブラリ: <a href=\"https://jquery.com/\">JQuery</a> + <a href=\"https://www.jacklmoore.com/colorbox/\">ColorBox</a></li>"
       <> "<li>サーバー側の言語: <a href=\"https://gleam.run/\">Gleam</a></li>"
       <> "<li>ウェブサーバー: <a href=\"https://gleam-wisp.github.io/wisp/\">Wisp</a> + <a href=\"https://hexdocs.pm/mist/\">Mist</a></li>"
+    Hi ->
+      "<li>दस्तावेज़ संरचना: <a href=\"https://www.w3.org/TR/html5/\">HTML5</a></li>"
+      <> "<li>दस्तावेज़ प्रस्तुति: <a href=\"https://www.w3.org/Style/CSS/current-work\">CSS 3</a> + <a href=\"https://sass-lang.com\">Sass</a></li>"
+      <> "<li>क्लाइंट-साइड डायनेमिक भाषा: <a href=\"https://hi.wikipedia.org/wiki/%E0%A4%9C%E0%A4%BE%E0%A4%B5%E0%A4%BE%E0%A4%B8%E0%A5%8D%E0%A4%95%E0%A5%8D%E0%A4%B0%E0%A4%BF%E0%A4%AA%E0%A5%8D%E0%A4%9F\">JavaScript</a></li>"
+      <> "<li>JavaScript लाइब्रेरी: <a href=\"https://jquery.com/\">JQuery</a> + <a href=\"https://www.jacklmoore.com/colorbox/\">ColorBox</a></li>"
+      <> "<li>सर्वर-साइड भाषा: <a href=\"https://gleam.run/\">Gleam</a></li>"
+      <> "<li>वेब सर्वर: <a href=\"https://gleam-wisp.github.io/wisp/\">Wisp</a> + <a href=\"https://hexdocs.pm/mist/\">Mist</a></li>"
   }
   |> raw_ul
 }
@@ -1216,6 +1322,7 @@ pub fn donate_title(l: Lang) -> element.Element(a) {
     Ru -> "Поддержите нас"
     Ko -> "후원하기"
     Ja -> "支援する"
+    Hi -> "हमारा समर्थन करें"
   }
   |> html.text
 }
@@ -1233,6 +1340,7 @@ pub fn donate_intro(l: Lang) -> element.Element(a) {
       "Если вам нравится этот проект и вы хотите видеть его развитие, поддержите нас!"
     Ko -> "이 프로젝트가 마음에 들고 성장하는 모습을 보고 싶다면 후원해 주세요!"
     Ja -> "このプロジェクトを気に入り、発展を望まれるなら、ぜひ応援してください！"
+    Hi -> "यदि आपको यह परियोजना पसंद है और आप इसे आगे बढ़ते देखना चाहते हैं, तो हमारा समर्थन करें!"
   }
   |> html.text
 }
@@ -1247,6 +1355,7 @@ pub fn donate_buy_me_a_coffee(l: Lang) -> element.Element(a) {
     Ru -> "Угостите меня кофе"
     Ko -> "커피 한 잔 사 주세요"
     Ja -> "コーヒーを一杯おごってください"
+    Hi -> "मुझे एक कॉफ़ी पिलाएँ"
   }
   |> html.text
 }
@@ -1261,6 +1370,7 @@ pub fn donate_bitcoin_address(l: Lang) -> element.Element(a) {
     Ru -> "Биткойн-адрес: "
     Ko -> "비트코인 주소: "
     Ja -> "ビットコインアドレス: "
+    Hi -> "बिटकॉइन पता: "
   }
   |> html.text
 }
@@ -1275,6 +1385,7 @@ pub fn donate_ethereum_address(l: Lang) -> element.Element(a) {
     Ru -> "Эфириум-адрес: "
     Ko -> "이더리움 주소: "
     Ja -> "イーサリアムアドレス: "
+    Hi -> "एथेरियम पता: "
   }
   |> html.text
 }
@@ -1289,6 +1400,7 @@ pub fn gallery_browse(l: Lang) -> String {
     Ru -> "Просмотр"
     Ko -> "탐색"
     Ja -> "閲覧"
+    Hi -> "ब्राउज़िंग"
   }
 }
 
@@ -1302,6 +1414,7 @@ pub fn gallery_browse_comment(l: Lang) -> String {
     Ru -> "Просмотр файлов и папок пира"
     Ko -> "피어의 파일과 폴더 탐색"
     Ja -> "ピアのファイルとフォルダーの閲覧"
+    Hi -> "किसी पीयर की फ़ाइलें और फ़ोल्डर ब्राउज़ करना"
   }
 }
 
@@ -1315,6 +1428,7 @@ pub fn gallery_search(l: Lang) -> String {
     Ru -> "Результаты поиска"
     Ko -> "검색 결과"
     Ja -> "検索結果"
+    Hi -> "खोज परिणाम"
   }
 }
 
@@ -1332,6 +1446,7 @@ pub fn gallery_search_comment(l: Lang) -> String {
       "Результаты отсортированы по релевантности. Папки отображаются сверху."
     Ko -> "결과는 관련도 순으로 정렬되며, 폴더가 위에 표시됩니다."
     Ja -> "結果は関連度順に並べられ、フォルダーが上に表示されます。"
+    Hi -> "परिणाम प्रासंगिकता के अनुसार क्रमबद्ध हैं। फ़ोल्डर सबसे ऊपर रखे जाते हैं।"
   }
 }
 
@@ -1345,6 +1460,7 @@ pub fn gallery_download_folders(l: Lang) -> String {
     Ru -> "Загрузки - Папки"
     Ko -> "다운로드 - 폴더"
     Ja -> "ダウンロード - フォルダー"
+    Hi -> "डाउनलोड - फ़ोल्डर"
   }
 }
 
@@ -1364,6 +1480,7 @@ pub fn gallery_download_folders_comment(l: Lang) -> String {
       "В этом представлении файлы показаны вместе с папками, и те и другие отсортированы по алфавиту."
     Ko -> "이 화면은 파일을 폴더와 함께 보여 주며, 모두 이름순으로 정렬됩니다."
     Ja -> "このビューはファイルをフォルダーとともに表示します。どちらもアルファベット順に並びます。"
+    Hi -> "यह दृश्य फ़ाइलों को उनके फ़ोल्डरों के साथ दिखाता है, दोनों वर्णानुक्रम में क्रमबद्ध हैं।"
   }
 }
 
@@ -1377,6 +1494,7 @@ pub fn gallery_download_files(l: Lang) -> String {
     Ru -> "Загрузки - Файлы"
     Ko -> "다운로드 - 파일"
     Ja -> "ダウンロード - ファイル"
+    Hi -> "डाउनलोड - फ़ाइलें"
   }
 }
 
@@ -1396,6 +1514,8 @@ pub fn gallery_download_files_comment(l: Lang) -> String {
       "В этом представлении показаны только файлы; их порядок можно менять, верхние файлы загружаются первыми."
     Ko -> "이 화면은 파일만 보여 주며, 순서를 변경할 수 있고 위쪽 파일이 먼저 다운로드됩니다."
     Ja -> "このビューはファイルのみを表示します。並べ替えができ、上にあるファイルから先にダウンロードされます。"
+    Hi ->
+      "यह दृश्य केवल फ़ाइलें दिखाता है, उनका क्रम बदला जा सकता है, सबसे ऊपर की फ़ाइलें पहले डाउनलोड होती हैं।"
   }
 }
 
@@ -1409,6 +1529,7 @@ pub fn gallery_upload(l: Lang) -> String {
     Ru -> "Представление отдач"
     Ko -> "업로드 화면"
     Ja -> "アップロード画面"
+    Hi -> "अपलोड दृश्य"
   }
 }
 
@@ -1422,6 +1543,7 @@ pub fn gallery_skin(l: Lang) -> String {
     Ru -> "Скин"
     Ko -> "스킨"
     Ja -> "スキン"
+    Hi -> "स्किन"
   }
 }
 
@@ -1435,6 +1557,7 @@ pub fn download_button_download(l: Lang) -> element.Element(a) {
     Ru -> "Скачать D-LAN"
     Ko -> "D-LAN 다운로드"
     Ja -> "D-LAN をダウンロード"
+    Hi -> "D-LAN डाउनलोड करें"
   }
   |> html.text
 }
@@ -1459,6 +1582,7 @@ pub fn download_button_version(
     Ru -> #("Версия " <> version <> " для ", "")
     Ko -> #("버전 " <> version <> " (", "용)")
     Ja -> #("バージョン " <> version <> " (", " 用)")
+    Hi -> #("संस्करण " <> version <> " (", " के लिए)")
   }
 
   element.fragment([
@@ -1481,6 +1605,7 @@ pub fn format_date(l: Lang, date: calendar.Date) -> String {
       "enero",
       "gennaio",
       "января",
+      "जनवरी",
     )
     calendar.February -> #(
       "February",
@@ -1489,12 +1614,37 @@ pub fn format_date(l: Lang, date: calendar.Date) -> String {
       "febrero",
       "febbraio",
       "февраля",
+      "फ़रवरी",
     )
-    calendar.March -> #("March", "mars", "März", "marzo", "marzo", "марта")
-    calendar.April -> #("April", "avril", "April", "abril", "aprile", "апреля")
-    calendar.May -> #("May", "mai", "Mai", "mayo", "maggio", "мая")
-    calendar.June -> #("June", "juin", "Juni", "junio", "giugno", "июня")
-    calendar.July -> #("July", "juillet", "Juli", "julio", "luglio", "июля")
+    calendar.March -> #(
+      "March",
+      "mars",
+      "März",
+      "marzo",
+      "marzo",
+      "марта",
+      "मार्च",
+    )
+    calendar.April -> #(
+      "April",
+      "avril",
+      "April",
+      "abril",
+      "aprile",
+      "апреля",
+      "अप्रैल",
+    )
+    calendar.May -> #("May", "mai", "Mai", "mayo", "maggio", "мая", "मई")
+    calendar.June -> #("June", "juin", "Juni", "junio", "giugno", "июня", "जून")
+    calendar.July -> #(
+      "July",
+      "juillet",
+      "Juli",
+      "julio",
+      "luglio",
+      "июля",
+      "जुलाई",
+    )
     calendar.August -> #(
       "August",
       "août",
@@ -1502,6 +1652,7 @@ pub fn format_date(l: Lang, date: calendar.Date) -> String {
       "agosto",
       "agosto",
       "августа",
+      "अगस्त",
     )
     calendar.September -> #(
       "September",
@@ -1510,6 +1661,7 @@ pub fn format_date(l: Lang, date: calendar.Date) -> String {
       "septiembre",
       "settembre",
       "сентября",
+      "सितंबर",
     )
     calendar.October -> #(
       "October",
@@ -1518,6 +1670,7 @@ pub fn format_date(l: Lang, date: calendar.Date) -> String {
       "octubre",
       "ottobre",
       "октября",
+      "अक्टूबर",
     )
     calendar.November -> #(
       "November",
@@ -1526,6 +1679,7 @@ pub fn format_date(l: Lang, date: calendar.Date) -> String {
       "noviembre",
       "novembre",
       "ноября",
+      "नवंबर",
     )
     calendar.December -> #(
       "December",
@@ -1534,6 +1688,7 @@ pub fn format_date(l: Lang, date: calendar.Date) -> String {
       "diciembre",
       "dicembre",
       "декабря",
+      "दिसंबर",
     )
   }
   case l {
@@ -1545,6 +1700,7 @@ pub fn format_date(l: Lang, date: calendar.Date) -> String {
     Ru -> day <> " " <> months.5 <> " " <> year <> " г."
     Ko -> year <> "년 " <> month_number <> "월 " <> day <> "일"
     Ja -> year <> "年" <> month_number <> "月" <> day <> "日"
+    Hi -> day <> " " <> months.6 <> " " <> year
   }
 }
 
@@ -1562,6 +1718,7 @@ pub fn download_button_released(
     Ru -> "Дата выпуска: " <> date
     Ko -> "출시일 : " <> date
     Ja -> "リリース日: " <> date
+    Hi -> "रिलीज़ की तारीख: " <> date
   }
   |> html.text
 }
@@ -1576,6 +1733,7 @@ pub fn download_button_torrent(l: Lang) -> element.Element(a) {
     Ru -> "Скачать через BitTorrent"
     Ko -> "BitTorrent로 다운로드"
     Ja -> "BitTorrent でダウンロード"
+    Hi -> "BitTorrent से डाउनलोड करें"
   }
   |> html.text
 }
