@@ -80,6 +80,7 @@ void ProtoHelper::setIP(Protos::Common::IP& ipMess, const QHostAddress& address)
 
          ipMess.set_type(Protos::Common::IP::IPv6);
          ipMess.set_ip(ip, sizeof(ip));
+         ipMess.set_scope_id(address.scopeId().toStdString());
       }
       break;
    default:;
@@ -113,7 +114,9 @@ QHostAddress ProtoHelper::getIP(const Protos::Common::IP& ipMess)
          Q_IPV6ADDR qipv6addr;
          for (int i = 0; i < 16; i++)
             qipv6addr[i] = static_cast<quint8>(ip[i]);
-         return QHostAddress(qipv6addr);
+         QHostAddress address(qipv6addr);
+         address.setScopeId(QString::fromStdString(ipMess.scope_id()));
+         return address;
       }
       break;
    default:;

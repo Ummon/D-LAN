@@ -2385,4 +2385,14 @@ void Tests::protoHelper()
       {
       }
    }
+
+   // 'setIP(..)' and 'getIP(..)'. The scope of a link-local IPv6 address must be kept, Linux can't connect without it.
+   for (const QHostAddress& address : { QHostAddress("192.168.1.2"), QHostAddress("2001:db8::1"), QHostAddress("fe80::1%lo") })
+   {
+      Protos::Common::IP ipMess;
+      ProtoHelper::setIP(ipMess, address);
+      const QHostAddress result = ProtoHelper::getIP(ipMess);
+      QCOMPARE(result, address);
+      QCOMPARE(result.scopeId(), address.scopeId());
+   }
 }

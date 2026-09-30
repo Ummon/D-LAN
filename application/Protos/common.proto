@@ -37,6 +37,7 @@ message IP {
    }
    Type type = 1;
    bytes ip = 2; // if type == IPv4 -> 4 bytes. If type == IPv6 -> 16 bytes. Big endian.
+   string scope_id = 3; // IPv6 only, the interface of a link-local address as seen by the core (e.g. "wlp97s0"). Linux can't connect to a link-local address without it.
 }
 
 // A shared entry matches an existing handle, thus it's optional to have the complete path to it.
