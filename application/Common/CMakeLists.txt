@@ -82,7 +82,27 @@ target_link_libraries(Common PUBLIC
 # Qt handles TLS transport; libcrypto generates and validates the persistent
 # self-signed Core identity without invoking an external openssl executable.
 find_package(OpenSSL 3 REQUIRED COMPONENTS Crypto SSL)
+if(EXISTS "${OPENSSL_INCLUDE_DIR}/stddef.h")
+   # A toolchain's C headers would shadow libc++'s ones ('<cstddef> tried including <stddef.h>').
+   message(FATAL_ERROR
+      "OPENSSL_INCLUDE_DIR (${OPENSSL_INCLUDE_DIR}) contains C library headers from another toolchain. "
+      "Use an OpenSSL installation whose include directory holds only OpenSSL, such as MSYS2 "
+      "'mingw-w64-clang-x86_64-openssl' with OPENSSL_ROOT_DIR=C:/msys64/clang64, then clear the "
+      "cached OPENSSL_* entries.")
+endif()
 target_link_libraries(Common PRIVATE OpenSSL::Crypto)
+
+if(WIN32)
+   # Copy the DLLs next to the executables so running from the build directory does not
+   # pick up an incompatible libcrypto/libssl with the same name from PATH.
+   if(DLAN_OPENSSL_RUNTIME_DIR)
+      set(_dlan_openssl_bin "${DLAN_OPENSSL_RUNTIME_DIR}")
+   else()
+      get_filename_component(_dlan_openssl_bin "${OPENSSL_CRYPTO_LIBRARY}/../../bin" ABSOLUTE)
+   endif()
+   file(GLOB _dlan_openssl_dlls "${_dlan_openssl_bin}/libcrypto-3*.dll" "${_dlan_openssl_bin}/libssl-3*.dll")
+   file(COPY ${_dlan_openssl_dlls} DESTINATION "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+endif()
 
 if(APPLE)
    target_link_libraries(Common PRIVATE "-framework SystemConfiguration" "-framework CoreFoundation")

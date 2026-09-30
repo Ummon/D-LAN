@@ -6,6 +6,7 @@ Unless stated otherwise, paths are relative to the repository root.
 
 * [Build BLAKE3](#build-blake3)
 * [Build Protobuf](#build-protobuf)
+* [OpenSSL for Windows](#openssl-for-windows)
 * [Build OpenSSL for macOS](#build-openssl-for-macos)
 * [CMake options](#cmake-options)
 * [Build a release](#build-a-release)
@@ -47,6 +48,29 @@ Use fresh build directories when rebuilding dependencies that previously targete
 a newer macOS version. Protobuf's bundled Abseil and utf8_range must be rebuilt
 with the same settings. Changing only D-LAN's deployment target does not make
 previously compiled static libraries compatible with macOS 26.
+
+## OpenSSL for Windows
+
+Install OpenSSL 3 from the MSYS2 `clang64` environment, which uses the same C
+runtime (UCRT) as LLVM-MinGW:
+
+```sh
+pacman -S mingw-w64-clang-x86_64-openssl
+```
+
+`OPENSSL_ROOT_DIR` defaults to `C:/msys64/clang64` on Windows. Do not use the
+`mingw64` environment: its include directory also contains GCC/MinGW C headers,
+which shadow libc++'s and break the build (`<cstddef> tried including <stddef.h>
+but didn't find libc++'s <stddef.h> header`); CMake stops with an error in that
+case. To switch an existing build directory, clear the cached OpenSSL entries:
+
+```sh
+cmake -S application -B application/build/<build-dir> -U 'OPENSSL_*' -U 'LIB_EAY*' -U 'SSL_EAY*' -DOPENSSL_ROOT_DIR=C:/msys64/clang64
+```
+
+Configuring copies `libcrypto-3-x64.dll` and `libssl-3-x64.dll` to the `output`
+directory, so executables run from the build directory do not load
+another OpenSSL build with the same file names from `PATH`.
 
 ## Build OpenSSL for macOS
 
@@ -100,7 +124,7 @@ an existing OpenSSL binary compatible with macOS 26.
 | `DLAN_PDB` | `ON` | Windows Clang: emit PDB symbols in non-Debug builds for crash reports and profiling |
 | `DLAN_BLAKE3_ROOT` | `C:/BLAKE3-1.8.7/c` | BLAKE3 location |
 | `DLAN_PROTOBUF_ROOT` | `C:/protobuf-36.1` | protobuf location |
-| `OPENSSL_ROOT_DIR` | CMake search paths | OpenSSL 3 headers and libraries |
+| `OPENSSL_ROOT_DIR` | `C:/msys64/clang64` on Windows, CMake search paths elsewhere | OpenSSL 3 headers and libraries |
 | `DLAN_OPENSSL_RUNTIME_DIR` | Inferred from the crypto library's installation | Windows packaging: directory containing the matching libcrypto and libssl DLLs |
 
 ## Remote-control TLS

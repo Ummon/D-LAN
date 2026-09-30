@@ -174,6 +174,11 @@ def windows_openssl_dlls [release_directory: path] {
 def make_windows_setup [build_dir?: path] {
     let release_directory = get_release_directory $build_dir
     let openssl_dlls = windows_openssl_dlls $release_directory
+    # Take the toolchain runtime from the compiler that built the release.
+    let compiler = cache_value $release_directory CMAKE_CXX_COMPILER
+    if ($compiler | is-empty) { error make {msg: "CMAKE_CXX_COMPILER is missing from the release CMake cache."} }
+    let winpthread_dll = $compiler | path dirname | path join "libwinpthread-1.dll" | path expand
+    if not ($winpthread_dll | path exists) { error make {msg: $"Cannot find ($winpthread_dll)."} }
 
     cd Setups/Windows
     mkdir setup_bundle
@@ -183,7 +188,7 @@ def make_windows_setup [build_dir?: path] {
     }
 
     cd setup_bundle
-    cp C:/Qt/Tools/llvm-mingw1706_64/bin/libwinpthread-1.dll .
+    cp $winpthread_dll .
     cp ...$openssl_dlls .
 
     mkdir styles

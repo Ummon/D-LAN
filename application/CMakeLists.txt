@@ -35,6 +35,12 @@ option(DLAN_PDB         "Emit CodeView debug info and a .pdb so LM::CrashHandler
 set(DLAN_BLAKE3_ROOT   "C:/BLAKE3-1.8.7/c" CACHE PATH "Root of the BLAKE3 C library (contains blake3.h and lib/)")
 set(DLAN_PROTOBUF_ROOT "C:/protobuf-36.1" CACHE PATH "Root of the protobuf installation")
 set(DLAN_OPENSSL_RUNTIME_DIR "" CACHE PATH "OpenSSL bin directory for Windows packaging (libcrypto and libssl DLLs)")
+if(WIN32)
+   # MSYS2 'clang64' matches llvm-mingw (UCRT) and its include directory holds only
+   # OpenSSL's headers. Without a default, CMake may pick another MSYS2 environment
+   # through PATH.
+   set(OPENSSL_ROOT_DIR "C:/msys64/clang64" CACHE PATH "Root of the OpenSSL 3 installation")
+endif()
 
 # ------------------------------------------------------------------------------
 # Global compiler / Qt configuration (was common.pri).
