@@ -1,0 +1,40 @@
+{
+   "number_of_cores": 10,
+   "duration_minutes": 15,
+
+   "tick_min_ms": 500,
+   "tick_max_ms": 2000,
+
+   "file_size_mean_mb": 100,
+   "file_size_std_dev_mb": 100,
+   "max_file_size_mb": 1024,
+   "max_total_size_gb": 100,
+
+   "remote_control_base_port": 59500,
+   "unicast_base_port": 59600,
+   "unicast_port_step": 10,
+
+   "channel": "D-LAN_StressTests",
+   "multicast_port": 59450,
+
+   "number_of_rooms": 5,
+   "core_stop_timeout_s": 30,
+
+   "core_executable": "",
+   "seed": 0,
+
+   "action_weights": {
+      "create_file": 8,
+      "create_shared_directory": 3,
+      "create_sub_directory": 5,
+      "change_nick": 1,
+      "download": 5,
+      "cancel_download": 1,
+      "pause_download": 2,
+      "move_downloads": 2,
+      "delete_entry": 2,
+      "join_leave_room": 3,
+      "send_chat_message": 5,
+      "restart_core": 1
+   }
+}

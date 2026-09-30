@@ -218,6 +218,10 @@ add_subdirectory(Core)   # D-LAN.Core executable.
 add_subdirectory(GUI)    # D-LAN.GUI executable.
 # add_subdirectory(Client) # D-LAN.Client executable. # Disabled for now.
 
+if(DLAN_BUILD_TESTS)
+   add_subdirectory(StressTests) # StressTests executable, it launches several D-LAN.Core.
+endif()
+
 if(DLAN_BUILD_TOOLS)
    add_subdirectory(Tools/FileIndexer)
    add_subdirectory(Tools/LogViewer)
