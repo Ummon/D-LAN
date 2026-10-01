@@ -1031,7 +1031,7 @@
         <translation>Local</translation>
     </message>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="+78"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="+88"/>
         <source>D-LAN Core cannot be installed as a service</source>
         <translation>El núcleo de D-LAN no puede instalarse como servicio</translation>
     </message>

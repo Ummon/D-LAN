@@ -945,7 +945,7 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="+78"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="+88"/>
         <source>D-LAN Core cannot be installed as a service</source>
         <translation>D-LAN Core ne peut pas être installé comme service</translation>
     </message>

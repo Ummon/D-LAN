@@ -1031,22 +1031,22 @@
         <translation>Locale</translation>
     </message>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="78"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="88"/>
         <source>D-LAN Core cannot be installed as a service</source>
         <translation>Impossibile installare D-LAN Core come servizio</translation>
     </message>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="93"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="103"/>
         <source>Core launched as subprocess</source>
         <translation>Core avviato come sottoprocesso</translation>
     </message>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="95"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="105"/>
         <source>Unable to launch the Core as subprocess</source>
         <translation>Impossibile avviare il Core come sottoprocesso</translation>
     </message>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="99"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="109"/>
         <source>Core service launched</source>
         <translation>Servizio Core avviato</translation>
     </message>

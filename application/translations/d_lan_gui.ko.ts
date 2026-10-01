@@ -945,22 +945,22 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="78"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="88"/>
         <source>D-LAN Core cannot be installed as a service</source>
         <translation>D-LAN 코어를 서비스로 설치할 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="93"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="103"/>
         <source>Core launched as subprocess</source>
         <translation>코어가 하위 프로세스로 시작되었습니다</translation>
     </message>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="95"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="105"/>
         <source>Unable to launch the Core as subprocess</source>
         <translation>코어를 하위 프로세스로 시작할 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="99"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="109"/>
         <source>Core service launched</source>
         <translation>코어 서비스가 시작되었습니다</translation>
     </message>
