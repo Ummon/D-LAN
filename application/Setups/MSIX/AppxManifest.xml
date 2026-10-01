@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Template used by 'build.nu make-msix', '@VERSION@' is replaced by the version from 'Common/Version.h'. -->
+<Package
+   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+   xmlns:desktop2="http://schemas.microsoft.com/appx/manifest/desktop/windows10/2"
+   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+   IgnorableNamespaces="uap desktop2 rescap">
+
+   <!-- 'Name', 'Publisher' and 'PublisherDisplayName' must match the values given by Partner Center
+        (Product management > Product identity) once the app name is reserved.
+        To sign the package yourself, 'Publisher' must also match the subject of the certificate. -->
+   <Identity
+      Name="GregBurri.D-LAN"
+      Publisher="CN=E2E6D597-C87B-4362-9C13-D8C66E31B347"
+      Version="@VERSION@"
+      ProcessorArchitecture="x64" />
+
+   <Properties>
+      <DisplayName>D-LAN</DisplayName>
+      <PublisherDisplayName>Greg Burri</PublisherDisplayName>
+      <Logo>Assets\StoreLogo.png</Logo>
+   </Properties>
+
+   <Dependencies>
+      <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.26100.0" />
+   </Dependencies>
+
+   <!-- Same languages as the translations. -->
+   <Resources>
+      <Resource Language="en-us" />
+      <Resource Language="fr" />
+      <Resource Language="de" />
+      <Resource Language="it" />
+      <Resource Language="ru" />
+      <Resource Language="ja" />
+      <Resource Language="es" />
+      <Resource Language="ko" />
+      <Resource Language="hi" />
+   </Resources>
+
+   <Applications>
+      <Application Id="DLAN" Executable="D-LAN.GUI.exe" EntryPoint="Windows.FullTrustApplication">
+         <uap:VisualElements
+            DisplayName="D-LAN"
+            Description="A free LAN file sharing software."
+            BackgroundColor="transparent"
+            Square150x150Logo="Assets\Square150x150Logo.png"
+            Square44x44Logo="Assets\Square44x44Logo.png" />
+      </Application>
+   </Applications>
+
+   <Capabilities>
+      <rescap:Capability Name="runFullTrust" />
+   </Capabilities>
+
+   <!-- Replace the 'netsh' firewall exception of the Inno Setup installer. The rules are added at install and
+        removed at uninstall. Ports aren't restricted because they can be changed in the settings and the unicast
+        port is searched from 'unicast_base_port' when it's already taken. -->
+   <Extensions>
+      <desktop2:Extension Category="windows.firewallRules">
+         <desktop2:FirewallRules Executable="D-LAN.Core.exe">
+            <desktop2:Rule Direction="in" IPProtocol="TCP" Profile="all" />
+            <desktop2:Rule Direction="in" IPProtocol="UDP" Profile="all" />
+         </desktop2:FirewallRules>
+      </desktop2:Extension>
+   </Extensions>
+</Package>

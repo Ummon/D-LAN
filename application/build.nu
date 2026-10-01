@@ -119,11 +119,31 @@ def "main run-tests" [--build-dir: path] {
 def "main make-setup" [--build-dir: path] {
     print "=== MAKE SETUP ==="
     match $nu.os-info.name {
-        "windows" => { make_windows_setup $build_dir }
+        "windows" => {
+            make_windows_setup $build_dir
+
+            # Previous call 'make_windows_setup' already prepare the setup dir by calling 'prepare_windows_bundle'.
+            make_msix
+        }
         "linux" => { make_linux_app_image $build_dir }
         "macos" => { make_macos_app $build_dir }
         $other => { error make {msg: $"Unsupported OS: ($other)"} }
     }
+}
+
+# Create an MSIX package to publish D-LAN on the Microsoft Store.
+#
+# The identity in 'Setups/MSIX/AppxManifest.xml' must match the one reserved in Partner Center.
+# The Store signs the package itself, a certificate is only needed to install the package locally.
+def "main make-msix" [
+    --build-dir: path
+    --certificate: path # .pfx file to sign the package, its subject must match the manifest 'Publisher'.
+    --password: string # Password of the certificate.
+] {
+    print "=== MAKE MSIX ==="
+    if $nu.os-info.name != "windows" { error make {msg: "MSIX packages can only be created on Windows"} }
+    prepare_windows_bundle $build_dir
+    make_msix $certificate $password
 }
 
 # Package only Apple Silicon slices, including the deployed Qt dependencies.
@@ -172,6 +192,14 @@ def windows_openssl_dlls [release_directory: path] {
 }
 
 def make_windows_setup [build_dir?: path] {
+    prepare_windows_bundle $build_dir
+    cd Setups/Windows
+    run_checked iscc windows_setup.iss
+}
+
+# Copy the executables and their dependencies to 'Setups/Windows/setup_bundle'.
+# Shared by the Inno Setup installer and the MSIX package.
+def prepare_windows_bundle [build_dir?: path] {
     let release_directory = get_release_directory $build_dir
     let openssl_dlls = windows_openssl_dlls $release_directory
     # Take the toolchain runtime from the compiler that built the release.
@@ -196,10 +224,68 @@ def make_windows_setup [build_dir?: path] {
     cp -r ../../../GUI/resources/emoticons .
 
     run_checked windeployqt.exe --force-openssl --no-translations PasswordHasher.exe D-LAN.Core.exe D-LAN.GUI.exe
+}
 
-    cd ..
+# Create an MSIX package from 'Setups/Windows/setup_bundle' and 'Setups/MSIX'.
+def make_msix [certificate?: path, password?: string] {
+    let sdk_bin = windows_sdk_bin
+    let version_header = open --raw Common/Version.h | lines
+    let version = $version_header | parse '#define VERSION "{version}"' | get version | first
+    let tag = $version_header | parse '#define VERSION_TAG "{tag}"' | get tag | first
+    let build_time = $version_header | parse '#define BUILD_TIME "{build_time}"' | get build_time | first
+    # MSIX versions have four numeric parts and the Store requires the last one to be 0.
+    if not ($version =~ '^\d+\.\d+\.\d+$') {
+        error make {msg: $"The version must have three numeric parts to be used in an MSIX package: ($version)"}
+    }
+    let package_version = $"($version).0"
 
-    run_checked iscc windows_setup.iss
+    let msix_directory = "build/msix" | path expand
+    let layout_directory = $msix_directory | path join "layout"
+    # Contains only the manifest and the logos, to not index every file of the package as a resource.
+    let pri_directory = $msix_directory | path join "pri"
+    if ($msix_directory | path exists) { rm -rf $msix_directory }
+    mkdir $layout_directory $pri_directory
+
+    cp -r Setups/Windows/setup_bundle/* $layout_directory
+    let manifest = open --raw Setups/MSIX/AppxManifest.xml | str replace --all "@VERSION@" $package_version
+    for directory in [$layout_directory $pri_directory] {
+        $manifest | save ($directory | path join "AppxManifest.xml")
+        cp -r Setups/MSIX/Assets $directory
+    }
+
+    # 'resources.pri' lets Windows choose the logo matching the display scale and the target size.
+    let makepri = $sdk_bin | path join "makepri.exe"
+    let pri_config = $msix_directory | path join "priconfig.xml"
+    run_checked $makepri createconfig /cf $pri_config /dq en-US /pv 10.0.0 /o
+    # Resource packages are only for bundles, keep all the logo variants in the main 'resources.pri'.
+    open --raw $pri_config | str replace --regex '(?s)\s*<packaging>.*</packaging>' '' | save --force $pri_config
+    run_checked $makepri new /pr $pri_directory /cf $pri_config /mn ($pri_directory | path join "AppxManifest.xml") /of ($layout_directory | path join "resources.pri") /o
+
+    let output_directory = "Setups/Windows/Installations" | path expand
+    mkdir $output_directory
+    let output = $output_directory | path join $"D-LAN-($version)($tag)-($build_time).msix"
+    run_checked ($sdk_bin | path join "makeappx.exe") pack /d $layout_directory /p $output /o
+
+    if $certificate != null {
+        let password_arguments = if $password != null { [/p $password] } else { [] }
+        run_checked ($sdk_bin | path join "signtool.exe") sign /fd SHA256 /f ($certificate | path expand) ...$password_arguments /tr http://timestamp.digicert.com /td SHA256 $output
+    }
+    print $"Created ($output)"
+}
+
+# The bin directory of the latest Windows SDK providing MakeAppx, MakePri and SignTool.
+def windows_sdk_bin [] {
+    let kits_bin = $env."ProgramFiles(x86)" | path join "Windows Kits/10/bin"
+    let directories = if ($kits_bin | path exists) {
+        ls $kits_bin | where type == dir | get name
+            | where {|directory| $directory | path join "x64/makeappx.exe" | path exists }
+            # Zero-pad each part so the versions can be compared as strings.
+            | sort-by {|directory| $directory | path basename | split row "." | fill --alignment right --character "0" --width 6 | str join "." }
+    } else { [] }
+    if ($directories | is-empty) {
+        error make {msg: "Cannot find MakeAppx, install the Windows SDK."}
+    }
+    $directories | last | path join "x64"
 }
 
 def make_linux_app_image [build_dir?: path] {
