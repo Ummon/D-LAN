@@ -11,7 +11,8 @@ package Protos.GUI;
 message Settings {
    string core_address = 1; // [default = "localhost"].
    uint32 core_port = 2; // [default = 59485]
-   Common.Hash password = 3; // Hashed with the salt given by the core. See the 'Protos.GUI.AskForAuthentication' message.
+   Common.Hash password = 3; // Before D-LAN 1.4.2: hashed with the salt given by the core. Replaced by 'core_password'.
+   string core_password = 37; // The key derived from the password of the core, see 'Common::SaltedPassword' and 'Protos.GUI.AskForAuthentication'.
 
    Common.Language language = 20;
 

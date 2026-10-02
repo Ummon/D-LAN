@@ -455,78 +455,88 @@
 <context>
     <name>GUI::MainWindow</name>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="170"/>
+        <location filename="../GUI/MainWindow.cpp" line="174"/>
         <source>Already connected to this address</source>
         <translation>Già connesso a questo indirizzo</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="173"/>
+        <location filename="../GUI/MainWindow.cpp" line="177"/>
         <source>There is already a connection process in progress</source>
         <translation>Un tentativo di connessione è già in corso</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="176"/>
+        <location filename="../GUI/MainWindow.cpp" line="180"/>
         <source>The host is unknown</source>
         <translation>Host sconosciuto</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="179"/>
+        <location filename="../GUI/MainWindow.cpp" line="183"/>
         <source>Host has timed out</source>
         <translation>L&apos;host non risponde</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="182"/>
+        <location filename="../GUI/MainWindow.cpp" line="186"/>
         <source>The host hasn&apos;t defined any password</source>
         <translation>L&apos;host non ha impostato alcuna password</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="185"/>
+        <location filename="../GUI/MainWindow.cpp" line="189"/>
         <source>Wrong password</source>
         <translation>Password errata</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="188"/>
+        <location filename="../GUI/MainWindow.cpp" line="192"/>
         <source>Invalid address</source>
         <translation>Indirizzo non valido</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="191"/>
+        <location filename="../GUI/MainWindow.cpp" line="195"/>
         <source>Unable to establish a trusted encrypted connection. The Core&apos;s certificate may have changed or TLS may be unavailable. See the log for details.</source>
         <translation>Impossibile stabilire una connessione crittografata attendibile. Il certificato del Core potrebbe essere cambiato oppure TLS potrebbe non essere disponibile. Consultare il log per ulteriori dettagli.</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="194"/>
+        <location filename="../GUI/MainWindow.cpp" line="198"/>
         <source>The core closed the connection. Remote access requires a password to be defined on the core. The core may also have too many connections.</source>
         <translation>Il Core ha chiuso la connessione. L&apos;accesso remoto richiede che sul Core sia impostata una password. Il Core potrebbe anche avere troppe connessioni.</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="197"/>
+        <location filename="../GUI/MainWindow.cpp" line="201"/>
+        <source>The core couldn&apos;t prove that it knows the password. The connection may have been intercepted.</source>
+        <translation>Il Core non ha potuto dimostrare di conoscere la password. La connessione potrebbe essere stata intercettata.</translation>
+    </message>
+    <message>
+        <location filename="../GUI/MainWindow.cpp" line="204"/>
+        <source>The versions of the core and of this GUI are incompatible for remote control. Update them to the same version.</source>
+        <translation>Le versioni del Core e di questa GUI non sono compatibili per il controllo remoto. Aggiornarle alla stessa versione.</translation>
+    </message>
+    <message>
+        <location filename="../GUI/MainWindow.cpp" line="207"/>
         <source>Error unknown</source>
         <translation>Errore sconosciuto</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="203"/>
+        <location filename="../GUI/MainWindow.cpp" line="213"/>
         <source>Unable to connect to the core</source>
         <translation>Impossibile connettersi al Core</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="206"/>
-        <location filename="../GUI/MainWindow.cpp" line="230"/>
+        <location filename="../GUI/MainWindow.cpp" line="216"/>
+        <location filename="../GUI/MainWindow.cpp" line="240"/>
         <source>Core address:</source>
         <translation>Indirizzo del Core:</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="216"/>
+        <location filename="../GUI/MainWindow.cpp" line="226"/>
         <source>Connected to the core</source>
         <translation>Connesso al Core</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="225"/>
+        <location filename="../GUI/MainWindow.cpp" line="235"/>
         <source>Connection lost</source>
         <translation>Connessione persa</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="229"/>
+        <location filename="../GUI/MainWindow.cpp" line="239"/>
         <source>The connection to the core has been lost</source>
         <translation>La connessione al Core è stata persa</translation>
     </message>
@@ -754,57 +764,57 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="255"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="256"/>
         <source>Default</source>
         <translation>Predefinito</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="314"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="315"/>
         <source>Interface not active</source>
         <translation>Interfaccia non attiva</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="538"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="539"/>
         <source>Change the password</source>
         <translation>Cambia la password</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="542"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="543"/>
         <source>No password defined</source>
         <translation>Non è stata impostata alcuna password</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="544"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="545"/>
         <source>Define a password</source>
         <translation>Imposta una password</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="590"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="902"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="591"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="904"/>
         <source>Connecting . . .</source>
         <translation>Connessione in corso . . .</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="598"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="613"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="628"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="902"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="599"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="615"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="630"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="904"/>
         <source>Connect</source>
         <translation>Connetti</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="722"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="724"/>
         <source>Select one or more directories and/or files to share</source>
         <translation>Seleziona una o più cartelle e/o file da condividere</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="743"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="808"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="745"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="810"/>
         <source>Remove selected shared entries</source>
         <translation>Rimuovi gli elementi condivisi selezionati</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="744"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="746"/>
         <source>Are you sure you want to remove the selected shared files and directories?</source>
         <translation>Rimuovere i file e le cartelle condivisi selezionati?</translation>
     </message>
@@ -821,17 +831,17 @@
         <translation type="vanished">Rimuovi la cartella condivisa</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="816"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="818"/>
         <source>Move up</source>
         <translation>Sposta su</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="824"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="826"/>
         <source>Move down</source>
         <translation>Sposta giù</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="832"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="834"/>
         <source>Open location</source>
         <translation>Apri percorso</translation>
     </message>

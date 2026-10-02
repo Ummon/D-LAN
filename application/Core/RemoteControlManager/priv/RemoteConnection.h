@@ -102,6 +102,7 @@ namespace RCM
       bool canBeSent(Common::MessageHeader::MessageType type) const;
 
       void askForAuthentication();
+      QByteArray channelBinding() const;
       void refuseAuthentication(Protos::GUI::AuthenticationResult::Status status);
 
       void getEntriesResult(const PM::IGetEntriesResult* getEntriesResult, quint64 tag, const Protos::Core::GetEntriesResult& entries);

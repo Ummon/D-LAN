@@ -455,7 +455,7 @@
 <context>
     <name>GUI::MainWindow</name>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="+170"/>
+        <location filename="../GUI/MainWindow.cpp" line="+174"/>
         <source>Already connected to this address</source>
         <translation>Ya está conectado a esta dirección</translation>
     </message>
@@ -498,6 +498,16 @@
         <location line="+3"/>
         <source>The core closed the connection. Remote access requires a password to be defined on the core. The core may also have too many connections.</source>
         <translation>El núcleo cerró la conexión. El acceso remoto requiere que se defina una contraseña en el núcleo. También es posible que el núcleo tenga demasiadas conexiones.</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>The core couldn&apos;t prove that it knows the password. The connection may have been intercepted.</source>
+        <translation>El núcleo no pudo demostrar que conoce la contraseña. Es posible que la conexión haya sido interceptada.</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>The versions of the core and of this GUI are incompatible for remote control. Update them to the same version.</source>
+        <translation>Las versiones del núcleo y de esta GUI son incompatibles para el control remoto. Actualícelas a la misma versión.</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -754,7 +764,7 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+255"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+256"/>
         <source>Default</source>
         <translation>Por defecto</translation>
     </message>
@@ -780,13 +790,13 @@
     </message>
     <message>
         <location line="+46"/>
-        <location line="+312"/>
+        <location line="+313"/>
         <source>Connecting . . .</source>
         <translation>Conectando . . .</translation>
     </message>
     <message>
-        <location line="-304"/>
-        <location line="+15"/>
+        <location line="-305"/>
+        <location line="+16"/>
         <location line="+15"/>
         <location line="+274"/>
         <source>Connect</source>

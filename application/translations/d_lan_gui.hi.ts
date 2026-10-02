@@ -451,7 +451,7 @@
 <context>
     <name>GUI::MainWindow</name>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="+170"/>
+        <location filename="../GUI/MainWindow.cpp" line="+174"/>
         <source>Already connected to this address</source>
         <translation>इस पते से पहले से कनेक्ट है</translation>
     </message>
@@ -494,6 +494,16 @@
         <location line="+3"/>
         <source>The core closed the connection. Remote access requires a password to be defined on the core. The core may also have too many connections.</source>
         <translation>Core ने कनेक्शन बंद कर दिया। रिमोट एक्सेस के लिए Core पर पासवर्ड निर्धारित होना आवश्यक है। यह भी हो सकता है कि Core पर बहुत अधिक कनेक्शन हों।</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>The core couldn&apos;t prove that it knows the password. The connection may have been intercepted.</source>
+        <translation>Core यह साबित नहीं कर सका कि वह पासवर्ड जानता है। हो सकता है कि कनेक्शन को बीच में रोक लिया गया हो।</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>The versions of the core and of this GUI are incompatible for remote control. Update them to the same version.</source>
+        <translation>Core और इस GUI के संस्करण रिमोट कंट्रोल के लिए असंगत हैं। दोनों को एक ही संस्करण में अपडेट करें।</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -750,7 +760,7 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+255"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+256"/>
         <source>Default</source>
         <translation>डिफ़ॉल्ट</translation>
     </message>
@@ -776,13 +786,13 @@
     </message>
     <message>
         <location line="+46"/>
-        <location line="+312"/>
+        <location line="+313"/>
         <source>Connecting . . .</source>
         <translation>कनेक्ट हो रहा है . . .</translation>
     </message>
     <message>
-        <location line="-304"/>
-        <location line="+15"/>
+        <location line="-305"/>
+        <location line="+16"/>
         <location line="+15"/>
         <location line="+274"/>
         <source>Connect</source>

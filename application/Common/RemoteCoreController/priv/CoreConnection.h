@@ -63,7 +63,7 @@ namespace RCC
 
       void connectToCore() override;
       void connectToCore(quint16 port) override;
-      void connectToCore(const QString& address, quint16 port, Common::Hash password) override;
+      void connectToCore(const QString& address, quint16 port, const Common::SaltedPassword& password) override;
       void connectToCore(const QString& address, quint16 port, const QString& password) override;
 
       Common::Hash getRemoteID() const override;

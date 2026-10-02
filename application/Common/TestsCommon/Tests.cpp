@@ -45,6 +45,7 @@
 #include <Containers/SortedArray.h>
 #include <Containers/MapArray.h>
 #include <Network/MessageHeader.h>
+#include <Network/RemoteControlAuthentication.h>
 #include <Constants.h>
 #include <PersistentData.h>
 #include <Settings.h>
@@ -57,6 +58,8 @@
 #include <BloomFilter.h>
 #include <TransferRateCalculator.h>
 using namespace Common;
+
+namespace RCA = Common::RemoteControlAuthentication;
 
 Tests::Tests()
 {
@@ -2181,20 +2184,126 @@ void Tests::randomSaltIsUnpredictable()
 
 void Tests::saltedPassword()
 {
-   const SaltedPassword password { Hash::rand(), 0xfedcba9876543210ULL };
-   const QString str = password.toStr();
-   QCOMPARE(str, password.hash.toStr() + "$18364758544493064720");
+   SaltedPassword password;
+   password.salt = 0xfedcba9876543210ULL;
+   password.kdfSalt = QByteArray::fromHex("000102030405060708090a0b0c0d0e0f");
+   password.kdfMemory = RCA::KDF_MEMORY;
+   password.kdfIterations = RCA::KDF_ITERATIONS;
+   password.key = QByteArray(RCA::KEY_SIZE, '\xab');
+   QVERIFY(password.isValid());
 
+   const QString str = password.toStr();
+   QCOMPARE(str, "argon2id$65536$3$000102030405060708090a0b0c0d0e0f$18364758544493064720$" + QString("ab").repeated(RCA::KEY_SIZE));
    const SaltedPassword decoded = SaltedPassword::fromStr(str);
-   QCOMPARE(decoded.hash, password.hash);
-   QCOMPARE(decoded.salt, password.salt);
+   QVERIFY(decoded.sameDerivation(password));
+   QCOMPARE(decoded.key, password.key);
+   QVERIFY(!decoded.isLegacy());
+
+   const QStringList malformed {
+      QString(str).replace("argon2id", "argon2i"),
+      str.chopped(2), // Key too short.
+      str + "ab", // Key too long.
+      QString(str).replace("000102", "0g0102"), // Not hexadecimal.
+      QString(str).replace("$3$", "$2$"), // Iterations below the minimum.
+      QString(str).replace("$65536$", "$1048576$"), // Memory above the maximum.
+      str + "$",
+   };
+   for (const QString& str : malformed)
+      QVERIFY2(SaltedPassword::fromStr(str).isNull() && !SaltedPassword::fromStr(str).isLegacy(), qPrintable(str));
+
+   // The form of the versions prior to 1.4.2.
+   const Hash hash = Hash::rand();
+   const SaltedPassword legacy = SaltedPassword::fromStr(hash.toStr() + "$18364758544493064720");
+   QVERIFY(legacy.isNull());
+   QVERIFY(legacy.isLegacy());
+   QCOMPARE(legacy.legacyHash, hash);
+   QCOMPARE(legacy.salt, 0xfedcba9876543210ULL);
+   QCOMPARE(legacy.toStr(), hash.toStr() + "$18364758544493064720");
 
    QVERIFY(SaltedPassword().toStr().isEmpty());
-   QVERIFY(SaltedPassword::fromStr("").isNull());
-   QVERIFY(SaltedPassword::fromStr(password.hash.toStr()).isNull()); // Without salt.
-   QVERIFY(SaltedPassword::fromStr(password.hash.toStr() + "$").isNull());
-   QVERIFY(SaltedPassword::fromStr(password.hash.toStr() + "$abc").isNull());
-   QVERIFY(SaltedPassword::fromStr("zz$42").isNull());
+   for (const QString& str : QStringList { QString(), hash.toStr(), hash.toStr() + "$", hash.toStr() + "$abc", "zz$42" })
+      QVERIFY2(SaltedPassword::fromStr(str).isNull() && !SaltedPassword::fromStr(str).isLegacy(), qPrintable(str));
+}
+
+void Tests::remoteControlKeys()
+{
+   const auto bytes = [](int first, int count) {
+      QByteArray result;
+      for (int i = 0; i < count; ++i)
+         result.append(static_cast<char>(first + i));
+      return result;
+   };
+
+   // Computed with libsodium ('crypto_pwhash', Argon2id 1.3 with one lane) and with the OpenSSL command line.
+   QCOMPARE(
+      RCA::deriveKey(bytes(0, Hash::HASH_SIZE), bytes(100, RCA::KDF_SALT_SIZE), 64 * 1024, 3).toHex(),
+      QByteArray("f4711ad63e3655cd703256a888a393e76cd0f4d3f03b9997f6305a64c7d939a8")
+   );
+
+   const QByteArray kdfSalt = bytes(100, RCA::KDF_SALT_SIZE);
+   QVERIFY(RCA::isValidKdf(kdfSalt, RCA::KDF_MEMORY, RCA::KDF_ITERATIONS));
+   QVERIFY(RCA::isValidKdf(kdfSalt, RCA::MAX_KDF_MEMORY, RCA::MAX_KDF_ITERATIONS));
+   QVERIFY(!RCA::isValidKdf(kdfSalt, RCA::KDF_MEMORY - 1, RCA::KDF_ITERATIONS)); // Cheaper to crack.
+   QVERIFY(!RCA::isValidKdf(kdfSalt, RCA::KDF_MEMORY, RCA::KDF_ITERATIONS - 1));
+   QVERIFY(!RCA::isValidKdf(kdfSalt, RCA::MAX_KDF_MEMORY + 1, RCA::KDF_ITERATIONS)); // Would make a GUI hang.
+   QVERIFY(!RCA::isValidKdf(kdfSalt, RCA::KDF_MEMORY, RCA::MAX_KDF_ITERATIONS + 1));
+   QVERIFY(!RCA::isValidKdf(kdfSalt.chopped(1), RCA::KDF_MEMORY, RCA::KDF_ITERATIONS));
+
+   const SaltedPassword created = SaltedPassword::create("password");
+   QVERIFY(created.isValid());
+   QCOMPARE(created.kdfMemory, RCA::KDF_MEMORY);
+   QCOMPARE(created.kdfIterations, RCA::KDF_ITERATIONS);
+   const SaltedPassword other = SaltedPassword::create("password");
+   QVERIFY(other.salt != created.salt && other.kdfSalt != created.kdfSalt && other.key != created.key);
+
+   // A GUI derives the key from the plain password and the parameters given by the core.
+   const SaltedPassword derived = SaltedPassword::derive(
+      Hasher::hashWithSalt(QString("password"), created.salt), created.salt, created.kdfSalt, created.kdfMemory, created.kdfIterations
+   );
+   QVERIFY(derived.sameDerivation(created));
+   QCOMPARE(derived.key, created.key);
+
+   // The same goes for the password of a prior version upgraded by the core.
+   SaltedPassword legacy;
+   legacy.salt = 42;
+   legacy.legacyHash = Hasher::hashWithSalt(QString("password"), 42);
+   const SaltedPassword upgraded = legacy.upgraded();
+   QVERIFY(upgraded.isValid());
+   QCOMPARE(upgraded.salt, quint64(42));
+   QCOMPARE(
+      SaltedPassword::derive(Hasher::hashWithSalt(QString("password"), 42), 42, upgraded.kdfSalt, upgraded.kdfMemory, upgraded.kdfIterations).key,
+      upgraded.key
+   );
+}
+
+void Tests::remoteControlProofs()
+{
+   const auto bytes = [](int first, int count) {
+      QByteArray result;
+      for (int i = 0; i < count; ++i)
+         result.append(static_cast<char>(first + i));
+      return result;
+   };
+   const QByteArray key = bytes(0, RCA::KEY_SIZE);
+   const QByteArray nonce = bytes(32, RCA::NONCE_SIZE);
+   const QByteArray binding = bytes(64, 32);
+   const quint64 challenge = 0x0102030405060708ULL;
+
+   // Computed with Python's 'hmac', following 'Protos.GUI.AskForAuthentication'.
+   QCOMPARE(RCA::clientProof(key, challenge, nonce, binding).toHex(), QByteArray("a218c7fddeaafb26efc89e5913a0ac1dcaa6f3ac17727252228f11fbe701a6c1"));
+   QCOMPARE(RCA::coreProof(key, challenge, nonce, binding).toHex(), QByteArray("448b343fe0ce5f9f8afc5d35ef8e8feddb96abcf9681caa437c8169d0413161c"));
+   QCOMPARE(RCA::clientProof(key, challenge, nonce, QByteArray()).toHex(), QByteArray("e4d65990689a2d987222431fa2ae8ccb11e8cb413c45501464f9bcf39b6e825b"));
+
+   QVERIFY(RCA::equals(key, key));
+   QVERIFY(RCA::equals(QByteArray(), QByteArray()));
+   QVERIFY(!RCA::equals(key, nonce));
+   QVERIFY(!RCA::equals(key, key.chopped(1)));
+
+   const QByteArray random = RCA::randomBytes(RCA::NONCE_SIZE);
+   QCOMPARE(random.size(), RCA::NONCE_SIZE);
+   QVERIFY(random != RCA::randomBytes(RCA::NONCE_SIZE));
+   QCOMPARE(RCA::randomBytes(RCA::KDF_SALT_SIZE).size(), RCA::KDF_SALT_SIZE);
+   QVERIFY(RCA::channelBinding(QSslCertificate()).isEmpty());
 }
 
 void Tests::bloomFilter()

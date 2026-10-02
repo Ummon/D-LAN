@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include <QByteArray>
 #include <QString>
 
 #include <Common/Hash.h>
@@ -25,18 +26,47 @@
 namespace Common
 {
    /**
-     * A password hashed with a salt: 'hash' = 'Hasher::hashWithSalt(password, salt)'.
-     * Stored in the settings as a string "<hash>$<salt>", where <hash> is in hexadecimal and <salt> in decimal.
-     * A null hash means no password is defined, its string form is empty.
+     * The remote control password, known by the core and by the GUI controlling it remotely:
+     * 'key' = Argon2id('Hasher::hashWithSalt(password, salt)', 'kdfSalt', 'kdfMemory', 'kdfIterations').
+     * See 'Protos.GUI.AskForAuthentication' and 'Common::RemoteControlAuthentication'.
+     * Stored in the settings as a string "argon2id$<kdf memory>$<kdf iterations>$<kdf salt>$<salt>$<key>", where the
+     * KDF salt and the key are in hexadecimal and the other values in decimal.
+     * A password without key is null, its string form is empty.
+     *
+     * The versions prior to 1.4.2 only kept 'Hasher::hashWithSalt(password, salt)', as "<hash>$<salt>". Such a legacy
+     * password has no key, only a 'legacyHash' from which the key is derived, see 'upgraded()'.
      */
    struct SaltedPassword
    {
-      Hash hash;
       quint64 salt = 0;
+      QByteArray kdfSalt;
+      quint32 kdfMemory = 0; // [KiB].
+      quint32 kdfIterations = 0;
+      QByteArray key;
 
-      bool isNull() const { return this->hash.isNull(); }
+      Hash legacyHash;
+
+      bool isNull() const { return this->key.isEmpty(); }
+      bool isLegacy() const { return this->isNull() && !this->legacyHash.isNull(); }
+
+      // A complete key with accepted KDF parameters.
+      bool isValid() const;
+
+      // Whether both keys are derived with the same salts and KDF parameters.
+      bool sameDerivation(const SaltedPassword& other) const;
 
       QString toStr() const;
       static SaltedPassword fromStr(const QString& str);
+
+      // The following functions derive a key, they are slow by design. They throw a QString on failure.
+
+      // With new random salts and the default KDF parameters.
+      static SaltedPassword create(const QString& password);
+
+      // The key of 'saltedPassword' = 'Hasher::hashWithSalt(password, salt)' for the given KDF salt and parameters.
+      static SaltedPassword derive(const Hash& saltedPassword, quint64 salt, const QByteArray& kdfSalt, quint32 kdfMemory, quint32 kdfIterations);
+
+      // The key of a legacy password, derived with a new random KDF salt and the default KDF parameters.
+      SaltedPassword upgraded() const;
    };
 }

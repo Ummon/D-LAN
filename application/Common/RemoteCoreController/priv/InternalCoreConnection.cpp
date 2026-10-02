@@ -27,6 +27,7 @@ using namespace RCC;
 #include <Common/ProtoHelper.h>
 #include <Common/Constants.h>
 #include <Common/Global.h>
+#include <Common/Network/RemoteControlAuthentication.h>
 #include <Common/Network/RemoteControlTls.h>
 
 #include <LogManager/Builder.h>
@@ -37,6 +38,8 @@ using namespace RCC;
 #include <priv/LocalBrowseResult.h>
 #include <priv/LocalBrowseQuickAccessResult.h>
 #include <priv/SearchResult.h>
+
+namespace RCA = Common::RemoteControlAuthentication;
 
 // The behavior under Windows and Linux are not the same when connecting a socket to a port.
 // On Linux 'connectToHost(..)' will immediately fail if there is no service behind the port,
@@ -69,8 +72,7 @@ InternalCoreConnection::InternalCoreConnection(CoreController& coreController) :
    currentHostLookupID(-1),
    nbRetries(0),
    authenticated(false),
-   forcedToClose(false),
-   salt(0)
+   forcedToClose(false)
 {
    this->retryTimer.setSingleShot(true);
    this->retryTimer.setInterval(TIME_BETWEEN_RETRIES);
@@ -156,21 +158,21 @@ void InternalCoreConnection::cancelConnectionAttempt()
    this->closedByCore = false;
 }
 
-void InternalCoreConnection::connectToCore(const QString& address, quint16 port, Common::Hash password)
+void InternalCoreConnection::connectToCore(const QString& address, quint16 port, const Common::SaltedPassword& password)
 {
    this->startConnection(address, port, password, QString());
 }
 
 void InternalCoreConnection::connectToCore(const QString& address, quint16 port, const QString& password)
 {
-   this->startConnection(address, port, Common::Hash(), password);
+   this->startConnection(address, port, Common::SaltedPassword(), password);
 }
 
 /**
-  * Each attempt sets both passwords: a plain one left by a failed attempt would otherwise be salted
-  * and used in place of the hash given to the next one.
+  * Each attempt sets both passwords: a plain one left by a failed attempt would otherwise be derived
+  * and used in place of the key given to the next one.
   */
-void InternalCoreConnection::startConnection(const QString& address, quint16 port, const Common::Hash& password, const QString& plainPassword)
+void InternalCoreConnection::startConnection(const QString& address, quint16 port, const Common::SaltedPassword& password, const QString& plainPassword)
 {
    this->cancelConnectionAttempt();
 
@@ -254,37 +256,49 @@ void InternalCoreConnection::setCoreLanguage(const QLocale& locale)
    this->sendCurrentLanguage();
 }
 
+/**
+  * The core doesn't check the old password, the GUI does when it knows the key of the current password,
+  * that is when it is connected to a remote core. Slow by design: keys are derived.
+  */
 bool InternalCoreConnection::setCorePassword(const QString& newPassword, const QString& oldPassword)
 {
-   Protos::GUI::ChangePassword passMess;
-
-   quint64 newSalt = 0;
-   const Common::Hash newPasswordHashed = Common::Hasher::hashWithRandomSalt(newPassword, newSalt);
-
-   passMess.mutable_new_password()->set_hash(newPasswordHashed.getData(), Common::Hash::HASH_SIZE);
-   passMess.set_new_salt(newSalt);
-
-   if (!oldPassword.isNull())
+   try
    {
-      Common::Hash oldPasswordHashed = Common::Hasher::hashWithSalt(oldPassword, this->salt);
-      if (!this->connectionInfo.password.isNull() && this->connectionInfo.password != oldPasswordHashed)
-         return false;
+      const Common::SaltedPassword& current = this->connectionInfo.password;
+      if (!oldPassword.isNull() && current.isValid())
+      {
+         const auto old = Common::SaltedPassword::derive(
+            Common::Hasher::hashWithSalt(oldPassword, current.salt), current.salt, current.kdfSalt, current.kdfMemory, current.kdfIterations
+         );
+         if (!RCA::equals(old.key, current.key))
+            return false;
+      }
 
-      passMess.mutable_old_password()->set_hash(oldPasswordHashed.getData(), Common::Hash::HASH_SIZE);
+      const auto password = Common::SaltedPassword::create(newPassword);
+
+      Protos::GUI::ChangePassword passMess;
+      passMess.set_new_salt(password.salt);
+      Protos::GUI::PasswordKdf* kdf = passMess.mutable_new_kdf();
+      kdf->set_salt(password.kdfSalt.toStdString());
+      kdf->set_memory(password.kdfMemory);
+      kdf->set_iterations(password.kdfIterations);
+      passMess.set_new_key(password.key.toStdString());
+
+      this->connectionInfo.password = password;
+      this->send(Common::MessageHeader::GUI_CHANGE_PASSWORD, passMess);
+      return true;
    }
-
-   this->connectionInfo.password = newPasswordHashed;
-   this->salt = newSalt;
-
-   this->send(Common::MessageHeader::GUI_CHANGE_PASSWORD, passMess);
-   return true;
+   catch (const QString& error)
+   {
+      L_WARN(QString("Unable to change the core password: %1").arg(error));
+      return false;
+   }
 }
 
 void InternalCoreConnection::resetCorePassword()
 {
    Protos::GUI::ChangePassword passMess;
-   passMess.mutable_new_password()->set_hash(Common::Hash().getData(), Common::Hash::HASH_SIZE);
-   passMess.set_new_salt(0);
+   passMess.set_remove(true);
    this->send(Common::MessageHeader::GUI_CHANGE_PASSWORD, passMess);
 }
 
@@ -468,8 +482,16 @@ void InternalCoreConnection::tlsFailed(const QString& reason)
    if (this->tlsFailureReported)
       return;
    this->tlsFailureReported = true;
-   const bool wasAuthenticated = this->authenticated;
    L_WARN(QString("Remote-control TLS connection refused: %1").arg(reason));
+   this->abortConnection(ICoreConnection::RCC_ERROR_TLS);
+}
+
+/**
+  * Reports 'error', or a disconnection if the connection was already established.
+  */
+void InternalCoreConnection::abortConnection(ICoreConnection::ConnectionErrorCode error)
+{
+   const bool wasAuthenticated = this->authenticated;
    this->cancelConnectionAttempt();
    // Abort without reporting a second, misleading timeout via disconnected().
    this->connectionAttemptActive = true;
@@ -479,7 +501,30 @@ void InternalCoreConnection::tlsFailed(const QString& reason)
    if (wasAuthenticated)
       emit disconnected(false);
    else
-      emit connectingError(ICoreConnection::RCC_ERROR_TLS);
+      emit connectingError(error);
+}
+
+/**
+  * The certificate of a remote core, see 'Protos.GUI.AskForAuthentication'.
+  */
+QByteArray InternalCoreConnection::channelBinding() const
+{
+   const auto* ssl = static_cast<const QSslSocket*>(this->socket);
+   return this->tlsRequired && ssl->isEncrypted() ? RCA::channelBinding(ssl->peerCertificate()) : QByteArray();
+}
+
+/**
+  * Derives the key asked by the core from the plain password or from a legacy one, see 'Common::SaltedPassword'.
+  * A key derived with other salts or parameters is kept: the password of the core has changed, the core will refuse it.
+  * @exception QString
+  */
+void InternalCoreConnection::deriveKey(quint64 salt, const QByteArray& kdfSalt, quint32 kdfMemory, quint32 kdfIterations)
+{
+   Common::SaltedPassword& password = this->connectionInfo.password;
+   if (!this->password.isEmpty())
+      password = Common::SaltedPassword::derive(Common::Hasher::hashWithSalt(this->password, salt), salt, kdfSalt, kdfMemory, kdfIterations);
+   else if (password.isLegacy())
+      password = Common::SaltedPassword::derive(password.legacyHash, salt, kdfSalt, kdfMemory, kdfIterations);
 }
 
 void InternalCoreConnection::connectionTimedOut()
@@ -528,7 +573,7 @@ void InternalCoreConnection::stateChanged(QAbstractSocket::SocketState socketSta
    }
 }
 
-void InternalCoreConnection::connectedAndAuthenticated()
+void InternalCoreConnection::connectedAndAuthenticated(const Protos::GUI::AuthenticationResult& result)
 {
    if (this->tlsRequired)
    {
@@ -538,6 +583,19 @@ void InternalCoreConnection::connectedAndAuthenticated()
          this->tlsFailed("The remote connection is not encrypted");
          return;
       }
+
+      // Before its certificate is trusted, the core must prove that it knows the password too. An impostor can't,
+      // even by relaying our proof to the real core: the proofs are bound to the certificate we received.
+      const QByteArray& key = this->connectionInfo.password.key;
+      if (key.isEmpty() || this->clientNonce.isEmpty() || !RCA::equals(
+            QByteArray::fromStdString(result.core_proof()),
+            RCA::coreProof(key, this->challenge, this->clientNonce, this->channelBinding())))
+      {
+         L_WARN(QString("The core %1:%2 couldn't prove that it knows the password").arg(this->connectionInfo.address).arg(this->connectionInfo.port));
+         this->abortConnection(ICoreConnection::RCC_ERROR_CORE_NOT_AUTHENTICATED);
+         return;
+      }
+
       try
       {
          Common::RemoteControlTls::rememberPeer(this->connectionInfo.address, this->connectionInfo.port, ssl->peerCertificate());
@@ -609,13 +667,50 @@ void InternalCoreConnection::onNewMessage(const Common::Message& message)
          const Protos::GUI::AskForAuthentication& askForAuthentication = message.getMessage<Protos::GUI::AskForAuthentication>();
 
          Protos::GUI::Authentication authentication;
+         authentication.set_protocol_version(RCA::PROTOCOL_VERSION);
+         this->challenge = askForAuthentication.salt_challenge();
+         this->clientNonce = RCA::randomBytes(RCA::NONCE_SIZE);
+         authentication.set_client_nonce(this->clientNonce.toStdString());
 
-         this->salt = askForAuthentication.salt();
+         // A local core trusts us: it doesn't need our proof. See 'Protos.GUI.AskForAuthentication'.
+         if (this->tlsRequired)
+         {
+            // Older cores can't prove that they know the password: nothing is sent to them.
+            if (askForAuthentication.protocol_version() < RCA::PROTOCOL_VERSION)
+            {
+               this->abortConnection(ICoreConnection::RCC_ERROR_INCOMPATIBLE_VERSION);
+               break;
+            }
 
-         if (!this->password.isEmpty())
-            this->connectionInfo.password = Common::Hasher::hashWithSalt(this->password, this->salt);
+            // Without KDF the core has no password: it will refuse any proof.
+            if (askForAuthentication.has_kdf())
+            {
+               const auto& kdf = askForAuthentication.kdf();
+               const QByteArray kdfSalt = QByteArray::fromStdString(kdf.salt());
+               if (!RCA::isValidKdf(kdfSalt, kdf.memory(), kdf.iterations()))
+               {
+                  L_WARN(QString("The core asks for unsupported key derivation parameters (memory: %1 KiB, iterations: %2)").arg(kdf.memory()).arg(kdf.iterations()));
+                  this->abortConnection(ICoreConnection::RCC_ERROR_INCOMPATIBLE_VERSION);
+                  break;
+               }
 
-         authentication.mutable_password_challenge()->set_hash(Common::Hasher::hashWithSalt(this->connectionInfo.password, askForAuthentication.salt_challenge()).getData(), Common::Hash::HASH_SIZE);
+               try
+               {
+                  this->deriveKey(askForAuthentication.salt(), kdfSalt, kdf.memory(), kdf.iterations());
+               }
+               catch (const QString& error)
+               {
+                  L_WARN(error);
+                  this->abortConnection(ICoreConnection::RCC_ERROR_UNKNOWN);
+                  break;
+               }
+            }
+
+            authentication.set_client_proof(
+               RCA::clientProof(this->connectionInfo.password.key, this->challenge, this->clientNonce, this->channelBinding()).toStdString()
+            );
+         }
+
          this->password.clear();
          this->send(Common::MessageHeader::GUI_AUTHENTICATION, authentication);
       }
@@ -627,7 +722,7 @@ void InternalCoreConnection::onNewMessage(const Common::Message& message)
 
          if (authenticationResult.status() == Protos::GUI::AuthenticationResult::AUTH_OK)
          {
-            this->connectedAndAuthenticated();
+            this->connectedAndAuthenticated(authenticationResult);
          }
          else
          {
@@ -642,6 +737,10 @@ void InternalCoreConnection::onNewMessage(const Common::Message& message)
 
             case Protos::GUI::AuthenticationResult::AUTH_BAD_PASSWORD:
                 emit connectingError(ICoreConnection::RCC_ERROR_WRONG_PASSWORD);
+               break;
+
+            case Protos::GUI::AuthenticationResult::AUTH_PROTOCOL_OUTDATED:
+               emit connectingError(ICoreConnection::RCC_ERROR_INCOMPATIBLE_VERSION);
                break;
 
             case Protos::GUI::AuthenticationResult::AUTH_ERROR:
@@ -733,6 +832,7 @@ void InternalCoreConnection::onNewMessage(const Common::Message& message)
 void InternalCoreConnection::onDisconnected()
 {
    this->authenticated = false;
+   this->clientNonce.clear(); // A result of the next connection must answer its own challenge.
    this->sendChatMessageResultWithoutReply.clear();
    const bool asked = this->forcedToClose;
    this->forcedToClose = false;

@@ -27,6 +27,7 @@
 
 #include <Common/Hash.h>
 #include <Common/Path.h>
+#include <Common/SaltedPassword.h>
 #include <Common/LogManager/IEntry.h>
 
 #include <Common/RemoteCoreController/Types.h>
@@ -67,6 +68,8 @@ namespace RCC
          RCC_ERROR_INVALID_ADDRESS = 7,
          RCC_ERROR_TLS = 8,
          RCC_ERROR_CLOSED_BY_CORE = 9, // A remote core closed the connection before authentication, for example because it hasn't defined any password.
+         RCC_ERROR_CORE_NOT_AUTHENTICATED = 10, // A remote core couldn't prove it knows the password, see 'Protos.GUI.AskForAuthentication'.
+         RCC_ERROR_INCOMPATIBLE_VERSION = 11, // The remote control protocol versions of the core and the GUI are incompatible.
          RCC_ERROR_UNKNOWN = 255
       };
 
@@ -101,11 +104,12 @@ namespace RCC
       virtual void connectToCore(quint16 port) = 0;
 
       /**
-        * Connect to a remote core. Password is mendatory and should be hashed and salted, see the class 'Common::Hasher'.
+        * Connect to a remote core. Password is mandatory, it is a key derived from the password of the core given by
+        * 'getConnectionInfo()' after a previous connection. A legacy password is also accepted, see 'Common::SaltedPassword'.
         * If the given address is a local one it may try to launch a local core.
         * @param address the IP address, it can be an IPv4 or IPv6 address.
         */
-      virtual void connectToCore(const QString& address, quint16 port, Common::Hash password) = 0;
+      virtual void connectToCore(const QString& address, quint16 port, const Common::SaltedPassword& password) = 0;
 
       /**
         * Same as the method above but takes a plain password, it will be automatically salted.
@@ -262,10 +266,10 @@ namespace RCC
       virtual void refreshNetworkInterfaces() = 0;
 
       struct ConnectionInfo {
-         void clear() { this->address.clear(); this->port = 0; this->password = Common::Hash(); }
+         void clear() { this->address.clear(); this->port = 0; this->password = Common::SaltedPassword(); }
          QString address;
          quint16 port = 0;
-         Common::Hash password;
+         Common::SaltedPassword password; // Its key is derived once a remote core has asked for it.
       };
 
       virtual ConnectionInfo getConnectionInfo() const = 0;

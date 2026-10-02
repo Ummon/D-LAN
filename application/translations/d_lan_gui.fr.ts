@@ -455,7 +455,7 @@
 <context>
     <name>GUI::MainWindow</name>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="+170"/>
+        <location filename="../GUI/MainWindow.cpp" line="+174"/>
         <source>Already connected to this address</source>
         <translation>Déjà connecté à cette adresse</translation>
     </message>
@@ -498,6 +498,16 @@
         <location line="+3"/>
         <source>The core closed the connection. Remote access requires a password to be defined on the core. The core may also have too many connections.</source>
         <translation>Le core a fermé la connexion. L&apos;accès à distance nécessite qu&apos;un mot de passe soit défini sur le core. Le core a peut-être aussi trop de connexions.</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>The core couldn&apos;t prove that it knows the password. The connection may have been intercepted.</source>
+        <translation>Le core n&apos;a pas pu prouver qu&apos;il connaît le mot de passe. La connexion a peut-être été interceptée.</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>The versions of the core and of this GUI are incompatible for remote control. Update them to the same version.</source>
+        <translation>Les versions du core et de cette GUI sont incompatibles pour le contrôle à distance. Mettez-les à jour vers la même version.</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -754,7 +764,7 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+255"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+256"/>
         <source>Default</source>
         <translation>Par défaut</translation>
     </message>
@@ -780,13 +790,13 @@
     </message>
     <message>
         <location line="+46"/>
-        <location line="+312"/>
+        <location line="+313"/>
         <source>Connecting . . .</source>
         <translation>Connexion...</translation>
     </message>
     <message>
-        <location line="-304"/>
-        <location line="+15"/>
+        <location line="-305"/>
+        <location line="+16"/>
         <location line="+15"/>
         <location line="+274"/>
         <source>Connect</source>

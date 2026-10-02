@@ -2,7 +2,7 @@
   * Protocol between core and GUI.
   * When a command is sent to the core, one or more responds will be sent back,
   * there cannot be other message like 'event message' between theses messages.
-  * Version : 1
+  * Version : 2, see 'AskForAuthentication'.
   * All string are encoded in UTF-8.
   */
 
@@ -136,35 +136,58 @@ message EventLogMessages {
 }
 
 /***** Commands. *****/
-// Authentication.
+// The Argon2id parameters of the remote control password (version 0x13, one lane), see 'AskForAuthentication'.
+message PasswordKdf {
+   bytes salt = 1; // 16 bytes.
+   uint32 memory = 2; // [KiB].
+   uint32 iterations = 3;
+}
+
+// Authentication, version 2 of the remote control protocol (version 1, without version number, is the one prior to D-LAN 1.4.2).
 // Always send by the core when a new connection is established.
 // All other messages can't be sent or received without a proper authentication.
-// A new salt is randomly generated each time a new connection is created.
+//
+// The GUI and the core share a 32-byte key derived from the password:
+//    K = Argon2id(hash(password + salt), kdf), where 'hash(password + salt)' is 'Common::Hasher::hashWithSalt(password, salt)'.
+// The GUI proves it knows K, then the core proves it knows K too. Both proofs are bound to the TLS connection:
+//    client proof = HMAC-SHA256(K, "D-LAN remote control GUI" + '\0' + salt_challenge + client_nonce + binding)
+//    core proof = HMAC-SHA256(K, "D-LAN remote control core" + '\0' + salt_challenge + client_nonce + binding)
+// Where 'salt_challenge' is in big endian and 'binding' is the SHA-256 of the DER certificate of the core: the one received
+// by the GUI and the one of the core itself. A man in the middle presents another certificate, the proofs don't match.
+// A local GUI is trusted: it doesn't have to give a valid proof, the core doesn't give its proof and there is no TLS.
 // Core -> GUI
 // id: 0x1021
 message AskForAuthentication {
    uint64 salt = 1;
-   uint64 salt_challenge = 2;
+   uint64 salt_challenge = 2; // Randomly generated for each connection.
+   PasswordKdf kdf = 3; // Not set if no password is defined.
+   uint32 protocol_version = 4; // 2.
 }
 
-// Password is for local connections.
 // GUI -> Core
 // id: 0x1022
 message Authentication {
-   Common.Hash password_challenge = 1; // (hash(password) + salt) + salt_challenge
+   reserved 1;
+   reserved "password_challenge"; // Version 1.
+
+   bytes client_nonce = 2; // 32 random bytes.
+   bytes client_proof = 3; // Not needed for a local GUI.
+   uint32 protocol_version = 4; // 2.
 }
 
 // Core -> GUI
 // id: 0x1023
-// If BAD_PASSWORD the core should wait a bit before sending the result (for example 1s) to avoid dictionary attack.
+// A refusal is delayed (by 'delay_gui_connection_fail', see 'core_settings.proto') to slow down password guessing.
 message AuthenticationResult {
    enum Status {
       AUTH_OK = 0x00;
       AUTH_BAD_PASSWORD = 0x01;
       AUTH_PASSWORD_NOT_DEFINED = 0x02; // The core doesn't have defined a password (empty password).
+      AUTH_PROTOCOL_OUTDATED = 0x03; // The protocol version of the GUI is too old.
       AUTH_ERROR = 0xFF;
    }
    Status status = 1;
+   bytes core_proof = 2; // With 'AUTH_OK' for a remote GUI, which must check it before trusting the core.
 }
 
 
@@ -178,14 +201,17 @@ message Language {
 
 // GUI -> Core
 // id: 0x10D1
-// Change the core password.
-// Both sent passwords are salted with 'AskForAuthentication.new_salt'.
-// If 'new_password' is set to a null hash, the password is removed, in this case the old password isn't needed.
+// Change the core password. The GUI is already authenticated: the old password isn't needed.
+// The new key and its parameters are defined as in 'AskForAuthentication', the GUI chooses new random salts.
 message ChangePassword {
-   Common.Hash new_password = 1; // Salted with the new salt.
-   uint64 new_salt = 2;
+   reserved 1, 3;
+   reserved "new_password", "old_password"; // Version 1.
 
-   Common.Hash old_password = 3; // Salted with the old salt. only if a password has already been set. 'See State.password_defined'.
+   uint64 new_salt = 2;
+   PasswordKdf new_kdf = 4;
+   bytes new_key = 5; // 32 bytes.
+
+   bool remove = 6; // Remove the password, the other fields are ignored.
 }
 
 

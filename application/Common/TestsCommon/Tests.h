@@ -114,6 +114,8 @@ private slots:
    void hasherEmptyAndSegmentedData();
    void randomSaltIsUnpredictable();
    void saltedPassword();
+   void remoteControlKeys();
+   void remoteControlProofs();
 
    // BloomFilter class.
    void bloomFilter();

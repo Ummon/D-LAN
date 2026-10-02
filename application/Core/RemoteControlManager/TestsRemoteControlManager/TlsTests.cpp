@@ -10,6 +10,8 @@
 #include <Common/Global.h>
 #include <Common/Settings.h>
 #include <Common/SaltedPassword.h>
+#include <Common/Network/MessageSocket.h>
+#include <Common/Network/RemoteControlAuthentication.h>
 #include <Common/Network/RemoteControlTls.h>
 #include <Common/RemoteCoreController/priv/InternalCoreConnection.h>
 #include <Core/RemoteControlManager/priv/RemoteControlManager.h>
@@ -18,6 +20,7 @@
 #include "Mocks.h"
 
 namespace Tls = Common::RemoteControlTls;
+namespace RCA = Common::RemoteControlAuthentication;
 
 // Use real loopback TCP/TLS, changing only the server's perceived peer address
 // so remote authentication and transport policy can be exercised on one host.
@@ -54,6 +57,53 @@ public:
    QSslSocket* transport() { return static_cast<QSslSocket*>(this->socket); }
 };
 
+// A man in the middle: terminates the TLS connection of a GUI with the given identity and relays it to the core.
+class Relay : public QTcpServer
+{
+public:
+   Relay(const QSslConfiguration& identity, quint16 corePort) : identity(identity), corePort(corePort) {}
+
+protected:
+   void incomingConnection(qintptr descriptor) override
+   {
+      auto* gui = new QSslSocket(this);
+      auto* core = new QSslSocket(this);
+      if (!gui->setSocketDescriptor(descriptor))
+         return;
+      connect(gui, &QSslSocket::readyRead, core, [gui, core] { core->write(gui->readAll()); });
+      connect(core, &QSslSocket::readyRead, gui, [gui, core] { gui->write(core->readAll()); });
+      connect(gui, &QSslSocket::disconnected, core, &QSslSocket::disconnectFromHost);
+      connect(core, &QSslSocket::disconnected, gui, &QSslSocket::disconnectFromHost);
+      gui->setSslConfiguration(this->identity);
+      gui->startServerEncryption();
+      auto configuration = QSslConfiguration::defaultConfiguration();
+      configuration.setPeerVerifyMode(QSslSocket::VerifyNone);
+      core->setSslConfiguration(configuration);
+      core->connectToHostEncrypted("127.0.0.1", this->corePort);
+   }
+
+private:
+   const QSslConfiguration identity;
+   const quint16 corePort;
+};
+
+// Sends and records raw protocol messages, as an impostor core.
+class Peer : public Common::MessageSocket
+{
+   class Logger : public ILogger
+   {
+      void logDebug(const QString&) override {}
+      void logError(const QString&) override {}
+   };
+
+public:
+   explicit Peer(QAbstractSocket* socket) : MessageSocket(new Logger, socket, Common::Hash::rand()) { this->startListening(); }
+   QList<Common::Message> received;
+
+private:
+   void onNewMessage(const Common::Message& message) override { this->received << message; }
+};
+
 class Tests : public QObject
 {
    Q_OBJECT
@@ -61,6 +111,7 @@ class Tests : public QObject
    std::unique_ptr<RCM::RemoteControlManager> manager;
    TestServer server;
    RCC::CoreController controller;
+   Common::SaltedPassword password; // Of the core, its plain form is "password".
 
    QString identityPath() const { return this->directory->filePath("remote-control-tls/core.pem"); }
 
@@ -73,11 +124,14 @@ class Tests : public QObject
       connect(&this->server, &QTcpServer::newConnection, this->manager.get(), &RCM::RemoteControlManager::newConnection);
    }
 
-   void connectClient(TestConnection& client, bool remote = true, bool correctPassword = true)
+   // 'port': of the core by default.
+   void connectClient(TestConnection& client, bool remote = true, bool correctPassword = true, quint16 port = 0)
    {
       client.connectionInfo.address = "test-core";
-      client.connectionInfo.port = this->server.serverPort();
-      client.connectionInfo.password = correctPassword ? Common::SaltedPassword::fromStr(SETTINGS.get<QString>("remote_password")).hash : Common::Hash::rand();
+      client.connectionInfo.port = port != 0 ? port : this->server.serverPort();
+      client.connectionInfo.password = this->password;
+      if (!correctPassword)
+         client.connectionInfo.password.key = RCA::randomBytes(RCA::KEY_SIZE);
       client.tlsRequired = remote;
       client.tlsFailureReported = false;
       client.connectionAttemptActive = true;
@@ -90,10 +144,10 @@ class Tests : public QObject
          configuration.setPeerVerifyMode(QSslSocket::VerifyPeer);
          client.transport()->setSslConfiguration(configuration);
          client.transport()->ignoreSslErrors(QList<QSslError>());
-         client.transport()->connectToHostEncrypted("127.0.0.1", this->server.serverPort(), "test-core");
+         client.transport()->connectToHostEncrypted("127.0.0.1", client.connectionInfo.port, "test-core");
       }
       else
-         client.transport()->connectToHost(QHostAddress::LocalHost, this->server.serverPort());
+         client.transport()->connectToHost(QHostAddress::LocalHost, client.connectionInfo.port);
    }
 
    // Like the last attempt of 'tryToConnectToTheNextAddress()': its failure is reported as a connecting error.
@@ -109,6 +163,7 @@ private slots:
       const QString backend = qEnvironmentVariable("DLAN_TEST_TLS_BACKEND");
       if (!backend.isEmpty())
          QVERIFY2(QSslSocket::setActiveBackend(backend), qPrintable(backend));
+      this->password = Common::SaltedPassword::create("password");
    }
 
    void init()
@@ -126,7 +181,7 @@ private slots:
       settings->set_peer_imalive_period(5000);
       SETTINGS.setSettingsMessage(settings);
       SETTINGS.set("peer_id", Common::Hash::rand());
-      SETTINGS.set("remote_password", Common::SaltedPassword { Common::Hash::rand(), 123 }.toStr());
+      SETTINGS.set("remote_password", this->password.toStr());
       this->server.remote = true;
       QVERIFY(this->server.listen(QHostAddress::LocalHost));
       QVERIFY2(QSslSocket::supportsSsl(), "The integration tests require a deployed Qt TLS backend");
@@ -215,6 +270,136 @@ private slots:
       QVERIFY(!client.isConnected());
    }
 
+   void loginWithEveryCredential_data()
+   {
+      QTest::addColumn<QString>("credential");
+      for (const char* credential : {"key", "plain-password", "legacy-hash"})
+         QTest::newRow(credential) << QString(credential);
+   }
+
+   // The key saved after a previous connection, a typed password, or the hash saved by a version prior to 1.4.2.
+   void loginWithEveryCredential()
+   {
+      QFETCH(QString, credential);
+      this->startManager();
+      TestConnection client(this->controller);
+      this->connectClient(client);
+      // No event has been processed yet: the core hasn't asked for the authentication.
+      if (credential == "plain-password")
+      {
+         client.connectionInfo.password = Common::SaltedPassword();
+         client.password = "password";
+      }
+      else if (credential == "legacy-hash")
+      {
+         client.connectionInfo.password = Common::SaltedPassword();
+         client.connectionInfo.password.legacyHash = Common::Hasher::hashWithSalt(QString("password"), this->password.salt);
+      }
+
+      QTRY_VERIFY(client.isConnected());
+      // The derived key is kept, the GUI saves it for the next connections.
+      QVERIFY(client.getConnectionInfo().password.sameDerivation(this->password));
+      QCOMPARE(client.getConnectionInfo().password.key, this->password.key);
+      QVERIFY(client.password.isEmpty());
+   }
+
+   void relayedLogin_data()
+   {
+      QTest::addColumn<bool>("coreCertificate");
+      QTest::newRow("relay-with-the-certificate-of-the-core") << true; // Checks the relay itself.
+      QTest::newRow("man-in-the-middle") << false;
+   }
+
+   void relayedLogin()
+   {
+      QFETCH(bool, coreCertificate);
+      this->startManager();
+      if (!coreCertificate)
+         QVERIFY(QFile::remove(this->identityPath())); // A new identity is generated for the relay.
+      Relay relay(coreCertificate ? this->manager->tlsConfiguration : Tls::serverConfiguration(), this->server.serverPort());
+      QVERIFY(relay.listen(QHostAddress::LocalHost));
+
+      TestConnection client(this->controller);
+      QSignalSpy errors(&client, &RCC::InternalCoreConnection::connectingError);
+      this->connectClient(client, true, true, relay.serverPort());
+      if (coreCertificate)
+      {
+         QTRY_VERIFY(client.isConnected());
+         QCOMPARE(errors.size(), 0);
+         return;
+      }
+
+      // The proof of the GUI is bound to the certificate of the relay: the core refuses it.
+      QTRY_COMPARE(errors.size(), 1);
+      QCOMPARE(errors[0][0].value<RCC::ICoreConnection::ConnectionErrorCode>(), RCC::ICoreConnection::RCC_ERROR_WRONG_PASSWORD);
+      QVERIFY(!client.isConnected());
+      QVERIFY(!QFile::exists(Tls::pinPath("test-core", relay.serverPort())));
+   }
+
+   void impostorCoreRejected_data()
+   {
+      QTest::addColumn<QString>("variant");
+      QTest::addColumn<int>("error");
+      const int notAuthenticated = RCC::ICoreConnection::RCC_ERROR_CORE_NOT_AUTHENTICATED;
+      const int incompatible = RCC::ICoreConnection::RCC_ERROR_INCOMPATIBLE_VERSION;
+      QTest::newRow("unsolicited-ok") << QString("unsolicited-ok") << notAuthenticated;
+      QTest::newRow("ok-without-proof") << QString("no-proof") << notAuthenticated;
+      QTest::newRow("ok-with-a-wrong-proof") << QString("wrong-proof") << notAuthenticated;
+      QTest::newRow("core-of-a-prior-version") << QString("old-core") << incompatible;
+      QTest::newRow("weak-key-derivation") << QString("weak-kdf") << incompatible;
+   }
+
+   // A server which knows the salts and the key derivation parameters of the core, but not its password.
+   void impostorCoreRejected()
+   {
+      QFETCH(QString, variant);
+      QFETCH(int, error);
+      TestConnection client(this->controller);
+      QSignalSpy errors(&client, &RCC::InternalCoreConnection::connectingError);
+      this->connectClient(client);
+      QTRY_VERIFY(this->server.hasPendingConnections());
+      auto* socket = static_cast<QSslSocket*>(this->server.nextPendingConnection());
+      QSignalSpy encrypted(socket, &QSslSocket::encrypted);
+      socket->setSslConfiguration(Tls::serverConfiguration());
+      socket->startServerEncryption();
+      QTRY_COMPARE(encrypted.size(), 1);
+      Peer impostor(socket);
+
+      if (variant != "unsolicited-ok")
+      {
+         Protos::GUI::AskForAuthentication ask;
+         if (variant != "old-core")
+            ask.set_protocol_version(RCA::PROTOCOL_VERSION);
+         ask.set_salt(this->password.salt);
+         ask.set_salt_challenge(42);
+         ask.mutable_kdf()->set_salt(this->password.kdfSalt.toStdString());
+         ask.mutable_kdf()->set_memory(variant == "weak-kdf" ? RCA::KDF_MEMORY / 2 : this->password.kdfMemory);
+         ask.mutable_kdf()->set_iterations(this->password.kdfIterations);
+         impostor.send(Common::MessageHeader::GUI_ASK_FOR_AUTHENTICATION, ask);
+      }
+
+      if (error == RCC::ICoreConnection::RCC_ERROR_CORE_NOT_AUTHENTICATED)
+      {
+         if (variant != "unsolicited-ok")
+            QTRY_COMPARE(impostor.received.size(), 1); // The proof of the GUI.
+         Protos::GUI::AuthenticationResult result;
+         result.set_status(Protos::GUI::AuthenticationResult::AUTH_OK);
+         if (variant == "wrong-proof")
+            result.set_core_proof(RCA::randomBytes(32).toStdString());
+         impostor.send(Common::MessageHeader::GUI_AUTHENTICATION_RESULT, result);
+      }
+
+      QTRY_COMPARE(errors.size(), 1);
+      QCOMPARE(errors[0][0].value<RCC::ICoreConnection::ConnectionErrorCode>(), RCC::ICoreConnection::ConnectionErrorCode(error));
+      QVERIFY(!client.isConnected());
+      QVERIFY(!QFile::exists(Tls::pinPath("test-core", this->server.serverPort())));
+      if (error == RCC::ICoreConnection::RCC_ERROR_INCOMPATIBLE_VERSION)
+      {
+         QTest::qWait(100);
+         QVERIFY(impostor.received.isEmpty()); // No proof to crack offline.
+      }
+   }
+
    void remoteAccessRequiresPassword()
    {
       SETTINGS.rm("remote_password");
@@ -237,7 +422,7 @@ private slots:
 
       // A password defined while the core runs enables remote access.
       this->server.remote = true;
-      SETTINGS.set("remote_password", Common::SaltedPassword { Common::Hash::rand(), 123 }.toStr());
+      SETTINGS.set("remote_password", this->password.toStr());
       TestConnection authorized(this->controller);
       this->connectClient(authorized);
       QTRY_VERIFY(authorized.isConnected());

@@ -90,7 +90,8 @@ void AskNewPasswordDialog::ok()
          QMessageBox::information(this, "Error", "The old password doesn't match");
       else
       {
-         SETTINGS.set("password", this->coreConnection->getConnectionInfo().password);
+         SETTINGS.set("core_password", this->coreConnection->getConnectionInfo().password.toStr());
+         SETTINGS.rm("password");
          SETTINGS.save();
          this->accept();
       }

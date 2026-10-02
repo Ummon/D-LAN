@@ -14,6 +14,7 @@
 #include <Common/SaltedPassword.h>
 #include <Common/Global.h>
 #include <Common/ProtoHelper.h>
+#include <Common/Network/RemoteControlAuthentication.h>
 #include <Common/TestsCommon/GlobalRandomPredictor.h>
 #include <Core/PeerManager/Builder.h>
 #include <Core/DownloadManager/IDownload.h>
@@ -23,9 +24,27 @@
 #include <Core/PeerManager/GetChunkParams.h>
 #include <priv/UploadProgress.h>
 
-static Common::SaltedPassword remotePassword()
+namespace RCA = Common::RemoteControlAuthentication;
+
+// See 'Protos.GUI.AskForAuthentication'. The test sockets don't use TLS: the channel binding is empty.
+static Protos::GUI::Authentication authentication(quint64 challenge, const QByteArray& key, const QByteArray& nonce = RCA::randomBytes(RCA::NONCE_SIZE))
 {
-   return Common::SaltedPassword::fromStr(SETTINGS.get<QString>("remote_password"));
+   Protos::GUI::Authentication authentication;
+   authentication.set_protocol_version(RCA::PROTOCOL_VERSION);
+   authentication.set_client_nonce(nonce.toStdString());
+   authentication.set_client_proof(RCA::clientProof(key, challenge, nonce, QByteArray()).toStdString());
+   return authentication;
+}
+
+static Protos::GUI::ChangePassword changePassword(const Common::SaltedPassword& password)
+{
+   Protos::GUI::ChangePassword request;
+   request.set_new_salt(password.salt);
+   request.mutable_new_kdf()->set_salt(password.kdfSalt.toStdString());
+   request.mutable_new_kdf()->set_memory(password.kdfMemory);
+   request.mutable_new_kdf()->set_iterations(password.kdfIterations);
+   request.set_new_key(password.key.toStdString());
+   return request;
 }
 
 class Tests : public QObject
@@ -46,7 +65,13 @@ private slots:
       settings->set_delay_gui_connection_fail(10);
       SETTINGS.setSettingsMessage(settings);
       SETTINGS.set("peer_id", Common::Hash::rand());
-      SETTINGS.set("remote_password", Common::SaltedPassword { Common::Hash::rand(), 123 }.toStr());
+      this->password = Common::SaltedPassword::create("password");
+      SETTINGS.set("remote_password", this->password.toStr());
+   }
+
+   void init()
+   {
+      SETTINGS.set("remote_password", this->password.toStr());
    }
 
    void macOSInterfaceState()
@@ -190,6 +215,7 @@ private slots:
       QCOMPARE(messages.size(), 4); // Challenge, authentication result, state, chat history.
       QCOMPARE(messages[0].getHeader().getType(), Common::MessageHeader::GUI_ASK_FOR_AUTHENTICATION);
       QCOMPARE(messages[1].getMessage<Protos::GUI::AuthenticationResult>().status(), Protos::GUI::AuthenticationResult::AUTH_OK);
+      QVERIFY(messages[1].getMessage<Protos::GUI::AuthenticationResult>().core_proof().empty()); // Only for a remote GUI.
       QCOMPARE(languageDefined.size(), 1);
       QCOMPARE(languageDefined[0][0].value<QLocale>(), QLocale("fr_CH"));
 
@@ -332,113 +358,84 @@ private slots:
 
    void malformedPasswordChange_data()
    {
-      QTest::addColumn<bool>("invalidNew");
-      QTest::addColumn<int>("length");
-      for (bool invalidNew : {true, false})
-         for (int length : {-1, 0, 1, Common::Hash::HASH_SIZE - 1, Common::Hash::HASH_SIZE + 1})
-            if (invalidNew || length >= 0) // A missing old password isn't malformed, see 'passwordChangeWithoutOldPassword'.
-               QTest::newRow(qPrintable(QString("%1-length-%2").arg(invalidNew ? "new" : "old").arg(length)))
-               << invalidNew << length;
+      QTest::addColumn<QString>("field");
+      for (const char* field : {"missing-key", "short-key", "missing-kdf", "short-kdf-salt", "weak-memory", "weak-iterations", "huge-memory"})
+         QTest::newRow(field) << QString(field);
    }
 
    void malformedPasswordChange()
    {
-      QFETCH(bool, invalidNew);
-      QFETCH(int, length);
-      const auto original = Common::Hash::rand();
-      SETTINGS.set("remote_password", Common::SaltedPassword { original, 123 }.toStr());
+      QFETCH(QString, field);
       auto* socket = new BufferedSocket;
       QScopedPointer<RCM::RemoteConnection> connection(this->newConnection(socket));
       connection->startListening();
       socket->output.clear();
-      Protos::GUI::ChangePassword request;
-      request.set_new_salt(456);
-      if (invalidNew)
-      {
-         request.mutable_old_password()->set_hash(original.getData(), Common::Hash::HASH_SIZE);
-         if (length >= 0)
-            request.mutable_new_password()->set_hash(std::string(length, '\0'));
-      }
-      else
-      {
-         const auto replacement = Common::Hash::rand();
-         request.mutable_new_password()->set_hash(replacement.getData(), Common::Hash::HASH_SIZE);
-         if (length >= 0)
-            request.mutable_old_password()->set_hash(std::string(length, '\0'));
-      }
+
+      auto request = changePassword(Common::SaltedPassword::create("new"));
+      if (field == "missing-key")
+         request.clear_new_key();
+      else if (field == "short-key")
+         request.mutable_new_key()->pop_back();
+      else if (field == "missing-kdf")
+         request.clear_new_kdf();
+      else if (field == "short-kdf-salt")
+         request.mutable_new_kdf()->mutable_salt()->pop_back();
+      else if (field == "weak-memory")
+         request.mutable_new_kdf()->set_memory(RCA::KDF_MEMORY - 1);
+      else if (field == "weak-iterations")
+         request.mutable_new_kdf()->set_iterations(RCA::KDF_ITERATIONS - 1);
+      else if (field == "huge-memory")
+         request.mutable_new_kdf()->set_memory(RCA::MAX_KDF_MEMORY + 1);
+
       socket->receive(Common::MessageHeader::GUI_CHANGE_PASSWORD, request);
-      QCOMPARE(remotePassword().hash, original);
-      QCOMPARE(remotePassword().salt, quint64(123));
+      QCOMPARE(SETTINGS.get<QString>("remote_password"), this->password.toStr());
       QVERIFY(socket->output.isEmpty());
    }
 
    void validPasswordChanges()
    {
-      const auto restore = qScopeGuard([] {
-         SETTINGS.set("remote_password", Common::SaltedPassword { Common::Hash::rand(), 123 }.toStr());
-      });
       SETTINGS.rm("remote_password");
       auto* socket = new BufferedSocket;
       QScopedPointer<RCM::RemoteConnection> connection(this->newConnection(socket));
       connection->startListening();
-      Protos::GUI::ChangePassword request;
-      const auto first = Common::Hash::rand();
-      request.mutable_new_password()->set_hash(first.getData(), Common::Hash::HASH_SIZE);
-      request.set_new_salt(456);
-      socket->receive(Common::MessageHeader::GUI_CHANGE_PASSWORD, request);
-      QCOMPARE(remotePassword().hash, first);
-      QCOMPARE(remotePassword().salt, quint64(456));
 
-      const auto second = Common::Hash::rand();
-      request.mutable_new_password()->set_hash(second.getData(), Common::Hash::HASH_SIZE);
-      request.mutable_old_password()->set_hash(second.getData(), Common::Hash::HASH_SIZE); // Wrong old password.
-      request.set_new_salt(789);
-      socket->receive(Common::MessageHeader::GUI_CHANGE_PASSWORD, request);
-      QCOMPARE(remotePassword().hash, first);
-      QCOMPARE(remotePassword().salt, quint64(456));
-      request.mutable_old_password()->set_hash(first.getData(), Common::Hash::HASH_SIZE);
-      socket->receive(Common::MessageHeader::GUI_CHANGE_PASSWORD, request);
-      QCOMPARE(remotePassword().hash, second);
-      QCOMPARE(remotePassword().salt, quint64(789));
+      const auto first = Common::SaltedPassword::create("first");
+      socket->receive(Common::MessageHeader::GUI_CHANGE_PASSWORD, changePassword(first));
+      QCOMPARE(SETTINGS.get<QString>("remote_password"), first.toStr());
 
-      request.clear_old_password(); // Explicit reset does not require the old password.
-      request.mutable_new_password()->set_hash(std::string(Common::Hash::HASH_SIZE, '\0'));
-      socket->receive(Common::MessageHeader::GUI_CHANGE_PASSWORD, request);
+      const auto second = Common::SaltedPassword::create("second");
+      socket->receive(Common::MessageHeader::GUI_CHANGE_PASSWORD, changePassword(second));
+      QCOMPARE(SETTINGS.get<QString>("remote_password"), second.toStr());
+
+      Protos::GUI::ChangePassword removal = changePassword(second);
+      removal.set_remove(true); // The other fields are ignored.
+      socket->receive(Common::MessageHeader::GUI_CHANGE_PASSWORD, removal);
       QVERIFY(SETTINGS.get<QString>("remote_password").isEmpty());
    }
 
-   void passwordChangeWithoutOldPassword_data()
+   void authorizedPasswordChange_data()
    {
       QTest::addColumn<bool>("local");
       QTest::newRow("local-client-is-trusted") << true;
-      QTest::newRow("remote-client-must-give-old-password") << false;
+      QTest::newRow("remote-client-has-proven-the-password") << false;
    }
 
-   void passwordChangeWithoutOldPassword()
+   void authorizedPasswordChange()
    {
       QFETCH(bool, local);
-      const auto original = remotePassword();
-      const auto restore = qScopeGuard([original] { SETTINGS.set("remote_password", original.toStr()); });
       auto* socket = new BufferedSocket(local);
       QScopedPointer<RCM::RemoteConnection> connection(this->newConnection(socket));
       connection->startListening();
       if (!local)
       {
          const auto challenge = socket->messages()[0].getMessage<Protos::GUI::AskForAuthentication>().salt_challenge();
-         Protos::GUI::Authentication authentication;
-         const auto hash = Common::Hasher::hashWithSalt(original.hash, challenge);
-         authentication.mutable_password_challenge()->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
-         socket->receive(Common::MessageHeader::GUI_AUTHENTICATION, authentication);
+         socket->receive(Common::MessageHeader::GUI_AUTHENTICATION, authentication(challenge, this->password.key));
          QCOMPARE(socket->messages()[1].getMessage<Protos::GUI::AuthenticationResult>().status(), Protos::GUI::AuthenticationResult::AUTH_OK);
       }
 
-      Protos::GUI::ChangePassword request;
-      const auto replacement = Common::Hash::rand();
-      request.mutable_new_password()->set_hash(replacement.getData(), Common::Hash::HASH_SIZE);
-      request.set_new_salt(456);
-      socket->receive(Common::MessageHeader::GUI_CHANGE_PASSWORD, request);
-      QCOMPARE(remotePassword().hash, local ? replacement : original.hash);
-      QCOMPARE(remotePassword().salt, local ? quint64(456) : original.salt);
+      const auto replacement = Common::SaltedPassword::create("replacement");
+      socket->receive(Common::MessageHeader::GUI_CHANGE_PASSWORD, changePassword(replacement));
+      QCOMPARE(SETTINGS.get<QString>("remote_password"), replacement.toStr());
    }
 
    void remoteAuthentication_data()
@@ -452,15 +449,9 @@ private slots:
    {
       QFETCH(bool, early);
       auto socket = new BufferedSocket(false);
-      const auto password = remotePassword().hash;
-      auto authenticate = [&](quint64 challenge) {
-         Protos::GUI::Authentication authentication;
-         const auto hash = Common::Hasher::hashWithSalt(password, challenge);
-         authentication.mutable_password_challenge()->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
-         socket->receive(Common::MessageHeader::GUI_AUTHENTICATION, authentication);
-      };
+      const QByteArray nonce = RCA::randomBytes(RCA::NONCE_SIZE);
       if (early)
-         authenticate(0);
+         socket->receive(Common::MessageHeader::GUI_AUTHENTICATION, authentication(0, this->password.key, nonce));
       QPointer<RCM::RemoteConnection> connection = this->newConnection(socket);
       QList<Common::Message> finalMessages;
       connect(connection, &RCM::RemoteConnection::deleted, this, [&] { finalMessages = socket->messages(); });
@@ -469,7 +460,11 @@ private slots:
       QCOMPARE(messages.size(), 1);
       QCOMPARE(messages[0].getHeader().getType(), Common::MessageHeader::GUI_ASK_FOR_AUTHENTICATION);
       const auto challenge = messages[0].getMessage<Protos::GUI::AskForAuthentication>();
-      QCOMPARE(challenge.salt(), quint64(123));
+      QCOMPARE(challenge.protocol_version(), RCA::PROTOCOL_VERSION);
+      QCOMPARE(challenge.salt(), this->password.salt);
+      QCOMPARE(QByteArray::fromStdString(challenge.kdf().salt()), this->password.kdfSalt);
+      QCOMPARE(challenge.kdf().memory(), this->password.kdfMemory);
+      QCOMPARE(challenge.kdf().iterations(), this->password.kdfIterations);
       if (early)
       {
          QTRY_VERIFY(!connection);
@@ -478,11 +473,67 @@ private slots:
       }
       else
       {
-         authenticate(challenge.salt_challenge());
+         socket->receive(Common::MessageHeader::GUI_AUTHENTICATION, authentication(challenge.salt_challenge(), this->password.key, nonce));
          QCOMPARE(socket->messages().size(), 4);
-         QCOMPARE(socket->messages()[1].getMessage<Protos::GUI::AuthenticationResult>().status(), Protos::GUI::AuthenticationResult::AUTH_OK);
+         const auto result = socket->messages()[1].getMessage<Protos::GUI::AuthenticationResult>();
+         QCOMPARE(result.status(), Protos::GUI::AuthenticationResult::AUTH_OK);
+         QCOMPARE(
+            QByteArray::fromStdString(result.core_proof()),
+            RCA::coreProof(this->password.key, challenge.salt_challenge(), nonce, QByteArray())
+         );
          delete connection;
       }
+   }
+
+   void refusedRemoteAuthentication_data()
+   {
+      QTest::addColumn<QString>("variant");
+      QTest::addColumn<int>("status");
+      const int bad = Protos::GUI::AuthenticationResult::AUTH_BAD_PASSWORD;
+      QTest::newRow("wrong-key") << QString("wrong-key") << bad;
+      QTest::newRow("wrong-challenge") << QString("wrong-challenge") << bad;
+      QTest::newRow("proof-for-another-nonce") << QString("other-nonce") << bad;
+      QTest::newRow("missing-nonce") << QString("missing-nonce") << bad;
+      QTest::newRow("proof-bound-to-a-certificate") << QString("binding") << bad; // As relayed by a man in the middle.
+      QTest::newRow("outdated-gui") << QString("outdated") << int(Protos::GUI::AuthenticationResult::AUTH_PROTOCOL_OUTDATED);
+      QTest::newRow("no-password-defined") << QString("no-password") << int(Protos::GUI::AuthenticationResult::AUTH_PASSWORD_NOT_DEFINED);
+   }
+
+   void refusedRemoteAuthentication()
+   {
+      QFETCH(QString, variant);
+      QFETCH(int, status);
+      if (variant == "no-password")
+         SETTINGS.rm("remote_password");
+      auto* socket = new BufferedSocket(false);
+      QPointer<RCM::RemoteConnection> connection = this->newConnection(socket);
+      QList<Common::Message> finalMessages;
+      connect(connection, &RCM::RemoteConnection::deleted, this, [&] { finalMessages = socket->messages(); });
+      connection->startListening();
+      const auto ask = socket->messages()[0].getMessage<Protos::GUI::AskForAuthentication>();
+      QCOMPARE(ask.has_kdf(), variant != "no-password");
+
+      const QByteArray nonce = RCA::randomBytes(RCA::NONCE_SIZE);
+      auto request = authentication(ask.salt_challenge(), this->password.key, nonce);
+      if (variant == "wrong-key")
+         request = authentication(ask.salt_challenge(), RCA::randomBytes(RCA::KEY_SIZE));
+      else if (variant == "wrong-challenge")
+         request = authentication(ask.salt_challenge() + 1, this->password.key);
+      else if (variant == "other-nonce")
+         request.set_client_nonce(RCA::randomBytes(RCA::NONCE_SIZE).toStdString());
+      else if (variant == "missing-nonce")
+         request.clear_client_nonce();
+      else if (variant == "binding")
+         request.set_client_proof(RCA::clientProof(this->password.key, ask.salt_challenge(), nonce, RCA::randomBytes(32)).toStdString());
+      else if (variant == "outdated")
+         request.clear_protocol_version();
+      socket->receive(Common::MessageHeader::GUI_AUTHENTICATION, request);
+
+      QTRY_VERIFY(!connection);
+      QCOMPARE(finalMessages.size(), 2);
+      const auto result = finalMessages[1].getMessage<Protos::GUI::AuthenticationResult>();
+      QCOMPARE(int(result.status()), status);
+      QVERIFY(result.core_proof().empty());
    }
 
    void challengeIsUnpredictable()
@@ -520,18 +571,16 @@ private slots:
       QPointer<RCM::RemoteConnection> connection = this->newConnection(socket);
       connection->startListening();
       const auto challenge = socket->messages()[0].getMessage<Protos::GUI::AskForAuthentication>().salt_challenge();
-      Protos::GUI::Authentication authentication;
-      const auto hash = Common::Hasher::hashWithSalt(remotePassword().hash, challenge);
-      authentication.mutable_password_challenge()->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
-      socket->receive(Common::MessageHeader::GUI_AUTHENTICATION, authentication);
+      const auto valid = authentication(challenge, this->password.key);
+      socket->receive(Common::MessageHeader::GUI_AUTHENTICATION, valid);
       QCOMPARE(socket->messages().size(), 4);
       QCOMPARE(socket->messages()[1].getMessage<Protos::GUI::AuthenticationResult>().status(), Protos::GUI::AuthenticationResult::AUTH_OK);
       QSignalSpy languageDefined(connection, &RCM::RemoteConnection::languageDefined);
       socket->output.clear();
 
-      socket->receive(Common::MessageHeader::GUI_AUTHENTICATION, authentication);
+      socket->receive(Common::MessageHeader::GUI_AUTHENTICATION, valid);
       socket->receive(Common::MessageHeader::GUI_AUTHENTICATION, Protos::GUI::Authentication());
-      socket->receive(Common::MessageHeader::GUI_AUTHENTICATION, authentication);
+      socket->receive(Common::MessageHeader::GUI_AUTHENTICATION, valid);
       QTest::qWait(50); // Beyond the configured failed-authentication delay.
       QVERIFY(connection);
       QVERIFY(connection->isConnected());
@@ -547,13 +596,10 @@ private slots:
       QPointer<RCM::RemoteConnection> connection = this->newConnection(socket);
       connection->startListening();
       const auto challenge = socket->messages()[0].getMessage<Protos::GUI::AskForAuthentication>().salt_challenge();
-      Protos::GUI::Authentication valid;
-      const auto hash = Common::Hasher::hashWithSalt(remotePassword().hash, challenge);
-      valid.mutable_password_challenge()->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
       QList<Common::Message> finalMessages;
       connect(connection, &RCM::RemoteConnection::deleted, this, [&] { finalMessages = socket->messages(); });
-      socket->receive(Common::MessageHeader::GUI_AUTHENTICATION, Protos::GUI::Authentication());
-      socket->receive(Common::MessageHeader::GUI_AUTHENTICATION, valid);
+      socket->receive(Common::MessageHeader::GUI_AUTHENTICATION, authentication(challenge, RCA::randomBytes(RCA::KEY_SIZE)));
+      socket->receive(Common::MessageHeader::GUI_AUTHENTICATION, authentication(challenge, this->password.key));
       QVERIFY(connection->isConnected()); // Ignored until the delayed refusal, other messages are tested by 'unauthorizedHeaders'.
       QTRY_VERIFY(!connection);
       QCOMPARE(finalMessages.size(), 2);
@@ -938,6 +984,7 @@ private slots:
    }
 private:
    QTemporaryDir dataDirectory;
+   Common::SaltedPassword password; // Defined before each test, its plain form is "password".
 
    RCM::RemoteConnection* newConnection(BufferedSocket* socket, QSharedPointer<NL::INetworkListener> network = {},
       QSharedPointer<PM::IPeerManager> peers = {}, QSharedPointer<FileManager> files = {},

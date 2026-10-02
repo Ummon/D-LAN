@@ -70,7 +70,7 @@ namespace RCC
       InternalCoreConnection(CoreController& coreController);
       ~InternalCoreConnection() override;
 
-      void connectToCore(const QString& address, quint16 port, Common::Hash password);
+      void connectToCore(const QString& address, quint16 port, const Common::SaltedPassword& password);
       void connectToCore(const QString& address, quint16 port, const QString& password);
 
       bool isLocal() const override;
@@ -148,10 +148,13 @@ namespace RCC
       void stateChanged(QAbstractSocket::SocketState socketState);
 
    private:
-      void startConnection(const QString& address, quint16 port, const Common::Hash& password, const QString& plainPassword);
+      void startConnection(const QString& address, quint16 port, const Common::SaltedPassword& password, const QString& plainPassword);
       void cancelConnectionAttempt();
       void tlsFailed(const QString& reason);
-      void connectedAndAuthenticated();
+      void abortConnection(ICoreConnection::ConnectionErrorCode error);
+      QByteArray channelBinding() const;
+      void deriveKey(quint64 salt, const QByteArray& kdfSalt, quint32 kdfMemory, quint32 kdfIterations);
+      void connectedAndAuthenticated(const Protos::GUI::AuthenticationResult& result);
 
       void sendCurrentLanguage();
 
@@ -191,9 +194,12 @@ namespace RCC
       bool authenticated;
       bool forcedToClose;
 
-      // Temporary text password. Once we got the salt sent by the Core we set 'connectionInfo.password'
-      // with the salted password and we erase this member.
+      // Temporary text password. Once we got the salts sent by the Core we set 'connectionInfo.password'
+      // with the derived key and we erase this member.
       QString password;
-      quint64 salt;
+
+      // The authentication of the current connection, see 'Protos.GUI.AskForAuthentication'.
+      quint64 challenge = 0;
+      QByteArray clientNonce; // Empty until the core asks for the authentication.
    };
 }

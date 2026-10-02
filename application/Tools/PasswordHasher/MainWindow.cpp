@@ -70,8 +70,16 @@ void MainWindow::computeHash()
    }
    else
    {
-      this->password.hash = Common::Hasher::hashWithRandomSalt(this->ui->txtPass1->text(), this->password.salt);
-      this->ui->txtResult->setText("\"remote_password\": \"" % this->password.toStr() % "\"\n");
+      try
+      {
+         this->password = Common::SaltedPassword::create(this->ui->txtPass1->text());
+         this->ui->txtResult->setText("\"remote_password\": \"" % this->password.toStr() % "\"\n");
+      }
+      catch (const QString& error)
+      {
+         this->password = Common::SaltedPassword();
+         this->ui->txtResult->setText(error);
+      }
    }
 }
 
@@ -92,6 +100,10 @@ void MainWindow::savePassword(const QString& directory)
    if (!error.isNull())
    {
       QMessageBox::warning(this, "Password not saved", error);
+   }
+   else if (this->password.isNull())
+   {
+      QMessageBox::warning(this, "Password not saved", this->ui->txtResult->toPlainText());
    }
    else
    {

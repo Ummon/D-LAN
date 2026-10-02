@@ -141,7 +141,11 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
    connect(this->coreConnection.data(), &RCC::ICoreConnection::connected, this, &MainWindow::coreConnected);
    connect(this->coreConnection.data(), &RCC::ICoreConnection::disconnected, this, &MainWindow::coreDisconnected);
 
-   this->coreConnection->connectToCore(SETTINGS.get<QString>("core_address"), SETTINGS.get<quint32>("core_port"), SETTINGS.get<Common::Hash>("password"));
+   // The password saved by a version prior to 1.4.2 is still accepted, see 'Common::SaltedPassword'.
+   Common::SaltedPassword password = Common::SaltedPassword::fromStr(SETTINGS.get<QString>("core_password"));
+   if (password.isNull() && !password.isLegacy())
+      password.legacyHash = SETTINGS.get<Common::Hash>("password");
+   this->coreConnection->connectToCore(SETTINGS.get<QString>("core_address"), SETTINGS.get<quint32>("core_port"), password);
 
 #ifdef DEBUG
    QPushButton* logEntireQWidgetTreeButton = new QPushButton();
@@ -192,6 +196,12 @@ void MainWindow::coreConnectionError(RCC::ICoreConnection::ConnectionErrorCode e
       break;
    case RCC::ICoreConnection::RCC_ERROR_CLOSED_BY_CORE:
       error = tr("The core closed the connection. Remote access requires a password to be defined on the core. The core may also have too many connections.");
+      break;
+   case RCC::ICoreConnection::RCC_ERROR_CORE_NOT_AUTHENTICATED:
+      error = tr("The core couldn't prove that it knows the password. The connection may have been intercepted.");
+      break;
+   case RCC::ICoreConnection::RCC_ERROR_INCOMPATIBLE_VERSION:
+      error = tr("The versions of the core and of this GUI are incompatible for remote control. Update them to the same version.");
       break;
    case RCC::ICoreConnection::RCC_ERROR_UNKNOWN:
       error = tr("Error unknown");

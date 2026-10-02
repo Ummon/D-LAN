@@ -74,10 +74,10 @@ void CoreConnection::connectToCore()
 
 void CoreConnection::connectToCore(quint16 port)
 {
-   this->connectToCore("localhost", port, Common::Hash());
+   this->connectToCore("localhost", port, Common::SaltedPassword());
 }
 
-void CoreConnection::connectToCore(const QString& address, quint16 port, Common::Hash password)
+void CoreConnection::connectToCore(const QString& address, quint16 port, const Common::SaltedPassword& password)
 {
    if (!this->connectToCorePrepare(address))
       return;

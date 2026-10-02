@@ -92,6 +92,7 @@ Core::Core(bool resetSettings, QLocale locale, quint16 remoteControlPort) :
    }
 
    this->checkSettingsIntegrity();
+   this->upgradeRemotePassword();
 
    // To automatically create the file if it doesn't exist.
    if (!SETTINGS.save())
@@ -140,11 +141,15 @@ void Core::printSimilarFiles() const
 
 void Core::changePassword(const QString& newPassword)
 {
-   Common::SaltedPassword password;
-   password.hash = Common::Hasher::hashWithRandomSalt(newPassword, password.salt);
-
-   SETTINGS.set("remote_password", password.toStr());
-   SETTINGS.save();
+   try
+   {
+      SETTINGS.set("remote_password", Common::SaltedPassword::create(newPassword).toStr());
+      SETTINGS.save();
+   }
+   catch (const QString& error)
+   {
+      L_ERRO(QString("Unable to change the remote password: %1").arg(error));
+   }
 }
 
 void Core::removePassword()
@@ -250,6 +255,27 @@ Protos::Core::Settings* Core::createDefaultValuesSettings()
    settings->set_hashcache_nb_of_files_deleted_before_vacuum(10000);
 
    return settings;
+}
+
+/**
+  * The versions prior to 1.4.2 only hashed the remote password with BLAKE3. Its key is derived once, without
+  * needing the password, so the existing passwords keep working. See 'Common::SaltedPassword'.
+  */
+void Core::upgradeRemotePassword()
+{
+   const auto password = Common::SaltedPassword::fromStr(SETTINGS.get<QString>("remote_password"));
+   if (!password.isLegacy())
+      return;
+
+   try
+   {
+      SETTINGS.set("remote_password", password.upgraded().toStr());
+      L_DEBU("The remote password has been upgraded to Argon2id");
+   }
+   catch (const QString& error)
+   {
+      L_ERRO(QString("Unable to upgrade the remote password, remote control is disabled: %1").arg(error));
+   }
 }
 
 /**

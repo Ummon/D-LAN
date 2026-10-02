@@ -13,6 +13,7 @@ add_library(Common STATIC
    PersistentData.cpp
    Network/MessageSocket.cpp
    Network/RemoteControlTls.cpp
+   Network/RemoteControlAuthentication.cpp
    Network/MessageHeader.cpp
    ThreadPool.cpp
    Languages.cpp
@@ -40,6 +41,7 @@ add_library(Common STATIC
    PersistentData.h
    Network/MessageSocket.h
    Network/RemoteControlTls.h
+   Network/RemoteControlAuthentication.h
    Network/MessageHeader.h
    ThreadPool.h
    IRunnable.h
@@ -81,7 +83,8 @@ target_link_libraries(Common PUBLIC
 
 # Qt handles TLS transport; libcrypto generates and validates the persistent
 # self-signed Core identity without invoking an external openssl executable.
-find_package(OpenSSL 3 REQUIRED COMPONENTS Crypto SSL)
+# It also derives the remote control keys with Argon2id, available since OpenSSL 3.2.
+find_package(OpenSSL 3.2 REQUIRED COMPONENTS Crypto SSL)
 if(EXISTS "${OPENSSL_INCLUDE_DIR}/stddef.h")
    # A toolchain's C headers would shadow libc++'s ones ('<cstddef> tried including <stddef.h>').
    message(FATAL_ERROR

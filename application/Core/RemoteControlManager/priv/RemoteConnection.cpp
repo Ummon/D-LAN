@@ -29,9 +29,11 @@ using namespace RCM;
 #include <QFileInfo>
 #include <QSet>
 #include <QHash>
+#include <QSslSocket>
 
 #include <Common/Settings.h>
 #include <Common/Network/InterfacePolicy.h>
+#include <Common/Network/RemoteControlAuthentication.h>
 #include <Common/ProtoHelper.h>
 #include <Common/Constants.h>
 #include <Common/Hash.h>
@@ -48,6 +50,8 @@ using namespace RCM;
 #include <priv/Log.h>
 #include <priv/UploadProgress.h>
 #include <priv/LocalBrowse.h>
+
+namespace RCA = Common::RemoteControlAuthentication;
 
 namespace
 {
@@ -402,8 +406,18 @@ void RemoteConnection::sendLogMessages()
 
 void RemoteConnection::askForAuthentication()
 {
+   const auto password = Common::SaltedPassword::fromStr(SETTINGS.get<QString>("remote_password"));
+
    Protos::GUI::AskForAuthentication askForAuthenticationMessage;
-   askForAuthenticationMessage.set_salt(Common::SaltedPassword::fromStr(SETTINGS.get<QString>("remote_password")).salt);
+   askForAuthenticationMessage.set_protocol_version(RCA::PROTOCOL_VERSION);
+   askForAuthenticationMessage.set_salt(password.salt);
+   if (!password.isNull())
+   {
+      Protos::GUI::PasswordKdf* kdf = askForAuthenticationMessage.mutable_kdf();
+      kdf->set_salt(password.kdfSalt.toStdString());
+      kdf->set_memory(password.kdfMemory);
+      kdf->set_iterations(password.kdfIterations);
+   }
 
    // From the system's cryptographically secure generator: 'global()' is a Mersenne Twister, a client could
    // predict the next challenges from the ones it has received.
@@ -414,6 +428,15 @@ void RemoteConnection::askForAuthentication()
 
    this->timerCloseSocket.start();
    this->send(Common::MessageHeader::GUI_ASK_FOR_AUTHENTICATION, askForAuthenticationMessage);
+}
+
+/**
+  * The certificate of a remote connection, see 'Protos.GUI.AskForAuthentication'.
+  */
+QByteArray RemoteConnection::channelBinding() const
+{
+   const auto* ssl = qobject_cast<const QSslSocket*>(this->socket);
+   return ssl && ssl->isEncrypted() ? RCA::channelBinding(ssl->localCertificate()) : QByteArray();
 }
 
 /**
@@ -518,24 +541,37 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
 
          this->timerCloseSocket.stop();
 
+         Protos::GUI::AuthenticationResult authResultMessage;
+
+         // See 'Protos.GUI.AskForAuthentication'.
          if (!this->localTrusted)
          {
-            const Common::Hash passwordReceived(authenticationMessage.password_challenge().hash());
-            const Common::Hash currentPassword = Common::SaltedPassword::fromStr(SETTINGS.get<QString>("remote_password")).hash;
+            if (authenticationMessage.protocol_version() < RCA::PROTOCOL_VERSION)
+            {
+               this->refuseAuthentication(Protos::GUI::AuthenticationResult::AUTH_PROTOCOL_OUTDATED);
+               break;
+            }
 
-            if (currentPassword.isNull())
+            const auto password = Common::SaltedPassword::fromStr(SETTINGS.get<QString>("remote_password"));
+            if (password.isNull())
             {
                this->refuseAuthentication(Protos::GUI::AuthenticationResult::AUTH_PASSWORD_NOT_DEFINED);
                break;
             }
-            if (passwordReceived != Common::Hasher::hashWithSalt(currentPassword, this->saltChallenge))
+
+            const QByteArray nonce = QByteArray::fromStdString(authenticationMessage.client_nonce());
+            const QByteArray binding = this->channelBinding();
+            if (nonce.size() != RCA::NONCE_SIZE || !RCA::equals(
+                  QByteArray::fromStdString(authenticationMessage.client_proof()),
+                  RCA::clientProof(password.key, this->saltChallenge, nonce, binding)))
             {
                this->refuseAuthentication(Protos::GUI::AuthenticationResult::AUTH_BAD_PASSWORD);
                break;
             }
+
+            authResultMessage.set_core_proof(RCA::coreProof(password.key, this->saltChallenge, nonce, binding).toStdString());
          }
 
-         Protos::GUI::AuthenticationResult authResultMessage;
          authResultMessage.set_status(Protos::GUI::AuthenticationResult::AUTH_OK);
          this->authenticationState = AuthenticationState::Authenticated;
          this->send(Common::MessageHeader::GUI_AUTHENTICATION_RESULT, authResultMessage);
@@ -553,31 +589,29 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
 
    case Common::MessageHeader::GUI_CHANGE_PASSWORD:
       {
+         // The client is authorized: a local one is trusted and a remote one has proven it knows the current password.
          const Protos::GUI::ChangePassword& passMessage = message.getMessage<Protos::GUI::ChangePassword>();
 
-         // Hash construction maps malformed byte strings to null. Validate first so
-         // only an explicitly encoded, full-length null hash can request a reset.
-         if (!passMessage.has_new_password() || passMessage.new_password().hash().size() != Common::Hash::HASH_SIZE ||
-             (passMessage.has_old_password() && passMessage.old_password().hash().size() != Common::Hash::HASH_SIZE))
-            break;
-
-         Common::Hash newPassword(passMessage.new_password().hash());
-         Common::Hash currentPassword = Common::SaltedPassword::fromStr(SETTINGS.get<QString>("remote_password")).hash;
-
-         if (newPassword.isNull()) // If the new password is null, the password is reset.
-         {
+         if (passMessage.remove())
             SETTINGS.rm("remote_password");
-            SETTINGS.save();
-            this->refresh();
-         }
-         // A local client is trusted and doesn't know the current password: it doesn't have to provide it. A given old password must match.
-         else if (currentPassword.isNull() ||
-                  (passMessage.has_old_password() ? currentPassword == Common::Hash(passMessage.old_password().hash()) : this->localTrusted))
+         else
          {
-            SETTINGS.set("remote_password", Common::SaltedPassword { newPassword, passMessage.new_salt() }.toStr());
-            SETTINGS.save();
-            this->refresh();
+            Common::SaltedPassword password;
+            password.salt = passMessage.new_salt();
+            password.kdfSalt = QByteArray::fromStdString(passMessage.new_kdf().salt());
+            password.kdfMemory = passMessage.new_kdf().memory();
+            password.kdfIterations = passMessage.new_kdf().iterations();
+            password.key = QByteArray::fromStdString(passMessage.new_key());
+
+            // The GUIs refuse the KDF parameters out of bounds.
+            if (!password.isValid())
+               break;
+
+            SETTINGS.set("remote_password", password.toStr());
          }
+
+         SETTINGS.save();
+         this->refresh();
       }
       break;
 

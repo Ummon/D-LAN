@@ -208,6 +208,7 @@ void SettingsWidget::connectToCore()
 void SettingsWidget::disconnectFromTheCore()
 {
    this->coreConnection->disconnectFromCore();
+   SETTINGS.rm("core_password");
    SETTINGS.rm("password");
    SETTINGS.save();
 }
@@ -602,7 +603,8 @@ void SettingsWidget::coreConnected()
 {
    SETTINGS.set("core_address", this->coreConnection->getConnectionInfo().address);
    SETTINGS.set("core_port", static_cast<quint32>(this->coreConnection->getConnectionInfo().port));
-   SETTINGS.set("password", this->coreConnection->getConnectionInfo().password);
+   SETTINGS.set("core_password", this->coreConnection->getConnectionInfo().password.toStr());
+   SETTINGS.rm("password"); // Replaced by 'core_password' in 1.4.2.
    SETTINGS.save();
 
    this->ui->txtPassword->clear();

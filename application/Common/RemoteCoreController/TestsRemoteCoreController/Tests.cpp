@@ -6,11 +6,13 @@
 #include <utility>
 
 #include <Common/Constants.h>
+#include <Common/Network/RemoteControlAuthentication.h>
 #include <Common/TestsCommon/GlobalRandomPredictor.h>
 #include <priv/InternalCoreConnection.h>
 #include <priv/CoreConnection.h>
 
 using Common::MessageHeader;
+namespace RCA = Common::RemoteControlAuthentication;
 
 // Connect directly to the test listener, without starting a local core/service.
 class TestConnection : public RCC::InternalCoreConnection
@@ -210,7 +212,7 @@ private slots:
       auto& pending = core.temp();
       if (outcome == "silent")
          pending.connectionTimeoutTimer.setInterval(100);
-      core.connectToCore(multipleAddresses ? "localhost" : "127.0.0.1", port, Common::Hash());
+      core.connectToCore(multipleAddresses ? "localhost" : "127.0.0.1", port, Common::SaltedPassword());
       QTRY_VERIFY(pending.retryTimer.isActive());
       QVERIFY(core.isConnecting());
       QCOMPARE(errors.count(), 0);
@@ -340,14 +342,14 @@ private slots:
       if (stage == "lookup")
       {
          // Cancel before processing events, while even a cached lookup is pending.
-         core.connectToCore("localhost", this->server.serverPort(), Common::Hash());
+         core.connectToCore("localhost", this->server.serverPort(), Common::SaltedPassword());
          cancelledLookup = pending.currentHostLookupID;
          QVERIFY(cancelledLookup != -1);
       }
       else
       {
          QVERIFY(core.connectToCorePrepare("localhost"));
-         pending.connectionInfo = {"localhost", this->server.serverPort(), Common::Hash()};
+         pending.connectionInfo = {"localhost", this->server.serverPort(), Common::SaltedPassword()};
          if (stage == "retry")
          {
             // Enter the retry delay deterministically, without a real connection timeout.
@@ -393,7 +395,7 @@ private slots:
          stale.setAddresses({QHostAddress("192.0.2.1")});
          pending.addressResolved(stale);
          QCOMPARE(pending.socket->state(), QAbstractSocket::UnconnectedState);
-         core.connectToCore("localhost", this->server.serverPort(), Common::Hash());
+         core.connectToCore("localhost", this->server.serverPort(), Common::SaltedPassword());
          const int replacementLookup = pending.currentHostLookupID;
          QVERIFY(replacementLookup != -1);
          QVERIFY(replacementLookup != cancelledLookup);
@@ -458,11 +460,12 @@ private slots:
       pending.connectToCore("localhost", this->server.serverPort(), QString("old"));
       QCOMPARE(pending.password, QString("old"));
 
-      // The hash of the next attempt must not be replaced by the old salted plain password.
-      const Common::Hash hash = Common::Hash::rand();
-      pending.connectToCore("localhost", this->server.serverPort(), hash);
+      // The key of the next attempt must not be replaced by one derived from the old plain password.
+      Common::SaltedPassword saved;
+      saved.key = RCA::randomBytes(RCA::KEY_SIZE);
+      pending.connectToCore("localhost", this->server.serverPort(), saved);
       QVERIFY(pending.password.isEmpty());
-      QCOMPARE(pending.connectionInfo.password, hash);
+      QCOMPARE(pending.connectionInfo.password.key, saved.key);
 
       pending.connectToCore("localhost", this->server.serverPort(), QString("new"));
       core.disconnectFromCore();
@@ -504,9 +507,36 @@ private slots:
       });
       QVERIFY(this->connection.setCorePassword("password"));
       QTRY_COMPARE(changes.size(), 1);
-      const quint64 salt = changes[0].new_salt();
-      QCOMPARE(Common::Hash(changes[0].new_password().hash()), Common::Hasher::hashWithSalt(QString("password"), salt));
+      const auto& change = changes[0];
+      const quint64 salt = change.new_salt();
+      const QByteArray key = QByteArray::fromStdString(change.new_key());
+      QCOMPARE(key, Common::SaltedPassword::derive(
+         Common::Hasher::hashWithSalt(QString("password"), salt), salt,
+         QByteArray::fromStdString(change.new_kdf().salt()), change.new_kdf().memory(), change.new_kdf().iterations()
+      ).key);
+      QCOMPARE(this->connection.getConnectionInfo().password.key, key); // Saved by the GUI for the next connections.
       QVERIFY(!predictor.predicts(salt));
+   }
+
+   void oldPasswordIsCheckedByTheGui()
+   {
+      QObject context;
+      QList<Protos::GUI::ChangePassword> changes;
+      connect(this->peer.data(), &Common::MessageSocket::newMessage, &context, [&](const Common::Message& message) {
+         if (message.getHeader().getType() == MessageHeader::GUI_CHANGE_PASSWORD)
+            changes << message.getMessage<Protos::GUI::ChangePassword>();
+      });
+
+      // The key known after a connection to a remote core.
+      this->connection.connectionInfo.password = Common::SaltedPassword::create("current");
+      QVERIFY(!this->connection.setCorePassword("new", "wrong"));
+      QVERIFY(this->connection.setCorePassword("new", "current"));
+      QTRY_COMPARE(changes.size(), 1);
+      QVERIFY(!changes[0].remove());
+
+      this->connection.resetCorePassword();
+      QTRY_COMPARE(changes.size(), 2);
+      QVERIFY(changes[1].remove());
    }
 
    void unauthenticatedHeaders_data()

@@ -61,6 +61,7 @@ namespace CoreSpace
    private:
       static Protos::Core::Settings* createDefaultValuesSettings();
       void checkSettingsIntegrity();
+      void upgradeRemotePassword();
 
       template <typename T>
       void checkSetting(const QString& name, T min, T max);
