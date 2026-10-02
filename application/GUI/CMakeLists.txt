@@ -345,5 +345,5 @@ if(WIN32)
       Taskbar/TaskbarImplWin.h
       "${CMAKE_SOURCE_DIR}/Common/version.rc"
    )
-   target_link_libraries(DLanGUI PRIVATE ole32)
+   target_link_libraries(DLanGUI PRIVATE ole32 shell32)
 endif()

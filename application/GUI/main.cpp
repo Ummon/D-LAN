@@ -29,12 +29,37 @@
 
 #include <D-LAN_GUI.h>
 
+#ifdef Q_OS_WIN
+   #include <windows.h>
+   #include <appmodel.h>
+   #include <shobjidl.h>
+#endif
+
 #if defined(DEBUG) && defined(ENABLE_NVWA)
    // For Common/debug_new.cpp.
    extern const char* new_progname;
 #endif
 
 Protos::GUI::Settings* createDefaultValuesSettings();
+
+#ifdef Q_OS_WIN
+/**
+  * Without an explicit AppUserModelID, Windows derives one from the executable path and the taskbar takes the
+  * icon associated with it. That association can be left broken (blank icon), for example after the MSIX package
+  * has been installed then removed. Must be called before any window is created.
+  * The ID must match 'AppUserModelID' of the shortcut in 'Setups/Windows/windows_setup.iss'.
+  */
+void setAppUserModelID()
+{
+   // The MSIX package already has its own ID ("<package family name>!DLAN"), replacing it would detach the
+   // windows from the package tile.
+   UINT32 length = 0;
+   if (GetCurrentPackageFullName(&length, nullptr) != APPMODEL_ERROR_NO_PACKAGE)
+      return;
+
+   SetCurrentProcessExplicitAppUserModelID(L"GregBurri.D-LAN.GUI");
+}
+#endif
 
 /**
   * Arguments : [--lang <language>]
@@ -44,6 +69,10 @@ int main(int argc, char *argv[])
 {
 #if defined(DEBUG) && defined(ENABLE_NVWA)
    new_progname = argv[0];
+#endif
+
+#ifdef Q_OS_WIN
+   setAppUserModelID();
 #endif
 
    // A flag and not a comparison against the system locale: '--lang <system language>' is a valid request

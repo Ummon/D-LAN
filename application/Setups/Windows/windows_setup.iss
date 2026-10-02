@@ -30,7 +30,8 @@ ArchitecturesAllowed=x64compatible
 Source: "{#BundleDir}/*"; DestDir: "{app}"; Flags: comparetimestamp recursesubdirs createallsubdirs
 
 [Icons]
-Name: "{group}\D-LAN"; Filename: "{app}/D-LAN.GUI.exe"; WorkingDir: "{app}"
+; 'AppUserModelID' must match the one set by the GUI, see 'setAppUserModelID()' in 'GUI/main.cpp'.
+Name: "{group}\D-LAN"; Filename: "{app}/D-LAN.GUI.exe"; WorkingDir: "{app}"; AppUserModelID: "GregBurri.D-LAN.GUI"
 
 [Languages]
 ; Name has to be coded as ISO-639 (two letters).
