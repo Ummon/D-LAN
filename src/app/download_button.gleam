@@ -106,6 +106,21 @@ pub fn element(
   |> Ok
 }
 
+pub fn microsoft_store_element(ctx: web.Context) -> element.Element(a) {
+  html.div([attr.class("download MicrosoftStore")], [
+    html.a(
+      [
+        attr.class("installer"),
+        attr.href(
+          "https://apps.microsoft.com/detail/9mt245kqw4qx?hl="
+          <> tr.to_str(ctx.lang),
+        ),
+      ],
+      [html.em([], [tr.download_microsoft_store(ctx.lang)])],
+    ),
+  ])
+}
+
 /// Returns the most recently built release among 'filenames', or an error if
 /// none of them follows the release naming scheme.
 ///

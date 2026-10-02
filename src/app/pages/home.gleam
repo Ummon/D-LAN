@@ -16,6 +16,7 @@ pub fn page(ctx: web.Context) -> element.Element(a) {
     html.h1([], [html.em([], [tr.home_title(ctx.lang)])]),
     html.p([], [tr.home_description(ctx.lang, "features.html")]),
     download_button.element(ctx, "Windows") |> result.unwrap(element.none()),
+    download_button.microsoft_store_element(ctx),
     download_button.element(ctx, "Linux") |> result.unwrap(element.none()),
     download_button.element(ctx, "macOS") |> result.unwrap(element.none()),
   ])

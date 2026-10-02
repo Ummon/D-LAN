@@ -248,6 +248,12 @@ select {
             background-image: url("img/download_for_raspberry.png");
          }
 
+         &.MicrosoftStore {
+            background-image: url("img/Microsoft_Store_logo_dark.svg");
+            background-size: 24px 24px;
+            background-position: 14px;
+         }
+
          background-repeat: no-repeat;
          background-position: 12px 18px;
 
@@ -263,7 +269,6 @@ select {
          }
 
          a.installer {
-            min-height: 58px;
             padding: 6px 17px 6px 45px;
             text-align: center;
 

@@ -1592,6 +1592,20 @@ pub fn download_button_version(
   ])
 }
 
+pub fn download_microsoft_store(l: Lang) -> element.Element(a) {
+  case l {
+    En -> html.text("Install from Microsoft Store")
+    Fr -> html.text("Installer depuis le Microsoft Store")
+    De -> html.text("Aus dem Microsoft Store installieren")
+    Es -> html.text("Instalar desde Microsoft Store")
+    It -> html.text("Installa da Microsoft Store")
+    Ru -> html.text("Установить из Microsoft Store")
+    Ko -> html.text("Microsoft Store에서 설치")
+    Ja -> html.text("Microsoft Store からインストール")
+    Hi -> html.text("Microsoft Store से इंस्टॉल करें")
+  }
+}
+
 /// Formats a display date using the selected language's month names and order.
 pub fn format_date(l: Lang, date: calendar.Date) -> String {
   let year = int.to_string(date.year)
