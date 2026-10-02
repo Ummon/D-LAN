@@ -492,6 +492,11 @@
     </message>
     <message>
         <location line="+3"/>
+        <source>The core closed the connection. Remote access requires a password to be defined on the core. The core may also have too many connections.</source>
+        <translation>Core ने कनेक्शन बंद कर दिया। रिमोट एक्सेस के लिए Core पर पासवर्ड निर्धारित होना आवश्यक है। यह भी हो सकता है कि Core पर बहुत अधिक कनेक्शन हों।</translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>Error unknown</source>
         <translation>अज्ञात त्रुटि</translation>
     </message>

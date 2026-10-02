@@ -23,6 +23,7 @@ using namespace RCM;
 
 #include <Common/Settings.h>
 #include <Common/Global.h>
+#include <Common/SaltedPassword.h>
 #include <Common/Network/RemoteControlTls.h>
 
 LOG_INIT_CPP(RemoteControlManager)
@@ -93,7 +94,9 @@ void RemoteControlManager::newConnection()
       return;
 
    const bool local = Common::Global::isLocal(socket->peerAddress());
-   if (!local && this->tlsConfiguration.isNull())
+   // Remote access requires TLS and a password. Without them a remote client could never authenticate:
+   // it is refused before costing a TLS handshake or taking a connection slot.
+   if (!local && (this->tlsConfiguration.isNull() || Common::SaltedPassword::fromStr(SETTINGS.get<QString>("remote_password")).isNull()))
    {
       socket->abort();
       socket->deleteLater();

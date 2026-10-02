@@ -66,6 +66,7 @@ namespace RCC
          RCC_ERROR_WRONG_PASSWORD = 6,
          RCC_ERROR_INVALID_ADDRESS = 7,
          RCC_ERROR_TLS = 8,
+         RCC_ERROR_CLOSED_BY_CORE = 9, // A remote core closed the connection before authentication, for example because it hasn't defined any password.
          RCC_ERROR_UNKNOWN = 255
       };
 

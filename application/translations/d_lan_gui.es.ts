@@ -496,6 +496,11 @@
     </message>
     <message>
         <location line="+3"/>
+        <source>The core closed the connection. Remote access requires a password to be defined on the core. The core may also have too many connections.</source>
+        <translation>El núcleo cerró la conexión. El acceso remoto requiere que se defina una contraseña en el núcleo. También es posible que el núcleo tenga demasiadas conexiones.</translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>Error unknown</source>
         <translation>Error desconocido</translation>
     </message>

@@ -178,6 +178,7 @@ namespace RCC
       bool connectionAttemptActive = false;
       bool tlsRequired = false;
       bool tlsFailureReported = false;
+      bool closedByCore = false; // A remote core closed one of the attempts before authentication, see 'RCC_ERROR_CLOSED_BY_CORE'.
 
       // When a name is resolved many addresses can be returned, we will try all of
       // them until a connection is successfully established.

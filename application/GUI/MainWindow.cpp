@@ -190,6 +190,9 @@ void MainWindow::coreConnectionError(RCC::ICoreConnection::ConnectionErrorCode e
    case RCC::ICoreConnection::RCC_ERROR_TLS:
       error = tr("Unable to establish a trusted encrypted connection. The Core's certificate may have changed or TLS may be unavailable. See the log for details.");
       break;
+   case RCC::ICoreConnection::RCC_ERROR_CLOSED_BY_CORE:
+      error = tr("The core closed the connection. Remote access requires a password to be defined on the core. The core may also have too many connections.");
+      break;
    case RCC::ICoreConnection::RCC_ERROR_UNKNOWN:
       error = tr("Error unknown");
    }

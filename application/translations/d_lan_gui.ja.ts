@@ -492,32 +492,37 @@
     </message>
     <message>
         <location filename="../GUI/MainWindow.cpp" line="194"/>
+        <source>The core closed the connection. Remote access requires a password to be defined on the core. The core may also have too many connections.</source>
+        <translation>Core が接続を閉じました。リモートアクセスには Core にパスワードを設定する必要があります。Core の接続数が多すぎる可能性もあります。</translation>
+    </message>
+    <message>
+        <location filename="../GUI/MainWindow.cpp" line="197"/>
         <source>Error unknown</source>
         <translation>原因不明のエラー</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="200"/>
+        <location filename="../GUI/MainWindow.cpp" line="203"/>
         <source>Unable to connect to the core</source>
         <translation>Core に接続できません</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="203"/>
-        <location filename="../GUI/MainWindow.cpp" line="227"/>
+        <location filename="../GUI/MainWindow.cpp" line="206"/>
+        <location filename="../GUI/MainWindow.cpp" line="230"/>
         <source>Core address:</source>
         <translation>Core のアドレス:</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="213"/>
+        <location filename="../GUI/MainWindow.cpp" line="216"/>
         <source>Connected to the core</source>
         <translation>Core に接続しました</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="222"/>
+        <location filename="../GUI/MainWindow.cpp" line="225"/>
         <source>Connection lost</source>
         <translation>接続が切断されました</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="226"/>
+        <location filename="../GUI/MainWindow.cpp" line="229"/>
         <source>The connection to the core has been lost</source>
         <translation>Core との接続が切断されました</translation>
     </message>

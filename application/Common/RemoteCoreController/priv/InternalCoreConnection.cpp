@@ -126,6 +126,10 @@ InternalCoreConnection::InternalCoreConnection(CoreController& coreController) :
           (error == QAbstractSocket::SslHandshakeFailedError || error == QAbstractSocket::SslInternalError ||
            error == QAbstractSocket::SslInvalidUserDataError))
          this->tlsFailed(ssl->errorString());
+      // A remote core immediately closes the connections it can't accept. The retries are kept: it may only
+      // have had too many connections.
+      else if (this->tlsRequired && this->connectionAttemptActive && error == QAbstractSocket::RemoteHostClosedError)
+         this->closedByCore = true;
    });
 }
 
@@ -150,6 +154,7 @@ void InternalCoreConnection::cancelConnectionAttempt()
    this->addressesToTry.clear();
    this->addressesToRetry.clear();
    this->nbRetries = 0;
+   this->closedByCore = false;
 }
 
 void InternalCoreConnection::connectToCore(const QString& address, quint16 port, Common::Hash password)
@@ -508,7 +513,7 @@ void InternalCoreConnection::stateChanged(QAbstractSocket::SocketState socketSta
       else
       {
          this->connectionAttemptActive = false;
-         emit connectingError(ICoreConnection::RCC_ERROR_HOST_TIMEOUT);
+         emit connectingError(this->closedByCore ? ICoreConnection::RCC_ERROR_CLOSED_BY_CORE : ICoreConnection::RCC_ERROR_HOST_TIMEOUT);
       }
       break;
 

@@ -496,6 +496,11 @@
     </message>
     <message>
         <location line="+3"/>
+        <source>The core closed the connection. Remote access requires a password to be defined on the core. The core may also have too many connections.</source>
+        <translation>Ядро закрыло соединение. Для удалённого доступа на ядре должен быть установлен пароль. Также возможно, что у ядра слишком много соединений.</translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>Error unknown</source>
         <translation>Неизвестная ошибка</translation>
     </message>

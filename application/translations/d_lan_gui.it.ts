@@ -496,32 +496,37 @@
     </message>
     <message>
         <location filename="../GUI/MainWindow.cpp" line="194"/>
+        <source>The core closed the connection. Remote access requires a password to be defined on the core. The core may also have too many connections.</source>
+        <translation>Il Core ha chiuso la connessione. L&apos;accesso remoto richiede che sul Core sia impostata una password. Il Core potrebbe anche avere troppe connessioni.</translation>
+    </message>
+    <message>
+        <location filename="../GUI/MainWindow.cpp" line="197"/>
         <source>Error unknown</source>
         <translation>Errore sconosciuto</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="200"/>
+        <location filename="../GUI/MainWindow.cpp" line="203"/>
         <source>Unable to connect to the core</source>
         <translation>Impossibile connettersi al Core</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="203"/>
-        <location filename="../GUI/MainWindow.cpp" line="227"/>
+        <location filename="../GUI/MainWindow.cpp" line="206"/>
+        <location filename="../GUI/MainWindow.cpp" line="230"/>
         <source>Core address:</source>
         <translation>Indirizzo del Core:</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="213"/>
+        <location filename="../GUI/MainWindow.cpp" line="216"/>
         <source>Connected to the core</source>
         <translation>Connesso al Core</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="222"/>
+        <location filename="../GUI/MainWindow.cpp" line="225"/>
         <source>Connection lost</source>
         <translation>Connessione persa</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="226"/>
+        <location filename="../GUI/MainWindow.cpp" line="229"/>
         <source>The connection to the core has been lost</source>
         <translation>La connessione al Core è stata persa</translation>
     </message>

@@ -96,6 +96,13 @@ class Tests : public QObject
          client.transport()->connectToHost(QHostAddress::LocalHost, this->server.serverPort());
    }
 
+   // Like the last attempt of 'tryToConnectToTheNextAddress()': its failure is reported as a connecting error.
+   void reportFinalError(TestConnection& client)
+   {
+      connect(client.transport(), &QAbstractSocket::stateChanged, &client, &RCC::InternalCoreConnection::stateChanged);
+      client.nbRetries = RCC::InternalCoreConnection::NB_RETRIES_MAX;
+   }
+
 private slots:
    void initTestCase()
    {
@@ -206,6 +213,49 @@ private slots:
       QCOMPARE(errors[0][0].value<RCC::ICoreConnection::ConnectionErrorCode>(), RCC::ICoreConnection::RCC_ERROR_WRONG_PASSWORD);
       QVERIFY(!QFile::exists(Tls::pinPath("test-core", this->server.serverPort())));
       QVERIFY(!client.isConnected());
+   }
+
+   void remoteAccessRequiresPassword()
+   {
+      SETTINGS.rm("remote_password");
+      this->startManager();
+      TestConnection client(this->controller);
+      QSignalSpy errors(&client, &RCC::InternalCoreConnection::connectingError);
+      this->reportFinalError(client);
+      this->connectClient(client);
+      QTRY_COMPARE(errors.size(), 1);
+      QCOMPARE(errors[0][0].value<RCC::ICoreConnection::ConnectionErrorCode>(), RCC::ICoreConnection::RCC_ERROR_CLOSED_BY_CORE);
+      QVERIFY(this->manager->connections.isEmpty()); // Refused before TLS, without taking a connection slot.
+      QVERIFY(!QFile::exists(Tls::pinPath("test-core", this->server.serverPort())));
+
+      this->server.remote = false;
+      TestConnection local(this->controller);
+      this->connectClient(local, false, false);
+      QTRY_VERIFY(local.isConnected()); // Local access doesn't need a password.
+      local.disconnectFromCore();
+      QTRY_VERIFY(this->manager->connections.isEmpty());
+
+      // A password defined while the core runs enables remote access.
+      this->server.remote = true;
+      SETTINGS.set("remote_password", Common::SaltedPassword { Common::Hash::rand(), 123 }.toStr());
+      TestConnection authorized(this->controller);
+      this->connectClient(authorized);
+      QTRY_VERIFY(authorized.isConnected());
+      QVERIFY(authorized.transport()->isEncrypted());
+   }
+
+   void silentRemoteCoreTimesOut()
+   {
+      // The TCP connection is accepted but no core answers: it's a timeout, not a refusal.
+      TestConnection client(this->controller);
+      QSignalSpy errors(&client, &RCC::InternalCoreConnection::connectingError);
+      this->reportFinalError(client);
+      client.connectionTimeoutTimer.setInterval(100);
+      this->connectClient(client);
+      QTRY_VERIFY(this->server.hasPendingConnections());
+      QScopedPointer<QTcpSocket> idle(this->server.nextPendingConnection());
+      QTRY_COMPARE(errors.size(), 1);
+      QCOMPARE(errors[0][0].value<RCC::ICoreConnection::ConnectionErrorCode>(), RCC::ICoreConnection::RCC_ERROR_HOST_TIMEOUT);
    }
 
    void changedCertificateRejected()

@@ -496,32 +496,37 @@
     </message>
     <message>
         <location filename="../GUI/MainWindow.cpp" line="194"/>
+        <source>The core closed the connection. Remote access requires a password to be defined on the core. The core may also have too many connections.</source>
+        <translation>코어가 연결을 닫았습니다. 원격 접근을 사용하려면 코어에 비밀번호가 설정되어 있어야 합니다. 코어에 연결이 너무 많을 수도 있습니다.</translation>
+    </message>
+    <message>
+        <location filename="../GUI/MainWindow.cpp" line="197"/>
         <source>Error unknown</source>
         <translation>알 수 없는 오류</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="200"/>
+        <location filename="../GUI/MainWindow.cpp" line="203"/>
         <source>Unable to connect to the core</source>
         <translation>코어에 연결할 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="203"/>
-        <location filename="../GUI/MainWindow.cpp" line="227"/>
+        <location filename="../GUI/MainWindow.cpp" line="206"/>
+        <location filename="../GUI/MainWindow.cpp" line="230"/>
         <source>Core address:</source>
         <translation>코어 주소:</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="213"/>
+        <location filename="../GUI/MainWindow.cpp" line="216"/>
         <source>Connected to the core</source>
         <translation>코어에 연결되었습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="222"/>
+        <location filename="../GUI/MainWindow.cpp" line="225"/>
         <source>Connection lost</source>
         <translation>연결이 끊어졌습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="226"/>
+        <location filename="../GUI/MainWindow.cpp" line="229"/>
         <source>The connection to the core has been lost</source>
         <translation>코어와의 연결이 끊어졌습니다</translation>
     </message>
