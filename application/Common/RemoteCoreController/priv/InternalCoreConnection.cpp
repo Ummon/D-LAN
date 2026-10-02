@@ -567,6 +567,28 @@ void InternalCoreConnection::sendCurrentLanguage()
    }
 }
 
+/**
+  * Until we are authenticated, the handshake messages must be small: a message is buffered and parsed before
+  * 'onNewMessage(..)' can drop it, an unauthenticated Core could otherwise make us allocate gigabytes.
+  * A remote Core sends nothing else. A local Core trusts us before the handshake completes and may already
+  * send events, they are dropped by 'onNewMessage(..)'.
+  */
+bool InternalCoreConnection::acceptsHeader(const Common::MessageHeader& header)
+{
+   if (this->authenticated)
+      return true;
+
+   switch (header.getType())
+   {
+   case Common::MessageHeader::GUI_ASK_FOR_AUTHENTICATION:
+   case Common::MessageHeader::GUI_AUTHENTICATION_RESULT:
+      return header.getSize() <= Common::Constants::MAX_GUI_HANDSHAKE_MESSAGE_SIZE;
+
+   default:
+      return !this->tlsRequired;
+   }
+}
+
 void InternalCoreConnection::onNewMessage(const Common::Message& message)
 {
    // While we are not authenticated we accept only two message types.

@@ -99,6 +99,9 @@ namespace Common
       // Called after sending is enabled, before any buffered input is dispatched.
       virtual void onStartListening() {}
 
+      // Reject a message from its header, before its body is buffered and parsed. The socket is then closed.
+      virtual bool acceptsHeader(const MessageHeader& header) { return true; }
+
       // Reject a message before either onNewMessage() or newMessage is called.
       virtual bool acceptsMessage(const Message& message) { return true; }
 

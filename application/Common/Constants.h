@@ -57,6 +57,11 @@ namespace Common
 
       static const QString BINARY_PREFIXES[];
 
+      // Maximum payload of a message exchanged between the Core and the GUI before the authentication completes,
+      // see 'Protos.GUI.AskForAuthentication'. Far above the size of these messages, but small enough to make
+      // parsing a message from an unauthenticated sender harmless.
+      static constexpr quint32 MAX_GUI_HANDSHAKE_MESSAGE_SIZE = 1024; // [byte].
+
       static const int MAX_NB_HASHES_PER_ENTRY_GUI_BROWSE;
       static const int CHUNK_SIZE;
 

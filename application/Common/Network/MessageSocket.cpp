@@ -345,6 +345,18 @@ void MessageSocket::dataReceivedSlot()
             this->socket->close();
             return;
          }
+
+         if (!this->acceptsHeader(this->currentHeader))
+         {
+            MESSAGE_SOCKET_LOG_DEBUG(
+               QString("Socket[%1]: Message refused from its header (%2), closing the socket")
+                  .arg(this->num)
+                  .arg(this->currentHeader.toStr())
+            );
+            this->currentHeader.setNull();
+            this->socket->close();
+            return;
+         }
       }
 
       if (!this->currentHeader.isNull() && this->socket->bytesAvailable() >= this->currentHeader.getSize())

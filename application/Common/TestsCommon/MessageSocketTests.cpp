@@ -114,6 +114,7 @@ namespace
          const Common::Hash& localID = {}, const Common::Hash& remoteID = {}) :
          MessageSocket(new Logger(logs), socket, localID, remoteID) {}
       std::function<void()> dataHook, acceptHook, messageHook, disconnectHook;
+      std::function<bool(const MessageHeader&)> headerFilter;
       QList<MessageHeader::MessageType> receivedTypes;
       int disconnections = 0;
 
@@ -124,6 +125,10 @@ namespace
          const auto hook = this->dataHook;
          if (hook)
             hook();
+      }
+      bool acceptsHeader(const MessageHeader& header) override
+      {
+         return !this->headerFilter || this->headerFilter(header);
       }
       bool acceptsMessage(const Common::Message&) override
       {
@@ -735,6 +740,37 @@ private slots:
       QCOMPARE(accepted, 0);
       QCOMPARE(signaled, 0);
       QVERIFY(peer.receivedTypes.isEmpty());
+   }
+
+   void rejectHeaderBeforeBody()
+   {
+      auto* socket = new BufferedSocket;
+      TestPeer peer(socket);
+      QList<MessageHeader> headers;
+      peer.headerFilter = [&](const MessageHeader& header) {
+         headers << header;
+         return header.getType() != MessageHeader::GUI_STATE;
+      };
+      int accepted = 0;
+      peer.acceptHook = [&] { ++accepted; };
+
+      socket->input = frame(MessageHeader::GUI_REFRESH);
+      peer.startListening();
+      QCOMPARE(peer.receivedTypes, QList<MessageHeader::MessageType>{MessageHeader::GUI_REFRESH});
+
+      // Only the header: a rejection must not wait for the body.
+      QByteArray header(MessageHeader::HEADER_SIZE, Qt::Uninitialized);
+      MessageHeader::writeHeader(header.data(), MessageHeader(MessageHeader::GUI_STATE, 123, Common::Hash()));
+      socket->input = header;
+      socket->notify();
+
+      QVERIFY(!peer.isConnected());
+      QCOMPARE(peer.disconnections, 1);
+      QCOMPARE(accepted, 1);
+      QCOMPARE(peer.receivedTypes.size(), 1);
+      QCOMPARE(headers.size(), 2);
+      QCOMPARE(headers[1].getType(), MessageHeader::GUI_STATE);
+      QCOMPARE(headers[1].getSize(), quint32(123));
    }
 
    void nullWireTypeDisconnectDeletesPeer()

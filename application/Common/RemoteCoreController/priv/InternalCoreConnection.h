@@ -155,6 +155,7 @@ namespace RCC
 
       void sendCurrentLanguage();
 
+      bool acceptsHeader(const Common::MessageHeader& header) override;
       void onNewMessage(const Common::Message& message) override;
       void onDisconnected() override;
 

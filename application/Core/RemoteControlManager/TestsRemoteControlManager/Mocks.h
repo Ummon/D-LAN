@@ -42,6 +42,15 @@ public:
       emit readyRead();
    }
 
+   // Only a header, its body never arrives.
+   void receiveHeader(Common::MessageHeader::MessageType type, quint32 size)
+   {
+      QByteArray bytes(Common::MessageHeader::HEADER_SIZE, Qt::Uninitialized);
+      Common::MessageHeader::writeHeader(bytes.data(), Common::MessageHeader(type, size, Common::Hash()));
+      this->input += bytes;
+      emit readyRead();
+   }
+
    QList<Common::Message> messages() const
    {
       QList<Common::Message> result;

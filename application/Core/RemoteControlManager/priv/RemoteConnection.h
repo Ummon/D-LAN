@@ -110,6 +110,7 @@ namespace RCM
 
       void refreshAllInterfaces();
 
+      bool acceptsHeader(const Common::MessageHeader& header) override;
       void onNewMessage(const Common::Message& message) override;
       void onStartListening() override;
       void onDisconnected() override;

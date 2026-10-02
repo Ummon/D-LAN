@@ -9,6 +9,7 @@
 #include <QScopeGuard>
 #include <priv/LocalBrowse.h>
 
+#include <Common/Constants.h>
 #include <Common/Settings.h>
 #include <Common/SaltedPassword.h>
 #include <Common/Global.h>
@@ -534,16 +535,62 @@ private slots:
       Protos::GUI::Authentication valid;
       const auto hash = Common::Hasher::hashWithSalt(remotePassword().hash, challenge);
       valid.mutable_password_challenge()->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
-      QSignalSpy languageDefined(connection, &RCM::RemoteConnection::languageDefined);
       QList<Common::Message> finalMessages;
       connect(connection, &RCM::RemoteConnection::deleted, this, [&] { finalMessages = socket->messages(); });
       socket->receive(Common::MessageHeader::GUI_AUTHENTICATION, Protos::GUI::Authentication());
       socket->receive(Common::MessageHeader::GUI_AUTHENTICATION, valid);
-      socket->receive(Common::MessageHeader::GUI_LANGUAGE, Protos::GUI::Language());
-      QCOMPARE(languageDefined.size(), 0);
+      QVERIFY(connection->isConnected()); // Ignored until the delayed refusal, other messages are tested by 'unauthorizedHeaders'.
       QTRY_VERIFY(!connection);
       QCOMPARE(finalMessages.size(), 2);
       QCOMPARE(finalMessages[1].getMessage<Protos::GUI::AuthenticationResult>().status(), Protos::GUI::AuthenticationResult::AUTH_BAD_PASSWORD);
+   }
+
+   void unauthorizedHeaders_data()
+   {
+      QTest::addColumn<bool>("local");
+      QTest::addColumn<bool>("refused");
+      QTest::addColumn<int>("type");
+      QTest::addColumn<quint32>("size");
+      QTest::addColumn<bool>("accepted");
+
+      const quint32 limit = Common::Constants::MAX_GUI_HANDSHAKE_MESSAGE_SIZE;
+      const quint32 maximum = 100 * 1024 * 1024; // The largest payload accepted by 'Common::MessageSocket'.
+      const int authentication = Common::MessageHeader::GUI_AUTHENTICATION;
+      const int language = Common::MessageHeader::GUI_LANGUAGE;
+      const int state = Common::MessageHeader::GUI_STATE;
+      QTest::newRow("authentication") << false << false << authentication << limit << true;
+      QTest::newRow("oversized-authentication") << false << false << authentication << limit + 1 << false;
+      QTest::newRow("other-type") << false << false << language << quint32(0) << false;
+      QTest::newRow("huge-other-type") << false << false << state << maximum << false;
+      QTest::newRow("refused-authentication") << false << true << authentication << limit << true;
+      QTest::newRow("refused-other-type") << false << true << language << quint32(0) << false;
+      QTest::newRow("trusted-local-client") << true << false << state << maximum << true;
+   }
+
+   void unauthorizedHeaders()
+   {
+      QFETCH(bool, local);
+      QFETCH(bool, refused);
+      QFETCH(int, type);
+      QFETCH(quint32, size);
+      QFETCH(bool, accepted);
+      auto* socket = new BufferedSocket(local);
+      QPointer<RCM::RemoteConnection> connection = this->newConnection(socket);
+      QList<Common::Message> finalMessages;
+      connect(connection, &RCM::RemoteConnection::deleted, this, [&] { finalMessages = socket->messages(); });
+      connection->startListening();
+      if (refused)
+         socket->receive(Common::MessageHeader::GUI_AUTHENTICATION, Protos::GUI::Authentication());
+
+      socket->receiveHeader(Common::MessageHeader::MessageType(type), size);
+      QCOMPARE(connection->isConnected(), accepted); // A rejection waits neither for the body nor for the authentication deadline.
+      if (accepted)
+         delete connection;
+      else
+      {
+         QTRY_VERIFY(!connection);
+         QCOMPARE(finalMessages.size(), 1); // Only the challenge, a pending refusal isn't sent either.
+      }
    }
 
    void disconnectedDuringStartup()

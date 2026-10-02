@@ -5,6 +5,7 @@
 #include <memory>
 #include <utility>
 
+#include <Common/Constants.h>
 #include <priv/InternalCoreConnection.h>
 #include <priv/CoreConnection.h>
 
@@ -486,6 +487,54 @@ private slots:
       emit core.temp().connectingError(RCC::ICoreConnection::RCC_ERROR_HOST_TIMEOUT);
       QCOMPARE(errors.size(), 2);
       QVERIFY(!core.isConnecting());
+   }
+
+   void unauthenticatedHeaders_data()
+   {
+      QTest::addColumn<bool>("remote");
+      QTest::addColumn<int>("type");
+      QTest::addColumn<quint32>("size");
+      QTest::addColumn<bool>("accepted");
+
+      const quint32 limit = Common::Constants::MAX_GUI_HANDSHAKE_MESSAGE_SIZE;
+      const quint32 maximum = 100 * 1024 * 1024; // The largest payload accepted by 'Common::MessageSocket'.
+      for (bool remote : {false, true})
+      {
+         const QString prefix = remote ? "remote-" : "local-";
+         QTest::newRow(qPrintable(prefix + "challenge")) << remote << int(MessageHeader::GUI_ASK_FOR_AUTHENTICATION) << limit << true;
+         QTest::newRow(qPrintable(prefix + "oversized-challenge")) << remote << int(MessageHeader::GUI_ASK_FOR_AUTHENTICATION) << limit + 1 << false;
+         QTest::newRow(qPrintable(prefix + "oversized-result")) << remote << int(MessageHeader::GUI_AUTHENTICATION_RESULT) << limit + 1 << false;
+         // A local Core trusts the GUI before the handshake completes and may already send events.
+         QTest::newRow(qPrintable(prefix + "event")) << remote << int(MessageHeader::GUI_EVENT_LOG_MESSAGES) << maximum << !remote;
+      }
+   }
+
+   void unauthenticatedHeaders()
+   {
+      QFETCH(bool, remote);
+      QFETCH(int, type);
+      QFETCH(quint32, size);
+      QFETCH(bool, accepted);
+      TestConnection client {this->controller};
+      client.tlsRequired = remote; // Over plain TCP: only the policy for a remote Core is exercised.
+      client.connectSocket(this->server.serverPort());
+      QTRY_VERIFY(this->server.hasPendingConnections());
+      QScopedPointer<QTcpSocket> core(this->server.nextPendingConnection());
+      QTRY_COMPARE(client.socket->state(), QAbstractSocket::ConnectedState);
+      if (remote)
+         client.startListening(); // Normally started once encrypted.
+
+      // Only the header: a rejection must not wait for the body.
+      QByteArray header(MessageHeader::HEADER_SIZE, Qt::Uninitialized);
+      MessageHeader::writeHeader(header.data(), MessageHeader(MessageHeader::MessageType(type), size, Common::Hash::rand()));
+      core->write(header);
+      if (accepted)
+      {
+         QTest::qWait(100);
+         QCOMPARE(client.socket->state(), QAbstractSocket::ConnectedState);
+      }
+      else
+         QTRY_COMPARE_WITH_TIMEOUT(client.socket->state(), QAbstractSocket::UnconnectedState, 1000);
    }
 
    void browseReplies()

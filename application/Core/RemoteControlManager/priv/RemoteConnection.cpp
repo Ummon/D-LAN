@@ -477,6 +477,17 @@ void RemoteConnection::refreshAllInterfaces()
    this->interfaces = QNetworkInterface::allInterfaces();
 }
 
+/**
+  * Without access, only an authentication message is accepted. A message is buffered and parsed before
+  * 'onNewMessage(..)' can drop it: an unauthenticated client could otherwise make the Core allocate gigabytes.
+  */
+bool RemoteConnection::acceptsHeader(const Common::MessageHeader& header)
+{
+   return
+      this->isAuthorized() ||
+      (header.getType() == Common::MessageHeader::GUI_AUTHENTICATION && header.getSize() <= Common::Constants::MAX_GUI_HANDSHAKE_MESSAGE_SIZE);
+}
+
 void RemoteConnection::onNewMessage(const Common::Message& message)
 {
    // The answer to a refused authentication is delayed, until it is sent the connection must stay mute.
