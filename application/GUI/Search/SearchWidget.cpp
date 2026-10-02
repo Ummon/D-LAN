@@ -471,6 +471,11 @@ bool SearchWidget::atLeastOneRemotePeer(const QModelIndexList& indexes) const
 
 void SearchWidget::openFile(const QModelIndex& index) const
 {
-   if (!SearchModel::isNonTerminalFile(index) && this->coreConnection->getRemoteID() == this->searchModel.getPeerID(index) && !this->searchModel.isDir(index))
+   if (
+      this->coreConnection->isLocal() &&
+      !SearchModel::isNonTerminalFile(index) &&
+      this->coreConnection->getRemoteID() == this->searchModel.getPeerID(index) &&
+      !this->searchModel.isDir(index)
+   )
       Utils::openFile(this->searchModel.getPath(index));
 }

@@ -268,6 +268,10 @@ void BrowseWidget::tryToReachEntryToBrowse()
 
 void BrowseWidget::openFile(const QModelIndex& index) const
 {
-   if (this->coreConnection->getRemoteID() == this->peerID && !this->browseModel.isDir(index))
+   if (
+      this->coreConnection->isLocal() &&
+      this->coreConnection->getRemoteID() == this->peerID &&
+      !this->browseModel.isDir(index)
+   )
       Utils::openFile(this->browseModel.getPath(index));
 }
