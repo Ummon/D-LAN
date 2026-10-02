@@ -35,6 +35,7 @@
 #include <QRandomGenerator64>
 
 #include <Common/LogManager/Builder.h>
+#include <Common/TestsCommon/GlobalRandomPredictor.h>
 
 #include <Protos/common.pb.h>
 #include <Protos/core_settings.pb.h>
@@ -2158,6 +2159,24 @@ void Tests::hasherEmptyAndSegmentedData()
    QCOMPARE(Hasher::hash(whole), hasher.getResult());
    hasher.addSalt(42);
    QCOMPARE(Hasher::hashWithSalt(whole, 42), hasher.getResult());
+}
+
+void Tests::randomSaltIsUnpredictable()
+{
+   GlobalRandomPredictor predictor;
+   if (!predictor.followsGlobal())
+      QSKIP("QRandomGenerator::global() is no longer a Mersenne Twister");
+
+   quint64 textSalt = 0;
+   const Hash textHash = Hasher::hashWithRandomSalt(QString("password"), textSalt);
+   QCOMPARE(textHash, Hasher::hashWithSalt(QString("password"), textSalt));
+   const Hash password = Hash::rand();
+   quint64 hashSalt = 0;
+   const Hash hashHash = Hasher::hashWithRandomSalt(password, hashSalt);
+   QCOMPARE(hashHash, Hasher::hashWithSalt(password, hashSalt));
+
+   QVERIFY(!predictor.predicts(textSalt));
+   QVERIFY(!predictor.predicts(hashSalt));
 }
 
 void Tests::saltedPassword()

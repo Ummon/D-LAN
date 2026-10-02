@@ -21,7 +21,6 @@ using namespace RCC;
 
 #include <QHostAddress>
 #include <QCoreApplication>
-#include <QRandomGenerator64>
 #include <QSslSocket>
 #include <QSslError>
 
@@ -259,8 +258,8 @@ bool InternalCoreConnection::setCorePassword(const QString& newPassword, const Q
 {
    Protos::GUI::ChangePassword passMess;
 
-   const quint64 newSalt = QRandomGenerator64::global()->generate64();
-   Common::Hash newPasswordHashed = Common::Hasher::hashWithSalt(newPassword, newSalt);
+   quint64 newSalt = 0;
+   const Common::Hash newPasswordHashed = Common::Hasher::hashWithRandomSalt(newPassword, newSalt);
 
    passMess.mutable_new_password()->set_hash(newPasswordHashed.getData(), Common::Hash::HASH_SIZE);
    passMess.set_new_salt(newSalt);

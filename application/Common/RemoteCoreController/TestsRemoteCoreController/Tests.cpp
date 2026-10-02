@@ -6,6 +6,7 @@
 #include <utility>
 
 #include <Common/Constants.h>
+#include <Common/TestsCommon/GlobalRandomPredictor.h>
 #include <priv/InternalCoreConnection.h>
 #include <priv/CoreConnection.h>
 
@@ -487,6 +488,25 @@ private slots:
       emit core.temp().connectingError(RCC::ICoreConnection::RCC_ERROR_HOST_TIMEOUT);
       QCOMPARE(errors.size(), 2);
       QVERIFY(!core.isConnecting());
+   }
+
+   void newPasswordSaltIsUnpredictable()
+   {
+      GlobalRandomPredictor predictor;
+      if (!predictor.followsGlobal())
+         QSKIP("QRandomGenerator::global() is no longer a Mersenne Twister");
+
+      QObject context;
+      QList<Protos::GUI::ChangePassword> changes;
+      connect(this->peer.data(), &Common::MessageSocket::newMessage, &context, [&](const Common::Message& message) {
+         if (message.getHeader().getType() == MessageHeader::GUI_CHANGE_PASSWORD)
+            changes << message.getMessage<Protos::GUI::ChangePassword>();
+      });
+      QVERIFY(this->connection.setCorePassword("password"));
+      QTRY_COMPARE(changes.size(), 1);
+      const quint64 salt = changes[0].new_salt();
+      QCOMPARE(Common::Hash(changes[0].new_password().hash()), Common::Hasher::hashWithSalt(QString("password"), salt));
+      QVERIFY(!predictor.predicts(salt));
    }
 
    void unauthenticatedHeaders_data()

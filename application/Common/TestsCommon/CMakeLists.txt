@@ -11,6 +11,7 @@ add_executable(TestsCommon
    Tests.h
    TreeTests.h
    BenchmarkTests.h
+   GlobalRandomPredictor.h
 )
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")

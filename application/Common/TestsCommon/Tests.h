@@ -112,6 +112,7 @@ private slots:
    void hasher();
    void hasherHashValue();
    void hasherEmptyAndSegmentedData();
+   void randomSaltIsUnpredictable();
    void saltedPassword();
 
    // BloomFilter class.

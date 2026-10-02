@@ -364,15 +364,19 @@ Common::Hash Hasher::hashWithSalt(const Common::Hash& hash, quint64 salt)
    return hasher.getResult();
 }
 
+/**
+  * The salt comes from the system's cryptographically secure generator: 'QRandomGenerator::global()' is a
+  * Mersenne Twister, its next outputs can be predicted from previous ones.
+  */
 Hash Hasher::hashWithRandomSalt(const QString& str, quint64& salt)
 {
-   salt = QRandomGenerator64::global()->generate64();
+   salt = QRandomGenerator64::system()->generate64();
    return Hasher::hashWithSalt(str, salt);
 }
 
 Hash Hasher::hashWithRandomSalt(const Common::Hash& hash, quint64& salt)
 {
-   salt = QRandomGenerator64::global()->generate64();
+   salt = QRandomGenerator64::system()->generate64();
    return Hasher::hashWithSalt(hash, salt);
 }
 

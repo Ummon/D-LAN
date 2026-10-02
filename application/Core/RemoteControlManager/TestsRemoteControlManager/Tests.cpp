@@ -14,6 +14,7 @@
 #include <Common/SaltedPassword.h>
 #include <Common/Global.h>
 #include <Common/ProtoHelper.h>
+#include <Common/TestsCommon/GlobalRandomPredictor.h>
 #include <Core/PeerManager/Builder.h>
 #include <Core/DownloadManager/IDownload.h>
 #include <Protos/core_settings.pb.h>
@@ -482,6 +483,20 @@ private slots:
          QCOMPARE(socket->messages()[1].getMessage<Protos::GUI::AuthenticationResult>().status(), Protos::GUI::AuthenticationResult::AUTH_OK);
          delete connection;
       }
+   }
+
+   void challengeIsUnpredictable()
+   {
+      GlobalRandomPredictor predictor;
+      if (!predictor.followsGlobal())
+         QSKIP("QRandomGenerator::global() is no longer a Mersenne Twister");
+
+      auto* socket = new BufferedSocket(false);
+      QScopedPointer<RCM::RemoteConnection> connection(this->newConnection(socket));
+      connection->startListening();
+      const auto messages = socket->messages();
+      QCOMPARE(messages.size(), 1);
+      QVERIFY(!predictor.predicts(messages[0].getMessage<Protos::GUI::AskForAuthentication>().salt_challenge()));
    }
 
    void disconnectedDuringStartup_data()

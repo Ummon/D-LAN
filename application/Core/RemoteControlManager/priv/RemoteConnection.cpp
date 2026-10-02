@@ -405,8 +405,10 @@ void RemoteConnection::askForAuthentication()
    Protos::GUI::AskForAuthentication askForAuthenticationMessage;
    askForAuthenticationMessage.set_salt(Common::SaltedPassword::fromStr(SETTINGS.get<QString>("remote_password")).salt);
 
+   // From the system's cryptographically secure generator: 'global()' is a Mersenne Twister, a client could
+   // predict the next challenges from the ones it has received.
    do
-      this->saltChallenge = QRandomGenerator64::global()->generate64();
+      this->saltChallenge = QRandomGenerator64::system()->generate64();
    while (this->saltChallenge == 0); // Never accept a response using the initial challenge value.
    askForAuthenticationMessage.set_salt_challenge(this->saltChallenge);
 
