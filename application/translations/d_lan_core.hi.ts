@@ -58,7 +58,7 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../Core/Core.cpp" line="128"/>
+        <location filename="../Core/Core.cpp" line="129"/>
         <source>Ready to serve</source>
         <translation>सेवा के लिए तैयार</translation>
     </message>
@@ -68,12 +68,12 @@
         <translation>कतार फ़ाइल &quot;%2&quot; का संस्करण (%1) वर्तमान संस्करण (%3) से मेल नहीं खाता। कतार रीसेट की जाएगी।</translation>
     </message>
     <message>
-        <location filename="../Core/Core.h" line="80"/>
+        <location filename="../Core/Core.h" line="81"/>
         <source>Shutdown</source>
         <translation>शटडाउन</translation>
     </message>
     <message>
-        <location filename="../Core/Core.cpp" line="110"/>
+        <location filename="../Core/Core.cpp" line="111"/>
         <source>D-LAN Core version %1 is starting . . .</source>
         <translation>D-LAN Core संस्करण %1 शुरू हो रहा है . . .</translation>
     </message>

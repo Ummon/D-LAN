@@ -1000,7 +1000,7 @@
         <translation>Все равно запустить</translation>
     </message>
     <message>
-        <location filename="../GUI/main.cpp" line="+79"/>
+        <location filename="../GUI/main.cpp" line="+108"/>
         <source>D-LAN GUI version %1</source>
         <translation>D-LAN GUI версия %1</translation>
     </message>

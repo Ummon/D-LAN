@@ -1071,7 +1071,7 @@
         <translation>다운로드할 폴더를 선택하십시오</translation>
     </message>
     <message>
-        <location filename="../GUI/main.cpp" line="79"/>
+        <location filename="../GUI/main.cpp" line="108"/>
         <source>D-LAN GUI version %1</source>
         <translation>D-LAN GUI 버전 %1</translation>
     </message>

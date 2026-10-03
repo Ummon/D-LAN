@@ -58,7 +58,7 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../Core/Core.cpp" line="128"/>
+        <location filename="../Core/Core.cpp" line="129"/>
         <source>Ready to serve</source>
         <translation>Prêt à servir</translation>
     </message>
@@ -68,12 +68,12 @@
         <translation>La version (%1) du fichier contenant la file d’attente &quot;%2&quot; ne correspond pas à la version actuelle (%3). La file d’attente va être réinitialisée.</translation>
     </message>
     <message>
-        <location filename="../Core/Core.h" line="80"/>
+        <location filename="../Core/Core.h" line="81"/>
         <source>Shutdown</source>
         <translation>Arrêté</translation>
     </message>
     <message>
-        <location filename="../Core/Core.cpp" line="110"/>
+        <location filename="../Core/Core.cpp" line="111"/>
         <source>D-LAN Core version %1 is starting . . .</source>
         <translation>D-LAN Core version %1 démarre...</translation>
     </message>
