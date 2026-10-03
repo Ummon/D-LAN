@@ -280,8 +280,23 @@ bool QtServiceController::uninstall()
     SC_HANDLE hSCM = pOpenSCManager(0, 0, SC_MANAGER_ALL_ACCESS);
     if (hSCM) {
         // Try to open the service
-        SC_HANDLE hService = pOpenService(hSCM, (wchar_t *)d->serviceName.utf16(), DELETE);
+        SC_HANDLE hService = pOpenService(hSCM, (wchar_t *)d->serviceName.utf16(),
+                                          DELETE|SERVICE_STOP|SERVICE_QUERY_STATUS);
         if (hService) {
+            // A running service is only marked for deletion and stays registered
+            // until it stops, so stop it first (wait up to 30 s).
+            SERVICE_STATUS status;
+            if (pQueryServiceStatus(hService, &status) && status.dwCurrentState != SERVICE_STOPPED) {
+                if (status.dwCurrentState != SERVICE_STOP_PENDING)
+                    pControlService(hService, SERVICE_CONTROL_STOP, &status);
+                for (int i = 0; i < 150 && status.dwCurrentState != SERVICE_STOPPED; ++i) {
+                    Sleep(200);
+                    if (!pQueryServiceStatus(hService, &status))
+                        break;
+                }
+                if (status.dwCurrentState != SERVICE_STOPPED)
+                    fprintf(stderr, "The service could not be stopped, it will be removed once it stops\n");
+            }
             if (pDeleteService(hService))
                 result = true;
             pCloseServiceHandle(hService);
