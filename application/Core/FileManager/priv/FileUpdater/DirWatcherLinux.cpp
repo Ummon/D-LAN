@@ -46,8 +46,11 @@ using namespace FM;
 
 const int DirWatcherLinux::EVENT_SIZE = (sizeof (struct inotify_event));
 const size_t DirWatcherLinux::BUF_LEN = (1024 * (EVENT_SIZE + 16));
-const uint32_t DirWatcherLinux::EVENTS_OBS = IN_MOVE | IN_DELETE | IN_CREATE | IN_CLOSE_WRITE;
-const uint32_t DirWatcherLinux::ROOT_EVENTS_OBS = EVENTS_OBS | IN_MOVE_SELF | IN_DELETE_SELF;
+// A deleted directory's IN_IGNORED is queued before its parent's IN_DELETE and a
+// read can end between them. IN_DELETE_SELF always precedes IN_IGNORED, so every
+// directory is retired before its IN_IGNORED could be mistaken for a lost watch.
+const uint32_t DirWatcherLinux::EVENTS_OBS = IN_MOVE | IN_DELETE | IN_CREATE | IN_CLOSE_WRITE | IN_DELETE_SELF;
+const uint32_t DirWatcherLinux::ROOT_EVENTS_OBS = EVENTS_OBS | IN_MOVE_SELF;
 const uint32_t DirWatcherLinux::EVENTS_FILE = IN_MODIFY | IN_ATTRIB | IN_MOVE_SELF | IN_DELETE_SELF;
 
 class UnableToWatchException {};

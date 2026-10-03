@@ -16,6 +16,7 @@
 #include <sys/syscall.h>
 #include <linux/fs.h>
 #include <fcntl.h>
+#include <poll.h>
 #include <unistd.h>
 #include <cstdio>
 #include <cerrno>
@@ -1345,6 +1346,64 @@ private slots:
       {
          QVERIFY(event.type != FM::WatcherEvent::WATCH_LOST);
          found |= event.type == FM::WatcherEvent::NEW && event.path1 == path;
+      }
+      QVERIFY(found);
+   }
+
+   void subdirectoryDeletionSplitAcrossReads_data()
+   {
+      QTest::addColumn<bool>("nested");
+      QTest::newRow("empty") << false;
+      QTest::newRow("nested") << true;
+   }
+
+   void subdirectoryDeletionSplitAcrossReads()
+   {
+      QFETCH(bool, nested);
+      QTemporaryDir temp;
+      QVERIFY(temp.isValid());
+      QDir base(temp.path());
+      QVERIFY(base.mkpath(nested ? "root/sub/deep" : "root/sub"));
+      FM::DirWatcherLinux watcher;
+      QVERIFY(watcher.addPath(temp.filePath("root")));
+      QVERIFY(QDir(temp.filePath("root/sub")).removeRecursively());
+
+      // The kernel queues a deleted directory's IN_IGNORED before its parent's
+      // IN_DELETE, and a read can end between them. Deliver each real event in
+      // its own read to cover every possible split.
+      pollfd fd{watcher.fileDescriptor, POLLIN, 0};
+      QCOMPARE(::poll(&fd, 1, 1000), 1);
+      alignas(inotify_event) char buf[4096];
+      const ssize_t len = ::read(watcher.fileDescriptor, buf, sizeof(buf));
+      QVERIFY(len > 0);
+      bool deleted = false;
+      for (ssize_t i = 0; i < len;)
+      {
+         const auto* event = reinterpret_cast<const inotify_event*>(&buf[i]);
+         const int size = sizeof(inotify_event) + event->len;
+         for (const auto& watcherEvent : watcher.processInotifyEvents(&buf[i], size))
+         {
+            QVERIFY(watcherEvent.type != FM::WatcherEvent::WATCH_LOST);
+            deleted |= watcherEvent.type == FM::WatcherEvent::DELETED && watcherEvent.path1 == temp.filePath("root/sub");
+         }
+         i += size;
+      }
+      QVERIFY(deleted);
+      QCOMPARE(watcher.nbWatchedPath(), 1);
+      for (const auto& watcherEvent : watcher.waitEvent(0))
+         QVERIFY(watcherEvent.type != FM::WatcherEvent::WATCH_LOST);
+
+      // The root must still be watched, not left to the periodic scan.
+      const QString path = temp.filePath("root/new.txt");
+      {
+         QFile file(path);
+         QVERIFY(file.open(QIODevice::WriteOnly));
+      }
+      bool found = false;
+      for (const auto& watcherEvent : watcher.waitEvent(1000))
+      {
+         QVERIFY(watcherEvent.type != FM::WatcherEvent::WATCH_LOST);
+         found |= watcherEvent.type == FM::WatcherEvent::NEW && watcherEvent.path1 == path;
       }
       QVERIFY(found);
    }
