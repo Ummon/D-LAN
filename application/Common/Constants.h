@@ -52,6 +52,7 @@ namespace Common
       static const QString STYLE_FILE_NAME;
 
       static const QString SERVICE_NAME;
+      static const QString SYSTEMD_UNIT_NAME;
 
       static constexpr int PROTOBUF_STREAMING_BUFFER_SIZE = 4 * 1024;
 

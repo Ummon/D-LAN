@@ -33,7 +33,11 @@ const int CoreController::TIMEOUT_SUBPROCESS_WAIT_FOR_STARTED(3000); // 3s.
 const int CoreController::TIMEOUT_SUBPROCESS_WAIT_FOR_STOPPED(5000); // 5s.
 
 CoreController::CoreController() :
+#ifdef Q_OS_LINUX
+   controller(Common::Constants::SYSTEMD_UNIT_NAME)
+#else
    controller(Common::Constants::SERVICE_NAME)
+#endif
 {
    this->setProgramPath();
 
@@ -65,6 +69,7 @@ bool CoreController::isAutoStart() const
 
 /**
   * Try to start the core as a service if it fails then try to launch it as a sub-process.
+  * The service is never installed here, see the '-i' argument of the Core.
   * When compiling with the DEBUG directive only the sub-process will be launched, not the service.
   * @param port The port the core will listen to for managing it with a client (GUI for instance).
   */
@@ -82,19 +87,13 @@ void CoreController::startCore(int port)
          false;
       #endif
 
-   if (!debug && !this->controller.isInstalled())
-   {
-      if (!QtServiceController::install(CORE_EXE_NAME)) // FIXME: This call generates a zombie thread on Linux.
-         L_WARN(QObject::tr("D-LAN Core cannot be installed as a service"));
-   }
-
    if (!this->controller.isRunning())
    {
       QStringList arguments;
       if (port != -1)
          arguments << "--port" << QString::number(port);
 
-      if (debug || !this->controller.start(arguments)) // FIXME: This call generates a zombie thread on Linux.
+      if (debug || !this->controller.start(arguments))
       {
          this->coreProcess.setArguments(arguments);
          this->coreProcess.start();

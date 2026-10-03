@@ -927,6 +927,27 @@ bool QtServiceBasePrivate::install(const QString &account, const QString &passwo
     return result;
 }
 
+QString QtServiceBasePrivate::installationError() const
+{
+    if (!winServiceInit())
+        return QLatin1String("The service control manager is not available");
+
+    SC_HANDLE hSCM = pOpenSCManager(0, 0, SC_MANAGER_ALL_ACCESS);
+    if (!hSCM) {
+        if (GetLastError() == ERROR_ACCESS_DENIED)
+            return QLatin1String("Administrator rights are required to install or uninstall the service");
+        return QLatin1String("The service control manager cannot be opened");
+    }
+    pCloseServiceHandle(hSCM);
+    return QString();
+}
+
+QString QtServiceBasePrivate::installationNotice(bool install) const
+{
+    return QString::fromLatin1(install ? "The Windows service '%1' will be created" : "The Windows service '%1' will be stopped and removed")
+        .arg(controller.serviceName());
+}
+
 QString QtServiceBasePrivate::filePath() const
 {
     wchar_t path[_MAX_PATH];

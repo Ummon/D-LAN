@@ -53,14 +53,14 @@ Name: "ResetSettings"; Description: {cm:resetSettings}
 [Run]
 Filename: "{sys}/netsh.exe"; Parameters: "firewall add allowedprogram ""{app}/D-LAN.Core.exe"" ""D-LAN.Core"" ENABLE ALL"; Flags: runhidden; MinVersion: 0,5.01.2600sp2; Tasks: Firewall
 Filename: "{app}/D-LAN.Core.exe"; Parameters: "--reset-settings"; Flags: RunHidden; Description: "Reset settings"; Tasks: ResetSettings
-; Filename: "{app}/D-LAN.Core.exe"; Parameters: "-u"; Flags: RunHidden; Description: "Uninstall the previous D-LAN service, its registered command line may be outdated"
-; Filename: "{app}/D-LAN.Core.exe"; Parameters: "-i --lang {language}"; Flags: RunHidden; Description: "Install the D-LAN service and define the language"
+; Filename: "{app}/D-LAN.Core.exe"; Parameters: "-u --yes"; Flags: RunHidden; Description: "Uninstall the previous D-LAN service, its registered command line may be outdated"
+; Filename: "{app}/D-LAN.Core.exe"; Parameters: "-i --yes --lang {language}"; Flags: RunHidden; Description: "Install the D-LAN service and define the language"
 Filename: "{app}/D-LAN.Core.exe"; Parameters: "--lang {language}"; Flags: RunHidden; Description: "Define the language for the Core"
 Filename: "{app}/D-LAN.GUI.exe"; Parameters: "--lang {language}"; Flags: RunHidden; Description: "Define the language for the GUI"
 Filename: "{app}/D-LAN.GUI.exe"; Flags: nowait postinstall runasoriginaluser; Description: "{cm:launchDLAN}"
 
 [UninstallRun]
-Filename: {app}/D-LAN.Core.exe; Parameters: -u; RunOnceId: "DLANUninstall";
+Filename: {app}/D-LAN.Core.exe; Parameters: "-u --yes"; RunOnceId: "DLANUninstall";
 Filename: {sys}/netsh.exe; Parameters: "firewall delete allowedprogram program=""{app}/D-LAN.Core.exe"""; Flags: runhidden; MinVersion: 0,5.01.2600sp2; Tasks: Firewall; RunOnceId: "DLANFirewallUninstall";
 
 

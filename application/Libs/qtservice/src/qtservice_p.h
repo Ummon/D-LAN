@@ -74,8 +74,16 @@ public:
     void startService();
     int run(bool asService, const QStringList &argList);
     bool install(const QString &account, const QString &password);
+    // The reason why the service can't be installed or uninstalled by the current user, empty if it can.
+    QString installationError() const;
+    // What is going to be done to the system to install ('install' is true) or to uninstall the service.
+    QString installationNotice(bool install) const;
 
     bool start();
+#if defined(Q_OS_UNIX)
+    void installStopSignalHandler();
+    void stopService();
+#endif
 
     QString filePath() const;
     bool sysInit();

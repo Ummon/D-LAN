@@ -25,7 +25,11 @@ using namespace CoreSpace;
 #include <Common/Constants.h>
 
 CoreService::CoreService(bool resetSettings, QLocale locale, quint16 remoteControlPort, int argc, char** argv) :
+#ifdef Q_OS_LINUX
+   QtService<CoreApplication>(argc, argv, Common::Constants::SYSTEMD_UNIT_NAME),
+#else
    QtService<CoreApplication>(argc, argv, Common::Constants::SERVICE_NAME),
+#endif
    core(new Core(resetSettings, locale, remoteControlPort)),
    consoleReader(nullptr)
 {

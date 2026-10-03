@@ -17,26 +17,10 @@ if(WIN32)
    target_sources(qtservice PRIVATE src/qtservice_win.cpp)
    target_link_libraries(qtservice PRIVATE user32)
 else()
-   target_sources(qtservice PRIVATE
-      src/qtservice_unix.cpp
-      src/qtservice_unix_p.h
-      src/qtunixsocket.cpp
-      src/qtunixserversocket.cpp
-      src/qtunixsocket.h
-      src/qtunixserversocket.h
-   )
-   target_link_libraries(qtservice PUBLIC Qt6::Network)
+   # A systemd unit on Linux, no service on the other systems.
+   target_sources(qtservice PRIVATE src/qtservice_unix.cpp)
 endif()
 
 target_link_libraries(qtservice PUBLIC Qt6::Core)
 
 target_include_directories(qtservice PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src")
-
-if(DLAN_BUILD_TESTS AND CMAKE_SYSTEM_NAME STREQUAL "Linux")
-   add_executable(TestsQtServiceUnix tests/QtServiceUnixTests.cpp)
-   target_link_libraries(TestsQtServiceUnix PRIVATE qtservice Qt6::Test)
-   target_link_options(TestsQtServiceUnix PRIVATE
-      "LINKER:--wrap=connect" "LINKER:--wrap=bind" "LINKER:--wrap=listen")
-   add_test(NAME TestsQtServiceUnix COMMAND TestsQtServiceUnix)
-   set_tests_properties(TestsQtServiceUnix PROPERTIES TIMEOUT 30)
-endif()

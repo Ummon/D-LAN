@@ -351,6 +351,12 @@ first argument; the remaining arguments go to the Core, for example
 `./D-LAN-<...>.AppImage --core --help`. `--help` lists the AppImage arguments and the
 Core arguments.
 
+The Core can be installed as a systemd service from the AppImage:
+`sudo ./D-LAN-<...>.AppImage --core -i [account]` creates
+`/etc/systemd/system/d-lan.service`, which runs this AppImage file with `--core` as
+the given account (root by default). The AppImage must not be moved afterwards.
+`-u` removes the unit, `-s` and `-t` start and stop the service.
+
 The first run requires `curl` and internet access to download the official
 linuxdeploy and Qt plugin continuous builds. Tools are cached under
 `application/build/appimage-tools`; remove that cache to download newer versions.

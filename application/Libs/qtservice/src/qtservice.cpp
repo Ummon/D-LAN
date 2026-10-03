@@ -322,6 +322,8 @@ bool QtServiceController::install(const QString &serviceFilePath, const QString 
     arguments << QLatin1String("-i");
     arguments << account;
     arguments << password;
+    // Nobody can answer the confirmation of the launched process.
+    arguments << QLatin1String("--yes");
     return (QProcess::execute(serviceFilePath, arguments) == 0);
 }
 
@@ -472,6 +474,10 @@ int QtServiceBasePrivate::run(bool asService, const QStringList &argList)
     if (asService)
         sysSetPath();
 
+#if defined(Q_OS_UNIX)
+    installStopSignalHandler();
+#endif
+
     QtServiceStarter starter(this);
     QTimer::singleShot(0, &starter, SLOT(slotStart()));
     int res = q_ptr->executeApplication();
@@ -517,7 +523,8 @@ int QtServiceBasePrivate::run(bool asService, const QStringList &argList)
     executable depends on (i.e. Qt), are located in the same directory
     as the service, or in a system path.
 
-    On Unix a service is implemented as a daemon.
+    On Linux a service is a systemd unit, it runs the executable as a
+    regular application. The other Unix systems aren't supported.
 
     You can retrieve the service's description, state, and startup
     type using the serviceDescription(), serviceFlags() and
@@ -752,12 +759,27 @@ QtServiceBase::ServiceFlags QtServiceBase::serviceFlags() const
     \sa ServiceFlags, serviceFlags()
 */
 
+// Asks a question on the console, the answer is 'no' by default and at the end of the input.
+static bool confirm(const QString &question)
+{
+    printf("%s [y/N] ", question.toLocal8Bit().constData());
+    fflush(stdout);
+    QByteArray answer;
+    for (int c = fgetc(stdin); c != EOF && c != '\n'; c = fgetc(stdin))
+        answer.append(char(c));
+    answer = answer.trimmed().toLower();
+    return answer == "y" || answer == "yes";
+}
+
 /*!
     Executes the service.
 
     When the exec() function is called, it will parse the \l
     {serviceSpecificArguments} {service specific arguments} passed in
     \c argv, perform the required actions, and exit.
+
+    Installing and uninstalling the service ask for a confirmation on
+    the console, unless the argument \c --yes is given.
 
     If none of the arguments is recognized as service specific, exec()
     runs the service as a regular application: it calls the createApplication()
@@ -770,14 +792,27 @@ int QtServiceBase::exec()
 {
     if (d_ptr->args.size() > 1) {
         QString a =  d_ptr->args.at(1);
+        // To install or uninstall without confirmation, from an installer for instance.
+        const bool assumeYes = d_ptr->args.contains(QLatin1String("--yes"));
         if (a == QLatin1String("-i") || a == QLatin1String("-install")) {
             if (!d_ptr->controller.isInstalled()) {
-                QString account;
-                QString password;
-                if (d_ptr->args.size() > 2)
-                    account = d_ptr->args.at(2);
-                if (d_ptr->args.size() > 3)
-                    password = d_ptr->args.at(3);
+                const QString error = d_ptr->installationError();
+                if (!error.isEmpty()) {
+                    fprintf(stderr, "%s\n", error.toLocal8Bit().constData());
+                    return -1;
+                }
+                if (!assumeYes) {
+                    if (!confirm(d_ptr->installationNotice(true) + QLatin1String(", would you like to continue?"))) {
+                        printf("The service %s has not been installed\n", serviceName().toLatin1().constData());
+                        return 0;
+                    }
+                    d_ptr->startupType = confirm(QLatin1String("Would you like the service to be started at boot?"))
+                        ? QtServiceController::AutoStartup : QtServiceController::ManualStartup;
+                }
+                QStringList parameters = d_ptr->args.mid(2);
+                parameters.removeAll(QLatin1String("--yes"));
+                const QString account = parameters.value(0);
+                const QString password = parameters.value(1);
                 if (!d_ptr->install(account, password)) {
                     fprintf(stderr, "The service %s could not be installed\n", serviceName().toLatin1().constData());
                     return -1;
@@ -791,6 +826,15 @@ int QtServiceBase::exec()
             return 0;
         } else if (a == QLatin1String("-u") || a == QLatin1String("-uninstall")) {
             if (d_ptr->controller.isInstalled()) {
+                const QString error = d_ptr->installationError();
+                if (!error.isEmpty()) {
+                    fprintf(stderr, "%s\n", error.toLocal8Bit().constData());
+                    return -1;
+                }
+                if (!assumeYes && !confirm(d_ptr->installationNotice(false) + QLatin1String(", would you like to continue?"))) {
+                    printf("The service %s has not been uninstalled\n", serviceName().toLatin1().constData());
+                    return 0;
+                }
                 if (!d_ptr->controller.uninstall()) {
                     fprintf(stderr, "The service %s could not be uninstalled\n", serviceName().toLatin1().constData());
                     return -1;
@@ -845,15 +889,6 @@ int QtServiceBase::exec()
             return 0;
         }
     }
-#if defined(Q_OS_UNIX)
-    if (::getenv("QTSERVICE_RUN")) {
-        // Means we're the detached, real service process.
-        int ec = d_ptr->run(true, d_ptr->args);
-        if (ec == -1)
-            qErrnoWarning("The service failed to run.");
-        return ec;
-    }
-#endif
     int ec = d_ptr->run(false, d_ptr->args);
     if (ec == -1)
         qErrnoWarning("The service could not be executed.");
@@ -861,9 +896,10 @@ int QtServiceBase::exec()
 }
 
 /*!
-    Returns true if the service is running as a system service (Windows)
-    or as a detached daemon (Unix); returns false if it is running as a
-    regular application.
+    Returns true if the service is running as a system service (Windows);
+    returns false if it is running as a regular application, which is
+    always the case on Unix: systemd runs the service like a regular
+    application.
 */
 bool QtServiceBase::isRunningAsService() const
 {

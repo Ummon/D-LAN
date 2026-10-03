@@ -63,6 +63,7 @@ const QString Constants::STYLE_DIRECTORY("styles");
 const QString Constants::STYLE_FILE_NAME("style.css");
 
 const QString Constants::SERVICE_NAME("D-LAN Core");
+const QString Constants::SYSTEMD_UNIT_NAME("d-lan"); ///< The service on Linux is the systemd unit "d-lan.service".
 
 const QString Constants::BINARY_PREFIXES[] = {"B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB"};
 

@@ -40,88 +40,80 @@
 
 #include "qtservice.h"
 #include "qtservice_p.h"
-#include "qtservice_unix_p.h"
-#include "qtunixsocket.h"
-#include "qtunixserversocket.h"
 #include <QCoreApplication>
 #include <QStringList>
 #include <QFile>
-#include <QTimer>
+#include <QFileInfo>
 #include <QDir>
+#include <QProcess>
+#include <QSocketNotifier>
+#include <errno.h>
 #include <pwd.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <syslog.h>
 #include <signal.h>
-#include <sys/stat.h>
-#include <QMap>
-#include <QSettings>
-#include <QProcess>
-#include <QDeadlineTimer>
 
-static QString encodeName(const QString &name, bool allowUpper = false)
+// On Linux the service is a systemd unit named after the service: "<service name>.service".
+// systemd runs the executable as a regular application, without any service specific argument.
+// There is no service on the other Unix systems (macOS, ..): nothing is installed and nothing can be controlled.
+
+static const char SYSTEMD_UNIT_DIRECTORY[] = "/etc/systemd/system";
+
+static bool systemdAvailable()
 {
-    QString n = name.toLower();
-    QString legal = QLatin1String("abcdefghijklmnopqrstuvwxyz1234567890");
-    if (allowUpper)
-        legal += QLatin1String("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-    int pos = 0;
-    while (pos < n.size()) {
-	if (legal.indexOf(n[pos]) == -1)
-	    n.remove(pos, 1);
-	else
-	    ++pos;
-    }
-    return n;
+#if defined(Q_OS_LINUX)
+    // The same test as sd_booted(3).
+    return QFileInfo(QLatin1String("/run/systemd/system")).isDir();
+#else
+    return false;
+#endif
 }
 
-static QString login()
+static QString unitName(const QString &serviceName)
 {
-    QString l;
-    uid_t uid = getuid();
-    passwd *pw = getpwuid(uid);
-    if (pw)
-        l = QString(pw->pw_name);
-    return l;
+    return serviceName + QLatin1String(".service");
 }
 
-static QString socketPath(const QString &serviceName)
+static QString unitFilePath(const QString &serviceName)
 {
-    QString sn = encodeName(serviceName);
-    return QString(QLatin1String("/var/tmp/") + sn + QLatin1String(".") + login());
+    return QLatin1String(SYSTEMD_UNIT_DIRECTORY) + QLatin1Char('/') + unitName(serviceName);
 }
 
-static bool sendCmd(const QString &serviceName, const QString &cmd)
+// Runs systemctl and waits for its end, its output isn't captured.
+// Without the required rights it fails instead of asking for a password: it's also run by a GUI.
+static bool systemctl(const QStringList &arguments)
 {
-    // Share one deadline across connecting, writes, and reply fragments.
-    QDeadlineTimer deadline(3000);
-    QtUnixSocket sock;
-    if (!sock.connectTo(socketPath(serviceName), deadline))
-        return false;
+    return systemdAvailable()
+        && QProcess::execute(QLatin1String("systemctl"), QStringList(QLatin1String("--no-ask-password")) + arguments) == 0;
+}
 
-    const QByteArray request = (cmd + QLatin1String("\r\n")).toLatin1();
-    if (sock.write(request) != request.size())
-        return false;
-    while (sock.bytesToWrite() > 0) {
-        if (deadline.hasExpired() || !sock.waitForBytesWritten(static_cast<int>(deadline.remainingTime())))
-            return false;
-    }
+// Returns the value of the first line "<key>=<value>" of the unit file.
+static QString unitFileValue(const QString &serviceName, const QString &key)
+{
+    QFile file(unitFilePath(serviceName));
+    if (!file.open(QIODevice::ReadOnly))
+        return QString();
 
-    const QByteArray successReply("true");
-    QByteArray reply;
-    for (;;) {
-        // Socket reads need not contain a complete reply. Stop immediately on
-        // a negative or invalid response, and bound the amount of data read.
-        reply += sock.read(successReply.size() + 1 - reply.size());
-        if (reply == successReply)
-            return true;
-        if (!successReply.startsWith(reply))
-            return false;
-        if (deadline.hasExpired() || !sock.waitForReadyRead(static_cast<int>(deadline.remainingTime())))
-            return false;
+    const QString prefix = key + QLatin1Char('=');
+    while (!file.atEnd()) {
+        const QString line = QString::fromUtf8(file.readLine()).trimmed();
+        if (line.startsWith(prefix))
+            return line.mid(prefix.size());
     }
+    return QString();
+}
+
+// Quotes an argument of a command line of a unit file, see "Command lines" in systemd.service(5).
+static QString quoted(QString argument)
+{
+    argument.replace(QLatin1Char('\\'), QLatin1String("\\\\"));
+    argument.replace(QLatin1Char('"'), QLatin1String("\\\""));
+    argument.replace(QLatin1Char('%'), QLatin1String("%%"));
+    return QLatin1Char('"') + argument + QLatin1Char('"');
 }
 
 static QString absPath(const QString &path)
@@ -153,133 +145,124 @@ static QString absPath(const QString &path)
     return ret;
 }
 
-QString QtServiceBasePrivate::filePath() const
+static QString executablePath(const QStringList &args)
 {
-    QString ret;
     if (args.isEmpty())
-        return ret;
+        return QString();
     QFileInfo fi(args[0]);
     QDir dir(absPath(args[0]));
     return dir.absoluteFilePath(fi.fileName());
 }
 
+// Returns the AppImage the executable is run from, an empty string if it isn't run from an AppImage.
+// The executable is then in a temporary mount: the service has to run the AppImage itself.
+static QString appImagePath(const QString &executable)
+{
+    const QString appImage = QFile::decodeName(qgetenv("APPIMAGE"));
+    const QString appDir = QFileInfo(QFile::decodeName(qgetenv("APPDIR"))).canonicalFilePath();
+    // These variables may be inherited from another application run from an AppImage.
+    if (appImage.isEmpty() || appDir.isEmpty()
+        || !QFileInfo(executable).canonicalFilePath().startsWith(appDir + QLatin1Char('/')))
+        return QString();
+    return appImage;
+}
+
+QString QtServiceBasePrivate::filePath() const
+{
+    const QString executable = executablePath(args);
+    const QString appImage = appImagePath(executable);
+    return appImage.isEmpty() ? executable : appImage;
+}
+
 
 QString QtServiceController::serviceDescription() const
 {
-    QSettings settings(QSettings::SystemScope, "QtSoftware");
-    settings.beginGroup("services");
-    settings.beginGroup(serviceName());
-
-    QString desc = settings.value("description").toString();
-
-    settings.endGroup();
-    settings.endGroup();
-
-    return desc;
+    // '%' is doubled by install().
+    return unitFileValue(serviceName(), QLatin1String("Description")).replace(QLatin1String("%%"), QLatin1String("%"));
 }
 
 QtServiceController::StartupType QtServiceController::startupType() const
 {
-    QSettings settings(QSettings::SystemScope, "QtSoftware");
-    settings.beginGroup("services");
-    settings.beginGroup(serviceName());
-
-    StartupType startupType = (StartupType)settings.value("startupType").toInt();
-
-    settings.endGroup();
-    settings.endGroup();
-
-    return startupType;
+    if (isInstalled() && systemctl(QStringList() << QLatin1String("is-enabled") << QLatin1String("--quiet") << unitName(serviceName())))
+        return AutoStartup;
+    return ManualStartup;
 }
 
 QString QtServiceController::serviceFilePath() const
 {
-    QSettings settings(QSettings::SystemScope, "QtSoftware");
-    settings.beginGroup("services");
-    settings.beginGroup(serviceName());
+    // The command line is written by install() as: "<file path>" [<arguments>]. See quoted(..).
+    const QString command = unitFileValue(serviceName(), QLatin1String("ExecStart"));
+    if (!command.startsWith(QLatin1Char('"')))
+        return command.section(QLatin1Char(' '), 0, 0);
 
-    QString path = settings.value("path").toString();
-
-    settings.endGroup();
-    settings.endGroup();
-
+    QString path;
+    for (int i = 1; i < command.size() && command.at(i) != QLatin1Char('"'); ++i) {
+        // Skip the character added by quoted(..).
+        if ((command.at(i) == QLatin1Char('\\') || command.at(i) == QLatin1Char('%')) && i + 1 < command.size())
+            ++i;
+        path += command.at(i);
+    }
     return path;
 }
 
 bool QtServiceController::uninstall()
 {
-    QSettings settings(QSettings::SystemScope, "QtSoftware");
-    settings.beginGroup("services");
+    if (!isInstalled())
+        return false;
 
-    settings.remove(serviceName());
+    // Stop the service and don't start it at boot anymore.
+    // It may fail because the service is neither running nor started at boot.
+    systemctl(QStringList() << QLatin1String("disable") << QLatin1String("--now") << unitName(serviceName()));
 
-    settings.endGroup();
-    settings.sync();
-
-    QSettings::Status ret = settings.status();
-    if (ret == QSettings::AccessError) {
-        fprintf(stderr, "Cannot uninstall \"%s\". Cannot write to: %s. Check permissions.\n",
+    const QString path = unitFilePath(serviceName());
+    if (!QFile::remove(path)) {
+        fprintf(stderr, "Cannot uninstall \"%s\". Cannot remove: %s. Check permissions.\n",
                 serviceName().toLatin1().constData(),
-                settings.fileName().toLatin1().constData());
+                path.toLatin1().constData());
+        return false;
     }
-    return (ret == QSettings::NoError);
+
+    systemctl(QStringList(QLatin1String("daemon-reload")));
+    return true;
 }
 
 
 bool QtServiceController::start(const QStringList &arguments)
 {
-    if (!isInstalled())
-        return false;
-    if (isRunning())
-        return false;
-    // Without the -s(ervice) argument the executable runs as a regular application.
-    return QProcess::startDetached(serviceFilePath(), QStringList(QLatin1String("-s")) + arguments);
+    // The command line of a unit can't be changed when it's started.
+    Q_UNUSED(arguments)
+    return isInstalled() && systemctl(QStringList() << QLatin1String("start") << unitName(serviceName()));
 }
 
 bool QtServiceController::stop()
 {
-    return sendCmd(serviceName(), QLatin1String("terminate"));
+    return isInstalled() && systemctl(QStringList() << QLatin1String("stop") << unitName(serviceName()));
 }
 
 bool QtServiceController::pause()
 {
-    return sendCmd(serviceName(), QLatin1String("pause"));
+    return false;
 }
 
 bool QtServiceController::resume()
 {
-    return sendCmd(serviceName(), QLatin1String("resume"));
+    return false;
 }
 
 bool QtServiceController::sendCommand(int code)
 {
-    return sendCmd(serviceName(), QString(QLatin1String("num:") + QString::number(code)));
+    Q_UNUSED(code)
+    return false;
 }
 
 bool QtServiceController::isInstalled() const
 {
-    QSettings settings(QSettings::SystemScope, "QtSoftware");
-    settings.beginGroup("services");
-
-    QStringList list = settings.childGroups();
-
-    settings.endGroup();
-
-    QStringListIterator it(list);
-    while (it.hasNext()) {
-        if (it.next() == serviceName())
-            return true;
-    }
-
-    return false;
+    return systemdAvailable() && QFile::exists(unitFilePath(serviceName()));
 }
 
 bool QtServiceController::isRunning() const
 {
-    QtUnixSocket sock;
-    if (sock.connectTo(socketPath(serviceName())))
-	return true;
-    return false;
+    return isInstalled() && systemctl(QStringList() << QLatin1String("is-active") << QLatin1String("--quiet") << unitName(serviceName()));
 }
 
 
@@ -287,157 +270,156 @@ bool QtServiceController::isRunning() const
 
 ///////////////////////////////////
 
-QtServiceSysPrivate::QtServiceSysPrivate()
-    : QtUnixServerSocket(), ident(0), serviceFlags(0)
+static int stopPipe[2] = { -1, -1 };
+
+static void stopSignalHandler(int)
 {
+    // Only async-signal-safe functions can be called here: the service is stopped from the event loop.
+    const int savedErrno = errno;
+    const char byte = 0;
+    const ssize_t written = ::write(stopPipe[1], &byte, 1);
+    Q_UNUSED(written);
+    errno = savedErrno;
 }
 
-QtServiceSysPrivate::~QtServiceSysPrivate()
+// Stop the service properly when SIGTERM is received: it's sent by systemd to stop a service.
+void QtServiceBasePrivate::installStopSignalHandler()
 {
-    if (ident)
-	delete[] ident;
+    if (::pipe(stopPipe) != 0)
+        return;
+    ::fcntl(stopPipe[0], F_SETFD, FD_CLOEXEC);
+    ::fcntl(stopPipe[1], F_SETFD, FD_CLOEXEC);
+
+    QSocketNotifier *notifier = new QSocketNotifier(stopPipe[0], QSocketNotifier::Read, QCoreApplication::instance());
+    QObject::connect(notifier, &QSocketNotifier::activated, notifier, [this, notifier]() {
+        notifier->setEnabled(false);
+        stopService();
+    });
+
+    struct sigaction action;
+    memset(&action, 0, sizeof(action));
+    action.sa_handler = stopSignalHandler;
+    sigemptyset(&action.sa_mask);
+    // The default action is restored when the signal is received: a second signal kills the process.
+    action.sa_flags = SA_RESTART | SA_RESETHAND;
+    ::sigaction(SIGTERM, &action, 0);
 }
 
-#if QT_VERSION >= 0x050000
-void QtServiceSysPrivate::incomingConnection(qintptr socketDescriptor)
-#else
-void QtServiceSysPrivate::incomingConnection(int socketDescriptor)
-#endif
+void QtServiceBasePrivate::stopService()
 {
-    QTcpSocket *s = new QTcpSocket(this);
-    s->setSocketDescriptor(socketDescriptor);
-    connect(s, SIGNAL(readyRead()), this, SLOT(slotReady()));
-    connect(s, SIGNAL(disconnected()), this, SLOT(slotClosed()));
+    q_ptr->stop();
+    QCoreApplication::quit();
 }
 
-void QtServiceSysPrivate::slotReady()
-{
-    QTcpSocket *s = (QTcpSocket *)sender();
-    cache[s] += QString(s->readAll());
-    QString cmd = getCommand(s);
-    while (!cmd.isEmpty()) {
-        bool retValue = false;
-	if (cmd == QLatin1String("terminate")) {
-            if (!(serviceFlags & QtServiceBase::CannotBeStopped)) {
-                QtServiceBase::instance()->stop();
-                QCoreApplication::instance()->quit();
-                retValue = true;
-            }
-        } else if (cmd == QLatin1String("pause")) {
-            if (serviceFlags & QtServiceBase::CanBeSuspended) {
-                QtServiceBase::instance()->pause();
-                retValue = true;
-            }
-        } else if (cmd == QLatin1String("resume")) {
-            if (serviceFlags & QtServiceBase::CanBeSuspended) {
-                QtServiceBase::instance()->resume();
-                retValue = true;
-            }
-        } else if (cmd == QLatin1String("alive")) {
-            retValue = true;
-        } else if (cmd.length() > 4 && cmd.left(4) == QLatin1String("num:")) {
-	    cmd = cmd.mid(4);
-            QtServiceBase::instance()->processCommand(cmd.toInt());
-            retValue = true;
-	}
-        QString retString;
-        if (retValue)
-            retString = QLatin1String("true");
-        else
-            retString = QLatin1String("false");
-        s->write(retString.toLatin1().constData());
-        s->flush();
-	cmd = getCommand(s);
-    }
-}
-
-void QtServiceSysPrivate::slotClosed()
-{
-    QTcpSocket *s = (QTcpSocket *)sender();
-    // Discard partial commands before a new socket can reuse this address.
-    cache.remove(s);
-    s->deleteLater();
-}
-
-QString QtServiceSysPrivate::getCommand(const QTcpSocket *socket)
-{
-    int pos = cache[socket].indexOf("\r\n");
-    if (pos >= 0) {
-	QString ret = cache[socket].left(pos);
-	cache[socket].remove(0, pos+2);
-	return ret;
-    }
-    return "";
-}
-
+// The process is never run as a service on Unix, see the top of this file.
 bool QtServiceBasePrivate::sysInit()
 {
-    sysd = new QtServiceSysPrivate;
-    sysd->serviceFlags = serviceFlags;
-    // Restrict permissions on files that are created by the service
-    ::umask(027);
-
     return true;
 }
 
 void QtServiceBasePrivate::sysSetPath()
 {
-    if (sysd)
-        sysd->setPath(socketPath(controller.serviceName()));
 }
 
 void QtServiceBasePrivate::sysCleanup()
 {
-    if (sysd) {
-        sysd->close();
-        delete sysd;
-        sysd = 0;
-    }
 }
 
 bool QtServiceBasePrivate::start()
 {
-    if (sendCmd(controller.serviceName(), "alive")) {
-        // Already running
+    if (!controller.isInstalled()) {
+        fprintf(stderr, "The service %s is not installed\n", controller.serviceName().toLatin1().constData());
         return false;
     }
-    // Could just call controller.start() here, but that would fail if
-    // we're not installed. We do not want to strictly require installation.
-    ::setenv("QTSERVICE_RUN", "1", 1);  // Tell the detached process it's it
-    return QProcess::startDetached(filePath(), args.mid(1), "/");
+    return controller.start();
+}
+
+QString QtServiceBasePrivate::installationError() const
+{
+#if defined(Q_OS_LINUX)
+    if (!systemdAvailable())
+        return QLatin1String("The service requires systemd, it is not running on this system");
+    if (::access(SYSTEMD_UNIT_DIRECTORY, W_OK) != 0)
+        return QString::fromLatin1("Administrator rights are required to install or uninstall the service, cannot write to: %1")
+            .arg(QLatin1String(SYSTEMD_UNIT_DIRECTORY));
+    return QString();
+#else
+    return QLatin1String("The service is not supported on this system");
+#endif
+}
+
+QString QtServiceBasePrivate::installationNotice(bool install) const
+{
+    return QString::fromLatin1(install ? "A systemd unit '%1' will be created in %2" : "The systemd unit '%1' will be stopped and removed from %2")
+        .arg(unitName(controller.serviceName()), QLatin1String(SYSTEMD_UNIT_DIRECTORY));
 }
 
 bool QtServiceBasePrivate::install(const QString &account, const QString &password)
 {
-    Q_UNUSED(account)
     Q_UNUSED(password)
-    QSettings settings(QSettings::SystemScope, "QtSoftware");
 
-    settings.beginGroup("services");
-    settings.beginGroup(controller.serviceName());
+    // The user is always given: systemd only defines its home directory, where the data are put, in this case.
+    QString user = account;
+    if (user.isEmpty())
+        user = QLatin1String("root");
+    if (!::getpwnam(user.toLocal8Bit().constData())) {
+        fprintf(stderr, "Cannot install \"%s\". Unknown account: %s.\n",
+                controller.serviceName().toLatin1().constData(),
+                user.toLocal8Bit().constData());
+        return false;
+    }
 
-    settings.setValue("path", filePath());
-    settings.setValue("description", serviceDescription);
-    settings.setValue("automaticStartup", startupType);
+    QString description = serviceDescription.isEmpty() ? controller.serviceName() : serviceDescription;
+    description.replace(QLatin1Char('\n'), QLatin1Char(' '));
+    description.replace(QLatin1Char('%'), QLatin1String("%%"));
 
-    settings.endGroup();
-    settings.endGroup();
-    settings.sync();
+    QString command = quoted(filePath());
+    // An AppImage of D-LAN runs the GUI by default, see its entry point in 'build.nu'.
+    if (!appImagePath(executablePath(args)).isEmpty())
+        command += QLatin1String(" --core");
 
-    QSettings::Status ret = settings.status();
-    if (ret == QSettings::AccessError) {
+    // 'KillMode': only the main process must receive a signal. An AppImage has a second process which mounts
+    // its content: stopped at the same time, the executable would disappear during its shutdown, and killed
+    // right after, the mount would be left behind. This process ends by itself after the main one.
+    const QByteArray unit = QString::fromLatin1(
+        "[Unit]\n"
+        "Description=%1\n"
+        "Wants=network-online.target\n"
+        "After=network-online.target\n"
+        "\n"
+        "[Service]\n"
+        "ExecStart=%2\n"
+        "User=%3\n"
+        "KillMode=process\n"
+        "\n"
+        "[Install]\n"
+        "WantedBy=multi-user.target\n").arg(description, command, user).toUtf8();
+
+    const QString path = unitFilePath(controller.serviceName());
+    QFile file(path);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::NewOnly) || file.write(unit) != unit.size()) {
         fprintf(stderr, "Cannot install \"%s\". Cannot write to: %s. Check permissions.\n",
                 controller.serviceName().toLatin1().constData(),
-                settings.fileName().toLatin1().constData());
+                path.toLatin1().constData());
+        return false;
     }
-    return (ret == QSettings::NoError);
+    file.setPermissions(QFile::ReadOwner | QFile::WriteOwner | QFile::ReadGroup | QFile::ReadOther);
+    file.close();
+
+    if (!systemctl(QStringList(QLatin1String("daemon-reload")))) {
+        QFile::remove(path);
+        return false;
+    }
+
+    // Without being enabled the service is only started on demand.
+    if (startupType == QtServiceController::AutoStartup)
+        return systemctl(QStringList() << QLatin1String("enable") << unitName(controller.serviceName()));
+    return true;
 }
 
 void QtServiceBase::logMessage(const QString &message, QtServiceBase::MessageType type,
 			    int, uint, const QByteArray &)
 {
-    if (!d_ptr->sysd)
-        return;
     int st;
     switch(type) {
         case QtServiceBase::Error:
@@ -449,25 +431,16 @@ void QtServiceBase::logMessage(const QString &message, QtServiceBase::MessageTyp
         default:
 	    st = LOG_INFO;
     }
-    if (!d_ptr->sysd->ident) {
-        QString tmp = encodeName(serviceName(), true);
-	int len = tmp.toLocal8Bit().size();
-	d_ptr->sysd->ident = new char[len+1];
-	d_ptr->sysd->ident[len] = '\0';
-	::memcpy(d_ptr->sysd->ident, tmp.toLocal8Bit().constData(), len);
-    }
-    openlog(d_ptr->sysd->ident, LOG_PID, LOG_DAEMON);
-    foreach(QString line, message.split('\n'))
+    // 'ident' must stay valid until the log is closed.
+    const QByteArray ident = serviceName().toLocal8Bit();
+    openlog(ident.constData(), LOG_PID, LOG_DAEMON);
+    const QStringList lines = message.split('\n');
+    for (const QString &line : lines)
         syslog(st, "%s", line.toLocal8Bit().constData());
     closelog();
 }
 
 void QtServiceBase::setServiceFlags(QtServiceBase::ServiceFlags flags)
 {
-    if (d_ptr->serviceFlags == flags)
-        return;
     d_ptr->serviceFlags = flags;
-    if (d_ptr->sysd)
-        d_ptr->sysd->serviceFlags = flags;
 }
-

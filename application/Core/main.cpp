@@ -40,14 +40,16 @@ void printUsage(QString appName)
 {
    QTextStream out(stdout);
    out << "Usage:" << Qt::endl <<
-      " " << appName << " [-i|-u|-s|-t|-v] [-r <roaming data directory>] [-l <local data directory>] [--port <remote control port>] [--reset-settings] [--lang <language>] [--pass <password> | --rmpass] [--version]" << Qt::endl <<
+      " " << appName << " [-i|-u|-s|-t|-v] [--yes] [-r <roaming data directory>] [-l <local data directory>] [--port <remote control port>] [--reset-settings] [--lang <language>] [--pass <password> | --rmpass] [--version]" << Qt::endl <<
       "  -i, -u, -s, -t and -v must be the first argument." << Qt::endl <<
       "  Without -i, -u, -s, -t or -v the Core runs as a regular application." << Qt::endl <<
-      "  -i [account] [password] : Install the service, optionally using given account and password" << Qt::endl <<
-      "  -u : Uninstall the service." << Qt::endl <<
+      "  The service is a Windows service or a systemd unit on Linux, it requires administrator rights. It isn't available on macOS." << Qt::endl <<
+      "  -i [account] [password] : Install the service after a confirmation, optionally using given account and password (the password is only used on Windows)." << Qt::endl <<
+      "  -u : Stop then uninstall the service after a confirmation." << Qt::endl <<
       "  -s : Launch the installed service." << Qt::endl <<
       "  -t : Stop the service." << Qt::endl <<
       "  -v : Print service status information." << Qt::endl <<
+      "  --yes : Do not ask for confirmation with -i or -u." << Qt::endl <<
       "  <roaming data directory> : Where settings are put." << Qt::endl <<
       "  <local data directory> : Where logs, download queue, and files cache are put." << Qt::endl <<
       "  --port <remote control port> : Listen to this port for remote control (GUI) instead of the one defined in the settings. It isn't saved in the settings." << Qt::endl <<
