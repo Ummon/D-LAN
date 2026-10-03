@@ -18,7 +18,7 @@
 
 #pragma once
 
-#define VERSION "1.4.2"
+#define VERSION "1.5.0"
 #define VERSION_TAG "Beta1"
 
 // These two values are automatically updated during the release building process. See the script 'Application/Tools/update_version.sh'
