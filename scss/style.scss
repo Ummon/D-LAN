@@ -220,6 +220,18 @@ select {
          font-weight: bold;
       }
 
+      .downloads {
+         width: 376px; // 340px button + 6px borders + 30px margins
+         max-width: 100%;
+      }
+
+      .download-separator {
+         display: block;
+         width: 12px;
+         height: 12px;
+         margin: 15px auto 0;
+      }
+
       .download {
          border: 3px solid white;
 

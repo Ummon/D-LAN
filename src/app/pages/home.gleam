@@ -11,14 +11,23 @@ import lustre/element/html
 import translations as tr
 
 pub fn page(ctx: web.Context) -> element.Element(a) {
+  let download_separator =
+    html.img([
+      attr.src("static/img/circle.svg"),
+      attr.class("download-separator"),
+    ])
   html.div([attr.id("content"), attr.class("home")], [
     image_of_the_week(ctx.lang),
     html.h1([], [html.em([], [tr.home_title(ctx.lang)])]),
     html.p([], [tr.home_description(ctx.lang, "features.html")]),
-    download_button.element(ctx, "Windows") |> result.unwrap(element.none()),
-    download_button.microsoft_store_element(ctx),
-    download_button.element(ctx, "Linux") |> result.unwrap(element.none()),
-    download_button.element(ctx, "macOS") |> result.unwrap(element.none()),
+    html.div([attr.class("downloads")], [
+      download_button.element(ctx, "Windows") |> result.unwrap(element.none()),
+      download_button.microsoft_store_element(ctx),
+      download_separator,
+      download_button.element(ctx, "Linux") |> result.unwrap(element.none()),
+      download_separator,
+      download_button.element(ctx, "macOS") |> result.unwrap(element.none()),
+    ]),
   ])
 }
 
