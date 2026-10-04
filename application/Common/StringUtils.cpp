@@ -24,6 +24,7 @@ using namespace Common;
 
 #include <QRegularExpression>
 #include <QTextBoundaryFinder>
+#include <QVarLengthArray>
 
 namespace
 {
@@ -218,6 +219,117 @@ QStringList StringUtils::splitInWords(const QString& words)
 {
    static const QRegularExpression regExp("[^\\p{L}\\p{Mn}\\p{Mc}\\p{N}]+");
    return StringUtils::toLowerAndRemoveAccents(words).split(regExp, Qt::SkipEmptyParts);
+}
+
+/**
+  * Like 'splitInWords(..)' plus the sub-words of each word, see 'subWordBoundaries(..)'.
+  * The words are kept, their sub-words are only another way to find them.
+  * It's used to index a name: the searched terms aren't split in sub-words.
+  * @example "superGirl.avi" => ["supergirl", "avi", "super", "girl"].
+  */
+QStringList StringUtils::splitInWordsAndSubWords(const QString& words)
+{
+   QStringList result = StringUtils::splitInWords(words);
+
+   const QList<int> boundaries = StringUtils::subWordBoundaries(words);
+   if (boundaries.isEmpty())
+      return result;
+
+   // A boundary always precedes a letter, never a mark: separating the sub-words doesn't change the way they are folded.
+   QString separated;
+   separated.reserve(words.size() + boundaries.size());
+   int previous = 0;
+   for (const int boundary : boundaries)
+   {
+      separated.append(QStringView(words).sliced(previous, boundary - previous)).append(u' ');
+      previous = boundary;
+   }
+   separated.append(QStringView(words).sliced(previous));
+
+   for (const QString& subWord : StringUtils::splitInWords(separated))
+      if (!result.contains(subWord))
+         result << subWord;
+
+   return result;
+}
+
+/**
+  * Return the positions in 'str', in ascending order, where a sub-word begins inside a word:
+  *  - Change of case, for the scripts having one (Latin, Cyrillic, Greek, ...): "superGirl" => "super|Girl".
+  *    The last letter of an upper case run begins a sub-word if it's followed by at least two lower case letters:
+  *    "HTTPServer" => "HTTP|Server", a plural like "PDFs" isn't split.
+  *  - Change of script: "Naruto第3話" => "Naruto|第3話", "東京タワー" => "東京|タワー".
+  *    The digits and the letters shared by several scripts, like 'ー', belong to the current sub-word.
+  */
+QList<int> StringUtils::subWordBoundaries(const QString& str)
+{
+   enum class Kind { SEPARATOR, OTHER, LOWER, UPPER };
+   struct Character
+   {
+      int position;
+      Kind kind;
+      QChar::Script script; // 'Script_Unknown' if the character doesn't identify a script.
+   };
+
+   // The marks and the joiners belong to the previous character.
+   QVarLengthArray<Character, 64> characters;
+   for (qsizetype i = 0; i < str.size(); ++i)
+   {
+      Character character { static_cast<int>(i), Kind::SEPARATOR, QChar::Script_Unknown };
+
+      char32_t c = str.at(i).unicode();
+      if (str.at(i).isHighSurrogate() && i + 1 < str.size() && str.at(i + 1).isLowSurrogate())
+      {
+         c = QChar::surrogateToUcs4(str.at(i), str.at(i + 1));
+         ++i;
+      }
+
+      if (QChar::isMark(c) || c == ZERO_WIDTH_NON_JOINER || c == ZERO_WIDTH_JOINER)
+         continue;
+
+      if (QChar::isLetter(c))
+      {
+         character.kind = QChar::isLower(c) ? Kind::LOWER : QChar::isUpper(c) || QChar::isTitleCase(c) ? Kind::UPPER : Kind::OTHER;
+         const QChar::Script script = QChar::script(c);
+         if (script != QChar::Script_Common && script != QChar::Script_Inherited)
+            character.script = script;
+      }
+      else if (QChar::isNumber(c))
+         character.kind = Kind::OTHER;
+
+      characters.append(character);
+   }
+
+   QList<int> boundaries;
+   QChar::Script script = QChar::Script_Unknown; // The script of the current sub-word.
+   for (qsizetype i = 0; i < characters.size(); ++i)
+   {
+      const Character& current = characters[i];
+      if (current.kind == Kind::SEPARATOR)
+      {
+         script = QChar::Script_Unknown;
+         continue;
+      }
+
+      bool boundary = false;
+      if (current.script != QChar::Script_Unknown)
+      {
+         boundary = script != QChar::Script_Unknown && current.script != script;
+         script = current.script;
+      }
+
+      if (!boundary && current.kind == Kind::UPPER && i > 0)
+      {
+         const Kind previous = characters[i - 1].kind;
+         boundary = previous == Kind::LOWER ||
+            (previous == Kind::UPPER && i + 2 < characters.size() && characters[i + 1].kind == Kind::LOWER && characters[i + 2].kind == Kind::LOWER);
+      }
+
+      if (boundary)
+         boundaries << current.position;
+   }
+
+   return boundaries;
 }
 
 /**

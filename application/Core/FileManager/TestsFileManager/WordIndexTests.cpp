@@ -136,7 +136,7 @@ void WordIndexTests::shortPrefixMatching()
 
    // Exercise the same normalization and list overload used by FileManager.
    WordIndex<int> normalizedIndex;
-   normalizedIndex.addItem(Common::StringUtils::splitInWords(word), 1);
+   normalizedIndex.addItem(Common::StringUtils::splitInWordsAndSubWords(word), 1);
    const QStringList terms = Common::StringUtils::splitInWords(prefix);
    QCOMPARE(terms.size(), 1);
    QCOMPARE(normalizedIndex.search(terms).size(), matches ? 1 : 0);
@@ -151,7 +151,7 @@ void WordIndexTests::normalizedKanaAndHangul()
 {
    WordIndex<int> index;
    const auto add = [&](const QString& word, int item) {
-      index.addItem(Common::StringUtils::splitInWords(word), item);
+      index.addItem(Common::StringUtils::splitInWordsAndSubWords(word), item);
    };
    const auto search = [&](const QString& word) {
       return WordIndex<int>::resultToList(index.search(Common::StringUtils::splitInWords(word)));
@@ -174,7 +174,7 @@ void WordIndexTests::normalizedDevanagari()
 {
    WordIndex<int> index;
    const auto add = [&](const QString& word, int item) {
-      index.addItem(Common::StringUtils::splitInWords(word), item);
+      index.addItem(Common::StringUtils::splitInWordsAndSubWords(word), item);
    };
    const auto search = [&](const QString& word) {
       return WordIndex<int>::resultToList(index.search(Common::StringUtils::splitInWords(word)));
@@ -203,6 +203,79 @@ void WordIndexTests::normalizedDevanagari()
    // Digits match across scripts.
    QCOMPARE(search("2024"), (QList<int> { 6 }));
    QCOMPARE(search(QStringLiteral("\u0917\u093E\u0928\u093E \u0968\u0966\u0968\u096A")), (QList<int> { 6 }));
+}
+
+/**
+  * The names are indexed by their words and their sub-words, like FileManager does.
+  */
+void WordIndexTests::subWords()
+{
+   WordIndex<int> index;
+   const auto words = [](const QString& name) {
+      return Common::StringUtils::splitInWordsAndSubWords(name);
+   };
+   const auto search = [&](const QString& terms) {
+      QList<int> result = WordIndex<int>::resultToList(index.search(Common::StringUtils::splitInWords(terms)));
+      std::sort(result.begin(), result.end());
+      return result;
+   };
+   const QString naruto = QStringLiteral("Naruto第3話.mkv");
+   const QString titan = QStringLiteral("進撃の巨人.mkv");
+   const QString bts = QStringLiteral("BTS방탄.mp3");
+   index.addItem(words("superGirl.avi"), 1);
+   index.addItem(words("supergirl.mkv"), 2);
+   index.addItem(words("HTTPServer.zip"), 3);
+   index.addItem(words(naruto), 4);
+   index.addItem(words(titan), 5);
+   index.addItem(words(bts), 6);
+
+   // A sub-word matches like a word: entirely or by its beginning.
+   QCOMPARE(search("girl"), (QList<int> { 1 }));
+   QCOMPARE(search("gir"), (QList<int> { 1 }));
+   QCOMPARE(search("GIRL"), (QList<int> { 1 }));
+   QVERIFY(search("irl").isEmpty());
+   QCOMPARE(index.search(QString("girl")).first().level, 0);
+   QCOMPARE(index.search(QString("gir")).first().level, 1);
+   QCOMPARE(search("server"), (QList<int> { 3 }));
+   QCOMPARE(search("http"), (QList<int> { 3 }));
+
+   // The words are still indexed and the searched terms aren't split.
+   QCOMPARE(search("super"), (QList<int> { 1, 2 }));
+   QCOMPARE(search("supergirl"), (QList<int> { 1, 2 }));
+   QCOMPARE(search("superGirl"), (QList<int> { 1, 2 }));
+   QCOMPARE(search("superg"), (QList<int> { 1, 2 }));
+   QCOMPARE(search("httpserver"), (QList<int> { 3 }));
+   QCOMPARE(WordIndex<int>::resultToList(index.search(QStringList { "super", "girl" })), (QList<int> { 1, 2 }));
+
+   // Changes of script.
+   QCOMPARE(search("naruto"), (QList<int> { 4 }));
+   QCOMPARE(search(QStringLiteral("第")), (QList<int> { 4 }));
+   QCOMPARE(search(QStringLiteral("naruto第3話")), (QList<int> { 4 }));
+   QVERIFY(search(QStringLiteral("話")).isEmpty()); // The digits don't begin a sub-word.
+   QCOMPARE(search(QStringLiteral("巨人")), (QList<int> { 5 }));
+   QCOMPARE(search(QStringLiteral("巨")), (QList<int> { 5 }));
+   QCOMPARE(search(QStringLiteral("の")), (QList<int> { 5 }));
+   QCOMPARE(search(QStringLiteral("進撃の")), (QList<int> { 5 }));
+   QVERIFY(search(QStringLiteral("撃")).isEmpty());
+   QCOMPARE(search(QStringLiteral("방")), (QList<int> { 6 }));
+   QCOMPARE(search("bts"), (QList<int> { 6 }));
+
+   // The sub-words are removed with the words.
+   QVERIFY(index.rmItem(words("superGirl.avi"), 1));
+   QVERIFY(search("girl").isEmpty());
+   QCOMPARE(search("super"), (QList<int> { 2 }));
+   index.renameItem(words("supergirl.mkv"), words("wonderWoman.mkv"), 2);
+   QVERIFY(search("super").isEmpty());
+   QCOMPARE(search("woman"), (QList<int> { 2 }));
+   index.renameItem(words("wonderWoman.mkv"), words("wonderwoman.mkv"), 2);
+   QVERIFY(search("woman").isEmpty());
+   QCOMPARE(search("wonderwoman"), (QList<int> { 2 }));
+   QVERIFY(index.rmItem(words("wonderwoman.mkv"), 2));
+   QVERIFY(index.rmItem(words("HTTPServer.zip"), 3));
+   QVERIFY(index.rmItem(words(naruto), 4));
+   QVERIFY(index.rmItem(words(titan), 5));
+   QVERIFY(index.rmItem(words(bts), 6));
+   QCOMPARE(index.toStringLog(), WordIndex<int>().toStringLog());
 }
 
 void WordIndexTests::prefixGraphemeBoundaries_data()

@@ -161,15 +161,8 @@ QString SearchDelegate::toHtmlText(const QString& text) const
 
    QList<QPair<int, int>> partsToHighlight; // Parts of 'text' to put in bold, as [begin, end[ positions.
 
-   // Use the index's tokenization, including digits and preserved combining marks.
-   // Locate each token in the folded text to retain the mapping to the original name.
-   int nextWord = 0;
-   for (const QString& word : Common::StringUtils::splitInWords(text))
-   {
-      const int pos = foldedText.indexOf(word, nextWord);
-      if (pos == -1)
-         break;
-      nextWord = pos + word.size();
+   // Highlight the beginning of 'word', located at 'pos' in the folded text, for each term it begins with.
+   const auto highlightWord = [&](int pos, const QString& word) {
       QTextBoundaryFinder boundaries(QTextBoundaryFinder::Grapheme, word);
 
       for (const QString& term : this->currentTerms)
@@ -190,6 +183,31 @@ QString SearchDelegate::toHtmlText(const QString& text) const
             ++end;
          partsToHighlight << qMakePair(positions[pos], positions[end]);
       }
+   };
+
+   const QList<int> subWordBoundaries = Common::StringUtils::subWordBoundaries(text);
+
+   // Use the index's tokenization, including digits and preserved combining marks.
+   // Locate each token in the folded text to retain the mapping to the original name.
+   int nextWord = 0;
+   for (const QString& word : Common::StringUtils::splitInWords(text))
+   {
+      const int pos = foldedText.indexOf(word, nextWord);
+      if (pos == -1)
+         break;
+      nextWord = pos + word.size();
+      highlightWord(pos, word);
+
+      // The index also has the sub-words of the word, see 'Common::StringUtils::splitInWordsAndSubWords(..)'.
+      int subWordPos = pos;
+      for (int i = pos + 1; i < nextWord; ++i)
+         if (positions[i] != positions[i - 1] && std::binary_search(subWordBoundaries.cbegin(), subWordBoundaries.cend(), positions[i]))
+         {
+            highlightWord(subWordPos, foldedText.mid(subWordPos, i - subWordPos));
+            subWordPos = i;
+         }
+      if (subWordPos != pos)
+         highlightWord(subWordPos, foldedText.mid(subWordPos, nextWord - subWordPos));
    }
 
    if (partsToHighlight.isEmpty())

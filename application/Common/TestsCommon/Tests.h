@@ -43,6 +43,9 @@ private slots:
    void renameLongPath();
    void splitInWords();
    void splitInWordsUnicode();
+   void subWordBoundaries_data();
+   void subWordBoundaries();
+   void splitInWordsAndSubWords();
    void normalizeSearchWords();
    void normalizeDevanagari();
    void normalizeSearchPositions_data();

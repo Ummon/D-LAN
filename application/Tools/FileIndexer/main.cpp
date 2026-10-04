@@ -86,7 +86,7 @@ void rm(WordIndex<T>& index, const QString& word, const T& item)
 template <typename T>
 void indexFile(WordIndex<T>& index, const QString& fileName, const T& item)
 {
-   const QStringList& words = Common::StringUtils::splitInWords(fileName);
+   const QStringList& words = Common::StringUtils::splitInWordsAndSubWords(fileName);
 
    index.addItem(words, item);
 }

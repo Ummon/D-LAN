@@ -917,8 +917,8 @@ void CoreSupervisor::search()
    const qint64 size = fileInfo.size();
    const QString extension = Common::KnownExtensions::getExtension(name).toLower();
 
-   // A word of the name, long enough to be almost unique. The word index uses the same splitting.
-   QStringList words = Common::StringUtils::splitInWords(name);
+   // A word or a sub-word of the name, long enough to be almost unique. The word index uses the same splitting.
+   QStringList words = Common::StringUtils::splitInWordsAndSubWords(name);
    words.removeIf([&](const QString& word) { return word.size() < SEARCH_MIN_WORD_LENGTH || word == extension; });
    if (words.isEmpty())
       return;
@@ -1066,7 +1066,7 @@ void CoreSupervisor::checkSearch()
             problems << "extension not in the filters";
          if (!entryName.isEmpty())
          {
-            const QStringList entryWords = Common::StringUtils::splitInWords(entryName);
+            const QStringList entryWords = Common::StringUtils::splitInWordsAndSubWords(entryName);
             if (std::none_of(entryWords.cbegin(), entryWords.cend(), [&](const QString& w) { return w.startsWith(word); }))
                problems << "the name doesn't contain the searched word";
          }

@@ -250,6 +250,96 @@ void Tests::splitInWordsUnicode()
       (QStringList { QStringLiteral("गंदा"), QStringLiteral("स्तर") }));
 }
 
+void Tests::subWordBoundaries_data()
+{
+   QTest::addColumn<QString>("text");
+   QTest::addColumn<QList<int>>("expected");
+
+   QTest::newRow("empty") << QString() << QList<int> {};
+   QTest::newRow("lower") << QString("supergirl") << QList<int> {};
+   QTest::newRow("upper") << QString("SUPERGIRL") << QList<int> {};
+   QTest::newRow("capitalized") << QString("Supergirl") << QList<int> {};
+   QTest::newRow("camel-case") << QString("superGirl") << QList<int> { 5 };
+   QTest::newRow("pascal-case") << QString("SuperGirlPower") << QList<int> { 5, 9 };
+   QTest::newRow("acronym") << QString("HTTPServer") << QList<int> { 4 };
+   QTest::newRow("acronym-inside") << QString("getHTTPResponse") << QList<int> { 3, 7 };
+   QTest::newRow("acronym-plural") << QString("PDFs") << QList<int> {};
+   QTest::newRow("acronym-plural-inside") << QString("myDVDsList") << QList<int> { 2, 6 };
+   QTest::newRow("separators") << QString("super Girl_Power.Avi") << QList<int> {};
+   QTest::newRow("digits") << QString("super2Girl S01E02 x264") << QList<int> {};
+   QTest::newRow("several-words") << QString("The superGirl - BluRay.mkv") << QList<int> { 9, 19 };
+   QTest::newRow("accent") << QStringLiteral("étéÉcole") << QList<int> { 3 };
+   QTest::newRow("decomposed-accent-before") << QStringLiteral("e\u0301Cole") << QList<int> { 2 };
+   QTest::newRow("decomposed-accent-after") << QStringLiteral("superE\u0301cole") << QList<int> { 5 };
+   QTest::newRow("decomposed-acronym") << QStringLiteral("HTTPE\u0301cole") << QList<int> { 4 };
+   QTest::newRow("fullwidth-latin") << QStringLiteral("ｓｕＰｅ") << QList<int> { 2 };
+   QTest::newRow("cyrillic") << QStringLiteral("СуперДевушка") << QList<int> { 5 };
+   QTest::newRow("greek") << QStringLiteral("σούπερΚορίτσι") << QList<int> { 6 };
+   QTest::newRow("surrogates") << QStringLiteral("\U00010428\U00010429\U00010400\U00010428") << QList<int> { 4 }; // Deseret.
+
+   QTest::newRow("latin-cyrillic") << QStringLiteral("superдевушка") << QList<int> { 5 };
+   QTest::newRow("latin-han") << QStringLiteral("Naruto第3話") << QList<int> { 6 };
+   QTest::newRow("han-latin") << QStringLiteral("日本語abc") << QList<int> { 3 };
+   QTest::newRow("han-digits") << QStringLiteral("2024年 第3話") << QList<int> {};
+   QTest::newRow("latin-digits-han") << QStringLiteral("abc2024年") << QList<int> { 7 };
+   QTest::newRow("han-katakana") << QStringLiteral("東京タワー") << QList<int> { 2 };
+   QTest::newRow("han-hiragana-han") << QStringLiteral("進撃の巨人") << QList<int> { 2, 3 };
+   QTest::newRow("prolonged-sound-mark") << QStringLiteral("タワー東京") << QList<int> { 3 };
+   QTest::newRow("voiced-kana") << QStringLiteral("\u30AB\u3099\u30E0\u6771") << QList<int> { 3 }; // Decomposed "ガム東".
+   QTest::newRow("latin-hangul") << QStringLiteral("BTS방탄소년단") << QList<int> { 3 };
+   QTest::newRow("hangul-latin") << QStringLiteral("한글abc") << QList<int> { 2 };
+   QTest::newRow("decomposed-hangul") << QStringLiteral("\u1112\u1161\u11AB\u1100\u1173\u11AFabc") << QList<int> { 6 };
+   QTest::newRow("hangul-han") << QStringLiteral("한국漢字") << QList<int> { 2 };
+   QTest::newRow("latin-devanagari") << QStringLiteral("movieफ़िल्म") << QList<int> { 5 };
+   QTest::newRow("devanagari-latin") << QStringLiteral("हिन्दीMovie") << QList<int> { 6 };
+   QTest::newRow("devanagari-digits") << QStringLiteral("गाना२०२४") << QList<int> {};
+   QTest::newRow("separated-scripts") << QStringLiteral("abc 日本語_한글") << QList<int> {};
+}
+
+void Tests::subWordBoundaries()
+{
+   QFETCH(QString, text);
+   QFETCH(QList<int>, expected);
+   QCOMPARE(StringUtils::subWordBoundaries(text), expected);
+
+   // The sub-words are the parts of the folded words.
+   const QStringList words = StringUtils::splitInWords(text);
+   const QStringList wordsAndSubWords = StringUtils::splitInWordsAndSubWords(text);
+   QCOMPARE(wordsAndSubWords.mid(0, words.size()), words);
+   QCOMPARE(wordsAndSubWords.size() > words.size(), !expected.isEmpty());
+   const QString folded = StringUtils::toLowerAndRemoveAccents(text);
+   for (const QString& word : wordsAndSubWords)
+      QVERIFY2(folded.contains(word), qPrintable(word));
+}
+
+void Tests::splitInWordsAndSubWords()
+{
+   QCOMPARE(StringUtils::splitInWordsAndSubWords("super girl.avi"), (QStringList { "super", "girl", "avi" }));
+   QCOMPARE(StringUtils::splitInWordsAndSubWords("superGirl.avi"), (QStringList { "supergirl", "avi", "super", "girl" }));
+   QCOMPARE(StringUtils::splitInWordsAndSubWords("SuperGirlPower"), (QStringList { "supergirlpower", "super", "girl", "power" }));
+   QCOMPARE(StringUtils::splitInWordsAndSubWords("HTTPServer"), (QStringList { "httpserver", "http", "server" }));
+   QCOMPARE(StringUtils::splitInWordsAndSubWords("iPhone"), (QStringList { "iphone", "i", "phone" }));
+
+   // A sub-word is listed once, and not at all if it's also a word.
+   QCOMPARE(StringUtils::splitInWordsAndSubWords("superSuper"), (QStringList { "supersuper", "super" }));
+   QCOMPARE(StringUtils::splitInWordsAndSubWords("girl superGirl"), (QStringList { "girl", "supergirl", "super" }));
+
+   // The sub-words are folded like the words.
+   QCOMPARE(StringUtils::splitInWordsAndSubWords(QStringLiteral("ÉtéE\u0301cole")), (QStringList { "eteecole", "ete", "ecole" }));
+   QCOMPARE(StringUtils::splitInWordsAndSubWords(QStringLiteral("СуперДевушка")),
+      (QStringList { QStringLiteral("супердевушка"), QStringLiteral("супер"), QStringLiteral("девушка") }));
+
+   // Changes of script.
+   QCOMPARE(StringUtils::splitInWordsAndSubWords(QStringLiteral("Naruto第3話.mkv")),
+      (QStringList { QStringLiteral("naruto第3話"), "mkv", "naruto", QStringLiteral("第3話") }));
+   QCOMPARE(StringUtils::splitInWordsAndSubWords(QStringLiteral("進撃の巨人")),
+      (QStringList { QStringLiteral("進撃の巨人"), QStringLiteral("進撃"), QStringLiteral("の"), QStringLiteral("巨人") }));
+   QCOMPARE(StringUtils::splitInWordsAndSubWords(QStringLiteral("ABC\u1112\u1161\u11AB\u1100\u1173\u11AF")), // Decomposed "ABC한글".
+      (QStringList { QStringLiteral("abc한글"), "abc", QStringLiteral("한글") }));
+   QCOMPARE(StringUtils::splitInWordsAndSubWords(QStringLiteral("हिन्दीMovie")),
+      (QStringList { QStringLiteral("हिंदीmovie"), QStringLiteral("हिंदी"), "movie" }));
+}
+
 void Tests::normalizeDevanagari()
 {
    // The vowel signs distinguish words: काम (work), कम (less) and कीमा (mince).

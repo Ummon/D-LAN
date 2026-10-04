@@ -552,7 +552,7 @@ void FileManager::entryAdded(Entry* entry)
 
    L_DEBU(QString("Adding entry '%1' to the index . . .").arg(name));
 
-   this->wordIndex.addItem(Common::StringUtils::splitInWords(name), entry);
+   this->wordIndex.addItem(Common::StringUtils::splitInWordsAndSubWords(name), entry);
 
    if (File* file = dynamic_cast<File*>(entry))
    {
@@ -569,7 +569,7 @@ void FileManager::entryRemoved(Entry* entry)
       return;
 
    L_DEBU(QString("Removing entry '%1' from the index . . .").arg(name));
-   if (!this->wordIndex.rmItem(Common::StringUtils::splitInWords(name), entry))
+   if (!this->wordIndex.rmItem(Common::StringUtils::splitInWordsAndSubWords(name), entry))
       L_DEBU(QString("The entry '%1' hasn't been found in the index!").arg(name));
 
    if (File* file = dynamic_cast<File*>(entry))
@@ -588,8 +588,8 @@ void FileManager::entryRenamed(Entry* entry, const QString& oldName, const QStri
    L_DEBU(QString("Renaming entry '%1' to '%2' in the index . . .").arg(oldUserName, name));
 
    this->wordIndex.renameItem(
-      wasSearchable ? Common::StringUtils::splitInWords(oldUserName) : QStringList(),
-      searchable ? Common::StringUtils::splitInWords(name) : QStringList(), entry);
+      wasSearchable ? Common::StringUtils::splitInWordsAndSubWords(oldUserName) : QStringList(),
+      searchable ? Common::StringUtils::splitInWordsAndSubWords(name) : QStringList(), entry);
 
    if (File* file = dynamic_cast<File*>(entry))
    {

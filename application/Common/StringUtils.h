@@ -31,6 +31,8 @@ namespace Common
       static QString toLowerAndRemoveAccents(const QString& str);
       static QString toLowerAndRemoveAccents(const QString& str, QList<int>& positions);
       static QStringList splitInWords(const QString& words);
+      static QStringList splitInWordsAndSubWords(const QString& words);
+      static QList<int> subWordBoundaries(const QString& str);
       static QStringList splitArguments(const QString& str);
 
       static bool isKorean(const QString& str);
