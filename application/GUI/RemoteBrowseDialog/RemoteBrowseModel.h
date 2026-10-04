@@ -19,6 +19,7 @@
 #pragma once
 
 #include <QAbstractItemModel>
+#include <QSet>
 #include <QVariant>
 
 #include <Protos/gui_protocol.pb.h>
@@ -67,6 +68,9 @@ namespace GUI
       virtual QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
       void setFilters(Filters filters);
+      // The hidden entries reached by 'getIndexFromPath(..)' or given to 'keepDisplayed(..)' are displayed anyway.
+      void setShowHidden(bool show);
+      void keepDisplayed(const QModelIndex& index);
       QString getPath(const QModelIndex& index, bool appendFilename = true) const;
       bool isDirectory(const QModelIndex& index) const;
       void getIndexFromPath(const QString& path);
@@ -87,6 +91,8 @@ namespace GUI
       void browse(Tree* tree);
       void loadChildren(const QPersistentModelIndex &index);
       void loadPendingChildren();
+      void display(Tree* tree, const google::protobuf::RepeatedPtrField<Protos::GUI::LocalBrowseResult::Entry>& entries);
+      void redisplay(Tree* tree);
       void synchronize(Tree* tree, const google::protobuf::RepeatedPtrField<Protos::GUI::LocalBrowseResult::Entry>& entries);
 
       void exploreDirectories();
@@ -105,11 +111,17 @@ namespace GUI
 
          QString path() const;
          bool childrenLoaded = false;
+
+         // The hidden entries of this directory which aren't displayed.
+         google::protobuf::RepeatedPtrField<Protos::GUI::LocalBrowseResult::Entry> hiddenEntries;
+         // The names of the hidden entries of this directory which are always displayed.
+         QSet<QString> revealedEntries;
       };
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;
 
       Filters filters;
+      bool showHidden = false;
 
       // When we receive some entries after a browse query, they will be added as children to this index.
       QPersistentModelIndex currentBrowseIndex;

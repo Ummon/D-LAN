@@ -80,6 +80,7 @@ namespace
             entry->set_name(info.fileName().toStdString());
             entry->set_type(isDir ? Protos::GUI::LocalBrowseResult::DIR : Protos::GUI::LocalBrowseResult::FILE);
             entry->set_date_modified(info.lastModified().toMSecsSinceEpoch());
+            entry->set_hidden(info.isHidden());
             if (isDir)
             {
                // Preserve the protocol's child count without allocating a second directory listing.

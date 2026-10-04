@@ -655,7 +655,17 @@
         <translation>취소</translation>
     </message>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="325"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="159"/>
+        <source>Show hidden files and directories</source>
+        <translation>숨김 파일 및 폴더 표시</translation>
+    </message>
+    <message>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="159"/>
+        <source>Show hidden directories</source>
+        <translation>숨김 폴더 표시</translation>
+    </message>
+    <message>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="343"/>
         <source>Open location</source>
         <translation>위치 열기</translation>
     </message>
@@ -663,7 +673,7 @@
 <context>
     <name>GUI::RemoteBrowseModel</name>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseModel.cpp" line="520"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseModel.cpp" line="624"/>
         <source>free</source>
         <translation>사용 가능</translation>
     </message>
@@ -960,22 +970,21 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="88"/>
         <source>D-LAN Core cannot be installed as a service</source>
-        <translation>D-LAN 코어를 서비스로 설치할 수 없습니다</translation>
+        <translation type="vanished">D-LAN 코어를 서비스로 설치할 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="103"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="102"/>
         <source>Core launched as subprocess</source>
         <translation>코어가 하위 프로세스로 시작되었습니다</translation>
     </message>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="105"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="104"/>
         <source>Unable to launch the Core as subprocess</source>
         <translation>코어를 하위 프로세스로 시작할 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="109"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="108"/>
         <source>Core service launched</source>
         <translation>코어 서비스가 시작되었습니다</translation>
     </message>

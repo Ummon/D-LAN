@@ -1,5 +1,6 @@
 #include <QtTest>
 #include <QAbstractItemModelTester>
+#include <QCheckBox>
 #include <QDialogButtonBox>
 #include <QLineEdit>
 #include <QListView>
@@ -20,6 +21,7 @@ namespace
 {
    using Entries = google::protobuf::RepeatedPtrField<Protos::GUI::LocalBrowseResult::Entry>;
 
+   // The entries whose name starts with a dot are hidden.
    Entries entries(std::initializer_list<const char*> directories, std::initializer_list<const char*> files = {})
    {
       Entries result;
@@ -29,6 +31,7 @@ namespace
          entry->set_name(name);
          entry->set_type(Protos::GUI::LocalBrowseResult::DIR);
          entry->set_size(1);
+         entry->set_hidden(*name == '.');
       }
       for (const auto* name : files)
       {
@@ -36,6 +39,7 @@ namespace
          entry->set_name(name);
          entry->set_type(Protos::GUI::LocalBrowseResult::FILE);
          entry->set_size(10);
+         entry->set_hidden(*name == '.');
       }
       return result;
    }
@@ -63,10 +67,13 @@ namespace
       QSharedPointer<QuickAccessResult> quickAccess = QSharedPointer<QuickAccessResult>::create();
       QMap<QString, Entries> filesystem {
          { "", entries({ "/" }) },
-         { "/", entries({ "home", "other", "empty" }) },
-         { "/home/", entries({ "child" }, { "a.txt", "b.txt" }) },
+         { "/", entries({ "home", "other", "empty", ".config" }) },
+         { "/home/", entries({ "child", ".secret" }, { "a.txt", "b.txt", ".profile" }) },
          { "/home/child/", entries({}, { "nested.txt" }) },
-         { "/other/", entries({}, { "other.txt" }) }
+         { "/home/.secret/", entries({ ".deep" }, { "inner.txt" }) },
+         { "/home/.secret/.deep/", entries({}, { "deep.txt" }) },
+         { "/other/", entries({}, { "other.txt" }) },
+         { "/.config/", entries({}, { ".only" }) }
       };
       bool isLocal() const override { return false; }
       QSharedPointer<RCC::ILocalBrowseResult> localBrowse(const QString& path, bool) override
@@ -97,6 +104,9 @@ namespace
          auto* second = result.Add();
          second->set_name("Other");
          second->set_path("/other/");
+         auto* third = result.Add();
+         third->set_name("Secret");
+         third->set_path("/home/.secret");
          emit this->quickAccess->result(result);
       }
    };
@@ -111,6 +121,7 @@ namespace
       QPushButton* next = dialog.findChild<QPushButton*>("butNext");
       QPushButton* up = dialog.findChild<QPushButton*>("butUp");
       QPushButton* refresh = dialog.findChild<QPushButton*>("butRefresh");
+      QCheckBox* showHidden = dialog.findChild<QCheckBox*>("chkShowHidden");
       QPushButton* ok = dialog.findChild<QDialogButtonBox*>("buttonBox")->button(QDialogButtonBox::Ok);
       GUI::RemoteBrowseModel* model = static_cast<GUI::RemoteBrowseModel*>(tree->model());
       Fixture()
@@ -391,6 +402,226 @@ private slots:
       QVERIFY(f.refresh->isEnabled());
       f.edit("/home/a.txt");
       QVERIFY(f.ok->isEnabled());
+   }
+
+   void showHiddenEntries()
+   {
+      Fixture f;
+      QAbstractItemModelTester tester(f.model, QAbstractItemModelTester::FailureReportingMode::QtTest);
+      tester.setUseFetchMore(false);
+      f.connection->drain();
+      const QPersistentModelIndex home = f.tree->currentIndex();
+      const QPersistentModelIndex root = home.parent();
+      QVERIFY(!f.showHidden->isChecked());
+      QCOMPARE(f.model->rowCount(root), 3);
+      QCOMPARE(f.model->rowCount(home), 3);
+
+      f.connection->requestedPaths.clear();
+      f.showHidden->click();
+      // The known hidden entries are displayed without waiting for the refresh.
+      QCOMPARE(f.model->rowCount(root), 4);
+      QCOMPARE(f.model->rowCount(home), 5);
+      QCOMPARE(f.model->index(0, 0, home).data().toString(), ".secret");
+      QCOMPARE(f.model->index(2, 0, home).data().toString(), ".profile");
+      f.connection->drain();
+      QCOMPARE(f.connection->requestedPaths, QStringList({"/", "/home/"}));
+      QCOMPARE(f.model->rowCount(home), 5);
+      QCOMPARE(f.selected(), "/home/");
+
+      f.connection->requestedPaths.clear();
+      f.showHidden->click();
+      QCOMPARE(f.model->rowCount(root), 3);
+      QCOMPARE(f.model->rowCount(home), 3);
+      f.connection->drain();
+      QCOMPARE(f.connection->requestedPaths, QStringList({"/", "/home/"}));
+      QCOMPARE(f.model->rowCount(home), 3);
+      QCOMPARE(f.selected(), "/home/");
+      QVERIFY(f.ok->isEnabled());
+
+      // An old core doesn't tell which entries are hidden: they are all displayed.
+      f.connection->filesystem["/other/"] = entries({}, {"other.txt", ".legacy"});
+      f.connection->filesystem["/other/"].Mutable(1)->set_hidden(false);
+      f.edit("/other/");
+      f.refresh->click();
+      f.connection->drain();
+      QCOMPARE(f.model->rowCount(f.tree->currentIndex()), 2);
+   }
+
+   void showHiddenLabelAndPosition()
+   {
+      Fixture f;
+      QCOMPARE(f.showHidden->text(), "Show hidden files and directories");
+      f.dialog.setModes(GUI::RemoteBrowseDialog::DIR);
+      QCOMPARE(f.showHidden->text(), "Show hidden directories");
+      f.dialog.show();
+      QVERIFY(QTest::qWaitForWindowExposed(&f.dialog));
+      // At the bottom left, beside the buttons.
+      const auto* buttons = f.dialog.findChild<QDialogButtonBox*>("buttonBox");
+      QVERIFY(f.showHidden->geometry().right() < buttons->geometry().left());
+      QVERIFY(f.showHidden->geometry().top() > f.tree->parentWidget()->geometry().bottom());
+   }
+
+   void hiddenPathsAreValidAndRevealed()
+   {
+      Fixture f;
+      QAbstractItemModelTester tester(f.model, QAbstractItemModelTester::FailureReportingMode::QtTest);
+      tester.setUseFetchMore(false);
+      f.connection->drain();
+      const QPersistentModelIndex home = f.tree->currentIndex();
+      const QPersistentModelIndex root = home.parent();
+      f.edit("/home/.sec"); // Only a part of the name.
+      QVERIFY(!f.ok->isEnabled());
+      QCOMPARE(f.model->rowCount(home), 3);
+      f.edit("/home/.secret/inner.txt");
+      f.connection->drain();
+      QCOMPARE(f.selected(), "/home/.secret/inner.txt");
+      QCOMPARE(f.dialog.getSelectedPaths(), QStringList({"/home/.secret/inner.txt"}));
+      QVERIFY(f.ok->isEnabled());
+      QVERIFY(f.path->styleSheet().isEmpty());
+      // Only the entries of the path are revealed.
+      const QPersistentModelIndex secret = f.tree->currentIndex().parent();
+      QCOMPARE(secret.row(), 0);
+      QCOMPARE(f.model->rowCount(home), 4);
+      QCOMPARE(f.model->rowCount(secret), 1);
+      QCOMPARE(f.model->rowCount(root), 3);
+
+      f.edit("/home/.profile");
+      QCOMPARE(f.selected(), "/home/.profile");
+      QVERIFY(f.ok->isEnabled());
+      f.edit("/home/.profile/"); // A hidden file isn't a directory either.
+      QVERIFY(!f.ok->isEnabled());
+      f.edit("/home/.secret/.deep/deep.txt");
+      f.connection->drain();
+      QCOMPARE(f.selected(), "/home/.secret/.deep/deep.txt");
+      QVERIFY(f.ok->isEnabled());
+      QCOMPARE(f.model->rowCount(home), 5);
+
+      // The revealed entries remain displayed.
+      f.refresh->click();
+      f.connection->drain();
+      QCOMPARE(f.model->rowCount(home), 5);
+      f.showHidden->click();
+      f.connection->drain();
+      QCOMPARE(f.model->rowCount(root), 4);
+      f.showHidden->click();
+      f.connection->drain();
+      QCOMPARE(f.model->rowCount(root), 3);
+      QCOMPARE(f.model->rowCount(home), 5);
+      QCOMPARE(f.model->rowCount(secret), 2);
+      QCOMPARE(f.selected(), "/home/.secret/.deep/deep.txt");
+      QVERIFY(f.ok->isEnabled());
+   }
+
+   void hiddenQuickAccess()
+   {
+      Fixture f;
+      auto* quick = f.dialog.findChild<QListView*>("quickAccessListView");
+      quick->setCurrentIndex(quick->model()->index(2, 0));
+      f.connection->drain();
+      QCOMPARE(f.selected(), "/home/.secret/");
+      QCOMPARE(f.path->text(), "/home/.secret");
+      QVERIFY(f.ok->isEnabled());
+      QVERIFY(!f.showHidden->isChecked());
+      f.back->click();
+      QCOMPARE(f.selected(), "/home/");
+      f.next->click();
+      QCOMPARE(f.selected(), "/home/.secret/");
+   }
+
+   void hidingKeepsTheSelectionDisplayed()
+   {
+      Fixture f;
+      QAbstractItemModelTester tester(f.model, QAbstractItemModelTester::FailureReportingMode::QtTest);
+      tester.setUseFetchMore(false);
+      f.connection->drain();
+      const QPersistentModelIndex home = f.tree->currentIndex();
+      const QPersistentModelIndex root = home.parent();
+      f.showHidden->click();
+      f.connection->drain();
+      f.edit("/home/.profile");
+      const QPersistentModelIndex profile = f.tree->currentIndex();
+      f.edit("/home/.secret/inner.txt");
+      f.connection->drain();
+      const QPersistentModelIndex inner = f.tree->currentIndex();
+      f.tree->selectionModel()->select(profile, QItemSelectionModel::Select | QItemSelectionModel::Rows);
+      QCOMPARE(f.model->rowCount(inner.parent()), 2);
+
+      f.showHidden->click();
+      f.connection->drain();
+      QVERIFY(profile.isValid());
+      QVERIFY(inner.isValid());
+      QCOMPARE(f.tree->currentIndex(), QModelIndex(inner));
+      auto selectedPaths = f.dialog.getSelectedPaths();
+      selectedPaths.sort();
+      QCOMPARE(selectedPaths, QStringList({"/home/.profile", "/home/.secret/inner.txt"}));
+      QVERIFY(f.ok->isEnabled());
+      // The other hidden entries aren't displayed anymore.
+      QCOMPARE(f.model->rowCount(root), 3);
+      QCOMPARE(f.model->rowCount(home), 5);
+      QCOMPARE(f.model->rowCount(inner.parent()), 1);
+   }
+
+   void directoryWithOnlyHiddenEntries()
+   {
+      Fixture f;
+      f.showHidden->click();
+      f.connection->drain();
+      f.edit("/.config/");
+      f.connection->drain();
+      const QPersistentModelIndex config = f.tree->currentIndex();
+      QCOMPARE(f.model->rowCount(config), 1);
+      f.showHidden->click();
+      f.connection->drain();
+      QVERIFY(config.isValid());
+      QCOMPARE(f.selected(), "/.config/");
+      QCOMPARE(f.model->rowCount(config), 0);
+      QVERIFY(!f.model->hasChildren(config));
+      f.showHidden->click();
+      QCOMPARE(f.model->rowCount(config), 1);
+      f.connection->drain();
+      QCOMPARE(f.model->rowCount(config), 1);
+   }
+
+   void hidingADirectoryBeingBrowsed()
+   {
+      Fixture f;
+      QAbstractItemModelTester tester(f.model, QAbstractItemModelTester::FailureReportingMode::QtTest);
+      tester.setUseFetchMore(false);
+      f.connection->drain();
+      const QPersistentModelIndex root = f.tree->currentIndex().parent();
+      f.showHidden->click();
+      f.connection->drain();
+      f.connection->requestedPaths.clear();
+      f.model->fetchMore(f.model->index(0, 0, root));
+      QCOMPARE(f.connection->requestedPaths, QStringList({"/.config/"}));
+      f.showHidden->click(); // '.config' isn't displayed anymore while its entries are awaited.
+      const auto stale = f.connection->requests.takeFirst();
+      QCOMPARE(stale.path, "/.config/");
+      emit stale.result->result(f.connection->filesystem.value(stale.path)); // Must not be given to the root.
+      f.connection->drain();
+      QCOMPARE(f.connection->requestedPaths, QStringList({"/.config/", "/", "/home/"}));
+      QCOMPARE(f.model->rowCount(), 1);
+      QCOMPARE(f.model->rowCount(root), 3);
+      QCOMPARE(f.selected(), "/home/");
+      // The abandoned request doesn't prevent the next ones.
+      f.connection->requestedPaths.clear();
+      f.refresh->click();
+      f.connection->drain();
+      QCOMPARE(f.connection->requestedPaths, QStringList({"/", "/home/"}));
+   }
+
+   void hidingDuringAPathLookup()
+   {
+      Fixture f;
+      f.showHidden->click();
+      f.connection->drain();
+      f.edit("/home/.secret/inner.txt"); // Paused until the entries of '.secret' are received.
+      QVERIFY(!f.ok->isEnabled());
+      f.showHidden->click();
+      f.connection->drain();
+      QCOMPARE(f.selected(), "/home/.secret/inner.txt");
+      QVERIFY(f.ok->isEnabled());
+      QCOMPARE(f.model->rowCount(f.tree->currentIndex().parent()), 1);
    }
 };
 

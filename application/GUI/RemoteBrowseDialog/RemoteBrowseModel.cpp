@@ -185,6 +185,53 @@ void RemoteBrowseModel::setFilters(Filters filters)
 }
 
 /**
+  * Shows or hides the hidden entries of the directories already loaded, the core isn't asked.
+  */
+void RemoteBrowseModel::setShowHidden(bool show)
+{
+   if (this->showHidden == show)
+      return;
+   this->showHidden = show;
+
+   const bool browsingDirectory = this->currentBrowseIndex.isValid();
+   // The node at which a pending path lookup was paused may be deleted.
+   if (this->currentTreeExploring)
+      this->currentTreeExploring = this->root;
+
+   QList<Tree*> trees { this->root };
+   while (!trees.isEmpty())
+   {
+      Tree* tree = trees.takeLast();
+      this->redisplay(tree);
+      for (int i = 0; i < tree->getNbChildren(); ++i)
+         trees.append(tree->getChild(i));
+   }
+
+   // The directory being browsed isn't displayed anymore, its entries must not be given to the root.
+   if (browsingDirectory && !this->currentBrowseIndex.isValid() && !this->localBrowseResult.isNull())
+   {
+      this->localBrowseResult->disconnect(this);
+      this->localBrowseResult.clear();
+   }
+
+   this->exploreDirectories();
+   this->loadPendingChildren();
+}
+
+/**
+  * The given entry and its parents remain displayed even if they are hidden.
+  */
+void RemoteBrowseModel::keepDisplayed(const QModelIndex& index)
+{
+   if (!index.isValid() || index.model() != this)
+      return;
+
+   for (Tree* tree = static_cast<Tree*>(index.internalPointer()); tree->getParent(); tree = tree->getParent())
+      if (tree->getItem().hidden())
+         tree->getParent()->revealedEntries.insert(QString::fromStdString(tree->getItem().name()));
+}
+
+/**
   * Returns the local path of the entry at the given index.
   */
 QString RemoteBrowseModel::getPath(const QModelIndex& index, bool appendFilename) const
@@ -247,24 +294,22 @@ void RemoteBrowseModel::refresh(const QModelIndexList& folders)
 
 void RemoteBrowseModel::result(const google::protobuf::RepeatedPtrField<Protos::GUI::LocalBrowseResult::Entry>& entries)
 {
-   google::protobuf::RepeatedPtrField<Protos::GUI::LocalBrowseResult::Entry> sortedEntries;
+   google::protobuf::RepeatedPtrField<Protos::GUI::LocalBrowseResult::Entry> filteredEntries;
    for (const auto& entry : entries)
    {
       if (
          entry.type() == Protos::GUI::LocalBrowseResult::DIR && this->filters.testAnyFlag(DIR) ||
          entry.type() == Protos::GUI::LocalBrowseResult::FILE && this->filters.testAnyFlag(FILE)
       )
-         sortedEntries.Add()->CopyFrom(entry);
+         filteredEntries.Add()->CopyFrom(entry);
    }
-
-   std::sort(sortedEntries.begin(), sortedEntries.end(), entryLess);
 
    Tree* tree = this->currentBrowseIndex.isValid() ? static_cast<Tree*>(this->currentBrowseIndex.internalPointer()) : this->root;
    tree->childrenLoaded = true;
    // A refresh can delete the node at which a pending path lookup was paused.
    if (this->currentTreeExploring)
       this->currentTreeExploring = this->root;
-   this->synchronize(tree, sortedEntries);
+   this->display(tree, filteredEntries);
 
    this->currentBrowseIndex = QModelIndex();
    this->localBrowseResult->disconnect(this);
@@ -337,6 +382,42 @@ void RemoteBrowseModel::loadPendingChildren()
    }
 }
 
+/**
+  * Displays the given entries of a directory.
+  * The hidden ones are kept aside unless they are shown or have been revealed.
+  */
+void RemoteBrowseModel::display(Tree* tree, const google::protobuf::RepeatedPtrField<Protos::GUI::LocalBrowseResult::Entry>& entries)
+{
+   google::protobuf::RepeatedPtrField<Protos::GUI::LocalBrowseResult::Entry> displayedEntries;
+   google::protobuf::RepeatedPtrField<Protos::GUI::LocalBrowseResult::Entry> hiddenEntries;
+   for (const auto& entry : entries)
+   {
+      if (entry.hidden() && !this->showHidden && !tree->revealedEntries.contains(QString::fromStdString(entry.name())))
+         hiddenEntries.Add()->CopyFrom(entry);
+      else
+         displayedEntries.Add()->CopyFrom(entry);
+   }
+
+   std::sort(displayedEntries.begin(), displayedEntries.end(), entryLess);
+
+   tree->hiddenEntries.Swap(&hiddenEntries);
+   this->synchronize(tree, displayedEntries);
+}
+
+/**
+  * Displays again the known entries of a directory, to be called when the entries to display have changed.
+  */
+void RemoteBrowseModel::redisplay(Tree* tree)
+{
+   if (tree->hiddenEntries.empty() && tree->getNbChildren() == 0)
+      return;
+
+   google::protobuf::RepeatedPtrField<Protos::GUI::LocalBrowseResult::Entry> entries(tree->hiddenEntries);
+   for (int i = 0; i < tree->getNbChildren(); ++i)
+      entries.Add()->CopyFrom(tree->getChild(i)->getItem());
+   this->display(tree, entries);
+}
+
 void RemoteBrowseModel::synchronize(Tree* tree, const google::protobuf::RepeatedPtrField<Protos::GUI::LocalBrowseResult::Entry>& entries)
 {
    const auto parent = this->indexFromTree(tree);
@@ -406,19 +487,42 @@ void RemoteBrowseModel::exploreDirectories()
          this->loadChildren(this->indexFromTree(this->currentTreeExploring));
          return;
       }
+      const auto isOnPath = [&](const QString& entryPath, const Protos::GUI::LocalBrowseResult::Entry& entry) {
+         const QString prefix = entryPath.endsWith('/') ? entryPath : entryPath + '/';
+         return this->pathToExplore.compare(entryPath, sensitivity) == 0 ||
+            (entry.type() == Protos::GUI::LocalBrowseResult::DIR && this->pathToExplore.startsWith(prefix, sensitivity));
+      };
       Tree* match = nullptr;
       qsizetype longestMatch = -1;
       for (int i = 0; i < this->currentTreeExploring->getNbChildren(); ++i)
       {
          Tree* child = this->currentTreeExploring->getChild(i);
          const QString childPath = QDir::cleanPath(child->path());
-         const QString prefix = childPath.endsWith('/') ? childPath : childPath + '/';
-         if ((this->pathToExplore.compare(childPath, sensitivity) == 0 ||
-              (child->getItem().type() == Protos::GUI::LocalBrowseResult::DIR && this->pathToExplore.startsWith(prefix, sensitivity))) &&
-             childPath.size() > longestMatch)
+         if (isOnPath(childPath, child->getItem()) && childPath.size() > longestMatch)
          {
             match = child;
             longestMatch = childPath.size();
+         }
+      }
+      if (!match)
+      {
+         // A hidden entry can still be reached by its path, it's then displayed and found by the next iteration.
+         const QString directoryPath = this->currentTreeExploring->path();
+         bool revealed = false;
+         for (const auto& entry : this->currentTreeExploring->hiddenEntries)
+         {
+            const QString name = QString::fromStdString(entry.name());
+            if (isOnPath(QDir::cleanPath(directoryPath + name), entry))
+            {
+               this->currentTreeExploring->revealedEntries.insert(name);
+               revealed = true;
+               break;
+            }
+         }
+         if (revealed)
+         {
+            this->redisplay(this->currentTreeExploring);
+            continue;
          }
       }
       this->currentTreeExploring = match;

@@ -655,7 +655,17 @@
         <translation>Annulla</translation>
     </message>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="325"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="159"/>
+        <source>Show hidden files and directories</source>
+        <translation>Mostra file e cartelle nascosti</translation>
+    </message>
+    <message>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="159"/>
+        <source>Show hidden directories</source>
+        <translation>Mostra cartelle nascoste</translation>
+    </message>
+    <message>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="343"/>
         <source>Open location</source>
         <translation>Apri percorso</translation>
     </message>
@@ -663,7 +673,7 @@
 <context>
     <name>GUI::RemoteBrowseModel</name>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseModel.cpp" line="520"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseModel.cpp" line="624"/>
         <source>free</source>
         <translation>liberi</translation>
     </message>
@@ -1046,22 +1056,21 @@
         <translation>Locale</translation>
     </message>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="88"/>
         <source>D-LAN Core cannot be installed as a service</source>
-        <translation>Impossibile installare D-LAN Core come servizio</translation>
+        <translation type="vanished">Impossibile installare D-LAN Core come servizio</translation>
     </message>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="103"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="102"/>
         <source>Core launched as subprocess</source>
         <translation>Core avviato come sottoprocesso</translation>
     </message>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="105"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="104"/>
         <source>Unable to launch the Core as subprocess</source>
         <translation>Impossibile avviare il Core come sottoprocesso</translation>
     </message>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="109"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="108"/>
         <source>Core service launched</source>
         <translation>Servizio Core avviato</translation>
     </message>

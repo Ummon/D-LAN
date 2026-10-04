@@ -95,6 +95,7 @@ RemoteBrowseDialog::RemoteBrowseDialog(QSharedPointer<RCC::ICoreConnection> core
    connect(this->ui->butNext, &QPushButton::clicked, this, [this]() { this->navigateHistory(1); });
    // Keep refresh enabled so it retains focus; the model ignores refreshes already in progress.
    connect(this->ui->butRefresh, &QPushButton::clicked, this, &RemoteBrowseDialog::refresh);
+   connect(this->ui->chkShowHidden, &QCheckBox::toggled, this, &RemoteBrowseDialog::showHidden);
    connect(&this->model, &QAbstractItemModel::rowsRemoved, this, [this]() { this->updateNavigation(); });
    connect(this->ui->butUp, &QPushButton::clicked, this, [this]() {
       auto folder = this->ui->treeView->currentIndex();
@@ -153,6 +154,10 @@ void RemoteBrowseDialog::setModes(Modes modes)
    if (modes.testAnyFlag(DIR))
       filters |= RemoteBrowseModel::DIR;
    this->model.setFilters(filters);
+
+   this->ui->chkShowHidden->setText(
+      modes.testAnyFlag(FILE) ? tr("Show hidden files and directories") : tr("Show hidden directories")
+   );
 }
 
 QStringList RemoteBrowseDialog::getSelectedPaths() const
@@ -259,6 +264,19 @@ void RemoteBrowseDialog::refresh()
    if (currentFolder.isValid() && !folders.contains(currentFolder))
       folders.append(currentFolder);
    this->model.refresh(folders);
+}
+
+void RemoteBrowseDialog::showHidden(bool show)
+{
+   if (!show)
+   {
+      // The selection isn't lost when its entries are hidden.
+      this->model.keepDisplayed(this->ui->treeView->currentIndex());
+      for (const auto& index : this->ui->treeView->selectionModel()->selectedRows())
+         this->model.keepDisplayed(index);
+   }
+   this->model.setShowHidden(show);
+   this->refresh();
 }
 
 void RemoteBrowseDialog::visit(const QModelIndex& index)

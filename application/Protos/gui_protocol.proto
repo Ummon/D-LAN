@@ -298,6 +298,8 @@ message LocalBrowseResult {
       // Only used for top roots.
       string volume_label = 5;
       int64 capacity = 6;
+
+      bool hidden = 7; // [default = false] Never set for the roots.
    }
 
    repeated Entry entries = 1;

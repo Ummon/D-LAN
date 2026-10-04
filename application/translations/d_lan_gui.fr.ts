@@ -655,7 +655,17 @@
         <translation>Annuler</translation>
     </message>
     <message>
-        <location line="+259"/>
+        <location line="+93"/>
+        <source>Show hidden files and directories</source>
+        <translation>Afficher les fichiers et dossiers cachés</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Show hidden directories</source>
+        <translation>Afficher les dossiers cachés</translation>
+    </message>
+    <message>
+        <location line="+184"/>
         <source>Open location</source>
         <translation>Ouvrir le dossier</translation>
     </message>
@@ -663,7 +673,7 @@
 <context>
     <name>GUI::RemoteBrowseModel</name>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseModel.cpp" line="+520"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseModel.cpp" line="+624"/>
         <source>free</source>
         <translation>libre</translation>
     </message>
@@ -960,12 +970,11 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="+88"/>
         <source>D-LAN Core cannot be installed as a service</source>
-        <translation>D-LAN Core ne peut pas être installé comme service</translation>
+        <translation type="vanished">D-LAN Core ne peut pas être installé comme service</translation>
     </message>
     <message>
-        <location line="+15"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="+102"/>
         <source>Core launched as subprocess</source>
         <translation>Core lancé comme sous-processus</translation>
     </message>

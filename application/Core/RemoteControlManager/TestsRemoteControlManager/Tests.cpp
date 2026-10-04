@@ -24,6 +24,13 @@
 #include <Core/PeerManager/GetChunkParams.h>
 #include <priv/UploadProgress.h>
 
+#if defined(Q_OS_WIN32)
+   #ifndef NOMINMAX
+      #define NOMINMAX
+   #endif
+   #include <windows.h>
+#endif
+
 namespace RCA = Common::RemoteControlAuthentication;
 
 // See 'Protos.GUI.AskForAuthentication'. The test sockets don't use TLS: the channel binding is empty.
@@ -704,12 +711,18 @@ private slots:
       QDir root(directory.path());
       QVERIFY(root.mkdir("empty"));
       QVERIFY(root.mkdir("nonempty"));
-      for (const auto& name : {"file.txt", "nonempty/child.txt"})
+      QVERIFY(root.mkdir(".hidden"));
+      for (const auto& name : {"file.txt", "nonempty/child.txt", ".hidden.txt", "nonempty/.hidden.txt"})
       {
          QFile file(root.filePath(name));
          QVERIFY(file.open(QIODevice::WriteOnly));
          QCOMPARE(file.write("hello"), qint64(5));
       }
+#ifdef Q_OS_WIN32
+      // A leading dot doesn't hide an entry on Windows.
+      for (const auto& name : {".hidden", ".hidden.txt", "nonempty/.hidden.txt"})
+         QVERIFY(SetFileAttributesW(root.filePath(name).toStdWString().c_str(), FILE_ATTRIBUTE_HIDDEN));
+#endif
       auto socket = new BufferedSocket;
       QScopedPointer<RCM::RemoteConnection> connection(this->newConnection(socket));
       connection->startListening();
@@ -723,17 +736,32 @@ private slots:
       QCOMPARE(message.getHeader().getType(), Common::MessageHeader::GUI_LOCAL_BROWSE_RESULT);
       const auto& result = message.getMessage<Protos::GUI::LocalBrowseResult>();
       QCOMPARE(result.tag(), quint64(1234));
-      QCOMPARE(result.entries_size(), 3);
+      // The hidden entries are always sent, the GUI chooses whether to display them.
+      QCOMPARE(result.entries_size(), 5);
       QMap<QString, qint64> sizes;
       for (const auto& entry : result.entries())
       {
-         sizes.insert(QString::fromStdString(entry.name()), entry.size());
-         QCOMPARE(entry.type(), entry.name() == "file.txt" ? Protos::GUI::LocalBrowseResult::FILE : Protos::GUI::LocalBrowseResult::DIR);
+         const QString name = QString::fromStdString(entry.name());
+         sizes.insert(name, entry.size());
+         QCOMPARE(entry.type(), name.endsWith(".txt") ? Protos::GUI::LocalBrowseResult::FILE : Protos::GUI::LocalBrowseResult::DIR);
+         QCOMPARE(entry.hidden(), name.startsWith(".hidden"));
          QVERIFY(entry.date_modified() > 0);
       }
       QCOMPARE(sizes.value("empty", -1), qint64(0));
-      QCOMPARE(sizes.value("nonempty", -1), qint64(1));
+      QCOMPARE(sizes.value("nonempty", -1), qint64(2)); // The hidden children are counted.
       QCOMPARE(sizes.value("file.txt", -1), qint64(5));
+      QCOMPARE(sizes.value(".hidden", -1), qint64(0));
+      QCOMPARE(sizes.value(".hidden.txt", -1), qint64(5));
+
+      // The roots are never hidden.
+      request.clear_path();
+      socket->output.clear();
+      socket->receive(Common::MessageHeader::GUI_LOCAL_BROWSE, request);
+      QTRY_COMPARE(socket->messages().size(), 1);
+      const auto roots = socket->messages()[0].getMessage<Protos::GUI::LocalBrowseResult>();
+      QVERIFY(roots.entries_size() > 0);
+      for (const auto& entry : roots.entries())
+         QVERIFY(!entry.hidden());
    }
 
    void localBrowseDoesNotBlockConnection_data()

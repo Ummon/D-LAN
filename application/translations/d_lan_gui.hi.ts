@@ -651,7 +651,17 @@
         <translation>रद्द करें</translation>
     </message>
     <message>
-        <location line="+259"/>
+        <location line="+93"/>
+        <source>Show hidden files and directories</source>
+        <translation>छिपी हुई फ़ाइलें और फ़ोल्डर दिखाएँ</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Show hidden directories</source>
+        <translation>छिपे हुए फ़ोल्डर दिखाएँ</translation>
+    </message>
+    <message>
+        <location line="+184"/>
         <source>Open location</source>
         <translation>स्थान खोलें</translation>
     </message>
@@ -659,7 +669,7 @@
 <context>
     <name>GUI::RemoteBrowseModel</name>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseModel.cpp" line="+520"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseModel.cpp" line="+624"/>
         <source>free</source>
         <translation>खाली</translation>
     </message>
@@ -944,12 +954,11 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="+88"/>
         <source>D-LAN Core cannot be installed as a service</source>
-        <translation>D-LAN Core को सेवा के रूप में इंस्टॉल नहीं किया जा सकता</translation>
+        <translation type="vanished">D-LAN Core को सेवा के रूप में इंस्टॉल नहीं किया जा सकता</translation>
     </message>
     <message>
-        <location line="+15"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="+102"/>
         <source>Core launched as subprocess</source>
         <translation>Core को उपप्रक्रिया के रूप में शुरू किया गया</translation>
     </message>

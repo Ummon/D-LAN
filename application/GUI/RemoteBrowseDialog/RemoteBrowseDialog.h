@@ -66,6 +66,7 @@ namespace GUI
       void treeSelectionChanged(const QModelIndex& index);
       void pathEdited(const QString& path);
       void refresh();
+      void showHidden(bool show);
 
       void displayContextMenuDownload(const QPoint& point);
       void openLocation();
