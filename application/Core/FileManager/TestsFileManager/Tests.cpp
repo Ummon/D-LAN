@@ -251,14 +251,17 @@ void Tests::createAFile()
 
    auto sharedEntry = Utils::tryFindEntry(this->fileManager, Common::Path("sharedDirs/"));
    QVERIFY(sharedEntry.IsInitialized());
+   // Wait for the hash too, not only for the listing: a file moved while it is still queued
+   // for hashing is looked up at its old path, the I/O error then delays its hashing by
+   // several seconds, see 'FileUpdater::IO_ERROR_WAITING_BEFORE_RETRY'.
    QVERIFY(
-      Utils::retry(5, 100,
+      Utils::retry(10, 100,
          [this, &sharedEntry]()
          {
             auto entries = this->fileManager->getEntries(sharedEntry);
             for (const auto& entry : entries.entries())
             {
-               if (entry.name() == "x.txt")
+               if (entry.name() == "x.txt" && entry.chunks_size() == 1 && !entry.chunks(0).hash().empty())
                   return true;
             }
             return false;
@@ -282,7 +285,7 @@ void Tests::moveAFile()
             auto entries = this->fileManager->getEntries(sharedEntry);
             for (const auto& entry : entries.entries())
             {
-               if (entry.name() == "x.txt")
+               if (entry.name() == "x.txt" && entry.chunks_size() == 1 && !entry.chunks(0).hash().empty())
                   return true;
             }
             return false;
@@ -306,7 +309,7 @@ void Tests::renameAFile()
             auto entries = this->fileManager->getEntries(sharedEntry);
             for (const auto& entry : entries.entries())
             {
-               if (entry.name() == "y.txt")
+               if (entry.name() == "y.txt" && entry.chunks_size() == 1 && !entry.chunks(0).hash().empty())
                   return true;
             }
             return false;
