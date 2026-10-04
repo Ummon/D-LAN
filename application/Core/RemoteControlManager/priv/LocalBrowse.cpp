@@ -39,7 +39,7 @@ namespace
          return;
 
       const QDir::Filters FILTERS =
-         QDir::Dirs | QDir::NoDotAndDotDot | QDir::Hidden | (request.onlydirectories() ? static_cast<QDir::Filter>(0) : QDir::Files);
+         QDir::Dirs | QDir::NoDotAndDotDot | QDir::Hidden | (request.only_directories() ? static_cast<QDir::Filter>(0) : QDir::Files);
 
       Protos::GUI::LocalBrowseResult result;
       quint64 resultSize = 32; // Tag and protobuf envelope overhead.

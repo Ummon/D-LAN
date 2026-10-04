@@ -34,7 +34,7 @@ message Settings {
       WIN_DOWNLOAD = 2;
       WIN_UPLOAD = 3;
    }
-   repeated Window windowOrder = 18;
+   repeated Window window_order = 18;
 
    enum DownloadView {
       TREE_VIEW = 0;

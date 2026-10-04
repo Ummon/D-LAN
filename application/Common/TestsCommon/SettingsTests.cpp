@@ -2,6 +2,7 @@
 #include <thread>
 
 #include <QTest>
+#include <QFile>
 #include <QTemporaryDir>
 
 #include <Common/Settings.h>
@@ -73,11 +74,11 @@ private slots:
       SETTINGS.set("search_column_sizes", QList<quint32>{10, 20, 30});
       SETTINGS.set("search_column_sizes", 4, quint32(50));
       QCOMPARE(SETTINGS.getRepeated<quint32>("search_column_sizes"), (QList<quint32>{10, 20, 30, 0, 50}));
-      SETTINGS.set("windowOrder", QList<quint32>{3, 2, 1, 0});
-      SETTINGS.set("windowOrder", 1, quint32(0));
-      QCOMPARE(SETTINGS.getRepeated<quint32>("windowOrder"), (QList<quint32>{3, 0, 1, 0}));
-      SETTINGS.rm("windowOrder");
-      QVERIFY(SETTINGS.getRepeated<quint32>("windowOrder").isEmpty());
+      SETTINGS.set("window_order", QList<quint32>{3, 2, 1, 0});
+      SETTINGS.set("window_order", 1, quint32(0));
+      QCOMPARE(SETTINGS.getRepeated<quint32>("window_order"), (QList<quint32>{3, 0, 1, 0}));
+      SETTINGS.rm("window_order");
+      QVERIFY(SETTINGS.getRepeated<quint32>("window_order").isEmpty());
 
       SETTINGS.setSettingsMessage(new Protos::Core::Settings());
       const QList<QString> rooms{QString(), QString::fromUtf8("caf\xc3\xa9"), QString("a") + QChar(0) + "b"};
@@ -131,6 +132,28 @@ private slots:
          QCOMPARE(SETTINGS.get<quint32>("socket_timeout"), quint32(200));
          QCOMPARE(SETTINGS.get<QString>("core_address"), QString("gui"));
       }
+   }
+
+   void previousFieldNameIsStillLoaded()
+   {
+      // 'window_order' was named 'windowOrder', the settings saved under this name must not be lost.
+      QTemporaryDir directory;
+      QVERIFY(directory.isValid());
+      SETTINGS.setFilename("settings-test.json");
+      QFile file(directory.filePath("settings-test.json"));
+      QVERIFY(file.open(QIODevice::WriteOnly));
+      QVERIFY(file.write(R"({ "windowOrder": ["WIN_UPLOAD", "WIN_CHAT", "WIN_SETTINGS", "WIN_DOWNLOAD"], "socket_timeout": 300 })") > 0);
+      file.close();
+      QVERIFY(SETTINGS.loadFromACustomDirectory(directory.path()));
+      QCOMPARE(SETTINGS.getRepeated<quint32>("window_order"), (QList<quint32>{3, 1, 0, 2}));
+      QCOMPARE(SETTINGS.get<quint32>("socket_timeout"), quint32(300));
+
+      // It's saved under the new name.
+      QVERIFY(SETTINGS.saveToACustomDirectory(directory.path()));
+      QVERIFY(file.open(QIODevice::ReadOnly));
+      const QByteArray saved = file.readAll();
+      QVERIFY(saved.contains("\"window_order\""));
+      QVERIFY(!saved.contains("\"windowOrder\""));
    }
 
    void concurrentReplacement()

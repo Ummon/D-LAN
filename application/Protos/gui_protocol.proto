@@ -273,7 +273,7 @@ message BrowseResult {
 // id: 0x10F1
 message LocalBrowse {
    string path = 1; // If empty, the roots (drives) are returned.
-   bool onlyDirectories = 3;
+   bool only_directories = 3;
 
    uint64 tag = 2;
 }
@@ -291,7 +291,7 @@ message LocalBrowseResult {
       int64 date_modified = 2; // [ms] since epoch.
 
       // Bytes for file and root, number of sub-entries for directory
-      // (if LocalBrowse.onlyDirectoires is true it doesn't count files).
+      // (if LocalBrowse.only_directories is true it doesn't count files).
       int64 size = 3;
       EntryType type = 4;
 

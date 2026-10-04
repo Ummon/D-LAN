@@ -225,7 +225,7 @@ void MdiArea::newState(const Protos::GUI::State& state)
 
 void MdiArea::coreConnected()
 {
-   QList<quint32> windowsOrder = SETTINGS.getRepeated<quint32>("windowOrder");
+   QList<quint32> windowsOrder = SETTINGS.getRepeated<quint32>("window_order");
    static const QList<quint32> windowsOrderDefault = QList<quint32>() <<
       Protos::GUI::Settings_Window_WIN_SETTINGS <<
       Protos::GUI::Settings_Window_WIN_CHAT <<
@@ -288,7 +288,7 @@ void MdiArea::tabMoved(int, int)
          values << data.toUInt();
    }
 
-   SETTINGS.set("windowOrder", values);
+   SETTINGS.set("window_order", values);
    SETTINGS.save();
 }
 

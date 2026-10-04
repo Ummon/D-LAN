@@ -32,7 +32,7 @@ LocalBrowseResult::LocalBrowseResult(
    ILocalBrowseResult(socketTimeout), coreConnection(coreConnection)
 {
    this->browseMessage.set_path(path.toStdString());
-   this->browseMessage.set_onlydirectories(onlyDirectories);
+   this->browseMessage.set_only_directories(onlyDirectories);
    this->browseMessage.set_tag(QRandomGenerator64::global()->generate64());
    connect(coreConnection, &InternalCoreConnection::disconnected, this, [this] {
       this->coreConnection.clear();
