@@ -724,6 +724,11 @@ void FileDownload::addHash(const Protos::Core::HashResult& hashResult)
    if (num < static_cast<quint32>(this->localEntry.chunks_size()))
       this->localEntry.mutable_chunks(num)->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
 
+   // The file may already be owned: now that all its hashes are known it can be recognized
+   // without waiting for its turn to be downloaded, see 'DownloadManager::scanTheQueue()'.
+   if (allHashesKnown && !this->localEntry.exists())
+      this->tryToLinkToAnExistingFile();
+
    // Finish with the final chunk's source included. Adding it may already have
    // started or failed a transfer and cancelled this pending scan; preserve that
    // newer status instead of consuming a transfer error a second time.
@@ -854,7 +859,7 @@ bool FileDownload::tryToLinkToAnExistingFile()
             hashes << Common::Hash();
       }
 
-      for (QListIterator<QSharedPointer<FM::IChunk>> i(this->fileManager->getAllChunks(this->localEntry, hashes)); i.hasNext();)
+      for (QListIterator<QSharedPointer<FM::IChunk>> i(this->getChunksOfTheExistingFile(hashes)); i.hasNext();)
       {
          auto chunk = i.next();
          this->chunksWithoutDownloader.insert(chunk->getNum(), chunk);
@@ -867,6 +872,44 @@ bool FileDownload::tryToLinkToAnExistingFile()
    }
 
    return this->localEntry.exists();
+}
+
+/**
+  * The chunks of the local file matching this download, if any, see 'IFileManager::getAllChunks(..)'.
+  * When the destination isn't defined yet the file is searched in each shared directory, the one which
+  * owns it becomes the destination: the file isn't downloaded again into another one.
+  */
+QList<QSharedPointer<FM::IChunk>> FileDownload::getChunksOfTheExistingFile(const QList<Common::Hash>& hashes)
+{
+   QList<QSharedPointer<FM::IChunk>> chunks = this->fileManager->getAllChunks(this->localEntry, hashes);
+
+   // A custom destination which isn't shared yet has a path but no ID, see 'DownloadManager::addDownload(..)'.
+   if (
+      !chunks.isEmpty() ||
+      !this->localEntry.shared_entry().id().hash().empty() ||
+      !this->localEntry.shared_entry().path().empty()
+   )
+      return chunks;
+
+   Protos::Common::Entry entry(this->localEntry);
+   for (const auto& shared : this->fileManager->getSharedEntries())
+   {
+      if (shared.path.isFile())
+         continue;
+
+      entry.mutable_shared_entry()->mutable_id()->set_hash(shared.ID.getData(), Common::Hash::HASH_SIZE);
+      chunks = this->fileManager->getAllChunks(entry, hashes);
+      if (!chunks.isEmpty())
+      {
+         auto sharedEntry = this->localEntry.mutable_shared_entry();
+         sharedEntry->mutable_id()->set_hash(shared.ID.getData(), Common::Hash::HASH_SIZE);
+         sharedEntry->set_path(shared.path.toString().toStdString());
+         sharedEntry->set_shared_name(shared.getName().toStdString());
+         break;
+      }
+   }
+
+   return chunks;
 }
 
 /**

@@ -109,6 +109,7 @@ namespace DM
       void addHash(const Protos::Core::HashResult& hashResult);
       void unableToRetrieveTheHashes();
       bool tryToLinkToAnExistingFile();
+      QList<QSharedPointer<FM::IChunk>> getChunksOfTheExistingFile(const QList<Common::Hash>& hashes);
       QSharedPointer<ChunkDownloader> createChunkDownloader(const Common::Hash& hash);
       bool createFile();
       bool prepareFileForResume();

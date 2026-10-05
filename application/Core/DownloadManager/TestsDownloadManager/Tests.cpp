@@ -1862,6 +1862,126 @@ void Tests::downloadingStatusEndsWithTransfer()
    QCOMPARE(download.getStatus(), Protos::Common::DownloadStatus::QUEUED);
 }
 
+/**
+  * A file already owned is recognized as soon as all its hashes are known, without waiting for its turn to be downloaded.
+  */
+void Tests::ownedFileIsCompleteOnceItsHashesAreKnown()
+{
+   class CompleteChunk : public FailingChunk
+   {
+   public:
+      using FailingChunk::FailingChunk;
+      bool isComplete() const override { return true; }
+   };
+   QSharedPointer<ResumeFileManager> files(new ResumeFileManager);
+   QList<Common::Hash> hashes;
+   for (int i = 0; i < 2; i++)
+   {
+      hashes << Common::Hash::rand();
+      files->chunks << QSharedPointer<FM::IChunk>(new CompleteChunk(i, hashes.last()));
+   }
+   Protos::Common::Entry entry;
+   entry.set_type(Protos::Common::Entry::FILE);
+   entry.set_name("owned.bin");
+   entry.set_size(quint64(2) * Common::Constants::CHUNK_SIZE);
+   HashPeer peer(files);
+   LinkedPeers links;
+   OccupiedPeers asking, downloading;
+   Common::ThreadPool pool(1);
+   Common::TransferRateCalculator rate;
+   FileDownload download(files, links, asking, downloading, pool, &peer, entry, entry,
+      rate, Protos::Queue::Queue::Entry::QUEUED);
+   download.start(); // No hash is known: the file can't be recognized yet.
+   QCOMPARE(download.getStatus(), Protos::Common::DownloadStatus::GETTING_THE_HASHES);
+
+   for (int i = 0; i < 2; i++)
+   {
+      QCOMPARE(download.getStatus(), Protos::Common::DownloadStatus::GETTING_THE_HASHES);
+      Protos::Core::HashResult hash;
+      hash.set_num(i);
+      hash.mutable_hash()->set_hash(hashes[i].getData(), Common::Hash::HASH_SIZE);
+      emit peer.hashes->nextHash(hash);
+   }
+   QCOMPARE(download.getStatus(), Protos::Common::DownloadStatus::COMPLETE);
+   QVERIFY(download.getLocalEntry().exists());
+   QCOMPARE(download.getDownloadedBytes(), entry.size());
+}
+
+void Tests::ownedFileIsFoundWithoutDestination_data()
+{
+   QTest::addColumn<bool>("pendingDestination");
+   QTest::newRow("destination not defined") << false;
+   QTest::newRow("pending custom destination") << true;
+}
+
+/**
+  * A download without a defined destination is linked to the file already owned in one of the shared directories,
+  * which becomes its destination. A destination already chosen out of the shared directories is left as it is.
+  */
+void Tests::ownedFileIsFoundWithoutDestination()
+{
+   QFETCH(bool, pendingDestination);
+   class CompleteChunk : public FailingChunk
+   {
+   public:
+      using FailingChunk::FailingChunk;
+      bool isComplete() const override { return true; }
+   };
+   class SharesFileManager : public MockFileManager
+   {
+   public:
+      QList<Common::SharedEntry> shares;
+      Common::Hash owner; // The shared directory which owns the file.
+      QList<QSharedPointer<FM::IChunk>> chunks;
+      QList<Common::SharedEntry> getSharedEntries() const override { return this->shares; }
+      QList<QSharedPointer<FM::IChunk>> getAllChunks(const Protos::Common::Entry& entry, const QList<Common::Hash>&) const override
+      {
+         if (entry.shared_entry().id().hash() == std::string(this->owner.getData(), Common::Hash::HASH_SIZE))
+            return this->chunks;
+         return {};
+      }
+   };
+   QSharedPointer<SharesFileManager> files(new SharesFileManager);
+   for (const char* path : { "/shares/first/", "/shares/second/" })
+   {
+      Common::SharedEntry shared;
+      shared.ID = Common::Hash::rand();
+      shared.path = Common::Path(QString(path));
+      files->shares << shared;
+   }
+   files->owner = files->shares[1].ID;
+   const auto hash = Common::Hash::rand();
+   files->chunks << QSharedPointer<FM::IChunk>(new CompleteChunk(0, hash));
+
+   Protos::Common::Entry remote;
+   remote.set_type(Protos::Common::Entry::FILE);
+   remote.set_name("owned.bin");
+   remote.set_path("/");
+   remote.set_size(Common::Constants::CHUNK_SIZE);
+   remote.add_chunks()->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
+   Protos::Common::Entry local(remote);
+   if (pendingDestination)
+      local.mutable_shared_entry()->set_path("/elsewhere/owned.bin");
+   ResumePeer peer(files);
+   LinkedPeers links;
+   OccupiedPeers asking, downloading;
+   Common::ThreadPool pool(1);
+   Common::TransferRateCalculator rate;
+   FileDownload download(files, links, asking, downloading, pool, &peer, remote, local,
+      rate, Protos::Queue::Queue::Entry::QUEUED);
+   download.start();
+
+   if (pendingDestination)
+   {
+      QCOMPARE(download.getStatus(), Protos::Common::DownloadStatus::QUEUED);
+      QVERIFY(download.getLocalEntry().shared_entry().id().hash().empty());
+      return;
+   }
+   QCOMPARE(download.getStatus(), Protos::Common::DownloadStatus::COMPLETE);
+   QCOMPARE(Common::Hash(download.getLocalEntry().shared_entry().id().hash()), files->owner);
+   QCOMPARE(download.getLocalEntry().shared_entry().path(), std::string("/shares/second/"));
+}
+
 void Tests::resetPreservesDestination_data()
 {
    QTest::addColumn<bool>("reloadQueue");
