@@ -67,7 +67,6 @@ Protos::Core::Settings* createDefaultValuesSettings()
    settings->set_scan_period_unwatchable_dirs(30000);
    settings->set_unfinished_suffix_term(".unfinished");
    settings->set_minimum_free_space(1048576);
-   settings->set_save_cache_period(60000);
    settings->set_get_entries_timeout(5000);
 
    ///// PeerManager /////

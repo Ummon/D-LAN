@@ -9,8 +9,8 @@ import "common.proto";
 package Protos.Core;
 
 message Settings {
-   reserved 3, 25, 54, 90;
-   reserved "chunk_size", "check_received_data_integrity", "upload_max_nb_connections_per_peer", "salt";
+   reserved 3, 24, 25, 54, 90;
+   reserved "chunk_size", "save_cache_period", "check_received_data_integrity", "upload_max_nb_connections_per_peer", "salt";
 
    string nick = 1;
    Common.Hash peer_id = 2;
@@ -29,7 +29,6 @@ message Settings {
    uint32 scan_period_unwatchable_dirs = 21; // [default = 30000] [ms].
    string unfinished_suffix_term = 22; // [default = ".unfinished"].
    uint32 minimum_free_space = 23; // [default = 1048576] (1 MiB) After creating a file in a directory this is the minimum space it must be left.
-   uint32 save_cache_period = 24; // [default = 60000] [ms]. (1 min).
    uint32 get_entries_timeout = 101; // [default = 5000] [ms].
 
    ///// PeerManager /////
