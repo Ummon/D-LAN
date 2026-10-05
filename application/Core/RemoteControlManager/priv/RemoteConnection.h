@@ -24,7 +24,6 @@
 #include <QTimer>
 #include <QList>
 #include <QLocale>
-#include <QFutureWatcher>
 #include <QNetworkInterface>
 
 #include <google/protobuf/message.h>
@@ -33,6 +32,7 @@
 #include <Protos/common.pb.h>
 
 #include <Common/Uncopyable.h>
+#include <Common/SaltedPassword.h>
 #include <Common/Network/MessageHeader.h>
 #include <Common/Network/MessageSocket.h>
 #include <Common/LogManager/Builder.h>
@@ -57,6 +57,7 @@ namespace RCM
       static const int MAX_DELAY_WAITING_AUTH_RES = 5000; // [ms]. We close the socket if we don't receive a response after this delay when sending the message 'Protos.GUI.AskForAuthentication'.
       static constexpr int MAX_NB_SEARCHES = 100; // Maximum outstanding network searches per GUI connection.
       static constexpr int MAX_NB_PEER_BROWSES = 32; // Pending peer requests per GUI connection.
+      static constexpr int MAX_NB_LOCAL_BROWSES = 8; // Pending local browses per GUI connection.
 
    protected:
       class Logger : public ILogger
@@ -78,6 +79,9 @@ namespace RCM
          bool localTrusted // Local clients don't have to provide the password.
       );
       ~RemoteConnection();
+
+      // The password asked to the remote clients as saved in the settings, null if it isn't defined.
+      static Common::SaltedPassword remotePassword();
 
       // Call once the owner has registered the connection and connected its signals.
       void startListening() override;
@@ -138,7 +142,7 @@ namespace RCM
 
       QList<QSharedPointer<NL::ISearch>> currentSearches;
       QList<QSharedPointer<PM::IGetEntriesResult>> getEntriesResults;
-      QList<QFutureWatcher<Protos::GUI::LocalBrowseResult>*> localBrowses;
+      int nbLocalBrowses = 0;
 
       bool started = false;
       const bool localTrusted;

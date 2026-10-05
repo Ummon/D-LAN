@@ -63,7 +63,6 @@ namespace RCM
 
    private slots:
       void newConnection();
-      void connectionDeleted(RemoteConnection* sender);
 
    private:      
       friend class ::Tests; // Real socket integration tests with simulated remote peer addresses.

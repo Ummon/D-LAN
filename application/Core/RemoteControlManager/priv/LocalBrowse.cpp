@@ -10,15 +10,20 @@
 #include <QMutexLocker>
 #include <QRunnable>
 
+#include <Common/Network/MessageSocket.h>
+
 namespace
 {
+   constexpr int NB_THREADS = 2;
+   constexpr int MAX_NB_QUEUED_JOBS = 40; // For all the connections, each one has its own limit: 'RemoteConnection::MAX_NB_LOCAL_BROWSES'.
+
    struct BrowsePool
    {
       QMutex mutex;
       int queued = 0;
       // Destroy the pool before the mutex: running jobs use the mutex when starting.
       QThreadPool pool;
-      BrowsePool() { pool.setMaxThreadCount(2); }
+      BrowsePool() { pool.setMaxThreadCount(NB_THREADS); }
    };
 
    BrowsePool& browsePool()
@@ -56,8 +61,8 @@ namespace
       quint64 resultSize = 32; // Tag and protobuf envelope overhead.
       const auto accountEntry = [&](const Protos::GUI::LocalBrowseResult::Entry& entry) {
          resultSize += entry.ByteSizeLong() + 10;
-         // Match MessageSocket's receive limit; never send an unreadable, partial result.
-         if (resultSize > 100 * 1024 * 1024)
+         // Never send an unreadable, partial result.
+         if (resultSize > Common::MessageSocket::MAX_MESSAGE_PAYLOAD_SIZE)
             throw std::length_error("Local browse response exceeds the message size limit");
       };
       result.set_tag(request.tag());
@@ -140,7 +145,7 @@ RCM::LocalBrowseJob RCM::localBrowse(const Protos::GUI::LocalBrowse& request)
    };
    auto& state = browsePool();
    QMutexLocker lock(&state.mutex);
-   if (state.queued >= 40)
+   if (state.queued >= MAX_NB_QUEUED_JOBS)
    {
       job->promise.setException(std::make_exception_ptr(std::runtime_error("Local browse queue is full")));
       job->promise.finish();

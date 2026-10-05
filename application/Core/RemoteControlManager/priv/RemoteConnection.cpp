@@ -24,6 +24,7 @@ using namespace RCM;
 
 #include <QCoreApplication>
 #include <QDateTime>
+#include <QFutureWatcher>
 #include <QNetworkInterface>
 #include <QRandomGenerator64>
 #include <QFileInfo>
@@ -71,6 +72,12 @@ namespace
          destination->mutable_shared_entry()->CopyFrom(source.shared_entry());
       destination->GetReflection()->MutableUnknownFields(destination)->MergeFrom(
          source.GetReflection()->GetUnknownFields(source));
+   }
+
+   template <typename T>
+   QList<quint64> toList(const google::protobuf::RepeatedField<T>& values)
+   {
+      return QList<quint64>(values.begin(), values.end());
    }
 }
 
@@ -134,10 +141,13 @@ RemoteConnection::RemoteConnection(
 
 RemoteConnection::~RemoteConnection()
 {
-   for (auto* browse : this->localBrowses)
-      delete browse; // The watcher's destroyed callback cancels and dequeues its job.
    L_DEBU(QString("RemoteConnection[%1] deleted").arg(this->num));
    emit deleted(this);
+}
+
+Common::SaltedPassword RemoteConnection::remotePassword()
+{
+   return Common::SaltedPassword::fromStr(SETTINGS.get<QString>("remote_password"));
 }
 
 void RemoteConnection::startListening()
@@ -220,7 +230,7 @@ void RemoteConnection::refresh()
 
    Protos::GUI::State state;
 
-   state.set_password_defined(!Common::SaltedPassword::fromStr(SETTINGS.get<QString>("remote_password")).isNull());
+   state.set_password_defined(!remotePassword().isNull());
 
    // Ourself
    PM::IPeer* selfPeer = this->peerManager->getSelf();
@@ -414,7 +424,7 @@ void RemoteConnection::sendLogMessages()
 
 void RemoteConnection::askForAuthentication()
 {
-   const auto password = Common::SaltedPassword::fromStr(SETTINGS.get<QString>("remote_password"));
+   const auto password = remotePassword();
 
    Protos::GUI::AskForAuthentication askForAuthenticationMessage;
    askForAuthenticationMessage.set_protocol_version(RCA::PROTOCOL_VERSION);
@@ -521,16 +531,11 @@ bool RemoteConnection::acceptsHeader(const Common::MessageHeader& header)
       (header.getType() == Common::MessageHeader::GUI_AUTHENTICATION && header.getSize() <= Common::Constants::MAX_GUI_HANDSHAKE_MESSAGE_SIZE);
 }
 
+/**
+  * Without access, only an authentication message gets here, see 'acceptsHeader(..)'.
+  */
 void RemoteConnection::onNewMessage(const Common::Message& message)
 {
-   // The answer to a refused authentication is delayed, until it is sent the connection must stay mute.
-   // Otherwise a client may pipeline as many password attempts as it wants during this delay.
-   if (this->authenticationState == AuthenticationState::Refused)
-      return;
-
-   if (!this->isAuthorized() && message.getHeader().getType() != Common::MessageHeader::GUI_AUTHENTICATION)
-      return;
-
    switch (message.getHeader().getType())
    {
    case Common::MessageHeader::GUI_STATE_RESULT:
@@ -542,6 +547,8 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
       {
          // Authentication is a one-time handshake. Ignore retries after success,
          // including invalid ones, without resending state/history or closing the client.
+         // Ignore them after a refusal too: its answer is delayed and the connection must stay mute until
+         // it is sent, otherwise a client may pipeline as many password attempts as it wants during this delay.
          if (this->authenticationState != AuthenticationState::AwaitingResponse)
             break;
 
@@ -560,7 +567,7 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
                break;
             }
 
-            const auto password = Common::SaltedPassword::fromStr(SETTINGS.get<QString>("remote_password"));
+            const auto password = remotePassword();
             if (password.isNull())
             {
                this->refuseAuthentication(Protos::GUI::AuthenticationResult::AUTH_PASSWORD_NOT_DEFINED);
@@ -730,54 +737,47 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
       {
          const Protos::GUI::Browse& browseMessage = message.getMessage<Protos::GUI::Browse>();
 
-         Common::Hash peerID(browseMessage.peer_id().hash());
+         const Common::Hash peerID(browseMessage.peer_id().hash());
          PM::IPeer* peer = this->peerManager->getPeer(peerID);
 
-         if (peer && peer != this->peerManager->getSelf())
+         // The result sent right now: our own entries, or nothing if the peer can't be asked.
+         Protos::GUI::BrowseResult result;
+
+         // The limit is checked before getEntries(): creating a request may already allocate a peer socket.
+         if (peer && peer != this->peerManager->getSelf() && this->getEntriesResults.size() < MAX_NB_PEER_BROWSES)
          {
             Protos::Core::GetEntries getEntries;
             getEntries.mutable_dirs()->CopyFrom(browseMessage.dirs());
             getEntries.set_get_roots(browseMessage.get_roots());
             getEntries.set_nb_max_hashes_per_entry(Common::Constants::MAX_NB_HASHES_PER_ENTRY_GUI_BROWSE);
-            // Check before getEntries(): creating a request may already allocate a peer socket.
-            QSharedPointer<PM::IGetEntriesResult> entries;
-            if (this->getEntriesResults.size() < MAX_NB_PEER_BROWSES)
-               entries = peer->getEntries(getEntries);
-            if (entries.isNull())
+
+            const QSharedPointer<PM::IGetEntriesResult> entries = peer->getEntries(getEntries);
+            if (!entries.isNull())
             {
-               Protos::GUI::BrowseResult result;
-               result.set_tag(browseMessage.tag());
-               this->send(Common::MessageHeader::GUI_BROWSE_RESULT, result);
+               const PM::IGetEntriesResult* entriesPtr = entries.data();
+               connect(entries.data(), &PM::IGetEntriesResult::result, this,
+                  [this, entriesPtr, tag = browseMessage.tag()](const Protos::Core::GetEntriesResult& peerResult) {
+                     this->getEntriesResult(entriesPtr, tag, peerResult);
+                  });
+               connect(entries.data(), &PM::IGetEntriesResult::timeout, this, [this, entriesPtr] { this->removeGetEntriesResult(entriesPtr); });
+               this->getEntriesResults << entries;
+               entries->start(); // Completion may be synchronous; ownership must already be registered.
                break;
             }
-
-            const PM::IGetEntriesResult* entriesPtr = entries.data();
-            connect(entries.data(), &PM::IGetEntriesResult::result, this,
-               [this, entriesPtr, tag = browseMessage.tag()](const Protos::Core::GetEntriesResult& result) {
-                  this->getEntriesResult(entriesPtr, tag, result);
-               });
-            connect(entries.data(), &PM::IGetEntriesResult::timeout, this, [this, entriesPtr] { this->removeGetEntriesResult(entriesPtr); });
-            this->getEntriesResults << entries;
-            entries->start(); // Completion may be synchronous; ownership must already be registered.
          }
-         else
+         // If we want to browse our files.
+         else if (peerID == this->peerManager->getSelf()->getID())
          {
-            Protos::GUI::BrowseResult result;
+            for (int i = 0; i < browseMessage.dirs().entries_size(); i++)
+               result.add_entries()->CopyFrom(this->fileManager->getEntries(browseMessage.dirs().entries(i)));
 
-            // If we want to browse our files.
-            if (peerID == this->peerManager->getSelf()->getID())
-            {
-               for (int i = 0; i < browseMessage.dirs().entries_size(); i++)
-                  result.add_entries()->CopyFrom(this->fileManager->getEntries(browseMessage.dirs().entries(i)));
-
-               // Add the root directories if asked. Populate shared dirs with their base path.
-               if (browseMessage.dirs().entries_size() == 0 || browseMessage.get_roots())
-                  result.add_entries()->CopyFrom(this->fileManager->getEntries());
-            }
-
-            result.set_tag(browseMessage.tag());
-            this->send(Common::MessageHeader::GUI_BROWSE_RESULT, result);
+            // Add the root directories if asked. Populate shared dirs with their base path.
+            if (browseMessage.dirs().entries_size() == 0 || browseMessage.get_roots())
+               result.add_entries()->CopyFrom(this->fileManager->getEntries());
          }
+
+         result.set_tag(browseMessage.tag());
+         this->send(Common::MessageHeader::GUI_BROWSE_RESULT, result);
       }
       break;
 
@@ -786,15 +786,16 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
          // Bound queued work as well as the number of worker threads. There is no browse-error
          // response in this protocol, so an overloaded connection is closed rather than returning
          // a misleading empty or partial directory listing.
-         if (this->localBrowses.size() >= 8)
+         if (this->nbLocalBrowses >= MAX_NB_LOCAL_BROWSES)
          {
             this->close();
             break;
          }
+         // A child of the connection: a watcher deleted with it cancels and dequeues its job, see below.
          auto* watcher = new QFutureWatcher<Protos::GUI::LocalBrowseResult>(this);
-         this->localBrowses << watcher;
+         ++this->nbLocalBrowses;
          connect(watcher, &QFutureWatcher<Protos::GUI::LocalBrowseResult>::finished, this, [this, watcher] {
-            this->localBrowses.removeOne(watcher);
+            --this->nbLocalBrowses;
             watcher->deleteLater();
             if (!this->isListening())
                return;
@@ -841,11 +842,7 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
          if (cancelDownloadsMessage.complete())
             this->downloadManager->removeAllCompleteDownloads();
 
-         QList<quint64> IDs;
-         for (int i = 0; i < cancelDownloadsMessage.ids_size(); i++)
-            IDs << cancelDownloadsMessage.ids(i);
-
-         this->downloadManager->removeDownloads(IDs);
+         this->downloadManager->removeDownloads(toList(cancelDownloadsMessage.ids()));
 
          this->refresh();
       }
@@ -855,11 +852,7 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
       {
          const Protos::GUI::PauseDownloads& pauseDownloadsMessage = message.getMessage<Protos::GUI::PauseDownloads>();
 
-         QList<quint64> IDs;
-         for (int i = 0; i < pauseDownloadsMessage.ids_size(); i++)
-            IDs << pauseDownloadsMessage.ids(i);
-
-         this->downloadManager->pauseDownloads(IDs, pauseDownloadsMessage.pause());
+         this->downloadManager->pauseDownloads(toList(pauseDownloadsMessage.ids()), pauseDownloadsMessage.pause());
 
          this->refresh();
       }
@@ -869,15 +862,11 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
       {
          const Protos::GUI::MoveDownloads& moveDownloadsMessage = message.getMessage<Protos::GUI::MoveDownloads>();
 
-         QList<quint64> downloadIDRefs;
-         for (int i = 0; i < moveDownloadsMessage.ids_ref_size(); i++)
-            downloadIDRefs << moveDownloadsMessage.ids_ref(i);
-
-         QList<quint64> downloadIDs;
-         for (int i = 0; i < moveDownloadsMessage.ids_to_move_size(); i++)
-            downloadIDs << moveDownloadsMessage.ids_to_move(i);
-
-         this->downloadManager->moveDownloads(downloadIDRefs, downloadIDs, moveDownloadsMessage.position());
+         this->downloadManager->moveDownloads(
+            toList(moveDownloadsMessage.ids_ref()),
+            toList(moveDownloadsMessage.ids_to_move()),
+            moveDownloadsMessage.position()
+         );
 
          this->refresh();
       }

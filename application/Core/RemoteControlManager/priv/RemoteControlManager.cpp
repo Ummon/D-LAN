@@ -96,7 +96,7 @@ void RemoteControlManager::newConnection()
    const bool local = Common::Global::isLocal(socket->peerAddress());
    // Remote access requires TLS and a password. Without them a remote client could never authenticate:
    // it is refused before costing a TLS handshake or taking a connection slot.
-   if (!local && (this->tlsConfiguration.isNull() || Common::SaltedPassword::fromStr(SETTINGS.get<QString>("remote_password")).isNull()))
+   if (!local && (this->tlsConfiguration.isNull() || RemoteConnection::remotePassword().isNull()))
    {
       socket->abort();
       socket->deleteLater();
@@ -136,7 +136,8 @@ void RemoteControlManager::newConnection()
       local
    );
 
-   connect(remoteConnection, &RemoteConnection::deleted, this, &RemoteControlManager::connectionDeleted, Qt::DirectConnection);
+   connect(remoteConnection, &RemoteConnection::deleted, this,
+      [this](RemoteConnection* connection) { this->connections.removeOne(connection); }, Qt::DirectConnection);
    connect(remoteConnection, &RemoteConnection::languageDefined, this, &RemoteControlManager::languageDefined);
    this->connections << remoteConnection;
    if (local)
@@ -161,9 +162,4 @@ void RemoteControlManager::newConnection()
       timeout->start(TLS_HANDSHAKE_TIMEOUT);
       socket->startServerEncryption();
    }
-}
-
-void RemoteControlManager::connectionDeleted(RemoteConnection* connection)
-{
-   this->connections.removeOne(connection);
 }
