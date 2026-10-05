@@ -89,6 +89,8 @@ private:
    quint64 getNbDeletedFiles();
    void setNbDeletedFiles(quint64 n);
 
+   void setMissingSince(qint64 id, QDateTime dateTime);
+
    void open();
    static bool isBroken(const QSqlError& error);
 
@@ -109,12 +111,14 @@ private:
    QSqlQuery querySetHashes;
    QSqlQuery queryRemoveHashes;
    QSqlQuery queryFilesToCheck;
+   QSqlQuery querySetMissingSince;
    QSqlQuery queryGetSettings;
    QSqlQuery querySetSettings;
 
    static const QStringList VERSION_1;
    static const QStringList VERSION_2;
    static const QStringList VERSION_3;
+   static const QStringList VERSION_4;
 };
 
 LOG_INIT_CPP(HashCache::Database)
@@ -256,6 +260,7 @@ HashCache::Database::Database(const QString& databaseFolder) :
    querySetHashes(this->db),
    queryRemoveHashes(this->db),
    queryFilesToCheck(this->db),
+   querySetMissingSince(this->db),
    queryGetSettings(this->db),
    querySetSettings(this->db)
 {
@@ -317,18 +322,19 @@ void HashCache::Database::open()
 
    prepare(
       this->queryGetHashesWithDate,
-      "SELECT [hashes] FROM [File] WHERE [path] = $1 AND [size] = $2 AND [date_last_modified] = $3"
+      "SELECT [hashes], [missing_since], [id] FROM [File] WHERE [path] = $1 AND [size] = $2 AND [date_last_modified] = $3"
    );
 
-   prepare(this->queryGetHashes, "SELECT [hashes] FROM [File] WHERE [path] = $1 AND [size] = $2");
+   prepare(this->queryGetHashes, "SELECT [hashes], [missing_since], [id] FROM [File] WHERE [path] = $1 AND [size] = $2");
 
+   // Hashes are set for a file which is there: it's no longer missing.
    prepare(
       this->querySetHashes,
       R"(
 INSERT INTO [File] ([path], [size], [date_last_modified], [hashes])
 VALUES ($1, $2, $3, $4)
 ON CONFLICT([path]) DO
-UPDATE SET [size] = excluded.[size], [date_last_modified] = excluded.[date_last_modified], [hashes] = excluded.[hashes]
+UPDATE SET [size] = excluded.[size], [date_last_modified] = excluded.[date_last_modified], [hashes] = excluded.[hashes], [missing_since] = NULL
       )"
    );
 
@@ -336,8 +342,10 @@ UPDATE SET [size] = excluded.[size], [date_last_modified] = excluded.[date_last_
 
    prepare(
       this->queryFilesToCheck,
-      "SELECT [id], [path] FROM [File] WHERE [id] > ? AND [id] <= ? ORDER BY [id] LIMIT 128"
+      "SELECT [id], [path], [missing_since] FROM [File] WHERE [id] > ? AND [id] <= ? ORDER BY [id] LIMIT 128"
    );
+
+   prepare(this->querySetMissingSince, "UPDATE [File] SET [missing_since] = $1 WHERE [id] = $2");
 
    prepare(
       this->queryGetSettings,
@@ -394,9 +402,23 @@ QList<Common::Hash> HashCache::Database::getHashes(const QString& filePath, qint
 
    // The size matched the query; reject a stored blob that doesn't have one hash per chunk.
    const QByteArray hashes = query.value(0).toByteArray();
+   const bool missing = !query.value(1).isNull();
+   const qint64 id = query.value(2).toLongLong();
+   query.finish();
    const int nbHashes = Common::Global::nbChunks(size);
    if (hashes.size() != qsizetype(nbHashes) * Common::Hash::HASH_SIZE)
       return {};
+
+   // Hashes are asked for a file which is there: it's no longer missing, whatever the last check has found.
+   if (missing)
+      try
+      {
+         this->setMissingSince(id, QDateTime());
+      }
+      catch (DatabaseException& e)
+      {
+         L_ERRO(QString("[getHashes] SQL Error: %1").arg(e.error.text()));
+      }
 
    QList<Common::Hash> result(nbHashes, Qt::Uninitialized);
    for (int i = 0; i < nbHashes; ++i)
@@ -510,6 +532,7 @@ int HashCache::Database::checkFilesExist()
    const qint64 periodMs = qint64(SETTINGS.get<quint32>("hashcache_period_verify_files_exist")) * 1000;
    const quint32 minFiles = SETTINGS.get<quint32>("hashcache_nb_of_files_before_check");
    const quint32 minDeleted = SETTINGS.get<quint32>("hashcache_nb_of_files_deleted_before_vacuum");
+   const qint64 removalDelayMs = qint64(SETTINGS.get<quint32>("hashcache_delay_before_removing_missing_files")) * 1000;
    // Recheck long periods in daily steps to stay within QTimer's int range.
    const auto timerDelay = [](qint64 ms) { return int(std::clamp(ms, qint64(1), qint64(86400000))); };
    const QDateTime now = QDateTime::currentDateTimeUtc();
@@ -532,11 +555,16 @@ int HashCache::Database::checkFilesExist()
          this->fileCheck = FileCheck { now, 0, maxId };
       }
 
+      // A missing file may be on a volume which is just unplugged or unreachable: it's removed
+      // only if it's still missing after a delay. The date it has been found missing is kept meanwhile.
       QList<qint64> idsToDelete;
+      QList<qint64> idsNewlyMissing;
+      QList<qint64> idsBack;
       qint64 nextId = this->fileCheck->lastId;
       bool finished = nextId >= this->fileCheck->maxId;
       if (!finished)
       {
+         const qint64 checkStartMs = this->fileCheck->started.toMSecsSinceEpoch();
          QElapsedTimer budget;
          budget.start();
          QSqlQuery& files = this->queryFilesToCheck;
@@ -555,8 +583,22 @@ int HashCache::Database::checkFilesExist()
                break;
             }
             nextId = files.value(0).toLongLong();
-            if (!QFile::exists(files.value(1).toString()))
-               idsToDelete << nextId;
+            const QVariant missingSince = files.value(2);
+            if (QFile::exists(files.value(1).toString()))
+            {
+               if (!missingSince.isNull())
+                  idsBack << nextId;
+            }
+            else
+            {
+               // Without a date, or with one in the future (the clock has been set back), the delay starts now.
+               const bool dated = !missingSince.isNull() && missingSince.toLongLong() <= checkStartMs;
+               const qint64 missingForMs = dated ? checkStartMs - missingSince.toLongLong() : 0;
+               if (missingForMs >= removalDelayMs)
+                  idsToDelete << nextId;
+               else if (!dated)
+                  idsNewlyMissing << nextId;
+            }
             finished = nextId >= this->fileCheck->maxId;
             // A single filesystem call cannot be interrupted. Yield after it if slow.
             if (finished || budget.elapsed() >= 10)
@@ -566,11 +608,15 @@ int HashCache::Database::checkFilesExist()
 
       quint64 filesDeletedTotal = 0;
       // Most batches find only existing files and need no write transaction.
-      if (finished || !idsToDelete.isEmpty())
+      if (finished || !idsToDelete.isEmpty() || !idsNewlyMissing.isEmpty() || !idsBack.isEmpty())
       {
          if (!this->db.transaction())
             throw DatabaseException(this->db.lastError());
          auto rollback = qScopeGuard([this] { this->db.rollback(); });
+         for (qint64 id : idsNewlyMissing)
+            this->setMissingSince(id, this->fileCheck->started);
+         for (qint64 id : idsBack)
+            this->setMissingSince(id, QDateTime());
          filesDeletedTotal = this->getNbDeletedFiles();
          if (!idsToDelete.isEmpty())
          {
@@ -691,6 +737,20 @@ void HashCache::Database::setNbDeletedFiles(quint64 n)
 }
 
 /**
+  * @param dateTime When the file has been found missing, null if it isn't missing.
+  * @exception DatabaseException
+  */
+void HashCache::Database::setMissingSince(qint64 id, QDateTime dateTime)
+{
+   QSqlQuery& query = this->querySetMissingSince;
+   const auto finish = qScopeGuard([&query] { query.finish(); });
+   query.bindValue(0, dateTime.isNull() ? QVariant() : dateTime.toMSecsSinceEpoch());
+   query.bindValue(1, id);
+   if (!query.exec())
+      throw DatabaseException(query.lastError());
+}
+
+/**
   * @exception DatabaseException
   */
 void HashCache::Database::updateDatabaseScheme()
@@ -775,6 +835,10 @@ bool HashCache::Database::updateToNextVersion(int currentVersion)
       statements = &HashCache::Database::VERSION_3;
       break;
 
+   case 3: // Version 3 to 4: a missing file isn't removed at once.
+      statements = &HashCache::Database::VERSION_4;
+      break;
+
    default:
       return false;
    }
@@ -829,4 +893,10 @@ const QStringList HashCache::Database::VERSION_3 =
    "INSERT INTO [Settings_new] SELECT [key], [value] FROM [Settings]",
    "DROP TABLE [Settings]",
    "ALTER TABLE [Settings_new] RENAME TO [Settings]"
+};
+
+const QStringList HashCache::Database::VERSION_4 =
+{
+   // [ms] Since epoch, when the periodic check has first found the file missing. NULL if it isn't missing.
+   "ALTER TABLE [File] ADD COLUMN [missing_since] INTEGER"
 };

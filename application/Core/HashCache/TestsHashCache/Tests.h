@@ -24,6 +24,7 @@
 using namespace HC;
 
 namespace HC { class HashCache; }
+class QSqlDatabase;
 
 class Tests : public QObject
 {
@@ -58,7 +59,11 @@ private slots:
    void brokenDatabaseIsRecreated_data();
    void brokenDatabaseIsRecreated();
    void unopenableDatabaseIsKept();
+   void missingFileIsRemovedAfterDelay();
+   void fileBackIsNoLongerMissing_data();
+   void fileBackIsNoLongerMissing();
 
 private:
    int runMaintenanceBatch(HC::HashCache& cache);
+   void runMaintenance(HC::HashCache& cache, const QSqlDatabase& inspector);
 };

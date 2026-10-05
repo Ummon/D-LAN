@@ -74,6 +74,32 @@ namespace
       QSqlQuery query(db);
       return query.exec("SELECT [value] FROM [Settings] WHERE [key] = 'last_check_time'") && query.first();
    }
+
+   bool hasRow(const QSqlDatabase& db, const QString& path)
+   {
+      QSqlQuery query(db);
+      query.prepare("SELECT 1 FROM [File] WHERE [path] = ?");
+      query.bindValue(0, path);
+      return query.exec() && query.first();
+   }
+
+   // When the file has been found missing [ms], 0 if it isn't missing.
+   qint64 missingSince(const QSqlDatabase& db, const QString& path)
+   {
+      QSqlQuery query(db);
+      query.prepare("SELECT [missing_since] FROM [File] WHERE [path] = ?");
+      query.bindValue(0, path);
+      return query.exec() && query.first() ? query.value(0).toLongLong() : 0;
+   }
+
+   void setMissingSince(const QSqlDatabase& db, const QString& path, qint64 ms)
+   {
+      QSqlQuery query(db);
+      query.prepare("UPDATE [File] SET [missing_since] = ? WHERE [path] = ?");
+      query.bindValue(0, ms);
+      query.bindValue(1, path);
+      QVERIFY(query.exec());
+   }
 }
 
 Tests::Tests()
@@ -90,6 +116,20 @@ int Tests::runMaintenanceBatch(HC::HashCache& cache)
    return delay;
 }
 
+/**
+  * Runs a whole check of the files, even if one has just been done.
+  */
+void Tests::runMaintenance(HC::HashCache& cache, const QSqlDatabase& inspector)
+{
+   QSqlQuery query(inspector);
+   QVERIFY(query.exec("DELETE FROM [Settings] WHERE [key] = 'last_check_time'"));
+   query.finish();
+   int delay = 1;
+   for (int batch = 0; delay == 1 && batch < 100; ++batch)
+      delay = this->runMaintenanceBatch(cache);
+   QVERIFY(delay > 1);
+}
+
 void Tests::init()
 {
    auto settings = new Protos::Core::Settings;
@@ -98,6 +138,8 @@ void Tests::init()
    settings->set_hashcache_period_verify_files_exist(365 * 86400);
    settings->set_hashcache_nb_of_files_before_check(100000);
    settings->set_hashcache_nb_of_files_deleted_before_vacuum(10000);
+   // Most of the tests expect a missing file to be removed by the first check.
+   settings->set_hashcache_delay_before_removing_missing_files(0);
    SETTINGS.setSettingsMessage(settings);
 }
 
@@ -414,11 +456,13 @@ void Tests::cleanupMissingFiles()
    }
    TestDatabase inspector(folder.path());
    QSqlQuery query(inspector.db);
-   // Simulate a database produced by the uncommitted version-2 schema.
+   // Simulate a database produced by the uncommitted version-2 schema: the
+   // hashes must survive the updates to the versions 3 and 4.
    QVERIFY(query.exec("DROP TABLE [Settings]"));
    QVERIFY(query.exec("CREATE TABLE [Settings] ([key] TEXT PRIMARY KEY NOT NULL, [value] BLOB) STRICT"));
    QVERIFY(query.exec("INSERT INTO [Settings] VALUES ('preserved', X'0102')"));
-   QVERIFY(query.exec("DELETE FROM [Version] WHERE [version] = 3"));
+   QVERIFY(query.exec("ALTER TABLE [File] DROP COLUMN [missing_since]"));
+   QVERIFY(query.exec("DELETE FROM [Version] WHERE [version] >= 3"));
    query.finish();
    SETTINGS.set("hashcache_nb_of_files_before_check", minFiles);
    SETTINGS.set("hashcache_nb_of_files_deleted_before_vacuum", minDeleted);
@@ -790,11 +834,13 @@ void Tests::defaultsSurviveOlderSettings()
    settings.set_hashcache_period_verify_files_exist(86400);
    settings.set_hashcache_nb_of_files_before_check(100000);
    settings.set_hashcache_nb_of_files_deleted_before_vacuum(10000);
+   settings.set_hashcache_delay_before_removing_missing_files(864000);
    // The same JSON loader is used by PersistentData for existing installations.
    QVERIFY(google::protobuf::util::JsonStringToMessage("{}", &settings).ok());
    QCOMPARE(settings.hashcache_period_verify_files_exist(), quint32(86400));
    QCOMPARE(settings.hashcache_nb_of_files_before_check(), quint32(100000));
    QCOMPARE(settings.hashcache_nb_of_files_deleted_before_vacuum(), quint32(10000));
+   QCOMPARE(settings.hashcache_delay_before_removing_missing_files(), quint32(864000));
 }
 
 void Tests::firstCheckIsDelayed()
@@ -891,4 +937,113 @@ void Tests::unopenableDatabaseIsKept()
       QVERIFY(cache->getHashes("file", 1).isEmpty());
    }
    QVERIFY(companion.exists());
+}
+
+void Tests::missingFileIsRemovedAfterDelay()
+{
+   QTest::failOnWarning();
+   QTemporaryDir folder;
+   QVERIFY(folder.isValid());
+   constexpr qint64 DAY = 86400000; // [ms].
+   SETTINGS.set("hashcache_nb_of_files_before_check", quint32(0));
+   SETTINGS.set("hashcache_delay_before_removing_missing_files", quint32(10 * 86400));
+   HC::HashCache cache(folder.path(), 60000);
+   const QString missing = folder.filePath("missing");
+   const QString present = folder.filePath("present");
+   QFile file(present);
+   QVERIFY(file.open(QIODevice::WriteOnly));
+   file.close();
+   const QList<Common::Hash> hashes { Common::Hash::rand() };
+   cache.setHashes(missing, hashes, 1);
+   cache.setHashes(present, hashes, 1);
+   QVERIFY(cache.getHashes("barrier", 1).isEmpty());
+   TestDatabase inspector(folder.path());
+
+   // Found missing for the first time: the file is only dated, its volume may just be unplugged.
+   const qint64 firstCheck = QDateTime::currentMSecsSinceEpoch();
+   this->runMaintenance(cache, inspector.db);
+   qint64 since = missingSince(inspector.db, missing);
+   QVERIFY(since >= firstCheck);
+   QVERIFY(hasRow(inspector.db, present));
+   QCOMPARE(missingSince(inspector.db, present), qint64(0));
+
+   // Neither another check nor a lookup which doesn't match changes the date.
+   QVERIFY(cache.getHashes(missing, 2).isEmpty());
+   this->runMaintenance(cache, inspector.db);
+   QCOMPARE(missingSince(inspector.db, missing), since);
+
+   // A date in the future, the clock has been set back: the delay starts again.
+   setMissingSince(inspector.db, missing, since + 2 * DAY);
+   const qint64 checkAfterClockChange = QDateTime::currentMSecsSinceEpoch();
+   this->runMaintenance(cache, inspector.db);
+   since = missingSince(inspector.db, missing);
+   QVERIFY(since >= checkAfterClockChange && since < checkAfterClockChange + DAY);
+
+   // Still kept the day before the end of the delay, removed once it's over.
+   setMissingSince(inspector.db, missing, since - 9 * DAY);
+   this->runMaintenance(cache, inspector.db);
+   QVERIFY(hasRow(inspector.db, missing));
+   setMissingSince(inspector.db, missing, since - 10 * DAY);
+   this->runMaintenance(cache, inspector.db);
+   QVERIFY(!hasRow(inspector.db, missing));
+   QVERIFY(hasRow(inspector.db, present));
+   QSqlQuery query(inspector.db);
+   QVERIFY(query.exec("SELECT [value] FROM [Settings] WHERE [key] = 'nb_deleted_files'"));
+   QVERIFY(query.first());
+   QCOMPARE(query.value(0).toInt(), 1);
+}
+
+void Tests::fileBackIsNoLongerMissing_data()
+{
+   // What tells the cache that the file is there again.
+   QTest::addColumn<QString>("witness");
+   QTest::newRow("found-by-the-check") << "check";
+   QTest::newRow("hashes-asked") << "lookup";
+   QTest::newRow("hashes-set") << "set";
+}
+
+void Tests::fileBackIsNoLongerMissing()
+{
+   QFETCH(QString, witness);
+   QTest::failOnWarning();
+   QTemporaryDir folder;
+   QVERIFY(folder.isValid());
+   SETTINGS.set("hashcache_nb_of_files_before_check", quint32(0));
+   SETTINGS.set("hashcache_delay_before_removing_missing_files", quint32(10 * 86400));
+   HC::HashCache cache(folder.path(), 60000);
+   const QString path = folder.filePath("file");
+   const QList<Common::Hash> hashes { Common::Hash::rand() };
+   cache.setHashes(path, hashes, 1);
+   QVERIFY(cache.getHashes("barrier", 1).isEmpty());
+   TestDatabase inspector(folder.path());
+   this->runMaintenance(cache, inspector.db);
+   const qint64 since = missingSince(inspector.db, path);
+   QVERIFY(since > 0);
+
+   // The file has been missing for the whole delay: the next check would remove it.
+   setMissingSince(inspector.db, path, since - 10 * qint64(86400000));
+
+   if (witness == "check")
+   {
+      QFile file(path);
+      QVERIFY(file.open(QIODevice::WriteOnly));
+   }
+   else
+   {
+      if (witness == "lookup")
+         QCOMPARE(cache.getHashes(path, 1), hashes);
+      else
+         cache.setHashes(path, hashes, 1);
+      QVERIFY(cache.getHashes("barrier", 1).isEmpty());
+      QCOMPARE(missingSince(inspector.db, path), qint64(0));
+   }
+
+   // The file is kept. If it's still missing on disk the delay has started again.
+   const qint64 secondCheck = QDateTime::currentMSecsSinceEpoch();
+   this->runMaintenance(cache, inspector.db);
+   QVERIFY(hasRow(inspector.db, path));
+   if (witness == "check")
+      QCOMPARE(missingSince(inspector.db, path), qint64(0));
+   else
+      QVERIFY(missingSince(inspector.db, path) >= secondCheck);
 }

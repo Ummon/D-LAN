@@ -44,6 +44,7 @@ namespace HC
         * Retrieve hashes matching the file path and current size in bytes.
         * If supplied, the modification time must also match.
         * An unknown path or mismatching metadata returns an empty list.
+        * To be called for a file which is there: a match cancels its pending removal as a missing file.
         */
       virtual QList<Common::Hash> getHashes(
          const QString& filePath,

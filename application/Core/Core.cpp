@@ -252,6 +252,7 @@ Protos::Core::Settings* Core::createDefaultValuesSettings()
    settings->set_hashcache_period_verify_files_exist(86400);
    settings->set_hashcache_nb_of_files_before_check(200000);
    settings->set_hashcache_nb_of_files_deleted_before_vacuum(10000);
+   settings->set_hashcache_delay_before_removing_missing_files(10 * 24 * 60 * 60);
 
    return settings;
 }
@@ -349,4 +350,5 @@ void Core::checkSettingsIntegrity()
    this->checkSetting("hashcache_period_verify_files_exist", 60u, 365u * 24u * 60u * 60u);
    this->checkSetting("hashcache_nb_of_files_before_check", 0u, 2000000u);
    this->checkSetting("hashcache_nb_of_files_deleted_before_vacuum", 0u, 1000000u);
+   this->checkSetting("hashcache_delay_before_removing_missing_files", 0u, 365u * 24u * 60u * 60u);
 }
