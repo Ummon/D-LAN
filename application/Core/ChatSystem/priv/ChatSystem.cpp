@@ -418,9 +418,10 @@ void ChatSystem::retrieveLastChatMessagesFromPeers(const QList<PM::IPeer*>& peer
 
    static const quint32 N = SETTINGS.get<quint32>("number_of_chat_messages_to_retrieve");
 
+   // The messages we have rejected are given as known too: we don't want them to be sent again.
    QList<quint64> messageIDs;
-   if (const ChatMessages* history = this->joinedMessages(roomName))
-      messageIDs = history->getLastMessageIDs(N);
+   if (ChatMessages* history = this->joinedMessages(roomName))
+      messageIDs = history->getLastMessageIDs(N) + history->takeRejectedMessageIDs();
 
    Protos::Core::GetLastChatMessages getLastChatMessages;
    getLastChatMessages.set_number(N);

@@ -28,6 +28,7 @@ namespace
       int limit = 256;
       QList<Protos::Common::ChatMessages> sent;
       QList<Common::Hash> historyRequestRecipients;
+      QList<Protos::Core::GetLastChatMessages> historyRequests;
       QSharedPointer<NL::ISearch> newSearch() override { return {}; }
       void rebindSockets() override {}
       int getMaxUDPMessageSize() const override { return this->limit; }
@@ -39,7 +40,10 @@ namespace
          if (type == Common::MessageHeader::CORE_CHAT_MESSAGES)
             this->sent << static_cast<const Protos::Common::ChatMessages&>(data);
          else if (type == Common::MessageHeader::CORE_GET_LAST_CHAT_MESSAGES)
+         {
             this->historyRequestRecipients << peerID;
+            this->historyRequests << static_cast<const Protos::Core::GetLastChatMessages&>(data);
+         }
          return SendStatus::OK;
       }
       void requestHistory(const QString& room = QString())
@@ -454,6 +458,66 @@ private slots:
       chat.getLastChatMessages(saved);
       QCOMPARE(saved.messages_size(), 1);
       QCOMPARE(saved.messages(0).id(), quint64(501));
+   }
+
+   /**
+     * A rejected message is given as known in the next requests, otherwise the peers would send it again each time.
+     */
+   void rejectedMessagesAreNotAskedAgain()
+   {
+      const auto peers = PM::Builder::newPeerManager({});
+      peers->updatePeer(Common::Hash::rand(), QHostAddress::LocalHost, 1, "peer", 0, QString(), 0, 0, Common::Constants::PROTOCOL_VERSION);
+      const auto network = QSharedPointer<NetworkListener>::create();
+      network->limit = 16356;
+      CS::ChatSystem chat(peers, network);
+      const quint64 now = QDateTime::currentMSecsSinceEpoch();
+      auto receive = [&](int firstID, int count, quint64 time) {
+         Protos::Common::ChatMessages batch;
+         for (int i = 0; i < count; ++i)
+         {
+            auto entry = message(QString(), firstID + i);
+            entry.mutable_messages(0)->set_time(time + i);
+            batch.MergeFrom(entry);
+         }
+         network->receiveChatMessages(batch);
+      };
+      // Send a request, as it's done periodically, and tell how many of the given messages are given as known.
+      auto numberGivenAsKnown = [&](const QList<quint64>& IDs) {
+         QMetaObject::invokeMethod(&chat, "retrieveLastChatMessages");
+         const auto& known = network->historyRequests.last().message_ids();
+         return std::count_if(IDs.begin(), IDs.end(), [&](quint64 ID) { return std::find(known.begin(), known.end(), ID) != known.end(); });
+      };
+
+      receive(1, 500, now - 100000); // The history is full.
+      receive(1001, 3, 1000); // Older than all the messages we have.
+      receive(2001, 2, now + 10 * 60 * 1000); // From a peer whose clock is too far ahead of ours.
+      receive(3001, 1, now - 1000); // Its arrival removes the oldest message.
+      Protos::Common::ChatMessages stored;
+      chat.getLastChatMessages(stored);
+      QCOMPARE(stored.messages_size(), 500);
+      QCOMPARE(stored.messages(0).id(), quint64(2));
+
+      const QList<quint64> rejected { 1001, 1002, 1003, 2001, 2002, 1 };
+      QCOMPARE(numberGivenAsKnown(rejected), rejected.size());
+
+      // Only for a while: a rejected message may be accepted later, from another peer which has stored it with another time for example.
+      for (int request = 2; request <= CS::ChatMessages::NB_REQUESTS_WITHOUT_REJECTED_MESSAGE; ++request)
+         QCOMPARE(numberGivenAsKnown(rejected), rejected.size());
+      QCOMPARE(numberGivenAsKnown(rejected), 0);
+
+      // Only the last rejected messages are remembered.
+      CS::ChatMessages history;
+      Protos::Common::ChatMessages tooMany;
+      for (int i = 0; i < CS::ChatMessages::MAX_NUMBER_OF_REJECTED_MESSAGES + 10; ++i)
+      {
+         auto entry = message(QString(), i + 1);
+         entry.mutable_messages(0)->set_time(now + 10 * 60 * 1000);
+         tooMany.MergeFrom(entry);
+      }
+      QVERIFY(history.add(tooMany).isEmpty());
+      const auto remembered = history.takeRejectedMessageIDs();
+      QCOMPARE(remembered.size(), CS::ChatMessages::MAX_NUMBER_OF_REJECTED_MESSAGES);
+      QCOMPARE(remembered.first(), quint64(11));
    }
 
    void cleanSavedFutureTimestamps()

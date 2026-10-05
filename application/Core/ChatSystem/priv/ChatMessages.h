@@ -38,12 +38,16 @@ namespace CS
    class ChatMessages
    {
    public:
+      static constexpr int NB_REQUESTS_WITHOUT_REJECTED_MESSAGE = 30; // About one minute with the default period between two requests.
+      static constexpr int MAX_NUMBER_OF_REJECTED_MESSAGES = 500;
+
       const static Common::Global::DataFolderType FOLDER_TYPE_MESSAGES_SAVED = Common::Global::DataFolderType::LOCAL;
 
       bool add(const QSharedPointer<ChatMessage>& message);
       QList<QSharedPointer<ChatMessage>> add(const Protos::Common::ChatMessages& chatMessages);
 
       QList<quint64> getLastMessageIDs(int nMax) const;
+      QList<quint64> takeRejectedMessageIDs();
 
       QList<QSharedPointer<ChatMessage>> getMessages() const;
       QList<QSharedPointer<ChatMessage>> getUnknownMessages(
@@ -70,9 +74,13 @@ namespace CS
       QList<QSharedPointer<ChatMessage>> add(const Protos::Common::ChatMessages& chatMessages, bool& timestampsChanged);
 
       QList<QSharedPointer<ChatMessage>> insert(const QList<QSharedPointer<ChatMessage>>& messages);
+      void reject(quint64 ID);
 
       mutable bool changed = false; // Some messages haven't been saved yet, 'saveForRoom()' clears it.
       QList<QSharedPointer<ChatMessage>> messages; // Sorted from oldest to youngest.
       QSet<quint64> messageIDs;
+
+      struct RejectedMessage { quint64 ID; int nbRequestsLeft; };
+      QList<RejectedMessage> rejectedMessages; // The oldest rejection first, see 'takeRejectedMessageIDs()'.
    };
 }

@@ -65,6 +65,7 @@ QList<QSharedPointer<ChatMessage>> ChatMessages::add(const Protos::Common::ChatM
       {
          ++rejected;
          timestampsChanged = true;
+         this->reject(message.id());
          continue;
       }
       if (message.time() == 0 || message.time() > now)
@@ -91,6 +92,28 @@ QList<quint64> ChatMessages::getLastMessageIDs(int nMax) const
    int n = 0;
    while (i.hasPrevious() && n++ < nMax)
       result << i.previous()->getID();
+
+   return result;
+}
+
+/**
+  * The IDs of the messages rejected recently: they were too old for a full list, have been removed from it by younger ones
+  * or were dated too far in the future. They are to be given as known in a request for the last messages, otherwise the
+  * peers which own them would send them again at each request only to be rejected again.
+  * A message is given for 'NB_REQUESTS_WITHOUT_REJECTED_MESSAGE' requests, then it's forgotten: it may be accepted later,
+  * for example from another peer which has stored it with another time.
+  */
+QList<quint64> ChatMessages::takeRejectedMessageIDs()
+{
+   QList<quint64> result;
+   result.reserve(this->rejectedMessages.size());
+   for (RejectedMessage& message : this->rejectedMessages)
+   {
+      result << message.ID;
+      message.nbRequestsLeft--;
+   }
+
+   this->rejectedMessages.removeIf([](const RejectedMessage& message) { return message.nbRequestsLeft <= 0; });
 
    return result;
 }
@@ -277,9 +300,12 @@ QList<QSharedPointer<ChatMessage>> ChatMessages::insert(const QList<QSharedPoint
          j--;
 
       // The list is full and the message is older than all the others: it would be removed right after.
-      // The remaining messages are even older so we can stop here.
+      // The remaining messages are even older, they are rejected the same way.
       if (this->messages.size() >= MAX_NUMBER_OF_STORED_CHAT_MESSAGES && j == 0)
-         break;
+      {
+         this->reject(mess->getID());
+         continue;
+      }
 
       insertedMessages.prepend(mess);
       this->messageIDs.insert(mess->getID());
@@ -292,7 +318,10 @@ QList<QSharedPointer<ChatMessage>> ChatMessages::insert(const QList<QSharedPoint
       const auto begin = this->messages.begin();
       const auto end = this->messages.begin() + (this->messages.size() - MAX_NUMBER_OF_STORED_CHAT_MESSAGES);
       for (auto m = begin; m != end; m++)
+      {
          removedIDs.insert((*m)->getID());
+         this->reject((*m)->getID());
+      }
       this->messages.erase(begin, end);
 
       this->messageIDs.subtract(removedIDs);
@@ -305,4 +334,17 @@ QList<QSharedPointer<ChatMessage>> ChatMessages::insert(const QList<QSharedPoint
       this->changed = !insertedMessages.isEmpty();
 
    return insertedMessages;
+}
+
+/**
+  * Remember a message we don't want, see 'takeRejectedMessageIDs()'. Only the last ones are remembered.
+  */
+void ChatMessages::reject(quint64 ID)
+{
+   if (std::any_of(this->rejectedMessages.cbegin(), this->rejectedMessages.cend(), [ID](const RejectedMessage& message) { return message.ID == ID; }))
+      return;
+
+   this->rejectedMessages << RejectedMessage { ID, NB_REQUESTS_WITHOUT_REJECTED_MESSAGE };
+   if (this->rejectedMessages.size() > MAX_NUMBER_OF_REJECTED_MESSAGES)
+      this->rejectedMessages.removeFirst();
 }
