@@ -65,7 +65,6 @@ private slots:
    void removeErroneousDownload();
    void moveDownloads_data();
    void moveDownloads();
-   void scanSurvivesNewMarkers();
    void bulkRemovalPreservesQueueState();
    void oldestChunksSkipUnavailableDownloads_data();
    void oldestChunksSkipUnavailableDownloads();
@@ -108,6 +107,8 @@ private slots:
    void emptyFileIsCompleteOnceCreated();
    void retryHashesAfterDontHave();
    void pauseManyDownloads();
+   void freedPeerAsksItsNextDirectory();
+   void erroneousDirectoryIsRestarted();
    void validateChunkResponse_data();
    void validateChunkResponse();
    void directoryBecomesEmpty_data();

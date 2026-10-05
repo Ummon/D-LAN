@@ -61,9 +61,9 @@ namespace DM
       ~FileDownload() override;
 
       void start() override;
-      void stop() override;
+      void stop();
 
-      bool pause(bool pause, bool stopTransfers = true) override;
+      bool pause(bool pause) override;
 
       void peerSourceBecomesAvailable() override;
 
@@ -109,7 +109,7 @@ namespace DM
       void addHash(const Protos::Core::HashResult& hashResult);
       void unableToRetrieveTheHashes();
       bool tryToLinkToAnExistingFile();
-      void connectChunkDownloaderSignals(const QSharedPointer<ChunkDownloader>& chunkDownload);
+      QSharedPointer<ChunkDownloader> createChunkDownloader(const Common::Hash& hash);
       bool createFile();
       bool prepareFileForResume();
       void giveChunksToDownloaders();

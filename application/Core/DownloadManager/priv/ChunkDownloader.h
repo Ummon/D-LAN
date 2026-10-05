@@ -120,6 +120,7 @@ namespace DM
       bool collectAvailablePeers(QSet<PM::IPeer*>* peers);
       PM::IPeer* getTheFastestFreePeer(bool removeDeadPeers = true);
       int getNumberOfFreePeer();
+      void pruneDeadPeers();
 
       LinkedPeers& linkedPeers;
       OccupiedPeers& occupiedPeersDownloadingChunk; // The peers from where we downloading.

@@ -477,27 +477,13 @@ bool ChunkDownloader::collectAvailablePeers(QSet<PM::IPeer*>* peers)
 {
    QMutexLocker locker(&this->mutex);
 
-   bool hasAvailablePeer = false;
-   bool isTheNumberOfPeersHasChanged = false;
-   for (QMutableListIterator<PM::IPeer*> i(this->peers); i.hasNext();)
-   {
-      PM::IPeer* peer = i.next();
-      if (peer->isAvailable())
-      {
-         hasAvailablePeer = true;
-         if (peers)
-            peers->insert(peer);
-      }
-      else
-      {
-         i.remove();
-         this->linkedPeers.rmLink(peer);
-         isTheNumberOfPeersHasChanged = true;
-      }
-   }
-   if (isTheNumberOfPeersHasChanged)
-      emit numberOfPeersChanged();
-   return hasAvailablePeer;
+   this->pruneDeadPeers();
+
+   if (peers)
+      for (PM::IPeer* peer : std::as_const(this->peers))
+         peers->insert(peer);
+
+   return !this->peers.isEmpty();
 }
 
 /**
@@ -662,26 +648,17 @@ PM::IPeer* ChunkDownloader::getTheFastestFreePeer(bool removeDeadPeers)
 {
    QMutexLocker locker(&this->mutex);
 
-   PM::IPeer* current = nullptr;
-   bool isTheNumberOfPeersHasChanged = false;
-   for (QMutableListIterator<PM::IPeer*> i(this->peers); i.hasNext();)
-   {
-      PM::IPeer* peer = i.next();
-      if (!peer->isAvailable())
-      {
-         if (removeDeadPeers)
-         {
-            i.remove();
-            this->linkedPeers.rmLink(peer);
-            isTheNumberOfPeersHasChanged = true;
-         }
-      }
-      else if (this->occupiedPeersDownloadingChunk.isPeerFree(peer) && (!current || peer->getSpeed() > current->getSpeed()))
-         current = peer;
-   }
+   if (removeDeadPeers)
+      this->pruneDeadPeers();
 
-   if (isTheNumberOfPeersHasChanged)
-      emit numberOfPeersChanged();
+   PM::IPeer* current = nullptr;
+   for (PM::IPeer* peer : std::as_const(this->peers))
+      if (
+         peer->isAvailable() &&
+         this->occupiedPeersDownloadingChunk.isPeerFree(peer) &&
+         (!current || peer->getSpeed() > current->getSpeed())
+      )
+         current = peer;
 
    return current;
 }
@@ -690,7 +667,22 @@ int ChunkDownloader::getNumberOfFreePeer()
 {
    QMutexLocker locker(&this->mutex);
 
+   this->pruneDeadPeers();
+
    int n = 0;
+   for (PM::IPeer* peer : std::as_const(this->peers))
+      if (this->occupiedPeersDownloadingChunk.isPeerFree(peer))
+         n++;
+
+   return n;
+}
+
+/**
+  * Remove the peers which are no longer available, 'numberOfPeersChanged()' is emitted if there is at least one.
+  * To be called from the main thread only, the mutex being locked.
+  */
+void ChunkDownloader::pruneDeadPeers()
+{
    bool isTheNumberOfPeersHasChanged = false;
    for (QMutableListIterator<PM::IPeer*> i(this->peers); i.hasNext();)
    {
@@ -701,12 +693,8 @@ int ChunkDownloader::getNumberOfFreePeer()
          this->linkedPeers.rmLink(peer);
          isTheNumberOfPeersHasChanged = true;
       }
-      else if (this->occupiedPeersDownloadingChunk.isPeerFree(peer))
-         n++;
    }
 
    if (isTheNumberOfPeersHasChanged)
       emit numberOfPeersChanged();
-
-   return n;
 }

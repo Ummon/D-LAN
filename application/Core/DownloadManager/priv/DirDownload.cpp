@@ -161,6 +161,8 @@ void DirDownload::result(const Protos::Core::GetEntriesResult& entries)
       {
          L_DEBU("Unable to get the entries: ENTRY_NOT_FOUND");
          this->setStatus(Protos::Common::DownloadStatus::ENTRY_NOT_FOUND);
+         // Not an erroneous status, unlike the ones below this download isn't restarted by 'DownloadManager::restartErroneousDownloads()'.
+         QTimer::singleShot(RETRY_GET_ENTRIES_PERIOD, this, &DirDownload::retryToGetEntries);
       }
       else if (entries.results(0).status() == Protos::Core::GetEntriesResult::EntryResult::TIMEOUT_SCANNING_IN_PROGRESS)
       {
@@ -175,7 +177,6 @@ void DirDownload::result(const Protos::Core::GetEntriesResult& entries)
 
       this->getEntriesResult.clear();
       this->freePeer();
-      QTimer::singleShot(RETRY_GET_ENTRIES_PERIOD, this, &DirDownload::retryToGetEntries);
    }
 }
 
@@ -186,7 +187,6 @@ void DirDownload::resultTimeout()
 
    this->getEntriesResult.clear();
    this->freePeer();
-   QTimer::singleShot(RETRY_GET_ENTRIES_PERIOD, this, &DirDownload::retryToGetEntries);
 }
 
 /**

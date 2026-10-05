@@ -1158,35 +1158,20 @@ void Tests::nextFilesToHashKeepsTemporaryExclusions()
 void Tests::noRequestWhileDestroyingQueue()
 {
    HashPeer peer(this->fileManager);
-   LinkedPeers links;
-   OccupiedPeers asking, downloading;
-   Common::ThreadPool pool(1);
-   Common::TransferRateCalculator rate;
-   Protos::Common::Entry entry;
-   entry.set_type(Protos::Common::Entry::FILE);
-   entry.set_size(Common::Constants::CHUNK_SIZE);
-
-   // A raw pointer: it must still be usable by the slot below while the queue is being deleted.
-   DownloadQueue* queue = new DownloadQueue();
-   for (const char* name : { "first.bin", "second.bin" })
+   Common::PersistentData::rmValue(Common::Constants::FILE_QUEUE, Common::Global::DataFolderType::LOCAL);
    {
-      entry.set_name(name);
-      queue->insert(queue->size(), new FileDownload(this->fileManager, links, asking, downloading, pool, &peer, entry, entry,
-         rate, Protos::Queue::Queue::Entry::QUEUED));
+      DownloadManager manager(this->fileManager, this->peerManager);
+      Protos::Common::Entry entry;
+      entry.set_type(Protos::Common::Entry::FILE);
+      entry.set_size(Common::Constants::CHUNK_SIZE);
+      for (const char* name : { "first.bin", "second.bin" })
+      {
+         entry.set_name(name);
+         QVERIFY(manager.addDownload(entry, entry, &peer, Protos::Queue::Queue::Entry::QUEUED));
+      }
+      QCOMPARE(peer.nbRequests, 1); // The second file waits for the peer to be free.
    }
-
-   // Same as 'DownloadManager::peerNoLongerAskingForHashes()'.
-   const auto connection = connect(&asking, &OccupiedPeers::newFreePeer, [&queue] {
-      for (int i = 0; i < queue->size(); i++)
-         if (static_cast<FileDownload*>((*queue)[i])->retrieveHashes())
-            break;
-   });
-
-   QVERIFY(static_cast<FileDownload*>((*queue)[0])->retrieveHashes());
-   QCOMPARE(peer.nbRequests, 1);
-
-   delete queue;
-   disconnect(connection);
+   QCoreApplication::processEvents();
    QCOMPARE(peer.nbRequests, 1);
 }
 
@@ -1220,6 +1205,8 @@ void Tests::freedPeerAsksItsOwnHashes()
    QCOMPARE(freedPeer.nbRequests, 1);
 
    emit freedPeer.hashes->timeout(); // Frees 'freedPeer'.
+   QCOMPARE(freedPeer.nbRequests, 1);
+   QCoreApplication::processEvents(); // The next request is sent from the event loop.
    QCOMPARE(freedPeer.nbRequests, 2);
    QCOMPARE(second->getStatus(), Protos::Common::DownloadStatus::GETTING_THE_HASHES);
    QCOMPARE(otherPeer.nbRequests, 0);
@@ -1387,9 +1374,71 @@ void Tests::pauseManyDownloads()
    QCOMPARE(peer.nbRequests, 1); // The second file waits for the peer to be free.
 
    manager.pauseDownloads(IDs);
+   QCoreApplication::processEvents(); // The freed peer is asked from the event loop: all its downloads are then paused.
    QCOMPARE(peer.nbRequests, 1);
    for (IDownload* download : manager.getDownloads())
       QCOMPARE(download->getStatus(), Protos::Common::DownloadStatus::PAUSED);
+}
+
+/**
+  * A peer freed from a request for entries is asked for its next directory, from the event loop.
+  */
+void Tests::freedPeerAsksItsNextDirectory()
+{
+   QSharedPointer<MockFileManager> files(new MockFileManager);
+   DirectoryPeer peer(files);
+   Common::PersistentData::rmValue(Common::Constants::FILE_QUEUE, Common::Global::DataFolderType::LOCAL);
+   DownloadManager manager(files, this->peerManager);
+
+   Protos::Common::Entry directory;
+   directory.set_type(Protos::Common::Entry::DIR);
+   directory.set_path("/");
+   for (const char* name : { "first", "second" })
+   {
+      directory.set_name(name);
+      QVERIFY(manager.addDownload(directory, directory, &peer, Protos::Queue::Queue::Entry::QUEUED));
+   }
+   QCOMPARE(peer.requests, 1); // The second directory waits for the peer to be free.
+
+   // The first directory is empty: it's removed from the queue and its peer is freed.
+   Protos::Core::GetEntriesResult response;
+   auto result = response.add_results();
+   result->set_status(Protos::Core::GetEntriesResult::EntryResult::OK);
+   result->mutable_entries();
+   emit peer.entries->result(response);
+   QCOMPARE(manager.getDownloads().size(), 1);
+   QCOMPARE(peer.requests, 1);
+   QCoreApplication::processEvents();
+   QCOMPARE(peer.requests, 2);
+   QCOMPARE(peer.requestedEntries.dirs().entries(0).name(), std::string("second"));
+}
+
+/**
+  * A directory whose request for entries has failed is erroneous: it's asked again when the erroneous downloads are restarted.
+  */
+void Tests::erroneousDirectoryIsRestarted()
+{
+   QSharedPointer<MockFileManager> files(new MockFileManager);
+   DirectoryPeer peer(files);
+   Common::PersistentData::rmValue(Common::Constants::FILE_QUEUE, Common::Global::DataFolderType::LOCAL);
+   DownloadManager manager(files, this->peerManager);
+
+   Protos::Common::Entry directory;
+   directory.set_type(Protos::Common::Entry::DIR);
+   directory.set_name("folder");
+   directory.set_path("/");
+   auto download = manager.addDownload(directory, directory, &peer, Protos::Queue::Queue::Entry::QUEUED);
+   QVERIFY(download);
+   QCOMPARE(peer.requests, 1);
+
+   emit peer.entries->timeout();
+   QCOMPARE(download->getStatus(), Protos::Common::DownloadStatus::UNABLE_TO_GET_ENTRIES);
+   QCoreApplication::processEvents(); // Its peer is free again but an erroneous download isn't asked before being restarted.
+   QCOMPARE(peer.requests, 1);
+
+   QVERIFY(QMetaObject::invokeMethod(&manager, "restartErroneousDownloads", Qt::DirectConnection));
+   QCOMPARE(peer.requests, 2);
+   QVERIFY(!download->isStatusErroneous());
 }
 
 void Tests::coalescePeerStatusUpdates()
@@ -2310,19 +2359,26 @@ void Tests::moveDownloads()
    QFETCH(bool, after);
    QFETCH(QList<int>, expected);
    ResumePeer peer(this->fileManager);
+   LinkedPeers links;
+   OccupiedPeers asking, downloading;
+   Common::ThreadPool pool(1);
+   Common::TransferRateCalculator rate;
    DownloadQueue queue;
    QList<Download*> original;
+   Protos::Common::Entry entry;
+   entry.set_type(Protos::Common::Entry::FILE);
+   entry.set_size(Common::Constants::CHUNK_SIZE);
    for (int i = 0; i < 6; ++i)
    {
-      auto download = new RetryDownload(this->fileManager, &peer);
-      if (i == 2 || i == 5)
-         download->setStatus(Protos::Common::DownloadStatus::COMPLETE);
+      // Only the downloads 2 and 5 are downloadable.
+      entry.set_name(QString("file-%1.bin").arg(i).toStdString());
+      auto download = new FileDownload(this->fileManager, links, asking, downloading, pool, &peer, entry, entry, rate,
+         i == 2 || i == 5 ? Protos::Queue::Queue::Entry::QUEUED : Protos::Queue::Queue::Entry::COMPLETE);
       original.append(download);
       queue.insert(queue.size(), download);
    }
    // Prime both a marker past the start and an exhausted marker before moving.
-   // 'IsComplete' isn't a valid scanning predicate in general (see 'ScanningIterator'), here no status changes.
-   QCOMPARE(DownloadQueue::ScanningIterator<IsComplete>(queue).next(), original[2]);
+   QCOMPARE(DownloadQueue::ScanningIterator<IsDownloadable>(queue).next(), original[2]);
    QVERIFY(!DownloadQueue::ScanningIterator<IsADirectory>(queue).next());
    const auto IDs = [&original](const QList<int>& indices)
    {
@@ -2336,11 +2392,11 @@ void Tests::moveDownloads()
    for (int i = 0; i < expected.size(); ++i)
       QCOMPARE(queue[i], original[expected[i]]);
 
-   DownloadQueue::ScanningIterator<IsComplete> completed(queue);
+   DownloadQueue::ScanningIterator<IsDownloadable> downloadable(queue);
    for (int index : expected)
       if (index == 2 || index == 5)
-         QCOMPARE(completed.next(), original[index]);
-   QVERIFY(!completed.next());
+         QCOMPARE(downloadable.next(), original[index]);
+   QVERIFY(!downloadable.next());
    QVERIFY(!DownloadQueue::ScanningIterator<IsADirectory>(queue).next());
    QVERIFY(queue.isAPeerSource(&peer));
 }
@@ -2348,33 +2404,6 @@ void Tests::moveDownloads()
 /**
   * A scan keeps a pointer to its marker: adding the markers of other predicates during the scan must not invalidate it.
   */
-void Tests::scanSurvivesNewMarkers()
-{
-   ResumePeer peer(this->fileManager);
-   LinkedPeers links;
-   OccupiedPeers asking, downloading;
-   Common::ThreadPool pool(1);
-   Common::TransferRateCalculator rate;
-   DownloadQueue queue;
-   Protos::Common::Entry entry;
-   entry.set_type(Protos::Common::Entry::FILE);
-   entry.set_size(Common::Constants::CHUNK_SIZE);
-   for (const char* name : { "first.bin", "second.bin", "third.bin" })
-   {
-      entry.set_name(name);
-      queue.insert(queue.size(), new FileDownload(this->fileManager, links, asking, downloading, pool, &peer, entry, entry,
-         rate, Protos::Queue::Queue::Entry::QUEUED));
-   }
-
-   DownloadQueue::ScanningIterator<IsDownloadable> i(queue);
-   QCOMPARE(i.next(), queue[0]);
-   QVERIFY(!DownloadQueue::ScanningIterator<IsComplete>(queue).next());
-   QVERIFY(!DownloadQueue::ScanningIterator<IsADirectory>(queue).next());
-   QCOMPARE(i.next(), queue[1]);
-   QCOMPARE(i.next(), queue[2]);
-   QVERIFY(!i.next());
-}
-
 void Tests::bulkRemovalPreservesQueueState()
 {
    ResumePeer removedPeer(this->fileManager), retainedPeer(this->fileManager);

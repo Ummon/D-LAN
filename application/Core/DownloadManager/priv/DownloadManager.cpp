@@ -50,8 +50,12 @@ DownloadManager::DownloadManager(QSharedPointer<FM::IFileManager> fileManager, Q
 {
    this->threadPool.setStackSize(MIN_DOWNLOAD_THREAD_STACK_SIZE + SETTINGS.get<quint32>("buffer_size_writing"));
 
-   connect(&this->occupiedPeersAskingForHashes, &OccupiedPeers::newFreePeer, this, &DownloadManager::peerNoLongerAskingForHashes);
-   connect(&this->occupiedPeersAskingForEntries, &OccupiedPeers::newFreePeer, this, &DownloadManager::peerNoLongerAskingForEntries);
+   // A request isn't sent from within the notification of a free peer but once the control returns to the event loop.
+   // The download which frees its peer may be stopped along with others, paused or removed together for example:
+   // none of them is then asked something only to be stopped right after, and the queue isn't used while it's being changed.
+   connect(&this->occupiedPeersAskingForHashes, &OccupiedPeers::newFreePeer, this, &DownloadManager::peerNoLongerAskingForHashes, Qt::QueuedConnection);
+   connect(&this->occupiedPeersAskingForEntries, &OccupiedPeers::newFreePeer, this, &DownloadManager::peerNoLongerAskingForEntries, Qt::QueuedConnection);
+   // Neither is a transfer started from within the notification, see 'scheduleScan()'.
    connect(&this->occupiedPeersDownloadingChunk, &OccupiedPeers::newFreePeer, this, &DownloadManager::peerNoLongerDownloadingChunk);
 
    // We wait the shared entries are scanned before loading the downloads queue.
@@ -129,9 +133,6 @@ void DownloadManager::addDownload(
          return;
       }
       const QString name = Utils::localName(remoteEntry);
-      if (name.isEmpty() || name == "." || name == ".." || name.contains('/') ||
-         name.contains('\\') || name.contains(':') || name.contains(QChar::Null))
-         return;
       const QString destination = QDir(absolutePath).absoluteFilePath(name) + '/';
       if (this->addDownloadIntoASharedDirectory(remoteEntry, peerSource, Common::Path(destination)))
          return;
@@ -435,7 +436,8 @@ void DownloadManager::peerNoLongerAskingForHashes(PM::IPeer* peer)
 {
    L_DEBU(QString("A peer is free from asking for hashes: %1").arg(peer->toStringLog()));
 
-   if (!this->downloadQueue.isAPeerSource(peer))
+   // The peer may have been asked again since it has been freed.
+   if (!this->occupiedPeersAskingForHashes.isPeerFree(peer) || !this->downloadQueue.isAPeerSource(peer))
       return;
 
    // We can't use 'downloadsIndexedBySourcePeerID' because the order matters.
@@ -452,7 +454,8 @@ void DownloadManager::peerNoLongerAskingForEntries(PM::IPeer* peer)
 {
    L_DEBU(QString("A peer is free from asking for entries: %1").arg(peer->toStringLog()));
 
-   if (!this->downloadQueue.isAPeerSource(peer))
+   // The peer may have been asked again since it has been freed.
+   if (!this->occupiedPeersAskingForEntries.isPeerFree(peer) || !this->downloadQueue.isAPeerSource(peer))
       return;
 
    DownloadQueue::ScanningIterator<IsADirectory> i(this->downloadQueue);

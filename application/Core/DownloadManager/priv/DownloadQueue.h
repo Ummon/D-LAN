@@ -20,9 +20,7 @@
 
 #include <list>
 #include <map>
-#include <memory>
-#include <typeindex>
-#include <typeinfo>
+#include <tuple>
 
 #include <QList>
 #include <QHash>
@@ -81,7 +79,8 @@ namespace DM
       void fileDownloadTimeChanged();
 
    private:
-      struct Marker;
+      template <typename P>
+      struct Marker { P predicate; int position = 0; };
 
    public:
       template <typename P>
@@ -92,12 +91,14 @@ namespace DM
          Download* next();
 
       private:
-         Marker* marker;
+         Marker<P>& marker;
          DownloadQueue& queue;
          int position;
       };
 
    private:
+      template <typename F>
+      void forEachMarker(F function);
       void updateMarkersInsert(int position, Download* download);
       void updateMarkersRemove(int position);
       void rebuildMarkers();
@@ -106,11 +107,9 @@ namespace DM
       void removeHashingHintCandidate(FileDownload* download);
       void rebuildHashingHintCandidates();
 
-      struct Marker { std::unique_ptr<DownloadPredicate> predicate; int position = 0; };
-
-      /// Saved some positions like the first downloadable file or the first directory, one per predicate type. The goal is to speed up the scan.
-      /// See the class 'ScanningIterator', which keeps a pointer to its marker: the container must not move them when a marker is added.
-      std::map<std::type_index, Marker> markers;
+      /// Saved some positions: the first downloadable file and the first directory. The goal is to speed up the scan.
+      /// There is one marker per predicate the queue can be scanned with, see the class 'ScanningIterator'.
+      std::tuple<Marker<IsDownloadable>, Marker<IsADirectory>> markers;
 
       QList<Download*> downloads; ///< All downloads, it also includes erroneous downloads.
       QList<Download*> erroneousDownloads;
@@ -129,23 +128,21 @@ namespace DM
 /**
   * @class DM::DownloadQueue::ScanningIterator
   *
-  * To iterate over the queue for all downloads which match a predicate 'P'.
+  * To iterate over the queue for all downloads which match a predicate 'P', one of those having a marker in the queue.
   *
-  * Each predicate type has a marker: the position before which no download matches, the scans begin there.
+  * A marker is the position before which no download matches its predicate, the scans begin there.
   * A marker only moves forward past downloads not matching when they are scanned, it is never checked again behind it.
-  * Thus 'P' must be a predicate that a queued download can stop matching but never start matching again, like
-  * 'IsDownloadable' (COMPLETE and DELETED are final) or 'IsADirectory' (the type never changes).
+  * Thus a predicate can only be given a marker if a queued download can stop matching it but never start matching it
+  * again, like 'IsDownloadable' (COMPLETE and DELETED are final) or 'IsADirectory' (the type never changes).
   * A predicate like 'IsComplete' would skip the downloads completed behind its marker.
   * The insertions, removals and moves of downloads are handled, see 'updateMarkersInsert(..)', 'updateMarkersRemove(..)' and 'rebuildMarkers()'.
   */
 template <typename P>
 DM::DownloadQueue::ScanningIterator<P>::ScanningIterator(DM::DownloadQueue& queue) :
-   marker(&queue.markers[typeid(P)]),
-   queue(queue)
+   marker(std::get<Marker<P>>(queue.markers)),
+   queue(queue),
+   position(this->marker.position)
 {
-   if (!this->marker->predicate) // First scan with 'P'.
-      this->marker->predicate = std::make_unique<P>();
-   this->position = this->marker->position;
 }
 
 /**
@@ -157,10 +154,10 @@ DM::Download* DM::DownloadQueue::ScanningIterator<P>::next()
    while (this->position < this->queue.size())
    {
       Download* download = this->queue[this->position++];
-      if (!(*this->marker->predicate)(download))
+      if (!this->marker.predicate(download))
       {
-         if (this->position - 1 == this->marker->position)
-            this->marker->position++;
+         if (this->position - 1 == this->marker.position)
+            this->marker.position++;
          continue;
       }
 

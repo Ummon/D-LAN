@@ -47,13 +47,6 @@ DownloadQueue::DownloadQueue()
 
 DownloadQueue::~DownloadQueue()
 {
-   // Deleting a download frees its peer, which may synchronously ask the queue for a new request to send.
-   // Every download is marked as deleted first, so none is started while the queue is torn down.
-   for (Download* download : std::as_const(this->downloads))
-      download->setAsDeleted();
-
-   this->hashingHintPositions.clear();
-   this->hashingHintCandidates.clear();
    while (!this->downloads.isEmpty())
       delete this->downloads.takeFirst();
 }
@@ -273,8 +266,8 @@ bool DownloadQueue::removeDownloads(const DownloadPredicate& predicate)
    removeFromIndex(this->downloadsIndexedBySourcePeer);
    removeFromIndex(this->downloadsIndexedByName);
 
-   // Removing a file can trigger queue scans. Finish compaction and index cleanup
-   // before any of those callbacks can run.
+   // Removing a file calls code outside of the queue, the file manager among others: the compaction
+   // and the index cleanup are finished first.
    for (Download* download : std::as_const(downloadsToDelete))
       download->remove();
 
@@ -289,23 +282,13 @@ bool DownloadQueue::pauseDownloads(QList<quint64> IDs, bool pause)
    QSet<quint64> IDsRemaining(IDs.begin(), IDs.end());
 
    bool stateChanged = false;
-   QList<Download*> pausedDownloads;
 
    for (QListIterator<Download*> i(this->downloads); i.hasNext() && !IDsRemaining.isEmpty();)
    {
       Download* download = i.next();
-      if (IDsRemaining.remove(download->getID()) && download->pause(pause, false))
-      {
+      if (IDsRemaining.remove(download->getID()) && download->pause(pause))
          stateChanged = true;
-         if (pause)
-            pausedDownloads << download;
-      }
    }
-
-   // Stopping a download frees its peers, which may start a request for the next download of the same peer.
-   // All the downloads are paused before any is stopped, so none of them is started only to be stopped right after.
-   for (Download* download : std::as_const(pausedDownloads))
-      download->stop();
 
    return stateChanged;
 }
@@ -522,11 +505,20 @@ void DownloadQueue::rebuildHashingHintCandidates()
          this->insertHashingHintCandidate(file, this->downloads.size()); // Append in the new order.
 }
 
+/**
+  * Call 'function' with each marker, they don't have the same type.
+  */
+template <typename F>
+void DownloadQueue::forEachMarker(F function)
+{
+   std::apply([&function](auto&... marker) { (function(marker), ...); }, this->markers);
+}
+
 void DownloadQueue::updateMarkersInsert(int position, Download* download)
 {
-   for (auto& [type, m] : this->markers)
+   this->forEachMarker([position, download](auto& m)
    {
-      if (!(*m.predicate)(download))
+      if (!m.predicate(download))
       {
          if (position <= m.position)
             m.position++;
@@ -536,22 +528,24 @@ void DownloadQueue::updateMarkersInsert(int position, Download* download)
          if (position < m.position)
             m.position = position;
       }
-   }
+   });
 }
 
 void DownloadQueue::updateMarkersRemove(int position)
 {
-   for (auto& [type, m] : this->markers)
+   this->forEachMarker([position](auto& m)
+   {
       if (position < m.position)
          m.position--;
+   });
 }
 
 void DownloadQueue::rebuildMarkers()
 {
-   for (auto& [type, marker] : this->markers)
+   this->forEachMarker([this](auto& marker)
    {
       marker.position = 0;
-      while (marker.position < this->downloads.size() && !(*marker.predicate)(this->downloads[marker.position]))
+      while (marker.position < this->downloads.size() && !marker.predicate(this->downloads[marker.position]))
          ++marker.position;
-   }
+   });
 }
