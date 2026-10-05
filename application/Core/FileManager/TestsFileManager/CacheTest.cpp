@@ -631,6 +631,71 @@ void CacheTest::watchedFileRename()
 #endif
 }
 
+void CacheTest::moveOntoCachedFile_data()
+{
+   QTest::addColumn<QString>("destinationName");
+   QTest::addColumn<bool>("exchanged");
+   QTest::newRow("replaced") << QString("destination.txt") << false;
+   QTest::newRow("replaced-download") << QString("destination.txt.unfinished") << false;
+   QTest::newRow("exchanged") << QString("destination.txt") << true;
+}
+
+void CacheTest::moveOntoCachedFile()
+{
+   QFETCH(QString, destinationName);
+   QFETCH(bool, exchanged);
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   const auto savedShares = SETTINGS.getRepeated<Protos::Common::SharedEntry>("shared_entries");
+   const auto restoreShares = qScopeGuard([&] { SETTINGS.set("shared_entries", savedShares); });
+   SETTINGS.rm("shared_entries");
+
+   FM::FileManager manager(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   manager.fileUpdater.stop();
+   const auto shared = manager.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(manager.cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   const QString sourcePath = temp.filePath("source.tmp");
+   const QString destinationPath = temp.filePath(destinationName);
+   const Common::Hash sourceHash = Common::Hash::rand();
+   const Common::Hash destinationHash = Common::Hash::rand();
+   const QDateTime date = QDateTime::currentDateTime();
+   auto source = new FM::File(root, "source.tmp", 13, false, date, root->getRootDir(), { sourceHash });
+   auto destination = new FM::File(root, destinationName, 3, false, date, root->getRootDir(), { destinationHash });
+   QCOMPARE(manager.getAmount(), qint64(16));
+
+   // The events are processed once the file system has changed: after a replacement the origin is gone.
+   for (const auto& path : exchanged ? QStringList { sourcePath, destinationPath } : QStringList { destinationPath })
+   {
+      QFile physical(path);
+      QVERIFY(physical.open(QIODevice::WriteOnly));
+   }
+   QList<FM::WatcherEvent> events { FM::WatcherEvent(FM::WatcherEvent::MOVE, sourcePath, destinationPath, false) };
+   if (exchanged)
+      events << FM::WatcherEvent(FM::WatcherEvent::MOVE, destinationPath, sourcePath, false);
+   manager.fileUpdater.processEvents(events);
+   // The worker is stopped: perform the queued deletion explicitly.
+   QCoreApplication::sendPostedEvents(&manager.cache, QEvent::MetaCall);
+
+   QCOMPARE(manager.getEntry(Common::Path(destinationPath)), static_cast<FM::Entry*>(source));
+   QVERIFY(manager.getChunk(sourceHash));
+   if (exchanged)
+   {
+      QCOMPARE(manager.getEntry(Common::Path(sourcePath)), static_cast<FM::Entry*>(destination));
+      QCOMPARE(root->getRootDir()->getFiles().size(), 2);
+      QCOMPARE(manager.getAmount(), qint64(16));
+      QVERIFY(manager.getChunk(destinationHash));
+   }
+   else
+   {
+      // The replaced file leaves the cache whereas what is now at its path stays on the disk.
+      QCOMPARE(root->getRootDir()->getFiles(), QList<FM::File*> { source });
+      QCOMPARE(manager.getAmount(), qint64(13));
+      QVERIFY(!manager.getChunk(destinationHash));
+      QVERIFY(QFile::exists(destinationPath));
+   }
+}
+
 void CacheTest::watcherLimitLeavesRoomForWaitConditions()
 {
 #ifdef Q_OS_WIN32

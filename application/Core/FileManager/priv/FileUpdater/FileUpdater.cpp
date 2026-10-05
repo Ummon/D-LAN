@@ -779,8 +779,9 @@ void FileUpdater::stopScanning(Entry* entry)
 /**
   * Delete an entry and if it's a directory remove it and its sub children from 'this->dirsToScan'.
   * It can't be used to remove a 'SharedDirectory', only the 'Cache' is able to do that.
+  * @param removeUnfinishedFiles False if the path of the entry now belongs to another one, see 'WatcherEvent::MOVE'.
   */
-void FileUpdater::deleteEntry(Entry* entry)
+void FileUpdater::deleteEntry(Entry* entry, bool removeUnfinishedFiles)
 {
    if (!entry)
       return;
@@ -790,7 +791,8 @@ void FileUpdater::deleteEntry(Entry* entry)
    this->removeFromHashingQueue(entry);
    this->removeFromEntriesToScan(entry);
 
-   entry->removeUnfinishedFiles();
+   if (removeUnfinishedFiles)
+      entry->removeUnfinishedFiles();
    entry->del();
 }
 
@@ -949,6 +951,14 @@ bool FileUpdater::processEvents(const QList<WatcherEvent>& events)
 
             if (entryToMove)
             {
+               // A rename can replace what was at the destination, a file saved through a temporary one for
+               // example. The replaced entry doesn't exist anymore whereas its path still does: nothing must
+               // be removed from the file system. If the origin still exists then both entries have been
+               // exchanged ('renameat2(..)' with 'RENAME_EXCHANGE'), the other one is moved by its own event.
+               Entry* replacedEntry = this->fileManager->getEntry(pathDestination);
+               if (replacedEntry && !replacedEntry->isRoot() && !QFileInfo::exists(event.path1))
+                  this->deleteEntry(replacedEntry, false);
+
                entryToMove->rename(pathDestination.getLastElement());
 
                if (destination)

@@ -91,7 +91,7 @@ namespace FM
 
       void stopScanning(Entry* entry = nullptr);
 
-      void deleteEntry(Entry* entry);
+      void deleteEntry(Entry* entry, bool removeUnfinishedFiles = true);
       void enqueueEntryToScan(Entry* entry);
       Entry* takeEntryToScan(bool oldestFirst);
       void removeFromEntriesToScan(Entry* entry);
