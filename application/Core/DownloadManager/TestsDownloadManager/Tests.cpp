@@ -75,11 +75,13 @@ namespace
    public:
       using FileDownload::FileDownload;
       int statusUpdates = 0;
+      QList<Protos::Common::DownloadStatus> statuses; // Each status given, in order.
 
    protected:
       void setStatus(Protos::Common::DownloadStatus status) override
       {
          ++this->statusUpdates;
+         this->statuses << status;
          FileDownload::setStatus(status);
       }
    };
@@ -1246,6 +1248,54 @@ void Tests::restartAllErroneousDownloads()
    QVERIFY(QMetaObject::invokeMethod(&manager, "restartErroneousDownloads", Qt::DirectConnection));
    for (Download* download : downloads)
       QVERIFY(!download->isStatusErroneous());
+}
+
+/**
+  * An empty file has no chunk to download: it's complete once created, not before, and it's created only once.
+  */
+void Tests::emptyFileIsCompleteOnceCreated()
+{
+   QSharedPointer<FailingNewFileManager> files(new FailingNewFileManager);
+   ResumePeer peer(files);
+   LinkedPeers links;
+   OccupiedPeers asking, downloading;
+   Common::ThreadPool pool(1);
+   Common::TransferRateCalculator rate;
+   Protos::Common::Entry entry;
+   entry.set_type(Protos::Common::Entry::FILE);
+   entry.set_name("empty.bin");
+   entry.set_size(0);
+
+   // The creation fails, as does its retry: the download is erroneous without having been complete.
+   StatusCountingFileDownload download(files, links, asking, downloading, pool, &peer, entry, entry,
+      rate, Protos::Queue::Queue::Entry::QUEUED);
+   for (int attempt = 1; attempt <= 2; attempt++)
+   {
+      download.start();
+      QCOMPARE(download.getStatus(), Protos::Common::DownloadStatus::UNABLE_TO_CREATE_THE_FILE);
+      QCOMPARE(files->creations, attempt);
+   }
+   QVERIFY(!download.statuses.contains(Protos::Common::DownloadStatus::COMPLETE));
+
+   files->fail = false;
+   download.start();
+   QCOMPARE(download.getStatus(), Protos::Common::DownloadStatus::COMPLETE);
+   QCOMPARE(files->creations, 3);
+
+   // Once complete the file isn't created again, it may have been deleted or its directory may no longer be shared.
+   files->fail = true;
+   download.start();
+   QCOMPARE(download.getStatus(), Protos::Common::DownloadStatus::COMPLETE);
+   QCOMPARE(files->creations, 3);
+
+   // Neither is the file of a complete download loaded from the queue, whose location stays known.
+   entry.set_exists(true);
+   FileDownload loaded(files, links, asking, downloading, pool, &peer, entry, entry,
+      rate, Protos::Queue::Queue::Entry::COMPLETE);
+   loaded.start();
+   QCOMPARE(loaded.getStatus(), Protos::Common::DownloadStatus::COMPLETE);
+   QVERIFY(loaded.getLocalEntry().exists());
+   QCOMPARE(files->creations, 3);
 }
 
 /**

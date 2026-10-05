@@ -135,11 +135,18 @@ void FileDownload::start()
    if (this->hasAValidPeerSource())
       this->peerSourceBecomesAvailable();
 
-   this->updateStatus();
+   // An empty file has no chunk to download: it's created now and is complete as soon as it exists.
+   // It's created before 'updateStatus()', which would set it as complete even if the creation then fails.
+   // A complete one isn't created again, for example when the queue is loaded.
+   if (
+      this->localEntry.size() == 0 &&
+      !this->localEntry.exists() &&
+      this->status != Protos::Common::DownloadStatus::COMPLETE &&
+      !this->createFile()
+   )
+      return;
 
-   // If the file is empty we create it now.
-   if (this->localEntry.size() == 0 && !this->localEntry.exists())
-      this->createFile();
+   this->updateStatus();
 
    if (!this->retrieveHashes() && this->hasAValidPeerSource())
       this->occupiedPeersDownloadingChunk.newPeer(this->peerSource);
@@ -819,9 +826,13 @@ bool FileDownload::prepareFileForResume()
 
 /**
   * Link cached chunks matching the known hashes and update localEntry.exists.
+  * An empty file has no chunk to link to: localEntry.exists is kept, it tells whether the file has been created, see 'start()'.
   */
 bool FileDownload::tryToLinkToAnExistingFile()
 {
+   if (this->localEntry.size() == 0)
+      return this->localEntry.exists();
+
    this->localEntry.set_exists(false);
 
    if (this->nbHashesKnown > 0)

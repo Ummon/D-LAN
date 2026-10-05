@@ -101,6 +101,7 @@ private slots:
    void noRequestWhileDestroyingQueue();
    void freedPeerAsksItsOwnHashes();
    void restartAllErroneousDownloads();
+   void emptyFileIsCompleteOnceCreated();
    void retryHashesAfterDontHave();
    void pauseManyDownloads();
    void validateChunkResponse_data();
