@@ -92,6 +92,8 @@ private slots:
    void pendingPeerStatusUpdateIsCancelled();
    void rejectInvalidChunkHashes_data();
    void rejectInvalidChunkHashes();
+   void shortHashStreamFailsRequest_data();
+   void shortHashStreamFailsRequest();
    void downloadWithOmittedHashes_data();
    void downloadWithOmittedHashes();
    void dontAskHashesToBusyPeer();

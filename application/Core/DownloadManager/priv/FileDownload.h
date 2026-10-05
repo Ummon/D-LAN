@@ -106,6 +106,8 @@ namespace DM
 
    private:
       bool hasHashesToRetrieve() const;
+      void addHash(const Protos::Core::HashResult& hashResult);
+      void unableToRetrieveTheHashes();
       bool tryToLinkToAnExistingFile();
       void connectChunkDownloaderSignals(const QSharedPointer<ChunkDownloader>& chunkDownload);
       bool createFile();
@@ -131,6 +133,7 @@ namespace DM
 
       int nbHashesKnown;
       QSharedPointer<PM::IGetHashesResult> getHashesResult;
+      quint32 nbHashesExpected = 0; // Hashes the pending request still has to give, as announced by the peer source. 0 if not known.
 
       DownloadQueue* downloadQueue; // To give the next files to hash to the peer source, may be null.
       bool givenAsNextFileToHash = false; // Not persisted, see 'canBeGivenAsNextFileToHash()'.

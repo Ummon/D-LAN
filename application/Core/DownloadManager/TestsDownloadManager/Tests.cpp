@@ -1626,6 +1626,80 @@ void Tests::rejectInvalidChunkHashes()
    QCOMPARE(saved.local_entry().chunks(0).hash(), valid.hash().hash());
 }
 
+void Tests::shortHashStreamFailsRequest_data()
+{
+   QTest::addColumn<int>("announced");
+   QTest::addColumn<QList<int>>("hashes"); // The chunk number of each hash sent, -1 for an invalid hash.
+   QTest::addColumn<int>("known");
+   QTest::newRow("nothing-announced") << 0 << QList<int> {} << 0;
+   QTest::newRow("fewer-announced") << 1 << QList<int> { 0 } << 1;
+   QTest::newRow("invalid-hash") << 2 << QList<int> { 0, -1 } << 1;
+   QTest::newRow("out-of-range-hash") << 2 << QList<int> { 0, 2 } << 1;
+   QTest::newRow("duplicated-hash") << 2 << QList<int> { 0, 0 } << 1;
+   QTest::newRow("complete") << 2 << QList<int> { 0, 1 } << 2;
+}
+
+/**
+  * The peer source announces how many hashes it sends, then nothing more is received. If some hashes are still
+  * unknown after the last one the request has failed: its peer must not stay occupied and the hashes are asked for again.
+  */
+void Tests::shortHashStreamFailsRequest()
+{
+   QFETCH(int, announced);
+   QFETCH(QList<int>, hashes);
+   QFETCH(int, known);
+   HashPeer peer(this->fileManager);
+   LinkedPeers links;
+   OccupiedPeers asking, downloading;
+   Common::ThreadPool pool(1);
+   Common::TransferRateCalculator rate;
+   Protos::Common::Entry entry;
+   entry.set_type(Protos::Common::Entry::FILE);
+   entry.set_name("short-stream.bin");
+   entry.set_size(quint64(2) * Common::Constants::CHUNK_SIZE);
+   FileDownload download(this->fileManager, links, asking, downloading, pool, &peer, entry, entry,
+      rate, Protos::Queue::Queue::Entry::QUEUED);
+   QVERIFY(download.retrieveHashes());
+
+   Protos::Core::GetHashesResult result;
+   result.set_status(Protos::Core::GetHashesResult::OK);
+   result.set_nb_hash(announced);
+   emit peer.hashes->result(result);
+   for (int num : hashes)
+   {
+      // The request is pending until the last announced hash, whatever has been received.
+      QCOMPARE(download.getStatus(), Protos::Common::DownloadStatus::GETTING_THE_HASHES);
+      QVERIFY(!asking.isPeerFree(&peer));
+      Protos::Core::HashResult hash;
+      hash.set_num(qMax(num, 0));
+      if (num == -1)
+         hash.mutable_hash()->set_hash("x");
+      else
+         hash.mutable_hash()->set_hash(Common::Hash::rand().getData(), Common::Hash::HASH_SIZE);
+      emit peer.hashes->nextHash(hash);
+   }
+
+   // The hashes received are kept.
+   QVERIFY(asking.isPeerFree(&peer));
+   QList<QSharedPointer<IChunkDownloader>> chunks;
+   download.getUnfinishedChunks(chunks, 2, false);
+   QCOMPARE(chunks.size(), known);
+   if (known == 2)
+   {
+      QVERIFY(!download.isStatusErroneous());
+      return;
+   }
+   QCOMPARE(download.getStatus(), Protos::Common::DownloadStatus::UNABLE_TO_RETRIEVE_THE_HASHES);
+
+   // Only the missing hashes are asked for when the download is restarted, see 'DownloadManager::restartErroneousDownloads()'.
+   peer.hashes = QSharedPointer<PendingHashesResult>::create(); // Each request has its own result.
+   download.start();
+   QCOMPARE(peer.nbRequests, 2);
+   QCOMPARE(download.getStatus(), Protos::Common::DownloadStatus::GETTING_THE_HASHES);
+   QCOMPARE(peer.requestedEntry.chunks(0).hash().empty(), known == 0);
+   QVERIFY(peer.requestedEntry.chunks(1).hash().empty());
+}
+
 void Tests::chunkErrorTakesPrecedence_data()
 {
    QTest::addColumn<int>("errorIndex");

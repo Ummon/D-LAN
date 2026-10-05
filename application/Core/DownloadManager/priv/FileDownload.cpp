@@ -463,6 +463,7 @@ bool FileDownload::retrieveHashes()
    for (FileDownload* nextFile : nextFiles)
       nextFile->givenAsNextFileToHash = true;
 
+   this->nbHashesExpected = 0; // Not known yet, see 'result(..)'.
    this->setStatus(Protos::Common::DownloadStatus::GETTING_THE_HASHES);
    connect(this->getHashesResult.data(), &PM::IGetHashesResult::result, this, &FileDownload::result);
    connect(this->getHashesResult.data(), &PM::IGetHashesResult::nextHash, this, &FileDownload::nextHash);
@@ -626,6 +627,14 @@ void FileDownload::result(const Protos::Core::GetHashesResult& result)
                .arg(this->nbHashesKnown)
                .arg(this->NB_CHUNK)
          );
+
+      // The peer source sends this number of hashes then nothing more, see 'nextHash(..)'.
+      this->nbHashesExpected = result.nb_hash();
+      if (this->nbHashesExpected == 0)
+      {
+         L_DEBU("Unable to retrieve the hashes: none is sent");
+         this->unableToRetrieveTheHashes();
+      }
    }
    else
    {
@@ -654,7 +663,29 @@ void FileDownload::result(const Protos::Core::GetHashesResult& result)
    }
 }
 
+/**
+  * A hash of the pending request. The peer source sends as many hashes as it has announced, see 'result(..)', then
+  * nothing more is received, not even a timeout. If some hashes are still unknown after the last one, fewer than
+  * needed having been announced or some having been rejected, the request has failed: its peer must not stay occupied.
+  */
 void FileDownload::nextHash(const Protos::Core::HashResult& hashResult)
+{
+   const bool isTheLastOne = this->nbHashesExpected > 0 && --this->nbHashesExpected == 0;
+
+   this->addHash(hashResult);
+
+   // The request is released by 'addHash(..)' when all the hashes are known.
+   if (isTheLastOne && !this->getHashesResult.isNull())
+   {
+      L_DEBU("Unable to retrieve the hashes: some are still unknown after the last one");
+      this->unableToRetrieveTheHashes();
+   }
+}
+
+/**
+  * Add the hash of a chunk, an invalid or unexpected one is rejected.
+  */
+void FileDownload::addHash(const Protos::Core::HashResult& hashResult)
 {
    if (hashResult.hash().hash().size() != Common::Hash::HASH_SIZE)
    {
@@ -740,6 +771,15 @@ void FileDownload::nextHash(const Protos::Core::HashResult& hashResult)
 void FileDownload::getHashTimeout()
 {
    L_DEBU("Unable to retrieve the hashes: timeout");
+   this->unableToRetrieveTheHashes();
+}
+
+/**
+  * The pending request is over without having given all the hashes: its peer is freed and the download becomes
+  * erroneous. The hashes still unknown are asked for again later, see 'DownloadManager::restartErroneousDownloads()'.
+  */
+void FileDownload::unableToRetrieveTheHashes()
+{
    this->getHashesResult.clear();
    this->setStatus(Protos::Common::DownloadStatus::UNABLE_TO_RETRIEVE_THE_HASHES);
    this->occupiedPeersAskingForHashes.setPeerAsFree(this->peerSource);
