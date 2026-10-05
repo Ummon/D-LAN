@@ -4,7 +4,7 @@
 <context>
     <name>CoreSpace::CoreService</name>
     <message>
-        <location filename="../Core/CoreService.cpp" line="32"/>
+        <location filename="../Core/CoreService.cpp" line="36"/>
         <source>A LAN file sharing system</source>
         <translation>LAN ファイル共有システム</translation>
     </message>

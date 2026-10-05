@@ -695,7 +695,7 @@
 <context>
     <name>GUI::SearchMenu</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="235"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="253"/>
         <source>Browse</source>
         <translation>閲覧</translation>
     </message>
@@ -737,32 +737,32 @@
 <context>
     <name>GUI::SearchWidget</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="365"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="383"/>
         <source>Open location</source>
         <translation>場所を開く</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="366"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="384"/>
         <source>Browse</source>
         <translation>閲覧</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="446"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="464"/>
         <source>1 directory</source>
         <translation>1 ディレクトリ</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="446"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="464"/>
         <source>%1 directories</source>
         <translation>%1 ディレクトリ</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="447"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="465"/>
         <source>1 file</source>
         <translation>1 ファイル</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="447"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="465"/>
         <source>%1 files</source>
         <translation>%1 ファイル</translation>
     </message>

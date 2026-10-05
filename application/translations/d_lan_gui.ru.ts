@@ -699,7 +699,7 @@
 <context>
     <name>GUI::SearchMenu</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="+235"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="+253"/>
         <source>Browse</source>
         <translation>Открыть</translation>
     </message>
