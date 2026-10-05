@@ -210,13 +210,17 @@ bool ChunksUploader::uploadChunks()
          // sent, the peer reads exactly this many bytes and would take the next ones for a message header.
          bytesRead = qMin(bytesRead, chunk.getEndOffset() - chunk.getOffset());
 
-         const int bytesSent = this->writeToSocket(buffer.constData(), bytesRead, chunk);
-         if (bytesSent < 0)
+         // The socket is buffered: it queues the whole block or fails, there is no partial write to retry.
+         // The amount of queued data is bounded afterwards by 'waitForSocketBufferRoom(..)'.
+         if (this->socket->write(buffer.constData(), bytesRead) != bytesRead)
+         {
+            L_WARN(QString("Socket: cannot send data: %1").arg(chunk.getChunk()->toStringLog()));
             return false;
+         }
 
-         this->transferRateCalculator.addData(bytesSent);
+         this->transferRateCalculator.addData(bytesRead);
 
-         chunk.setOffset(chunk.getOffset() + bytesSent);
+         chunk.setOffset(chunk.getOffset() + bytesRead);
          {
             QMutexLocker locker(&this->mutex);
             this->chunks[i].setOffset(chunk.getOffset());
@@ -239,42 +243,6 @@ bool ChunksUploader::uploadChunks()
    }
 
    return true;
-}
-
-/**
-  * Writes the given data, retrying while the socket accepts none of it.
-  * @return The number of bytes written, may be less than 'size', or -1 if the upload must be aborted.
-  */
-int ChunksUploader::writeToSocket(const char* data, int size, const PM::GetChunkParams& chunk)
-{
-   qint64 bytesSent = this->socket->write(data, size);
-
-   QElapsedTimer writeStalled;
-   writeStalled.start();
-   while (bytesSent == 0)
-   {
-      const qint64 remaining = this->socketTimeout - writeStalled.elapsed();
-      if (remaining <= 0)
-      {
-         L_WARN(QString("Socket: no data accepted before timeout: %1").arg(chunk.getChunk()->toStringLog()));
-         return -1;
-      }
-
-      // Retry the same buffer, without rereading the file or advancing progress. Even if
-      // other queued bytes drain, this write must accept data within its timeout budget.
-      this->waitForBytesWritten(remaining);
-      if (this->mustStop())
-         return -1;
-      bytesSent = this->socket->write(data, size);
-   }
-
-   if (bytesSent < 0)
-   {
-      L_WARN(QString("Socket: cannot send data: %1").arg(chunk.getChunk()->toStringLog()));
-      return -1;
-   }
-
-   return static_cast<int>(bytesSent);
 }
 
 /**

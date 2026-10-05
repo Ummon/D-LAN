@@ -58,7 +58,6 @@ namespace UM
 
    private:
       bool uploadChunks();
-      int writeToSocket(const char* data, int size, const PM::GetChunkParams& chunk);
       bool waitForSocketBufferRoom(const PM::GetChunkParams& chunk);
       bool waitForBytesWritten(qint64 maxWait);
 

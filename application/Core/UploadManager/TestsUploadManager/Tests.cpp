@@ -6,6 +6,7 @@
 
 #include <functional>
 #include <memory>
+#include <optional>
 #include <algorithm>
 
 #include <Common/Settings.h>
@@ -63,7 +64,7 @@ namespace
    public:
       qint64 pending = 0;
       int writes = 0;
-      int zeroWritesRemaining = 0; // -1 means every write returns zero.
+      std::optional<qint64> refusedWriteResult; // If set, no write is accepted and each one returns this value.
       qint64 pendingAfterWrite = 4096;
       QByteArray sent;
       QList<int> waits;
@@ -87,12 +88,8 @@ namespace
       {
          ++this->writes;
          this->readBufferSizeDuringWrite = this->readBufferSize;
-         if (this->zeroWritesRemaining != 0)
-         {
-            if (this->zeroWritesRemaining > 0)
-               --this->zeroWritesRemaining;
-            return 0;
-         }
+         if (this->refusedWriteResult)
+            return *this->refusedWriteResult;
          this->sent.append(data, size);
          this->pending = this->pendingAfterWrite;
          return size;
@@ -206,20 +203,11 @@ private slots:
       QVERIFY(socket->closed);
    }
 
-   void stopDuringSocketWait_data()
-   {
-      QTest::addColumn<bool>("zeroWrite");
-      QTest::newRow("buffer draining") << false;
-      QTest::newRow("zero-byte write") << true;
-   }
-
    void stopDuringSocketWait()
    {
-      QFETCH(bool, zeroWrite);
       SETTINGS.set("socket_timeout", quint32(7000));
       auto chunk = QSharedPointer<Chunk>::create();
       auto socket = QSharedPointer<Socket>::create();
-      socket->zeroWritesRemaining = zeroWrite ? -1 : 0;
       Common::TransferRateCalculator rate;
       UM::ChunksUploader upload({PM::GetChunkParams(chunk, 0, 32, 0)}, socket, rate);
       std::unique_ptr<QThread> worker(QThread::create([&] { upload.run(); }));
@@ -237,41 +225,28 @@ private slots:
          QVERIFY(wait > 0 && wait <= 100);
    }
 
-   void zeroWritesRecover()
+   void refusedWriteClosesSocket_data()
    {
-      auto chunk = QSharedPointer<Chunk>::create();
-      auto socket = QSharedPointer<Socket>::create();
-      socket->zeroWritesRemaining = 2;
-      socket->pendingAfterWrite = 0;
-      socket->immediateFailure = true;
-      Common::TransferRateCalculator rate;
-      UM::ChunksUploader upload({PM::GetChunkParams(chunk, 0, 32, 0)}, socket, rate);
-      upload.run();
-      upload.finished();
-      QCOMPARE(chunk->reader->calls, 1);
-      QCOMPARE(socket->writes, 3);
-      QCOMPARE(socket->sent, QByteArray(32, 'x'));
-      QCOMPARE(upload.getChunks().first().getOffset(), 32);
-      QVERIFY(!socket->closed);
+      QTest::addColumn<qint64>("result");
+      QTest::newRow("error") << qint64(-1);
+      QTest::newRow("nothing accepted") << qint64(0);
+      QTest::newRow("partial write") << qint64(8);
    }
 
-   void zeroWritesTimeOut()
+   void refusedWriteClosesSocket()
    {
+      QFETCH(qint64, result);
       auto chunk = QSharedPointer<Chunk>::create();
       auto socket = QSharedPointer<Socket>::create();
-      socket->zeroWritesRemaining = -1;
-      socket->immediateFailure = true;
+      socket->refusedWriteResult = result;
       Common::TransferRateCalculator rate;
       UM::ChunksUploader upload({PM::GetChunkParams(chunk, 0, 32, 0)}, socket, rate);
-      QElapsedTimer elapsed;
-      elapsed.start();
       upload.run();
       upload.finished();
-      QVERIFY(elapsed.elapsed() >= 350);
-      QVERIFY(elapsed.elapsed() < 2000);
+      // A buffered socket queues a whole block or fails: anything else ends the upload, without retry.
       QCOMPARE(chunk->reader->calls, 1);
-      QVERIFY(socket->writes > 1 && socket->writes < 10);
-      QVERIFY(socket->sent.isEmpty());
+      QCOMPARE(socket->writes, 1);
+      QVERIFY(socket->waits.isEmpty());
       QCOMPARE(upload.getChunks().first().getOffset(), 0);
       QCOMPARE(rate.getTransferRate(), 0);
       QVERIFY(socket->closed);
