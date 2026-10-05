@@ -39,6 +39,9 @@ void GetHashesResult::start()
    if (!this->socket.isNull())
    {
       connect(this->socket.data(), &PeerMessageSocket::newMessage, this, &GetHashesResult::newMessage, Qt::DirectConnection);
+      // The answer will never come if the socket is closed, there is no need to wait for the timer.
+      // Queued: the socket may be closed from within 'send(..)' and the caller doesn't expect a timeout from 'start()'.
+      connect(this->socket.data(), &PeerMessageSocket::closed, this, &GetHashesResult::timeoutNow, Qt::QueuedConnection);
       socket->send(Common::MessageHeader::CORE_GET_HASHES, this->request);
    }
 }
@@ -48,7 +51,7 @@ void GetHashesResult::doDeleteLater()
    this->stopTimer();
    if (!this->socket.isNull())
    {
-      disconnect(this->socket.data(), &PeerMessageSocket::newMessage, this, &GetHashesResult::newMessage);
+      disconnect(this->socket.data(), nullptr, this, nullptr);
       // Abandoning a hash stream must not expose its remaining replies to a new request.
       this->socket->finished(this->pending);
       this->socket.clear();
@@ -94,7 +97,7 @@ void GetHashesResult::complete()
    this->pending = false;
    this->stopTimer();
    if (this->socket)
-      disconnect(this->socket.data(), &PeerMessageSocket::newMessage, this, &GetHashesResult::newMessage);
+      disconnect(this->socket.data(), nullptr, this, nullptr);
    // PeerMessageSocket has already marked the socket idle. An old result must not
    // finish it again after a caller has started the next transaction.
    this->socket.clear();

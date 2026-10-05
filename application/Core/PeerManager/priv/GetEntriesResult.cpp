@@ -38,6 +38,9 @@ void GetEntriesResult::start()
    if (!this->socket.isNull())
    {
       connect(this->socket.data(), &PeerMessageSocket::newMessage, this, &GetEntriesResult::newMessage, Qt::DirectConnection);
+      // The answer will never come if the socket is closed, there is no need to wait for the timer.
+      // Queued: the socket may be closed from within 'send(..)' and the caller doesn't expect a timeout from 'start()'.
+      connect(this->socket.data(), &PeerMessageSocket::closed, this, &GetEntriesResult::timeoutNow, Qt::QueuedConnection);
       socket->send(Common::MessageHeader::CORE_GET_ENTRIES, this->dirs);
    }
 }
@@ -47,7 +50,7 @@ void GetEntriesResult::doDeleteLater()
    this->stopTimer();
    if (!this->socket.isNull())
    {
-      disconnect(this->socket.data(), &PeerMessageSocket::newMessage, this, &GetEntriesResult::newMessage);
+      disconnect(this->socket.data(), nullptr, this, nullptr);
       // An unfinished response has no request ID and cannot be reused by another request.
       this->socket->finished(this->pending);
       this->socket.clear();
@@ -64,7 +67,7 @@ void GetEntriesResult::newMessage(const Common::Message& message)
    this->pending = false;
 
    if (!this->socket.isNull())
-      disconnect(this->socket.data(), &PeerMessageSocket::newMessage, this, &GetEntriesResult::newMessage);
+      disconnect(this->socket.data(), nullptr, this, nullptr);
 
    // PeerMessageSocket has already finished the transaction. Drop ownership before
    // notifying callers, which may immediately start another request on this socket.

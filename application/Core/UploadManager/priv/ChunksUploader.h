@@ -70,7 +70,8 @@ namespace UM
 
       const quint64 ID; ///< Each uploader has an ID to identified it.
       QList<PM::GetChunkParams> chunks; ///< The chunks uploaded.
-      QSharedPointer<PM::ISocket> socket;
+      QSharedPointer<PM::ISocket> socket; ///< Released by 'finished()'.
+      const Common::Hash peerID; ///< Kept apart: it's still asked once the socket is released.
 
       Common::TransferRateCalculator& transferRateCalculator;
 

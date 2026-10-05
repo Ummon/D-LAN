@@ -52,6 +52,7 @@ ChunksUploader::ChunksUploader(
    ID(currentID++),
    chunks(std::move(chunksParams)),
    socket(socket),
+   peerID(socket->getRemotePeerID()),
    transferRateCalculator(transferRateCalculator),
    socketTimeout(SETTINGS.get<quint32>("socket_timeout")),
    closeTheSocket(false),
@@ -71,7 +72,7 @@ quint64 ChunksUploader::getID() const
 
 Common::Hash ChunksUploader::getPeerID() const
 {
-   return this->socket->getRemotePeerID();
+   return this->peerID;
 }
 
 /**
@@ -136,6 +137,9 @@ void ChunksUploader::run()
 void ChunksUploader::finished()
 {
    this->socket->finished(this->closeTheSocket);
+   // The uploader lives 'upload_lifetime' ms more, see 'UploadManager'. A socket to close is really closed only
+   // once nobody references it anymore: kept here, the peer would wait for the missing data during this period.
+   this->socket.clear();
    this->startTimer();
 }
 

@@ -72,6 +72,7 @@ namespace
       bool immediateFailure = false;
       bool progress = false;
       QThread* owner = nullptr;
+      Common::Hash peerID;
 
       void setReadBufferSize(qint64) override {}
       qint64 bytesAvailable() const override { return 0; }
@@ -111,7 +112,7 @@ namespace
       }
       void moveToThread(QThread* thread) override { this->owner = thread; }
       QString errorString() const override { return "test socket timeout"; }
-      Common::Hash getRemotePeerID() const override { return {}; }
+      Common::Hash getRemotePeerID() const override { return this->peerID; }
       void finished(bool close) override { this->closed = close; }
    };
 }
@@ -139,6 +140,25 @@ private slots:
       QCOMPARE(socket->writes, 0);
       QVERIFY(socket->closed);
       QCOMPARE(socket->owner, QThread::currentThread());
+   }
+
+   void finishedReleasesTheSocket()
+   {
+      auto chunk = QSharedPointer<Chunk>::create();
+      auto socket = QSharedPointer<Socket>::create();
+      socket->peerID = Common::Hash::rand();
+      const Common::Hash peerID = socket->peerID;
+      const QWeakPointer<Socket> weakSocket = socket;
+      Common::TransferRateCalculator rate;
+      UM::ChunksUploader upload({PM::GetChunkParams(chunk, 0, 32, 0)}, socket, rate);
+      socket.clear();
+      upload.stop();
+      upload.run();
+      QVERIFY(!weakSocket.isNull());
+      upload.finished();
+      // The uploader outlives its upload by 'upload_lifetime', the socket must not: it's closed only once released.
+      QVERIFY(weakSocket.isNull());
+      QCOMPARE(upload.getPeerID(), peerID);
    }
 
    void stopDuringRead()

@@ -1032,6 +1032,94 @@ void Tests::resultStartsOnlyOnce()
    QVERIFY(!socket->isClosing());
 }
 
+void Tests::closedSocketTimesOutRequest_data()
+{
+   QTest::addColumn<int>("kind");
+   QTest::addColumn<bool>("refused");
+   QTest::newRow("entries-connection-refused") << 0 << true;
+   QTest::newRow("entries-disconnected") << 0 << false;
+   QTest::newRow("hashes-connection-refused") << 1 << true;
+   QTest::newRow("hashes-disconnected") << 1 << false;
+   QTest::newRow("chunks-connection-refused") << 2 << true;
+   QTest::newRow("chunks-disconnected") << 2 << false;
+}
+
+/**
+  * A request whose socket is closed is timed out at once instead of waiting for an answer which can't come.
+  * Chunk requests are excepted: their timeout paces the retries of 'DM::ChunkDownloader'.
+  */
+void Tests::closedSocketTimesOutRequest()
+{
+   QFETCH(int, kind);
+   QFETCH(bool, refused);
+   const char* setting = kind == 1 ? "get_hashes_timeout" : "socket_timeout";
+   const quint32 oldTimeout = SETTINGS.get<quint32>(setting);
+   const auto restore = qScopeGuard([&] { SETTINGS.set(setting, oldTimeout); });
+   SETTINGS.set(setting, quint32(60000)); // Far beyond the duration of the test: a timeout can't come from the timer.
+
+   QTcpServer server;
+   QVERIFY(server.listen(QHostAddress::LocalHost, 0));
+   const quint16 port = server.serverPort();
+   if (refused)
+      server.close();
+   PM::ConnectionPool pool(static_cast<PM::PeerManager*>(this->peerManagers[0].data()),
+      this->fileManagers[0], this->peerIDs[1]);
+   pool.setIP(QHostAddress::LocalHost, port);
+   auto socket = pool.getASocket();
+
+   QSharedPointer<Common::Timeoutable> result;
+   if (kind == 0)
+   {
+      auto entries = QSharedPointer<PM::GetEntriesResult>(new PM::GetEntriesResult(Protos::Core::GetEntries(), socket),
+         &PM::GetEntriesResult::doDeleteLater);
+      entries->start();
+      result = entries;
+   }
+   else if (kind == 1)
+   {
+      auto hashes = QSharedPointer<PM::GetHashesResult>(new PM::GetHashesResult(Protos::Core::GetHashes(), socket),
+         &PM::GetHashesResult::doDeleteLater);
+      hashes->start();
+      result = hashes;
+   }
+   else
+   {
+      auto chunks = QSharedPointer<PM::GetChunksResult>(new PM::GetChunksResult(Protos::Core::GetChunks(), socket),
+         &PM::GetChunksResult::doDeleteLater);
+      chunks->start();
+      result = chunks;
+   }
+   QSignalSpy timedOut(result.data(), &Common::Timeoutable::timeout);
+   QCOMPARE(timedOut.count(), 0); // Never from within 'start()'.
+
+   QScopedPointer<QTcpSocket> remote;
+   if (!refused)
+   {
+      QTRY_VERIFY(server.hasPendingConnections());
+      remote.reset(server.nextPendingConnection());
+      QTRY_VERIFY(remote->bytesAvailable() >= Common::MessageHeader::HEADER_SIZE);
+      QVERIFY(!socket->isClosing());
+      remote->abort();
+   }
+
+   // Refusing a connection may take a few seconds, depending on the platform.
+   QTRY_VERIFY_WITH_TIMEOUT(socket->isClosing(), 20000);
+   if (kind == 2)
+      QVERIFY(!timedOut.wait(500));
+   else
+   {
+      QTRY_COMPARE(timedOut.count(), 1);
+      QVERIFY(result->isTimedout());
+   }
+
+   // The closed socket isn't given to the next request.
+   QVERIFY(pool.getASocket() != socket);
+
+   result.clear();
+   QVERIFY(!timedOut.wait(200));
+   QCOMPARE(timedOut.count(), kind == 2 ? 0 : 1);
+}
+
 void Tests::chunkRequestSocketLifecycle_data()
 {
    QTest::addColumn<int>("stage");

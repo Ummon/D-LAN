@@ -35,6 +35,8 @@ void GetChunksResult::start()
    this->state = State::AwaitingResponse;
    this->startTimer();
    // The socket may be null if the connection pool was unable to give one, in this case the request will simply time out.
+   // Unlike 'GetEntriesResult' and 'GetHashesResult', a closed socket doesn't time out the request at once:
+   // 'DM::ChunkDownloader' asks again right after a timeout, the wait is the only thing which paces its retries.
    if (!this->socket.isNull())
    {
       connect(this->socket.data(), &PeerMessageSocket::newMessage, this, &GetChunksResult::newMessage, Qt::DirectConnection);

@@ -86,6 +86,17 @@ PeerMessageSocket::PeerMessageSocket(
    nbHash(0)
 {
    this->initUnactiveTimer();
+
+   // 'disconnected()' is only emitted by a socket which has been connected: without this a connection which
+   // can't be established would stay in the pool, active, until the request made on it times out.
+   connect(this->socket, &QAbstractSocket::stateChanged, this, [this](QAbstractSocket::SocketState state) {
+      if (state == QAbstractSocket::UnconnectedState)
+         this->close();
+   });
+   // The connection may have failed at once, before the connection above (network unreachable for instance).
+   // Queued: nobody is connected to 'closed(..)' yet, see 'ConnectionPool::addNewSocket(..)'.
+   if (this->socket->state() == QAbstractSocket::UnconnectedState)
+      QMetaObject::invokeMethod(this, &PeerMessageSocket::close, Qt::QueuedConnection);
 }
 
 PeerMessageSocket::~PeerMessageSocket()

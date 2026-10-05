@@ -72,6 +72,8 @@ private slots:
    void requestSocketLifecycle();
    void resultStartsOnlyOnce_data();
    void resultStartsOnlyOnce();
+   void closedSocketTimesOutRequest_data();
+   void closedSocketTimesOutRequest();
    void chunkRequestSocketLifecycle_data();
    void chunkRequestSocketLifecycle();
    void askForHashes();

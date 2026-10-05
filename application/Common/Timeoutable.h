@@ -40,6 +40,7 @@ namespace Common
    protected:
       virtual void startTimer();
       virtual void stopTimer();
+      void timeoutNow();
 
    private slots:
       void timeoutSlot();

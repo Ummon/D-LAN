@@ -50,6 +50,19 @@ void Timeoutable::stopTimer()
    this->timer.stop();
 }
 
+/**
+  * Times out right now instead of waiting for the timer, to be called when it's known that what is awaited
+  * will never come. Does nothing if the timer isn't running.
+  */
+void Timeoutable::timeoutNow()
+{
+   if (!this->timer.isActive())
+      return;
+
+   this->timer.stop();
+   this->timeoutSlot();
+}
+
 void Timeoutable::timeoutSlot()
 {
    this->timeouted = true;
