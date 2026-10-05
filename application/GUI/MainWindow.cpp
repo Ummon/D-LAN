@@ -33,6 +33,7 @@ using namespace GUI;
 #include <QColor>
 #include <QPen>
 #include <QScreen>
+#include <QWindow>
 
 #include <Protos/gui_settings.pb.h>
 
@@ -396,7 +397,13 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* event)
       }
       else if (event->type() == QEvent::MouseMove && !this->isMaximized() && static_cast<QMouseEvent*>(event)->buttons() & Qt::LeftButton && !this->dragPosition.isNull())
       {
-         move(static_cast<QMouseEvent*>(event)->globalPosition().toPoint() - this->dragPosition);
+         // Let the window manager do the move when possible: on Wayland a client isn't allowed to set its own position, 'move(..)' has no effect.
+         // The move is started here and not when the button is pressed to not break the double-click.
+         // The button release will not be received during a system move, thus the drag has to be ended now.
+         if (this->windowHandle() && this->windowHandle()->startSystemMove())
+            this->dragPosition = QPoint();
+         else
+            move(static_cast<QMouseEvent*>(event)->globalPosition().toPoint() - this->dragPosition);
       }
       else if (event->type() == QEvent::Resize)
       {
