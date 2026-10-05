@@ -21,6 +21,9 @@ private slots:
    void updaterWatcherRecovery();
    void darwinWatcherUpdatesCache();
    void darwinWatcherFollowsReplacedSubDirectory();
+   void windowsWatcherUpdatesCache();
+   void windowsWatcherFollowsReplacedSubDirectory_data();
+   void windowsWatcherFollowsReplacedSubDirectory();
    void pendingScansFollowQueueTransitions();
    void scanSkipsScannedSubDirectoriesUnlessRecursive();
    void eventScansAreAsDeepAsTheWatcherRequires();
@@ -141,6 +144,8 @@ private slots:
    void emptyFileReplacement();
    void emptyFileReplacementReportsRenameFailure();
    void completionIsRetriedAfterRenameFailure();
+   void completionIsRetriedWhileFileIsOpen_data();
+   void completionIsRetriedWhileFileIsOpen();
    void unfinishedFilesStayOutOfSearch_data();
    void unfinishedFilesStayOutOfSearch();
    void sharedFileRenameUpdatesSearchIndexes();

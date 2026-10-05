@@ -887,8 +887,9 @@ bool FileUpdater::processEvents(const QList<WatcherEvent>& events)
    // Whether the sub-directories of a modified directory have to be read again.
    const bool recursive = !this->dirWatcher || !this->dirWatcher->notifiesEachChange();
 
+   // 'replaced': what is at 'path' may be another entry than the cached one, see 'WatcherEvent::DELETED' below.
    const auto newOrContentChanged =
-      [this, recursive](const QString& path)
+      [this, recursive](const QString& path, bool replaced = false)
       {
          Entry* entry = this->fileManager->getEntry(path);
          if (!entry)
@@ -919,7 +920,9 @@ bool FileUpdater::processEvents(const QList<WatcherEvent>& events)
          {
             Directory* dir = this->fileManager->getFittestDirectory(path);
 
-            this->enqueueEntryToScan(dir, recursive);
+            // The sub-directories of a replaced directory aren't the cached ones, even if they have the same
+            // names: the watcher has told nothing about them, they are all read again.
+            this->enqueueEntryToScan(dir, recursive || (replaced && dir == entry));
          }
       };
 
@@ -1036,9 +1039,10 @@ bool FileUpdater::processEvents(const QList<WatcherEvent>& events)
             // Replacing a file can report deletion of the previous destination.
             // If its path exists again, synchronize the replacement instead of
             // retiring the completed download now stored at that same path.
+            // It may also be a directory moved away then another one moved to the same path.
             if (QFileInfo::exists(event.path1))
             {
-               newOrContentChanged(event.path1);
+               newOrContentChanged(event.path1, true);
                break;
             }
 

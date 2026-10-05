@@ -189,6 +189,202 @@ void CacheTest::darwinWatcherFollowsReplacedSubDirectory()
 #endif
 }
 
+#ifdef Q_OS_WIN32
+namespace
+{
+   bool writeFile(const QString& path, const QByteArray& bytes)
+   {
+      QFile file(path);
+      return file.open(QIODevice::WriteOnly) && file.write(bytes) == bytes.size();
+   }
+
+   // The native operation: the notifications are the ones of a move made by any other application.
+   bool moveEntry(const QString& from, const QString& to, DWORD flags = 0)
+   {
+      return MoveFileExW(
+         reinterpret_cast<LPCWSTR>(QDir::toNativeSeparators(from).utf16()),
+         reinterpret_cast<LPCWSTR>(QDir::toNativeSeparators(to).utf16()),
+         flags
+      ) != 0;
+   }
+}
+#endif
+
+/**
+  * The changes are told by 'ReadDirectoryChangesW(..)': each of them is followed without reading the whole tree again,
+  * see 'DirWatcherWin::notifiesEachChange()'.
+  */
+void CacheTest::windowsWatcherUpdatesCache()
+{
+#ifdef Q_OS_WIN32
+   QTemporaryDir temp;
+   QTemporaryDir outside; // Not shared, on the same volume.
+   QVERIFY(temp.isValid() && outside.isValid());
+   const auto savedShares = SETTINGS.getRepeated<Protos::Common::SharedEntry>("shared_entries");
+   const auto savedPeriod = SETTINGS.get<quint32>("scan_period_unwatchable_dirs");
+   const auto restore = qScopeGuard([&] {
+      SETTINGS.set("shared_entries", savedShares);
+      SETTINGS.set("scan_period_unwatchable_dirs", savedPeriod);
+   });
+   SETTINGS.set("shared_entries", QList<Protos::Common::SharedEntry>());
+   SETTINGS.set("scan_period_unwatchable_dirs", quint32(3600000));
+   FM::FileManager manager(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   manager.addASharedPath(temp.path() + '/');
+   QTRY_COMPARE(manager.getCacheStatus(), FM::IFileManager::UP_TO_DATE);
+   const auto entry = [&](const QString& path) { return manager.getEntry(Common::Path(path)); };
+   const auto nbFiles = [&](const QString& dir) {
+      auto directory = dynamic_cast<FM::Directory*>(entry(dir + '/'));
+      return directory ? directory->getFiles().size() : -1;
+   };
+
+   // A file in new directories.
+   const QString two = temp.filePath("one/two");
+   const QString path = two + "/file.txt";
+   QVERIFY(QDir().mkpath(two));
+   QVERIFY(writeFile(path, "first"));
+   QTRY_VERIFY_WITH_TIMEOUT(entry(path), 5000);
+   QTRY_COMPARE_WITH_TIMEOUT(manager.getAmount(), qint64(5), 5000);
+
+   // A file replaced by another one, the way an application saves through a temporary file.
+   const QString temporary = two + "/file.tmp";
+   QVERIFY(writeFile(temporary, "replacement"));
+   QVERIFY(moveEntry(temporary, path, MOVEFILE_REPLACE_EXISTING));
+   QTRY_COMPARE_WITH_TIMEOUT(manager.getAmount(), qint64(11), 5000);
+   QTRY_COMPARE_WITH_TIMEOUT(nbFiles(two), 1, 5000);
+   QVERIFY(entry(path));
+
+   // A file renamed, then renamed again by changing only its case.
+   const QString renamed = two + "/renamed.txt";
+   QVERIFY(moveEntry(path, renamed));
+   QTRY_VERIFY_WITH_TIMEOUT(entry(renamed), 5000);
+   QTRY_VERIFY_WITH_TIMEOUT(!entry(path), 5000);
+   const QString upperCase = two + "/RENAMED.txt";
+   QVERIFY(moveEntry(renamed, upperCase));
+   QTRY_VERIFY_WITH_TIMEOUT(entry(upperCase), 5000);
+   QTRY_COMPARE_WITH_TIMEOUT(nbFiles(two), 1, 5000);
+   QCOMPARE(manager.getAmount(), qint64(11));
+
+   // A whole tree moved into the share: only its top directory is told.
+   QVERIFY(QDir().mkpath(outside.filePath("tree/a/b")));
+   QVERIFY(writeFile(outside.filePath("tree/a/b/deep.txt"), "deep"));
+   QVERIFY(writeFile(outside.filePath("tree/top.txt"), "top"));
+   QVERIFY(moveEntry(outside.filePath("tree"), temp.filePath("one/tree")));
+   QTRY_VERIFY_WITH_TIMEOUT(entry(temp.filePath("one/tree/a/b/deep.txt")), 5000);
+   QTRY_COMPARE_WITH_TIMEOUT(manager.getAmount(), qint64(18), 5000);
+
+   // A directory renamed, then a change in its tree.
+   QVERIFY(moveEntry(temp.filePath("one/tree"), temp.filePath("one/moved")));
+   QTRY_VERIFY_WITH_TIMEOUT(entry(temp.filePath("one/moved/a/b/deep.txt")), 5000);
+   QVERIFY(writeFile(temp.filePath("one/moved/a/b/other.txt"), "other"));
+   QTRY_VERIFY_WITH_TIMEOUT(entry(temp.filePath("one/moved/a/b/other.txt")), 5000);
+   QTRY_COMPARE_WITH_TIMEOUT(manager.getAmount(), qint64(23), 5000);
+   QVERIFY(!entry(temp.filePath("one/tree/")));
+
+   // A whole tree moved out of the share.
+   QVERIFY(moveEntry(temp.filePath("one/moved"), outside.filePath("moved")));
+   QTRY_VERIFY_WITH_TIMEOUT(!entry(temp.filePath("one/moved/")), 5000);
+   QTRY_COMPARE_WITH_TIMEOUT(manager.getAmount(), qint64(11), 5000);
+
+   QVERIFY(QDir(temp.filePath("one")).removeRecursively());
+   QTRY_VERIFY_WITH_TIMEOUT(!entry(temp.filePath("one") + '/'), 5000);
+   QTRY_COMPARE_WITH_TIMEOUT(manager.getAmount(), qint64(0), 5000);
+#else
+   QSKIP("Windows notifications integration");
+#endif
+}
+
+void CacheTest::windowsWatcherFollowsReplacedSubDirectory_data()
+{
+   QTest::addColumn<bool>("processedAfterwards");
+   QTest::newRow("live") << false;
+   QTest::newRow("processed-afterwards") << true;
+}
+
+/**
+  * A directory can't be exchanged with another one in a single operation on Windows: it's moved away then the other
+  * one takes its name. The updater may only process the first notification once the second move is done, when it's
+  * busy for example: the directory then exists, with the same name but another content.
+  */
+void CacheTest::windowsWatcherFollowsReplacedSubDirectory()
+{
+#ifdef Q_OS_WIN32
+   QFETCH(bool, processedAfterwards);
+   QTemporaryDir temp;
+   QTemporaryDir outside; // Not shared, on the same volume.
+   QVERIFY(temp.isValid() && outside.isValid());
+   const auto savedShares = SETTINGS.getRepeated<Protos::Common::SharedEntry>("shared_entries");
+   const auto savedPeriod = SETTINGS.get<quint32>("scan_period_unwatchable_dirs");
+   const auto restore = qScopeGuard([&] {
+      SETTINGS.set("shared_entries", savedShares);
+      SETTINGS.set("scan_period_unwatchable_dirs", savedPeriod);
+   });
+   SETTINGS.set("shared_entries", QList<Protos::Common::SharedEntry>());
+   SETTINGS.set("scan_period_unwatchable_dirs", quint32(3600000));
+   const QString sub = temp.filePath("parent/sub");
+   const QString replacement = outside.filePath("replacement");
+   QVERIFY(QDir().mkpath(sub + "/deep"));
+   QVERIFY(QDir().mkpath(replacement + "/deep"));
+   QVERIFY(writeFile(sub + "/old.txt", "old"));
+   QVERIFY(writeFile(sub + "/deep/old.txt", "old"));
+   QVERIFY(writeFile(replacement + "/new.txt", "newer"));
+   QVERIFY(writeFile(replacement + "/deep/new.txt", "newer"));
+   FM::FileManager manager(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   auto& updater = manager.fileUpdater;
+   if (processedAfterwards)
+      updater.stop(); // The notifications are read and processed explicitly below.
+   manager.addASharedPath(temp.path() + '/');
+   const auto entry = [&](const QString& path) { return manager.getEntry(Common::Path(path)); };
+   const auto scanTheQueue = [&] {
+      bool recursive = true;
+      while (FM::Entry* toScan = updater.takeEntryToScan(true, &recursive))
+         updater.scan(toScan, false, recursive);
+   };
+   if (processedAfterwards)
+   {
+      updater.stopScanning();
+      updater.toStop = false; // A stopped updater aborts its scans.
+      updater.scan(entry(temp.path() + '/'));
+      scanTheQueue();
+   }
+   else
+      QTRY_COMPARE(manager.getCacheStatus(), FM::IFileManager::UP_TO_DATE);
+   QVERIFY(entry(sub + "/deep/old.txt"));
+   QCOMPARE(manager.getAmount(), qint64(6));
+
+   const auto processNotifications = [&] {
+      forever
+      {
+         const auto events = updater.dirWatcher->waitEvent(500);
+         if (std::all_of(events.cbegin(), events.cend(), [](const auto& event) { return event.type == FM::WatcherEvent::TIMEOUT; }))
+            break;
+         updater.processEvents(events);
+         // The worker is stopped: perform the queued deletions explicitly.
+         QCoreApplication::sendPostedEvents(&manager.cache, QEvent::MetaCall);
+      }
+      scanTheQueue();
+      QCoreApplication::sendPostedEvents(&manager.cache, QEvent::MetaCall);
+   };
+
+   // The notifications of what has been created above must not hide the ones of the replacement.
+   if (processedAfterwards)
+      processNotifications();
+
+   QVERIFY(moveEntry(sub, outside.filePath("retired")));
+   QVERIFY(moveEntry(replacement, sub));
+
+   if (processedAfterwards)
+      processNotifications();
+
+   QTRY_VERIFY_WITH_TIMEOUT(entry(sub + "/new.txt"), 5000);
+   QTRY_VERIFY_WITH_TIMEOUT(!entry(sub + "/old.txt"), 5000);
+   QTRY_VERIFY_WITH_TIMEOUT(entry(sub + "/deep/new.txt"), 5000);
+   QTRY_VERIFY_WITH_TIMEOUT(!entry(sub + "/deep/old.txt"), 5000);
+   QTRY_COMPARE_WITH_TIMEOUT(manager.getAmount(), qint64(10), 5000);
+#else
+   QSKIP("Windows notifications integration");
+#endif
+}
+
 void CacheTest::addASharedPathInsideSharedDirectory()
 {
    QTemporaryDir temp;
@@ -655,7 +851,19 @@ void CacheTest::setSharedPathsWithOverlappingShares()
    manager.fileUpdater.stop();
    manager.setSharedPaths(sharedPaths(initial));
    if (!deleted.isEmpty())
+   {
+#ifdef Q_OS_WIN32
+      // A watched directory can't be removed on Windows, its handle doesn't share the deletion: a share only
+      // disappears with its volume, a drive which is unplugged for example. Its watch is released to remove it.
+      for (const QString& path : std::as_const(initial))
+      {
+         const Common::Path watched(base + path);
+         manager.fileUpdater.dirWatcher->rmPath(watched.toString(false), watched.getFilename());
+      }
+      manager.fileUpdater.dirWatcher->waitEvent(0); // The removed watches are closed there.
+#endif
       QVERIFY(QDir(temp.filePath(deleted)).removeRecursively());
+   }
    int nbNotFound = 0;
    try
    {
@@ -5248,6 +5456,91 @@ void CacheTest::completionIsRetriedAfterRenameFailure()
    QCOMPARE(file->getName(), QString("blocked.bin"));
    QVERIFY(QFileInfo(path).isFile());
    QVERIFY(!QFileInfo::exists(path + ".unfinished"));
+}
+
+void CacheTest::completionIsRetriedWhileFileIsOpen_data()
+{
+   QTest::addColumn<bool>("destinationIsOpen");
+   QTest::newRow("destination") << true;
+   QTest::newRow("unfinished") << false;
+}
+
+/**
+  * On Windows a file can neither be renamed nor replaced while another application has opened it without sharing
+  * its deletion, the way an antivirus, an indexer or a media player does.
+  */
+void CacheTest::completionIsRetriedWhileFileIsOpen()
+{
+#ifdef Q_OS_WIN32
+   QFETCH(bool, destinationIsOpen);
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   const auto savedShares = SETTINGS.getRepeated<Protos::Common::SharedEntry>("shared_entries");
+   const auto restoreShares = qScopeGuard([&] { SETTINGS.set("shared_entries", savedShares); });
+   SETTINGS.rm("shared_entries");
+   const int savedPeriod = FM::File::COMPLETION_RETRY_PERIOD;
+   const auto restorePeriod = qScopeGuard([&] { FM::File::COMPLETION_RETRY_PERIOD = savedPeriod; });
+   FM::File::COMPLETION_RETRY_PERIOD = 10;
+
+   FM::FileManager manager(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   manager.fileUpdater.stop();
+   const auto shared = manager.addASharedPath(temp.path() + '/');
+
+   // The previous version of the downloaded file.
+   const QString path = temp.filePath("busy.bin");
+   QVERIFY(writeFile(path, "previous"));
+   const QByteArray data("content");
+   Common::Hasher hasher;
+   hasher.addData(std::span<const char>(data));
+   const auto hash = hasher.getResult();
+   Protos::Common::Entry entry;
+   entry.set_type(Protos::Common::Entry::FILE);
+   entry.set_path("/");
+   entry.set_name("busy.bin");
+   entry.set_size(data.size());
+   entry.add_chunks()->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
+   entry.mutable_shared_entry()->mutable_id()->set_hash(shared.first.ID.getData(), Common::Hash::HASH_SIZE);
+   const auto chunks = manager.newFile(entry);
+   QCOMPARE(chunks.size(), 1);
+   auto file = dynamic_cast<FM::File*>(manager.getEntry(Common::Path(path + ".unfinished")));
+   QVERIFY(file);
+
+   // The data are written from a download thread, the unfinished file exists once the first ones are.
+   const auto write = [&](int offset, int size) {
+      bool chunkComplete = false;
+      std::thread downloader([&] { chunkComplete = chunks.first()->getDataWriter()->write(data.constData() + offset, size); });
+      downloader.join();
+      return chunkComplete;
+   };
+   QVERIFY(!write(0, 3));
+   QVERIFY(QFileInfo::exists(path + ".unfinished"));
+
+   const QString openedPath = destinationIsOpen ? path : path + ".unfinished";
+   HANDLE handle = CreateFileW(reinterpret_cast<LPCWSTR>(openedPath.utf16()), GENERIC_READ,
+      FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, 0, nullptr);
+   QVERIFY(handle != INVALID_HANDLE_VALUE);
+   auto closeHandle = qScopeGuard([&] { CloseHandle(handle); });
+
+   QVERIFY(write(3, data.size() - 3));
+   QVERIFY(!file->isComplete());
+   QCOMPARE(file->getName(), QString("busy.bin.unfinished"));
+   QTest::qWait(50); // Some attempts are made meanwhile.
+   QVERIFY(!file->isComplete());
+   QVERIFY(QFileInfo::exists(path + ".unfinished"));
+   QCOMPARE(QFileInfo(path).size(), qint64(8));
+
+   // Once the other application has closed the file the download takes its name, without waiting for a restart.
+   closeHandle.dismiss();
+   QVERIFY(CloseHandle(handle));
+   QTRY_VERIFY(file->isComplete());
+   QCOMPARE(file->getName(), QString("busy.bin"));
+   QVERIFY(!QFileInfo::exists(path + ".unfinished"));
+   QFile physical(path);
+   QVERIFY(physical.open(QIODevice::ReadOnly));
+   QCOMPARE(physical.readAll(), data);
+#else
+   QSKIP("Windows file sharing modes");
+#endif
 }
 
 void CacheTest::metadataReadersAvoidStructuralLocks()
