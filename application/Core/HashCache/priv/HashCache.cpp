@@ -89,6 +89,9 @@ private:
    quint64 getNbDeletedFiles();
    void setNbDeletedFiles(quint64 n);
 
+   void open();
+   static bool isBroken(const QSqlError& error);
+
    void updateDatabaseScheme();
    bool updateToNextVersion(int currentVersion);
 
@@ -261,24 +264,66 @@ HashCache::Database::Database(const QString& databaseFolder) :
 
    this->db.setDatabaseName(DATABASE_FILEPATH);
 
-   if (!this->db.open()) {
-      L_ERRO(QString("Unable to open hash cache index database: %1").arg(db.lastError().text()));
+   try
+   {
+      try
+      {
+         this->open();
+      }
+      catch (DatabaseException& e)
+      {
+         if (!isBroken(e.error))
+            throw;
+
+         // It's only a cache: a new one costs a new hashing of the files, a broken one costs it at each start.
+         L_WARN(
+            QString("The hash cache database is broken, it's deleted and a new one is created: %1 (%2)")
+               .arg(DATABASE_FILEPATH, e.error.text())
+         );
+         this->db.close(); // Releases the queries too, the file can't be removed while it's in use.
+         for (const char* suffix : { "", "-wal", "-shm" })
+            QFile::remove(DATABASE_FILEPATH + suffix);
+
+         this->open();
+      }
    }
+   catch (DatabaseException& e)
+   {
+      L_ERRO(QString("Unable to open the hash cache database: %1").arg(e.error.text()));
+   }
+}
+
+/**
+  * Opens the database, brings its scheme up to date and prepares the queries.
+  * @exception DatabaseException
+  */
+void HashCache::Database::open()
+{
+   if (!this->db.open())
+      throw DatabaseException(this->db.lastError());
 
    QSqlQuery query(this->db);
-   query.exec("PRAGMA foreign_keys = ON");
-   query.exec("PRAGMA journal_mode = WAL");
-   query.exec("PRAGMA synchronous = NORMAL");
+   for (const char* pragma : { "PRAGMA foreign_keys = ON", "PRAGMA journal_mode = WAL", "PRAGMA synchronous = NORMAL" })
+      if (!query.exec(pragma))
+         throw DatabaseException(query.lastError());
 
    this->updateDatabaseScheme();
 
-   this->queryGetHashesWithDate.prepare(
+   const auto prepare = [](QSqlQuery& queryToPrepare, const QString& sql)
+   {
+      if (!queryToPrepare.prepare(sql))
+         throw DatabaseException(queryToPrepare.lastError());
+   };
+
+   prepare(
+      this->queryGetHashesWithDate,
       "SELECT [hashes] FROM [File] WHERE [path] = $1 AND [size] = $2 AND [date_last_modified] = $3"
    );
 
-   this->queryGetHashes.prepare("SELECT [hashes] FROM [File] WHERE [path] = $1 AND [size] = $2");
+   prepare(this->queryGetHashes, "SELECT [hashes] FROM [File] WHERE [path] = $1 AND [size] = $2");
 
-   this->querySetHashes.prepare(
+   prepare(
+      this->querySetHashes,
       R"(
 INSERT INTO [File] ([path], [size], [date_last_modified], [hashes])
 VALUES ($1, $2, $3, $4)
@@ -287,19 +332,38 @@ UPDATE SET [size] = excluded.[size], [date_last_modified] = excluded.[date_last_
       )"
    );
 
-   this->queryRemoveHashes.prepare("DELETE FROM [File] WHERE [path] = $1");
+   prepare(this->queryRemoveHashes, "DELETE FROM [File] WHERE [path] = $1");
 
-   this->queryFilesToCheck.prepare(
+   prepare(
+      this->queryFilesToCheck,
       "SELECT [id], [path] FROM [File] WHERE [id] > ? AND [id] <= ? ORDER BY [id] LIMIT 128"
    );
 
-   this->queryGetSettings.prepare(
+   prepare(
+      this->queryGetSettings,
       "SELECT [value] FROM [Settings] WHERE [key] = $1 LIMIT 1"
    );
 
-   this->querySetSettings.prepare(
+   prepare(
+      this->querySetSettings,
       "INSERT INTO [Settings] ([key], [value]) VALUES($1, $2) ON CONFLICT([key]) DO UPDATE SET value = excluded.value"
    );
+}
+
+/**
+  * Tells if an error comes from the content of the database file, in which case only a new file helps.
+  * The other errors come from its environment (a locked file, a full disk, a missing folder, ..):
+  * the content may be sound and must be kept.
+  */
+bool HashCache::Database::isBroken(const QSqlError& error)
+{
+   // SQLite result codes.
+   constexpr int SQLITE_ERROR = 1; // A missing table or column for instance.
+   constexpr int SQLITE_CORRUPT = 11;
+   constexpr int SQLITE_NOTADB = 26;
+
+   const int code = error.nativeErrorCode().toInt() & 0xff; // The low byte of an extended code is the primary one.
+   return code == SQLITE_ERROR || code == SQLITE_CORRUPT || code == SQLITE_NOTADB;
 }
 
 HashCache::Database::~Database()
@@ -626,21 +690,23 @@ void HashCache::Database::setNbDeletedFiles(quint64 n)
    this->setSettings(NB_DELETED_FILES_KEY, n);
 }
 
+/**
+  * @exception DatabaseException
+  */
 void HashCache::Database::updateDatabaseScheme()
 {
+   // A failure to read the version must not be taken for the version 0.
    QSqlQuery query(this->db);
-   query.exec(
-      R"(
-SELECT [name] FROM [sqlite_master]
-WHERE [type] = 'table' AND [name] = 'Version'
-      )");
+   if (!query.exec("SELECT [name] FROM [sqlite_master] WHERE [type] = 'table' AND [name] = 'Version'"))
+      throw DatabaseException(query.lastError());
 
    int currentVersion = 0;
 
    if (query.first())
    {
       QSqlQuery queryVersion(this->db);
-      queryVersion.exec(R"(SELECT [version] FROM [Version] ORDER BY [id] DESC)");
+      if (!queryVersion.exec(R"(SELECT [version] FROM [Version] ORDER BY [id] DESC)"))
+         throw DatabaseException(queryVersion.lastError());
       if (queryVersion.first())
       {
          currentVersion = queryVersion.value(0).toInt();
@@ -650,45 +716,38 @@ WHERE [type] = 'table' AND [name] = 'Version'
    query.finish(); // Release the sqlite_master cursor before schema changes.
    L_DEBU(QString("HashCache database version: %1").arg(currentVersion));
 
-   try
+   forever
    {
-      forever
+      if (!this->db.transaction())
+         throw DatabaseException(this->db.lastError());
+
+      try
       {
-         if (!this->db.transaction())
-            throw DatabaseException(this->db.lastError());
-
-         try
-         {
-            if (!this->updateToNextVersion(currentVersion))
-            {
-               this->db.rollback();
-               break;
-            }
-
-            // The version row is written in the same transaction as the migration itself,
-            // otherwise a crash between the two would leave the schema updated but the version not.
-            QSqlQuery queryUpdateVersion(this->db);
-            queryUpdateVersion.prepare("INSERT INTO [Version] ([version]) VALUES (?)");
-            queryUpdateVersion.bindValue(0, currentVersion + 1);
-            if (!queryUpdateVersion.exec())
-               throw DatabaseException(queryUpdateVersion.lastError());
-
-            if (!this->db.commit())
-               throw DatabaseException(this->db.lastError());
-         }
-         catch (DatabaseException&)
+         if (!this->updateToNextVersion(currentVersion))
          {
             this->db.rollback();
-            throw;
+            break;
          }
 
-         currentVersion += 1;
-         L_DEBU(QString("HashCache database updated to version: %1").arg(currentVersion));
+         // The version row is written in the same transaction as the migration itself,
+         // otherwise a crash between the two would leave the schema updated but the version not.
+         QSqlQuery queryUpdateVersion(this->db);
+         queryUpdateVersion.prepare("INSERT INTO [Version] ([version]) VALUES (?)");
+         queryUpdateVersion.bindValue(0, currentVersion + 1);
+         if (!queryUpdateVersion.exec())
+            throw DatabaseException(queryUpdateVersion.lastError());
+
+         if (!this->db.commit())
+            throw DatabaseException(this->db.lastError());
       }
-   }
-   catch (DatabaseException& e)
-   {
-      L_ERRO(QString("SQL error during update: %1").arg(e.error.text()));
+      catch (DatabaseException&)
+      {
+         this->db.rollback();
+         throw;
+      }
+
+      currentVersion += 1;
+      L_DEBU(QString("HashCache database updated to version: %1").arg(currentVersion));
    }
 }
 

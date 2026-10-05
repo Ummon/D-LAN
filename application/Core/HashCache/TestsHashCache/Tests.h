@@ -55,6 +55,9 @@ private slots:
    void restartKeepsMaintenanceDeadline();
    void defaultsSurviveOlderSettings();
    void firstCheckIsDelayed();
+   void brokenDatabaseIsRecreated_data();
+   void brokenDatabaseIsRecreated();
+   void unopenableDatabaseIsKept();
 
 private:
    int runMaintenanceBatch(HC::HashCache& cache);

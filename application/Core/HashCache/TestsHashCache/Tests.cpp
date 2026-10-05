@@ -28,6 +28,7 @@ using namespace HC;
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QTemporaryDir>
+#include <QDir>
 #include <QFile>
 #include <QSqlError>
 #include <QUuid>
@@ -828,4 +829,66 @@ void Tests::firstCheckIsDelayed()
    QCOMPARE(cache->getHashes(missing, 1), hashes);
    QTRY_VERIFY_WITH_TIMEOUT(cache->getHashes(missing, 1).isEmpty(), 5000);
    QVERIFY(elapsed.elapsed() >= testDelay);
+}
+
+void Tests::brokenDatabaseIsRecreated_data()
+{
+   // An empty statement means the file is overwritten with something which isn't a database.
+   QTest::addColumn<QString>("damagingStatement");
+   QTest::newRow("not-a-database") << QString();
+   QTest::newRow("missing-table") << "DROP TABLE [File]";
+   QTest::newRow("version-lost") << "DELETE FROM [Version]";
+}
+
+void Tests::brokenDatabaseIsRecreated()
+{
+   QFETCH(QString, damagingStatement);
+   QTest::failOnWarning();
+   QTemporaryDir folder;
+   QVERIFY(folder.isValid());
+   const QList<Common::Hash> hashes { Common::Hash::rand() };
+   {
+      auto cache = newTestHashCache(folder.path());
+      cache->setHashes("file", hashes, 1);
+   }
+   if (damagingStatement.isEmpty())
+   {
+      QFile file(folder.filePath(Common::Constants::HASH_CACHE_INDEX_FILENAME));
+      QVERIFY(file.open(QIODevice::WriteOnly | QIODevice::Truncate));
+      QCOMPARE(file.write(QByteArray(8192, 'x')), qint64(8192));
+   }
+   else
+   {
+      TestDatabase inspector(folder.path());
+      QSqlQuery query(inspector.db);
+      QVERIFY(query.exec(damagingStatement));
+   }
+   {
+      // The content is lost but the cache works again.
+      auto cache = newTestHashCache(folder.path());
+      QVERIFY(cache->getHashes("file", 1).isEmpty());
+      cache->setHashes("file", hashes, 1);
+      QCOMPARE(cache->getHashes("file", 1), hashes);
+   }
+   // The new database is a sound one: the next start keeps it.
+   const auto reopened = newTestHashCache(folder.path());
+   QCOMPARE(reopened->getHashes("file", 1), hashes);
+}
+
+void Tests::unopenableDatabaseIsKept()
+{
+   // Being unable to open the file tells nothing about its content: nothing must be deleted.
+   QTemporaryDir folder;
+   QVERIFY(folder.isValid());
+   const QString databasePath = folder.filePath(Common::Constants::HASH_CACHE_INDEX_FILENAME);
+   QVERIFY(QDir().mkdir(databasePath)); // A directory can't be opened as a database.
+   QFile companion(databasePath + "-wal");
+   QVERIFY(companion.open(QIODevice::WriteOnly));
+   companion.close();
+   {
+      auto cache = newTestHashCache(folder.path());
+      cache->setHashes("file", { Common::Hash::rand() }, 1);
+      QVERIFY(cache->getHashes("file", 1).isEmpty());
+   }
+   QVERIFY(companion.exists());
 }
