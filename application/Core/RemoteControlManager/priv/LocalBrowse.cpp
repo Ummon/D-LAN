@@ -33,6 +33,17 @@ namespace
       QRunnable* queuedRunnable = nullptr; // Protected by BrowsePool::mutex.
    };
 
+   bool isHiddenEntry(const QFileInfo& info)
+   {
+#ifdef Q_OS_MACOS
+      // Qt's macOS iterator metadata reports native hidden flags but can omit
+      // dot-prefixed names (see the same workaround in FileUpdater.cpp).
+      if (info.fileName().startsWith('.'))
+         return true;
+#endif
+      return info.isHidden();
+   }
+
    void enumerate(const Protos::GUI::LocalBrowse& request, QPromise<Protos::GUI::LocalBrowseResult>& promise)
    {
       if (promise.isCanceled())
@@ -80,7 +91,7 @@ namespace
             entry->set_name(info.fileName().toStdString());
             entry->set_type(isDir ? Protos::GUI::LocalBrowseResult::DIR : Protos::GUI::LocalBrowseResult::FILE);
             entry->set_date_modified(info.lastModified().toMSecsSinceEpoch());
-            entry->set_hidden(info.isHidden());
+            entry->set_hidden(isHiddenEntry(info));
             if (isDir)
             {
                // Preserve the protocol's child count without allocating a second directory listing.
