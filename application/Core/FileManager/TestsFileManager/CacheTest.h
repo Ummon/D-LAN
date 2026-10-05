@@ -95,6 +95,8 @@ private slots:
    void chunkFlushReleasesFileMutex();
    void concurrentChunkMetadata();
    void chunkEntryWithoutHashes();
+   void peerHashOnlyAppliesToDownloads_data();
+   void peerHashOnlyAppliesToDownloads();
    void addASharedPathInsideSharedDirectory();
    void metadataReadersAvoidStructuralLocks();
    void concurrentEntryMetadata();

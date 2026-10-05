@@ -252,8 +252,17 @@ Common::Hash Chunk::getHash() const
    return this->hash;
 }
 
+/**
+  * The hash comes from a peer: it's the one the data to download will have to match.
+  * The data of a complete file is already there and only the hasher tells its hashes: the one from a peer would be
+  * persisted and announced without being checked, and the hasher would skip the chunk.
+  */
 void Chunk::setHash(const Common::Hash& hash)
 {
+   QMutexLocker locker(this->fileMutex.data());
+   if (this->file && this->file->isComplete())
+      return;
+
    this->setHash(hash, true);
 }
 

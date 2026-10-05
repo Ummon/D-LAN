@@ -94,7 +94,8 @@ namespace FM
       virtual Common::Hash getHash() const = 0;
 
       /**
-        * Set the hash of the chunk.
+        * Set the hash of the chunk, the one its data must have once downloaded.
+        * Ignored if the file is complete: its hashes are only computed from its data.
         */
       virtual void setHash(const Common::Hash&) = 0;
 

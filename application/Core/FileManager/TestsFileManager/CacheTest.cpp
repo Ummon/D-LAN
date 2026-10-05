@@ -224,6 +224,53 @@ void CacheTest::chunkEntryWithoutHashes()
    QVERIFY(!chunk->populateEntry(&detached, false));
 }
 
+void CacheTest::peerHashOnlyAppliesToDownloads_data()
+{
+   QTest::addColumn<QString>("name");
+   QTest::addColumn<bool>("hashed");
+   QTest::addColumn<bool>("adopted");
+   QTest::newRow("not-hashed-yet") << QString("file.bin") << false << false;
+   QTest::newRow("hashed") << QString("file.bin") << true << false;
+   // The hash of a chunk to download is the one its data will have to match.
+   QTest::newRow("download") << QString("file.bin.unfinished") << false << true;
+}
+
+void CacheTest::peerHashOnlyAppliesToDownloads()
+{
+   QFETCH(QString, name);
+   QFETCH(bool, hashed);
+   QFETCH(bool, adopted);
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   const auto savedShares = SETTINGS.getRepeated<Protos::Common::SharedEntry>("shared_entries");
+   const auto restoreShares = qScopeGuard([&] { SETTINGS.set("shared_entries", savedShares); });
+   SETTINGS.rm("shared_entries");
+
+   auto hashCache = QSharedPointer<RecordingHashCache>::create();
+   FM::FileManager manager(hashCache);
+   manager.fileUpdater.stop();
+   const auto shared = manager.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(manager.cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   const Common::Hash localHash = hashed ? Common::Hash::rand() : Common::Hash();
+   const Common::Hash peerHash = Common::Hash::rand();
+   auto file = new FM::File(root, name, qint64(FM::Chunk::CHUNK_SIZE) + 7, false, QDateTime::currentDateTime(),
+      root->getRootDir(), { Common::Hash::rand(), localHash });
+   const qint64 remainingBytesToHash = file->getRemainingBytesToHash();
+
+   // As the download manager does with the chunks of a file it finds in the cache.
+   const QSharedPointer<FM::IChunk> chunk = file->getChunks().last();
+   chunk->setHash(peerHash);
+
+   QCOMPARE(chunk->getHash(), adopted ? peerHash : localHash);
+   if (!adopted)
+   {
+      // The data is already there, only the hasher tells its hash: it still has to hash it and nothing is persisted.
+      QCOMPARE(file->getRemainingBytesToHash(), remainingBytesToHash);
+      QVERIFY(hashCache->writes.isEmpty());
+   }
+}
+
 void CacheTest::failedSharedFileCreation()
 {
    FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
@@ -2487,13 +2534,13 @@ void CacheTest::hashResultsOnlySendOutstandingChunks()
    cache.onChunkHashKnown(unrelated->getChunks().first());
    QCOMPARE(received.size(), 1);
 
-   chunks[3]->setHash(hashes[3]); // Requested hashes may arrive out of order.
+   chunks[3]->setHash(hashes[3], false); // Requested hashes may arrive out of order.
    cache.onChunkHashKnown(chunks[3]);
    QCOMPARE(received.size(), 2);
    cache.onChunkHashKnown(chunks[3]); // Duplicate while chunk 2 is still pending.
    QCOMPARE(received.size(), 2);
 
-   chunks[2]->setHash(hashes[2]);
+   chunks[2]->setHash(hashes[2], false);
    cache.onChunkHashKnown(chunks[2]);
    QCOMPARE(received.size(), response.nb_hash());
    for (const auto& chunk : chunks)
