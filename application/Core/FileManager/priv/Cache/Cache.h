@@ -77,7 +77,6 @@ namespace FM
 
       SharedDirectory* getSuperSharedDirectory(const Common::Path& path) const;
       QList<SharedEntry*> getSubSharedEntries(const Common::Path& path) const;
-      bool isShared(const Common::Path& path) const;
 
       Directory* getFittestDirectory(const Common::Path& path) const;
 
@@ -92,7 +91,7 @@ namespace FM
       void onEntryRemoved(Entry* entry);
       void onEntryRenamed(Entry* entry, const QString& oldName, const QString& oldUserName);
       void onFileResizing(File* file);
-      void onFileResized(File* file, qint64 oldSize);
+      void onFileResized(File* file);
 
       void onChunkHashKnown(const QSharedPointer<Chunk>& chunk);
       void onChunkRemoved(const QSharedPointer<Chunk>& chunk);
@@ -111,7 +110,7 @@ namespace FM
       // Physical filenames and shared display names have independent search indexes.
       void entryRenamed(FM::Entry* entry, const QString& oldName, const QString& oldUserName);
       void fileResizing(FM::File* file);
-      void fileResized(FM::File* file, qint64 oldSize);
+      void fileResized(FM::File* file);
 
       /**
         * May be emitted from a separated thread.
@@ -150,7 +149,8 @@ namespace FM
       SharedEntry* createSharedEntry(
          const Common::Path& path,
          const Common::Hash& ID = Common::Hash(),
-         const QString& name = QString()
+         const QString& name = QString(),
+         bool mergeSubEntries = true
       );
       void saveSharedEntries() const;
 

@@ -90,8 +90,6 @@ namespace FM
 
       void populateEntry(Protos::Common::Entry* entry) const;
 
-      void del(bool invokeDelete = true);
-
       void moveInto(Directory* directory);
 
       void setPath(const Common::Path& path);

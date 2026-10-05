@@ -92,7 +92,6 @@ namespace FM
       qint64 read(char* buffer, qint64 offset, int maxBytesToRead);
 
       QList<QSharedPointer<Chunk>> getChunks() const;
-      bool hasAllHashes() const;
       qint64 getRemainingBytesToHash() const;
 
       bool isComplete() const;
@@ -129,7 +128,6 @@ namespace FM
       void setHashes(const QList<Common::Hash>& hashes);
       int getFirstUnhashedChunk() const;
       void chunkHashChanged(const Chunk* chunk, bool hadHash, bool hasHash);
-      void rebuildHashingProgress();
 
    protected:
       void setRootRecursively(SharedEntry* sharedEntry) override;

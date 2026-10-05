@@ -692,6 +692,33 @@ void CacheTest::setSharedPathsKeepsDownloadsOfReplacedShare()
    QCOMPARE(chunks.first()->getFilePath(), Common::Path(unfinished));
 }
 
+void CacheTest::savedSharedEntriesAreLoadedAsTheyAre()
+{
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   for (const QString& dir : { "s/sub", "other" })
+      QVERIFY(QDir().mkpath(temp.filePath(dir)));
+   const auto savedShares = SETTINGS.getRepeated<Protos::Common::SharedEntry>("shared_entries");
+   const auto restoreShares = qScopeGuard([&] { SETTINGS.set("shared_entries", savedShares); });
+
+   // Entries saved by a previous version may contain each other.
+   QList<Protos::Common::SharedEntry> saved;
+   for (const QString& dir : { "s/sub/", "s/", "other/" })
+   {
+      Protos::Common::SharedEntry entry;
+      entry.set_path(temp.filePath(dir).toStdString());
+      saved << entry;
+   }
+   SETTINGS.set("shared_entries", saved);
+
+   // Merging while loading would save the entries again, without the ones which aren't loaded yet.
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   cache.addExistingSharedEntry(saved[0]);
+   cache.addExistingSharedEntry(saved[1]);
+   QCOMPARE(cache.getSharedEntries().size(), 2);
+   QCOMPARE(SETTINGS.getRepeated<Protos::Common::SharedEntry>("shared_entries").size(), 3);
+}
+
 void CacheTest::fittestDirectoryMatchesExistingPaths()
 {
    QTemporaryDir temp;
@@ -4096,7 +4123,6 @@ void CacheTest::scanLoadsHashesInBatches()
          auto file = dir->getFile(info.fileName());
          QVERIFY(file);
          const auto expected = hashCache->savedHashes.value(request.path);
-         QCOMPARE(file->hasAllHashes(), !expected.isEmpty());
          QCOMPARE(file->getRemainingBytesToHash(), expected.isEmpty() ? info.size() : qint64(0));
          if (!expected.isEmpty())
             QCOMPARE(file->getChunks().first()->getHash(), expected.first());
@@ -5204,8 +5230,7 @@ void CacheTest::metadataReadersAvoidStructuralLocks()
    std::thread reader([&] {
       // Parent lookups and index predicates may read child metadata while the
       // child's structural lock is held by a writer waiting to enter its parent.
-      correct = root->getRootDir()->getFile("locked.txt") == file &&
-         file->getNameWithoutExtension() == "locked" && file->getExtension() == "txt" &&
+      correct = root->getRootDir()->getFile("locked.txt") == file && file->getExtension() == "txt" &&
          file->getSize() == 8 && cache.getAmount() == 8 && file->getRoot() == root && !file->isRoot();
       readDone.release();
    });
@@ -5266,8 +5291,7 @@ void CacheTest::concurrentEntryMetadata()
       start.acquire();
       for (int i = 0; i < 2000; ++i)
       {
-         if (!names.contains(file->getName()) || !stems.contains(file->getNameWithoutExtension()) ||
-             file->getExtension() != "txt" || !validSize(file->getSize()) ||
+         if (!names.contains(file->getName()) || file->getExtension() != "txt" || !validSize(file->getSize()) ||
              !validSize(cache.getAmount()) || !aliases.contains(root->getUserName()) ||
              file->getRoot() != root || file->isRoot())
             valid = false;

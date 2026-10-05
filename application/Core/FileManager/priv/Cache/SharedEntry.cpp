@@ -58,7 +58,7 @@ SharedEntry::SharedEntry(
    const QString& pathStr = fullPath.toString();
 
    // Avoid two same entries.
-   if (this->getCache()->isShared(fullPath))
+   if (this->getCache()->getSharedEntry(fullPath))
       throw SharedEntryAlreadySharedException();
 
    // First of all check is the entry physically exists.
@@ -113,11 +113,6 @@ SharedEntry::~SharedEntry()
 void SharedEntry::populateEntry(Protos::Common::Entry* entry) const
 {
    this->getRootEntry()->populateEntry(entry, true);
-}
-
-void SharedEntry::del(bool invokeDelete)
-{
-   this->getRootEntry()->del(invokeDelete);
 }
 
 /**
@@ -221,7 +216,7 @@ SharedDirectory::~SharedDirectory()
 void SharedDirectory::mergeSubSharedEntries()
 {
    // Merges the sub-entries (directories and files) of each directory found.
-   foreach (SharedEntry* subEntry, this->getCache()->getSubSharedEntries(this->getPath()))
+   for (SharedEntry* subEntry : this->getCache()->getSubSharedEntries(this->getPath()))
    {
       // Create the missing directories.
       const QStringList& parentFolders = this->getPath().getDirs();

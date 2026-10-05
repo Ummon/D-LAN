@@ -53,7 +53,7 @@ namespace Common
       template <typename Updater>
       bool updateItem(const T& item, Updater update);
 
-      void removeOne(const T& item);
+      bool removeOne(const T& item);
       void clear();
 
       QList<T> getItems(const U& key) const;
@@ -201,10 +201,13 @@ bool Common::SortedList<T, U>::updateItem(const T& item, Updater update)
    return true;
 }
 
+/**
+  * @return 'false' if the item isn't in the list.
+  */
 template <typename T, typename U>
-void Common::SortedList<T, U>::removeOne(const T& item)
+bool Common::SortedList<T, U>::removeOne(const T& item)
 {
-   this->list.removeOne(item);
+   return this->list.removeOne(item);
 }
 
 template <typename T, typename U>

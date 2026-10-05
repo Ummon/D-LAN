@@ -86,9 +86,9 @@ QList<T> FM::ExtensionIndex<T>::search(const QList<QString>& extensions, int lim
    QList<T> result;
    QSet<QString> visitedExtensions;
 
-   for (QListIterator<QString> i(extensions); i.hasNext();)
+   for (const QString& requestedExtension : extensions)
    {
-      const QString extension = i.next().toLower();
+      const QString extension = requestedExtension.toLower();
       // Visit each bucket once, preserving the order of the requested extensions.
       if (visitedExtensions.contains(extension))
          continue;

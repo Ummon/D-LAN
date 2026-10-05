@@ -155,7 +155,7 @@ Protos::Common::Entries Cache::getProtoSharedEntries() const
 
    Protos::Common::Entries result;
 
-   foreach (SharedEntry* sharedEntry, this->sharedEntries)
+   for (SharedEntry* sharedEntry : this->sharedEntries)
    {
       Protos::Common::Entry* entry = result.add_entries();
       sharedEntry->populateEntry(entry);
@@ -190,7 +190,7 @@ Directory* Cache::getDirectory(const Protos::Common::Entry& dir) const
 
    QMutexLocker locker(&this->mutex);
 
-   foreach (SharedEntry* sharedEntry, this->sharedEntries)
+   for (SharedEntry* sharedEntry : this->sharedEntries)
    {
       if (sharedEntry->getId() == dir.shared_entry().id().hash())
       {
@@ -202,7 +202,7 @@ Directory* Cache::getDirectory(const Protos::Common::Entry& dir) const
 
          if (currentDir)
          {
-            foreach (QString folder, folders)
+            for (const QString& folder : std::as_const(folders))
             {
                currentDir = currentDir->getSubDir(folder);
                if (!currentDir)
@@ -230,7 +230,7 @@ Entry* Cache::getEntry(const Common::Path& path) const
 
    QMutexLocker locker(&this->mutex);
 
-   foreach (SharedEntry* sharedEntry, this->sharedEntries)
+   for (SharedEntry* sharedEntry : this->sharedEntries)
    {
       const Common::Path sharedEntryPath = sharedEntry->getPath();
 
@@ -479,12 +479,10 @@ SharedEntry* Cache::getSharedEntry(const Common::Hash& ID) const
 {
    QMutexLocker locker(&this->mutex);
 
-   for (QListIterator<SharedEntry*> i(this->sharedEntries); i.hasNext();)
-   {
-      SharedEntry* entry = i.next();
+   for (SharedEntry* entry : this->sharedEntries)
       if (entry->getId() == ID)
          return entry;
-   }
+
    return nullptr;
 }
 
@@ -626,35 +624,17 @@ void Cache::addExistingSharedEntry(const Protos::Common::SharedEntry& sharedEntr
 
    try
    {
-      if (!QFileInfo::exists(path))
-         throw EntriesNotFoundException(QStringList{ path });
-
-      const Common::Path commonPath = Common::Path(path);
-      const QString name = QString::fromStdString(sharedEntry.shared_name());
-      const Common::Hash id = Common::Hash(sharedEntry.id().hash());
-
-      SharedEntry* entry = SharedEntry::create(this, path, id, name);
-
-      L_DEBU(QString("Add an existing shared entry: %1").arg(path));
-
-      this->sharedEntries << entry;
-
-      emit newSharedEntry(entry);
+      // Not merged: the saved entries would be saved again, without the ones which aren't loaded yet.
+      this->createSharedEntry(
+         Common::Path(path),
+         Common::Hash(sharedEntry.id().hash()),
+         QString::fromStdString(sharedEntry.shared_name()),
+         false
+      );
    }
    catch (FileSystemEntryNotFoundException&)
    {
-      // The entry has been removed since the check above.
       throw EntriesNotFoundException(QStringList{ path });
-   }
-   catch (SharedEntryAlreadySharedException&)
-   {
-      L_DEBU(QString("Shared entry already shared: %1").arg(path));
-   }
-   catch (SuperDirectoryExistsException& e)
-   {
-      L_WARN(
-         QString("There is already a super directory: %1 for this entry: %2").arg(e.superDirectory, e.subPath)
-      );
    }
 }
 
@@ -712,20 +692,6 @@ QList<SharedEntry*> Cache::getSubSharedEntries(const Common::Path& path) const
       if (sharedEntry->getPath().isSubOf(path))
          ret << sharedEntry;
    return ret;
-}
-
-/**
-  * Returns true if 'path' is the path of a shared entry. A path inside a shared directory isn't one.
-  */
-bool Cache::isShared(const Common::Path& path) const
-{
-   QMutexLocker locker(&this->mutex);
-
-   for (auto entry: this->sharedEntries)
-      if (entry->getPath() == path)
-         return true;
-
-   return false;
 }
 
 /**
@@ -841,9 +807,9 @@ void Cache::onFileResizing(File* file)
    emit fileResizing(file);
 }
 
-void Cache::onFileResized(File* file, qint64 oldSize)
+void Cache::onFileResized(File* file)
 {
-   emit fileResized(file, oldSize);
+   emit fileResized(file);
 }
 
 void Cache::onChunkHashKnown(const QSharedPointer<Chunk>& chunk)
@@ -942,14 +908,16 @@ Common::SharedEntry Cache::makeSharedEntry(const SharedEntry* entry, bool withFr
 }
 
 /**
-  * Creates a new shared entry, the shared entries it contains are merged into it.
+  * Creates a new shared entry.
   *
+  * @param mergeSubEntries Whether the shared entries it contains are merged into it.
   * @exception FileSystemEntryNotFoundException
   */
 SharedEntry* Cache::createSharedEntry(
    const Common::Path& path,
    const Common::Hash& id,
-   const QString& name
+   const QString& name,
+   bool mergeSubEntries
 )
 {
    try
@@ -962,7 +930,8 @@ SharedEntry* Cache::createSharedEntry(
 
       // Merged before the file updater knows the new entry: its scan then finds the merged content. Merging while
       // it scans would add the entries it has already created a second time.
-      entry->mergeSubSharedEntries();
+      if (mergeSubEntries)
+         entry->mergeSubSharedEntries();
 
       emit newSharedEntry(entry);
 

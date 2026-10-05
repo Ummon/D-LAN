@@ -85,12 +85,8 @@ DirWatcherLinux::~DirWatcherLinux()
 void DirWatcherLinux::clearWatches()
 {
    // Remove all directories.
-   for (QMutableListIterator<Dir*> i(dirs); i.hasNext();)
-   {
-      Dir* dir = i.next();
-      delete dir;
-      i.remove();
-   }
+   while (!this->dirs.isEmpty())
+      delete this->dirs.takeFirst();
 
    // Remove all files.
    for (auto i = this->files.begin(); i != this->files.end(); ++i)
@@ -303,13 +299,12 @@ void DirWatcherLinux::rmPath(const QString& directory, const QString& filename)
 
    // Consult the registration, since a removed or renamed path no longer
    // identifies the filesystem object that was originally watched.
-   for (QMutableListIterator<Dir*> i(dirs); i.hasNext();)
+   for (auto i = this->dirs.begin(); i != this->dirs.end(); ++i)
    {
-      Dir* dir = i.next();
-      if (dir->name == path)
+      if ((*i)->name == path)
       {
-         delete dir;
-         i.remove();
+         delete *i;
+         this->dirs.erase(i);
          return;
       }
    }
@@ -334,15 +329,17 @@ QList<DirWatcherLinux::RemovedPath> DirWatcherLinux::removeWatchedPathsUnder(con
    };
 
    QList<RemovedPath> removed;
-   for (QMutableListIterator<Dir*> i(this->dirs); i.hasNext();)
+   for (auto i = this->dirs.begin(); i != this->dirs.end();)
    {
-      Dir* dir = i.next();
+      Dir* dir = *i;
       if (isUnderRoot(dir->name))
       {
          removed << RemovedPath{dir->name, false};
          delete dir;
-         i.remove();
+         i = this->dirs.erase(i);
       }
+      else
+         ++i;
    }
    for (auto i = this->files.begin(); i != this->files.end();)
    {
@@ -810,17 +807,20 @@ QList<WatcherEvent> DirWatcherLinux::processInotifyEvents(const char* buf, int l
    // Retire incomplete roots only after processing the batch, so pending moves
    // and directory pointers remain valid. Notify each surviving registration
    // once; FileUpdater will rescan it and switch to periodic scanning.
-   for (QMutableListIterator<Dir*> i(this->dirs); i.hasNext();)
+   for (auto i = this->dirs.begin(); i != this->dirs.end();)
    {
-      Dir* root = i.next();
+      Dir* root = *i;
       if (failedRoots.contains(root->name))
       {
          events << WatcherEvent(WatcherEvent::WATCH_LOST, root->name, false);
          delete root;
-         i.remove();
+         i = this->dirs.erase(i);
+         continue;
       }
-      else if (rescannedRoots.contains(root->name))
+
+      if (rescannedRoots.contains(root->name))
          events << WatcherEvent(WatcherEvent::RESCAN, root->name, false);
+      ++i;
    }
    // Restore replacements after interpreting all events against the old trees.
    // Keep each notification's original position relative to other path changes.
@@ -924,16 +924,15 @@ DirWatcherLinux::Dir::Dir(DirWatcherLinux* dwl, Dir* parent, const QString& name
       if (!parent)
          this->ancestors = dwl->watchAncestors(name);
       this->wd = dwl->addWatch(this->getFullPath(), (this->parent ? EVENTS_OBS : ROOT_EVENTS_OBS) | IN_ONLYDIR);
-      for (QListIterator<QString> i(QDir(this->getFullPath()).entryList(QDir::Dirs | QDir::Hidden | QDir::NoDotAndDotDot | QDir::NoSymLinks)); i.hasNext();)
-         new Dir(this->dwl, this, i.next());
+      for (const QString& subDir : QDir(this->getFullPath()).entryList(QDir::Dirs | QDir::Hidden | QDir::NoDotAndDotDot | QDir::NoSymLinks))
+         new Dir(this->dwl, this, subDir);
    }
    catch (UnableToWatchException&)
    {
-      for (QHashIterator<QString, Dir*> j(this->children); j.hasNext();)
+      for (Dir* child : std::as_const(this->children))
       {
-         auto child = j.next();
-         child.value()->parent = nullptr;
-         delete child.value();
+         child->parent = nullptr;
+         delete child;
       }
       if (this->wd >= 0)
          this->dwl->rmWatcher(this->wd);
@@ -957,11 +956,10 @@ DirWatcherLinux::Dir::~Dir()
       if (this->parent)
          this->parent->children.remove(this->name);
 
-      for (QHashIterator<QString, Dir*> i(this->children); i.hasNext();)
+      for (Dir* child : std::as_const(this->children))
       {
-         auto child = i.next();
-         child.value()->parent = nullptr;
-         delete child.value();
+         child->parent = nullptr;
+         delete child;
       }
    }
    this->dwl->releaseAncestors(this->ancestors);

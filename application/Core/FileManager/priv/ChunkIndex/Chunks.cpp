@@ -29,7 +29,7 @@ using namespace FM;
   * - Add identical files 'a' and 'b'.
   * - remove 'a'. 'b' wouldn't be remove from Chunks at the same time.
   *
-  * We may use a Bloom filter to reduce the time of a call to 'contains(..)', 'value(..)' and 'values(..)'.
+  * We may use a Bloom filter to reduce the time of a call to 'contains(..)' and 'values(..)'.
   * Some measurements (compiled with GCC 4.6 and -02):
   *  - The filter reduces the call time of 'contains()' from about 20% with 30'000 hashes
   *    and about 15% with 100'000 hashes.
@@ -62,20 +62,6 @@ void Chunks::rm(const QSharedPointer<Chunk>& chunk)
    if (this->isEmpty())
       this->bloomFilter.reset();
 #endif
-   // L_DEBU(QString("Nb chunks: %1").arg(this->size()));
-}
-
-QSharedPointer<Chunk> Chunks::value(const Common::Hash& hash) const
-{
-   if (hash.isNull())
-      return QSharedPointer<Chunk>();
-
-   QMutexLocker locker(&this->mutex);
-#ifdef BLOOM_FILTER_ON
-   if (!this->bloomFilter.test(hash))
-      return QSharedPointer<Chunk>();
-#endif
-   return QMultiHash<Common::Hash, QSharedPointer<Chunk>>::value(hash);
 }
 
 QList<QSharedPointer<Chunk>> Chunks::values(const Common::Hash& hash) const

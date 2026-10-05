@@ -19,7 +19,7 @@
 #pragma once
 
 // Uncomment this directive to enable the Bloom filter.
-// It will speed up the call to the methods 'value(..)', 'values(..)' and 'contains(..)' by 15% for less than 100'000 chunks in memory
+// It will speed up the call to the methods 'values(..)' and 'contains(..)' by 15% for less than 100'000 chunks in memory
 // but slow down by 100% for more than 1'000'000 chunks in memory, this is why it is disable by default.
 // #define BLOOM_FILTER_ON
 
@@ -41,7 +41,6 @@ namespace FM
    public:
       void add(const QSharedPointer<Chunk>& chunk);
       void rm(const QSharedPointer<Chunk>& chunk);
-      QSharedPointer<Chunk> value(const Common::Hash& hash) const;
       QList<QSharedPointer<Chunk>> values(const Common::Hash& hash) const;
       bool contains(const Common::Hash& hash) const;
 

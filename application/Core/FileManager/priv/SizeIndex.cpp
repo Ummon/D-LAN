@@ -6,7 +6,6 @@ using namespace FM;
 
 #include <priv/Log.h>
 #include <priv/Cache/SharedEntry.h>
-// #include <priv/Cache/File.h>
 
 SizeIndex::SizeIndex()
 {
@@ -21,14 +20,12 @@ SizeIndex::SizeIndex()
 void SizeIndex::addItem(ISizeItem* item)
 {
    QMutexLocker locker(&this->mutex);
-   // L_DEBU(QString("~~~~~~~~~~~~~~~~ addFile: %1 (%2)").arg(dynamic_cast<File*>(item)->getAbsolutePath()).arg(item->getSize()));
    this->index.insert(item);
 }
 
 void SizeIndex::rmItem(ISizeItem* item)
 {
    QMutexLocker locker(&this->mutex);
-   // L_DEBU(QString("~~~~~~~~~~~~~~~~ rmItem: %1 (%2)").arg(dynamic_cast<File*>(item)->getAbsolutePath()).arg(item->getSize()));
    this->index.remove(item);
 }
 

@@ -302,11 +302,11 @@ void File::populateEntry(Protos::Common::Entry* entry, bool setSharedDir, int ma
    this->populateEntryMetadata(entry, setSharedDir);
 
    int nb = 0;
-   for (QListIterator<QSharedPointer<Chunk>> i(this->chunks); i.hasNext();)
+   for (const QSharedPointer<Chunk>& chunk : this->chunks)
    {
       Protos::Common::Hash* protoHash = entry->add_chunks();
 
-      Common::Hash hash = i.next()->getHash();
+      const Common::Hash hash = chunk->getHash();
       if (!hash.isNull() && nb < maxHashes)
       {
          protoHash->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
@@ -351,10 +351,6 @@ void File::updateFromScan(const QFileInfo& fileInfo)
 
 void File::fileHasChangedOnDisk(const QFileInfo fileInfo)
 {
-   // L_DEBU(QString("~~~ File::fileHasChangedOnDisk, chunks size: %1").arg(this->chunks.size()));
-   // L_DEBU(QString("~~~ file.size: %1, fileInfo.size: %2").arg(this->getSize()).arg(fileInfo.size()));
-   // L_DEBU(QString("~~~ file.dateLastModified: %1, fileInfo.lastModified: %2").arg(this->dateLastModified.toString()).arg(fileInfo.lastModified().toString()));
-
    QMutexLocker locker(&this->mutex);
 
    this->setSize(fileInfo.size());
@@ -452,9 +448,8 @@ void File::newDataWriterCreated()
 
          this->setFileAsSparse(*this->fileInWriteMode);
 
-         for (QListIterator<QSharedPointer<Chunk>> i(this->chunks); i.hasNext();)
+         for (const QSharedPointer<Chunk>& chunk : std::as_const(this->chunks))
          {
-            QSharedPointer<Chunk> chunk = i.next();
             if (chunk->getKnownBytes() != 0)
             {
                chunk->setKnownBytes(0);
@@ -629,20 +624,6 @@ QList<QSharedPointer<Chunk>> File::getChunks() const
    return this->chunks;
 }
 
-bool File::hasAllHashes() const
-{
-   QMutexLocker locker(&this->mutex);
-
-   if (this->getSize() == 0)
-      return false;
-
-   for (QListIterator<QSharedPointer<Chunk>> i(this->chunks); i.hasNext();)
-      if (!i.next()->hasHash())
-         return false;
-
-   return true;
-}
-
 qint64 File::getRemainingBytesToHash() const
 {
    // Snapshot one file generation: restored hashes, resize, and re-download can
@@ -670,15 +651,6 @@ void File::chunkHashChanged(const Chunk* chunk, bool hadHash, bool hasHash)
    this->remainingBytesToHash += (hasHash ? -1 : 1) * qint64(chunk->getChunkSize());
    if (!hasHash)
       this->firstUnhashedChunk = qMin(this->firstUnhashedChunk, num);
-}
-
-void File::rebuildHashingProgress()
-{
-   this->remainingBytesToHash = 0;
-   this->firstUnhashedChunk = 0;
-   for (const auto& chunk : this->chunks)
-      if (!chunk->hasHash())
-         this->remainingBytesToHash += chunk->getChunkSize();
 }
 
 /**
@@ -730,8 +702,7 @@ void File::setSize(qint64 size)
       this->getCache()->onFileResizing(this);
       qint64 oldSize = this->size;
       Entry::setSize(size);
-      this->rebuildHashingProgress();
-      this->getCache()->onFileResized(this, oldSize);
+      this->getCache()->onFileResized(this);
 
       if (this->parentDirectory)
          this->parentDirectory.load()->fileSizeChanged(oldSize, size);
@@ -778,8 +749,6 @@ void File::removeUnfinishedFiles()
 
       this->fileInReadMode = nullptr;
       this->fileInWriteMode = nullptr;
-
-      // this->getCache()->getHashCache()->rmHashes(this->getAbsolutePath());
 
       if (!QFile::remove(this->getAbsolutePath()))
          L_WARN(QString("File::removeUnfinishedFiles(): unable to delete an unfinished file: %1").arg(this->getAbsolutePath()));

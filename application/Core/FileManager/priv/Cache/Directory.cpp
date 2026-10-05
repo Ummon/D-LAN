@@ -91,10 +91,10 @@ Directory::~Directory()
    }
    // Children may still be completing I/O and calling back into this directory. Keep it alive,
    // but never hold its mutex while waiting for a child. Destruction runs on the cache thread.
-   foreach (Directory* d, subDirs)
+   for (Directory* d : std::as_const(subDirs))
       delete d;
 
-   foreach (File* f, files)
+   for (File* f : std::as_const(files))
       delete f;
 
    L_DEBU(QString("Directory deleted: %1").arg(this->getName()));
@@ -119,9 +119,9 @@ void Directory::del(bool invokeDelete)
 
    // File operations acquire the file mutex before calling back into their parent.
    // Snapshot membership under the directory mutex, then release it before descending.
-   foreach (Directory* d, subDirs)
+   for (Directory* d : std::as_const(subDirs))
       d->del();
-   foreach (File* f, files)
+   for (File* f : std::as_const(files))
       f->del();
 
    if (this->parentDirectory)
@@ -138,8 +138,8 @@ void Directory::populateEntry(Protos::Common::Entry* dir, bool setSharedDir) con
 
    // Do not count the unfinished files.
    bool noFiles = true;
-   for (QListIterator<File*> i(this->files.getList()); i.hasNext();)
-      if (i.next()->isComplete())
+   for (File* file : this->files.getList())
+      if (file->isComplete())
       {
          noFiles = false;
          break;
@@ -178,10 +178,10 @@ void Directory::removeUnfinishedFiles()
    }
 
    // Removes incomplete file we don't know.
-   foreach (File* f, files)
+   for (File* f : std::as_const(files))
       f->removeUnfinishedFiles();
 
-   foreach (Directory* d, subDirs)
+   for (Directory* d : std::as_const(subDirs))
       d->removeUnfinishedFiles();
 }
 
@@ -229,10 +229,8 @@ void Directory::fileDeleted(File* file)
 
    QMutexLocker locker(&this->mutex);
 
-   if (!this->files.getList().contains(file))
-      return;
-   this->adjustSize(-file->getSize());
-   this->files.removeOne(file);
+   if (this->files.removeOne(file))
+      this->adjustSize(-file->getSize());
 }
 
 void Directory::subDirDeleted(Directory* dir)
@@ -264,9 +262,10 @@ Entry* Directory::getEntry(const Common::Path& path)
    // would invert the child-to-parent lock order used by size propagation.
    // The traversal guard keeps the returned intermediate pointers alive.
    Directory* currentDirectory = this;
-   for (QStringListIterator i(path.getDirs()); i.hasNext();)
+   const QStringList dirs = path.getDirs();
+   for (const QString& dir : dirs)
    {
-      currentDirectory = currentDirectory->getSubDir(i.next());
+      currentDirectory = currentDirectory->getSubDir(dir);
       if (!currentDirectory)
          break;
    }
@@ -323,8 +322,8 @@ QList<File*> Directory::getCompleteFiles() const
 {
    QMutexLocker locker(&this->mutex);
 
-   QList<File*> completeFiles;   
-   foreach (File* file, this->files.getList())
+   QList<File*> completeFiles;
+   for (File* file : this->files.getList())
    {
       if (file->isComplete())
          completeFiles << file;
@@ -368,7 +367,7 @@ Directory* Directory::createSubDirs(const QStringList& names, bool physically)
    // createSubDir serializes lookup/insertion in each parent. Release that
    // parent's lock before descending, while deferring deletion of the path.
    Directory* currentDir = this;
-   foreach (QString name, names)
+   for (const QString& name : names)
    {
       currentDir = currentDir->createSubDir(name, physically);
       if (!currentDir)

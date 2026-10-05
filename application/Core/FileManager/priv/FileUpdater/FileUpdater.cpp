@@ -129,18 +129,45 @@ void FileUpdater::addRoot(SharedEntry* sharedEntry)
 
    L_DEBU(QString("FileUpdater: addRoot: %1").arg(sharedEntry->getPath()));
 
-   const Common::Path& entryPath = sharedEntry->getPath();
-
    // Browse requests must wait until the initial scan has populated the root directory.
    if (auto directory = dynamic_cast<Directory*>(sharedEntry->getRootEntry()))
       directory->setScanned(false);
+
+   this->watchRoot(sharedEntry);
+
+   this->enqueueEntryToScan(sharedEntry->getRootEntry());
+
+   this->dirEvent->release();
+}
+
+/**
+  * The path of a shared entry has changed: it's renamed by the downloader or moved on the file system.
+  * Its cached name and path are already updated.
+  */
+void FileUpdater::updateRootPath(SharedEntry* sharedEntry, const Common::Path& oldPath)
+{
+   QMutexLocker locker(&this->mutex);
+   if (!this->dirWatcher)
+      return;
+
+   this->dirWatcher->rmPath(oldPath.toString(false), oldPath.getFilename());
+   this->watchRoot(sharedEntry);
+}
+
+/**
+  * Watches the path of a shared entry. An entry which can't be watched is periodically rescanned.
+  * 'mutex' must be locked.
+  */
+void FileUpdater::watchRoot(SharedEntry* sharedEntry)
+{
+   const Common::Path path = sharedEntry->getPath();
 
    bool watchable = false;
    if (this->dirWatcher)
    {
       try
       {
-         watchable = this->dirWatcher->addPath(entryPath.toString(false), entryPath.getFilename());
+         watchable = this->dirWatcher->addPath(path.toString(false), path.getFilename());
       }
       catch (FileSystemEntryNotFoundException& e)
       {
@@ -148,38 +175,15 @@ void FileUpdater::addRoot(SharedEntry* sharedEntry)
       }
    }
 
-   this->enqueueEntryToScan(sharedEntry->getRootEntry());
-
-   if (!watchable)
-   {
-      L_WARN(QString("This entry is not watchable: %1").arg(entryPath.toString()));
-      this->unwatchableEntries << sharedEntry->getRootEntry();
-   }
-
-   this->dirEvent->release();
-}
-
-// Follow a rename performed by the downloader, whose cached name is already updated.
-void FileUpdater::updateRootPath(SharedEntry* sharedEntry, const Common::Path& oldPath)
-{
-   QMutexLocker locker(&this->mutex);
-   if (!this->dirWatcher)
-      return;
-   this->dirWatcher->rmPath(oldPath.toString(false), oldPath.getFilename());
-   const auto path = sharedEntry->getPath();
-   bool watchable = false;
-   try
-   {
-      watchable = this->dirWatcher->addPath(path.toString(false), path.getFilename());
-   }
-   catch (FileSystemEntryNotFoundException&)
-   {
-   }
-   auto root = sharedEntry->getRootEntry();
+   Entry* root = sharedEntry->getRootEntry();
    if (watchable)
       this->unwatchableEntries.removeOne(root);
-   else if (!this->unwatchableEntries.contains(root))
-      this->unwatchableEntries << root;
+   else
+   {
+      L_WARN(QString("This entry is not watchable: %1").arg(path.toString()));
+      if (!this->unwatchableEntries.contains(root))
+         this->unwatchableEntries << root;
+   }
 }
 
 /**
@@ -326,7 +330,7 @@ void FileUpdater::run()
 
       this->mutex.lock();
 
-      foreach (Entry* entry, this->rootEntriesToRemove)
+      for (Entry* entry : std::as_const(this->rootEntriesToRemove))
       {
          L_DEBU(QString("Stop watching this path: %1").arg(entry->getAbsolutePath()));
          if (this->dirWatcher)
@@ -477,10 +481,9 @@ void FileUpdater::computeSomeHashes()
       {
          QMutexLocker locker(&this->mutex);
          this->hashingFile = nullptr;
-         // Update only existing work; never resurrect a removed job.
-         if (this->hashingQueue.contains(file))
-            this->hashingQueue.finishPass(file, file->getRemainingBytesToHash(), ioError,
-               this->schedulerClock.elapsed(), this->IO_ERROR_WAITING_BEFORE_RETRY);
+         // Only existing work is updated: a job removed meanwhile is never resurrected.
+         this->hashingQueue.finishPass(file, file->getRemainingBytesToHash(), ioError,
+            this->schedulerClock.elapsed(), this->IO_ERROR_WAITING_BEFORE_RETRY);
       }
 
       // Relocking at the next pass would otherwise starve an entry deletion waiting in the cache thread
@@ -966,8 +969,6 @@ bool FileUpdater::processEvents(const QList<WatcherEvent>& events)
                      !pathDestination.isFile() && !event.path1.endsWith('/') ? event.path1 + '/' : event.path1
                   );
 
-            // L_DEBU(QString("MOVE from %1, to %2").arg(pathOrigin.toString(), pathDestination.toString()));
-
             Directory* destination =
                dynamic_cast<Directory*>(this->fileManager->getEntry(pathDestination.removeLastElement()));
 
@@ -1009,31 +1010,7 @@ bool FileUpdater::processEvents(const QList<WatcherEvent>& events)
                   // 'SharedEntry::path' is the directory containing the shared entry, the last element is its name (already renamed above).
                   SharedEntry* sharedEntry = entryToMove->getRoot();
                   sharedEntry->setPath(pathDestination.removeLastElement());
-
-                  if (this->dirWatcher)
-                  {
-                     this->dirWatcher->rmPath(pathOrigin.toString(false), pathOrigin.getFilename());
-
-                     const Common::Path newPath = sharedEntry->getPath();
-                     bool watchable = false;
-                     try
-                     {
-                        watchable = this->dirWatcher->addPath(newPath.toString(false), newPath.getFilename());
-                     }
-                     catch (FileSystemEntryNotFoundException&)
-                     {
-                     }
-
-                     QMutexLocker locker(&this->mutex);
-                     if (watchable)
-                        this->unwatchableEntries.removeOne(entryToMove);
-                     else
-                     {
-                        L_WARN(QString("This entry is not watchable: %1").arg(newPath.toString()));
-                        if (!this->unwatchableEntries.contains(entryToMove))
-                           this->unwatchableEntries << entryToMove;
-                     }
-                  }
+                  this->updateRootPath(sharedEntry, pathOrigin);
                }
                else
                {

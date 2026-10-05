@@ -89,11 +89,8 @@ namespace FM
 
       QString getName() const;
       QString getUserName() const;
-      QString getNameWithoutExtension() const;
 
       virtual void rename(const QString& newName);
-
-      void setParentDirectory(Directory* dir);
 
       virtual qint64 getSize() const override;
       quintptr uniqueKey() const override { return reinterpret_cast<quintptr>(this); }

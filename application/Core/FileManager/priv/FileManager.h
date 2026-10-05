@@ -137,7 +137,7 @@ namespace FM
       void entryRenamed(FM::Entry* entry, const QString& oldName, const QString& oldUserName);
 
       void fileResizing(FM::File* file);
-      void fileResized(FM::File* file, qint64 oldSize);
+      void fileResized(FM::File* file);
 
       void chunkHashKnown(const QSharedPointer<FM::Chunk>& chunk);
       void chunkRemoved(const QSharedPointer<FM::Chunk>& chunk);

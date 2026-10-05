@@ -85,6 +85,8 @@ namespace FM
 
       void stopHashing();
 
+      void watchRoot(SharedEntry* sharedEntry);
+
       void scan(Entry* entry, bool addUnfinished = false, bool recursive = true);
 
       File* addScannedFile(const QFileInfo& fileInfo, File* file, Directory* parentDirectory = nullptr,

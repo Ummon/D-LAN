@@ -19,29 +19,18 @@
 #include <priv/FileManager.h>
 using namespace FM;
 
-#include <functional>
-
 #include <QSharedPointer>
 #include <QStringList>
-#include <QStringBuilder>
 #include <QList>
 #include <QSet>
 #include <QVector>
-#include <QDir>
-#include <QMutableListIterator>
 #include <QThread>
 
-#include <google/protobuf/text_format.h>
-
 #include <Common/KnownExtensions.h>
-#include <Common/PersistentData.h>
 #include <Common/Settings.h>
 #include <Common/Constants.h>
-#include <Common/Global.h>
 #include <Common/SharedEntry.h>
 #include <Common/StringUtils.h>
-
-#include <Protos/gui_settings.pb.h>
 
 #include <Exceptions.h>
 #include <priv/Global.h>
@@ -67,7 +56,6 @@ namespace
 FileManager::FileManager(QSharedPointer<HC::IHashCache> hashCache) :
    fileUpdater(this),
    cache(hashCache)
-   // cacheLoading(true)
 {
    Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
 
@@ -177,14 +165,13 @@ QList<QSharedPointer<IChunk>> FileManager::getAllChunks(
    const QList<Common::Hash>& hashes
 ) const
 {
-   for (QListIterator<Common::Hash> h(hashes); h.hasNext();)
+   for (const Common::Hash& hash : hashes)
    {
       // Chunks from different files, usually one chunk.
-      const QList<QSharedPointer<Chunk>>& chunks = this->chunks.values(h.next());
+      const QList<QSharedPointer<Chunk>> chunks = this->chunks.values(hash);
 
-      for (QListIterator<QSharedPointer<Chunk>> i(chunks); i.hasNext();)
+      for (const QSharedPointer<Chunk>& chunk : chunks)
       {
-         QSharedPointer<Chunk> chunk = i.next();
          if (chunk->matchesEntry(localEntry)) // The name, the path and the size of the file are the same?
          {
             // We verify that all hashes of all chunks match the given hashes. If it's not the case, the files are not the same.
@@ -369,8 +356,8 @@ QList<Protos::Common::FindResult> FileManager::find(
             intermediateResult << dynamic_cast<File*>(file);
       }
 
-      for (QListIterator<File*> i(intermediateResult); i.hasNext();)
-         result << NodeResult<Entry*>(i.next());
+      for (File* file : std::as_const(intermediateResult))
+         result << NodeResult<Entry*>(file);
    }
 
    QList<Protos::Common::FindResult> findResults;
@@ -381,9 +368,8 @@ QList<Protos::Common::FindResult> FileManager::find(
    const int EMPTY_FIND_RESULT_SIZE = findResults.last().ByteSizeLong(); // Around ~11 bytes.
    int findResultCurrentSize = EMPTY_FIND_RESULT_SIZE; // [Byte].
 
-   for (QListIterator<NodeResult<Entry*>> i(result); i.hasNext();)
+   for (const NodeResult<Entry*>& entry : std::as_const(result))
    {
-      const NodeResult<Entry*>& entry = i.next();
       Protos::Common::FindResult::EntryLevel* entryLevel = findResults.last().add_entries();
       entryLevel->set_level(entry.level);
 
@@ -475,7 +461,7 @@ QString FileManager::getSimilarFiles_debug() const
    QString result("Similar files:\n");
 
    QSet<Common::Hash> knownHashes;
-   foreach (Common::SharedEntry sharedEntry, this->cache.getSharedEntries())
+   for (const Common::SharedEntry& sharedEntry : this->cache.getSharedEntries())
    {
       Entry* entry = this->cache.getSharedEntry(sharedEntry.ID)->getRootEntry();
 
@@ -493,7 +479,7 @@ QString FileManager::getSimilarFiles_debug() const
                const QList<QSharedPointer<Chunk>>& similarChunks = this->chunks.values(hash);
                if (similarChunks.size() > 1)
                {
-                  foreach (QSharedPointer<Chunk> similarChunk, similarChunks)
+                  for (const QSharedPointer<Chunk>& similarChunk : similarChunks)
                      result.append(similarChunk->getFilePath()).append("\n");
                   result.append("------\n");
                }
@@ -608,7 +594,7 @@ void FileManager::fileResizing(File* file)
    this->sizeIndex.rmItem(file);
 }
 
-void FileManager::fileResized(File* file, qint64 oldSize)
+void FileManager::fileResized(File* file)
 {
    // Re-downloading removes the file from search before resizing it. Completion will add it back.
    if (isSearchableEntry(file))

@@ -147,5 +147,6 @@ private slots:
    void setSharedPathsWithOverlappingShares_data();
    void setSharedPathsWithOverlappingShares();
    void setSharedPathsKeepsDownloadsOfReplacedShare();
+   void savedSharedEntriesAreLoadedAsTheyAre();
    void directoryDeletionDequeuesHashingJobs();
 };

@@ -70,9 +70,6 @@ namespace FM
       QList<Dir*> dirs; ///< The watched dirs.
       QList<Dir*> dirsToDelete; ///< Dirs to delete.
 
-      // BYTE notifyBuffer[NOTIFY_BUFFER_SIZE]; ///< Is this data can be shares among some 'ReadDirectoryChangesW'?
-      // DWORD nbBytesNotifyBuffer;
-
       QRecursiveMutex mutex;
    };
 }

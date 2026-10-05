@@ -381,7 +381,6 @@ bool DirWatcherWin::watch(Dir* dir)
             FILE_NOTIFY_CHANGE_SIZE |
             FILE_NOTIFY_CHANGE_LAST_WRITE |
             FILE_NOTIFY_CHANGE_CREATION,
-         // &this->nbBytesNotifyBuffer,
          nullptr,
          &dir->overlapped,
          nullptr
@@ -397,7 +396,6 @@ bool DirWatcherWin::watch(Dir* dir)
          FILE_NOTIFY_CHANGE_FILE_NAME |
             FILE_NOTIFY_CHANGE_SIZE |
             FILE_NOTIFY_CHANGE_LAST_WRITE,
-         // &this->nbBytesNotifyBuffer,
          nullptr,
          &dir->overlapped,
          nullptr

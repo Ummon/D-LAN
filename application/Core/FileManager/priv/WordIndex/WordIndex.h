@@ -116,8 +116,8 @@ template<typename T>
 void FM::WordIndex<T>::addItem(const QStringList& words, const T& item)
 {
    QMutexLocker locker(&this->mutex);
-   for (QStringListIterator i(words); i.hasNext();)
-      this->root.addItem(QStringView(i.next()), item);
+   for (const QString& word : words)
+      this->root.addItem(QStringView(word), item);
 }
 
 template<typename T>
@@ -135,8 +135,8 @@ bool FM::WordIndex<T>::rmItem(const QStringList& words, const T& item)
 {
    QMutexLocker locker(&this->mutex);
    bool itemRemoved = false;
-   for (QStringListIterator i(words); i.hasNext();)
-      itemRemoved |= this->root.rmItem(i.next(), item);
+   for (const QString& word : words)
+      itemRemoved |= this->root.rmItem(word, item);
    return itemRemoved;
 }
 
@@ -144,10 +144,10 @@ template<typename T>
 void FM::WordIndex<T>::renameItem(const QStringList& oldWords, const QStringList& newWords, const T& item)
 {
    QMutexLocker locker(&this->mutex);
-   for (QStringListIterator i(oldWords); i.hasNext();)
-      this->root.rmItem(i.next(), item);
-   for (QStringListIterator i(newWords); i.hasNext();)
-      this->root.addItem(QStringView(i.next()), item);
+   for (const QString& word : oldWords)
+      this->root.rmItem(word, item);
+   for (const QString& word : newWords)
+      this->root.addItem(QStringView(word), item);
 }
 
 /**

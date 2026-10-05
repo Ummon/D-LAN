@@ -137,8 +137,8 @@ FM::Node<T>::Node()
 template <typename T>
 FM::Node<T>::~Node()
 {
-   for (QListIterator<Node<T>*>i(this->children); i.hasNext();)
-      delete i.next();
+   for (Node<T>* child : std::as_const(this->children))
+      delete child;
 }
 
 template <typename T>
@@ -250,10 +250,8 @@ QString FM::Node<T>::toStringDebug() const
       result.append(QString().fill(' ', INDENTATION * current.level));
       result.append(current.node->part).append(current.node->items.isEmpty() ? "" : QString(" N = %1").arg(current.node->items.size())).append('\n');
 
-      QListIterator<Node<T>*> i(current.node->children);
-      i.toBack();
-      while (i.hasPrevious())
-         nodesToProcess.prepend(SubNode { current.level + 1, i.previous() });
+      for (auto child = current.node->children.crbegin(); child != current.node->children.crend(); ++child)
+         nodesToProcess.prepend(SubNode { current.level + 1, *child });
    }
 
    return result;
@@ -364,16 +362,14 @@ QList<FM::NodeResult<T>> FM::Node<T>::getItems(
          }
       }
 
-      for (QListIterator<T> i(current->items); matches && i.hasNext();)
-      {
-         const T& item = i.next();
-         if (!predicat || predicat(item))
-         {
-            result << NodeResult<T>(item, !(fullyMatched && current == this));
-            if (result.size() == maxNbResult)
-               return result;
-         }
-      }
+      if (matches)
+         for (const T& item : current->items)
+            if (!predicat || predicat(item))
+            {
+               result << NodeResult<T>(item, !(fullyMatched && current == this));
+               if (result.size() == maxNbResult)
+                  return result;
+            }
 
       if (!alsoFromSubNodes)
          break;

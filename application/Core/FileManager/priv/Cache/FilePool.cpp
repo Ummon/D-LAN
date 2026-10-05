@@ -45,8 +45,8 @@ FilePool::~FilePool()
 
    this->timer.stop();
 
-   for (QMutableListIterator<OpenedFile> i(this->files); i.hasNext();)
-      delete i.next().file;
+   for (const OpenedFile& openedFile : std::as_const(this->files))
+      delete openedFile.file;
    this->files.clear();
 }
 
@@ -64,9 +64,9 @@ QFile* FilePool::open(const QString& path, QIODevice::OpenMode mode, bool* fileC
    if (fileCreated)
       *fileCreated = false;
 
-   for (QMutableListIterator<OpenedFile> i(this->files); i.hasNext();)
+   for (auto i = this->files.begin(); i != this->files.end(); ++i)
    {
-      OpenedFile& file = i.next();
+      OpenedFile& file = *i;
 
       if (file.path == path && file.releasedTime.isValid())
       {
@@ -74,7 +74,7 @@ QFile* FilePool::open(const QString& path, QIODevice::OpenMode mode, bool* fileC
          {
             L_DEBU(QString("FilePool::open(%1, %2): reopening released file").arg(path).arg(mode.toInt()));
             delete file.file;
-            i.remove();
+            this->files.erase(i);
             break;
          }
          else
@@ -102,16 +102,16 @@ void FilePool::release(QFile* file, bool forceToClose)
 
    QMutexLocker locker(&this->mutex);
 
-   for (QMutableListIterator<OpenedFile> i(this->files); i.hasNext();)
+   for (auto i = this->files.begin(); i != this->files.end(); ++i)
    {
-      OpenedFile& openedFile = i.next();
+      OpenedFile& openedFile = *i;
       if (openedFile.file == file)
       {
          if (forceToClose)
          {
             L_DEBU(QString("FilePool::release(%1, %2): file forced to close").arg(openedFile.path).arg(forceToClose));
             QFile* fileToDelete = openedFile.file;
-            i.remove();
+            this->files.erase(i);
 
             // The 'delete' below can take a while (because of flushing data),
             // we avoid to block the access to the 'FilePool' by unlocking the mutex.
@@ -159,15 +159,15 @@ QList<QFile*> FilePool::takeAll(const QString& path)
    QMutexLocker locker(&this->mutex);
 
    QList<QFile*> files;
-   for (QMutableListIterator<OpenedFile> i(this->files); i.hasNext();)
-   {
-      OpenedFile& openedFile = i.next();
-      if (openedFile.path == path)
+   this->files.removeIf(
+      [&](const OpenedFile& openedFile)
       {
+         if (openedFile.path != path)
+            return false;
          files << openedFile.file;
-         i.remove();
+         return true;
       }
-   }
+   );
    return files;
 }
 
@@ -180,23 +180,23 @@ void FilePool::tryToDeleteReleasedFiles()
    QList<QFile*> filesToDelete;
 
    bool stopTimer = true;
-   for (QMutableListIterator<OpenedFile> i(this->files); i.hasNext();)
-   {
-      const OpenedFile& openedFile = i.next();
-      if (openedFile.releasedTime.isValid())
+   this->files.removeIf(
+      [&](const OpenedFile& openedFile)
       {
-         if (openedFile.releasedTime.elapsed() > TIME_KEEP_FILE_OPEN_MIN)
-         {
-            L_DEBU(QString("FilePool::tryToDeleteReleasedFiles(): file closed: %1").arg(openedFile.path));
-            filesToDelete << openedFile.file;
-            i.remove();
-         }
-         else
+         if (!openedFile.releasedTime.isValid())
+            return false;
+
+         if (openedFile.releasedTime.elapsed() <= TIME_KEEP_FILE_OPEN_MIN)
          {
             stopTimer = false;
+            return false;
          }
+
+         L_DEBU(QString("FilePool::tryToDeleteReleasedFiles(): file closed: %1").arg(openedFile.path));
+         filesToDelete << openedFile.file;
+         return true;
       }
-   }
+   );
 
    if (stopTimer)
    {
@@ -207,7 +207,7 @@ void FilePool::tryToDeleteReleasedFiles()
    if (!filesToDelete.isEmpty())
    {
       locker.unlock();
-      for (QListIterator<QFile*> i(filesToDelete); i.hasNext();)
-         delete i.next();
+      for (QFile* file : std::as_const(filesToDelete))
+         delete file;
    }
 }

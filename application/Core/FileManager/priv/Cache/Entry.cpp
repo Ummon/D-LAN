@@ -21,7 +21,6 @@ using namespace FM;
 
 #include <Common/ProtoHelper.h>
 #include <Common/Settings.h>
-#include <Common/KnownExtensions.h>
 
 #include <priv/Log.h>
 #include <priv/FileManager.h>
@@ -106,11 +105,6 @@ QString Entry::getUserName() const
    return this->isRoot() ? this->getRoot()->getUserName() : this->getName();
 }
 
-QString Entry::getNameWithoutExtension() const
-{
-   return Common::KnownExtensions::removeExtension(this->getName());
-}
-
 /**
   * When a file or a directory is renamed.
   */
@@ -129,22 +123,6 @@ void Entry::rename(const QString& newName)
    const QString oldUserName = this->getUserName();
    this->setName(newName);
    this->getCache()->onEntryRenamed(this, oldName, oldUserName);
-}
-
-void Entry::setParentDirectory(Directory* dir)
-{
-   QMutexLocker locker(&this->mutex);
-
-   if (this->parentDirectory != dir)
-   {
-      this->parentDirectory = dir;
-      if (dir)
-      {
-         SharedEntry* newRoot = dir->getRoot();
-         locker.unlock();
-         this->setRootRecursively(newRoot);
-      }
-   }
 }
 
 void Entry::setName(const QString& name)
