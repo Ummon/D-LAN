@@ -29,6 +29,8 @@
       #define NOMINMAX
    #endif
    #include <windows.h>
+#elif defined(Q_OS_MACOS)
+   #include <sys/stat.h>
 #endif
 
 namespace RCA = Common::RemoteControlAuthentication;
@@ -762,6 +764,45 @@ private slots:
       QVERIFY(roots.entries_size() > 0);
       for (const auto& entry : roots.entries())
          QVERIFY(!entry.hidden());
+   }
+
+   void localBrowseHiddenEntriesDarwin()
+   {
+#ifdef Q_OS_MACOS
+      // An entry is hidden by its name or by its native flag, the one the Finder sets ("chflags hidden").
+      QTemporaryDir directory;
+      QVERIFY(directory.isValid());
+      QMap<QString, bool> expected;
+      for (bool isDir : {false, true})
+         for (bool dotName : {false, true})
+            for (bool nativeHidden : {false, true})
+            {
+               const QString name = QString("%1%2%3").arg(dotName ? "." : "", isDir ? "dir" : "file", nativeHidden ? "-flagged" : "");
+               const QString path = directory.filePath(name);
+               if (isDir)
+                  QVERIFY(QDir().mkdir(path));
+               else
+               {
+                  QFile file(path);
+                  QVERIFY(file.open(QIODevice::WriteOnly));
+               }
+               if (nativeHidden)
+                  QCOMPARE(chflags(QFile::encodeName(path).constData(), UF_HIDDEN), 0);
+               expected.insert(name, dotName || nativeHidden);
+            }
+
+      Protos::GUI::LocalBrowse request;
+      request.set_path(directory.path().toStdString());
+      auto job = RCM::localBrowse(request);
+      job.future.waitForFinished();
+      const auto result = job.future.result();
+      QMap<QString, bool> hidden;
+      for (const auto& entry : result.entries())
+         hidden.insert(QString::fromStdString(entry.name()), entry.hidden());
+      QCOMPARE(hidden, expected);
+#else
+      QSKIP("macOS hidden entries");
+#endif
    }
 
    void localBrowseDoesNotBlockConnection_data()

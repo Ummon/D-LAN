@@ -36,6 +36,7 @@
 #include <priv/FileUpdater/WaitCondition.h>
 #endif
 #ifdef Q_OS_MACOS
+#include <cstdio>
 #include <sys/stat.h>
 #endif
 
@@ -142,6 +143,47 @@ void CacheTest::darwinWatcherUpdatesCache()
    QVERIFY(QDir(temp.filePath("one")).removeRecursively());
    QTRY_VERIFY_WITH_TIMEOUT(!manager.getEntry(Common::Path(temp.filePath("one") + '/')), 5000);
    QTRY_COMPARE_WITH_TIMEOUT(manager.getAmount(), qint64(0), 5000);
+#else
+   QSKIP("macOS FSEvents integration");
+#endif
+}
+
+void CacheTest::darwinWatcherFollowsReplacedSubDirectory()
+{
+#ifdef Q_OS_DARWIN
+   QTemporaryDir temp;
+   QTemporaryDir outside; // Not shared, on the same volume.
+   QVERIFY(temp.isValid() && outside.isValid());
+   const auto savedShares = SETTINGS.getRepeated<Protos::Common::SharedEntry>("shared_entries");
+   const auto savedPeriod = SETTINGS.get<quint32>("scan_period_unwatchable_dirs");
+   const auto restore = qScopeGuard([&] {
+      SETTINGS.set("shared_entries", savedShares);
+      SETTINGS.set("scan_period_unwatchable_dirs", savedPeriod);
+   });
+   SETTINGS.set("shared_entries", QList<Protos::Common::SharedEntry>());
+   SETTINGS.set("scan_period_unwatchable_dirs", quint32(3600000));
+   const auto writeFile = [](const QString& path, const QByteArray& bytes) {
+      QFile file(path);
+      return file.open(QIODevice::WriteOnly) && file.write(bytes) == bytes.size();
+   };
+   const QString sub = temp.filePath("parent/sub");
+   const QString replacement = outside.filePath("replacement");
+   QVERIFY(QDir().mkpath(sub));
+   QVERIFY(QDir().mkpath(replacement));
+   QVERIFY(writeFile(sub + "/old.txt", "old"));
+   QVERIFY(writeFile(replacement + "/new.txt", "newer"));
+   FM::FileManager manager(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   manager.addASharedPath(temp.path() + '/');
+   QTRY_COMPARE(manager.getCacheStatus(), FM::IFileManager::UP_TO_DATE);
+   QVERIFY(manager.getEntry(Common::Path(sub + "/old.txt")));
+
+   // FSEvents only tells that 'sub' has been renamed, nothing about what it now contains: it's the reason why the
+   // scans asked by this watcher are recursive, see 'DirWatcherDarwin::notifiesEachChange()'.
+   // The directories are exchanged in one operation: 'sub' is never missing, no scan can take it for a new directory.
+   QCOMPARE(renamex_np(QFile::encodeName(sub).constData(), QFile::encodeName(replacement).constData(), RENAME_SWAP), 0);
+   QTRY_VERIFY_WITH_TIMEOUT(manager.getEntry(Common::Path(sub + "/new.txt")), 5000);
+   QTRY_VERIFY_WITH_TIMEOUT(!manager.getEntry(Common::Path(sub + "/old.txt")), 5000);
+   QTRY_COMPARE_WITH_TIMEOUT(manager.getAmount(), qint64(5), 5000);
 #else
    QSKIP("macOS FSEvents integration");
 #endif

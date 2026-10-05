@@ -20,6 +20,7 @@ private slots:
    void updaterWatcherRecovery_data();
    void updaterWatcherRecovery();
    void darwinWatcherUpdatesCache();
+   void darwinWatcherFollowsReplacedSubDirectory();
    void pendingScansFollowQueueTransitions();
    void scanSkipsScannedSubDirectoriesUnlessRecursive();
    void eventScansAreAsDeepAsTheWatcherRequires();
