@@ -137,6 +137,7 @@ private slots:
    void entryTypeReplacement();
    void emptyFileReplacement();
    void emptyFileReplacementReportsRenameFailure();
+   void completionIsRetriedAfterRenameFailure();
    void unfinishedFilesStayOutOfSearch_data();
    void unfinishedFilesStayOutOfSearch();
    void sharedFileRenameUpdatesSearchIndexes();

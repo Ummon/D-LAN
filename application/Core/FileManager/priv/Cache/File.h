@@ -98,6 +98,8 @@ namespace FM
       bool isComplete() const;
       void chunkComplete(const Chunk* chunk);
 
+      static int COMPLETION_RETRY_PERIOD; ///< [ms], see 'setAsComplete(..)'.
+
       int getNbChunks() const;
 
       virtual void setSize(qint64 size) override;
@@ -114,7 +116,8 @@ namespace FM
       friend class GetHashesResult; // Subscribe and validate a chunk generation under the file lock.
       friend class FileHasher; // Publish validated hashes while excluding generation retirement.
       QSharedPointer<QRecursiveMutex> getChunkMutex() const { return this->mutexStorage; }
-      void setAsComplete();
+      void completeIfAllChunksAre(bool retry = false);
+      void setAsComplete(bool retry = false);
       // Caller holds the file mutex. Unlike a zero hash limit, omit even unknown chunk records.
       void populateEntryMetadata(Protos::Common::Entry* entry, bool setSharedDir) const;
       void deleteAllChunks();

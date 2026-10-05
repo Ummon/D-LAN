@@ -35,6 +35,7 @@ using namespace FM;
 #include <QString>
 #include <QFile>
 #include <QScopeGuard>
+#include <QTimer>
 
 #include <Common/KnownExtensions.h>
 #include <Common/Global.h>
@@ -63,6 +64,8 @@ using namespace FM;
   * If it is an unfinished one, the name ends with ".unfinished" (see setting 'unfinished_suffix_term').
   * When a file becomes complete the suffix ".unfinished" is removed.
   */
+
+int File::COMPLETION_RETRY_PERIOD(10000);
 
 /**
   * Create a new file into a given directory.
@@ -694,11 +697,21 @@ void File::chunkComplete(const Chunk* chunk)
    if (num >= 0 && num < this->chunks.size() && this->chunks[num].data() == chunk)
       this->getCache()->onChunkHashKnown(this->chunks[num]);
 
+   this->completeIfAllChunksAre();
+}
+
+/**
+  * @param retry True for a new attempt after a failed one, see 'setAsComplete(..)'.
+  */
+void File::completeIfAllChunksAre(bool retry)
+{
+   QMutexLocker locker(&this->mutex);
+
    if (
       this->chunks.size() == this->getNbChunks() &&
       std::all_of(this->chunks.cbegin(), this->chunks.cend(), [](const auto& c) { return c->isComplete(); })
    )
-      this->setAsComplete();
+      this->setAsComplete(retry);
 }
 
 int File::getNbChunks() const
@@ -811,8 +824,11 @@ bool File::hasAParentDir(Directory* dir)
   * Set the file as complete, change its name from "<name>.unfinished" to "<name>".
   * If a file with the same name already exists it will be deleted.
   * Close the handles while excluding active I/O and new openers. Existing readers reopen lazily after the rename.
+  * If the file can't be renamed, because another application uses its destination for example, a new attempt is made
+  * from the cache thread every 'COMPLETION_RETRY_PERIOD'.
+  * @param retry True for one of these new attempts.
   */
-void File::setAsComplete()
+void File::setAsComplete(bool retry)
 {
    L_DEBU(QString("File set as complete: %1").arg(this->getAbsolutePath()));
 
@@ -839,7 +855,19 @@ void File::setAsComplete()
 
       if (!Common::Global::rename(oldPath, newPath))
       {
-         L_ERRO(QString("Unable to rename the file %1 to %2").arg(oldPath, newPath));
+         // Only the first failure is reported as an error: the following ones would repeat it at each period.
+         if (retry)
+            L_DEBU(QString("Still unable to rename the file %1 to %2").arg(oldPath, newPath));
+         else
+            L_ERRO(QString("Unable to rename the file %1 to %2").arg(oldPath, newPath));
+
+         // A retained chunk is detached when the file is deleted or downloaded again: the attempt then does nothing.
+         if (!this->chunks.isEmpty())
+            QTimer::singleShot(
+               COMPLETION_RETRY_PERIOD,
+               this->getCache(),
+               [chunk = this->chunks.constFirst()] { chunk->retryFileCompletion(); }
+            );
       }
       else
       {

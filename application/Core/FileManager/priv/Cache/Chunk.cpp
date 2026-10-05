@@ -303,6 +303,16 @@ void Chunk::saveFileHashes()
       this->file->saveHashes();
 }
 
+/**
+  * See 'File::setAsComplete(..)'.
+  */
+void Chunk::retryFileCompletion()
+{
+   QMutexLocker locker(this->fileMutex.data());
+   if (this->file)
+      this->file->completeIfAllChunksAre(true);
+}
+
 int Chunk::getKnownBytes() const
 {
    QMutexLocker locker(this->fileMutex.data());

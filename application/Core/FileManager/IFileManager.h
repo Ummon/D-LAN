@@ -216,7 +216,7 @@ namespace FM
 
       /**
         * Return the progress of the current action returned by 'getCacheStatus()'.
-        * @return An integer from 0 to 100.
+        * @return An integer from 0 to 10000 (hundredths of a percent).
         */
       virtual int getProgress() const = 0;
 

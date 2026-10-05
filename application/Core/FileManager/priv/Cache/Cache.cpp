@@ -345,7 +345,16 @@ QList<QSharedPointer<IChunk>> Cache::newFile(Protos::Common::Entry& fileEntry)
          {
             const auto existing = QFileInfo::exists(unfinished.toString()) ? unfinished : destination;
             if (QFileInfo::exists(existing.toString()))
-               shared = dynamic_cast<SharedFile*>(this->createSharedEntry(existing, Common::Hash(), name));
+            {
+               try
+               {
+                  shared = dynamic_cast<SharedFile*>(this->createSharedEntry(existing, Common::Hash(), name));
+               }
+               catch (FileSystemEntryNotFoundException&)
+               {
+                  // The file has been removed since the check above: a new one is created below.
+               }
+            }
          }
          if (shared)
          {
@@ -530,7 +539,7 @@ void Cache::setSharedPaths(const QList<std::pair<QString, Common::Path>>& paths)
             // The path isn't shared yet -> we create a new shared entry.
             entry = this->createSharedEntry(path, Common::Hash(), trimmedName);
          }
-         catch (PathNotFoundException& e)
+         catch (FileSystemEntryNotFoundException& e)
          {
             pathsNotFound << e.path;
          }
@@ -596,7 +605,7 @@ QPair<Common::SharedEntry, QString> Cache::addASharedPath(const QString& absolut
       else
          throw UnableToCreateSharedEntry();
    }
-   catch (PathNotFoundException& e)
+   catch (FileSystemEntryNotFoundException& e)
    {
       throw EntriesNotFoundException(QStringList() << e.path);
    }
@@ -625,6 +634,11 @@ void Cache::addExistingSharedEntry(const Protos::Common::SharedEntry& sharedEntr
       this->sharedEntries << entry;
 
       emit newSharedEntry(entry);
+   }
+   catch (FileSystemEntryNotFoundException&)
+   {
+      // The entry has been removed since the check above.
+      throw EntriesNotFoundException(QStringList{ path });
    }
    catch (SharedEntryAlreadySharedException&)
    {
@@ -695,7 +709,7 @@ QList<SharedEntry*> Cache::getSubSharedEntries(const Common::Path& path) const
 }
 
 /**
-  * If path matches a shared directory or one of its sub directories then true is returned.
+  * Returns true if 'path' is the path of a shared entry. A path inside a shared directory isn't one.
   */
 bool Cache::isShared(const Common::Path& path) const
 {
@@ -921,7 +935,7 @@ Common::SharedEntry Cache::makeSharedEntry(const SharedEntry* entry)
 /**
   * Creates a new shared entry, the shared entries it contains are merged into it.
   *
-  * @exception PathNotFoundException
+  * @exception FileSystemEntryNotFoundException
   */
 SharedEntry* Cache::createSharedEntry(
    const Common::Path& path,

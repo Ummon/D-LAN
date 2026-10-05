@@ -79,6 +79,7 @@ namespace FM
       void setHash(const Common::Hash& hash) override;
       void setHash(const Common::Hash& hash, bool saveHashes);
       void saveFileHashes();
+      void retryFileCompletion();
 
       int getKnownBytes() const override;      
       void setKnownBytes(int bytes) override;

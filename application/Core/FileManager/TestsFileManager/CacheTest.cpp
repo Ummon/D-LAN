@@ -5035,6 +5035,54 @@ void CacheTest::emptyFileReplacementReportsRenameFailure()
 #endif
 }
 
+void CacheTest::completionIsRetriedAfterRenameFailure()
+{
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   const auto savedShares = SETTINGS.getRepeated<Protos::Common::SharedEntry>("shared_entries");
+   const auto restoreShares = qScopeGuard([&] { SETTINGS.set("shared_entries", savedShares); });
+   SETTINGS.rm("shared_entries");
+   const int savedPeriod = FM::File::COMPLETION_RETRY_PERIOD;
+   const auto restorePeriod = qScopeGuard([&] { FM::File::COMPLETION_RETRY_PERIOD = savedPeriod; });
+   FM::File::COMPLETION_RETRY_PERIOD = 10;
+
+   FM::FileManager manager(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   manager.fileUpdater.stop();
+   const auto shared = manager.addASharedPath(temp.path() + '/');
+
+   // A directory has the name of the downloaded file: the unfinished file can't take it.
+   QVERIFY(QDir(temp.path()).mkdir("blocked.bin"));
+   const QByteArray data("content");
+   Common::Hasher hasher;
+   hasher.addData(std::span<const char>(data));
+   const auto hash = hasher.getResult();
+   Protos::Common::Entry entry;
+   entry.set_type(Protos::Common::Entry::FILE);
+   entry.set_path("/");
+   entry.set_name("blocked.bin");
+   entry.set_size(data.size());
+   entry.add_chunks()->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
+   entry.mutable_shared_entry()->mutable_id()->set_hash(shared.first.ID.getData(), Common::Hash::HASH_SIZE);
+   const auto chunks = manager.newFile(entry);
+   QCOMPARE(chunks.size(), 1);
+   // The last chunk of a file is written from a download thread.
+   bool chunkComplete = false;
+   std::thread downloader([&] { chunkComplete = chunks.first()->getDataWriter()->write(data.constData(), data.size()); });
+   downloader.join();
+   QVERIFY(chunkComplete);
+   const QString path = temp.filePath("blocked.bin");
+   auto file = dynamic_cast<FM::File*>(manager.getEntry(Common::Path(path + ".unfinished")));
+   QVERIFY(file);
+   QVERIFY(!file->isComplete());
+
+   // Once the name is available the file takes it, without waiting for a restart.
+   QVERIFY(QDir(temp.path()).rmdir("blocked.bin"));
+   QTRY_VERIFY(file->isComplete());
+   QCOMPARE(file->getName(), QString("blocked.bin"));
+   QVERIFY(QFileInfo(path).isFile());
+   QVERIFY(!QFileInfo::exists(path + ".unfinished"));
+}
+
 void CacheTest::metadataReadersAvoidStructuralLocks()
 {
    FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;

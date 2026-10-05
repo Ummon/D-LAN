@@ -46,7 +46,7 @@ DirWatcher* DirWatcher::getNewWatcher()
 }
 
 WatcherEvent::WatcherEvent() :
-   type(WatcherEvent::UNKNOWN)
+   type(WatcherEvent::UNKNOWN), isWatchedFile(false)
 {}
 
  WatcherEvent::WatcherEvent(const WatcherEvent& e) :
