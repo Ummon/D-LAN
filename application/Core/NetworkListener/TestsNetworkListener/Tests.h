@@ -66,6 +66,7 @@ private slots:
    void peerDiscovery();
    void multicastOnLANInterface_data();
    void multicastOnLANInterface();
+   void duplicateMulticastDatagrams();
    void unicastReception();
    void search();
    void searchResultReception();

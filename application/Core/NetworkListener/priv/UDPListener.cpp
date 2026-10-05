@@ -258,6 +258,7 @@ void UDPListener::closeSockets()
    this->multicastSocket.close();
    this->multicastInterfaces.clear();
    this->unicastSocket.close();
+   this->recentMulticastDatagrams.clear();
    this->currentIMAliveTag = 0;
    this->currentChunkDownloaders.clear();
 }
@@ -282,7 +283,7 @@ void UDPListener::processPendingMulticastDatagrams()
    {
       QHostAddress peerAddress;
       const Common::MessageHeader header = this->readDatagramToBuffer(this->multicastSocket, peerAddress);
-      if (header.isNull())
+      if (header.isNull() || this->isDuplicate(header))
          continue;
 
       // Discovery comes from any peer and departure from an alive peer, even if it is unavailable.
@@ -625,6 +626,38 @@ Common::MessageHeader UDPListener::readDatagramToBuffer(QUdpSocket& socket, QHos
 
    L_DEBU(QString("Receive a datagram UDP from %1 (%2): %3").arg(header.getSenderID().toStrShort(), peerAddress.toString(), header.toStr()));
    return header;
+}
+
+/**
+  * A multicast message is sent on each interface, see 'send(..)'. A peer sharing several networks with us, or
+  * connected several times to the same one (wired and wireless for example), receives it several times, from
+  * different addresses. Only the first copy must be processed: the others would duplicate the search results
+  * and make the address of the sender flip, which retires the sockets connected to it.
+  * The copies are identical and follow each other closely. A datagram is forgotten after a short time: an
+  * identical one received later is a new message.
+  * @return true if the multicast datagram in the buffer has already been received.
+  */
+bool UDPListener::isDuplicate(const Common::MessageHeader& header)
+{
+   static const int LIFETIME = 1000; // [ms].
+
+   // Nothing distinguishes a new goodbye from a copy, and processing it again is harmless.
+   if (header.getType() == Common::MessageHeader::CORE_GOODBYE)
+      return false;
+
+   while (!this->recentMulticastDatagrams.isEmpty() && this->recentMulticastDatagrams.first().expiration.hasExpired())
+      this->recentMulticastDatagrams.removeFirst();
+
+   // The header is included: it contains the ID of the sender.
+   const QByteArrayView datagram(this->buffer, Common::MessageHeader::HEADER_SIZE + header.getSize());
+   const size_t hash = qHash(datagram, QHashSeed::globalSeed());
+
+   for (const ReceivedDatagram& received : std::as_const(this->recentMulticastDatagrams))
+      if (received.hash == hash && received.size == datagram.size())
+         return true;
+
+   this->recentMulticastDatagrams << ReceivedDatagram { hash, datagram.size(), QDeadlineTimer(LIFETIME) };
+   return false;
 }
 
 /**

@@ -21,6 +21,7 @@
 #include <QObject>
 #include <QUdpSocket>
 #include <QTimer>
+#include <QDeadlineTimer>
 #include <QSharedPointer>
 #include <QNetworkInterface>
 
@@ -88,6 +89,7 @@ namespace NL
    private:
       INetworkListener::SendStatus send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message, PM::IPeer& peer);
       bool isListening() const { return this->timerIMAlive.isActive(); } // The heartbeat timer runs only while all the sockets are bound.
+      bool isDuplicate(const Common::MessageHeader& header);
       PM::IPeer* getSender(const Common::MessageHeader& header, const QHostAddress& peerAddress, bool mustBeAvailable);
       bool initMulticastUDPSocket(const QList<QNetworkInterface>& interfaces, bool logFailures);
       static void setBufferSize(QUdpSocket& socket);
@@ -113,6 +115,14 @@ namespace NL
 
       QUdpSocket multicastSocket;
       QUdpSocket unicastSocket;
+
+      struct ReceivedDatagram
+      {
+         size_t hash;
+         qsizetype size;
+         QDeadlineTimer expiration;
+      };
+      QList<ReceivedDatagram> recentMulticastDatagrams; // From the oldest to the youngest, see 'isDuplicate(..)'.
 
       quint64 currentIMAliveTag;
       QList<QSharedPointer<DM::IChunkDownloader>> currentChunkDownloaders;

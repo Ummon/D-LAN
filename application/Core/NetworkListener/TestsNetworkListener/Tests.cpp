@@ -26,6 +26,7 @@
 #include <QTcpSocket>
 #include <QScopeGuard>
 #include <QTemporaryDir>
+#include <QRandomGenerator64>
 #include <Common/Constants.h>
 
 #include <Protos/common.pb.h>
@@ -583,6 +584,98 @@ void Tests::multicastOnLANInterface()
       QSKIP("No active multicast LAN interface for this protocol");
 }
 
+/**
+  * A peer reachable through several interfaces sends us a copy of each multicast message per interface.
+  * The copies are simulated by sending the same datagram several times.
+  */
+void Tests::duplicateMulticastDatagrams()
+{
+#if !DEBUG
+   QSKIP("The multicast loopback is only enabled in debug; this test sends and receives on the same host");
+#endif
+
+   const Utils::ListenTarget target = Utils::getListenTarget();
+   if (target.interfaces.isEmpty())
+      QSKIP("No active multicast LAN interface");
+   const QNetworkInterface iface = target.interfaces.first();
+   QHostAddress sourceAddress;
+   for (const auto& entry : iface.addressEntries())
+      if (entry.ip().protocol() == target.address.protocol())
+      {
+         sourceAddress = entry.ip();
+         break;
+      }
+
+   const auto& instance = this->instances[0];
+   // This temporary listener must not advertise another instance's ID on its temporary port.
+   const Common::Hash originalID = SETTINGS.get<Common::Hash>("peer_id");
+   SETTINGS.set("peer_id", Common::Hash::rand());
+   const auto peerManager = PM::Builder::newPeerManager(instance.fileManager);
+   SETTINGS.set("peer_id", originalID);
+   QTcpServer tcp;
+   QVERIFY(tcp.listen(target.address, 0));
+   UDPListener listener(instance.fileManager, peerManager, instance.uploadManager, instance.downloadManager);
+   QVERIFY(listener.bindUnicastSocket(target.address, tcp.serverPort()));
+   QVERIFY(listener.startListening(target.interfaces));
+
+   QUdpSocket sender;
+   QVERIFY(sender.bind(sourceAddress, 0));
+   sender.setMulticastInterface(iface);
+   sender.setSocketOption(QAbstractSocket::MulticastLoopbackOption, 1);
+   const QHostAddress group = Utils::getMulticastGroup(target.address.protocol());
+   const quint16 port = SETTINGS.get<quint32>("multicast_port");
+   const Common::Hash ID = Common::Hash::rand();
+   auto send = [&](Common::MessageHeader::MessageType type, const google::protobuf::Message& message) {
+      QByteArray datagram(1024, Qt::Uninitialized);
+      const Common::MessageHeader header(type, message.ByteSizeLong(), ID);
+      const int size = Common::Message::writeMessageToBuffer(datagram.data(), datagram.size(), header, &message);
+      return size > 0 && sender.writeDatagram(datagram.constData(), size, group, port) == size;
+   };
+
+   // The nick of the heartbeats and the tag of the searches processed by the listener.
+   QStringList processed;
+   QObject context;
+   connect(&listener, &UDPListener::received, &context, [&](const Common::Message& message) {
+      if (message.getHeader().getSenderID() != ID)
+         return;
+      if (message.getHeader().getType() == Common::MessageHeader::CORE_IM_ALIVE)
+         processed << QString::fromStdString(message.getMessage<Protos::Core::IMAlive>().nick());
+      else if (message.getHeader().getType() == Common::MessageHeader::CORE_FIND)
+         processed << QString::number(message.getMessage<Protos::Core::Find>().tag());
+   });
+
+   // A different message sent afterwards marks the end of the copies' processing.
+   Protos::Core::IMAlive heartbeat;
+   heartbeat.set_version(Common::Constants::PROTOCOL_VERSION);
+   heartbeat.set_port(sender.localPort());
+   heartbeat.set_nick("first");
+   QVERIFY(send(Common::MessageHeader::CORE_IM_ALIVE, heartbeat));
+   QVERIFY(send(Common::MessageHeader::CORE_IM_ALIVE, heartbeat));
+   heartbeat.set_nick("second");
+   QVERIFY(send(Common::MessageHeader::CORE_IM_ALIVE, heartbeat));
+   QTRY_VERIFY_WITH_TIMEOUT(processed.contains("second"), 2000);
+   QCOMPARE(processed, QStringList({ "first", "second" }));
+
+   // The sender is now a known peer, its searches are processed.
+   QVERIFY(peerManager->getPeer(ID)->isAvailable());
+   Protos::Core::Find find;
+   find.set_tag(1);
+   find.mutable_pattern()->set_pattern("duplicate datagrams test");
+   QVERIFY(send(Common::MessageHeader::CORE_FIND, find));
+   QVERIFY(send(Common::MessageHeader::CORE_FIND, find));
+   find.set_tag(2);
+   QVERIFY(send(Common::MessageHeader::CORE_FIND, find));
+   QTRY_VERIFY_WITH_TIMEOUT(processed.contains("2"), 2000);
+   QCOMPARE(processed, QStringList({ "first", "second", "1", "2" }));
+
+   // An identical datagram received later isn't a copy.
+   QTest::qWait(1500);
+   heartbeat.set_nick("first");
+   QVERIFY(send(Common::MessageHeader::CORE_IM_ALIVE, heartbeat));
+   QTRY_COMPARE_WITH_TIMEOUT(processed.size(), 5, 2000);
+   QCOMPARE(processed.last(), QString("first"));
+}
+
 void Tests::unicastReception()
 {
    qDebug() << "===== unicastReception() =====";
@@ -888,6 +981,8 @@ void Tests::unavailableMulticastPeer()
    };
    Protos::Common::ChatMessages chat;
    chat.add_messages()->set_message("Multicast availability test");
+   // As a real message: an identical datagram would be taken for a copy of the one sent by the previous row.
+   chat.mutable_messages(0)->set_id(QRandomGenerator64::global()->generate64());
    this->receivedMessages.clear();
    QCOMPARE(sender->send(Common::MessageHeader::CORE_CHAT_MESSAGES, chat), INetworkListener::SendStatus::OK);
    QTRY_VERIFY_WITH_TIMEOUT(receivedType(Common::MessageHeader::CORE_CHAT_MESSAGES), DISCOVERY_TIMEOUT);
@@ -905,9 +1000,11 @@ void Tests::unavailableMulticastPeer()
    QVERIFY(!peer->isAvailable());
 
    this->receivedMessages.clear();
+   // New messages, to be ignored because of their sender and not as copies of the previous ones.
+   chat.mutable_messages(0)->set_id(QRandomGenerator64::global()->generate64());
    QCOMPARE(sender->send(Common::MessageHeader::CORE_CHAT_MESSAGES, chat), INetworkListener::SendStatus::OK);
    Protos::Core::Find find;
-   find.set_tag(123456);
+   find.set_tag(QRandomGenerator64::global()->generate64());
    find.mutable_pattern()->set_pattern("unavailable peer search");
    QCOMPARE(sender->send(Common::MessageHeader::CORE_FIND, find), INetworkListener::SendStatus::OK);
    // A later heartbeat must still reach consumers and update the unavailable peer.
@@ -957,6 +1054,8 @@ void Tests::invalidIMAlivePort()
    heartbeat.set_version(peer->getProtocolVersion());
    heartbeat.set_nick("invalid port");
    heartbeat.set_port(invalidPort);
+   // As a real heartbeat: an identical datagram would be taken for a copy of the one sent by the previous row.
+   heartbeat.set_tag(QRandomGenerator64::global()->generate64());
    this->receivedMessages.clear();
    QCOMPARE(sender->send(Common::MessageHeader::CORE_IM_ALIVE, heartbeat), INetworkListener::SendStatus::OK);
 
