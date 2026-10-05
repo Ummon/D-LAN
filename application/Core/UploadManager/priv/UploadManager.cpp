@@ -42,7 +42,6 @@ UploadManager::UploadManager(QSharedPointer<PM::IPeerManager> peerManager) :
    threadPool(static_cast<int>(SETTINGS.get<quint32>("upload_min_nb_thread")),
    SETTINGS.get<quint32>("upload_thread_lifetime"))
 {
-   // Keep the platform's default thread stack size: ChunksUploader's read buffer is heap allocated.
    connect(
       this->peerManager.data(),
       &PM::IPeerManager::getChunks,
@@ -84,22 +83,17 @@ void UploadManager::getChunks(
 {
    auto upload = QSharedPointer<ChunksUploader>::create(chunksParams, socket, this->transferRateCalculator);
 
-   // The connection must be queued: 'removeUpload(..)' releases the last reference to the uploader and thus
+   // The connection must be queued: the removal releases the last reference to the uploader and thus
    // deletes it. A direct call would run from 'Common::Timeoutable::timeoutSlot()', that is from within the
    // timer event of the very 'QTimer' emitting the signal, and would delete it under its own event handler.
    connect(
       upload.data(),
       &Common::Timeoutable::timeout,
       this,
-      [this, uploadPtr = upload.data()] { this->removeUpload(uploadPtr); },
+      [this, uploadPtr = upload.data()] { this->uploads.removeOne(uploadPtr); },
       Qt::QueuedConnection
    );
 
    this->uploads << upload;
    this->threadPool.run(upload.toWeakRef());
-}
-
-void UploadManager::removeUpload(const ChunksUploader* upload)
-{
-   this->uploads.removeIf([upload](const QSharedPointer<ChunksUploader>& u) { return u.data() == upload; });
 }

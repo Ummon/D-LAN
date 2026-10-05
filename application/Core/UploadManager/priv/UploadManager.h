@@ -53,8 +53,6 @@ namespace UM
          const QSharedPointer<PM::ISocket>& socket
       );
 
-      void removeUpload(const ChunksUploader* upload);
-
       LOG_INIT_H("UploadManager")
 
       Common::TransferRateCalculator transferRateCalculator;

@@ -26,6 +26,9 @@ target_link_libraries(UploadManager PUBLIC
    dlan_protos
 )
 
+# 'PM::GetChunkParams' is compiled in PeerManager.
+target_link_libraries(UploadManager PRIVATE PeerManager)
+
 if(DLAN_BUILD_TESTS)
    add_subdirectory(TestsUploadManager)
 endif()

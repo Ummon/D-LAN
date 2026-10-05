@@ -166,7 +166,7 @@ bool ChunksUploader::uploadChunks()
    // current element is kept as a local copy, the shared list is written under the mutex.
    for (int i = 0; i < this->chunks.size(); i++)
    {
-      if (this->mustStop())
+      if (this->toStop)
          return false;
       // Only this thread writes the elements, reading one without the mutex is safe.
       PM::GetChunkParams chunk = this->chunks.at(i);
@@ -196,12 +196,12 @@ bool ChunksUploader::uploadChunks()
       // endpoint is reached, even an EOF probe is unnecessary and could fail after success.
       while (chunk.getOffset() < chunk.getEndOffset())
       {
-         if (this->mustStop())
+         if (this->toStop)
             return false;
 
          int bytesRead = reader->read(buffer.data(), chunk.getOffset());
          // A read may block; do not write its result if stop() was called meanwhile.
-         if (this->mustStop())
+         if (this->toStop)
             return false;
          if (bytesRead <= 0)
             break;
@@ -259,7 +259,7 @@ bool ChunksUploader::waitForSocketBufferRoom(const PM::GetChunkParams& chunk)
    {
       // Checked here too: this loop may last as long as the whole chunk and 'stop()' expects the
       // upload to end quickly, see 'UploadManager::~UploadManager()'.
-      if (this->mustStop())
+      if (this->toStop)
          return false;
 
       const qint64 remaining = this->socketTimeout - noProgress.elapsed();
@@ -297,18 +297,10 @@ bool ChunksUploader::waitForBytesWritten(qint64 maxWait)
       return true;
 
    const qint64 delay = waitTime - waitDuration.elapsed();
-   if (delay > 0 && !this->mustStop())
+   if (delay > 0 && !this->toStop)
       QThread::msleep(static_cast<unsigned long>(delay));
 
    return false;
-}
-
-/**
-  * Returns 'true' if 'stop()' has been called, the upload must then be aborted.
-  */
-bool ChunksUploader::mustStop() const
-{
-   return this->toStop;
 }
 
 /**

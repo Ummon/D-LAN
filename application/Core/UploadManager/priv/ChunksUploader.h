@@ -61,8 +61,6 @@ namespace UM
       bool waitForSocketBufferRoom(const PM::GetChunkParams& chunk);
       bool waitForBytesWritten(qint64 maxWait);
 
-      bool mustStop() const;
-
       mutable QMutex mutex; ///< Protects 'chunks'.
 
       QThread* mainThread;
@@ -77,6 +75,6 @@ namespace UM
       const int socketTimeout; ///< [ms].
 
       bool closeTheSocket;
-      std::atomic_bool toStop;
+      std::atomic_bool toStop; ///< Set by 'stop()', the upload must then be aborted.
    };
 }
