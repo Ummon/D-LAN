@@ -390,6 +390,15 @@ int DirWatcherLinux::nbWatchedPath()
 }
 
 /**
+  * @copydoc FM::DirWatcher::notifiesEachChange()
+  */
+bool DirWatcherLinux::notifiesEachChange() const
+{
+   // Each directory has its own watch, a lost notification is turned into a 'RESCAN'.
+   return true;
+}
+
+/**
   * @copydoc FM::DirWatcher::waitEvent(QList<WaitCondition*>)
   */
 const QList<WatcherEvent> DirWatcherLinux::waitEvent(QList<WaitCondition*> ws)

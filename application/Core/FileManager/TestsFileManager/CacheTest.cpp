@@ -796,6 +796,105 @@ void CacheTest::watchedFileRename()
 #endif
 }
 
+void CacheTest::scanSkipsScannedSubDirectoriesUnlessRecursive()
+{
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   const auto createFile = [&](const QString& path) {
+      QFile file(temp.filePath(path));
+      return file.open(QIODevice::WriteOnly);
+   };
+   QVERIFY(QDir(temp.path()).mkpath("known/deep"));
+   QVERIFY(createFile("known/first.txt"));
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   FM::FileUpdater updater(nullptr);
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   auto dir = root->getRootDir();
+   updater.scan(dir);
+   auto known = dir->getSubDir("known");
+   QVERIFY(known && known->isScanned() && known->getFile("first.txt"));
+
+   // The watcher has an event for each of these changes. This scan is the one asked by the new file of the root.
+   QVERIFY(createFile("root.txt"));
+   QVERIFY(createFile("known/second.txt"));
+   QVERIFY(QDir(temp.path()).mkpath("new/deep"));
+   QVERIFY(createFile("new/deep/file.txt"));
+   updater.scan(dir, false, false);
+   QVERIFY(dir->getFile("root.txt"));
+   QVERIFY(!known->getFile("second.txt"));
+   QVERIFY(known->isScanned());
+   // A new directory is read with its whole tree: it may have been filled before being watched.
+   auto created = dir->getSubDir("new");
+   QVERIFY(created && created->isScanned());
+   QVERIFY(created->getSubDir("deep") && created->getSubDir("deep")->getFile("file.txt"));
+
+   // A directory which hasn't been scanned yet is read, without its scanned sub-directories.
+   QVERIFY(createFile("known/deep/third.txt"));
+   known->setScanned(false);
+   updater.scan(dir, false, false);
+   QVERIFY(known->isScanned());
+   QVERIFY(known->getFile("second.txt"));
+   QVERIFY(!known->getSubDir("deep")->getFile("third.txt"));
+
+   // A recursive scan reads everything again.
+   updater.scan(dir);
+   QVERIFY(known->getSubDir("deep")->getFile("third.txt"));
+}
+
+void CacheTest::eventScansAreAsDeepAsTheWatcherRequires()
+{
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   const auto savedShares = SETTINGS.getRepeated<Protos::Common::SharedEntry>("shared_entries");
+   const auto restoreShares = qScopeGuard([&] { SETTINGS.set("shared_entries", savedShares); });
+   SETTINGS.rm("shared_entries");
+   FM::FileManager manager(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   auto& updater = manager.fileUpdater;
+   updater.stop(); // Deliver events explicitly.
+   manager.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::Directory*>(manager.getEntry(Common::Path(temp.path() + '/')));
+   QVERIFY(root);
+   updater.stopScanning();
+   if (!updater.dirWatcher)
+      QSKIP("No directory watcher on this platform");
+
+   const bool recursive = !updater.dirWatcher->notifiesEachChange();
+#if defined(Q_OS_LINUX) || defined(Q_OS_WIN32)
+   QVERIFY(!recursive);
+#elif defined(Q_OS_DARWIN)
+   QVERIFY(recursive);
+#endif
+
+   const QString path = temp.filePath("new.txt");
+   {
+      QFile file(path);
+      QVERIFY(file.open(QIODevice::WriteOnly));
+   }
+   const FM::WatcherEvent created(FM::WatcherEvent::NEW, path, false);
+   const FM::WatcherEvent lost(FM::WatcherEvent::RESCAN, temp.path(), false);
+   const auto takenAsRecursive = [&] {
+      bool taken = false;
+      return updater.takeEntryToScan(true, &taken) == root && taken;
+   };
+
+   // A change in a directory: its sub-directories are read again only if the watcher doesn't tell their own changes.
+   updater.processEvents({ created });
+   QCOMPARE(updater.entriesToScan, QList<FM::Entry*> { root });
+   QCOMPARE(takenAsRecursive(), recursive);
+
+   // Lost notifications: the whole tree has to be read again, whatever was or is then asked for the same entry.
+   updater.processEvents({ created, lost });
+   QCOMPARE(updater.entriesToScan, QList<FM::Entry*> { root });
+   QVERIFY(takenAsRecursive());
+   updater.processEvents({ lost, created });
+   QCOMPARE(updater.entriesToScan, QList<FM::Entry*> { root });
+   QVERIFY(takenAsRecursive());
+   QVERIFY(updater.pendingScanEntries.isEmpty());
+}
+
 void CacheTest::moveOntoCachedFile_data()
 {
    QTest::addColumn<QString>("destinationName");
@@ -4590,7 +4689,7 @@ void CacheTest::pendingScansFollowQueueTransitions()
    auto root = dynamic_cast<FM::Directory*>(manager.getEntry(Common::Path(temp.path() + '/')));
    QVERIFY(root);
    QCOMPARE(updater.entriesToScan, QList<FM::Entry*> { root });
-   QCOMPARE(updater.pendingScanEntries, QSet<FM::Entry*> { root });
+   QCOMPARE(updater.pendingScanEntries.keys(), QList<FM::Entry*> { root });
    updater.stopScanning();
 
    QList<FM::Entry*> expected;

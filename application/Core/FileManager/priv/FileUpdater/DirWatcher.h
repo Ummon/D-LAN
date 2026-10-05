@@ -86,6 +86,15 @@ namespace FM
       virtual int nbWatchedPath() = 0;
 
       /**
+        * Tells how precise the events are.
+        * If 'true' each change has its own event, in the order they occurred: when something changes in a directory
+        * only this directory has to be read again, not its sub-directories.
+        * If 'false' a change may only be known by the directory containing it, a sub-directory replaced by another
+        * one for example: the whole tree below this directory has to be read again.
+        */
+      virtual bool notifiesEachChange() const = 0;
+
+      /**
         * Wait a new event from the listened directories or from a given wait condition.
         * There is no timeout, it can wait forever.
         */

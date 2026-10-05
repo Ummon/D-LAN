@@ -104,10 +104,21 @@ namespace FM
 
       void adjustSize(qint64 delta);
 
-      static inline QString entryGetKeyFun(const Entry* const& entry) { return entry->getName().toLower(); }
+      /**
+        * The sort key of the entries: their name compared without its case.
+        * It shares the string of the entry: a lower case copy would have to be allocated for each comparison, the
+        * main cost of a lookup, or be kept in each entry, about a hundred bytes more for each of them.
+        */
+      struct NameKey
+      {
+         QString name;
+         friend bool operator<(const NameKey& k1, const NameKey& k2) { return k1.name.compare(k2.name, Qt::CaseInsensitive) < 0; }
+         friend bool operator==(const NameKey& k1, const NameKey& k2) { return k1.name.compare(k2.name, Qt::CaseInsensitive) == 0; }
+      };
+      static inline NameKey entryGetKeyFun(const Entry* const& entry) { return { entry->getName() }; }
 
-      Common::SortedList<Directory*, QString> subDirs; ///< Sorted by name as lower case.
-      Common::SortedList<File*, QString> files; ///< Sorted by name as lower case.
+      Common::SortedList<Directory*, NameKey> subDirs; ///< Sorted by name, without its case.
+      Common::SortedList<File*, NameKey> files; ///< Sorted by name, without its case.
 
       bool scanned;
       QRecursiveMutex retirementMutex; ///< Serializes subtree retirement without blocking metadata callbacks.

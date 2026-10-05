@@ -459,12 +459,18 @@ void Cache::newDirectory(Protos::Common::Entry& dirEntry)
 
 QList<Common::SharedEntry> Cache::getSharedEntries() const
 {
-   QMutexLocker locker(&this->mutex);
-
    QList<Common::SharedEntry> list;
+   {
+      QMutexLocker locker(&this->mutex);
 
-   for (SharedEntry* sharedEntry : this->sharedEntries)
-      list << makeSharedEntry(sharedEntry);
+      for (SharedEntry* sharedEntry : this->sharedEntries)
+         list << makeSharedEntry(sharedEntry, false);
+   }
+
+   // Asking the file system can take time, a network drive may not answer for example. The cache isn't locked
+   // meanwhile: the file updater needs it for each file system event.
+   for (Common::SharedEntry& entry : list)
+      entry.freeSpace = Common::Global::availableDiskSpace(entry.path);
 
    return list;
 }
@@ -921,14 +927,17 @@ void Cache::deleteDeferredEntries()
    }
 }
 
-Common::SharedEntry Cache::makeSharedEntry(const SharedEntry* entry)
+/**
+  * @param withFreeSpace If 'false' the free space is left to the caller, see 'getSharedEntries()'.
+  */
+Common::SharedEntry Cache::makeSharedEntry(const SharedEntry* entry, bool withFreeSpace)
 {
    return Common::SharedEntry {
       entry->getId(),
       entry->getPath(),
       entry->getUserName(),
       entry->getRootEntry()->getSize(),
-      Common::Global::availableDiskSpace(entry->getPath())
+      withFreeSpace ? Common::Global::availableDiskSpace(entry->getPath()) : 0
    };
 }
 

@@ -23,6 +23,7 @@ namespace FM
       bool addPath(const QString& path, const QString& filename = QString()) override;
       void rmPath(const QString& path, const QString& filename = QString()) override;
       int nbWatchedPath() override;
+      bool notifiesEachChange() const override;
       const QList<WatcherEvent> waitEvent(QList<WaitCondition*> ws = {}) override;
       const QList<WatcherEvent> waitEvent(int timeout, QList<WaitCondition*> ws = {}) override;
 

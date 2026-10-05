@@ -30,6 +30,7 @@
 #include <QString>
 #include <QList>
 #include <QSet>
+#include <QHash>
 #include <QElapsedTimer>
 #include <QFileInfo>
 
@@ -84,7 +85,7 @@ namespace FM
 
       void stopHashing();
 
-      void scan(Entry* entry, bool addUnfinished = false);
+      void scan(Entry* entry, bool addUnfinished = false, bool recursive = true);
 
       File* addScannedFile(const QFileInfo& fileInfo, File* file, Directory* parentDirectory = nullptr,
          const QList<Common::Hash>* cachedHashes = nullptr, bool addUnfinished = false);
@@ -92,8 +93,8 @@ namespace FM
       void stopScanning(Entry* entry = nullptr);
 
       void deleteEntry(Entry* entry, bool removeUnfinishedFiles = true);
-      void enqueueEntryToScan(Entry* entry);
-      Entry* takeEntryToScan(bool oldestFirst);
+      void enqueueEntryToScan(Entry* entry, bool recursive = true);
+      Entry* takeEntryToScan(bool oldestFirst, bool* recursive = nullptr);
       void removeFromEntriesToScan(Entry* entry);
       void removeFromHashingQueue(Entry* entry);
 
@@ -114,7 +115,7 @@ namespace FM
       QElapsedTimer timerScanUnwatchable;
 
       QList<Entry*> entriesToScan; ///< When something change in a directory or in a file we put it in this list until it is scanned.
-      QSet<Entry*> pendingScanEntries; ///< Membership of entriesToScan; both are protected by mutex.
+      QHash<Entry*, bool> pendingScanEntries; ///< Membership of entriesToScan and whether the scan is recursive; both are protected by mutex.
       Entry* currentScanningEntry;
 
       QWaitCondition scanningStopped;      

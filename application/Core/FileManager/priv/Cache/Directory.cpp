@@ -300,7 +300,7 @@ Directory* Directory::getSubDir(const QString& name) const
 
    return
       this->subDirs.getItem(
-         name.toLower(),
+         NameKey { name },
          [&name](const Directory* const& dir) { return dir->getName() == name; }
       ).value_or(nullptr);
 }
@@ -383,7 +383,7 @@ File* Directory::getFile(const QString& name) const
 
    return
       this->files.getItem(
-         name.toLower(),
+         NameKey { name },
          [&name](const File* const& file) { return file->getName() == name; }
       ).value_or(nullptr);
 }

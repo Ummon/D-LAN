@@ -114,6 +114,12 @@ int DirWatcherWin::nbWatchedPath()
    return this->dirs.size();
 }
 
+bool DirWatcherWin::notifiesEachChange() const
+{
+   // The whole tree is watched, a lost notification is turned into a 'RESCAN'.
+   return true;
+}
+
 const QList<WatcherEvent> DirWatcherWin::waitEvent(QList<WaitCondition*> ws)
 {
    return this->waitEvent(-1, ws);

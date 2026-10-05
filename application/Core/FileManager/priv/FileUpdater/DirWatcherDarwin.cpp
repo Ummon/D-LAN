@@ -124,6 +124,12 @@ int DirWatcherDarwin::nbWatchedPath()
    return static_cast<int>(this->watches.size());
 }
 
+bool DirWatcherDarwin::notifiesEachChange() const
+{
+   // Creations, deletions and renamings may be coalesced: only the containing directory is told, see 'recordEvents(..)'.
+   return false;
+}
+
 void DirWatcherDarwin::callback(ConstFSEventStreamRef, void* context, size_t count,
    void* paths, const FSEventStreamEventFlags flags[], const FSEventStreamEventId[])
 {

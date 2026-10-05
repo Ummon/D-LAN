@@ -361,20 +361,21 @@ void FileUpdater::run()
          }
 
          Entry* nextEntryToScan = nullptr;
+         bool recursive = true;
          {
             // Same locking order as 'stopScanning(..)'.
             QMutexLocker scanningLocker(&this->scanningMutex);
             QMutexLocker locker(&this->mutex);
             if (!this->entriesToScan.isEmpty())
             {
-               nextEntryToScan = this->takeEntryToScan(false);
+               nextEntryToScan = this->takeEntryToScan(false, &recursive);
                this->currentScanningEntry = nextEntryToScan;
             }
          }
 
          // Synchronize the new directory.
          if (nextEntryToScan)
-            this->scan(nextEntryToScan);
+            this->scan(nextEntryToScan, false, recursive);
       }
       else
       {
@@ -515,8 +516,10 @@ void FileUpdater::stopHashing()
   * in entry (if 'entry' is a directory). Create the associated cached tree structure under a
   * given 'Directory*'.
   * The directories may already exist in the cache.
+  * @param recursive If 'false' a sub-directory which has already been scanned isn't read again: the watcher tells
+  *        what changes in it, see 'DirWatcher::notifiesEachChange()'. A new one is always scanned, with all its tree.
   */
-void FileUpdater::scan(Entry* entry, bool addUnfinished)
+void FileUpdater::scan(Entry* entry, bool addUnfinished, bool recursive)
 {
    L_DEBU(QString("Start scanning an entry: %1").arg(entry->getAbsolutePath()));
 
@@ -609,9 +612,12 @@ void FileUpdater::scan(Entry* entry, bool addUnfinished)
             if (fileInfo.isDir())
             {
                Directory* subDir = currentDir->createSubDir(fileInfo.fileName(), false, isHiddenEntry(fileInfo));
-               subDir->setScanned(false);
-               dirsToVisit << subDir;
-               unseenSubDirs.remove(subDir);
+               const bool alreadyScanned = unseenSubDirs.remove(subDir) && subDir->isScanned();
+               if (recursive || !alreadyScanned)
+               {
+                  subDir->setScanned(false);
+                  dirsToVisit << subDir;
+               }
             }
             else if (addUnfinished || !Global::isFileUnfinished(fileInfo.fileName()))
             {
@@ -796,17 +802,30 @@ void FileUpdater::deleteEntry(Entry* entry, bool removeUnfinishedFiles)
    entry->del();
 }
 
-void FileUpdater::enqueueEntryToScan(Entry* entry)
+/**
+  * @param recursive See 'scan(..)'. An entry already queued keeps its place, its scan becomes recursive if asked.
+  */
+void FileUpdater::enqueueEntryToScan(Entry* entry, bool recursive)
 {
    QMutexLocker locker(&this->mutex);
-   if (!entry || this->pendingScanEntries.contains(entry))
+   if (!entry)
       return;
 
-   this->pendingScanEntries.insert(entry);
+   const auto pending = this->pendingScanEntries.find(entry);
+   if (pending != this->pendingScanEntries.end())
+   {
+      pending.value() = pending.value() || recursive;
+      return;
+   }
+
+   this->pendingScanEntries.insert(entry, recursive);
    this->entriesToScan.append(entry);
 }
 
-Entry* FileUpdater::takeEntryToScan(bool oldestFirst)
+/**
+  * @param[out] recursive Optional, how the entry has to be scanned, see 'enqueueEntryToScan(..)'.
+  */
+Entry* FileUpdater::takeEntryToScan(bool oldestFirst, bool* recursive)
 {
    QMutexLocker locker(&this->mutex);
    if (this->entriesToScan.isEmpty())
@@ -814,7 +833,9 @@ Entry* FileUpdater::takeEntryToScan(bool oldestFirst)
 
    // Initial scans keep insertion order; subsequent scans prefer recent events.
    Entry* entry = oldestFirst ? this->entriesToScan.takeFirst() : this->entriesToScan.takeLast();
-   this->pendingScanEntries.remove(entry);
+   const bool pendingRecursive = this->pendingScanEntries.take(entry);
+   if (recursive)
+      *recursive = pendingRecursive;
    return entry;
 }
 
@@ -860,8 +881,11 @@ void FileUpdater::removeFromHashingQueue(Entry* entry)
   */
 bool FileUpdater::processEvents(const QList<WatcherEvent>& events)
 {
+   // Whether the sub-directories of a modified directory have to be read again.
+   const bool recursive = !this->dirWatcher || !this->dirWatcher->notifiesEachChange();
+
    const auto newOrContentChanged =
-      [this](const QString& path)
+      [this, recursive](const QString& path)
       {
          Entry* entry = this->fileManager->getEntry(path);
          if (!entry)
@@ -879,20 +903,20 @@ bool FileUpdater::processEvents(const QList<WatcherEvent>& events)
 
             Directory* parent = this->fileManager->getFittestDirectory(Common::Path(path).removeLastElement());
             this->deleteEntry(entry);
-            this->enqueueEntryToScan(parent);
+            this->enqueueEntryToScan(parent, recursive);
             return;
          }
 
          File* file = dynamic_cast<File*>(entry);
          if (file)
          {
-            this->enqueueEntryToScan(file);
+            this->enqueueEntryToScan(file, recursive);
          }
          else
          {
             Directory* dir = this->fileManager->getFittestDirectory(path);
 
-            this->enqueueEntryToScan(dir);
+            this->enqueueEntryToScan(dir, recursive);
          }
       };
 
@@ -971,7 +995,7 @@ bool FileUpdater::processEvents(const QList<WatcherEvent>& events)
                      // The entry of a shared file isn't transferred, the destination is rescanned to find the file.
                      if (dynamic_cast<File*>(entryToMove))
                      {
-                        this->enqueueEntryToScan(destination);
+                        this->enqueueEntryToScan(destination, recursive);
                      }
                   }
                   else
@@ -1059,8 +1083,7 @@ bool FileUpdater::processEvents(const QList<WatcherEvent>& events)
             break;
          }
 
-      // TODO: Implement ::NEW, a new directory or file should be added directly without scanning an entire
-      // directory tree.
+      // TODO: Implement ::NEW, a new file should be added directly without scanning its directory.
       case WatcherEvent::NEW:
       case WatcherEvent::CONTENT_CHANGED:
          newOrContentChanged(event.path1);

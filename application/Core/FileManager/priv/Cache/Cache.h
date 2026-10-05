@@ -146,7 +146,7 @@ namespace FM
       int activeTraversals = 0;
       QList<Entry*> deferredDeletions;
 
-      static Common::SharedEntry makeSharedEntry(const SharedEntry* entry);
+      static Common::SharedEntry makeSharedEntry(const SharedEntry* entry, bool withFreeSpace = true);
       SharedEntry* createSharedEntry(
          const Common::Path& path,
          const Common::Hash& ID = Common::Hash(),
