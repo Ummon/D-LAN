@@ -85,6 +85,8 @@ namespace RCM
       void send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message) override;
       void send(Common::MessageHeader::MessageType type) override;
 
+      bool isLocal() const override;
+
    signals:
       void deleted(RCM::RemoteConnection*);
       void languageDefined(QLocale);

@@ -549,6 +549,29 @@ private slots:
       QTRY_COMPARE(stalled.state(), QAbstractSocket::UnconnectedState);
    }
 
+   void remoteClientsDoNotTakeLocalSlots()
+   {
+      SETTINGS.set("remote_max_nb_connection", quint32(1));
+      this->startManager();
+      QTcpSocket stalled; // Never starts the TLS handshake, it holds the only remote slot.
+      stalled.connectToHost(QHostAddress::LocalHost, this->server.serverPort());
+      QTRY_COMPARE(this->manager->connections.size(), 1);
+
+      this->server.remote = false;
+      TestConnection local(this->controller);
+      this->connectClient(local, false);
+      QTRY_VERIFY(local.isConnected());
+      QCOMPARE(this->manager->connections.size(), 2);
+
+      // The local connections are bounded too.
+      QTcpSocket excess;
+      QSignalSpy disconnected(&excess, &QTcpSocket::disconnected);
+      excess.connectToHost(QHostAddress::LocalHost, this->server.serverPort());
+      QTRY_COMPARE(disconnected.size(), 1);
+      QCOMPARE(this->manager->connections.size(), 2);
+      QVERIFY(local.isConnected());
+   }
+
    void cancelDuringTlsHandshake()
    {
       // Leave the accepted TCP socket idle, before the server starts TLS.

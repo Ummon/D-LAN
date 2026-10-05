@@ -112,12 +112,14 @@ void RemoteControlManager::newConnection()
 
    // A connection which has just been closed can still be in the list, it is waiting to be deleted,
    // see 'RemoteConnection::onDisconnected()'. Such a connection doesn't take a slot anymore.
+   // The local and the remote connections are counted apart: a remote client takes a slot before being authenticated,
+   // it must not be able to lock the local GUI out by holding all of them.
    const auto nbCurrentConnections = std::count_if(this->connections.cbegin(), this->connections.cend(),
-      [](const RemoteConnection* connection) { return connection->isConnected(); });
+      [local](const RemoteConnection* connection) { return connection->isLocal() == local && connection->isConnected(); });
 
    if (static_cast<quint64>(nbCurrentConnections) >= SETTINGS.get<quint32>("remote_max_nb_connection"))
    {
-      L_WARN("Cannot handle new connection, too many connection");
+      L_WARN(QString("Cannot handle new connection, too many %1 connections").arg(local ? "local" : "remote"));
       socket->close();
       socket->deleteLater();
       return;

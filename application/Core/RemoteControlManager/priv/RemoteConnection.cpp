@@ -177,6 +177,14 @@ void RemoteConnection::send(Common::MessageHeader::MessageType type)
    Common::MessageSocket::send(type);
 }
 
+/**
+  * As defined when the connection has been accepted: it stays valid once disconnected and doesn't enumerate the network interfaces.
+  */
+bool RemoteConnection::isLocal() const
+{
+   return this->localTrusted;
+}
+
 bool RemoteConnection::isAuthorized() const
 {
    // Local clients retain their trusted access while completing the handshake.
