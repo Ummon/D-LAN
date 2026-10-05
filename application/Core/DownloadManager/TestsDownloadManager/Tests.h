@@ -85,6 +85,7 @@ private slots:
    void resetPreservesDestination();
    void chunkErrorTakesPrecedence_data();
    void chunkErrorTakesPrecedence();
+   void downloadingStatusEndsWithTransfer();
    void coalescePeerStatusUpdates();
    void finalHashPreservesSchedulingError();
    void pendingPeerStatusUpdateIsCancelled_data();

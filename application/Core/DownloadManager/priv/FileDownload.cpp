@@ -509,7 +509,10 @@ bool FileDownload::updateStatus()
       }
    }
 
-   Protos::Common::DownloadStatus newStatus = this->status;
+   // No chunk is downloading: 'DOWNLOADING' isn't kept as the default status. Nothing below would replace it when some
+   // hashes are still unknown, no request for them is pending and all the known chunks are complete.
+   Protos::Common::DownloadStatus newStatus =
+      this->status == Protos::Common::DownloadStatus::DOWNLOADING ? Protos::Common::DownloadStatus::QUEUED : this->status;
    Protos::Common::DownloadStatus transferError = Protos::Common::DownloadStatus::QUEUED;
 
    if (this->nbHashesKnown == NB_CHUNK)

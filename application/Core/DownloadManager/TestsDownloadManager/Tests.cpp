@@ -1697,6 +1697,48 @@ void Tests::chunkErrorTakesPrecedence()
    QCOMPARE(errors.count(), 1);
 }
 
+/**
+  * Once its last transfer has ended a download is no longer seen as downloading, even when nothing else sets its status:
+  * here all the known chunks are complete and the missing hash can't be asked for, the peer source being busy.
+  */
+void Tests::downloadingStatusEndsWithTransfer()
+{
+   class CompletableChunk : public FailingChunk
+   {
+   public:
+      using FailingChunk::FailingChunk;
+      bool complete = false;
+      bool isComplete() const override { return this->complete; }
+   };
+   QSharedPointer<ResumeFileManager> files(new ResumeFileManager);
+   const auto hash = Common::Hash::rand();
+   QSharedPointer<CompletableChunk> chunk(new CompletableChunk(0, hash));
+   files->chunks << chunk;
+   Protos::Common::Entry entry;
+   entry.set_type(Protos::Common::Entry::FILE);
+   entry.set_name("missing-hash.bin");
+   entry.set_size(quint64(2) * Common::Constants::CHUNK_SIZE);
+   entry.add_chunks()->set_hash(hash.getData(), Common::Hash::HASH_SIZE); // The hash of the second chunk is unknown.
+   CheckpointPeer peer(files);
+   LinkedPeers links;
+   OccupiedPeers asking, downloading;
+   Common::ThreadPool pool(1);
+   Common::TransferRateCalculator rate;
+   QVERIFY(asking.setPeerAsOccupied(&peer));
+   FileDownload download(files, links, asking, downloading, pool, &peer, entry, entry,
+      rate, Protos::Queue::Queue::Entry::QUEUED);
+   download.start();
+   auto downloader = download.getAChunkToDownload();
+   QVERIFY(downloader);
+   QCOMPARE(downloader->startDownloading(), &peer);
+   QCOMPARE(download.getStatus(), Protos::Common::DownloadStatus::DOWNLOADING);
+
+   chunk->complete = true;
+   downloader->stop();
+   QVERIFY(!downloader->isDownloading());
+   QCOMPARE(download.getStatus(), Protos::Common::DownloadStatus::QUEUED);
+}
+
 void Tests::resetPreservesDestination_data()
 {
    QTest::addColumn<bool>("reloadQueue");
