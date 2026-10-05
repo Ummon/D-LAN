@@ -101,26 +101,25 @@ ChatSystem::SendStatus ChatSystem::send(
    );
 
    Protos::Common::ChatMessages protoChatMessages;
-   Protos::Common::ChatMessage* protochatMessage = protoChatMessages.add_messages();
-   chatMessage->fillProtoChatMessage(*protochatMessage);
+   chatMessage->fillProtoChatMessage(*protoChatMessages.add_messages());
 
    // The complete history representation must fit too, otherwise a successful live
    // message could never be forwarded to peers that missed the initial broadcast.
    if (protoChatMessages.ByteSizeLong() > static_cast<size_t>(this->networkListener->getMaxUDPMessageSize()))
       return SendStatus::MESSAGE_TOO_LARGE;
 
-   quint64 time = protochatMessage->time();
-
-   protochatMessage->clear_time(); // We let the receiver set the time.
+   // A live message is sent without its time nor its author: the receiver sets the time and our ID is in the header of the message.
+   Protos::Common::ChatMessages liveChatMessages(protoChatMessages);
+   liveChatMessages.mutable_messages(0)->clear_time();
+   liveChatMessages.mutable_messages(0)->clear_peer_id();
 
    NL::INetworkListener::SendStatus status =
-      this->networkListener->send(Common::MessageHeader::CORE_CHAT_MESSAGES, protoChatMessages);
+      this->networkListener->send(Common::MessageHeader::CORE_CHAT_MESSAGES, liveChatMessages);
 
    switch (status)
    {
    case NL::INetworkListener::SendStatus::OK:
       history->add(chatMessage);
-      protochatMessage->set_time(time);
       emit newMessages(protoChatMessages);
       return SendStatus::OK;
 
@@ -255,9 +254,10 @@ void ChatSystem::received(const Common::Message& message)
             break;
          }
 
-         // Set the peer ID of each message if not already set.
+         // The author of a live message, which has no time, is its sender: see 'send(..)'.
+         // The other messages come from the history of the sender, their author is given with them.
          for (int i = 0; i < chatMessages.messages_size(); i++)
-            if (!chatMessages.messages(i).has_peer_id())
+            if (chatMessages.messages(i).time() == 0 || !chatMessages.messages(i).has_peer_id())
                chatMessages.mutable_messages(i)->mutable_peer_id()->set_hash(
                   message.getHeader().getSenderID().getData(),
                   Common::Hash::HASH_SIZE

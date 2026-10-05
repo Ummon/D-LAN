@@ -56,11 +56,11 @@ namespace
          emit received(Common::Message::readMessageBody(
             Common::MessageHeader(Common::MessageHeader::CORE_GET_LAST_CHAT_MESSAGES, bytes.size(), Common::Hash::rand()), bytes.data()));
       }
-      void receiveChatMessages(const Protos::Common::ChatMessages& messages)
+      void receiveChatMessages(const Protos::Common::ChatMessages& messages, const Common::Hash& sender = Common::Hash::rand())
       {
          const auto bytes = messages.SerializeAsString();
          emit received(Common::Message::readMessageBody(
-            Common::MessageHeader(Common::MessageHeader::CORE_CHAT_MESSAGES, bytes.size(), Common::Hash::rand()), bytes.data()));
+            Common::MessageHeader(Common::MessageHeader::CORE_CHAT_MESSAGES, bytes.size(), sender), bytes.data()));
       }
       void receiveIMAlive(const Common::Hash& peerID, const QStringList& rooms)
       {
@@ -208,6 +208,40 @@ private slots:
       }
       QCOMPARE(IDs, (QList<quint64> { 2, 4, 5 }));
       QCOMPARE(network->sent.size(), 3);
+   }
+
+   /**
+     * A live message is sent without its author nor its time: the receivers take the first one from
+     * the sender of the message and set the second one. Only the messages of a history are given with them.
+     */
+   void liveMessageAuthorIsItsSender()
+   {
+      const auto peers = PM::Builder::newPeerManager({});
+      const auto network = QSharedPointer<NetworkListener>::create();
+      CS::ChatSystem chat(peers, network);
+      QSignalSpy notifications(&chat, &CS::IChatSystem::newMessages);
+      auto lastAuthor = [&] {
+         const auto stored = qvariant_cast<Protos::Common::ChatMessages>(notifications.last().at(0));
+         return Common::Hash(stored.messages(0).peer_id().hash());
+      };
+
+      QCOMPARE(chat.send("hello"), CS::IChatSystem::SendStatus::OK);
+      QVERIFY(!network->sent.last().messages(0).has_peer_id());
+      QCOMPARE(network->sent.last().messages(0).time(), quint64(0));
+      QCOMPARE(lastAuthor(), peers->getSelf()->getID()); // We keep our own message with its author.
+
+      const auto sender = Common::Hash::rand(), other = Common::Hash::rand();
+      auto live = message(QString(), 1);
+      live.mutable_messages(0)->clear_time();
+      live.mutable_messages(0)->mutable_peer_id()->set_hash(other.getData(), Common::Hash::HASH_SIZE);
+      network->receiveChatMessages(live, sender);
+      QCOMPARE(lastAuthor(), sender);
+
+      // A message from the history of the sender, written by another peer.
+      auto old = message(QString(), 2);
+      old.mutable_messages(0)->mutable_peer_id()->set_hash(other.getData(), Common::Hash::HASH_SIZE);
+      network->receiveChatMessages(old, sender);
+      QCOMPARE(lastAuthor(), other);
    }
 
    void historyRequestedOnlyFromAvailablePeers()
