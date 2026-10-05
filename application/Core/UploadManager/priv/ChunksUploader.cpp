@@ -86,7 +86,12 @@ QList<PM::GetChunkParams> ChunksUploader::getChunks() const
 
 void ChunksUploader::init(QThread* thread)
 {
-  this->socket->moveToThread(thread);
+   static const quint32 SOCKET_BUFFER_SIZE = SETTINGS.get<quint32>("socket_buffer_size");
+
+   // The peer has nothing to send during the upload but 'waitForBytesWritten(..)' also reads the incoming data
+   // and nobody consumes it until the socket listens again: without a limit a peer could fill our memory.
+   this->socket->setReadBufferSize(SOCKET_BUFFER_SIZE);
+   this->socket->moveToThread(thread);
 }
 
 /**
@@ -131,6 +136,8 @@ void ChunksUploader::run()
    // truncated: closing the socket is the only way to avoid it reading the next messages as chunk data.
    this->closeTheSocket = !completed;
 
+   // Messages are read again once the socket is given back, see 'init(..)'.
+   this->socket->setReadBufferSize(0);
    this->socket->moveToThread(this->mainThread);
 }
 

@@ -74,7 +74,10 @@ namespace
       QThread* owner = nullptr;
       Common::Hash peerID;
 
-      void setReadBufferSize(qint64) override {}
+      qint64 readBufferSize = 0;
+      qint64 readBufferSizeDuringWrite = -1;
+
+      void setReadBufferSize(qint64 size) override { this->readBufferSize = size; }
       qint64 bytesAvailable() const override { return 0; }
       qint64 read(char*, qint64) override { return 0; }
       QByteArray readAll() override { return {}; }
@@ -83,6 +86,7 @@ namespace
       qint64 write(const char* data, qint64 size) override
       {
          ++this->writes;
+         this->readBufferSizeDuringWrite = this->readBufferSize;
          if (this->zeroWritesRemaining != 0)
          {
             if (this->zeroWritesRemaining > 0)
@@ -159,6 +163,33 @@ private slots:
       // The uploader outlives its upload by 'upload_lifetime', the socket must not: it's closed only once released.
       QVERIFY(weakSocket.isNull());
       QCOMPARE(upload.getPeerID(), peerID);
+   }
+
+   void readBufferBoundedDuringUpload_data()
+   {
+      QTest::addColumn<bool>("completed");
+      QTest::newRow("completed upload") << true;
+      QTest::newRow("truncated upload") << false;
+   }
+
+   void readBufferBoundedDuringUpload()
+   {
+      QFETCH(bool, completed);
+      auto chunk = QSharedPointer<Chunk>::create();
+      chunk->reader->availableBytes = completed ? 32 : 16;
+      auto socket = QSharedPointer<Socket>::create();
+      socket->pendingAfterWrite = 0;
+      Common::TransferRateCalculator rate;
+      UM::ChunksUploader upload({PM::GetChunkParams(chunk, 0, 32, 0)}, socket, rate);
+      upload.init(QThread::currentThread());
+      // What the peer sends during the upload isn't consumed, it must not be buffered without limit.
+      QCOMPARE(socket->readBufferSize, qint64(16)); // 'socket_buffer_size', see 'main(..)'.
+      upload.run();
+      QCOMPARE(socket->readBufferSizeDuringWrite, qint64(16));
+      // The limit is removed before the socket reads messages again: one may be larger than it.
+      QCOMPARE(socket->readBufferSize, qint64(0));
+      upload.finished();
+      QCOMPARE(socket->closed, !completed);
    }
 
    void stopDuringRead()
