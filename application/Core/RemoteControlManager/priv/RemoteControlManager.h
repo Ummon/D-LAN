@@ -22,6 +22,7 @@
 #include <QSharedPointer>
 #include <QList>
 #include <QTcpServer>
+#include <QSslConfiguration>
 #include <QLocale>
 
 #include <Common/Uncopyable.h>

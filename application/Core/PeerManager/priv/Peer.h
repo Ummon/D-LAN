@@ -27,8 +27,6 @@
 #include <QSharedPointer>
 #include <QMutex>
 
-#include <google/protobuf/text_format.h>
-
 #include <Common/Hash.h>
 #include <Common/Constants.h>
 #include <Common/Uncopyable.h>
@@ -77,7 +75,7 @@ namespace PM
       virtual bool isAlive() const override;
       virtual bool isAvailable() const override;
       virtual quint32 getProtocolVersion() const override;
-      virtual void update(
+      void update(
          const QHostAddress& IP,
          quint16 port,
          const QString& nick,
@@ -87,7 +85,7 @@ namespace PM
          quint32 uploadRate,
          quint32 protocolVersion
       );
-      virtual void setAsDead();
+      void setAsDead();
 
       virtual QSharedPointer<IGetEntriesResult> getEntries(const Protos::Core::GetEntries& dirs) override;
       virtual QSharedPointer<IGetHashesResult> getHashes(const Protos::Core::GetHashes& request) override;
@@ -103,6 +101,10 @@ namespace PM
       void consideredDead();
       void unblock();
 
+   private:
+      template <typename Implementation, typename Interface, typename Request>
+      QSharedPointer<Interface> newResult(const Request& request);
+
    protected:
       /**
         * Both must be called with 'mutex' held.
@@ -117,7 +119,7 @@ namespace PM
         * Every field below is therefore guarded by 'mutex', 'ID' excepted because it never changes after
         * the construction.
         * No signal must be emitted nor any other object called while holding 'mutex':
-        * 'PeerManager::peerUnblocked()' calls 'isAvailable()' back and 'DM::ChunkDownloader' takes its own
+        * 'PeerManager' calls 'isAvailable()' back when 'unblocked()' is emitted and 'DM::ChunkDownloader' takes its own
         * mutex before asking a peer if it's available.
         */
       mutable QMutex mutex;

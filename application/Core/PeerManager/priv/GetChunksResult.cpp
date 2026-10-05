@@ -21,50 +21,16 @@ using namespace PM;
 
 #include <Common/Settings.h>
 
-#include <priv/Log.h>
-
 GetChunksResult::GetChunksResult(const Protos::Core::GetChunks& chunks, QSharedPointer<PeerMessageSocket> socket) :
-   IGetChunksResult(SETTINGS.get<quint32>("socket_timeout")), chunks(chunks), socket(socket), closeTheSocket(false)
+   Result(SETTINGS.get<quint32>("socket_timeout"), Common::MessageHeader::CORE_GET_CHUNKS, chunks, socket)
 {
-}
-
-void GetChunksResult::start()
-{
-   if (this->state != State::NotStarted)
-      return;
-   this->state = State::AwaitingResponse;
-   this->startTimer();
-   // The socket may be null if the connection pool was unable to give one, in this case the request will simply time out.
-   // Unlike 'GetEntriesResult' and 'GetHashesResult', a closed socket doesn't time out the request at once:
-   // 'DM::ChunkDownloader' asks again right after a timeout, the wait is the only thing which paces its retries.
-   if (!this->socket.isNull())
-   {
-      connect(this->socket.data(), &PeerMessageSocket::newMessage, this, &GetChunksResult::newMessage, Qt::DirectConnection);
-      socket->send(Common::MessageHeader::CORE_GET_CHUNKS, this->chunks);
-   }
 }
 
 void GetChunksResult::setStatus(bool closeTheSocket)
 {
-   this->closeTheSocket = closeTheSocket;
    // A successful status is meaningful only after the stream has been handed off.
    // Cancellation before that point must close even if the caller reports no error.
-   if (!closeTheSocket && this->state == State::Streaming)
-      this->state = State::Complete;
-}
-
-void GetChunksResult::doDeleteLater()
-{
-   this->stopTimer();
-   if (!this->socket.isNull())
-   {
-      // We must disconnect because 'this->socket->finished' can read some data and emit 'newMessage'.
-      disconnect(this->socket.data(), &PeerMessageSocket::newMessage, this, &GetChunksResult::newMessage);
-      const bool unfinished = this->state != State::NotStarted && this->state != State::Complete;
-      this->socket->finished(unfinished || this->isTimedout() || this->closeTheSocket);
-      this->socket.clear();
-   }
-   this->deleteLater();
+   this->socketReusable = this->streaming && !closeTheSocket;
 }
 
 void GetChunksResult::newMessage(const Common::Message& message)
@@ -76,19 +42,23 @@ void GetChunksResult::newMessage(const Common::Message& message)
 
    const Protos::Core::GetChunksResult& chunksResult = message.getMessage<Protos::Core::GetChunksResult>();
    const bool success = chunksResult.status() == Protos::Core::GetChunksResult::OK;
-   this->state = State::AwaitingStream;
-   if (!success)
-      this->closeTheSocket = true;
-   else if (this->socket)
+   // The raw-stream boundary is established before notifying the receiver, which may release this result synchronously.
+   if (success)
       this->socket->stopListening();
 
-   // The receiver may release this result synchronously. Establish the raw-stream
-   // boundary and cancellation state before invoking it.
    emit result(chunksResult);
 
-   if (this->socket && success)
+   if (success && !this->socket.isNull())
    {
-      this->state = State::Streaming;
+      this->streaming = true;
       emit stream(this->socket);
    }
+}
+
+/**
+  * Unlike the other results, a closed socket doesn't time out the request at once: 'DM::ChunkDownloader' asks
+  * again right after a timeout, the wait is the only thing which paces its retries.
+  */
+void GetChunksResult::socketClosed()
+{
 }

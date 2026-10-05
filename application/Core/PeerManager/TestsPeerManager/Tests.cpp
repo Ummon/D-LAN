@@ -553,6 +553,46 @@ void Tests::destroyManagerWithPendingConnections()
       QTRY_COMPARE(client->state(), QAbstractSocket::UnconnectedState);
 }
 
+/**
+  * A connection which doesn't tell which peer it comes from is dropped after 'pending_socket_timeout'.
+  * The timeout no longer applies once the connection has been given to its peer.
+  */
+void Tests::pendingConnectionTimeout()
+{
+   const quint32 oldTimeout = SETTINGS.get<quint32>("pending_socket_timeout");
+   const auto restore = qScopeGuard([&] { SETTINGS.set("pending_socket_timeout", oldTimeout); });
+   SETTINGS.set("pending_socket_timeout", quint32(300));
+
+   QTcpServer server;
+   QVERIFY(server.listen(QHostAddress::LocalHost, 0));
+   auto manager = Builder::newPeerManager(this->fileManagers[0]);
+   const Common::Hash peerID = Common::Hash::rand();
+   manager->updatePeer(peerID, QHostAddress::LocalHost, 1, "peer", 0, QString(), 0, 0, Common::Constants::PROTOCOL_VERSION);
+
+   QTcpSocket identified;
+   QTcpSocket silent;
+   QList<QPointer<QTcpSocket>> accepted;
+   for (QTcpSocket* client : {&identified, &silent})
+   {
+      client->connectToHost(QHostAddress::LocalHost, server.serverPort());
+      QTRY_VERIFY(server.hasPendingConnections());
+      accepted << server.nextPendingConnection();
+      manager->newConnection(accepted.last());
+   }
+
+   const Protos::Core::GetEntries request;
+   Common::Message::writeMessageToDevice(&identified,
+      Common::MessageHeader(Common::MessageHeader::CORE_GET_ENTRIES, request.ByteSizeLong(), peerID), &request);
+   QTRY_VERIFY(identified.bytesAvailable() >= Common::MessageHeader::HEADER_SIZE); // The answer of the peer manager.
+
+   QTRY_VERIFY(accepted[1].isNull());
+   QTRY_COMPARE(silent.state(), QAbstractSocket::UnconnectedState);
+
+   QTest::qWait(100); // Both timeouts are now elapsed.
+   QVERIFY(!accepted[0].isNull());
+   QCOMPARE(identified.state(), QAbstractSocket::ConnectedState);
+}
+
 void Tests::socketOutlivesManager_data()
 {
    QTest::addColumn<bool>("finish");

@@ -31,6 +31,7 @@ add_library(PeerManager STATIC
    priv/GetEntriesResult.h
    priv/GetHashesResult.h
    priv/PeerSelf.h
+   priv/Result.h
 
    GetChunkParams.h
    GetChunkParams.cpp

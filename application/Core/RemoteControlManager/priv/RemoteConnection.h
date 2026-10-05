@@ -25,6 +25,7 @@
 #include <QList>
 #include <QLocale>
 #include <QFutureWatcher>
+#include <QNetworkInterface>
 
 #include <google/protobuf/message.h>
 

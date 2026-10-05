@@ -59,6 +59,7 @@ private slots:
    void averagePeerSpeed();
    void expiredPeerSpeedIsReplaced();
    void destroyManagerWithPendingConnections();
+   void pendingConnectionTimeout();
    void socketOutlivesManager_data();
    void socketOutlivesManager();
    void requestOutlivesManager();

@@ -20,6 +20,7 @@
 using namespace PM;
 
 #include <algorithm>
+#include <limits>
 
 #include <QCoreApplication>
 
@@ -44,11 +45,56 @@ void PeerMessageSocket::Logger::logError(const QString& message)
    L_WARN(message);
 }
 
+/**
+  * A connection established by the remote peer.
+  */
 PeerMessageSocket::PeerMessageSocket(
    PeerManager* peerManager,
    QSharedPointer<FM::IFileManager> fileManager,
    const Common::Hash& remotePeerID,
    QTcpSocket* socket
+) :
+   PeerMessageSocket(peerManager, fileManager, remotePeerID, socket, true)
+{
+}
+
+/**
+  * Will automatically create a connection to the given address and port.
+  */
+PeerMessageSocket::PeerMessageSocket(
+   PeerManager* peerManager,
+   QSharedPointer<FM::IFileManager> fileManager,
+   const Common::Hash& remotePeerID,
+   const QHostAddress& address,
+   quint16 port
+) :
+   PeerMessageSocket(peerManager, fileManager, remotePeerID, new QTcpSocket(), false)
+{
+   // 'disconnected()' is only emitted by a socket which has been connected: without this a connection which
+   // can't be established would stay in the pool, active, until the request made on it times out.
+   // Queued: the connection may fail at once, from within 'connectToHost(..)' (network unreachable for instance),
+   // while nobody is connected to 'closed(..)' yet, see 'ConnectionPool::addNewSocket(..)'.
+   connect(
+      this->socket,
+      &QAbstractSocket::stateChanged,
+      this,
+      [this](QAbstractSocket::SocketState state) {
+         if (state == QAbstractSocket::UnconnectedState)
+            this->close();
+      },
+      Qt::QueuedConnection
+   );
+
+   L_DEBU(QString("Socket[%1] connecting to %2:%3").arg(this->num).arg(address.toString()).arg(port));
+   this->socket->connectToHost(address, port);
+}
+
+PeerMessageSocket::PeerMessageSocket(
+   PeerManager* peerManager,
+   QSharedPointer<FM::IFileManager> fileManager,
+   const Common::Hash& remotePeerID,
+   QAbstractSocket* socket,
+   bool incoming
 ) :
    MessageSocket(
       new PeerMessageSocket::Logger(),
@@ -58,45 +104,17 @@ PeerMessageSocket::PeerMessageSocket(
    ),
    peerManager(peerManager),
    fileManager(fileManager),
-   incoming(true),
+   incoming(incoming),
    active(true),
    nbHash(0)
 {
-   this->initUnactiveTimer();
-}
+   static const quint32 IDLE_SOCKET_TIMEOUT = SETTINGS.get<quint32>("idle_socket_timeout");
 
-PeerMessageSocket::PeerMessageSocket(
-   PeerManager* peerManager,
-   QSharedPointer<FM::IFileManager> fileManager,
-   const Common::Hash& remotePeerID,
-   const QHostAddress& address,
-   quint16 port
-) :
-   MessageSocket(
-      new PeerMessageSocket::Logger(),
-      address,
-      port,
-      peerManager->getSelf()->getID(),
-      remotePeerID
-   ),
-   peerManager(peerManager),
-   fileManager(fileManager),
-   incoming(false),
-   active(true),
-   nbHash(0)
-{
-   this->initUnactiveTimer();
-
-   // 'disconnected()' is only emitted by a socket which has been connected: without this a connection which
-   // can't be established would stay in the pool, active, until the request made on it times out.
-   connect(this->socket, &QAbstractSocket::stateChanged, this, [this](QAbstractSocket::SocketState state) {
-      if (state == QAbstractSocket::UnconnectedState)
-         this->close();
-   });
-   // The connection may have failed at once, before the connection above (network unreachable for instance).
-   // Queued: nobody is connected to 'closed(..)' yet, see 'ConnectionPool::addNewSocket(..)'.
-   if (this->socket->state() == QAbstractSocket::UnconnectedState)
-      QMetaObject::invokeMethod(this, &PeerMessageSocket::close, Qt::QueuedConnection);
+   this->inactiveTimer.setSingleShot(true);
+   this->inactiveTimer.setInterval(IDLE_SOCKET_TIMEOUT);
+   connect(&this->inactiveTimer, &QTimer::timeout, this, &PeerMessageSocket::close);
+   // Not started here: 'startListening()' owns the timer and is called right after the socket is built,
+   // see 'ConnectionPool::addNewSocket(..)'.
 }
 
 PeerMessageSocket::~PeerMessageSocket()
@@ -355,7 +373,7 @@ void PeerMessageSocket::close()
   */
 void PeerMessageSocket::nextAskedHash(Protos::Core::HashResult hash)
 {
-   if (this->closing || this->incomingTransaction != IncomingTransaction::Hashes || this->nbHash <= 0)
+   if (this->closing || this->incomingTransaction != IncomingTransaction::Hashes || this->nbHash == 0)
       return;
 
    this->send(Common::MessageHeader::CORE_HASH_RESULT, hash);
@@ -451,15 +469,17 @@ void PeerMessageSocket::onNewMessage(const Common::Message& message)
 
          const Protos::Core::GetEntries& getEntries = message.getMessage<Protos::Core::GetEntries>();
 
+         // Zero means no limit. Bounded before narrowing the 'uint32' of the protocol to 'int'.
+         const quint32 nbMaxHashesAsked = getEntries.nb_max_hashes_per_entry();
+         const int nbMaxHashesPerEntry =
+            nbMaxHashesAsked == 0 || nbMaxHashesAsked > quint32(std::numeric_limits<int>::max()) ?
+                 std::numeric_limits<int>::max()
+               : static_cast<int>(nbMaxHashesAsked);
+
          for (int i = 0; i < getEntries.dirs().entries_size(); i++)
          {
             QSharedPointer<FM::IGetEntriesResult> result =
-               this->fileManager->getScannedEntries(
-                  getEntries.dirs().entries(i),
-                  getEntries.nb_max_hashes_per_entry() > 0 ?
-                       getEntries.nb_max_hashes_per_entry()
-                     : std::numeric_limits<int>::max()
-               );
+               this->fileManager->getScannedEntries(getEntries.dirs().entries(i), nbMaxHashesPerEntry);
             connect(
                result.data(),
                &FM::IGetEntriesResult::result,
@@ -668,17 +688,6 @@ void PeerMessageSocket::onNewDataReceived()
 void PeerMessageSocket::onDisconnected()
 {
    this->close();
-}
-
-void PeerMessageSocket::initUnactiveTimer()
-{
-   static const quint32 IDLE_SOCKET_TIMEOUT = SETTINGS.get<quint32>("idle_socket_timeout");
-
-   this->inactiveTimer.setSingleShot(true);
-   this->inactiveTimer.setInterval(IDLE_SOCKET_TIMEOUT);
-   connect(&this->inactiveTimer, &QTimer::timeout, this, &PeerMessageSocket::close);
-   // Not started here: 'startListening()' owns the timer and is called right after the socket is built,
-   // see 'ConnectionPool::addNewSocket(..)'.
 }
 
 void PeerMessageSocket::sendEntriesResultMessage()

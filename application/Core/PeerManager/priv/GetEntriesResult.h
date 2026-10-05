@@ -15,39 +15,22 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #pragma once
 
-#include <QObject>
-
-#include <google/protobuf/message.h>
-
-#include <Protos/common.pb.h>
 #include <Protos/core_protocol.pb.h>
 
-#include <Common/Network/MessageHeader.h>
-#include <Common/Uncopyable.h>
-
 #include <IGetEntriesResult.h>
-#include <priv/PeerMessageSocket.h>
+#include <priv/Result.h>
 
 namespace PM
 {
-   class GetEntriesResult : public IGetEntriesResult, Common::Uncopyable
+   class GetEntriesResult : public Result<IGetEntriesResult, Protos::Core::GetEntries>
    {
-      Q_OBJECT
    public:
       GetEntriesResult(const Protos::Core::GetEntries& dirs, QSharedPointer<PeerMessageSocket> socket);
-      void start();
-      void doDeleteLater();
-
-   private slots:
-      void newMessage(const Common::Message& message);
 
    private:
-      const Protos::Core::GetEntries dirs;
-      QSharedPointer<PeerMessageSocket> socket;
-      bool pending = false;
-      bool started = false;
+      void newMessage(const Common::Message& message) override;
    };
 }

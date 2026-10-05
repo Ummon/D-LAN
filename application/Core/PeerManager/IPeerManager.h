@@ -18,8 +18,11 @@
   
 #pragma once
 
+#include <QObject>
 #include <QString>
-#include <QtNetwork>
+#include <QList>
+#include <QHostAddress>
+#include <QTcpSocket>
 #include <QSharedPointer>
 
 #include <Core/FileManager/IChunk.h>

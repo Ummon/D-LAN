@@ -139,20 +139,11 @@ void ConnectionPool::socketBecomeIdle(PeerMessageSocket*)
 
 void ConnectionPool::socketClosed(PeerMessageSocket* socket)
 {
-   for (int k = 0; k < 2; k++)
-   {
-      QList<QSharedPointer<PeerMessageSocket>>& list = k == 0 ? this->socketsToPeer : this->socketsFromPeer;
+   // Before the removal, which may delete the socket.
+   socket->disconnect(this);
 
-      for (QMutableListIterator<QSharedPointer<PeerMessageSocket>> i(list); i.hasNext();)
-      {
-         if (i.next().data() == socket)
-         {
-            socket->disconnect(this);
-            i.remove();
-            return;
-         }
-      }
-   }
+   if (!this->socketsToPeer.removeOne(socket))
+      this->socketsFromPeer.removeOne(socket);
 }
 
 void ConnectionPool::socketGetChunks(
@@ -160,24 +151,7 @@ void ConnectionPool::socketGetChunks(
    PeerMessageSocket* socket
 )
 {
-   for (QListIterator<QSharedPointer<PeerMessageSocket>> i(this->socketsFromPeer); i.hasNext();)
-   {
-      QSharedPointer<PeerMessageSocket> socketShared = i.next();
-      if (socketShared.data() == socket)
-      {
-         this->peerManager->onGetChunks(chunksParams, socketShared);
-         return;
-      }
-   }
-
-   // Shouldn't happen: only the sockets put in 'socketsFromPeer' are connected to 'PeerMessageSocket::getChunks'.
-   // A status OK has already been sent and the socket isn't listening anymore, closing it is the only way left
-   // to tell the remote peer that no data will come.
-   L_ERRO(
-      QString("ConnectionPool::socketGetChunks(..): unknown socket, it's closed. Peer: %1")
-         .arg(this->peerID.toStr())
-   );
-   socket->close();
+   this->peerManager->onGetChunks(chunksParams, socket->sharedFromThis());
 }
 
 /**

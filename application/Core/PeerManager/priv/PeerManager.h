@@ -20,9 +20,8 @@
 
 #include <QObject>
 #include <QMap>
+#include <QSet>
 #include <QString>
-#include <QTimer>
-#include <QElapsedTimer>
 #include <QList>
 #include <QTcpSocket>
 
@@ -44,18 +43,6 @@
 namespace PM
 {
    class Peer;
-
-   struct PendingSocket
-   {
-      PendingSocket(QTcpSocket* socket)
-         : socket(socket)
-      {
-         this->t.start();
-      }
-
-      QTcpSocket* socket;
-      QElapsedTimer t;
-   };
 
    class PeerManager : public IPeerManager, Common::Uncopyable
    {
@@ -110,16 +97,12 @@ namespace PM
          QSharedPointer<PeerMessageSocket> socket
       );
 
-   private slots:
-      void checkIdlePendingSockets();
-      void peerUnblocked();
-
    private:
       Peer* addPeer(const Common::Hash& ID, const QString& nick = QString());
 
       void dataReceived(QTcpSocket* tcpSocket);
       void disconnected(QTcpSocket* tcpSocket);
-      void removeFromPending(QTcpSocket* socket);
+      bool removeFromPending(QTcpSocket* socket);
 
       LOG_INIT_H("PeerManager")
 
@@ -129,8 +112,7 @@ namespace PM
       QMap<Common::Hash, Peer*> peers; // The other peers.
 
       const int pendingSocketTimeout; // [ms].
-      QTimer timer; ///< Used to check periodically if some pending sockets have timeouted.
-      QList<PendingSocket> pendingSockets;
+      QSet<QTcpSocket*> pendingSockets; // The new connections, until their first header tells which peer they come from.
       QMap<PeerMessageSocket*, Common::Hash> activeUploads;
    };
 }

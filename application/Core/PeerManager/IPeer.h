@@ -33,8 +33,6 @@
 
 namespace PM
 {
-   class IGetHashes;
-
    /**
      * @brief A remote peer.
      *

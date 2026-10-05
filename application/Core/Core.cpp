@@ -21,7 +21,9 @@
 #include <Core.h>
 using namespace CoreSpace;
 
+#include <QCoreApplication>
 #include <QRegularExpression>
+#include <QThread>
 
 #include <Common/PersistentData.h>
 #include <Common/Constants.h>

@@ -15,43 +15,22 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #pragma once
 
-#include <QObject>
-#include <QSharedPointer>
-
-#include <google/protobuf/message.h>
-
-#include <Protos/common.pb.h>
 #include <Protos/core_protocol.pb.h>
 
-#include <Common/Network/MessageHeader.h>
-#include <Common/Uncopyable.h>
-
 #include <IGetHashesResult.h>
-#include <priv/PeerMessageSocket.h>
+#include <priv/Result.h>
 
 namespace PM
 {
-   class GetHashesResult : public IGetHashesResult, Common::Uncopyable
+   class GetHashesResult : public Result<IGetHashesResult, Protos::Core::GetHashes>
    {
-      Q_OBJECT
    public:
       GetHashesResult(const Protos::Core::GetHashes& request, QSharedPointer<PeerMessageSocket> socket);
-      void start();
-      void doDeleteLater();
-
-   private slots:
-      void newMessage(const Common::Message& message);
 
    private:
-      void complete();
-
-      const Protos::Core::GetHashes request;
-      QSharedPointer<PeerMessageSocket> socket;
-      bool pending = false;
-      bool started = false;
-      quint32 remainingHashes = 0;
+      void newMessage(const Common::Message& message) override;
    };
 }

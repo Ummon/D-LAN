@@ -18,41 +18,23 @@
 
 #pragma once
 
-#include <QObject>
-#include <QTimer>
-
-#include <google/protobuf/message.h>
-
-#include <Protos/common.pb.h>
 #include <Protos/core_protocol.pb.h>
 
-#include <Common/Network/MessageHeader.h>
-#include <Common/Network/MessageSocket.h>
-#include <Common/Uncopyable.h>
-
 #include <IGetChunksResult.h>
-#include <priv/PeerMessageSocket.h>
+#include <priv/Result.h>
 
 namespace PM
 {
-   class GetChunksResult : public IGetChunksResult, Common::Uncopyable
+   class GetChunksResult : public Result<IGetChunksResult, Protos::Core::GetChunks>
    {
-      Q_OBJECT
    public:
       GetChunksResult(const Protos::Core::GetChunks& chunks, QSharedPointer<PeerMessageSocket> socket);
-      void start();
-      void setStatus(bool closeTheSocket);
-      void doDeleteLater();
-
-   private slots:
-      void newMessage(const Common::Message& message);
+      void setStatus(bool closeTheSocket) override;
 
    private:
-      enum class State { NotStarted, AwaitingResponse, AwaitingStream, Streaming, Complete };
+      void newMessage(const Common::Message& message) override;
+      void socketClosed() override;
 
-      const Protos::Core::GetChunks chunks;
-      QSharedPointer<PeerMessageSocket> socket;
-      State state = State::NotStarted;
-      bool closeTheSocket;
+      bool streaming = false; // The socket has been given to the caller to read the data of the chunks.
    };
 }

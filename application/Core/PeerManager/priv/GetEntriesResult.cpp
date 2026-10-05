@@ -15,47 +15,15 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <priv/GetEntriesResult.h>
 using namespace PM;
 
 #include <Common/Settings.h>
 
-#include <priv/Log.h>
-
 GetEntriesResult::GetEntriesResult(const Protos::Core::GetEntries& dirs, QSharedPointer<PeerMessageSocket> socket) :
-   IGetEntriesResult(SETTINGS.get<quint32>("socket_timeout")), dirs(dirs), socket(socket)
+   Result(SETTINGS.get<quint32>("socket_timeout"), Common::MessageHeader::CORE_GET_ENTRIES, dirs, socket)
 {
-}
-
-void GetEntriesResult::start()
-{
-   if (this->started)
-      return;
-   this->started = true;
-   this->pending = true;
-   this->startTimer();
-   if (!this->socket.isNull())
-   {
-      connect(this->socket.data(), &PeerMessageSocket::newMessage, this, &GetEntriesResult::newMessage, Qt::DirectConnection);
-      // The answer will never come if the socket is closed, there is no need to wait for the timer.
-      // Queued: the socket may be closed from within 'send(..)' and the caller doesn't expect a timeout from 'start()'.
-      connect(this->socket.data(), &PeerMessageSocket::closed, this, &GetEntriesResult::timeoutNow, Qt::QueuedConnection);
-      socket->send(Common::MessageHeader::CORE_GET_ENTRIES, this->dirs);
-   }
-}
-
-void GetEntriesResult::doDeleteLater()
-{
-   this->stopTimer();
-   if (!this->socket.isNull())
-   {
-      disconnect(this->socket.data(), nullptr, this, nullptr);
-      // An unfinished response has no request ID and cannot be reused by another request.
-      this->socket->finished(this->pending);
-      this->socket.clear();
-   }
-   this->deleteLater();
 }
 
 void GetEntriesResult::newMessage(const Common::Message& message)
@@ -63,16 +31,8 @@ void GetEntriesResult::newMessage(const Common::Message& message)
    if (message.getHeader().getType() != Common::MessageHeader::CORE_GET_ENTRIES_RESULT)
       return;
 
-   this->stopTimer();
-   this->pending = false;
+   // Before notifying the caller, which may immediately start another request on this socket.
+   this->releaseSocket();
 
-   if (!this->socket.isNull())
-      disconnect(this->socket.data(), nullptr, this, nullptr);
-
-   // PeerMessageSocket has already finished the transaction. Drop ownership before
-   // notifying callers, which may immediately start another request on this socket.
-   this->socket.clear();
-
-   const Protos::Core::GetEntriesResult& entries = message.getMessage<Protos::Core::GetEntriesResult>();
-   emit result(entries);
+   emit result(message.getMessage<Protos::Core::GetEntriesResult>());
 }

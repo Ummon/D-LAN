@@ -15,90 +15,33 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #include <priv/GetHashesResult.h>
 using namespace PM;
 
 #include <Common/Settings.h>
 
-#include <priv/Log.h>
-
 GetHashesResult::GetHashesResult(const Protos::Core::GetHashes& request, QSharedPointer<PeerMessageSocket> socket) :
-   IGetHashesResult(SETTINGS.get<quint32>("get_hashes_timeout")), request(request), socket(socket)
+   Result(SETTINGS.get<quint32>("get_hashes_timeout"), Common::MessageHeader::CORE_GET_HASHES, request, socket)
 {
-}
-
-void GetHashesResult::start()
-{
-   if (this->started)
-      return;
-   this->started = true;
-   this->pending = true;
-   this->startTimer();
-   // The socket may be null if the connection pool was unable to give one, in this case the request will simply time out.
-   if (!this->socket.isNull())
-   {
-      connect(this->socket.data(), &PeerMessageSocket::newMessage, this, &GetHashesResult::newMessage, Qt::DirectConnection);
-      // The answer will never come if the socket is closed, there is no need to wait for the timer.
-      // Queued: the socket may be closed from within 'send(..)' and the caller doesn't expect a timeout from 'start()'.
-      connect(this->socket.data(), &PeerMessageSocket::closed, this, &GetHashesResult::timeoutNow, Qt::QueuedConnection);
-      socket->send(Common::MessageHeader::CORE_GET_HASHES, this->request);
-   }
-}
-
-void GetHashesResult::doDeleteLater()
-{
-   this->stopTimer();
-   if (!this->socket.isNull())
-   {
-      disconnect(this->socket.data(), nullptr, this, nullptr);
-      // Abandoning a hash stream must not expose its remaining replies to a new request.
-      this->socket->finished(this->pending);
-      this->socket.clear();
-   }
-   this->deleteLater();
 }
 
 void GetHashesResult::newMessage(const Common::Message& message)
 {
-   switch (message.getHeader().getType())
-   {
-   case Common::MessageHeader::CORE_GET_HASHES_RESULT:
-      {
-         const Protos::Core::GetHashesResult& hashesResult = message.getMessage<Protos::Core::GetHashesResult>();
-         this->remainingHashes = hashesResult.nb_hash();
-         if (hashesResult.status() != Protos::Core::GetHashesResult::OK || this->remainingHashes == 0)
-            this->complete();
-         else
-            this->startTimer();
-         emit result(hashesResult);
-      }
-      break;
+   const Common::MessageHeader::MessageType type = message.getHeader().getType();
+   if (type != Common::MessageHeader::CORE_GET_HASHES_RESULT && type != Common::MessageHeader::CORE_HASH_RESULT)
+      return;
 
-   case Common::MessageHeader::CORE_HASH_RESULT:
-      {
-         const Protos::Core::HashResult& hashResult = message.getMessage<Protos::Core::HashResult>();
-         if (this->remainingHashes == 0)
-            return;
-         if (--this->remainingHashes == 0)
-            this->complete();
-         else
-            this->startTimer();
-         emit nextHash(hashResult);
-      }
-      break;
+   // The socket counts the hashes: if this message is the last one, it has already ended the transaction and
+   // isn't active anymore, see 'PeerMessageSocket::onNewMessage(..)'.
+   // The socket is released before notifying the caller, which may immediately start another request on it.
+   if (this->socket->isActive())
+      this->startTimer();
+   else
+      this->releaseSocket();
 
-   default:;
-   }
-}
-
-void GetHashesResult::complete()
-{
-   this->pending = false;
-   this->stopTimer();
-   if (this->socket)
-      disconnect(this->socket.data(), nullptr, this, nullptr);
-   // PeerMessageSocket has already marked the socket idle. An old result must not
-   // finish it again after a caller has started the next transaction.
-   this->socket.clear();
+   if (type == Common::MessageHeader::CORE_GET_HASHES_RESULT)
+      emit result(message.getMessage<Protos::Core::GetHashesResult>());
+   else
+      emit nextHash(message.getMessage<Protos::Core::HashResult>());
 }

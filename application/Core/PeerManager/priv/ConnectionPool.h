@@ -18,7 +18,9 @@
   
 #pragma once
 
-#include <QtNetwork>
+#include <QObject>
+#include <QHostAddress>
+#include <QTcpSocket>
 #include <QList>
 #include <QDateTime>
 #include <QSharedPointer>

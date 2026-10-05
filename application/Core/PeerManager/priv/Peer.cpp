@@ -232,37 +232,34 @@ void Peer::setAsDead()
    this->consideredDead();
 }
 
-QSharedPointer<IGetEntriesResult> Peer::getEntries(const Protos::Core::GetEntries& dirs)
+/**
+  * Build the result of a request to send to the peer. Return a null pointer if the peer isn't available.
+  */
+template <typename Implementation, typename Interface, typename Request>
+QSharedPointer<Interface> Peer::newResult(const Request& request)
 {
    if (!this->isAvailable())
-      return QSharedPointer<IGetEntriesResult>();
+      return QSharedPointer<Interface>();
 
-   return QSharedPointer<IGetEntriesResult>(
-      new GetEntriesResult(dirs, this->connectionPool.getASocket()),
-      &IGetEntriesResult::doDeleteLater
+   return QSharedPointer<Interface>(
+      new Implementation(request, this->connectionPool.getASocket()),
+      &Interface::doDeleteLater
    );
+}
+
+QSharedPointer<IGetEntriesResult> Peer::getEntries(const Protos::Core::GetEntries& dirs)
+{
+   return this->newResult<GetEntriesResult, IGetEntriesResult>(dirs);
 }
 
 QSharedPointer<IGetHashesResult> Peer::getHashes(const Protos::Core::GetHashes& request)
 {
-   if (!this->isAvailable())
-      return QSharedPointer<IGetHashesResult>();
-
-   return QSharedPointer<IGetHashesResult>(
-      new GetHashesResult(request, this->connectionPool.getASocket()),
-      &IGetHashesResult::doDeleteLater
-   );
+   return this->newResult<GetHashesResult, IGetHashesResult>(request);
 }
 
 QSharedPointer<IGetChunksResult> Peer::getChunks(const Protos::Core::GetChunks& chunks)
 {
-   if (!this->isAvailable())
-      return QSharedPointer<IGetChunksResult>();
-
-   return QSharedPointer<IGetChunksResult>(
-      new GetChunksResult(chunks, this->connectionPool.getASocket()),
-      &IGetChunksResult::doDeleteLater
-   );
+   return this->newResult<GetChunksResult, IGetChunksResult>(chunks);
 }
 
 void Peer::newConnexion(QTcpSocket* tcpSocket)
@@ -317,6 +314,6 @@ void Peer::unblock()
    }
 
    this->blockedTimer.stop();
-   // Emitted without holding 'mutex': 'PeerManager::peerUnblocked()' calls 'isAvailable()' back.
+   // Emitted without holding 'mutex': 'PeerManager' calls 'isAvailable()' back, see 'PeerManager::addPeer(..)'.
    emit unblocked();
 }

@@ -22,6 +22,9 @@ using namespace PM;
 #include <algorithm>
 
 #include <QMetaMethod>
+#include <QThread>
+#include <QPointer>
+#include <QTimer>
 
 #include <Protos/common.pb.h>
 
@@ -44,18 +47,14 @@ PeerManager::PeerManager(QSharedPointer<FM::IFileManager> fileManager) :
    self(new PeerSelf(this, this->fileManager)),
    pendingSocketTimeout(SETTINGS.get<quint32>("pending_socket_timeout"))
 {
-   this->timer.setInterval(this->pendingSocketTimeout / 10);
-   connect(&this->timer, &QTimer::timeout, this, &PeerManager::checkIdlePendingSockets);
 }
 
 PeerManager::~PeerManager()
 {
-   this->timer.stop();
-   while (!this->pendingSockets.isEmpty())
+   // Pending sockets have no parent. Disconnect our callbacks before deleting
+   // them so closing a connection cannot modify the pending set during cleanup.
+   for (QTcpSocket* socket : std::as_const(this->pendingSockets))
    {
-      QTcpSocket* socket = this->pendingSockets.takeLast().socket;
-      // Pending sockets have no parent. Disconnect our callbacks before deleting
-      // them so closing a connection cannot modify the pending list during cleanup.
       socket->disconnect(this);
       delete socket;
    }
@@ -192,12 +191,19 @@ void PeerManager::newConnection(QTcpSocket* tcpSocket)
    {
       L_DEBU(QString("New pending socket from %1").arg(tcpSocket->peerAddress().toString()));
 
-      if (!this->timer.isActive())
-         this->timer.start();
-
       connect(tcpSocket, &QTcpSocket::readyRead, this, [this, tcpSocket] { this->dataReceived(tcpSocket); }, Qt::DirectConnection);
       connect(tcpSocket, &QTcpSocket::disconnected, this, [this, tcpSocket] { this->disconnected(tcpSocket); }, Qt::DirectConnection);
-      this->pendingSockets << PendingSocket(tcpSocket);
+      this->pendingSockets << tcpSocket;
+
+      // 'QPointer': the socket may be deleted in the meantime and its address given to another pending socket.
+      QTimer::singleShot(this->pendingSocketTimeout, this, [this, socket = QPointer<QTcpSocket>(tcpSocket)] {
+         if (socket && this->removeFromPending(socket))
+         {
+            L_DEBU("Pending socket timed out -> removed");
+            socket->deleteLater();
+         }
+      });
+
       this->dataReceived(tcpSocket); // The case where some data arrived before the 'connect' above.
    }
 }
@@ -272,54 +278,27 @@ void PeerManager::disconnected(QTcpSocket* tcpSocket)
    tcpSocket->deleteLater();
 }
 
-void PeerManager::checkIdlePendingSockets()
-{
-   for (QMutableListIterator<PendingSocket> i(this->pendingSockets); i.hasNext();)
-   {
-      PendingSocket& pendingSocket = i.next();
-      if (pendingSocket.t.elapsed() > this->pendingSocketTimeout)
-      {
-         L_DEBU("Pending socket timed out -> removed");
-         pendingSocket.socket->disconnect();
-         pendingSocket.socket->deleteLater();
-         i.remove();
-      }
-   }
-
-   if (this->pendingSockets.isEmpty())
-      this->timer.stop();
-}
-
-void PeerManager::peerUnblocked()
-{
-   Peer* peer = static_cast<Peer*>(this->sender());
-   if (peer->isAvailable())
-      emit peerBecomesAvailable(peer);
-}
-
 Peer* PeerManager::addPeer(const Common::Hash& ID, const QString& nick)
 {
    Peer* peer = new Peer(this, this->fileManager, ID, nick);
-   connect(peer, &Peer::unblocked, this, &PeerManager::peerUnblocked);
+   connect(peer, &Peer::unblocked, this, [this, peer] {
+      if (peer->isAvailable())
+         emit peerBecomesAvailable(peer);
+   });
    this->peers.insert(ID, peer);
    return peer;
 }
 
-void PeerManager::removeFromPending(QTcpSocket* socket)
+/**
+  * Return 'false' if the given socket isn't a pending one.
+  */
+bool PeerManager::removeFromPending(QTcpSocket* socket)
 {
-   for (QMutableListIterator<PendingSocket> i(this->pendingSockets); i.hasNext();)
-   {
-      PendingSocket& pendingSocket = i.next();
-      if (pendingSocket.socket == socket)
-      {
-         // Remove every connection, not only ours: the socket is handed to a 'PeerMessageSocket' which takes
-         // ownership of it. A connection made by the creator (e.g. 'disconnected' -> 'deleteLater') would delete it behind the new owner.
-         pendingSocket.socket->disconnect();
-         i.remove();
-         break;
-      }
-   }
+   if (!this->pendingSockets.remove(socket))
+      return false;
 
-   if (this->pendingSockets.isEmpty())
-      this->timer.stop();
+   // Remove every connection, not only ours: the socket is handed to a 'PeerMessageSocket' which takes
+   // ownership of it. A connection made by the creator (e.g. 'disconnected' -> 'deleteLater') would delete it behind the new owner.
+   socket->disconnect();
+   return true;
 }

@@ -44,7 +44,7 @@ namespace PM
 {
    class PeerManager;
 
-   class PeerMessageSocket : public Common::MessageSocket, public ISocket
+   class PeerMessageSocket : public Common::MessageSocket, public ISocket, public QEnableSharedFromThis<PeerMessageSocket>
    {
       Q_OBJECT
 
@@ -122,6 +122,14 @@ namespace PM
       void entriesResultTimeout();
 
    private:
+      PeerMessageSocket(
+         PeerManager* peerManager,
+         QSharedPointer<FM::IFileManager> fileManager,
+         const Common::Hash& remotePeerID,
+         QAbstractSocket* socket,
+         bool incoming
+      );
+
       enum class IncomingTransaction { None, Entries, Hashes, Chunks };
       enum class OutgoingTransaction { None, Entries, HashesHeader, Hashes, Chunks, AwaitingCompletion };
 
@@ -129,7 +137,6 @@ namespace PM
       void onNewMessage(const Common::Message& message) override;
       void onNewDataReceived() override;
       void onDisconnected() override;
-      void initUnactiveTimer();
 
       void storeEntriesResult(const Protos::Core::GetEntriesResult::EntryResult* result);
       void sendEntriesResultMessage();
