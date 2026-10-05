@@ -272,6 +272,18 @@ namespace
       }
    };
 
+   class RefusingPeer : public ResumePeer
+   {
+   public:
+      using ResumePeer::ResumePeer;
+      int requests = 0;
+      QSharedPointer<PM::IGetChunksResult> getChunks(const Protos::Core::GetChunks&) override
+      {
+         ++this->requests; // No transfer is started: each scan of the queue asks each chunk once.
+         return {};
+      }
+   };
+
    class FailingChunk : public FM::IChunk
    {
    public:
@@ -1841,6 +1853,7 @@ void Tests::checkpointDownloadProgress()
    file->populateEntry(&entry, true);
    auto download = manager.addDownload(entry, entry, &peer, Protos::Queue::Queue::Entry::QUEUED);
    QVERIFY(download);
+   QCoreApplication::processEvents(); // The queue is scanned from the event loop.
    QCOMPARE(download->getStatus(), Protos::Common::DownloadStatus::DOWNLOADING);
    auto unfinished = manager.getTheFirstUnfinishedChunks(1);
    QCOMPARE(unfinished.size(), 1);
@@ -1918,6 +1931,7 @@ void Tests::downloadSlotFreedWhenTransferEnds()
       downloads << manager.addDownload(entry, entry, peer, Protos::Queue::Queue::Entry::QUEUED);
       QVERIFY(downloads.last());
    }
+   QCoreApplication::processEvents(); // The queue is scanned from the event loop.
    QCOMPARE(downloads[0]->getStatus(), Protos::Common::DownloadStatus::DOWNLOADING);
    QVERIFY(downloads[1]->getStatus() != Protos::Common::DownloadStatus::DOWNLOADING);
 
@@ -1929,7 +1943,54 @@ void Tests::downloadSlotFreedWhenTransferEnds()
 
    firstPeer.available = false; // The ended transfer must not restart and take the freed slot back.
    downloader->stop();
+   QCoreApplication::processEvents();
    QCOMPARE(downloads[1]->getStatus(), Protos::Common::DownloadStatus::DOWNLOADING);
+}
+
+/**
+  * Each started download asks for a scan of the queue: the queue is scanned once, not once per download.
+  */
+void Tests::coalesceQueueScans()
+{
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new EmptyHashCache));
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   QSharedPointer<ChunksByHashFileManager> files(new ChunksByHashFileManager);
+   RefusingPeer peer(files);
+   Common::PersistentData::rmValue(Common::Constants::FILE_QUEUE, Common::Global::DataFolderType::LOCAL);
+   DownloadManager manager(files, this->peerManager);
+
+   const int nbDownloads = 20;
+   QList<quint64> IDs;
+   for (int i = 0; i < nbDownloads; i++)
+   {
+      auto file = new FM::File(root, QString("file-%1.bin").arg(i), 100, false, QDateTime::currentDateTime(),
+         root->getRootDir(), { Common::Hash::rand() }, true);
+      files->chunks << file->getChunks().first();
+      Protos::Common::Entry entry;
+      file->populateEntry(&entry, true);
+      auto download = manager.addDownload(entry, entry, &peer, Protos::Queue::Queue::Entry::QUEUED);
+      QVERIFY(download);
+      IDs << download->getID();
+   }
+
+   // The scan is done when the control returns to the event loop.
+   QCOMPARE(peer.requests, 0);
+   QCoreApplication::processEvents();
+   QCOMPARE(peer.requests, nbDownloads);
+   QCoreApplication::processEvents();
+   QCOMPARE(peer.requests, nbDownloads);
+
+   // The same goes for the downloads resumed together.
+   manager.pauseDownloads(IDs);
+   manager.pauseDownloads(IDs, false);
+   QCOMPARE(peer.requests, nbDownloads);
+   QCoreApplication::processEvents();
+   QCOMPARE(peer.requests, 2 * nbDownloads);
 }
 
 void Tests::chunkPeerQueriesPruneUnavailable_data()

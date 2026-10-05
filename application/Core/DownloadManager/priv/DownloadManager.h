@@ -119,6 +119,8 @@ namespace DM
    private:
       bool addDownloadIntoASharedDirectory(const Protos::Common::Entry& remoteEntry, PM::IPeer* peerSource, const Common::Path& destination);
 
+      void scheduleScan();
+
       void loadQueueFromFile();
 
    private slots:
@@ -144,6 +146,7 @@ namespace DM
       Common::ThreadPool threadPool;
 
       DownloadQueue downloadQueue;
+      bool scanPending; // 'true' when a scan of the queue has been asked and isn't done yet, see 'scheduleScan()'.
 
       QTimer startErroneousDownloadTimer; // When one or more downloads are in error state, we try to relaunch them periodically.
 

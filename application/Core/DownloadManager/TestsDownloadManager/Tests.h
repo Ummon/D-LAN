@@ -78,6 +78,7 @@ private slots:
    void checkpointDownloadProgress_data();
    void checkpointDownloadProgress();
    void downloadSlotFreedWhenTransferEnds();
+   void coalesceQueueScans();
    void retryFailedQueueSave();
    void skipRejectedSourceWhenLoadingQueue();
    void resetPreservesDestination_data();

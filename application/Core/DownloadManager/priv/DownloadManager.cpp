@@ -44,6 +44,7 @@ DownloadManager::DownloadManager(QSharedPointer<FM::IFileManager> fileManager, Q
    fileManager(fileManager),
    peerManager(peerManager),
    threadPool(NUMBER_OF_DOWNLOADER),
+   scanPending(false),
    queueChanged(false),
    queueLoaded(false)
 {
@@ -261,8 +262,8 @@ Download* DownloadManager::addDownload(
 
    connect(newDownload, &Download::becomeErroneous, this, &DownloadManager::downloadStatusBecomeErroneous);
    // A download may leave its erroneous state by itself (for example when its peers change), the queue must be rescanned
-   // otherwise it may wait until the next free peer. Queued: the status may change from within a scan or a mutex.
-   connect(newDownload, &Download::noLongerErroneous, this, &DownloadManager::scanTheQueue, Qt::QueuedConnection);
+   // otherwise it may wait until the next free peer.
+   connect(newDownload, &Download::noLongerErroneous, this, &DownloadManager::scheduleScan);
    this->downloadQueue.insert(position == -1 ? this->downloadQueue.size() : position, newDownload);
    newDownload->start();
 
@@ -343,7 +344,7 @@ void DownloadManager::pauseDownloads(QList<quint64> IDs, bool pause)
       this->setQueueChanged();
 
    if (!pause)
-      this->scanTheQueue();
+      this->scheduleScan();
 }
 
 QList<QSharedPointer<IChunkDownloader>> DownloadManager::getTheFirstUnfinishedChunks(int n)
@@ -469,14 +470,33 @@ void DownloadManager::peerNoLongerDownloadingChunk(PM::IPeer* peer)
    );
    // A transfer may have just ended: persist its final bytes and status even when no transfer remains at the next save tick.
    this->setQueueChanged();
-   this->scanTheQueue();
+   this->scheduleScan();
+}
+
+/**
+  * Ask for a scan of the queue, see 'scanTheQueue()'. It's done once the control returns to the event loop.
+  * A scan can be asked many times in a row, for example by each download of a directory being expanded or by each
+  * erroneous download being restarted: they are grouped into a single one, a scan per request would be quadratic.
+  * The scan is thus never run from within the caller, which may be in the middle of changing its state.
+  */
+void DownloadManager::scheduleScan()
+{
+   if (this->scanPending)
+      return;
+
+   this->scanPending = true;
+   QMetaObject::invokeMethod(this, &DownloadManager::scanTheQueue, Qt::QueuedConnection);
 }
 
 /**
   * Search a chunk to download.
+  * Not called directly, see 'scheduleScan()'.
   */
 void DownloadManager::scanTheQueue()
 {
+   // Reset first: a scan asked from here on, even by this one, has to be done.
+   this->scanPending = false;
+
    // Each transfer occupies its own peer, from 'ChunkDownloader::startDownloading(..)' to 'ChunkDownloader::downloadingEnded()'.
    int numberOfDownloadThreadRunning = this->occupiedPeersDownloadingChunk.nbOccupiedPeers();
    if (numberOfDownloadThreadRunning >= NUMBER_OF_DOWNLOADER)
