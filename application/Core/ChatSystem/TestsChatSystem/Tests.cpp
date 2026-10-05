@@ -308,6 +308,40 @@ private slots:
       QCOMPARE(numberOfPeersByRoom(), (QMap<QString, int> { { "Joined", 0 } }));
    }
 
+   /**
+     * A room is forgotten once nobody is in it any more: neither us nor an alive peer.
+     */
+   void unusedRoomsAreForgotten()
+   {
+      const auto peers = PM::Builder::newPeerManager({});
+      const auto network = QSharedPointer<NetworkListener>::create();
+      CS::ChatSystem chat(peers, network);
+      chat.joinRoom("Joined");
+      chat.joinRoom("Left");
+
+      const auto peerID = Common::Hash::rand();
+      peers->updatePeer(peerID, QHostAddress::LocalHost, 1, "peer", 0, QString(), 0, 0, Common::Constants::PROTOCOL_VERSION);
+      network->receiveIMAlive(peerID, { "Joined", "Left", "Other" });
+      auto rooms = [&] {
+         QMap<QString, QPair<int, bool>> result;
+         for (const auto& room : chat.getRooms())
+            result[room.name] = { room.peers.size(), room.joined };
+         return result;
+      };
+
+      // A peer is still in the room we leave: the room remains known.
+      chat.leaveRoom("Left");
+      QCOMPARE(rooms(), (QMap<QString, QPair<int, bool>> { { "Joined", { 1, true } }, { "Left", { 1, false } }, { "Other", { 1, false } } }));
+
+      // The dead peers are removed periodically.
+      peers->removePeer(peerID, QHostAddress::LocalHost);
+      QVERIFY(QMetaObject::invokeMethod(&chat, "retrieveLastChatMessages"));
+      QCOMPARE(rooms(), (QMap<QString, QPair<int, bool>> { { "Joined", { 0, true } } }));
+
+      chat.leaveRoom("Joined");
+      QVERIFY(chat.getRooms().isEmpty());
+   }
+
    void joinRoomEmitsSavedHistory()
    {
       QVERIFY(QDir(this->directory->path()).mkpath("chat/rooms"));

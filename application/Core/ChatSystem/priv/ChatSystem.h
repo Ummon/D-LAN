@@ -68,6 +68,7 @@ namespace CS
 
    private:
       void removeDeadPeersFromRooms();
+      void removeUnusedRooms();
 
       struct Room {
          ChatMessages messages; // We may not know the messages of not joined rooms.

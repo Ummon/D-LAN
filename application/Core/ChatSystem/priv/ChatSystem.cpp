@@ -196,11 +196,8 @@ void ChatSystem::leaveRoom(const QString& roomName)
       return;
 
    room->messages.saveForRoom(roomName);
-
-   if (room->peers.isEmpty())
-      this->rooms.erase(room);
-   else
-      room->joined = false;
+   room->joined = false;
+   this->removeUnusedRooms();
 
    this->saveRoomListToSettings();
 }
@@ -229,19 +226,13 @@ void ChatSystem::received(const Common::Message& message)
                room.peers.insert(peer);
             }
 
-            // We remove the peer from the rooms it is not in, and remove the rooms left empty that we haven't joined.
+            // We remove the peer from the rooms it is not in.
             // The dead peers are removed periodically, see 'retrieveLastChatMessages()'.
-            for (QMutableHashIterator<QString, Room> i(this->rooms); i.hasNext();)
-            {
-               i.next();
-               if (roomsWithPeer.contains(i.key()))
-                  continue;
+            for (auto [name, room] : this->rooms.asKeyValueRange())
+               if (!roomsWithPeer.contains(name))
+                  room.peers.remove(peer);
 
-               Room& room = i.value();
-               room.peers.remove(peer);
-               if (room.peers.isEmpty() && !room.joined)
-                  i.remove();
-            }
+            this->removeUnusedRooms();
          }
       }
       break;
@@ -344,19 +335,23 @@ void ChatSystem::retrieveLastChatMessages()
 }
 
 /**
-  * Remove the dead peers from all rooms. A room without any peer which is not joined is removed.
+  * Remove the dead peers from all rooms.
   */
 void ChatSystem::removeDeadPeersFromRooms()
 {
-   for (QMutableHashIterator<QString, Room> i(this->rooms); i.hasNext();)
-   {
-      Room& room = i.next().value();
-
+   for (Room& room : this->rooms)
       room.peers.removeIf([](PM::IPeer* peer) { return !peer->isAlive(); });
 
-      if (room.peers.isEmpty() && !room.joined)
-         i.remove();
-   }
+   this->removeUnusedRooms();
+}
+
+/**
+  * Remove the rooms nobody is in any more: neither a peer nor us.
+  * To be called each time a peer is removed from a room or a room is left.
+  */
+void ChatSystem::removeUnusedRooms()
+{
+   this->rooms.removeIf([](const auto& room) { return room.value().peers.isEmpty() && !room.value().joined; });
 }
 
 /**
@@ -395,15 +390,6 @@ void ChatSystem::saveAllChatMessages()
   * @return The messages of the main chat if 'roomName' is empty, of the room if we have joined it, 'nullptr' otherwise.
   *         A room is never created.
   */
-ChatMessages* ChatSystem::joinedMessages(const QString& roomName)
-{
-   if (roomName.isEmpty())
-      return &this->messages;
-
-   const auto room = this->rooms.find(roomName);
-   return room != this->rooms.end() && room->joined ? &room->messages : nullptr;
-}
-
 const ChatMessages* ChatSystem::joinedMessages(const QString& roomName) const
 {
    if (roomName.isEmpty())
@@ -411,6 +397,14 @@ const ChatMessages* ChatSystem::joinedMessages(const QString& roomName) const
 
    const auto room = this->rooms.constFind(roomName);
    return room != this->rooms.cend() && room->joined ? &room->messages : nullptr;
+}
+
+/**
+  * The same for messages which can be modified.
+  */
+ChatMessages* ChatSystem::joinedMessages(const QString& roomName)
+{
+   return const_cast<ChatMessages*>(std::as_const(*this).joinedMessages(roomName));
 }
 
 /**
