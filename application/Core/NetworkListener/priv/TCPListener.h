@@ -37,7 +37,7 @@ namespace NL
         * The server doesn't listen until 'listen()' is called.
         */
       TCPListener(QSharedPointer<PM::IPeerManager> peerManager);
-      quint16 getCurrentPort();
+      quint16 getCurrentPort() const;
       bool listen(const QHostAddress& address, quint16 port);
       void close();
 
@@ -47,8 +47,6 @@ namespace NL
    private:
       QSharedPointer<PM::IPeerManager> peerManager;
       QTcpServer tcpServer;
-
-      quint16 currentPort;
 
       // TODO: count the number of connections per IP per second and temporarily block an IP with too many attempts.
    };

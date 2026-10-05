@@ -39,14 +39,14 @@ using namespace NL;
   */
 QStringList Utils::getNetworkConfiguration(const QList<QNetworkInterface>& interfaces)
 {
-   const QHostAddress address = Utils::getCurrentAddressToListenTo(interfaces);
-   QStringList configuration { address.toString() };
-   for (const auto& interface : Utils::getCurrentInterfacesToListenTo(interfaces))
+   const ListenTarget target = Utils::getListenTarget(interfaces);
+   QStringList configuration { target.address.toString() };
+   for (const auto& interface : target.interfaces)
    {
       const QString identity = QString("%1|%2").arg(interface.index()).arg(interface.name());
       configuration << identity;
       // An IPv6 membership is bound to the interface index. An IPv4 one may be bound to the interface address (Windows).
-      if (address.protocol() == QAbstractSocket::IPv4Protocol)
+      if (target.address.protocol() == QAbstractSocket::IPv4Protocol)
          for (const auto& entry : interface.addressEntries())
             if (entry.ip().protocol() == QAbstractSocket::IPv4Protocol)
                configuration << QString("%1|%2").arg(identity, entry.ip().toString());
@@ -55,31 +55,44 @@ QStringList Utils::getNetworkConfiguration(const QList<QNetworkInterface>& inter
    return configuration;
 }
 
-QList<QNetworkInterface> Utils::getCurrentInterfacesToListenTo(const QList<QNetworkInterface>& allInterfaces)
+/**
+  * @return Where to listen, from the settings 'listen_address' and 'listen_any' and the given interfaces.
+  * The address is always valid: "any" is used if none is set or if the one set isn't currently assigned to an interface.
+  * This function has no side effect on the settings, see 'sanitizeListenSettings()'.
+  */
+Utils::ListenTarget Utils::getListenTarget(const QList<QNetworkInterface>& allInterfaces)
 {
-   QList<QNetworkInterface> interfaces;
-   QString addressToListen = SETTINGS.get<QString>("listen_address");
-   if (!Utils::addressExists(addressToListen, allInterfaces))
-      addressToListen.clear(); // Same fallback to "any" as 'getCurrentAddressToListenTo(..)'.
-   const auto protocol = Utils::getCurrentAddressToListenTo(allInterfaces).protocol();
+   const QString addressToListen = SETTINGS.get<QString>("listen_address");
+
+   ListenTarget target;
+   target.fallback = !addressToListen.isEmpty() && !Utils::addressExists(addressToListen, allInterfaces);
+   const bool any = addressToListen.isEmpty() || target.fallback;
+
+   if (!any)
+      target.address = QHostAddress(addressToListen);
+   else if (SETTINGS.get<quint32>("listen_any") == Protos::Common::Interface::Address::IPv4 || !Utils::hasIPv6(allInterfaces))
+      target.address = QHostAddress::AnyIPv4;
+   else
+      target.address = QHostAddress::AnyIPv6;
+
    for (const auto& interface : allInterfaces)
    {
       // An explicit address may select loopback or a tunnel. "Any" must use LAN adapters,
       // not the OS default multicast interface, which can be loopback on Windows.
-      if (addressToListen.isEmpty() && !Common::isDefaultMulticastInterface(interface))
+      if (any && !Common::isDefaultMulticastInterface(interface))
          continue;
       for (const auto& entry : interface.addressEntries())
       {
          // QHostAddress equality ignores IPv6 scope IDs. Match the full address
          // so tunnels sharing a link-local address are selected independently.
-         if (addressToListen.isEmpty() ? entry.ip().protocol() == protocol : entry.ip().toString() == addressToListen)
+         if (any ? entry.ip().protocol() == target.address.protocol() : entry.ip().toString() == addressToListen)
          {
-            interfaces << interface;
+            target.interfaces << interface;
             break; // Join each adapter once, even if it has several matching addresses.
          }
       }
    }
-   return interfaces;
+   return target;
 }
 
 /**
@@ -111,7 +124,7 @@ bool Utils::hasIPv6(const QList<QNetworkInterface>& interfaces)
 /**
   * Check the settings 'listen_address' and 'listen_any' against the current network configuration and correct them if needed.
   * It should be called once before (re)binding the sockets.
-  * 'getCurrentAddressToListenTo()' doesn't depend on this function, it will always return a valid address.
+  * 'getListenTarget()' doesn't depend on this function, it will always return a valid address.
   */
 void Utils::sanitizeListenSettings(const QList<QNetworkInterface>& interfaces)
 {
@@ -128,22 +141,6 @@ void Utils::sanitizeListenSettings(const QList<QNetworkInterface>& interfaces)
       L_WARN("No usable IPv6 multicast LAN adapter, listening to any IPv4 address instead");
       SETTINGS.set("listen_any", static_cast<quint32>(Protos::Common::Interface::Address::IPv4));
    }
-}
-
-/**
-  * @return The address to bind the sockets to. This function has no side effect on the settings, see 'sanitizeListenSettings()'.
-  */
-QHostAddress Utils::getCurrentAddressToListenTo(const QList<QNetworkInterface>& interfaces)
-{
-   const QString addressToListen = SETTINGS.get<QString>("listen_address");
-
-   if (!addressToListen.isEmpty() && Utils::addressExists(addressToListen, interfaces))
-      return QHostAddress(addressToListen);
-
-   return
-      SETTINGS.get<quint32>("listen_any") == Protos::Common::Interface::Address::IPv4 || !Utils::hasIPv6(interfaces) ?
-           QHostAddress::AnyIPv4
-         : QHostAddress::AnyIPv6;
 }
 
 /**

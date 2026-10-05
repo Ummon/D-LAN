@@ -26,7 +26,7 @@ using namespace NL;
   */
 
 TCPListener::TCPListener(QSharedPointer<PM::IPeerManager> peerManager) :
-   peerManager(peerManager), currentPort(0)
+   peerManager(peerManager)
 {
    connect(&this->tcpServer, &QTcpServer::newConnection, this, &TCPListener::newConnection);
 }
@@ -34,24 +34,20 @@ TCPListener::TCPListener(QSharedPointer<PM::IPeerManager> peerManager) :
 /**
   * @return The port currently listened to, 0 if the server isn't listening.
   */
-quint16 TCPListener::getCurrentPort()
+quint16 TCPListener::getCurrentPort() const
 {
-   return this->currentPort;
+   return this->tcpServer.serverPort();
 }
 
 bool TCPListener::listen(const QHostAddress& address, quint16 port)
 {
    this->close();
-   if (!this->tcpServer.listen(address, port))
-      return false;
-   this->currentPort = this->tcpServer.serverPort();
-   return true;
+   return this->tcpServer.listen(address, port);
 }
 
 void TCPListener::close()
 {
    this->tcpServer.close();
-   this->currentPort = 0;
 }
 
 void TCPListener::newConnection()

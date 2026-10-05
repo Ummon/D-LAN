@@ -203,7 +203,7 @@ void Tests::multicastGroupIPv6()
 
 void Tests::multicastDestinationIPv6()
 {
-   const auto interfaces = Utils::getCurrentInterfacesToListenTo();
+   const auto interfaces = Utils::getListenTarget().interfaces;
    if (interfaces.isEmpty())
       QSKIP("No active multicast interface for IPv6");
    const auto iface = interfaces.first();
@@ -234,13 +234,13 @@ void Tests::addressToListenTo()
    qDebug() << "===== addressToListenTo() =====";
 
    // No address set: listen to any address.
-   const QHostAddress anyAddress = Utils::getCurrentAddressToListenTo();
+   const QHostAddress anyAddress = Utils::getListenTarget().address;
    QVERIFY(anyAddress == QHostAddress(QHostAddress::AnyIPv4) || anyAddress == QHostAddress(QHostAddress::AnyIPv6));
 
    // An address that doesn't exist must not be returned and must be reset by the sanitization.
    const QString unknownAddress("198.51.100.42"); // Reserved for documentation (RFC 5737), never assigned to an interface.
    SETTINGS.set("listen_address", unknownAddress);
-   QCOMPARE(Utils::getCurrentAddressToListenTo(), anyAddress);
+   QCOMPARE(Utils::getListenTarget().address, anyAddress);
    QCOMPARE(SETTINGS.get<QString>("listen_address"), unknownAddress); // The getter has no side effect.
 
    Utils::sanitizeListenSettings();
@@ -249,7 +249,7 @@ void Tests::addressToListenTo()
    // An existing address must be returned as is.
    const QString loopback = QHostAddress(QHostAddress::LocalHost).toString();
    SETTINGS.set("listen_address", loopback);
-   QCOMPARE(Utils::getCurrentAddressToListenTo(), QHostAddress(loopback));
+   QCOMPARE(Utils::getListenTarget().address, QHostAddress(loopback));
    Utils::sanitizeListenSettings();
    QCOMPARE(SETTINGS.get<QString>("listen_address"), loopback);
 
@@ -291,12 +291,12 @@ void Tests::ipv6LoopbackFallback()
    // Supply interface snapshots without changing the host's adapters. IPv6
    // loopback must not keep discovery on IPv6 after the LAN adapter disappears.
    if (!ipv6LANInterfaces.isEmpty())
-      QCOMPARE(Utils::getCurrentAddressToListenTo(ipv6LANInterfaces), QHostAddress(QHostAddress::AnyIPv6));
-   QCOMPARE(Utils::getCurrentAddressToListenTo(loopbackInterfaces), QHostAddress(QHostAddress::AnyIPv4));
-   QCOMPARE(Utils::getCurrentAddressToListenTo({}), QHostAddress(QHostAddress::AnyIPv4));
+      QCOMPARE(Utils::getListenTarget(ipv6LANInterfaces).address, QHostAddress(QHostAddress::AnyIPv6));
+   QCOMPARE(Utils::getListenTarget(loopbackInterfaces).address, QHostAddress(QHostAddress::AnyIPv4));
+   QCOMPARE(Utils::getListenTarget({}).address, QHostAddress(QHostAddress::AnyIPv4));
    QCOMPARE(SETTINGS.get<quint32>("listen_any"), ipv6); // Automatic rebinding preserves the preference.
    if (!ipv6LANInterfaces.isEmpty())
-      QCOMPARE(Utils::getCurrentAddressToListenTo(ipv6LANInterfaces), QHostAddress(QHostAddress::AnyIPv6));
+      QCOMPARE(Utils::getListenTarget(ipv6LANInterfaces).address, QHostAddress(QHostAddress::AnyIPv6));
 
    Utils::sanitizeListenSettings(loopbackInterfaces);
    QCOMPARE(SETTINGS.get<quint32>("listen_any"), ipv4);
@@ -307,14 +307,14 @@ void Tests::ipv6LoopbackFallback()
    Utils::sanitizeListenSettings(loopbackInterfaces);
    QCOMPARE(SETTINGS.get<QString>("listen_address"), loopbackIPv6);
    QCOMPARE(SETTINGS.get<quint32>("listen_any"), ipv6);
-   QCOMPARE(Utils::getCurrentAddressToListenTo(loopbackInterfaces), QHostAddress(loopbackIPv6));
+   QCOMPARE(Utils::getListenTarget(loopbackInterfaces).address, QHostAddress(loopbackIPv6));
 
    // Losing an explicitly selected address also applies the corrected fallback.
    SETTINGS.set("listen_address", QString("198.51.100.42"));
    Utils::sanitizeListenSettings(loopbackInterfaces);
    QVERIFY(SETTINGS.get<QString>("listen_address").isEmpty());
    QCOMPARE(SETTINGS.get<quint32>("listen_any"), ipv4);
-   QCOMPARE(Utils::getCurrentAddressToListenTo(loopbackInterfaces), QHostAddress(QHostAddress::AnyIPv4));
+   QCOMPARE(Utils::getListenTarget(loopbackInterfaces).address, QHostAddress(QHostAddress::AnyIPv4));
 }
 
 void Tests::macOSInterfaceSelection()
@@ -330,7 +330,7 @@ void Tests::macOSInterfaceSelection()
    });
    SETTINGS.set("listen_address", QString());
    SETTINGS.set("listen_any", quint32(Protos::Common::Interface::Address::IPv6));
-   const auto selected = Utils::getCurrentInterfacesToListenTo();
+   const auto selected = Utils::getListenTarget().interfaces;
    QList<QNetworkInterface> excluded;
    for (const auto& interface : QNetworkInterface::allInterfaces())
    {
@@ -348,7 +348,7 @@ void Tests::macOSInterfaceSelection()
       {
          SETTINGS.set("listen_address", interface.addressEntries().first().ip().toString());
          Utils::sanitizeListenSettings();
-         const auto explicitSelection = Utils::getCurrentInterfacesToListenTo();
+         const auto explicitSelection = Utils::getListenTarget().interfaces;
          QCOMPARE(explicitSelection.size(), 1);
          QCOMPARE(explicitSelection.first().index(), interface.index());
          SETTINGS.set("listen_address", QString());
@@ -357,7 +357,7 @@ void Tests::macOSInterfaceSelection()
    if (excluded.isEmpty())
       QSKIP("No macOS auxiliary or tunnel interfaces available");
    // Auxiliary/tunnel IPv6 addresses alone must not enable IPv6 LAN discovery.
-   QCOMPARE(Utils::getCurrentAddressToListenTo(excluded), QHostAddress(QHostAddress::AnyIPv4));
+   QCOMPARE(Utils::getListenTarget(excluded).address, QHostAddress(QHostAddress::AnyIPv4));
    Utils::sanitizeListenSettings(excluded);
    QCOMPARE(SETTINGS.get<quint32>("listen_any"), quint32(Protos::Common::Interface::Address::IPv4));
 #endif
@@ -376,7 +376,7 @@ void Tests::networkConfigurationSnapshot()
    QCOMPARE(Utils::getNetworkConfiguration({}), QStringList { QHostAddress(QHostAddress::AnyIPv4).toString() });
 
    // Interfaces not listened to, like loopback or virtual adapters that are down, must not trigger a rebinding.
-   QList<QNetworkInterface> selected = Utils::getCurrentInterfacesToListenTo(interfaces);
+   QList<QNetworkInterface> selected = Utils::getListenTarget(interfaces).interfaces;
    QCOMPARE(Utils::getNetworkConfiguration(selected), configuration);
 
    // Losing a listened interface must.
@@ -492,10 +492,10 @@ void Tests::multicastOnLANInterface()
    });
    SETTINGS.set("listen_address", QString());
    SETTINGS.set("listen_any", protocol);
-   const QHostAddress address = Utils::getCurrentAddressToListenTo();
+   const QHostAddress address = Utils::getListenTarget().address;
    if (protocol == Protos::Common::Interface::Address::IPv6 && address.protocol() != QAbstractSocket::IPv6Protocol)
       QSKIP("IPv6 is unavailable");
-   if (Utils::getCurrentInterfacesToListenTo().isEmpty())
+   if (Utils::getListenTarget().interfaces.isEmpty())
       QSKIP("No active multicast LAN interface for this protocol");
    const auto group = Utils::getMulticastGroup(address.protocol());
    const auto& instance = this->instances[0];
@@ -508,7 +508,7 @@ void Tests::multicastOnLANInterface()
    QVERIFY(tcp.listen(address, 0));
    UDPListener listener(instance.fileManager, peerManager, instance.uploadManager, instance.downloadManager);
    QVERIFY(listener.bindUnicastSocket(address, tcp.serverPort()));
-   QVERIFY(listener.startListening(Utils::getCurrentInterfacesToListenTo()));
+   QVERIFY(listener.startListening(Utils::getListenTarget().interfaces));
 
    int checked = 0;
    for (const auto& iface : QNetworkInterface::allInterfaces())
@@ -528,7 +528,7 @@ void Tests::multicastOnLANInterface()
 
       // An explicit address must still select only its own adapter.
       SETTINGS.set("listen_address", sourceAddress.toString());
-      const auto selected = Utils::getCurrentInterfacesToListenTo();
+      const auto selected = Utils::getListenTarget().interfaces;
       QCOMPARE(selected.size(), 1);
       QCOMPARE(selected.first().index(), iface.index());
       SETTINGS.set("listen_address", QString());
@@ -730,9 +730,9 @@ void Tests::searchSendFailure()
    const Instance& instance = this->instances[1];
    UDPListener listener(instance.fileManager, instance.peerManager, instance.uploadManager, instance.downloadManager);
    QTcpServer tcp;
-   QVERIFY(tcp.listen(Utils::getCurrentAddressToListenTo(), 0));
-   QVERIFY(listener.bindUnicastSocket(Utils::getCurrentAddressToListenTo(), tcp.serverPort()));
-   QVERIFY(listener.startListening(Utils::getCurrentInterfacesToListenTo()));
+   QVERIFY(tcp.listen(Utils::getListenTarget().address, 0));
+   QVERIFY(listener.bindUnicastSocket(Utils::getListenTarget().address, tcp.serverPort()));
+   QVERIFY(listener.startListening(Utils::getListenTarget().interfaces));
    if (!oversized)
       listener.closeSockets();
 
@@ -754,8 +754,8 @@ void Tests::searchSendFailure()
 
    if (!oversized)
    {
-      QVERIFY(listener.bindUnicastSocket(Utils::getCurrentAddressToListenTo(), tcp.serverPort()));
-      QVERIFY(listener.startListening(Utils::getCurrentInterfacesToListenTo()));
+      QVERIFY(listener.bindUnicastSocket(Utils::getListenTarget().address, tcp.serverPort()));
+      QVERIFY(listener.startListening(Utils::getListenTarget().interfaces));
    }
    pattern.set_pattern("something");
    const quint64 tag = search.search(pattern);
@@ -786,9 +786,9 @@ void Tests::searchResultLimit()
    const Instance& instance = this->instances[1];
    UDPListener listener(instance.fileManager, instance.peerManager, instance.uploadManager, instance.downloadManager);
    QTcpServer tcp;
-   QVERIFY(tcp.listen(Utils::getCurrentAddressToListenTo(), 0));
-   QVERIFY(listener.bindUnicastSocket(Utils::getCurrentAddressToListenTo(), tcp.serverPort()));
-   QVERIFY(listener.startListening(Utils::getCurrentInterfacesToListenTo()));
+   QVERIFY(tcp.listen(Utils::getListenTarget().address, 0));
+   QVERIFY(listener.bindUnicastSocket(Utils::getListenTarget().address, tcp.serverPort()));
+   QVERIFY(listener.startListening(Utils::getListenTarget().interfaces));
    Search search(listener);
    Protos::Common::FindPattern pattern;
    pattern.set_pattern("result limit test");
@@ -1180,7 +1180,7 @@ void Tests::bindFailureAndRecovery()
    UDPListener udp(instance.fileManager, instance.peerManager, instance.uploadManager, instance.downloadManager);
    QVERIFY(tcpProbe.listen(QHostAddress::AnyIPv4, 0));
    QVERIFY(udp.bindUnicastSocket(QHostAddress::AnyIPv4, tcpProbe.serverPort()));
-   QVERIFY(udp.startListening(Utils::getCurrentInterfacesToListenTo()));
+   QVERIFY(udp.startListening(Utils::getListenTarget().interfaces));
    int stoppedHeartbeats = 0;
    connect(&udp, &UDPListener::IMAliveMessageToBeSend, &context,
       [&](Protos::Core::IMAlive&) { ++stoppedHeartbeats; });
@@ -1197,7 +1197,7 @@ void Tests::rejectZeroUnicastPort()
    const Instance& instance = this->instances[1];
    UDPListener listener(instance.fileManager, instance.peerManager, instance.uploadManager, instance.downloadManager);
    QVERIFY(!listener.bindUnicastSocket(QHostAddress::AnyIPv4, 0));
-   QVERIFY(!listener.startListening(Utils::getCurrentInterfacesToListenTo()));
+   QVERIFY(!listener.startListening(Utils::getListenTarget().interfaces));
    QCOMPARE(listener.send(Common::MessageHeader::CORE_GOODBYE), INetworkListener::SendStatus::UNABLE_TO_SEND);
 }
 
@@ -1223,7 +1223,7 @@ void Tests::automaticRebinding()
    // Exercise the actual polling timer, without resetting a physical adapter.
    QTRY_COMPARE_WITH_TIMEOUT(heartbeats, 2, 3500);
    QTcpSocket tcp;
-   const auto address = Utils::getCurrentAddressToListenTo();
+   const auto address = Utils::getListenTarget().address;
    tcp.connectToHost(address == QHostAddress(QHostAddress::AnyIPv4) ? QHostAddress(QHostAddress::LocalHost) :
       address == QHostAddress(QHostAddress::AnyIPv6) ? QHostAddress(QHostAddress::LocalHostIPv6) : address, port);
    QVERIFY(tcp.waitForConnected(1000));
@@ -1288,9 +1288,9 @@ void Tests::startupKeepsUnavailableAddress()
          result << interface.index();
       return result;
    };
-   const auto fallbackInterfaces = indexes(Utils::getCurrentInterfacesToListenTo());
+   const auto fallbackInterfaces = indexes(Utils::getListenTarget().interfaces);
    SETTINGS.set("listen_address", QString());
-   QCOMPARE(fallbackInterfaces, indexes(Utils::getCurrentInterfacesToListenTo()));
+   QCOMPARE(fallbackInterfaces, indexes(Utils::getListenTarget().interfaces));
 
    // The adapter comes up with the selected address (simulated with the original one).
    SETTINGS.set("listen_address", originalAddress);
@@ -1328,7 +1328,7 @@ void Tests::downloadOwnChunks()
    SETTINGS.set("listen_any", protocol);
    SETTINGS.set("listen_address", address);
    QTcpServer blocker;
-   QVERIFY(blocker.listen(Utils::getCurrentAddressToListenTo(), 0));
+   QVERIFY(blocker.listen(Utils::getListenTarget().address, 0));
    SETTINGS.set("unicast_base_port", quint32(blocker.serverPort()));
 
    QTemporaryDir directory;

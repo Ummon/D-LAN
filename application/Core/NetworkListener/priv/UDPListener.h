@@ -90,6 +90,7 @@ namespace NL
       bool isListening() const { return this->timerIMAlive.isActive(); } // The heartbeat timer runs only while all the sockets are bound.
       PM::IPeer* getSender(const Common::MessageHeader& header, const QHostAddress& peerAddress, bool mustBeAvailable);
       bool initMulticastUDPSocket(const QList<QNetworkInterface>& interfaces, bool logFailures);
+      static void setBufferSize(QUdpSocket& socket);
       int writeMessageToBuffer(Common::MessageHeader::MessageType type, const google::protobuf::Message& message);
       Common::MessageHeader readDatagramToBuffer(QUdpSocket& socket, QHostAddress& peerAddress);
 
@@ -101,7 +102,6 @@ namespace NL
       char buffer[BUFFER_SIZE]; // Buffer used when sending or receiving datagram.
       char* const bodyBuffer;
 
-      quint16 unicastPort; // Same as the TCP port, it may change when the sockets are rebound.
       const quint16 MULTICAST_PORT;
       QHostAddress multicastGroup;
       QList<QNetworkInterface> multicastInterfaces;

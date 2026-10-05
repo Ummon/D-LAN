@@ -21,15 +21,6 @@ using namespace NL;
 
 #include <limits>
 
-#if defined(Q_OS_LINUX)
-   #include <netinet/in.h>
-#elif defined(Q_OS_DARWIN)
-   #include <sys/types.h>
-   #include <sys/socket.h>
-#elif defined(Q_OS_WIN32)
-   #include <Winsock.h>
-#endif
-
 #include <QRandomGenerator64>
 
 #include <google/protobuf/message.h>
@@ -65,7 +56,6 @@ UDPListener::UDPListener(
 ) :
    MAX_UDP_DATAGRAM_PAYLOAD_SIZE(UDPListener::getMaxUDPDatagramPayloadSize()),
    bodyBuffer(UDPListener::buffer + Common::MessageHeader::HEADER_SIZE),
-   unicastPort(0),
    MULTICAST_PORT(SETTINGS.get<quint32>("multicast_port")),
    fileManager(fileManager),
    peerManager(peerManager),
@@ -178,7 +168,7 @@ void UDPListener::sendIMAliveMessage()
    Protos::Core::IMAlive IMAliveMessage;
    IMAliveMessage.set_version(Common::Constants::PROTOCOL_VERSION);
    IMAliveMessage.set_core_version(Common::Global::getVersionFull().toStdString());
-   IMAliveMessage.set_port(this->unicastPort);
+   IMAliveMessage.set_port(this->unicastSocket.localPort());
 
    const QString& nick = this->peerManager->getSelf()->getNick();
    IMAliveMessage.set_nick((nick.length() > MAX_NICK_LENGTH ? nick.left(MAX_NICK_LENGTH) : nick).toStdString());
@@ -268,14 +258,13 @@ void UDPListener::closeSockets()
    this->multicastSocket.close();
    this->multicastInterfaces.clear();
    this->unicastSocket.close();
-   this->unicastPort = 0;
    this->currentIMAliveTag = 0;
    this->currentChunkDownloaders.clear();
 }
 
 bool UDPListener::startListening(const QList<QNetworkInterface>& interfaces, bool logFailures)
 {
-   if (this->unicastPort == 0 || !this->initMulticastUDPSocket(interfaces, logFailures))
+   if (this->unicastSocket.localPort() == 0 || !this->initMulticastUDPSocket(interfaces, logFailures))
    {
       this->closeSockets();
       return false;
@@ -541,10 +530,7 @@ bool UDPListener::initMulticastUDPSocket(const QList<QNetworkInterface>& interfa
       return false;
    }
 
-   // This settings cannot change dynamically -> static.
-   static const quint32 BUFFER_SIZE_UDP = SETTINGS.get<quint32>("udp_buffer_size");
-   this->multicastSocket.setSocketOption(QAbstractSocket::SendBufferSizeSocketOption, BUFFER_SIZE_UDP);
-   this->multicastSocket.setSocketOption(QAbstractSocket::ReceiveBufferSizeSocketOption, BUFFER_SIZE_UDP);
+   UDPListener::setBufferSize(this->multicastSocket);
 
    return true;
 }
@@ -556,14 +542,20 @@ bool UDPListener::bindUnicastSocket(const QHostAddress& address, quint16 port)
    if (port == 0 || !this->unicastSocket.bind(address, port, QUdpSocket::DontShareAddress))
       return false;
 
-   this->unicastPort = port;
-
-   // This settings cannot change dynamically -> static.
-   static const int BUFFER_SIZE_UDP = SETTINGS.get<quint32>("udp_buffer_size");
-   this->unicastSocket.setSocketOption(QAbstractSocket::SendBufferSizeSocketOption, BUFFER_SIZE_UDP);
-   this->unicastSocket.setSocketOption(QAbstractSocket::ReceiveBufferSizeSocketOption, BUFFER_SIZE_UDP);
+   UDPListener::setBufferSize(this->unicastSocket);
 
    return true;
+}
+
+/**
+  * Set the size of the send and receive buffers of the given socket to the setting 'udp_buffer_size'.
+  */
+void UDPListener::setBufferSize(QUdpSocket& socket)
+{
+   // This settings cannot change dynamically -> static.
+   static const quint32 BUFFER_SIZE_UDP = SETTINGS.get<quint32>("udp_buffer_size");
+   socket.setSocketOption(QAbstractSocket::SendBufferSizeSocketOption, BUFFER_SIZE_UDP);
+   socket.setSocketOption(QAbstractSocket::ReceiveBufferSizeSocketOption, BUFFER_SIZE_UDP);
 }
 
 /**

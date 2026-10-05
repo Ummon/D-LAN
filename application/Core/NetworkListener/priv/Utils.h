@@ -27,9 +27,15 @@ namespace NL
    class Utils
    {
    public:
-      static QList<QNetworkInterface> getCurrentInterfacesToListenTo(const QList<QNetworkInterface>& interfaces = QNetworkInterface::allInterfaces());
+      struct ListenTarget
+      {
+         QHostAddress address; // The address to bind the sockets to.
+         QList<QNetworkInterface> interfaces; // The interfaces joining the multicast group.
+         bool fallback; // The address set in 'listen_address' is unavailable, "any" is used meanwhile.
+      };
+
+      static ListenTarget getListenTarget(const QList<QNetworkInterface>& interfaces = QNetworkInterface::allInterfaces());
       static void sanitizeListenSettings(const QList<QNetworkInterface>& interfaces = QNetworkInterface::allInterfaces());
-      static QHostAddress getCurrentAddressToListenTo(const QList<QNetworkInterface>& interfaces = QNetworkInterface::allInterfaces());
       static QHostAddress getMulticastGroup(QAbstractSocket::NetworkLayerProtocol protocol);
       // Stable across enumeration order; only covers what the sockets depend on.
       static QStringList getNetworkConfiguration(const QList<QNetworkInterface>& interfaces = QNetworkInterface::allInterfaces());

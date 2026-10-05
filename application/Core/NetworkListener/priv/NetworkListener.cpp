@@ -93,18 +93,17 @@ void NetworkListener::bindSockets(const QList<QNetworkInterface>& interfaces, bo
    // Taken after sanitizing, which may change the address to listen to.
    this->networkConfiguration = this->networkConfigurationProvider(interfaces);
 
-   const QHostAddress address = Utils::getCurrentAddressToListenTo(interfaces);
+   const Utils::ListenTarget target = Utils::getListenTarget(interfaces);
    // An adapter may disappear temporarily. Listen to any address meanwhile but keep the user's selection:
    // the network configuration changes when the address returns, which triggers a rebinding to it.
-   const QString configuredAddress = SETTINGS.get<QString>("listen_address");
-   if (!retry && !configuredAddress.isEmpty() && address != QHostAddress(configuredAddress))
-      L_WARN(QString("The address to listen to (%1) is unavailable, listening to %2 until it returns").arg(configuredAddress, address.toString()));
+   if (!retry && target.fallback)
+      L_WARN(QString("The address to listen to (%1) is unavailable, listening to %2 until it returns").arg(SETTINGS.get<QString>("listen_address"), target.address.toString()));
    const quint32 basePort = SETTINGS.get<quint32>("unicast_base_port");
    constexpr int MAX_LISTEN_ATTEMPTS = 10;
    auto bindBoth = [&](quint16 port) {
-      if (!this->tCPListener.listen(address, port))
+      if (!this->tCPListener.listen(target.address, port))
          return false;
-      if (this->uDPListener.bindUnicastSocket(address, this->tCPListener.getCurrentPort()))
+      if (this->uDPListener.bindUnicastSocket(target.address, this->tCPListener.getCurrentPort()))
          return true;
       this->tCPListener.close();
       return false;
@@ -121,19 +120,19 @@ void NetworkListener::bindSockets(const QList<QNetworkInterface>& interfaces, bo
       if ((bound = bindBoth(0)))
          L_WARN(QString("Listening to TCP and UDP on OS-selected port %1").arg(this->tCPListener.getCurrentPort()));
 
-   this->socketsBound = bound && this->uDPListener.startListening(Utils::getCurrentInterfacesToListenTo(interfaces), !retry);
+   this->socketsBound = bound && this->uDPListener.startListening(target.interfaces, !retry);
    if (!this->socketsBound)
    {
       this->uDPListener.closeSockets();
       this->tCPListener.close();
       if (!retry)
-         L_ERRO(QString("Unable to initialize network listeners on %1; discovery is disabled, retrying every two seconds").arg(address.toString()));
+         L_ERRO(QString("Unable to initialize network listeners on %1; discovery is disabled, retrying every two seconds").arg(target.address.toString()));
    }
    else
    {
       if (retry)
-         L_WARN(QString("Network listeners initialized on %1 after an earlier failure; discovery is enabled").arg(address.toString()));
-      this->peerManager->setSelfAddress(address, this->tCPListener.getCurrentPort());
+         L_WARN(QString("Network listeners initialized on %1 after an earlier failure; discovery is enabled").arg(target.address.toString()));
+      this->peerManager->setSelfAddress(target.address, this->tCPListener.getCurrentPort());
    }
 }
 
