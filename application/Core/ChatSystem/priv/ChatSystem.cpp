@@ -286,22 +286,17 @@ void ChatSystem::received(const Common::Message& message)
          if (!history)
             break;
 
-         QList<QSharedPointer<ChatMessage>> messages = history->getUnknownMessages(getLastChatMessages);
-
-         if (messages.isEmpty())
-            break;
+         const QList<QSharedPointer<ChatMessage>> messages = history->getUnknownMessages(getLastChatMessages);
 
          const int maxSize = this->networkListener->getMaxUDPMessageSize();
-         Protos::Common::ChatMessages chatMessages;
-         do
+         for (int first = 0; first < messages.size();)
          {
-            // 'fillProtoChatMessages' always consumes at least one message (a message too large to be sent alone is dropped), so this loop terminates.
-            messages = ChatMessages::fillProtoChatMessages(chatMessages, messages, maxSize);
+            // 'fillProtoChatMessages' always moves forward (a message too large to be sent alone is skipped), so this loop terminates.
+            Protos::Common::ChatMessages chatMessages;
+            first = ChatMessages::fillProtoChatMessages(chatMessages, messages, first, maxSize);
             if (chatMessages.messages_size() > 0)
                this->networkListener->send(Common::MessageHeader::CORE_CHAT_MESSAGES, chatMessages, message.getHeader().getSenderID());
-            chatMessages.Clear();
-
-         } while (!messages.isEmpty());
+         }
       }
       break;
 

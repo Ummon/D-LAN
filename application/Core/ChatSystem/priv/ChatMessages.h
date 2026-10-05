@@ -54,9 +54,10 @@ namespace CS
          Protos::Common::ChatMessages& chatMessages,
          int number = std::numeric_limits<int>::max()
       ) const;
-      static QList<QSharedPointer<ChatMessage>> fillProtoChatMessages(
+      static int fillProtoChatMessages(
          Protos::Common::ChatMessages& chatMessages,
          const QList<QSharedPointer<ChatMessage>>& messages,
+         int first = 0,
          int maxByteSize = std::numeric_limits<int>::max()
       );
 

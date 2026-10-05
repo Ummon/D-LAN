@@ -173,6 +173,39 @@ private slots:
       QVERIFY(network->sent.size() > 1);
    }
 
+   /**
+     * A message too large to be sent alone is skipped, the others are still given.
+     */
+   void historySkipsTooLargeMessages()
+   {
+      const auto peers = PM::Builder::newPeerManager({});
+      const auto network = QSharedPointer<NetworkListener>::create();
+      CS::ChatSystem chat(peers, network);
+      Protos::Common::ChatMessages batch;
+      for (int id = 1; id <= 5; ++id)
+      {
+         auto entry = message(QString(), id);
+         entry.mutable_messages(0)->set_time(1000 * id);
+         if (id == 1 || id == 3)
+            entry.mutable_messages(0)->set_message(std::string(network->limit, 'x'));
+         else
+            entry.mutable_messages(0)->set_message(std::string(network->limit / 2, 'x')); // One per packet.
+         batch.MergeFrom(entry);
+      }
+      network->receiveChatMessages(batch); // Received from a peer allowing larger messages than us.
+
+      network->requestHistory();
+      QList<quint64> IDs;
+      for (const auto& packet : network->sent)
+      {
+         QVERIFY(packet.ByteSizeLong() <= static_cast<size_t>(network->limit));
+         for (const auto& entry : packet.messages())
+            IDs << entry.id();
+      }
+      QCOMPARE(IDs, (QList<quint64> { 2, 4, 5 }));
+      QCOMPARE(network->sent.size(), 3);
+   }
+
    void historyRequestedOnlyFromAvailablePeers()
    {
       const auto peers = PM::Builder::newPeerManager({});
