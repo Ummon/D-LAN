@@ -345,7 +345,7 @@ QList<QSharedPointer<IChunk>> Cache::newFile(Protos::Common::Entry& fileEntry)
          {
             const auto existing = QFileInfo::exists(unfinished.toString()) ? unfinished : destination;
             if (QFileInfo::exists(existing.toString()))
-               shared = dynamic_cast<SharedFile*>(this->createSharedEntry(existing, Common::Hash(), -1, name));
+               shared = dynamic_cast<SharedFile*>(this->createSharedEntry(existing, Common::Hash(), name));
          }
          if (shared)
          {
@@ -474,6 +474,9 @@ SharedEntry* Cache::getSharedEntry(const Common::Hash& ID) const
 }
 
 /**
+  * The shared entries become the given paths, in the same order.
+  * A shared entry which isn't requested anymore is removed, unless it's contained in a requested directory: it's
+  * then merged into this directory.
   * @exception EntriesNotFoundException
   */
 void Cache::setSharedPaths(const QList<std::pair<QString, Common::Path>>& paths)
@@ -491,38 +494,61 @@ void Cache::setSharedPaths(const QList<std::pair<QString, Common::Path>>& paths)
 
    QMutexLocker locker(&this->mutex);
 
+   // The entries which aren't shared anymore are removed first: one of them may contain a requested path and would
+   // prevent to share it. An entry contained in a requested directory is kept: it will be merged into it instead of
+   // losing its content (its unfinished files are deleted when an entry is removed).
+   const auto isStillShared =
+      [&pathsWithoutDuplicates](const Common::Path& path)
+      {
+         return std::any_of(
+            pathsWithoutDuplicates.cbegin(),
+            pathsWithoutDuplicates.cend(),
+            [&path](const auto& requested) { return requested.second == path || requested.second.isSuperOf(path); }
+         );
+      };
+   const QList<SharedEntry*> previousEntries = this->sharedEntries;
+   for (SharedEntry* entry : previousEntries)
+      if (!isStillShared(entry->getPath()))
+         this->removeSharedEntry(entry);
+
    QStringList pathsNotFound;
 
-   int j = 0;
-   for (int i = 0; i < pathsWithoutDuplicates.size(); i++) {
-      const QString trimmedName = pathsWithoutDuplicates[i].first.trimmed();
-      for (int j2 = j; j2 < this->sharedEntries.size(); j2++) {
-         if (pathsWithoutDuplicates[i].second == this->sharedEntries[j2]->getPath())
+   QList<SharedEntry*> requestedEntries;
+   for (const auto& [name, path] : std::as_const(pathsWithoutDuplicates))
+   {
+      const QString trimmedName = name.trimmed();
+      SharedEntry* entry = this->getSharedEntry(path);
+      if (entry)
+      {
+         // As for a new shared entry, an empty name means the default one.
+         entry->setUserName(trimmedName.isEmpty() ? SharedEntry::defaultUserName(path) : trimmedName);
+      }
+      else
+      {
+         try
          {
-            // As for a new shared entry, an empty name means the default one.
-            this->sharedEntries[j2]->setUserName(trimmedName.isEmpty() ? SharedEntry::defaultUserName(pathsWithoutDuplicates[i].second) : trimmedName);
-            this->sharedEntries.move(j2, j++);
-            goto nextEntry;
+            // The path isn't shared yet -> we create a new shared entry.
+            entry = this->createSharedEntry(path, Common::Hash(), trimmedName);
+         }
+         catch (PathNotFoundException& e)
+         {
+            pathsNotFound << e.path;
          }
       }
-      try
-      {
-         // dirs[i] not found -> we create a new one.
-         if (this->createSharedEntry(pathsWithoutDuplicates[i].second, Common::Hash(), j, trimmedName))
-            j++;
-      }
-      catch (PathNotFoundException& e)
-      {
-         pathsNotFound << e.path;
-      }
-   nextEntry:;
+
+      if (entry)
+         requestedEntries << entry;
    }
 
-   while (j < this->sharedEntries.size())
-      this->removeSharedEntry(this->sharedEntries[j]);
+   // An entry kept to be merged is still there if its directory can't be shared.
+   const QList<SharedEntry*> remainingEntries = this->sharedEntries;
+   for (SharedEntry* entry : remainingEntries)
+      if (!requestedEntries.contains(entry))
+         this->removeSharedEntry(entry);
 
-   for (int k = 0; k < this->sharedEntries.size(); k++)
-      this->sharedEntries[k]->mergeSubSharedEntries();
+   // The requested order, without the entries merged into a following one.
+   requestedEntries.removeIf([this](SharedEntry* entry) { return !this->sharedEntries.contains(entry); });
+   this->sharedEntries = requestedEntries;
 
    // Persist the paths that were applied even if some others could not be found.
    this->saveSharedEntries();
@@ -564,7 +590,6 @@ QPair<Common::SharedEntry, QString> Cache::addASharedPath(const QString& absolut
       SharedEntry* entry = this->createSharedEntry(absolutePathCleaned);
       if (entry)
       {
-         entry->mergeSubSharedEntries();
          this->saveSharedEntries();
          return qMakePair(makeSharedEntry(entry), QString("/"));
       }
@@ -894,16 +919,13 @@ Common::SharedEntry Cache::makeSharedEntry(const SharedEntry* entry)
 }
 
 /**
-  * Creates a new shared entry.
-  * The other shared entries may not be merged with the new one,
-  * use 'SharedEntry::mergeSubSharedEntries' to do that after this call.
+  * Creates a new shared entry, the shared entries it contains are merged into it.
   *
   * @exception PathNotFoundException
   */
 SharedEntry* Cache::createSharedEntry(
    const Common::Path& path,
    const Common::Hash& id,
-   int pos,
    const QString& name
 )
 {
@@ -913,10 +935,11 @@ SharedEntry* Cache::createSharedEntry(
 
       L_DEBU(QString("Add a new shared entry: %1,").arg(path));
 
-      if (pos == -1 || pos > this->sharedEntries.size())
-         this->sharedEntries << entry;
-      else
-         this->sharedEntries.insert(pos, entry);
+      this->sharedEntries << entry;
+
+      // Merged before the file updater knows the new entry: its scan then finds the merged content. Merging while
+      // it scans would add the entries it has already created a second time.
+      entry->mergeSubSharedEntries();
 
       emit newSharedEntry(entry);
 

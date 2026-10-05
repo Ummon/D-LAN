@@ -527,6 +527,124 @@ void CacheTest::setSharedPathsSavesDespiteMissingPaths()
    QCOMPARE(manager.getSharedEntries().first().name, QString("Movies"));
 }
 
+void CacheTest::setSharedPathsWithOverlappingShares_data()
+{
+   QTest::addColumn<QStringList>("initial");
+   QTest::addColumn<QStringList>("requested");
+   QTest::addColumn<QString>("deleted");
+   QTest::addColumn<QStringList>("expected");
+   QTest::newRow("replaced-by-parent") << QStringList { "s/sub/" } << QStringList { "s/" } << QString() << QStringList { "s/" };
+   QTest::newRow("several-parents") << QStringList { "x/a/", "y/d/" } << QStringList { "x/a/", "x/", "y/", "y/d/" }
+      << QString() << QStringList { "x/", "y/" };
+   QTest::newRow("narrowed") << QStringList { "s/" } << QStringList { "s/sub/" } << QString() << QStringList { "s/sub/" };
+   // The share can't be merged into a parent which doesn't exist, it isn't requested either.
+   QTest::newRow("missing-parent") << QStringList { "s/sub/" } << QStringList { "s/" } << QString("s") << QStringList();
+}
+
+void CacheTest::setSharedPathsWithOverlappingShares()
+{
+   QFETCH(QStringList, initial);
+   QFETCH(QStringList, requested);
+   QFETCH(QString, deleted);
+   QFETCH(QStringList, expected);
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   for (const QString& dir : { "s/sub", "x/a", "y/d" })
+      QVERIFY(QDir().mkpath(temp.filePath(dir)));
+   const auto savedShares = SETTINGS.getRepeated<Protos::Common::SharedEntry>("shared_entries");
+   const auto restoreShares = qScopeGuard([&] { SETTINGS.set("shared_entries", savedShares); });
+   SETTINGS.rm("shared_entries");
+   const QString base = temp.path() + '/';
+   const auto sharedPaths = [&](const QStringList& paths) {
+      QList<FM::IFileManager::SharedPath> result;
+      for (const QString& path : paths)
+         result << FM::IFileManager::SharedPath { QString(), base + path };
+      return result;
+   };
+
+   FM::FileManager manager(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   manager.fileUpdater.stop();
+   manager.setSharedPaths(sharedPaths(initial));
+   if (!deleted.isEmpty())
+      QVERIFY(QDir(temp.filePath(deleted)).removeRecursively());
+   int nbNotFound = 0;
+   try
+   {
+      manager.setSharedPaths(sharedPaths(requested));
+   }
+   catch (FM::EntriesNotFoundException& e)
+   {
+      nbNotFound = e.paths.size();
+   }
+   QCOMPARE(nbNotFound, deleted.isEmpty() ? 0 : 1);
+
+   QStringList shared;
+   for (const auto& entry : manager.getSharedEntries())
+      shared << entry.path.toString().mid(base.size());
+   QCOMPARE(shared, expected);
+   QStringList saved;
+   for (const auto& entry : SETTINGS.getRepeated<Protos::Common::SharedEntry>("shared_entries"))
+      saved << QString::fromStdString(entry.path()).mid(base.size());
+   QCOMPARE(saved, expected);
+
+   // Each share which is gone has been given to the worker to be retired.
+   const auto nbGone = std::count_if(initial.cbegin(), initial.cend(), [&](const QString& path) { return !expected.contains(path); });
+   QCOMPARE(int(manager.fileUpdater.rootEntriesToRemove.size()), int(nbGone));
+   // The worker is stopped: perform its queued retirements explicitly.
+   while (!manager.fileUpdater.rootEntriesToRemove.isEmpty())
+      manager.fileUpdater.rootEntriesToRemove.takeFirst()->del();
+   QCoreApplication::sendPostedEvents(&manager.cache, QEvent::MetaCall);
+}
+
+void CacheTest::setSharedPathsKeepsDownloadsOfReplacedShare()
+{
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   QVERIFY(QDir().mkpath(temp.filePath("s/sub")));
+   const auto savedShares = SETTINGS.getRepeated<Protos::Common::SharedEntry>("shared_entries");
+   const auto restoreShares = qScopeGuard([&] { SETTINGS.set("shared_entries", savedShares); });
+   SETTINGS.rm("shared_entries");
+
+   FM::FileManager manager(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   manager.fileUpdater.stop();
+   manager.setSharedPaths({ { QString(), temp.filePath("s/sub") + '/' } });
+
+   Protos::Common::Entry entry;
+   entry.set_type(Protos::Common::Entry::FILE);
+   entry.set_path("/");
+   entry.set_name("movie.bin");
+   entry.set_size(1000);
+   const auto shared = manager.getSharedEntries().first();
+   entry.mutable_shared_entry()->mutable_id()->set_hash(shared.ID.getData(), Common::Hash::HASH_SIZE);
+   const auto chunks = manager.newFile(entry);
+   QCOMPARE(chunks.size(), 1);
+   const QString unfinished = temp.filePath("s/sub/movie.bin.unfinished");
+   QVERIFY(QFile::exists(unfinished));
+   auto file = manager.getEntry(Common::Path(unfinished));
+   QVERIFY(file);
+
+   // The share is replaced by its parent directory. The file updater is told about the new share once it owns the
+   // content of the replaced one: its scan would otherwise create this content a second time.
+   bool announcedWithItsContent = false;
+   connect(&manager.cache, &FM::Cache::newSharedEntry, &manager.cache,
+      [&](FM::SharedEntry* newEntry) { announcedWithItsContent = file->getRoot() == newEntry; });
+   manager.setSharedPaths({ { QString(), temp.filePath("s") + '/' } });
+   QVERIFY(announcedWithItsContent);
+   // The worker is stopped: retire the replaced share as it does.
+   while (!manager.fileUpdater.rootEntriesToRemove.isEmpty())
+   {
+      FM::Entry* root = manager.fileUpdater.rootEntriesToRemove.takeFirst();
+      root->removeUnfinishedFiles();
+      root->del();
+   }
+   QCoreApplication::sendPostedEvents(&manager.cache, QEvent::MetaCall);
+
+   // The download goes on in the new share.
+   QVERIFY(QFile::exists(unfinished));
+   QCOMPARE(manager.getEntry(Common::Path(unfinished)), file);
+   QCOMPARE(chunks.first()->getFilePath(), Common::Path(unfinished));
+}
+
 void CacheTest::fittestDirectoryMatchesExistingPaths()
 {
    QTemporaryDir temp;

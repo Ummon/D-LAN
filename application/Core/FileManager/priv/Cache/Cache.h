@@ -150,7 +150,6 @@ namespace FM
       SharedEntry* createSharedEntry(
          const Common::Path& path,
          const Common::Hash& ID = Common::Hash(),
-         int pos = -1,
          const QString& name = QString()
       );
       void saveSharedEntries() const;

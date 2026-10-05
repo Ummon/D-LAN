@@ -70,7 +70,7 @@ namespace FM
       /**
         * Try to merge other shared entry with this one.
         * For exemple "/sharing/folder1/" can be merged with "/sharing/".
-        * Should be called after each new SharedDirectory created.
+        * Called for each new shared entry, see 'Cache::createSharedEntry(..)'.
         */
       virtual void mergeSubSharedEntries() = 0;
       virtual Entry* getRootEntry() const = 0;

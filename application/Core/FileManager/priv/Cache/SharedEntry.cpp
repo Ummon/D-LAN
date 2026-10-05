@@ -216,7 +216,7 @@ SharedDirectory::~SharedDirectory()
 /**
   * Try to merge other shared directories or files with this one.
   * For exemple /sharing/folder1/ and /sharing/folder2/a.txt can be merged with /sharing.
-  * Should be called after each new SharedDirectory created.
+  * Called for each new shared directory, see 'Cache::createSharedEntry(..)'.
   */
 void SharedDirectory::mergeSubSharedEntries()
 {

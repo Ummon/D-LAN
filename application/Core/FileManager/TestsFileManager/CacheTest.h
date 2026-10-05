@@ -139,5 +139,8 @@ private slots:
    void unfinishedFilesStayOutOfSearch();
    void sharedFileRenameUpdatesSearchIndexes();
    void setSharedPathsSavesDespiteMissingPaths();
+   void setSharedPathsWithOverlappingShares_data();
+   void setSharedPathsWithOverlappingShares();
+   void setSharedPathsKeepsDownloadsOfReplacedShare();
    void directoryDeletionDequeuesHashingJobs();
 };
