@@ -339,6 +339,13 @@ if(DLAN_BUILD_TESTS)
    add_test(NAME TestsDownloadsFlatModel COMMAND TestsDownloadsFlatModel)
    set_tests_properties(TestsDownloadsFlatModel PROPERTIES TIMEOUT 60)
 
+   add_executable(TestsSearchDock Search/TestsSearchDock.cpp Search/SearchDock.cpp Search/SearchUtils.cpp Log.cpp resources.qrc)
+   set_target_properties(TestsSearchDock PROPERTIES AUTOUIC ON AUTORCC ON)
+   target_include_directories(TestsSearchDock PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+   target_link_libraries(TestsSearchDock PRIVATE RemoteCoreController LogManager Common Qt6::Widgets Qt6::Test)
+   add_test(NAME TestsSearchDock COMMAND TestsSearchDock)
+   set_tests_properties(TestsSearchDock PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 30)
+
    add_executable(TestsStatusBar TestsStatusBar.cpp StatusBar.cpp ProgressBar.cpp DialogAbout.cpp resources.qrc)
    set_target_properties(TestsStatusBar PROPERTIES AUTOUIC ON AUTORCC ON)
    target_include_directories(TestsStatusBar PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")

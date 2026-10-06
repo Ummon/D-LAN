@@ -181,11 +181,17 @@ void SearchDock::search()
 
    this->ui->txtSearch->setText(this->ui->txtSearch->text().trimmed());
 
+   // The filters of the advanced options are only used when they are shown.
+   const bool withAdvancedOptions = this->ui->advancedOptions->isVisible();
+
+   // A search needs at least a text or a filter.
    if (
-      this->ui->txtSearch->text().isEmpty() &&
-      this->currentType().entryType != SearchType::EntryType::FILES_BY_EXTENSION &&
-      this->currentMinSize() == 0 &&
-      this->currentMaxSize() == 0
+      this->ui->txtSearch->text().isEmpty() && (
+         !withAdvancedOptions ||
+         this->currentType().entryType != SearchType::EntryType::FILES_BY_EXTENSION &&
+         this->currentMinSize() == 0 &&
+         this->currentMaxSize() == 0
+      )
    )
       return;
 
@@ -194,7 +200,7 @@ void SearchDock::search()
 
    bool local = false;
 
-   if (this->ui->advancedOptions->isVisible())
+   if (withAdvancedOptions)
    {
       SearchType type = this->currentType();
       if (type.entryType == SearchType::EntryType::FILES_BY_EXTENSION)
