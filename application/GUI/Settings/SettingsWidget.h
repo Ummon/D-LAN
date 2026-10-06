@@ -57,7 +57,7 @@ namespace GUI
 
    signals:
       void languageChanged(const QString& filename);
-      void styleChanged(const QString& filename);
+      void styleChanged(const QString& styleName); // The name of the directory of the style, empty for the default one.
 
    private:
       void fillComboBoxLanguages();

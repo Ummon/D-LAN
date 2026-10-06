@@ -18,11 +18,11 @@
 
 #pragma once
 
-#include <QStyledItemDelegate>
+#include <NoFocusDelegate.h>
 
 namespace GUI
 {
-   class SharedEntryListDelegate : public QStyledItemDelegate
+   class SharedEntryListDelegate : public NoFocusDelegate
    {
       Q_OBJECT
 
@@ -33,7 +33,6 @@ namespace GUI
             const QModelIndex &index
          ) const override;
 
-      void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
       QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
       signals:

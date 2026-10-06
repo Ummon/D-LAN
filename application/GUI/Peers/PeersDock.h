@@ -52,18 +52,15 @@ namespace GUI
       void displayContextMenuPeers(const QPoint& point);
 
       void browse();
-      void takeControlOfACore();
-      void copyIPToClipboard();
-
-      void sortPeersBySharingAmount();
-      void sortPeersByNick();
-      void colorizeSelectedPeer();
       void uncolorizeSelectedPeer();
 
       void coreConnected();
       void coreDisconnected(bool force);
 
    private:
+      void takeControlOfACore(const QHostAddress& address);
+      void sortPeers(Protos::GUI::Settings::PeerSortType sortType);
+      void colorizeSelectedPeer(const QColor& color);
       void restoreColorizedPeers();
 
       Ui::PeersDock* ui;

@@ -691,21 +691,19 @@ void SettingsWidget::cmbLanguageChanged(int cmbIndex)
 void SettingsWidget::cmbStyleChanged(int cmbIndex)
 {
    const QString& dirname = this->ui->cmbStyles->itemData(cmbIndex).toString();
-   emit styleChanged(dirname.isEmpty() ? QString() : Common::Global::getResourceFolder() % "/" % Common::Constants::STYLE_DIRECTORY % "/" % dirname % "/" % Common::Constants::STYLE_FILE_NAME);
+   emit styleChanged(dirname);
    SETTINGS.set("style", dirname);
    SETTINGS.save();
 }
 
 void SettingsWidget::reloadCurrentStyle()
 {
-   const QString& dirname = this->ui->cmbStyles->itemData(this->ui->cmbStyles->currentIndex()).toString();
-   emit styleChanged(dirname.isEmpty() ? QString() : Common::Global::getResourceFolder() % "/" % Common::Constants::STYLE_DIRECTORY % "/" % dirname % "/" % Common::Constants::STYLE_FILE_NAME);
+   emit styleChanged(this->ui->cmbStyles->itemData(this->ui->cmbStyles->currentIndex()).toString());
 }
 
 void SettingsWidget::changePassword()
 {
-   AskNewPasswordDialog dia(this->coreConnection, this->corePasswordDefined, this);
-   dia.exec();
+   Utils::showModal(new AskNewPasswordDialog(this->coreConnection, this->corePasswordDefined, this));
 }
 
 void SettingsWidget::resetPassword()
@@ -717,18 +715,16 @@ void SettingsWidget::resetPassword()
 
 void SettingsWidget::addShared()
 {
-   QStringList entries =
-      Utils::askForDirectoriesOrFiles(
-         this,
-         this->coreConnection,
-         tr("Select one or more directories and/or files to share")
-      );
-
-   if (!entries.isEmpty())
-   {
-      this->sharedEntryListModel.addEntries(entries);
-      this->saveCoreSettings();
-   }
+   Utils::askForDirectoriesOrFiles(
+      this,
+      this->coreConnection,
+      tr("Select one or more directories and/or files to share"),
+      [this](const QStringList& entries)
+      {
+         this->sharedEntryListModel.addEntries(entries);
+         this->saveCoreSettings();
+      }
+   );
 }
 
 void SettingsWidget::removeShared()
@@ -741,14 +737,17 @@ void SettingsWidget::removeShared()
       for (const QModelIndex& index : selectedRows)
          selectedEntries << this->sharedEntryListModel.getSharedEntries().at(index.row());
 
-      QMessageBox msgBox(this);
-      msgBox.setWindowTitle(tr("Remove selected shared entries"));
-      msgBox.setText(tr("Are you sure you want to remove the selected shared files and directories?"));
-      msgBox.setIcon(QMessageBox::Question);
-      msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
-      msgBox.setDefaultButton(QMessageBox::Ok);
-      if (msgBox.exec() == QMessageBox::Ok)
+      QMessageBox* msgBox = new QMessageBox(this);
+      msgBox->setWindowTitle(tr("Remove selected shared entries"));
+      msgBox->setText(tr("Are you sure you want to remove the selected shared files and directories?"));
+      msgBox->setIcon(QMessageBox::Question);
+      msgBox->setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+      msgBox->setDefaultButton(QMessageBox::Ok);
+      connect(msgBox, &QMessageBox::finished, this, [this, selectedEntries](int result)
       {
+         if (result != QMessageBox::Ok)
+            return;
+
          const auto& entries = this->sharedEntryListModel.getSharedEntries();
          bool removed = false;
          for (int row = entries.size() - 1; row >= 0; --row)
@@ -768,7 +767,8 @@ void SettingsWidget::removeShared()
          }
          if (removed)
             this->saveCoreSettings();
-      }
+      });
+      Utils::showModal(msgBox);
    }
 }
 

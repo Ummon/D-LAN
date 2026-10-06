@@ -18,6 +18,7 @@
 #include <Common/RemoteCoreController/priv/CoreConnection.h>
 #include <Chat/ChatWidget.h>
 #include <Chat/ChatTextEdit.h>
+#include <Emoticons/SingleEmoticonWidget.h>
 
 namespace
 {
@@ -475,6 +476,34 @@ private slots:
       const auto format = received.begin().begin().fragment().charFormat();
       QVERIFY(format.isImageFormat());
       QCOMPARE(format.stringProperty(QTextFormat::ImageAltText), QString("o_O"));
+   }
+
+   void emoticonsPopupIsCreatedWhenFirstShown()
+   {
+      Fixture f({}, QFINDTESTDATA("../resources/emoticons"));
+      auto* button = f.widget.findChild<QPushButton*>("butEmoticons");
+      QVERIFY(button);
+      QVERIFY(!f.widget.findChild<GUI::EmoticonsWidget*>());
+
+      button->setChecked(true);
+      auto* popup = f.widget.findChild<GUI::EmoticonsWidget*>();
+      QVERIFY(popup);
+      QVERIFY(popup->isVisible());
+      const auto emoticonWidgets = popup->findChildren<GUI::SingleEmoticonWidget*>();
+      QVERIFY(!emoticonWidgets.isEmpty());
+
+      // Choosing an emoticon inserts it in the message.
+      QVERIFY(!f.editor->document()->toRawText().contains(QChar::ObjectReplacementCharacter));
+      QTest::mouseClick(emoticonWidgets.first(), Qt::LeftButton);
+      QVERIFY(f.editor->document()->toRawText().contains(QChar::ObjectReplacementCharacter));
+
+      // The same popup is shown again the next times.
+      popup->hide();
+      button->setChecked(false);
+      button->setChecked(true);
+      QCOMPARE(f.widget.findChildren<GUI::EmoticonsWidget*>().size(), 1);
+      QVERIFY(popup->isVisible());
+      popup->hide();
    }
 
    void copyingEmoticonsPreservesOtherMarkdown()

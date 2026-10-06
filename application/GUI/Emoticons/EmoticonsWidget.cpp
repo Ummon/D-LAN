@@ -39,7 +39,10 @@ EmoticonsWidget::EmoticonsWidget(Emoticons& emoticons, QWidget* parent) :
    foreach (QString theme, this->emoticons.getThemes())
    {
       QRadioButton* radio = new QRadioButton(this);
-      connect(radio, &QRadioButton::toggled, this, &EmoticonsWidget::themeButtonToggled);
+      connect(radio, &QRadioButton::toggled, this, [this, theme](bool checked) {
+         if (checked)
+            emit defaultThemeChanged(theme);
+      });
       this->themeButtons << radio;
       radio->setToolTip(tr("Set as the default theme"));
       radio->setText(theme);
@@ -50,9 +53,9 @@ EmoticonsWidget::EmoticonsWidget(Emoticons& emoticons, QWidget* parent) :
       foreach (QString smileName, this->emoticons.getSmileNames(theme))
       {
          SingleEmoticonWidget* emoticonWidget = new SingleEmoticonWidget(this);
-         connect(emoticonWidget, &SingleEmoticonWidget::clicked, this, &EmoticonsWidget::emoticonClicked);
-         emoticonWidget->setTheme(theme);
-         emoticonWidget->setEmoticonName(smileName);
+         connect(emoticonWidget, &SingleEmoticonWidget::clicked, this, [this, theme, smileName] {
+            emit emoticonChosen(theme, smileName);
+         });
          emoticonWidget->setSymbols(this->emoticons.getSmileSymbols(theme, smileName));
          emoticonWidget->setImage(this->emoticons.getSmileImage(theme, smileName));
          layout->addWidget(emoticonWidget, row, col, 1, 1);
@@ -79,21 +82,6 @@ void EmoticonsWidget::setDefaultTheme(const QString& theme)
 
    if (!this->themeButtons.isEmpty())
       this->themeButtons.first()->setChecked(true); // Is not found.
-}
-
-void EmoticonsWidget::emoticonClicked()
-{
-   SingleEmoticonWidget* emoticonWidget = dynamic_cast<SingleEmoticonWidget*>(this->sender());
-   emit emoticonChosen(emoticonWidget->getTheme(), emoticonWidget->getEmoticonName());
-}
-
-void EmoticonsWidget::themeButtonToggled(bool checked)
-{
-   if (checked)
-   {
-      QRadioButton* sender = dynamic_cast<QRadioButton*>(this->sender());
-      emit defaultThemeChanged(sender->text());
-   }
 }
 
 void EmoticonsWidget::showEvent(QShowEvent*)

@@ -15,18 +15,36 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-  
+
 #pragma once
 
 #include <QStyledItemDelegate>
 
 namespace GUI
 {
-   class RoomsDelegate : public QStyledItemDelegate
+   /**
+     * An item delegate which doesn't draw the focus rectangle around the current item.
+     * It can also show the selection only while the view belongs to the active window.
+     */
+   class NoFocusDelegate : public QStyledItemDelegate
    {
-      Q_OBJECT
-
    public:
-      void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
+      explicit NoFocusDelegate(bool selectionOnlyIfActive = false, QObject* parent = nullptr) :
+         QStyledItemDelegate(parent), selectionOnlyIfActive(selectionOnlyIfActive)
+      {}
+
+   protected:
+      void initStyleOption(QStyleOptionViewItem* option, const QModelIndex& index) const override
+      {
+         QStyledItemDelegate::initStyleOption(option, index);
+
+         option->state &= ~QStyle::State_HasFocus;
+
+         if (this->selectionOnlyIfActive && !(option->state & QStyle::State_Active))
+            option->state &= ~QStyle::State_Selected;
+      }
+
+   private:
+      const bool selectionOnlyIfActive;
    };
 }

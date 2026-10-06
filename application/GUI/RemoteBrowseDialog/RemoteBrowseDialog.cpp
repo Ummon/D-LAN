@@ -27,15 +27,6 @@ using namespace GUI;
 
 #include <Utils.h>
 
-void RemoteBrowseDialogDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
-{
-   QStyleOptionViewItem newOption(option);
-   newOption.state = option.state & (~QStyle::State_HasFocus);
-   QStyledItemDelegate::paint(painter, newOption, index);
-}
-
-/////
-
 RemoteBrowseDialog::RemoteBrowseDialog(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidget *parent) :
    QDialog(parent),
    ui(new Ui::RemoteBrowseDialog),

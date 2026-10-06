@@ -21,7 +21,6 @@
 #include <QWidget>
 #include <QStringList>
 #include <QAbstractButton>
-#include <QStyledItemDelegate>
 #include <QItemSelection>
 
 #include <Common/Hash.h>
@@ -30,7 +29,9 @@
 #include <Peers/PeerListModel.h>
 #include <Settings/SharedEntryListModel.h>
 #include <Browse/BrowseModel.h>
+#include <Browse/EntriesWidget.h>
 #include <DownloadMenu.h>
+#include <NoFocusDelegate.h>
 
 namespace Ui {
    class BrowseWidget;
@@ -38,13 +39,7 @@ namespace Ui {
 
 namespace GUI
 {
-   class BrowseDelegate : public QStyledItemDelegate
-   {
-   public:
-      void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
-   };
-
-   class BrowseWidget : public QWidget
+   class BrowseWidget : public EntriesWidget
    {
       Q_OBJECT
    public:
@@ -63,33 +58,22 @@ namespace GUI
       void refresh();
 
    protected:
-      void changeEvent(QEvent* event);
-      void keyPressEvent(QKeyEvent* event);
+      void changeEvent(QEvent* event) override;
+      Common::Hash entryPeerID(const QModelIndex& index) const override;
 
    private slots:
       void displayContextMenuDownload(const QPoint& point);
       void entryDoubleClicked(const QModelIndex& index);
-
-      void download();
-
-      void downloadTo();
-      void downloadTo(const Common::Path& path);
-      void downloadTo(const Common::Hash& sharedDirID, const Common::Path& relativePath);
-
-      void openLocation();
       void tryToReachEntryToBrowse();
 
    private:
-      void openFile(const QModelIndex& index) const;
-
       Ui::BrowseWidget* ui;
       DownloadMenu downloadMenu;
 
-      QSharedPointer<RCC::ICoreConnection> coreConnection;
       const Common::Hash peerID;
 
       BrowseModel browseModel;
-      BrowseDelegate browseDelegate;
+      NoFocusDelegate browseDelegate;
 
       bool tryingToReachEntryToBrowse;
       Protos::Common::Entry remoteEntryToBrowse;

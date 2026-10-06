@@ -42,8 +42,6 @@ namespace GUI
 
    private slots:
       void setDefaultTheme(const QString& theme);
-      void emoticonClicked();
-      void themeButtonToggled(bool checked);
 
    private:
       Emoticons& emoticons;

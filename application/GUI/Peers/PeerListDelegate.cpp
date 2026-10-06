@@ -39,14 +39,7 @@ const QColor PeerListDelegate::UPLOAD_COLOR(100, 175, 255);
 
 void PeerListDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-   QStyleOptionViewItem newOption(option);
-   newOption.state = option.state & (~QStyle::State_HasFocus);
-
-   // Show the selection only if the widget is active.
-   if (!(newOption.state & QStyle::State_Active))
-      newOption.state = newOption.state & (~QStyle::State_Selected);
-
-   QStyledItemDelegate::paint(painter, newOption, index);
+   NoFocusDelegate::paint(painter, option, index);
 
    if (index.column() == 0)
    {
@@ -104,7 +97,7 @@ QSize PeerListDelegate::sizeHint(const QStyleOptionViewItem& option, const QMode
    }
    else
    {
-      return QStyledItemDelegate::sizeHint(option, index);
+      return NoFocusDelegate::sizeHint(option, index);
    }
 }
 

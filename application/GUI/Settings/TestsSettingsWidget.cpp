@@ -15,10 +15,11 @@
 #include <Utils.h>
 
 void GUI::Utils::openLocation(const QString&, QWidget*) { QFAIL("Unexpected openLocation"); }
-QStringList GUI::Utils::askForDirectoriesOrFiles(QWidget*, QSharedPointer<RCC::ICoreConnection>, const QString&)
+void GUI::Utils::askForDirectoriesOrFiles(
+   QWidget*, QSharedPointer<RCC::ICoreConnection>, const QString&, const std::function<void(const QStringList&)>&
+)
 {
    QTest::qFail("Unexpected file dialog", __FILE__, __LINE__);
-   return {};
 }
 
 class TestsSettingsWidget : public QObject

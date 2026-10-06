@@ -89,11 +89,16 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
 
    ///// Dockable widgets
    this->addDockWidget(Qt::LeftDockWidgetArea, this->searchDock);
-   connect(this->searchDock, qOverload<const Protos::Common::FindPattern&, bool>(&SearchDock::search), this, &MainWindow::search);
+   connect(
+      this->searchDock,
+      qOverload<const Protos::Common::FindPattern&, bool>(&SearchDock::search),
+      this->mdiArea,
+      &MdiArea::openSearchWindow
+   );
    this->addDockWidget(Qt::LeftDockWidgetArea, this->peersDock);
-   connect(this->peersDock, &PeersDock::browsePeer, this, &MainWindow::browsePeer);
+   connect(this->peersDock, &PeersDock::browsePeer, this->mdiArea, &MdiArea::openBrowseWindow);
    this->addDockWidget(Qt::LeftDockWidgetArea, this->roomsDock);
-   connect(this->roomsDock, &RoomsDock::roomJoined, this, &MainWindow::roomJoined);
+   connect(this->roomsDock, &RoomsDock::roomJoined, this->mdiArea, &MdiArea::openChatWindow);
    /////
 
    this->ui->tblLog->setModel(&this->logModel);
@@ -127,14 +132,7 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
    // the default style): the title bar and the borders would stay invisible.
    this->winId();
 
-   if (!SETTINGS.get<QString>("style").isEmpty())
-      this->loadCustomStyle(
-         Common::Global::getResourceFolder() % "/" %
-         Common::Constants::STYLE_DIRECTORY % "/" %
-         SETTINGS.get<QString>("style") % "/" % Common::Constants::STYLE_FILE_NAME
-      );
-   else
-      this->loadCustomStyle();
+   this->loadCustomStyle(SETTINGS.get<QString>("style"));
 
    this->restoreWindowsSettings();
 
@@ -253,21 +251,6 @@ void MainWindow::coreDisconnected(bool forced)
    }
 }
 
-void MainWindow::browsePeer(const Common::Hash& peerID)
-{
-   this->mdiArea->openBrowseWindow(peerID);
-}
-
-void MainWindow::search(const Protos::Common::FindPattern& findPattern, bool local)
-{
-   this->mdiArea->openSearchWindow(findPattern, local);
-}
-
-void MainWindow::roomJoined(const QString& name)
-{
-   this->mdiArea->openChatWindow(name);
-}
-
 void MainWindow::logScrollChanged(int value)
 {
    this->logAutoScroll = value == this->ui->tblLog->verticalScrollBar()->maximum();
@@ -279,15 +262,23 @@ void MainWindow::newLogMessage()
       this->ui->tblLog->scrollToBottom();
 }
 
-void MainWindow::loadCustomStyle(const QString& filepath)
+/**
+  * @param styleName The name of the directory of the style, the default style is loaded if it's empty.
+  */
+void MainWindow::loadCustomStyle(const QString& styleName)
 {
    QApplication* app = dynamic_cast<QApplication*>(QApplication::instance());
    const bool wasVisible = this->isVisible();
 
-   if (!filepath.isEmpty())
+   if (!styleName.isEmpty())
    {
       // The css images are search from the current path.
       QDir::setCurrent(Common::Global::getResourceFolder());
+
+      const QString filepath =
+         Common::Global::getResourceFolder() % "/" %
+         Common::Constants::STYLE_DIRECTORY % "/" %
+         styleName % "/" % Common::Constants::STYLE_FILE_NAME;
 
       QFile file(filepath);
       if (file.open(QIODevice::ReadOnly))

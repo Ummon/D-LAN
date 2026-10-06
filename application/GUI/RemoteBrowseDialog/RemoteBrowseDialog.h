@@ -19,12 +19,12 @@
 #pragma once
 
 #include <QDialog>
-#include <QStyledItemDelegate>
 
 #include <Common/RemoteCoreController/ICoreConnection.h>
 
 #include <RemoteBrowseDialog/RemoteBrowseModel.h>
 #include <RemoteBrowseDialog/RemoteBrowseQuickAccessModel.h>
+#include <NoFocusDelegate.h>
 
 namespace Ui {
    class RemoteBrowseDialog;
@@ -32,12 +32,6 @@ namespace Ui {
 
 namespace GUI
 {
-   class RemoteBrowseDialogDelegate : public QStyledItemDelegate
-   {
-   public:
-      void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
-   };
-
    class RemoteBrowseDialog : public QDialog
    {
       Q_OBJECT
@@ -84,7 +78,7 @@ namespace GUI
 
       RemoteBrowseModel model;
       RemoteBrowseQuickAccessModel modelQuickAccess;
-      RemoteBrowseDialogDelegate delegate;
+      NoFocusDelegate delegate;
       QList<QPersistentModelIndex> history;
       int historyPosition = -1;
       bool navigatingHistory = false;

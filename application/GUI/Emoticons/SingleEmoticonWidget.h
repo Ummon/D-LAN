@@ -39,12 +39,6 @@ namespace GUI
       void setImage(const QPixmap& image);
       void setSymbols(const QStringList& list);
 
-      void setTheme(const QString& theme);
-      const QString& getTheme() const;
-
-      void setEmoticonName(const QString& emoticonName);
-      const QString& getEmoticonName() const;
-
    signals:
       void clicked();
 
@@ -55,8 +49,5 @@ namespace GUI
 
    private:
       Ui::SingleEmoticonWidget* ui;
-
-      QString themeName;
-      QString emoticonName;
    };
 }

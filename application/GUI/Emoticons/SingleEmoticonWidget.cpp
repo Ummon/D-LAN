@@ -47,26 +47,6 @@ void SingleEmoticonWidget::setSymbols(const QStringList& list)
    this->ui->lblEmoticonImage->setToolTip(list.join(" "));
 }
 
-void SingleEmoticonWidget::setTheme(const QString& theme)
-{
-   this->themeName = theme;
-}
-
-const QString& SingleEmoticonWidget::getTheme() const
-{
-   return this->themeName;
-}
-
-void SingleEmoticonWidget::setEmoticonName(const QString& emoticonName)
-{
-   this->emoticonName = emoticonName;
-}
-
-const QString& SingleEmoticonWidget::getEmoticonName() const
-{
-   return this->emoticonName;
-}
-
 void SingleEmoticonWidget::leaveEvent(QEvent*)
 {
    this->setBackgroundRole(QPalette::Window);

@@ -20,7 +20,6 @@
 #include <ui_RoomsDock.h>
 using namespace GUI;
 
-#include <QKeyEvent>
 #include <QMenu>
 #include <QActionGroup>
 
@@ -36,7 +35,7 @@ RoomsDock::RoomsDock(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidge
 
    this->roomsModel.setSortType(static_cast<Protos::GUI::Settings::RoomSortType>(SETTINGS.get<quint32>("room_sort_type")));
 
-   this->ui->txtRoomName->installEventFilter(this);
+   connect(this->ui->txtRoomName, &QLineEdit::returnPressed, this, qOverload<>(&RoomsDock::joinRoom));
 
    this->ui->tblRooms->setModel(&this->roomsModel);
    this->ui->tblRooms->setItemDelegate(&this->roomsDelegate);
@@ -76,21 +75,6 @@ void RoomsDock::changeEvent(QEvent* event)
    QDockWidget::changeEvent(event);
 }
 
-bool RoomsDock::eventFilter(QObject* obj, QEvent* event)
-{
-   if (
-      obj == this->ui->txtRoomName &&
-      event->type() == QEvent::KeyPress &&
-      (static_cast<QKeyEvent*>(event)->key() == Qt::Key_Return ||
-       static_cast<QKeyEvent*>(event)->key() == Qt::Key_Enter)
-   )
-   {
-      this->joinRoom();
-   }
-
-   return QDockWidget::eventFilter(obj, event);
-}
-
 void RoomsDock::displayContextMenuRooms(const QPoint& point)
 {
    QMenu menu;
@@ -98,10 +82,12 @@ void RoomsDock::displayContextMenuRooms(const QPoint& point)
 
    menu.addSeparator();
 
-   QAction* sortByNbPeersAction = menu.addAction(tr("Sort by number of peers"), this, &RoomsDock::sortByNbPeers);
-   QAction* sortByNameAction = menu.addAction(tr("Sort alphabetically"), this, &RoomsDock::sortByName);
+   QAction* sortByNbPeersAction =
+      menu.addAction(tr("Sort by number of peers"), this, [this] { this->sortRooms(Protos::GUI::Settings::BY_NB_PEERS); });
+   QAction* sortByNameAction =
+      menu.addAction(tr("Sort alphabetically"), this, [this] { this->sortRooms(Protos::GUI::Settings::BY_NAME); });
 
-   QActionGroup sortGroup(this);
+   QActionGroup sortGroup(&menu);
    sortGroup.setExclusive(true);
    sortByNbPeersAction->setCheckable(true);
    sortByNbPeersAction->setChecked(this->roomsModel.getSortType() == Protos::GUI::Settings::BY_NB_PEERS);
@@ -129,19 +115,11 @@ void RoomsDock::joinRoom()
    this->joinRoom(this->ui->txtRoomName->text());
 }
 
-void RoomsDock::sortByNbPeers()
+void RoomsDock::sortRooms(Protos::GUI::Settings::RoomSortType sortType)
 {
-   this->roomsModel.setSortType(Protos::GUI::Settings::BY_NB_PEERS);
-   SETTINGS.set("room_sort_type", static_cast<quint32>(Protos::GUI::Settings::BY_NB_PEERS));
+   this->roomsModel.setSortType(sortType);
+   SETTINGS.set("room_sort_type", static_cast<quint32>(sortType));
    SETTINGS.save();
-}
-
-void RoomsDock::sortByName()
-{
-   this->roomsModel.setSortType(Protos::GUI::Settings::BY_NAME);
-   SETTINGS.set("room_sort_type", static_cast<quint32>(Protos::GUI::Settings::BY_NAME));
-   SETTINGS.save();
-
 }
 
 void RoomsDock::coreConnected()

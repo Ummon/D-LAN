@@ -18,6 +18,10 @@
 
 #pragma once
 
+#include <functional>
+
+#include <QDialog>
+#include <QMessageBox>
 #include <QSharedPointer>
 #include <QStringList>
 
@@ -28,15 +32,41 @@ namespace GUI
    class Utils
    {
    public:
-      static QStringList askForDirectoriesOrFiles(
+      /**
+        * Shows the given dialog as a modal one without running a local event loop, unlike 'QDialog::exec()'.
+        * A widget can be deleted while one of its dialogs is open: its tab is removed when the connection to the
+        * core is lost, the main window is deleted when the application is exited from the tray icon. A dialog
+        * declared as a local variable and run by 'exec()' is then deleted a second time by its parent, and the
+        * caller continues in a deleted object.
+        * The dialog must have been allocated with 'new', it's deleted when it's closed or with its parent.
+        * Its result is given by its signals, 'accepted()' or 'finished(..)' for instance.
+        */
+      static void showModal(QDialog* dialog)
+      {
+         dialog->setAttribute(Qt::WA_DeleteOnClose);
+         dialog->setModal(true);
+         dialog->show();
+      }
+
+      /**
+        * As 'QMessageBox::information(..)' but without a local event loop, see 'showModal(..)'.
+        */
+      static void showInformation(QWidget* parent, const QString& title, const QString& text)
+      {
+         Utils::showModal(new QMessageBox(QMessageBox::Information, title, text, QMessageBox::Ok, parent));
+      }
+
+      static void askForDirectoriesOrFiles(
          QWidget* parent,
          QSharedPointer<RCC::ICoreConnection> coreConnection,
-         const QString& title = QString()
+         const QString& title,
+         const std::function<void(const QStringList&)>& selected
       );
 
-      static QString askForADirectoryToDownloadTo(
+      static void askForADirectoryToDownloadTo(
          QWidget* parent,
-         QSharedPointer<RCC::ICoreConnection> coreConnection
+         QSharedPointer<RCC::ICoreConnection> coreConnection,
+         const std::function<void(const QString&)>& selected
       );
 
       static QString emoticonsDirectoryPath();

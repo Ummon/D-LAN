@@ -24,6 +24,7 @@ using namespace GUI;
 #include <Common/Settings.h>
 
 #include <DialogAbout.h>
+#include <Utils.h>
 
 StatusBar::StatusBar(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidget* parent) :
    QWidget(parent), ui(new Ui::StatusBar), coreConnection(coreConnection)
@@ -112,8 +113,7 @@ void StatusBar::newState(const Protos::GUI::State& state)
 
 void StatusBar::showAbout()
 {
-   DialogAbout about(this);
-   about.exec();
+   Utils::showModal(new DialogAbout(this));
 }
 
 void StatusBar::setDownloadRate(qint64 rate)

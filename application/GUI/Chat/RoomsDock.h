@@ -24,7 +24,7 @@
 #include <Common/RemoteCoreController/ICoreConnection.h>
 
 #include <Chat/RoomsModel.h>
-#include <Chat/RoomsDelegate.h>
+#include <NoFocusDelegate.h>
 
 namespace Ui {
    class RoomsDock;
@@ -45,7 +45,6 @@ namespace GUI
 
    protected:
       void changeEvent(QEvent* event);
-      bool eventFilter(QObject* obj, QEvent* event);
 
    private slots:
       void displayContextMenuRooms(const QPoint& point);
@@ -53,20 +52,18 @@ namespace GUI
       void joinSelectedRoom();
       void joinRoom();
 
-      void sortByNbPeers();
-      void sortByName();
-
       void coreConnected();
       void coreDisconnected(bool force);
 
    private:
       void joinRoom(const QString& roomName);
+      void sortRooms(Protos::GUI::Settings::RoomSortType sortType);
 
       Ui::RoomsDock* ui;
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;
 
       RoomsModel roomsModel;
-      RoomsDelegate roomsDelegate;
+      NoFocusDelegate roomsDelegate { true };
    };
 }

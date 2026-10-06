@@ -50,7 +50,6 @@ add_executable(DLanGUI WIN32
    BusyIndicator.cpp
    Log/LogDelegate.cpp
    Chat/RoomsModel.cpp
-   Chat/RoomsDelegate.cpp
    Peers/PeersDock.cpp
    Peers/PeerListModel.cpp
    Peers/PeerListDelegate.cpp
@@ -59,6 +58,7 @@ add_executable(DLanGUI WIN32
    MDI/TabButtons.cpp
    MDI/MdiArea.cpp
    Browse/BrowseWidget.cpp
+   Browse/EntriesWidget.cpp
    Chat/ChatWidget.cpp
    Downloads/DownloadsWidget.cpp
    Search/SearchWidget.cpp
@@ -88,6 +88,7 @@ add_executable(DLanGUI WIN32
    CheckBoxList.h
    CheckBoxModel.h
    IFilter.h
+   NoFocusDelegate.h
    Browse/BrowseModel.h
    Chat/ChatModel.h
    Downloads/DownloadFilterStatus.h
@@ -110,7 +111,6 @@ add_executable(DLanGUI WIN32
    Taskbar/TaskbarTypes.h
    Log/LogDelegate.h
    Chat/RoomsModel.h
-   Chat/RoomsDelegate.h
    Peers/PeersDock.h
    Peers/PeerListModel.h
    Peers/PeerListDelegate.h
@@ -120,6 +120,7 @@ add_executable(DLanGUI WIN32
    MDI/MdiArea.h
    MDI/MdiWidget.h
    Browse/BrowseWidget.h
+   Browse/EntriesWidget.h
    Chat/ChatWidget.h
    Downloads/DownloadsWidget.h
    Search/SearchWidget.h

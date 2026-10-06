@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include <QAbstractTableModel>
+#include <QAbstractItemModel>
 #include <QDragEnterEvent>
 #include <QList>
 #include <QFile>
@@ -35,7 +35,10 @@
 
 namespace GUI
 {
-   class DownloadsModel : public QAbstractTableModel
+   /**
+     * The base of the two models of the download queue: a flat one and a tree one.
+     */
+   class DownloadsModel : public QAbstractItemModel
    {
       Q_OBJECT
 

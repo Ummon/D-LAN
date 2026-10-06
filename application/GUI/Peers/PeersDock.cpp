@@ -29,7 +29,7 @@ using namespace GUI;
 #include <Common/Global.h>
 #include <Common/Settings.h>
 
-Q_DECLARE_METATYPE(QHostAddress)
+#include <Utils.h>
 
 PeersDock::PeersDock(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidget* parent) :
    QDockWidget(parent),
@@ -86,9 +86,7 @@ void PeersDock::changeEvent(QEvent* event)
 void PeersDock::displayContextMenuPeers(const QPoint& point)
 {
    QModelIndex i = this->ui->tblPeers->currentIndex();
-   QHostAddress addr = i.isValid() ? this->peerListModel.getPeerIP(i.row()) : QHostAddress();
-   QVariant addrVariant;
-   addrVariant.setValue(addr);
+   const QHostAddress addr = i.isValid() ? this->peerListModel.getPeerIP(i.row()) : QHostAddress();
 
    Protos::GUI::State::Peer::PeerStatus peerStatus = this->peerListModel.getStatus(i.row());
 
@@ -99,31 +97,27 @@ void PeersDock::displayContextMenuPeers(const QPoint& point)
    if (!addr.isNull())
    {
       if (peerStatus == Protos::GUI::State::Peer::OK)
-      {
-         QAction* takeControlAction =
-            menu.addAction(
-               QIcon(":/icons/resources/connect.svg"),
-               tr("Take control"),
-               this,
-               &PeersDock::takeControlOfACore
-            );
-         takeControlAction->setData(addrVariant);
-      }
+         menu.addAction(
+            QIcon(":/icons/resources/connect.svg"),
+            tr("Take control"),
+            this,
+            [this, addr] { this->takeControlOfACore(addr); }
+         );
 
-      QAction* copyIPAction =
-         menu.addAction(tr("Copy IP: %1").arg(addr.toString()), this, &PeersDock::copyIPToClipboard);
-      copyIPAction->setData(addrVariant);
+      menu.addAction(tr("Copy IP: %1").arg(addr.toString()), this, [addr] { QApplication::clipboard()->setText(addr.toString()); });
    }
 
    menu.addSeparator();
 
    QAction* sortBySharingAmountAction =
-      menu.addAction(tr("Sort by the amount of sharing"), this, &PeersDock::sortPeersBySharingAmount);
+      menu.addAction(
+         tr("Sort by the amount of sharing"), this, [this] { this->sortPeers(Protos::GUI::Settings::BY_SHARING_AMOUNT); }
+      );
 
    QAction* sortByNickAction =
-      menu.addAction(tr("Sort alphabetically"), this, &PeersDock::sortPeersByNick);
+      menu.addAction(tr("Sort alphabetically"), this, [this] { this->sortPeers(Protos::GUI::Settings::BY_NICK); });
 
-   QActionGroup sortGroup(this);
+   QActionGroup sortGroup(&menu);
    sortGroup.setExclusive(true);
    sortBySharingAmountAction->setCheckable(true);
    sortBySharingAmountAction->setChecked(this->peerListModel.getSortType() == Protos::GUI::Settings::BY_SHARING_AMOUNT);
@@ -138,23 +132,22 @@ void PeersDock::displayContextMenuPeers(const QPoint& point)
       QIcon(":/icons/resources/marble_red.svg"),
       tr("Colorize in red"),
       this,
-      &PeersDock::colorizeSelectedPeer
-   )->setData(PeerListModel::COLOR_PEER_RED);
+      [this] { this->colorizeSelectedPeer(PeerListModel::COLOR_PEER_RED); }
+   );
 
    menu.addAction(
       QIcon(":/icons/resources/marble_blue.svg"),
       tr("Colorize in blue"),
       this,
-      &PeersDock::colorizeSelectedPeer
-   )->setData(PeerListModel::COLOR_PEER_BLUE);
-
+      [this] { this->colorizeSelectedPeer(PeerListModel::COLOR_PEER_BLUE); }
+   );
 
    menu.addAction(
       QIcon(":/icons/resources/marble_green.svg"),
       tr("Colorize in green"),
       this,
-      &PeersDock::colorizeSelectedPeer
-   )->setData(PeerListModel::COLOR_PEER_GREEN);
+      [this] { this->colorizeSelectedPeer(PeerListModel::COLOR_PEER_GREEN); }
+   );
 
    menu.addAction(tr("Uncolorize"), this, &PeersDock::uncolorizeSelectedPeer);
 
@@ -163,7 +156,7 @@ void PeersDock::displayContextMenuPeers(const QPoint& point)
 
 void PeersDock::browse()
 {
-   foreach (QModelIndex i, this->ui->tblPeers->selectionModel()->selectedIndexes())
+   foreach (QModelIndex i, this->ui->tblPeers->selectionModel()->selectedRows())
    {
       if (i.isValid())
       {
@@ -180,67 +173,46 @@ void PeersDock::browse()
    this->ui->tblPeers->clearSelection();
 }
 
-void PeersDock::takeControlOfACore()
+void PeersDock::takeControlOfACore(const QHostAddress& address)
 {
-   QAction* action = dynamic_cast<QAction*>(this->sender());
-   if (action)
+   const auto connectToCore = [this, address](const QString& password)
    {
-      QHostAddress address = action->data().value<QHostAddress>();
-      QString password;
-
-      if (!Common::Global::isLocal(address))
-      {
-         QInputDialog inputDialog(this);
-         inputDialog.setWindowTitle(
-            tr("Take control of %1").arg(Common::Global::formatIP(address, SETTINGS.get<quint32>("core_port")))
-         );
-         inputDialog.setLabelText(tr("Enter a password"));
-         inputDialog.setTextEchoMode(QLineEdit::Password);
-         inputDialog.resize(300, 100);
-
-         if (inputDialog.exec() == QDialog::Rejected || inputDialog.textValue().isEmpty())
-            return;
-
-         password = inputDialog.textValue();
-      }
-
       this->coreConnection->connectToCore(address.toString(), SETTINGS.get<quint32>("core_port"), password);
-   }
-}
+   };
 
-void PeersDock::copyIPToClipboard()
-{
-   QAction* action = dynamic_cast<QAction*>(this->sender());
-   if (action)
+   // A password is only asked for a remote core.
+   if (Common::Global::isLocal(address))
    {
-      QHostAddress address = action->data().value<QHostAddress>();
-      QApplication::clipboard()->setText(address.toString());
+      connectToCore(QString());
+      return;
    }
+
+   QInputDialog* inputDialog = new QInputDialog(this);
+   inputDialog->setWindowTitle(
+      tr("Take control of %1").arg(Common::Global::formatIP(address, SETTINGS.get<quint32>("core_port")))
+   );
+   inputDialog->setLabelText(tr("Enter a password"));
+   inputDialog->setTextEchoMode(QLineEdit::Password);
+   inputDialog->resize(300, 100);
+   connect(inputDialog, &QInputDialog::textValueSelected, this, [connectToCore](const QString& password)
+   {
+      if (!password.isEmpty())
+         connectToCore(password);
+   });
+   Utils::showModal(inputDialog);
 }
 
-void PeersDock::sortPeersBySharingAmount()
+void PeersDock::sortPeers(Protos::GUI::Settings::PeerSortType sortType)
 {
-   this->peerListModel.setSortType(Protos::GUI::Settings::BY_SHARING_AMOUNT);
-   SETTINGS.set("peer_sort_type", static_cast<quint32>(Protos::GUI::Settings::BY_SHARING_AMOUNT));
+   this->peerListModel.setSortType(sortType);
+   SETTINGS.set("peer_sort_type", static_cast<quint32>(sortType));
    SETTINGS.save();
 }
 
-void PeersDock::sortPeersByNick()
+void PeersDock::colorizeSelectedPeer(const QColor& color)
 {
-   this->peerListModel.setSortType(Protos::GUI::Settings::BY_NICK);
-   SETTINGS.set("peer_sort_type", static_cast<quint32>(Protos::GUI::Settings::BY_NICK));
-   SETTINGS.save();
-}
-
-/**
-  * Must be called only by a 'QAction' object with a 'QColor' object as data.
-  */
-void PeersDock::colorizeSelectedPeer()
-{
-   const QColor color = static_cast<QAction*>(this->sender())->data().value<QColor>();
-
    QSet<Common::Hash> peerIDs;
-   foreach (QModelIndex i, this->ui->tblPeers->selectionModel()->selectedIndexes())
+   foreach (QModelIndex i, this->ui->tblPeers->selectionModel()->selectedRows())
    {
       this->peerListModel.colorize(i, color);
       peerIDs << this->peerListModel.getPeerID(i.row());
@@ -275,7 +247,7 @@ void PeersDock::colorizeSelectedPeer()
 void PeersDock::uncolorizeSelectedPeer()
 {
    QSet<Common::Hash> peerIDs;
-   foreach (QModelIndex i, this->ui->tblPeers->selectionModel()->selectedIndexes())
+   foreach (QModelIndex i, this->ui->tblPeers->selectionModel()->selectedRows())
    {
       this->peerListModel.uncolorize(i);
       peerIDs << this->peerListModel.getPeerID(i.row());

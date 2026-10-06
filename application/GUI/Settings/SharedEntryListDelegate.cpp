@@ -13,13 +13,6 @@ QWidget* SharedEntryListDelegate::createEditor(
    return QStyledItemDelegate::createEditor(parent, opt, index);
 }
 
-void SharedEntryListDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
-{
-   QStyleOptionViewItem newOption(option);
-   newOption.state = option.state & (~QStyle::State_HasFocus);
-   QStyledItemDelegate::paint(painter, newOption, index);
-}
-
 QSize SharedEntryListDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
    auto size = QStyledItemDelegate::sizeHint(option, index);

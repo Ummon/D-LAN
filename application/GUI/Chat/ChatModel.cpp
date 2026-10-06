@@ -262,11 +262,14 @@ void ChatModel::sendRawMessage(const QString& message, const QList<Common::Hash>
       this->coreConnection->sendChatMessage(message, this->roomName, peerIDsAnswered);
 
    // Carry each draft's revision with its result, even when replies arrive out of order.
-   connect(result.data(), &RCC::ISendChatMessageResult::result, this, [this, draftRevision](const Protos::GUI::ChatMessageResult& result) {
+   const RCC::ISendChatMessageResult* sent = result.data();
+   connect(result.data(), &RCC::ISendChatMessageResult::result, this, [this, sent, draftRevision](const Protos::GUI::ChatMessageResult& result) {
       this->result(result, draftRevision);
+      this->removeResult(sent);
    });
-   connect(result.data(), &Common::Timeoutable::timeout, this, [this, draftRevision]() {
+   connect(result.data(), &Common::Timeoutable::timeout, this, [this, sent, draftRevision]() {
       this->resultTimeout(draftRevision);
+      this->removeResult(sent);
    });
    this->results << result;
    result->start();
@@ -391,21 +394,18 @@ void ChatModel::result(const Protos::GUI::ChatMessageResult& result, quint64 dra
       emit sendMessageStatus(ERROR_UNKNOWN, draftRevision);
       break;
    }
-
-   this->removeResult(qobject_cast<RCC::ISendChatMessageResult*>(this->sender()));
 }
 
 void ChatModel::resultTimeout(quint64 draftRevision)
 {
    emit sendMessageStatus(TIMEOUT, draftRevision);
-   this->removeResult(qobject_cast<RCC::ISendChatMessageResult*>(this->sender()));
 }
 
 /**
   * Forget the given result, it has been answered or has timed out.
   *
   * The removal is deferred for two reasons:
-  *  - Both callers are slots called synchronously from a signal emitted by 'result' itself, so dropping the
+  *  - It's called synchronously from a signal emitted by 'result' itself, see 'sendRawMessage(..)', so dropping the
   *    last reference here would destroy it, and its timer, while that timer is being dispatched. Qt then
   *    silently drops the pending timers of other objects: with two messages in flight, the timeout of the
   *    second one never fires. Same reason as the 'deleteLater()' of the commit 9476210f.

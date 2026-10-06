@@ -100,7 +100,12 @@ void DownloadMenu::show(const QPoint& globalPosition)
 
    this->onShowMenu(menu);
 
+   // The widget owning this object can be deleted while its menu is shown, for example if the connection to the
+   // core is lost: nothing of this object may then be accessed.
+   const QPointer<DownloadMenu> self(this);
    menu.exec(globalPosition);
+   if (!self)
+      return;
 
    // The menus waiting for these results no longer exist.
    this->browseResults.clear();

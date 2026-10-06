@@ -355,15 +355,19 @@ void DownloadsWidget::removeSelectedEntries()
    {
       if (!allComplete)
       {
-         QMessageBox msgBox(this);
-         msgBox.setWindowIcon(QIcon(":/icons/resources/bin.svg"));
-         msgBox.setWindowTitle(tr("Remove selected downloads"));
-         msgBox.setText(tr("Are you sure to remove the selected downloads? There is one or more unfinished download."));
-         msgBox.setIcon(QMessageBox::Question);
-         msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
-         msgBox.setDefaultButton(QMessageBox::Ok);
-         if (msgBox.exec() == QMessageBox::Ok)
-            this->coreConnection->cancelDownloads(downloadIDs.values());
+         QMessageBox* msgBox = new QMessageBox(this);
+         msgBox->setWindowIcon(QIcon(":/icons/resources/bin.svg"));
+         msgBox->setWindowTitle(tr("Remove selected downloads"));
+         msgBox->setText(tr("Are you sure to remove the selected downloads? There is one or more unfinished download."));
+         msgBox->setIcon(QMessageBox::Question);
+         msgBox->setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+         msgBox->setDefaultButton(QMessageBox::Ok);
+         connect(msgBox, &QMessageBox::finished, this, [this, downloadIDs](int result)
+         {
+            if (result == QMessageBox::Ok)
+               this->coreConnection->cancelDownloads(downloadIDs.values());
+         });
+         Utils::showModal(msgBox);
       }
       else
          this->coreConnection->cancelDownloads(downloadIDs.values());

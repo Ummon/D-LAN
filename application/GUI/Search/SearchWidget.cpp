@@ -34,7 +34,6 @@ using namespace GUI;
 #include <Common/Settings.h>
 
 #include <Search/SearchUtils.h>
-#include <Utils.h>
 #include <Log.h>
 
 const QString SearchDelegate::MARKUP_FIRST_PART("<b>");
@@ -284,13 +283,13 @@ SearchWidget::SearchWidget(
    bool local,
    QWidget* parent
 ) :
-   QWidget(parent),
+   EntriesWidget(coreConnection, parent),
    ui(new Ui::SearchWidget),
    downloadMenu(coreConnection, sharedEntryListModel),
-   coreConnection(coreConnection),
    searchModel(coreConnection, peerListModel, sharedEntryListModel)
 {
    this->ui->setupUi(this);
+   this->setEntries(&this->searchModel, this->ui->treeView);
 
    this->ui->lblSearchTerm->setText(SearchUtils::getFindPatternSummary(findPattern, local));
 
@@ -370,20 +369,20 @@ void SearchWidget::changeEvent(QEvent* event)
    if (event->type() == QEvent::LanguageChange)
       this->ui->retranslateUi(this);
 
-   QWidget::changeEvent(event);
+   EntriesWidget::changeEvent(event);
 }
 
-void SearchWidget::keyPressEvent(QKeyEvent* event)
+Common::Hash SearchWidget::entryPeerID(const QModelIndex& index) const
 {
-   // Return key -> open all selected files.
-   if (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter)
-   {
-      const QModelIndexList& selectedRows = this->ui->treeView->selectionModel()->selectedRows();
-      for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
-         this->openFile(i.next());
-   }
-   else
-      QWidget::keyPressEvent(event);
+   return this->searchModel.getPeerID(index);
+}
+
+/**
+  * A file found on several peers is shown as a group, only the entries of the group have a location.
+  */
+bool SearchWidget::hasOwnLocation(const QModelIndex& index) const
+{
+   return !SearchModel::isNonTerminalFile(index);
 }
 
 void SearchWidget::displayContextMenuDownload(const QPoint& point)
@@ -412,55 +411,6 @@ void SearchWidget::displayContextMenuDownload(const QPoint& point)
 void SearchWidget::entryDoubleClicked(const QModelIndex& index)
 {
    this->openFile(index);
-}
-
-void SearchWidget::download()
-{
-   if (this->searchModel.nbSharedDirs() == 0)
-      this->downloadTo();
-   else
-      for (const auto& index : this->ui->treeView->selectionModel()->selectedRows())
-         this->coreConnection->download(this->searchModel.getPeerID(index), this->searchModel.getEntry(index));
-}
-
-void SearchWidget::downloadTo()
-{
-   const QString dir = Utils::askForADirectoryToDownloadTo(this, this->coreConnection);
-   if (!dir.isEmpty())
-      this->downloadTo(dir);
-}
-/**
-  * Download all selected items to 'path'.
-  */
-void SearchWidget::downloadTo(const Common::Path& path)
-{
-   for (const auto& index : this->ui->treeView->selectionModel()->selectedRows())
-      this->coreConnection->download(this->searchModel.getPeerID(index), this->searchModel.getEntry(index), path);
-}
-
-/**
-  * Download all selected items to a folder of the shared directory.
-  * @param relativePath The folder relative to the shared directory, empty for the shared directory itself.
-  */
-void SearchWidget::downloadTo(const Common::Hash& sharedDirID, const Common::Path& relativePath)
-{
-   for (const auto& index : this->ui->treeView->selectionModel()->selectedRows())
-      this->coreConnection->download(this->searchModel.getPeerID(index), this->searchModel.getEntry(index), sharedDirID, relativePath);
-}
-
-void SearchWidget::openLocation()
-{
-   QModelIndexList selectedRows = this->ui->treeView->selectionModel()->selectedRows();
-
-   QSet<QString> locations;
-   for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
-   {
-      const QModelIndex& index = i.next();
-      if (!SearchModel::isNonTerminalFile(index))
-         locations.insert(this->searchModel.getPath(index, true));
-   }
-
-   Utils::openLocations(locations.values(), this);
 }
 
 void SearchWidget::browseCurrents()
@@ -512,13 +462,3 @@ bool SearchWidget::atLeastOneRemotePeer(const QModelIndexList& indexes) const
    return false;
 }
 
-void SearchWidget::openFile(const QModelIndex& index) const
-{
-   if (
-      this->coreConnection->isLocal() &&
-      !SearchModel::isNonTerminalFile(index) &&
-      this->coreConnection->getRemoteID() == this->searchModel.getPeerID(index) &&
-      !this->searchModel.isDir(index)
-   )
-      Utils::openFile(this->searchModel.getPath(index));
-}

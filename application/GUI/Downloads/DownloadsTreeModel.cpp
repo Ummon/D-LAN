@@ -188,11 +188,6 @@ QString DownloadsTreeModel::getPath(const QModelIndex& index, bool appendFilenam
    }
 }
 
-bool DownloadsTreeModel::hasChildren(const QModelIndex& parent) const
-{
-   return this->rowCount(parent) > 0;
-}
-
 int DownloadsTreeModel::rowCount(const QModelIndex& parent) const
 {
    if (parent.column() > 0)
@@ -247,20 +242,6 @@ QModelIndex DownloadsTreeModel::parent(const QModelIndex& index) const
       return QModelIndex();
 
    return this->createIndex(parentItem->getOwnPosition(), 0, parentItem);
-}
-
-/**
-  * Must be overridden because 'QAbstractTableModel::sibling(..)' assumes a flat model and drops the
-  * parent ('return index(row, column);'), which corrupts the selection ranges built by
-  * 'QTreeViewPrivate::select(..)' (shift-click, rubber band, shift+arrows). Same bug family as
-  * 'hasChildren(..)' and 'parent(..)'.
-  */
-QModelIndex DownloadsTreeModel::sibling(int row, int column, const QModelIndex& index) const
-{
-   if (!index.isValid())
-      return QModelIndex();
-
-   return this->index(row, column, this->parent(index));
 }
 
 Qt::DropActions DownloadsTreeModel::supportedDropActions() const

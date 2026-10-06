@@ -20,10 +20,11 @@
 #include <ui_AskNewPasswordDialog.h>
 using namespace GUI;
 
-#include <QMessageBox>
 #include <QRegularExpression>
 
 #include <Common/Settings.h>
+
+#include <Utils.h>
 
 AskNewPasswordDialog::AskNewPasswordDialog(
    QSharedPointer<RCC::ICoreConnection> coreConnection,
@@ -56,27 +57,27 @@ void AskNewPasswordDialog::ok()
 {
    if (this->ui->txtNewPassword->text() != this->ui->txtNewPasswordRepeated->text())
    {
-      QMessageBox::information(this, tr("Error"), tr("The passwords aren't the same"));
+      Utils::showInformation(this, tr("Error"), tr("The passwords aren't the same"));
       return;
    }
    else if (this->ui->txtNewPassword->text().isEmpty())
    {
-      QMessageBox::information(this, tr("Error"), tr("The password can't be empty"));
+      Utils::showInformation(this, tr("Error"), tr("The password can't be empty"));
       return;
    }
    else if (this->ui->txtNewPassword->text().contains(QRegularExpression("\\s")))
    {
-      QMessageBox::information(this, tr("Error"), tr("The password can't contain any whitespace"));
+      Utils::showInformation(this, tr("Error"), tr("The password can't contain any whitespace"));
       return;
    }
    else if (!this->ui->txtOldPassword->isHidden() && this->ui->txtOldPassword->text().isEmpty())
    {
-      QMessageBox::information(this, tr("Error"), tr("The old password is required"));
+      Utils::showInformation(this, tr("Error"), tr("The old password is required"));
       return;
    }
    else if (this->ui->txtOldPassword->text() == this->ui->txtNewPassword->text())
    {
-      QMessageBox::information(this, tr("Error"), tr("The old and new passwords are the same"));
+      Utils::showInformation(this, tr("Error"), tr("The old and new passwords are the same"));
       return;
    }
    else
@@ -87,7 +88,7 @@ void AskNewPasswordDialog::ok()
             this->ui->txtOldPassword->isHidden() ? QString() : this->ui->txtOldPassword->text()
          )
       )
-         QMessageBox::information(this, tr("Error"), tr("The old password doesn't match"));
+         Utils::showInformation(this, tr("Error"), tr("The old password doesn't match"));
       else
       {
          SETTINGS.set("core_password", this->coreConnection->getConnectionInfo().password.toStr());

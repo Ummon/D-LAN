@@ -60,16 +60,10 @@ namespace GUI
       void coreConnected();
       void coreDisconnected(bool forced);
 
-      void browsePeer(const Common::Hash& peerID);
-
-      void search(const Protos::Common::FindPattern& findPattern, bool local);
-
-      void roomJoined(const QString& name);
-
       void logScrollChanged(int value);
       void newLogMessage();
 
-      void loadCustomStyle(const QString& filepath = QString());
+      void loadCustomStyle(const QString& styleName);
 
       void maximize();
 

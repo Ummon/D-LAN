@@ -34,6 +34,7 @@
 #include <Chat/ChatModel.h>
 #include <Chat/ChatDocumentCache.h>
 #include <MDI/MdiWidget.h>
+#include <NoFocusDelegate.h>
 #include <Emoticons/Emoticons.h>
 #include <Emoticons/EmoticonsWidget.h>
 #include <AutoComplete/AutoComplete.h>
@@ -46,13 +47,6 @@ class TestsChatCompletion;
 
 namespace GUI
 {
-   class PeerListChatDelegate : public QStyledItemDelegate
-   {
-   public:
-      void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
-      //QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const;
-   };
-
    class ChatDelegate : public QStyledItemDelegate
    {
    public:
@@ -84,12 +78,7 @@ namespace GUI
       explicit ChatWidget(
          QSharedPointer<RCC::ICoreConnection> coreConnection,
          Emoticons& emoticons,
-         QWidget* parent = nullptr
-      );
-      explicit ChatWidget(
-         QSharedPointer<RCC::ICoreConnection> coreConnection,
-         Emoticons& emoticons,
-         const QString& roomName,
+         const QString& roomName = QString(),
          QWidget* parent = nullptr
       );
       ~ChatWidget();
@@ -108,7 +97,6 @@ namespace GUI
 
       void displayContextMenuPeers(const QPoint& point);
       void browseSelectedPeers();
-      void copyIPToClipboard();
 
       void displayContextMenu(const QPoint& point);
       void copySelectedMessagesToClipboard();
@@ -169,7 +157,7 @@ namespace GUI
       static QString mdEmoticon(const QString& theme, const QString& emoticonName);
 
       Ui::ChatWidget* ui;
-      EmoticonsWidget* emoticonsWidget;
+      EmoticonsWidget* emoticonsWidget = nullptr; // Created by 'displayEmoticons(..)'.
 
       // Current peers answered.
       struct Answer {
@@ -201,7 +189,7 @@ namespace GUI
       Emoticons& emoticons;
 
       PeerListModel peerListModel;
-      PeerListChatDelegate peerListDelegate;
+      NoFocusDelegate peerListDelegate { true };
 
       ChatModel chatModel;
       ChatDelegate chatDelegate;

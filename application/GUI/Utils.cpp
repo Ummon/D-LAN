@@ -38,34 +38,46 @@ using namespace GUI;
 
 /**
   * Ask the user to choose one or more directories/files.
+  * This function doesn't wait for the answer, see 'showModal(..)'.
+  * @param selected Called with the chosen paths, there is at least one. It isn't called if the user cancels, nor
+  *        once 'parent' is deleted: the dialog belongs to it.
   */
-QStringList Utils::askForDirectoriesOrFiles(
+void Utils::askForDirectoriesOrFiles(
    QWidget* parent,
    QSharedPointer<RCC::ICoreConnection> coreConnection,
-   const QString& title
+   const QString& title,
+   const std::function<void(const QStringList&)>& selected
 )
 {
-   RemoteBrowseDialog dialog(coreConnection, parent);
-   dialog.setWindowTitle(title.isEmpty() ? QObject::tr("Select one or more directories and/or files") : title);
-   if (dialog.exec() == QDialog::Accepted)
-      return dialog.getSelectedPaths();
-   else
-      return QStringList();
+   RemoteBrowseDialog* dialog = new RemoteBrowseDialog(coreConnection, parent);
+   dialog->setWindowTitle(title.isEmpty() ? QObject::tr("Select one or more directories and/or files") : title);
+   QObject::connect(dialog, &QDialog::accepted, dialog, [dialog, selected] {
+      const QStringList selectedPaths = dialog->getSelectedPaths();
+      if (!selectedPaths.isEmpty())
+         selected(selectedPaths);
+   });
+   Utils::showModal(dialog);
 }
 
-QString Utils::askForADirectoryToDownloadTo(QWidget* parent, QSharedPointer<RCC::ICoreConnection> coreConnection)
+/**
+  * Ask the user to choose a directory.
+  * @param selected Called with the chosen directory, see 'askForDirectoriesOrFiles(..)'.
+  */
+void Utils::askForADirectoryToDownloadTo(
+   QWidget* parent,
+   QSharedPointer<RCC::ICoreConnection> coreConnection,
+   const std::function<void(const QString&)>& selected
+)
 {
-   RemoteBrowseDialog dialog(coreConnection, parent);
-   dialog.setWindowTitle(QObject::tr("Select a directory where to download to"));
-   dialog.setModes(RemoteBrowseDialog::DIR);
-   if (dialog.exec() == QDialog::Accepted)
-   {
-      const auto& selectedPath = dialog.getSelectedPaths();
-      if (!selectedPath.isEmpty())
-         return selectedPath.constFirst();
-   }
-
-   return QString();
+   RemoteBrowseDialog* dialog = new RemoteBrowseDialog(coreConnection, parent);
+   dialog->setWindowTitle(QObject::tr("Select a directory where to download to"));
+   dialog->setModes(RemoteBrowseDialog::DIR);
+   QObject::connect(dialog, &QDialog::accepted, dialog, [dialog, selected] {
+      const QStringList selectedPaths = dialog->getSelectedPaths();
+      if (!selectedPaths.isEmpty())
+         selected(selectedPaths.constFirst());
+   });
+   Utils::showModal(dialog);
 }
 
 QString Utils::emoticonsDirectoryPath()

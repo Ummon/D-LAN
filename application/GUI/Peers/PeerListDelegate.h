@@ -18,19 +18,20 @@
   
 #pragma once
 
-#include <QStyledItemDelegate>
 #include <QPixmap>
+
+#include <NoFocusDelegate.h>
 
 namespace GUI
 {
-   class PeerListDelegate : public QStyledItemDelegate
+   class PeerListDelegate : public NoFocusDelegate
    {
       Q_OBJECT
       static const QColor DOWNLOAD_COLOR;
       static const QColor UPLOAD_COLOR;
 
    public:
-      PeerListDelegate() : miniChartBackground(0) {}
+      PeerListDelegate() : NoFocusDelegate(true), miniChartBackground(0) {} // The selection is only shown if the widget is active.
       ~PeerListDelegate() { if (this->miniChartBackground) delete this->miniChartBackground; }
 
       void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;

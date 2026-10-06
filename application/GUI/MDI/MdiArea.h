@@ -66,7 +66,7 @@ namespace GUI
 
    signals:
       void languageChanged(const QString& filename);
-      void styleChanged(const QString& path);
+      void styleChanged(const QString& styleName);
 
    protected:
       void changeEvent(QEvent* event);

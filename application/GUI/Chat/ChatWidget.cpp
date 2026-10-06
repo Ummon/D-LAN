@@ -45,9 +45,8 @@ using namespace GUI;
 #include <algorithm>
 
 #include <Log.h>
+#include <Utils.h>
 #include <Common/Settings.h>
-
-Q_DECLARE_METATYPE(QHostAddress)
 
 namespace
 {
@@ -59,20 +58,6 @@ namespace
          QCryptographicHash::Sha256);
    }
 }
-
-void PeerListChatDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
-{
-   QStyleOptionViewItem newOption(option);
-   newOption.state = option.state & (~QStyle::State_HasFocus);
-
-   // Show the selection only if the widget is active.
-   if (!(newOption.state & QStyle::State_Active))
-      newOption.state = newOption.state & (~QStyle::State_Selected);
-
-   QStyledItemDelegate::paint(painter, newOption, index);
-}
-
-/////
 
 /**
   * @class GUI::ChatDelegate
@@ -238,18 +223,9 @@ QString ChatDelegate::anchorAt(
 
 /////
 
-ChatWidget::ChatWidget(QSharedPointer<RCC::ICoreConnection> coreConnection, Emoticons& emoticons, QWidget* parent) :
-   MdiWidget(parent),
-   ui(new Ui::ChatWidget),
-   coreConnection(coreConnection),
-   emoticons(emoticons),
-   peerListModel(coreConnection),
-   chatModel(coreConnection, this->peerListModel),
-   chatDelegate(emoticons)
-{
-   this->init();
-}
-
+/**
+  * @param roomName Empty for the main chat.
+  */
 ChatWidget::ChatWidget(
    QSharedPointer<RCC::ICoreConnection> coreConnection,
    Emoticons& emoticons,
@@ -508,11 +484,11 @@ void ChatWidget::sendMessageStatus(ChatModel::SendMessageStatus status, quint64 
       break;
 
    case ChatModel::MESSAGE_TOO_LARGE:
-      QMessageBox::information(this, tr("Unable to send message"), tr("The message is too long"));
+      Utils::showInformation(this, tr("Unable to send message"), tr("The message is too long"));
       break;
 
    default:
-      QMessageBox::information(this, tr("Unable to send message"), tr("The message can't be send, unknown error"));
+      Utils::showInformation(this, tr("Unable to send message"), tr("The message can't be send, unknown error"));
       break;
    }
 }
@@ -525,25 +501,20 @@ void ChatWidget::scrollChanged(int value)
 void ChatWidget::displayContextMenuPeers(const QPoint& point)
 {
    QModelIndex i = this->ui->tblRoomPeers->currentIndex();
-   QHostAddress addr = i.isValid() ? this->peerListModel.getPeerIP(i.row()) : QHostAddress();
-   QVariant addrVariant;
-   addrVariant.setValue(addr);
+   const QHostAddress addr = i.isValid() ? this->peerListModel.getPeerIP(i.row()) : QHostAddress();
 
    QMenu menu;
    menu.addAction(QIcon(":/icons/resources/folder.svg"), tr("Browse"), this, &ChatWidget::browseSelectedPeers);
 
    if (!addr.isNull())
-   {
-      QAction* copyIPAction = menu.addAction(tr("Copy IP: %1").arg(addr.toString()), this, &ChatWidget::copyIPToClipboard);
-      copyIPAction->setData(addrVariant);
-   }
+      menu.addAction(tr("Copy IP: %1").arg(addr.toString()), this, [addr] { QApplication::clipboard()->setText(addr.toString()); });
 
    menu.exec(this->ui->tblRoomPeers->mapToGlobal(point));
 }
 
 void ChatWidget::browseSelectedPeers()
 {
-   foreach (QModelIndex i, this->ui->tblRoomPeers->selectionModel()->selectedIndexes())
+   foreach (QModelIndex i, this->ui->tblRoomPeers->selectionModel()->selectedRows())
    {
       if (i.isValid())
       {
@@ -554,16 +525,6 @@ void ChatWidget::browseSelectedPeers()
    }
 
    this->ui->tblRoomPeers->clearSelection();
-}
-
-void ChatWidget::copyIPToClipboard()
-{
-   QAction* action = dynamic_cast<QAction*>(this->sender());
-   if (action)
-   {
-      QHostAddress address = action->data().value<QHostAddress>();
-      QApplication::clipboard()->setText(address.toString());
-   }
 }
 
 void ChatWidget::displayContextMenu(const QPoint& point)
@@ -602,7 +563,7 @@ void ChatWidget::browseSelectedMessages()
 {
    QSet<Common::Hash> peersSent;
 
-   foreach (QModelIndex i, this->ui->tblChat->selectionModel()->selectedIndexes())
+   foreach (QModelIndex i, this->ui->tblChat->selectionModel()->selectedRows())
       if (i.isValid())
       {
          Common::Hash peerID = this->chatModel.getPeerID(i.row());
@@ -788,10 +749,7 @@ void ChatWidget::resetFormat()
 void ChatWidget::emoticonsButtonToggled(bool checked)
 {
    if (checked)
-   {
-      QAbstractButton* sender = dynamic_cast<QAbstractButton*>(this->sender());
-         this->displayEmoticons(this->mapToGlobal(sender->pos()), sender->size());
-   }
+      this->displayEmoticons(this->mapToGlobal(this->ui->butEmoticons->pos()), this->ui->butEmoticons->size());
 }
 
 void ChatWidget::messageWordTyped(int position, const QString& word)
@@ -1021,9 +979,6 @@ void ChatWidget::init()
 
    this->emoticons.setDefaultTheme(SETTINGS.get<QString>("default_emoticon_theme"));
 
-   this->emoticonsWidget = new EmoticonsWidget(this->emoticons, this);
-   this->emoticonsWidget->setWindowFlags(Qt::Popup);
-
    this->autoComplete = new AutoComplete(this);
    this->autoComplete->setWindowFlags(Qt::Popup);
    this->autoComplete->setVisible(false);
@@ -1120,9 +1075,6 @@ void ChatWidget::init()
    connect(this->ui->butEmoticons, &QPushButton::toggled, this, &ChatWidget::emoticonsButtonToggled);
    connect(this->ui->txtMessage, &ChatTextEdit::wordTyped, this, &ChatWidget::messageWordTyped);
    connect(this->ui->txtMessage, &ChatTextEdit::textEdited, this, &ChatWidget::updatePeerNameCompletion);
-   connect(this->emoticonsWidget, &EmoticonsWidget::hidden, this, &ChatWidget::emoticonsWindowHidden);
-   connect(this->emoticonsWidget, &EmoticonsWidget::emoticonChosen, this, &ChatWidget::insertEmoticon);
-   connect(this->emoticonsWidget, &EmoticonsWidget::defaultThemeChanged, this, &ChatWidget::defaultEmoticonThemeChanged);
 
    connect(this->autoComplete, &AutoComplete::stringAdded, this, &ChatWidget::autoCompleteStringAdded);
    connect(this->autoComplete, &AutoComplete::lastCharRemoved, this, &ChatWidget::autoCompleteLastCharRemoved);
@@ -1163,6 +1115,17 @@ void ChatWidget::disconnectFormatWidgets()
 
 void ChatWidget::displayEmoticons(const QPoint& positionSender, const QSize& sizeSender)
 {
+   // Created the first time it's shown: it holds a widget for each emoticon of each theme, that's most of the
+   // objects and of the memory of a chat window, for something which may never be opened.
+   if (!this->emoticonsWidget)
+   {
+      this->emoticonsWidget = new EmoticonsWidget(this->emoticons, this);
+      this->emoticonsWidget->setWindowFlags(Qt::Popup);
+      connect(this->emoticonsWidget, &EmoticonsWidget::hidden, this, &ChatWidget::emoticonsWindowHidden);
+      connect(this->emoticonsWidget, &EmoticonsWidget::emoticonChosen, this, &ChatWidget::insertEmoticon);
+      connect(this->emoticonsWidget, &EmoticonsWidget::defaultThemeChanged, this, &ChatWidget::defaultEmoticonThemeChanged);
+   }
+
    this->emoticonsWidget->show();
 
    this->emoticonsWidget->move(

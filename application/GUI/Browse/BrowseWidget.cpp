@@ -29,16 +29,6 @@ using namespace GUI;
 #include <Common/ProtoHelper.h>
 
 #include <Log.h>
-#include <Utils.h>
-
-void BrowseDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
-{
-   QStyleOptionViewItem newOption(option);
-   newOption.state = option.state & (~QStyle::State_HasFocus);
-   QStyledItemDelegate::paint(painter, newOption, index);
-}
-
-/////
 
 BrowseWidget::BrowseWidget(
    QSharedPointer<RCC::ICoreConnection> coreConnection,
@@ -47,15 +37,15 @@ BrowseWidget::BrowseWidget(
    const Common::Hash& peerID,
    QWidget* parent
 ) :
-   QWidget(parent),
+   EntriesWidget(coreConnection, parent),
    ui(new Ui::BrowseWidget),
    downloadMenu(coreConnection, sharedEntryListModel),
-   coreConnection(coreConnection),
    peerID(peerID),
    browseModel(coreConnection, sharedEntryListModel, peerID),
    tryingToReachEntryToBrowse(false)
 {
    this->ui->setupUi(this);
+   this->setEntries(&this->browseModel, this->ui->treeView);
 
    this->ui->treeView->setModel(&this->browseModel);
    this->ui->treeView->setItemDelegate(&this->browseDelegate);
@@ -118,20 +108,15 @@ void BrowseWidget::changeEvent(QEvent* event)
    if (event->type() == QEvent::LanguageChange)
       this->ui->retranslateUi(this);
 
-   QWidget::changeEvent(event);
+   EntriesWidget::changeEvent(event);
 }
 
-void BrowseWidget::keyPressEvent(QKeyEvent* event)
+/**
+  * All the entries are owned by the browsed peer.
+  */
+Common::Hash BrowseWidget::entryPeerID(const QModelIndex&) const
 {
-   // Return key -> open all selected files.
-   if (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter)
-   {
-      const QModelIndexList& selectedRows = this->ui->treeView->selectionModel()->selectedRows();
-      for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
-         this->openFile(i.next());
-   }
-   else
-      QWidget::keyPressEvent(event);
+   return this->peerID;
 }
 
 void BrowseWidget::displayContextMenuDownload(const QPoint& point)
@@ -157,59 +142,6 @@ void BrowseWidget::displayContextMenuDownload(const QPoint& point)
 void BrowseWidget::entryDoubleClicked(const QModelIndex& index)
 {
    this->openFile(index);
-}
-
-/**
-  * Download all selected items to the first available directory.
-  * If not directory is available then ask the user to choose one.
-  */
-void BrowseWidget::download()
-{
-   if (this->browseModel.nbSharedDirs() == 0)
-      this->downloadTo();
-   else
-      for (const auto& index : this->ui->treeView->selectionModel()->selectedRows())
-         this->coreConnection->download(this->peerID, this->browseModel.getEntry(index));
-}
-
-/**
-  * Ask the user to chose a directory and download all selected items into it.
-  */
-void BrowseWidget::downloadTo()
-{
-   QString dir = Utils::askForADirectoryToDownloadTo(this, this->coreConnection);
-   if (!dir.isEmpty())
-      this->downloadTo(dir);
-}
-
-/**
-  * Download all selected items to 'path'.
-  */
-void BrowseWidget::downloadTo(const Common::Path& path)
-{
-   for (const auto& index : this->ui->treeView->selectionModel()->selectedRows())
-      this->coreConnection->download(this->peerID, this->browseModel.getEntry(index), path);
-}
-
-/**
-  * Download all selected items to a folder of the shared directory.
-  * @param relativePath The folder relative to the shared directory, empty for the shared directory itself.
-  */
-void BrowseWidget::downloadTo(const Common::Hash& sharedDirID, const Common::Path& relativePath)
-{
-   for (const auto& index : this->ui->treeView->selectionModel()->selectedRows())
-      this->coreConnection->download(this->peerID, this->browseModel.getEntry(index), sharedDirID, relativePath);
-}
-
-void BrowseWidget::openLocation()
-{
-   QModelIndexList selectedRows = this->ui->treeView->selectionModel()->selectedRows();
-
-   QSet<QString> locations;
-   for (QListIterator<QModelIndex> i(selectedRows); i.hasNext();)
-      locations.insert(this->browseModel.getPath(i.next(), true));
-
-   Utils::openLocations(locations.values(), this);
 }
 
 /**
@@ -274,12 +206,3 @@ void BrowseWidget::tryToReachEntryToBrowse()
    this->tryingToReachEntryToBrowse = false;
 }
 
-void BrowseWidget::openFile(const QModelIndex& index) const
-{
-   if (
-      this->coreConnection->isLocal() &&
-      this->coreConnection->getRemoteID() == this->peerID &&
-      !this->browseModel.isDir(index)
-   )
-      Utils::openFile(this->browseModel.getPath(index));
-}

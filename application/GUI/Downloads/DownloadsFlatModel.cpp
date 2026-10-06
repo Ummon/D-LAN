@@ -151,6 +151,19 @@ QString DownloadsFlatModel::getPath(const QModelIndex& index, bool appendFilenam
    }
 }
 
+QModelIndex DownloadsFlatModel::index(int row, int column, const QModelIndex& parent) const
+{
+   return this->hasIndex(row, column, parent) ? this->createIndex(row, column) : QModelIndex();
+}
+
+/**
+  * All the downloads are at the top level.
+  */
+QModelIndex DownloadsFlatModel::parent(const QModelIndex&) const
+{
+   return QModelIndex();
+}
+
 int DownloadsFlatModel::rowCount(const QModelIndex& parent) const
 {
    if (parent.isValid())

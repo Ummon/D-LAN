@@ -33,6 +33,7 @@
 #include <Common/Hash.h>
 
 #include <Search/SearchModel.h>
+#include <Browse/EntriesWidget.h>
 #include <Settings/SharedEntryListModel.h>
 #include <DownloadMenu.h>
 
@@ -75,7 +76,7 @@ namespace GUI
       bool browseVisible = false;
    };
 
-   class SearchWidget : public QWidget
+   class SearchWidget : public EntriesWidget
    {
       Q_OBJECT
    public:
@@ -93,20 +94,13 @@ namespace GUI
       void browse(const Common::Hash&, const Protos::Common::Entry&);
 
    protected:
-      void changeEvent(QEvent* event);
-      void keyPressEvent(QKeyEvent* event);
+      void changeEvent(QEvent* event) override;
+      Common::Hash entryPeerID(const QModelIndex& index) const override;
+      bool hasOwnLocation(const QModelIndex& index) const override;
 
    private slots:
       void displayContextMenuDownload(const QPoint& point);
       void entryDoubleClicked(const QModelIndex& index);
-
-      void download();
-
-      void downloadTo();
-      void downloadTo(const Common::Path& path);
-      void downloadTo(const Common::Hash& sharedDirID, const Common::Path& relativePath);
-
-      void openLocation();
       void browseCurrents();
       void progress(int value);
       void treeviewSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
@@ -115,12 +109,8 @@ namespace GUI
    private:
       bool atLeastOneRemotePeer(const QModelIndexList& indexes) const;
 
-      void openFile(const QModelIndex& index) const;
-
       Ui::SearchWidget* ui;
       SearchMenu downloadMenu;
-
-      QSharedPointer<RCC::ICoreConnection> coreConnection;
 
       SearchModel searchModel;
       SearchDelegate searchDelegate;
