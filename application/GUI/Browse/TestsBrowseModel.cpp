@@ -130,11 +130,18 @@ private slots:
       const auto root = model.index(0, 0);
       QVERIFY(root.isValid());
       QCOMPARE(model.rowCount(root), 1);
+      QVERIFY(model.hasUnloadedChildren(root));
       model.update(root, files({ "child" }));
       QCOMPARE(model.rowCount(root), 1);
+      QVERIFY(!model.hasUnloadedChildren(root));
       const auto child = model.index(0, 0, root);
       QVERIFY(child.isValid());
       QCOMPARE(model.getEntry(child).name(), std::string("child"));
+      QVERIFY(!model.hasUnloadedChildren(child)); // A file.
+
+      // A directory known to be empty has nothing to load.
+      Fixture f;
+      QVERIFY(!f.model.hasUnloadedChildren(f.model.index(0, 0)));
    }
 
    void batchesDirectoryChangesAndPreservesNodes()

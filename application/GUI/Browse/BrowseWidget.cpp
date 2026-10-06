@@ -232,7 +232,8 @@ void BrowseWidget::tryToReachEntryToBrowse()
          root.shared_entry().id().hash() == this->remoteEntryToBrowse.shared_entry().id().hash()
       )
       {
-         // Then we try to match each folder name. If a folder cannot be reached then we ask to expand the last folder.
+         // Then we try to match each folder name. If a folder cannot be reached and the content of the last folder
+         // isn't loaded yet then we ask to expand this last folder.
          // After the folder entries are loaded, 'tryToReachEntryToBrowse()' will be recalled
          // via the signal 'BrowseModel::loadingResultFinished()'.
          const QStringList& path =
@@ -245,8 +246,15 @@ void BrowseWidget::tryToReachEntryToBrowse()
             QModelIndex childIndex = this->browseModel.searchChild(i.next(), currentIndex);
             if (!childIndex.isValid())
             {
-               this->ui->treeView->expand(currentIndex);
-               return;
+               if (this->browseModel.hasUnloadedChildren(currentIndex))
+               {
+                  this->ui->treeView->expand(currentIndex);
+                  return;
+               }
+
+               // The content of the folder is known and the entry isn't in it: it doesn't exist anymore, we give up.
+               // Otherwise this folder would be expanded again each time some entries are loaded.
+               break;
             }
             currentIndex = childIndex;
 

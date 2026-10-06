@@ -72,6 +72,7 @@ namespace GUI
       QModelIndex searchChild(const QString& name, const QModelIndex& parent = QModelIndex());
 
       bool isWaitingResult() const;
+      bool hasUnloadedChildren(const QModelIndex& index) const;
 
       int nbSharedDirs() const;
 

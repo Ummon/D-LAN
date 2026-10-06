@@ -232,6 +232,16 @@ bool BrowseModel::isWaitingResult() const
    return !this->browseResult.isNull();
 }
 
+/**
+  * Returns 'true' if the entry is a directory whose content hasn't been received yet, it's asked when the view
+  * expands the directory, see 'loadChildren(..)'.
+  */
+bool BrowseModel::hasUnloadedChildren(const QModelIndex& index) const
+{
+   const Tree* tree = index.isValid() ? static_cast<Tree*>(index.internalPointer()) : this->root;
+   return tree->hasUnloadedChildren();
+}
+
 int BrowseModel::nbSharedDirs() const
 {
    return this->sharedEntryListModel.getSharedDirectories().size();
