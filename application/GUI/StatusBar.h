@@ -39,7 +39,7 @@ namespace GUI
       explicit StatusBar(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidget* parent = nullptr);
       ~StatusBar();
 
-      bool eventFilter(QObject* obj, QEvent* event);
+      bool eventFilter(QObject* obj, QEvent* event) override;
 
    protected:
       void changeEvent(QEvent* event) override;
