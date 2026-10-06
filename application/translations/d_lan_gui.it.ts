@@ -120,6 +120,49 @@
     </message>
 </context>
 <context>
+    <name>GUI::AskNewPasswordDialog</name>
+    <message>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="59"/>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="64"/>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="69"/>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="74"/>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="79"/>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="90"/>
+        <source>Error</source>
+        <translation>Errore</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="59"/>
+        <source>The passwords aren&apos;t the same</source>
+        <translation>Le password non coincidono</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="64"/>
+        <source>The password can&apos;t be empty</source>
+        <translation>La password non può essere vuota</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="69"/>
+        <source>The password can&apos;t contain any whitespace</source>
+        <translation>La password non può contenere spazi</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="74"/>
+        <source>The old password is required</source>
+        <translation>La vecchia password è obbligatoria</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="79"/>
+        <source>The old and new passwords are the same</source>
+        <translation>La vecchia e la nuova password sono uguali</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="90"/>
+        <source>The old password doesn&apos;t match</source>
+        <translation>La vecchia password non corrisponde</translation>
+    </message>
+</context>
+<context>
     <name>GUI::BrowseWidget</name>
     <message>
         <location filename="../GUI/Browse/BrowseWidget.cpp" line="146"/>
@@ -188,27 +231,27 @@
 <context>
     <name>GUI::D_LAN_GUI</name>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="211"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="207"/>
         <source>Show the user interface</source>
         <translation>Mostra l&apos;interfaccia utente</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="215"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="211"/>
         <source>Stop the user interface</source>
         <translation>Chiudi l&apos;interfaccia utente</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="218"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="214"/>
         <source>Exit</source>
         <translation>Esci</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="249"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="245"/>
         <source>D-LAN user interface closed</source>
         <translation>Interfaccia utente di D-LAN chiusa</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="250"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="246"/>
         <source>D-LAN Core is still running in background. Select &apos;exit&apos; from the contextual menu if you want to stop it.</source>
         <translation>D-LAN Core è ancora in esecuzione in background. Seleziona «Esci» dal menu contestuale per arrestarlo.</translation>
     </message>
@@ -544,12 +587,12 @@
 <context>
     <name>GUI::MdiArea</name>
     <message>
-        <location filename="../GUI/MDI/MdiArea.cpp" line="368"/>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="375"/>
         <source>Waiting the initial scanning process is finished before loading the download queue</source>
         <translation>In attesa del completamento della scansione iniziale prima di caricare la coda dei download</translation>
     </message>
     <message>
-        <location filename="../GUI/MDI/MdiArea.cpp" line="559"/>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="566"/>
         <source>Leave room</source>
         <translation>Esci dalla stanza</translation>
     </message>
@@ -741,32 +784,32 @@
 <context>
     <name>GUI::SearchWidget</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="383"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="385"/>
         <source>Open location</source>
         <translation>Apri percorso</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="384"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="386"/>
         <source>Browse</source>
         <translation>Sfoglia</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="464"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="466"/>
         <source>1 directory</source>
         <translation>1 cartella</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="464"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="466"/>
         <source>%1 directories</source>
         <translation>%1 cartelle</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="465"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="467"/>
         <source>1 file</source>
         <translation>1 file</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="465"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="467"/>
         <source>%1 files</source>
         <translation>%1 file</translation>
     </message>
@@ -921,6 +964,11 @@
         <source>disconnected</source>
         <translation>disconnesso</translation>
     </message>
+    <message>
+        <location filename="../GUI/StatusBar.cpp" line="181"/>
+        <source>Core: %1</source>
+        <translation>Core: %1</translation>
+    </message>
 </context>
 <context>
     <name>GUI::TabCloseButton</name>
@@ -970,22 +1018,22 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="106"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="108"/>
         <source>D-LAN already launched</source>
         <translation>D-LAN è già in esecuzione</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="107"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="109"/>
         <source>An instance of D-LAN is already launched</source>
         <translation>Un&apos;istanza di D-LAN è già in esecuzione</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="109"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="111"/>
         <source>Quit</source>
         <translation>Esci</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="110"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="112"/>
         <source>Launch anyway</source>
         <translation>Avvia comunque</translation>
     </message>

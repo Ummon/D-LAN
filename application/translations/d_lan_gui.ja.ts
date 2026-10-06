@@ -120,6 +120,49 @@
     </message>
 </context>
 <context>
+    <name>GUI::AskNewPasswordDialog</name>
+    <message>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="59"/>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="64"/>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="69"/>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="74"/>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="79"/>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="90"/>
+        <source>Error</source>
+        <translation>エラー</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="59"/>
+        <source>The passwords aren&apos;t the same</source>
+        <translation>パスワードが一致しません</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="64"/>
+        <source>The password can&apos;t be empty</source>
+        <translation>パスワードを空にすることはできません</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="69"/>
+        <source>The password can&apos;t contain any whitespace</source>
+        <translation>パスワードに空白文字を含めることはできません</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="74"/>
+        <source>The old password is required</source>
+        <translation>現在のパスワードが必要です</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="79"/>
+        <source>The old and new passwords are the same</source>
+        <translation>現在のパスワードと新しいパスワードが同じです</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="90"/>
+        <source>The old password doesn&apos;t match</source>
+        <translation>現在のパスワードが違います</translation>
+    </message>
+</context>
+<context>
     <name>GUI::BrowseWidget</name>
     <message>
         <location filename="../GUI/Browse/BrowseWidget.cpp" line="146"/>
@@ -188,27 +231,27 @@
 <context>
     <name>GUI::D_LAN_GUI</name>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="211"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="207"/>
         <source>Show the user interface</source>
         <translation>ユーザーインターフェースを表示</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="215"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="211"/>
         <source>Stop the user interface</source>
         <translation>ユーザーインターフェースを終了</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="218"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="214"/>
         <source>Exit</source>
         <translation>終了</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="249"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="245"/>
         <source>D-LAN user interface closed</source>
         <translation>D-LANのユーザーインターフェースを閉じました</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="250"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="246"/>
         <source>D-LAN Core is still running in background. Select &apos;exit&apos; from the contextual menu if you want to stop it.</source>
         <translation>D-LAN Coreはバックグラウンドで引き続き動作しています。停止するには、コンテキストメニューから「終了」を選択してください。</translation>
     </message>
@@ -540,12 +583,12 @@
 <context>
     <name>GUI::MdiArea</name>
     <message>
-        <location filename="../GUI/MDI/MdiArea.cpp" line="368"/>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="375"/>
         <source>Waiting the initial scanning process is finished before loading the download queue</source>
         <translation>ダウンロードキューを読み込む前に、初回スキャンの完了を待っています</translation>
     </message>
     <message>
-        <location filename="../GUI/MDI/MdiArea.cpp" line="559"/>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="566"/>
         <source>Leave room</source>
         <translation>ルームを退出</translation>
     </message>
@@ -737,32 +780,32 @@
 <context>
     <name>GUI::SearchWidget</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="383"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="385"/>
         <source>Open location</source>
         <translation>場所を開く</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="384"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="386"/>
         <source>Browse</source>
         <translation>閲覧</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="464"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="466"/>
         <source>1 directory</source>
         <translation>1 ディレクトリ</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="464"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="466"/>
         <source>%1 directories</source>
         <translation>%1 ディレクトリ</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="465"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="467"/>
         <source>1 file</source>
         <translation>1 ファイル</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="465"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="467"/>
         <source>%1 files</source>
         <translation>%1 ファイル</translation>
     </message>
@@ -917,6 +960,11 @@
         <source>disconnected</source>
         <translation>切断されました</translation>
     </message>
+    <message>
+        <location filename="../GUI/StatusBar.cpp" line="181"/>
+        <source>Core: %1</source>
+        <translation>Core: %1</translation>
+    </message>
 </context>
 <context>
     <name>GUI::TabCloseButton</name>
@@ -990,22 +1038,22 @@
         <translation>D-LAN GUI バージョン %1</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="106"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="108"/>
         <source>D-LAN already launched</source>
         <translation>D-LAN はすでに起動しています</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="107"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="109"/>
         <source>An instance of D-LAN is already launched</source>
         <translation>D-LAN のインスタンスがすでに起動しています</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="109"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="111"/>
         <source>Quit</source>
         <translation>終了</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="110"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="112"/>
         <source>Launch anyway</source>
         <translation>それでも起動する</translation>
     </message>

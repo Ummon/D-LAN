@@ -120,6 +120,49 @@
     </message>
 </context>
 <context>
+    <name>GUI::AskNewPasswordDialog</name>
+    <message>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="+59"/>
+        <location line="+5"/>
+        <location line="+5"/>
+        <location line="+5"/>
+        <location line="+5"/>
+        <location line="+11"/>
+        <source>Error</source>
+        <translation>Error</translation>
+    </message>
+    <message>
+        <location line="-31"/>
+        <source>The passwords aren&apos;t the same</source>
+        <translation>Las contraseñas no coinciden</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>The password can&apos;t be empty</source>
+        <translation>La contraseña no puede estar vacía</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>The password can&apos;t contain any whitespace</source>
+        <translation>La contraseña no puede contener espacios en blanco</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>The old password is required</source>
+        <translation>Se requiere la contraseña anterior</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>The old and new passwords are the same</source>
+        <translation>La contraseña anterior y la nueva son iguales</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>The old password doesn&apos;t match</source>
+        <translation>La contraseña anterior no coincide</translation>
+    </message>
+</context>
+<context>
     <name>GUI::BrowseWidget</name>
     <message>
         <location filename="../GUI/Browse/BrowseWidget.cpp" line="+146"/>
@@ -188,7 +231,7 @@
 <context>
     <name>GUI::D_LAN_GUI</name>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="+211"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="+207"/>
         <source>Show the user interface</source>
         <translation>Mostrar la interfaz de usuario</translation>
     </message>
@@ -544,7 +587,7 @@
 <context>
     <name>GUI::MdiArea</name>
     <message>
-        <location filename="../GUI/MDI/MdiArea.cpp" line="+368"/>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="+375"/>
         <source>Waiting the initial scanning process is finished before loading the download queue</source>
         <translation>Esperando a que termine el escaneo inicial antes de cargar la cola de descargas</translation>
     </message>
@@ -741,7 +784,7 @@
 <context>
     <name>GUI::SearchWidget</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="+130"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="+132"/>
         <source>Open location</source>
         <translation>Abrir ubicación</translation>
     </message>
@@ -921,6 +964,11 @@
         <source>disconnected</source>
         <translation>desconectado</translation>
     </message>
+    <message>
+        <location line="+4"/>
+        <source>Core: %1</source>
+        <translation>Núcleo: %1</translation>
+    </message>
 </context>
 <context>
     <name>GUI::TabCloseButton</name>
@@ -970,7 +1018,7 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="-144"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="-138"/>
         <source>D-LAN already launched</source>
         <translation>D-LAN ya se ha ejecutado</translation>
     </message>

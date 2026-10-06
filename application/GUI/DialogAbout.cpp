@@ -41,7 +41,7 @@ DialogAbout::DialogAbout(QWidget *parent) :
 
    QDateTime buildTime = QDateTime::fromString(BUILD_TIME, "yyyy-MM-dd_hh-mm");
 
-   QLocale locale = SETTINGS.get<QLocale>("language");
+   const QLocale locale = SETTINGS.isSet("language") ? SETTINGS.get<QLocale>("language") : QLocale::system();
 
    this->ui->lblTitle->setText(QString("%1 %2 %3").arg(this->ui->lblTitle->text(), VERSION, VERSION_TAG));
    this->ui->lblBuiltOn->setText(QString("%1 %2").arg(this->ui->lblBuiltOn->text(), locale.toString(buildTime)));

@@ -56,27 +56,27 @@ void AskNewPasswordDialog::ok()
 {
    if (this->ui->txtNewPassword->text() != this->ui->txtNewPasswordRepeated->text())
    {
-      QMessageBox::information(this, "Error", "The passwords aren't the same");
+      QMessageBox::information(this, tr("Error"), tr("The passwords aren't the same"));
       return;
    }
    else if (this->ui->txtNewPassword->text().isEmpty())
    {
-      QMessageBox::information(this, "Error", "The password can't be empty");
+      QMessageBox::information(this, tr("Error"), tr("The password can't be empty"));
       return;
    }
    else if (this->ui->txtNewPassword->text().contains(QRegularExpression("\\s")))
    {
-      QMessageBox::information(this, "Error", "The password can't contain one or more whitespace");
+      QMessageBox::information(this, tr("Error"), tr("The password can't contain any whitespace"));
       return;
    }
    else if (!this->ui->txtOldPassword->isHidden() && this->ui->txtOldPassword->text().isEmpty())
    {
-      QMessageBox::information(this, "Error", "The old password is required");
+      QMessageBox::information(this, tr("Error"), tr("The old password is required"));
       return;
    }
    else if (this->ui->txtOldPassword->text() == this->ui->txtNewPassword->text())
    {
-      QMessageBox::information(this, "Error", "The old and new password are the same");
+      QMessageBox::information(this, tr("Error"), tr("The old and new passwords are the same"));
       return;
    }
    else
@@ -87,7 +87,7 @@ void AskNewPasswordDialog::ok()
             this->ui->txtOldPassword->isHidden() ? QString() : this->ui->txtOldPassword->text()
          )
       )
-         QMessageBox::information(this, "Error", "The old password doesn't match");
+         QMessageBox::information(this, tr("Error"), tr("The old password doesn't match"));
       else
       {
          SETTINGS.set("core_password", this->coreConnection->getConnectionInfo().password.toStr());

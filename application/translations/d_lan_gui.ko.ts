@@ -120,6 +120,49 @@
     </message>
 </context>
 <context>
+    <name>GUI::AskNewPasswordDialog</name>
+    <message>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="59"/>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="64"/>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="69"/>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="74"/>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="79"/>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="90"/>
+        <source>Error</source>
+        <translation>오류</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="59"/>
+        <source>The passwords aren&apos;t the same</source>
+        <translation>비밀번호가 일치하지 않습니다</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="64"/>
+        <source>The password can&apos;t be empty</source>
+        <translation>비밀번호는 비워 둘 수 없습니다</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="69"/>
+        <source>The password can&apos;t contain any whitespace</source>
+        <translation>비밀번호에는 공백 문자를 사용할 수 없습니다</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="74"/>
+        <source>The old password is required</source>
+        <translation>이전 비밀번호를 입력해야 합니다</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="79"/>
+        <source>The old and new passwords are the same</source>
+        <translation>이전 비밀번호와 새 비밀번호가 같습니다</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="90"/>
+        <source>The old password doesn&apos;t match</source>
+        <translation>이전 비밀번호가 일치하지 않습니다</translation>
+    </message>
+</context>
+<context>
     <name>GUI::BrowseWidget</name>
     <message>
         <location filename="../GUI/Browse/BrowseWidget.cpp" line="146"/>
@@ -188,27 +231,27 @@
 <context>
     <name>GUI::D_LAN_GUI</name>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="211"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="207"/>
         <source>Show the user interface</source>
         <translation>사용자 인터페이스 표시</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="215"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="211"/>
         <source>Stop the user interface</source>
         <translation>사용자 인터페이스 닫기</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="218"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="214"/>
         <source>Exit</source>
         <translation>종료</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="249"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="245"/>
         <source>D-LAN user interface closed</source>
         <translation>D-LAN 사용자 인터페이스가 닫혔습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="250"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="246"/>
         <source>D-LAN Core is still running in background. Select &apos;exit&apos; from the contextual menu if you want to stop it.</source>
         <translation>D-LAN Core가 백그라운드에서 계속 실행 중입니다. 중지하려면 컨텍스트 메뉴에서 «종료»를 선택하세요.</translation>
     </message>
@@ -544,12 +587,12 @@
 <context>
     <name>GUI::MdiArea</name>
     <message>
-        <location filename="../GUI/MDI/MdiArea.cpp" line="368"/>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="375"/>
         <source>Waiting the initial scanning process is finished before loading the download queue</source>
         <translation>초기 스캔이 완료될 때까지 기다린 후 다운로드 대기열을 불러옵니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MDI/MdiArea.cpp" line="559"/>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="566"/>
         <source>Leave room</source>
         <translation>대화방 나가기</translation>
     </message>
@@ -741,32 +784,32 @@
 <context>
     <name>GUI::SearchWidget</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="383"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="385"/>
         <source>Open location</source>
         <translation>위치 열기</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="384"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="386"/>
         <source>Browse</source>
         <translation>탐색</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="464"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="466"/>
         <source>1 directory</source>
         <translation>폴더 1개</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="464"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="466"/>
         <source>%1 directories</source>
         <translation>폴더 %1개</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="465"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="467"/>
         <source>1 file</source>
         <translation>파일 1개</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="465"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="467"/>
         <source>%1 files</source>
         <translation>파일 %1개</translation>
     </message>
@@ -921,6 +964,11 @@
         <source>disconnected</source>
         <translation>연결 안 됨</translation>
     </message>
+    <message>
+        <location filename="../GUI/StatusBar.cpp" line="181"/>
+        <source>Core: %1</source>
+        <translation>코어: %1</translation>
+    </message>
 </context>
 <context>
     <name>GUI::TabCloseButton</name>
@@ -989,22 +1037,22 @@
         <translation>코어 서비스가 시작되었습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="106"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="108"/>
         <source>D-LAN already launched</source>
         <translation>D-LAN이 이미 실행 중입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="107"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="109"/>
         <source>An instance of D-LAN is already launched</source>
         <translation>D-LAN 인스턴스가 이미 실행 중입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="109"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="111"/>
         <source>Quit</source>
         <translation>종료</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="110"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="112"/>
         <source>Launch anyway</source>
         <translation>무시하고 실행</translation>
     </message>

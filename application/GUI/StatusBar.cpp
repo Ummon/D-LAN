@@ -139,7 +139,7 @@ void StatusBar::setTotalSharing(int nbPeer, qint64 amount)
 
 void StatusBar::updateCoreStatus(Protos::GUI::State_Stats_CacheStatus status, int progress)
 {
-   QString statusMess("Core: ");
+   QString statusMess;
 
    this->ui->butConnectToLocal->setVisible(this->coreConnection->isConnected() && !this->coreConnection->isLocal());
 
@@ -178,5 +178,5 @@ void StatusBar::updateCoreStatus(Protos::GUI::State_Stats_CacheStatus status, in
       this->ui->prgCurrentAction->setVisible(false);
    }
 
-   this->ui->lblCoreStatus->setText(statusMess);
+   this->ui->lblCoreStatus->setText(tr("Core: %1").arg(statusMess));
 }
