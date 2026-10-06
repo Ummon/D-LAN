@@ -197,6 +197,32 @@ private slots:
       QCOMPARE(f.model.rowCount(), 0);
       QVERIFY(layouts.isEmpty());
    }
+
+   void roomWithoutMemberDisplaysNobody()
+   {
+      Fixture f;
+      f.add("A", 300);
+      f.add("B", 200);
+      f.model.setRoom("test");
+
+      // The room isn't in the state yet, for example right after having joined it.
+      f.send();
+      QCOMPARE(f.model.rowCount(), 0);
+
+      f.state.add_rooms()->set_name("test");
+      f.send();
+      QCOMPARE(f.model.rowCount(), 0);
+
+      f.state.mutable_rooms(0)->add_peer_ids()->set_hash(f.ids[1].getData(), Common::Hash::HASH_SIZE);
+      f.send();
+      QCOMPARE(f.model.rowCount(), 1);
+      QCOMPARE(f.model.getPeerID(0), f.ids[1]);
+
+      // The last member has left.
+      f.state.mutable_rooms(0)->clear_peer_ids();
+      f.send();
+      QCOMPARE(f.model.rowCount(), 0);
+   }
 };
 
 int main(int argc, char** argv)

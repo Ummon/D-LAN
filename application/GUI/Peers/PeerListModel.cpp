@@ -342,7 +342,8 @@ void PeerListModel::coreDisconnected(bool forced)
 }
 
 /**
-  * @param peersToDisplay If empty then all peers are displayed.
+  * @param peersToDisplay Only used when a room is set, see 'setRoom(..)': the peers of this room. An empty set
+  *        then means nobody is displayed, it's the case when the room isn't known or has no member.
   */
 void PeerListModel::updatePeers(
    const google::protobuf::RepeatedPtrField<Protos::GUI::State::Peer>& peers,
@@ -361,7 +362,7 @@ void PeerListModel::updatePeers(
 
       // We ignore some peers depending 'peersToDisplay' and 'this->displayOnlyPeersWithStatusOK'.
       if (
-         (!peersToDisplay.isEmpty() && !peersToDisplay.contains(peerID)) ||
+         (!this->room.isEmpty() && !peersToDisplay.contains(peerID)) ||
          (this->displayOnlyPeersWithStatusOK && peers.Get(i).status() != Protos::GUI::State::Peer::OK)
       )
          continue;
