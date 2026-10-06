@@ -244,7 +244,9 @@ void SearchDock::saveSettings()
    SETTINGS.set("search_local", this->ui->chkOwnFiles->checkState() == Qt::Checked);
 
 #if HIDE_BUTTON
-   SETTINGS.set("search_advanced_visible", this->ui->advancedOptions->isVisible());
+   // 'isHidden()' and not 'isVisible()': this method is also called when the main window is being hidden or
+   // isn't shown yet, 'isVisible()' is then 'false' whatever the user has chosen.
+   SETTINGS.set("search_advanced_visible", !this->ui->advancedOptions->isHidden());
 #endif
 }
 
