@@ -24,7 +24,7 @@ using namespace GUI;
 #include <QMessageBox>
 #include <QIcon>
 #include <QPushButton>
-#ifdef Q_OS_LINUX
+#ifndef Q_OS_WIN
 #include <QDir>
 #include <QStandardPaths>
 #endif
@@ -37,7 +37,7 @@ using namespace GUI;
 
 #include <Log.h>
 
-#ifndef Q_OS_LINUX
+#ifdef Q_OS_WIN
 const QString D_LAN_GUI::SHARED_MEMORY_KEYNAME("D-LAN GUI instance");
 #endif
 
@@ -75,9 +75,12 @@ D_LAN_GUI::D_LAN_GUI(int& argc, char* argv[]) :
    this->loadLanguage(langs.getBestMatchLanguage(Common::Languages::ExeType::GUI, current).filename);
 
    // Keep the instance marker alive for the lifetime of the application.
+   // Windows frees a shared memory segment when its last process ends, even after a crash. On the other systems
+   // the segment would outlive a crashed GUI and make the next ones believe it's still running: a lock file is
+   // used instead.
    if (!SETTINGS.get<bool>("multiple_instance_allowed"))
    {
-#ifdef Q_OS_LINUX
+#ifndef Q_OS_WIN
       const QString runtimeDirectory = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
       bool alreadyRunning = false;
       if (runtimeDirectory.isEmpty())
@@ -96,7 +99,6 @@ D_LAN_GUI::D_LAN_GUI(int& argc, char* argv[]) :
          }
       }
 #else
-      this->sharedMemory.lock();
       this->sharedMemory.setKey(SHARED_MEMORY_KEYNAME);
       const bool alreadyRunning = !this->sharedMemory.create(1);
 #endif
@@ -111,17 +113,11 @@ D_LAN_GUI::D_LAN_GUI(int& argc, char* argv[]) :
          message.exec();
          if (message.clickedButton() == abortButton)
          {
-#ifndef Q_OS_LINUX
-            this->sharedMemory.unlock();
-#endif
             QSharedPointer<LM::ILogger> mainLogger = LM::Builder::newLogger("D-LAN GUI");
             mainLogger->log("User interface already launched, exiting . . .", LM::SV_END_USER);
             throw AbortException();
          }
       }
-#ifndef Q_OS_LINUX
-      this->sharedMemory.unlock();
-#endif
    }
 
    this->setQuitOnLastWindowClosed(false);

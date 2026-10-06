@@ -22,11 +22,11 @@
 #include <QTranslator>
 #include <QMenu>
 #include <QSystemTrayIcon>
-#ifdef Q_OS_LINUX
+#ifdef Q_OS_WIN
+#include <QSharedMemory>
+#else
 #include <QLockFile>
 #include <QScopedPointer>
-#else
-#include <QSharedMemory>
 #endif
 
 #include <MainWindow.h>
@@ -37,7 +37,7 @@ namespace GUI
 {
    class D_LAN_GUI : public QApplication
    {
-#ifndef Q_OS_LINUX
+#ifdef Q_OS_WIN
       static const QString SHARED_MEMORY_KEYNAME;
 #endif
 
@@ -70,10 +70,10 @@ namespace GUI
       void shutdown(bool stopTheCore = true);
       bool shuttingDown = false;
 
-#ifdef Q_OS_LINUX
-      QScopedPointer<QLockFile> instanceLock;
-#else
+#ifdef Q_OS_WIN
       QSharedMemory sharedMemory;
+#else
+      QScopedPointer<QLockFile> instanceLock;
 #endif
 
       MainWindow* mainWindow;
