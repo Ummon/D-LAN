@@ -453,6 +453,87 @@ private slots:
       QCOMPARE(disconnected[1][0].toBool(), false);
    }
 
+   void switchingCore_data()
+   {
+      QTest::addColumn<bool>("deferred");
+      QTest::addColumn<bool>("alreadyAsked");
+      QTest::newRow("previous-core-closed-at-once") << false << false;
+      QTest::newRow("previous-core-closed-later") << true << false;
+      QTest::newRow("previous-core-still-being-disconnected") << true << true;
+   }
+
+   /**
+     * Connecting to a core while being connected to another one: the listeners must be told that the previous core
+     * is disconnected before being told that the new one is connected.
+     */
+   void switchingCore()
+   {
+      QFETCH(bool, deferred);
+      QFETCH(bool, alreadyAsked);
+      RCC::CoreConnection core;
+      QStringList events;
+      connect(&core, &RCC::ICoreConnection::connected, this, [&] { events << "connected"; });
+      connect(&core, &RCC::ICoreConnection::disconnected, this, [&](bool asked) {
+         events << QString("disconnected, asked: %1, still connected: %2").arg(asked).arg(core.isConnected());
+      });
+
+      // Open a session on the temporary connection, the listener plays the role of the core.
+      QTcpSocket* coreSocket = nullptr;
+      const auto openSession = [&](QScopedPointer<TestPeer>& sessionPeer) {
+         QVERIFY(core.connectToCorePrepare("localhost"));
+         core.temp().socket->connectToHost(QHostAddress::LocalHost, this->server.serverPort());
+         QTRY_VERIFY(this->server.hasPendingConnections());
+         coreSocket = this->server.nextPendingConnection();
+         sessionPeer.reset(new TestPeer(coreSocket));
+         Protos::GUI::AuthenticationResult auth;
+         auth.set_status(Protos::GUI::AuthenticationResult::AUTH_OK);
+         sessionPeer->send(MessageHeader::GUI_AUTHENTICATION_RESULT, auth);
+      };
+
+      QScopedPointer<TestPeer> firstPeer;
+      openSession(firstPeer);
+      QTRY_COMPARE(events, QStringList({"connected"}));
+      QTcpSocket* const firstCoreSocket = coreSocket;
+      RCC::InternalCoreConnection& first = core.current();
+
+      if (deferred)
+      {
+         // The first core no longer reads: the data sent to it stay in the socket, which can't be closed at once.
+         firstPeer->stopListening();
+         firstCoreSocket->setReadBufferSize(1024);
+         for (int i = 0; i < 64; i++) // Separately: the system may accept a single block whatever its size.
+            first.socket->write(QByteArray(1024 * 1024, '\0'));
+         QTest::qWait(100);
+         QVERIFY(first.socket->bytesToWrite() > 0);
+      }
+
+      if (alreadyAsked)
+      {
+         core.disconnectFromCore();
+         QCOMPARE(first.socket->state(), QAbstractSocket::ClosingState);
+         QCOMPARE(events, QStringList({"connected"}));
+      }
+
+      QScopedPointer<TestPeer> secondPeer;
+      openSession(secondPeer);
+      const QStringList expected {"connected", "disconnected, asked: 1, still connected: 0", "connected"};
+      QTRY_COMPARE(events, expected);
+      QVERIFY(core.isConnected());
+      QVERIFY(&core.current() != &first);
+      QCOMPARE(first.socket->state(), deferred ? QAbstractSocket::ClosingState : QAbstractSocket::UnconnectedState);
+
+      // The end of the first session, whenever it comes, concerns nobody anymore.
+      firstCoreSocket->abort();
+      QTRY_COMPARE(first.socket->state(), QAbstractSocket::UnconnectedState);
+      QTest::qWait(50);
+      QCOMPARE(events, expected);
+      QVERIFY(core.isConnected());
+
+      core.disconnectFromCore();
+      QTRY_COMPARE(events.size(), 4);
+      QCOMPARE(events.last(), QString("disconnected, asked: 1, still connected: 0"));
+   }
+
    void plainPasswordDoesNotOutliveItsAttempt()
    {
       RCC::CoreConnection core;

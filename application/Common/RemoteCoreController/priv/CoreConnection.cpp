@@ -281,10 +281,14 @@ void CoreConnection::tempConnectingError(RCC::ICoreConnection::ConnectionErrorCo
 
 void CoreConnection::tempConnected()
 {
-   this->current().disconnectFromCore(); // May throw a 'disconnected()' signal.
-
+   // The disconnection of the previous core is announced here and not by its own signal: its socket is only closed
+   // once its pending data are sent, the signal would then come after 'connected()' or during a later attempt.
+   const bool disconnectionToAnnounce = this->current().isDisconnectionToCome();
    this->current().disconnect(this);
    this->temp().disconnect(this);
+   this->current().disconnectFromCore();
+   if (disconnectionToAnnounce)
+      emit disconnected(true);
 
    this->connectingInProgress = false;
 

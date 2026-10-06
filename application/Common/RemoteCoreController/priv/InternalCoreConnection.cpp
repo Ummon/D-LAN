@@ -198,6 +198,15 @@ bool InternalCoreConnection::isConnected() const
    return MessageSocket::isConnected() && this->authenticated;
 }
 
+/**
+  * If 'connected()' has been emitted and 'disconnected(..)' not yet. It's still the case once 'disconnectFromCore()'
+  * is called as long as the socket isn't closed, which waits for its pending data to be sent.
+  */
+bool InternalCoreConnection::isDisconnectionToCome() const
+{
+   return this->authenticated;
+}
+
 void InternalCoreConnection::disconnectFromCore()
 {
    this->cancelConnectionAttempt();

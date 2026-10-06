@@ -75,6 +75,7 @@ namespace RCC
 
       bool isLocal() const override;
       bool isConnected() const override;
+      bool isDisconnectionToCome() const;
 
       void disconnectFromCore();
 
