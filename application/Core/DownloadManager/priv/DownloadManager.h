@@ -99,7 +99,7 @@ namespace DM
       QList<QSharedPointer<IChunkDownloader>> getTheFirstUnfinishedChunks(int n) override;
       QList<QSharedPointer<IChunkDownloader>> getTheOldestUnfinishedChunks(int n) override;
 
-      int getDownloadRate() override;
+      quint64 getDownloadRate() override;
 
    private slots:
       void peerBecomesAvailable(PM::IPeer* peer);

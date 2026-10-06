@@ -112,7 +112,7 @@ class UploadManager : public UM::IUploadManager
 {
 public:
    QList<UM::IChunksUploader*> getChunksUploaders() const override { return {}; }
-   int getUploadRate() override { return 0; }
+   quint64 getUploadRate() override { return 0; }
 };
 
 class DownloadManager : public DM::IDownloadManager
@@ -128,7 +128,7 @@ public:
    void pauseDownloads(QList<quint64>, bool) override {}
    QList<QSharedPointer<DM::IChunkDownloader>> getTheFirstUnfinishedChunks(int) override { return {}; }
    QList<QSharedPointer<DM::IChunkDownloader>> getTheOldestUnfinishedChunks(int) override { return {}; }
-   int getDownloadRate() override { return 0; }
+   quint64 getDownloadRate() override { return 0; }
 };
 
 class ChatSystem : public CS::IChatSystem

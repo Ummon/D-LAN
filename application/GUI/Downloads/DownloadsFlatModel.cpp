@@ -396,8 +396,8 @@ void DownloadsFlatModel::updateProgress(const Protos::GUI::State& state)
    }
 
    // ETA computation.
-   const quint32 oldRate = this->dlRateValues[this->currentDlRateValueIndex];
-   const quint32 newRate = state.stats().download_rate();
+   const quint64 oldRate = this->dlRateValues[this->currentDlRateValueIndex];
+   const quint64 newRate = state.stats().download_rate();
    this->sumDlRateValues -= oldRate;
    this->sumDlRateValues += newRate;
 

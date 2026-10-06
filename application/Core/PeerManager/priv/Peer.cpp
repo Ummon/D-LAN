@@ -32,7 +32,7 @@ using namespace PM;
 #include <priv/GetHashesResult.h>
 #include <priv/GetChunksResult.h>
 
-const quint32 Peer::MAX_SPEED = std::numeric_limits<quint32>::max();
+const quint64 Peer::MAX_SPEED = std::numeric_limits<quint64>::max();
 
 Peer::Peer(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManager, Common::Hash ID, const QString& nick) :
    connectionPool(peerManager, fileManager, ID),
@@ -67,6 +67,9 @@ QString Peer::toStringLog() const
 {
    QMutexLocker locker(&this->mutex);
 
+   // 'MAX_SPEED', the speed when it's unknown, doesn't fit in the signed type of a size.
+   const qint64 speed = static_cast<qint64>(qMin<quint64>(this->getSpeedUnlocked(), std::numeric_limits<qint64>::max()));
+
    return
       QString("%1 %2 %3:%4 %5 %6/s")
          .arg(
@@ -76,7 +79,7 @@ QString Peer::toStringLog() const
          )
          .arg(this->port)
          .arg(this->alive ? "<alive>" : "<dead>")
-         .arg(Common::Global::formatByteSize(this->getSpeedUnlocked(), 4));
+         .arg(Common::Global::formatByteSize(speed, 4));
 }
 
 /**
@@ -117,25 +120,25 @@ quint64 Peer::getSharingAmount() const
    return this->sharingAmount;
 }
 
-quint32 Peer::getDownloadRate() const
+quint64 Peer::getDownloadRate() const
 {
    QMutexLocker locker(&this->mutex);
    return this->downloadRate;
 }
 
-quint32 Peer::getUploadRate() const
+quint64 Peer::getUploadRate() const
 {
    QMutexLocker locker(&this->mutex);
    return this->uploadRate;
 }
 
-quint32 Peer::getSpeed()
+quint64 Peer::getSpeed()
 {
    QMutexLocker locker(&this->mutex);
    return this->getSpeedUnlocked();
 }
 
-quint32 Peer::getSpeedUnlocked() const
+quint64 Peer::getSpeedUnlocked() const
 {
    static const quint32 lanSpeed = SETTINGS.get<quint32>("lan_speed");
 
@@ -151,17 +154,17 @@ quint32 Peer::getSpeedUnlocked() const
    return this->speed;
 }
 
-void Peer::setSpeed(quint32 newSpeed)
+void Peer::setSpeed(quint64 newSpeed)
 {
    QMutexLocker locker(&this->mutex);
 
    // Expire the previous measurement before restarting its validity timer.
-   const quint32 previousSpeed = this->getSpeedUnlocked();
+   const quint64 previousSpeed = this->getSpeedUnlocked();
    this->speedTimer.start();
    if (previousSpeed == MAX_SPEED)
       this->speed = newSpeed;
    else
-      this->speed = static_cast<quint32>((quint64(previousSpeed) + newSpeed) / 2);
+      this->speed = previousSpeed / 2 + newSpeed / 2 + (previousSpeed & newSpeed & 1); // The sum may not fit in 64 bits.
 }
 
 void Peer::block(int duration, const QString& reason)
@@ -202,8 +205,8 @@ void Peer::update(
    const QString& nick,
    const quint64& sharingAmount,
    const QString& coreVersion,
-   quint32 downloadRate,
-   quint32 uploadRate,
+   quint64 downloadRate,
+   quint64 uploadRate,
    quint32 protocolVersion
 )
 {

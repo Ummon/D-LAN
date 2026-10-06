@@ -72,7 +72,7 @@ private slots:
       QVERIFY(layouts.isEmpty() && aboutLayouts.isEmpty() && moves.isEmpty() && inserts.isEmpty() && removes.isEmpty());
       QCOMPARE(selected.row(), 1);
       const auto transfer = f.model.index(1, 0).data().value<GUI::PeerListModel::TransferInformation>();
-      QCOMPARE(transfer.downloadRate, quint32(1000));
+      QCOMPARE(transfer.downloadRate, quint64(1000));
       QVERIFY(transfer.isDownloadingOurData);
       QVERIFY(f.model.index(2, 1).data(Qt::ToolTipRole).toString().contains("2.0"));
       QCOMPARE(f.model.index(4, 1).data(Qt::ForegroundRole).value<QColor>(), GUI::PeerListModel::COLOR_PEER_ERROR);

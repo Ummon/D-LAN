@@ -71,7 +71,7 @@ QList<IChunksUploader*> UploadManager::getChunksUploaders() const
    return uploaders;
 }
 
-int UploadManager::getUploadRate()
+quint64 UploadManager::getUploadRate()
 {
    return this->transferRateCalculator.getTransferRate();
 }

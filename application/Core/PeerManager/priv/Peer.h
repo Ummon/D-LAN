@@ -45,7 +45,7 @@ namespace PM
    class Peer : public QObject, public IPeer, Common::Uncopyable
    {
       Q_OBJECT
-      static const quint32 MAX_SPEED;
+      static const quint64 MAX_SPEED;
 
    public:
       Peer(
@@ -64,11 +64,11 @@ namespace PM
       virtual QString getNick() const override;
       virtual QString getCoreVersion() const override;
       virtual quint64 getSharingAmount() const override;
-      virtual quint32 getDownloadRate() const override;
-      virtual quint32 getUploadRate() const override;
+      virtual quint64 getDownloadRate() const override;
+      virtual quint64 getUploadRate() const override;
 
-      virtual quint32 getSpeed() override;
-      virtual void setSpeed(quint32 newSpeed) override;
+      virtual quint64 getSpeed() override;
+      virtual void setSpeed(quint64 newSpeed) override;
 
       virtual void block(int duration, const QString& reason = QString()) override;
 
@@ -81,8 +81,8 @@ namespace PM
          const QString& nick,
          const quint64& sharingAmount,
          const QString& coreVersion,
-         quint32 downloadRate,
-         quint32 uploadRate,
+         quint64 downloadRate,
+         quint64 uploadRate,
          quint32 protocolVersion
       );
       void setAsDead();
@@ -110,7 +110,7 @@ namespace PM
         * Both must be called with 'mutex' held.
         */
       bool isVersionCompatible() const { return this->protocolVersion == Common::Constants::PROTOCOL_VERSION; }
-      quint32 getSpeedUnlocked() const;
+      quint64 getSpeedUnlocked() const;
 
       /**
         * A peer is updated from the main thread ('update(..)', 'consideredDead()', ...) but it is also read and
@@ -134,11 +134,11 @@ namespace PM
       QString nick;
       QString coreVersion;
       quint64 sharingAmount;
-      quint32 downloadRate;
-      quint32 uploadRate;
+      quint64 downloadRate;
+      quint64 uploadRate;
 
       QElapsedTimer speedTimer;
-      mutable quint32 speed; // [bytes/s]. Reset to 'MAX_SPEED' by 'getSpeedUnlocked()' when outdated.
+      mutable quint64 speed; // [bytes/s]. Reset to 'MAX_SPEED' by 'getSpeedUnlocked()' when outdated.
 
       bool alive;
       QTimer aliveTimer; // Main thread only.

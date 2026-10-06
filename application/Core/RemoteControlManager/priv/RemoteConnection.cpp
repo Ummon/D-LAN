@@ -225,8 +225,8 @@ void RemoteConnection::refresh()
    if (!this->isAuthorized() || !this->isListening())
       return;
 
-   const int downloadRate = this->downloadManager->getDownloadRate();
-   const int uploadRate = this->uploadManager->getUploadRate();
+   const quint64 downloadRate = this->downloadManager->getDownloadRate();
+   const quint64 uploadRate = this->uploadManager->getUploadRate();
 
    Protos::GUI::State state;
 

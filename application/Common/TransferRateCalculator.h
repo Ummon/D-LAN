@@ -35,12 +35,12 @@ namespace Common
    public:
       TransferRateCalculator();
 
-      void addData(int bytes);
-      int getTransferRate();
+      void addData(qint64 bytes);
+      quint64 getTransferRate();
 
    private:
       void reset();
-      void update(int value);
+      void update(quint64 value);
 
       mutable QRecursiveMutex mutex;
       QElapsedTimer timer;

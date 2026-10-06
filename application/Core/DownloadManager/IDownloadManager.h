@@ -104,6 +104,6 @@ namespace DM
       /**
         * @return Byte/s.
         */
-      virtual int getDownloadRate() = 0;
+      virtual quint64 getDownloadRate() = 0;
    };
 }

@@ -253,8 +253,8 @@ void ChunkDownloader::run()
                PM::IPeer* peer = this->getTheFastestFreePeer(false);
                if (peer && peer != this->currentDownloadingPeer)
                {
-                  const double currentSpeed = qMax<quint32>(1, this->currentDownloadingPeer->getSpeed()); // [B/s].
-                  const double otherSpeed = qMax<quint32>(1, peer->getSpeed()); // [B/s].
+                  const double currentSpeed = qMax<quint64>(1, this->currentDownloadingPeer->getSpeed()); // [B/s].
+                  const double otherSpeed = qMax<quint64>(1, peer->getSpeed()); // [B/s].
 
                   // Estimated time saved by switching for the remaining bytes of the chunk. Not worth it when the chunk is almost finished.
                   const double timeSaved = 1000.0 * bytesToRead * (1.0 / currentSpeed - 1.0 / otherSpeed); // [ms].

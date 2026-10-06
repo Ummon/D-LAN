@@ -266,7 +266,7 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed, bool deferPers
       L_DEBU("Hashing speed: ?? MB/s (delta too small)");
    else
    {
-      const int speed = 1000LL * bytesReadTotal / delta;
+      const qint64 speed = 1000LL * bytesReadTotal / delta;
       L_DEBU(QString("Hashing speed: %1/s").arg(Common::Global::formatByteSize(speed)));
    }
 #endif

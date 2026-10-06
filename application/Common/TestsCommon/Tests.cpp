@@ -1959,25 +1959,25 @@ void Tests::mapArray()
 void Tests::transferRateCalculator()
 {
    TransferRateCalculator t;
-   QCOMPARE(t.getTransferRate(), 0);
+   QCOMPARE(t.getTransferRate(), quint64(0));
 
    // Each iteration sleeps at least 'i' ms then adds 'i' bytes: about 1000 B/s.
    // The rate counts the values added during the last 3 s, but the first of them was paid for by
    // a sleep that started before the window. So the window can hold up to 3000 bytes plus that
    // first value (< 600 bytes), whatever the sleeps overrun.
-   const int MAX_RATE = (3000 + 600) / 3;
+   const quint64 MAX_RATE = (3000 + 600) / 3;
    // The sleeps can overrun (15.6 ms timer on Windows) and only lower the rate.
-   const int MIN_PEAK_RATE = 500;
+   const quint64 MIN_PEAK_RATE = 500;
 
    const int N = 700;
-   int peakRate = 0;
+   quint64 peakRate = 0;
    for (int i = 1; i < N; i += 10)
    {
       QTest::qSleep(i);
       if (i < 600)
          t.addData(i);
 
-      const int rate = t.getTransferRate();
+      const quint64 rate = t.getTransferRate();
       qDebug() << "Transfer rate: " << rate;
 
       QVERIFY2(rate <= MAX_RATE, qPrintable(QString("Rate too high: %1 B/s").arg(rate)));
@@ -1987,7 +1987,7 @@ void Tests::transferRateCalculator()
    QVERIFY2(peakRate >= MIN_PEAK_RATE, qPrintable(QString("Peak rate too low: %1 B/s").arg(peakRate)));
 
    // No data added during the last 10 iterations (more than 3 s): nothing is left in the window.
-   QCOMPARE(t.getTransferRate(), 0);
+   QCOMPARE(t.getTransferRate(), quint64(0));
 }
 
 void Tests::writePersistentData()

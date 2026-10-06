@@ -24,8 +24,8 @@ public:
       const QString& nick,
       const quint64& sharingAmount,
       const QString& coreVersion,
-      quint32 downloadRate,
-      quint32 uploadRate,
+      quint64 downloadRate,
+      quint64 uploadRate,
       quint32 protocolVersion
    );
    void removePeer(const Common::Hash& ID, const QHostAddress& IP);

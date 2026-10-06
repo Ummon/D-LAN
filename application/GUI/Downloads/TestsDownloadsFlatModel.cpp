@@ -49,7 +49,7 @@ namespace
          entry->set_size(10000);
       }
 
-      quint64 update(quint32 rate)
+      quint64 update(quint64 rate)
       {
          this->state.mutable_stats()->set_download_rate(rate);
          this->model.updateProgress(this->state);

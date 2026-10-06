@@ -27,8 +27,8 @@ message IMAlive {
    string nick = 3;
 
    uint64 amount = 4; // [byte] Amount of sharing.
-   uint32 download_rate = 7; // [byte/s]
-   uint32 upload_rate = 8; // [byte/s]
+   uint64 download_rate = 7; // [byte/s]
+   uint64 upload_rate = 8; // [byte/s]
 
    uint64 tag = 5; // A random number, all responds ('ChunkOwned' message) must repeat this number.
    repeated Common.Hash chunks = 6; // The chunks the core wants to download. May be empty.

@@ -145,7 +145,7 @@ namespace
       /**
         * A size per second, 0 by default.
         */
-      quint32 rate(const QString& key) const
+      quint64 rate(const QString& key) const
       {
          QJsonValue value = this->object.value(key);
          if (value.isUndefined())
@@ -154,10 +154,7 @@ namespace
          if (value.isString() && value.toString().trimmed().endsWith("/s"))
             value = value.toString().trimmed().chopped(2);
 
-         const quint64 rate = parseSize(value, this->location(key));
-         if (rate > std::numeric_limits<quint32>::max())
-            throw QString("'%1' is too high, the maximum is %2/s").arg(this->location(key), Common::Global::formatByteSize(std::numeric_limits<quint32>::max()));
-         return static_cast<quint32>(rate);
+         return parseSize(value, this->location(key));
       }
 
       /**

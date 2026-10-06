@@ -74,8 +74,8 @@ namespace GUI
         */
       struct TransferInformation
       {
-         quint32 downloadRate;
-         quint32 uploadRate;
+         quint64 downloadRate;
+         quint64 uploadRate;
          bool isDownloadingOurData;
 
          bool operator==(const TransferInformation& ti) const

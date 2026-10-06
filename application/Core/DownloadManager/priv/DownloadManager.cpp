@@ -368,7 +368,7 @@ QList<QSharedPointer<IChunkDownloader>> DownloadManager::getTheOldestUnfinishedC
    return this->downloadQueue.getTheOldestUnfinishedChunks(n);
 }
 
-int DownloadManager::getDownloadRate()
+quint64 DownloadManager::getDownloadRate()
 {
    return this->transferRateCalculator.getTransferRate();
 }

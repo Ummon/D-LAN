@@ -85,7 +85,7 @@ namespace GUI
       int nbOfDlRateValues;
       int nbOfNonZeroDlRateValues;
       quint64 sumDlRateValues;
-      quint32 dlRateValues[NB_OF_DL_RATE_VALUES]{};
+      quint64 dlRateValues[NB_OF_DL_RATE_VALUES]{};
       quint32 currentDlRateValueIndex;
 
       QList<Protos::GUI::State::Download> downloads;

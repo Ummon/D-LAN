@@ -45,7 +45,7 @@ namespace UM
 
       QList<IChunksUploader*> getChunksUploaders() const override;
 
-      int getUploadRate() override;
+      quint64 getUploadRate() override;
 
    private:
       void getChunks(

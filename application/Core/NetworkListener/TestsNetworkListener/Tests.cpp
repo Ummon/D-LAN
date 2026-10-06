@@ -81,7 +81,7 @@ namespace
       void removeAllCompleteDownloads() override {}
       void removeDownloads(QList<quint64>) override {}
       void pauseDownloads(QList<quint64>, bool) override {}
-      int getDownloadRate() override { return 0; }
+      quint64 getDownloadRate() override { return 0; }
       QList<QSharedPointer<DM::IChunkDownloader>> getTheFirstUnfinishedChunks(int n) override
       {
          QList<QSharedPointer<DM::IChunkDownloader>> chunks;
@@ -963,8 +963,8 @@ void Tests::unavailableMulticastPeer()
    const QString nick = peer->getNick();
    const QString coreVersion = peer->getCoreVersion();
    const quint64 amount = peer->getSharingAmount();
-   const quint32 downloadRate = peer->getDownloadRate();
-   const quint32 uploadRate = peer->getUploadRate();
+   const quint64 downloadRate = peer->getDownloadRate();
+   const quint64 uploadRate = peer->getUploadRate();
    const quint32 version = peer->getProtocolVersion();
    const auto restore = qScopeGuard([&]() {
       manager->updatePeer(peer->getID(), address, port, nick, amount, coreVersion, downloadRate, uploadRate, version);

@@ -249,7 +249,7 @@ private slots:
       QCOMPARE(socket->writes, 1);
       QVERIFY(socket->waits.isEmpty());
       QCOMPARE(upload.getChunks().first().getOffset(), 0);
-      QCOMPARE(rate.getTransferRate(), 0);
+      QCOMPARE(rate.getTransferRate(), quint64(0));
       QVERIFY(socket->closed);
    }
 

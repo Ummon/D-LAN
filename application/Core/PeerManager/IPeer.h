@@ -62,23 +62,23 @@ namespace PM
 
       virtual quint64 getSharingAmount() const = 0;
 
-      virtual quint32 getDownloadRate() const = 0;
+      virtual quint64 getDownloadRate() const = 0;
 
-      virtual quint32 getUploadRate() const = 0;
+      virtual quint64 getUploadRate() const = 0;
 
       /**
         * Return the average speed when downloading from this peer.
         * [bytes/s].
-        * The default speed is 2^32-1.
+        * The default speed is 2^64-1.
         */
-      virtual quint32 getSpeed() = 0;
+      virtual quint64 getSpeed() = 0;
 
       /**
         * When we download a file from a peer we can set its current speed with this method.
         * If this method isn't called for some time, the speed will be reset to its default value.
         * See 'DownloadRateValidTime' from this wiki page: http://dev.d-lan.net/projects/pmp/wiki/Protocol_core-core#Parameters to show the computation.
         */
-      virtual void setSpeed(quint32 newSpeed) = 0;
+      virtual void setSpeed(quint64 newSpeed) = 0;
 
       /**
         * Block a peer for a given duration [ms].

@@ -52,8 +52,8 @@ message State {
       }
       CacheStatus cache_status = 1;
       uint32 progress = 2; // 0 to 10000.
-      uint32 download_rate = 3; // [byte/s].
-      uint32 upload_rate = 4; // [byte/s].
+      uint64 download_rate = 3; // [byte/s].
+      uint64 upload_rate = 4; // [byte/s].
    }
    message Peer {
       enum PeerStatus {
@@ -64,8 +64,8 @@ message State {
       Common.Hash peer_id = 1;
       string nick = 2;
       uint64 sharing_amount = 3; // [byte].
-      uint32 download_rate = 6; // [byte/s].
-      uint32 upload_rate = 7; // [byte/s]
+      uint64 download_rate = 6; // [byte/s].
+      uint64 upload_rate = 7; // [byte/s]
       Common.IP ip = 4;
       string core_version = 5;
       PeerStatus status = 8;

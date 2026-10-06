@@ -466,28 +466,33 @@ void Tests::peerBlockDeadline()
 
 void Tests::averagePeerSpeed_data()
 {
-   QTest::addColumn<quint32>("first");
-   QTest::addColumn<quint32>("second");
-   QTest::addColumn<quint32>("expected");
-   QTest::newRow("ordinary") << quint32(100) << quint32(200) << quint32(150);
-   QTest::newRow("round-down") << quint32(0) << quint32(3) << quint32(1);
+   QTest::addColumn<quint64>("first");
+   QTest::addColumn<quint64>("second");
+   QTest::addColumn<quint64>("expected");
+   QTest::newRow("ordinary") << quint64(100) << quint64(200) << quint64(150);
+   QTest::newRow("round-down") << quint64(0) << quint64(3) << quint64(1);
+   QTest::newRow("both-odd") << quint64(3) << quint64(5) << quint64(4);
    QTest::newRow("three-gigabytes-per-second")
-      << quint32(3000000000u) << quint32(3000000000u) << quint32(3000000000u);
+      << quint64(3000000000u) << quint64(3000000000u) << quint64(3000000000u);
    QTest::newRow("sum-at-32-bit-boundary")
-      << quint32(2147483647u) << quint32(2147483649u) << quint32(2147483648u);
-   // UINT32_MAX is reserved for an unknown speed; exercise the largest measured value.
+      << quint64(2147483647u) << quint64(2147483649u) << quint64(2147483648u);
+   QTest::newRow("beyond-32-bits")
+      << quint64(5000000000u) << quint64(7000000001u) << quint64(6000000000u);
+   // UINT64_MAX is reserved for an unknown speed; exercise the largest measured value, whose sum doesn't fit in 64 bits.
    QTest::newRow("maximum-measured-speed")
-      << quint32(4294967294u) << quint32(4294967294u) << quint32(4294967294u);
+      << quint64(18446744073709551614u) << quint64(18446744073709551614u) << quint64(18446744073709551614u);
+   QTest::newRow("sum-beyond-64-bits")
+      << quint64(18446744073709551614u) << quint64(18446744073709551613u) << quint64(18446744073709551613u);
 }
 
 void Tests::averagePeerSpeed()
 {
-   QFETCH(quint32, first);
-   QFETCH(quint32, second);
-   QFETCH(quint32, expected);
+   QFETCH(quint64, first);
+   QFETCH(quint64, second);
+   QFETCH(quint64, expected);
    PM::Peer peer(static_cast<PM::PeerManager*>(this->peerManagers[0].data()),
       this->fileManagers[0], this->peerIDs[1]);
-   QCOMPARE(peer.getSpeed(), quint32(0xffffffffu));
+   QCOMPARE(peer.getSpeed(), std::numeric_limits<quint64>::max());
    peer.setSpeed(first);
    QCOMPARE(peer.getSpeed(), first);
    peer.setSpeed(second);
@@ -505,11 +510,11 @@ void Tests::expiredPeerSpeedIsReplaced()
    // Test settings give measurements a one-second lifetime. Do not call the
    // tested peer's getter before the next sample: that used to mask the bug.
    QTest::qWait(1100);
-   QCOMPARE(reference.getSpeed(), quint32(0xffffffffu));
+   QCOMPARE(reference.getSpeed(), std::numeric_limits<quint64>::max());
    peer.setSpeed(300);
-   QCOMPARE(peer.getSpeed(), quint32(300));
+   QCOMPARE(peer.getSpeed(), quint64(300));
    peer.setSpeed(500);
-   QCOMPARE(peer.getSpeed(), quint32(400)); // Fresh measurements still average.
+   QCOMPARE(peer.getSpeed(), quint64(400)); // Fresh measurements still average.
 }
 
 void Tests::destroyManagerWithPendingConnections()

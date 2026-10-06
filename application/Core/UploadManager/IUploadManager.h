@@ -38,6 +38,6 @@ namespace UM
       /**
         * @return Byte/s.
         */
-      virtual int getUploadRate() = 0;
+      virtual quint64 getUploadRate() = 0;
    };
 }

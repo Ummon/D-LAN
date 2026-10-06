@@ -20,7 +20,6 @@
 using namespace Common;
 
 #include <cstring>
-#include <limits>
 
 #include <QMutexLocker>
 
@@ -39,29 +38,24 @@ TransferRateCalculator::TransferRateCalculator()
    this->reset();
 }
 
-void TransferRateCalculator::addData(int bytes)
+void TransferRateCalculator::addData(qint64 bytes)
 {
    QMutexLocker locker(&this->mutex);
 
    if (bytes > 0)
-      this->update(bytes);
+      this->update(static_cast<quint64>(bytes));
 }
 
 /**
   * @return Rate in [B/s].
   */
-int TransferRateCalculator::getTransferRate()
+quint64 TransferRateCalculator::getTransferRate()
 {
    QMutexLocker locker(&this->mutex);
 
    this->update(0);
 
-   const quint64 rate = this->total / PERIOD_S;
-
-   // The returned type is signed and 32 bits, the rate is saturated instead of being wrapped.
-   return rate > static_cast<quint64>(std::numeric_limits<int>::max()) ?
-      std::numeric_limits<int>::max() :
-      static_cast<int>(rate);
+   return this->total / PERIOD_S;
 }
 
 void TransferRateCalculator::reset()
@@ -76,7 +70,7 @@ void TransferRateCalculator::reset()
    this->timer.start();
 }
 
-void TransferRateCalculator::update(int value)
+void TransferRateCalculator::update(quint64 value)
 {
    const qint64 t2 = this->timer.nsecsElapsed();
    if (t2 - this->t1 > PERIOD)

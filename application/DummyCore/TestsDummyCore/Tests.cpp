@@ -120,14 +120,14 @@ private slots:
       QVERIFY(!this->state.getSelfID().isNull());
       QCOMPARE(hash(state.peers(0).peer_id()), this->state.getSelfID());
       QCOMPARE(state.peers(0).sharing_amount(), quint64(5)); // The size of its shared folders.
-      QCOMPARE(state.peers(0).download_rate(), quint32(1572864));
-      QCOMPARE(state.peers(0).upload_rate(), quint32(2048));
+      QCOMPARE(state.peers(0).download_rate(), quint64(1572864));
+      QCOMPARE(state.peers(0).upload_rate(), quint64(2048));
       QCOMPARE(str(state.peers(0).core_version()), Common::Global::getVersionFull());
 
       QCOMPARE(str(state.peers(1).nick()), QString("Bob"));
       QCOMPARE(state.peers(1).sharing_amount(), quint64(2147483648));
-      QCOMPARE(state.peers(1).download_rate(), quint32(10));
-      QCOMPARE(state.peers(1).upload_rate(), quint32(0));
+      QCOMPARE(state.peers(1).download_rate(), quint64(10));
+      QCOMPARE(state.peers(1).upload_rate(), quint64(0));
       QCOMPARE(str(state.peers(1).core_version()), QString("1.2.3"));
       QCOMPARE(state.peers(1).status(), Protos::GUI::State::Peer::OK);
 
@@ -137,8 +137,8 @@ private slots:
 
       // The status bar.
       QCOMPARE(state.stats().cache_status(), Protos::GUI::State::Stats::UP_TO_DATE);
-      QCOMPARE(state.stats().download_rate(), quint32(1572864));
-      QCOMPARE(state.stats().upload_rate(), quint32(2048));
+      QCOMPARE(state.stats().download_rate(), quint64(1572864));
+      QCOMPARE(state.stats().upload_rate(), quint64(2048));
 
       // The same file always gives the same IDs.
       State other;
@@ -217,6 +217,19 @@ private slots:
       QCOMPARE(state.getState().peers(0).sharing_amount(), size);
    }
 
+   /**
+     * A rate isn't limited to 32 bits.
+     */
+   void rateBeyond4GiBPerSecond()
+   {
+      State state;
+      QCOMPARE(state.loadFromJson(R"({ "peers": [ { "name": "a", "self": true, "download_rate": "5 GiB/s", "upload_rate": 6000000000 } ] })"), QString());
+      QCOMPARE(state.getState().peers(0).download_rate(), quint64(5368709120));
+      QCOMPARE(state.getState().peers(0).upload_rate(), quint64(6000000000));
+      QCOMPARE(state.getState().stats().download_rate(), quint64(5368709120));
+      QCOMPARE(state.getState().stats().upload_rate(), quint64(6000000000));
+   }
+
    void errors_data()
    {
       QTest::addColumn<QByteArray>("json");
@@ -237,7 +250,7 @@ private slots:
       QTest::newRow("unknown-top-key") << with(R"("chat": [])") << "Unknown key 'chat'";
       QTest::newRow("unknown-unit") << peer(R"("sharing": "1.5 GB")") << "'peers[0].sharing' must be a number of bytes";
       QTest::newRow("negative-size") << peer(R"("sharing": -1)") << "'peers[0].sharing' must be a number of bytes";
-      QTest::newRow("rate-too-high") << peer(R"("download_rate": "5 GiB/s")") << "'peers[0].download_rate' is too high";
+      QTest::newRow("negative-rate") << peer(R"("download_rate": "-1 KiB/s")") << "'peers[0].download_rate' must be a number of bytes";
       QTest::newRow("self-not-a-boolean") << QByteArray(R"({ "peers": [ { "name": "a", "self": 1 } ] })") << "'peers[0].self' must be true or false";
       QTest::newRow("slash-in-name") << peer(R"("shared": [ { "name": "S", "children": [ { "name": "a/b" } ] } ])") << "'peers[0].shared[0].children[0].name' can't contain a '/'";
       QTest::newRow("same-names") << peer(R"("shared": [ { "name": "S", "children": [ { "name": "f" }, { "name": "F", "children": [] } ] } ])") << "'peers[0].shared[0].children[1].name': there is already an entry named 'F'";
