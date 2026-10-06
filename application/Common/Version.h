@@ -22,5 +22,5 @@
 #define VERSION_TAG ""
 
 // These two values are automatically updated during the release building process. See the script 'Application/Tools/update_version.sh'
-#define BUILD_TIME "2026-10-05_08-56"
-#define GIT_VERSION "a31bbd806074700c43326034dab922a6e2cd5e34"
+#define BUILD_TIME "2026-10-06_11-44"
+#define GIT_VERSION "1d766b42fa356f646114c98d511a3a176a333909"
