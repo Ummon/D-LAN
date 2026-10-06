@@ -75,6 +75,7 @@ namespace PM
       ~PeerMessageSocket();
 
       void setReadBufferSize(qint64 size) override;
+      void setSocketOption(QAbstractSocket::SocketOption option, const QVariant& value) override;
 
       qint64 bytesAvailable() const override;
       qint64 read(char* data, qint64 maxSize) override;

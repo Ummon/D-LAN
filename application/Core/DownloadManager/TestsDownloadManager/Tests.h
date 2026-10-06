@@ -84,6 +84,7 @@ private slots:
    void resetPreservesDestination();
    void chunkErrorTakesPrecedence_data();
    void chunkErrorTakesPrecedence();
+   void streamSocketGetsReceiveBufferSize();
    void downloadingStatusEndsWithTransfer();
    void ownedFileIsCompleteOnceItsHashesAreKnown();
    void ownedFileIsFoundWithoutDestination_data();

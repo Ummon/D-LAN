@@ -19,9 +19,10 @@ message Settings {
 
    repeated Common.SharedEntry shared_entries = 103;
 
-   uint32 buffer_size_reading = 4; // [default = 131072] (128 KiB). Buffer used when reading files (uploading and computing hashes).
+   uint32 buffer_size_reading = 4; // [default = 1048576] (1 MiB). Buffer used when reading files (uploading and computing hashes).
    uint32 buffer_size_writing = 5; // [default = 524288] (512 KiB). Buffer used when writing files (downloading).
    uint32 socket_buffer_size = 6; // [default = 131072] (128 KiB). Max size of the socket buffer, using when receiving or sending data over the sockets.
+   uint32 tcp_receive_buffer_size = 8; // [default = 2097152 on Windows (2 MiB), 0 on the other systems]. Size of the system receive buffer (SO_RCVBUF) of a socket downloading a chunk. 0: the size is left to the system.
    uint32 socket_timeout = 7; // [default = 7000] [ms].
 
    ///// FileManager /////

@@ -1779,6 +1779,31 @@ void Tests::rejectExcessUploads()
    }
 }
 
+/**
+  * An option set through 'PM::ISocket' reaches the system socket, even once connected: it's how a chunk downloader
+  * enlarges its receive buffer, see the setting 'tcp_receive_buffer_size'.
+  */
+void Tests::socketOptionIsApplied()
+{
+   QTcpServer server;
+   QVERIFY(server.listen(QHostAddress::LocalHost, 0));
+   QTcpSocket client;
+   client.connectToHost(QHostAddress::LocalHost, server.serverPort());
+   QTRY_COMPARE(client.state(), QAbstractSocket::ConnectedState);
+   QTRY_VERIFY(server.hasPendingConnections());
+   auto* accepted = server.nextPendingConnection();
+   accepted->setParent(nullptr);
+   auto* manager = static_cast<PM::PeerManager*>(this->peerManagers[1].data());
+   const QSharedPointer<PM::ISocket> socket = QSharedPointer<PM::PeerMessageSocket>(
+      new PM::PeerMessageSocket(manager, this->fileManagers[1], this->peerIDs[0], accepted));
+
+   // The system may give more than asked (Linux doubles it) but never less.
+   const int before = accepted->socketOption(QAbstractSocket::ReceiveBufferSizeSocketOption).toInt();
+   QVERIFY(before > 0);
+   socket->setSocketOption(QAbstractSocket::ReceiveBufferSizeSocketOption, 2 * before);
+   QVERIFY(accepted->socketOption(QAbstractSocket::ReceiveBufferSizeSocketOption).toInt() >= 2 * before);
+}
+
 void Tests::socketShowsRemotePeerActivity()
 {
    // Downloading: from the chunks result until the transfer has finished.

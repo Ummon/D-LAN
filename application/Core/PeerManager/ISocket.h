@@ -20,6 +20,8 @@
 
 #include <QtGlobal>
 #include <QByteArray>
+#include <QAbstractSocket>
+#include <QVariant>
 
 #include <Protos/core_protocol.pb.h>
 
@@ -34,6 +36,11 @@ namespace PM
       virtual ~ISocket() {}
 
       virtual void setReadBufferSize(qint64 size) = 0;
+
+      /**
+        * Sets an option of the system socket, see 'QAbstractSocket::setSocketOption(..)'.
+        */
+      virtual void setSocketOption(QAbstractSocket::SocketOption option, const QVariant& value) = 0;
 
       virtual qint64 bytesAvailable() const = 0;
       virtual qint64 read(char* data, qint64 maxSize) = 0;

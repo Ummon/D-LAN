@@ -129,6 +129,11 @@ void PeerMessageSocket::setReadBufferSize(qint64 size)
    this->socket->setReadBufferSize(size);
 }
 
+void PeerMessageSocket::setSocketOption(QAbstractSocket::SocketOption option, const QVariant& value)
+{
+   this->socket->setSocketOption(option, value);
+}
+
 qint64 PeerMessageSocket::bytesAvailable() const
 {
    return this->socket->bytesAvailable();

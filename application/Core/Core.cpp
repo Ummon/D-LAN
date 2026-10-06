@@ -184,9 +184,16 @@ void Core::setLanguage(QLocale locale, bool load)
 Protos::Core::Settings* Core::createDefaultValuesSettings()
 {
    auto settings = new Protos::Core::Settings();
-   settings->set_buffer_size_reading(131072);
+   settings->set_buffer_size_reading(1048576);
    settings->set_buffer_size_writing(524288);
    settings->set_socket_buffer_size(131072);
+#ifdef Q_OS_WIN32
+   // Windows gives 64 KiB to a socket: the sender stalls each time the downloading thread is busy hashing or writing.
+   settings->set_tcp_receive_buffer_size(2097152);
+#else
+   // The system tunes the size by itself, defining one would disable it.
+   settings->set_tcp_receive_buffer_size(0);
+#endif
    settings->set_socket_timeout(7000);
 
    ///// FileManager /////
@@ -291,6 +298,7 @@ void Core::checkSettingsIntegrity()
    this->checkSetting("buffer_size_reading", 1024u, 32u * 1024u * 1024u);
    this->checkSetting("buffer_size_writing", 1024u, 32u * 1024u * 1024u);
    this->checkSetting("socket_buffer_size", 1024u, 32u * 1024u * 1024u);
+   this->checkSetting("tcp_receive_buffer_size", 0u, 32u * 1024u * 1024u);
    this->checkSetting("socket_timeout", 1000u, 60u * 1000u);
 
    this->checkSetting("minimum_duration_when_hashing", 100u, 30u * 1000u);

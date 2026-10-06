@@ -21,6 +21,7 @@ using namespace DM;
 
 #include <QtDebug>
 #include <QStringList>
+#include <QMap>
 #include <QSignalSpy>
 
 #include <Protos/core_protocol.pb.h>
@@ -312,7 +313,9 @@ namespace
    public:
       // The writer fails before any network IO; only ownership/buffer cleanup is exercised.
       int bufferChanges = 0;
+      QMap<QAbstractSocket::SocketOption, QVariant> options;
       void setReadBufferSize(qint64) override { ++this->bufferChanges; }
+      void setSocketOption(QAbstractSocket::SocketOption option, const QVariant& value) override { this->options[option] = value; }
       qint64 bytesAvailable() const override { return 0; }
       qint64 read(char*, qint64) override { return -1; }
       QByteArray readAll() override { return {}; }
@@ -825,6 +828,7 @@ void Tests::validateChunkResponse()
       emit request->stream(socket);
       emit request->timeout();
       QCOMPARE(socket->bufferChanges, 0);
+      QVERIFY(socket->options.isEmpty());
       QCOMPARE(finished.count(), 1);
    }
    downloader->stop();
@@ -1818,6 +1822,46 @@ void Tests::chunkErrorTakesPrecedence()
    QCoreApplication::processEvents();
    QCOMPARE(download.getStatus(), Protos::Common::DownloadStatus::FILE_IO_ERROR);
    QCOMPARE(errors.count(), 1);
+}
+
+/**
+  * The socket streaming a chunk gets the system receive buffer defined by 'tcp_receive_buffer_size', see 'main(..)'.
+  */
+void Tests::streamSocketGetsReceiveBufferSize()
+{
+   QSharedPointer<ResumeFileManager> files(new ResumeFileManager);
+   Protos::Common::Entry entry;
+   entry.set_type(Protos::Common::Entry::FILE);
+   entry.set_name("buffer.bin");
+   entry.set_size(quint64(2) * Common::Constants::CHUNK_SIZE);
+   for (int i = 0; i < 2; ++i)
+   {
+      const auto hash = Common::Hash::rand();
+      entry.add_chunks()->set_hash(hash.getData(), Common::Hash::HASH_SIZE);
+      files->chunks << QSharedPointer<FM::IChunk>(new FailingChunk(i, hash));
+   }
+   CheckpointPeer peer(files);
+   LinkedPeers links;
+   OccupiedPeers asking, downloading;
+   Common::ThreadPool pool(1);
+   Common::TransferRateCalculator rate;
+   FileDownload download(files, links, asking, downloading, pool, &peer, entry, entry,
+      rate, Protos::Queue::Queue::Entry::QUEUED);
+   download.start();
+   QList<QSharedPointer<IChunkDownloader>> chunks;
+   download.getUnfinishedChunks(chunks, 2);
+   QCOMPARE(chunks.size(), 2);
+   auto downloader = qSharedPointerDynamicCast<ChunkDownloader>(chunks[0]);
+   QVERIFY(downloader);
+   QCOMPARE(downloader->startDownloading(), &peer);
+
+   auto socket = QSharedPointer<UnusedSocket>::create();
+   emit peer.lastChunksResult->stream(socket);
+   QCOMPARE(socket->options.size(), 1);
+   QCOMPARE(socket->options.value(QAbstractSocket::ReceiveBufferSizeSocketOption).toUInt(), 65536u);
+
+   // The worker fails when it opens the data writer.
+   QTRY_VERIFY(!downloader->isDownloading());
 }
 
 /**

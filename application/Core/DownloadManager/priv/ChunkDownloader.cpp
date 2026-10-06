@@ -591,7 +591,15 @@ void ChunkDownloader::stream(const QSharedPointer<PM::ISocket>& socket)
 {
    this->socket = socket;
    static const quint32 SOCKET_BUFFER_SIZE = SETTINGS.get<quint32>("socket_buffer_size");
+   static const quint32 TCP_RECEIVE_BUFFER_SIZE = SETTINGS.get<quint32>("tcp_receive_buffer_size");
    this->socket->setReadBufferSize(SOCKET_BUFFER_SIZE);
+
+   // The socket is read by a single thread, 'run()', which also hashes and writes the data: meanwhile the system
+   // can only keep what fits in its own buffer, then the peer has to stop sending.
+   // The size is kept by the socket once it's given back to the connection pool.
+   if (TCP_RECEIVE_BUFFER_SIZE != 0)
+      this->socket->setSocketOption(QAbstractSocket::ReceiveBufferSizeSocketOption, TCP_RECEIVE_BUFFER_SIZE);
+
    this->threadPool.run(this->getWeakRef());
 }
 

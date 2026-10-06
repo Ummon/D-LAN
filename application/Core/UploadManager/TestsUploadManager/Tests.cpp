@@ -79,6 +79,7 @@ namespace
       qint64 readBufferSizeDuringWrite = -1;
 
       void setReadBufferSize(qint64 size) override { this->readBufferSize = size; }
+      void setSocketOption(QAbstractSocket::SocketOption, const QVariant&) override {}
       qint64 bytesAvailable() const override { return 0; }
       qint64 read(char*, qint64) override { return 0; }
       QByteArray readAll() override { return {}; }
