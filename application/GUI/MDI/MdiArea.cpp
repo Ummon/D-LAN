@@ -239,6 +239,7 @@ void MdiArea::coreConnected()
    )
       windowsOrder = windowsOrderDefault;
 
+   this->restoringWindowOrder = true;
    for (QListIterator<quint32> i(windowsOrder); i.hasNext();)
    {
       switch (i.next())
@@ -260,6 +261,7 @@ void MdiArea::coreConnected()
             break;
       }
    }
+   this->restoringWindowOrder = false;
 
    this->setActiveSubWindow(dynamic_cast<QMdiSubWindow*>(this->chatWidget->parent()));
 }
@@ -279,6 +281,11 @@ void MdiArea::coreDisconnected(bool)
 
 void MdiArea::tabMoved(int, int)
 {
+   // Moving the settings tab to its saved position also emits the signal: the permanent windows following it
+   // don't exist yet, saving now would replace the saved order by a truncated one.
+   if (this->restoringWindowOrder)
+      return;
+
    QList<quint32> values;
 
    for (int i = 0; i < this->mdiAreaTabBar->count(); i++)

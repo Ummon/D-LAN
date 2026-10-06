@@ -139,6 +139,9 @@ namespace GUI
       // The is to avoid to close a new joined room right after receiving a state without this new room.
       QString newOpenedChatRoom;
 
+      // 'true' while 'coreConnected()' puts the permanent windows back in their saved order, see 'tabMoved(..)'.
+      bool restoringWindowOrder = false;
+
       // This widget is shown on the tab of the downloads page. It is visible only after D-LAN has started and during the
       // initial scanning (before the downloads are loaded).
       // This widget is owned by the tab bar of the 'QMdiArea'.
