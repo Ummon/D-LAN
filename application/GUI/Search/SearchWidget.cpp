@@ -287,7 +287,6 @@ SearchWidget::SearchWidget(
    if (columnSizes.size() != this->ui->treeView->header()->count())
       columnSizes = QList<quint32>() << 450 << 250 << 80 << 90 << 80;
    SETTINGS.set("search_column_sizes", columnSizes);
-   SETTINGS.save();
    for (int i = 0; i < this->ui->treeView->header()->count(); i++)
       this->ui->treeView->header()->resizeSection(i, columnSizes[i]);
 
@@ -338,6 +337,9 @@ SearchWidget::SearchWidget(
 
 SearchWidget::~SearchWidget()
 {
+   // The column sizes are written here and not each time one of them changes, see 'treeviewSectionResized(..)'.
+   SETTINGS.save();
+
    disconnect(&this->searchModel, &SearchModel::progress, this, &SearchWidget::progress);
    delete this->ui;
 }
@@ -474,8 +476,9 @@ void SearchWidget::treeviewSelectionChanged(const QItemSelection& selected, cons
 
 void SearchWidget::treeviewSectionResized(int logicalIndex, int oldSize, int newSize)
 {
+   // Only kept in memory, for the next search windows. The last section is stretched: this slot is called
+   // for each step of a window resize, writing the settings file here would be far too frequent.
    SETTINGS.set("search_column_sizes", logicalIndex, static_cast<quint32>(newSize));
-   SETTINGS.save();
 }
 
 bool SearchWidget::atLeastOneRemotePeer(const QModelIndexList& indexes) const
