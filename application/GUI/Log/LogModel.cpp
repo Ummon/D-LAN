@@ -107,8 +107,9 @@ void LogModel::newLogEntries(const QList<QSharedPointer<LM::IEntry>>& entries)
       }
    }
 
-   if (!filteredEntries.isEmpty() && !this->entries.isEmpty() && filteredEntries.last()->getMessage() == this->entries.last()->getMessage())
-      filteredEntries.removeLast();
+   // The first new entry is the one which follows the last displayed entry.
+   if (!filteredEntries.isEmpty() && !this->entries.isEmpty() && filteredEntries.first()->getMessage() == this->entries.last()->getMessage())
+      filteredEntries.removeFirst();
 
    if (filteredEntries.isEmpty())
       return;
