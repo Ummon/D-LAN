@@ -471,7 +471,8 @@ void SearchWidget::progress(int value)
 
 void SearchWidget::treeviewSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
 {
-   this->ui->butDownload->setEnabled(this->atLeastOneRemotePeer(selected.indexes()));
+   // 'selected' only holds the entries which have just been added to the selection, not the whole selection.
+   this->ui->butDownload->setEnabled(this->atLeastOneRemotePeer(this->ui->treeView->selectionModel()->selectedRows()));
 }
 
 void SearchWidget::treeviewSectionResized(int logicalIndex, int oldSize, int newSize)
