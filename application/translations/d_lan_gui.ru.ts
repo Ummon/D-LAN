@@ -122,7 +122,7 @@
 <context>
     <name>GUI::AskNewPasswordDialog</name>
     <message>
-        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="+59"/>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="+60"/>
         <location line="+5"/>
         <location line="+5"/>
         <location line="+5"/>
@@ -165,7 +165,7 @@
 <context>
     <name>GUI::BrowseWidget</name>
     <message>
-        <location filename="../GUI/Browse/BrowseWidget.cpp" line="+146"/>
+        <location filename="../GUI/Browse/BrowseWidget.cpp" line="+131"/>
         <source>Open location</source>
         <translation>Открыть расположение</translation>
     </message>
@@ -173,7 +173,7 @@
 <context>
     <name>GUI::ChatWidget</name>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="+511"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="+479"/>
         <location line="+4"/>
         <source>Unable to send message</source>
         <translation>Не удалось отправить сообщение</translation>
@@ -189,17 +189,17 @@
         <translation>Не удалось отправить сообщение из-за неизвестной ошибки</translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location line="+16"/>
         <source>Browse</source>
         <translation>Открыть</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+3"/>
         <source>Copy IP: %1</source>
         <translation>Копировать IP: %1</translation>
     </message>
     <message>
-        <location line="+35"/>
+        <location line="+23"/>
         <source>Copy selected messages</source>
         <translation>Копировать выделенные сообщения</translation>
     </message>
@@ -214,8 +214,8 @@
         <translation>Открыть выделенных пиров</translation>
     </message>
     <message>
-        <location line="+395"/>
-        <location line="+62"/>
+        <location line="+376"/>
+        <location line="+63"/>
         <source>Chat</source>
         <translation>Чат</translation>
     </message>
@@ -274,7 +274,7 @@
         <translation>Скачать выбранные элементы в...</translation>
     </message>
     <message>
-        <location line="+29"/>
+        <location line="+34"/>
         <source>Download here</source>
         <translation>Скачать сюда</translation>
     </message>
@@ -452,7 +452,7 @@
         <translation>Вы уверены, что хотите удалить выбранные загрузки? Присутствуют незавершенные загрузки.</translation>
     </message>
     <message>
-        <location line="+78"/>
+        <location line="+82"/>
         <source>Switch to file list view</source>
         <translation>Переключиться на список файлов</translation>
     </message>
@@ -490,7 +490,7 @@
 <context>
     <name>GUI::EmoticonsWidget</name>
     <message>
-        <location filename="../GUI/Emoticons/EmoticonsWidget.cpp" line="+44"/>
+        <location filename="../GUI/Emoticons/EmoticonsWidget.cpp" line="+47"/>
         <source>Set as the default theme</source>
         <translation>Установить как стандартный скин</translation>
     </message>
@@ -498,7 +498,7 @@
 <context>
     <name>GUI::MainWindow</name>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="+175"/>
+        <location filename="../GUI/MainWindow.cpp" line="+172"/>
         <source>Already connected to this address</source>
         <translation>Уже подключен к этому адресу</translation>
     </message>
@@ -587,7 +587,7 @@
 <context>
     <name>GUI::MdiArea</name>
     <message>
-        <location filename="../GUI/MDI/MdiArea.cpp" line="+375"/>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="+380"/>
         <source>Waiting the initial scanning process is finished before loading the download queue</source>
         <translation>Ожидание завершения первоначального сканирования перед загрузкой очереди загрузок</translation>
     </message>
@@ -600,7 +600,7 @@
 <context>
     <name>GUI::PeerListModel</name>
     <message>
-        <location filename="../GUI/Peers/PeerListModel.cpp" line="+267"/>
+        <location filename="../GUI/Peers/PeerListModel.cpp" line="+262"/>
         <source>Their protocol version is more recent and incompatible with ours. Upgrade you version!</source>
         <translation>Версия протокола этого пира новее и несовместима с нашей. Обновите свою версию!</translation>
     </message>
@@ -630,17 +630,17 @@
 <context>
     <name>GUI::PeersDock</name>
     <message>
-        <location filename="../GUI/Peers/PeersDock.cpp" line="+97"/>
+        <location filename="../GUI/Peers/PeersDock.cpp" line="+95"/>
         <source>Browse</source>
         <translation>Открыть</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="+7"/>
         <source>Take control</source>
         <translation>Взять контроль</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+5"/>
         <source>Copy IP: %1</source>
         <translation>Копировать IP: %1</translation>
     </message>
@@ -650,7 +650,7 @@
         <translation>Сортировать по размеру</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+4"/>
         <source>Sort alphabetically</source>
         <translation>Сортировать по алфавиту</translation>
     </message>
@@ -665,7 +665,7 @@
         <translation>Пометить синим</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+7"/>
         <source>Colorize in green</source>
         <translation>Пометить зеленым</translation>
     </message>
@@ -675,7 +675,7 @@
         <translation>Снять пометку</translation>
     </message>
     <message>
-        <location line="+36"/>
+        <location line="+40"/>
         <source>Take control of %1</source>
         <translation>Взять контроль над %1</translation>
     </message>
@@ -688,7 +688,7 @@
 <context>
     <name>GUI::RemoteBrowseDialog</name>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="+65"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="+56"/>
         <source>Ok</source>
         <translation>ОК</translation>
     </message>
@@ -724,17 +724,17 @@
 <context>
     <name>GUI::RoomsDock</name>
     <message>
-        <location filename="../GUI/Chat/RoomsDock.cpp" line="+97"/>
+        <location filename="../GUI/Chat/RoomsDock.cpp" line="+81"/>
         <source>Join</source>
         <translation>Присоединиться</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+5"/>
         <source>Sort by number of peers</source>
         <translation>Сортировать по количеству пиров</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Sort alphabetically</source>
         <translation>Сортировать по алфавиту</translation>
     </message>
@@ -742,7 +742,7 @@
 <context>
     <name>GUI::SearchMenu</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="+253"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="+273"/>
         <source>Browse</source>
         <translation>Открыть</translation>
     </message>
@@ -775,8 +775,8 @@
         <translation>Размер</translation>
     </message>
     <message>
-        <location line="+222"/>
-        <location line="+54"/>
+        <location line="+255"/>
+        <location line="+60"/>
         <source>&lt;unknown&gt;</source>
         <translation>&lt;неизвестно&gt;</translation>
     </message>
@@ -794,7 +794,7 @@
         <translation>Открыть</translation>
     </message>
     <message>
-        <location line="+80"/>
+        <location line="+31"/>
         <source>1 directory</source>
         <translation>папок: 1</translation>
     </message>
@@ -817,7 +817,7 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+256"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+253"/>
         <source>Default</source>
         <translation>Стандартный</translation>
     </message>
@@ -842,7 +842,7 @@
         <translation>Установить пароль</translation>
     </message>
     <message>
-        <location line="+46"/>
+        <location line="+25"/>
         <location line="+313"/>
         <source>Connecting . . .</source>
         <translation>Подключение...</translation>
@@ -856,18 +856,18 @@
         <translation>Подключиться</translation>
     </message>
     <message>
-        <location line="-180"/>
+        <location line="-183"/>
         <source>Select one or more directories and/or files to share</source>
         <translation>Выберите одну или несколько папок и/или файлов для общего доступа</translation>
     </message>
     <message>
-        <location line="+21"/>
-        <location line="+65"/>
+        <location line="+20"/>
+        <location line="+69"/>
         <source>Remove selected shared entries</source>
         <translation>Удалить выбранные общие ресурсы</translation>
     </message>
     <message>
-        <location line="-64"/>
+        <location line="-68"/>
         <source>Are you sure you want to remove the selected shared files and directories?</source>
         <translation>Вы уверены, что хотите удалить выбранные общие файлы и папки?</translation>
     </message>
@@ -884,7 +884,7 @@
         <translation type="vanished">Удалить общую папку</translation>
     </message>
     <message>
-        <location line="+72"/>
+        <location line="+76"/>
         <source>Move up</source>
         <translation>На позицию вверх</translation>
     </message>
@@ -902,7 +902,7 @@
 <context>
     <name>GUI::SharedEntryListModel</name>
     <message>
-        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="+284"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="+259"/>
         <source>Name</source>
         <translation>Имя</translation>
     </message>
@@ -925,7 +925,7 @@
 <context>
     <name>GUI::StatusBar</name>
     <message>
-        <location filename="../GUI/StatusBar.cpp" line="+134"/>
+        <location filename="../GUI/StatusBar.cpp" line="+154"/>
         <source>peers</source>
         <translation>пиры</translation>
     </message>
@@ -935,7 +935,7 @@
         <translation>пир</translation>
     </message>
     <message>
-        <location line="+15"/>
+        <location line="+18"/>
         <source>connected to %1</source>
         <translation>подключен к %1</translation>
     </message>
@@ -1123,12 +1123,12 @@
         <translation>Локальный</translation>
     </message>
     <message>
-        <location filename="../GUI/Utils.cpp" line="+49"/>
+        <location filename="../GUI/Utils.cpp" line="+52"/>
         <source>Select one or more directories and/or files</source>
         <translation>Выберите одну или несколько папок и/или файлов</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="+20"/>
         <source>Select a directory where to download to</source>
         <translation>Выберите папку для загрузки</translation>
     </message>

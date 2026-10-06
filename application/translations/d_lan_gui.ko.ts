@@ -122,42 +122,42 @@
 <context>
     <name>GUI::AskNewPasswordDialog</name>
     <message>
-        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="59"/>
-        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="64"/>
-        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="69"/>
-        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="74"/>
-        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="79"/>
-        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="90"/>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="60"/>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="65"/>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="70"/>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="75"/>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="80"/>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="91"/>
         <source>Error</source>
         <translation>오류</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="59"/>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="60"/>
         <source>The passwords aren&apos;t the same</source>
         <translation>비밀번호가 일치하지 않습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="64"/>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="65"/>
         <source>The password can&apos;t be empty</source>
         <translation>비밀번호는 비워 둘 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="69"/>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="70"/>
         <source>The password can&apos;t contain any whitespace</source>
         <translation>비밀번호에는 공백 문자를 사용할 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="74"/>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="75"/>
         <source>The old password is required</source>
         <translation>이전 비밀번호를 입력해야 합니다</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="79"/>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="80"/>
         <source>The old and new passwords are the same</source>
         <translation>이전 비밀번호와 새 비밀번호가 같습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="90"/>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="91"/>
         <source>The old password doesn&apos;t match</source>
         <translation>이전 비밀번호가 일치하지 않습니다</translation>
     </message>
@@ -165,7 +165,7 @@
 <context>
     <name>GUI::BrowseWidget</name>
     <message>
-        <location filename="../GUI/Browse/BrowseWidget.cpp" line="146"/>
+        <location filename="../GUI/Browse/BrowseWidget.cpp" line="131"/>
         <source>Open location</source>
         <translation>위치 열기</translation>
     </message>
@@ -173,49 +173,49 @@
 <context>
     <name>GUI::ChatWidget</name>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="511"/>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="515"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="479"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="483"/>
         <source>Unable to send message</source>
         <translation>메시지를 보낼 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="511"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="479"/>
         <source>The message is too long</source>
         <translation>메시지가 너무 깁니다</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="515"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="483"/>
         <source>The message can&apos;t be send, unknown error</source>
         <translation>메시지를 보낼 수 없습니다. 알 수 없는 오류입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="533"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="499"/>
         <source>Browse</source>
         <translation>탐색</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="537"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="502"/>
         <source>Copy IP: %1</source>
         <translation>IP 복사: %1</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="572"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="525"/>
         <source>Copy selected messages</source>
         <translation>선택한 메시지 복사</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="573"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="526"/>
         <source>Copy selected lines</source>
         <translation>선택한 줄 복사</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="574"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="527"/>
         <source>Browse selected peers</source>
         <translation>선택한 피어 탐색</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="969"/>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="1031"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="903"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="966"/>
         <source>Chat</source>
         <translation>채팅</translation>
     </message>
@@ -274,22 +274,22 @@
         <translation>선택한 항목을 다음 위치로 다운로드 . . .</translation>
     </message>
     <message>
-        <location filename="../GUI/DownloadMenu.cpp" line="124"/>
+        <location filename="../GUI/DownloadMenu.cpp" line="129"/>
         <source>Download here</source>
         <translation>여기에 다운로드</translation>
     </message>
     <message>
-        <location filename="../GUI/DownloadMenu.cpp" line="131"/>
+        <location filename="../GUI/DownloadMenu.cpp" line="136"/>
         <source>Loading . . .</source>
         <translation>불러오는 중 . . .</translation>
     </message>
     <message>
-        <location filename="../GUI/DownloadMenu.cpp" line="195"/>
+        <location filename="../GUI/DownloadMenu.cpp" line="200"/>
         <source>%1 more folders . . .</source>
         <translation>그 외 폴더 %1개 . . .</translation>
     </message>
     <message>
-        <location filename="../GUI/DownloadMenu.cpp" line="203"/>
+        <location filename="../GUI/DownloadMenu.cpp" line="208"/>
         <source>Unable to get the folders</source>
         <translation>폴더를 가져올 수 없습니다</translation>
     </message>
@@ -452,37 +452,37 @@
         <translation>선택한 다운로드를 제거하시겠습니까? 완료되지 않은 다운로드가 하나 이상 있습니다.</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="439"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="443"/>
         <source>Switch to file list view</source>
         <translation>파일 목록 보기로 전환</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="451"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="455"/>
         <source>Switch to tree view</source>
         <translation>트리 보기로 전환</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="494"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="498"/>
         <source>&lt;All&gt;</source>
         <translation>&lt;전체&gt;</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="494"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="498"/>
         <source>Complete</source>
         <translation>완료</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="494"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="498"/>
         <source>Downloading</source>
         <translation>다운로드 중</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="494"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="498"/>
         <source>Queued</source>
         <translation>대기열에 있음</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="494"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="498"/>
         <source>Inactive</source>
         <translation>비활성</translation>
     </message>
@@ -490,7 +490,7 @@
 <context>
     <name>GUI::EmoticonsWidget</name>
     <message>
-        <location filename="../GUI/Emoticons/EmoticonsWidget.cpp" line="44"/>
+        <location filename="../GUI/Emoticons/EmoticonsWidget.cpp" line="47"/>
         <source>Set as the default theme</source>
         <translation>기본 테마로 설정</translation>
     </message>
@@ -498,88 +498,88 @@
 <context>
     <name>GUI::MainWindow</name>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="175"/>
+        <location filename="../GUI/MainWindow.cpp" line="172"/>
         <source>Already connected to this address</source>
         <translation>이미 이 주소에 연결되어 있습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="178"/>
+        <location filename="../GUI/MainWindow.cpp" line="175"/>
         <source>There is already a connection process in progress</source>
         <translation>이미 연결을 시도하는 중입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="181"/>
+        <location filename="../GUI/MainWindow.cpp" line="178"/>
         <source>The host is unknown</source>
         <translation>알 수 없는 호스트입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="184"/>
+        <location filename="../GUI/MainWindow.cpp" line="181"/>
         <source>Host has timed out</source>
         <translation>호스트가 응답하지 않습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="187"/>
+        <location filename="../GUI/MainWindow.cpp" line="184"/>
         <source>The host hasn&apos;t defined any password</source>
         <translation>호스트에 비밀번호가 설정되어 있지 않습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="190"/>
+        <location filename="../GUI/MainWindow.cpp" line="187"/>
         <source>Wrong password</source>
         <translation>잘못된 비밀번호입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="193"/>
+        <location filename="../GUI/MainWindow.cpp" line="190"/>
         <source>Invalid address</source>
         <translation>잘못된 주소입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="196"/>
+        <location filename="../GUI/MainWindow.cpp" line="193"/>
         <source>Unable to establish a trusted encrypted connection. The Core&apos;s certificate may have changed or TLS may be unavailable. See the log for details.</source>
         <translation>신뢰할 수 있는 암호화된 연결을 설정할 수 없습니다. 코어의 인증서가 변경되었거나 TLS를 사용할 수 없는 상태일 수 있습니다. 자세한 내용은 로그를 확인하세요.</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="199"/>
+        <location filename="../GUI/MainWindow.cpp" line="196"/>
         <source>The core closed the connection. Remote access requires a password to be defined on the core. The core may also have too many connections.</source>
         <translation>코어가 연결을 닫았습니다. 원격 접근을 사용하려면 코어에 비밀번호가 설정되어 있어야 합니다. 코어에 연결이 너무 많을 수도 있습니다.</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="202"/>
+        <location filename="../GUI/MainWindow.cpp" line="199"/>
         <source>The core couldn&apos;t prove that it knows the password. The connection may have been intercepted.</source>
         <translation>코어가 비밀번호를 알고 있음을 증명하지 못했습니다. 연결이 가로채졌을 수 있습니다.</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="205"/>
+        <location filename="../GUI/MainWindow.cpp" line="202"/>
         <source>The versions of the core and of this GUI are incompatible for remote control. Update them to the same version.</source>
         <translation>코어와 이 GUI의 버전이 원격 제어에 호환되지 않습니다. 같은 버전으로 업데이트하세요.</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="208"/>
+        <location filename="../GUI/MainWindow.cpp" line="205"/>
         <source>Error unknown</source>
         <translation>알 수 없는 오류</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="214"/>
+        <location filename="../GUI/MainWindow.cpp" line="211"/>
         <source>Unable to connect to the core</source>
         <translation>코어에 연결할 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="217"/>
-        <location filename="../GUI/MainWindow.cpp" line="241"/>
+        <location filename="../GUI/MainWindow.cpp" line="214"/>
+        <location filename="../GUI/MainWindow.cpp" line="238"/>
         <source>Core address:</source>
         <translation>코어 주소:</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="227"/>
+        <location filename="../GUI/MainWindow.cpp" line="224"/>
         <source>Connected to the core</source>
         <translation>코어에 연결되었습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="236"/>
+        <location filename="../GUI/MainWindow.cpp" line="233"/>
         <source>Connection lost</source>
         <translation>연결이 끊어졌습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="240"/>
+        <location filename="../GUI/MainWindow.cpp" line="237"/>
         <source>The connection to the core has been lost</source>
         <translation>코어와의 연결이 끊어졌습니다</translation>
     </message>
@@ -587,12 +587,12 @@
 <context>
     <name>GUI::MdiArea</name>
     <message>
-        <location filename="../GUI/MDI/MdiArea.cpp" line="375"/>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="380"/>
         <source>Waiting the initial scanning process is finished before loading the download queue</source>
         <translation>초기 스캔이 완료될 때까지 기다린 후 다운로드 대기열을 불러옵니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MDI/MdiArea.cpp" line="566"/>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="571"/>
         <source>Leave room</source>
         <translation>대화방 나가기</translation>
     </message>
@@ -600,29 +600,29 @@
 <context>
     <name>GUI::PeerListModel</name>
     <message>
-        <location filename="../GUI/Peers/PeerListModel.cpp" line="267"/>
+        <location filename="../GUI/Peers/PeerListModel.cpp" line="262"/>
         <source>Their protocol version is more recent and incompatible with ours. Upgrade you version!</source>
         <translation>상대 피어의 프로토콜 버전이 더 최신이며 현재 버전과 호환되지 않습니다. 버전을 업그레이드하십시오!</translation>
     </message>
     <message>
-        <location filename="../GUI/Peers/PeerListModel.cpp" line="269"/>
+        <location filename="../GUI/Peers/PeerListModel.cpp" line="264"/>
         <source>Their protocol version is outdated and incompatible with ours. They should upgrade their version!</source>
         <translation>상대 피어의 프로토콜 버전이 오래되어 현재 버전과 호환되지 않습니다. 상대방이 버전을 업그레이드해야 합니다!</translation>
     </message>
     <message>
-        <location filename="../GUI/Peers/PeerListModel.cpp" line="272"/>
+        <location filename="../GUI/Peers/PeerListModel.cpp" line="267"/>
         <source>Version %1
 </source>
         <translation>버전 %1
 </translation>
     </message>
     <message>
-        <location filename="../GUI/Peers/PeerListModel.cpp" line="274"/>
+        <location filename="../GUI/Peers/PeerListModel.cpp" line="269"/>
         <source>Download rate: </source>
         <translation>다운로드 속도: </translation>
     </message>
     <message>
-        <location filename="../GUI/Peers/PeerListModel.cpp" line="275"/>
+        <location filename="../GUI/Peers/PeerListModel.cpp" line="270"/>
         <source>Upload rate: </source>
         <translation>업로드 속도: </translation>
     </message>
@@ -630,57 +630,57 @@
 <context>
     <name>GUI::PeersDock</name>
     <message>
-        <location filename="../GUI/Peers/PeersDock.cpp" line="97"/>
+        <location filename="../GUI/Peers/PeersDock.cpp" line="95"/>
         <source>Browse</source>
         <translation>탐색</translation>
     </message>
     <message>
-        <location filename="../GUI/Peers/PeersDock.cpp" line="106"/>
+        <location filename="../GUI/Peers/PeersDock.cpp" line="102"/>
         <source>Take control</source>
         <translation>제어권 가져오기</translation>
     </message>
     <message>
-        <location filename="../GUI/Peers/PeersDock.cpp" line="114"/>
+        <location filename="../GUI/Peers/PeersDock.cpp" line="107"/>
         <source>Copy IP: %1</source>
         <translation>IP 복사: %1</translation>
     </message>
     <message>
-        <location filename="../GUI/Peers/PeersDock.cpp" line="121"/>
+        <location filename="../GUI/Peers/PeersDock.cpp" line="114"/>
         <source>Sort by the amount of sharing</source>
         <translation>공유 크기순 정렬</translation>
     </message>
     <message>
-        <location filename="../GUI/Peers/PeersDock.cpp" line="124"/>
+        <location filename="../GUI/Peers/PeersDock.cpp" line="118"/>
         <source>Sort alphabetically</source>
         <translation>이름순 정렬</translation>
     </message>
     <message>
-        <location filename="../GUI/Peers/PeersDock.cpp" line="139"/>
+        <location filename="../GUI/Peers/PeersDock.cpp" line="133"/>
         <source>Colorize in red</source>
         <translation>빨간색으로 표시</translation>
     </message>
     <message>
-        <location filename="../GUI/Peers/PeersDock.cpp" line="146"/>
+        <location filename="../GUI/Peers/PeersDock.cpp" line="140"/>
         <source>Colorize in blue</source>
         <translation>파란색으로 표시</translation>
     </message>
     <message>
-        <location filename="../GUI/Peers/PeersDock.cpp" line="154"/>
+        <location filename="../GUI/Peers/PeersDock.cpp" line="147"/>
         <source>Colorize in green</source>
         <translation>초록색으로 표시</translation>
     </message>
     <message>
-        <location filename="../GUI/Peers/PeersDock.cpp" line="159"/>
+        <location filename="../GUI/Peers/PeersDock.cpp" line="152"/>
         <source>Uncolorize</source>
         <translation>색상 제거</translation>
     </message>
     <message>
-        <location filename="../GUI/Peers/PeersDock.cpp" line="195"/>
+        <location filename="../GUI/Peers/PeersDock.cpp" line="192"/>
         <source>Take control of %1</source>
         <translation>%1 제어권 가져오기</translation>
     </message>
     <message>
-        <location filename="../GUI/Peers/PeersDock.cpp" line="197"/>
+        <location filename="../GUI/Peers/PeersDock.cpp" line="194"/>
         <source>Enter a password</source>
         <translation>비밀번호 입력</translation>
     </message>
@@ -688,27 +688,27 @@
 <context>
     <name>GUI::RemoteBrowseDialog</name>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="65"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="56"/>
         <source>Ok</source>
         <translation>확인</translation>
     </message>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="66"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="57"/>
         <source>Cancel</source>
         <translation>취소</translation>
     </message>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="159"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="150"/>
         <source>Show hidden files and directories</source>
         <translation>숨김 파일 및 폴더 표시</translation>
     </message>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="159"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="150"/>
         <source>Show hidden directories</source>
         <translation>숨김 폴더 표시</translation>
     </message>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="343"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="334"/>
         <source>Open location</source>
         <translation>위치 열기</translation>
     </message>
@@ -724,17 +724,17 @@
 <context>
     <name>GUI::RoomsDock</name>
     <message>
-        <location filename="../GUI/Chat/RoomsDock.cpp" line="97"/>
+        <location filename="../GUI/Chat/RoomsDock.cpp" line="81"/>
         <source>Join</source>
         <translation>참여</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/RoomsDock.cpp" line="101"/>
+        <location filename="../GUI/Chat/RoomsDock.cpp" line="86"/>
         <source>Sort by number of peers</source>
         <translation>피어 수로 정렬</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/RoomsDock.cpp" line="102"/>
+        <location filename="../GUI/Chat/RoomsDock.cpp" line="88"/>
         <source>Sort alphabetically</source>
         <translation>이름순 정렬</translation>
     </message>
@@ -742,7 +742,7 @@
 <context>
     <name>GUI::SearchMenu</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="253"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="273"/>
         <source>Browse</source>
         <translation>탐색</translation>
     </message>
@@ -775,8 +775,8 @@
         <translation>크기</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchModel.cpp" line="364"/>
-        <location filename="../GUI/Search/SearchModel.cpp" line="418"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="397"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="457"/>
         <source>&lt;unknown&gt;</source>
         <translation>&lt;알 수 없음&gt;</translation>
     </message>
@@ -784,32 +784,32 @@
 <context>
     <name>GUI::SearchWidget</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="385"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="405"/>
         <source>Open location</source>
         <translation>위치 열기</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="386"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="406"/>
         <source>Browse</source>
         <translation>탐색</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="466"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="437"/>
         <source>1 directory</source>
         <translation>폴더 1개</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="466"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="437"/>
         <source>%1 directories</source>
         <translation>폴더 %1개</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="467"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="438"/>
         <source>1 file</source>
         <translation>파일 1개</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="467"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="438"/>
         <source>%1 files</source>
         <translation>파일 %1개</translation>
     </message>
@@ -817,57 +817,57 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="256"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="253"/>
         <source>Default</source>
         <translation>기본값</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="315"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="312"/>
         <source>Interface not active</source>
         <translation>인터페이스가 비활성 상태입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="539"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="536"/>
         <source>Change the password</source>
         <translation>비밀번호 변경</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="543"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="540"/>
         <source>No password defined</source>
         <translation>비밀번호가 설정되어 있지 않습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="545"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="542"/>
         <source>Define a password</source>
         <translation>비밀번호 설정</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="591"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="904"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="567"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="880"/>
         <source>Connecting . . .</source>
         <translation>연결하는 중 . . .</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="599"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="615"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="630"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="904"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="575"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="591"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="606"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="880"/>
         <source>Connect</source>
         <translation>연결</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="724"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="697"/>
         <source>Select one or more directories and/or files to share</source>
         <translation>공유할 폴더 및/또는 파일을 하나 이상 선택하십시오</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="745"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="810"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="717"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="786"/>
         <source>Remove selected shared entries</source>
         <translation>선택한 공유 항목 제거</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="746"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="718"/>
         <source>Are you sure you want to remove the selected shared files and directories?</source>
         <translation>선택한 공유 파일과 폴더를 제거하시겠습니까?</translation>
     </message>
@@ -884,17 +884,17 @@
         <translation type="vanished">공유 폴더 제거</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="818"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="794"/>
         <source>Move up</source>
         <translation>위로 이동</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="826"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="802"/>
         <source>Move down</source>
         <translation>아래로 이동</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="834"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="810"/>
         <source>Open location</source>
         <translation>위치 열기</translation>
     </message>
@@ -902,22 +902,22 @@
 <context>
     <name>GUI::SharedEntryListModel</name>
     <message>
-        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="284"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="259"/>
         <source>Name</source>
         <translation>이름</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="285"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="260"/>
         <source>Path</source>
         <translation>경로</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="286"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="261"/>
         <source>Size</source>
         <translation>크기</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="287"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="262"/>
         <source>Free space</source>
         <translation>여유 공간</translation>
     </message>
@@ -925,47 +925,47 @@
 <context>
     <name>GUI::StatusBar</name>
     <message>
-        <location filename="../GUI/StatusBar.cpp" line="134"/>
+        <location filename="../GUI/StatusBar.cpp" line="154"/>
         <source>peers</source>
         <translation>피어</translation>
     </message>
     <message>
-        <location filename="../GUI/StatusBar.cpp" line="134"/>
+        <location filename="../GUI/StatusBar.cpp" line="154"/>
         <source>peer</source>
         <translation>피어</translation>
     </message>
     <message>
-        <location filename="../GUI/StatusBar.cpp" line="149"/>
+        <location filename="../GUI/StatusBar.cpp" line="172"/>
         <source>connected to %1</source>
         <translation>%1에 연결됨</translation>
     </message>
     <message>
-        <location filename="../GUI/StatusBar.cpp" line="151"/>
+        <location filename="../GUI/StatusBar.cpp" line="174"/>
         <source>connected</source>
         <translation>연결됨</translation>
     </message>
     <message>
-        <location filename="../GUI/StatusBar.cpp" line="157"/>
+        <location filename="../GUI/StatusBar.cpp" line="180"/>
         <source>scanning in progress . . .</source>
         <translation>스캔 중 . . .</translation>
     </message>
     <message>
-        <location filename="../GUI/StatusBar.cpp" line="161"/>
+        <location filename="../GUI/StatusBar.cpp" line="184"/>
         <source>indexing in progress . . .</source>
         <translation>인덱싱 중 . . .</translation>
     </message>
     <message>
-        <location filename="../GUI/StatusBar.cpp" line="166"/>
+        <location filename="../GUI/StatusBar.cpp" line="189"/>
         <source>cache is up to date</source>
         <translation>캐시가 최신 상태입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/StatusBar.cpp" line="177"/>
+        <location filename="../GUI/StatusBar.cpp" line="200"/>
         <source>disconnected</source>
         <translation>연결 안 됨</translation>
     </message>
     <message>
-        <location filename="../GUI/StatusBar.cpp" line="181"/>
+        <location filename="../GUI/StatusBar.cpp" line="204"/>
         <source>Core: %1</source>
         <translation>코어: %1</translation>
     </message>
@@ -1118,12 +1118,12 @@
         <translation>로컬</translation>
     </message>
     <message>
-        <location filename="../GUI/Utils.cpp" line="49"/>
+        <location filename="../GUI/Utils.cpp" line="52"/>
         <source>Select one or more directories and/or files</source>
         <translation>폴더 및/또는 파일을 하나 이상 선택하십시오</translation>
     </message>
     <message>
-        <location filename="../GUI/Utils.cpp" line="59"/>
+        <location filename="../GUI/Utils.cpp" line="72"/>
         <source>Select a directory where to download to</source>
         <translation>다운로드할 폴더를 선택하십시오</translation>
     </message>

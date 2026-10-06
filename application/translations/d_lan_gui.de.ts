@@ -122,7 +122,7 @@
 <context>
     <name>GUI::AskNewPasswordDialog</name>
     <message>
-        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="+59"/>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="+60"/>
         <location line="+5"/>
         <location line="+5"/>
         <location line="+5"/>
@@ -165,7 +165,7 @@
 <context>
     <name>GUI::BrowseWidget</name>
     <message>
-        <location filename="../GUI/Browse/BrowseWidget.cpp" line="+146"/>
+        <location filename="../GUI/Browse/BrowseWidget.cpp" line="+131"/>
         <source>Open location</source>
         <translation>Ordner anzeigen</translation>
     </message>
@@ -173,7 +173,7 @@
 <context>
     <name>GUI::ChatWidget</name>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="+511"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="+479"/>
         <location line="+4"/>
         <source>Unable to send message</source>
         <translation>Nachricht konnte nicht gesendet werden</translation>
@@ -189,17 +189,17 @@
         <translation>Nachricht konnte nicht gesendet werden, unbekannter Fehler</translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location line="+16"/>
         <source>Browse</source>
         <translation>Durchsuchen</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+3"/>
         <source>Copy IP: %1</source>
         <translation>IP kopieren: %1</translation>
     </message>
     <message>
-        <location line="+35"/>
+        <location line="+23"/>
         <source>Copy selected messages</source>
         <translation>Ausgewählte Nachrichten kopieren</translation>
     </message>
@@ -214,8 +214,8 @@
         <translation>Ausgewählte Peers durchsuchen</translation>
     </message>
     <message>
-        <location line="+395"/>
-        <location line="+62"/>
+        <location line="+376"/>
+        <location line="+63"/>
         <source>Chat</source>
         <translation>Chat</translation>
     </message>
@@ -274,7 +274,7 @@
         <translation>Ausgewählte Elemente herunterladen nach . . .</translation>
     </message>
     <message>
-        <location line="+29"/>
+        <location line="+34"/>
         <source>Download here</source>
         <translation>Hierher herunterladen</translation>
     </message>
@@ -452,7 +452,7 @@
         <translation>Möchten Sie die ausgewählten Einträge wirklich entfernen? Mindestens ein Download ist noch nicht abgeschlossen.</translation>
     </message>
     <message>
-        <location line="+78"/>
+        <location line="+82"/>
         <source>Switch to file list view</source>
         <translation>Zur Listenansicht wechseln</translation>
     </message>
@@ -490,7 +490,7 @@
 <context>
     <name>GUI::EmoticonsWidget</name>
     <message>
-        <location filename="../GUI/Emoticons/EmoticonsWidget.cpp" line="+44"/>
+        <location filename="../GUI/Emoticons/EmoticonsWidget.cpp" line="+47"/>
         <source>Set as the default theme</source>
         <translation>Als Standardaussehen festlegen</translation>
     </message>
@@ -498,7 +498,7 @@
 <context>
     <name>GUI::MainWindow</name>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="+175"/>
+        <location filename="../GUI/MainWindow.cpp" line="+172"/>
         <source>Already connected to this address</source>
         <translation>Bereits mit dieser Adresse verbunden</translation>
     </message>
@@ -587,7 +587,7 @@
 <context>
     <name>GUI::MdiArea</name>
     <message>
-        <location filename="../GUI/MDI/MdiArea.cpp" line="+375"/>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="+380"/>
         <source>Waiting the initial scanning process is finished before loading the download queue</source>
         <translation>Warte auf den Abschluss des ersten Einlesevorgangs, bevor die Warteschlange geladen wird</translation>
     </message>
@@ -600,7 +600,7 @@
 <context>
     <name>GUI::PeerListModel</name>
     <message>
-        <location filename="../GUI/Peers/PeerListModel.cpp" line="+267"/>
+        <location filename="../GUI/Peers/PeerListModel.cpp" line="+262"/>
         <source>Their protocol version is more recent and incompatible with ours. Upgrade you version!</source>
         <translation>Die Protokollversion dieses Knotens ist neuer und mit unserer nicht kompatibel. Bitte aktualisieren Sie Ihre Version!</translation>
     </message>
@@ -630,17 +630,17 @@
 <context>
     <name>GUI::PeersDock</name>
     <message>
-        <location filename="../GUI/Peers/PeersDock.cpp" line="+97"/>
+        <location filename="../GUI/Peers/PeersDock.cpp" line="+95"/>
         <source>Browse</source>
         <translation>Durchsuchen</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="+7"/>
         <source>Take control</source>
         <translation>Kontrolle übernehmen</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+5"/>
         <source>Copy IP: %1</source>
         <translation>IP kopieren: %1</translation>
     </message>
@@ -650,7 +650,7 @@
         <translation>Nach Größe der Freigabe sortieren</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+4"/>
         <source>Sort alphabetically</source>
         <translation>Nach Alphabet sortieren</translation>
     </message>
@@ -665,7 +665,7 @@
         <translation>Blau einfärben</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+7"/>
         <source>Colorize in green</source>
         <translation>Grün einfärben</translation>
     </message>
@@ -675,7 +675,7 @@
         <translation>Farbe zurücksetzen</translation>
     </message>
     <message>
-        <location line="+36"/>
+        <location line="+40"/>
         <source>Take control of %1</source>
         <translation>Kontrolle über %1 übernehmen</translation>
     </message>
@@ -688,7 +688,7 @@
 <context>
     <name>GUI::RemoteBrowseDialog</name>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="+65"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="+56"/>
         <source>Ok</source>
         <translation>OK</translation>
     </message>
@@ -724,17 +724,17 @@
 <context>
     <name>GUI::RoomsDock</name>
     <message>
-        <location filename="../GUI/Chat/RoomsDock.cpp" line="+97"/>
+        <location filename="../GUI/Chat/RoomsDock.cpp" line="+81"/>
         <source>Join</source>
         <translation>Beitreten</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+5"/>
         <source>Sort by number of peers</source>
         <translation>Nach Anzahl der Personen sortieren</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Sort alphabetically</source>
         <translation>Nach Alphabet sortieren</translation>
     </message>
@@ -742,7 +742,7 @@
 <context>
     <name>GUI::SearchMenu</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="+253"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="+273"/>
         <source>Browse</source>
         <translation>Durchsuchen</translation>
     </message>
@@ -775,8 +775,8 @@
         <translation>Größe</translation>
     </message>
     <message>
-        <location line="+222"/>
-        <location line="+54"/>
+        <location line="+255"/>
+        <location line="+60"/>
         <source>&lt;unknown&gt;</source>
         <translation>&lt;unbekannt&gt;</translation>
     </message>
@@ -794,7 +794,7 @@
         <translation>Durchsuchen</translation>
     </message>
     <message>
-        <location line="+80"/>
+        <location line="+31"/>
         <source>1 directory</source>
         <translation>1 Ordner</translation>
     </message>
@@ -817,7 +817,7 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+256"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+253"/>
         <source>Default</source>
         <translation>Standard</translation>
     </message>
@@ -842,7 +842,7 @@
         <translation>Passwort festlegen</translation>
     </message>
     <message>
-        <location line="+46"/>
+        <location line="+25"/>
         <location line="+313"/>
         <source>Connecting . . .</source>
         <translation>Verbinde . . .</translation>
@@ -856,18 +856,18 @@
         <translation>Verbinden</translation>
     </message>
     <message>
-        <location line="-180"/>
+        <location line="-183"/>
         <source>Select one or more directories and/or files to share</source>
         <translation>Wählen Sie einen oder mehrere Ordner und/oder Dateien zum Freigeben aus</translation>
     </message>
     <message>
-        <location line="+21"/>
-        <location line="+65"/>
+        <location line="+20"/>
+        <location line="+69"/>
         <source>Remove selected shared entries</source>
         <translation>Ausgewählte Freigaben entfernen</translation>
     </message>
     <message>
-        <location line="-64"/>
+        <location line="-68"/>
         <source>Are you sure you want to remove the selected shared files and directories?</source>
         <translation>Möchten Sie die ausgewählten freigegebenen Dateien und Verzeichnisse wirklich entfernen?</translation>
     </message>
@@ -884,7 +884,7 @@
         <translation type="vanished">Freigegebenen Ordner entfernen</translation>
     </message>
     <message>
-        <location line="+72"/>
+        <location line="+76"/>
         <source>Move up</source>
         <translation>Nach oben bewegen</translation>
     </message>
@@ -902,7 +902,7 @@
 <context>
     <name>GUI::SharedEntryListModel</name>
     <message>
-        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="+284"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="+259"/>
         <source>Name</source>
         <translation>Name</translation>
     </message>
@@ -925,7 +925,7 @@
 <context>
     <name>GUI::StatusBar</name>
     <message>
-        <location filename="../GUI/StatusBar.cpp" line="+134"/>
+        <location filename="../GUI/StatusBar.cpp" line="+154"/>
         <source>peers</source>
         <translation>Knoten</translation>
     </message>
@@ -935,7 +935,7 @@
         <translation>Knoten</translation>
     </message>
     <message>
-        <location line="+15"/>
+        <location line="+18"/>
         <source>connected to %1</source>
         <translation>Verbunden mit %1</translation>
     </message>
@@ -1123,12 +1123,12 @@
         <translation>Lokal</translation>
     </message>
     <message>
-        <location filename="../GUI/Utils.cpp" line="+49"/>
+        <location filename="../GUI/Utils.cpp" line="+52"/>
         <source>Select one or more directories and/or files</source>
         <translation>Wählen Sie einen oder mehrere Ordner und/oder Dateien aus</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="+20"/>
         <source>Select a directory where to download to</source>
         <translation>Wählen Sie einen Zielordner für den Download aus</translation>
     </message>

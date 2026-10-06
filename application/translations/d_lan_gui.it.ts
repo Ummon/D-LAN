@@ -122,42 +122,42 @@
 <context>
     <name>GUI::AskNewPasswordDialog</name>
     <message>
-        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="59"/>
-        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="64"/>
-        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="69"/>
-        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="74"/>
-        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="79"/>
-        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="90"/>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="60"/>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="65"/>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="70"/>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="75"/>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="80"/>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="91"/>
         <source>Error</source>
         <translation>Errore</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="59"/>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="60"/>
         <source>The passwords aren&apos;t the same</source>
         <translation>Le password non coincidono</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="64"/>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="65"/>
         <source>The password can&apos;t be empty</source>
         <translation>La password non può essere vuota</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="69"/>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="70"/>
         <source>The password can&apos;t contain any whitespace</source>
         <translation>La password non può contenere spazi</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="74"/>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="75"/>
         <source>The old password is required</source>
         <translation>La vecchia password è obbligatoria</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="79"/>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="80"/>
         <source>The old and new passwords are the same</source>
         <translation>La vecchia e la nuova password sono uguali</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="90"/>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="91"/>
         <source>The old password doesn&apos;t match</source>
         <translation>La vecchia password non corrisponde</translation>
     </message>
@@ -165,7 +165,7 @@
 <context>
     <name>GUI::BrowseWidget</name>
     <message>
-        <location filename="../GUI/Browse/BrowseWidget.cpp" line="146"/>
+        <location filename="../GUI/Browse/BrowseWidget.cpp" line="131"/>
         <source>Open location</source>
         <translation>Apri percorso</translation>
     </message>
@@ -173,49 +173,49 @@
 <context>
     <name>GUI::ChatWidget</name>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="511"/>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="515"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="479"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="483"/>
         <source>Unable to send message</source>
         <translation>Impossibile inviare il messaggio</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="511"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="479"/>
         <source>The message is too long</source>
         <translation>Il messaggio è troppo lungo</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="515"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="483"/>
         <source>The message can&apos;t be send, unknown error</source>
         <translation>Impossibile inviare il messaggio, errore sconosciuto</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="533"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="499"/>
         <source>Browse</source>
         <translation>Sfoglia</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="537"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="502"/>
         <source>Copy IP: %1</source>
         <translation>Copia IP: %1</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="572"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="525"/>
         <source>Copy selected messages</source>
         <translation>Copia i messaggi selezionati</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="573"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="526"/>
         <source>Copy selected lines</source>
         <translation>Copia le righe selezionate</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="574"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="527"/>
         <source>Browse selected peers</source>
         <translation>Sfoglia i peer selezionati</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="969"/>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="1031"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="903"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="966"/>
         <source>Chat</source>
         <translation>Chat</translation>
     </message>
@@ -274,22 +274,22 @@
         <translation>Scarica gli elementi selezionati in . . .</translation>
     </message>
     <message>
-        <location filename="../GUI/DownloadMenu.cpp" line="124"/>
+        <location filename="../GUI/DownloadMenu.cpp" line="129"/>
         <source>Download here</source>
         <translation>Scarica qui</translation>
     </message>
     <message>
-        <location filename="../GUI/DownloadMenu.cpp" line="131"/>
+        <location filename="../GUI/DownloadMenu.cpp" line="136"/>
         <source>Loading . . .</source>
         <translation>Caricamento . . .</translation>
     </message>
     <message>
-        <location filename="../GUI/DownloadMenu.cpp" line="195"/>
+        <location filename="../GUI/DownloadMenu.cpp" line="200"/>
         <source>%1 more folders . . .</source>
         <translation>Altre %1 cartelle . . .</translation>
     </message>
     <message>
-        <location filename="../GUI/DownloadMenu.cpp" line="203"/>
+        <location filename="../GUI/DownloadMenu.cpp" line="208"/>
         <source>Unable to get the folders</source>
         <translation>Impossibile ottenere le cartelle</translation>
     </message>
@@ -452,37 +452,37 @@
         <translation>Rimuovere i download selezionati? Uno o più download non sono ancora completati.</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="439"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="443"/>
         <source>Switch to file list view</source>
         <translation>Passa alla vista elenco file</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="451"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="455"/>
         <source>Switch to tree view</source>
         <translation>Passa alla vista ad albero</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="494"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="498"/>
         <source>&lt;All&gt;</source>
         <translation>&lt;Tutti&gt;</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="494"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="498"/>
         <source>Complete</source>
         <translation>Completato</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="494"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="498"/>
         <source>Downloading</source>
         <translation>In scaricamento</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="494"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="498"/>
         <source>Queued</source>
         <translation>In coda</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="494"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="498"/>
         <source>Inactive</source>
         <translation>Inattivo</translation>
     </message>
@@ -490,7 +490,7 @@
 <context>
     <name>GUI::EmoticonsWidget</name>
     <message>
-        <location filename="../GUI/Emoticons/EmoticonsWidget.cpp" line="44"/>
+        <location filename="../GUI/Emoticons/EmoticonsWidget.cpp" line="47"/>
         <source>Set as the default theme</source>
         <translation>Imposta come tema predefinito</translation>
     </message>
@@ -498,88 +498,88 @@
 <context>
     <name>GUI::MainWindow</name>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="175"/>
+        <location filename="../GUI/MainWindow.cpp" line="172"/>
         <source>Already connected to this address</source>
         <translation>Già connesso a questo indirizzo</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="178"/>
+        <location filename="../GUI/MainWindow.cpp" line="175"/>
         <source>There is already a connection process in progress</source>
         <translation>Un tentativo di connessione è già in corso</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="181"/>
+        <location filename="../GUI/MainWindow.cpp" line="178"/>
         <source>The host is unknown</source>
         <translation>Host sconosciuto</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="184"/>
+        <location filename="../GUI/MainWindow.cpp" line="181"/>
         <source>Host has timed out</source>
         <translation>L&apos;host non risponde</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="187"/>
+        <location filename="../GUI/MainWindow.cpp" line="184"/>
         <source>The host hasn&apos;t defined any password</source>
         <translation>L&apos;host non ha impostato alcuna password</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="190"/>
+        <location filename="../GUI/MainWindow.cpp" line="187"/>
         <source>Wrong password</source>
         <translation>Password errata</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="193"/>
+        <location filename="../GUI/MainWindow.cpp" line="190"/>
         <source>Invalid address</source>
         <translation>Indirizzo non valido</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="196"/>
+        <location filename="../GUI/MainWindow.cpp" line="193"/>
         <source>Unable to establish a trusted encrypted connection. The Core&apos;s certificate may have changed or TLS may be unavailable. See the log for details.</source>
         <translation>Impossibile stabilire una connessione crittografata attendibile. Il certificato del Core potrebbe essere cambiato oppure TLS potrebbe non essere disponibile. Consultare il log per ulteriori dettagli.</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="199"/>
+        <location filename="../GUI/MainWindow.cpp" line="196"/>
         <source>The core closed the connection. Remote access requires a password to be defined on the core. The core may also have too many connections.</source>
         <translation>Il Core ha chiuso la connessione. L&apos;accesso remoto richiede che sul Core sia impostata una password. Il Core potrebbe anche avere troppe connessioni.</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="202"/>
+        <location filename="../GUI/MainWindow.cpp" line="199"/>
         <source>The core couldn&apos;t prove that it knows the password. The connection may have been intercepted.</source>
         <translation>Il Core non ha potuto dimostrare di conoscere la password. La connessione potrebbe essere stata intercettata.</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="205"/>
+        <location filename="../GUI/MainWindow.cpp" line="202"/>
         <source>The versions of the core and of this GUI are incompatible for remote control. Update them to the same version.</source>
         <translation>Le versioni del Core e di questa GUI non sono compatibili per il controllo remoto. Aggiornarle alla stessa versione.</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="208"/>
+        <location filename="../GUI/MainWindow.cpp" line="205"/>
         <source>Error unknown</source>
         <translation>Errore sconosciuto</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="214"/>
+        <location filename="../GUI/MainWindow.cpp" line="211"/>
         <source>Unable to connect to the core</source>
         <translation>Impossibile connettersi al Core</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="217"/>
-        <location filename="../GUI/MainWindow.cpp" line="241"/>
+        <location filename="../GUI/MainWindow.cpp" line="214"/>
+        <location filename="../GUI/MainWindow.cpp" line="238"/>
         <source>Core address:</source>
         <translation>Indirizzo del Core:</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="227"/>
+        <location filename="../GUI/MainWindow.cpp" line="224"/>
         <source>Connected to the core</source>
         <translation>Connesso al Core</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="236"/>
+        <location filename="../GUI/MainWindow.cpp" line="233"/>
         <source>Connection lost</source>
         <translation>Connessione persa</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="240"/>
+        <location filename="../GUI/MainWindow.cpp" line="237"/>
         <source>The connection to the core has been lost</source>
         <translation>La connessione al Core è stata persa</translation>
     </message>
@@ -587,12 +587,12 @@
 <context>
     <name>GUI::MdiArea</name>
     <message>
-        <location filename="../GUI/MDI/MdiArea.cpp" line="375"/>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="380"/>
         <source>Waiting the initial scanning process is finished before loading the download queue</source>
         <translation>In attesa del completamento della scansione iniziale prima di caricare la coda dei download</translation>
     </message>
     <message>
-        <location filename="../GUI/MDI/MdiArea.cpp" line="566"/>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="571"/>
         <source>Leave room</source>
         <translation>Esci dalla stanza</translation>
     </message>
@@ -600,29 +600,29 @@
 <context>
     <name>GUI::PeerListModel</name>
     <message>
-        <location filename="../GUI/Peers/PeerListModel.cpp" line="267"/>
+        <location filename="../GUI/Peers/PeerListModel.cpp" line="262"/>
         <source>Their protocol version is more recent and incompatible with ours. Upgrade you version!</source>
         <translation>La versione del protocollo di questo peer è più recente e incompatibile con la nostra. Aggiorna la tua versione!</translation>
     </message>
     <message>
-        <location filename="../GUI/Peers/PeerListModel.cpp" line="269"/>
+        <location filename="../GUI/Peers/PeerListModel.cpp" line="264"/>
         <source>Their protocol version is outdated and incompatible with ours. They should upgrade their version!</source>
         <translation>La versione del protocollo di questo peer è obsoleta e incompatibile con la nostra. Il peer dovrebbe aggiornare la propria versione!</translation>
     </message>
     <message>
-        <location filename="../GUI/Peers/PeerListModel.cpp" line="272"/>
+        <location filename="../GUI/Peers/PeerListModel.cpp" line="267"/>
         <source>Version %1
 </source>
         <translation>Versione %1
 </translation>
     </message>
     <message>
-        <location filename="../GUI/Peers/PeerListModel.cpp" line="274"/>
+        <location filename="../GUI/Peers/PeerListModel.cpp" line="269"/>
         <source>Download rate: </source>
         <translation>Velocità di download: </translation>
     </message>
     <message>
-        <location filename="../GUI/Peers/PeerListModel.cpp" line="275"/>
+        <location filename="../GUI/Peers/PeerListModel.cpp" line="270"/>
         <source>Upload rate: </source>
         <translation>Velocità di upload: </translation>
     </message>
@@ -630,57 +630,57 @@
 <context>
     <name>GUI::PeersDock</name>
     <message>
-        <location filename="../GUI/Peers/PeersDock.cpp" line="97"/>
+        <location filename="../GUI/Peers/PeersDock.cpp" line="95"/>
         <source>Browse</source>
         <translation>Sfoglia</translation>
     </message>
     <message>
-        <location filename="../GUI/Peers/PeersDock.cpp" line="106"/>
+        <location filename="../GUI/Peers/PeersDock.cpp" line="102"/>
         <source>Take control</source>
         <translation>Prendi il controllo</translation>
     </message>
     <message>
-        <location filename="../GUI/Peers/PeersDock.cpp" line="114"/>
+        <location filename="../GUI/Peers/PeersDock.cpp" line="107"/>
         <source>Copy IP: %1</source>
         <translation>Copia IP: %1</translation>
     </message>
     <message>
-        <location filename="../GUI/Peers/PeersDock.cpp" line="121"/>
+        <location filename="../GUI/Peers/PeersDock.cpp" line="114"/>
         <source>Sort by the amount of sharing</source>
         <translation>Ordina per dimensione della condivisione</translation>
     </message>
     <message>
-        <location filename="../GUI/Peers/PeersDock.cpp" line="124"/>
+        <location filename="../GUI/Peers/PeersDock.cpp" line="118"/>
         <source>Sort alphabetically</source>
         <translation>Ordina alfabeticamente</translation>
     </message>
     <message>
-        <location filename="../GUI/Peers/PeersDock.cpp" line="139"/>
+        <location filename="../GUI/Peers/PeersDock.cpp" line="133"/>
         <source>Colorize in red</source>
         <translation>Colora di rosso</translation>
     </message>
     <message>
-        <location filename="../GUI/Peers/PeersDock.cpp" line="146"/>
+        <location filename="../GUI/Peers/PeersDock.cpp" line="140"/>
         <source>Colorize in blue</source>
         <translation>Colora di blu</translation>
     </message>
     <message>
-        <location filename="../GUI/Peers/PeersDock.cpp" line="154"/>
+        <location filename="../GUI/Peers/PeersDock.cpp" line="147"/>
         <source>Colorize in green</source>
         <translation>Colora di verde</translation>
     </message>
     <message>
-        <location filename="../GUI/Peers/PeersDock.cpp" line="159"/>
+        <location filename="../GUI/Peers/PeersDock.cpp" line="152"/>
         <source>Uncolorize</source>
         <translation>Rimuovi il colore</translation>
     </message>
     <message>
-        <location filename="../GUI/Peers/PeersDock.cpp" line="195"/>
+        <location filename="../GUI/Peers/PeersDock.cpp" line="192"/>
         <source>Take control of %1</source>
         <translation>Prendi il controllo di %1</translation>
     </message>
     <message>
-        <location filename="../GUI/Peers/PeersDock.cpp" line="197"/>
+        <location filename="../GUI/Peers/PeersDock.cpp" line="194"/>
         <source>Enter a password</source>
         <translation>Inserisci una password</translation>
     </message>
@@ -688,27 +688,27 @@
 <context>
     <name>GUI::RemoteBrowseDialog</name>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="65"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="56"/>
         <source>Ok</source>
         <translation>OK</translation>
     </message>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="66"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="57"/>
         <source>Cancel</source>
         <translation>Annulla</translation>
     </message>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="159"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="150"/>
         <source>Show hidden files and directories</source>
         <translation>Mostra file e cartelle nascosti</translation>
     </message>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="159"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="150"/>
         <source>Show hidden directories</source>
         <translation>Mostra cartelle nascoste</translation>
     </message>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="343"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="334"/>
         <source>Open location</source>
         <translation>Apri percorso</translation>
     </message>
@@ -724,17 +724,17 @@
 <context>
     <name>GUI::RoomsDock</name>
     <message>
-        <location filename="../GUI/Chat/RoomsDock.cpp" line="97"/>
+        <location filename="../GUI/Chat/RoomsDock.cpp" line="81"/>
         <source>Join</source>
         <translation>Entra</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/RoomsDock.cpp" line="101"/>
+        <location filename="../GUI/Chat/RoomsDock.cpp" line="86"/>
         <source>Sort by number of peers</source>
         <translation>Ordina per numero di peer</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/RoomsDock.cpp" line="102"/>
+        <location filename="../GUI/Chat/RoomsDock.cpp" line="88"/>
         <source>Sort alphabetically</source>
         <translation>Ordina alfabeticamente</translation>
     </message>
@@ -742,7 +742,7 @@
 <context>
     <name>GUI::SearchMenu</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="253"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="273"/>
         <source>Browse</source>
         <translation>Sfoglia</translation>
     </message>
@@ -775,8 +775,8 @@
         <translation>Dimensione</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchModel.cpp" line="364"/>
-        <location filename="../GUI/Search/SearchModel.cpp" line="418"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="397"/>
+        <location filename="../GUI/Search/SearchModel.cpp" line="457"/>
         <source>&lt;unknown&gt;</source>
         <translation>&lt;sconosciuto&gt;</translation>
     </message>
@@ -784,32 +784,32 @@
 <context>
     <name>GUI::SearchWidget</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="385"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="405"/>
         <source>Open location</source>
         <translation>Apri percorso</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="386"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="406"/>
         <source>Browse</source>
         <translation>Sfoglia</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="466"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="437"/>
         <source>1 directory</source>
         <translation>1 cartella</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="466"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="437"/>
         <source>%1 directories</source>
         <translation>%1 cartelle</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="467"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="438"/>
         <source>1 file</source>
         <translation>1 file</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="467"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="438"/>
         <source>%1 files</source>
         <translation>%1 file</translation>
     </message>
@@ -817,57 +817,57 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="256"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="253"/>
         <source>Default</source>
         <translation>Predefinito</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="315"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="312"/>
         <source>Interface not active</source>
         <translation>Interfaccia non attiva</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="539"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="536"/>
         <source>Change the password</source>
         <translation>Cambia la password</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="543"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="540"/>
         <source>No password defined</source>
         <translation>Non è stata impostata alcuna password</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="545"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="542"/>
         <source>Define a password</source>
         <translation>Imposta una password</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="591"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="904"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="567"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="880"/>
         <source>Connecting . . .</source>
         <translation>Connessione in corso . . .</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="599"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="615"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="630"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="904"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="575"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="591"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="606"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="880"/>
         <source>Connect</source>
         <translation>Connetti</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="724"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="697"/>
         <source>Select one or more directories and/or files to share</source>
         <translation>Seleziona una o più cartelle e/o file da condividere</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="745"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="810"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="717"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="786"/>
         <source>Remove selected shared entries</source>
         <translation>Rimuovi gli elementi condivisi selezionati</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="746"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="718"/>
         <source>Are you sure you want to remove the selected shared files and directories?</source>
         <translation>Rimuovere i file e le cartelle condivisi selezionati?</translation>
     </message>
@@ -884,17 +884,17 @@
         <translation type="vanished">Rimuovi la cartella condivisa</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="818"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="794"/>
         <source>Move up</source>
         <translation>Sposta su</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="826"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="802"/>
         <source>Move down</source>
         <translation>Sposta giù</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="834"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="810"/>
         <source>Open location</source>
         <translation>Apri percorso</translation>
     </message>
@@ -902,22 +902,22 @@
 <context>
     <name>GUI::SharedEntryListModel</name>
     <message>
-        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="284"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="259"/>
         <source>Name</source>
         <translation>Nome</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="285"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="260"/>
         <source>Path</source>
         <translation>Percorso</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="286"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="261"/>
         <source>Size</source>
         <translation>Dimensione</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="287"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="262"/>
         <source>Free space</source>
         <translation>Spazio libero</translation>
     </message>
@@ -925,47 +925,47 @@
 <context>
     <name>GUI::StatusBar</name>
     <message>
-        <location filename="../GUI/StatusBar.cpp" line="134"/>
+        <location filename="../GUI/StatusBar.cpp" line="154"/>
         <source>peers</source>
         <translation>peer</translation>
     </message>
     <message>
-        <location filename="../GUI/StatusBar.cpp" line="134"/>
+        <location filename="../GUI/StatusBar.cpp" line="154"/>
         <source>peer</source>
         <translation>peer</translation>
     </message>
     <message>
-        <location filename="../GUI/StatusBar.cpp" line="149"/>
+        <location filename="../GUI/StatusBar.cpp" line="172"/>
         <source>connected to %1</source>
         <translation>connesso a %1</translation>
     </message>
     <message>
-        <location filename="../GUI/StatusBar.cpp" line="151"/>
+        <location filename="../GUI/StatusBar.cpp" line="174"/>
         <source>connected</source>
         <translation>connesso</translation>
     </message>
     <message>
-        <location filename="../GUI/StatusBar.cpp" line="157"/>
+        <location filename="../GUI/StatusBar.cpp" line="180"/>
         <source>scanning in progress . . .</source>
         <translation>scansione in corso . . .</translation>
     </message>
     <message>
-        <location filename="../GUI/StatusBar.cpp" line="161"/>
+        <location filename="../GUI/StatusBar.cpp" line="184"/>
         <source>indexing in progress . . .</source>
         <translation>indicizzazione in corso . . .</translation>
     </message>
     <message>
-        <location filename="../GUI/StatusBar.cpp" line="166"/>
+        <location filename="../GUI/StatusBar.cpp" line="189"/>
         <source>cache is up to date</source>
         <translation>la cache è aggiornata</translation>
     </message>
     <message>
-        <location filename="../GUI/StatusBar.cpp" line="177"/>
+        <location filename="../GUI/StatusBar.cpp" line="200"/>
         <source>disconnected</source>
         <translation>disconnesso</translation>
     </message>
     <message>
-        <location filename="../GUI/StatusBar.cpp" line="181"/>
+        <location filename="../GUI/StatusBar.cpp" line="204"/>
         <source>Core: %1</source>
         <translation>Core: %1</translation>
     </message>
@@ -1123,12 +1123,12 @@
         <translation>Servizio Core avviato</translation>
     </message>
     <message>
-        <location filename="../GUI/Utils.cpp" line="49"/>
+        <location filename="../GUI/Utils.cpp" line="52"/>
         <source>Select one or more directories and/or files</source>
         <translation>Seleziona una o più cartelle e/o file</translation>
     </message>
     <message>
-        <location filename="../GUI/Utils.cpp" line="59"/>
+        <location filename="../GUI/Utils.cpp" line="72"/>
         <source>Select a directory where to download to</source>
         <translation>Seleziona una cartella di destinazione per il download</translation>
     </message>

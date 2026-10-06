@@ -122,7 +122,7 @@
 <context>
     <name>GUI::AskNewPasswordDialog</name>
     <message>
-        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="+59"/>
+        <location filename="../GUI/Settings/AskNewPasswordDialog.cpp" line="+60"/>
         <location line="+5"/>
         <location line="+5"/>
         <location line="+5"/>
@@ -165,7 +165,7 @@
 <context>
     <name>GUI::BrowseWidget</name>
     <message>
-        <location filename="../GUI/Browse/BrowseWidget.cpp" line="+146"/>
+        <location filename="../GUI/Browse/BrowseWidget.cpp" line="+131"/>
         <source>Open location</source>
         <translation>स्थान खोलें</translation>
     </message>
@@ -173,7 +173,7 @@
 <context>
     <name>GUI::ChatWidget</name>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="+511"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="+479"/>
         <location line="+4"/>
         <source>Unable to send message</source>
         <translation>संदेश भेजने में असमर्थ</translation>
@@ -189,17 +189,17 @@
         <translation>संदेश नहीं भेजा जा सका, अज्ञात त्रुटि</translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location line="+16"/>
         <source>Browse</source>
         <translation>ब्राउज़ करें</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+3"/>
         <source>Copy IP: %1</source>
         <translation>IP कॉपी करें: %1</translation>
     </message>
     <message>
-        <location line="+35"/>
+        <location line="+23"/>
         <source>Copy selected messages</source>
         <translation>चयनित संदेश कॉपी करें</translation>
     </message>
@@ -214,8 +214,8 @@
         <translation>चयनित पीयर ब्राउज़ करें</translation>
     </message>
     <message>
-        <location line="+395"/>
-        <location line="+62"/>
+        <location line="+376"/>
+        <location line="+63"/>
         <source>Chat</source>
         <translation>चैट</translation>
     </message>
@@ -274,7 +274,7 @@
         <translation>चयनित आइटम इसमें डाउनलोड करें . . .</translation>
     </message>
     <message>
-        <location line="+29"/>
+        <location line="+34"/>
         <source>Download here</source>
         <translation>यहाँ डाउनलोड करें</translation>
     </message>
@@ -448,7 +448,7 @@
         <translation>क्या आप वाकई चयनित डाउनलोड हटाना चाहते हैं? एक या अधिक डाउनलोड अधूरे हैं।</translation>
     </message>
     <message>
-        <location line="+78"/>
+        <location line="+82"/>
         <source>Switch to file list view</source>
         <translation>फ़ाइल सूची दृश्य पर जाएँ</translation>
     </message>
@@ -486,7 +486,7 @@
 <context>
     <name>GUI::EmoticonsWidget</name>
     <message>
-        <location filename="../GUI/Emoticons/EmoticonsWidget.cpp" line="+44"/>
+        <location filename="../GUI/Emoticons/EmoticonsWidget.cpp" line="+47"/>
         <source>Set as the default theme</source>
         <translation>डिफ़ॉल्ट थीम के रूप में सेट करें</translation>
     </message>
@@ -494,7 +494,7 @@
 <context>
     <name>GUI::MainWindow</name>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="+175"/>
+        <location filename="../GUI/MainWindow.cpp" line="+172"/>
         <source>Already connected to this address</source>
         <translation>इस पते से पहले से कनेक्ट है</translation>
     </message>
@@ -583,7 +583,7 @@
 <context>
     <name>GUI::MdiArea</name>
     <message>
-        <location filename="../GUI/MDI/MdiArea.cpp" line="+375"/>
+        <location filename="../GUI/MDI/MdiArea.cpp" line="+380"/>
         <source>Waiting the initial scanning process is finished before loading the download queue</source>
         <translation>डाउनलोड कतार लोड करने से पहले प्रारंभिक स्कैनिंग पूरी होने की प्रतीक्षा की जा रही है</translation>
     </message>
@@ -596,7 +596,7 @@
 <context>
     <name>GUI::PeerListModel</name>
     <message>
-        <location filename="../GUI/Peers/PeerListModel.cpp" line="+267"/>
+        <location filename="../GUI/Peers/PeerListModel.cpp" line="+262"/>
         <source>Their protocol version is more recent and incompatible with ours. Upgrade you version!</source>
         <translation>उनका प्रोटोकॉल संस्करण नया है और हमारे संस्करण के साथ असंगत है। अपना संस्करण अपग्रेड करें!</translation>
     </message>
@@ -626,17 +626,17 @@
 <context>
     <name>GUI::PeersDock</name>
     <message>
-        <location filename="../GUI/Peers/PeersDock.cpp" line="+97"/>
+        <location filename="../GUI/Peers/PeersDock.cpp" line="+95"/>
         <source>Browse</source>
         <translation>ब्राउज़ करें</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="+7"/>
         <source>Take control</source>
         <translation>नियंत्रण लें</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+5"/>
         <source>Copy IP: %1</source>
         <translation>IP कॉपी करें: %1</translation>
     </message>
@@ -646,7 +646,7 @@
         <translation>साझा की गई मात्रा के अनुसार क्रमबद्ध करें</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+4"/>
         <source>Sort alphabetically</source>
         <translation>वर्णानुक्रम में क्रमबद्ध करें</translation>
     </message>
@@ -661,7 +661,7 @@
         <translation>नीला रंग दें</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+7"/>
         <source>Colorize in green</source>
         <translation>हरा रंग दें</translation>
     </message>
@@ -671,7 +671,7 @@
         <translation>रंग हटाएँ</translation>
     </message>
     <message>
-        <location line="+36"/>
+        <location line="+40"/>
         <source>Take control of %1</source>
         <translation>%1 का नियंत्रण लें</translation>
     </message>
@@ -684,7 +684,7 @@
 <context>
     <name>GUI::RemoteBrowseDialog</name>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="+65"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="+56"/>
         <source>Ok</source>
         <translation>ठीक है</translation>
     </message>
@@ -720,17 +720,17 @@
 <context>
     <name>GUI::RoomsDock</name>
     <message>
-        <location filename="../GUI/Chat/RoomsDock.cpp" line="+97"/>
+        <location filename="../GUI/Chat/RoomsDock.cpp" line="+81"/>
         <source>Join</source>
         <translation>शामिल हों</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+5"/>
         <source>Sort by number of peers</source>
         <translation>पीयर की संख्या के अनुसार क्रमबद्ध करें</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Sort alphabetically</source>
         <translation>वर्णानुक्रम में क्रमबद्ध करें</translation>
     </message>
@@ -738,7 +738,7 @@
 <context>
     <name>GUI::SearchMenu</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="+253"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="+273"/>
         <source>Browse</source>
         <translation>ब्राउज़ करें</translation>
     </message>
@@ -771,8 +771,8 @@
         <translation>आकार</translation>
     </message>
     <message>
-        <location line="+222"/>
-        <location line="+54"/>
+        <location line="+255"/>
+        <location line="+60"/>
         <source>&lt;unknown&gt;</source>
         <translation>&lt;अज्ञात&gt;</translation>
     </message>
@@ -790,7 +790,7 @@
         <translation>ब्राउज़ करें</translation>
     </message>
     <message>
-        <location line="+80"/>
+        <location line="+31"/>
         <source>1 directory</source>
         <translation>1 फ़ोल्डर</translation>
     </message>
@@ -813,7 +813,7 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+256"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+253"/>
         <source>Default</source>
         <translation>डिफ़ॉल्ट</translation>
     </message>
@@ -838,7 +838,7 @@
         <translation>पासवर्ड निर्धारित करें</translation>
     </message>
     <message>
-        <location line="+46"/>
+        <location line="+25"/>
         <location line="+313"/>
         <source>Connecting . . .</source>
         <translation>कनेक्ट हो रहा है . . .</translation>
@@ -852,23 +852,23 @@
         <translation>कनेक्ट करें</translation>
     </message>
     <message>
-        <location line="-180"/>
+        <location line="-183"/>
         <source>Select one or more directories and/or files to share</source>
         <translation>साझा करने के लिए एक या अधिक फ़ोल्डर और/या फ़ाइलें चुनें</translation>
     </message>
     <message>
-        <location line="+21"/>
-        <location line="+65"/>
+        <location line="+20"/>
+        <location line="+69"/>
         <source>Remove selected shared entries</source>
         <translation>चयनित साझा आइटम हटाएँ</translation>
     </message>
     <message>
-        <location line="-64"/>
+        <location line="-68"/>
         <source>Are you sure you want to remove the selected shared files and directories?</source>
         <translation>क्या आप वाकई चयनित साझा फ़ाइलें और फ़ोल्डर हटाना चाहते हैं?</translation>
     </message>
     <message>
-        <location line="+72"/>
+        <location line="+76"/>
         <source>Move up</source>
         <translation>ऊपर ले जाएँ</translation>
     </message>
@@ -886,7 +886,7 @@
 <context>
     <name>GUI::SharedEntryListModel</name>
     <message>
-        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="+284"/>
+        <location filename="../GUI/Settings/SharedEntryListModel.cpp" line="+259"/>
         <source>Name</source>
         <translation>नाम</translation>
     </message>
@@ -909,7 +909,7 @@
 <context>
     <name>GUI::StatusBar</name>
     <message>
-        <location filename="../GUI/StatusBar.cpp" line="+134"/>
+        <location filename="../GUI/StatusBar.cpp" line="+154"/>
         <source>peers</source>
         <translation>पीयर</translation>
     </message>
@@ -919,7 +919,7 @@
         <translation>पीयर</translation>
     </message>
     <message>
-        <location line="+15"/>
+        <location line="+18"/>
         <source>connected to %1</source>
         <translation>%1 से कनेक्टेड</translation>
     </message>
@@ -1107,12 +1107,12 @@
         <translation>स्थानीय</translation>
     </message>
     <message>
-        <location filename="../GUI/Utils.cpp" line="+49"/>
+        <location filename="../GUI/Utils.cpp" line="+52"/>
         <source>Select one or more directories and/or files</source>
         <translation>एक या अधिक फ़ोल्डर और/या फ़ाइलें चुनें</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="+20"/>
         <source>Select a directory where to download to</source>
         <translation>वह फ़ोल्डर चुनें जिसमें डाउनलोड करना है</translation>
     </message>
