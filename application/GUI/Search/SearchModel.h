@@ -89,7 +89,12 @@ namespace GUI
 
    private:
       SearchTree* getRoot();
-      int insertTree(const Protos::Common::FindResult_EntryLevel& entry, const Common::Hash& peerID, int currentIndex);
+      int insertTree(
+         const Protos::Common::FindResult_EntryLevel& entry,
+         const QString& directoryKey,
+         const Common::Hash& peerID,
+         int currentIndex
+      );
       bool setMaxLevel(int newLevel);
 
       const PeerListModel& peerListModel;
@@ -146,6 +151,8 @@ namespace GUI
          int getLevel() const;
          Common::Hash getPeerID() const;
          const QString& getPeerNick() const;
+         const QString& getDirectorySortKey() const;
+         void setItem(const Protos::Common::Entry& entry) override;
          QVariant data(int column) const override;
 
          void copyFrom(const SearchTree* otherNode);
@@ -158,6 +165,9 @@ namespace GUI
          int level;
          Common::Hash peerID;
          QString peerNick;
+
+         mutable QString directorySortKey; // See 'getDirectorySortKey()'.
+         mutable bool directorySortKeyBuilt = false;
       };
    };
 }

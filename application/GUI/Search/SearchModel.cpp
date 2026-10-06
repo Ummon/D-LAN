@@ -187,6 +187,71 @@ void SearchModel::loadChildren(const QPersistentModelIndex &index)
    }
 }
 
+namespace
+{
+   /**
+     * The directory of an entry as it's compared when sorting.
+     */
+   QString directorySortKey(const Protos::Common::Entry& entry)
+   {
+      return Common::ProtoHelper::getPath(entry, !Common::ProtoHelper::isRoot(entry)).toString(false).toLower();
+   }
+
+   /**
+     * What is compared for an entry. The directory is given as a key already built, see 'directorySortKey(..)':
+     * building it for each comparison was by far the most expensive part of a sort, it's the first tie-breaker.
+     */
+   struct SortKeys
+   {
+      const Protos::Common::Entry& entry;
+      int level;
+      const QString& peerNick;
+      const QString& directory;
+   };
+
+   bool lessThan(const SortKeys& k1, const SortKeys& k2, SearchModel::Column column, Qt::SortOrder order)
+   {
+      const auto compare = [&](SearchModel::Column key) -> int
+      {
+         switch (key)
+         {
+         case SearchModel::NAME:
+            // Compare UTF-8 bytes as in the download model; this is not Unicode case folding.
+            return Common::StringUtils::strcmpi(k1.entry.name(), k2.entry.name());
+
+         case SearchModel::DIRECTORY:
+            return k1.directory.compare(k2.directory);
+
+         case SearchModel::RELEVANCE:
+            // A lower level means a better match.
+            return (k1.level > k2.level) - (k1.level < k2.level);
+
+         case SearchModel::PEER:
+            return k1.peerNick.compare(k2.peerNick);
+
+         case SearchModel::SIZE:
+            return (k1.entry.size() > k2.entry.size()) - (k1.entry.size() < k2.entry.size());
+         }
+         return 0;
+      };
+
+      // Selected column first, then the same tie-breakers for every column.
+      int comparison = compare(column);
+      for (const auto key : { SearchModel::RELEVANCE, SearchModel::DIRECTORY, SearchModel::NAME, SearchModel::PEER, SearchModel::SIZE })
+      {
+         if (comparison != 0)
+            break;
+         if (key != column)
+            comparison = compare(key);
+      }
+      return order == Qt::AscendingOrder ? comparison < 0 : comparison > 0;
+   }
+}
+
+/**
+  * The order of two entries, with their directory keys built on the fly. The model gives its own keys to
+  * 'lessThan(..)', this function is the entry point of the tests.
+  */
 bool entryLessThan(
    const Protos::Common::Entry& e1,
    int level1,
@@ -198,44 +263,9 @@ bool entryLessThan(
    Qt::SortOrder order
 )
 {
-   const auto compare = [&](SearchModel::Column key) -> int
-   {
-      switch (key)
-      {
-      case SearchModel::NAME:
-         // Compare UTF-8 bytes as in the download model; this is not Unicode case folding.
-         return Common::StringUtils::strcmpi(e1.name(), e2.name());
-
-      case SearchModel::DIRECTORY:
-      {
-         const QString path1 = Common::ProtoHelper::getPath(e1, !Common::ProtoHelper::isRoot(e1)).toString(false).toLower();
-         const QString path2 = Common::ProtoHelper::getPath(e2, !Common::ProtoHelper::isRoot(e2)).toString(false).toLower();
-         return path1.compare(path2);
-      }
-
-      case SearchModel::RELEVANCE:
-         // A lower level means a better match.
-         return (level1 > level2) - (level1 < level2);
-
-      case SearchModel::PEER:
-         return peerNick1.compare(peerNick2);
-
-      case SearchModel::SIZE:
-         return (e1.size() > e2.size()) - (e1.size() < e2.size());
-      }
-      return 0;
-   };
-
-   // Selected column first, then the same tie-breakers for every column.
-   int comparison = compare(column);
-   for (const auto key : { SearchModel::RELEVANCE, SearchModel::DIRECTORY, SearchModel::NAME, SearchModel::PEER, SearchModel::SIZE })
-   {
-      if (comparison != 0)
-         break;
-      if (key != column)
-         comparison = compare(key);
-   }
-   return order == Qt::AscendingOrder ? comparison < 0 : comparison > 0;
+   const QString directory1 = directorySortKey(e1);
+   const QString directory2 = directorySortKey(e2);
+   return lessThan({ e1, level1, peerNick1, directory1 }, { e2, level2, peerNick2, directory2 }, column, order);
 }
 
 /**
@@ -258,13 +288,12 @@ void SearchModel::sort(int column, Qt::SortOrder order)
    this->root->sort(
       [&](const Tree* t1, const Tree* t2)
       {
-         return entryLessThan(
-            t1->getItem(),
-            dynamic_cast<const SearchTree*>(t1)->getLevel(),
-            dynamic_cast<const SearchTree*>(t1)->getPeerNick(),
-            t2->getItem(),
-            dynamic_cast<const SearchTree*>(t2)->getLevel(),
-            dynamic_cast<const SearchTree*>(t2)->getPeerNick(),
+         // The children of the root are always 'SearchTree' objects.
+         const SearchTree* s1 = static_cast<const SearchTree*>(t1);
+         const SearchTree* s2 = static_cast<const SearchTree*>(t2);
+         return lessThan(
+            { s1->getItem(), s1->getLevel(), s1->getPeerNick(), s1->getDirectorySortKey() },
+            { s2->getItem(), s2->getLevel(), s2->getPeerNick(), s2->getDirectorySortKey() },
             this->currentSortedColumn,
             this->currentSortOrder
          );
@@ -295,23 +324,27 @@ void SearchModel::resultFromFindResult(const Protos::Common::FindResult& findRes
    if (findResult.entries_size() == 0)
       return;
 
-   QList<const Protos::Common::FindResult_EntryLevel*> sortedEntries;
+   // The directory keys are built once per entry and not for each comparison.
+   struct SortedEntry
+   {
+      const Protos::Common::FindResult_EntryLevel* entry;
+      QString directory;
+   };
+   QList<SortedEntry> sortedEntries;
+   sortedEntries.reserve(findResult.entries_size());
    for (int i = 0; i < findResult.entries_size(); i++)
-      sortedEntries << &findResult.entries(i);
+      sortedEntries << SortedEntry { &findResult.entries(i), directorySortKey(findResult.entries(i).entry()) };
 
+   // The peer nick isn't necessary because the results are from the same peer.
+   const QString noPeerNick;
    std::sort(
       sortedEntries.begin(),
       sortedEntries.end(),
-      [&](const Protos::Common::FindResult_EntryLevel* e1, const Protos::Common::FindResult_EntryLevel* e2)
+      [&](const SortedEntry& e1, const SortedEntry& e2)
       {
-         // The peer nick isn't necessary because the results are from the same peer.
-         return entryLessThan(
-            e1->entry(),
-            e1->level(),
-            QString(),
-            e2->entry(),
-            e2->level(),
-            QString(),
+         return lessThan(
+            { e1.entry->entry(), static_cast<int>(e1.entry->level()), noPeerNick, e1.directory },
+            { e2.entry->entry(), static_cast<int>(e2.entry->level()), noPeerNick, e2.directory },
             this->currentSortedColumn,
             this->currentSortOrder
          );
@@ -321,9 +354,9 @@ void SearchModel::resultFromFindResult(const Protos::Common::FindResult& findRes
    int currentIndex = 0;
    bool maxLevelChange = false;
 
-   for (QListIterator<const Protos::Common::FindResult_EntryLevel*> i(sortedEntries); i.hasNext();)
+   for (const SortedEntry& sortedEntry : std::as_const(sortedEntries))
    {
-      const Protos::Common::FindResult_EntryLevel* entry = i.next();
+      const Protos::Common::FindResult_EntryLevel* entry = sortedEntry.entry;
       if (this->setMaxLevel(entry->level()))
          maxLevelChange = true;
 
@@ -379,7 +412,7 @@ void SearchModel::resultFromFindResult(const Protos::Common::FindResult& findRes
          }
       }
 
-      currentIndex = this->insertTree(*entry, findResult.peer_id().hash(), currentIndex);
+      currentIndex = this->insertTree(*entry, sortedEntry.directory, findResult.peer_id().hash(), currentIndex);
    }
 
    if (maxLevelChange && this->rowCount() > 0)
@@ -407,8 +440,14 @@ SearchModel::SearchTree* SearchModel::getRoot()
 /**
   * Create a new tree, it can be a directory or a file. It will be inserted in the structure depending its level and its path+name.
   * Return the index of the first entry of the same level.
+  * @param directoryKey The key of the entry's directory, see 'directorySortKey(..)'.
   */
-int SearchModel::insertTree(const Protos::Common::FindResult_EntryLevel& entry, const Common::Hash& peerID, int currentIndex)
+int SearchModel::insertTree(
+   const Protos::Common::FindResult_EntryLevel& entry,
+   const QString& directoryKey,
+   const Common::Hash& peerID,
+   int currentIndex
+)
 {
    if (entry.entry().type() == Protos::Common::Entry_Type_FILE)
       this->nbFiles++;
@@ -420,18 +459,21 @@ int SearchModel::insertTree(const Protos::Common::FindResult_EntryLevel& entry, 
    SearchTree* root = this->getRoot();
 
    // Search a place to insert the new entry, order (level > path > name) must be kept.
-   while (currentIndex < root->getNbChildren() &&
-          entryLessThan(
-             root->getChild(currentIndex)->getItem(),
-             static_cast<SearchTree*>(root->getChild(currentIndex))->getLevel(),
-             static_cast<SearchTree*>(root->getChild(currentIndex))->getPeerNick(),
-             entry.entry(),
-             static_cast<int>(entry.level()),
-             peerNick,
-             this->currentSortedColumn,
-             this->currentSortOrder)
-          )
+   const SortKeys keys { entry.entry(), static_cast<int>(entry.level()), peerNick, directoryKey };
+   while (currentIndex < root->getNbChildren())
+   {
+      const SearchTree* child = static_cast<const SearchTree*>(root->getChild(currentIndex));
+      if (
+         !lessThan(
+            { child->getItem(), child->getLevel(), child->getPeerNick(), child->getDirectorySortKey() },
+            keys,
+            this->currentSortedColumn,
+            this->currentSortOrder
+         )
+      )
+         break;
       currentIndex++;
+   }
 
    this->beginInsertRows(QModelIndex(), currentIndex, currentIndex);
    SearchTree* newTree = root->insertChildEntryAtIndex(currentIndex++, entry, peerID, peerNick);
@@ -526,6 +568,26 @@ const QString& SearchModel::SearchTree::getPeerNick() const
    return this->peerNick;
 }
 
+/**
+  * The key of the entry's directory to sort the results, see 'directorySortKey(..)'.
+  * It's built the first time it's asked and kept until the entry changes.
+  */
+const QString& SearchModel::SearchTree::getDirectorySortKey() const
+{
+   if (!this->directorySortKeyBuilt)
+   {
+      this->directorySortKey = ::directorySortKey(this->getItem());
+      this->directorySortKeyBuilt = true;
+   }
+   return this->directorySortKey;
+}
+
+void SearchModel::SearchTree::setItem(const Protos::Common::Entry& entry)
+{
+   Tree::setItem(entry);
+   this->directorySortKeyBuilt = false;
+}
+
 QVariant SearchModel::SearchTree::data(int column) const
 {
    switch (column)
@@ -572,6 +634,7 @@ SearchModel::SearchTree* SearchModel::SearchTree::newTree(const Protos::Common::
 void SearchModel::SearchTree::copyFrom(const SearchModel::SearchTree* otherTree)
 {
    this->getItem().CopyFrom(otherTree->getItem());
+   this->directorySortKeyBuilt = false;
    this->level = otherTree->getLevel();
    this->peerID = otherTree->getPeerID();
    this->peerNick = otherTree->peerNick;
