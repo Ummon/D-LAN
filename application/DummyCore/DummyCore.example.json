@@ -1,0 +1,203 @@
+{
+   "peers": [
+      {
+         "name": "Renoir",
+         "self": true,
+         "sharing": "2.9 TiB",
+         "download_rate": "234.3 MiB/s",
+         "upload_rate": "191.6 MiB/s",
+         "shared": [
+            { "name": "Incoming", "children": [] }
+         ]
+      },
+      {
+         "name": "Sciel",
+         "sharing": "82.1 GiB",
+         "upload_rate": "234.3 MiB/s",
+         "version": "1.5.1"
+      },
+      {
+         "name": "Gustave",
+         "sharing": "43.1 GiB",
+         "download_rate": "150.0 MiB/s",
+         "version": "1.5.1"
+      },
+      {
+         "name": "Maelle",
+         "sharing": "41.0 GiB",
+         "version": "1.5.0"
+      },
+      {
+         "name": "Lune",
+         "download_rate": "41.6 MiB/s",
+         "version": "1.5.1",
+         "shared": [
+            { "name": "Incoming", "children": [] },
+            {
+               "name": "Sharing",
+               "children": [
+                  {
+                     "name": "Games",
+                     "children": [
+                        {
+                           "name": "0 A.D.",
+                           "children": [
+                              { "name": "0ad-0.27.1-win32.exe", "size": "1.0 GiB" }
+                           ]
+                        }
+                     ]
+                  },
+                  {
+                     "name": "Music",
+                     "children": [
+                        {
+                           "name": "Butterfly Tea - Feeries 2010 - Soundtrack",
+                           "children": [
+                              { "name": "01 - Heart of Medieval.mp3", "size": "6.2 MiB" },
+                              { "name": "02 - Asian Wonders.mp3", "size": "6.9 MiB" },
+                              { "name": "03 - Oriental Rock Lullaby.mp3", "size": "4.8 MiB" },
+                              { "name": "04 - Forest Dance.mp3", "size": "6.9 MiB" },
+                              { "name": "05 - The Night of The Feeries.mp3", "size": "6.7 MiB" },
+                              { "name": "06 - The Origins.mp3", "size": "6.3 MiB" },
+                              { "name": "07 - Butterfly in Paris.mp3", "size": "3.9 MiB" },
+                              { "name": "08 - Return of the Fantasy.mp3", "size": "6.7 MiB" },
+                              { "name": "[cover] Butterfly Tea - Feeries 2010 - Soundtrack.jpg", "size": "198.0 KiB" },
+                              { "name": "License.txt", "size": 670 },
+                              { "name": "Readme - www.jamendo.com .txt", "size": "6.6 KiB" }
+                           ]
+                        },
+                        {
+                           "name": "Diablo Swing Orchestra - The Butcher's Ballroom",
+                           "children": [
+                              { "name": "01 - Balrog Boogie.mp3", "size": "6.0 MiB" },
+                              { "name": "02 - Heroines.mp3", "size": "7.7 MiB" },
+                              { "name": "03 - Poetic Pitbull Revolutions.mp3", "size": "7.5 MiB" },
+                              { "name": "04 - Rag Doll Physics.mp3", "size": "5.9 MiB" },
+                              { "name": "05 - D'angelo.mp3", "size": "2.2 MiB" },
+                              { "name": "06 - Velvet Embracer.mp3", "size": "6.2 MiB" },
+                              { "name": "07 - Gunpowder Chant.mp3", "size": "2.8 MiB" },
+                              { "name": "08 - Infralove.mp3", "size": "7.5 MiB" },
+                              { "name": "09 - Wedding March for a Bullet.mp3", "size": "4.9 MiB" },
+                              { "name": "10 - Qualms of Conscience.mp3", "size": "1.9 MiB" },
+                              { "name": "11 - Zodiac Virtues.mp3", "size": "7.2 MiB" },
+                              { "name": "12 - Porcelain Judas.mp3", "size": "7.0 MiB" },
+                              { "name": "13 - Pink Noise Waltz.mp3", "size": "9.4 MiB" }
+                           ]
+                        },
+                        {
+                           "name": "Kendra Springer - Hope",
+                           "children": [
+                              { "name": "02 - Angels To Guard You.mp3", "size": "7.1 MiB" },
+                              { "name": "05 - Angela.mp3", "size": "8.4 MiB" }
+                           ]
+                        },
+                        {
+                           "name": "pornophonique - 8-bit lagerfeuer",
+                           "children": [
+                              { "name": "01 - Sad Robot.mp3", "size": "5.6 MiB" },
+                              { "name": "02 - Rock'n'Roll Hall of Fame.mp3", "size": "4.4 MiB" },
+                              { "name": "03 - Take Me to the Bonuslevel Because I Need an Extralife.mp3", "size": "5.1 MiB" },
+                              { "name": "04 - Lemmings in Love.mp3", "size": "5.3 MiB" },
+                              { "name": "05 - 1-2 Player Game.mp3", "size": "4.2 MiB" },
+                              { "name": "06 - Space Invaders.mp3", "size": "5.9 MiB" },
+                              { "name": "07 - Game Over.mp3", "size": "3.9 MiB" },
+                              { "name": "08 - I Want to Be a Machine.mp3", "size": "4.4 MiB" }
+                           ]
+                        },
+                        {
+                           "name": "zero-project - Celtic dream (Jamendo edition)",
+                           "children": [
+                              { "name": "01 - zero-project - 01 - Celtic dream.mp3", "size": "7.9 MiB" },
+                              { "name": "02 - zero-project - 02 - Touch of serenity.mp3", "size": "6.8 MiB" },
+                              { "name": "03 - zero-project - 03 - Eden.mp3", "size": "7.4 MiB" },
+                              { "name": "04 - zero-project - 04 - Promises.mp3", "size": "6.5 MiB" },
+                              { "name": "05 - zero-project - 05 - Irish wedding.mp3", "size": "6.9 MiB" },
+                              { "name": "06 - zero-project - 06 - Missing.mp3", "size": "7.6 MiB" },
+                              { "name": "[cover] zero-project - Celtic dream (Jamendo edition).jpg", "size": "180.0 KiB" }
+                           ]
+                        },
+                        {
+                           "name": "zero-project - Infinity",
+                           "children": [
+                              { "name": "01 - zero-project - Infinity.mp3", "size": "10.9 MiB" },
+                              { "name": "[cover] zero-project - Infinity.jpg", "size": "270.0 KiB" },
+                              { "name": "License.txt", "size": 670 },
+                              { "name": "Readme - www.jamendo.com .txt", "size": "6.6 KiB" }
+                           ]
+                        }
+                     ]
+                  },
+                  {
+                     "name": "Old Public Domain Cartoon",
+                     "children": [
+                        { "name": "Betty Boop - Minnie the Moocher (1932).mp4", "size": "430.0 MiB" },
+                        { "name": "Popeye the Sailor Meets Sindbad the Sailor (1936).mp4", "size": "420.0 MiB" },
+                        { "name": "Superman - The Mechanical Monsters (1941).mp4", "size": "380.0 MiB" }
+                     ]
+                  },
+                  {
+                     "name": "Operating System",
+                     "children": [
+                        { "name": "archlinux-2026.09.01-x86_64.iso", "size": "1.5 GiB" },
+                        { "name": "debian-13.6.0-amd64-DVD-1.iso", "size": "3.7 GiB" },
+                        { "name": "FreeBSD-15.1-RELEASE-amd64-ufs.qcow2.xz", "size": "633.8 MiB" },
+                        { "name": "openSUSE-Tumbleweed-DVD-x86_64-Snapshot20260904-Media.iso", "size": "4.3 GiB" },
+                        { "name": "ubuntu-26.04.1-desktop-amd64.iso", "size": "6.0 GiB" }
+                     ]
+                  }
+               ]
+            }
+         ]
+      }
+   ],
+
+   "search": [
+      { "peer": "Lune", "path": "Sharing/Music/zero-project - Infinity" },
+      { "peer": "Lune", "path": "Sharing/Music/zero-project - Infinity/01 - zero-project - Infinity.mp3" },
+      { "peer": "Lune", "path": "Sharing/Music/zero-project - Infinity/[cover] zero-project - Infinity.jpg" },
+      { "peer": "Lune", "path": "Sharing/Music/zero-project - Celtic dream (Jamendo edition)", "level": 4 },
+      { "peer": "Lune", "path": "Sharing/Music/zero-project - Celtic dream (Jamendo edition)/01 - zero-project - 01 - Celtic dream.mp3", "level": 4 },
+      { "peer": "Lune", "path": "Sharing/Music/zero-project - Celtic dream (Jamendo edition)/02 - zero-project - 02 - Touch of serenity.mp3", "level": 4 },
+      { "peer": "Lune", "path": "Sharing/Music/zero-project - Celtic dream (Jamendo edition)/03 - zero-project - 03 - Eden.mp3", "level": 4 },
+      { "peer": "Lune", "path": "Sharing/Music/zero-project - Celtic dream (Jamendo edition)/04 - zero-project - 04 - Promises.mp3", "level": 4 },
+      { "peer": "Lune", "path": "Sharing/Music/zero-project - Celtic dream (Jamendo edition)/05 - zero-project - 05 - Irish wedding.mp3", "level": 4 },
+      { "peer": "Lune", "path": "Sharing/Music/zero-project - Celtic dream (Jamendo edition)/06 - zero-project - 06 - Missing.mp3", "level": 4 },
+      { "peer": "Lune", "path": "Sharing/Music/zero-project - Celtic dream (Jamendo edition)/[cover] zero-project - Celtic dream (Jamendo edition).jpg", "level": 4 }
+   ],
+
+   "downloads": [
+      { "path": "Operating System", "name": "archlinux-2026.09.01-x86_64.iso", "size": "1.5 GiB", "status": "COMPLETE", "peer": "Sciel" },
+      { "path": "Operating System", "name": "debian-13.6.0-amd64-DVD-1.iso", "size": "3.7 GiB", "status": "DOWNLOADING", "progress": 19.1, "peer": "Sciel", "other_peers": ["Lune"] },
+      { "path": "Operating System", "name": "FreeBSD-15.1-RELEASE-amd64-ufs.qcow2.xz", "size": "633.8 MiB", "peer": "Sciel", "other_peers": ["Lune"] },
+      { "path": "Operating System", "name": "openSUSE-Tumbleweed-DVD-x86_64-Snapshot20260904-Media.iso", "size": "4.3 GiB", "peer": "Sciel", "other_peers": ["Lune"] },
+      { "path": "Operating System", "name": "ubuntu-26.04.1-desktop-amd64.iso", "size": "6.0 GiB", "peer": "Sciel", "other_peers": ["Lune"] },
+      { "path": "Music/Butterfly Tea - Feeries 2010 - Soundtrack", "name": "01 - Heart of Medieval.mp3", "size": "6.2 MiB", "peer": "Sciel", "other_peers": ["Lune"] },
+      { "path": "Music/Butterfly Tea - Feeries 2010 - Soundtrack", "name": "02 - Asian Wonders.mp3", "size": "6.9 MiB", "peer": "Sciel", "other_peers": ["Lune"] },
+      { "path": "Music/Butterfly Tea - Feeries 2010 - Soundtrack", "name": "03 - Oriental Rock Lullaby.mp3", "size": "4.8 MiB", "peer": "Sciel", "other_peers": ["Lune"] },
+      { "path": "Music/Butterfly Tea - Feeries 2010 - Soundtrack", "name": "04 - Forest Dance.mp3", "size": "6.9 MiB", "peer": "Sciel", "other_peers": ["Lune"] },
+      { "path": "Music/Butterfly Tea - Feeries 2010 - Soundtrack", "name": "05 - The Night of The Feeries.mp3", "size": "6.7 MiB", "peer": "Sciel", "other_peers": ["Lune"] },
+      { "path": "Music/Butterfly Tea - Feeries 2010 - Soundtrack", "name": "06 - The Origins.mp3", "size": "6.3 MiB", "peer": "Sciel", "other_peers": ["Lune"] },
+      { "path": "Music/Butterfly Tea - Feeries 2010 - Soundtrack", "name": "07 - Butterfly in Paris.mp3", "size": "3.9 MiB", "peer": "Sciel", "other_peers": ["Lune"] },
+      { "path": "Music/Butterfly Tea - Feeries 2010 - Soundtrack", "name": "08 - Return of the Fantasy.mp3", "size": "6.7 MiB", "peer": "Sciel", "other_peers": ["Lune"] },
+      { "path": "Music/Butterfly Tea - Feeries 2010 - Soundtrack", "name": "[cover] Butterfly Tea - Feeries 2010 - Soundtrack.jpg", "size": "198.0 KiB", "peer": "Sciel", "other_peers": ["Lune"] },
+      { "path": "Music/Butterfly Tea - Feeries 2010 - Soundtrack", "name": "License.txt", "size": 670, "peer": "Sciel", "other_peers": ["Lune"] },
+      { "path": "Music/Butterfly Tea - Feeries 2010 - Soundtrack", "name": "Readme - www.jamendo.com .txt", "size": "6.6 KiB", "peer": "Sciel", "other_peers": ["Lune"] },
+      { "path": "Music/zero-project - Infinity", "name": "01 - zero-project - Infinity.mp3", "size": "10.9 MiB", "peer": "Sciel", "other_peers": ["Lune"] },
+      { "path": "Music/zero-project - Infinity", "name": "[cover] zero-project - Infinity.jpg", "size": "270.0 KiB", "peer": "Sciel", "other_peers": ["Lune"] },
+      { "path": "Music/zero-project - Infinity", "name": "License.txt", "size": 670, "peer": "Sciel", "other_peers": ["Lune"] },
+      { "path": "Music/zero-project - Infinity", "name": "Readme - www.jamendo.com .txt", "size": "6.6 KiB", "peer": "Sciel", "other_peers": ["Lune"] }
+   ],
+
+   "uploads": [
+      { "path": "StarCraft II/SC2Data/data", "name": "data.000", "size": "1.9 GiB", "progress": 78.36, "peer": "Gustave" },
+      { "path": "Operating System", "name": "archlinux-2026.09.01-x86_64.iso", "size": "1.5 GiB", "progress": 95.07, "peer": "Lune" },
+      { "path": "Music/Butterfly Tea - Feeries 2010 - Soundtrack", "name": "06 - The Origins.mp3", "size": "6.3 MiB", "progress": 100, "peer": "Gustave" },
+      { "path": "Operating System", "name": "debian-13.6.0-amd64-DVD-1.iso", "size": "3.7 GiB", "progress": 13.79, "peer": "Lune" },
+      { "path": "Music/Diablo Swing Orchestra - The Butcher's Ballroom", "name": "02 - Heroines.mp3", "size": "7.7 MiB", "progress": 100, "peer": "Gustave" },
+      { "path": "Music/Diablo Swing Orchestra - The Butcher's Ballroom", "name": "07 - Gunpowder Chant.mp3", "size": "2.8 MiB", "progress": 100, "peer": "Gustave" },
+      { "path": "Music/Diablo Swing Orchestra - The Butcher's Ballroom", "name": "09 - Wedding March for a Bullet.mp3", "size": "4.9 MiB", "progress": 100, "peer": "Gustave" },
+      { "path": "Music/Diablo Swing Orchestra - The Butcher's Ballroom", "name": "12 - Porcelain Judas.mp3", "size": "7.0 MiB", "progress": 100, "peer": "Gustave" },
+      { "path": "Music/Kendra Springer - Hope", "name": "02 - Angels To Guard You.mp3", "size": "7.1 MiB", "progress": 100, "peer": "Gustave" },
+      { "path": "Music/Kendra Springer - Hope", "name": "05 - Angela.mp3", "size": "8.4 MiB", "progress": 80.14, "peer": "Gustave" }
+   ]
+}

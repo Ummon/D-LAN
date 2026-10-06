@@ -62,8 +62,9 @@ void setAppUserModelID()
 #endif
 
 /**
-  * Arguments : [--lang <language>]
+  * Arguments : [--lang <language>] [--no-auto-start]
   *  --lang <language> : set the language and save it to the settings file. (ISO-63, two letters). Do not start the gui in this case.
+  *  --no-auto-start : do not launch the local Core when connecting to it, it's launched by someone else. For example a 'D-LAN.DummyCore'.
   */
 int main(int argc, char *argv[])
 {
@@ -79,6 +80,7 @@ int main(int argc, char *argv[])
    // and must be honoured like any other.
    QLocale locale;
    bool languageGiven = false;
+   bool autoStartLocalCore = true;
    for (int i = 1; i < argc; i++)
    {
       const QString arg = QString::fromLatin1(argv[i]);
@@ -87,6 +89,8 @@ int main(int argc, char *argv[])
          locale = QLocale(QString::fromLatin1(argv[++i]));
          languageGiven = true;
       }
+      else if (arg == "--no-auto-start")
+         autoStartLocalCore = false;
    }
 
    SETTINGS.setFilename(Common::Constants::GUI_SETTINGS_FILENAME);
@@ -109,7 +113,7 @@ int main(int argc, char *argv[])
 
    try
    {
-      GUI::D_LAN_GUI gui(argc, argv);
+      GUI::D_LAN_GUI gui(argc, argv, autoStartLocalCore);
       return GUI::D_LAN_GUI::exec();
    }
    catch (GUI::D_LAN_GUI::AbortException&)

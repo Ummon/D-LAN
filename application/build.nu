@@ -473,10 +473,11 @@ fi
 if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
     cat <<EOF
 Usage:
- $name [--lang <language>]
+ $name [--lang <language>] [--no-auto-start]
  $name --core [<Core arguments>]
  $name --help
   --lang <language> : Set the GUI language and save it to the settings file then quit. (ISO-639, two letters)
+  --no-auto-start : Do not launch the local Core when connecting to it, it's launched by someone else.
   --core : Run D-LAN Core instead of the GUI, the following arguments are given to the Core. See below.
   --help : Print this help.
 

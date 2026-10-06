@@ -14,6 +14,7 @@ Unless stated otherwise, paths are relative to the repository root.
 * [macOS application packaging](#macos-application-packaging)
 * [Linux AppImage](#linux-appimage)
 * [Profiling](#profiling)
+* [GUI screenshots with a dummy Core](#gui-screenshots-with-a-dummy-core)
 * [IPv6 peer discovery](#ipv6-peer-discovery)
 * [Remote-control TLS](#remote-control-tls)
 * [macOS filesystem monitoring](#macos-filesystem-monitoring)
@@ -119,7 +120,7 @@ an existing OpenSSL binary compatible with macOS 26.
 | Option | Default | Purpose |
 |---|---|---|
 | `DLAN_BUILD_TESTS` | `ON` | Test executables (+ CTest) |
-| `DLAN_BUILD_TOOLS` | `ON` | LogViewer, FileIndexer, PasswordHasher |
+| `DLAN_BUILD_TOOLS` | `ON` | DummyCore, LogViewer, FileIndexer, PasswordHasher |
 | `DLAN_PROFILING` | `OFF` | gprof `-pg`; requires a compatible compiler and runtime (checked at configure time) |
 | `DLAN_PDB` | `ON` | Windows Clang: emit PDB symbols in non-Debug builds for crash reports and profiling |
 | `DLAN_BLAKE3_ROOT` | `C:/BLAKE3-1.8.7/c` | BLAKE3 location |
@@ -394,6 +395,38 @@ Keep the PDB from the exact build used for the recording.
 
 For gprof output (`gmon.out`), use a toolchain with working gprof support and
 matching Qt and third-party libraries, then enable `DLAN_PROFILING`.
+
+## GUI screenshots with a dummy Core
+
+`D-LAN.DummyCore` (`application/DummyCore`, built with the tools) is a Core without
+any logic: it always gives the same state to the connected GUI. It shares nothing,
+is not seen by the other peers and only accepts a GUI running on the same computer.
+
+```sh
+D-LAN.DummyCore [--port <remote control port>] [<state file>]
+D-LAN.GUI --no-auto-start
+```
+
+`--no-auto-start` is required with a Release GUI, which otherwise launches the real
+Core before connecting to it. The dummy Core listens on the port of the Core (59485)
+by default, so the real Core must not be running. For another port, also set
+`core_port` in the GUI settings file.
+
+The state file is `DummyCore.json` next to the executable by default. Start from
+`DummyCore.example.json`, which the build copies there. There is one variant per
+language of the GUI, for example `DummyCore.example.fr.json`: the same state with
+the peer nicks and the folder names of this language.
+
+| Key | Content |
+|---|---|
+| `peers` | Name, sharing amount, transfer rates, Core version and shared folders of each peer. Exactly one has `"self": true`: the dummy Core. Its rates are the ones of the status bar |
+| `search` | The result of any search: entries of the shared folders with a relevance level |
+| `downloads` | The queue: directory, name, size, status, progress in percent, source and other peers of each file |
+| `uploads` | Directory, name, progress in percent and downloading peer of each file |
+
+Sizes are a number of bytes or a string such as `"1.5 GiB"`. The complete format is
+described in `application/DummyCore/State.h`. Commands sent by the GUI (pause,
+cancel, settings) are ignored.
 
 ## IPv6 peer discovery
 

@@ -45,7 +45,7 @@ namespace GUI
    public:
       class AbortException {};
 
-      D_LAN_GUI(int& argc, char* argv[]);
+      D_LAN_GUI(int& argc, char* argv[], bool autoStartLocalCore = true);
       ~D_LAN_GUI() override;
 
       bool notify(QObject* receiver, QEvent* event) override;

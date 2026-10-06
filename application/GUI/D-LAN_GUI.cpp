@@ -47,7 +47,10 @@ const QString D_LAN_GUI::SHARED_MEMORY_KEYNAME("D-LAN GUI instance");
   * With a tray icon, closing the main window allows it to be reopened from the tray.
   */
 
-D_LAN_GUI::D_LAN_GUI(int& argc, char* argv[]) :
+/**
+  * @param autoStartLocalCore See 'RCC::ICoreConnection::setAutoStartLocalCore(..)'.
+  */
+D_LAN_GUI::D_LAN_GUI(int& argc, char* argv[], bool autoStartLocalCore) :
    QApplication(argc, argv),
    mainWindow(0),
 #ifndef Q_OS_MACOS
@@ -60,6 +63,8 @@ D_LAN_GUI::D_LAN_GUI(int& argc, char* argv[]) :
    // 'autoFillBackground' flag of every scroll area viewport (Qt >= 6.11.2), the item views then lose their
    // 'QPalette::Base' background. See 'MainWindow::loadCustomStyle(..)' about why Fusion is used.
    this->setStyle("Fusion");
+
+   this->coreConnection->setAutoStartLocalCore(autoStartLocalCore);
 
    this->setWindowIcon(QIcon(":/icons/resources/icon.svg"));
 #ifdef Q_OS_LINUX

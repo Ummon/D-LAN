@@ -27,7 +27,7 @@ endif()
 # Options.
 # ------------------------------------------------------------------------------
 option(DLAN_BUILD_TESTS "Build the unit/stress test executables" ON)
-option(DLAN_BUILD_TOOLS "Build the tools (LogViewer, FileIndexer, PasswordHasher)" ON)
+option(DLAN_BUILD_TOOLS "Build the tools (DummyCore, LogViewer, FileIndexer, PasswordHasher)" ON)
 option(DLAN_PROFILING   "Build with gprof instrumentation (-pg); requires a compatible compiler and runtime" OFF)
 option(DLAN_PDB         "Emit CodeView debug info and a .pdb so LM::CrashHandler can print function names and line numbers" ON)
 
@@ -223,6 +223,7 @@ if(DLAN_BUILD_TESTS)
 endif()
 
 if(DLAN_BUILD_TOOLS)
+   add_subdirectory(DummyCore) # D-LAN.DummyCore executable, it gives a static state to the GUI.
    add_subdirectory(Tools/FileIndexer)
    add_subdirectory(Tools/LogViewer)
    add_subdirectory(Tools/PasswordHasher)
