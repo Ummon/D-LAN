@@ -26,7 +26,7 @@
 <context>
     <name>DM::DownloadManager</name>
     <message>
-        <location filename="../Core/DownloadManager/priv/DownloadManager.cpp" line="218"/>
+        <location filename="../Core/DownloadManager/priv/DownloadManager.cpp" line="220"/>
         <source>The file &apos;%1&apos; is already in queue</source>
         <translation>ファイル &apos;%1&apos; はすでにキューにあります</translation>
     </message>
@@ -34,7 +34,7 @@
 <context>
     <name>DM::FileDownload</name>
     <message>
-        <location filename="../Core/DownloadManager/priv/FileDownload.cpp" line="559"/>
+        <location filename="../Core/DownloadManager/priv/FileDownload.cpp" line="545"/>
         <source>File completed: %1%2%3</source>
         <translation>ファイルが完了しました: %1%2%3</translation>
     </message>
@@ -58,17 +58,17 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="405"/>
+        <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="388"/>
         <source>The version (%1) of the queue file &quot;%2&quot; doesn&apos;t match the current version (%3). Queue will be reset.</source>
         <translation>キューファイル &quot;%2&quot; のバージョン (%1) が現在のバージョン (%3) と一致しません。キューをリセットします。</translation>
     </message>
     <message>
-        <location filename="../Core/Core.cpp" line="111"/>
+        <location filename="../Core/Core.cpp" line="113"/>
         <source>D-LAN Core version %1 is starting . . .</source>
         <translation>D-LAN Core バージョン %1 を起動しています . . .</translation>
     </message>
     <message>
-        <location filename="../Core/Core.cpp" line="129"/>
+        <location filename="../Core/Core.cpp" line="131"/>
         <source>Ready to serve</source>
         <translation>準備完了</translation>
     </message>

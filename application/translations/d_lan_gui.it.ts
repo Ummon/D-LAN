@@ -455,88 +455,88 @@
 <context>
     <name>GUI::MainWindow</name>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="174"/>
+        <location filename="../GUI/MainWindow.cpp" line="175"/>
         <source>Already connected to this address</source>
         <translation>Già connesso a questo indirizzo</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="177"/>
+        <location filename="../GUI/MainWindow.cpp" line="178"/>
         <source>There is already a connection process in progress</source>
         <translation>Un tentativo di connessione è già in corso</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="180"/>
+        <location filename="../GUI/MainWindow.cpp" line="181"/>
         <source>The host is unknown</source>
         <translation>Host sconosciuto</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="183"/>
+        <location filename="../GUI/MainWindow.cpp" line="184"/>
         <source>Host has timed out</source>
         <translation>L&apos;host non risponde</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="186"/>
+        <location filename="../GUI/MainWindow.cpp" line="187"/>
         <source>The host hasn&apos;t defined any password</source>
         <translation>L&apos;host non ha impostato alcuna password</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="189"/>
+        <location filename="../GUI/MainWindow.cpp" line="190"/>
         <source>Wrong password</source>
         <translation>Password errata</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="192"/>
+        <location filename="../GUI/MainWindow.cpp" line="193"/>
         <source>Invalid address</source>
         <translation>Indirizzo non valido</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="195"/>
+        <location filename="../GUI/MainWindow.cpp" line="196"/>
         <source>Unable to establish a trusted encrypted connection. The Core&apos;s certificate may have changed or TLS may be unavailable. See the log for details.</source>
         <translation>Impossibile stabilire una connessione crittografata attendibile. Il certificato del Core potrebbe essere cambiato oppure TLS potrebbe non essere disponibile. Consultare il log per ulteriori dettagli.</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="198"/>
+        <location filename="../GUI/MainWindow.cpp" line="199"/>
         <source>The core closed the connection. Remote access requires a password to be defined on the core. The core may also have too many connections.</source>
         <translation>Il Core ha chiuso la connessione. L&apos;accesso remoto richiede che sul Core sia impostata una password. Il Core potrebbe anche avere troppe connessioni.</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="201"/>
+        <location filename="../GUI/MainWindow.cpp" line="202"/>
         <source>The core couldn&apos;t prove that it knows the password. The connection may have been intercepted.</source>
         <translation>Il Core non ha potuto dimostrare di conoscere la password. La connessione potrebbe essere stata intercettata.</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="204"/>
+        <location filename="../GUI/MainWindow.cpp" line="205"/>
         <source>The versions of the core and of this GUI are incompatible for remote control. Update them to the same version.</source>
         <translation>Le versioni del Core e di questa GUI non sono compatibili per il controllo remoto. Aggiornarle alla stessa versione.</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="207"/>
+        <location filename="../GUI/MainWindow.cpp" line="208"/>
         <source>Error unknown</source>
         <translation>Errore sconosciuto</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="213"/>
+        <location filename="../GUI/MainWindow.cpp" line="214"/>
         <source>Unable to connect to the core</source>
         <translation>Impossibile connettersi al Core</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="216"/>
-        <location filename="../GUI/MainWindow.cpp" line="240"/>
+        <location filename="../GUI/MainWindow.cpp" line="217"/>
+        <location filename="../GUI/MainWindow.cpp" line="241"/>
         <source>Core address:</source>
         <translation>Indirizzo del Core:</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="226"/>
+        <location filename="../GUI/MainWindow.cpp" line="227"/>
         <source>Connected to the core</source>
         <translation>Connesso al Core</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="235"/>
+        <location filename="../GUI/MainWindow.cpp" line="236"/>
         <source>Connection lost</source>
         <translation>Connessione persa</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="239"/>
+        <location filename="../GUI/MainWindow.cpp" line="240"/>
         <source>The connection to the core has been lost</source>
         <translation>La connessione al Core è stata persa</translation>
     </message>

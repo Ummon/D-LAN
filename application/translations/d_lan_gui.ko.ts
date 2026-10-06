@@ -455,88 +455,88 @@
 <context>
     <name>GUI::MainWindow</name>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="174"/>
+        <location filename="../GUI/MainWindow.cpp" line="175"/>
         <source>Already connected to this address</source>
         <translation>이미 이 주소에 연결되어 있습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="177"/>
+        <location filename="../GUI/MainWindow.cpp" line="178"/>
         <source>There is already a connection process in progress</source>
         <translation>이미 연결을 시도하는 중입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="180"/>
+        <location filename="../GUI/MainWindow.cpp" line="181"/>
         <source>The host is unknown</source>
         <translation>알 수 없는 호스트입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="183"/>
+        <location filename="../GUI/MainWindow.cpp" line="184"/>
         <source>Host has timed out</source>
         <translation>호스트가 응답하지 않습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="186"/>
+        <location filename="../GUI/MainWindow.cpp" line="187"/>
         <source>The host hasn&apos;t defined any password</source>
         <translation>호스트에 비밀번호가 설정되어 있지 않습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="189"/>
+        <location filename="../GUI/MainWindow.cpp" line="190"/>
         <source>Wrong password</source>
         <translation>잘못된 비밀번호입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="192"/>
+        <location filename="../GUI/MainWindow.cpp" line="193"/>
         <source>Invalid address</source>
         <translation>잘못된 주소입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="195"/>
+        <location filename="../GUI/MainWindow.cpp" line="196"/>
         <source>Unable to establish a trusted encrypted connection. The Core&apos;s certificate may have changed or TLS may be unavailable. See the log for details.</source>
         <translation>신뢰할 수 있는 암호화된 연결을 설정할 수 없습니다. 코어의 인증서가 변경되었거나 TLS를 사용할 수 없는 상태일 수 있습니다. 자세한 내용은 로그를 확인하세요.</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="198"/>
+        <location filename="../GUI/MainWindow.cpp" line="199"/>
         <source>The core closed the connection. Remote access requires a password to be defined on the core. The core may also have too many connections.</source>
         <translation>코어가 연결을 닫았습니다. 원격 접근을 사용하려면 코어에 비밀번호가 설정되어 있어야 합니다. 코어에 연결이 너무 많을 수도 있습니다.</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="201"/>
+        <location filename="../GUI/MainWindow.cpp" line="202"/>
         <source>The core couldn&apos;t prove that it knows the password. The connection may have been intercepted.</source>
         <translation>코어가 비밀번호를 알고 있음을 증명하지 못했습니다. 연결이 가로채졌을 수 있습니다.</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="204"/>
+        <location filename="../GUI/MainWindow.cpp" line="205"/>
         <source>The versions of the core and of this GUI are incompatible for remote control. Update them to the same version.</source>
         <translation>코어와 이 GUI의 버전이 원격 제어에 호환되지 않습니다. 같은 버전으로 업데이트하세요.</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="207"/>
+        <location filename="../GUI/MainWindow.cpp" line="208"/>
         <source>Error unknown</source>
         <translation>알 수 없는 오류</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="213"/>
+        <location filename="../GUI/MainWindow.cpp" line="214"/>
         <source>Unable to connect to the core</source>
         <translation>코어에 연결할 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="216"/>
-        <location filename="../GUI/MainWindow.cpp" line="240"/>
+        <location filename="../GUI/MainWindow.cpp" line="217"/>
+        <location filename="../GUI/MainWindow.cpp" line="241"/>
         <source>Core address:</source>
         <translation>코어 주소:</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="226"/>
+        <location filename="../GUI/MainWindow.cpp" line="227"/>
         <source>Connected to the core</source>
         <translation>코어에 연결되었습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="235"/>
+        <location filename="../GUI/MainWindow.cpp" line="236"/>
         <source>Connection lost</source>
         <translation>연결이 끊어졌습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="239"/>
+        <location filename="../GUI/MainWindow.cpp" line="240"/>
         <source>The connection to the core has been lost</source>
         <translation>코어와의 연결이 끊어졌습니다</translation>
     </message>

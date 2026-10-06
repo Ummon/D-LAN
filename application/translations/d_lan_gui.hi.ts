@@ -451,7 +451,7 @@
 <context>
     <name>GUI::MainWindow</name>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="+174"/>
+        <location filename="../GUI/MainWindow.cpp" line="+175"/>
         <source>Already connected to this address</source>
         <translation>इस पते से पहले से कनेक्ट है</translation>
     </message>

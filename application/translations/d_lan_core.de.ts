@@ -27,7 +27,7 @@
 <context>
     <name>DM::DownloadManager</name>
     <message>
-        <location filename="../Core/DownloadManager/priv/DownloadManager.cpp" line="218"/>
+        <location filename="../Core/DownloadManager/priv/DownloadManager.cpp" line="220"/>
         <source>The file &apos;%1&apos; is already in queue</source>
         <translation>Die Datei &apos;%1&apos; befindet sich bereits in der Warteschlange</translation>
     </message>
@@ -35,7 +35,7 @@
 <context>
     <name>DM::FileDownload</name>
     <message>
-        <location filename="../Core/DownloadManager/priv/FileDownload.cpp" line="559"/>
+        <location filename="../Core/DownloadManager/priv/FileDownload.cpp" line="545"/>
         <source>File completed: %1%2%3</source>
         <translation>Datei vollständig: %1%2%3</translation>
     </message>
@@ -59,12 +59,12 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../Core/Core.cpp" line="129"/>
+        <location filename="../Core/Core.cpp" line="131"/>
         <source>Ready to serve</source>
         <translation>Bereit</translation>
     </message>
     <message>
-        <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="405"/>
+        <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="388"/>
         <source>The version (%1) of the queue file &quot;%2&quot; doesn&apos;t match the current version (%3). Queue will be reset.</source>
         <translation>Die Version (%1) der Warteschlangen-Datei &quot;%2&quot; entspricht nicht der aktuellen Version (%3). Die Warteschlange wird zurückgesetzt.</translation>
     </message>
@@ -74,7 +74,7 @@
         <translation>Beenden</translation>
     </message>
     <message>
-        <location filename="../Core/Core.cpp" line="111"/>
+        <location filename="../Core/Core.cpp" line="113"/>
         <source>D-LAN Core version %1 is starting . . .</source>
         <translation>D-LAN Core Version %1 wird gestartet . . .</translation>
     </message>

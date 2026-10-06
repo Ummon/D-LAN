@@ -26,7 +26,7 @@
 <context>
     <name>DM::DownloadManager</name>
     <message>
-        <location filename="../Core/DownloadManager/priv/DownloadManager.cpp" line="218"/>
+        <location filename="../Core/DownloadManager/priv/DownloadManager.cpp" line="220"/>
         <source>The file &apos;%1&apos; is already in queue</source>
         <translation>फ़ाइल &apos;%1&apos; पहले से कतार में है</translation>
     </message>
@@ -34,7 +34,7 @@
 <context>
     <name>DM::FileDownload</name>
     <message>
-        <location filename="../Core/DownloadManager/priv/FileDownload.cpp" line="559"/>
+        <location filename="../Core/DownloadManager/priv/FileDownload.cpp" line="545"/>
         <source>File completed: %1%2%3</source>
         <translation>फ़ाइल पूर्ण: %1%2%3</translation>
     </message>
@@ -58,12 +58,12 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../Core/Core.cpp" line="129"/>
+        <location filename="../Core/Core.cpp" line="131"/>
         <source>Ready to serve</source>
         <translation>सेवा के लिए तैयार</translation>
     </message>
     <message>
-        <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="405"/>
+        <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="388"/>
         <source>The version (%1) of the queue file &quot;%2&quot; doesn&apos;t match the current version (%3). Queue will be reset.</source>
         <translation>कतार फ़ाइल &quot;%2&quot; का संस्करण (%1) वर्तमान संस्करण (%3) से मेल नहीं खाता। कतार रीसेट की जाएगी।</translation>
     </message>
@@ -73,7 +73,7 @@
         <translation>शटडाउन</translation>
     </message>
     <message>
-        <location filename="../Core/Core.cpp" line="111"/>
+        <location filename="../Core/Core.cpp" line="113"/>
         <source>D-LAN Core version %1 is starting . . .</source>
         <translation>D-LAN Core संस्करण %1 शुरू हो रहा है . . .</translation>
     </message>
