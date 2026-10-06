@@ -69,6 +69,21 @@ bool StatusBar::eventFilter(QObject* obj, QEvent* event)
    return false;
 }
 
+void StatusBar::changeEvent(QEvent* event)
+{
+   if (event->type() == QEvent::LanguageChange)
+   {
+      // The texts which depend on the state of the core aren't defined by the form, which clears them.
+      this->ui->retranslateUi(this);
+      this->setDownloadRate(this->downloadRate);
+      this->setUploadRate(this->uploadRate);
+      this->setTotalSharing(this->nbPeer, this->sharingAmount);
+      this->updateCoreStatus(this->cacheStatus, this->progress);
+   }
+
+   QWidget::changeEvent(event);
+}
+
 void StatusBar::dockLogVisibilityChanged(bool visibility)
 {
    this->ui->butLog->setChecked(visibility);
@@ -118,16 +133,21 @@ void StatusBar::showAbout()
 
 void StatusBar::setDownloadRate(qint64 rate)
 {
+   this->downloadRate = rate;
    this->ui->lblDownloadRate->setText(Common::Global::formatByteSize(rate).append("/s"));
 }
 
 void StatusBar::setUploadRate(qint64 rate)
 {
+   this->uploadRate = rate;
    this->ui->lblUploadRate->setText(Common::Global::formatByteSize(rate).append("/s"));
 }
 
 void StatusBar::setTotalSharing(int nbPeer, qint64 amount)
 {
+   this->nbPeer = nbPeer;
+   this->sharingAmount = amount;
+
    this->ui->lblTotalSharing->setText(
       QString::number(nbPeer)
          .append(" ")
@@ -139,6 +159,9 @@ void StatusBar::setTotalSharing(int nbPeer, qint64 amount)
 
 void StatusBar::updateCoreStatus(Protos::GUI::State_Stats_CacheStatus status, int progress)
 {
+   this->cacheStatus = status;
+   this->progress = progress;
+
    QString statusMess;
 
    this->ui->butConnectToLocal->setVisible(this->coreConnection->isConnected() && !this->coreConnection->isLocal());

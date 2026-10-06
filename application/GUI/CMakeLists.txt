@@ -338,6 +338,13 @@ if(DLAN_BUILD_TESTS)
    target_link_libraries(TestsDownloadsFlatModel PRIVATE GUIIconProvider RemoteCoreController LogManager Common Qt6::Widgets Qt6::Svg Qt6::Test)
    add_test(NAME TestsDownloadsFlatModel COMMAND TestsDownloadsFlatModel)
    set_tests_properties(TestsDownloadsFlatModel PROPERTIES TIMEOUT 60)
+
+   add_executable(TestsStatusBar TestsStatusBar.cpp StatusBar.cpp ProgressBar.cpp DialogAbout.cpp resources.qrc)
+   set_target_properties(TestsStatusBar PROPERTIES AUTOUIC ON AUTORCC ON)
+   target_include_directories(TestsStatusBar PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+   target_link_libraries(TestsStatusBar PRIVATE RemoteCoreController LogManager Common Qt6::Widgets Qt6::SvgWidgets Qt6::Test)
+   add_test(NAME TestsStatusBar COMMAND TestsStatusBar)
+   set_tests_properties(TestsStatusBar PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 30)
 endif()
 
 if(WIN32)

@@ -41,6 +41,9 @@ namespace GUI
 
       bool eventFilter(QObject* obj, QEvent* event);
 
+   protected:
+      void changeEvent(QEvent* event) override;
+
    signals:
       void showDockLog(bool);
       void downloadClicked();
@@ -68,5 +71,13 @@ namespace GUI
       Ui::StatusBar* ui;
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;
+
+      // The values currently displayed, to display them again when the language changes.
+      qint64 downloadRate = 0;
+      qint64 uploadRate = 0;
+      int nbPeer = 0;
+      qint64 sharingAmount = 0;
+      Protos::GUI::State_Stats_CacheStatus cacheStatus = Protos::GUI::State_Stats_CacheStatus_UNKNOWN;
+      int progress = 0;
    };
 }
