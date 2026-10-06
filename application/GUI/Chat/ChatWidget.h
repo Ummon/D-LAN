@@ -195,6 +195,10 @@ namespace GUI
       ChatDelegate chatDelegate;
 
       quint64 draftRevision = 0;
+
+      // The draft sent to the core which hasn't answered yet, 0 if there is none: a draft which isn't empty has
+      // been modified at least once.
+      quint64 draftRevisionBeingSent = 0;
       bool autoScroll;
    };
 }

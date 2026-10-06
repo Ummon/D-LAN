@@ -35,6 +35,7 @@ namespace
       int sentMessages = 0;
       QString lastMessage;
       QList<Common::Hash> answers;
+      QList<QSharedPointer<PendingResult>> results; // In the order the messages were sent.
 
       QSharedPointer<RCC::ISendChatMessageResult> sendChatMessage(
          const QString& message, const QString&, const QList<Common::Hash>& answers) override
@@ -42,7 +43,8 @@ namespace
          ++this->sentMessages;
          this->lastMessage = message;
          this->answers = answers;
-         return QSharedPointer<PendingResult>::create();
+         this->results << QSharedPointer<PendingResult>::create();
+         return this->results.last();
       }
    };
 
@@ -881,6 +883,77 @@ private slots:
          QEvent leave(QEvent::Leave);
          delegate.eventFilter(view.viewport(), &leave);
          QCOMPARE(view.viewport()->cursor().shape(), Qt::ArrowCursor);
+      }
+   }
+
+   void draftIsSentOnceWhileUnanswered_data()
+   {
+      QTest::addColumn<QString>("outcome");
+      for (const auto& outcome : { "accepted", "refused", "timed out", "edited meanwhile" })
+         QTest::newRow(outcome) << QString(outcome);
+   }
+
+   /**
+     * The draft stays in the editor until the core has accepted it: validating it again meanwhile must not send
+     * it a second time. It can be sent again once the core has refused it or hasn't answered in time.
+     */
+   void draftIsSentOnceWhileUnanswered()
+   {
+      QFETCH(QString, outcome);
+      Fixture f;
+      const auto answer = [&f](int n, Protos::GUI::ChatMessageResult::Status status) {
+         Protos::GUI::ChatMessageResult result;
+         result.set_status(status);
+         emit f.connection->results[n]->result(result);
+      };
+      const auto closeErrorMessage = [] {
+         QWidget* message = QApplication::activeModalWidget();
+         QVERIFY(message);
+         message->close();
+      };
+
+      f.type("hello");
+      f.key(Qt::Key_Return);
+      f.key(Qt::Key_Return);
+      QCOMPARE(f.connection->sentMessages, 1);
+      QCOMPARE(f.editor->toPlainText(), QString("hello"));
+
+      if (outcome == "accepted")
+      {
+         answer(0, Protos::GUI::ChatMessageResult::OK);
+         QVERIFY(f.editor->toPlainText().isEmpty());
+         f.type("again");
+         f.key(Qt::Key_Return);
+         QCOMPARE(f.connection->sentMessages, 2);
+      }
+      else if (outcome == "refused" || outcome == "timed out")
+      {
+         if (outcome == "refused")
+            answer(0, Protos::GUI::ChatMessageResult::MESSAGE_TOO_LARGE);
+         else
+            emit f.connection->results[0]->timeout();
+         closeErrorMessage();
+         QCOMPARE(f.editor->toPlainText(), QString("hello"));
+         f.key(Qt::Key_Return);
+         f.key(Qt::Key_Return);
+         QCOMPARE(f.connection->sentMessages, 2);
+      }
+      else
+      {
+         // Once modified it's another message.
+         f.type("!");
+         f.key(Qt::Key_Return);
+         f.key(Qt::Key_Return);
+         QCOMPARE(f.connection->sentMessages, 2);
+
+         // The answer to the first message concerns neither the editor nor the second message.
+         answer(0, Protos::GUI::ChatMessageResult::OK);
+         QCOMPARE(f.editor->toPlainText(), QString("hello!"));
+         f.key(Qt::Key_Return);
+         QCOMPARE(f.connection->sentMessages, 2);
+
+         answer(1, Protos::GUI::ChatMessageResult::OK);
+         QVERIFY(f.editor->toPlainText().isEmpty());
       }
    }
 

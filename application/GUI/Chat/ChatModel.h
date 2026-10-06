@@ -92,7 +92,7 @@ namespace GUI
          ERROR_UNKNOWN
       };
 
-      void sendMessage(const QString& message, const QList<Common::Hash>& peerIDsAnswered = QList<Common::Hash>(), quint64 draftRevision = 0);
+      bool sendMessage(const QString& message, const QList<Common::Hash>& peerIDsAnswered = QList<Common::Hash>(), quint64 draftRevision = 0);
 
    public slots:
       void languageChanged();

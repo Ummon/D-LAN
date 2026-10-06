@@ -247,14 +247,19 @@ bool ChatModel::isValidMessageIndex(const QModelIndex& index) const
       index.row() >= 0 && index.row() < this->messages.size();
 }
 
-void ChatModel::sendMessage(const QString& message, const QList<Common::Hash>& peerIDsAnswered, quint64 draftRevision)
+/**
+  * @return 'false' if there is nothing to send, otherwise the signal 'sendMessageStatus(..)' will be emitted with
+  *         'draftRevision'.
+  */
+bool ChatModel::sendMessage(const QString& message, const QList<Common::Hash>& peerIDsAnswered, quint64 draftRevision)
 {
    const QString trimmedMessage = message.trimmed();
 
    if (trimmedMessage.isEmpty())
-      return;
+      return false;
 
    this->sendRawMessage(trimmedMessage, peerIDsAnswered, draftRevision);
+   return true;
 }
 void ChatModel::sendRawMessage(const QString& message, const QList<Common::Hash>& peerIDsAnswered, quint64 draftRevision)
 {

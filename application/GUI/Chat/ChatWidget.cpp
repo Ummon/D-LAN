@@ -385,6 +385,10 @@ static void preserveAutomaticLinks(QTextDocument& document)
 
 void ChatWidget::sendMessage()
 {
+   // The draft stays in the editor until the core has accepted it: it isn't sent again meanwhile.
+   if (this->draftRevision == this->draftRevisionBeingSent)
+      return;
+
    // Serialize a copy so the editor's text, reply ranges and undo history stay intact.
    QScopedPointer<QTextDocument> document(this->ui->txtMessage->document()->clone());
    QString lineBreakMarker = "DLANLINEBREAK";
@@ -443,7 +447,11 @@ void ChatWidget::sendMessage()
          md.replace(QRegularExpression(marker + "([*_~`]*)\\n" + continuation), replacement.marker + "\\1");
       md.replace(replacement.marker, replacement.html);
    }
-   this->chatModel.sendMessage(md, this->getPeerAnswers(), this->draftRevision);
+
+   // Set before sending: nothing prevents the status from being given during the call.
+   this->draftRevisionBeingSent = this->draftRevision;
+   if (!this->chatModel.sendMessage(md, this->getPeerAnswers(), this->draftRevision))
+      this->draftRevisionBeingSent = 0;
 }
 
 void ChatWidget::newRows(const QModelIndex& parent, int start, int end)
@@ -466,6 +474,10 @@ void ChatWidget::newRows(const QModelIndex& parent, int start, int end)
 
 void ChatWidget::sendMessageStatus(ChatModel::SendMessageStatus status, quint64 draftRevision)
 {
+   // Whatever the status the draft can be sent again, it's still there if it hasn't been accepted.
+   if (draftRevision == this->draftRevisionBeingSent)
+      this->draftRevisionBeingSent = 0;
+
    switch (status)
    {
    case  ChatModel::OK:
