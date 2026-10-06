@@ -225,7 +225,7 @@ void BrowseWidget::tryToReachEntryToBrowse()
    for (int r = 0; r < this->browseModel.rowCount(); r++)
    {
       QModelIndex currentIndex = this->browseModel.index(r, 0);
-      Protos::Common::Entry root = this->browseModel.getEntry(currentIndex);
+      const Protos::Common::Entry& root = this->browseModel.getEntry(currentIndex);
       if (
          root.has_shared_entry() &&
          this->remoteEntryToBrowse.has_shared_entry() &&

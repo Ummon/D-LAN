@@ -62,7 +62,7 @@ namespace GUI
       virtual int columnCount(const QModelIndex& parent = QModelIndex()) const override;
       virtual QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
-      virtual Protos::Common::Entry getEntry(const QModelIndex& index) const;
+      virtual const Protos::Common::Entry& getEntry(const QModelIndex& index) const;
 
       virtual bool isDir(const QModelIndex& index) const;
       virtual QString getPath(const QModelIndex& index, bool appendFilename = true) const;

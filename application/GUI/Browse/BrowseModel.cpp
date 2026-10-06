@@ -152,7 +152,10 @@ QVariant BrowseModel::data(const QModelIndex& index, int role) const
    }
 }
 
-Protos::Common::Entry BrowseModel::getEntry(const QModelIndex& index) const
+/**
+  * The entry isn't copied, it can hold many chunk hashes. The reference is valid as long as the entry is in the model.
+  */
+const Protos::Common::Entry& BrowseModel::getEntry(const QModelIndex& index) const
 {
    Tree* tree = static_cast<Tree*>(index.internalPointer());
    return tree->getItem();
@@ -168,7 +171,7 @@ bool BrowseModel::isDir(const QModelIndex& index) const
   */
 QString BrowseModel::getPath(const QModelIndex& index, bool appendFilename) const
 {
-   const Protos::Common::Entry entry = this->getEntry(index);
+   const Protos::Common::Entry& entry = this->getEntry(index);
    const Common::SharedEntry sharedEntry = this->sharedEntryListModel.getSharedEntry(entry.shared_entry().id().hash());
 
    if (sharedEntry.isNull())
