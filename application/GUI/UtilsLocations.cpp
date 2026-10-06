@@ -132,8 +132,9 @@ void Utils::openLocation(const QString& path, QWidget* parent)
       explorer.setArguments(QStringList() << "/select,");
    explorer.setNativeArguments("\"" + QDir::toNativeSeparators(path) + "\"");
    explorer.setProgram("explorer");
-   explorer.start();
-   explorer.waitForFinished(5000);
+   // Detached: nothing is expected from the process and waiting for its end would freeze the GUI meanwhile, for
+   // each location to open.
+   explorer.startDetached();
 #else
    const QFileInfo fileInfo(path);
    const QUrl directoryUrl = QUrl::fromLocalFile(fileInfo.isDir() ? fileInfo.absoluteFilePath() : fileInfo.absolutePath());
