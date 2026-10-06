@@ -22,6 +22,7 @@
 #include <QString>
 #include <QSharedPointer>
 #include <QDateTime>
+#include <QLocale>
 #include <QList>
 #include <QSet>
 #include <QSize>
@@ -93,6 +94,9 @@ namespace GUI
 
       void sendMessage(const QString& message, const QList<Common::Hash>& peerIDsAnswered = QList<Common::Hash>(), quint64 draftRevision = 0);
 
+   public slots:
+      void languageChanged();
+
    private:
       bool isValidMessageIndex(const QModelIndex& index) const;
       void sendRawMessage(const QString& message, const QList<Common::Hash>& peerIDsAnswered, quint64 draftRevision);
@@ -127,13 +131,24 @@ namespace GUI
             QString theme;
          } renderedSize;
          bool separateSenderLine = false;
+         // The line built by 'formatMessage(..)', which is asked for every message each time one is inserted.
+         mutable struct FormattedLine
+         {
+            QString line;
+            bool withDate = false;
+         } formatted;
       };
 
+      void loadLocale();
       QString formatMessage(const Message& message) const;
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;
       PeerListModel& peerListModel;
       // const Emoticons& emoticons;
+
+      // To format the dates of the messages, they depend on the language of the GUI: see 'languageChanged()'.
+      QLocale locale;
+      QString dateFormat;
 
       QString roomName; // Empty for main chat.
       QList<Message> messages; // Always sorted by date-time.

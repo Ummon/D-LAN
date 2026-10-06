@@ -967,6 +967,10 @@ void ChatWidget::changeEvent(QEvent* event)
    {
       this->ui->retranslateUi(this);
       this->setWindowTitle(this->chatModel.isMainChat() ? tr("Chat") : this->chatModel.getRoomName());
+
+      // Deferred: the settings may not hold the new language yet, 'SettingsWidget::cmbLanguageChanged(..)' sets it
+      // after having asked to load the translation.
+      QMetaObject::invokeMethod(&this->chatModel, &ChatModel::languageChanged, Qt::QueuedConnection);
    }
 
    QWidget::changeEvent(event);

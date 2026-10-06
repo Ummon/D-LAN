@@ -709,6 +709,7 @@ private slots:
       for (const auto& locale : { QLocale(QLocale::English), QLocale(QLocale::German) })
       {
          SETTINGS.set("language", locale);
+         f.widget.chatModel.languageChanged();
          for (const int width : { 90, 400 })
             for (const int fontSize : { 10, 24 })
             {
@@ -720,6 +721,51 @@ private slots:
             }
       }
       SETTINGS.set("language", QLocale::system());
+      f.widget.chatModel.languageChanged();
+   }
+
+   void chatLinesAreKeptAndFollowTheLanguage()
+   {
+      Fixture f;
+      auto& model = f.widget.chatModel;
+      QSignalSpy changes(&model, &QAbstractItemModel::dataChanged);
+
+      // The messages of the fixture are old: their lines show the date, in the format of the language.
+      const QDate date = QDateTime::fromMSecsSinceEpoch(1000).date();
+      const auto shortDate = [date](const QLocale& locale) { return locale.toString(date, locale.dateFormat(QLocale::ShortFormat)); };
+      const QLocale english(QLocale::English);
+      const QLocale german(QLocale::German);
+      QVERIFY(shortDate(english) != shortDate(german));
+
+      SETTINGS.set("language", english);
+      model.languageChanged();
+      QCOMPARE(changes.size(), 1);
+      QCOMPARE(changes[0][0].value<QModelIndex>().row(), 0);
+      QCOMPARE(changes[0][1].value<QModelIndex>().row(), model.rowCount() - 1);
+      const QString englishLine = model.getLineStr(0);
+      QVERIFY(englishLine.startsWith('[' + shortDate(english) + ' '));
+
+      // The line isn't built again when nothing has changed.
+      QCOMPARE(model.getLineStr(0).constData(), englishLine.constData());
+      QCOMPARE(model.index(0, 0).data().toString().constData(), englishLine.constData());
+
+      // The widget tells its model when the language of the GUI changes.
+      SETTINGS.set("language", german);
+      QEvent languageChange(QEvent::LanguageChange);
+      QApplication::sendEvent(&f.widget, &languageChange);
+      QCoreApplication::processEvents();
+      QCOMPARE(changes.size(), 2);
+      QVERIFY(model.getLineStr(0).startsWith('[' + shortDate(german) + ' '));
+      QCOMPARE(model.getLineStr(0).mid(shortDate(german).size()), englishLine.mid(shortDate(english).size()));
+
+      // A message of today only shows its time.
+      f.receiveMessage("now");
+      const QString todayLine = model.getLineStr(model.rowCount() - 1);
+      QVERIFY(QRegularExpression("^\\[\\d\\d:\\d\\d:\\d\\d\\] ").match(todayLine).hasMatch());
+      QVERIFY(todayLine.endsWith("now"));
+
+      SETTINGS.set("language", QLocale::system());
+      model.languageChanged();
    }
 
    void chatDocumentsInvalidateEmoticonTheme()

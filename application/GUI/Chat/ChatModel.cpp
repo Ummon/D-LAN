@@ -112,6 +112,8 @@ ChatModel::ChatModel(
       this,
       &ChatModel::newChatMessages
    );
+
+   this->loadLocale();
 }
 
 bool ChatModel::isMainChat() const
@@ -270,6 +272,21 @@ void ChatModel::sendRawMessage(const QString& message, const QList<Common::Hash>
    result->start();
 }
 
+/**
+  * Must be called when the language of the GUI has changed: the dates of the messages are displayed in the
+  * format of this language.
+  */
+void ChatModel::languageChanged()
+{
+   this->loadLocale();
+
+   for (const Message& message : std::as_const(this->messages))
+      message.formatted.line.clear();
+
+   if (!this->messages.isEmpty())
+      emit dataChanged(this->index(0, 0), this->index(this->messages.size() - 1, 0));
+}
+
 /*Qt::ItemFlags ChatModel::flags(const QModelIndex& index) const
 {
    if (index.column() == 0)
@@ -415,19 +432,34 @@ void ChatModel::removeResult(const RCC::ISendChatMessageResult* result)
    );
 }
 
+void ChatModel::loadLocale()
+{
+   this->locale = SETTINGS.isSet("language") ? SETTINGS.get<QLocale>("language") : QLocale::system();
+   this->dateFormat = this->locale.dateFormat(QLocale::ShortFormat);
+}
+
+/**
+  * The line is kept in the message: the view asks for the line of every message each time a message is
+  * inserted, see 'ChatDelegate::sizeHint(..)'.
+  * The date is only shown for the messages which aren't from today, a line is thus built again once its day is over.
+  */
 QString ChatModel::formatMessage(const Message& message) const
 {
-   const QDateTime now = QDateTime::currentDateTime();
-   const QLocale locale = SETTINGS.isSet("language") ? SETTINGS.get<QLocale>("language") : QLocale::system();
-   const QString dateFormat = locale.dateFormat(QLocale::ShortFormat);
+   const bool withDate = message.dateTime.date() != QDate::currentDate();
 
-   return
-      QString()
-         .append(
-            now.date() == message.dateTime.date() ?
-              message.dateTime.toString("[HH:mm:ss] ")
-            : message.dateTime.toString("[%1 HH:mm:ss] ").arg(locale.toString(message.dateTime.date(), dateFormat)))
-         .append("*").append(escapeMarkdown(message.nick)).append("*:")
-         .append(message.separateSenderLine ? "\n\n" : " ")
-         .append(message.message);
+   if (message.formatted.line.isEmpty() || message.formatted.withDate != withDate)
+   {
+      message.formatted.withDate = withDate;
+      message.formatted.line =
+         QString()
+            .append(
+               withDate ?
+                 message.dateTime.toString("[%1 HH:mm:ss] ").arg(this->locale.toString(message.dateTime.date(), this->dateFormat))
+               : message.dateTime.toString("[HH:mm:ss] "))
+            .append("*").append(escapeMarkdown(message.nick)).append("*:")
+            .append(message.separateSenderLine ? "\n\n" : " ")
+            .append(message.message);
+   }
+
+   return message.formatted.line;
 }
