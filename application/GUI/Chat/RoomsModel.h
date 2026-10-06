@@ -40,7 +40,6 @@ namespace GUI
       RoomsModel(QSharedPointer<RCC::ICoreConnection> coreConnection);
       ~RoomsModel();
 
-      //QModelIndex	index(int row, int column, const QModelIndex& parent = QModelIndex()) const;
       int rowCount(const QModelIndex& parent = QModelIndex()) const;
       int columnCount(const QModelIndex& parent = QModelIndex()) const;
       QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
@@ -49,10 +48,6 @@ namespace GUI
 
       void setSortType(Protos::GUI::Settings::RoomSortType sortType);
       Protos::GUI::Settings::RoomSortType getSortType() const;
-
-   signals:
-      void roomJoined(const QString& room);
-      void roomLeft(const QString& room);
 
    private slots:
       void newState(const Protos::GUI::State& state);

@@ -114,9 +114,6 @@ SettingsWidget::SettingsWidget(
    this->ui->tblShareDirs->setContextMenuPolicy(Qt::CustomContextMenu);
    connect(this->ui->tblShareDirs, &QTableView::customContextMenuRequested, this, &SettingsWidget::displayContextMenuSharedDirs);
 
-   // Commented: double click is now used to edit share name.
-   // connect(this->ui->tblShareDirs, &QTableView::doubleClicked, this, &SettingsWidget::openLocation);
-
    // When the selection change or a shared dir is moved/deleted/inserted we must set the availability of the action buttons.
    connect(
       this->ui->tblShareDirs->selectionModel(),
@@ -560,27 +557,6 @@ void SettingsWidget::newState(const Protos::GUI::State& state)
    this->updateNetworkInterfaces(state);
 
    this->getAtLeastOneState = true;
-
-
-   // If this is the first message state received and there is no incoming folder defined we ask the user to choose one.
-   // Commented cuz the user can know choose a folder right before downloading a file.
-   /*if (this->initialState)
-   {
-      this->initialState = false;
-      if (this->sharedDirsModel.rowCount() == 0)
-      {
-         if (QMessageBox::question(
-               this,
-               "No directory folder",
-               "You don't have any shared directory, would you like to choose one?",
-               QMessageBox::Yes,
-               QMessageBox::No
-            ) == QMessageBox::Yes)
-         {
-            this->addShared();
-         }
-      }
-   }*/
 }
 
 void SettingsWidget::coreConnecting()

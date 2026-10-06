@@ -22,7 +22,6 @@
 #include <QWidget>
 #include <QEvent>
 #include <QSharedPointer>
-#include <QIcon>
 
 #include <Taskbar/ITaskbarImpl.h>
 #include <Taskbar/TaskbarTypes.h>
@@ -48,7 +47,6 @@ namespace GUI
 
       void setStatus(TaskbarButtonStatus status) { if (!this->impl.isNull()) this->impl->setStatus(status); }
       void setProgress(quint64 completed, quint64 total) { if (!this->impl.isNull()) this->impl->setProgress(completed, total); }
-      void setOverlayIcon(const QIcon& icon, const QString& description) { if (!this->impl.isNull()) this->impl->setOverlayIcon(icon, description); }
 
 #ifdef Q_OS_WIN32
       void setWinHandle(HWND winHandle) { this->impl->setWinHandle(winHandle); }

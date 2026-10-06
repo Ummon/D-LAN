@@ -923,15 +923,6 @@ Common::Hash DownloadsTreeModel::Tree::getSharedEntryId() const
 
 /////
 
-bool GUI::operator>(const Protos::GUI::State::Download& d1, const Protos::GUI::State::Download& d2)
-{
-   if (d1.local_entry().type() != d2.local_entry().type())
-      return d1.local_entry().type() < d2.local_entry().type();
-
-   // We don't use the 'QString' class because of performance issue of the conversion.
-   return Common::StringUtils::strcmpi(d1.local_entry().name(), d2.local_entry().name()) == 1;
-}
-
 bool GUI::operator<(const Protos::GUI::State::Download& d1, const Protos::GUI::State::Download& d2)
 {
    if (d1.local_entry().type() != d2.local_entry().type())

@@ -51,8 +51,6 @@ MdiArea::MdiArea(
    downloadsBusyIndicator(nullptr)
 {
    this->setObjectName("mdiArea");
-   /*sizePolicy.setHeightForWidth(mdiArea->sizePolicy().hasHeightForWidth());
-   mdiArea->setSizePolicy(sizePolicy);*/
    this->setActivationOrder(QMdiArea::ActivationHistoryOrder);
    this->setViewMode(QMdiArea::TabbedView);
    this->setDocumentMode(true);

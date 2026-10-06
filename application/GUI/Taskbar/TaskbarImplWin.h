@@ -20,7 +20,6 @@
 
 #include <QEvent>
 #include <QObject>
-#include <QIcon>
 
 #include <shlobj.h>
 
@@ -38,7 +37,6 @@ namespace GUI
 
       void setStatus(TaskbarButtonStatus status);
       void setProgress(quint64 completed, quint64 total);
-      void setOverlayIcon(const QIcon& icon, const QString& description);
 
       void setWinHandle(HWND winHandle);
       void winEvent(MSG* message, qintptr* result);

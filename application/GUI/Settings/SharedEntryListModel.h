@@ -50,11 +50,8 @@ namespace GUI
       const QList<Common::SharedEntry>& getSharedEntries() const;
 
       Common::SharedEntry getSharedEntry(const Common::Hash& ID) const;
-      Common::SharedEntry getSharedDir(const Common::Hash& ID) const;
-      Common::SharedEntry getSharedFile(const Common::Hash& ID) const;
 
       QList<Common::SharedEntry> getSharedDirectories() const;
-      QList<Common::SharedEntry> getSharedFiles() const;
 
       int rowCount(const QModelIndex& parent = QModelIndex()) const override;
       int columnCount(const QModelIndex& parent = QModelIndex()) const override;

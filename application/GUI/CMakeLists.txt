@@ -38,7 +38,6 @@ add_executable(DLanGUI WIN32
    Log/LogModel.cpp
    Search/SearchModel.cpp
    Uploads/UploadsModel.cpp
-   Settings/RemoteFileDialog.cpp
    DownloadMenu.cpp
    D-LAN_GUI.cpp
    ProgressBar.cpp
@@ -65,7 +64,6 @@ add_executable(DLanGUI WIN32
    Settings/SettingsWidget.cpp
    Uploads/UploadsWidget.cpp
    MDI/MdiWidget.cpp
-   ColorBox.cpp
    Chat/ChatTextEdit.cpp
    Constants.cpp
    Emoticons/EmoticonsWidget.cpp
@@ -95,7 +93,6 @@ add_executable(DLanGUI WIN32
    Log/LogModel.h
    Search/SearchModel.h
    Uploads/UploadsModel.h
-   Settings/RemoteFileDialog.h
    DownloadMenu.h
    D-LAN_GUI.h
    ProgressBar.h
@@ -126,7 +123,6 @@ add_executable(DLanGUI WIN32
    Search/SearchWidget.h
    Settings/SettingsWidget.h
    Uploads/UploadsWidget.h
-   ColorBox.h
    Chat/ChatTextEdit.h
    Constants.h
    Emoticons/EmoticonsWidget.h
@@ -141,7 +137,6 @@ add_executable(DLanGUI WIN32
    RemoteBrowseDialog.ui
    StatusBar.ui
    DialogAbout.ui
-   Settings/RemoteFileDialog.ui
    Settings/AskNewPasswordDialog.ui
    Peers/PeersDock.ui
    Chat/RoomsDock.ui

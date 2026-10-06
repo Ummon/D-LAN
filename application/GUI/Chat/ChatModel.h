@@ -27,7 +27,6 @@
 #include <QSet>
 #include <QSize>
 #include <QFont>
-// #include <QRegularExpression>
 #include <QPair>
 
 #include <Protos/gui_protocol.pb.h>
@@ -37,14 +36,12 @@
 #include <Common/RemoteCoreController/ISendChatMessageResult.h>
 
 #include <Peers/PeerListModel.h>
-// #include <Emoticons/Emoticons.h>
 
 namespace GUI
 {
    class ChatModel : public QAbstractTableModel
    {
       Q_OBJECT
-      static const int MAX_NICK_LENGTH = 12;
 
    public:
       ChatModel(
@@ -68,7 +65,6 @@ namespace GUI
       int rowCount(const QModelIndex& parent = QModelIndex()) const override;
       int columnCount(const QModelIndex& parent = QModelIndex()) const override;
       QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-      //Qt::ItemFlags flags(const QModelIndex& index) const;
 
       inline QSize getCachedSize(const QModelIndex& index, const QString& markdown, const QFont& font, const QString& theme, int width) const
       {
@@ -144,7 +140,6 @@ namespace GUI
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;
       PeerListModel& peerListModel;
-      // const Emoticons& emoticons;
 
       // To format the dates of the messages, they depend on the language of the GUI: see 'languageChanged()'.
       QLocale locale;
@@ -153,11 +148,6 @@ namespace GUI
       QString roomName; // Empty for main chat.
       QList<Message> messages; // Always sorted by date-time.
       QSet<quint64> messageIDs; // The IDs of 'messages'.
-      QList<Common::Hash> peersAnsweringToUs;
-
-      // QRegularExpression regexMatchMessageContent;
-      // QRegularExpression regexMatchFirstBR;
-      // QRegularExpression regexMatchLastBR;
    };
 
 }

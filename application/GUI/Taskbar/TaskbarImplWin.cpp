@@ -71,18 +71,6 @@ void TaskbarImplWin::setProgress(quint64 completed, quint64 total)
    this->taskbarInterface->SetProgressValue(this->winHandle, completed, total);
 }
 
-void TaskbarImplWin::setOverlayIcon(const QIcon& icon, const QString& description)
-{
-   if (!this->winHandle || !this->taskbarInterface)
-      return;
-
-   HICON overlayIcon = icon.isNull() ? NULL : icon.pixmap(48).toImage().toHICON();
-   this->taskbarInterface->SetOverlayIcon(this->winHandle, overlayIcon, description.toStdWString().c_str());
-
-   if (overlayIcon)
-      DestroyIcon(overlayIcon);
-}
-
 void TaskbarImplWin::setWinHandle(HWND winHandle)
 {
    this->winHandle = winHandle;

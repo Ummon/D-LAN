@@ -60,7 +60,6 @@ namespace GUI
       void setDisplayOnlyPeersWithStatusOK(bool displayed);
       void setToolTipEnabled(bool enabled);
       void setRoom(const QString& room);
-      void rmRoom();
 
       int rowCount(const QModelIndex& parent = QModelIndex()) const;
       int columnCount(const QModelIndex& parent = QModelIndex()) const;
@@ -89,12 +88,6 @@ namespace GUI
 
          bool operator!=(const TransferInformation& ti) const { return !(ti == *this); }
       };
-
-   signals:
-      /**
-        * To remove peer files browse window. (Not used).
-        */
-      void peersRemoved(QList<Common::Hash> peerIDs);
 
    private slots:
       void newState(const Protos::GUI::State& state);

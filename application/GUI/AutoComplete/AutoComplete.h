@@ -52,7 +52,6 @@ namespace GUI
       void closed();
 
    protected:
-      //void keyPressEvent(QKeyEvent* event) override;
       bool eventFilter(QObject* obj, QEvent* event) override;
       void showEvent(QShowEvent* event) override;
       void closeEvent(QCloseEvent* event) override;

@@ -524,16 +524,6 @@ SearchModel::SearchTree::SearchTree(const Protos::Common::Entry& entry, const Co
 {
 }
 
-SearchModel::SearchTree* SearchModel::SearchTree::insertChildEntry(
-   const Protos::Common::FindResult_EntryLevel& entry,
-   const Common::Hash& peerID, const QString& peerNick
-)
-{
-   SearchTree* searchTree = new SearchTree(entry.entry(), entry.level(), peerID, peerNick, this);
-   this->children << searchTree;
-   return searchTree;
-}
-
 SearchModel::SearchTree* SearchModel::SearchTree::insertChildEntryAtIndex(
    int index,
    const Protos::Common::FindResult_EntryLevel& entry,

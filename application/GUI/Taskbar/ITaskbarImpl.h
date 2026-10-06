@@ -31,7 +31,6 @@ namespace GUI
 
       virtual void setStatus(TaskbarButtonStatus status) = 0;
       virtual void setProgress(quint64 completed, quint64 total) = 0;
-      virtual void setOverlayIcon(const QIcon& icon, const QString& description) = 0;
 
 #ifdef Q_OS_WIN32
       virtual void setWinHandle(HWND winHandle) = 0;

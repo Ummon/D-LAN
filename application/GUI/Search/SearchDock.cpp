@@ -32,10 +32,6 @@ using namespace GUI;
 
 #include <Log.h>
 
-// To activate the possibility to hide the advanced fields.
-// There is actually some difficulties to hide these controls.
-#define HIDE_BUTTON true
-
 SearchDock::SearchDock(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidget* parent) :
    QDockWidget(parent),
    ui(new Ui::SearchDock),
@@ -45,7 +41,6 @@ SearchDock::SearchDock(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
 
 #ifdef Q_OS_DARWIN
    this->ui->butSearch->setMaximumWidth(24);
-   // this->ui->butSearchOwnFiles->setMaximumWidth(24);
 #endif
 
    auto sizeValidator = new QIntValidator(this);
@@ -88,11 +83,7 @@ SearchDock::SearchDock(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
          QMetaObject::invokeMethod(this, [this]() { this->adjustHeight(); }, Qt::QueuedConnection);
    });
 
-#if not HIDE_BUTTON
-   this->ui->butAdvanced->hide();
-#else
    connect(this->ui->butAdvanced, &QPushButton::clicked, this, &SearchDock::advancedOptionsVisibility);
-#endif
 
    this->adjustHeight(); // Match the initial visibility state loaded by 'loadSettings()'.
 
@@ -250,11 +241,9 @@ void SearchDock::saveSettings()
 
    SETTINGS.set("search_local", this->ui->chkOwnFiles->checkState() == Qt::Checked);
 
-#if HIDE_BUTTON
    // 'isHidden()' and not 'isVisible()': this method is also called when the main window is being hidden or
    // isn't shown yet, 'isVisible()' is then 'false' whatever the user has chosen.
    SETTINGS.set("search_advanced_visible", !this->ui->advancedOptions->isHidden());
-#endif
 }
 
 void SearchDock::loadSettings()
@@ -272,12 +261,10 @@ void SearchDock::loadSettings()
 
    this->ui->chkOwnFiles->setChecked(SETTINGS.get<bool>("search_local"));
 
-#if HIDE_BUTTON
    const bool SHOW_ADVANCED_OPTIONS = SETTINGS.get<bool>("search_advanced_visible");
 
    this->ui->advancedOptions->setVisible(SHOW_ADVANCED_OPTIONS);
    this->ui->butAdvanced->setChecked(SHOW_ADVANCED_OPTIONS);
-#endif
 }
 
 void SearchDock::updateComboTypes()

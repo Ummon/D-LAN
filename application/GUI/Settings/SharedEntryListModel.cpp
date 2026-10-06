@@ -158,36 +158,11 @@ Common::SharedEntry SharedEntryListModel::getSharedEntry(const Common::Hash& ID)
    return Common::SharedEntry();
 }
 
-Common::SharedEntry SharedEntryListModel::getSharedDir(const Common::Hash& ID) const
-{
-   const Common::SharedEntry& sharedEntry = this->getSharedEntry(ID);
-   if (sharedEntry.isNull() || !sharedEntry.path.isFile())
-      return sharedEntry;
-   else
-      return Common::SharedEntry();
-}
-
-Common::SharedEntry SharedEntryListModel::getSharedFile(const Common::Hash& ID) const
-{
-   const Common::SharedEntry& sharedEntry = this->getSharedEntry(ID);
-   if (sharedEntry.isNull() || sharedEntry.path.isFile())
-      return sharedEntry;
-   else
-      return Common::SharedEntry();
-}
-
 QList<Common::SharedEntry> SharedEntryListModel::getSharedDirectories() const
 {
    QList sharedDirectories = this->sharedEntries;
    sharedDirectories.removeIf([](const auto& entry){ return entry.path.isFile(); });
    return sharedDirectories;
-}
-
-QList<Common::SharedEntry> SharedEntryListModel::getSharedFiles() const
-{
-   QList sharedFiles = this->sharedEntries;
-   sharedFiles.removeIf([](const auto& entry){ return !entry.path.isFile(); });
-   return sharedFiles;
 }
 
 int SharedEntryListModel::rowCount(const QModelIndex&) const

@@ -197,11 +197,6 @@ void PeerListModel::setRoom(const QString& room)
    this->room = room;
 }
 
-void PeerListModel::rmRoom()
-{
-   this->room = QString();
-}
-
 int PeerListModel::rowCount(const QModelIndex& parent) const
 {
    return parent.isValid() ? 0 : this->orderedPeers.size();
@@ -437,13 +432,11 @@ void PeerListModel::updatePeers(
       }
    }
 
-   QList<Common::Hash> peerIDsRemoved;
    for (auto i = peersToRemove.begin(); i != peersToRemove.end(); ++i)
    {
       Peer* peer = this->indexedPeers[*i];
       const int row = this->orderedPeers.indexOf(peer);
       this->beginRemoveRows(QModelIndex(), row, row);
-      peerIDsRemoved << peer->peerID;
       this->indexedPeers.remove(peer->peerID);
       this->orderedPeers.remove(peer);
       delete peer;
@@ -476,7 +469,4 @@ void PeerListModel::updatePeers(
       }
       flush(row - 1);
    }
-
-   if (!peerIDsRemoved.isEmpty())
-      emit peersRemoved(peerIDsRemoved);
 }

@@ -32,7 +32,6 @@ using namespace GUI;
 #include <QTreeView>
 #include <QLabel>
 
-#include <Settings/RemoteFileDialog.h>
 #include <RemoteBrowseDialog/RemoteBrowseDialog.h>
 #include <Constants.h>
 

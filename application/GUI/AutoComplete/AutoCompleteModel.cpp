@@ -42,16 +42,6 @@ Common::Hash AutoCompleteModel::getHash(const QModelIndex& index) const
    return Common::Hash();
 }
 
-/*QModelIndex AutoCompleteModel::index(int row, int column, const QModelIndex& parent) const
-{
-   return QModelIndex();
-}
-
-QModelIndex AutoCompleteModel::parent(const QModelIndex& child) const
-{
-   return QModelIndex();
-}*/
-
 int AutoCompleteModel::rowCount(const QModelIndex& parent) const
 {
    return this->values.count();

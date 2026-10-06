@@ -184,21 +184,6 @@ bool ChatDelegate::eventFilter(QObject* watched, QEvent* event)
    return QStyledItemDelegate::eventFilter(watched, event);
 }
 
-//QWidget* ChatDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
-//{
-//   QLineEdit* line = new QLineEdit(parent);
-//   line->setFrame(false);
-//   line->setReadOnly(true);
-//   return line;
-//}
-
-//void ChatDelegate::setEditorData(QWidget* editor, const QModelIndex& index) const
-//{
-//   // Set editor data.
-//   QLineEdit* line = static_cast<QLineEdit*>(editor);
-//   line->setText(index.model()->data(index, Qt::DisplayRole).toString());
-//}
-
 QString ChatDelegate::anchorAt(
    const QStyleOptionViewItem& option,
    const QModelIndex& index,
@@ -247,11 +232,6 @@ ChatWidget::ChatWidget(
 ChatWidget::~ChatWidget()
 {
    delete this->ui;
-}
-
-bool ChatWidget::isGeneral() const
-{
-   return this->getRoomName().isEmpty();
 }
 
 QString ChatWidget::getRoomName() const
@@ -621,22 +601,6 @@ void ChatWidget::currentCharFormatChanged(const QTextCharFormat& charFormat)
       );
    }
 }
-
-// void ChatWidget::cursorPositionChanged()
-// {
-//    if (this->ui->txtMessage->textCursor().position() != 0)
-//    {
-//       this->disconnectFormatWidgets();
-//       this->ui->butColorBox->setColor(this->ui->txtMessage->textColor());
-//       this->connectFormatWidgets();
-//    }
-//    else
-//    {
-//       disconnect(this->ui->txtMessage, &ChatTextEdit::cursorPositionChanged, this, &ChatWidget::cursorPositionChanged);
-//       this->ui->txtMessage->setTextColor(this->ui->butColorBox->getCurrentColor());
-//       connect(this->ui->txtMessage, &ChatTextEdit::cursorPositionChanged, this, &ChatWidget::cursorPositionChanged);
-//    }
-// }
 
 void ChatWidget::textChanged()
 {
@@ -1059,7 +1023,6 @@ void ChatWidget::init()
    connect(this->ui->tblChat->verticalScrollBar(), &QScrollBar::valueChanged, this, &ChatWidget::scrollChanged);
 
    connect(this->ui->txtMessage, &ChatTextEdit::currentCharFormatChanged, this, &ChatWidget::currentCharFormatChanged);
-   // connect(this->ui->txtMessage, &ChatTextEdit::cursorPositionChanged, this, &ChatWidget::cursorPositionChanged);
    connect(this->ui->txtMessage, &ChatTextEdit::textChanged, this, &ChatWidget::textChanged);
    // Wrapping also changes on resize. Defer resizing until the document layout has finished.
    connect(this->ui->txtMessage->document()->documentLayout(), &QAbstractTextDocumentLayout::documentSizeChanged,
@@ -1075,11 +1038,9 @@ void ChatWidget::init()
    });
    connect(this->ui->txtMessage->document(), &QTextDocument::contentsChange, this, &ChatWidget::documentChanged);
 
-   // connect(this->ui->cmbFontSize, &QComboBox::currentIndexChanged, this, &ChatWidget::setFocusTxtMessage);
    connect(this->ui->butBold, &QPushButton::clicked, this, &ChatWidget::setFocusTxtMessage);
    connect(this->ui->butItalic, &QPushButton::clicked, this, &ChatWidget::setFocusTxtMessage);
    connect(this->ui->butUnderline, &QPushButton::clicked, this, &ChatWidget::setFocusTxtMessage);
-   // connect(this->ui->butColorBox, &QPushButton::clicked, this, &ChatWidget::setFocusTxtMessage);
 
    connect(this->ui->butResetFormat, &QPushButton::clicked, this, &ChatWidget::setFocusTxtMessage);
    connect(this->ui->butResetFormat, &QPushButton::clicked, this, &ChatWidget::resetFormat);
@@ -1271,9 +1232,4 @@ void ChatWidget::setNewMessageState(bool newMessage)
 QUrl ChatWidget::buildUrlEmoticon(const QString& theme, const QString& emoticonName)
 {
    return QUrl(QString("emoticons://%1/%2").arg(theme, emoticonName));
-}
-
-QString ChatWidget::mdEmoticon(const QString& theme, const QString& emoticonName)
-{
-   return QString("![%1](%2)").arg(emoticonName, buildUrlEmoticon(theme, emoticonName).toString());
 }

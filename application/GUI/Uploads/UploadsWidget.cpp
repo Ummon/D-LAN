@@ -83,7 +83,6 @@ UploadsWidget::UploadsWidget(QSharedPointer<RCC::ICoreConnection> coreConnection
    this->ui->tblUploads->horizontalHeader()->setSectionResizeMode(UploadsModel::PEER, QHeaderView::ResizeToContents);
    this->ui->tblUploads->horizontalHeader()->setMinimumSectionSize(0);
 
-   //this->ui->tblChat->verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
    this->ui->tblUploads->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
    this->ui->tblUploads->verticalHeader()->setDefaultSectionSize(QFontMetrics(QApplication::font()).height() + 2);
    this->ui->tblUploads->verticalHeader()->setVisible(false);

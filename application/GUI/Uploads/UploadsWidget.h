@@ -19,7 +19,6 @@
 #pragma once
 
 #include <QWidget>
-#include <QProgressBar>
 #include <QStyledItemDelegate>
 
 #include <Common/RemoteCoreController/ICoreConnection.h>
@@ -38,10 +37,6 @@ namespace GUI
    public:
       void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
       QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const;
-      void drawFocus(QPainter*, const QStyleOptionViewItem&, const QRect&) const {}
-
-   private:
-      QProgressBar model;
    };
 
    class UploadsWidget : public QWidget

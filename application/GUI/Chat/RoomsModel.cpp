@@ -56,11 +56,6 @@ RoomsModel::~RoomsModel()
       delete *i;
 }
 
-/*QModelIndex	RoomsModel::index(int row, int column, const QModelIndex& parent) const
-{
-   return this->createIndex(row, column)
-}*/
-
 int RoomsModel::rowCount(const QModelIndex& parent) const
 {
    return parent.isValid() ? 0 : this->orderedRooms.size();

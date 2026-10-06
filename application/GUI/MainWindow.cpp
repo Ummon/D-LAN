@@ -69,11 +69,6 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
    this->taskbar.setStatus(TaskbarButtonStatus::BUTTON_STATUS_NOPROGRESS);
 
    this->mdiArea = new MdiArea(this->coreConnection, this->peersDock->getModel(), this->taskbar, this->ui->centralWidget);
-   /*QSizePolicy sizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-   sizePolicy.setHorizontalStretch(0);
-   sizePolicy.setVerticalStretch(0);
-   sizePolicy.setHeightForWidth(this->mdiArea->sizePolicy().hasHeightForWidth());
-   this->mdiArea->setSizePolicy(sizePolicy);*/
    this->ui->verticalLayout->addWidget(this->mdiArea);
    connect(this->mdiArea, &MdiArea::languageChanged, this, &MainWindow::languageChanged);
    connect(this->mdiArea, &MdiArea::styleChanged, this, &MainWindow::loadCustomStyle);

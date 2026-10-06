@@ -22,7 +22,6 @@
 #include <QPoint>
 #include <QPair>
 #include <QStyledItemDelegate>
-#include <QProgressBar>
 
 #include <Protos/gui_settings.pb.h>
 
@@ -52,9 +51,6 @@ namespace GUI
    public:
       void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
       QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
-
-   private:
-      QProgressBar model;
    };
 
    class DownloadsWidget : public QWidget

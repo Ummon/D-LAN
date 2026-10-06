@@ -133,12 +133,6 @@ namespace GUI
             SearchTree* parent
          );
 
-         SearchTree* insertChildEntry(
-            const Protos::Common::FindResult::EntryLevel& entry,
-            const Common::Hash& peerID,
-            const QString& peerNick
-         );
-
          SearchTree* insertChildEntryAtIndex(
             int index,
             const Protos::Common::FindResult::EntryLevel& entry,

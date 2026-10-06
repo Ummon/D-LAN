@@ -142,6 +142,5 @@ namespace GUI
       QHash<quint64, Tree*> indexedEntries; // Entries received from the Core. They all have an ID.
    };
 
-   bool operator>(const Protos::GUI::State::Download& d1, const Protos::GUI::State::Download& d2);
    bool operator<(const Protos::GUI::State::Download& d1, const Protos::GUI::State::Download& d2);
 }

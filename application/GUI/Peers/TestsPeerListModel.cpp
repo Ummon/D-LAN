@@ -162,7 +162,6 @@ private slots:
       QPersistentModelIndex retained(f.model.index(1, 1));
       QPersistentModelIndex removed(f.model.index(0, 1));
       QSignalSpy changes(&f.model, &QAbstractItemModel::dataChanged);
-      QSignalSpy removals(&f.model, &GUI::PeerListModel::peersRemoved);
       QSignalSpy layouts(&f.model, &QAbstractItemModel::layoutChanged);
       f.state.mutable_peers()->DeleteSubrange(0, 1);
       f.state.mutable_peers(0)->set_upload_rate(42);
@@ -173,8 +172,6 @@ private slots:
       QCOMPARE(f.model.getPeerID(0), f.ids[3]);
       QCOMPARE(changes.size(), 1);
       QCOMPARE(changes[0][0].value<QModelIndex>().row(), retained.row());
-      QCOMPARE(removals.size(), 1);
-      QCOMPARE(removals[0][0].value<QList<Common::Hash>>(), QList<Common::Hash> { f.ids[0] });
       QVERIFY(layouts.isEmpty());
 
       f.model.setDisplayOnlyPeersWithStatusOK(true);

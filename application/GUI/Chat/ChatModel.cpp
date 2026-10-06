@@ -295,14 +295,6 @@ void ChatModel::languageChanged()
       emit dataChanged(this->index(0, 0), this->index(this->messages.size() - 1, 0));
 }
 
-/*Qt::ItemFlags ChatModel::flags(const QModelIndex& index) const
-{
-   if (index.column() == 0)
-      return Qt::ItemIsSelectable | Qt::ItemIsEnabled;
-   else
-      return Qt::ItemIsSelectable | Qt::ItemIsEditable | Qt::ItemIsEnabled;
-}*/
-
 void ChatModel::newChatMessages(const Protos::Common::ChatMessages& messages)
 {
    if (messages.messages_size() == 0)

@@ -60,8 +60,6 @@ namespace GUI
          const QModelIndex& index
       ) override;
       bool eventFilter(QObject* watched, QEvent* event) override;
-//      QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const;
-//      void setEditorData(QWidget* editor, const QModelIndex& index) const;
 
    private:
       QString anchorAt(const QStyleOptionViewItem& option, const QModelIndex& index, const QPoint& pos) const;
@@ -83,7 +81,6 @@ namespace GUI
       );
       ~ChatWidget();
 
-      bool isGeneral() const;
       QString getRoomName() const;
 
    signals:
@@ -154,7 +151,6 @@ namespace GUI
       bool isChatActive() const;
 
       static QUrl buildUrlEmoticon(const QString& theme, const QString& emoticonName);
-      static QString mdEmoticon(const QString& theme, const QString& emoticonName);
 
       Ui::ChatWidget* ui;
       EmoticonsWidget* emoticonsWidget = nullptr; // Created by 'displayEmoticons(..)'.
