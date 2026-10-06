@@ -121,9 +121,10 @@ bool SearchDock::eventFilter(QObject* object, QEvent* event)
 void SearchDock::changeEvent(QEvent* event)
 {
    if (event->type() == QEvent::LanguageChange)
+   {
       this->ui->retranslateUi(this);
-
-   this->updateComboTypes();
+      this->updateComboTypes();
+   }
 
    QDockWidget::changeEvent(event);
 }
