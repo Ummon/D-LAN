@@ -81,6 +81,13 @@ MdiArea::MdiArea(
 MdiArea::~MdiArea()
 {
    this->coreConnection->disconnect(this);
+
+   // All the windows are removed here: they hold references to some members of this object ('sharedEntryListModel',
+   // 'emoticon') which would otherwise be destroyed before them, the sub-windows being deleted by 'QWidget'.
+   this->removeUploadsWindow();
+   this->removeDownloadsWindow();
+   this->removeChatWindow();
+   this->removeAllWindows();
    this->removeSettingsWindow();
 }
 

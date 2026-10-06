@@ -163,6 +163,10 @@ MainWindow::~MainWindow()
    this->coreConnection->disconnect(this); // Disconnect all signals.
    this->logModel.disconnect(this);
 
+   // The windows of the MDI area hold a reference to the peer list model owned by 'peersDock'. The docks are the
+   // first children of this window, 'QWidget' would delete them before the MDI area.
+   delete this->mdiArea;
+
    delete this->ui;
 }
 
