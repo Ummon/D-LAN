@@ -53,8 +53,7 @@ void SearchDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option
    {
    case SearchModel::NAME:
       {
-         QTextDocument doc;
-         this->initTextDocument(doc, newOption);
+         QTextDocument& doc = this->textDocument(newOption);
          QStyle* style = newOption.widget ? newOption.widget->style() : QApplication::style();
 
          // Painting item without text.
@@ -120,8 +119,7 @@ QSize SearchDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelI
 
    QStyleOptionViewItem newOption = option;
    this->initStyleOption(&newOption, index);
-   QTextDocument doc;
-   this->initTextDocument(doc, newOption);
+   QTextDocument& doc = this->textDocument(newOption);
 
    // Let the widget's style size the icon, check indicator and spacing, then
    // add the rich text that paint() draws in the remaining text rectangle.
@@ -132,19 +130,42 @@ QSize SearchDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelI
    return QSize(itemSize.width() + qCeil(doc.idealWidth()), qMax(itemSize.height(), qCeil(doc.size().height())));
 }
 
-void SearchDelegate::initTextDocument(QTextDocument& doc, const QStyleOptionViewItem& option) const
+/**
+  * Returns the document showing 'option.text' with the current terms highlighted.
+  * The documents are kept: building one costs much more than drawing or measuring it and the same cells are
+  * painted again and again (scrolling, hovering, new results).
+  * The returned reference is only valid until the next call.
+  */
+QTextDocument& SearchDelegate::textDocument(const QStyleOptionViewItem& option) const
 {
-   doc.setDefaultFont(option.font);
-   // Search results use a single line, clipped to the column when painting.
-   QTextOption textOption = doc.defaultTextOption();
-   textOption.setWrapMode(QTextOption::NoWrap);
-   doc.setDefaultTextOption(textOption);
-   doc.setHtml(this->toHtmlText(option.text));
+   QTextDocument* doc = this->documents.object(option.text);
+
+   // The font is given when the document is built.
+   if (doc && doc->defaultFont() != option.font)
+   {
+      this->documents.remove(option.text);
+      doc = nullptr;
+   }
+
+   if (!doc)
+   {
+      doc = new QTextDocument();
+      doc->setDefaultFont(option.font);
+      // Search results use a single line, clipped to the column when painting.
+      QTextOption textOption = doc->defaultTextOption();
+      textOption.setWrapMode(QTextOption::NoWrap);
+      doc->setDefaultTextOption(textOption);
+      doc->setHtml(this->toHtmlText(option.text));
+      this->documents.insert(option.text, doc);
+   }
+
+   return *doc;
 }
 
 void SearchDelegate::setTerms(const QString& terms)
 {
    this->currentTerms = Common::StringUtils::splitInWords(terms);
+   this->documents.clear(); // They highlight the previous terms.
 }
 
 /**

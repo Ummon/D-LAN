@@ -22,6 +22,8 @@
 #include <QString>
 #include <QStyledItemDelegate>
 #include <QPainter>
+#include <QCache>
+#include <QTextDocument>
 #include <QItemSelection>
 #include <QProgressBar>
 
@@ -38,8 +40,6 @@ namespace Ui {
    class SearchWidget;
 }
 
-class QTextDocument;
-
 namespace GUI
 {
    class SearchDelegate : public QStyledItemDelegate
@@ -53,9 +53,12 @@ namespace GUI
       void setTerms(const QString& terms);
 
    private:
-      void initTextDocument(QTextDocument& doc, const QStyleOptionViewItem& option) const;
+      QTextDocument& textDocument(const QStyleOptionViewItem& option) const;
       QString toHtmlText(const QString& text) const;
       QStringList currentTerms;
+
+      // The documents of the names lately painted or measured, by name. See 'textDocument(..)'.
+      mutable QCache<QString, QTextDocument> documents { 256 };
    };
 
    class SearchMenu : public DownloadMenu
