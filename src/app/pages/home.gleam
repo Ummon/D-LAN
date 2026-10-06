@@ -38,6 +38,7 @@ fn image_of_the_week(lang: tr.Lang) -> element.Element(a) {
   case date.weekday(date) {
     date.Monday ->
       screenshots.image(
+        lang,
         "browse",
         tr.gallery_browse(lang),
         tr.gallery_browse_comment(lang),
@@ -45,6 +46,7 @@ fn image_of_the_week(lang: tr.Lang) -> element.Element(a) {
 
     date.Tuesday ->
       screenshots.image(
+        lang,
         "search",
         tr.gallery_search(lang),
         tr.gallery_search_comment(lang),
@@ -52,6 +54,7 @@ fn image_of_the_week(lang: tr.Lang) -> element.Element(a) {
 
     date.Wednesday ->
       screenshots.image(
+        lang,
         "download_folders",
         tr.gallery_download_folders(lang),
         tr.gallery_download_folders_comment(lang),
@@ -59,16 +62,19 @@ fn image_of_the_week(lang: tr.Lang) -> element.Element(a) {
 
     date.Thursday ->
       screenshots.image(
+        lang,
         "download_files",
         tr.gallery_download_files(lang),
         tr.gallery_download_files_comment(lang),
       )
 
-    date.Friday -> screenshots.image("upload", tr.gallery_upload(lang), "")
+    date.Friday ->
+      screenshots.image(lang, "upload", tr.gallery_upload(lang), "")
 
     // Week-end.
     _ ->
       screenshots.image(
+        lang,
         "download_files",
         tr.gallery_download_files(lang),
         tr.gallery_download_files_comment(lang),
