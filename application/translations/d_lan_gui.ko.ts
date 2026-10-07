@@ -231,27 +231,27 @@
 <context>
     <name>GUI::D_LAN_GUI</name>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="207"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="212"/>
         <source>Show the user interface</source>
         <translation>사용자 인터페이스 표시</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="211"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="216"/>
         <source>Stop the user interface</source>
         <translation>사용자 인터페이스 닫기</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="214"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="219"/>
         <source>Exit</source>
         <translation>종료</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="245"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="250"/>
         <source>D-LAN user interface closed</source>
         <translation>D-LAN 사용자 인터페이스가 닫혔습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="246"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="251"/>
         <source>D-LAN Core is still running in background. Select &apos;exit&apos; from the contextual menu if you want to stop it.</source>
         <translation>D-LAN Core가 백그라운드에서 계속 실행 중입니다. 중지하려면 컨텍스트 메뉴에서 «종료»를 선택하세요.</translation>
     </message>
@@ -1037,22 +1037,22 @@
         <translation>코어 서비스가 시작되었습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="108"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="113"/>
         <source>D-LAN already launched</source>
         <translation>D-LAN이 이미 실행 중입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="109"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="114"/>
         <source>An instance of D-LAN is already launched</source>
         <translation>D-LAN 인스턴스가 이미 실행 중입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="111"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="116"/>
         <source>Quit</source>
         <translation>종료</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="112"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="117"/>
         <source>Launch anyway</source>
         <translation>무시하고 실행</translation>
     </message>
@@ -1128,7 +1128,7 @@
         <translation>다운로드할 폴더를 선택하십시오</translation>
     </message>
     <message>
-        <location filename="../GUI/main.cpp" line="108"/>
+        <location filename="../GUI/main.cpp" line="112"/>
         <source>D-LAN GUI version %1</source>
         <translation>D-LAN GUI 버전 %1</translation>
     </message>

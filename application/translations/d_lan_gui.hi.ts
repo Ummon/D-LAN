@@ -231,7 +231,7 @@
 <context>
     <name>GUI::D_LAN_GUI</name>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="+207"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="+212"/>
         <source>Show the user interface</source>
         <translation>यूज़र इंटरफ़ेस दिखाएँ</translation>
     </message>
@@ -1041,7 +1041,7 @@
         <translation>फिर भी शुरू करें</translation>
     </message>
     <message>
-        <location filename="../GUI/main.cpp" line="+108"/>
+        <location filename="../GUI/main.cpp" line="+112"/>
         <source>D-LAN GUI version %1</source>
         <translation>D-LAN GUI संस्करण %1</translation>
     </message>

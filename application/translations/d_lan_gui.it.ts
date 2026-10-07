@@ -231,27 +231,27 @@
 <context>
     <name>GUI::D_LAN_GUI</name>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="207"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="212"/>
         <source>Show the user interface</source>
         <translation>Mostra l&apos;interfaccia utente</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="211"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="216"/>
         <source>Stop the user interface</source>
         <translation>Chiudi l&apos;interfaccia utente</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="214"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="219"/>
         <source>Exit</source>
         <translation>Esci</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="245"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="250"/>
         <source>D-LAN user interface closed</source>
         <translation>Interfaccia utente di D-LAN chiusa</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="246"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="251"/>
         <source>D-LAN Core is still running in background. Select &apos;exit&apos; from the contextual menu if you want to stop it.</source>
         <translation>D-LAN Core è ancora in esecuzione in background. Seleziona «Esci» dal menu contestuale per arrestarlo.</translation>
     </message>
@@ -1018,27 +1018,27 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="108"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="113"/>
         <source>D-LAN already launched</source>
         <translation>D-LAN è già in esecuzione</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="109"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="114"/>
         <source>An instance of D-LAN is already launched</source>
         <translation>Un&apos;istanza di D-LAN è già in esecuzione</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="111"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="116"/>
         <source>Quit</source>
         <translation>Esci</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="112"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="117"/>
         <source>Launch anyway</source>
         <translation>Avvia comunque</translation>
     </message>
     <message>
-        <location filename="../GUI/main.cpp" line="108"/>
+        <location filename="../GUI/main.cpp" line="112"/>
         <source>D-LAN GUI version %1</source>
         <translation>D-LAN GUI versione %1</translation>
     </message>

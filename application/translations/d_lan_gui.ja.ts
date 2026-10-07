@@ -231,27 +231,27 @@
 <context>
     <name>GUI::D_LAN_GUI</name>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="207"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="212"/>
         <source>Show the user interface</source>
         <translation>ユーザーインターフェースを表示</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="211"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="216"/>
         <source>Stop the user interface</source>
         <translation>ユーザーインターフェースを終了</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="214"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="219"/>
         <source>Exit</source>
         <translation>終了</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="245"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="250"/>
         <source>D-LAN user interface closed</source>
         <translation>D-LANのユーザーインターフェースを閉じました</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="246"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="251"/>
         <source>D-LAN Core is still running in background. Select &apos;exit&apos; from the contextual menu if you want to stop it.</source>
         <translation>D-LAN Coreはバックグラウンドで引き続き動作しています。停止するには、コンテキストメニューから「終了」を選択してください。</translation>
     </message>
@@ -1033,27 +1033,27 @@
         <translation>Core サービスを起動しました</translation>
     </message>
     <message>
-        <location filename="../GUI/main.cpp" line="108"/>
+        <location filename="../GUI/main.cpp" line="112"/>
         <source>D-LAN GUI version %1</source>
         <translation>D-LAN GUI バージョン %1</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="108"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="113"/>
         <source>D-LAN already launched</source>
         <translation>D-LAN はすでに起動しています</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="109"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="114"/>
         <source>An instance of D-LAN is already launched</source>
         <translation>D-LAN のインスタンスがすでに起動しています</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="111"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="116"/>
         <source>Quit</source>
         <translation>終了</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="112"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="117"/>
         <source>Launch anyway</source>
         <translation>それでも起動する</translation>
     </message>
