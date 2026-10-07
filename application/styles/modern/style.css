@@ -157,7 +157,6 @@ QTabBar {
 
 #mdiArea > QTabBar {
    border-bottom: 1px solid #2a313b;
-   qproperty-expanding: 0;
 }
 
 QTabBar::tab {
