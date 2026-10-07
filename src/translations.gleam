@@ -622,68 +622,144 @@ pub fn faq_q2(l: Lang) -> element.Element(a) {
 }
 
 pub fn faq_a2(l: Lang) -> element.Element(a) {
+  let ipv6_address = "<em>ff12:0:318b:bc3f:d75a:c873:ec0d:2b18</em>"
+  let ipv4_address = "<em>236.13.43.24</em>"
+  let port_udp = "<em>59486</em>"
+  let port_udp_tcp = "<em>59487</em>"
   case l {
     En ->
       "<ul>"
       <> "<li>Check that you have the latest version of D-LAN.</li>"
-      <> "<li>Make sure ports 59486 (<i>UDP</i>) and 59487 (<i>UDP + TCP</i>) are open in your firewall.</li>"
-      <> "<li>Make sure UDP multicast is allowed on your network. The IPv6 address is <i>ff12:0:318b:bc3f:d75a:c873:ec0d:2b18</i>, and the IPv4 address is <i>236.13.43.24</i>.</li>"
+      <> "<li>Make sure ports "
+      <> port_udp
+      <> " (<i>UDP</i>) and "
+      <> port_udp_tcp
+      <> " (<i>UDP + TCP</i>) are open in your firewall.</li>"
+      <> "<li>Make sure UDP multicast is allowed on your network. The IPv6 address is "
+      <> ipv6_address
+      <> ", and the IPv4 address is "
+      <> ipv4_address
+      <> ".</li>"
       <> "<li>All peers must use the same protocol: IPv6 (the default) or IPv4. Check this under <i>Settings &gt; Network</i>.</li>"
       <> "</ul>"
     Fr ->
       "<ul>"
       <> "<li>Vérifier que la dernière version de D-LAN est installée.</li>"
-      <> "<li>S'assurer que les ports 59486 (<i>UDP</i>) et 59487 (<i>UDP + TCP</i>) sont ouverts sur le pare-feu (<i>firewall</i>).</li>"
-      <> "<li>S'assurer que l'UDP multicast est autorisé sur le réseau. L'adresse IPv6 est <i>ff12:0:318b:bc3f:d75a:c873:ec0d:2b18</i> et l'adresse IPv4 est <i>236.13.43.24</i>.</li>"
+      <> "<li>S'assurer que les ports "
+      <> port_udp
+      <> " (<i>UDP</i>) et "
+      <> port_udp_tcp
+      <> " (<i>UDP + TCP</i>) sont ouverts sur le pare-feu (<i>firewall</i>).</li>"
+      <> "<li>S'assurer que l'UDP multicast est autorisé sur le réseau. L'adresse IPv6 est "
+      <> ipv6_address
+      <> " et l'adresse IPv4 est "
+      <> ipv4_address
+      <> ".</li>"
       <> "<li>Tous les pairs doivent utiliser le même protocole : IPv6 (par défaut) ou IPv4. Vérifier ce réglage dans <i>Paramètres &gt; Réseau</i>.</li>"
       <> "</ul>"
     De ->
       "<ul>"
       <> "<li>Stellen Sie sicher, dass die neueste Version von D-LAN installiert ist.</li>"
-      <> "<li>Stellen Sie sicher, dass die Ports 59486 (<i>UDP</i>) und 59487 (<i>UDP + TCP</i>) in Ihrer Firewall geöffnet sind.</li>"
-      <> "<li>Stellen Sie sicher, dass UDP-Multicast in Ihrem Netzwerk erlaubt ist. Die IPv6-Adresse lautet <i>ff12:0:318b:bc3f:d75a:c873:ec0d:2b18</i> und die IPv4-Adresse <i>236.13.43.24</i>.</li>"
+      <> "<li>Stellen Sie sicher, dass die Ports "
+      <> port_udp
+      <> " (<i>UDP</i>) und "
+      <> port_udp_tcp
+      <> " (<i>UDP + TCP</i>) in Ihrer Firewall geöffnet sind.</li>"
+      <> "<li>Stellen Sie sicher, dass UDP-Multicast in Ihrem Netzwerk erlaubt ist. Die IPv6-Adresse lautet "
+      <> ipv6_address
+      <> " und die IPv4-Adresse "
+      <> ipv4_address
+      <> ".</li>"
       <> "<li>Alle Peers müssen dasselbe Protokoll verwenden: IPv6 (Standard) oder IPv4. Prüfen Sie dies unter <i>Einstellungen &gt; Netzwerk</i>.</li>"
       <> "</ul>"
     Es ->
       "<ul>"
       <> "<li>Compruebe que tiene la última versión de D-LAN.</li>"
-      <> "<li>Asegúrese de que los puertos 59486 (<i>UDP</i>) y 59487 (<i>UDP + TCP</i>) están abiertos en su cortafuegos.</li>"
-      <> "<li>Asegúrese de que la multidifusión UDP está permitida en su red. La dirección IPv6 es <i>ff12:0:318b:bc3f:d75a:c873:ec0d:2b18</i> y la dirección IPv4 es <i>236.13.43.24</i>.</li>"
+      <> "<li>Asegúrese de que los puertos "
+      <> port_udp
+      <> " (<i>UDP</i>) y "
+      <> port_udp_tcp
+      <> " (<i>UDP + TCP</i>) están abiertos en su cortafuegos.</li>"
+      <> "<li>Asegúrese de que la multidifusión UDP está permitida en su red. La dirección IPv6 es "
+      <> ipv6_address
+      <> " y la dirección IPv4 es "
+      <> ipv4_address
+      <> ".</li>"
       <> "<li>Todos los pares deben usar el mismo protocolo: IPv6 (predeterminado) o IPv4. Compruébelo en <i>Configuración &gt; Red</i>.</li>"
       <> "</ul>"
     It ->
       "<ul>"
       <> "<li>Verificate di avere l'ultima versione di D-LAN.</li>"
-      <> "<li>Assicuratevi che le porte 59486 (<i>UDP</i>) e 59487 (<i>UDP + TCP</i>) siano aperte nel vostro firewall.</li>"
-      <> "<li>Assicuratevi che il multicast UDP sia consentito nella vostra rete. L'indirizzo IPv6 è <i>ff12:0:318b:bc3f:d75a:c873:ec0d:2b18</i> e l'indirizzo IPv4 è <i>236.13.43.24</i>.</li>"
+      <> "<li>Assicuratevi che le porte "
+      <> port_udp
+      <> " (<i>UDP</i>) e "
+      <> port_udp_tcp
+      <> " (<i>UDP + TCP</i>) siano aperte nel vostro firewall.</li>"
+      <> "<li>Assicuratevi che il multicast UDP sia consentito nella vostra rete. L'indirizzo IPv6 è "
+      <> ipv6_address
+      <> " e l'indirizzo IPv4 è "
+      <> ipv4_address
+      <> ".</li>"
       <> "<li>Tutti i peer devono usare lo stesso protocollo: IPv6 (predefinito) o IPv4. Verificatelo in <i>Impostazioni &gt; Rete</i>.</li>"
       <> "</ul>"
     Ru ->
       "<ul>"
       <> "<li>Убедитесь, что у вас установлена последняя версия D-LAN.</li>"
-      <> "<li>Убедитесь, что порты 59486 (<i>UDP</i>) и 59487 (<i>UDP + TCP</i>) открыты в вашем брандмауэре.</li>"
-      <> "<li>Убедитесь, что в вашей сети разрешён UDP multicast. Адрес IPv6: <i>ff12:0:318b:bc3f:d75a:c873:ec0d:2b18</i>, адрес IPv4: <i>236.13.43.24</i>.</li>"
+      <> "<li>Убедитесь, что порты "
+      <> port_udp
+      <> " (<i>UDP</i>) и "
+      <> port_udp_tcp
+      <> " (<i>UDP + TCP</i>) открыты в вашем брандмауэре.</li>"
+      <> "<li>Убедитесь, что в вашей сети разрешён UDP multicast. Адрес IPv6: "
+      <> ipv6_address
+      <> ", адрес IPv4: "
+      <> ipv4_address
+      <> ".</li>"
       <> "<li>Все пиры должны использовать один и тот же протокол: IPv6 (по умолчанию) или IPv4. Проверьте этот параметр в разделе <i>Настройки &gt; Сеть</i>.</li>"
       <> "</ul>"
     Ko ->
       "<ul>"
       <> "<li>최신 버전의 D-LAN이 설치되어 있는지 확인하세요.</li>"
-      <> "<li>방화벽에서 59486 (<i>UDP</i>) 및 59487 (<i>UDP + TCP</i>) 포트가 열려 있는지 확인하세요.</li>"
-      <> "<li>네트워크에서 UDP 멀티캐스트가 허용되어 있는지 확인하세요. IPv6 주소는 <i>ff12:0:318b:bc3f:d75a:c873:ec0d:2b18</i>이고 IPv4 주소는 <i>236.13.43.24</i>입니다.</li>"
+      <> "<li>방화벽에서 "
+      <> port_udp
+      <> " (<i>UDP</i>) 및 "
+      <> port_udp_tcp
+      <> " (<i>UDP + TCP</i>) 포트가 열려 있는지 확인하세요.</li>"
+      <> "<li>네트워크에서 UDP 멀티캐스트가 허용되어 있는지 확인하세요. IPv6 주소는 "
+      <> ipv6_address
+      <> "이고 IPv4 주소는 "
+      <> ipv4_address
+      <> "입니다.</li>"
       <> "<li>모든 피어는 동일한 프로토콜(IPv6(기본값) 또는 IPv4)을 사용해야 합니다. <i>설정 &gt; 네트워크</i>에서 확인하세요.</li>"
       <> "</ul>"
     Ja ->
       "<ul>"
       <> "<li>D-LAN が最新バージョンであることを確認してください。</li>"
-      <> "<li>ファイアウォールでポート 59486 (<i>UDP</i>) と 59487 (<i>UDP + TCP</i>) が開いていることを確認してください。</li>"
-      <> "<li>ネットワークで UDP マルチキャストが許可されていることを確認してください。IPv6 アドレスは <i>ff12:0:318b:bc3f:d75a:c873:ec0d:2b18</i>、IPv4 アドレスは <i>236.13.43.24</i> です。</li>"
+      <> "<li>ファイアウォールでポート "
+      <> port_udp
+      <> " (<i>UDP</i>) と "
+      <> port_udp_tcp
+      <> " (<i>UDP + TCP</i>) が開いていることを確認してください。</li>"
+      <> "<li>ネットワークで UDP マルチキャストが許可されていることを確認してください。IPv6 アドレスは "
+      <> ipv6_address
+      <> "、IPv4 アドレスは "
+      <> ipv4_address
+      <> " です。</li>"
       <> "<li>すべてのピアが同じプロトコル（IPv6（デフォルト）または IPv4）を使用する必要があります。<i>設定 &gt; ネットワーク</i>で確認してください。</li>"
       <> "</ul>"
     Hi ->
       "<ul>"
       <> "<li>जाँच लें कि आपके पास D-LAN का नवीनतम संस्करण है।</li>"
-      <> "<li>सुनिश्चित करें कि आपके फ़ायरवॉल में पोर्ट 59486 (<i>UDP</i>) और 59487 (<i>UDP + TCP</i>) खुले हैं।</li>"
-      <> "<li>सुनिश्चित करें कि आपके नेटवर्क पर UDP मल्टीकास्ट की अनुमति है। IPv6 पता <i>ff12:0:318b:bc3f:d75a:c873:ec0d:2b18</i> है और IPv4 पता <i>236.13.43.24</i> है।</li>"
+      <> "<li>सुनिश्चित करें कि आपके फ़ायरवॉल में पोर्ट "
+      <> port_udp
+      <> " (<i>UDP</i>) और "
+      <> port_udp_tcp
+      <> " (<i>UDP + TCP</i>) खुले हैं।</li>"
+      <> "<li>सुनिश्चित करें कि आपके नेटवर्क पर UDP मल्टीकास्ट की अनुमति है। IPv6 पता "
+      <> ipv6_address
+      <> " है और IPv4 पता "
+      <> ipv4_address
+      <> " है।</li>"
       <> "<li>सभी पीयर्स को एक ही प्रोटोकॉल का उपयोग करना चाहिए: IPv6 (डिफ़ॉल्ट) या IPv4। इसे <i>सेटिंग्स &gt; नेटवर्क</i> में जाँचें।</li>"
       <> "</ul>"
   }
@@ -801,128 +877,176 @@ pub fn faq_a4(l: Lang) -> element.Element(a) {
 
 pub fn faq_q5(l: Lang) -> element.Element(a) {
   case l {
-    En ->
-      "Can I configure D-LAN to start automatically when my computer starts?"
+    En -> "Is it possible to run D-LAN in headless mode or as a service?"
     Fr ->
-      "Est-il possible de configurer D-LAN pour qu'il démarre automatiquement au démarrage de la machine ?"
-    De ->
-      "Kann D-LAN so konfiguriert werden, dass es beim Hochfahren des Computers automatisch startet?"
-    Es ->
-      "¿Puedo configurar D-LAN para que se inicie automáticamente al arrancar el equipo?"
-    It ->
-      "Posso configurare D-LAN perché si avvii automaticamente all'accensione del computer?"
-    Ru ->
-      "Можно ли настроить D-LAN так, чтобы он запускался автоматически при включении компьютера?"
-    Ko -> "컴퓨터가 시작될 때 D-LAN이 자동으로 실행되도록 설정할 수 있나요?"
-    Ja -> "コンピューターの起動時に D-LAN が自動的に起動するように設定できますか？"
-    Hi -> "क्या D-LAN को इस तरह कॉन्फ़िगर किया जा सकता है कि वह कंप्यूटर चालू होने पर अपने-आप शुरू हो जाए?"
+      "Est-il possible de lancer D-LAN en mode headless ou en tant que service ?"
+    De -> "Kann D-LAN im Headless-Modus oder als Dienst ausgeführt werden?"
+    Es -> "¿Es posible ejecutar D-LAN en modo headless o como servicio?"
+    It -> "È possibile avviare D-LAN in modalità headless o come servizio?"
+    Ru -> "Можно ли запустить D-LAN в режиме headless или как службу?"
+    Ko -> "D-LAN을 헤드리스 모드나 서비스로 실행할 수 있나요?"
+    Ja -> "D-LAN をヘッドレスモードまたはサービスとして実行できますか？"
+    Hi -> "क्या D-LAN को हेडलेस मोड में या सर्विस के रूप में चलाया जा सकता है?"
   }
   |> html.text
 }
 
 pub fn faq_a5(l: Lang) -> element.Element(a) {
+  let linux_version = "1.5.1-2026-10-06_11-44-x86_64"
   case l {
     En ->
-      "<i>Windows 7</i>: Go to <i>Control Panel</i> &gt; <i>Administrative Tools</i> &gt; <i>Services</i>. Open the properties of <i>D-LAN Core</i> and set the <i>Startup type</i> from <i>Manual</i> to <i>Automatic</i>."
+      "<h3>On Windows:</h3>"
+      <> "<ul>"
+      <> "<li>Headless: <code>PS&gt; .\\D-LAN.Core.exe</code></li>"
+      <> "<li>Install the service (to be run from an administrator shell): <code>PS&gt; .\\D-LAN.Core.exe -i &lt;username&gt; &lt;password&gt;</code> Where the pair (&lt;username&gt;, &lt;password&gt;) is the user the service will run as. This can be changed afterwards in the Windows services management panel.</li>"
+      <> "</ul>"
+      <> "<h3>On Linux:</h3>"
+      <> "<ul>"
+      <> "<li>Headless: <code>$ ./D-LAN-"
+      <> linux_version
+      <> ".AppImage --core</code></li>"
+      <> "<li>Install a systemd service: <code>$ sudo ./D-LAN-"
+      <> linux_version
+      <> ".AppImage --core -i &lt;username&gt;</code> Where &lt;username&gt; is the user D-LAN Core will run as.</li>"
+      <> "</ul>"
+      <> "<h3>On macOS:</h3>"
+      <> "<p>D-LAN can only be run headless, installing a service is not supported: <code>% ./D-LAN.Core</code> (location: /Applications/D-LAN.app/Contents/MacOS)</p>"
     Fr ->
-      "<i>Windows 7</i> : Allez dans <i>Panneau de configuration</i> &gt; <i>Outils d'administration</i> &gt; <i>Services</i>. Ouvrir la fenêtre de propriétés de <i>D-LAN Core</i> et définir le <i>Type de Démarrage</i> à <i>Automatique</i>."
+      "<h3>Sous Windows :</h3>"
+      <> "<ul>"
+      <> "<li>headless : <code>PS&gt; .\\D-LAN.Core.exe</code></li>"
+      <> "<li>Installer le service (à exécuter depuis un shell administrateur) : <code>PS&gt; .\\D-LAN.Core.exe -i &lt;username&gt; &lt;password&gt;</code> Où le couple (&lt;username&gt;, &lt;password&gt;) correspond à l'utilisateur sous lequel le service va tourner. Cela peut être changé par la suite dans le panneau de gestion des services de Windows.</li>"
+      <> "</ul>"
+      <> "<h3>Sous Linux :</h3>"
+      <> "<ul>"
+      <> "<li>headless : <code>$ ./D-LAN-"
+      <> linux_version
+      <> ".AppImage --core</code></li>"
+      <> "<li>Installer un service systemd : <code>$ sudo ./D-LAN-"
+      <> linux_version
+      <> ".AppImage --core -i &lt;username&gt;</code> Où &lt;username&gt; correspond à l'utilisateur sous lequel D-LAN Core va tourner.</li>"
+      <> "</ul>"
+      <> "<h3>Sous macOS :</h3>"
+      <> "<p>Il est uniquement possible de lancer D-LAN en headless, l'installation d'un service n'est pas supportée : <code>% ./D-LAN.Core</code> (emplacement : /Applications/D-LAN.app/Contents/MacOS)</p>"
     De ->
-      "<i>Windows 7</i>: Gehen Sie zu <i>Systemsteuerung</i> &gt; <i>Verwaltung</i> &gt; <i>Dienste</i>. Öffnen Sie die Eigenschaften von <i>D-LAN Core</i> und stellen Sie den <i>Starttyp</i> von <i>Manuell</i> auf <i>Automatisch</i>."
+      "<h3>Unter Windows:</h3>"
+      <> "<ul>"
+      <> "<li>Headless: <code>PS&gt; .\\D-LAN.Core.exe</code></li>"
+      <> "<li>Den Dienst installieren (in einer Administrator-Shell auszuführen): <code>PS&gt; .\\D-LAN.Core.exe -i &lt;username&gt; &lt;password&gt;</code> Dabei steht das Paar (&lt;username&gt;, &lt;password&gt;) für den Benutzer, unter dem der Dienst läuft. Dies kann später in der Windows-Diensteverwaltung geändert werden.</li>"
+      <> "</ul>"
+      <> "<h3>Unter Linux:</h3>"
+      <> "<ul>"
+      <> "<li>Headless: <code>$ ./D-LAN-"
+      <> linux_version
+      <> ".AppImage --core</code></li>"
+      <> "<li>Einen systemd-Dienst installieren: <code>$ sudo ./D-LAN-"
+      <> linux_version
+      <> ".AppImage --core -i &lt;username&gt;</code> Dabei steht &lt;username&gt; für den Benutzer, unter dem D-LAN Core läuft.</li>"
+      <> "</ul>"
+      <> "<h3>Unter macOS:</h3>"
+      <> "<p>D-LAN kann nur headless gestartet werden, die Installation eines Dienstes wird nicht unterstützt: <code>% ./D-LAN.Core</code> (Speicherort: /Applications/D-LAN.app/Contents/MacOS)</p>"
     Es ->
-      "<i>Windows 7</i>: vaya a <i>Panel de control</i> &gt; <i>Herramientas administrativas</i> &gt; <i>Servicios</i>. Abra las propiedades de <i>D-LAN Core</i> y cambie el <i>Tipo de inicio</i> de <i>Manual</i> a <i>Automático</i>."
+      "<h3>En Windows:</h3>"
+      <> "<ul>"
+      <> "<li>Headless: <code>PS&gt; .\\D-LAN.Core.exe</code></li>"
+      <> "<li>Instalar el servicio (debe ejecutarse desde una shell de administrador): <code>PS&gt; .\\D-LAN.Core.exe -i &lt;username&gt; &lt;password&gt;</code> Donde el par (&lt;username&gt;, &lt;password&gt;) corresponde al usuario con el que se ejecutará el servicio. Esto puede cambiarse más adelante en el panel de administración de servicios de Windows.</li>"
+      <> "</ul>"
+      <> "<h3>En Linux:</h3>"
+      <> "<ul>"
+      <> "<li>Headless: <code>$ ./D-LAN-"
+      <> linux_version
+      <> ".AppImage --core</code></li>"
+      <> "<li>Instalar un servicio systemd: <code>$ sudo ./D-LAN-"
+      <> linux_version
+      <> ".AppImage --core -i &lt;username&gt;</code> Donde &lt;username&gt; corresponde al usuario con el que se ejecutará D-LAN Core.</li>"
+      <> "</ul>"
+      <> "<h3>En macOS:</h3>"
+      <> "<p>Solo es posible ejecutar D-LAN en modo headless, la instalación de un servicio no está soportada: <code>% ./D-LAN.Core</code> (ubicación: /Applications/D-LAN.app/Contents/MacOS)</p>"
     It ->
-      "<i>Windows 7</i>: andate in <i>Pannello di controllo</i> &gt; <i>Strumenti di amministrazione</i> &gt; <i>Servizi</i>. Aprite le proprietà di <i>D-LAN Core</i> e impostate il <i>Tipo di avvio</i> da <i>Manuale</i> ad <i>Automatico</i>."
+      "<h3>Su Windows:</h3>"
+      <> "<ul>"
+      <> "<li>Headless: <code>PS&gt; .\\D-LAN.Core.exe</code></li>"
+      <> "<li>Installare il servizio (da eseguire da una shell di amministratore): <code>PS&gt; .\\D-LAN.Core.exe -i &lt;username&gt; &lt;password&gt;</code> Dove la coppia (&lt;username&gt;, &lt;password&gt;) corrisponde all'utente con cui verrà eseguito il servizio. Questo può essere modificato in seguito nel pannello di gestione dei servizi di Windows.</li>"
+      <> "</ul>"
+      <> "<h3>Su Linux:</h3>"
+      <> "<ul>"
+      <> "<li>Headless: <code>$ ./D-LAN-"
+      <> linux_version
+      <> ".AppImage --core</code></li>"
+      <> "<li>Installare un servizio systemd: <code>$ sudo ./D-LAN-"
+      <> linux_version
+      <> ".AppImage --core -i &lt;username&gt;</code> Dove &lt;username&gt; corrisponde all'utente con cui verrà eseguito D-LAN Core.</li>"
+      <> "</ul>"
+      <> "<h3>Su macOS:</h3>"
+      <> "<p>È possibile avviare D-LAN solo in modalità headless, l'installazione di un servizio non è supportata: <code>% ./D-LAN.Core</code> (percorso: /Applications/D-LAN.app/Contents/MacOS)</p>"
     Ru ->
-      "<i>Windows 7</i>: откройте <i>Панель управления</i> &gt; <i>Администрирование</i> &gt; <i>Службы</i>. Откройте свойства <i>D-LAN Core</i> и измените <i>Тип запуска</i> с <i>Вручную</i> на <i>Автоматически</i>."
+      "<h3>В Windows:</h3>"
+      <> "<ul>"
+      <> "<li>Headless: <code>PS&gt; .\\D-LAN.Core.exe</code></li>"
+      <> "<li>Установка службы (выполнять в командной оболочке с правами администратора): <code>PS&gt; .\\D-LAN.Core.exe -i &lt;username&gt; &lt;password&gt;</code> Здесь пара (&lt;username&gt;, &lt;password&gt;) соответствует пользователю, от имени которого будет работать служба. Позже это можно изменить в панели управления службами Windows.</li>"
+      <> "</ul>"
+      <> "<h3>В Linux:</h3>"
+      <> "<ul>"
+      <> "<li>Headless: <code>$ ./D-LAN-"
+      <> linux_version
+      <> ".AppImage --core</code></li>"
+      <> "<li>Установка службы systemd: <code>$ sudo ./D-LAN-"
+      <> linux_version
+      <> ".AppImage --core -i &lt;username&gt;</code> Здесь &lt;username&gt; соответствует пользователю, от имени которого будет работать D-LAN Core.</li>"
+      <> "</ul>"
+      <> "<h3>В macOS:</h3>"
+      <> "<p>D-LAN можно запустить только в режиме headless, установка службы не поддерживается: <code>% ./D-LAN.Core</code> (расположение: /Applications/D-LAN.app/Contents/MacOS)</p>"
     Ko ->
-      "<i>Windows 7</i>: <i>제어판</i> &gt; <i>관리 도구</i> &gt; <i>서비스</i>로 이동합니다. <i>D-LAN Core</i>의 속성을 열고 <i>시작 유형</i>을 <i>수동</i>에서 <i>자동</i>으로 변경하세요."
+      "<h3>Windows:</h3>"
+      <> "<ul>"
+      <> "<li>헤드리스: <code>PS&gt; .\\D-LAN.Core.exe</code></li>"
+      <> "<li>서비스 설치(관리자 셸에서 실행): <code>PS&gt; .\\D-LAN.Core.exe -i &lt;username&gt; &lt;password&gt;</code> 여기서 (&lt;username&gt;, &lt;password&gt;) 쌍은 서비스를 실행할 사용자 계정입니다. 이후 Windows 서비스 관리 패널에서 변경할 수 있습니다.</li>"
+      <> "</ul>"
+      <> "<h3>Linux:</h3>"
+      <> "<ul>"
+      <> "<li>헤드리스: <code>$ ./D-LAN-"
+      <> linux_version
+      <> ".AppImage --core</code></li>"
+      <> "<li>systemd 서비스 설치: <code>$ sudo ./D-LAN-"
+      <> linux_version
+      <> ".AppImage --core -i &lt;username&gt;</code> 여기서 &lt;username&gt;은(는) D-LAN Core를 실행할 사용자입니다.</li>"
+      <> "</ul>"
+      <> "<h3>macOS:</h3>"
+      <> "<p>D-LAN은 헤드리스로만 실행할 수 있으며, 서비스 설치는 지원되지 않습니다: <code>% ./D-LAN.Core</code> (위치: /Applications/D-LAN.app/Contents/MacOS)</p>"
     Ja ->
-      "<i>Windows 7</i>: <i>コントロールパネル</i> &gt; <i>管理ツール</i> &gt; <i>サービス</i> を開きます。<i>D-LAN Core</i> のプロパティを開き、<i>スタートアップの種類</i>を<i>手動</i>から<i>自動</i>に変更します。"
+      "<h3>Windows の場合:</h3>"
+      <> "<ul>"
+      <> "<li>ヘッドレス: <code>PS&gt; .\\D-LAN.Core.exe</code></li>"
+      <> "<li>サービスのインストール (管理者シェルから実行): <code>PS&gt; .\\D-LAN.Core.exe -i &lt;username&gt; &lt;password&gt;</code> (&lt;username&gt;, &lt;password&gt;) の組は、サービスを実行するユーザーを表します。これは後から Windows のサービス管理パネルで変更できます。</li>"
+      <> "</ul>"
+      <> "<h3>Linux の場合:</h3>"
+      <> "<ul>"
+      <> "<li>ヘッドレス: <code>$ ./D-LAN-"
+      <> linux_version
+      <> ".AppImage --core</code></li>"
+      <> "<li>systemd サービスのインストール: <code>$ sudo ./D-LAN-"
+      <> linux_version
+      <> ".AppImage --core -i &lt;username&gt;</code> &lt;username&gt; は D-LAN Core を実行するユーザーを表します。</li>"
+      <> "</ul>"
+      <> "<h3>macOS の場合:</h3>"
+      <> "<p>D-LAN はヘッドレスでのみ実行でき、サービスのインストールには対応していません: <code>% ./D-LAN.Core</code> (場所: /Applications/D-LAN.app/Contents/MacOS)</p>"
     Hi ->
-      "<i>Windows 7</i>: <i>नियंत्रण कक्ष</i> &gt; <i>व्यवस्थापकीय उपकरण</i> &gt; <i>सेवाएँ</i> पर जाएँ। <i>D-LAN Core</i> के गुण खोलें और <i>स्टार्टअप प्रकार</i> को <i>मैन्युअल</i> से <i>स्वचालित</i> में बदलें।"
-  }
-  |> raw_span
-}
-
-pub fn faq_q6(l: Lang) -> element.Element(a) {
-  case l {
-    En ->
-      "After installing D-LAN on macOS, I see a warning that Apple could not verify the application. What should I do?"
-    Fr ->
-      "Après avoir installé D-LAN sur macOS, un avertissement indique qu'Apple n'a pas pu vérifier l'application. Que dois-je faire ?"
-    De ->
-      "Nach der Installation von D-LAN unter macOS erscheint eine Warnung, dass Apple die Anwendung nicht überprüfen konnte. Was soll ich tun?"
-    Es ->
-      "Después de instalar D-LAN en macOS, aparece una advertencia de que Apple no ha podido verificar la aplicación. ¿Qué debo hacer?"
-    It ->
-      "Dopo aver installato D-LAN su macOS, compare un avviso che indica che Apple non ha potuto verificare l'applicazione. Cosa devo fare?"
-    Ru ->
-      "После установки D-LAN на macOS появляется предупреждение о том, что Apple не удалось проверить приложение. Что делать?"
-    Ko -> "macOS에 D-LAN을 설치한 후 Apple이 앱을 확인할 수 없다는 경고가 표시됩니다. 어떻게 해야 하나요?"
-    Ja ->
-      "macOS に D-LAN をインストールした後、Apple がアプリケーションを検証できなかったという警告が表示されます。どうすればよいですか？"
-    Hi ->
-      "macOS पर D-LAN इंस्टॉल करने के बाद एक चेतावनी दिखाई देती है कि Apple ऐप्लिकेशन को सत्यापित नहीं कर सका। मुझे क्या करना चाहिए?"
-  }
-  |> raw_div
-}
-
-pub fn faq_a6(l: Lang) -> element.Element(a) {
-  case l {
-    En ->
-      "The application is self-signed. After copying D-LAN to the <i>Applications</i> folder, you can add an exception by following these steps:<ul>"
-      <> "<li>Try opening D-LAN, then dismiss the warning.</li>"
-      <> "<li>Open System Settings → Privacy & Security.</li>"
-      <> "<li>Scroll to the message about D-LAN and click Open Anyway.</li>"
-      <> "<li>Authenticate, then click Open to confirm.</li></ul>"
-    Fr ->
-      "L'application est signée avec un certificat autosigné. Après avoir copié D-LAN dans le dossier <i>Applications</i>, vous pouvez ajouter une exception en suivant ces étapes :<ul>"
-      <> "<li>Essayez d'ouvrir D-LAN, puis fermez l'avertissement.</li>"
-      <> "<li>Ouvrez Réglages Système → Confidentialité et sécurité.</li>"
-      <> "<li>Faites défiler la page jusqu'au message concernant D-LAN et cliquez sur Ouvrir quand même.</li>"
-      <> "<li>Authentifiez-vous, puis cliquez sur Ouvrir pour confirmer.</li></ul>"
-    De ->
-      "Die Anwendung ist mit einem selbstsignierten Zertifikat signiert. Nachdem Sie D-LAN in den Ordner <i>Programme</i> kopiert haben, können Sie mit den folgenden Schritten eine Ausnahme hinzufügen:<ul>"
-      <> "<li>Versuchen Sie, D-LAN zu öffnen, und schließen Sie dann die Warnmeldung.</li>"
-      <> "<li>Öffnen Sie Systemeinstellungen → Datenschutz & Sicherheit.</li>"
-      <> "<li>Scrollen Sie zur Meldung über D-LAN und klicken Sie auf Dennoch öffnen.</li>"
-      <> "<li>Authentifizieren Sie sich und klicken Sie zur Bestätigung auf Öffnen.</li></ul>"
-    Es ->
-      "La aplicación está firmada con un certificado autofirmado. Después de copiar D-LAN en la carpeta <i>Aplicaciones</i>, puede añadir una excepción siguiendo estos pasos:<ul>"
-      <> "<li>Intente abrir D-LAN y luego cierre la advertencia.</li>"
-      <> "<li>Abra Ajustes del Sistema → Privacidad y seguridad.</li>"
-      <> "<li>Desplácese hasta el mensaje sobre D-LAN y haga clic en Abrir igualmente.</li>"
-      <> "<li>Autentíquese y luego haga clic en Abrir para confirmar.</li></ul>"
-    It ->
-      "L'applicazione è firmata con un certificato autofirmato. Dopo aver copiato D-LAN nella cartella <i>Applicazioni</i>, potete aggiungere un'eccezione seguendo questi passaggi:<ul>"
-      <> "<li>Provate ad aprire D-LAN, poi chiudete l'avviso.</li>"
-      <> "<li>Aprite Impostazioni di Sistema → Privacy e sicurezza.</li>"
-      <> "<li>Scorrete fino al messaggio relativo a D-LAN e fate clic su Apri comunque.</li>"
-      <> "<li>Autenticatevi, poi fate clic su Apri per confermare.</li></ul>"
-    Ru ->
-      "Приложение подписано самоподписанным сертификатом. После копирования D-LAN в папку <i>Программы</i> вы можете добавить исключение, выполнив следующие действия:<ul>"
-      <> "<li>Попробуйте открыть D-LAN, затем закройте предупреждение.</li>"
-      <> "<li>Откройте Системные настройки → Конфиденциальность и безопасность.</li>"
-      <> "<li>Прокрутите страницу до сообщения о D-LAN и нажмите Всё равно открыть.</li>"
-      <> "<li>Пройдите аутентификацию, затем нажмите Открыть для подтверждения.</li></ul>"
-    Ko ->
-      "이 앱은 자체 서명된 인증서로 서명되어 있습니다. D-LAN을 <i>응용 프로그램</i> 폴더에 복사한 후 다음 단계에 따라 예외를 추가할 수 있습니다:<ul>"
-      <> "<li>D-LAN을 열어 본 다음 경고 창을 닫으세요.</li>"
-      <> "<li>시스템 설정 → 개인정보 보호 및 보안을 여세요.</li>"
-      <> "<li>D-LAN에 대한 메시지가 나올 때까지 스크롤한 다음 확인 없이 열기를 클릭하세요.</li>"
-      <> "<li>인증을 완료한 다음 열기를 클릭하여 확인하세요.</li></ul>"
-    Ja ->
-      "このアプリケーションは自己署名証明書で署名されています。D-LAN を<i>アプリケーション</i>フォルダにコピーした後、次の手順で例外を追加できます：<ul>"
-      <> "<li>D-LAN を開こうとして、表示された警告を閉じます。</li>"
-      <> "<li>システム設定 → プライバシーとセキュリティを開きます。</li>"
-      <> "<li>D-LAN に関するメッセージが表示されるまでスクロールし、「このまま開く」をクリックします。</li>"
-      <> "<li>認証を行い、「開く」をクリックして確定します。</li></ul>"
-    Hi ->
-      "यह ऐप्लिकेशन स्व-हस्ताक्षरित (self-signed) है। D-LAN को <i>ऐप्लिकेशन</i> फ़ोल्डर में कॉपी करने के बाद, आप इन चरणों का पालन करके एक अपवाद जोड़ सकते हैं:<ul>"
-      <> "<li>D-LAN खोलने का प्रयास करें, फिर चेतावनी बंद कर दें।</li>"
-      <> "<li>सिस्टम सेटिंग्ज़ → गोपनीयता और सुरक्षा खोलें।</li>"
-      <> "<li>D-LAN से संबंधित संदेश तक स्क्रॉल करें और फिर भी खोलें पर क्लिक करें।</li>"
-      <> "<li>प्रमाणीकरण करें, फिर पुष्टि करने के लिए खोलें पर क्लिक करें।</li></ul>"
+      "<h3>Windows पर:</h3>"
+      <> "<ul>"
+      <> "<li>हेडलेस: <code>PS&gt; .\\D-LAN.Core.exe</code></li>"
+      <> "<li>सर्विस इंस्टॉल करें (एडमिनिस्ट्रेटर शेल से चलाएँ): <code>PS&gt; .\\D-LAN.Core.exe -i &lt;username&gt; &lt;password&gt;</code> यहाँ (&lt;username&gt;, &lt;password&gt;) की जोड़ी उस उपयोगकर्ता को दर्शाती है जिसके अंतर्गत सर्विस चलेगी। इसे बाद में Windows के सर्विस प्रबंधन पैनल में बदला जा सकता है।</li>"
+      <> "</ul>"
+      <> "<h3>Linux पर:</h3>"
+      <> "<ul>"
+      <> "<li>हेडलेस: <code>$ ./D-LAN-"
+      <> linux_version
+      <> ".AppImage --core</code></li>"
+      <> "<li>systemd सर्विस इंस्टॉल करें: <code>$ sudo ./D-LAN-"
+      <> linux_version
+      <> ".AppImage --core -i &lt;username&gt;</code> यहाँ &lt;username&gt; उस उपयोगकर्ता को दर्शाता है जिसके अंतर्गत D-LAN Core चलेगा।</li>"
+      <> "</ul>"
+      <> "<h3>macOS पर:</h3>"
+      <> "<p>D-LAN को केवल हेडलेस रूप में चलाया जा सकता है, सर्विस इंस्टॉल करना समर्थित नहीं है: <code>% ./D-LAN.Core</code> (स्थान: /Applications/D-LAN.app/Contents/MacOS)</p>"
   }
   |> raw_div
 }

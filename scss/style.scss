@@ -313,6 +313,20 @@ select {
       }
 
       &.faq {
+
+         em,
+         code {
+            border: 1px solid white;
+            padding: 0px 2px;
+            border-radius: 3px;
+            background-color: rgba(255, 255, 255, 0.3);
+            font-weight: normal;
+         }
+
+         code {
+            display: block
+         }
+
          div.qa {
             margin-bottom: 25px;
          }
