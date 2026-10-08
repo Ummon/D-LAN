@@ -2,7 +2,11 @@
 var dlan = {};
 
 dlan.isMobile = function () {
-   return (/webos|iphone|ipod|android|ie|blackberry|windows phone/).test(navigator.userAgent.toLowerCase());
+   // Chromium based browsers only.
+   if (navigator.userAgentData)
+      return navigator.userAgentData.mobile;
+   // The primary input is a finger (also true for iPad which pretends to be a Mac in its user agent).
+   return window.matchMedia("(pointer: coarse)").matches;
 }
 
 $(function () {
@@ -49,7 +53,7 @@ $(function () {
 
    // It snows from the begining of december to the end of january.
    var currentMonth = (new Date()).getMonth();
-   if (currentMonth >= 11 || currentMonth <= 0 && !dlan.isMobile()) {
+   if ((currentMonth >= 11 || currentMonth <= 0) && !dlan.isMobile()) {
       snow = new Snow(canvas);
 
       /*
