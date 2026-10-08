@@ -56,6 +56,16 @@ void CoreService::removePassword()
    this->core->removePassword();
 }
 
+/**
+  * @return 0 if 'value' isn't a valid port.
+  */
+quint16 CoreService::parsePort(const QString& value)
+{
+   bool ok = false;
+   const uint port = value.toUInt(&ok);
+   return ok && port <= 65535 ? static_cast<quint16>(port) : 0;
+}
+
 void CoreService::start()
 {
    this->core->start();
@@ -67,6 +77,26 @@ void CoreService::stop()
    this->core = nullptr;
 
    this->application()->quit();
+}
+
+/**
+  * The arguments given to a Windows service when it's started, by 'RCC::CoreController::startCore(..)' for instance,
+  * aren't on the command line of the process read by 'main(..)': they are only known here.
+  */
+void CoreService::createApplication(int& argc, char** argv)
+{
+   if (this->isRunningAsService())
+      for (int i = 1; i < argc - 1; i++)
+         if (qstrcmp(argv[i], "--port") == 0)
+         {
+            const quint16 port = CoreService::parsePort(QString::fromLatin1(argv[++i]));
+            if (port != 0)
+               this->core->setRemoteControlPort(port);
+            else
+               L_WARN(QString("Invalid remote control port: %1").arg(QString::fromLatin1(argv[i])));
+         }
+
+   QtService::createApplication(argc, argv);
 }
 
 int CoreService::executeApplication()

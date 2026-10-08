@@ -72,6 +72,7 @@ bool CoreController::isAutoStart() const
   * The service is never installed here, see the '-i' argument of the Core.
   * When compiling with the DEBUG directive only the sub-process will be launched, not the service.
   * @param port The port the core will listen to for managing it with a client (GUI for instance).
+  * A systemd service can't be given a port when it's started, it listens to the one defined in its settings.
   */
 void CoreController::startCore(int port)
 {

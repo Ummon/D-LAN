@@ -96,10 +96,9 @@ try
          Common::Global::setDataFolder(Common::Global::DataFolderType::LOCAL, QString::fromLatin1(argv[++i]));
       else if (arg == "--port" && i < argc - 1)
       {
-         bool ok = false;
-         const uint port = QString::fromLatin1(argv[++i]).toUInt(&ok);
-         if (ok && port > 0 && port <= 65535)
-            remoteControlPort = static_cast<quint16>(port);
+         const quint16 port = CoreSpace::CoreService::parsePort(QString::fromLatin1(argv[++i]));
+         if (port != 0)
+            remoteControlPort = port;
          else
             std::cerr << "Invalid remote control port: " << argv[i] << std::endl;
       }

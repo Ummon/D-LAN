@@ -103,6 +103,15 @@ Core::Core(bool resetSettings, QLocale locale, quint16 remoteControlPort) :
    }
 }
 
+/**
+  * Must be called before 'start()'.
+  * @param port If 0, the setting 'remote_control_port' is used.
+  */
+void Core::setRemoteControlPort(quint16 port)
+{
+   this->remoteControlPort = port;
+}
+
 void Core::start()
 {
    QThread::currentThread()->setObjectName("Core");

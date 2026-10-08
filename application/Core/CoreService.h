@@ -38,10 +38,13 @@ namespace CoreSpace
       void changePassword(const QString& newPassword);
       void removePassword();
 
+      static quint16 parsePort(const QString& value);
+
    protected:
       void start() override;
       void stop() override;
 
+      void createApplication(int& argc, char** argv) override;
       int executeApplication() override;
 
    private slots:
