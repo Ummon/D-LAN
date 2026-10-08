@@ -897,9 +897,6 @@ bool QtServiceBasePrivate::install(const QString &account, const QString &passwo
             pwd = (wchar_t*)password.utf16();
         }
 
-        // Only set INTERACTIVE if act is LocalSystem. (and act should be 0 if it is LocalSystem).
-        if (!act) dwServiceType |= SERVICE_INTERACTIVE_PROCESS;
-
         // The service controller must launch the executable with -s(ervice), without argument it runs as a regular application.
         const QString binaryPath = QLatin1Char('"') + filePath() + QLatin1String("\" -s");
 
@@ -907,7 +904,7 @@ bool QtServiceBasePrivate::install(const QString &account, const QString &passwo
         SC_HANDLE hService = pCreateService(hSCM, (wchar_t *)controller.serviceName().utf16(),
                                             (wchar_t *)controller.serviceName().utf16(),
                                             SERVICE_ALL_ACCESS,
-                                            dwServiceType, // QObject::inherits ( const char * className ) for no inter active ????
+                                            dwServiceType,
                                             dwStartType, SERVICE_ERROR_NORMAL, (wchar_t *)binaryPath.utf16(),
                                             0, 0, 0,
                                             act, pwd);
@@ -960,7 +957,7 @@ bool QtServiceBasePrivate::sysInit()
     sysd = new QtServiceSysPrivate();
 
     sysd->serviceStatus			    = 0;
-    sysd->status.dwServiceType		    = SERVICE_WIN32_OWN_PROCESS|SERVICE_INTERACTIVE_PROCESS;
+    sysd->status.dwServiceType		    = SERVICE_WIN32_OWN_PROCESS;
     sysd->status.dwCurrentState		    = SERVICE_STOPPED;
     sysd->status.dwControlsAccepted         = sysd->serviceFlags(serviceFlags);
     sysd->status.dwWin32ExitCode	    = NO_ERROR;
