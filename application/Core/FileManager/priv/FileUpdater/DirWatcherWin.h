@@ -38,13 +38,12 @@ namespace FM
       DirWatcherWin();
       ~DirWatcherWin();
 
-      bool isReliable() const;
-      bool addPath(const QString& path, const QString& filename = QString(""));
-      void rmPath(const QString& path, const QString& filename = QString(""));
-      int nbWatchedPath();
+      bool addPath(const QString& path, const QString& filename = QString("")) override;
+      void rmPath(const QString& path, const QString& filename = QString("")) override;
+      int nbWatchedPath() override;
       bool notifiesEachChange() const override;
-      const QList<WatcherEvent> waitEvent(QList<WaitCondition*> ws = QList<WaitCondition*>());
-      const QList<WatcherEvent> waitEvent(int timeout, QList<WaitCondition*> ws = QList<WaitCondition*>());
+      const QList<WatcherEvent> waitEvent(QList<WaitCondition*> ws = QList<WaitCondition*>()) override;
+      const QList<WatcherEvent> waitEvent(int timeout, QList<WaitCondition*> ws = QList<WaitCondition*>()) override;
 
    private:
       friend class ::CacheTest;

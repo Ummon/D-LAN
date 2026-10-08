@@ -194,9 +194,9 @@ private slots:
 
    void delayedCoreStartup()
    {
+#ifdef Q_OS_UNIX
       QFETCH(QString, outcome);
       QFETCH(bool, multipleAddresses);
-#ifdef Q_OS_UNIX
       RCC::CoreConnection core;
       auto& process = core.coreController.coreProcess;
       process.start("/bin/cat", QStringList());
