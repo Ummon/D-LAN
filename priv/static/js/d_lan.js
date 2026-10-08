@@ -28,10 +28,18 @@ $(function () {
 
 
    var canvas = $("#canvas-menu")[0];
+   var snow;
    // The canvas is stretched over the menu by the CSS, its drawing buffer has to match its displayed size.
    var setCanvasSize = function () {
+      if (canvas.width === canvas.clientWidth && canvas.height === canvas.clientHeight)
+         return;
+
       canvas.width = canvas.clientWidth;
       canvas.height = canvas.clientHeight;
+
+      // Changing the size of a canvas clears it: the flakes are redrawn right away to avoid a blank frame.
+      if (snow)
+         snow.draw();
    };
    if (window.ResizeObserver)
       new ResizeObserver(setCanvasSize).observe(canvas);
@@ -39,10 +47,10 @@ $(function () {
       $(window).resize(setCanvasSize);
    setCanvasSize();
 
-   // It snows from the begining of december to the end of february.
+   // It snows from the begining of december to the end of january.
    var currentMonth = (new Date()).getMonth();
    if (currentMonth >= 11 || currentMonth <= 0 && !dlan.isMobile()) {
-      var snow = new Snow(canvas);
+      snow = new Snow(canvas);
 
       /*
       snow.p.flakeSpeedFactor = 4;
