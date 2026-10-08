@@ -23,7 +23,6 @@
 #include <optional>
 #include <span>
 #include <string>
-#include <utility>
 
 #include <QHash>
 #include <QString>
