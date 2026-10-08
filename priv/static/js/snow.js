@@ -277,6 +277,14 @@ Snow.prototype.drawBlur = function () {
 Snow.prototype.start = function () {
    var self = this;
 
+   // Already started: avoid running a second loop in parallel.
+   if (this.running)
+      return;
+
+   // Do not animate if the user has asked for reduced motion.
+   if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches)
+      return;
+
    var requestAnimFrame =
       window.requestAnimationFrame ||
       window.webkitRequestAnimationFrame ||
