@@ -105,10 +105,16 @@ p {
    border-radius: 10px;
 }
 
+#menu-bg {
+   position: relative;
+   isolation: isolate; // Keeps the canvas 'z-index: -1' inside this block.
+}
+
 #canvas-menu {
-   left: 0px;
-   top: 20px;
    position: absolute;
+   inset: 0;
+   width: 100%;
+   height: 100%;
    z-index: -1;
 }
 

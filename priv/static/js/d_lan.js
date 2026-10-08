@@ -28,9 +28,15 @@ $(function () {
 
 
    var canvas = $("#canvas-menu")[0];
-   canvas.height = 120;
-   var setCanvasSize = function () { canvas.width = window.innerWidth; };
-   $(window).resize(setCanvasSize);
+   // The canvas is stretched over the menu by the CSS, its drawing buffer has to match its displayed size.
+   var setCanvasSize = function () {
+      canvas.width = canvas.clientWidth;
+      canvas.height = canvas.clientHeight;
+   };
+   if (window.ResizeObserver)
+      new ResizeObserver(setCanvasSize).observe(canvas);
+   else
+      $(window).resize(setCanvasSize);
    setCanvasSize();
 
    // It snows from the begining of december to the end of february.

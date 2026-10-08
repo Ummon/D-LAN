@@ -31,9 +31,11 @@ pub fn main_page(
       html.script([attr.src("static/js/d_lan.js")], ""),
     ]),
     html.body([], [
-      html.canvas([attr.id("canvas-menu")]),
       header(lang),
-      menu(lang, page),
+      html.div([attr.id("menu-bg")], [
+        html.canvas([attr.id("canvas-menu")]),
+        menu(lang, page),
+      ]),
       html.div([attr.id("content-bg")], [content]),
       footer(page),
     ]),
