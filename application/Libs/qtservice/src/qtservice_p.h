@@ -71,8 +71,7 @@ public:
 
     QtServiceController controller;
 
-    void startService();
-    int run(bool asService, const QStringList &argList);
+    int run(const QStringList &argList);
     bool install(const QString &account, const QString &password);
     // The reason why the service can't be installed or uninstalled by the current user, empty if it can.
     QString installationError() const;
@@ -86,9 +85,11 @@ public:
 #endif
 
     QString filePath() const;
-    bool sysInit();
-    void sysSetPath();
+#if defined(Q_OS_WIN)
+    void sysInit();
     void sysCleanup();
+#endif
+    // Only set when the process is run as a Windows service.
     class QtServiceSysPrivate *sysd;
 };
 

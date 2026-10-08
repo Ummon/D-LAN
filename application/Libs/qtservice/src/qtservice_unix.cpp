@@ -91,22 +91,6 @@ static bool systemctl(const QStringList &arguments)
         && QProcess::execute(QLatin1String("systemctl"), QStringList(QLatin1String("--no-ask-password")) + arguments) == 0;
 }
 
-// Returns the value of the first line "<key>=<value>" of the unit file.
-static QString unitFileValue(const QString &serviceName, const QString &key)
-{
-    QFile file(unitFilePath(serviceName));
-    if (!file.open(QIODevice::ReadOnly))
-        return QString();
-
-    const QString prefix = key + QLatin1Char('=');
-    while (!file.atEnd()) {
-        const QString line = QString::fromUtf8(file.readLine()).trimmed();
-        if (line.startsWith(prefix))
-            return line.mid(prefix.size());
-    }
-    return QString();
-}
-
 // Quotes an argument of a command line of a unit file, see "Command lines" in systemd.service(5).
 static QString quoted(QString argument)
 {
@@ -175,36 +159,6 @@ QString QtServiceBasePrivate::filePath() const
 }
 
 
-QString QtServiceController::serviceDescription() const
-{
-    // '%' is doubled by install().
-    return unitFileValue(serviceName(), QLatin1String("Description")).replace(QLatin1String("%%"), QLatin1String("%"));
-}
-
-QtServiceController::StartupType QtServiceController::startupType() const
-{
-    if (isInstalled() && systemctl(QStringList() << QLatin1String("is-enabled") << QLatin1String("--quiet") << unitName(serviceName())))
-        return AutoStartup;
-    return ManualStartup;
-}
-
-QString QtServiceController::serviceFilePath() const
-{
-    // The command line is written by install() as: "<file path>" [<arguments>]. See quoted(..).
-    const QString command = unitFileValue(serviceName(), QLatin1String("ExecStart"));
-    if (!command.startsWith(QLatin1Char('"')))
-        return command.section(QLatin1Char(' '), 0, 0);
-
-    QString path;
-    for (int i = 1; i < command.size() && command.at(i) != QLatin1Char('"'); ++i) {
-        // Skip the character added by quoted(..).
-        if ((command.at(i) == QLatin1Char('\\') || command.at(i) == QLatin1Char('%')) && i + 1 < command.size())
-            ++i;
-        path += command.at(i);
-    }
-    return path;
-}
-
 bool QtServiceController::uninstall()
 {
     if (!isInstalled())
@@ -237,22 +191,6 @@ bool QtServiceController::start(const QStringList &arguments)
 bool QtServiceController::stop()
 {
     return isInstalled() && systemctl(QStringList() << QLatin1String("stop") << unitName(serviceName()));
-}
-
-bool QtServiceController::pause()
-{
-    return false;
-}
-
-bool QtServiceController::resume()
-{
-    return false;
-}
-
-bool QtServiceController::sendCommand(int code)
-{
-    Q_UNUSED(code)
-    return false;
 }
 
 bool QtServiceController::isInstalled() const
@@ -309,20 +247,6 @@ void QtServiceBasePrivate::stopService()
 {
     q_ptr->stop();
     QCoreApplication::quit();
-}
-
-// The process is never run as a service on Unix, see the top of this file.
-bool QtServiceBasePrivate::sysInit()
-{
-    return true;
-}
-
-void QtServiceBasePrivate::sysSetPath()
-{
-}
-
-void QtServiceBasePrivate::sysCleanup()
-{
 }
 
 bool QtServiceBasePrivate::start()

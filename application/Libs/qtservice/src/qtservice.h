@@ -78,20 +78,12 @@ public:
     bool isRunning() const;
 
     QString serviceName() const;
-    QString serviceDescription() const;
-    StartupType startupType() const;
-    QString serviceFilePath() const;
 
-    static bool install(const QString &serviceFilePath, const QString &account = QString(),
-                const QString &password = QString());
     bool uninstall();
 
     bool start(const QStringList &arguments);
     bool start();
     bool stop();
-    bool pause();
-    bool resume();
-    bool sendCommand(int code);
 
 private:
     QtServiceControllerPrivate *d_ptr;
@@ -112,7 +104,6 @@ public:
     enum ServiceFlag
     {
         Default = 0x00,
-        CanBeSuspended = 0x01,
         CannotBeStopped = 0x02,
         NeedsStopOnShutdown = 0x04
     };
@@ -146,9 +137,6 @@ protected:
 
     virtual void start() = 0;
     virtual void stop();
-    virtual void pause();
-    virtual void resume();
-    virtual void processCommand(int code);
 
     virtual void createApplication(int &argc, char **argv) = 0;
 

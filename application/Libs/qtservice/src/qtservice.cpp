@@ -44,106 +44,6 @@
 #include <stdio.h>
 #include <QTimer>
 #include <QVector>
-#include <QProcess>
-
-#if defined(QTSERVICE_DEBUG)
-#include <QDebug>
-#include <QString>
-#include <QFile>
-#include <QTime>
-#include <QMutex>
-#if defined(Q_OS_WIN32)
-#include <qt_windows.h>
-#else
-#include <unistd.h>
-#include <stdlib.h>
-#endif
-
-static QFile* f = 0;
-
-static void qtServiceCloseDebugLog()
-{
-    if (!f)
-        return;
-    f->write(QTime::currentTime().toString("HH:mm:ss.zzz").toLatin1());
-    f->write(" --- DEBUG LOG CLOSED ---\n\n");
-    f->flush();
-    f->close();
-    delete f;
-    f = 0;
-}
-
-#if QT_VERSION >= 0x050000
-void qtServiceLogDebug(QtMsgType type, const QMessageLogContext &context, const QString &msg)
-#else
-void qtServiceLogDebug(QtMsgType type, const char* msg)
-#endif
-{
-    static QMutex mutex;
-    QMutexLocker locker(&mutex);
-#if defined(Q_OS_WIN32)
-    const qulonglong processId = GetCurrentProcessId();
-#else
-    const qulonglong processId = getpid();
-#endif
-    QByteArray s(QTime::currentTime().toString("HH:mm:ss.zzz").toLatin1());
-    s += " [";
-    s += QByteArray::number(processId);
-    s += "] ";
-
-    if (!f) {
-#if defined(Q_OS_WIN32)
-        f = new QFile("c:/service-debuglog.txt");
-#else
-        f = new QFile("/tmp/service-debuglog.txt");
-#endif
-        if (!f->open(QIODevice::WriteOnly | QIODevice::Append)) {
-            delete f;
-            f = 0;
-            return;
-        }
-        QByteArray ps('\n' + s + "--- DEBUG LOG OPENED ---\n");
-        f->write(ps);
-    }
-
-    switch (type) {
-    case QtWarningMsg:
-        s += "WARNING: ";
-        break;
-    case QtCriticalMsg:
-        s += "CRITICAL: ";
-        break;
-    case QtFatalMsg:
-        s+= "FATAL: ";
-        break;
-    case QtDebugMsg:
-        s += "DEBUG: ";
-        break;
-    default:
-        // Nothing
-        break;
-    }
-
-#if QT_VERSION >= 0x050400
-    s += qFormatLogMessage(type, context, msg).toLocal8Bit();
-#elif QT_VERSION >= 0x050000
-    s += msg.toLocal8Bit();
-    Q_UNUSED(context)
-#else
-    s += msg;
-#endif
-    s += '\n';
-
-    f->write(s);
-    f->flush();
-
-    if (type == QtFatalMsg) {
-        qtServiceCloseDebugLog();
-        exit(1);
-    }
-}
-
-#endif
 
 /*!
     \class QtServiceController
@@ -152,30 +52,25 @@ void qtServiceLogDebug(QtMsgType type, const char* msg)
     services from separate applications.
 
     QtServiceController provides a collection of functions that lets
-    you install and run a service controlling its execution, as well
-    as query its status.
+    you run a service controlling its execution, as well as query its
+    status.
 
     In order to run a service, the service must be installed in the
-    system's service database using the install() function. The system
-    will start the service depending on the specified StartupType; it
-    can either be started during system startup, or when a process
-    starts it manually.
+    system's service database: this is done by the service executable
+    itself, see the \l {serviceSpecificArguments} {service specific
+    arguments} of QtServiceBase. The system will start the service
+    depending on the specified StartupType; it can either be started
+    during system startup, or when a process starts it manually.
 
     Once a service is installed, the service can be run and controlled
-    manually using the start(), stop(), pause(), resume() or
-    sendCommand() functions.  You can at any time query for the
-    service's status using the isInstalled() and isRunning()
-    functions, or you can query its properties using the
-    serviceDescription(), serviceFilePath(), serviceName() and
-    startupType() functions. For example:
+    manually using the start() and stop() functions.  You can at any
+    time query for the service's status using the isInstalled() and
+    isRunning() functions. For example:
 
     \code
-    MyService service;       \\ which inherits QtService
-    QString serviceFilePath;
+    QtServiceController controller("MyService");
 
-    QtServiceController controller(service.serviceName());
-
-    if (controller.install(serviceFilePath))
+    if (controller.isInstalled())
         controller.start()
 
     if (controller.isRunning())
@@ -186,7 +81,6 @@ void qtServiceLogDebug(QtMsgType type, const char* msg)
 
     controller.stop();
     controller.uninstall();
-    }
     \endcode
 
     An instance of the service controller can only control one single
@@ -208,11 +102,10 @@ void qtServiceLogDebug(QtMsgType type, const char* msg)
     \value AutoStartup The service is started during system startup.
     \value ManualStartup The service must be started manually by a process.
 
-    \warning The \a StartupType enum is ignored under UNIX-like
-    systems. A service, or daemon, can only be started manually on such
-    systems with current implementation.
+    On Linux a service started during system startup is an enabled
+    systemd unit.
 
-    \sa startupType()
+    \sa QtServiceBase::startupType()
 */
 
 
@@ -248,10 +141,7 @@ QtServiceController::~QtServiceController()
 
     On Windows it uses the system's service control manager.
 
-    On Unix it checks configuration written to QSettings::SystemScope
-    using "QtSoftware" as organization name.
-
-    \sa install()
+    On Linux it checks if the systemd unit of the service exists.
 */
 
 /*!
@@ -266,7 +156,7 @@ QtServiceController::~QtServiceController()
 /*!
     Returns the name of the controlled service.
 
-    \sa QtServiceController(), serviceDescription()
+    \sa QtServiceController()
 */
 QString QtServiceController::serviceName() const
 {
@@ -274,72 +164,13 @@ QString QtServiceController::serviceName() const
     return d->serviceName;
 }
 /*!
-    \fn QString QtServiceController::serviceDescription() const
-
-    Returns the description of the controlled service.
-
-    \sa install(), serviceName()
-*/
-
-/*!
-    \fn QtServiceController::StartupType QtServiceController::startupType() const
-
-    Returns the startup type of the controlled service.
-
-    \sa install(), serviceName()
-*/
-
-/*!
-    \fn QString QtServiceController::serviceFilePath() const
-
-    Returns the file path to the controlled service.
-
-    \sa install(), serviceName()
-*/
-
-/*!
-    Installs the service with the given \a serviceFilePath
-    and returns true if the service is installed
-    successfully; otherwise returns false.
-
-    On Windows service is installed in the system's service control manager with the given
-    \a account and \a password.
-
-    On Unix service configuration is written to QSettings::SystemScope
-    using "QtSoftware" as organization name. \a account and \a password
-    arguments are ignored.
-
-    \warning Due to the different implementations of how services (daemons)
-    are installed on various UNIX-like systems, this method doesn't
-    integrate the service into the system's startup scripts.
-
-    \sa uninstall(), start()
-*/
-bool QtServiceController::install(const QString &serviceFilePath, const QString &account,
-                const QString &password)
-{
-    QStringList arguments;
-    arguments << QLatin1String("-i");
-    arguments << account;
-    arguments << password;
-    // Nobody can answer the confirmation of the launched process.
-    arguments << QLatin1String("--yes");
-    return (QProcess::execute(serviceFilePath, arguments) == 0);
-}
-
-
-/*!
     \fn bool QtServiceController::uninstall()
 
     Uninstalls the service and returns true if successful; otherwise returns false.
 
     On Windows service is uninstalled using the system's service control manager.
 
-    On Unix service configuration is cleared using QSettings::SystemScope
-    with "QtSoftware" as organization name.
-
-
-    \sa install()
+    On Linux the systemd unit of the service is stopped, disabled and removed.
 */
 
 /*!
@@ -348,10 +179,13 @@ bool QtServiceController::install(const QString &serviceFilePath, const QString 
     Starts the installed service passing the given \a arguments to the
     service. A service must be installed before a controller can run it.
 
+    On Linux the \a arguments are ignored: the command line of a
+    systemd unit can't be changed when it's started.
+
     Returns true if the service could be started; otherwise returns
     false.
 
-    \sa install(), stop()
+    \sa stop()
 */
 
 /*!
@@ -378,63 +212,6 @@ bool QtServiceController::start()
     \sa start(), QtServiceBase::stop(), QtServiceBase::ServiceFlags
 */
 
-/*!
-    \fn bool QtServiceController::pause()
-
-    Requests the running service to pause. If the service's state is
-    QtServiceBase::CanBeSuspended, the service will call the
-    QtServiceBase::pause() implementation. The function does nothing
-    if the service is not running.
-
-    Returns true if a running service was successfully paused;
-    otherwise returns false.
-
-    \sa resume(), QtServiceBase::pause(), QtServiceBase::ServiceFlags
-*/
-
-/*!
-    \fn bool QtServiceController::resume()
-
-    Requests the running service to continue. If the service's state
-    is QtServiceBase::CanBeSuspended, the service will call the
-    QtServiceBase::resume() implementation. This function does nothing
-    if the service is not running.
-
-    Returns true if a running service was successfully resumed;
-    otherwise returns false.
-
-    \sa pause(), QtServiceBase::resume(), QtServiceBase::ServiceFlags
-*/
-
-/*!
-    \fn bool QtServiceController::sendCommand(int code)
-
-    Sends the user command \a code to the service. The service will
-    call the QtServiceBase::processCommand() implementation.  This
-    function does nothing if the service is not running.
-
-    Returns true if the request was sent to a running service;
-    otherwise returns false.
-
-    \sa QtServiceBase::processCommand()
-*/
-
-class QtServiceStarter : public QObject
-{
-    Q_OBJECT
-public:
-    QtServiceStarter(QtServiceBasePrivate *service)
-        : QObject(), d_ptr(service) {}
-public slots:
-    void slotStart()
-    {
-        d_ptr->startService();
-    }
-private:
-    QtServiceBasePrivate *d_ptr;
-};
-#include "qtservice.moc"
-
 QtServiceBase *QtServiceBasePrivate::instance = 0;
 
 QtServiceBasePrivate::QtServiceBasePrivate(const QString &name)
@@ -448,12 +225,7 @@ QtServiceBasePrivate::~QtServiceBasePrivate()
 
 }
 
-void QtServiceBasePrivate::startService()
-{
-    q_ptr->start();
-}
-
-int QtServiceBasePrivate::run(bool asService, const QStringList &argList)
+int QtServiceBasePrivate::run(const QStringList &argList)
 {
     int argc = argList.size();
     QVector<char *> argv(argc);
@@ -463,28 +235,18 @@ int QtServiceBasePrivate::run(bool asService, const QStringList &argList)
     for (int i = 0; i < argc; ++i)
         argv[i] = argvData[i].data();
 
-    if (asService && !sysInit())
-        return -1;
-
     q_ptr->createApplication(argc, argv.data());
     QCoreApplication *app = QCoreApplication::instance();
     if (!app)
         return -1;
 
-    if (asService)
-        sysSetPath();
-
 #if defined(Q_OS_UNIX)
     installStopSignalHandler();
 #endif
 
-    QtServiceStarter starter(this);
-    QTimer::singleShot(0, &starter, SLOT(slotStart()));
+    QTimer::singleShot(0, app, [this]() { q_ptr->start(); });
     int res = q_ptr->executeApplication();
     delete app;
-
-    if (asService)
-        sysCleanup();
     return res;
 }
 
@@ -504,13 +266,7 @@ int QtServiceBasePrivate::run(bool asService, const QStringList &argList)
     Services are usually non-interactive console applications. User
     interaction, if required, is usually implemented in a separate,
     normal GUI application that communicates with the service through
-    an IPC channel. For simple communication,
-    QtServiceController::sendCommand() and QtService::processCommand()
-    may be used, possibly in combination with a shared settings
-    file. For more complex, interactive communication, a custom IPC
-    channel should be used, e.g. based on Qt's networking classes. (In
-    certain circumstances, a service may provide a GUI itself,
-    ref. the "interactive" example documentation).
+    an IPC channel, e.g. based on Qt's networking classes.
 
     Typically, you will create a service by subclassing the QtService
     template class which inherits QtServiceBase and allows you to
@@ -533,24 +289,14 @@ int QtServiceBasePrivate::run(bool asService, const QStringList &argList)
     also be set using the corresponding set functions. In addition you
     can retrieve the service's name using the serviceName() function.
 
-    Several of QtServiceBase's protected functions are called on
-    requests from the QtServiceController class:
-
-    \list
-        \o start()
-        \o pause()
-        \o processCommand()
-        \o resume()
-        \o stop()
-    \endlist
+    The protected functions start() and stop() are called on requests
+    from the QtServiceController class.
 
     You can control any given service using an instance of the
     QtServiceController class which also allows you to control
-    services from separate applications. The mentioned functions are
-    all virtual and won't do anything unless they are
-    reimplemented. You can reimplement these functions to pause and
-    resume the service's execution, as well as process user commands
-    and perform additional clean-ups before shutting down.
+    services from separate applications. You can reimplement stop()
+    to perform additional clean-ups before shutting down, it won't do
+    anything unless it is reimplemented.
 
     QtServiceBase also provides the static instance() function which
     returns a pointer to an application's QtServiceBase instance. In
@@ -589,10 +335,6 @@ int QtServiceBasePrivate::run(bool asService, const QStringList &argList)
     \row \i -v \i -version \i Display version and status information.
     \endtable
 
-    Pausing, resuming and sending a command are only available through
-    QtServiceController: their arguments (\c -p, \c -r and \c -c) would
-    hide the ones of the application.
-
     If \e none of the arguments is recognized as service specific, the
     service is executed as a standalone application. This is a blocking
     call, the service will be executed like a normal application. In
@@ -621,8 +363,7 @@ int QtServiceBasePrivate::run(bool asService, const QStringList &argList)
 
     This enum describes the different capabilities of a service.
 
-    \value Default The service can be stopped, but not suspended.
-    \value CanBeSuspended The service can be suspended.
+    \value Default The service can be stopped.
     \value CannotBeStopped The service cannot be stopped.
     \value NeedsStopOnShutdown (Windows only) The service will be stopped before the system shuts down. Note that Microsoft recommends this only for services that must absolutely clean up during shutdown, because there is a limited time available for shutdown of services.
 */
@@ -638,19 +379,10 @@ int QtServiceBasePrivate::run(bool asService, const QStringList &argList)
     addition, the name must be unique in the system's service
     database.
 
-    \sa exec(), start(), QtServiceController::install()
+    \sa exec(), start()
 */
 QtServiceBase::QtServiceBase(int argc, char **argv, const QString &name)
 {
-#if defined(QTSERVICE_DEBUG)
-#  if QT_VERSION >= 0x050000
-    qInstallMessageHandler(qtServiceLogDebug);
-#  else
-    qInstallMsgHandler(qtServiceLogDebug);
-#  endif
-    qAddPostRoutine(qtServiceCloseDebugLog);
-#endif
-
     Q_ASSERT(!QtServiceBasePrivate::instance);
     QtServiceBasePrivate::instance = this;
 
@@ -876,7 +608,7 @@ int QtServiceBase::exec()
             return 0;
         }
     }
-    int ec = d_ptr->run(false, d_ptr->args);
+    int ec = d_ptr->run(d_ptr->args);
     if (ec == -1)
         qErrnoWarning("The service could not be executed.");
     return ec;
@@ -951,45 +683,6 @@ void QtServiceBase::stop()
 }
 
 /*!
-    Reimplement this function to pause the service's execution (for
-    example to stop a polling timer, or to ignore socket notifiers).
-
-    This function is called in reply to controller requests.  The
-    default implementation does nothing.
-
-    \sa resume(), QtServiceController::pause()
-*/
-void QtServiceBase::pause()
-{
-}
-
-/*!
-    Reimplement this function to continue the service after a call to
-    pause().
-
-    This function is called in reply to controller requests. The
-    default implementation does nothing.
-
-    \sa pause(), QtServiceController::resume()
-*/
-void QtServiceBase::resume()
-{
-}
-
-/*!
-    Reimplement this function to process the user command \a code.
-
-
-    This function is called in reply to controller requests.  The
-    default implementation does nothing.
-
-    \sa QtServiceController::sendCommand()
-*/
-void QtServiceBase::processCommand(int /*code*/)
-{
-}
-
-/*!
     \fn void QtServiceBase::createApplication(int &argc, char **argv)
 
     Creates the application object using the \a argc and \a argv
@@ -1038,17 +731,7 @@ void QtServiceBase::processCommand(int /*code*/)
     Services are usually non-interactive console applications. User
     interaction, if required, is usually implemented in a separate,
     normal GUI application that communicates with the service through
-    an IPC channel. For simple communication,
-    QtServiceController::sendCommand() and QtService::processCommand()
-    may be used, possibly in combination with a shared settings file. For
-    more complex, interactive communication, a custom IPC channel
-    should be used, e.g. based on Qt's networking classes. (In certain
-    circumstances, a service may provide a GUI itself, ref. the
-    "interactive" example documentation).
-
-    \bold{Note:} On Unix systems, this class relies on facilities
-    provided by the QtNetwork module, provided as part of the
-    \l{Qt Open Source Edition} and certain \l{Qt Commercial Editions}.
+    an IPC channel, e.g. based on Qt's networking classes.
 
     The QtService class functionality is inherited from QtServiceBase,
     but in addition the QtService class binds an instance of
@@ -1067,9 +750,6 @@ void QtServiceBase::processCommand(int /*code*/)
     protected:
         void start();
         void stop();
-        void pause();
-        void resume();
-        void processCommand(int code);
     };
     \endcode
 
@@ -1081,14 +761,11 @@ void QtServiceBase::processCommand(int /*code*/)
     perform the service's work. Usually you create some main object on
     the heap which is the heart of your service.
 
-    In addition, you might want to reimplement the
-    QtServiceBase::pause(), QtServiceBase::processCommand(),
-    QtServiceBase::resume() and QtServiceBase::stop() to intervene the
-    service's process on controller requests. You can control any
-    given service using an instance of the QtServiceController class
-    which also allows you to control services from separate
-    applications. The mentioned functions are all virtual and won't do
-    anything unless they are reimplemented.
+    In addition, you might want to reimplement QtServiceBase::stop()
+    to perform additional clean-ups before shutting down. You can
+    control any given service using an instance of the
+    QtServiceController class which also allows you to control
+    services from separate applications.
 
     Your custom service is typically instantiated in the application's
     main function. Then the main function will call your service's

@@ -3,8 +3,7 @@
 # directly into each consumer — RemoteCoreController and D-LAN.Core).
 # Now built once as a static library.
 #
-# The 'examples' and 'buildlib' qmake subprojects are third-party samples not
-# used by D-LAN and are intentionally not ported.
+# Only what D-LAN uses has been kept from the original Qt Solutions component (see README.TXT).
 # ==============================================================================
 
 add_library(qtservice STATIC
@@ -15,7 +14,6 @@ add_library(qtservice STATIC
 
 if(WIN32)
    target_sources(qtservice PRIVATE src/qtservice_win.cpp)
-   target_link_libraries(qtservice PRIVATE user32)
 else()
    # A systemd unit on Linux, no service on the other systems.
    target_sources(qtservice PRIVATE src/qtservice_unix.cpp)
