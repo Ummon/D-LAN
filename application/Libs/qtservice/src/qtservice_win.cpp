@@ -947,9 +947,12 @@ QString QtServiceBasePrivate::installationNotice(bool install) const
 
 QString QtServiceBasePrivate::filePath() const
 {
-    wchar_t path[_MAX_PATH];
-    ::GetModuleFileNameW( 0, path, sizeof(path) );
-    return QString::fromWCharArray(path);
+    // The path may be longer than MAX_PATH: the size is returned when the path has been truncated.
+    QVector<wchar_t> path(MAX_PATH);
+    DWORD length;
+    while ((length = ::GetModuleFileNameW(0, path.data(), path.size())) == DWORD(path.size()))
+        path.resize(path.size() * 2);
+    return QString::fromWCharArray(path.constData(), length);
 }
 
 bool QtServiceBasePrivate::sysInit()
