@@ -289,47 +289,19 @@ pub fn home_warning_beta(
   |> raw_span
 }
 
-pub fn features_disclaimer(
-  l: Lang,
-  planned_features_url: String,
-) -> element.Element(a) {
+pub fn features_disclaimer(l: Lang) -> element.Element(a) {
   case l {
-    En ->
-      "<em>Here are the main features of the current release.</em> D-LAN is constantly under development, you can see <a href=\""
-      <> planned_features_url
-      <> "\">here</a> the planned features."
+    En -> "<h2>Here are the main features of the current release.</h2>"
     Fr ->
-      "<em>Voici la liste des principales fonctionnalités de la version courante.</em> D-LAN est en développement constant, vous pouvez voir <a href=\""
-      <> planned_features_url
-      <> "\">ici</a> les fonctionnalités planifiées pour les futures versions."
-    De ->
-      "<em>Hier sind die wichtigsten Funktionen der aktuellen Version.</em> D-LAN wird ständig weiterentwickelt, die geplanten Funktionen können <a href=\""
-      <> planned_features_url
-      <> "\">hier</a> eingesehen werden."
+      "<h2>Voici la liste des principales fonctionnalités de la version courante.</h2>"
+    De -> "<h2>Hier sind die wichtigsten Funktionen der aktuellen Version.</h2>"
     Es ->
-      "<em>Estas son las principales características de la versión actual.</em> D-LAN está en constante desarrollo; puede ver <a href=\""
-      <> planned_features_url
-      <> "\">aquí</a> las características planificadas."
-    It ->
-      "<em>Ecco le principali funzionalità della versione attuale.</em> D-LAN è in costante sviluppo, potete vedere <a href=\""
-      <> planned_features_url
-      <> "\">qui</a> le funzionalità pianificate."
-    Ru ->
-      "<em>Вот основные возможности текущей версии.</em> D-LAN постоянно развивается; запланированные возможности можно посмотреть <a href=\""
-      <> planned_features_url
-      <> "\">здесь</a>."
-    Ko ->
-      "<em>다음은 현재 버전의 주요 기능입니다.</em> D-LAN은 지속적으로 개발되고 있으며, 계획된 기능은 <a href=\""
-      <> planned_features_url
-      <> "\">여기</a>에서 확인할 수 있습니다."
-    Ja ->
-      "<em>以下は現在のバージョンの主な機能です。</em> D-LAN は常に開発が続けられており、予定されている機能は<a href=\""
-      <> planned_features_url
-      <> "\">こちら</a>で確認できます。"
-    Hi ->
-      "<em>वर्तमान रिलीज़ की मुख्य विशेषताएँ ये हैं।</em> D-LAN का विकास लगातार जारी है, नियोजित विशेषताएँ आप <a href=\""
-      <> planned_features_url
-      <> "\">यहाँ</a> देख सकते हैं।"
+      "<h2>Estas son las principales características de la versión actual.</h2>"
+    It -> "<h2>Ecco le principali funzionalità della versione attuale.</h2>"
+    Ru -> "<h2>Вот основные возможности текущей версии.</h2>"
+    Ko -> "<h2>다음은 현재 버전의 주요 기능입니다.</h2>"
+    Ja -> "<h2>以下は現在のバージョンの主な機能です。</h2>"
+    Hi -> "<h2>वर्तमान रिलीज़ की मुख्य विशेषताएँ ये हैं।</h2>"
   }
   |> raw_span
 }

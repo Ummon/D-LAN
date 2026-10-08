@@ -11,10 +11,7 @@ pub fn page(ctx: web.Context) -> element.Element(a) {
   }
   html.div([attr.id("content"), attr.class("features")], [
     html.p([], [
-      tr.features_disclaimer(
-        ctx.lang,
-        "http://dev.d-lan.net/projects/pmp/roadmap",
-      ),
+      tr.features_disclaimer(ctx.lang),
     ]),
     html.ul([], [
       html.li([], [tr.features_feat_1(ctx.lang)]),
