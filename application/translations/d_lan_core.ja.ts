@@ -63,17 +63,17 @@
         <translation>キューファイル &quot;%2&quot; のバージョン (%1) が現在のバージョン (%3) と一致しません。キューをリセットします。</translation>
     </message>
     <message>
-        <location filename="../Core/Core.cpp" line="113"/>
+        <location filename="../Core/Core.cpp" line="122"/>
         <source>D-LAN Core version %1 is starting . . .</source>
         <translation>D-LAN Core バージョン %1 を起動しています . . .</translation>
     </message>
     <message>
-        <location filename="../Core/Core.cpp" line="131"/>
+        <location filename="../Core/Core.cpp" line="140"/>
         <source>Ready to serve</source>
         <translation>準備完了</translation>
     </message>
     <message>
-        <location filename="../Core/Core.h" line="81"/>
+        <location filename="../Core/Core.h" line="82"/>
         <source>Shutdown</source>
         <translation>シャットダウン</translation>
     </message>

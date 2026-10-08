@@ -1006,7 +1006,7 @@
         <translation type="vanished">D-LAN Core को सेवा के रूप में इंस्टॉल नहीं किया जा सकता</translation>
     </message>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="+102"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="+103"/>
         <source>Core launched as subprocess</source>
         <translation>Core को उपप्रक्रिया के रूप में शुरू किया गया</translation>
     </message>

@@ -1108,7 +1108,7 @@
         <translation type="vanished">El núcleo de D-LAN no puede instalarse como servicio</translation>
     </message>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="+102"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="+103"/>
         <source>Core launched as subprocess</source>
         <translation>Núcleo ejecutado como subproceso</translation>
     </message>

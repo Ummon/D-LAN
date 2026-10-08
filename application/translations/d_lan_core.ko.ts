@@ -63,17 +63,17 @@
         <translation>대기열 파일 &quot;%2&quot;의 버전(%1)이 현재 버전(%3)과 일치하지 않습니다. 대기열이 초기화됩니다.</translation>
     </message>
     <message>
-        <location filename="../Core/Core.cpp" line="113"/>
+        <location filename="../Core/Core.cpp" line="122"/>
         <source>D-LAN Core version %1 is starting . . .</source>
         <translation>D-LAN 코어 버전 %1을(를) 시작하는 중 . . .</translation>
     </message>
     <message>
-        <location filename="../Core/Core.cpp" line="131"/>
+        <location filename="../Core/Core.cpp" line="140"/>
         <source>Ready to serve</source>
         <translation>준비 완료</translation>
     </message>
     <message>
-        <location filename="../Core/Core.h" line="81"/>
+        <location filename="../Core/Core.h" line="82"/>
         <source>Shutdown</source>
         <translation>종료</translation>
     </message>

@@ -58,7 +58,7 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../Core/Core.cpp" line="131"/>
+        <location filename="../Core/Core.cpp" line="140"/>
         <source>Ready to serve</source>
         <translation>Готов</translation>
     </message>
@@ -68,13 +68,13 @@
         <translation>Версия (%1) файла очереди &quot;%2&quot; не соответствует текущей версии (%3). Очередь будет сброшена.</translation>
     </message>
     <message>
-        <location filename="../Core/Core.h" line="81"/>
+        <location filename="../Core/Core.h" line="82"/>
         <source>Shutdown</source>
         <translatorcomment>Is it a verb, or a noun?</translatorcomment>
         <translation>Завершить</translation>
     </message>
     <message>
-        <location filename="../Core/Core.cpp" line="113"/>
+        <location filename="../Core/Core.cpp" line="122"/>
         <source>D-LAN Core version %1 is starting . . .</source>
         <translation>D-LAN Core версии %1 запускается...</translation>
     </message>

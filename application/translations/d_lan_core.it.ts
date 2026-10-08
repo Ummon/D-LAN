@@ -58,17 +58,17 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../Core/Core.cpp" line="113"/>
+        <location filename="../Core/Core.cpp" line="122"/>
         <source>D-LAN Core version %1 is starting . . .</source>
         <translation>D-LAN Core versione %1 in avvio . . .</translation>
     </message>
     <message>
-        <location filename="../Core/Core.cpp" line="131"/>
+        <location filename="../Core/Core.cpp" line="140"/>
         <source>Ready to serve</source>
         <translation>Pronto</translation>
     </message>
     <message>
-        <location filename="../Core/Core.h" line="81"/>
+        <location filename="../Core/Core.h" line="82"/>
         <source>Shutdown</source>
         <translation>Arresto</translation>
     </message>

@@ -1022,7 +1022,7 @@
         <translation type="vanished">D-LAN Core kann nicht als Dienst installiert werden</translation>
     </message>
     <message>
-        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="+102"/>
+        <location filename="../Common/RemoteCoreController/priv/CoreController.cpp" line="+103"/>
         <source>Core launched as subprocess</source>
         <translation>Kern als Unterprozess gestartet</translation>
     </message>
