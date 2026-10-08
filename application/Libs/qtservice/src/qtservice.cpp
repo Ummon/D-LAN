@@ -586,12 +586,12 @@ int QtServiceBasePrivate::run(bool asService, const QStringList &argList)
     \row \i -u \i -uninstall \i Uninstall the service.
     \row \i -s \i -service \i Start the service.
     \row \i -t \i -terminate \i Stop the service.
-    \row \i -p \i -pause \i Pause the service.
-    \row \i -r \i -resume \i Resume a paused service.
-    \row \i -c \e{cmd} \i -command \e{cmd}
-	 \i Send the user defined command code \e{cmd} to the service application.
     \row \i -v \i -version \i Display version and status information.
     \endtable
+
+    Pausing, resuming and sending a command are only available through
+    QtServiceController: their arguments (\c -p, \c -r and \c -c) would
+    hide the ones of the application.
 
     If \e none of the arguments is recognized as service specific, the
     service is executed as a standalone application. This is a blocking
@@ -863,25 +863,12 @@ int QtServiceBase::exec()
             if (!d_ptr->controller.stop())
                 qErrnoWarning("The service could not be stopped.");
             return 0;
-        } else if (a == QLatin1String("-p") || a == QLatin1String("-pause")) {
-            d_ptr->controller.pause();
-            return 0;
-        } else if (a == QLatin1String("-r") || a == QLatin1String("-resume")) {
-            d_ptr->controller.resume();
-            return 0;
-        } else if (a == QLatin1String("-c") || a == QLatin1String("-command")) {
-            int code = 0;
-            if (d_ptr->args.size() > 2)
-                code = d_ptr->args.at(2).toInt();
-            d_ptr->controller.sendCommand(code);
-            return 0;
         } else  if (a == QLatin1String("-h") || a == QLatin1String("-help")) {
-            printf("\n%s -[i|u|s|t|c|v|h]\n"
+            printf("\n%s -[i|u|s|t|v|h]\n"
                    "\t-i(nstall) [account] [password]\t: Install the service, optionally using given account and password\n"
                    "\t-u(ninstall)\t: Uninstall the service.\n"
                    "\t-s(ervice)\t: Start the service.\n"
                    "\t-t(erminate)\t: Stop the service.\n"
-                   "\t-c(ommand) num\t: Send command code num to the service.\n"
                    "\t-v(ersion)\t: Print version and status information.\n"
                    "\t-h(elp)   \t: Show this help\n"
                    "\tNo arguments\t: Run as a regular application.\n",

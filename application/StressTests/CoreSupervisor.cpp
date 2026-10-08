@@ -231,7 +231,6 @@ void CoreSupervisor::startCore()
       return;
 
    this->process.setProgram(this->config.coreExecutable);
-   // '-r' must not be the first argument: QtService would take it as its 'resume' command.
    this->process.setArguments({ "--port", QString::number(this->remoteControlPort), "-r", this->roamingDirectory, "-l", this->localDirectory });
    this->process.setWorkingDirectory(this->localDirectory);
    // The output must be read or redirected, otherwise the Core may be blocked when the pipe is full.
