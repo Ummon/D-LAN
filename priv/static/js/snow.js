@@ -61,11 +61,12 @@ SnowNS.bigFlakes.threshold = 0.6;
 var Snow = function (canvas, parameters) {
    parameters = typeof parameters !== 'undefined' ? parameters : SnowNS.littleFlakes;
 
-   var self = this
+   var self = this;
 
    this.p = parameters;
 
    this.running = false;
+   this.visible = true; // Updated by an 'IntersectionObserver' in 'start', if available.
    this.canvas = canvas;
    this.ct = this.canvas.getContext("2d");
 
@@ -286,22 +287,57 @@ Snow.prototype.start = function () {
 
    var getCurrentTime = function () { return window.performance.now ? window.performance.now() : Date.now(); }; // [ms].
 
+   var minFramePeriodMs = 1000 / 30; // Cap the framerate to 30 FPS.
+
    this.running = true;
    var lastUpdateTime = getCurrentTime();
 
+   var scheduled = false; // To avoid having more than one pending frame request.
+   var schedule = function () {
+      if (scheduled)
+         return;
+      scheduled = true;
+      requestAnimFrame(tick);
+   };
+
    var tick = function () {
-      if (!self.running)
+      scheduled = false;
+
+      // When the canvas isn't visible the loop is stopped, it will be restarted by 'resume'.
+      if (!self.running || !self.visible)
          return;
 
-      requestAnimFrame(tick);
+      schedule();
 
-      var now = getCurrentTime();
+      var now = getCurrentTime(),
+         dt = now - lastUpdateTime;
 
-      self.update(now - lastUpdateTime);
+      // Skip this frame if the last one is too recent, '- 1' is a tolerance for the vsync jitter.
+      if (dt < minFramePeriodMs - 1)
+         return;
+
+      self.update(dt);
       lastUpdateTime = now;
 
       self.draw();
    };
+
+   // Called when the canvas becomes visible again.
+   this.resume = function () {
+      lastUpdateTime = getCurrentTime(); // To avoid a jump of the flakes.
+      schedule();
+   };
+
+   // Pause the animation when the canvas is out of the viewport.
+   if (window.IntersectionObserver && !this.visibilityObserver) {
+      this.visibilityObserver = new IntersectionObserver(function (entries) {
+         self.visible = entries[entries.length - 1].isIntersecting;
+         if (self.visible)
+            self.resume();
+      });
+      this.visibilityObserver.observe(this.canvas);
+   }
+
    tick();
 }
 
