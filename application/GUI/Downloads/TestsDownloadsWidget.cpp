@@ -365,6 +365,38 @@ private slots:
       QVERIFY(filter->setData(filter->index(0, 0), true, Qt::UserRole)); // "<All>".
       QTRY_COMPARE(filterList->width(), allWidth);
    }
+
+   void progressColumnFitsTheLongestTranslatedText()
+   {
+      struct Translator : QTranslator
+      {
+         QString text;
+         bool isEmpty() const override { return false; }
+         QString translate(const char*, const char* sourceText, const char*, int) const override
+         {
+            return qstrcmp(sourceText, "Getting hashes..") == 0 ? this->text : QString();
+         }
+      };
+
+      Fixture f;
+      f.add(1); // Downloading: its own text is short.
+      f.send();
+      f.widget.resize(1000, 400);
+      f.widget.show();
+      const int column = GUI::DownloadsModel::PROGRESS;
+      QTRY_VERIFY(f.view->columnWidth(column) > 0);
+      const int defaultWidth = f.view->columnWidth(column);
+
+      Translator translator;
+      translator.text = QString(60, 'm');
+      QVERIFY(QCoreApplication::installTranslator(&translator));
+      const int textWidth = f.view->fontMetrics().horizontalAdvance(translator.text);
+      QVERIFY(textWidth > defaultWidth);
+      QTRY_VERIFY(f.view->columnWidth(column) > textWidth);
+
+      QVERIFY(QCoreApplication::removeTranslator(&translator));
+      QTRY_COMPARE(f.view->columnWidth(column), defaultWidth);
+   }
 };
 
 int main(int argc, char** argv)

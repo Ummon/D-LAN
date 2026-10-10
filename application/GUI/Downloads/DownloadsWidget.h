@@ -51,6 +51,9 @@ namespace GUI
    public:
       void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
       QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+
+   private:
+      static QString progressText(const Progress& progress);
    };
 
    class DownloadsWidget : public QWidget

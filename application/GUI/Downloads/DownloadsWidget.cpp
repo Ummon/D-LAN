@@ -51,32 +51,7 @@ void DownloadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
       // Complete -> 100%.
       progressBarOption.progress = progress.status == Protos::Common::DownloadStatus::COMPLETE ? 10000 : progress.progress;
 
-      switch (progress.status)
-      {
-      case Protos::Common::DownloadStatus::QUEUED:
-         progressBarOption.text = tr("Queued");
-         break;
-      case Protos::Common::DownloadStatus::GETTING_THE_HASHES:
-         progressBarOption.text = tr("Getting hashes..");
-         break;
-      case Protos::Common::DownloadStatus::DOWNLOADING:
-         {
-            // We avoid to disturb the user and to show "100 %" if the file is downloading.
-            const double percentProgress = static_cast<double>(progress.progress) / 100;
-            progressBarOption.text = QStringLiteral("%1%").arg(percentProgress > 99.99 ? 99.99 : percentProgress);
-            break;
-         }
-      case Protos::Common::DownloadStatus::COMPLETE:
-         progressBarOption.text = tr("Complete");
-         break;
-      case Protos::Common::DownloadStatus::PAUSED:
-         progressBarOption.text = tr("Paused");
-         break;
-      default:
-         progressBarOption.text = tr("Waiting..");
-         break;
-      }
-
+      progressBarOption.text = progressText(progress);
       progressBarOption.textVisible = true;
 
       QApplication::style()->drawControl(QStyle::CE_ProgressBar, &progressBarOption, painter, option.widget);
@@ -104,8 +79,51 @@ QSize DownloadsDelegate::sizeHint(const QStyleOptionViewItem& option, const QMod
    // An hack to avoid truncating the size field, don't know why it happens (Qt add "..." at the end of some sizes).
    if (index.column() == DownloadsModel::SIZE)
       size.rwidth() += 2 * option.fontMetrics.averageCharWidth();
+   // The progress bar is enlarged to show the longest text of the current language on one line.
+   // All the texts are considered, not only the one of 'index', to avoid the column width changing with the status.
+   else if (index.column() == DownloadsModel::PROGRESS)
+   {
+      int textWidth = 0;
+      for (const auto status : {
+         Protos::Common::DownloadStatus::QUEUED,
+         Protos::Common::DownloadStatus::GETTING_THE_HASHES,
+         Protos::Common::DownloadStatus::DOWNLOADING,
+         Protos::Common::DownloadStatus::COMPLETE,
+         Protos::Common::DownloadStatus::PAUSED,
+         Protos::Common::DownloadStatus::NO_SOURCE // For the default text.
+      })
+         textWidth = qMax(
+            textWidth,
+            option.fontMetrics.horizontalAdvance(progressText(Progress(9999, status, Protos::Common::Entry::FILE)))
+         );
+
+      size.setWidth(qMax(size.width(), textWidth + 4 * option.fontMetrics.averageCharWidth()));
+   }
 
    return size;
+}
+
+QString DownloadsDelegate::progressText(const Progress& progress)
+{
+   switch (progress.status)
+   {
+   case Protos::Common::DownloadStatus::QUEUED:
+      return tr("Queued");
+   case Protos::Common::DownloadStatus::GETTING_THE_HASHES:
+      return tr("Getting hashes..");
+   case Protos::Common::DownloadStatus::DOWNLOADING:
+      {
+         // We avoid to disturb the user and to show "100 %" if the file is downloading.
+         const double percentProgress = static_cast<double>(progress.progress) / 100;
+         return QStringLiteral("%1%").arg(percentProgress > 99.99 ? 99.99 : percentProgress);
+      }
+   case Protos::Common::DownloadStatus::COMPLETE:
+      return tr("Complete");
+   case Protos::Common::DownloadStatus::PAUSED:
+      return tr("Paused");
+   default:
+      return tr("Waiting..");
+   }
 }
 
 /////
@@ -204,6 +222,8 @@ void DownloadsWidget::changeEvent(QEvent* event)
    {
       this->ui->retranslateUi(this);
       this->updateCheckBoxElements();
+      // The width of the progress bars depends on the translated texts.
+      this->ui->tblDownloads->resizeColumnToContents(DownloadsModel::PROGRESS);
    }
 
    QWidget::changeEvent(event);
