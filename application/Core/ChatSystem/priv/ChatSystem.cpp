@@ -103,9 +103,11 @@ ChatSystem::SendStatus ChatSystem::send(
    Protos::Common::ChatMessages protoChatMessages;
    chatMessage->fillProtoChatMessage(*protoChatMessages.add_messages());
 
-   // The complete history representation must fit too, otherwise a successful live
-   // message could never be forwarded to peers that missed the initial broadcast.
-   if (protoChatMessages.ByteSizeLong() > static_cast<size_t>(this->networkListener->getMaxUDPMessageSize()))
+   // The complete history representation, which is given with our time, must fit too, otherwise
+   // a successful live message could never be forwarded to peers that missed the initial broadcast.
+   Protos::Common::ChatMessages historyChatMessages(protoChatMessages);
+   historyChatMessages.set_sender_time(QDateTime::currentMSecsSinceEpoch());
+   if (historyChatMessages.ByteSizeLong() > static_cast<size_t>(this->networkListener->getMaxUDPMessageSize()))
       return SendStatus::MESSAGE_TOO_LARGE;
 
    // A live message is sent without its time nor its author: the receiver sets the time and our ID is in the header of the message.
@@ -292,7 +294,9 @@ void ChatSystem::received(const Common::Message& message)
          for (int first = 0; first < messages.size();)
          {
             // 'fillProtoChatMessages' always moves forward (a message too large to be sent alone is skipped), so this loop terminates.
+            // Our time lets the receiver translate the times of the messages into its own clock.
             Protos::Common::ChatMessages chatMessages;
+            chatMessages.set_sender_time(QDateTime::currentMSecsSinceEpoch());
             first = ChatMessages::fillProtoChatMessages(chatMessages, messages, first, maxSize);
             if (chatMessages.messages_size() > 0)
                this->networkListener->send(Common::MessageHeader::CORE_CHAT_MESSAGES, chatMessages, message.getHeader().getSenderID());

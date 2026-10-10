@@ -163,6 +163,10 @@ message ChatMessage {
 // The messages are always sorted from oldest to youngest.
 message ChatMessages {
    repeated ChatMessage messages = 1;
+
+   // The current time of the sender, in [ms] since Epoch. Only set in an answer to 'Core.GetLastChatMessages':
+   // the clocks of two peers may differ, the receiver uses it to translate the times of the messages into its own clock.
+   uint64 sender_time = 2;
 }
 
 message Interface {

@@ -144,6 +144,13 @@ private slots:
             live.mutable_messages(0)->set_id(std::numeric_limits<quint64>::max());
             live.mutable_messages(0)->set_message(text.toStdString());
             QVERIFY(live.ByteSizeLong() <= static_cast<size_t>(network->limit));
+            // All the accepted messages can be given with our time to a peer asking for our history.
+            network->sent.clear();
+            network->requestHistory();
+            int count = 0;
+            for (const auto& packet : network->sent)
+               count += packet.messages_size();
+            QCOMPARE(count, before.messages_size());
             return;
          }
          QCOMPARE(status, CS::IChatSystem::SendStatus::OK);
@@ -466,6 +473,51 @@ private slots:
       }
       // Rejected IDs must remain usable for later valid messages.
       QCOMPARE(history.add(message(QString(), 4)).size(), 1);
+   }
+
+   /**
+     * A history is given with the time of its sender: a message keeps its age whatever the clock of the sender is.
+     */
+   void historyTimesAreTranslatedIntoOurClock()
+   {
+      const auto peers = PM::Builder::newPeerManager({});
+      const auto network = QSharedPointer<NetworkListener>::create();
+      CS::ChatSystem chat(peers, network);
+      const quint64 before = QDateTime::currentMSecsSinceEpoch();
+      QCOMPARE(chat.send("hello"), CS::IChatSystem::SendStatus::OK);
+      QCOMPARE(network->sent.last().sender_time(), quint64(0)); // Not for a live message.
+      network->requestHistory();
+      QVERIFY(network->sent.last().sender_time() >= before);
+      QVERIFY(network->sent.last().sender_time() <= quint64(QDateTime::currentMSecsSinceEpoch()));
+
+      static constexpr quint64 HOUR = 60 * 60 * 1000, MAX = std::numeric_limits<quint64>::max();
+      // The time of the message with the given ID once received, zero if it's rejected.
+      auto received = [](quint64 ID, quint64 time, quint64 senderTime) -> quint64 {
+         auto batch = message(QString(), ID);
+         batch.mutable_messages(0)->set_time(time);
+         batch.set_sender_time(senderTime);
+         CS::ChatMessages history;
+         if (history.add(batch).isEmpty())
+            return 0;
+         Protos::Common::ChatMessages saved;
+         history.fillProtoChatMessages(saved);
+         return saved.messages(0).time();
+      };
+      auto isAbout = [](quint64 time, quint64 expected) { return time >= expected && time <= expected + 10000; };
+
+      const quint64 now = QDateTime::currentMSecsSinceEpoch();
+      QVERIFY(isAbout(received(1, now + HOUR - 10000, now + HOUR), now - 10000)); // The clock of the sender is one hour ahead of ours.
+      QVERIFY(isAbout(received(2, now - HOUR - 10000, now - HOUR), now - 10000)); // One hour behind.
+      QVERIFY(isAbout(received(3, 0, now + HOUR), now)); // A live message is never translated.
+
+      // A message in the future of its sender is treated as before.
+      QVERIFY(isAbout(received(4, now + HOUR + 60000, now + HOUR), now));
+      QCOMPARE(received(5, now + HOUR + 10 * 60000, now + HOUR), quint64(0));
+
+      // Nothing wraps with the extreme values.
+      QCOMPARE(received(6, MAX, 1), quint64(0));
+      QCOMPARE(received(7, 1, MAX), quint64(1));
+      QVERIFY(isAbout(received(8, MAX, MAX), now));
    }
 
    void futureMessagesCannotBlockLiveMessages()

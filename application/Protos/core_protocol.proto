@@ -78,6 +78,8 @@ message GetLastChatMessages {
 
 // This message is only sent if 'b' has some messages not contained in the given list.
 // The fields 'peer_id' and 'time' must be set for all messages.
+// The field 'sender_time' must be set: 'a' keeps the age of each message ('sender_time' - 'time') and not its time,
+// the clock of 'b' may differ from its own one.
 // b -> a (unicast UDP)
 // id : 0x11
 // Common.ChatMessages

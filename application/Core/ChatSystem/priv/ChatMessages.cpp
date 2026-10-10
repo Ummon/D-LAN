@@ -48,7 +48,25 @@ QList<QSharedPointer<ChatMessage>> ChatMessages::add(const Protos::Common::ChatM
 }
 
 /**
-  * Zero timestamps denote live messages and use our receipt time. Allow five minutes
+  * Translate a time given by a peer into our clock: the message keeps the age it has for this peer.
+  * The values come from an untrusted peer: the result saturates instead of wrapping and is never
+  * zero, which denotes a live message.
+  */
+static quint64 toLocalTime(quint64 time, quint64 senderTime, quint64 now)
+{
+   if (time > senderTime) // In the future of the sender.
+   {
+      const quint64 ahead = time - senderTime;
+      return ahead > std::numeric_limits<quint64>::max() - now ? std::numeric_limits<quint64>::max() : now + ahead;
+   }
+
+   const quint64 age = senderTime - time;
+   return age < now ? now - age : 1;
+}
+
+/**
+  * Zero timestamps denote live messages and use our receipt time. The other ones are translated
+  * into our clock if the sender has given its current time, see 'toLocalTime(..)'. Allow five minutes
   * of clock skew, but normalize future times to now so they cannot displace normal
   * messages. Reject larger future times before converting uint64 to Qt's signed time.
   */
@@ -61,17 +79,24 @@ QList<QSharedPointer<ChatMessage>> ChatMessages::add(const Protos::Common::ChatM
    int rejected = 0;
    for (const auto& message : chatMessages.messages())
    {
-      if (message.time() > now + MAX_CLOCK_SKEW_MS)
+      quint64 time = message.time();
+      if (time != 0 && chatMessages.sender_time() != 0)
+         time = toLocalTime(time, chatMessages.sender_time(), now);
+
+      if (time > now + MAX_CLOCK_SKEW_MS)
       {
          ++rejected;
          timestampsChanged = true;
          this->reject(message.id());
          continue;
       }
-      if (message.time() == 0 || message.time() > now)
+      if (time == 0 || time > now)
+         time = now;
+
+      if (time != message.time())
       {
          auto normalized = message;
-         normalized.set_time(now);
+         normalized.set_time(time);
          messages << QSharedPointer<ChatMessage>::create(normalized);
          timestampsChanged = true;
       }
@@ -155,7 +180,7 @@ void ChatMessages::fillProtoChatMessages(Protos::Common::ChatMessages& chatMessa
 
 /**
   * Fill 'chatMessages' with the given messages, starting from the one at the position 'first'.
-  * 'chatMessages' must not exceed 'maxByteSize' and is expected to be empty when this method is called.
+  * 'chatMessages' must not exceed 'maxByteSize' and is expected to have no message when this method is called.
   * A message which doesn't fit alone in 'maxByteSize' is skipped, this guarantees the caller always makes
   * progress when calling this method repeatedly with the returned position.
   * @return The position of the first message which isn't put in 'chatMessages', 'messages.size()' if there is none left.
