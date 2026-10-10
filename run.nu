@@ -38,7 +38,7 @@ def "main deploy" [port, host, path, chown_user = ""] {
     let files = ls build/erlang-shipment | get name | str replace --all '\' '/'
     rsync -rvz --delete --exclude=d_lan_website.sqlite3 --exclude=config.toml --exclude=/d_lan_website/priv/releases/ -e $'ssh -p ($port)' ...$files $'($host):($path)'
     if $chown_user != "" {
-        ssh -p 9851 $host $'sudo chown -R ($chown_user):($chown_user) ($path)'
+        ssh -p $port $host $'sudo chown -R ($chown_user):($chown_user) ($path)'
     }
 
     if $cross_compiled {
