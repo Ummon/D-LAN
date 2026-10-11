@@ -348,7 +348,10 @@ QList<QSharedPointer<IChunkDownloader>> DownloadQueue::getTheOldestUnfinishedChu
    while (i != this->downloadsSortedByTime.end() && unfinishedChunks.size() < n)
    {
       FileDownload* download = i.value();
-      if (download->getStatus() == Protos::Common::DownloadStatus::COMPLETE || download->getStatus() == Protos::Common::DownloadStatus::DELETED)
+      if (
+         download->getStatus() == Protos::Common::DownloadStatus::COMPLETE ||
+         download->getStatus() == Protos::Common::DownloadStatus::DELETED
+      )
       {
          this->downloadTimePositions.remove(download);
          i = this->downloadsSortedByTime.erase(i);

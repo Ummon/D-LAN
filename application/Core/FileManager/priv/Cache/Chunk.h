@@ -96,6 +96,9 @@ namespace FM
       // The same mutex as the owning File's metadata lock; outlives File through this shared reference.
       const QSharedPointer<QRecursiveMutex> fileMutex;
       File* file;
+      // Set when the file retires this chunk, see 'fileDeleted()'. Unlike 'file' it can be read without the file mutex:
+      // 'File::write(..)' checks it once it owns the write lock.
+      std::atomic<bool> retired { false };
       const int num; // First is 0.
       int knownBytes; ///< Relative offset, 0 means we don't have any byte and 'getChunkSize()' means we have all the chunk data.
       // Hash readers may hold index/result locks. Never call into File while holding this mutex.

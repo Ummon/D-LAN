@@ -99,6 +99,9 @@ private slots:
    void chunkAccessExcludesRetirement();
    void chunkFlushReleasesFileMutex_data();
    void chunkFlushReleasesFileMutex();
+   void waitingWriterReleasesFileMutex_data();
+   void waitingWriterReleasesFileMutex();
+   void retiredChunkWriteIsDropped();
    void concurrentChunkMetadata();
    void chunkEntryWithoutHashes();
    void peerHashOnlyAppliesToDownloads_data();

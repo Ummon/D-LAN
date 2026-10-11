@@ -3778,7 +3778,8 @@ void CacheTest::chunkAccessExcludesRetirement()
          cache.deleteEntry(file);
 
       QVERIFY(reachedAccess);
-      QVERIFY(!retirementCouldEnter);
+      // A write only holds the write lock of the file: its retirement can begin, then waits for the write to close the handle.
+      QCOMPARE(retirementCouldEnter, writing);
       QVERIFY(!retiredDuringAccess);
       QVERIFY(!accessError);
       QVERIFY(!retireError);
@@ -3918,6 +3919,208 @@ void CacheTest::chunkFlushReleasesFileMutex()
          QVERIFY(file->isComplete());
    }
    writer.clear();
+}
+
+namespace
+{
+   // Pauses the next physical write or the next flush, while it holds the write lock of the file.
+   class PausedIOFile : public FM::File
+   {
+   public:
+      using FM::File::File;
+
+      bool canLockMetadata()
+      {
+         if (!this->mutex.tryLock())
+            return false;
+         this->mutex.unlock();
+         return true;
+      }
+
+      std::atomic<bool> pauseNextWrite { false };
+      std::atomic<bool> pauseNextFlush { false };
+      QSemaphore paused;
+      QSemaphore resume;
+
+   protected:
+      qint64 writePhysicalFile(const char* buffer, qint64 nbBytes) override
+      {
+         this->pause(this->pauseNextWrite);
+         return FM::File::writePhysicalFile(buffer, nbBytes);
+      }
+
+      void flushPhysicalFile() override
+      {
+         this->pause(this->pauseNextFlush);
+         FM::File::flushPhysicalFile();
+      }
+
+   private:
+      void pause(std::atomic<bool>& requested)
+      {
+         if (requested.exchange(false))
+         {
+            this->paused.release();
+            this->resume.acquire();
+         }
+      }
+   };
+
+   // A file of two chunks being downloaded, the second chunk is made of 'tail'.
+   PausedIOFile* newTwoChunksDownload(FM::SharedDirectory* root, const QByteArray& tail)
+   {
+      Common::Hasher hasher;
+      hasher.addData(std::span<const char>(tail));
+      return new PausedIOFile(root, "download.bin", qint64(FM::Chunk::CHUNK_SIZE) + tail.size(), false,
+         QDateTime::currentDateTime(), root->getRootDir(), { Common::Hash::rand(), hasher.getResult() }, true);
+   }
+}
+
+void CacheTest::waitingWriterReleasesFileMutex_data()
+{
+   QTest::addColumn<bool>("flushing");
+   QTest::newRow("write") << false;
+   QTest::newRow("flush") << true;
+}
+
+/**
+  * Two peers are downloading the same file. While a downloader is writing or flushing, which can take seconds,
+  * the other one waits for the write lock. Neither may hold the file mutex meanwhile: the main thread reads the
+  * chunk progress and the file metadata through it.
+  */
+void CacheTest::waitingWriterReleasesFileMutex()
+{
+   QFETCH(bool, flushing);
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   const QByteArray tail("abcdefghij");
+   auto file = newTwoChunksDownload(root, tail);
+   const auto chunks = file->getChunks();
+   QCOMPARE(chunks.size(), 2);
+   auto busyWriter = chunks[1]->getDataWriter();
+   auto waitingWriter = chunks[0]->getDataWriter();
+
+   // The whole second chunk to reach its flush, otherwise its first bytes only.
+   const int busySize = flushing ? tail.size() : 3;
+   (flushing ? file->pauseNextFlush : file->pauseNextWrite) = true;
+   bool busyComplete = false;
+   std::exception_ptr busyError;
+   std::thread busy([&] {
+      try { busyComplete = busyWriter->write(tail.constData(), busySize); }
+      catch (...) { busyError = std::current_exception(); }
+   });
+   const bool paused = file->paused.tryAcquire(1, 5000);
+
+   QSemaphore waitingStarted;
+   std::atomic<bool> waitingDone = false;
+   std::exception_ptr waitingError;
+   std::thread waiting([&] {
+      waitingStarted.release();
+      try { waitingWriter->write("x", 1); }
+      catch (...) { waitingError = std::current_exception(); }
+      waitingDone = true;
+   });
+   waitingStarted.acquire();
+   QThread::msleep(200); // Time to reach the write lock.
+   const bool stillWaiting = paused && !waitingDone;
+
+   // Only use them once 'tryLock' has succeeded, so a regression fails instead of blocking the test.
+   const bool metadataAvailable = paused && file->canLockMetadata();
+   const int progressMeanwhile = metadataAvailable ? chunks[0]->getKnownBytes() : -1;
+   const bool completeMeanwhile = metadataAvailable && chunks[0]->isComplete();
+
+   file->resume.release();
+   busy.join();
+   waiting.join();
+
+   QVERIFY(paused);
+   QVERIFY(stillWaiting);
+   QVERIFY(metadataAvailable);
+   QCOMPARE(progressMeanwhile, 0);
+   QVERIFY(!completeMeanwhile);
+   QVERIFY(!busyError);
+   QVERIFY(!waitingError);
+   QCOMPARE(busyComplete, flushing);
+   QCOMPARE(chunks[1]->getKnownBytes(), busySize);
+   QCOMPARE(chunks[0]->getKnownBytes(), 1);
+   busyWriter.clear();
+   waitingWriter.clear();
+}
+
+/**
+  * A chunk is retired while its downloader waits for the write lock: its data must not be written, the handle
+  * may then be the one of the next generation of the file.
+  */
+void CacheTest::retiredChunkWriteIsDropped()
+{
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   const QByteArray tail("abcdefghij");
+   auto file = newTwoChunksDownload(root, tail);
+   const auto chunks = file->getChunks();
+   QCOMPARE(chunks.size(), 2);
+   auto busyWriter = chunks[1]->getDataWriter();
+   auto waitingWriter = chunks[0]->getDataWriter();
+
+   file->pauseNextWrite = true;
+   std::exception_ptr busyError;
+   std::thread busy([&] {
+      try { busyWriter->write(tail.constData(), 3); }
+      catch (...) { busyError = std::current_exception(); }
+   });
+   const bool paused = file->paused.tryAcquire(1, 5000);
+
+   QSemaphore waitingStarted;
+   std::exception_ptr waitingError;
+   std::thread waiting([&] {
+      waitingStarted.release();
+      try { waitingWriter->write("x", 1); }
+      catch (...) { waitingError = std::current_exception(); }
+   });
+   waitingStarted.acquire();
+   QThread::msleep(200); // Time to reach the write lock.
+
+   // The retirement detaches the chunks, then waits for the write lock to close the file.
+   std::thread retirement;
+   bool retirementEntered = false;
+   if (paused && file->canLockMetadata())
+   {
+      retirement = std::thread([&] { file->del(false); });
+      QDeadlineTimer deadline(5000);
+      while (file->canLockMetadata() && !deadline.hasExpired())
+         QThread::msleep(1);
+      retirementEntered = !file->canLockMetadata();
+   }
+
+   file->resume.release();
+   busy.join();
+   waiting.join();
+   if (retirement.joinable())
+      retirement.join();
+
+   QVERIFY(paused);
+   QVERIFY(retirementEntered);
+   // The write in progress ends normally, as if the retirement had followed it.
+   QVERIFY(!busyError);
+   QCOMPARE(chunks[1]->getKnownBytes(), 3);
+   // The waiting one is dropped.
+   QVERIFY(waitingError);
+   QVERIFY_THROWS_EXCEPTION(FM::ChunkDeletedException, std::rethrow_exception(waitingError));
+   QCOMPARE(chunks[0]->getKnownBytes(), 0);
+
+   cache.deleteEntry(file);
+   busyWriter.clear();
+   waitingWriter.clear();
 }
 
 void CacheTest::concurrentChunkMetadata()

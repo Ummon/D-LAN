@@ -525,13 +525,21 @@ void File::dataReaderDeleted()
   * If the buffer exceed the file size then only the beginning of the buffer is
   * used, the file is not resizing.
   * @exception IOErrorException
+  * @exception ChunkDeletedException
   * @param buffer The buffer containing the data to write.
   * @param nbBytes The number of bytes my buffer contains.
   * @param offset The offset into the file where the data will be written.
+  * @param retired If given, set when the chunk the data belongs to is retired. The caller doesn't hold the file mutex:
+  *        the chunk may be retired while this thread waits for the write lock, the handle may then be the
+  *        one of the next generation of the file, opened by a new writer.
   */
-qint64 File::write(const char* buffer, int nbBytes, qint64 offset)
+qint64 File::write(const char* buffer, int nbBytes, qint64 offset, const std::atomic<bool>* retired)
 {
    QMutexLocker locker(&this->writeLock);
+
+   // Retiring a chunk is followed by 'closePhysicalFiles()', which waits for this lock: no write follows a retirement.
+   if (retired && *retired)
+      throw ChunkDeletedException();
 
    if (nbBytes < 0 || (nbBytes > 0 && !buffer) || offset < 0 ||
        !this->fileInWriteMode || offset >= this->getSize() || !this->fileInWriteMode->seek(offset))
