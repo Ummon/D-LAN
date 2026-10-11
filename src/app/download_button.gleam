@@ -23,18 +23,7 @@ pub fn element(
   platform: String,
 ) -> Result(element.Element(a), Nil) {
   let release_platform_folder = ctx.app.releases_directory <> "/" <> platform
-  use filenames <- result.try(
-    simplifile.read_directory(release_platform_folder)
-    |> result.replace_error(Nil),
-  )
-
-  use filename <- result.try(
-    filenames
-    |> list.filter(fn(f) {
-      list.any([".exe", ".dmg", ".deb", ".AppImage"], string.ends_with(f, _))
-    })
-    |> latest_release,
-  )
+  use filename <- result.try(latest_release_filename(release_platform_folder))
 
   let assert Ok(extension) = filename |> string.split(".") |> list.last
 
@@ -73,19 +62,19 @@ pub fn element(
     date.parse_date(year <> "-" <> month <> "-" <> day)
 
   // Add a link to the torrent file if it exists.
-  let torrent_link = case
-    filenames
-    |> list.filter(string.ends_with(_, ".torrent"))
-    |> latest_release
-  {
-    Ok(torrent_file) -> [
-      html.a(
-        [attr.class("torrent"), attr.href(file_to_url(torrent_file, platform))],
-        [tr.download_button_torrent(ctx.lang)],
-      ),
-    ]
-    Error(Nil) -> []
-  }
+  // let torrent_link = case
+  //   filenames
+  //   |> list.filter(string.ends_with(_, ".torrent"))
+  //   |> latest_release
+  // {
+  //   Ok(torrent_file) -> [
+  //     html.a(
+  //       [attr.class("torrent"), attr.href(file_to_url(torrent_file, platform))],
+  //       [tr.download_button_torrent(ctx.lang)],
+  //     ),
+  //   ]
+  //   Error(Nil) -> []
+  // }
 
   html.div([attr.class("download " <> extension <> " " <> platform)], [
     html.a(
@@ -101,9 +90,22 @@ pub fn element(
         tr.download_button_released(ctx.lang, released_date),
       ],
     ),
-    ..torrent_link
+    // ..torrent_link
   ])
   |> Ok
+}
+
+pub fn latest_release_filename(folder: String) -> Result(String, Nil) {
+  use filenames <- result.try(
+    simplifile.read_directory(folder)
+    |> result.replace_error(Nil),
+  )
+
+  filenames
+  |> list.filter(fn(f) {
+    list.any([".exe", ".dmg", ".deb", ".AppImage"], string.ends_with(f, _))
+  })
+  |> latest_release
 }
 
 pub fn microsoft_store_element(ctx: web.Context) -> element.Element(a) {
@@ -128,6 +130,7 @@ pub fn microsoft_store_element(ctx: web.Context) -> element.Element(a) {
 /// the name itself: compared as plain strings, "D-LAN-1.9.0-..." comes after
 /// "D-LAN-1.10.0-..." and "D-LAN-1.2.0Beta1-..." after the final release
 /// "D-LAN-1.2.0-...".
+@internal
 pub fn latest_release(filenames: List(String)) -> Result(String, Nil) {
   filenames
   |> list.filter_map(fn(f) {

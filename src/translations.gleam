@@ -925,8 +925,8 @@ pub fn faq_q5(l: Lang) -> element.Element(a) {
   |> html.text
 }
 
-pub fn faq_a5(l: Lang) -> element.Element(a) {
-  let linux_version = "1.5.1-2026-10-06_11-44-x86_64"
+pub fn faq_a5(l: Lang, appimage_filename: String) -> element.Element(a) {
+  // let linux_version = "1.5.1-2026-10-06_11-44-x86_64"
   case l {
     En ->
       "<h3>On Windows:</h3>"
@@ -936,12 +936,12 @@ pub fn faq_a5(l: Lang) -> element.Element(a) {
       <> "</ul>"
       <> "<h3>On Linux:</h3>"
       <> "<ul>"
-      <> "<li>Headless: <code>$ ./D-LAN-"
-      <> linux_version
-      <> ".AppImage --core</code></li>"
-      <> "<li>Install a systemd service: <code>$ sudo ./D-LAN-"
-      <> linux_version
-      <> ".AppImage --core -i &lt;username&gt;</code> Where &lt;username&gt; is the user D-LAN Core will run as.</li>"
+      <> "<li>Headless: <code>$ ./"
+      <> appimage_filename
+      <> " --core</code></li>"
+      <> "<li>Install a systemd service: <code>$ sudo ./"
+      <> appimage_filename
+      <> " --core -i &lt;username&gt;</code> Where &lt;username&gt; is the user D-LAN Core will run as.</li>"
       <> "</ul>"
       <> "<h3>On macOS:</h3>"
       <> "<p>D-LAN can only be run headless, installing a service is not supported: <code>% ./D-LAN.Core</code> (location: /Applications/D-LAN.app/Contents/MacOS)</p>"
@@ -953,12 +953,12 @@ pub fn faq_a5(l: Lang) -> element.Element(a) {
       <> "</ul>"
       <> "<h3>Sous Linux :</h3>"
       <> "<ul>"
-      <> "<li>headless : <code>$ ./D-LAN-"
-      <> linux_version
-      <> ".AppImage --core</code></li>"
-      <> "<li>Installer un service systemd : <code>$ sudo ./D-LAN-"
-      <> linux_version
-      <> ".AppImage --core -i &lt;username&gt;</code> Où &lt;username&gt; correspond à l'utilisateur sous lequel D-LAN Core va tourner.</li>"
+      <> "<li>headless : <code>$ ./"
+      <> appimage_filename
+      <> " --core</code></li>"
+      <> "<li>Installer un service systemd : <code>$ sudo ./"
+      <> appimage_filename
+      <> " --core -i &lt;username&gt;</code> Où &lt;username&gt; correspond à l'utilisateur sous lequel D-LAN Core va tourner.</li>"
       <> "</ul>"
       <> "<h3>Sous macOS :</h3>"
       <> "<p>Il est uniquement possible de lancer D-LAN en headless, l'installation d'un service n'est pas supportée : <code>% ./D-LAN.Core</code> (emplacement : /Applications/D-LAN.app/Contents/MacOS)</p>"
@@ -970,12 +970,12 @@ pub fn faq_a5(l: Lang) -> element.Element(a) {
       <> "</ul>"
       <> "<h3>Unter Linux:</h3>"
       <> "<ul>"
-      <> "<li>Headless: <code>$ ./D-LAN-"
-      <> linux_version
-      <> ".AppImage --core</code></li>"
-      <> "<li>Einen systemd-Dienst installieren: <code>$ sudo ./D-LAN-"
-      <> linux_version
-      <> ".AppImage --core -i &lt;username&gt;</code> Dabei steht &lt;username&gt; für den Benutzer, unter dem D-LAN Core läuft.</li>"
+      <> "<li>Headless: <code>$ ./"
+      <> appimage_filename
+      <> " --core</code></li>"
+      <> "<li>Einen systemd-Dienst installieren: <code>$ sudo ./"
+      <> appimage_filename
+      <> " --core -i &lt;username&gt;</code> Dabei steht &lt;username&gt; für den Benutzer, unter dem D-LAN Core läuft.</li>"
       <> "</ul>"
       <> "<h3>Unter macOS:</h3>"
       <> "<p>D-LAN kann nur headless gestartet werden, die Installation eines Dienstes wird nicht unterstützt: <code>% ./D-LAN.Core</code> (Speicherort: /Applications/D-LAN.app/Contents/MacOS)</p>"
@@ -987,12 +987,12 @@ pub fn faq_a5(l: Lang) -> element.Element(a) {
       <> "</ul>"
       <> "<h3>En Linux:</h3>"
       <> "<ul>"
-      <> "<li>Headless: <code>$ ./D-LAN-"
-      <> linux_version
-      <> ".AppImage --core</code></li>"
-      <> "<li>Instalar un servicio systemd: <code>$ sudo ./D-LAN-"
-      <> linux_version
-      <> ".AppImage --core -i &lt;username&gt;</code> Donde &lt;username&gt; corresponde al usuario con el que se ejecutará D-LAN Core.</li>"
+      <> "<li>Headless: <code>$ ./"
+      <> appimage_filename
+      <> " --core</code></li>"
+      <> "<li>Instalar un servicio systemd: <code>$ sudo ./"
+      <> appimage_filename
+      <> " --core -i &lt;username&gt;</code> Donde &lt;username&gt; corresponde al usuario con el que se ejecutará D-LAN Core.</li>"
       <> "</ul>"
       <> "<h3>En macOS:</h3>"
       <> "<p>Solo es posible ejecutar D-LAN en modo headless, la instalación de un servicio no está soportada: <code>% ./D-LAN.Core</code> (ubicación: /Applications/D-LAN.app/Contents/MacOS)</p>"
@@ -1004,12 +1004,12 @@ pub fn faq_a5(l: Lang) -> element.Element(a) {
       <> "</ul>"
       <> "<h3>Su Linux:</h3>"
       <> "<ul>"
-      <> "<li>Headless: <code>$ ./D-LAN-"
-      <> linux_version
-      <> ".AppImage --core</code></li>"
-      <> "<li>Installare un servizio systemd: <code>$ sudo ./D-LAN-"
-      <> linux_version
-      <> ".AppImage --core -i &lt;username&gt;</code> Dove &lt;username&gt; corrisponde all'utente con cui verrà eseguito D-LAN Core.</li>"
+      <> "<li>Headless: <code>$ ./"
+      <> appimage_filename
+      <> " --core</code></li>"
+      <> "<li>Installare un servizio systemd: <code>$ sudo ./"
+      <> appimage_filename
+      <> " --core -i &lt;username&gt;</code> Dove &lt;username&gt; corrisponde all'utente con cui verrà eseguito D-LAN Core.</li>"
       <> "</ul>"
       <> "<h3>Su macOS:</h3>"
       <> "<p>È possibile avviare D-LAN solo in modalità headless, l'installazione di un servizio non è supportata: <code>% ./D-LAN.Core</code> (percorso: /Applications/D-LAN.app/Contents/MacOS)</p>"
@@ -1021,12 +1021,12 @@ pub fn faq_a5(l: Lang) -> element.Element(a) {
       <> "</ul>"
       <> "<h3>В Linux:</h3>"
       <> "<ul>"
-      <> "<li>Headless: <code>$ ./D-LAN-"
-      <> linux_version
-      <> ".AppImage --core</code></li>"
-      <> "<li>Установка службы systemd: <code>$ sudo ./D-LAN-"
-      <> linux_version
-      <> ".AppImage --core -i &lt;username&gt;</code> Здесь &lt;username&gt; соответствует пользователю, от имени которого будет работать D-LAN Core.</li>"
+      <> "<li>Headless: <code>$ ./"
+      <> appimage_filename
+      <> " --core</code></li>"
+      <> "<li>Установка службы systemd: <code>$ sudo ./"
+      <> appimage_filename
+      <> " --core -i &lt;username&gt;</code> Здесь &lt;username&gt; соответствует пользователю, от имени которого будет работать D-LAN Core.</li>"
       <> "</ul>"
       <> "<h3>В macOS:</h3>"
       <> "<p>D-LAN можно запустить только в режиме headless, установка службы не поддерживается: <code>% ./D-LAN.Core</code> (расположение: /Applications/D-LAN.app/Contents/MacOS)</p>"
@@ -1038,12 +1038,12 @@ pub fn faq_a5(l: Lang) -> element.Element(a) {
       <> "</ul>"
       <> "<h3>Linux:</h3>"
       <> "<ul>"
-      <> "<li>헤드리스: <code>$ ./D-LAN-"
-      <> linux_version
-      <> ".AppImage --core</code></li>"
-      <> "<li>systemd 서비스 설치: <code>$ sudo ./D-LAN-"
-      <> linux_version
-      <> ".AppImage --core -i &lt;username&gt;</code> 여기서 &lt;username&gt;은(는) D-LAN Core를 실행할 사용자입니다.</li>"
+      <> "<li>헤드리스: <code>$ ./"
+      <> appimage_filename
+      <> " --core</code></li>"
+      <> "<li>systemd 서비스 설치: <code>$ sudo ./"
+      <> appimage_filename
+      <> " --core -i &lt;username&gt;</code> 여기서 &lt;username&gt;은(는) D-LAN Core를 실행할 사용자입니다.</li>"
       <> "</ul>"
       <> "<h3>macOS:</h3>"
       <> "<p>D-LAN은 헤드리스로만 실행할 수 있으며, 서비스 설치는 지원되지 않습니다: <code>% ./D-LAN.Core</code> (위치: /Applications/D-LAN.app/Contents/MacOS)</p>"
@@ -1055,12 +1055,12 @@ pub fn faq_a5(l: Lang) -> element.Element(a) {
       <> "</ul>"
       <> "<h3>Linux の場合:</h3>"
       <> "<ul>"
-      <> "<li>ヘッドレス: <code>$ ./D-LAN-"
-      <> linux_version
-      <> ".AppImage --core</code></li>"
-      <> "<li>systemd サービスのインストール: <code>$ sudo ./D-LAN-"
-      <> linux_version
-      <> ".AppImage --core -i &lt;username&gt;</code> &lt;username&gt; は D-LAN Core を実行するユーザーを表します。</li>"
+      <> "<li>ヘッドレス: <code>$ ./"
+      <> appimage_filename
+      <> " --core</code></li>"
+      <> "<li>systemd サービスのインストール: <code>$ sudo ./"
+      <> appimage_filename
+      <> " --core -i &lt;username&gt;</code> &lt;username&gt; は D-LAN Core を実行するユーザーを表します。</li>"
       <> "</ul>"
       <> "<h3>macOS の場合:</h3>"
       <> "<p>D-LAN はヘッドレスでのみ実行でき、サービスのインストールには対応していません: <code>% ./D-LAN.Core</code> (場所: /Applications/D-LAN.app/Contents/MacOS)</p>"
@@ -1072,12 +1072,12 @@ pub fn faq_a5(l: Lang) -> element.Element(a) {
       <> "</ul>"
       <> "<h3>Linux पर:</h3>"
       <> "<ul>"
-      <> "<li>हेडलेस: <code>$ ./D-LAN-"
-      <> linux_version
-      <> ".AppImage --core</code></li>"
-      <> "<li>systemd सर्विस इंस्टॉल करें: <code>$ sudo ./D-LAN-"
-      <> linux_version
-      <> ".AppImage --core -i &lt;username&gt;</code> यहाँ &lt;username&gt; उस उपयोगकर्ता को दर्शाता है जिसके अंतर्गत D-LAN Core चलेगा।</li>"
+      <> "<li>हेडलेस: <code>$ ./"
+      <> appimage_filename
+      <> " --core</code></li>"
+      <> "<li>systemd सर्विस इंस्टॉल करें: <code>$ sudo ./"
+      <> appimage_filename
+      <> " --core -i &lt;username&gt;</code> यहाँ &lt;username&gt; उस उपयोगकर्ता को दर्शाता है जिसके अंतर्गत D-LAN Core चलेगा।</li>"
       <> "</ul>"
       <> "<h3>macOS पर:</h3>"
       <> "<p>D-LAN को केवल हेडलेस रूप में चलाया जा सकता है, सर्विस इंस्टॉल करना समर्थित नहीं है: <code>% ./D-LAN.Core</code> (स्थान: /Applications/D-LAN.app/Contents/MacOS)</p>"
@@ -1089,12 +1089,12 @@ pub fn faq_a5(l: Lang) -> element.Element(a) {
       <> "</ul>"
       <> "<h3>在 Linux 上：</h3>"
       <> "<ul>"
-      <> "<li>无界面模式：<code>$ ./D-LAN-"
-      <> linux_version
-      <> ".AppImage --core</code></li>"
-      <> "<li>安装 systemd 服务：<code>$ sudo ./D-LAN-"
-      <> linux_version
-      <> ".AppImage --core -i &lt;username&gt;</code> 其中 &lt;username&gt; 是运行 D-LAN Core 的用户。</li>"
+      <> "<li>无界面模式：<code>$ ./"
+      <> appimage_filename
+      <> " --core</code></li>"
+      <> "<li>安装 systemd 服务：<code>$ sudo ./"
+      <> appimage_filename
+      <> " --core -i &lt;username&gt;</code> 其中 &lt;username&gt; 是运行 D-LAN Core 的用户。</li>"
       <> "</ul>"
       <> "<h3>在 macOS 上：</h3>"
       <> "<p>D-LAN 只能以无界面模式运行，不支持安装服务：<code>% ./D-LAN.Core</code>（位置：/Applications/D-LAN.app/Contents/MacOS）</p>"
