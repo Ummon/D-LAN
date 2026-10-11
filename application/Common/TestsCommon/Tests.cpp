@@ -34,6 +34,8 @@
 #include <QElapsedTimer>
 #include <QRandomGenerator64>
 
+#include <Common/HanVariants.h>
+#include <Common/HanVariantsData.h>
 #include <Common/LogManager/Builder.h>
 #include <Common/TestsCommon/GlobalRandomPredictor.h>
 
@@ -306,10 +308,36 @@ void Tests::subWordBoundaries()
    const QStringList words = StringUtils::splitInWords(text);
    const QStringList wordsAndSubWords = StringUtils::splitInWordsAndSubWords(text);
    QCOMPARE(wordsAndSubWords.mid(0, words.size()), words);
-   QCOMPARE(wordsAndSubWords.size() > words.size(), !expected.isEmpty());
+   const bool hanSuffixes = std::any_of(words.cbegin(), words.cend(), [](const QString& word) { return !StringUtils::hanSuffixPositions(word).isEmpty(); });
+   QCOMPARE(wordsAndSubWords.size() > words.size(), !expected.isEmpty() || hanSuffixes);
    const QString folded = StringUtils::toLowerAndRemoveAccents(text);
    for (const QString& word : wordsAndSubWords)
       QVERIFY2(folded.contains(word), qPrintable(word));
+}
+
+void Tests::hanSuffixPositions_data()
+{
+   QTest::addColumn<QString>("word");
+   QTest::addColumn<QList<int>>("expected");
+
+   QTest::newRow("empty") << QString() << QList<int> {};
+   QTest::newRow("latin") << QString("supergirl") << QList<int> {};
+   QTest::newRow("single") << QStringLiteral("球") << QList<int> {};
+   QTest::newRow("han") << QStringLiteral("流浪地球") << QList<int> { 1, 2, 3 };
+   QTest::newRow("han-digits") << QStringLiteral("流浪地球2") << QList<int> { 1, 2, 3 };
+   QTest::newRow("digits-han") << QStringLiteral("2024年") << QList<int> { 4 };
+   QTest::newRow("latin-han") << QStringLiteral("naruto第3话") << QList<int> { 6, 8 };
+   QTest::newRow("han-kana") << QStringLiteral("进撃の巨人") << QList<int> { 1, 3, 4 };
+   QTest::newRow("kana") << QStringLiteral("となりのトトロ") << QList<int> {};
+   QTest::newRow("hangul") << QStringLiteral("방탄소년단") << QList<int> {};
+   QTest::newRow("surrogates") << QStringLiteral("\U00020000\U00020001\u4E00") << QList<int> { 2, 4 }; // CJK extension B.
+}
+
+void Tests::hanSuffixPositions()
+{
+   QFETCH(QString, word);
+   QFETCH(QList<int>, expected);
+   QCOMPARE(StringUtils::hanSuffixPositions(word), expected);
 }
 
 void Tests::splitInWordsAndSubWords()
@@ -331,13 +359,52 @@ void Tests::splitInWordsAndSubWords()
 
    // Changes of script.
    QCOMPARE(StringUtils::splitInWordsAndSubWords(QStringLiteral("Naruto第3話.mkv")),
-      (QStringList { QStringLiteral("naruto第3話"), "mkv", "naruto", QStringLiteral("第3話") }));
+      (QStringList { QStringLiteral("naruto第3话"), "mkv", "naruto", QStringLiteral("第3话"), QStringLiteral("话") }));
    QCOMPARE(StringUtils::splitInWordsAndSubWords(QStringLiteral("進撃の巨人")),
-      (QStringList { QStringLiteral("進撃の巨人"), QStringLiteral("進撃"), QStringLiteral("の"), QStringLiteral("巨人") }));
+      (QStringList { QStringLiteral("进撃の巨人"), QStringLiteral("进撃"), QStringLiteral("の"), QStringLiteral("巨人"), QStringLiteral("撃の巨人"), QStringLiteral("人") }));
    QCOMPARE(StringUtils::splitInWordsAndSubWords(QStringLiteral("ABC\u1112\u1161\u11AB\u1100\u1173\u11AF")), // Decomposed "ABC한글".
       (QStringList { QStringLiteral("abc한글"), "abc", QStringLiteral("한글") }));
    QCOMPARE(StringUtils::splitInWordsAndSubWords(QStringLiteral("हिन्दीMovie")),
       (QStringList { QStringLiteral("हिंदीmovie"), QStringLiteral("हिंदी"), "movie" }));
+
+   // The suffixes beginning with a Han character, they go up to the end of the word.
+   QCOMPARE(StringUtils::splitInWordsAndSubWords(QStringLiteral("流浪地球2.mkv")),
+      (QStringList { QStringLiteral("流浪地球2"), "mkv", QStringLiteral("浪地球2"), QStringLiteral("地球2"), QStringLiteral("球2") }));
+   QCOMPARE(StringUtils::splitInWordsAndSubWords(QStringLiteral("《霸王別姬》1993")),
+      (QStringList { QStringLiteral("霸王别姬"), "1993", QStringLiteral("王别姬"), QStringLiteral("别姬"), QStringLiteral("姬") }));
+
+   // A suffix is listed once.
+   QCOMPARE(StringUtils::splitInWordsAndSubWords(QStringLiteral("哈哈哈 哈哈")),
+      (QStringList { QStringLiteral("哈哈哈"), QStringLiteral("哈哈"), QStringLiteral("哈") }));
+}
+
+void Tests::hanVariants()
+{
+   QCOMPARE(HanVariants::toSimplified(U'電'), U'电');
+   QCOMPARE(HanVariants::toSimplified(U'电'), U'电');
+   QCOMPARE(HanVariants::toSimplified(U'發'), U'发');
+   QCOMPARE(HanVariants::toSimplified(U'髮'), U'发');
+   QCOMPARE(HanVariants::toSimplified(U'的'), U'的'); // Same character in both forms.
+   QCOMPARE(HanVariants::toSimplified(U'a'), U'a');
+   QCOMPARE(HanVariants::toSimplified(U'\0'), U'\0');
+   QCOMPARE(HanVariants::toSimplified(U'\U0010FFFF'), U'\U0010FFFF');
+
+   // The table is sorted and a simplified character has no other simplified form.
+   const auto end = std::end(TRADITIONAL_TO_SIMPLIFIED);
+   QVERIFY(std::is_sorted(std::begin(TRADITIONAL_TO_SIMPLIFIED), end, [](const HanVariant& v1, const HanVariant& v2) { return v1.traditional < v2.traditional; }));
+   for (const HanVariant& variant : TRADITIONAL_TO_SIMPLIFIED)
+   {
+      QVERIFY(variant.traditional != variant.simplified);
+      QCOMPARE(HanVariants::toSimplified(variant.traditional), variant.simplified);
+      QCOMPARE(HanVariants::toSimplified(variant.simplified), variant.simplified);
+   }
+
+   // The texts are folded to the simplified form whatever theirs.
+   QCOMPARE(StringUtils::toLowerAndRemoveAccents(QStringLiteral("電影")), QStringLiteral("电影"));
+   QCOMPARE(StringUtils::toLowerAndRemoveAccents(QStringLiteral("电影")), QStringLiteral("电影"));
+   QCOMPARE(StringUtils::splitInWords(QStringLiteral("臥虎藏龍.Crouching Tiger")), (QStringList { QStringLiteral("卧虎藏龙"), "crouching", "tiger" }));
+   QCOMPARE(StringUtils::toLowerAndRemoveAccents(QStringLiteral("\uF9C4")), QStringLiteral("龙")); // The compatibility ideograph of 龍.
+   QCOMPARE(StringUtils::toLowerAndRemoveAccents(QStringLiteral("日本語 かな カナ 한글")), QStringLiteral("日本语 かな カナ 한글"));
 }
 
 void Tests::normalizeDevanagari()
@@ -412,6 +479,8 @@ void Tests::normalizeSearchPositions_data()
    QTest::newRow("surrogate") << QStringLiteral("\U00010400") << QStringLiteral("\U00010428") << QList<int> { 0, 0, 2 };
    QTest::newRow("devanagari-nukta") << QStringLiteral("फ़ि") << QStringLiteral("फि") << QList<int> { 0, 0, 2 };
    QTest::newRow("devanagari-digits") << QStringLiteral("२०") << QString("20") << QList<int> { 0, 1, 2 };
+   QTest::newRow("traditional-han") << QStringLiteral("電影a") << QStringLiteral("电影a") << QList<int> { 0, 1, 2, 3 };
+   QTest::newRow("traditional-han-supplementary") << QStringLiteral("\u35F2a") << QStringLiteral("\U00020D7Ea") << QList<int> { 0, 0, 1, 2 };
    // The conjunct न्दी is a single grapheme (Unicode 15.1 Indic conjunct break rule).
    QTest::newRow("devanagari-nasal") << QStringLiteral("हिन्दी") << QStringLiteral("हिंदी") << QList<int> { 0, 0, 2, 2, 2, 6 };
 }

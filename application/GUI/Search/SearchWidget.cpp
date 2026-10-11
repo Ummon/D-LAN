@@ -228,6 +228,10 @@ QString SearchDelegate::toHtmlText(const QString& text) const
          }
       if (subWordPos != pos)
          highlightWord(subWordPos, foldedText.mid(subWordPos, nextWord - subWordPos));
+
+      // And its suffixes beginning with a Han character.
+      for (const int suffixPos : Common::StringUtils::hanSuffixPositions(word))
+         highlightWord(pos + suffixPos, word.mid(suffixPos));
    }
 
    if (partsToHighlight.isEmpty())

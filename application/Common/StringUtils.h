@@ -33,6 +33,7 @@ namespace Common
       static QStringList splitInWords(const QString& words);
       static QStringList splitInWordsAndSubWords(const QString& words);
       static QList<int> subWordBoundaries(const QString& str);
+      static QList<int> hanSuffixPositions(const QString& word);
       static QStringList splitArguments(const QString& str);
 
       static bool isKorean(const QString& str);

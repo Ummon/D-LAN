@@ -45,7 +45,10 @@ private slots:
    void splitInWordsUnicode();
    void subWordBoundaries_data();
    void subWordBoundaries();
+   void hanSuffixPositions_data();
+   void hanSuffixPositions();
    void splitInWordsAndSubWords();
+   void hanVariants();
    void normalizeSearchWords();
    void normalizeDevanagari();
    void normalizeSearchPositions_data();

@@ -251,12 +251,14 @@ void WordIndexTests::subWords()
    QCOMPARE(search("naruto"), (QList<int> { 4 }));
    QCOMPARE(search(QStringLiteral("第")), (QList<int> { 4 }));
    QCOMPARE(search(QStringLiteral("naruto第3話")), (QList<int> { 4 }));
-   QVERIFY(search(QStringLiteral("話")).isEmpty()); // The digits don't begin a sub-word.
+   QCOMPARE(search(QStringLiteral("話")), (QList<int> { 4 })); // The digits don't begin a sub-word but a Han character begins a suffix.
+   QVERIFY(search(QStringLiteral("3話")).isEmpty());
    QCOMPARE(search(QStringLiteral("巨人")), (QList<int> { 5 }));
    QCOMPARE(search(QStringLiteral("巨")), (QList<int> { 5 }));
    QCOMPARE(search(QStringLiteral("の")), (QList<int> { 5 }));
    QCOMPARE(search(QStringLiteral("進撃の")), (QList<int> { 5 }));
-   QVERIFY(search(QStringLiteral("撃")).isEmpty());
+   QCOMPARE(search(QStringLiteral("撃")), (QList<int> { 5 }));
+   QCOMPARE(search(QStringLiteral("撃の巨")), (QList<int> { 5 }));
    QCOMPARE(search(QStringLiteral("방")), (QList<int> { 6 }));
    QCOMPARE(search("bts"), (QList<int> { 6 }));
 
@@ -275,6 +277,79 @@ void WordIndexTests::subWords()
    QVERIFY(index.rmItem(words(naruto), 4));
    QVERIFY(index.rmItem(words(titan), 5));
    QVERIFY(index.rmItem(words(bts), 6));
+   QCOMPARE(index.toStringLog(), WordIndex<int>().toStringLog());
+}
+
+/**
+  * The Chinese words aren't separated: a name is found from any of its parts, whatever the form of the characters.
+  */
+void WordIndexTests::chinese()
+{
+   WordIndex<int> index;
+   const auto words = [](const QString& name) {
+      return Common::StringUtils::splitInWordsAndSubWords(name);
+   };
+   const auto search = [&](const QString& terms) {
+      QList<int> result = WordIndex<int>::resultToList(index.search(Common::StringUtils::splitInWords(terms)));
+      std::sort(result.begin(), result.end());
+      return result;
+   };
+   const QString wanderingEarth = QStringLiteral("流浪地球2.2023.1080p.国语中字.mkv");
+   const QString farewell = QStringLiteral("《霸王別姬》1993.mkv"); // Traditional.
+   const QString earth = QStringLiteral("地球脉动.第一季.mp4");
+   const QString dream = QStringLiteral("紅樓夢 第01集.avi"); // Traditional.
+   index.addItem(words(wanderingEarth), 1);
+   index.addItem(words(farewell), 2);
+   index.addItem(words(earth), 3);
+   index.addItem(words(dream), 4);
+
+   // From the beginning, the middle or the end of a name.
+   QCOMPARE(search(QStringLiteral("流浪")), (QList<int> { 1 }));
+   QCOMPARE(search(QStringLiteral("流浪地球")), (QList<int> { 1 }));
+   QCOMPARE(search(QStringLiteral("地球")), (QList<int> { 1, 3 }));
+   QCOMPARE(search(QStringLiteral("地球2")), (QList<int> { 1 }));
+   QCOMPARE(search(QStringLiteral("球")), (QList<int> { 1, 3 }));
+   QCOMPARE(search(QStringLiteral("中字")), (QList<int> { 1 }));
+   QCOMPARE(search(QStringLiteral("字")), (QList<int> { 1 }));
+   QCOMPARE(search(QStringLiteral("脉动")), (QList<int> { 3 }));
+   QCOMPARE(search(QStringLiteral("一季")), (QList<int> { 3 }));
+   QCOMPARE(search(QStringLiteral("集")), (QList<int> { 4 }));
+
+   // The characters have to follow each other.
+   QVERIFY(search(QStringLiteral("流地")).isEmpty());
+   QVERIFY(search(QStringLiteral("球地")).isEmpty());
+   QVERIFY(search(QStringLiteral("地球3")).isEmpty());
+
+   // A whole word is a better match than a part of it.
+   QCOMPARE(index.search(QStringLiteral("流浪地球2")).first().level, 0);
+   QCOMPARE(index.search(QStringLiteral("流浪")).first().level, 1);
+   QCOMPARE(index.search(QStringLiteral("地球")).size(), 2);
+
+   // Several terms.
+   QCOMPARE(WordIndex<int>::resultToList(index.search(Common::StringUtils::splitInWords(QStringLiteral("地球 国语")))), (QList<int> { 1, 3 }));
+   QCOMPARE(WordIndex<int>::resultToList(index.search(Common::StringUtils::splitInWords(QStringLiteral("地球 第一季")))), (QList<int> { 3, 1 }));
+
+   // Simplified terms find traditional names and the other way around.
+   QCOMPARE(search(QStringLiteral("霸王别姬")), (QList<int> { 2 }));
+   QCOMPARE(search(QStringLiteral("霸王別姬")), (QList<int> { 2 }));
+   QCOMPARE(search(QStringLiteral("别姬")), (QList<int> { 2 }));
+   QCOMPARE(search(QStringLiteral("別姬")), (QList<int> { 2 }));
+   QCOMPARE(search(QStringLiteral("红楼梦")), (QList<int> { 4 }));
+   QCOMPARE(search(QStringLiteral("楼梦")), (QList<int> { 4 }));
+   QCOMPARE(search(QStringLiteral("國語")), (QList<int> { 1 }));
+   QCOMPARE(search(QStringLiteral("地球脈動")), (QList<int> { 3 }));
+   QCOMPARE(search(QStringLiteral("脈動")), (QList<int> { 3 }));
+
+   // The suffixes are removed with the words.
+   QVERIFY(index.rmItem(words(wanderingEarth), 1));
+   QCOMPARE(search(QStringLiteral("地球")), (QList<int> { 3 }));
+   index.renameItem(words(earth), words(QStringLiteral("藍色星球.mp4")), 3);
+   QVERIFY(search(QStringLiteral("地球")).isEmpty());
+   QCOMPARE(search(QStringLiteral("星球")), (QList<int> { 3 }));
+   QCOMPARE(search(QStringLiteral("蓝色")), (QList<int> { 3 }));
+   QVERIFY(index.rmItem(words(QStringLiteral("藍色星球.mp4")), 3));
+   QVERIFY(index.rmItem(words(farewell), 2));
+   QVERIFY(index.rmItem(words(dream), 4));
    QCOMPARE(index.toStringLog(), WordIndex<int>().toStringLog());
 }
 

@@ -39,6 +39,7 @@ private slots:
    void normalizedKanaAndHangul();
    void normalizedDevanagari();
    void subWords();
+   void chinese();
    void prefixGraphemeBoundaries_data();
    void prefixGraphemeBoundaries();
    void singleWordResultLimits();

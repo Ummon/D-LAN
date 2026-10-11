@@ -21,6 +21,7 @@ add_library(Common STATIC
    FileLocker.cpp
    ConsoleReader.cpp
    StringUtils.cpp
+   HanVariants.cpp
    Network/Message.cpp
    KnownExtensions.cpp
    Hash_noShare.cpp
@@ -49,6 +50,8 @@ add_library(Common STATIC
    FileLocker.h
    ConsoleReader.h
    StringUtils.h
+   HanVariants.h
+   HanVariantsData.h
    BloomFilter.h
    Network/Message.h
    Network/InterfacePolicy.h

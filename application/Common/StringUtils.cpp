@@ -26,6 +26,8 @@ using namespace Common;
 #include <QTextBoundaryFinder>
 #include <QVarLengthArray>
 
+#include <Common/HanVariants.h>
+
 namespace
 {
    const char16_t DEVANAGARI_CANDRABINDU = 0x0901;
@@ -114,6 +116,7 @@ namespace
   *  - Remove the zero-width joiners, they only change the rendering of a word.
   *  - Replace the non-ASCII decimal digits by their ASCII equivalent, e.g. '२०२४' => '2024'.
   *  - Devanagari: remove the nukta, replace the candrabindu and the nasal conjuncts by an anusvara.
+  *  - Replace the traditional Chinese characters by their simplified form, e.g. '電影' => '电影'.
   */
 QString StringUtils::toLowerAndRemoveAccents(const QString& str)
 {
@@ -147,6 +150,8 @@ QString StringUtils::toLowerAndRemoveAccents(const QString& str)
          baseScript = QChar::script(c);
          if (category == QChar::Number_DecimalDigit)
             c = u'0' + QChar::digitValue(c);
+         else if (baseScript == QChar::Script_Han)
+            c = HanVariants::toSimplified(c);
       }
       result.append(QChar::fromUcs4(c));
    }
@@ -222,35 +227,77 @@ QStringList StringUtils::splitInWords(const QString& words)
 }
 
 /**
-  * Like 'splitInWords(..)' plus the sub-words of each word, see 'subWordBoundaries(..)'.
-  * The words are kept, their sub-words are only another way to find them.
+  * Like 'splitInWords(..)' plus the sub-words of each word, see 'subWordBoundaries(..)',
+  * and the suffixes of each word beginning with a Han character, see 'hanSuffixPositions(..)'.
+  * The words are kept, their sub-words and their suffixes are only another way to find them.
   * It's used to index a name: the searched terms aren't split in sub-words.
   * @example "superGirl.avi" => ["supergirl", "avi", "super", "girl"].
+  * @example "流浪地球.mkv" => ["流浪地球", "mkv", "浪地球", "地球", "球"].
   */
 QStringList StringUtils::splitInWordsAndSubWords(const QString& words)
 {
    QStringList result = StringUtils::splitInWords(words);
+   const qsizetype nbWords = result.size();
 
    const QList<int> boundaries = StringUtils::subWordBoundaries(words);
-   if (boundaries.isEmpty())
-      return result;
-
-   // A boundary always precedes a letter, never a mark: separating the sub-words doesn't change the way they are folded.
-   QString separated;
-   separated.reserve(words.size() + boundaries.size());
-   int previous = 0;
-   for (const int boundary : boundaries)
+   if (!boundaries.isEmpty())
    {
-      separated.append(QStringView(words).sliced(previous, boundary - previous)).append(u' ');
-      previous = boundary;
-   }
-   separated.append(QStringView(words).sliced(previous));
+      // A boundary always precedes a letter, never a mark: separating the sub-words doesn't change the way they are folded.
+      QString separated;
+      separated.reserve(words.size() + boundaries.size());
+      int previous = 0;
+      for (const int boundary : boundaries)
+      {
+         separated.append(QStringView(words).sliced(previous, boundary - previous)).append(u' ');
+         previous = boundary;
+      }
+      separated.append(QStringView(words).sliced(previous));
 
-   for (const QString& subWord : StringUtils::splitInWords(separated))
-      if (!result.contains(subWord))
-         result << subWord;
+      for (const QString& subWord : StringUtils::splitInWords(separated))
+         if (!result.contains(subWord))
+            result << subWord;
+   }
+
+   // Only the suffixes of the words: the ones of a sub-word are the beginning of them.
+   for (qsizetype i = 0; i < nbWords; ++i)
+   {
+      const QString word = result.at(i);
+      for (const int position : StringUtils::hanSuffixPositions(word))
+      {
+         const QString suffix = word.sliced(position);
+         if (!result.contains(suffix))
+            result << suffix;
+      }
+   }
 
    return result;
+}
+
+/**
+  * Return the positions in 'word', in ascending order, of its Han characters (Chinese, Japanese kanji) except the first
+  * character of the word.
+  * The words of these languages aren't separated: the name of a film like 流浪地球 is seen as a single word although
+  * it's made of 流浪 (wandering) and 地球 (earth). Indexing the suffix beginning at each of these positions allows
+  * to find a name from any of its parts: "流浪地球" => "浪地球", "地球", "球".
+  * 'word' is a folded word as given by 'splitInWords(..)'.
+  */
+QList<int> StringUtils::hanSuffixPositions(const QString& word)
+{
+   QList<int> positions;
+   for (qsizetype i = 0; i < word.size(); ++i)
+   {
+      const int position = static_cast<int>(i);
+      char32_t c = word.at(i).unicode();
+      if (word.at(i).isHighSurrogate() && i + 1 < word.size() && word.at(i + 1).isLowSurrogate())
+      {
+         c = QChar::surrogateToUcs4(word.at(i), word.at(i + 1));
+         ++i;
+      }
+
+      if (position > 0 && QChar::script(c) == QChar::Script_Han)
+         positions << position;
+   }
+   return positions;
 }
 
 /**
