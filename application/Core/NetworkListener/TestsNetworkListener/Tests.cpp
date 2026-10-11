@@ -62,16 +62,23 @@ static const int DISCOVERY_TIMEOUT = 5000; // [ms]
 
 namespace
 {
-   class PendingChunk : public DM::IChunkDownloader
+   // A chunk to download, it remembers the peers known to own it.
+   class NeededChunk : public DM::IChunkDownloader
    {
    public:
-      Common::Hash getHash() const override { return Common::Hash(); }
-      void addPeer(PM::IPeer*) override {}
-      void rmPeer(PM::IPeer*) override {}
+      NeededChunk(const Common::Hash& hash) : hash(hash) {}
+      Common::Hash getHash() const override { return this->hash; }
+      void addPeer(PM::IPeer* peer) override { this->owners.insert(peer->getID()); }
+      void rmPeer(PM::IPeer* peer) override { this->owners.remove(peer->getID()); }
+
+      QSet<Common::Hash> owners;
+
+   private:
+      const Common::Hash hash;
    };
 
-   // Always supplies as many hashes as requested, exercising a full heartbeat.
-   class BusyDownloadManager : public DM::IDownloadManager
+   // Only supplies the chunks to ask to the other peers.
+   class NeededChunksDownloadManager : public DM::IDownloadManager
    {
    public:
       void addDownload(const Protos::Common::Entry&, PM::IPeer*, const Common::Hash&, const QString&) override {}
@@ -84,16 +91,20 @@ namespace
       quint64 getDownloadRate() override { return 0; }
       QList<QSharedPointer<DM::IChunkDownloader>> getTheFirstUnfinishedChunks(int n) override
       {
-         QList<QSharedPointer<DM::IChunkDownloader>> chunks;
-         const QSharedPointer<DM::IChunkDownloader> chunk(new PendingChunk());
-         for (int i = 0; i < n; ++i)
-            chunks << chunk;
-         return chunks;
+         QList<QSharedPointer<DM::IChunkDownloader>> unfinishedChunks;
+         for (int i = 0; i < n && i < this->chunks.size(); ++i)
+            unfinishedChunks << this->chunks[i];
+         if (!unfinishedChunks.isEmpty())
+            ++this->nbRequests;
+         return unfinishedChunks;
       }
       QList<QSharedPointer<DM::IChunkDownloader>> getTheOldestUnfinishedChunks(int n) override
       {
          return this->getTheFirstUnfinishedChunks(n);
       }
+
+      QList<QSharedPointer<NeededChunk>> chunks;
+      int nbRequests = 0; // The number of times some chunks have been supplied: a 'ChunksNeeded' message is sent each time.
    };
 }
 
@@ -130,7 +141,10 @@ void Tests::initTestCase()
    });
 }
 
-Tests::Instance Tests::createInstance(const Common::Hash& ID, const QString& nick)
+/**
+  * @param downloadManager If null, a real download manager is created.
+  */
+Tests::Instance Tests::createInstance(const Common::Hash& ID, const QString& nick, QSharedPointer<DM::IDownloadManager> downloadManager)
 {
    Instance instance;
 
@@ -142,7 +156,7 @@ Tests::Instance Tests::createInstance(const Common::Hash& ID, const QString& nic
    instance.peerManager->setNick(nick);
 
    instance.uploadManager = UM::Builder::newUploadManager(instance.peerManager);
-   instance.downloadManager = DM::Builder::newDownloadManager(instance.fileManager, instance.peerManager);
+   instance.downloadManager = downloadManager ? downloadManager : DM::Builder::newDownloadManager(instance.fileManager, instance.peerManager);
    instance.networkListener = NL::Builder::newNetworkListener(instance.fileManager, instance.peerManager, instance.uploadManager, instance.downloadManager);
 
    return instance;
@@ -163,6 +177,12 @@ bool Tests::peersDiscovered() const
             return false;
       }
    return true;
+}
+
+bool Tests::isPeerAvailable(const Instance& instance, const Common::Hash& ID)
+{
+   PM::IPeer* peer = instance.peerManager->getPeer(ID);
+   return peer && peer->isAvailable();
 }
 
 void Tests::multicastGroupIPv4()
@@ -386,6 +406,20 @@ void Tests::networkConfigurationSnapshot()
       selected.removeLast();
       QVERIFY(Utils::getNetworkConfiguration(selected) != configuration);
    }
+}
+
+void Tests::maxUnfragmentedDatagramSize()
+{
+   // Without any interface: the MTU of Ethernet minus the IP and UDP headers.
+   QCOMPARE(Utils::getMaxUnfragmentedDatagramSize({}, QAbstractSocket::IPv4Protocol), 1500 - 20 - 8);
+   QCOMPARE(Utils::getMaxUnfragmentedDatagramSize({}, QAbstractSocket::IPv6Protocol), 1500 - 40 - 8);
+
+   // Whatever the interfaces are (the MTU of some may be unknown, tiny or huge), the size stays in a usable range.
+   const auto interfaces = QNetworkInterface::allInterfaces();
+   const int sizeIPv4 = Utils::getMaxUnfragmentedDatagramSize(interfaces, QAbstractSocket::IPv4Protocol);
+   QVERIFY(sizeIPv4 >= 576 - 20 - 8);
+   QVERIFY(sizeIPv4 <= 1500 - 20 - 8);
+   QCOMPARE(Utils::getMaxUnfragmentedDatagramSize(interfaces, QAbstractSocket::IPv6Protocol), sizeIPv4 - 20);
 }
 
 void Tests::sendToUnknownPeer()
@@ -985,13 +1019,17 @@ void Tests::unavailableMulticastPeer()
    chat.mutable_messages(0)->set_id(QRandomGenerator64::global()->generate64());
    this->receivedMessages.clear();
    QCOMPARE(sender->send(Common::MessageHeader::CORE_CHAT_MESSAGES, chat), INetworkListener::SendStatus::OK);
+   Protos::Core::ChunksNeeded chunksNeeded;
+   chunksNeeded.set_tag(QRandomGenerator64::global()->generate64());
+   chunksNeeded.add_chunks()->set_hash(Common::Hash::rand().getData(), Common::Hash::HASH_SIZE);
+   QCOMPARE(sender->send(Common::MessageHeader::CORE_CHUNKS_NEEDED, chunksNeeded), INetworkListener::SendStatus::OK);
    QTRY_VERIFY_WITH_TIMEOUT(receivedType(Common::MessageHeader::CORE_CHAT_MESSAGES), DISCOVERY_TIMEOUT);
+   QTRY_VERIFY_WITH_TIMEOUT(receivedType(Common::MessageHeader::CORE_CHUNKS_NEEDED), DISCOVERY_TIMEOUT);
 
    Protos::Core::IMAlive heartbeat;
    heartbeat.set_version(blocked ? version : version + 1);
    heartbeat.set_port(port);
    heartbeat.set_nick("unavailable peer");
-   heartbeat.set_tag(123456);
    if (blocked)
       peer->block(60000, "NetworkListener regression test");
    QCOMPARE(sender->send(Common::MessageHeader::CORE_IM_ALIVE, heartbeat), INetworkListener::SendStatus::OK);
@@ -1007,6 +1045,8 @@ void Tests::unavailableMulticastPeer()
    find.set_tag(QRandomGenerator64::global()->generate64());
    find.mutable_pattern()->set_pattern("unavailable peer search");
    QCOMPARE(sender->send(Common::MessageHeader::CORE_FIND, find), INetworkListener::SendStatus::OK);
+   chunksNeeded.set_tag(QRandomGenerator64::global()->generate64());
+   QCOMPARE(sender->send(Common::MessageHeader::CORE_CHUNKS_NEEDED, chunksNeeded), INetworkListener::SendStatus::OK);
    // A later heartbeat must still reach consumers and update the unavailable peer.
    heartbeat.set_nick("still unavailable");
    QCOMPARE(sender->send(Common::MessageHeader::CORE_IM_ALIVE, heartbeat), INetworkListener::SendStatus::OK);
@@ -1015,6 +1055,7 @@ void Tests::unavailableMulticastPeer()
    QVERIFY(receivedType(Common::MessageHeader::CORE_IM_ALIVE));
    QVERIFY(!receivedType(Common::MessageHeader::CORE_CHAT_MESSAGES));
    QVERIFY(!receivedType(Common::MessageHeader::CORE_FIND));
+   QVERIFY(!receivedType(Common::MessageHeader::CORE_CHUNKS_NEEDED));
    QVERIFY(!peer->isAvailable());
 
    QCOMPARE(sender->send(Common::MessageHeader::CORE_GOODBYE, Protos::Common::Null()), INetworkListener::SendStatus::OK);
@@ -1050,22 +1091,24 @@ void Tests::invalidIMAlivePort()
       return false;
    };
 
+   // A nick for each row: an identical datagram would be taken for a copy of the one sent by the previous row.
+   const std::string invalidNick = std::string("invalid port: ") + QTest::currentDataTag();
+   const std::string validNick = std::string("valid port: ") + QTest::currentDataTag();
+
    Protos::Core::IMAlive heartbeat;
    heartbeat.set_version(peer->getProtocolVersion());
-   heartbeat.set_nick("invalid port");
+   heartbeat.set_nick(invalidNick);
    heartbeat.set_port(invalidPort);
-   // As a real heartbeat: an identical datagram would be taken for a copy of the one sent by the previous row.
-   heartbeat.set_tag(QRandomGenerator64::global()->generate64());
    this->receivedMessages.clear();
    QCOMPARE(sender->send(Common::MessageHeader::CORE_IM_ALIVE, heartbeat), INetworkListener::SendStatus::OK);
 
    // A valid heartbeat sent afterwards marks the end of the invalid one's processing.
-   heartbeat.set_nick("valid port");
+   heartbeat.set_nick(validNick);
    heartbeat.set_port(port);
    QCOMPARE(sender->send(Common::MessageHeader::CORE_IM_ALIVE, heartbeat), INetworkListener::SendStatus::OK);
-   QTRY_VERIFY_WITH_TIMEOUT(receivedNick("valid port"), DISCOVERY_TIMEOUT);
+   QTRY_VERIFY_WITH_TIMEOUT(receivedNick(validNick), DISCOVERY_TIMEOUT);
 
-   QVERIFY(!receivedNick("invalid port"));
+   QVERIFY(!receivedNick(invalidNick));
    QCOMPARE(peer->getPort(), port);
 }
 
@@ -1084,7 +1127,7 @@ void Tests::heartbeatWithChatRooms_data()
    QStringList shortRooms;
    for (int i = 0; i < 4000; ++i)
       shortRooms << QString("%1").arg(i, 4, 10, QChar('0'));
-   QTest::newRow("short rooms filling hash space") << shortRooms << true;
+   QTest::newRow("too many short rooms") << shortRooms << true;
 }
 
 void Tests::heartbeatWithChatRooms()
@@ -1096,46 +1139,235 @@ void Tests::heartbeatWithChatRooms()
    QFETCH(bool, expectOmissions);
 
    this->receivedMessages.clear();
-   quint64 tag = 0;
+   // The second instance already has a listener sending heartbeats with the same ID: the ones of this listener are recognized by their port.
+   quint32 port = 0;
    const Instance& instance = this->instances[1];
-   const auto busyDownloads = QSharedPointer<DM::IDownloadManager>(new BusyDownloadManager());
    const auto networkListener = NL::Builder::newNetworkListener(
-      instance.fileManager, instance.peerManager, instance.uploadManager, busyDownloads);
+      instance.fileManager, instance.peerManager, instance.uploadManager, instance.downloadManager);
    // A scoped context disconnects the callback even if an assertion fails.
    QObject context;
    connect(networkListener.data(), &INetworkListener::IMAliveMessageToBeSend,
       &context, [&](Protos::Core::IMAlive& message) {
-         tag = message.tag();
+         port = message.port();
          for (const QString& room : roomNames)
             message.add_chat_rooms(room.toStdString());
       });
 
+   auto isHeartbeat = [&](const Common::Message& message) {
+      return
+         port != 0 &&
+         message.getHeader().getType() == Common::MessageHeader::CORE_IM_ALIVE &&
+         message.getHeader().getSenderID() == this->peerIDs[1] &&
+         message.getMessage<Protos::Core::IMAlive>().port() == port;
+   };
    auto receivedHeartbeat = [&]() {
-      for (const Common::Message& message : std::as_const(this->receivedMessages))
-         if (message.getHeader().getType() == Common::MessageHeader::CORE_IM_ALIVE &&
-             message.getHeader().getSenderID() == this->peerIDs[1] &&
-             message.getMessage<Protos::Core::IMAlive>().tag() == tag)
-            return true;
-      return false;
+      return std::any_of(this->receivedMessages.cbegin(), this->receivedMessages.cend(), isHeartbeat);
    };
    QTRY_VERIFY_WITH_TIMEOUT(receivedHeartbeat(), 2 * DISCOVERY_TIMEOUT);
 
+   const quint32 maxDatagramSize = SETTINGS.get<quint32>("max_udp_datagram_size");
    for (const Common::Message& message : std::as_const(this->receivedMessages))
    {
-      if (message.getHeader().getType() != Common::MessageHeader::CORE_IM_ALIVE ||
-          message.getHeader().getSenderID() != this->peerIDs[1])
+      if (!isHeartbeat(message))
          continue;
       const auto& heartbeat = message.getMessage<Protos::Core::IMAlive>();
-      if (heartbeat.tag() != tag)
-         continue;
-      QVERIFY(heartbeat.ByteSizeLong() + Common::MessageHeader::HEADER_SIZE <= SETTINGS.get<quint32>("max_udp_datagram_size"));
+      QVERIFY(heartbeat.ByteSizeLong() + Common::MessageHeader::HEADER_SIZE <= maxDatagramSize);
       QCOMPARE(heartbeat.chat_rooms_size() < roomNames.size(), expectOmissions);
       for (int i = 0; i < heartbeat.chat_rooms_size(); ++i)
          QCOMPARE(QString::fromStdString(heartbeat.chat_rooms(i)), roomNames[i]);
       if (roomNames.size() > 1)
          QVERIFY(heartbeat.chat_rooms_size() > 0);
-      QVERIFY(heartbeat.chunks_size() >= 4);
+      if (expectOmissions)
+      {
+         // The whole datagram is available for the rooms: the first omitted one doesn't fit.
+         Protos::Core::IMAlive larger(heartbeat);
+         larger.add_chat_rooms(roomNames[heartbeat.chat_rooms_size()].toStdString());
+         QVERIFY(larger.ByteSizeLong() + Common::MessageHeader::HEADER_SIZE > maxDatagramSize);
+      }
    }
+}
+
+/**
+  * The chunks to download are asked to all the other peers with a 'ChunksNeeded' message, a peer owning
+  * at least one of them replies with a 'ChunksOwned' message.
+  */
+void Tests::chunksNeeded()
+{
+#ifndef DEBUG
+   QSKIP("The multicast loopback is only enabled in debug");
+#endif
+   // The shared entries are saved in the settings, which are common to all the instances.
+   const Common::Hash originalID = SETTINGS.get<Common::Hash>("peer_id");
+   const QList<Protos::Common::SharedEntry> originalSharedEntries = SETTINGS.getRepeated<Protos::Common::SharedEntry>("shared_entries");
+   const auto restore = qScopeGuard([&]() {
+      SETTINGS.set("peer_id", originalID);
+      SETTINGS.set("shared_entries", originalSharedEntries);
+   });
+
+   // A file made of a single chunk.
+   QTemporaryDir directory;
+   QVERIFY(directory.isValid());
+   const QByteArray data(12345, 'z');
+   QFile file(directory.filePath("owned.bin"));
+   QVERIFY(file.open(QIODevice::WriteOnly));
+   QCOMPARE(file.write(data), data.size());
+   file.close();
+   Common::Hasher hasher;
+   hasher.addData(data);
+   const Common::Hash ownedHash = hasher.getResult();
+
+   // The requester is created first, to not share the file of the owner.
+   const Common::Hash requesterID = Common::Hash::rand();
+   const auto downloads = QSharedPointer<NeededChunksDownloadManager>::create();
+   const Instance requester = this->createInstance(requesterID, "chunks requester", downloads);
+
+   const Common::Hash ownerID = Common::Hash::rand();
+   const Instance owner = this->createInstance(ownerID, "chunks owner");
+   owner.fileManager->setSharedPaths({ { "owned", file.fileName() } });
+   QTRY_VERIFY_WITH_TIMEOUT(!owner.fileManager->getChunk(ownedHash).isNull(), 10000);
+   QVERIFY(requester.fileManager->getChunk(ownedHash).isNull());
+
+   QList<Protos::Core::ChunksNeeded> requests; // Received by the owner.
+   QList<Protos::Core::ChunksOwned> replies; // Received by the requester.
+   QObject context;
+   connect(owner.networkListener.data(), &INetworkListener::received, &context, [&](const Common::Message& message) {
+      if (message.getHeader().getType() == Common::MessageHeader::CORE_CHUNKS_NEEDED && message.getHeader().getSenderID() == requesterID)
+         requests << message.getMessage<Protos::Core::ChunksNeeded>();
+   });
+   connect(requester.networkListener.data(), &INetworkListener::received, &context, [&](const Common::Message& message) {
+      if (message.getHeader().getType() == Common::MessageHeader::CORE_CHUNKS_OWNED && message.getHeader().getSenderID() == ownerID)
+         replies << message.getMessage<Protos::Core::ChunksOwned>();
+   });
+   // The request matching the given reply.
+   auto requestOf = [&](const Protos::Core::ChunksOwned& reply) {
+      for (const auto& request : std::as_const(requests))
+         if (request.tag() == reply.tag())
+            return request;
+      return Protos::Core::ChunksNeeded();
+   };
+   auto toHash = [](const Protos::Common::Hash& hash) { return Common::Hash(hash.hash()); };
+
+   // The messages of an unknown peer are ignored.
+   QTRY_VERIFY_WITH_TIMEOUT(isPeerAvailable(owner, requesterID) && isPeerAvailable(requester, ownerID), 2 * DISCOVERY_TIMEOUT);
+
+   // Nothing to download: nothing is asked.
+   QTest::qWait(2 * Common::Constants::CHUNKS_NEEDED_PERIOD);
+   QVERIFY(requests.isEmpty());
+   QVERIFY(replies.isEmpty());
+
+   const auto unknownChunk = QSharedPointer<NeededChunk>::create(Common::Hash::rand());
+   const auto ownedChunk = QSharedPointer<NeededChunk>::create(ownedHash);
+   downloads->chunks << unknownChunk << ownedChunk;
+   QTRY_VERIFY_WITH_TIMEOUT(!replies.isEmpty(), DISCOVERY_TIMEOUT);
+
+   // The reply repeats the tag of the request and gives the state of each of its chunks, in the same order.
+   Protos::Core::ChunksNeeded request = requestOf(replies.first());
+   QVERIFY(request.tag() != 0);
+   QCOMPARE(request.chunks_size(), 2);
+   QCOMPARE(toHash(request.chunks(0)), unknownChunk->getHash());
+   QCOMPARE(toHash(request.chunks(1)), ownedHash);
+   QCOMPARE(replies.first().chunk_state_size(), 2);
+   QVERIFY(!replies.first().chunk_state(0));
+   QVERIFY(replies.first().chunk_state(1));
+   QCOMPARE(ownedChunk->owners, QSet<Common::Hash> { ownerID });
+   QVERIFY(unknownChunk->owners.isEmpty());
+
+   // More chunks than a datagram can hold without being fragmented: it is filled with as many hashes as possible.
+   downloads->chunks.clear();
+   downloads->chunks << ownedChunk;
+   for (int i = 0; i < 1000; ++i)
+      downloads->chunks << QSharedPointer<NeededChunk>::create(Common::Hash::rand());
+   auto fullReply = [&]() {
+      return !replies.isEmpty() && replies.last().chunk_state_size() > 2;
+   };
+   QTRY_VERIFY_WITH_TIMEOUT(fullReply(), DISCOVERY_TIMEOUT);
+
+   const Protos::Core::ChunksOwned reply = replies.last();
+   request = requestOf(reply);
+   QVERIFY(request.tag() != 0);
+   const Utils::ListenTarget target = Utils::getListenTarget();
+   const int maxDatagramSize = Utils::getMaxUnfragmentedDatagramSize(target.interfaces, target.address.protocol());
+   QVERIFY(maxDatagramSize < int(SETTINGS.get<quint32>("max_udp_datagram_size")));
+   const int datagramSize = Common::MessageHeader::HEADER_SIZE + request.ByteSizeLong();
+   QVERIFY(datagramSize <= maxDatagramSize);
+   const int hashSize = request.chunks(0).ByteSizeLong() + 2; // Two bytes for the field number and the size.
+   const int maxTagSize = 11; // One byte for the field number and ten for the largest value.
+   QCOMPARE(request.chunks_size(), (maxDatagramSize - Common::MessageHeader::HEADER_SIZE - maxTagSize) / hashSize);
+   QVERIFY(request.chunks_size() < downloads->chunks.size());
+   for (int i = 0; i < request.chunks_size(); ++i)
+      QCOMPARE(toHash(request.chunks(i)), downloads->chunks[i]->getHash());
+   QCOMPARE(reply.chunk_state_size(), request.chunks_size());
+   QVERIFY(reply.chunk_state(0));
+   for (int i = 1; i < reply.chunk_state_size(); ++i)
+      QVERIFY(!reply.chunk_state(i));
+}
+
+/**
+  * A 'ChunksOwned' message may arrive after the next 'ChunksNeeded' messages have been sent:
+  * the reply to one of the last three is accepted.
+  */
+void Tests::lateChunksOwned()
+{
+#ifndef DEBUG
+   QSKIP("The multicast loopback is only enabled in debug");
+#endif
+   const Common::Hash originalID = SETTINGS.get<Common::Hash>("peer_id");
+   const auto restore = qScopeGuard([&]() { SETTINGS.set("peer_id", originalID); });
+
+   const Common::Hash requesterID = Common::Hash::rand();
+   const auto downloads = QSharedPointer<NeededChunksDownloadManager>::create();
+   const Instance requester = this->createInstance(requesterID, "chunks requester", downloads);
+
+   // It shares nothing and never replies by itself: the replies are sent by the test.
+   const Common::Hash ownerID = Common::Hash::rand();
+   const Instance owner = this->createInstance(ownerID, "late chunks owner");
+
+   QList<quint64> tags; // Of the requests received by the owner.
+   QList<Protos::Core::ChunksOwned> replies; // Accepted by the requester.
+   QObject context;
+   connect(owner.networkListener.data(), &INetworkListener::received, &context, [&](const Common::Message& message) {
+      if (message.getHeader().getType() == Common::MessageHeader::CORE_CHUNKS_NEEDED && message.getHeader().getSenderID() == requesterID)
+         tags << message.getMessage<Protos::Core::ChunksNeeded>().tag();
+   });
+   connect(requester.networkListener.data(), &INetworkListener::received, &context, [&](const Common::Message& message) {
+      if (message.getHeader().getType() == Common::MessageHeader::CORE_CHUNKS_OWNED && message.getHeader().getSenderID() == ownerID)
+         replies << message.getMessage<Protos::Core::ChunksOwned>();
+   });
+   QTRY_VERIFY_WITH_TIMEOUT(isPeerAvailable(owner, requesterID) && isPeerAvailable(requester, ownerID), 2 * DISCOVERY_TIMEOUT);
+
+   const auto firstChunk = QSharedPointer<NeededChunk>::create(Common::Hash::rand());
+   const auto secondChunk = QSharedPointer<NeededChunk>::create(Common::Hash::rand());
+   downloads->chunks << firstChunk << secondChunk;
+   // Each request sent has been received: the last tags are the ones of the last requests, the next one is sent in about one period.
+   QTRY_VERIFY_WITH_TIMEOUT(tags.size() >= 4 && tags.size() == downloads->nbRequests, 6 * Common::Constants::CHUNKS_NEEDED_PERIOD);
+   const qsizetype n = tags.size();
+
+   // The reply to a request older than the last three is ignored.
+   Protos::Core::ChunksOwned reply;
+   reply.add_chunk_state(true);
+   reply.add_chunk_state(true);
+   reply.set_tag(tags[n - 4]);
+   QCOMPARE(owner.networkListener->send(Common::MessageHeader::CORE_CHUNKS_OWNED, reply, requesterID), INetworkListener::SendStatus::OK);
+
+   // The reply to the oldest of the last three is accepted.
+   reply.set_chunk_state(0, false);
+   reply.set_tag(tags[n - 3]);
+   QCOMPARE(owner.networkListener->send(Common::MessageHeader::CORE_CHUNKS_OWNED, reply, requesterID), INetworkListener::SendStatus::OK);
+
+   QTRY_VERIFY_WITH_TIMEOUT(!replies.isEmpty(), DISCOVERY_TIMEOUT);
+   QCOMPARE(replies.first().tag(), tags[n - 3]);
+   QVERIFY(firstChunk->owners.isEmpty());
+   QCOMPARE(secondChunk->owners, QSet<Common::Hash> { ownerID });
+
+   // As is the reply to the last one.
+   reply.set_chunk_state(0, true);
+   reply.set_chunk_state(1, false);
+   reply.set_tag(tags[n - 1]);
+   QCOMPARE(owner.networkListener->send(Common::MessageHeader::CORE_CHUNKS_OWNED, reply, requesterID), INetworkListener::SendStatus::OK);
+   QTRY_COMPARE_WITH_TIMEOUT(replies.size(), 2, DISCOVERY_TIMEOUT);
+   QCOMPARE(replies.last().tag(), tags[n - 1]);
+   QCOMPARE(firstChunk->owners, QSet<Common::Hash> { ownerID });
+   QVERIFY(secondChunk->owners.isEmpty());
 }
 
 void Tests::sharedUnicastPort_data()

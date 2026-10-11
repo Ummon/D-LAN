@@ -770,7 +770,7 @@ private slots:
       QCOMPARE(peer.receivedTypes.size(), 1);
       QCOMPARE(headers.size(), 2);
       QCOMPARE(headers[1].getType(), MessageHeader::GUI_STATE);
-      QCOMPARE(headers[1].getSize(), quint32(123));
+      QCOMPARE(headers[1].getPayloadSize(), quint32(123));
    }
 
    void nullWireTypeDisconnectDeletesPeer()

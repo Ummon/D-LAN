@@ -82,7 +82,6 @@ Protos::Core::Settings* createDefaultValuesSettings()
    ///// PeerManager /////
    settings->set_pending_socket_timeout(10000);
    settings->set_peer_timeout_factor(3.2);
-   settings->set_peer_imalive_period(5000);
    settings->set_idle_socket_timeout(60000);
    settings->set_max_number_idle_socket(6);
    settings->set_get_hashes_timeout(20000);
@@ -109,7 +108,6 @@ Protos::Core::Settings* createDefaultValuesSettings()
    settings->set_channel("main");
    settings->set_multicast_ttl(31);
    settings->set_max_udp_datagram_size(16356);
-   settings->set_max_imalive_throughput(1048576);
    settings->set_udp_buffer_size(163840);
    settings->set_max_number_of_search_result_to_send(300);
    settings->set_max_number_of_result_shown(5000);

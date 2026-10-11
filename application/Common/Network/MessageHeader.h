@@ -40,7 +40,9 @@ namespace Common
          // UDP.
          CORE_IM_ALIVE =                  0x0001,
          CORE_GOODBYE =                   0x00FE,
-         CORE_CHUNKS_OWNED =              0x0002,
+
+         CORE_CHUNKS_NEEDED =             0x0061,
+         CORE_CHUNKS_OWNED =              0x0062,
 
          CORE_CHAT_MESSAGES =             0x0011,
          CORE_GET_LAST_CHAT_MESSAGES =    0x0018,
@@ -107,9 +109,9 @@ namespace Common
       MessageHeader();
       MessageHeader(MessageType type, quint32 size, const Hash& senderID);
 
-      const Hash& getSenderID() const;
-      quint32 getSize() const;
       MessageType getType() const;
+      quint32 getPayloadSize() const;
+      const Hash& getSenderID() const;
 
       bool isNull() const;
       void setNull();
@@ -130,10 +132,10 @@ namespace Common
       static void writeHeader(QDataStream& stream, const MessageHeader& header);
 
       MessageType type;
-      quint32 size;
+      quint32 payloadSize;
       Hash senderID;
 
    public:
-      static constexpr int HEADER_SIZE = sizeof(MessageHeader::type) + sizeof(MessageHeader::size) + Hash::HASH_SIZE;
+      static constexpr int HEADER_SIZE = sizeof(MessageHeader::type) + sizeof(MessageHeader::payloadSize) + Hash::HASH_SIZE;
    };
 }

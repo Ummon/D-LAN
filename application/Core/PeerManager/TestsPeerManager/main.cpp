@@ -74,7 +74,6 @@ Protos::Core::Settings* createDefaultValuesSettings()
    settings->set_download_rate_valid_time_factor(50); // One-second validity for speed expiry tests.
    settings->set_pending_socket_timeout(10000);
    settings->set_peer_timeout_factor(3.2);
-   settings->set_peer_imalive_period(5000);
    settings->set_idle_socket_timeout(60000);
    settings->set_max_number_idle_socket(6);
    settings->set_get_hashes_timeout(20000);

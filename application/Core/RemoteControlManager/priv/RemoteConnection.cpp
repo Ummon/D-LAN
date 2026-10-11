@@ -528,7 +528,7 @@ bool RemoteConnection::acceptsHeader(const Common::MessageHeader& header)
 {
    return
       this->isAuthorized() ||
-      (header.getType() == Common::MessageHeader::GUI_AUTHENTICATION && header.getSize() <= Common::Constants::MAX_GUI_HANDSHAKE_MESSAGE_SIZE);
+      (header.getType() == Common::MessageHeader::GUI_AUTHENTICATION && header.getPayloadSize() <= Common::Constants::MAX_GUI_HANDSHAKE_MESSAGE_SIZE);
 }
 
 /**

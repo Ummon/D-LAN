@@ -68,7 +68,6 @@ private slots:
       Common::Global::setDataFolder(Common::Global::DataFolderType::ROAMING, this->dataDirectory.path());
       auto settings = new Protos::Core::Settings;
       settings->set_peer_timeout_factor(3);
-      settings->set_peer_imalive_period(5000);
       settings->set_remote_refresh_rate(1000);
       settings->set_delay_before_sending_log_messages(100);
       settings->set_delay_gui_connection_fail(10);

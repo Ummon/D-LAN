@@ -9,8 +9,15 @@ import "common.proto";
 package Protos.Core;
 
 message Settings {
-   reserved 3, 24, 25, 54, 90;
-   reserved "chunk_size", "save_cache_period", "check_received_data_integrity", "upload_max_nb_connections_per_peer", "salt";
+   reserved 3, 24, 25, 54, 60, 90, 91;
+   reserved
+      "chunk_size",
+      "save_cache_period",
+      "check_received_data_integrity",
+      "upload_max_nb_connections_per_peer",
+      "salt",
+      "max_imalive_throughput",
+      "peer_imalive_period";
 
    string nick = 1;
    Common.Hash peer_id = 2;
@@ -34,7 +41,7 @@ message Settings {
 
    ///// PeerManager /////
    uint32 pending_socket_timeout = 30; // [default = 10000] [ms]. When a new connection is created we wait a maximum of this period before data incoming.
-   double peer_timeout_factor = 31; // [default = 3.2] If we don't receive any 'IMAlive' message from a peer during peer_timeout_factor * peer_imalive_period the peer is considering as dead.
+   double peer_timeout_factor = 31; // [default = 3.2] If we don't receive any 'IMAlive' message from a peer during peer_timeout_factor * 'Common::Constants::PEER_IMALIVE_PERIOD' the peer is considering as dead.
    uint32 idle_socket_timeout = 32; // [default = 60000] [ms], (1 min). Idle connections can exist for this duration.
    uint32 max_number_idle_socket = 33; // [default = 6] The maximum number of idle socket per distant peer. (one for each TCP message : 'GetEntries',  'GetHashes', 'GetChunk').
    uint32 get_hashes_timeout = 34; // [default = 20000] [ms] (20 s). After sending the message 'GetHashes' we will receive a stream of hashes, if the time between two hashes exceed this value, the request is aborted.
@@ -55,18 +62,12 @@ message Settings {
    uint32 upload_max_nb_connections = 53; // [default = 32] Maximum number of active upload requests across all peers.
 
    ///// NetworkListener /////
-   uint32 peer_imalive_period = 60; // [default = 5000] [ms]. Send an IMAlive message each 5 s.
    uint32 unicast_base_port = 61; // [default = 59487] If it's already taken we will look further to a free port. (UDP + TCP).
    uint32 multicast_port = 62; // [default = 59486] (UDP)
    uint32 multicast_group = 63; // [default = 3960285976] IPv4: 236.13.43.24 / IPv6: ff12:0:<channel hash bytes 2..9>:ec0d:2b18
    string channel = 89; // [default = "main"] Used with 'multicast_group' to define the IPv6 multicast group.
    uint32 multicast_ttl = 64; // [default = 31].
    uint32 max_udp_datagram_size = 65; // [default = 16356] (~16 KiB). It doesn't include the IP+UDP header (28 bytes). It's an arbitrary limit and will not prevent IP fragmentation.
-
-   // This is the max throughput allowed for the 'IMAlive' message for the whole network.
-   // It means thats n * s / 'peer_imalive_period' must not exceed this value. Where n is the number of peer and s the size of the 'IMAlive' message.
-   // The 'IMAlive' message size may vary from ~100 bytes to ~'max_udp_datagram_size' depending the number of hashes in it.
-   uint32 max_imalive_throughput = 91; // [default = 1048576] [B/s]. (1 MiB/s).
 
    uint32 udp_buffer_size = 66; // [default = 163840] (10 * 16KiB).
    uint32 max_number_of_search_result_to_send = 68; // [default = 300]

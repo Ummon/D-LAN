@@ -35,26 +35,26 @@ using namespace Common;
   * Builds a null header, it can be tested with 'isNull()'.
   */
 MessageHeader::MessageHeader() :
-   type(NULL_MESS), size(0)
+   type(NULL_MESS), payloadSize(0)
 {}
 
 MessageHeader::MessageHeader(MessageType type, quint32 size, const Hash& senderID) :
-   type(type), size(size), senderID(senderID)
+   type(type), payloadSize(size), senderID(senderID)
 {}
-
-const Hash& MessageHeader::getSenderID() const
-{
-   return this->senderID;
-}
-
-quint32 MessageHeader::getSize() const
-{
-   return this->size;
-}
 
 MessageHeader::MessageType MessageHeader::getType() const
 {
    return this->type;
+}
+
+quint32 MessageHeader::getPayloadSize() const
+{
+   return this->payloadSize;
+}
+
+const Hash& MessageHeader::getSenderID() const
+{
+   return this->senderID;
 }
 
 bool MessageHeader::isNull() const
@@ -75,7 +75,7 @@ QString MessageHeader::toStr() const
       return
          QString("MessageHeader: type = %1, size = %2, senderID = %3")
             .arg(messToStr(this->type))
-            .arg(this->size)
+            .arg(this->payloadSize)
             .arg(this->senderID.toStrShort());
 }
 
@@ -87,6 +87,7 @@ QString MessageHeader::messToStr(MessageType type)
 
    case CORE_IM_ALIVE: return "IM_ALIVE";
    case CORE_GOODBYE: return "GOODBYE";
+   case CORE_CHUNKS_NEEDED: return "CHUNKS_NEEDED";
    case CORE_CHUNKS_OWNED: return "CHUNKS_OWNED";
    case CORE_CHAT_MESSAGES: return "CHAT_MESSAGES";
    case CORE_GET_LAST_CHAT_MESSAGES: return "CHAT_GET_LAST_MESSAGES";
@@ -159,7 +160,7 @@ MessageHeader MessageHeader::readHeader(const QByteArray& data)
 
    MessageHeader header;
    stream >> header.type;
-   stream >> header.size;
+   stream >> header.payloadSize;
    stream >> header.senderID;
    return header;
 }
@@ -190,6 +191,6 @@ void MessageHeader::writeHeader(char* buffer, const MessageHeader& header)
 void MessageHeader::writeHeader(QDataStream& stream, const MessageHeader& header)
 {
    stream << header.type;
-   stream << header.size;
+   stream << header.payloadSize;
    stream << header.senderID;
 }

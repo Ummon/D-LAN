@@ -2,8 +2,12 @@
   * Protocol between core and GUI.
   * When a command is sent to the core, one or more responds will be sent back,
   * there cannot be other message like 'event message' between theses messages.
-  * Version : 2, see 'AskForAuthentication'.
-  * All string are encoded in UTF-8.
+  * Version: 2, see 'AskForAuthentication'.
+  *
+  * All messages begin with a header (all values are encoded in big-endian):
+  * - Message type (uint16)
+  * - payload size (uint32)
+  * - sender ID (224 bits)
   */
 
 syntax = "proto3";
@@ -14,7 +18,7 @@ package Protos.GUI;
 
 /***** Core state *****/
 // Core -> GUI
-// id: 0x1001
+// type: 0x1001
 // The state is sent periodically to the GUI (each second for example)
 // or right after a GUI command.
 // The size of this message should be lesser than 63kB to fit in one IP packet.
@@ -101,18 +105,18 @@ message State {
 }
 
 // GUI -> Core
-// id: 0x1002
+// type: 0x1002
 // Empty message to tell the core that we have finished to process the state message.
 
 
 /***** Events *****/
 // Core -> GUI
-// id: 0x1011
+// type: 0x1011
 // Common.ChatMessages
 
 
 // Core -> GUI
-// id: 0x1012
+// type: 0x1012
 message EventLogMessages {
    message EventLogMessage {
       enum Severity {
@@ -156,7 +160,7 @@ message PasswordKdf {
 // by the GUI and the one of the core itself. A man in the middle presents another certificate, the proofs don't match.
 // A local GUI is trusted: it doesn't have to give a valid proof, the core doesn't give its proof and there is no TLS.
 // Core -> GUI
-// id: 0x1021
+// type: 0x1021
 message AskForAuthentication {
    uint64 salt = 1;
    uint64 salt_challenge = 2; // Randomly generated for each connection.
@@ -165,7 +169,7 @@ message AskForAuthentication {
 }
 
 // GUI -> Core
-// id: 0x1022
+// type: 0x1022
 message Authentication {
    reserved 1;
    reserved "password_challenge"; // Version 1.
@@ -176,7 +180,7 @@ message Authentication {
 }
 
 // Core -> GUI
-// id: 0x1023
+// type: 0x1023
 // A refusal is delayed (by 'delay_gui_connection_fail', see 'core_settings.proto') to slow down password guessing.
 message AuthenticationResult {
    enum Status {
@@ -192,7 +196,7 @@ message AuthenticationResult {
 
 
 // GUI -> Core
-// id: 0x10B1
+// type: 0x10B1
 // Set the language of the core.
 message Language {
    Common.Language language = 1;
@@ -200,7 +204,7 @@ message Language {
 
 
 // GUI -> Core
-// id: 0x10D1
+// type: 0x10D1
 // Change the core password. The GUI is already authenticated: the old password isn't needed.
 // The new key and its parameters are defined as in 'AskForAuthentication', the GUI chooses new random salts.
 message ChangePassword {
@@ -216,7 +220,7 @@ message ChangePassword {
 
 
 // GUI -> Core
-// id: 0x1031
+// type: 0x1031
 // Set the settings.
 message CoreSettings {
    reserved 3;
@@ -239,7 +243,7 @@ message CoreSettings {
 
 
 // GUI -> Core
-// id: 0x1041
+// type: 0x1041
 message Search {
    Common.FindPattern pattern = 1;
    bool local = 2; // [default = false] Search among the local files and directories if true.
@@ -248,12 +252,12 @@ message Search {
 
 // Core -> GUI (deferred)
 // This message is sent for each UDP datagram received.
-// id: 0x1043
+// type: 0x1043
 // Common.FindResult
 
 
 // GUI -> Core
-// id: 0x1051
+// type: 0x1051
 message Browse {
    Common.Hash peer_id = 1;
    Common.Entries dirs = 2;
@@ -262,7 +266,7 @@ message Browse {
 }
 
 // Core -> GUI (deferred)
-// id: 0x1053
+// type: 0x1053
 message BrowseResult {
    uint64 tag = 1;
    repeated Common.Entries entries = 2;
@@ -270,7 +274,7 @@ message BrowseResult {
 
 
 // GUI -> Core
-// id: 0x10F1
+// type: 0x10F1
 message LocalBrowse {
    string path = 1; // If empty, the roots (drives) are returned.
    bool only_directories = 3;
@@ -279,7 +283,7 @@ message LocalBrowse {
 }
 
 // Core -> GUI (directly)
-// id: 0x10F2
+// type: 0x10F2
 message LocalBrowseResult {
    enum EntryType {
       FILE = 0;
@@ -309,13 +313,13 @@ message LocalBrowseResult {
 
 
 // GUI -> Core
-// id: 0x1101
+// type: 0x1101
 message LocalBrowseQuickAccess {
    uint64 tag = 1;
 }
 
 // Core -> GUI (directly)
-// id: 0x1102
+// type: 0x1102
 message LocalBrowseQuickAccessResult {
    message QuickAccess {
       string name = 1;
@@ -329,7 +333,7 @@ message LocalBrowseQuickAccessResult {
 
 
 // GUI -> Core
-// id: 0x1061
+// type: 0x1061
 // Remove one or several download from the queue. If this download
 // is not finished the unfinished file is removed.
 message CancelDownloads {
@@ -339,7 +343,7 @@ message CancelDownloads {
 
 
 // GUI -> Core
-// id: 0x10C1
+// type: 0x10C1
 // Pause or unpause the given downloads.
 message PauseDownloads {
    repeated uint64 ids = 1;
@@ -348,7 +352,7 @@ message PauseDownloads {
 
 
 // GUI -> Core
-// id: 0x1071
+// type: 0x1071
 // Tell the core to move one or more downloads in the list right before or after a given set of downloads.
 // 'id_ref' and 'id_to_move' must have at least one item each.
 // The order of the moved downloads are kept unchanged.
@@ -372,7 +376,7 @@ message MoveDownloads {
 
 
 // GUI -> Core
-// id: 0x1081
+// type: 0x1081
 // Tell the core to download a file or a directory.
 // The given path can be relative to a shared directory (if destination_directory_id is set) or
 // absolute (if destination_directory_id is null).
@@ -392,7 +396,7 @@ message Download {
 
 
 // GUI -> Core
-// id: 0x1091
+// type: 0x1091
 // Send a chat message to the given room. The message goes to the main chat if 'room' isn't set.
 message ChatMessage {
    string message = 1;
@@ -401,7 +405,7 @@ message ChatMessage {
 }
 
 // Core -> GUI (directly)
-// id: 0x1092
+// type: 0x1092
 message ChatMessageResult {
    enum Status {
       OK = 0;
@@ -413,27 +417,27 @@ message ChatMessageResult {
 
 
 // GUI -> Core
-// id: 0x1094
+// type: 0x1094
 message JoinRoom {
    string name = 1;
 }
 
 
 // GUI -> Core
-// id: 0x1098
+// type: 0x1098
 message LeaveRoom {
    string name = 1;
 }
 
 
 // GUI -> Core
-// id: 0x10A1
+// type: 0x10A1
 // Ask to receive a new state.
 // This message doesn't have a body.
 
 
 // GUI -> Core
-// id: 0x10E1
+// type: 0x10E1
 // Ask to refresh the known network interfaces.
 // A new state is immediately sent by the core.
 // This message doesn't have a body.

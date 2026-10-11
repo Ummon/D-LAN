@@ -22,6 +22,7 @@ using namespace PM;
 #include <limits>
 
 #include <Common/Settings.h>
+#include <Common/Constants.h>
 #include <Common/Global.h>
 #include <Common/LogManager/Builder.h>
 
@@ -49,7 +50,7 @@ Peer::Peer(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManage
 {
    this->speedTimer.invalidate();
 
-   static int interval_ms = SETTINGS.get<double>("peer_timeout_factor") * SETTINGS.get<quint32>("peer_imalive_period");
+   static int interval_ms = SETTINGS.get<double>("peer_timeout_factor") * Common::Constants::PEER_IMALIVE_PERIOD;
    Q_ASSERT(interval_ms > 100); // An inteval near zero shouldn't be possible.
 
    this->aliveTimer.setSingleShot(true);

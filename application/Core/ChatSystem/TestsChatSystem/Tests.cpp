@@ -713,7 +713,6 @@ int main(int argc, char** argv)
    settings->set_save_chat_messages_period(90000);
    settings->set_max_udp_datagram_size(16356); // Deliberately different from the mock's effective limit.
    settings->set_peer_timeout_factor(3.2);
-   settings->set_peer_imalive_period(5000);
    settings->set_pending_socket_timeout(10000);
    settings->set_nick("test");
    const auto peerID = Common::Hash::rand();

@@ -20,6 +20,7 @@
 using namespace NL;
 
 #include <limits>
+#include <algorithm>
 
 #include <QRandomGenerator64>
 
@@ -61,15 +62,18 @@ UDPListener::UDPListener(
    peerManager(peerManager),
    uploadManager(uploadManager),
    downloadManager(downloadManager),
-   currentIMAliveTag(0),
+   maxChunksNeededDatagramSize(0),
    nextHashRequestType(FIRST_HASHES),
-   loggerIMAlive(LM::Builder::newLogger("NetworkListener (IMAlive)"))
+   loggerChunksNeeded(LM::Builder::newLogger("NetworkListener (IMAlive)"))
 {
    connect(&this->multicastSocket, &QUdpSocket::readyRead, this, &UDPListener::processPendingMulticastDatagrams);
    connect(&this->unicastSocket, &QUdpSocket::readyRead, this, &UDPListener::processPendingUnicastDatagrams);
+
    connect(&this->timerIMAlive, &QTimer::timeout, this, &UDPListener::sendIMAliveMessage);
    this->timerInitialIMAlive.setSingleShot(true);
    connect(&this->timerInitialIMAlive, &QTimer::timeout, this, &UDPListener::sendIMAliveMessage);
+
+   connect(&this->timerChunksNeeded, &QTimer::timeout, this, &UDPListener::sendChunksNeededMessage);
 }
 
 /**
@@ -91,7 +95,10 @@ INetworkListener::SendStatus UDPListener::send(
 /**
   * Send an UDP unicast datagram to a peer already looked up.
   */
-INetworkListener::SendStatus UDPListener::send(Common::MessageHeader::MessageType type, const google::protobuf::Message& message, PM::IPeer& peer)
+INetworkListener::SendStatus UDPListener::send(
+   Common::MessageHeader::MessageType type,
+   const google::protobuf::Message& message, PM::IPeer& peer
+)
 {
    int messageSize;
    if (!(messageSize = this->writeMessageToBuffer(type, message)))
@@ -136,8 +143,8 @@ INetworkListener::SendStatus UDPListener::send(
       arg(messageSize).
       arg(Common::ProtoHelper::getDebugStr(message));
 
-   if (type == Common::MessageHeader::CORE_IM_ALIVE)
-      LOG_DEBU(this->loggerIMAlive, logMess);
+   if (type == Common::MessageHeader::CORE_CHUNKS_NEEDED)
+      LOG_DEBU(this->loggerChunksNeeded, logMess);
    else
       L_DEBU(logMess);
 #endif
@@ -177,47 +184,36 @@ void UDPListener::sendIMAliveMessage()
    IMAliveMessage.set_download_rate(this->downloadManager->getDownloadRate());
    IMAliveMessage.set_upload_rate(this->uploadManager->getUploadRate());
 
-   this->currentIMAliveTag = QRandomGenerator64::global()->generate64();
-   IMAliveMessage.set_tag(this->currentIMAliveTag);
-
-   static const qint64 HASH_SIZE = Common::Hash::HASH_SIZE + 4; // "4" is the overhead added by protobuf for each hash.
-   static const qint64 MIN_HASHES_TO_SEND = 4; // Keep chunk discovery progressing even when the throughput budget is exhausted.
-
-   // Add chat rooms before filling the remaining datagram with hashes.
+   // Add chat rooms by the ChatSystem component.
    emit IMAliveMessageToBeSend(IMAliveMessage);
 
-   // Keep a prefix of the room list while reserving space for the minimum number of hashes.
+   // Avoid exceeding the datagram payload maximum size.
    const int numberOfRooms = IMAliveMessage.chat_rooms_size();
    while (IMAliveMessage.chat_rooms_size() > 0 &&
-          static_cast<qint64>(IMAliveMessage.ByteSizeLong()) + Common::MessageHeader::HEADER_SIZE + MIN_HASHES_TO_SEND * HASH_SIZE > this->MAX_UDP_DATAGRAM_PAYLOAD_SIZE)
+          static_cast<qint64>(IMAliveMessage.ByteSizeLong()) +
+          Common::MessageHeader::HEADER_SIZE > this->MAX_UDP_DATAGRAM_PAYLOAD_SIZE
+   )
       IMAliveMessage.mutable_chat_rooms()->RemoveLast();
 
    if (IMAliveMessage.chat_rooms_size() != numberOfRooms)
-      L_WARN(QString("IMAlive: %1 chat room announcements omitted to fit the datagram limit and reserve space for hashes").arg(numberOfRooms - IMAliveMessage.chat_rooms_size()));
+      L_WARN(QString("IMAlive: %1 chat room announcements omitted to not exceed datagram size").arg(numberOfRooms - IMAliveMessage.chat_rooms_size()));
 
-   // We fill the rest of the message with a maximum of needed hashes.
-   // Everything is computed with signed 64 bits integers to avoid any division by zero, overflow or unsigned wrap around.
-   static const qint64 MAX_IMALIVE_THROUGHPUT = SETTINGS.get<quint32>("max_imalive_throughput"); // [Byte/s]
-   static const qint64 AVERAGE_FIXED_SIZE = Common::MessageHeader::HEADER_SIZE + 60; // [Byte]. Header size + information in the 'IMAlive' message without the hashes.
-   static const qint64 IMALIVE_PERIOD = qMax<qint64>(1, SETTINGS.get<quint32>("peer_imalive_period")); // [ms]
+   this->send(Common::MessageHeader::CORE_IM_ALIVE, IMAliveMessage);
+}
 
-   const qint64 numberOfPeers = this->peerManager->getNbOfPeers();
+void UDPListener::sendChunksNeededMessage()
+{
+   if (!this->isListening())
+      return;
 
-   // Throughput constraint: n * s / period <= 'max_imalive_throughput', where n is the number of peers and s the size of the message.
-   // Allow the minimum number of hashes even if this exceeds the throughput budget.
-   qint64 maxNumberOfHashesToSend = std::numeric_limits<int>::max();
-   if (numberOfPeers > 0)
-   {
-      // Number of bytes available for the hashes during one period once the fixed part of the message is deducted for each peer.
-      const qint64 bytesAvailableForHashes = MAX_IMALIVE_THROUGHPUT * IMALIVE_PERIOD / 1000 - numberOfPeers * AVERAGE_FIXED_SIZE;
-      maxNumberOfHashesToSend = qMax<qint64>(MIN_HASHES_TO_SEND, bytesAvailableForHashes / (numberOfPeers * HASH_SIZE));
-   }
+   static const qint64 HASH_SIZE = Common::Hash::HASH_SIZE + 4; // "4" is the overhead added by protobuf for each hash.
 
-   // Datagram constraint: the hashes must fit in the remaining space of the datagram.
-   const qint64 bytesRemainingInDatagram =
-      static_cast<qint64>(this->MAX_UDP_DATAGRAM_PAYLOAD_SIZE) - Common::MessageHeader::HEADER_SIZE - static_cast<qint64>(IMAliveMessage.ByteSizeLong());
+   // The datagram mustn't be fragmented. "-11" is the maximum tag size.
+   const qint64 MAX_NUMBER_OF_HASHES =
+      (this->maxChunksNeededDatagramSize - Common::MessageHeader::HEADER_SIZE - 11) / HASH_SIZE;
 
-   const int numberOfHashesToSend = static_cast<int>(qBound<qint64>(0, bytesRemainingInDatagram / HASH_SIZE, maxNumberOfHashesToSend));
+   ChunksNeededRequest request;
+   request.tag = QRandomGenerator64::global()->generate64();
 
    // The requested hashes method alternates from the first hashes and the oldest hashes.
    // We are trying to have the knowledge about who has which chunk for the whole download queue (IDownloadManager::getTheOldestUnfinishedChunks(..))
@@ -225,20 +221,25 @@ void UDPListener::sendIMAliveMessage()
    switch (this->nextHashRequestType)
    {
    case FIRST_HASHES:
-      this->currentChunkDownloaders = this->downloadManager->getTheFirstUnfinishedChunks(numberOfHashesToSend);
+      request.chunkDownloaders = this->downloadManager->getTheFirstUnfinishedChunks(MAX_NUMBER_OF_HASHES);
       this->nextHashRequestType = OLDEST_HASHES;
       break;
    case OLDEST_HASHES:
-      this->currentChunkDownloaders = this->downloadManager->getTheOldestUnfinishedChunks(numberOfHashesToSend);
+      request.chunkDownloaders = this->downloadManager->getTheOldestUnfinishedChunks(MAX_NUMBER_OF_HASHES);
       this->nextHashRequestType = FIRST_HASHES;
       break;
    }
 
-   IMAliveMessage.mutable_chunks()->Reserve(this->currentChunkDownloaders.size());
-   for (QListIterator<QSharedPointer<DM::IChunkDownloader>> i(this->currentChunkDownloaders); i.hasNext();)
+   if (request.chunkDownloaders.isEmpty())
+      return;
+
+   Protos::Core::ChunksNeeded chunkNeededMessage;
+   chunkNeededMessage.set_tag(request.tag);
+   chunkNeededMessage.mutable_chunks()->Reserve(request.chunkDownloaders.size());
+   for (QListIterator<QSharedPointer<DM::IChunkDownloader>> i(request.chunkDownloaders); i.hasNext();)
    {
       QSharedPointer<DM::IChunkDownloader> chunkDownloader = i.next();
-      IMAliveMessage.add_chunks()->set_hash(chunkDownloader->getHash().getData(), Common::Hash::HASH_SIZE);
+      chunkNeededMessage.add_chunks()->set_hash(chunkDownloader->getHash().getData(), Common::Hash::HASH_SIZE);
 
       // Reuse complete local chunks, including those in other unfinished files.
       const QSharedPointer<FM::IChunk> chunk = this->fileManager->getChunk(chunkDownloader->getHash());
@@ -248,19 +249,23 @@ void UDPListener::sendIMAliveMessage()
          chunkDownloader->rmPeer(this->peerManager->getSelf());
    }
 
-   this->send(Common::MessageHeader::CORE_IM_ALIVE, IMAliveMessage);
+   while (this->chunksNeededRequests.size() >= NB_CHUNKS_NEEDED_REQUESTS_KEPT)
+      this->chunksNeededRequests.removeFirst();
+   this->chunksNeededRequests << request;
+
+   this->send(Common::MessageHeader::CORE_CHUNKS_NEEDED, chunkNeededMessage);
 }
 
 void UDPListener::closeSockets()
 {
    this->timerIMAlive.stop();
    this->timerInitialIMAlive.stop();
+   this->timerChunksNeeded.stop();
    this->multicastSocket.close();
    this->multicastInterfaces.clear();
    this->unicastSocket.close();
    this->recentMulticastDatagrams.clear();
-   this->currentIMAliveTag = 0;
-   this->currentChunkDownloaders.clear();
+   this->chunksNeededRequests.clear();
 }
 
 bool UDPListener::startListening(const QList<QNetworkInterface>& interfaces, bool logFailures)
@@ -271,9 +276,15 @@ bool UDPListener::startListening(const QList<QNetworkInterface>& interfaces, boo
       return false;
    }
 
-   this->timerIMAlive.start(static_cast<int>(SETTINGS.get<quint32>("peer_imalive_period")));
+   this->timerIMAlive.start(Common::Constants::PEER_IMALIVE_PERIOD);
    // Defer the first heartbeat so callers can connect their message contributors.
    this->timerInitialIMAlive.start(0);
+
+   this->maxChunksNeededDatagramSize = qMin(
+      Utils::getMaxUnfragmentedDatagramSize(this->multicastInterfaces, this->multicastGroup.protocol()),
+      this->MAX_UDP_DATAGRAM_PAYLOAD_SIZE
+   );
+   this->timerChunksNeeded.start(Common::Constants::CHUNKS_NEEDED_PERIOD);
    return true;
 }
 
@@ -324,22 +335,26 @@ void UDPListener::processPendingMulticastDatagrams()
                   IMAliveMessage.upload_rate(),
                   IMAliveMessage.version()
                );
+            }
+            break;
 
-               // We reply only to the peers we can collaborate with (alive, not blocked and with a compatible protocol version).
-               peer = this->peerManager->getPeer(header.getSenderID());
-               if (peer && peer->isAvailable() && IMAliveMessage.chunks_size() > 0)
+         case Common::MessageHeader::CORE_CHUNKS_NEEDED:
+            {
+               const Protos::Core::ChunksNeeded& chunksNeededMessage = message.getMessage<Protos::Core::ChunksNeeded>();
+
+               if (peer && peer->isAvailable() && chunksNeededMessage.chunks_size() > 0)
                {
                   QList<Common::Hash> hashes;
-                  hashes.reserve(IMAliveMessage.chunks_size());
-                  for (int i = 0; i < IMAliveMessage.chunks_size(); i++)
-                     hashes << IMAliveMessage.chunks(i).hash();
+                  hashes.reserve(chunksNeededMessage.chunks_size());
+                  for (int i = 0; i < chunksNeededMessage.chunks_size(); i++)
+                     hashes << chunksNeededMessage.chunks(i).hash();
 
                   const QBitArray& bitArray = this->fileManager->haveChunks(hashes);
 
                   if (!bitArray.isNull()) // If we own at least one chunk we reply with a CHUNKS_OWNED message.
                   {
                      Protos::Core::ChunksOwned chunkOwnedMessage;
-                     chunkOwnedMessage.set_tag(IMAliveMessage.tag());
+                     chunkOwnedMessage.set_tag(chunksNeededMessage.tag());
                      chunkOwnedMessage.mutable_chunk_state()->Reserve(bitArray.size());
                      for (int i = 0; i < bitArray.size(); i++)
                         chunkOwnedMessage.add_chunk_state(bitArray[i]);
@@ -426,29 +441,35 @@ void UDPListener::processPendingUnicastDatagrams()
             {
                const Protos::Core::ChunksOwned& chunksOwnedMessage = message.getMessage<Protos::Core::ChunksOwned>();
 
-               if (chunksOwnedMessage.tag() != this->currentIMAliveTag)
+               const auto request = std::find_if(
+                  this->chunksNeededRequests.cbegin(),
+                  this->chunksNeededRequests.cend(),
+                  [&](const ChunksNeededRequest& sent) { return sent.tag == chunksOwnedMessage.tag(); }
+               );
+
+               if (request == this->chunksNeededRequests.cend())
                {
                   L_WARN(
-                     QString("ChunksOwned: tag (%1) doesn't match current tag (%2)")
-                        .arg(chunksOwnedMessage.tag()).arg(currentIMAliveTag)
+                     QString("ChunksOwned: tag (%1) doesn't match any of the last %2 'ChunksNeeded' messages")
+                        .arg(chunksOwnedMessage.tag()).arg(NB_CHUNKS_NEEDED_REQUESTS_KEPT)
                   );
                   continue;
                }
 
-               if (chunksOwnedMessage.chunk_state_size() != this->currentChunkDownloaders.size())
+               if (chunksOwnedMessage.chunk_state_size() != request->chunkDownloaders.size())
                {
                   L_WARN(
                      QString("ChunksOwned: The size (%1) doesn't match the expected one (%2)")
-                        .arg(chunksOwnedMessage.chunk_state_size()).arg(this->currentChunkDownloaders.size())
+                        .arg(chunksOwnedMessage.chunk_state_size()).arg(request->chunkDownloaders.size())
                   );
                   continue;
                }
 
                for (int i = 0; i < chunksOwnedMessage.chunk_state_size(); i++)
                   if (chunksOwnedMessage.chunk_state(i))
-                     this->currentChunkDownloaders[i]->addPeer(peer);
+                     request->chunkDownloaders[i]->addPeer(peer);
                   else
-                     this->currentChunkDownloaders[i]->rmPeer(peer);
+                     request->chunkDownloaders[i]->rmPeer(peer);
             }
             break;
 
@@ -574,7 +595,7 @@ int UDPListener::writeMessageToBuffer(Common::MessageHeader::MessageType type, c
    if (!nbBytesWritten)
       L_ERRO(
          QString("Datagram size too big: %1, max allowed: %2")
-            .arg(Common::MessageHeader::HEADER_SIZE + header.getSize()).arg(this->MAX_UDP_DATAGRAM_PAYLOAD_SIZE)
+            .arg(Common::MessageHeader::HEADER_SIZE + header.getPayloadSize()).arg(this->MAX_UDP_DATAGRAM_PAYLOAD_SIZE)
       );
 
    return nbBytesWritten;
@@ -610,7 +631,7 @@ Common::MessageHeader UDPListener::readDatagramToBuffer(QUdpSocket& socket, QHos
 
    Common::MessageHeader header = Common::MessageHeader::readHeader(this->buffer);
 
-   if (header.getSize() > datagramSize - Common::MessageHeader::HEADER_SIZE)
+   if (header.getPayloadSize() > datagramSize - Common::MessageHeader::HEADER_SIZE)
    {
       L_ERRO("The message size (header.size) exceeds the datagram size received");
       header.setNull();
@@ -649,7 +670,7 @@ bool UDPListener::isDuplicate(const Common::MessageHeader& header)
       this->recentMulticastDatagrams.removeFirst();
 
    // The header is included: it contains the ID of the sender.
-   const QByteArrayView datagram(this->buffer, Common::MessageHeader::HEADER_SIZE + header.getSize());
+   const QByteArrayView datagram(this->buffer, Common::MessageHeader::HEADER_SIZE + header.getPayloadSize());
    const size_t hash = qHash(datagram, QHashSeed::globalSeed());
 
    for (const ReceivedDatagram& received : std::as_const(this->recentMulticastDatagrams))

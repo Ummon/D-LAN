@@ -2525,7 +2525,7 @@ void Tests::messageHeader()
 
    QVERIFY(!header.isNull());
    QCOMPARE(header.getType(), MessageHeader::CORE_IM_ALIVE);
-   QCOMPARE(header.getSize(), 42u);
+   QCOMPARE(header.getPayloadSize(), 42u);
    QCOMPARE(header.getSenderID().toStr(), peerID);
 
    // We use a larger buffer to check if the last four bytes has been alterate.

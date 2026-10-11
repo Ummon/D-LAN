@@ -55,6 +55,7 @@ private slots:
    void ipv6LoopbackFallback();
    void macOSInterfaceSelection();
    void networkConfigurationSnapshot();
+   void maxUnfragmentedDatagramSize();
 
    // Sending without any known peer.
    void sendToUnknownPeer();
@@ -80,6 +81,8 @@ private slots:
    void invalidIMAlivePort();
    void heartbeatWithChatRooms_data();
    void heartbeatWithChatRooms();
+   void chunksNeeded();
+   void lateChunksOwned();
    void sharedUnicastPort_data();
    void sharedUnicastPort();
    void bindFailureAndRecovery();
@@ -102,8 +105,9 @@ private:
       QSharedPointer<NL::INetworkListener> networkListener; // Must be the last one to be destroyed first.
    };
 
-   Instance createInstance(const Common::Hash& ID, const QString& nick);
+   Instance createInstance(const Common::Hash& ID, const QString& nick, QSharedPointer<DM::IDownloadManager> downloadManager = {});
    bool peersDiscovered() const;
+   static bool isPeerAvailable(const Instance& instance, const Common::Hash& ID);
 
    QList<Common::Hash> peerIDs;
    QList<Instance> instances;

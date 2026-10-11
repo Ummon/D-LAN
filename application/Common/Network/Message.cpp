@@ -47,7 +47,7 @@ int Message::writeMessageToBuffer(
    const google::protobuf::Message* message
 )
 {
-   if (MessageHeader::HEADER_SIZE + header.getSize() > bufferSize)
+   if (MessageHeader::HEADER_SIZE + header.getPayloadSize() > bufferSize)
       return 0;
 
    MessageHeader::writeHeader(buffer, header);
@@ -55,7 +55,7 @@ int Message::writeMessageToBuffer(
    if (message && !message->SerializeToArray(buffer + MessageHeader::HEADER_SIZE, bufferSize - MessageHeader::HEADER_SIZE))
        return 0;
 
-   return MessageHeader::HEADER_SIZE + header.getSize();
+   return MessageHeader::HEADER_SIZE + header.getPayloadSize();
 }
 
 int Message::writeMessageToDevice(QIODevice* ioDevice, const MessageHeader& header, const google::protobuf::Message* message)
@@ -70,7 +70,7 @@ int Message::writeMessageToDevice(QIODevice* ioDevice, const MessageHeader& head
          return 0;
    }
 
-   return MessageHeader::HEADER_SIZE + header.getSize();
+   return MessageHeader::HEADER_SIZE + header.getPayloadSize();
 }
 
 int Message::writeMessageToDeviceWithCachedSizes(QIODevice* ioDevice, const MessageHeader& header, const google::protobuf::Message* message)
@@ -91,14 +91,14 @@ int Message::writeMessageToDeviceWithCachedSizes(QIODevice* ioDevice, const Mess
          // Return unused bytes before flushing the QIODevice adapter. Otherwise
          // the final buffer could include bytes beyond the serialized message.
          codedStream.Trim();
-         if (codedStream.HadError() || codedStream.ByteCount() != header.getSize())
+         if (codedStream.HadError() || codedStream.ByteCount() != header.getPayloadSize())
             return 0;
       }
       if (!outputStream.Flush())
          return 0;
    }
 
-   return MessageHeader::HEADER_SIZE + header.getSize();
+   return MessageHeader::HEADER_SIZE + header.getPayloadSize();
 }
 
 /**
@@ -113,7 +113,7 @@ Message Message::readMessage(const char* buffer, quint32 bufferSize)
 
    MessageHeader header = MessageHeader::readHeader(buffer);
 
-   if (header.getSize() > bufferSize - MessageHeader::HEADER_SIZE)
+   if (header.getPayloadSize() > bufferSize - MessageHeader::HEADER_SIZE)
       throw ReadErrorException();
 
    const char* bufferBody = buffer + MessageHeader::HEADER_SIZE;

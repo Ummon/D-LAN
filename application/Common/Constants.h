@@ -28,7 +28,15 @@ namespace Common
       // 2 -> 3 : BLAKE -> Sha-1
       // 3 -> 4 : New chat protocol + changes of the 'GET_ENTRIES_RESULT' message. (Breaking compatible with previous versions).
       // 4 -> 5 : Not sending all trailing empty chunks when browsing or searching break the compatibilty with the 1.2 branch.
+      // 5 -> 6 : Hashes needed is now sent in a specific message. Peer-to-peer chat message.
       static const quint32 PROTOCOL_VERSION;
+
+      // The period of the 'IMAlive' message, see "Protos/core_protocol.proto".
+      // It belongs to the protocol: the other peers rely on it to know when a silent peer is dead (see the setting 'peer_timeout_factor').
+      static constexpr int PEER_IMALIVE_PERIOD = 3000; // [ms].
+
+      // The period of the 'ChunksNeeded' message, see "Protos/core_protocol.proto".
+      static constexpr int CHUNKS_NEEDED_PERIOD = 1000; // [ms].
 
       static const quint16 DEFAULT_CORE_REMOTE_CONTROL_PORT;
 

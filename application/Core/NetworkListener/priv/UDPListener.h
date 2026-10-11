@@ -83,6 +83,7 @@ namespace NL
 
    private slots:
       void sendIMAliveMessage();
+      void sendChunksNeededMessage();
       void processPendingMulticastDatagrams();
       void processPendingUnicastDatagrams();
 
@@ -124,8 +125,16 @@ namespace NL
       };
       QList<ReceivedDatagram> recentMulticastDatagrams; // From the oldest to the youngest, see 'isDuplicate(..)'.
 
-      quint64 currentIMAliveTag;
-      QList<QSharedPointer<DM::IChunkDownloader>> currentChunkDownloaders;
+      // The last 'ChunksNeeded' messages sent, from the oldest to the youngest.
+      // Several are kept: a reply may arrive after the next message has been sent.
+      struct ChunksNeededRequest
+      {
+         quint64 tag;
+         QList<QSharedPointer<DM::IChunkDownloader>> chunkDownloaders;
+      };
+      static const int NB_CHUNKS_NEEDED_REQUESTS_KEPT = 3;
+      QList<ChunksNeededRequest> chunksNeededRequests;
+      int maxChunksNeededDatagramSize; // Defined when the multicast interfaces are known, see 'startListening(..)'.
       enum HashRequestType
       {
          FIRST_HASHES,
@@ -135,6 +144,8 @@ namespace NL
 
       QTimer timerIMAlive;
       QTimer timerInitialIMAlive;
-      QSharedPointer<LM::ILogger> loggerIMAlive; // A logger especially for the IMAlive message.
+      QSharedPointer<LM::ILogger> loggerChunksNeeded; // A logger especially for the ChunkNeeded message.
+
+      QTimer timerChunksNeeded;
    };
 }

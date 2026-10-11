@@ -178,7 +178,6 @@ private slots:
       settings->set_delay_before_sending_log_messages(100);
       settings->set_delay_gui_connection_fail(10);
       settings->set_peer_timeout_factor(3);
-      settings->set_peer_imalive_period(5000);
       SETTINGS.setSettingsMessage(settings);
       SETTINGS.set("peer_id", Common::Hash::rand());
       SETTINGS.set("remote_password", this->password.toStr());

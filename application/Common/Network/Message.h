@@ -96,6 +96,7 @@ Common::Message Common::Message::readMessageBody(const Common::MessageHeader& he
    case MessageHeader::NULL_MESS:                        return readMessageBody<Protos::Common::Null>                (header, source);
 
    case MessageHeader::CORE_IM_ALIVE:                    return readMessageBody<Protos::Core::IMAlive>               (header, source);
+   case MessageHeader::CORE_CHUNKS_NEEDED:               return readMessageBody<Protos::Core::ChunksNeeded>          (header, source);
    case MessageHeader::CORE_CHUNKS_OWNED:                return readMessageBody<Protos::Core::ChunksOwned>           (header, source);
    case MessageHeader::CORE_CHAT_MESSAGES:               return readMessageBody<Protos::Common::ChatMessages>        (header, source);
    case MessageHeader::CORE_GET_LAST_CHAT_MESSAGES:      return readMessageBody<Protos::Core::GetLastChatMessages>   (header, source);
@@ -149,7 +150,7 @@ template <typename T>
 Common::Message Common::Message::readMessageBody(const Common::MessageHeader& header, const char* buffer)
 {
    T* message = new T();
-   if (!message->ParseFromArray(buffer, header.getSize()))
+   if (!message->ParseFromArray(buffer, header.getPayloadSize()))
    {
       delete message;
       throw ReadErrorException();
@@ -164,7 +165,7 @@ template <typename T>
 Common::Message Common::Message::readMessageBody(const Common::MessageHeader& header, ZeroCopyInputStreamQIODevice* stream)
 {
    T* message = new T();
-   if (!message->ParseFromBoundedZeroCopyStream(stream, header.getSize()))
+   if (!message->ParseFromBoundedZeroCopyStream(stream, header.getPayloadSize()))
    {
       delete message;
       throw ReadErrorException();

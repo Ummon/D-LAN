@@ -144,6 +144,28 @@ void Utils::sanitizeListenSettings(const QList<QNetworkInterface>& interfaces)
 }
 
 /**
+  * Return the size of the largest UDP datagram (without the IP and UDP headers) which is sent in one piece
+  * through each of the given interfaces: a larger one is fragmented and is lost as soon as one of its fragments is.
+  * Only the MTU of our own links is known: there is no path MTU discovery for a multicast destination.
+  */
+int Utils::getMaxUnfragmentedDatagramSize(const QList<QNetworkInterface>& interfaces, QAbstractSocket::NetworkLayerProtocol protocol)
+{
+   static const int MIN_MTU = 576; // Every IPv4 host accepts a datagram of this size.
+   static const int MAX_MTU = 1500; // Ethernet. A larger one (jumbo frames) may not be supported by the whole network, for example behind a Wi-Fi bridge.
+   static const int DEFAULT_MTU = 1280; // The minimum MTU of an IPv6 link, used when the MTU of an interface is unknown.
+
+   int MTU = MAX_MTU;
+   for (const auto& networkInterface : interfaces)
+   {
+      const int interfaceMTU = networkInterface.maximumTransmissionUnit();
+      MTU = qMin(MTU, interfaceMTU > 0 ? qMax(interfaceMTU, MIN_MTU) : DEFAULT_MTU);
+   }
+
+   static const int UDP_HEADER_SIZE = 8;
+   return MTU - (protocol == QAbstractSocket::IPv4Protocol ? 20 : 40) - UDP_HEADER_SIZE;
+}
+
+/**
   * Return the multicast group. It can be an IPv6 or an IPv4 group, depending of the current address.
   * The group is stored in the setting variable 'multicast_group'.
   */

@@ -58,7 +58,7 @@ public:
       while (offset < this->output.size())
       {
          auto message = Common::Message::readMessage(this->output.constData() + offset, this->output.size() - offset);
-         offset += Common::MessageHeader::HEADER_SIZE + message.getHeader().getSize();
+         offset += Common::MessageHeader::HEADER_SIZE + message.getHeader().getPayloadSize();
          result << message;
       }
       return result;

@@ -1,7 +1,11 @@
 /**
   * Protocol between cores (peers).
-  * Version: 5
-  * All string are encoded in UTF-8.
+  * Version: 6
+  *
+  * All messages begin with a header (all values are encoded in big-endian):
+  * - Message type (uint16)
+  * - payload size (uint32)
+  * - sender ID (224 bits)
   */
 
 syntax = "proto3";
@@ -11,14 +15,11 @@ import "common.proto";
 package Protos.Core;
 
 // I'm alive.
-// This message is sent periodically to all other peers (for example each 5s).
-// It contains some information about the peer and an array of chunk hashes the peer wants to download.
-// If a peer owns one or more chunk corresponding to the given hashes then it
-// will reply with a 'ChunksOwned' message.
-// These hashes can come from different files.
+// This message is sent periodically to all other peers, each 3 s (see 'Common::Constants::PEER_IMALIVE_PERIOD').
+// It contains some information about the peer.
 // Remember that the peer ID of the sender is in the message header, see 'Common::Network::MessageHeader' for more information.
 // a -> all (multicast UDP)
-// id : 0x01
+// type: 0x01
 message IMAlive {
    uint32 version = 1; // The version of the protocol used. If 'version' from another peer doesn't correspond to our own version, this peer is ignored.
    string core_version = 9; // The core version, for example: "1.1.4 - Linux Mr. 3.2.0-24-generic".
@@ -30,48 +31,61 @@ message IMAlive {
    uint64 download_rate = 7; // [byte/s]
    uint64 upload_rate = 8; // [byte/s]
 
-   uint64 tag = 5; // A random number, all responds ('ChunkOwned' message) must repeat this number.
-   repeated Common.Hash chunks = 6; // The chunks the core wants to download. May be empty.
-
    repeated string chat_rooms = 10; // The joined chat rooms.
 }
-
-// This message is only sent if at least one requested chunks is known.
-// Return an array with a bool value for each
-// given chunks. 'true' means "I have this chunk".
-// all -> a (unicast UDP)
-// id : 0x02
-message ChunksOwned {
-   uint64 tag = 1; // The repeated number.
-   repeated bool chunk_state = 2 [packed=true]; // The array size must have the same size of HaveChunks.chunks.
-}
-
 
 // Goodbye, my people need me.
 // Sent by a peer leaving the network. Not mandatory.
 // a -> all  (multicast UDP)
-// id : 0xFE
+// type: 0xFE
 // No data
 
+/////
+
+// Sent periodically, each second (see 'Common::Constants::CHUNKS_NEEDED_PERIOD'), while the peer wants to download some chunks.
+// It contains an array of chunk hashes. Their number is limited to keep the datagram under the MTU:
+// a multicast datagram may not be retransmitted (Wi-Fi), a fragmented one is lost as soon as one of its fragments is.
+// If a peer owns one or more chunk corresponding to the given hashes then it
+// will reply with a 'ChunksOwned' message.
+// These hashes can come from different files.
+// a -> all (Multicast UDP)
+// type: 0x61
+message ChunksNeeded {
+   uint64 tag = 1; // A random number, all responds ('ChunkOwned' message) must repeat this number.
+   repeated Common.Hash chunks = 2; // The chunks the core wants to download.
+}
+
+
+// Answer to 'ChunksNeeded'.
+// This message is only sent if at least one requested chunks is known.
+// Return an array with a bool value for each
+// given chunks. 'true' means "I have this chunk".
+// all -> a (unicast UDP)
+// type: 0x62
+message ChunksOwned {
+   uint64 tag = 1; // The repeated number. The reply to one of the last three 'ChunksNeeded' messages is accepted.
+   repeated bool chunk_state = 2; // The array size must have the same size of HaveChunks.chunks.
+}
+
+/////
 
 // Send a chat message to all other peers.
 // The field 'peer_id' is not set because it is already set in the header.
 // The field 'time' is not set because the receiver will set the time and not the sender.
 // a -> all  (multicast UDP)
-// id : 0x11
+// type: 0x11
 // Common.ChatMessages
-
 
 // Ask to a peer the 'n' last messages.
 // We can ask periodically to a random peer to be sure we got all the messages of the network.
 // For example the last 500 messages each second.
 // a -> b (unicast UDP)
-// id : 0x18
+// type: 0x18
 message GetLastChatMessages {
    uint32 number = 1; // Number of desired messages.
 
    // Messages already known (only in the asked chat room if 'chat_room' is not empty).
-   repeated uint64 message_ids = 2 [packed=true];
+   repeated uint64 message_ids = 2;
 
    string chat_room = 3;
 }
@@ -81,14 +95,15 @@ message GetLastChatMessages {
 // The field 'sender_time' must be set: 'a' keeps the age of each message ('sender_time' - 'time') and not its time,
 // the clock of 'b' may differ from its own one.
 // b -> a (unicast UDP)
-// id : 0x11
+// type: 0x11
 // Common.ChatMessages
 
+/////
 
 // Searching a file or a directory.
 // See http://dev.d-lan.net/projects/pmp/wiki/Algorithms#Searching-among-other-peers for more details.
 // a -> all (multicast UDP)
-// id : 0x21
+// type: 0x21
 message Find {
    uint64 tag = 1; // A tag to identify the search. All answers must have the same tag.
    Common.FindPattern pattern = 2;
@@ -101,13 +116,14 @@ message Find {
 // for a limited duration. For example 3 seconds.
 // The file entries may or may not include the hashes depending of the core state and its policy.
 // all -> a (unicast UDP)
-// id : 0x22
+// type: 0x22
 // Common.FindResult (see common.proto)
 
+/////
 
 // Browsing.
 // a -> b (TCP)
-// id : 0x31
+// type: 0x31
 message GetEntries {
    // The shared directories must have the field 'shared_entry' defined but 'shared_entry.shared_name' is not mandatory.
    Common.Entries dirs = 1;
@@ -122,7 +138,7 @@ message GetEntries {
 
 // The file entries may or may not include the hashes depending of the core state and its policy.
 // b -> a (TCP)
-// id : 0x32
+// type: 0x32
 message GetEntriesResult {
    message EntryResult {
       enum Status {
@@ -137,6 +153,7 @@ message GetEntriesResult {
    repeated EntryResult results = 1;
 }
 
+/////
 
 // Get hashes.
 // If a peer want to start a queued download but doesn't know its hashes
@@ -146,7 +163,7 @@ message GetEntriesResult {
 // can be a bit long (> 20s for example).
 // The given entry shall have some chunks set to null. The number of chunks ('GetHashes.file.chunk') must be be correct.
 // a -> b (TCP)
-// id : 0x41
+// type: 0x41
 message GetHashes {
    Common.Entry file = 1; // Must have the field 'shared_dir' set. If it already contains some chunk hashes only the next ones will be sent.
    // The next files for which we want to know their hashes in the future, in the order they will be asked.
@@ -156,7 +173,7 @@ message GetHashes {
 }
 
 // b -> a (TCP)
-// id : 0x42
+// type: 0x42
 message GetHashesResult {
    enum Status {
       OK = 0;
@@ -179,9 +196,11 @@ message HashResult {
    Common.Hash hash = 2;
 }
 
+/////
+
 // Download one or more chunks.
 // a -> b (TCP)
-// id : 0x51
+// type: 0x51
 message GetChunks {
    message Chunk {
       Common.Hash hash = 1;
@@ -193,7 +212,7 @@ message GetChunks {
 }
 
 // b -> a (TCP)
-// id : 0x52
+// type: 0x52
 message GetChunksResult {
    enum Status {
       OK = 0;

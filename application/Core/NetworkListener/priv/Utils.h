@@ -37,6 +37,7 @@ namespace NL
       static ListenTarget getListenTarget(const QList<QNetworkInterface>& interfaces = QNetworkInterface::allInterfaces());
       static void sanitizeListenSettings(const QList<QNetworkInterface>& interfaces = QNetworkInterface::allInterfaces());
       static QHostAddress getMulticastGroup(QAbstractSocket::NetworkLayerProtocol protocol);
+      static int getMaxUnfragmentedDatagramSize(const QList<QNetworkInterface>& interfaces, QAbstractSocket::NetworkLayerProtocol protocol);
       // Stable across enumeration order; only covers what the sockets depend on.
       static QStringList getNetworkConfiguration(const QList<QNetworkInterface>& interfaces = QNetworkInterface::allInterfaces());
 

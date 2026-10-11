@@ -204,7 +204,7 @@ void MessageSocket::send(MessageHeader::MessageType type, const google::protobuf
          .arg(
             header.toStr(),
             this->remoteID.toStrShort(),
-            message ? messageDebugStr(*message, header.getSize()) : "<empty message>"
+            message ? messageDebugStr(*message, header.getPayloadSize()) : "<empty message>"
          )
    );
 
@@ -333,12 +333,12 @@ void MessageSocket::dataReceivedSlot()
             return;
          }
 
-         if (this->currentHeader.getSize() > MAX_MESSAGE_PAYLOAD_SIZE)
+         if (this->currentHeader.getPayloadSize() > MAX_MESSAGE_PAYLOAD_SIZE)
          {
             MESSAGE_SOCKET_LOG_DEBUG(
                QString("Socket[%1]: Message size too big (%2), size limit is (%3) bytes")
                   .arg(this->num)
-                  .arg(this->currentHeader.getSize())
+                  .arg(this->currentHeader.getPayloadSize())
                   .arg(MAX_MESSAGE_PAYLOAD_SIZE)
             );
             this->currentHeader.setNull();
@@ -359,7 +359,7 @@ void MessageSocket::dataReceivedSlot()
          }
       }
 
-      if (!this->currentHeader.isNull() && this->socket->bytesAvailable() >= this->currentHeader.getSize())
+      if (!this->currentHeader.isNull() && this->socket->bytesAvailable() >= this->currentHeader.getPayloadSize())
       {
          if (!this->readMessage())
          {
@@ -411,7 +411,7 @@ bool MessageSocket::readMessage()
          QString::number(this->num),
          this->socket->peerAddress().toString(),
          message.getHeader().toStr(),
-         messageDebugStr(message.getMessage(), message.getHeader().getSize())
+         messageDebugStr(message.getMessage(), message.getHeader().getPayloadSize())
       ));
 
       // 'onNewMessage(..)' may delete this object, see 'dataReceivedSlot()'.

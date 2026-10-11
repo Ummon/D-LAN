@@ -1050,7 +1050,7 @@ void Tests::resultStartsOnlyOnce()
    QTRY_VERIFY(remote->bytesAvailable() >= Common::MessageHeader::HEADER_SIZE);
    const QByteArray request = remote->readAll();
    const auto header = Common::MessageHeader::readHeader(request);
-   QCOMPARE(request.size(), qsizetype(Common::MessageHeader::HEADER_SIZE + header.getSize()));
+   QCOMPARE(request.size(), qsizetype(Common::MessageHeader::HEADER_SIZE + header.getPayloadSize()));
    if (timeout)
       QTRY_COMPARE(timedOut.count(), 1);
    else

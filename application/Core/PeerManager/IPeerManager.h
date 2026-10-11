@@ -81,7 +81,7 @@ namespace PM
         * Tell a given peer exists and is alive. Calling 'createPeer(..)' before isn't necessary.
         * The method must be call frequently to tell that a peer (ID) is still alive.
         * After a while, if a peer is not updated, it will not appear in the list given by 'IPeerManager::getPeers()'.
-        * The maximum live duration is 'peer_timeout_factor' * 'peer_imalive_period', these values are from the settings.
+        * The maximum live duration is the setting 'peer_timeout_factor' * 'Common::Constants::PEER_IMALIVE_PERIOD'.
         * @see The protobuf message 'Protos.Core.IMAlive' in "Protos/core_protocol.proto".
         */
       virtual void updatePeer(

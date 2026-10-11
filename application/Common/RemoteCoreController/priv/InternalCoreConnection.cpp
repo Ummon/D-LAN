@@ -653,7 +653,7 @@ bool InternalCoreConnection::acceptsHeader(const Common::MessageHeader& header)
    {
    case Common::MessageHeader::GUI_ASK_FOR_AUTHENTICATION:
    case Common::MessageHeader::GUI_AUTHENTICATION_RESULT:
-      return header.getSize() <= Common::Constants::MAX_GUI_HANDSHAKE_MESSAGE_SIZE;
+      return header.getPayloadSize() <= Common::Constants::MAX_GUI_HANDSHAKE_MESSAGE_SIZE;
 
    default:
       return !this->tlsRequired;
