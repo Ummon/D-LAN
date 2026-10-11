@@ -102,6 +102,7 @@ private slots:
    void waitingWriterReleasesFileMutex_data();
    void waitingWriterReleasesFileMutex();
    void retiredChunkWriteIsDropped();
+   void chunkDataFlushedRegularly();
    void concurrentChunkMetadata();
    void chunkEntryWithoutHashes();
    void peerHashOnlyAppliesToDownloads_data();

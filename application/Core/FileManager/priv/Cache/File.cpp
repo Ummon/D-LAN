@@ -568,7 +568,7 @@ qint64 File::writePhysicalFile(const char* buffer, qint64 nbBytes)
 
 /**
   * Ask the OS to write the cached data of the file to the disk.
-  * Called by 'Chunk::write(..)' each time a chunk is complete: without this the whole cached data would be flushed
+  * Called regularly by 'Chunk::write(..)', see 'FLUSH_PERIOD': without this the whole cached data would be flushed
   * in one go when the file is closed in 'setAsComplete()', it can take several seconds for a big file and during
   * this time the peer is unable to answer to the other peers.
   * Only the calling thread (a downloader) waits for the disk: it must not hold the file mutex.

@@ -179,7 +179,7 @@ bool Chunk::write(const char* buffer, int nbBytes)
    if (knownBytesBefore + nbBytes > CURRENT_CHUNK_SIZE)
       throw TryToWriteBeyondTheEndOfChunkException();
 
-   // Writing to the disk and flushing a whole chunk can take seconds, and this thread may first have to wait for
+   // Writing to the disk and flushing can take seconds, and this thread may first have to wait for
    // another downloader of the same file doing so. Only the file's write lock is needed, so the file mutex is released
    // meanwhile: other threads (the main one included) read the chunk progress and the file metadata through it.
    // The traversal guard defers the destruction of the file until this method returns.
@@ -203,15 +203,25 @@ bool Chunk::write(const char* buffer, int nbBytes)
       this->knownBytes = CURRENT_CHUNK_SIZE;
    }
 
-   if (this->knownBytes != CURRENT_CHUNK_SIZE)
+   // The data is flushed regularly and when the chunk is complete: to avoid a long flush when the file is closed
+   // and to never suspend the writes for long, see 'FLUSH_PERIOD'.
+   const bool complete = this->knownBytes == CURRENT_CHUNK_SIZE;
+   if (!complete && this->knownBytes / FLUSH_PERIOD == knownBytesBefore / FLUSH_PERIOD)
       return false;
 
    if (!this->file)
-      throw ChunkDeletedException();
+   {
+      if (complete)
+         throw ChunkDeletedException();
+      return false;
+   }
 
    locker.unlock();
-   file->flushWrittenData(); // To avoid a long flush when the file is closed.
+   file->flushWrittenData();
    locker.relock();
+
+   if (!complete)
+      return false;
 
    // The file may have retired this chunk or reset its data while it was unlocked.
    if (!this->file)

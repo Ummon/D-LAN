@@ -199,13 +199,29 @@ namespace
    }
 
    // The native operation: the notifications are the ones of a move made by any other application.
+   // The hasher keeps a file open while it reads it, without 'FILE_SHARE_DELETE' (see 'FilePool'): moving or replacing
+   // this file, or moving one of its parent directories, is refused meanwhile. A new file is hashed as soon as it is
+   // seen, and again if a later notification tells it has been modified: the move is tried again for a while.
    bool moveEntry(const QString& from, const QString& to, DWORD flags = 0)
    {
-      return MoveFileExW(
-         reinterpret_cast<LPCWSTR>(QDir::toNativeSeparators(from).utf16()),
-         reinterpret_cast<LPCWSTR>(QDir::toNativeSeparators(to).utf16()),
-         flags
-      ) != 0;
+      QDeadlineTimer deadline(5000);
+      for (;;)
+      {
+         if (
+            MoveFileExW(
+               reinterpret_cast<LPCWSTR>(QDir::toNativeSeparators(from).utf16()),
+               reinterpret_cast<LPCWSTR>(QDir::toNativeSeparators(to).utf16()),
+               flags
+            ) != 0
+         )
+            return true;
+
+         const DWORD error = GetLastError();
+         if ((error != ERROR_ACCESS_DENIED && error != ERROR_SHARING_VIOLATION) || deadline.hasExpired())
+            return false;
+
+         QTest::qWait(5);
+      }
    }
 }
 #endif
@@ -251,7 +267,8 @@ void CacheTest::windowsWatcherUpdatesCache()
    QVERIFY(moveEntry(temporary, path, MOVEFILE_REPLACE_EXISTING));
    QTRY_COMPARE_WITH_TIMEOUT(manager.getAmount(), qint64(11), 5000);
    QTRY_COMPARE_WITH_TIMEOUT(nbFiles(two), 1, 5000);
-   QVERIFY(entry(path));
+   // The notifications are followed one by one: the old file may be removed before the temporary one is renamed.
+   QTRY_VERIFY_WITH_TIMEOUT(entry(path), 5000);
 
    // A file renamed, then renamed again by changing only its case.
    const QString renamed = two + "/renamed.txt";
@@ -3941,6 +3958,7 @@ namespace
       std::atomic<bool> pauseNextFlush { false };
       QSemaphore paused;
       QSemaphore resume;
+      std::atomic<int> flushCalls { 0 };
 
    protected:
       qint64 writePhysicalFile(const char* buffer, qint64 nbBytes) override
@@ -3951,6 +3969,7 @@ namespace
 
       void flushPhysicalFile() override
       {
+         ++this->flushCalls;
          this->pause(this->pauseNextFlush);
          FM::File::flushPhysicalFile();
       }
@@ -4121,6 +4140,46 @@ void CacheTest::retiredChunkWriteIsDropped()
    cache.deleteEntry(file);
    busyWriter.clear();
    waitingWriter.clear();
+}
+
+/**
+  * The data of a chunk being downloaded is flushed each time 'FLUSH_PERIOD' bytes have been written into it,
+  * and when it is complete.
+  */
+void CacheTest::chunkDataFlushedRegularly()
+{
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   const QByteArray tail("abcdefghij");
+   auto file = newTwoChunksDownload(root, tail);
+   const auto chunks = file->getChunks();
+   QCOMPARE(chunks.size(), 2);
+   auto writer = chunks[0]->getDataWriter();
+   auto tailWriter = chunks[1]->getDataWriter();
+
+   // Each block is 3/8 of the period: it is crossed by the third and the sixth write, and reached by the eighth one.
+   const QByteArray block(FM::FLUSH_PERIOD / 8 * 3, 'x');
+   QList<int> flushes;
+   for (int i = 0; i < 8; ++i)
+   {
+      QVERIFY(!chunks[0]->write(block.constData(), block.size()));
+      flushes << file->flushCalls;
+   }
+   QCOMPARE(flushes, QList<int>({ 0, 0, 1, 1, 1, 2, 2, 3 }));
+   QCOMPARE(chunks[0]->getKnownBytes(), 3 * FM::FLUSH_PERIOD);
+
+   // A complete chunk is flushed whatever its size.
+   QVERIFY(tailWriter->write(tail.constData(), tail.size()));
+   QCOMPARE(file->flushCalls, 4);
+   QVERIFY(chunks[1]->isComplete());
+
+   writer.clear();
+   tailWriter.clear();
 }
 
 void CacheTest::concurrentChunkMetadata()

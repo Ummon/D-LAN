@@ -25,4 +25,10 @@ namespace FM
    // When searching we don't want to send all the hashes of entries
    // because it may take a lot of memory (UDP datagram are very small).
    const int NB_MAX_HASHES_PER_ENTRY_SEARCH = 8;
+
+   // A file being downloaded is flushed to the disk each time this amount of data has been written into one of its chunks,
+   // see 'Chunk::write(..)'. A flush suspends the writes into the file: this amount takes a few milliseconds, the data
+   // received meanwhile fits in the buffer of the socket and the peer doesn't have to suspend its upload. Flushing a
+   // whole chunk at once takes about ten times longer than the socket can absorb.
+   const int FLUSH_PERIOD = 4 * 1024 * 1024; // [byte].
 }
