@@ -20,10 +20,11 @@ pub type Lang {
   Ko
   Ja
   Hi
+  Zh
 }
 
 pub fn all_langs() -> List(Lang) {
-  [En, Fr, De, Es, It, Ru, Ko, Ja, Hi]
+  [En, Fr, De, Es, It, Ru, Ko, Ja, Hi, Zh]
 }
 
 pub fn plain_lang(l: Lang) {
@@ -37,6 +38,7 @@ pub fn plain_lang(l: Lang) {
     Ko -> "한국어"
     Ja -> "日本語"
     Hi -> "हिन्दी"
+    Zh -> "简体中文"
   }
 }
 
@@ -51,6 +53,7 @@ fn parse_lang(lang_str: String) -> Lang {
     "ko" -> Ko
     "ja" -> Ja
     "hi" -> Hi
+    "zh" -> Zh
     _ -> En
   }
 }
@@ -66,6 +69,7 @@ pub fn to_str(l: Lang) -> String {
     Ko -> "ko"
     Ja -> "ja"
     Hi -> "hi"
+    Zh -> "zh"
   }
 }
 
@@ -100,6 +104,7 @@ pub fn title(l: Lang) -> String {
     Ko -> "D-LAN - LAN 파일 공유 소프트웨어"
     Ja -> "D-LAN - LAN ファイル共有ソフトウェア"
     Hi -> "D-LAN - LAN फ़ाइल-साझाकरण सॉफ़्टवेयर"
+    Zh -> "D-LAN - 局域网文件共享软件"
   }
 }
 
@@ -114,6 +119,7 @@ pub fn header_support_us(l: Lang) -> element.Element(a) {
     Ko -> "후원해 주세요!"
     Ja -> "応援してください！"
     Hi -> "हमारा समर्थन करें!"
+    Zh -> "支持我们！"
   }
   |> html.text
 }
@@ -129,6 +135,7 @@ pub fn menu_home(l: Lang) -> element.Element(a) {
     Ko -> "홈"
     Ja -> "ホーム"
     Hi -> "होम"
+    Zh -> "首页"
   }
   |> html.text
 }
@@ -144,6 +151,7 @@ pub fn menu_features(l: Lang) -> element.Element(a) {
     Ko -> "기능"
     Ja -> "機能"
     Hi -> "विशेषताएँ"
+    Zh -> "功能"
   }
   |> html.text
 }
@@ -159,6 +167,7 @@ pub fn menu_faq(l: Lang) -> element.Element(a) {
     Ko -> "FAQ"
     Ja -> "FAQ"
     Hi -> "FAQ"
+    Zh -> "常见问题"
   }
   |> html.text
 }
@@ -174,6 +183,7 @@ pub fn menu_about(l: Lang) -> element.Element(a) {
     Ko -> "소개"
     Ja -> "概要"
     Hi -> "परिचय"
+    Zh -> "关于"
   }
   |> html.text
 }
@@ -198,6 +208,8 @@ pub fn home_title(l: Lang) -> element.Element(a) {
       "D-LAN - オープンソースの <abbr title=\"Local Area Network (ローカルエリアネットワーク)\">LAN</abbr> ファイル共有ソフトウェア。"
     Hi ->
       "D-LAN - मुक्त <abbr title=\"Local Area Network (लोकल एरिया नेटवर्क)\">LAN</abbr> फ़ाइल-साझाकरण सॉफ़्टवेयर।"
+    Zh ->
+      "D-LAN - 一款用于 <abbr title=\"Local Area Network（局域网）\">LAN</abbr> 文件共享的自由软件。"
   }
   |> raw_span
 }
@@ -240,6 +252,10 @@ pub fn home_description(l: Lang, features_url: String) -> element.Element(a) {
       "इसका उद्देश्य LAN-पार्टी जैसे लोकल एरिया नेटवर्क वातावरण में बड़ी मात्रा में डेटा का आसानी से आदान-प्रदान करना है। D-LAN शुरू करने के बाद, बिना किसी विशेष कॉन्फ़िगरेशन के, नेटवर्क के अन्य सभी लोग और उनकी साझा की गई फ़ाइलें आपको अपने-आप दिखाई देंगी। अधिक जानकारी के लिए <a href=\""
       <> features_url
       <> "\">विशेषताओं की सूची</a> देखें।"
+    Zh ->
+      "其目标是在局域网环境（例如 LAN Party）中轻松交换大量数据。启动 D-LAN 后，无需任何特殊配置，即可自动看到网络中的其他所有用户及其共享的文件。更多信息请参阅<a href=\""
+      <> features_url
+      <> "\">功能列表</a>。"
   }
   |> raw_span
 }
@@ -285,6 +301,10 @@ pub fn home_warning_beta(
       "<em>चेतावनी:</em> D-LAN का वर्तमान संस्करण बीटा है और केवल परीक्षण के लिए है। आप किसी भी त्रुटि की रिपोर्ट <a href=\""
       <> bug_report_url
       <> "\">यहाँ</a> कर सकते हैं।"
+    Zh ->
+      "<em>注意：</em>当前版本的 D-LAN 为测试版，仅供测试使用。您可以在<a href=\""
+      <> bug_report_url
+      <> "\">此处</a>报告任何缺陷。"
   }
   |> raw_span
 }
@@ -302,6 +322,7 @@ pub fn features_disclaimer(l: Lang) -> element.Element(a) {
     Ko -> "<h2>다음은 현재 버전의 주요 기능입니다.</h2>"
     Ja -> "<h2>以下は現在のバージョンの主な機能です。</h2>"
     Hi -> "<h2>वर्तमान रिलीज़ की मुख्य विशेषताएँ ये हैं।</h2>"
+    Zh -> "<h2>以下是当前版本的主要功能。</h2>"
   }
   |> raw_span
 }
@@ -317,6 +338,7 @@ pub fn features_feat_1(l: Lang) -> element.Element(a) {
     Ko -> "근거리 네트워크(LAN) 환경에서 파일과 폴더를 공유합니다."
     Ja -> "ローカルエリアネットワーク (LAN) 環境でファイルやフォルダーを共有します。"
     Hi -> "लोकल एरिया नेटवर्क (LAN) में फ़ाइलें और फ़ोल्डर साझा करें।"
+    Zh -> "在局域网（LAN）环境中共享文件和文件夹。"
   }
   |> html.text
 }
@@ -334,6 +356,7 @@ pub fn features_feat_2(l: Lang) -> element.Element(a) {
     Ko -> "분산 전송으로 성능과 안정성을 높입니다."
     Ja -> "分散転送によって性能と信頼性を高めます。"
     Hi -> "बेहतर प्रदर्शन और विश्वसनीयता के लिए वितरित स्थानांतरण।"
+    Zh -> "分布式传输，提高性能和可靠性。"
   }
   |> html.text
 }
@@ -352,6 +375,7 @@ pub fn features_feat_3(l: Lang) -> element.Element(a) {
     Ko -> "매우 쉬운 사용법: 별도의 설정도, 중앙 서버도 필요 없습니다."
     Ja -> "とても簡単に使えます。設定も中央サーバーも不要です。"
     Hi -> "उपयोग में बहुत आसान: न कोई कॉन्फ़िगरेशन, न कोई केंद्रीय सर्वर।"
+    Zh -> "非常易于使用：无需配置，无需中央服务器。"
   }
   |> html.text
 }
@@ -367,6 +391,7 @@ pub fn features_feat_4(l: Lang) -> element.Element(a) {
     Ko -> "모든 피어를 대상으로 한 빠른 색인 검색."
     Ja -> "他のすべてのピアを対象とした高速なインデックス検索。"
     Hi -> "अन्य सभी पीयर्स में तेज़ अनुक्रमित खोज।"
+    Zh -> "在所有其他节点中进行快速索引搜索。"
   }
   |> html.text
 }
@@ -385,6 +410,7 @@ pub fn features_feat_5(l: Lang) -> element.Element(a) {
     Ko -> "다른 피어의 모든 파일과 폴더를 탐색할 수 있습니다."
     Ja -> "他のピアのすべてのファイルとフォルダーを閲覧できます。"
     Hi -> "किसी भी अन्य पीयर की सभी फ़ाइलें और फ़ोल्डर ब्राउज़ करें।"
+    Zh -> "浏览任意其他节点的所有文件和文件夹。"
   }
   |> html.text
 }
@@ -406,6 +432,7 @@ pub fn features_feat_6(l: Lang) -> element.Element(a) {
     Ko -> "다운로드 대기열 관리: 추가, 삭제, 순서 변경이 가능합니다."
     Ja -> "ダウンロードキューの管理。追加、削除、並べ替えができます。"
     Hi -> "डाउनलोड कतार का प्रबंधन: जोड़ना, हटाना या क्रम बदलना।"
+    Zh -> "管理下载队列：可添加、删除或重新排序。"
   }
   |> html.text
 }
@@ -421,6 +448,7 @@ pub fn features_feat_7(l: Lang) -> element.Element(a) {
     Ko -> "전체 채팅 및 대화 채널."
     Ja -> "全体チャットとチャットチャンネル。"
     Hi -> "सामूहिक चैट और चर्चा चैनल।"
+    Zh -> "全局聊天和讨论频道。"
   }
   |> html.text
 }
@@ -442,6 +470,7 @@ pub fn features_feat_8(l: Lang) -> element.Element(a) {
     Ko -> "D-LAN은 그래픽 인터페이스(GUI) 없이 실행할 수 있으며 원격으로 제어할 수 있습니다."
     Ja -> "D-LAN はグラフィカルインターフェース (GUI) なしで実行でき、リモートから操作できます。"
     Hi -> "D-LAN ग्राफ़िकल इंटरफ़ेस (GUI) के बिना चल सकता है और इसे दूर से नियंत्रित किया जा सकता है।"
+    Zh -> "D-LAN 可以在没有图形界面（GUI）的情况下运行，并可远程控制。"
   }
   |> raw_span
 }
@@ -466,6 +495,7 @@ pub fn features_feat_9(l: Lang) -> element.Element(a) {
       "<a href=\"https://github.com/Ummon/D-LAN\">オープンソース</a>。ソースコードは GPLv3 ライセンスで配布されています。"
     Hi ->
       "<a href=\"https://github.com/Ummon/D-LAN\">ओपन सोर्स</a>। सोर्स कोड GPLv3 लाइसेंस के अंतर्गत वितरित किया जाता है।"
+    Zh -> "<a href=\"https://github.com/Ummon/D-LAN\">开源</a>。源代码以 GPLv3 许可证发布。"
   }
   |> raw_span
 }
@@ -490,6 +520,8 @@ pub fn features_feat_10(l: Lang) -> element.Element(a) {
       "いかなる広告や<a href=\"https://ja.wikipedia.org/wiki/%E3%83%9E%E3%83%AB%E3%82%A6%E3%82%A7%E3%82%A2\">マルウェア</a>も含みません。"
     Hi ->
       "किसी भी प्रकार के विज्ञापन या <a href=\"https://hi.wikipedia.org/wiki/%E0%A4%AE%E0%A5%88%E0%A4%B2%E0%A4%B5%E0%A5%87%E0%A4%AF%E0%A4%B0\">मैलवेयर</a> से मुक्त।"
+    Zh ->
+      "不含任何形式的广告或<a href=\"https://zh.wikipedia.org/zh-cn/%E6%81%B6%E6%84%8F%E8%BD%AF%E4%BB%B6\">恶意软件</a>。"
   }
   |> raw_span
 }
@@ -529,6 +561,7 @@ pub fn features_help_us(l: Lang, support_url: String) -> element.Element(a) {
       "हमारा <a href=\""
       <> support_url
       <> "\">समर्थन</a> करना न भूलें। इससे रखरखाव और नई विशेषताएँ जोड़ने में मदद मिलेगी।"
+    Zh -> "别忘了<a href=\"" <> support_url <> "\">支持我们</a>，这将有助于维护和添加新功能。"
   }
   |> raw_span
 }
@@ -550,6 +583,7 @@ pub fn faq_q1(l: Lang) -> element.Element(a) {
     Ko -> "시스템 기본 도구 대신 D-LAN을 사용하면 어떤 이점이 있나요?"
     Ja -> "システム標準のツールの代わりに D-LAN を使う利点は何ですか？"
     Hi -> "सिस्टम के डिफ़ॉल्ट टूल के बजाय D-LAN का उपयोग करने के क्या लाभ हैं?"
+    Zh -> "与系统自带的工具相比，使用 D-LAN 有哪些优势？"
   }
   |> html.text
 }
@@ -574,6 +608,8 @@ pub fn faq_a1(l: Lang) -> element.Element(a) {
       "D-LAN は大量の転送のために設計されており、ダウンロードするファイルのキューを管理できます。ファイルは複数のピアから同時に自動でダウンロードされるため、転送が速くなり、ピアの切断にも備えられます。また、システム標準のファイル共有にはない高速な全体検索機能があります。詳しくは<a href=\"features.html\">機能ページ</a>をご覧ください。"
     Hi ->
       "D-LAN बड़े पैमाने पर स्थानांतरण के लिए बनाया गया है, आप डाउनलोड की जाने वाली फ़ाइलों की कतार का प्रबंधन कर सकते हैं। स्थानांतरण को तेज़ करने और किसी पीयर के बंद हो जाने की स्थिति से निपटने के लिए, एक फ़ाइल एक साथ कई पीयर्स से अपने-आप डाउनलोड की जा सकती है। D-LAN में एक तेज़ वैश्विक खोज सुविधा भी है, जो सिस्टम के डिफ़ॉल्ट फ़ाइल साझाकरण में नहीं होती। अधिक जानकारी आपको <a href=\"features.html\">विशेषताओं के पृष्ठ</a> पर मिलेगी।"
+    Zh ->
+      "D-LAN 专为大量传输而设计，您可以管理待下载文件的队列。一个文件可以同时从多个节点自动下载，从而加快传输速度并应对节点离线的情况。D-LAN 还具备快速的全局搜索功能，这是系统自带的文件共享所没有的。更多信息请参阅<a href=\"features.html\">功能页面</a>。"
   }
   |> raw_span
 }
@@ -589,6 +625,7 @@ pub fn faq_q2(l: Lang) -> element.Element(a) {
     Ko -> "네트워크에서 다른 컴퓨터가 보이지 않습니다."
     Ja -> "ネットワーク上の他のコンピューターが見えません。"
     Hi -> "मुझे अपने नेटवर्क में अन्य कंप्यूटर दिखाई नहीं देते।"
+    Zh -> "我在网络中看不到其他计算机。"
   }
   |> html.text
 }
@@ -734,6 +771,21 @@ pub fn faq_a2(l: Lang) -> element.Element(a) {
       <> " है।</li>"
       <> "<li>सभी पीयर्स को एक ही प्रोटोकॉल का उपयोग करना चाहिए: IPv6 (डिफ़ॉल्ट) या IPv4। इसे <i>सेटिंग्स &gt; नेटवर्क</i> में जाँचें।</li>"
       <> "</ul>"
+    Zh ->
+      "<ul>"
+      <> "<li>请确认您使用的是最新版本的 D-LAN。</li>"
+      <> "<li>请确保防火墙已开放端口 "
+      <> port_udp
+      <> "（<i>UDP</i>）和 "
+      <> port_udp_tcp
+      <> "（<i>UDP + TCP</i>）。</li>"
+      <> "<li>请确保您的网络允许 UDP 组播。IPv6 地址为 "
+      <> ipv6_address
+      <> "，IPv4 地址为 "
+      <> ipv4_address
+      <> "。</li>"
+      <> "<li>所有节点必须使用相同的协议：IPv6（默认）或 IPv4。请在<i>设置 &gt; 网络</i>中检查。</li>"
+      <> "</ul>"
   }
   |> raw_div
 }
@@ -755,6 +807,7 @@ pub fn faq_q3(l: Lang) -> element.Element(a) {
     Ko -> "해시 계산 중에 D-LAN이 컴퓨터를 느리게 합니다. 해시란 무엇이고 왜 필요한가요?"
     Ja -> "ハッシュの計算中に D-LAN がコンピューターを遅くします。ハッシュとは何で、なぜ必要なのですか？"
     Hi -> "हैशिंग के दौरान D-LAN मेरे कंप्यूटर को धीमा कर देता है। यह क्या है और इसकी आवश्यकता क्यों है?"
+    Zh -> "D-LAN 在计算哈希时会拖慢我的计算机。哈希是什么，为什么需要它？"
   }
   |> html.text
 }
@@ -795,6 +848,10 @@ pub fn faq_a3(l: Lang) -> element.Element(a) {
       "किसी फ़ाइल के सभी भागों की पहचान करने के लिए हैश आवश्यक हैं। इनसे कई स्रोतों से डाउनलोड करना और डेटा की अखंडता का सत्यापन संभव होता है। "
       <> "हैशिंग के दौरान केवल एक कोर का उपयोग होता है, और आज बिकने वाले सभी कंप्यूटर मल्टी-कोर हैं। "
       <> "सभी साझा की गई फ़ाइलों को एक बार पढ़ना पड़ता है, जिससे डिस्क की पहुँच थोड़ी धीमी हो सकती है।"
+    Zh ->
+      "哈希用于标识文件的所有部分，它使多源下载和数据完整性校验成为可能。"
+      <> "计算哈希时只使用一个核心，而如今销售的计算机都是多核的。"
+      <> "所有共享文件都必须被读取一次，这可能会稍微降低磁盘访问速度。"
   }
   |> html.text
 }
@@ -811,6 +868,7 @@ pub fn faq_q4(l: Lang) -> element.Element(a) {
     Ko -> "D-LAN이 리소스를 너무 많이 사용합니다. 어떻게 개선할 수 있나요?"
     Ja -> "D-LAN がリソースを使いすぎます。どうすれば改善できますか？"
     Hi -> "D-LAN बहुत अधिक संसाधनों का उपयोग करता है, इसे कैसे कम किया जा सकता है?"
+    Zh -> "D-LAN 占用的资源太多，如何改善？"
   }
   |> html.text
 }
@@ -843,6 +901,9 @@ pub fn faq_a4(l: Lang) -> element.Element(a) {
     Hi ->
       "<p>यदि D-LAN इस समय हैश की गणना कर रहा है, तो आपको इस प्रक्रिया के पूरा होने तक प्रतीक्षा करनी होगी, पिछला प्रश्न देखें। "
       <> "अन्यथा D-LAN की मुख्य विंडो बंद की जा सकती है, जिससे GUI कोर से अलग हो जाएगा और कम संसाधनों का उपयोग करेगा।</p><p>कतार में 10,000 से अधिक फ़ाइलें न रखने का प्रयास करें और समय-समय पर कतार को साफ़ करें।</p>"
+    Zh ->
+      "<p>如果 D-LAN 正在计算哈希，您需要等待该操作完成，参见上一个问题。"
+      <> "否则可以关闭 D-LAN 主窗口，图形界面将与核心断开连接，从而占用更少的资源。</p><p>尽量不要让队列中的文件超过 10,000 个，并定期清理队列。</p>"
   }
   |> raw_div
 }
@@ -859,6 +920,7 @@ pub fn faq_q5(l: Lang) -> element.Element(a) {
     Ko -> "D-LAN을 헤드리스 모드나 서비스로 실행할 수 있나요?"
     Ja -> "D-LAN をヘッドレスモードまたはサービスとして実行できますか？"
     Hi -> "क्या D-LAN को हेडलेस मोड में या सर्विस के रूप में चलाया जा सकता है?"
+    Zh -> "D-LAN 可以以无界面（headless）模式或作为服务运行吗？"
   }
   |> html.text
 }
@@ -1019,6 +1081,23 @@ pub fn faq_a5(l: Lang) -> element.Element(a) {
       <> "</ul>"
       <> "<h3>macOS पर:</h3>"
       <> "<p>D-LAN को केवल हेडलेस रूप में चलाया जा सकता है, सर्विस इंस्टॉल करना समर्थित नहीं है: <code>% ./D-LAN.Core</code> (स्थान: /Applications/D-LAN.app/Contents/MacOS)</p>"
+    Zh ->
+      "<h3>在 Windows 上：</h3>"
+      <> "<ul>"
+      <> "<li>无界面模式：<code>PS&gt; .\\D-LAN.Core.exe</code></li>"
+      <> "<li>安装服务（需在管理员 shell 中运行）：<code>PS&gt; .\\D-LAN.Core.exe -i &lt;username&gt; &lt;password&gt;</code> 其中 (&lt;username&gt;, &lt;password&gt;) 是运行该服务的用户。之后可以在 Windows 服务管理面板中更改。</li>"
+      <> "</ul>"
+      <> "<h3>在 Linux 上：</h3>"
+      <> "<ul>"
+      <> "<li>无界面模式：<code>$ ./D-LAN-"
+      <> linux_version
+      <> ".AppImage --core</code></li>"
+      <> "<li>安装 systemd 服务：<code>$ sudo ./D-LAN-"
+      <> linux_version
+      <> ".AppImage --core -i &lt;username&gt;</code> 其中 &lt;username&gt; 是运行 D-LAN Core 的用户。</li>"
+      <> "</ul>"
+      <> "<h3>在 macOS 上：</h3>"
+      <> "<p>D-LAN 只能以无界面模式运行，不支持安装服务：<code>% ./D-LAN.Core</code>（位置：/Applications/D-LAN.app/Contents/MacOS）</p>"
   }
   |> raw_div
 }
@@ -1035,6 +1114,7 @@ pub fn about_author(l: Lang, name: element.Element(a)) -> element.Element(a) {
       Ko -> "제작자: "
       Ja -> "作者: "
       Hi -> "लेखक: "
+      Zh -> "作者："
     }
       |> html.text,
     name,
@@ -1053,6 +1133,7 @@ pub fn about_linux(l: Lang, name: element.Element(a)) -> element.Element(a) {
       Ko -> "Linux 담당자: "
       Ja -> "Linux メンテナー: "
       Hi -> "Linux अनुरक्षक: "
+      Zh -> "Linux 维护者："
     }
       |> html.text,
     name,
@@ -1128,6 +1209,13 @@ pub fn about_thanks(
       name_2,
       html.text(" को धन्यवाद।"),
     ]
+    Zh -> [
+      html.text("感谢 "),
+      name_1,
+      html.text(" 和 "),
+      name_2,
+      html.text(" 的支持。"),
+    ]
   }
   |> element.fragment
 }
@@ -1143,6 +1231,7 @@ pub fn about_tech(l: Lang) -> element.Element(a) {
     Ko -> "사용된 기술 및 소프트웨어"
     Ja -> "使用している技術とソフトウェア"
     Hi -> "प्रयुक्त तकनीकें और सॉफ़्टवेयर"
+    Zh -> "使用的技术和软件"
   }
   |> html.text
 }
@@ -1158,6 +1247,7 @@ pub fn about_tech_used_d_lan_title(l: Lang) -> element.Element(a) {
     Ko -> "D-LAN"
     Ja -> "D-LAN"
     Hi -> "D-LAN"
+    Zh -> "D-LAN"
   }
   |> html.text
 }
@@ -1227,6 +1317,13 @@ pub fn about_tech_used_d_lan(l: Lang) -> element.Element(a) {
       <> "<li>संदेश सीरियलाइज़ेशन: <a href=\"https://protobuf.dev/\">Protocol Buffers</a></li>"
       <> "<li>क्रिप्टोग्राफ़िक हैश फ़ंक्शन: <a href=\"https://github.com/BLAKE3-team/BLAKE3\">BLAKE3</a></li>"
       <> "<li>डेटाबेस: <a href=\"https://www.sqlite.org/\">SQLite</a></li>"
+    Zh ->
+      "<li>编程语言：<a href=\"https://en.wikipedia.org/wiki/C%2B%2B\">C++</a></li>"
+      <> "<li>框架和库：<a href=\"https://www.qt.io/development/qt-framework\">Qt 6</a></li>"
+      <> "<li>编译器：<a href=\"https://clang.llvm.org/\">Clang</a></li>"
+      <> "<li>消息序列化：<a href=\"https://protobuf.dev/\">Protocol Buffers</a></li>"
+      <> "<li>加密哈希函数：<a href=\"https://github.com/BLAKE3-team/BLAKE3\">BLAKE3</a></li>"
+      <> "<li>数据库：<a href=\"https://www.sqlite.org/\">SQLite</a></li>"
   }
   |> raw_ul
 }
@@ -1242,6 +1339,7 @@ pub fn about_tech_used_tools_title(l: Lang) -> element.Element(a) {
     Ko -> "개발 도구"
     Ja -> "開発ツール"
     Hi -> "विकास उपकरण"
+    Zh -> "开发工具"
   }
   |> html.text
 }
@@ -1320,6 +1418,14 @@ pub fn about_tech_used_tools(l: Lang) -> element.Element(a) {
       <> "<li>दस्तावेज़ीकरण जनरेटर: <a href=\"https://www.doxygen.org/\">Doxygen</a></li>"
       <> "<li>इंस्टॉलर निर्माण: <a href=\"https://www.jrsoftware.org/isinfo.php\">Inno Setup</a></li>"
       <> "<li>वेक्टर और बिटमैप ग्राफ़िक्स संपादक: <a href=\"https://www.affinity.studio/\">Affinity</a></li>"
+    Zh ->
+      "<li>开发环境：<a href=\"https://www.qt.io/development/tools/qt-creator-ide\">Qt Creator</a></li>"
+      <> "<li>版本控制系统：<a href=\"https://git-scm.com/\">git</a></li>"
+      <> "<li>脚本：<a href=\"https://www.nushell.sh/\">Nushell</a></li>"
+      <> "<li>项目管理：<a href=\"https://www.redmine.org/\">Redmine</a></li>"
+      <> "<li>文档生成器：<a href=\"https://www.doxygen.org/\">Doxygen</a></li>"
+      <> "<li>安装程序制作：<a href=\"https://www.jrsoftware.org/isinfo.php\">Inno Setup</a></li>"
+      <> "<li>矢量和位图图形编辑器：<a href=\"https://www.affinity.studio/\">Affinity</a></li>"
   }
   |> raw_ul
 }
@@ -1335,6 +1441,7 @@ pub fn about_tech_used_website_title(l: Lang) -> element.Element(a) {
     Ko -> "웹 사이트"
     Ja -> "ウェブサイト"
     Hi -> "वेबसाइट"
+    Zh -> "网站"
   }
   |> html.text
 }
@@ -1404,6 +1511,13 @@ pub fn about_tech_used_website(l: Lang) -> element.Element(a) {
       <> "<li>JavaScript लाइब्रेरी: <a href=\"https://jquery.com/\">JQuery</a> + <a href=\"https://www.jacklmoore.com/colorbox/\">ColorBox</a></li>"
       <> "<li>सर्वर-साइड भाषा: <a href=\"https://gleam.run/\">Gleam</a></li>"
       <> "<li>वेब सर्वर: <a href=\"https://gleam-wisp.github.io/wisp/\">Wisp</a> + <a href=\"https://hexdocs.pm/mist/\">Mist</a></li>"
+    Zh ->
+      "<li>文档结构：<a href=\"https://www.w3.org/TR/html5/\">HTML5</a></li>"
+      <> "<li>文档样式：<a href=\"https://www.w3.org/Style/CSS/current-work\">CSS 3</a> + <a href=\"https://sass-lang.com\">Sass</a></li>"
+      <> "<li>客户端动态语言：<a href=\"https://zh.wikipedia.org/zh-cn/JavaScript\">JavaScript</a></li>"
+      <> "<li>JavaScript 库：<a href=\"https://jquery.com/\">JQuery</a> + <a href=\"https://www.jacklmoore.com/colorbox/\">ColorBox</a></li>"
+      <> "<li>服务器端语言：<a href=\"https://gleam.run/\">Gleam</a></li>"
+      <> "<li>Web 服务器：<a href=\"https://gleam-wisp.github.io/wisp/\">Wisp</a> + <a href=\"https://hexdocs.pm/mist/\">Mist</a></li>"
   }
   |> raw_ul
 }
@@ -1419,6 +1533,7 @@ pub fn donate_title(l: Lang) -> element.Element(a) {
     Ko -> "후원하기"
     Ja -> "支援する"
     Hi -> "हमारा समर्थन करें"
+    Zh -> "支持我们"
   }
   |> html.text
 }
@@ -1437,6 +1552,7 @@ pub fn donate_intro(l: Lang) -> element.Element(a) {
     Ko -> "이 프로젝트가 마음에 들고 성장하는 모습을 보고 싶다면 후원해 주세요!"
     Ja -> "このプロジェクトを気に入り、発展を望まれるなら、ぜひ応援してください！"
     Hi -> "यदि आपको यह परियोजना पसंद है और आप इसे आगे बढ़ते देखना चाहते हैं, तो हमारा समर्थन करें!"
+    Zh -> "如果您喜欢这个项目并希望看到它不断发展，请支持我们！"
   }
   |> html.text
 }
@@ -1452,6 +1568,7 @@ pub fn donate_buy_me_a_coffee(l: Lang) -> element.Element(a) {
     Ko -> "커피 한 잔 사 주세요"
     Ja -> "コーヒーを一杯おごってください"
     Hi -> "मुझे एक कॉफ़ी पिलाएँ"
+    Zh -> "请我喝杯咖啡"
   }
   |> html.text
 }
@@ -1467,6 +1584,7 @@ pub fn donate_bitcoin_address(l: Lang) -> element.Element(a) {
     Ko -> "비트코인 주소: "
     Ja -> "ビットコインアドレス: "
     Hi -> "बिटकॉइन पता: "
+    Zh -> "比特币地址："
   }
   |> html.text
 }
@@ -1482,6 +1600,7 @@ pub fn donate_ethereum_address(l: Lang) -> element.Element(a) {
     Ko -> "이더리움 주소: "
     Ja -> "イーサリアムアドレス: "
     Hi -> "एथेरियम पता: "
+    Zh -> "以太坊地址："
   }
   |> html.text
 }
@@ -1497,6 +1616,7 @@ pub fn gallery_browse(l: Lang) -> String {
     Ko -> "탐색"
     Ja -> "閲覧"
     Hi -> "ब्राउज़िंग"
+    Zh -> "浏览"
   }
 }
 
@@ -1511,6 +1631,7 @@ pub fn gallery_browse_comment(l: Lang) -> String {
     Ko -> "피어의 파일과 폴더 탐색"
     Ja -> "ピアのファイルとフォルダーの閲覧"
     Hi -> "किसी पीयर की फ़ाइलें और फ़ोल्डर ब्राउज़ करना"
+    Zh -> "浏览某个节点的文件和文件夹"
   }
 }
 
@@ -1525,6 +1646,7 @@ pub fn gallery_search(l: Lang) -> String {
     Ko -> "검색 결과"
     Ja -> "検索結果"
     Hi -> "खोज परिणाम"
+    Zh -> "搜索结果"
   }
 }
 
@@ -1543,6 +1665,7 @@ pub fn gallery_search_comment(l: Lang) -> String {
     Ko -> "결과는 관련도 순으로 정렬되며, 폴더가 위에 표시됩니다."
     Ja -> "結果は関連度順に並べられ、フォルダーが上に表示されます。"
     Hi -> "परिणाम प्रासंगिकता के अनुसार क्रमबद्ध हैं। फ़ोल्डर सबसे ऊपर रखे जाते हैं।"
+    Zh -> "结果按相关性排序，文件夹排在最前面。"
   }
 }
 
@@ -1557,6 +1680,7 @@ pub fn gallery_download_folders(l: Lang) -> String {
     Ko -> "다운로드 - 폴더"
     Ja -> "ダウンロード - フォルダー"
     Hi -> "डाउनलोड - फ़ोल्डर"
+    Zh -> "下载 - 文件夹"
   }
 }
 
@@ -1577,6 +1701,7 @@ pub fn gallery_download_folders_comment(l: Lang) -> String {
     Ko -> "이 화면은 파일을 폴더와 함께 보여 주며, 모두 이름순으로 정렬됩니다."
     Ja -> "このビューはファイルをフォルダーとともに表示します。どちらもアルファベット順に並びます。"
     Hi -> "यह दृश्य फ़ाइलों को उनके फ़ोल्डरों के साथ दिखाता है, दोनों वर्णानुक्रम में क्रमबद्ध हैं।"
+    Zh -> "此视图显示文件及其所在的文件夹，两者均按字母顺序排序。"
   }
 }
 
@@ -1591,6 +1716,7 @@ pub fn gallery_download_files(l: Lang) -> String {
     Ko -> "다운로드 - 파일"
     Ja -> "ダウンロード - ファイル"
     Hi -> "डाउनलोड - फ़ाइलें"
+    Zh -> "下载 - 文件"
   }
 }
 
@@ -1612,6 +1738,7 @@ pub fn gallery_download_files_comment(l: Lang) -> String {
     Ja -> "このビューはファイルのみを表示します。並べ替えができ、上にあるファイルから先にダウンロードされます。"
     Hi ->
       "यह दृश्य केवल फ़ाइलें दिखाता है, उनका क्रम बदला जा सकता है, सबसे ऊपर की फ़ाइलें पहले डाउनलोड होती हैं।"
+    Zh -> "此视图仅显示文件，可以重新排列，排在上面的文件会先下载。"
   }
 }
 
@@ -1626,6 +1753,7 @@ pub fn gallery_upload(l: Lang) -> String {
     Ko -> "업로드 화면"
     Ja -> "アップロード画面"
     Hi -> "अपलोड दृश्य"
+    Zh -> "上传视图"
   }
 }
 
@@ -1640,6 +1768,7 @@ pub fn gallery_skin(l: Lang) -> String {
     Ko -> "스킨"
     Ja -> "スキン"
     Hi -> "स्किन"
+    Zh -> "皮肤"
   }
 }
 
@@ -1654,6 +1783,7 @@ pub fn download_button_download(l: Lang) -> element.Element(a) {
     Ko -> "D-LAN 다운로드"
     Ja -> "D-LAN をダウンロード"
     Hi -> "D-LAN डाउनलोड करें"
+    Zh -> "下载 D-LAN"
   }
   |> html.text
 }
@@ -1679,6 +1809,7 @@ pub fn download_button_version(
     Ko -> #("버전 " <> version <> " (", "용)")
     Ja -> #("バージョン " <> version <> " (", " 用)")
     Hi -> #("संस्करण " <> version <> " (", " के लिए)")
+    Zh -> #("版本 " <> version <> "（适用于 ", "）")
   }
 
   element.fragment([
@@ -1699,6 +1830,7 @@ pub fn download_microsoft_store(l: Lang) -> element.Element(a) {
     Ko -> html.text("Microsoft Store에서 설치")
     Ja -> html.text("Microsoft Store からインストール")
     Hi -> html.text("Microsoft Store से इंस्टॉल करें")
+    Zh -> html.text("从 Microsoft Store 安装")
   }
 }
 
@@ -1811,6 +1943,7 @@ pub fn format_date(l: Lang, date: calendar.Date) -> String {
     Ko -> year <> "년 " <> month_number <> "월 " <> day <> "일"
     Ja -> year <> "年" <> month_number <> "月" <> day <> "日"
     Hi -> day <> " " <> months.6 <> " " <> year
+    Zh -> year <> "年" <> month_number <> "月" <> day <> "日"
   }
 }
 
@@ -1829,6 +1962,7 @@ pub fn download_button_released(
     Ko -> "출시일 : " <> date
     Ja -> "リリース日: " <> date
     Hi -> "रिलीज़ की तारीख: " <> date
+    Zh -> "发布日期：" <> date
   }
   |> html.text
 }
@@ -1844,6 +1978,7 @@ pub fn download_button_torrent(l: Lang) -> element.Element(a) {
     Ko -> "BitTorrent로 다운로드"
     Ja -> "BitTorrent でダウンロード"
     Hi -> "BitTorrent से डाउनलोड करें"
+    Zh -> "通过 BitTorrent 下载"
   }
   |> html.text
 }
