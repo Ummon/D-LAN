@@ -297,7 +297,7 @@
 <context>
     <name>GUI::DownloadsDelegate</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+57"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+111"/>
         <source>Queued</source>
         <translation>En file d&apos;attente</translation>
     </message>
@@ -306,22 +306,22 @@
         <translation type="vanished">Obtention des empreintes..</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+2"/>
         <source>Getting hashes..</source>
         <translation>Obtention des empreintes..</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="+8"/>
         <source>Complete</source>
         <translation>Terminé</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+2"/>
         <source>Paused</source>
         <translation>En pause</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+2"/>
         <source>Waiting..</source>
         <translation>En attente..</translation>
     </message>
@@ -422,7 +422,7 @@
 <context>
     <name>GUI::DownloadsWidget</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+164"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+135"/>
         <source>Open location</source>
         <translation>Ouvrir le dossier</translation>
     </message>
@@ -742,7 +742,7 @@
 <context>
     <name>GUI::SearchMenu</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="+273"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="+277"/>
         <source>Browse</source>
         <translation>Explorer</translation>
     </message>

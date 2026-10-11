@@ -297,7 +297,7 @@
 <context>
     <name>GUI::DownloadsDelegate</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="57"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="111"/>
         <source>Queued</source>
         <translation>대기열에 있음</translation>
     </message>
@@ -306,22 +306,22 @@
         <translation type="vanished">해시 가져오는 중..</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="60"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="113"/>
         <source>Getting hashes..</source>
         <translation>해시 가져오는 중..</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="70"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="121"/>
         <source>Complete</source>
         <translation>완료</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="73"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="123"/>
         <source>Paused</source>
         <translation>일시정지됨</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="76"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="125"/>
         <source>Waiting..</source>
         <translation>대기 중..</translation>
     </message>
@@ -422,67 +422,67 @@
 <context>
     <name>GUI::DownloadsWidget</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="240"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="260"/>
         <source>Open location</source>
         <translation>위치 열기</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="249"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="269"/>
         <source>Move to top</source>
         <translation>맨 위로 이동</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="272"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="292"/>
         <source>Pause selected entries</source>
         <translation>선택한 항목 일시정지</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="272"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="292"/>
         <source>Unpause selected entries</source>
         <translation>선택한 항목 재개</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="360"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="380"/>
         <source>Remove selected downloads</source>
         <translation>선택한 다운로드 제거</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="361"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="381"/>
         <source>Are you sure to remove the selected downloads? There is one or more unfinished download.</source>
         <translation>선택한 다운로드를 제거하시겠습니까? 완료되지 않은 다운로드가 하나 이상 있습니다.</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="443"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="463"/>
         <source>Switch to file list view</source>
         <translation>파일 목록 보기로 전환</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="455"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="475"/>
         <source>Switch to tree view</source>
         <translation>트리 보기로 전환</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="498"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="518"/>
         <source>&lt;All&gt;</source>
         <translation>&lt;전체&gt;</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="498"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="518"/>
         <source>Complete</source>
         <translation>완료</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="498"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="518"/>
         <source>Downloading</source>
         <translation>다운로드 중</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="498"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="518"/>
         <source>Queued</source>
         <translation>대기열에 있음</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="498"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="518"/>
         <source>Inactive</source>
         <translation>비활성</translation>
     </message>
@@ -742,7 +742,7 @@
 <context>
     <name>GUI::SearchMenu</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="273"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="277"/>
         <source>Browse</source>
         <translation>탐색</translation>
     </message>
@@ -784,32 +784,32 @@
 <context>
     <name>GUI::SearchWidget</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="405"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="409"/>
         <source>Open location</source>
         <translation>위치 열기</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="406"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="410"/>
         <source>Browse</source>
         <translation>탐색</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="437"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="441"/>
         <source>1 directory</source>
         <translation>폴더 1개</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="437"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="441"/>
         <source>%1 directories</source>
         <translation>폴더 %1개</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="438"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="442"/>
         <source>1 file</source>
         <translation>파일 1개</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="438"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="442"/>
         <source>%1 files</source>
         <translation>파일 %1개</translation>
     </message>

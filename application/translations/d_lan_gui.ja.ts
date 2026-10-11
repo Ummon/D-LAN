@@ -297,27 +297,27 @@
 <context>
     <name>GUI::DownloadsDelegate</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="57"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="111"/>
         <source>Queued</source>
         <translation>キュー待ち</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="60"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="113"/>
         <source>Getting hashes..</source>
         <translation>ハッシュを取得中..</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="70"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="121"/>
         <source>Complete</source>
         <translation>完了</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="73"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="123"/>
         <source>Paused</source>
         <translation>一時停止</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="76"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="125"/>
         <source>Waiting..</source>
         <translation>待機中..</translation>
     </message>
@@ -418,67 +418,67 @@
 <context>
     <name>GUI::DownloadsWidget</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="240"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="260"/>
         <source>Open location</source>
         <translation>場所を開く</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="249"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="269"/>
         <source>Move to top</source>
         <translation>先頭に移動</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="272"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="292"/>
         <source>Pause selected entries</source>
         <translation>選択した項目を一時停止</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="272"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="292"/>
         <source>Unpause selected entries</source>
         <translation>選択した項目を再開</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="360"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="380"/>
         <source>Remove selected downloads</source>
         <translation>選択したダウンロードを削除</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="361"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="381"/>
         <source>Are you sure to remove the selected downloads? There is one or more unfinished download.</source>
         <translation>選択したダウンロードを削除してもよろしいですか？未完了のダウンロードが含まれています。</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="443"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="463"/>
         <source>Switch to file list view</source>
         <translation>ファイル一覧表示に切り替え</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="455"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="475"/>
         <source>Switch to tree view</source>
         <translation>ツリー表示に切り替え</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="498"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="518"/>
         <source>&lt;All&gt;</source>
         <translation>&lt;すべて&gt;</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="498"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="518"/>
         <source>Complete</source>
         <translation>完了</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="498"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="518"/>
         <source>Downloading</source>
         <translation>ダウンロード中</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="498"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="518"/>
         <source>Queued</source>
         <translation>キュー待ち</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="498"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="518"/>
         <source>Inactive</source>
         <translation>停止中</translation>
     </message>
@@ -738,7 +738,7 @@
 <context>
     <name>GUI::SearchMenu</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="273"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="277"/>
         <source>Browse</source>
         <translation>閲覧</translation>
     </message>
@@ -780,32 +780,32 @@
 <context>
     <name>GUI::SearchWidget</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="405"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="409"/>
         <source>Open location</source>
         <translation>場所を開く</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="406"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="410"/>
         <source>Browse</source>
         <translation>閲覧</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="437"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="441"/>
         <source>1 directory</source>
         <translation>1 ディレクトリ</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="437"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="441"/>
         <source>%1 directories</source>
         <translation>%1 ディレクトリ</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="438"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="442"/>
         <source>1 file</source>
         <translation>1 ファイル</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="438"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="442"/>
         <source>%1 files</source>
         <translation>%1 ファイル</translation>
     </message>

@@ -297,27 +297,27 @@
 <context>
     <name>GUI::DownloadsDelegate</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+57"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+111"/>
         <source>Queued</source>
         <translation>कतार में</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+2"/>
         <source>Getting hashes..</source>
         <translation>हैश प्राप्त किए जा रहे हैं..</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="+8"/>
         <source>Complete</source>
         <translation>पूर्ण</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+2"/>
         <source>Paused</source>
         <translation>रोका गया</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+2"/>
         <source>Waiting..</source>
         <translation>प्रतीक्षा में..</translation>
     </message>
@@ -418,7 +418,7 @@
 <context>
     <name>GUI::DownloadsWidget</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+164"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+135"/>
         <source>Open location</source>
         <translation>स्थान खोलें</translation>
     </message>
@@ -738,7 +738,7 @@
 <context>
     <name>GUI::SearchMenu</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="+273"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="+277"/>
         <source>Browse</source>
         <translation>ब्राउज़ करें</translation>
     </message>

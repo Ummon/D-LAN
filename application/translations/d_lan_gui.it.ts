@@ -297,7 +297,7 @@
 <context>
     <name>GUI::DownloadsDelegate</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="57"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="111"/>
         <source>Queued</source>
         <translation>In coda</translation>
     </message>
@@ -306,22 +306,22 @@
         <translation type="vanished">Recupero degli hash..</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="60"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="113"/>
         <source>Getting hashes..</source>
         <translation>Recupero degli hash..</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="70"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="121"/>
         <source>Complete</source>
         <translation>Completato</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="73"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="123"/>
         <source>Paused</source>
         <translation>In pausa</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="76"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="125"/>
         <source>Waiting..</source>
         <translation>In attesa..</translation>
     </message>
@@ -422,67 +422,67 @@
 <context>
     <name>GUI::DownloadsWidget</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="240"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="260"/>
         <source>Open location</source>
         <translation>Apri percorso</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="249"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="269"/>
         <source>Move to top</source>
         <translation>Sposta in cima</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="272"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="292"/>
         <source>Pause selected entries</source>
         <translation>Metti in pausa gli elementi selezionati</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="272"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="292"/>
         <source>Unpause selected entries</source>
         <translation>Riprendi gli elementi selezionati</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="360"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="380"/>
         <source>Remove selected downloads</source>
         <translation>Rimuovi i download selezionati</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="361"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="381"/>
         <source>Are you sure to remove the selected downloads? There is one or more unfinished download.</source>
         <translation>Rimuovere i download selezionati? Uno o più download non sono ancora completati.</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="443"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="463"/>
         <source>Switch to file list view</source>
         <translation>Passa alla vista elenco file</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="455"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="475"/>
         <source>Switch to tree view</source>
         <translation>Passa alla vista ad albero</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="498"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="518"/>
         <source>&lt;All&gt;</source>
         <translation>&lt;Tutti&gt;</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="498"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="518"/>
         <source>Complete</source>
         <translation>Completato</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="498"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="518"/>
         <source>Downloading</source>
         <translation>In scaricamento</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="498"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="518"/>
         <source>Queued</source>
         <translation>In coda</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="498"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="518"/>
         <source>Inactive</source>
         <translation>Inattivo</translation>
     </message>
@@ -742,7 +742,7 @@
 <context>
     <name>GUI::SearchMenu</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="273"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="277"/>
         <source>Browse</source>
         <translation>Sfoglia</translation>
     </message>
@@ -784,32 +784,32 @@
 <context>
     <name>GUI::SearchWidget</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="405"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="409"/>
         <source>Open location</source>
         <translation>Apri percorso</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="406"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="410"/>
         <source>Browse</source>
         <translation>Sfoglia</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="437"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="441"/>
         <source>1 directory</source>
         <translation>1 cartella</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="437"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="441"/>
         <source>%1 directories</source>
         <translation>%1 cartelle</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="438"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="442"/>
         <source>1 file</source>
         <translation>1 file</translation>
     </message>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="438"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="442"/>
         <source>%1 files</source>
         <translation>%1 file</translation>
     </message>
