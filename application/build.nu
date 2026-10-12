@@ -64,12 +64,13 @@ def "main translations" [--build-dir: path] {
     run_checked cmake --build $release_directory --config Release --target update_translations
     run_checked cmake --build $release_directory --config Release --target dlan_translations
 
-    for $project in [GUI Core] {
-        mkdir ($project)/output/debug/languages
+    # Windows path separators are glob escapes, match just the filename in a scoped directory.
+    let translations = do { cd $release_directory; glob --no-dir "*.qm" }
+    for $output_directory in (glob --no-file "build/*_{Debug,Release}/output") {
+        let languages_directory = $output_directory | path join "languages"
+        mkdir $languages_directory
+        cp ...$translations $languages_directory
     }
-
-    cp ($release_directory)/*gui*.qm GUI/output/debug/languages
-    cp ($release_directory)/*core*.qm Core/output/debug/languages
 
     mkdir Setups/Windows/setup_bundle/languages
     cp ($release_directory)/*gui*.qm Setups/Windows/setup_bundle/languages
