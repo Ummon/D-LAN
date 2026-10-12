@@ -173,6 +173,70 @@ private slots:
       QCOMPARE(connection->saved.size(), 1);
    }
 
+   void tabsFollowConnection()
+   {
+      auto connection = QSharedPointer<RCC::CoreConnection>::create();
+      GUI::SharedEntryListModel shares;
+      GUI::SettingsWidget widget(connection, shares);
+      auto* tabs = widget.findChild<QTabWidget*>("tabWidget");
+      QVERIFY(tabs);
+      const QStringList names { "tabBasicSettings", "tabCoreConnection", "tabAdvancedSettings", "tabNetworkSettings", "tabCoreAdvancedSettings" };
+      const QStringList titles { "Basic", "Core connection", "User interface", "Network", "Advanced" };
+      enum { BASIC, CORE_CONNECTION, USER_INTERFACE, NETWORK, ADVANCED };
+      QCOMPARE(tabs->count(), 5);
+      const auto check = [&](bool connected) {
+         for (int i = 0; i < tabs->count(); ++i)
+         {
+            QCOMPARE(tabs->widget(i)->objectName(), names[i]);
+            QCOMPARE(tabs->tabText(i), titles[i]);
+            // The other tabs hold some settings of the core.
+            QCOMPARE(tabs->isTabEnabled(i), connected || i == USER_INTERFACE || i == CORE_CONNECTION);
+         }
+      };
+      for (const char* name : { "txtCoreAddress", "txtPassword", "butConnect", "butDisconnect", "butResetCoreAddress", "butChangePassword", "butResetPassword" })
+         QVERIFY(tabs->widget(CORE_CONNECTION)->findChild<QWidget*>(name));
+
+      // Without a core the tab to connect to one is shown.
+      check(false);
+      QCOMPARE(tabs->currentIndex(), int(CORE_CONNECTION));
+
+      // Opening the settings shows the basic ones only if there is a core.
+      widget.activate();
+      QCOMPARE(tabs->currentIndex(), int(CORE_CONNECTION));
+      emit connection->connected();
+      check(true);
+      QCOMPARE(tabs->currentIndex(), int(CORE_CONNECTION));
+      widget.activate();
+      QCOMPARE(tabs->currentIndex(), int(BASIC));
+
+      tabs->setCurrentIndex(NETWORK);
+      emit connection->disconnected(false);
+      check(false);
+      QCOMPARE(tabs->currentIndex(), int(CORE_CONNECTION));
+
+      // The user interface doesn't depend on the core: its tab is kept.
+      emit connection->connected();
+      tabs->setCurrentIndex(USER_INTERFACE);
+      emit connection->disconnected(false);
+      QCOMPARE(tabs->currentIndex(), int(USER_INTERFACE));
+   }
+
+   void passwordPlaceholderTellsIfDefined()
+   {
+      auto connection = QSharedPointer<RCC::CoreConnection>::create();
+      GUI::SharedEntryListModel shares;
+      GUI::SettingsWidget widget(connection, shares);
+      auto* password = widget.findChild<QLineEdit*>("txtPassword");
+      QVERIFY(password);
+      Protos::GUI::State state;
+      state.add_peers()->set_nick("Test");
+      emit connection->newState(state);
+      QCOMPARE(password->placeholderText(), QString("No password defined"));
+      state.set_password_defined(true);
+      emit connection->newState(state);
+      QCOMPARE(password->placeholderText(), QString("A password is defined"));
+   }
+
    void ignoredExtensions()
    {
       class Connection : public RCC::CoreConnection
@@ -206,11 +270,12 @@ private slots:
          return extensions;
       };
 
-      // It's a setting of the core: the tab follows the connection, right after the "User interface" one.
-      QCOMPARE(tabs->indexOf(tab), 3);
-      QVERIFY(!tabs->isTabEnabled(3));
+      // It's a setting of the core: the tab follows the connection.
+      const int tabIndex = tabs->indexOf(tab);
+      QVERIFY(tabIndex != -1);
+      QVERIFY(!tabs->isTabEnabled(tabIndex));
       emit connection->connected();
-      QVERIFY(tabs->isTabEnabled(3));
+      QVERIFY(tabs->isTabEnabled(tabIndex));
 
       Protos::GUI::State state;
       state.add_peers()->set_nick("Test");
@@ -287,7 +352,7 @@ private slots:
       QCOMPARE(connection->saved.size(), 4);
 
       emit connection->disconnected(false);
-      QVERIFY(!tabs->isTabEnabled(3));
+      QVERIFY(!tabs->isTabEnabled(tabIndex));
    }
 
    void languageChangeKeepsStyle()

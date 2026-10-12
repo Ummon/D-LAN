@@ -72,6 +72,8 @@ namespace GUI
       bool canDropShared(const QMimeData* mimeData) const;
       bool dragDropEventShared(QEvent* event);
 
+      void setCoreTabsEnabled(bool enabled);
+
       QStringList getIgnoredExtensions() const;
       void setIgnoredExtensions(QStringList extensions);
 

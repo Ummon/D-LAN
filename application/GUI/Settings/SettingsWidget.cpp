@@ -106,7 +106,7 @@ SettingsWidget::SettingsWidget(
    connect(this->ui->butResetCoreAddress, &QPushButton::clicked, this, &SettingsWidget::resetCoreAddress);
    connect(this->ui->butConnect, &QPushButton::clicked, this, &SettingsWidget::connectToCore);
    connect(this->ui->butDisconnect, &QPushButton::clicked, this, &SettingsWidget::disconnectFromTheCore);
-   this->ui->tabAdvancedSettings->installEventFilter(this);
+   this->ui->tabCoreConnection->installEventFilter(this);
 
    // Files and directories can be dropped from the file explorer to share them, see 'dragDropEventShared(..)'.
    this->ui->tblShareDirs->viewport()->setAcceptDrops(true);
@@ -543,7 +543,7 @@ void SettingsWidget::newState(const Protos::GUI::State& state)
 
    if ((this->corePasswordDefined = state.password_defined()))
    {
-      this->ui->txtPassword->setPlaceholderText("");
+      this->ui->txtPassword->setPlaceholderText(tr("A password is defined"));
       this->ui->butResetPassword->setEnabled(true);
       this->ui->butChangePassword->setText(tr("Change the password"));
    }
@@ -602,9 +602,7 @@ void SettingsWidget::coreConnected()
    SETTINGS.save();
 
    this->ui->txtPassword->clear();
-   this->ui->tabWidget->setTabEnabled(0, true);
-   this->ui->tabWidget->setTabEnabled(1, true);
-   this->ui->tabWidget->setTabEnabled(this->ui->tabWidget->indexOf(this->ui->tabCoreAdvancedSettings), true);
+   this->setCoreTabsEnabled(true);
 
    this->ui->butConnect->setDisabled(false);
    this->ui->butConnect->setText(tr("Connect"));
@@ -618,9 +616,11 @@ void SettingsWidget::coreDisconnected()
 {
    this->getAtLeastOneState = false;
 
-   this->ui->tabWidget->setTabEnabled(0, false);
-   this->ui->tabWidget->setTabEnabled(1, false);
-   this->ui->tabWidget->setTabEnabled(this->ui->tabWidget->indexOf(this->ui->tabCoreAdvancedSettings), false);
+   // Without a core the tab to connect to one is shown, except if the user is setting the user interface.
+   const bool userInterfaceShown = this->ui->tabWidget->currentWidget() == this->ui->tabAdvancedSettings;
+   this->setCoreTabsEnabled(false);
+   if (!userInterfaceShown)
+      this->ui->tabWidget->setCurrentWidget(this->ui->tabCoreConnection);
 
    this->ui->butConnect->setDisabled(false);
    this->ui->butConnect->setText(tr("Connect"));
@@ -628,6 +628,15 @@ void SettingsWidget::coreDisconnected()
 
    this->ui->butChangePassword->setDisabled(true);
    this->ui->butResetPassword->setDisabled(true);
+}
+
+/**
+  * The tabs holding some settings of the core are only usable when connected to it.
+  */
+void SettingsWidget::setCoreTabsEnabled(bool enabled)
+{
+   for (QWidget* tab : { this->ui->tabBasicSettings, this->ui->tabNetworkSettings, this->ui->tabCoreAdvancedSettings })
+      this->ui->tabWidget->setTabEnabled(this->ui->tabWidget->indexOf(tab), enabled);
 }
 
 void SettingsWidget::refreshNetworkInterfaces()
@@ -961,7 +970,7 @@ void SettingsWidget::refreshIgnoredExtensionsButtons()
 
 bool SettingsWidget::eventFilter(QObject* obj, QEvent* event)
 {
-   if (obj == this->ui->tabAdvancedSettings && event->type() == QEvent::Show)
+   if (obj == this->ui->tabCoreConnection && event->type() == QEvent::Show)
    {
       this->ui->txtPassword->clear();
       this->ui->txtCoreAddress->setText(SETTINGS.get<QString>("core_address"));
@@ -987,6 +996,7 @@ void SettingsWidget::changeEvent(QEvent* event)
 
 void SettingsWidget::onActivate()
 {
-   if (this->ui->tabWidget->isTabEnabled(0))
-      this->ui->tabWidget->setCurrentIndex(0);
+   this->ui->tabWidget->setCurrentWidget(
+      this->ui->tabWidget->isTabEnabled(0) ? this->ui->tabBasicSettings : this->ui->tabCoreConnection
+   );
 }
