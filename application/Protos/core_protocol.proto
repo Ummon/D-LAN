@@ -64,7 +64,7 @@ message ChunksNeeded {
 // type: 0x62
 message ChunksOwned {
    uint64 tag = 1; // The repeated number. The reply to one of the last three 'ChunksNeeded' messages is accepted.
-   repeated bool chunk_state = 2; // The array size must have the same size of HaveChunks.chunks.
+   repeated bool chunk_state = 2; // The array size must have the same size of ChunksNeeded.chunks.
 }
 
 /////

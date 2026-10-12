@@ -64,7 +64,7 @@ UDPListener::UDPListener(
    downloadManager(downloadManager),
    maxChunksNeededDatagramSize(0),
    nextHashRequestType(FIRST_HASHES),
-   loggerChunksNeeded(LM::Builder::newLogger("NetworkListener (IMAlive)"))
+   loggerChunksNeeded(LM::Builder::newLogger("NetworkListener (chunkNeeded)"))
 {
    connect(&this->multicastSocket, &QUdpSocket::readyRead, this, &UDPListener::processPendingMulticastDatagrams);
    connect(&this->unicastSocket, &QUdpSocket::readyRead, this, &UDPListener::processPendingUnicastDatagrams);

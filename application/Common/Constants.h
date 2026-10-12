@@ -28,7 +28,7 @@ namespace Common
       // 2 -> 3 : BLAKE -> Sha-1
       // 3 -> 4 : New chat protocol + changes of the 'GET_ENTRIES_RESULT' message. (Breaking compatible with previous versions).
       // 4 -> 5 : Not sending all trailing empty chunks when browsing or searching break the compatibilty with the 1.2 branch.
-      // 5 -> 6 : Hashes needed is now sent in a specific message. Peer-to-peer chat message.
+      // 5 -> 6 : Hashes needed is now sent in a specific message.
       static const quint32 PROTOCOL_VERSION;
 
       // The period of the 'IMAlive' message, see "Protos/core_protocol.proto".
