@@ -111,6 +111,7 @@ pub fn localized_date_test() {
   assert tr.format_date(tr.Ja, released) == "2026年7月10日"
   assert tr.format_date(tr.Hi, released) == "10 जुलाई 2026"
   assert tr.format_date(tr.Zh, released) == "2026年7月10日"
+  assert tr.format_date(tr.Pt, released) == "10 de julho de 2026"
 
   assert tr.format_date(tr.Fr, calendar.Date(2026, calendar.January, 5))
     == "5 janvier 2026"
@@ -205,6 +206,7 @@ pub fn current_lang_test() {
   // Language tags are case insensitive and their subtags are ignored.
   assert lang("FR-CH") == tr.Fr
   assert lang("zh-CN") == tr.Zh
+  assert lang("pt-BR") == tr.Pt
 
   // Without a quality an entry has the best one, ties keep the header order.
   assert lang("de,fr") == tr.De
