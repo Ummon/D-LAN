@@ -14,6 +14,9 @@ namespace GUI
    class ChatDocumentCache
    {
    public:
+      // The margin around the content of the documents, known without having to lay a document out.
+      static constexpr int DOCUMENT_MARGIN = 4;
+
       explicit ChatDocumentCache(const Emoticons& emoticons);
       EmoticonTextDocument& get(const QString& markdown, const QFont& font, int width);
 

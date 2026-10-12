@@ -36,6 +36,12 @@ namespace
       QString lastMessage;
       QList<Common::Hash> answers;
       QList<QSharedPointer<PendingResult>> results; // In the order the messages were sent.
+      Common::Hash remoteID; // The messages of this peer are ours.
+
+      Common::Hash getRemoteID() const override
+      {
+         return this->remoteID;
+      }
 
       QSharedPointer<RCC::ISendChatMessageResult> sendChatMessage(
          const QString& message, const QString&, const QList<Common::Hash>& answers) override
@@ -727,58 +733,60 @@ private slots:
       QVERIFY(oversized.isNull());
    }
 
-   void chatSizeCacheTracksFontWidthAndFormattedContent()
+   void chatSizeCacheTracksFontAndWidth()
    {
       Fixture f;
       auto* view = f.widget.findChild<QTableView*>("tblChat");
       QVERIFY(view);
       const auto index = view->model()->index(0, 0);
-      GUI::ChatDocumentCache fresh(f.emoticons);
+
+      // The same message in a model which doesn't keep the sizes.
+      QStandardItemModel uncached(1, 1);
+      for (const int role : { int(Qt::DisplayRole), int(GUI::ChatModel::TimeRole), int(GUI::ChatModel::NickRole),
+            int(GUI::ChatModel::SeparateSenderLineRole), int(GUI::ChatModel::DayRole) })
+         uncached.setData(uncached.index(0, 0), index.data(role), role);
+      GUI::ChatDelegate reference(f.emoticons);
+
       QStyleOptionViewItem option;
       option.initFrom(view);
       option.widget = view;
-      for (const auto& locale : { QLocale(QLocale::English), QLocale(QLocale::German) })
-      {
-         SETTINGS.set("language", locale);
-         f.widget.chatModel.languageChanged();
-         for (const int width : { 90, 400 })
-            for (const int fontSize : { 10, 24 })
-            {
-               option.rect = QRect(0, 0, width, 100);
-               option.font.setPointSize(fontSize);
-               const QSize expected(width, qCeil(fresh.get(index.data().toString(), option.font, width).size().height()));
-               QCOMPARE(view->itemDelegate()->sizeHint(option, index), expected);
-               QCOMPARE(view->itemDelegate()->sizeHint(option, index), expected);
-            }
-      }
-      SETTINGS.set("language", QLocale::system());
-      f.widget.chatModel.languageChanged();
+      QSet<int> heights;
+      for (const int width : { 90, 400 })
+         for (const int fontSize : { 10, 24 })
+         {
+            option.rect = QRect(0, 0, width, 100);
+            option.font.setPointSize(fontSize);
+            const QSize expected = reference.sizeHint(option, uncached.index(0, 0));
+            QCOMPARE(view->itemDelegate()->sizeHint(option, index), expected);
+            QCOMPARE(view->itemDelegate()->sizeHint(option, index), expected);
+            heights << expected.height();
+         }
+      QCOMPARE(heights.size(), 4);
    }
 
-   void chatLinesAreKeptAndFollowTheLanguage()
+   void chatDaysAndCopiedLinesFollowTheLanguage()
    {
       Fixture f;
       auto& model = f.widget.chatModel;
       QSignalSpy changes(&model, &QAbstractItemModel::dataChanged);
 
-      // The messages of the fixture are old: their lines show the date, in the format of the language.
+      // The messages of the fixture are old and from the same day: the first one shows it, in the language.
       const QDate date = QDateTime::fromMSecsSinceEpoch(1000).date();
       const auto shortDate = [date](const QLocale& locale) { return locale.toString(date, locale.dateFormat(QLocale::ShortFormat)); };
       const QLocale english(QLocale::English);
       const QLocale german(QLocale::German);
       QVERIFY(shortDate(english) != shortDate(german));
+      QVERIFY(english.toString(date, QLocale::LongFormat) != german.toString(date, QLocale::LongFormat));
 
       SETTINGS.set("language", english);
       model.languageChanged();
       QCOMPARE(changes.size(), 1);
       QCOMPARE(changes[0][0].value<QModelIndex>().row(), 0);
       QCOMPARE(changes[0][1].value<QModelIndex>().row(), model.rowCount() - 1);
+      QCOMPARE(model.index(0, 0).data(GUI::ChatModel::DayRole).toString(), english.toString(date, QLocale::LongFormat));
+      QVERIFY(!model.index(1, 0).data(GUI::ChatModel::DayRole).isValid());
       const QString englishLine = model.getLineStr(0);
       QVERIFY(englishLine.startsWith('[' + shortDate(english) + ' '));
-
-      // The line isn't built again when nothing has changed.
-      QCOMPARE(model.getLineStr(0).constData(), englishLine.constData());
-      QCOMPARE(model.index(0, 0).data().toString().constData(), englishLine.constData());
 
       // The widget tells its model when the language of the GUI changes.
       SETTINGS.set("language", german);
@@ -786,17 +794,173 @@ private slots:
       QApplication::sendEvent(&f.widget, &languageChange);
       QCoreApplication::processEvents();
       QCOMPARE(changes.size(), 2);
+      QCOMPARE(model.index(0, 0).data(GUI::ChatModel::DayRole).toString(), german.toString(date, QLocale::LongFormat));
       QVERIFY(model.getLineStr(0).startsWith('[' + shortDate(german) + ' '));
       QCOMPARE(model.getLineStr(0).mid(shortDate(german).size()), englishLine.mid(shortDate(english).size()));
 
-      // A message of today only shows its time.
+      // A message of today begins another day. The view only gets its time, as its copied line.
       f.receiveMessage("now");
-      const QString todayLine = model.getLineStr(model.rowCount() - 1);
+      const QModelIndex today = model.index(model.rowCount() - 1, 0);
+      QCOMPARE(today.data(GUI::ChatModel::DayRole).toString(), german.toString(QDate::currentDate(), QLocale::LongFormat));
+      QVERIFY(QRegularExpression("^\\d\\d:\\d\\d$").match(today.data(GUI::ChatModel::TimeRole).toString()).hasMatch());
+      QCOMPARE(today.data(GUI::ChatModel::NickRole).toString(), QString("Alice"));
+      QCOMPARE(today.data().toString(), QString("now"));
+      const QString todayLine = model.getLineStr(today.row());
       QVERIFY(QRegularExpression("^\\[\\d\\d:\\d\\d:\\d\\d\\] ").match(todayLine).hasMatch());
       QVERIFY(todayLine.endsWith("now"));
 
       SETTINGS.set("language", QLocale::system());
       model.languageChanged();
+   }
+
+   void messagesAreGroupedByDay()
+   {
+      Fixture f(QStringList {});
+      auto& model = f.widget.chatModel;
+      auto* view = f.widget.findChild<QTableView*>("tblChat");
+      QSignalSpy changes(&model, &QAbstractItemModel::dataChanged);
+
+      const auto time = [](int day, int hour) { return QDateTime(QDate(2026, 10, day), QTime(hour, 0)).toMSecsSinceEpoch(); };
+      // Sorted from oldest to youngest, as the core sends them. The text of a message is its ID.
+      const auto receive = [&f](const QList<QPair<quint64, qint64>>& idsAndTimes) {
+         Protos::Common::ChatMessages messages;
+         for (const auto& [id, time] : idsAndTimes)
+         {
+            auto* message = messages.add_messages();
+            message->set_id(id);
+            message->set_time(time);
+            message->set_peer_nick("Alice");
+            message->set_message(QString::number(id).toStdString());
+         }
+         emit f.connection->newChatMessages(messages);
+      };
+      // The messages showing their day.
+      const auto days = [&model] {
+         QStringList result;
+         for (int row = 0; row < model.rowCount(); row++)
+            if (model.index(row, 0).data(GUI::ChatModel::DayRole).isValid())
+               result << model.getMessageStr(row);
+         return result.join(' ');
+      };
+      const int dayHeight = 2 * QFontMetrics(view->font()).height();
+
+      receive({ { 1, time(5, 22) }, { 2, time(5, 23) }, { 3, time(6, 10) }, { 4, time(6, 11) } });
+      QCOMPARE(days(), QString("1 3"));
+      QVERIFY(model.index(2, 0).data(GUI::ChatModel::DayRole).toString().contains("2026"));
+      QCOMPARE(changes.size(), 0);
+      QTRY_COMPARE(view->rowHeight(0), view->rowHeight(1) + dayHeight);
+      QCOMPARE(view->rowHeight(2), view->rowHeight(1) + dayHeight);
+      QCOMPARE(view->rowHeight(3), view->rowHeight(1));
+
+      // A missed message, older than the one which was the first of its day.
+      receive({ { 5, time(6, 9) } });
+      QCOMPARE(days(), QString("1 5"));
+      QCOMPARE(changes.size(), 1);
+      QCOMPARE(changes[0][0].value<QModelIndex>().row(), 3);
+      QCOMPARE(changes[0][1].value<QModelIndex>().row(), 3);
+      QTRY_COMPARE(view->rowHeight(2), view->rowHeight(1) + dayHeight);
+      QCOMPARE(view->rowHeight(3), view->rowHeight(1));
+
+      // The other messages don't change the first one of a day.
+      receive({ { 6, time(5, 23) + 1 }, { 7, time(6, 12) }, { 8, time(7, 8) } });
+      QCOMPARE(days(), QString("1 5 8"));
+      QCOMPARE(changes.size(), 1);
+
+      // Only the youngest messages are kept, see "max_chat_message_displayed": the oldest one left shows its day.
+      QList<QPair<quint64, qint64>> manyMessages;
+      for (int i = 0; i < 497; i++)
+         manyMessages << qMakePair(quint64(100 + i), time(8, 8) + i);
+      receive(manyMessages);
+      QCOMPARE(model.rowCount(), 500);
+      QCOMPARE(days(), QString("4 8 100"));
+      QCOMPARE(changes.size(), 2);
+      QCOMPARE(changes[1][0].value<QModelIndex>().row(), 0);
+      QTRY_COMPARE(view->rowHeight(0), view->rowHeight(1) + dayHeight);
+   }
+
+   void messageFollowsItsSenderWhenItCan_data()
+   {
+      QTest::addColumn<QString>("message");
+      QTest::addColumn<bool>("separateSenderLine");
+      QTest::newRow("paragraph") << QString("Hello **you**") << false;
+      QTest::newRow("hard break") << QString("first<br/>second") << false;
+      QTest::newRow("paragraphs") << QString("first\n\nsecond") << true;
+      QTest::newRow("list") << QString("- first\n- second") << true;
+      QTest::newRow("quote") << QString("> quote") << true;
+      QTest::newRow("code") << QString("```\ncode\n```") << true;
+      // In Hebrew.
+      QTest::newRow("right to left") << QString::fromUtf8("\xD7\xA9\xD7\x9C\xD7\x95\xD7\x9D") << false;
+   }
+
+   void messageFollowsItsSenderWhenItCan()
+   {
+      QFETCH(QString, message);
+      QFETCH(bool, separateSenderLine);
+      Fixture f(QStringList {});
+      f.receiveMessage(message);
+      auto* view = f.widget.findChild<QTableView*>("tblChat");
+      const auto index = view->model()->index(0, 0);
+      QCOMPARE(index.data(GUI::ChatModel::SeparateSenderLineRole).toBool(), separateSenderLine);
+
+      // Beside its sender a message doesn't take more height than alone.
+      QStandardItemModel alone(1, 1);
+      alone.setData(alone.index(0, 0), message);
+      GUI::ChatDelegate reference(f.emoticons);
+      QStyleOptionViewItem option;
+      option.initFrom(view);
+      option.widget = view;
+      option.rect = QRect(0, 0, 400, 100);
+      const int dayHeight = 2 * QFontMetrics(option.font).height();
+      const int height = view->itemDelegate()->sizeHint(option, index).height() - dayHeight;
+      const int heightAlone = reference.sizeHint(option, alone.index(0, 0)).height();
+      if (separateSenderLine)
+         QVERIFY2(height >= heightAlone + QFontMetrics(option.font).height(), qPrintable(QString("%1, alone: %2").arg(height).arg(heightAlone)));
+      else
+         QCOMPARE(height, heightAlone);
+   }
+
+   void sendersHaveTheirColor()
+   {
+      Fixture f(QStringList {});
+      f.connection->remoteID = Common::Hash::rand();
+      Protos::Common::ChatMessages messages;
+      for (const auto& peerID : { Common::Hash::rand(), f.connection->remoteID })
+      {
+         auto* message = messages.add_messages();
+         message->set_id(messages.messages_size());
+         message->set_time(1000);
+         message->mutable_peer_id()->set_hash(peerID.getData(), Common::Hash::HASH_SIZE);
+         message->set_peer_nick("Nick");
+         message->set_message("Hello");
+      }
+      emit f.connection->newChatMessages(messages);
+
+      auto* view = f.widget.findChild<QTableView*>("tblChat");
+      const auto nbPixels = [view](int row, const QColor& color) {
+         QStyleOptionViewItem option;
+         option.initFrom(view);
+         option.widget = view;
+         option.rect = QRect(0, 0, 400, 100);
+         QImage rendered(option.rect.size(), QImage::Format_RGB32);
+         rendered.fill(Qt::white);
+         QPainter painter(&rendered);
+         view->itemDelegate()->paint(&painter, option, view->model()->index(row, 0));
+         painter.end();
+         int n = 0;
+         for (int y = 0; y < rendered.height(); y++)
+            for (int x = 0; x < rendered.width(); x++)
+               if (rendered.pixel(x, y) == color.rgb())
+                  n++;
+         return n;
+      };
+
+      QVERIFY(!view->model()->index(0, 0).data(GUI::ChatModel::OursRole).toBool());
+      QVERIFY(nbPixels(0, GUI::ChatDelegate::COLOR_SENDER) > 100);
+      QCOMPARE(nbPixels(0, GUI::ChatDelegate::COLOR_SENDER_OURS), 0);
+
+      QVERIFY(view->model()->index(1, 0).data(GUI::ChatModel::OursRole).toBool());
+      QVERIFY(nbPixels(1, GUI::ChatDelegate::COLOR_SENDER_OURS) > 100);
+      QCOMPARE(nbPixels(1, GUI::ChatDelegate::COLOR_SENDER), 0);
    }
 
    void chatDocumentsInvalidateEmoticonTheme()
@@ -884,6 +1048,93 @@ private slots:
          delegate.eventFilter(view.viewport(), &leave);
          QCOMPARE(view.viewport()->cursor().shape(), Qt::ArrowCursor);
       }
+   }
+
+   void chatLinksFollowTheSenderAndTheDay_data()
+   {
+      QTest::addColumn<bool>("separateSenderLine");
+      QTest::addColumn<bool>("firstOfDay");
+      for (const bool separateSenderLine : { false, true })
+         for (const bool firstOfDay : { false, true })
+            QTest::addRow("%s%s", separateSenderLine ? "below" : "beside", firstOfDay ? ", first of day" : "")
+               << separateSenderLine << firstOfDay;
+   }
+
+   /**
+     * The message is put beside or below its sender, itself put below the day: the links are where they are drawn.
+     */
+   void chatLinksFollowTheSenderAndTheDay()
+   {
+      QFETCH(bool, separateSenderLine);
+      QFETCH(bool, firstOfDay);
+
+      GUI::Emoticons emoticons("nonexistent-test-emoticons");
+      GUI::ChatDelegate delegate(emoticons);
+      QStandardItemModel model(1, 1);
+      const QModelIndex index = model.index(0, 0);
+      // Two lines.
+      model.setData(index, "[click here](https://example.com)<br/>[and there](https://example.com)");
+      model.setData(index, "18:44", GUI::ChatModel::TimeRole);
+      model.setData(index, "Paul", GUI::ChatModel::NickRole);
+      model.setData(index, separateSenderLine, GUI::ChatModel::SeparateSenderLineRole);
+      if (firstOfDay)
+         model.setData(index, "Tuesday, October 6, 2026", GUI::ChatModel::DayRole);
+      QTableView view;
+      view.setModel(&model);
+      view.setItemDelegate(&delegate);
+      view.horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+      view.verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+      view.setShowGrid(false);
+      view.resize(400, 250);
+      view.show();
+      view.resizeRowsToContents();
+      QApplication::processEvents();
+
+      QStyleOptionViewItem option;
+      option.initFrom(&view);
+      option.widget = &view;
+      option.rect = view.visualRect(index);
+      option.features |= QStyleOptionViewItem::HasDisplay;
+      QImage rendered(view.viewport()->size(), QImage::Format_RGB32);
+      rendered.fill(Qt::white);
+      QPainter painter(&rendered);
+      delegate.paint(&painter, option, index);
+      painter.end();
+
+      // Where the background of the sender is drawn and where the cursor shows a link.
+      QRect sender;
+      QRect link;
+      for (int y = option.rect.top(); y <= option.rect.bottom(); y++)
+         for (int x = option.rect.left(); x <= option.rect.right(); x++)
+         {
+            const QPoint position(x, y);
+            if (rendered.pixel(position) == GUI::ChatDelegate::COLOR_SENDER.rgb())
+               sender |= QRect(position, QSize(1, 1));
+            QMouseEvent move(QEvent::MouseMove, QPointF(position), QPointF(view.viewport()->mapToGlobal(position)), Qt::NoButton, Qt::NoButton, Qt::NoModifier);
+            delegate.eventFilter(view.viewport(), &move);
+            if (view.viewport()->cursor().shape() == Qt::PointingHandCursor)
+               link |= QRect(position, QSize(1, 1));
+         }
+      QVERIFY(!sender.isEmpty());
+      QVERIFY(!link.isEmpty());
+
+      const int fontHeight = QFontMetrics(view.font()).height();
+      QVERIFY(sender.height() >= fontHeight);
+      QVERIFY(link.height() >= fontHeight / 2);
+      QCOMPARE(sender.top() - option.rect.top() >= 2 * fontHeight, firstOfDay);
+      if (separateSenderLine)
+      {
+         QVERIFY2(link.top() > sender.bottom(), qPrintable(QString("link top: %1, sender bottom: %2").arg(link.top()).arg(sender.bottom())));
+         QVERIFY(link.left() < sender.right());
+      }
+      else
+      {
+         // Beside the sender all the lines of the message are aligned: the second one doesn't go back below the sender.
+         QVERIFY2(link.left() > sender.right(), qPrintable(QString("link left: %1, sender right: %2").arg(link.left()).arg(sender.right())));
+         QVERIFY(link.top() >= sender.top() && link.top() < sender.bottom());
+         QVERIFY(link.bottom() > sender.bottom());
+      }
+      QVERIFY(option.rect.contains(link));
    }
 
    void draftIsSentOnceWhileUnanswered_data()

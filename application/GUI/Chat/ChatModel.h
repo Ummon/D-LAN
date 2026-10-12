@@ -44,6 +44,16 @@ namespace GUI
       Q_OBJECT
 
    public:
+      // 'Qt::DisplayRole' is the message itself, in Markdown. Its sender is given by these roles.
+      enum Role
+      {
+         TimeRole = Qt::UserRole, // QString.
+         NickRole, // QString.
+         OursRole, // bool.
+         SeparateSenderLineRole, // bool: the message can't follow its sender on the same line.
+         DayRole // QString: the day of the message, only for the first message of each day.
+      };
+
       ChatModel(
          QSharedPointer<RCC::ICoreConnection> coreConnection,
          PeerListModel& peerListModel,
@@ -66,18 +76,18 @@ namespace GUI
       int columnCount(const QModelIndex& parent = QModelIndex()) const override;
       QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
-      inline QSize getCachedSize(const QModelIndex& index, const QString& markdown, const QFont& font, const QString& theme, int width) const
+      // The size of a message and its sender, without its day: a message and its sender never change.
+      inline QSize getCachedSize(const QModelIndex& index, const QFont& font, const QString& theme, int width) const
       {
          if (!this->isValidMessageIndex(index))
             return QSize();
          const auto& cached = this->messages[index.row()].renderedSize;
-         return cached.size.width() == width && cached.markdown == markdown && cached.font == font && cached.theme == theme
-            ? cached.size : QSize();
+         return cached.size.width() == width && cached.font == font && cached.theme == theme ? cached.size : QSize();
       }
-      inline void insertCachedSize(const QModelIndex& index, const QSize& size, const QString& markdown, const QFont& font, const QString& theme)
+      inline void insertCachedSize(const QModelIndex& index, const QSize& size, const QFont& font, const QString& theme)
       {
          if (this->isValidMessageIndex(index))
-            this->messages[index.row()].renderedSize = { size, markdown, font, theme };
+            this->messages[index.row()].renderedSize = { size, font, theme };
       }
 
       enum SendMessageStatus
@@ -122,28 +132,21 @@ namespace GUI
          struct RenderedSize
          {
             QSize size;
-            QString markdown;
             QFont font;
             QString theme;
          } renderedSize;
          bool separateSenderLine = false;
-         // The line built by 'formatMessage(..)', which is asked for every message each time one is inserted.
-         mutable struct FormattedLine
-         {
-            QString line;
-            bool withDate = false;
-         } formatted;
       };
 
       void loadLocale();
-      QString formatMessage(const Message& message) const;
+      bool isFirstOfDay(int row) const;
 
       QSharedPointer<RCC::ICoreConnection> coreConnection;
       PeerListModel& peerListModel;
 
       // To format the dates of the messages, they depend on the language of the GUI: see 'languageChanged()'.
       QLocale locale;
-      QString dateFormat;
+      QString dateFormat; // Of the copied lines, see 'getLineStr(..)'.
 
       QString roomName; // Empty for main chat.
       QList<Message> messages; // Always sorted by date-time.

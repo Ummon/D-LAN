@@ -33,6 +33,7 @@ EmoticonTextDocument& ChatDocumentCache::get(const QString& markdown, const QFon
       auto prepared = std::make_unique<EmoticonTextDocument>(this->emoticons);
       document = prepared.get();
       document->setUndoRedoEnabled(false);
+      document->setDocumentMargin(DOCUMENT_MARGIN);
       document->setDefaultFont(font);
       document->setMarkdown(markdown);
 

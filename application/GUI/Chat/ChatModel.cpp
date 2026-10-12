@@ -40,7 +40,7 @@ using namespace GUI;
 /**
   * Escape the characters CommonMark gives a meaning to, so a string can be inserted into a message without
   * being interpreted. The nicks come from remote peers, a nick like "[x](http://...)" would otherwise put a
-  * clickable link into the messages shown to every user, see 'ChatDelegate::paint(..)'.
+  * link into the lines copied by the user, see 'ChatModel::getLineStr(..)'.
   */
 static QString escapeMarkdown(const QString& str)
 {
@@ -182,16 +182,25 @@ QString ChatModel::getNick(const Common::Hash& id) const
 }
 
 /**
-  * Return a string with all the field: "[<date>] <nick>: <message>".
+  * Return a string with all the fields: "[<date>] *<nick>*: <message>", in Markdown.
+  * The date is only given for the messages which aren't from today.
   */
 QString ChatModel::getLineStr(int row) const
 {
    if (row < 0 || row >= this->messages.size())
       return QString();
 
-   QString result = this->formatMessage(this->messages[row]);
+   const Message& message = this->messages[row];
 
-   return result;
+   return
+      QString()
+         .append(
+            message.dateTime.date() != QDate::currentDate() ?
+              message.dateTime.toString("[%1 HH:mm:ss] ").arg(this->locale.toString(message.dateTime.date(), this->dateFormat))
+            : message.dateTime.toString("[HH:mm:ss] "))
+         .append("*").append(escapeMarkdown(message.nick)).append("*:")
+         .append(message.separateSenderLine ? "\n\n" : " ")
+         .append(message.message);
 }
 
 QString ChatModel::getMessageStr(int row) const
@@ -232,10 +241,29 @@ QVariant ChatModel::data(const QModelIndex& index, int role) const
    if (!this->isValidMessageIndex(index))
       return QVariant();
 
+   const Message& message = this->messages[index.row()];
+
    switch (role)
    {
    case Qt::DisplayRole:
-      return this->formatMessage(this->messages[index.row()]);
+      return message.message;
+
+   case TimeRole:
+      return message.dateTime.toString("HH:mm");
+
+   case NickRole:
+      return message.nick;
+
+   case OursRole:
+      return this->isMessageIsOurs(index.row());
+
+   case SeparateSenderLineRole:
+      return message.separateSenderLine;
+
+   case DayRole:
+      if (this->isFirstOfDay(index.row()))
+         return this->locale.toString(message.dateTime.date(), QLocale::LongFormat);
+      break;
    }
 
    return QVariant();
@@ -281,18 +309,15 @@ void ChatModel::sendRawMessage(const QString& message, const QList<Common::Hash>
 }
 
 /**
-  * Must be called when the language of the GUI has changed: the dates of the messages are displayed in the
-  * format of this language.
+  * Must be called when the language of the GUI has changed: the days of the messages are displayed in this
+  * language.
   */
 void ChatModel::languageChanged()
 {
    this->loadLocale();
 
-   for (const Message& message : std::as_const(this->messages))
-      message.formatted.line.clear();
-
    if (!this->messages.isEmpty())
-      emit dataChanged(this->index(0, 0), this->index(this->messages.size() - 1, 0));
+      emit dataChanged(this->index(0, 0), this->index(this->messages.size() - 1, 0), { DayRole });
 }
 
 void ChatModel::newChatMessages(const Protos::Common::ChatMessages& messages)
@@ -308,6 +333,23 @@ void ChatModel::newChatMessages(const Protos::Common::ChatMessages& messages)
 
    int j = this->messages.size();
    QList<Message> toInsert;
+
+   const auto insert = [this, &toInsert](int position)
+   {
+      const bool nextWasFirstOfDay = position < this->messages.size() && this->isFirstOfDay(position);
+
+      this->beginInsertRows(QModelIndex(), position, position + toInsert.size() - 1);
+      for (QListIterator<Message> k(toInsert); k.hasNext();)
+         this->messages.insert(position, k.next());
+      this->endInsertRows();
+
+      // The message following the inserted ones no longer shows its day if one of them is from the same day.
+      const int next = position + toInsert.size();
+      if (nextWasFirstOfDay && !this->isFirstOfDay(next))
+         emit dataChanged(this->index(next, 0), this->index(next, 0), { DayRole, Qt::SizeHintRole });
+
+      toInsert.clear();
+   };
 
    for (int i = messages.messages_size() - 1; i >= 0; i--)
    {
@@ -342,24 +384,13 @@ void ChatModel::newChatMessages(const Protos::Common::ChatMessages& messages)
          j--;
 
       if (previousJ != j && !toInsert.isEmpty())
-      {
-         this->beginInsertRows(QModelIndex(), previousJ, previousJ + toInsert.size() - 1);
-         for (QListIterator<Message> k(toInsert); k.hasNext();)
-            this->messages.insert(previousJ, k.next());
-         this->endInsertRows();
-         toInsert.clear();
-      }
+         insert(previousJ);
 
       toInsert << message;
    }
 
    if (!toInsert.isEmpty())
-   {
-      this->beginInsertRows(QModelIndex(), j, j + toInsert.size() - 1);
-      for (QListIterator<Message> k(toInsert); k.hasNext();)
-         this->messages.insert(j, k.next());
-      this->endInsertRows();
-   }
+      insert(j);
 
    static const quint32 MAX_NB_MESSAGES = SETTINGS.get<quint32>("max_chat_message_displayed");
    const int nbMessageToDelete = this->messages.size() - MAX_NB_MESSAGES;
@@ -369,9 +400,15 @@ void ChatModel::newChatMessages(const Protos::Common::ChatMessages& messages)
       for (int i = 0; i < nbMessageToDelete; i++)
          this->messageIDs.remove(this->messages[i].ID);
 
+      const bool firstWasFirstOfDay = nbMessageToDelete >= this->messages.size() || this->isFirstOfDay(nbMessageToDelete);
+
       this->beginRemoveRows(QModelIndex(), 0, nbMessageToDelete - 1);
       this->messages.erase(this->messages.begin(), this->messages.begin() + nbMessageToDelete);
       this->endRemoveRows();
+
+      // The oldest message left now shows its day.
+      if (!firstWasFirstOfDay)
+         emit dataChanged(this->index(0, 0), this->index(0, 0), { DayRole, Qt::SizeHintRole });
    }
 }
 
@@ -436,27 +473,9 @@ void ChatModel::loadLocale()
 }
 
 /**
-  * The line is kept in the message: the view asks for the line of every message each time a message is
-  * inserted, see 'ChatDelegate::sizeHint(..)'.
-  * The date is only shown for the messages which aren't from today, a line is thus built again once its day is over.
+  * The messages are grouped by day: the first one of each day shows its day, see 'DayRole'.
   */
-QString ChatModel::formatMessage(const Message& message) const
+bool ChatModel::isFirstOfDay(int row) const
 {
-   const bool withDate = message.dateTime.date() != QDate::currentDate();
-
-   if (message.formatted.line.isEmpty() || message.formatted.withDate != withDate)
-   {
-      message.formatted.withDate = withDate;
-      message.formatted.line =
-         QString()
-            .append(
-               withDate ?
-                 message.dateTime.toString("[%1 HH:mm:ss] ").arg(this->locale.toString(message.dateTime.date(), this->dateFormat))
-               : message.dateTime.toString("[HH:mm:ss] "))
-            .append("*").append(escapeMarkdown(message.nick)).append("*:")
-            .append(message.separateSenderLine ? "\n\n" : " ")
-            .append(message.message);
-   }
-
-   return message.formatted.line;
+   return row == 0 || this->messages[row - 1].dateTime.date() != this->messages[row].dateTime.date();
 }

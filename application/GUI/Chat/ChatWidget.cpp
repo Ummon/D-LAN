@@ -27,6 +27,7 @@ using namespace GUI;
 #include <QMessageBox>
 #include <QTextDocument>
 #include <QTextBlock>
+#include <QTextLayout>
 #include <QTextDocumentFragment>
 #include <QFontInfo>
 #include <QRegularExpression>
@@ -57,13 +58,40 @@ namespace
          QByteArrayView(reinterpret_cast<const char*>(text.constData()), text.size() * sizeof(QChar)),
          QCryptographicHash::Sha256);
    }
+
+   const int SENDER_VERTICAL_PADDING = 2; // Above and below the time and the nick.
+   const QColor COLOR_SENDER_TIME(255, 255, 255, 200);
+   const QColor COLOR_SENDER_NICK(255, 255, 255);
 }
 
 /**
   * @class GUI::ChatDelegate
   *
-  * To be able to select some message text via a QLineEdit and copy it.
+  * Draws a message after its sender: the time and the nick on a colored background ended by an arrow.
+  * The first message of each day is topped by a separator showing this day.
+  *
+  *    ---------- Tuesday, October 6, 2026 ----------
+  *    | 18:44 Paul > Hi
+  *    | 19:50 Dylan > Hello
   */
+
+const QColor ChatDelegate::COLOR_SENDER = QColor::fromHslF(0.6, 0.2, 0.4);
+const QColor ChatDelegate::COLOR_SENDER_OURS = QColor::fromHslF(0.17, 0.3, 0.35); // The hue of 'PeerListModel::COLOR_OURSELF'.
+
+/**
+  * The positions are relative to the top left corner of the item, without its day.
+  */
+struct ChatDelegate::MessageLayout
+{
+   QString time;
+   QString nick; // Elided if there isn't enough room for it.
+   QRectF sender; // The background of the time and the nick, null if the model doesn't give them.
+   QPointF timePos; // On the baseline.
+   QPointF nickPos;
+   EmoticonTextDocument* document = nullptr;
+   QPointF documentPos;
+   int height = 0;
+};
 
 ChatDelegate::ChatDelegate(const Emoticons& emoticons)
    : emoticons(emoticons), documents(emoticons)
@@ -79,8 +107,14 @@ void ChatDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, 
 
    QStyle* style = newOption.widget ? newOption.widget->style() : QApplication::style();
 
-   // initStyleOption() converts newlines to line separators, which turns Markdown soft wraps into hard breaks.
-   auto& document = this->documents.get(index.data(Qt::DisplayRole).toString(), newOption.font, newOption.rect.width());
+   const QString day = index.data(ChatModel::DayRole).toString();
+   if (!day.isEmpty())
+   {
+      QRect dayRect = newOption.rect;
+      dayRect.setHeight(dayHeight(newOption.font, index));
+      newOption.rect.setTop(dayRect.bottom() + 1);
+      paintDay(painter, newOption, dayRect, day);
+   }
 
    newOption.text = QString();
    style->drawControl(QStyle::CE_ItemViewItem, &newOption, painter, newOption.widget);
@@ -92,11 +126,16 @@ void ChatDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, 
    if (newOption.state & QStyle::State_Selected && newOption.state & QStyle::State_Active)
       ctx.palette.setColor(QPalette::Text, newOption.palette.color(QPalette::Active, QPalette::HighlightedText));
 
+   // A style may give some padding to the items.
    QRect textRect = style->subElementRect(QStyle::SE_ItemViewItemText, &newOption, newOption.widget);
+   const MessageLayout layout = this->layoutMessage(newOption.font, textRect.width(), index);
    painter->save();
    painter->translate(textRect.topLeft());
    painter->setClipRect(textRect.translated(-textRect.topLeft()));
-   document.documentLayout()->draw(painter, ctx);
+   if (!layout.sender.isNull())
+      paintSender(painter, layout, newOption.font, index.data(ChatModel::OursRole).toBool());
+   painter->translate(layout.documentPos);
+   layout.document->documentLayout()->draw(painter, ctx);
    painter->restore();
 }
 
@@ -108,21 +147,24 @@ QSize	ChatDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelInd
 {
    QStyleOptionViewItem newOption = option;
    initStyleOption(&newOption, index);
-   const QString markdown = index.data(Qt::DisplayRole).toString();
+   newOption.text = QString();
+   QStyle* style = newOption.widget ? newOption.widget->style() : QApplication::style();
+   // The same width as in 'paint(..)'.
+   const int width = style->subElementRect(QStyle::SE_ItemViewItemText, &newOption, newOption.widget).width();
+   const int dayHeight = ChatDelegate::dayHeight(newOption.font, index);
    const QString theme = this->emoticons.getDefaultTheme();
    auto* model = const_cast<ChatModel*>(qobject_cast<const ChatModel*>(index.model()));
    if (model)
    {
-      const QSize cachedSize = model->getCachedSize(index, markdown, newOption.font, theme, newOption.rect.width());
+      const QSize cachedSize = model->getCachedSize(index, newOption.font, theme, width);
       if (cachedSize.isValid())
-         return cachedSize;
+         return QSize(newOption.rect.width(), cachedSize.height() + dayHeight);
    }
 
-   auto& document = this->documents.get(markdown, newOption.font, newOption.rect.width());
-   const QSize size(newOption.rect.width(), qCeil(document.size().height()));
+   const QSize size(width, this->layoutMessage(newOption.font, width, index).height);
    if (model)
-      model->insertCachedSize(index, size, markdown, newOption.font, theme);
-   return size;
+      model->insertCachedSize(index, size, newOption.font, theme);
+   return QSize(newOption.rect.width(), size.height() + dayHeight);
 }
 
 bool ChatDelegate::editorEvent(
@@ -193,16 +235,149 @@ QString ChatDelegate::anchorAt(
    QStyleOptionViewItem opt(option);
    this->initStyleOption(&opt, index);
 
-   // Lay the document out exactly as paint() does.
-   auto& document = this->documents.get(index.data(Qt::DisplayRole).toString(), opt.font, opt.rect.width());
+   // Lay the message out exactly as paint() does.
+   opt.rect.setTop(opt.rect.top() + dayHeight(opt.font, index));
    opt.state &= ~QStyle::State_HasFocus;
    opt.text.clear();
 
    QStyle* style = opt.widget ? opt.widget->style() : QApplication::style();
    const QRect textRect = style->subElementRect(QStyle::SE_ItemViewItemText, &opt, opt.widget);
+   const MessageLayout layout = this->layoutMessage(opt.font, textRect.width(), index);
 
-   // Map the viewport point into document coordinates (paint translates by textRect.topLeft()).
-   return document.documentLayout()->anchorAt(QPointF(pos - textRect.topLeft()));
+   // Map the viewport point into document coordinates (paint translates by textRect.topLeft() and by the position of the document).
+   return layout.document->documentLayout()->anchorAt(QPointF(pos - textRect.topLeft()) - layout.documentPos);
+}
+
+/**
+  * Lay out a message and its sender in the given width. The message is put beside its sender, in its own column:
+  * all its lines are aligned. It's put below if it can't follow its sender, see
+  * 'ChatModel::SeparateSenderLineRole', or if the sender wouldn't leave it at least half of the width.
+  */
+ChatDelegate::MessageLayout ChatDelegate::layoutMessage(const QFont& font, int width, const QModelIndex& index) const
+{
+   MessageLayout layout;
+   layout.time = index.data(ChatModel::TimeRole).toString();
+   layout.nick = index.data(ChatModel::NickRole).toString();
+
+   // The text of 'initStyleOption(..)' isn't used: its newlines are converted to line separators, which turns
+   // Markdown soft wraps into hard breaks.
+   const QString markdown = index.data(Qt::DisplayRole).toString();
+
+   // The model isn't a 'ChatModel'.
+   if (layout.time.isEmpty() && layout.nick.isEmpty())
+   {
+      layout.document = &this->documents.get(markdown, font, width);
+      layout.height = qCeil(layout.document->size().height());
+      return layout;
+   }
+
+   QFont nickFont(font);
+   nickFont.setBold(true);
+   const QFontMetricsF metrics(font);
+   const QFontMetricsF nickMetrics(nickFont);
+
+   const qreal margin = ChatDocumentCache::DOCUMENT_MARGIN;
+   const qreal maxWidth = width - 2 * margin;
+   const qreal padding = metrics.height() / 3; // Around the time and the nick, and between the sender and its message.
+   const qreal senderHeight = qCeil(metrics.height()) + 2 * SENDER_VERTICAL_PADDING;
+   const qreal arrowWidth = senderHeight / 2;
+   const qreal timeWidth = metrics.horizontalAdvance(layout.time);
+   const qreal widthWithoutNick = padding + timeWidth + padding + padding / 2 + arrowWidth;
+
+   layout.nick = nickMetrics.elidedText(layout.nick, Qt::ElideRight, qMax(0.0, maxWidth - widthWithoutNick));
+   const qreal senderWidth = qCeil(widthWithoutNick + nickMetrics.horizontalAdvance(layout.nick));
+
+   const bool below = index.data(ChatModel::SeparateSenderLineRole).toBool() || senderWidth + padding > maxWidth / 2;
+   layout.documentPos = below ? QPointF(0, margin + qCeil(metrics.height())) : QPointF(qCeil(senderWidth + padding), 0);
+
+   // The document is asked once its width is known: asking it for another width lays it out again.
+   EmoticonTextDocument& document = this->documents.get(markdown, font, width - int(layout.documentPos.x()));
+   layout.document = &document;
+   const qreal documentHeight = document.size().height(); // Also lays the document out.
+
+   qreal baseline = margin + metrics.ascent();
+   if (const QTextLayout* firstBlock = document.firstBlock().layout(); !below && firstBlock->lineCount() > 0)
+   {
+      // The sender is aligned with the first line of its message, which an emoticon may make higher than its text.
+      const QTextLine firstLine = firstBlock->lineAt(0);
+      baseline = firstBlock->position().y() + firstLine.y() + firstLine.ascent();
+   }
+
+   layout.sender = QRectF(margin, qRound(baseline - metrics.ascent()) - SENDER_VERTICAL_PADDING, senderWidth, senderHeight);
+   layout.timePos = QPointF(layout.sender.left() + padding, baseline);
+   layout.nickPos = QPointF(layout.timePos.x() + timeWidth + padding, baseline);
+   layout.height = qCeil(qMax(layout.documentPos.y() + documentHeight, layout.sender.bottom()));
+   return layout;
+}
+
+/**
+  * The height of the separator showing the day of a message, 0 if the message isn't the first of its day.
+  */
+int ChatDelegate::dayHeight(const QFont& font, const QModelIndex& index)
+{
+   return index.data(ChatModel::DayRole).isValid() ? 2 * QFontMetrics(font).height() : 0;
+}
+
+void ChatDelegate::paintDay(QPainter* painter, const QStyleOptionViewItem& option, const QRect& rect, const QString& day)
+{
+   painter->save();
+
+   // The whole row may have been filled with the selection color: the day isn't part of the message.
+   if (option.state & QStyle::State_Selected)
+      painter->fillRect(rect, option.palette.brush(QPalette::Base));
+
+   const QFontMetrics metrics(option.font);
+   const int margin = metrics.height() / 2;
+   const QRect area = rect.adjusted(margin, 0, -margin, 0);
+
+   QColor color = option.palette.color(QPalette::Text);
+   color.setAlphaF(0.65);
+   painter->setPen(color);
+   painter->setFont(option.font);
+   QRect textRect;
+   painter->drawText(area, Qt::AlignCenter | Qt::TextSingleLine, metrics.elidedText(day, Qt::ElideRight, area.width()), &textRect);
+
+   color.setAlphaF(0.25);
+   painter->setPen(color);
+   const int y = area.center().y();
+   if (textRect.left() - margin > area.left())
+   {
+      painter->drawLine(area.left(), y, textRect.left() - margin, y);
+      painter->drawLine(textRect.right() + margin, y, area.right(), y);
+   }
+
+   painter->restore();
+}
+
+void ChatDelegate::paintSender(QPainter* painter, const MessageLayout& layout, const QFont& font, bool ours)
+{
+   const QRectF& rect = layout.sender;
+   const qreal arrowWidth = rect.height() / 2;
+
+   painter->save();
+
+   painter->setRenderHint(QPainter::Antialiasing);
+   painter->setPen(Qt::NoPen);
+   painter->setBrush(ours ? COLOR_SENDER_OURS : COLOR_SENDER);
+   painter->drawPolygon(QPolygonF(QList<QPointF> {
+      rect.topLeft(),
+      QPointF(rect.right() - arrowWidth, rect.top()),
+      QPointF(rect.right(), rect.center().y()),
+      QPointF(rect.right() - arrowWidth, rect.bottom()),
+      rect.bottomLeft()
+   }));
+
+   painter->setFont(font);
+   painter->setPen(COLOR_SENDER_TIME);
+   painter->drawText(layout.timePos, layout.time);
+
+   QFont nickFont(font);
+   nickFont.setBold(true);
+   painter->setFont(nickFont);
+   painter->setPen(COLOR_SENDER_NICK);
+   painter->drawText(layout.nickPos, layout.nick);
+
+   painter->restore();
 }
 
 

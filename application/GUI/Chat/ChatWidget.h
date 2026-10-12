@@ -23,6 +23,7 @@
 #include <QTextCursor>
 #include <QStyledItemDelegate>
 #include <QTextCharFormat>
+#include <QColor>
 #include <QUrl>
 #include <QMap>
 #include <QByteArray>
@@ -50,6 +51,10 @@ namespace GUI
    class ChatDelegate : public QStyledItemDelegate
    {
    public:
+      // The background of the sender of a message.
+      static const QColor COLOR_SENDER;
+      static const QColor COLOR_SENDER_OURS;
+
       ChatDelegate(const Emoticons& emoticons);
       void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
       QSize	sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
@@ -62,6 +67,12 @@ namespace GUI
       bool eventFilter(QObject* watched, QEvent* event) override;
 
    private:
+      struct MessageLayout;
+      MessageLayout layoutMessage(const QFont& font, int width, const QModelIndex& index) const;
+      static int dayHeight(const QFont& font, const QModelIndex& index);
+      static void paintDay(QPainter* painter, const QStyleOptionViewItem& option, const QRect& rect, const QString& day);
+      static void paintSender(QPainter* painter, const MessageLayout& layout, const QFont& font, bool ours);
+
       QString anchorAt(const QStyleOptionViewItem& option, const QModelIndex& index, const QPoint& pos) const;
 
       const Emoticons& emoticons;
