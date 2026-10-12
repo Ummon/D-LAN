@@ -22,14 +22,15 @@ pub type Lang {
   Hi
   Zh
   Pt
+  Id
 }
 
 pub fn all_langs() -> List(Lang) {
-  [En, Fr, De, Es, It, Ru, Ko, Ja, Hi, Zh, Pt]
+  [En, Fr, De, Es, It, Ru, Ko, Ja, Hi, Zh, Pt, Id]
 }
 
 pub fn all_langs_ordered() -> List(Lang) {
-  [De, En, Es, Fr, It, Pt, Ru, Hi, Ja, Zh, Ko]
+  [Id, De, En, Es, Fr, It, Pt, Ru, Hi, Ja, Zh, Ko]
 }
 
 pub fn plain_lang(l: Lang) {
@@ -45,6 +46,7 @@ pub fn plain_lang(l: Lang) {
     Hi -> "हिन्दी"
     Zh -> "简体中文"
     Pt -> "Português (Brasil)"
+    Id -> "Bahasa Indonesia"
   }
 }
 
@@ -61,6 +63,7 @@ fn parse_lang(lang_str: String) -> Lang {
     "hi" -> Hi
     "zh" -> Zh
     "pt" -> Pt
+    "id" -> Id
     _ -> En
   }
 }
@@ -78,6 +81,7 @@ pub fn to_str(l: Lang) -> String {
     Hi -> "hi"
     Zh -> "zh"
     Pt -> "pt"
+    Id -> "id"
   }
 }
 
@@ -114,6 +118,7 @@ pub fn title(l: Lang) -> String {
     Hi -> "D-LAN - LAN फ़ाइल-साझाकरण सॉफ़्टवेयर"
     Zh -> "D-LAN - 局域网文件共享软件"
     Pt -> "D-LAN - Um software de compartilhamento de arquivos em LAN"
+    Id -> "D-LAN - Perangkat lunak berbagi file di LAN"
   }
 }
 
@@ -130,6 +135,7 @@ pub fn header_support_us(l: Lang) -> element.Element(a) {
     Hi -> "हमारा समर्थन करें!"
     Zh -> "支持我们！"
     Pt -> "apoie-nos!"
+    Id -> "dukung kami!"
   }
   |> html.text
 }
@@ -147,6 +153,7 @@ pub fn menu_home(l: Lang) -> element.Element(a) {
     Hi -> "होम"
     Zh -> "首页"
     Pt -> "INÍCIO"
+    Id -> "BERANDA"
   }
   |> html.text
 }
@@ -164,6 +171,7 @@ pub fn menu_features(l: Lang) -> element.Element(a) {
     Hi -> "विशेषताएँ"
     Zh -> "功能"
     Pt -> "RECURSOS"
+    Id -> "FITUR"
   }
   |> html.text
 }
@@ -181,6 +189,7 @@ pub fn menu_faq(l: Lang) -> element.Element(a) {
     Hi -> "FAQ"
     Zh -> "常见问题"
     Pt -> "FAQ"
+    Id -> "FAQ"
   }
   |> html.text
 }
@@ -198,6 +207,7 @@ pub fn menu_about(l: Lang) -> element.Element(a) {
     Hi -> "परिचय"
     Zh -> "关于"
     Pt -> "SOBRE"
+    Id -> "TENTANG"
   }
   |> html.text
 }
@@ -226,6 +236,8 @@ pub fn home_title(l: Lang) -> element.Element(a) {
       "D-LAN - 一款用于 <abbr title=\"Local Area Network（局域网）\">LAN</abbr> 文件共享的自由软件。"
     Pt ->
       "D-LAN - Um software livre de compartilhamento de arquivos em <abbr title=\"Local Area Network (rede local)\">LAN</abbr>."
+    Id ->
+      "D-LAN - Perangkat lunak bebas untuk berbagi file di <abbr title=\"Local Area Network (jaringan area lokal)\">LAN</abbr>."
   }
   |> raw_span
 }
@@ -276,6 +288,10 @@ pub fn home_description(l: Lang, features_url: String) -> element.Element(a) {
       "O objetivo é trocar facilmente grandes quantidades de dados em uma rede local, por exemplo durante uma LAN party. Depois de iniciar o D-LAN, todas as outras pessoas e seus arquivos compartilhados aparecem automaticamente, sem nenhuma configuração especial. Consulte a <a href=\""
       <> features_url
       <> "\">lista de recursos</a> para mais informações."
+    Id ->
+      "Tujuannya adalah bertukar data dalam jumlah besar dengan mudah di lingkungan jaringan lokal, misalnya saat LAN party. Setelah D-LAN dijalankan, semua orang lain beserta file yang mereka bagikan akan terlihat secara otomatis, tanpa konfigurasi khusus apa pun. Lihat <a href=\""
+      <> features_url
+      <> "\">daftar fitur</a> untuk informasi lebih lanjut."
   }
   |> raw_span
 }
@@ -329,6 +345,10 @@ pub fn home_warning_beta(
       "<em>Atenção:</em> a versão atual do D-LAN é uma versão beta e deve ser usada apenas para testes. Você pode relatar qualquer defeito <a href=\""
       <> bug_report_url
       <> "\">aqui</a>."
+    Id ->
+      "<em>Peringatan:</em> versi D-LAN saat ini adalah versi beta dan hanya ditujukan untuk pengujian. Anda dapat melaporkan cacat apa pun <a href=\""
+      <> bug_report_url
+      <> "\">di sini</a>."
   }
   |> raw_span
 }
@@ -348,6 +368,7 @@ pub fn features_disclaimer(l: Lang) -> element.Element(a) {
     Hi -> "<h2>वर्तमान रिलीज़ की मुख्य विशेषताएँ ये हैं।</h2>"
     Zh -> "<h2>以下是当前版本的主要功能。</h2>"
     Pt -> "<h2>Estes são os principais recursos da versão atual.</h2>"
+    Id -> "<h2>Berikut adalah fitur-fitur utama dari rilis saat ini.</h2>"
   }
   |> raw_span
 }
@@ -365,6 +386,7 @@ pub fn features_feat_1(l: Lang) -> element.Element(a) {
     Hi -> "लोकल एरिया नेटवर्क (LAN) में फ़ाइलें और फ़ोल्डर साझा करें।"
     Zh -> "在局域网（LAN）环境中共享文件和文件夹。"
     Pt -> "Compartilhamento de arquivos e pastas em uma rede local (LAN)."
+    Id -> "Berbagi file dan folder di lingkungan jaringan area lokal (LAN)."
   }
   |> html.text
 }
@@ -385,6 +407,7 @@ pub fn features_feat_2(l: Lang) -> element.Element(a) {
     Zh -> "分布式传输，提高性能和可靠性。"
     Pt ->
       "Transferências distribuídas para aumentar o desempenho e a confiabilidade."
+    Id -> "Transfer terdistribusi untuk meningkatkan kinerja dan keandalan."
   }
   |> html.text
 }
@@ -405,6 +428,7 @@ pub fn features_feat_3(l: Lang) -> element.Element(a) {
     Hi -> "उपयोग में बहुत आसान: न कोई कॉन्फ़िगरेशन, न कोई केंद्रीय सर्वर।"
     Zh -> "非常易于使用：无需配置，无需中央服务器。"
     Pt -> "Muito fácil de usar: sem configuração e sem servidor central."
+    Id -> "Sangat mudah digunakan: tanpa konfigurasi, tanpa server pusat."
   }
   |> html.text
 }
@@ -422,6 +446,7 @@ pub fn features_feat_4(l: Lang) -> element.Element(a) {
     Hi -> "अन्य सभी पीयर्स में तेज़ अनुक्रमित खोज।"
     Zh -> "在所有其他节点中进行快速索引搜索。"
     Pt -> "Busca indexada rápida entre todos os outros pares."
+    Id -> "Pencarian terindeks yang cepat di antara semua peer lainnya."
   }
   |> html.text
 }
@@ -442,6 +467,7 @@ pub fn features_feat_5(l: Lang) -> element.Element(a) {
     Hi -> "किसी भी अन्य पीयर की सभी फ़ाइलें और फ़ोल्डर ब्राउज़ करें।"
     Zh -> "浏览任意其他节点的所有文件和文件夹。"
     Pt -> "Navegue por todos os arquivos e pastas de qualquer outro par."
+    Id -> "Jelajahi semua file dan folder milik peer lain mana pun."
   }
   |> html.text
 }
@@ -466,6 +492,7 @@ pub fn features_feat_6(l: Lang) -> element.Element(a) {
     Zh -> "管理下载队列：可添加、删除或重新排序。"
     Pt ->
       "Gerenciamento da fila de downloads: é possível adicionar, remover ou reordenar transferências."
+    Id -> "Kelola antrean unduhan: menambah, menghapus, atau mengurutkan ulang."
   }
   |> html.text
 }
@@ -483,6 +510,7 @@ pub fn features_feat_7(l: Lang) -> element.Element(a) {
     Hi -> "सामूहिक चैट और चर्चा चैनल।"
     Zh -> "全局聊天和讨论频道。"
     Pt -> "Chat global e canais de discussão."
+    Id -> "Obrolan global dan kanal diskusi."
   }
   |> html.text
 }
@@ -507,6 +535,8 @@ pub fn features_feat_8(l: Lang) -> element.Element(a) {
     Zh -> "D-LAN 可以在没有图形界面（GUI）的情况下运行，并可远程控制。"
     Pt ->
       "O D-LAN pode ser executado sem interface gráfica (GUI) e controlado remotamente."
+    Id ->
+      "D-LAN dapat berjalan tanpa antarmuka grafis (GUI) dan dikendalikan dari jarak jauh."
   }
   |> raw_span
 }
@@ -534,6 +564,8 @@ pub fn features_feat_9(l: Lang) -> element.Element(a) {
     Zh -> "<a href=\"https://github.com/Ummon/D-LAN\">开源</a>。源代码以 GPLv3 许可证发布。"
     Pt ->
       "<a href=\"https://github.com/Ummon/D-LAN\">Código aberto</a>. O código-fonte é distribuído sob a licença GPLv3."
+    Id ->
+      "<a href=\"https://github.com/Ummon/D-LAN\">Sumber terbuka</a>. Kode sumber didistribusikan di bawah lisensi GPLv3."
   }
   |> raw_span
 }
@@ -562,6 +594,8 @@ pub fn features_feat_10(l: Lang) -> element.Element(a) {
       "不含任何形式的广告或<a href=\"https://zh.wikipedia.org/zh-cn/%E6%81%B6%E6%84%8F%E8%BD%AF%E4%BB%B6\">恶意软件</a>。"
     Pt ->
       "Livre de qualquer tipo de publicidade ou <a href=\"https://pt.wikipedia.org/wiki/Malware\">malware</a>."
+    Id ->
+      "Bebas dari segala jenis iklan atau <a href=\"https://id.wikipedia.org/wiki/Malware\">malware</a>."
   }
   |> raw_span
 }
@@ -606,6 +640,10 @@ pub fn features_help_us(l: Lang, support_url: String) -> element.Element(a) {
       "Não se esqueça de nos <a href=\""
       <> support_url
       <> "\">apoiar</a>: isso ajudará na manutenção e na adição de novos recursos."
+    Id ->
+      "Jangan lupa untuk <a href=\""
+      <> support_url
+      <> "\">mendukung kami</a>. Hal ini akan membantu pemeliharaan dan penambahan fitur baru."
   }
   |> raw_span
 }
@@ -630,6 +668,7 @@ pub fn faq_q1(l: Lang) -> element.Element(a) {
     Zh -> "与系统自带的工具相比，使用 D-LAN 有哪些优势？"
     Pt ->
       "Quais são as vantagens de usar o D-LAN em vez das ferramentas padrão do sistema?"
+    Id -> "Apa keuntungan menggunakan D-LAN dibandingkan alat bawaan sistem?"
   }
   |> html.text
 }
@@ -658,6 +697,8 @@ pub fn faq_a1(l: Lang) -> element.Element(a) {
       "D-LAN 专为大量传输而设计，您可以管理待下载文件的队列。一个文件可以同时从多个节点自动下载，从而加快传输速度并应对节点离线的情况。D-LAN 还具备快速的全局搜索功能，这是系统自带的文件共享所没有的。更多信息请参阅<a href=\"features.html\">功能页面</a>。"
     Pt ->
       "O D-LAN foi projetado para transferências em massa: você pode gerenciar uma fila de arquivos a serem baixados. Um arquivo pode ser baixado automaticamente de vários pares ao mesmo tempo, o que acelera a transferência e compensa a indisponibilidade de um par. O D-LAN também tem uma busca global rápida, algo que o compartilhamento de arquivos padrão do sistema não oferece. Você encontrará mais informações na <a href=\"features.html\">página de recursos</a>."
+    Id ->
+      "D-LAN dirancang untuk transfer berskala besar: Anda dapat mengelola antrean file yang akan diunduh. Sebuah file dapat diunduh secara otomatis dari banyak peer sekaligus untuk mempercepat transfer dan mengatasi peer yang terputus. D-LAN juga memiliki fitur pencarian global yang cepat, yang tidak dimiliki oleh fitur berbagi file bawaan sistem. Informasi lebih lanjut tersedia di <a href=\"features.html\">halaman fitur</a>."
   }
   |> raw_span
 }
@@ -675,6 +716,7 @@ pub fn faq_q2(l: Lang) -> element.Element(a) {
     Hi -> "मुझे अपने नेटवर्क में अन्य कंप्यूटर दिखाई नहीं देते।"
     Zh -> "我在网络中看不到其他计算机。"
     Pt -> "Não vejo os outros computadores da minha rede."
+    Id -> "Saya tidak melihat komputer lain di jaringan saya."
   }
   |> html.text
 }
@@ -850,6 +892,21 @@ pub fn faq_a2(l: Lang) -> element.Element(a) {
       <> ".</li>"
       <> "<li>Todos os pares devem usar o mesmo protocolo: IPv6 (padrão) ou IPv4. Verifique isso em <i>Configurações &gt; Rede</i>.</li>"
       <> "</ul>"
+    Id ->
+      "<ul>"
+      <> "<li>Pastikan Anda memiliki versi terbaru D-LAN.</li>"
+      <> "<li>Pastikan port "
+      <> port_udp
+      <> " (<i>UDP</i>) dan "
+      <> port_udp_tcp
+      <> " (<i>UDP + TCP</i>) terbuka di firewall Anda.</li>"
+      <> "<li>Pastikan multicast UDP diizinkan di jaringan Anda. Alamat IPv6-nya adalah "
+      <> ipv6_address
+      <> ", dan alamat IPv4-nya adalah "
+      <> ipv4_address
+      <> ".</li>"
+      <> "<li>Semua peer harus menggunakan protokol yang sama: IPv6 (bawaan) atau IPv4. Periksa hal ini di <i>Pengaturan &gt; Jaringan</i>.</li>"
+      <> "</ul>"
   }
   |> raw_div
 }
@@ -874,6 +931,8 @@ pub fn faq_q3(l: Lang) -> element.Element(a) {
     Zh -> "D-LAN 在计算哈希时会拖慢我的计算机。哈希是什么，为什么需要它？"
     Pt ->
       "O D-LAN deixa meu computador lento ao calcular os hashes. O que é isso e por que é necessário?"
+    Id ->
+      "D-LAN memperlambat komputer saya saat menghitung hash. Apa itu dan mengapa diperlukan?"
   }
   |> html.text
 }
@@ -922,6 +981,10 @@ pub fn faq_a3(l: Lang) -> element.Element(a) {
       "Os hashes são necessários para identificar todas as partes de um arquivo. Eles permitem o download a partir de várias fontes e a verificação da integridade dos dados. "
       <> "Durante o cálculo dos hashes, apenas um núcleo é usado, e todos os computadores vendidos hoje são multinúcleo. "
       <> "Todos os arquivos compartilhados precisam ser lidos uma vez, o que pode deixar o acesso ao disco um pouco mais lento."
+    Id ->
+      "Hash diperlukan untuk mengidentifikasi semua bagian dari sebuah file. Hash memungkinkan pengunduhan dari banyak sumber dan verifikasi integritas data. "
+      <> "Selama proses penghitungan hash, hanya satu inti prosesor yang digunakan, dan semua komputer yang dijual saat ini memiliki banyak inti. "
+      <> "Semua file yang dibagikan harus dibaca satu kali, yang dapat sedikit memperlambat akses disk."
   }
   |> html.text
 }
@@ -940,6 +1003,8 @@ pub fn faq_q4(l: Lang) -> element.Element(a) {
     Hi -> "D-LAN बहुत अधिक संसाधनों का उपयोग करता है, इसे कैसे कम किया जा सकता है?"
     Zh -> "D-LAN 占用的资源太多，如何改善？"
     Pt -> "O D-LAN usa recursos demais, como posso melhorar isso?"
+    Id ->
+      "D-LAN menggunakan terlalu banyak sumber daya, bagaimana cara memperbaikinya?"
   }
   |> html.text
 }
@@ -978,6 +1043,9 @@ pub fn faq_a4(l: Lang) -> element.Element(a) {
     Pt ->
       "<p>Se o D-LAN estiver calculando hashes, é preciso aguardar o fim da operação, veja a pergunta anterior. "
       <> "Caso contrário, é possível fechar a janela principal do D-LAN: a interface será desconectada do núcleo e consumirá menos recursos.</p><p>Tente não ter mais de 10.000 arquivos na fila e limpe-a periodicamente.</p>"
+    Id ->
+      "<p>Jika D-LAN sedang menghitung hash, Anda harus menunggu hingga proses ini selesai, lihat pertanyaan sebelumnya. "
+      <> "Jika tidak, jendela utama D-LAN dapat ditutup: antarmuka akan terputus dari inti program dan menggunakan lebih sedikit sumber daya.</p><p>Usahakan agar tidak ada lebih dari 10.000 file dalam antrean, dan bersihkan antrean secara berkala.</p>"
   }
   |> raw_div
 }
@@ -996,6 +1064,8 @@ pub fn faq_q5(l: Lang) -> element.Element(a) {
     Hi -> "क्या D-LAN को हेडलेस मोड में या सर्विस के रूप में चलाया जा सकता है?"
     Zh -> "D-LAN 可以以无界面（headless）模式或作为服务运行吗？"
     Pt -> "É possível executar o D-LAN em modo headless ou como serviço?"
+    Id ->
+      "Apakah D-LAN dapat dijalankan dalam mode headless atau sebagai layanan?"
   }
   |> html.text
 }
@@ -1190,6 +1260,23 @@ pub fn faq_a5(l: Lang, appimage_filename: String) -> element.Element(a) {
       <> "</ul>"
       <> "<h3>No macOS:</h3>"
       <> "<p>O D-LAN só pode ser executado em modo headless, a instalação de um serviço não é suportada: <code>% ./D-LAN.Core</code> (local: /Applications/D-LAN.app/Contents/MacOS)</p>"
+    Id ->
+      "<h3>Di Windows:</h3>"
+      <> "<ul>"
+      <> "<li>Headless: <code>PS&gt; .\\D-LAN.Core.exe</code></li>"
+      <> "<li>Memasang layanan (dijalankan dari shell administrator): <code>PS&gt; .\\D-LAN.Core.exe -i &lt;username&gt; &lt;password&gt;</code> Pasangan (&lt;username&gt;, &lt;password&gt;) adalah pengguna yang akan menjalankan layanan tersebut. Ini dapat diubah nanti di panel pengelolaan layanan Windows.</li>"
+      <> "</ul>"
+      <> "<h3>Di Linux:</h3>"
+      <> "<ul>"
+      <> "<li>Headless: <code>$ ./"
+      <> appimage_filename
+      <> " --core</code></li>"
+      <> "<li>Memasang layanan systemd: <code>$ sudo ./"
+      <> appimage_filename
+      <> " --core -i &lt;username&gt;</code> &lt;username&gt; adalah pengguna yang akan menjalankan D-LAN Core.</li>"
+      <> "</ul>"
+      <> "<h3>Di macOS:</h3>"
+      <> "<p>D-LAN hanya dapat dijalankan dalam mode headless, pemasangan layanan tidak didukung: <code>% ./D-LAN.Core</code> (lokasi: /Applications/D-LAN.app/Contents/MacOS)</p>"
   }
   |> raw_div
 }
@@ -1208,6 +1295,7 @@ pub fn about_author(l: Lang, name: element.Element(a)) -> element.Element(a) {
       Hi -> "लेखक: "
       Zh -> "作者："
       Pt -> "Autor: "
+      Id -> "Pembuat: "
     }
       |> html.text,
     name,
@@ -1228,6 +1316,7 @@ pub fn about_linux(l: Lang, name: element.Element(a)) -> element.Element(a) {
       Hi -> "Linux अनुरक्षक: "
       Zh -> "Linux 维护者："
       Pt -> "Mantenedor Linux: "
+      Id -> "Pemelihara Linux: "
     }
       |> html.text,
     name,
@@ -1317,6 +1406,13 @@ pub fn about_thanks(
       name_2,
       html.text(" pelo apoio."),
     ]
+    Id -> [
+      html.text("Terima kasih kepada "),
+      name_1,
+      html.text(" dan "),
+      name_2,
+      html.text(" atas dukungan mereka."),
+    ]
   }
   |> element.fragment
 }
@@ -1334,6 +1430,7 @@ pub fn about_tech(l: Lang) -> element.Element(a) {
     Hi -> "प्रयुक्त तकनीकें और सॉफ़्टवेयर"
     Zh -> "使用的技术和软件"
     Pt -> "Tecnologias e softwares utilizados"
+    Id -> "Teknologi dan perangkat lunak yang digunakan"
   }
   |> html.text
 }
@@ -1351,6 +1448,7 @@ pub fn about_tech_used_d_lan_title(l: Lang) -> element.Element(a) {
     Hi -> "D-LAN"
     Zh -> "D-LAN"
     Pt -> "D-LAN"
+    Id -> "D-LAN"
   }
   |> html.text
 }
@@ -1434,6 +1532,13 @@ pub fn about_tech_used_d_lan(l: Lang) -> element.Element(a) {
       <> "<li>Serialização de mensagens: <a href=\"https://protobuf.dev/\">Protocol Buffers</a></li>"
       <> "<li>Função de hash criptográfica: <a href=\"https://github.com/BLAKE3-team/BLAKE3\">BLAKE3</a></li>"
       <> "<li>Banco de dados: <a href=\"https://www.sqlite.org/\">SQLite</a></li>"
+    Id ->
+      "<li>Bahasa pemrograman: <a href=\"https://en.wikipedia.org/wiki/C%2B%2B\">C++</a></li>"
+      <> "<li>Kerangka kerja dan pustaka: <a href=\"https://www.qt.io/development/qt-framework\">Qt 6</a></li>"
+      <> "<li>Kompiler: <a href=\"https://clang.llvm.org/\">Clang</a></li>"
+      <> "<li>Serialisasi pesan: <a href=\"https://protobuf.dev/\">Protocol Buffers</a></li>"
+      <> "<li>Fungsi hash kriptografis: <a href=\"https://github.com/BLAKE3-team/BLAKE3\">BLAKE3</a></li>"
+      <> "<li>Basis data: <a href=\"https://www.sqlite.org/\">SQLite</a></li>"
   }
   |> raw_ul
 }
@@ -1451,6 +1556,7 @@ pub fn about_tech_used_tools_title(l: Lang) -> element.Element(a) {
     Hi -> "विकास उपकरण"
     Zh -> "开发工具"
     Pt -> "Ferramentas de desenvolvimento"
+    Id -> "Alat pengembangan"
   }
   |> html.text
 }
@@ -1545,6 +1651,14 @@ pub fn about_tech_used_tools(l: Lang) -> element.Element(a) {
       <> "<li>Gerador de documentação: <a href=\"https://www.doxygen.org/\">Doxygen</a></li>"
       <> "<li>Criação do instalador: <a href=\"https://www.jrsoftware.org/isinfo.php\">Inno Setup</a></li>"
       <> "<li>Editor de gráficos vetoriais e bitmap: <a href=\"https://www.affinity.studio/\">Affinity</a></li>"
+    Id ->
+      "<li>Lingkungan pengembangan: <a href=\"https://www.qt.io/development/tools/qt-creator-ide\">Qt Creator</a></li>"
+      <> "<li>Sistem kontrol versi: <a href=\"https://git-scm.com/\">git</a></li>"
+      <> "<li>Skrip: <a href=\"https://www.nushell.sh/\">Nushell</a></li>"
+      <> "<li>Manajemen proyek: <a href=\"https://www.redmine.org/\">Redmine</a></li>"
+      <> "<li>Pembuat dokumentasi: <a href=\"https://www.doxygen.org/\">Doxygen</a></li>"
+      <> "<li>Pembuat penginstal: <a href=\"https://www.jrsoftware.org/isinfo.php\">Inno Setup</a></li>"
+      <> "<li>Editor grafis vektor dan bitmap: <a href=\"https://www.affinity.studio/\">Affinity</a></li>"
   }
   |> raw_ul
 }
@@ -1562,6 +1676,7 @@ pub fn about_tech_used_website_title(l: Lang) -> element.Element(a) {
     Hi -> "वेबसाइट"
     Zh -> "网站"
     Pt -> "Site"
+    Id -> "Situs web"
   }
   |> html.text
 }
@@ -1645,6 +1760,13 @@ pub fn about_tech_used_website(l: Lang) -> element.Element(a) {
       <> "<li>Bibliotecas JavaScript: <a href=\"https://jquery.com/\">JQuery</a> + <a href=\"https://www.jacklmoore.com/colorbox/\">ColorBox</a></li>"
       <> "<li>Linguagem do lado do servidor: <a href=\"https://gleam.run/\">Gleam</a></li>"
       <> "<li>Servidor web: <a href=\"https://gleam-wisp.github.io/wisp/\">Wisp</a> + <a href=\"https://hexdocs.pm/mist/\">Mist</a></li>"
+    Id ->
+      "<li>Struktur dokumen: <a href=\"https://www.w3.org/TR/html5/\">HTML5</a></li>"
+      <> "<li>Tampilan dokumen: <a href=\"https://www.w3.org/Style/CSS/current-work\">CSS 3</a> + <a href=\"https://sass-lang.com\">Sass</a></li>"
+      <> "<li>Bahasa dinamis sisi klien: <a href=\"https://id.wikipedia.org/wiki/JavaScript\">JavaScript</a></li>"
+      <> "<li>Pustaka JavaScript: <a href=\"https://jquery.com/\">JQuery</a> + <a href=\"https://www.jacklmoore.com/colorbox/\">ColorBox</a></li>"
+      <> "<li>Bahasa sisi server: <a href=\"https://gleam.run/\">Gleam</a></li>"
+      <> "<li>Server web: <a href=\"https://gleam-wisp.github.io/wisp/\">Wisp</a> + <a href=\"https://hexdocs.pm/mist/\">Mist</a></li>"
   }
   |> raw_ul
 }
@@ -1662,6 +1784,7 @@ pub fn donate_title(l: Lang) -> element.Element(a) {
     Hi -> "हमारा समर्थन करें"
     Zh -> "支持我们"
     Pt -> "Apoie-nos"
+    Id -> "Dukung kami"
   }
   |> html.text
 }
@@ -1682,6 +1805,8 @@ pub fn donate_intro(l: Lang) -> element.Element(a) {
     Hi -> "यदि आपको यह परियोजना पसंद है और आप इसे आगे बढ़ते देखना चाहते हैं, तो हमारा समर्थन करें!"
     Zh -> "如果您喜欢这个项目并希望看到它不断发展，请支持我们！"
     Pt -> "Se você gosta deste projeto e quer vê-lo crescer, apoie-nos!"
+    Id ->
+      "Jika Anda menyukai proyek ini dan ingin melihatnya berkembang, dukung kami!"
   }
   |> html.text
 }
@@ -1699,6 +1824,7 @@ pub fn donate_buy_me_a_coffee(l: Lang) -> element.Element(a) {
     Hi -> "मुझे एक कॉफ़ी पिलाएँ"
     Zh -> "请我喝杯咖啡"
     Pt -> "Pague-me um café"
+    Id -> "Traktir saya kopi"
   }
   |> html.text
 }
@@ -1716,6 +1842,7 @@ pub fn donate_bitcoin_address(l: Lang) -> element.Element(a) {
     Hi -> "बिटकॉइन पता: "
     Zh -> "比特币地址："
     Pt -> "Endereço Bitcoin: "
+    Id -> "Alamat Bitcoin: "
   }
   |> html.text
 }
@@ -1733,6 +1860,7 @@ pub fn donate_ethereum_address(l: Lang) -> element.Element(a) {
     Hi -> "एथेरियम पता: "
     Zh -> "以太坊地址："
     Pt -> "Endereço Ethereum: "
+    Id -> "Alamat Ethereum: "
   }
   |> html.text
 }
@@ -1750,6 +1878,7 @@ pub fn gallery_browse(l: Lang) -> String {
     Hi -> "ब्राउज़िंग"
     Zh -> "浏览"
     Pt -> "Navegação"
+    Id -> "Penjelajahan"
   }
 }
 
@@ -1766,6 +1895,7 @@ pub fn gallery_browse_comment(l: Lang) -> String {
     Hi -> "किसी पीयर की फ़ाइलें और फ़ोल्डर ब्राउज़ करना"
     Zh -> "浏览某个节点的文件和文件夹"
     Pt -> "Navegação pelos arquivos e pastas de um par"
+    Id -> "Menjelajahi file dan folder milik sebuah peer"
   }
 }
 
@@ -1782,6 +1912,7 @@ pub fn gallery_search(l: Lang) -> String {
     Hi -> "खोज परिणाम"
     Zh -> "搜索结果"
     Pt -> "Resultado da busca"
+    Id -> "Hasil pencarian"
   }
 }
 
@@ -1803,6 +1934,7 @@ pub fn gallery_search_comment(l: Lang) -> String {
     Zh -> "结果按相关性排序，文件夹排在最前面。"
     Pt ->
       "Os resultados são ordenados por relevância. As pastas aparecem primeiro."
+    Id -> "Hasil diurutkan berdasarkan relevansi. Folder ditempatkan di atas."
   }
 }
 
@@ -1819,6 +1951,7 @@ pub fn gallery_download_folders(l: Lang) -> String {
     Hi -> "डाउनलोड - फ़ोल्डर"
     Zh -> "下载 - 文件夹"
     Pt -> "Downloads - Pastas"
+    Id -> "Unduhan - Folder"
   }
 }
 
@@ -1842,6 +1975,8 @@ pub fn gallery_download_folders_comment(l: Lang) -> String {
     Zh -> "此视图显示文件及其所在的文件夹，两者均按字母顺序排序。"
     Pt ->
       "Esta visualização mostra os arquivos com suas pastas, ambos em ordem alfabética."
+    Id ->
+      "Tampilan ini menunjukkan file beserta foldernya, keduanya diurutkan menurut abjad."
   }
 }
 
@@ -1858,6 +1993,7 @@ pub fn gallery_download_files(l: Lang) -> String {
     Hi -> "डाउनलोड - फ़ाइलें"
     Zh -> "下载 - 文件"
     Pt -> "Downloads - Arquivos"
+    Id -> "Unduhan - File"
   }
 }
 
@@ -1882,6 +2018,8 @@ pub fn gallery_download_files_comment(l: Lang) -> String {
     Zh -> "此视图仅显示文件，可以重新排列，排在上面的文件会先下载。"
     Pt ->
       "Esta visualização mostra apenas os arquivos; eles podem ser reordenados, e os arquivos do topo são baixados primeiro."
+    Id ->
+      "Tampilan ini hanya menunjukkan file; urutannya dapat diubah, dan file teratas diunduh lebih dulu."
   }
 }
 
@@ -1898,6 +2036,7 @@ pub fn gallery_upload(l: Lang) -> String {
     Hi -> "अपलोड दृश्य"
     Zh -> "上传视图"
     Pt -> "Visualização de uploads"
+    Id -> "Tampilan unggahan"
   }
 }
 
@@ -1914,6 +2053,7 @@ pub fn gallery_skin(l: Lang) -> String {
     Hi -> "स्किन"
     Zh -> "皮肤"
     Pt -> "Skin"
+    Id -> "Skin"
   }
 }
 
@@ -1930,6 +2070,7 @@ pub fn download_button_download(l: Lang) -> element.Element(a) {
     Hi -> "D-LAN डाउनलोड करें"
     Zh -> "下载 D-LAN"
     Pt -> "Baixar o D-LAN"
+    Id -> "Unduh D-LAN"
   }
   |> html.text
 }
@@ -1957,6 +2098,7 @@ pub fn download_button_version(
     Hi -> #("संस्करण " <> version <> " (", " के लिए)")
     Zh -> #("版本 " <> version <> "（适用于 ", "）")
     Pt -> #("Versão " <> version <> " para ", "")
+    Id -> #("Versi " <> version <> " untuk ", "")
   }
 
   element.fragment([
@@ -1979,6 +2121,7 @@ pub fn download_microsoft_store(l: Lang) -> element.Element(a) {
     Hi -> html.text("Microsoft Store से इंस्टॉल करें")
     Zh -> html.text("从 Microsoft Store 安装")
     Pt -> html.text("Instalar pela Microsoft Store")
+    Id -> html.text("Instal dari Microsoft Store")
   }
 }
 
@@ -1997,6 +2140,7 @@ pub fn format_date(l: Lang, date: calendar.Date) -> String {
       "января",
       "जनवरी",
       "janeiro",
+      "Januari",
     )
     calendar.February -> #(
       "February",
@@ -2007,6 +2151,7 @@ pub fn format_date(l: Lang, date: calendar.Date) -> String {
       "февраля",
       "फ़रवरी",
       "fevereiro",
+      "Februari",
     )
     calendar.March -> #(
       "March",
@@ -2017,6 +2162,7 @@ pub fn format_date(l: Lang, date: calendar.Date) -> String {
       "марта",
       "मार्च",
       "março",
+      "Maret",
     )
     calendar.April -> #(
       "April",
@@ -2027,6 +2173,7 @@ pub fn format_date(l: Lang, date: calendar.Date) -> String {
       "апреля",
       "अप्रैल",
       "abril",
+      "April",
     )
     calendar.May -> #(
       "May",
@@ -2037,6 +2184,7 @@ pub fn format_date(l: Lang, date: calendar.Date) -> String {
       "мая",
       "मई",
       "maio",
+      "Mei",
     )
     calendar.June -> #(
       "June",
@@ -2047,6 +2195,7 @@ pub fn format_date(l: Lang, date: calendar.Date) -> String {
       "июня",
       "जून",
       "junho",
+      "Juni",
     )
     calendar.July -> #(
       "July",
@@ -2057,6 +2206,7 @@ pub fn format_date(l: Lang, date: calendar.Date) -> String {
       "июля",
       "जुलाई",
       "julho",
+      "Juli",
     )
     calendar.August -> #(
       "August",
@@ -2067,6 +2217,7 @@ pub fn format_date(l: Lang, date: calendar.Date) -> String {
       "августа",
       "अगस्त",
       "agosto",
+      "Agustus",
     )
     calendar.September -> #(
       "September",
@@ -2077,6 +2228,7 @@ pub fn format_date(l: Lang, date: calendar.Date) -> String {
       "сентября",
       "सितंबर",
       "setembro",
+      "September",
     )
     calendar.October -> #(
       "October",
@@ -2087,6 +2239,7 @@ pub fn format_date(l: Lang, date: calendar.Date) -> String {
       "октября",
       "अक्टूबर",
       "outubro",
+      "Oktober",
     )
     calendar.November -> #(
       "November",
@@ -2097,6 +2250,7 @@ pub fn format_date(l: Lang, date: calendar.Date) -> String {
       "ноября",
       "नवंबर",
       "novembro",
+      "November",
     )
     calendar.December -> #(
       "December",
@@ -2107,6 +2261,7 @@ pub fn format_date(l: Lang, date: calendar.Date) -> String {
       "декабря",
       "दिसंबर",
       "dezembro",
+      "Desember",
     )
   }
   case l {
@@ -2121,6 +2276,7 @@ pub fn format_date(l: Lang, date: calendar.Date) -> String {
     Hi -> day <> " " <> months.6 <> " " <> year
     Zh -> year <> "年" <> month_number <> "月" <> day <> "日"
     Pt -> day <> " de " <> months.7 <> " de " <> year
+    Id -> day <> " " <> months.8 <> " " <> year
   }
 }
 
@@ -2141,6 +2297,7 @@ pub fn download_button_released(
     Hi -> "रिलीज़ की तारीख: " <> date
     Zh -> "发布日期：" <> date
     Pt -> "Lançado em " <> date
+    Id -> "Dirilis pada " <> date
   }
   |> html.text
 }
@@ -2158,6 +2315,7 @@ pub fn download_button_torrent(l: Lang) -> element.Element(a) {
     Hi -> "BitTorrent से डाउनलोड करें"
     Zh -> "通过 BitTorrent 下载"
     Pt -> "Baixar com BitTorrent"
+    Id -> "Unduh dengan BitTorrent"
   }
   |> html.text
 }
