@@ -173,7 +173,7 @@
 <context>
     <name>GUI::ChatWidget</name>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="+479"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="+696"/>
         <location line="+4"/>
         <source>Unable to send message</source>
         <translation>No se puede enviar mensaje</translation>
@@ -688,7 +688,7 @@
 <context>
     <name>GUI::RemoteBrowseDialog</name>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="+56"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="+58"/>
         <source>Ok</source>
         <translation>Aceptar</translation>
     </message>
@@ -698,7 +698,7 @@
         <translation>Cancelar</translation>
     </message>
     <message>
-        <location line="+93"/>
+        <location line="+98"/>
         <source>Show hidden files and directories</source>
         <translation>Mostrar archivos y directorios ocultos</translation>
     </message>
@@ -708,7 +708,7 @@
         <translation>Mostrar directorios ocultos</translation>
     </message>
     <message>
-        <location line="+184"/>
+        <location line="+196"/>
         <source>Open location</source>
         <translation>Abrir ubicación</translation>
     </message>
@@ -716,7 +716,7 @@
 <context>
     <name>GUI::RemoteBrowseModel</name>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseModel.cpp" line="+624"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseModel.cpp" line="+698"/>
         <source>free</source>
         <translation>libre</translation>
     </message>
@@ -817,7 +817,7 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+253"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+265"/>
         <source>Default</source>
         <translation>Por defecto</translation>
     </message>
@@ -827,7 +827,12 @@
         <translation>Interfaz desactivada</translation>
     </message>
     <message>
-        <location line="+224"/>
+        <location line="+222"/>
+        <source>A password is defined</source>
+        <translation>Hay una contraseña definida</translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>Change the password</source>
         <translation>Cambiar la contraseña</translation>
     </message>
@@ -842,21 +847,21 @@
         <translation>Definir una contraseña</translation>
     </message>
     <message>
-        <location line="+25"/>
-        <location line="+313"/>
+        <location line="+31"/>
+        <location line="+406"/>
         <source>Connecting . . .</source>
         <translation>Conectando . . .</translation>
     </message>
     <message>
-        <location line="-305"/>
-        <location line="+16"/>
+        <location line="-398"/>
         <location line="+15"/>
-        <location line="+274"/>
+        <location line="+18"/>
+        <location line="+365"/>
         <source>Connect</source>
         <translation>Conectar</translation>
     </message>
     <message>
-        <location line="-183"/>
+        <location line="-260"/>
         <source>Select one or more directories and/or files to share</source>
         <translation>Seleccione uno o más directorios y/o archivos para compartir</translation>
     </message>
@@ -1305,7 +1310,7 @@
         <translation>Abrir las ubicaciones de los archivos y directorios compartidos seleccionados</translation>
     </message>
     <message>
-        <location line="+50"/>
+        <location line="+255"/>
         <source>Network</source>
         <translation>Red</translation>
     </message>
@@ -1330,17 +1335,62 @@
         <translation>IPv4</translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location line="+20"/>
         <source>Show tunnel interfaces</source>
         <translation>Mostrar interfaces de túnel</translation>
     </message>
     <message>
+        <location line="+34"/>
+        <source>Advanced</source>
+        <translation>Avanzado</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Ignored extensions: the files whose name ends with one of them are not shared, for example the ones being downloaded by another software</source>
+        <translation>Extensiones ignoradas: los archivos cuyo nombre termina con una de ellas no se comparten, por ejemplo los que otro programa está descargando</translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>New extension</source>
+        <translation>Nueva extensión</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Add</source>
+        <translation>Agregar</translation>
+    </message>
+    <message>
+        <location line="+26"/>
+        <source>Remove the selected extensions</source>
+        <translation>Quitar las extensiones seleccionadas</translation>
+    </message>
+    <message>
         <location line="+3"/>
+        <source>Remove</source>
+        <translation>Quitar</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Replace the list by the default one</source>
+        <translation>Reemplazar la lista por la lista por defecto</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Reset to default</source>
+        <translation>Restablecer por defecto</translation>
+    </message>
+    <message>
+        <location line="+24"/>
+        <source>Do not share the files having one of these extensions</source>
+        <translation>No compartir los archivos que tengan una de estas extensiones</translation>
+    </message>
+    <message>
+        <location line="-128"/>
         <source>Tunnels are excluded from automatic discovery. Select a tunnel address to use it. The selected interface always remains visible.</source>
         <translation>Los túneles están excluidos de la detección automática. Seleccione la dirección de un túnel para utilizarlo. La interfaz seleccionada siempre permanece visible.</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+10"/>
         <source>Refresh interfaces</source>
         <translation>Refrescar interfaces</translation>
     </message>
@@ -1353,7 +1403,7 @@
         <translation type="vanished">Chequeo de integridad de datos</translation>
     </message>
     <message>
-        <location line="+27"/>
+        <location line="-177"/>
         <source>User interface</source>
         <translation>Interfaz de usuario</translation>
     </message>
@@ -1378,7 +1428,7 @@
         <translation>Recargar el estilo actual</translation>
     </message>
     <message>
-        <location line="+22"/>
+        <location line="-169"/>
         <source>Core connection</source>
         <translation>Conexión al núcleo</translation>
     </message>

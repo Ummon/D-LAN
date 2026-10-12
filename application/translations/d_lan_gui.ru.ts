@@ -173,7 +173,7 @@
 <context>
     <name>GUI::ChatWidget</name>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="+479"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="+696"/>
         <location line="+4"/>
         <source>Unable to send message</source>
         <translation>Не удалось отправить сообщение</translation>
@@ -688,7 +688,7 @@
 <context>
     <name>GUI::RemoteBrowseDialog</name>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="+56"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="+58"/>
         <source>Ok</source>
         <translation>ОК</translation>
     </message>
@@ -698,7 +698,7 @@
         <translation>Отмена</translation>
     </message>
     <message>
-        <location line="+93"/>
+        <location line="+98"/>
         <source>Show hidden files and directories</source>
         <translation>Показывать скрытые файлы и папки</translation>
     </message>
@@ -708,7 +708,7 @@
         <translation>Показывать скрытые папки</translation>
     </message>
     <message>
-        <location line="+184"/>
+        <location line="+196"/>
         <source>Open location</source>
         <translation>Открыть расположение</translation>
     </message>
@@ -716,7 +716,7 @@
 <context>
     <name>GUI::RemoteBrowseModel</name>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseModel.cpp" line="+624"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseModel.cpp" line="+698"/>
         <source>free</source>
         <translation>свободно</translation>
     </message>
@@ -817,7 +817,7 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+253"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+265"/>
         <source>Default</source>
         <translation>Стандартный</translation>
     </message>
@@ -827,7 +827,12 @@
         <translation>Интерфейс не активен</translation>
     </message>
     <message>
-        <location line="+224"/>
+        <location line="+222"/>
+        <source>A password is defined</source>
+        <translation>Пароль установлен</translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>Change the password</source>
         <translation>Сменить пароль</translation>
     </message>
@@ -842,21 +847,21 @@
         <translation>Установить пароль</translation>
     </message>
     <message>
-        <location line="+25"/>
-        <location line="+313"/>
+        <location line="+31"/>
+        <location line="+406"/>
         <source>Connecting . . .</source>
         <translation>Подключение...</translation>
     </message>
     <message>
-        <location line="-305"/>
-        <location line="+16"/>
+        <location line="-398"/>
         <location line="+15"/>
-        <location line="+274"/>
+        <location line="+18"/>
+        <location line="+365"/>
         <source>Connect</source>
         <translation>Подключиться</translation>
     </message>
     <message>
-        <location line="-183"/>
+        <location line="-260"/>
         <source>Select one or more directories and/or files to share</source>
         <translation>Выберите одну или несколько папок и/или файлов для общего доступа</translation>
     </message>
@@ -1279,7 +1284,7 @@
         <translation>Открыть расположения выбранных общих файлов и папок</translation>
     </message>
     <message>
-        <location line="+50"/>
+        <location line="+255"/>
         <source>Network</source>
         <translation>Сеть</translation>
     </message>
@@ -1304,17 +1309,62 @@
         <translation>IPv4</translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location line="+20"/>
         <source>Show tunnel interfaces</source>
         <translation>Показывать туннельные интерфейсы</translation>
     </message>
     <message>
+        <location line="+34"/>
+        <source>Advanced</source>
+        <translation>Дополнительно</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Ignored extensions: the files whose name ends with one of them are not shared, for example the ones being downloaded by another software</source>
+        <translation>Игнорируемые расширения: файлы, имя которых заканчивается на одно из них, не становятся общими, например файлы, которые скачивает другая программа</translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>New extension</source>
+        <translation>Новое расширение</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Add</source>
+        <translation>Добавить</translation>
+    </message>
+    <message>
+        <location line="+26"/>
+        <source>Remove the selected extensions</source>
+        <translation>Удалить выбранные расширения</translation>
+    </message>
+    <message>
         <location line="+3"/>
+        <source>Remove</source>
+        <translation>Удалить</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Replace the list by the default one</source>
+        <translation>Заменить список стандартным</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Reset to default</source>
+        <translation>Сбросить к стандартным</translation>
+    </message>
+    <message>
+        <location line="+24"/>
+        <source>Do not share the files having one of these extensions</source>
+        <translation>Не делать общими файлы с одним из этих расширений</translation>
+    </message>
+    <message>
+        <location line="-128"/>
         <source>Tunnels are excluded from automatic discovery. Select a tunnel address to use it. The selected interface always remains visible.</source>
         <translation>Туннели исключены из автоматического обнаружения. Чтобы использовать туннель, выберите его адрес. Выбранный интерфейс всегда остаётся видимым.</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+10"/>
         <source>Refresh interfaces</source>
         <translation>Обновить список интерфейсов</translation>
     </message>
@@ -1327,7 +1377,7 @@
         <translation type="vanished">Проверять целостность данных</translation>
     </message>
     <message>
-        <location line="-243"/>
+        <location line="-448"/>
         <source>Shared folders and files</source>
         <translation>Общие папки и файлы</translation>
     </message>
@@ -1353,7 +1403,7 @@
         <translation type="vanished">Открыть расположение выбранной общей папки или файла</translation>
     </message>
     <message>
-        <location line="+264"/>
+        <location line="+265"/>
         <source>Graphic User Interface</source>
         <translation>Пользовательский интерфейс</translation>
     </message>
@@ -1373,7 +1423,7 @@
         <translation>Перезагрузить текущий скин</translation>
     </message>
     <message>
-        <location line="+22"/>
+        <location line="-169"/>
         <source>Core connection</source>
         <translation>Подключение к ядру</translation>
     </message>
@@ -1408,7 +1458,7 @@
         <translation>Сбросить пароль</translation>
     </message>
     <message>
-        <location line="-166"/>
+        <location line="+25"/>
         <source>User interface</source>
         <translation>Пользовательский интерфейс</translation>
     </message>

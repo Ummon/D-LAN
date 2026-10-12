@@ -173,49 +173,49 @@
 <context>
     <name>GUI::ChatWidget</name>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="479"/>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="483"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="696"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="700"/>
         <source>Unable to send message</source>
         <translation>メッセージを送信できません</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="479"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="696"/>
         <source>The message is too long</source>
         <translation>メッセージが長すぎます</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="483"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="700"/>
         <source>The message can&apos;t be send, unknown error</source>
         <translation>メッセージを送信できません。原因不明のエラーです</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="499"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="716"/>
         <source>Browse</source>
         <translation>閲覧</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="502"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="719"/>
         <source>Copy IP: %1</source>
         <translation>IP をコピー: %1</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="525"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="742"/>
         <source>Copy selected messages</source>
         <translation>選択したメッセージをコピー</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="526"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="743"/>
         <source>Copy selected lines</source>
         <translation>選択した行をコピー</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="527"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="744"/>
         <source>Browse selected peers</source>
         <translation>選択したピアを閲覧</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="903"/>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="966"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="1120"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="1183"/>
         <source>Chat</source>
         <translation>チャット</translation>
     </message>
@@ -684,27 +684,27 @@
 <context>
     <name>GUI::RemoteBrowseDialog</name>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="56"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="58"/>
         <source>Ok</source>
         <translation>OK</translation>
     </message>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="57"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="59"/>
         <source>Cancel</source>
         <translation>キャンセル</translation>
     </message>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="150"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="157"/>
         <source>Show hidden files and directories</source>
         <translation>隠しファイルと隠しディレクトリを表示</translation>
     </message>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="150"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="157"/>
         <source>Show hidden directories</source>
         <translation>隠しディレクトリを表示</translation>
     </message>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="334"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="353"/>
         <source>Open location</source>
         <translation>場所を開く</translation>
     </message>
@@ -712,7 +712,7 @@
 <context>
     <name>GUI::RemoteBrowseModel</name>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseModel.cpp" line="624"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseModel.cpp" line="698"/>
         <source>free</source>
         <translation>空き</translation>
     </message>
@@ -813,57 +813,62 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="253"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="265"/>
         <source>Default</source>
         <translation>既定</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="312"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="324"/>
         <source>Interface not active</source>
         <translation>インターフェースが有効ではありません</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="536"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="546"/>
+        <source>A password is defined</source>
+        <translation>パスワードが設定されています</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="548"/>
         <source>Change the password</source>
         <translation>パスワードを変更</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="540"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="552"/>
         <source>No password defined</source>
         <translation>パスワードが設定されていません</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="542"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="554"/>
         <source>Define a password</source>
         <translation>パスワードを設定</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="567"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="880"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="585"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="991"/>
         <source>Connecting . . .</source>
         <translation>接続中 . . .</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="575"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="591"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="606"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="880"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="593"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="608"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="626"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="991"/>
         <source>Connect</source>
         <translation>接続</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="697"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="731"/>
         <source>Select one or more directories and/or files to share</source>
         <translation>共有するディレクトリやファイルを1つ以上選択してください</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="717"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="786"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="751"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="820"/>
         <source>Remove selected shared entries</source>
         <translation>選択した共有項目を削除</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="718"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="752"/>
         <source>Are you sure you want to remove the selected shared files and directories?</source>
         <translation>選択した共有ファイルとフォルダーを削除してもよろしいですか？</translation>
     </message>
@@ -880,17 +885,17 @@
         <translation type="vanished">共有ディレクトリを削除</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="794"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="828"/>
         <source>Move up</source>
         <translation>上へ移動</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="802"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="836"/>
         <source>Move down</source>
         <translation>下へ移動</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="810"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="844"/>
         <source>Open location</source>
         <translation>場所を開く</translation>
     </message>
@@ -1301,42 +1306,87 @@
         <translation>選択した共有ファイルとフォルダーの場所を開く</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="202"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="407"/>
         <source>Network</source>
         <translation>ネットワーク</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="214"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="419"/>
         <source>Interface to listen</source>
         <translation>待ち受けるインターフェース</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="250"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="455"/>
         <source>Any</source>
         <translation>すべて</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="263"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="468"/>
         <source>IPv6</source>
         <translation>IPv6</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="276"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="481"/>
         <source>IPv4</source>
         <translation>IPv4</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="293"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="501"/>
         <source>Show tunnel interfaces</source>
         <translation>トンネルインターフェースを表示</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="296"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="535"/>
+        <source>Advanced</source>
+        <translation>詳細</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="541"/>
+        <source>Ignored extensions: the files whose name ends with one of them are not shared, for example the ones being downloaded by another software</source>
+        <translation>無視する拡張子: 名前がこれらのいずれかで終わるファイルは共有されません (例: 他のソフトウェアがダウンロード中のファイル)</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="556"/>
+        <source>New extension</source>
+        <translation>新しい拡張子</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="563"/>
+        <source>Add</source>
+        <translation>追加</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="589"/>
+        <source>Remove the selected extensions</source>
+        <translation>選択した拡張子を削除</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="592"/>
+        <source>Remove</source>
+        <translation>削除</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="599"/>
+        <source>Replace the list by the default one</source>
+        <translation>リストを既定のものに置き換える</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="602"/>
+        <source>Reset to default</source>
+        <translation>既定に戻す</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="626"/>
+        <source>Do not share the files having one of these extensions</source>
+        <translation>これらの拡張子のいずれかを持つファイルを共有しない</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="498"/>
         <source>Tunnels are excluded from automatic discovery. Select a tunnel address to use it. The selected interface always remains visible.</source>
         <translation>トンネルは自動検出の対象外です。トンネルを使用するには、そのアドレスを選択してください。選択したインターフェースは常に表示されます。</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="303"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="508"/>
         <source>Refresh interfaces</source>
         <translation>インターフェースを更新</translation>
     </message>
@@ -1349,62 +1399,62 @@
         <translation type="vanished">データ整合性チェック</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="330"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="331"/>
         <source>User interface</source>
         <translation>ユーザーインターフェース</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="333"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="334"/>
         <source>Graphic User Interface</source>
         <translation>グラフィカルユーザーインターフェース</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="339"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="340"/>
         <source>Language</source>
         <translation>言語</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="349"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="350"/>
         <source>Style</source>
         <translation>スタイル</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="370"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="371"/>
         <source>Reload the current style</source>
         <translation>現在のスタイルを再読み込み</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="392"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="202"/>
         <source>Core connection</source>
         <translation>Core への接続</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="400"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="210"/>
         <source>Address</source>
         <translation>アドレス</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="410"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="220"/>
         <source>Reset to local</source>
         <translation>ローカルにリセット</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="417"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="227"/>
         <source>Password</source>
         <translation>パスワード</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="475"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="285"/>
         <source>Disconnect</source>
         <translation>切断</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="489"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="299"/>
         <source>Change the password</source>
         <translation>パスワードを変更</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="496"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="306"/>
         <source>Reset the password</source>
         <translation>パスワードをリセット</translation>
     </message>

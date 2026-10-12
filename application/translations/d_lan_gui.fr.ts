@@ -173,7 +173,7 @@
 <context>
     <name>GUI::ChatWidget</name>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="+479"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="+696"/>
         <location line="+4"/>
         <source>Unable to send message</source>
         <translation>Impossible d&apos;envoyer le message</translation>
@@ -688,7 +688,7 @@
 <context>
     <name>GUI::RemoteBrowseDialog</name>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="+56"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="+58"/>
         <source>Ok</source>
         <translation>Ok</translation>
     </message>
@@ -698,7 +698,7 @@
         <translation>Annuler</translation>
     </message>
     <message>
-        <location line="+93"/>
+        <location line="+98"/>
         <source>Show hidden files and directories</source>
         <translation>Afficher les fichiers et dossiers cachés</translation>
     </message>
@@ -708,7 +708,7 @@
         <translation>Afficher les dossiers cachés</translation>
     </message>
     <message>
-        <location line="+184"/>
+        <location line="+196"/>
         <source>Open location</source>
         <translation>Ouvrir le dossier</translation>
     </message>
@@ -716,7 +716,7 @@
 <context>
     <name>GUI::RemoteBrowseModel</name>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseModel.cpp" line="+624"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseModel.cpp" line="+698"/>
         <source>free</source>
         <translation>libre</translation>
     </message>
@@ -817,7 +817,7 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+253"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+265"/>
         <source>Default</source>
         <translation>Par défaut</translation>
     </message>
@@ -827,7 +827,12 @@
         <translation>Interface inactive</translation>
     </message>
     <message>
-        <location line="+224"/>
+        <location line="+222"/>
+        <source>A password is defined</source>
+        <translation>Un mot de passe est défini</translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>Change the password</source>
         <translation>Changer le mot de passe</translation>
     </message>
@@ -842,21 +847,21 @@
         <translation>Définir un mot de passe</translation>
     </message>
     <message>
-        <location line="+25"/>
-        <location line="+313"/>
+        <location line="+31"/>
+        <location line="+406"/>
         <source>Connecting . . .</source>
         <translation>Connexion...</translation>
     </message>
     <message>
-        <location line="-305"/>
-        <location line="+16"/>
+        <location line="-398"/>
         <location line="+15"/>
-        <location line="+274"/>
+        <location line="+18"/>
+        <location line="+365"/>
         <source>Connect</source>
         <translation>Connecter</translation>
     </message>
     <message>
-        <location line="-183"/>
+        <location line="-260"/>
         <source>Select one or more directories and/or files to share</source>
         <translation>Sélectionnez un ou plusieurs dossiers et/ou fichiers à partager</translation>
     </message>
@@ -1279,7 +1284,7 @@
         <translation>Ouvrir les emplacements des fichiers et dossiers partagés sélectionnés</translation>
     </message>
     <message>
-        <location line="+50"/>
+        <location line="+255"/>
         <source>Network</source>
         <translation>Réseau</translation>
     </message>
@@ -1304,17 +1309,62 @@
         <translation>IPv4</translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location line="+20"/>
         <source>Show tunnel interfaces</source>
         <translation>Afficher les interfaces de tunnel</translation>
     </message>
     <message>
+        <location line="+34"/>
+        <source>Advanced</source>
+        <translation>Avancé</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Ignored extensions: the files whose name ends with one of them are not shared, for example the ones being downloaded by another software</source>
+        <translation>Extensions ignorées : les fichiers dont le nom se termine par l&apos;une d&apos;elles ne sont pas partagés, par exemple ceux en cours de téléchargement par un autre logiciel</translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>New extension</source>
+        <translation>Nouvelle extension</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Add</source>
+        <translation>Ajouter</translation>
+    </message>
+    <message>
+        <location line="+26"/>
+        <source>Remove the selected extensions</source>
+        <translation>Enlever les extensions sélectionnées</translation>
+    </message>
+    <message>
         <location line="+3"/>
+        <source>Remove</source>
+        <translation>Enlever</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Replace the list by the default one</source>
+        <translation>Remplacer la liste par celle par défaut</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Reset to default</source>
+        <translation>Rétablir par défaut</translation>
+    </message>
+    <message>
+        <location line="+24"/>
+        <source>Do not share the files having one of these extensions</source>
+        <translation>Ne pas partager les fichiers ayant l&apos;une de ces extensions</translation>
+    </message>
+    <message>
+        <location line="-128"/>
         <source>Tunnels are excluded from automatic discovery. Select a tunnel address to use it. The selected interface always remains visible.</source>
         <translation>Les tunnels sont exclus de la découverte automatique. Pour utiliser un tunnel, sélectionnez son adresse. L’interface sélectionnée reste toujours visible.</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+10"/>
         <source>Refresh interfaces</source>
         <translation>Rafraichir les interfaces</translation>
     </message>
@@ -1327,7 +1377,7 @@
         <translation type="vanished">Vérification de l&apos;intégrité des données</translation>
     </message>
     <message>
-        <location line="-243"/>
+        <location line="-448"/>
         <source>Shared folders and files</source>
         <translation>Dossiers et fichiers partagés</translation>
     </message>
@@ -1353,7 +1403,7 @@
         <translation type="vanished">Ouvrir l&apos;emplacement du dossier ou fichier partagé sélectionné</translation>
     </message>
     <message>
-        <location line="+264"/>
+        <location line="+265"/>
         <source>Graphic User Interface</source>
         <translation>Interface Graphique</translation>
     </message>
@@ -1373,7 +1423,7 @@
         <translation>Recharger le style courant</translation>
     </message>
     <message>
-        <location line="+22"/>
+        <location line="-169"/>
         <source>Core connection</source>
         <translation>Connexion au core</translation>
     </message>
@@ -1408,7 +1458,7 @@
         <translation>Réinitialiser le mot de passe</translation>
     </message>
     <message>
-        <location line="-166"/>
+        <location line="+25"/>
         <source>User interface</source>
         <translation>Interface utilisateur</translation>
     </message>

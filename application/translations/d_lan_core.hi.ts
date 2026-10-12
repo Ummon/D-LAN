@@ -63,7 +63,7 @@
         <translation>सेवा के लिए तैयार</translation>
     </message>
     <message>
-        <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="388"/>
+        <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="391"/>
         <source>The version (%1) of the queue file &quot;%2&quot; doesn&apos;t match the current version (%3). Queue will be reset.</source>
         <translation>कतार फ़ाइल &quot;%2&quot; का संस्करण (%1) वर्तमान संस्करण (%3) से मेल नहीं खाता। कतार रीसेट की जाएगी।</translation>
     </message>

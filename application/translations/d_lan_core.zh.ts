@@ -63,7 +63,7 @@
         <translation>已就绪</translation>
     </message>
     <message>
-        <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="388"/>
+        <location filename="../Core/DownloadManager/priv/DownloadQueue.cpp" line="391"/>
         <source>The version (%1) of the queue file &quot;%2&quot; doesn&apos;t match the current version (%3). Queue will be reset.</source>
         <translation>队列文件“%2”的版本 (%1) 与当前版本 (%3) 不一致。队列将被重置。</translation>
     </message>

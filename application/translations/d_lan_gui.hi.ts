@@ -173,7 +173,7 @@
 <context>
     <name>GUI::ChatWidget</name>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="+479"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="+696"/>
         <location line="+4"/>
         <source>Unable to send message</source>
         <translation>संदेश भेजने में असमर्थ</translation>
@@ -684,7 +684,7 @@
 <context>
     <name>GUI::RemoteBrowseDialog</name>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="+56"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="+58"/>
         <source>Ok</source>
         <translation>ठीक है</translation>
     </message>
@@ -694,7 +694,7 @@
         <translation>रद्द करें</translation>
     </message>
     <message>
-        <location line="+93"/>
+        <location line="+98"/>
         <source>Show hidden files and directories</source>
         <translation>छिपी हुई फ़ाइलें और फ़ोल्डर दिखाएँ</translation>
     </message>
@@ -704,7 +704,7 @@
         <translation>छिपे हुए फ़ोल्डर दिखाएँ</translation>
     </message>
     <message>
-        <location line="+184"/>
+        <location line="+196"/>
         <source>Open location</source>
         <translation>स्थान खोलें</translation>
     </message>
@@ -712,7 +712,7 @@
 <context>
     <name>GUI::RemoteBrowseModel</name>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseModel.cpp" line="+624"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseModel.cpp" line="+698"/>
         <source>free</source>
         <translation>खाली</translation>
     </message>
@@ -813,7 +813,7 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+253"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+265"/>
         <source>Default</source>
         <translation>डिफ़ॉल्ट</translation>
     </message>
@@ -823,7 +823,12 @@
         <translation>इंटरफ़ेस सक्रिय नहीं है</translation>
     </message>
     <message>
-        <location line="+224"/>
+        <location line="+222"/>
+        <source>A password is defined</source>
+        <translation>पासवर्ड निर्धारित है</translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>Change the password</source>
         <translation>पासवर्ड बदलें</translation>
     </message>
@@ -838,21 +843,21 @@
         <translation>पासवर्ड निर्धारित करें</translation>
     </message>
     <message>
-        <location line="+25"/>
-        <location line="+313"/>
+        <location line="+31"/>
+        <location line="+406"/>
         <source>Connecting . . .</source>
         <translation>कनेक्ट हो रहा है . . .</translation>
     </message>
     <message>
-        <location line="-305"/>
-        <location line="+16"/>
+        <location line="-398"/>
         <location line="+15"/>
-        <location line="+274"/>
+        <location line="+18"/>
+        <location line="+365"/>
         <source>Connect</source>
         <translation>कनेक्ट करें</translation>
     </message>
     <message>
-        <location line="-183"/>
+        <location line="-260"/>
         <source>Select one or more directories and/or files to share</source>
         <translation>साझा करने के लिए एक या अधिक फ़ोल्डर और/या फ़ाइलें चुनें</translation>
     </message>
@@ -1263,7 +1268,7 @@
         <translation>चयनित साझा फ़ाइलों और फ़ोल्डरों के स्थान खोलें</translation>
     </message>
     <message>
-        <location line="+50"/>
+        <location line="+255"/>
         <source>Network</source>
         <translation>नेटवर्क</translation>
     </message>
@@ -1288,22 +1293,67 @@
         <translation>IPv4</translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location line="+20"/>
         <source>Show tunnel interfaces</source>
         <translation>टनल इंटरफ़ेस दिखाएँ</translation>
     </message>
     <message>
+        <location line="+34"/>
+        <source>Advanced</source>
+        <translation>उन्नत</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Ignored extensions: the files whose name ends with one of them are not shared, for example the ones being downloaded by another software</source>
+        <translation>अनदेखे एक्सटेंशन: जिन फ़ाइलों का नाम इनमें से किसी एक पर समाप्त होता है वे साझा नहीं की जातीं, उदाहरण के लिए वे जिन्हें कोई अन्य सॉफ़्टवेयर डाउनलोड कर रहा है</translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>New extension</source>
+        <translation>नया एक्सटेंशन</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Add</source>
+        <translation>जोड़ें</translation>
+    </message>
+    <message>
+        <location line="+26"/>
+        <source>Remove the selected extensions</source>
+        <translation>चयनित एक्सटेंशन हटाएँ</translation>
+    </message>
+    <message>
         <location line="+3"/>
+        <source>Remove</source>
+        <translation>हटाएँ</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Replace the list by the default one</source>
+        <translation>सूची को डिफ़ॉल्ट सूची से बदलें</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Reset to default</source>
+        <translation>डिफ़ॉल्ट पर रीसेट करें</translation>
+    </message>
+    <message>
+        <location line="+24"/>
+        <source>Do not share the files having one of these extensions</source>
+        <translation>इनमें से किसी एक्सटेंशन वाली फ़ाइलें साझा न करें</translation>
+    </message>
+    <message>
+        <location line="-128"/>
         <source>Tunnels are excluded from automatic discovery. Select a tunnel address to use it. The selected interface always remains visible.</source>
         <translation>टनल स्वचालित खोज से बाहर रखे जाते हैं। किसी टनल का उपयोग करने के लिए उसका पता चुनें। चयनित इंटरफ़ेस हमेशा दिखाई देता है।</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+10"/>
         <source>Refresh interfaces</source>
         <translation>इंटरफ़ेस रीफ़्रेश करें</translation>
     </message>
     <message>
-        <location line="-243"/>
+        <location line="-448"/>
         <source>Shared folders and files</source>
         <translation>साझा फ़ोल्डर और फ़ाइलें</translation>
     </message>
@@ -1313,7 +1363,7 @@
         <translation>नए साझा फ़ोल्डर और/या फ़ाइलें जोड़ें</translation>
     </message>
     <message>
-        <location line="+264"/>
+        <location line="+265"/>
         <source>Graphic User Interface</source>
         <translation>ग्राफ़िकल यूज़र इंटरफ़ेस</translation>
     </message>
@@ -1333,7 +1383,7 @@
         <translation>वर्तमान शैली फिर से लोड करें</translation>
     </message>
     <message>
-        <location line="+22"/>
+        <location line="-169"/>
         <source>Core connection</source>
         <translation>Core कनेक्शन</translation>
     </message>
@@ -1368,7 +1418,7 @@
         <translation>पासवर्ड रीसेट करें</translation>
     </message>
     <message>
-        <location line="-166"/>
+        <location line="+25"/>
         <source>User interface</source>
         <translation>यूज़र इंटरफ़ेस</translation>
     </message>

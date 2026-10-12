@@ -173,49 +173,49 @@
 <context>
     <name>GUI::ChatWidget</name>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="479"/>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="483"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="696"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="700"/>
         <source>Unable to send message</source>
         <translation>Impossibile inviare il messaggio</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="479"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="696"/>
         <source>The message is too long</source>
         <translation>Il messaggio è troppo lungo</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="483"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="700"/>
         <source>The message can&apos;t be send, unknown error</source>
         <translation>Impossibile inviare il messaggio, errore sconosciuto</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="499"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="716"/>
         <source>Browse</source>
         <translation>Sfoglia</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="502"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="719"/>
         <source>Copy IP: %1</source>
         <translation>Copia IP: %1</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="525"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="742"/>
         <source>Copy selected messages</source>
         <translation>Copia i messaggi selezionati</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="526"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="743"/>
         <source>Copy selected lines</source>
         <translation>Copia le righe selezionate</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="527"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="744"/>
         <source>Browse selected peers</source>
         <translation>Sfoglia i peer selezionati</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="903"/>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="966"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="1120"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="1183"/>
         <source>Chat</source>
         <translation>Chat</translation>
     </message>
@@ -688,27 +688,27 @@
 <context>
     <name>GUI::RemoteBrowseDialog</name>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="56"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="58"/>
         <source>Ok</source>
         <translation>OK</translation>
     </message>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="57"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="59"/>
         <source>Cancel</source>
         <translation>Annulla</translation>
     </message>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="150"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="157"/>
         <source>Show hidden files and directories</source>
         <translation>Mostra file e cartelle nascosti</translation>
     </message>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="150"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="157"/>
         <source>Show hidden directories</source>
         <translation>Mostra cartelle nascoste</translation>
     </message>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="334"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseDialog.cpp" line="353"/>
         <source>Open location</source>
         <translation>Apri percorso</translation>
     </message>
@@ -716,7 +716,7 @@
 <context>
     <name>GUI::RemoteBrowseModel</name>
     <message>
-        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseModel.cpp" line="624"/>
+        <location filename="../GUI/RemoteBrowseDialog/RemoteBrowseModel.cpp" line="698"/>
         <source>free</source>
         <translation>liberi</translation>
     </message>
@@ -817,57 +817,62 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="253"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="265"/>
         <source>Default</source>
         <translation>Predefinito</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="312"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="324"/>
         <source>Interface not active</source>
         <translation>Interfaccia non attiva</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="536"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="546"/>
+        <source>A password is defined</source>
+        <translation>È stata impostata una password</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="548"/>
         <source>Change the password</source>
         <translation>Cambia la password</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="540"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="552"/>
         <source>No password defined</source>
         <translation>Non è stata impostata alcuna password</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="542"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="554"/>
         <source>Define a password</source>
         <translation>Imposta una password</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="567"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="880"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="585"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="991"/>
         <source>Connecting . . .</source>
         <translation>Connessione in corso . . .</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="575"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="591"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="606"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="880"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="593"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="608"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="626"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="991"/>
         <source>Connect</source>
         <translation>Connetti</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="697"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="731"/>
         <source>Select one or more directories and/or files to share</source>
         <translation>Seleziona una o più cartelle e/o file da condividere</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="717"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="786"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="751"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="820"/>
         <source>Remove selected shared entries</source>
         <translation>Rimuovi gli elementi condivisi selezionati</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="718"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="752"/>
         <source>Are you sure you want to remove the selected shared files and directories?</source>
         <translation>Rimuovere i file e le cartelle condivisi selezionati?</translation>
     </message>
@@ -884,17 +889,17 @@
         <translation type="vanished">Rimuovi la cartella condivisa</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="794"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="828"/>
         <source>Move up</source>
         <translation>Sposta su</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="802"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="836"/>
         <source>Move down</source>
         <translation>Sposta giù</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="810"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="844"/>
         <source>Open location</source>
         <translation>Apri percorso</translation>
     </message>
@@ -1305,42 +1310,87 @@
         <translation>Apri i percorsi dei file e delle cartelle condivisi selezionati</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="202"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="407"/>
         <source>Network</source>
         <translation>Rete</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="214"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="419"/>
         <source>Interface to listen</source>
         <translation>Interfaccia di ascolto</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="250"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="455"/>
         <source>Any</source>
         <translation>Qualsiasi</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="263"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="468"/>
         <source>IPv6</source>
         <translation>IPv6</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="276"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="481"/>
         <source>IPv4</source>
         <translation>IPv4</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="293"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="501"/>
         <source>Show tunnel interfaces</source>
         <translation>Mostra le interfacce tunnel</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="296"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="535"/>
+        <source>Advanced</source>
+        <translation>Avanzate</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="541"/>
+        <source>Ignored extensions: the files whose name ends with one of them are not shared, for example the ones being downloaded by another software</source>
+        <translation>Estensioni ignorate: i file il cui nome termina con una di esse non vengono condivisi, ad esempio quelli in fase di download da parte di un altro programma</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="556"/>
+        <source>New extension</source>
+        <translation>Nuova estensione</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="563"/>
+        <source>Add</source>
+        <translation>Aggiungi</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="589"/>
+        <source>Remove the selected extensions</source>
+        <translation>Rimuovi le estensioni selezionate</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="592"/>
+        <source>Remove</source>
+        <translation>Rimuovi</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="599"/>
+        <source>Replace the list by the default one</source>
+        <translation>Sostituisci l&apos;elenco con quello predefinito</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="602"/>
+        <source>Reset to default</source>
+        <translation>Ripristina predefinite</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="626"/>
+        <source>Do not share the files having one of these extensions</source>
+        <translation>Non condividere i file con una di queste estensioni</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="498"/>
         <source>Tunnels are excluded from automatic discovery. Select a tunnel address to use it. The selected interface always remains visible.</source>
         <translation>I tunnel sono esclusi dal rilevamento automatico. Per utilizzare un tunnel, selezionane l’indirizzo. L’interfaccia selezionata rimane sempre visibile.</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="303"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="508"/>
         <source>Refresh interfaces</source>
         <translation>Aggiorna le interfacce</translation>
     </message>
@@ -1353,62 +1403,62 @@
         <translation type="vanished">Verifica dell&apos;integrità dei dati</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="330"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="331"/>
         <source>User interface</source>
         <translation>Interfaccia utente</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="333"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="334"/>
         <source>Graphic User Interface</source>
         <translation>Interfaccia grafica</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="339"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="340"/>
         <source>Language</source>
         <translation>Lingua</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="349"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="350"/>
         <source>Style</source>
         <translation>Stile</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="370"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="371"/>
         <source>Reload the current style</source>
         <translation>Ricarica lo stile corrente</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="392"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="202"/>
         <source>Core connection</source>
         <translation>Connessione al Core</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="400"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="210"/>
         <source>Address</source>
         <translation>Indirizzo</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="410"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="220"/>
         <source>Reset to local</source>
         <translation>Ripristina connessione locale</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="417"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="227"/>
         <source>Password</source>
         <translation>Password</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="475"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="285"/>
         <source>Disconnect</source>
         <translation>Disconnetti</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="489"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="299"/>
         <source>Change the password</source>
         <translation>Cambia la password</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="496"/>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="306"/>
         <source>Reset the password</source>
         <translation>Reimposta la password</translation>
     </message>
