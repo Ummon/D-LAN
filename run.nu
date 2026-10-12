@@ -19,7 +19,9 @@ def "main build-css" [] {
     build_css
 }
 
-def "main deploy" [port, host, path, chown_user = ""] {
+def "main deploy" [port, host, ssh_key, path, chown_user = ""] {
+    let ssh_args = [-p $port -i $ssh_key]
+
     build_css
     setup_native_build_env
     gleam test
@@ -27,7 +29,7 @@ def "main deploy" [port, host, path, chown_user = ""] {
 
     let cross_compiled = $nu.os-info.name == "windows"
     if $cross_compiled {
-        cross_compile_nifs_for_linux (ssh -p $port $host uname -m | str trim)
+        cross_compile_nifs_for_linux (ssh ...$ssh_args $host uname -m | str trim)
 
         # The entry point is exported with Windows line endings.
         let entrypoint = "build/erlang-shipment/entrypoint.sh"
@@ -36,15 +38,17 @@ def "main deploy" [port, host, path, chown_user = ""] {
 
     # 'rsync' doesn't understand the Windows path separators.
     let files = ls build/erlang-shipment | get name | str replace --all '\' '/'
-    rsync -rvz --delete --exclude=d_lan_website.sqlite3 --exclude=config.toml --exclude=/d_lan_website/priv/releases/ -e $'ssh -p ($port)' ...$files $'($host):($path)'
+    rsync -rvz --delete --exclude=d_lan_website.sqlite3 --exclude=config.toml --exclude=/d_lan_website/priv/releases/ -e $'ssh ($ssh_args | str join " ")' ...$files $'($host):($path)'
     if $chown_user != "" {
-        ssh -p $port $host $'sudo chown -R ($chown_user):($chown_user) ($path)'
+        # The directories must stay writable by the group for the next deployment:
+        # the ones created by 'rsync' aren't.
+        ssh ...$ssh_args $host $'sudo chown -R ($chown_user):($chown_user) ($path) && sudo find ($path) -type d -exec chmod g+w {} +'
     }
 
     if $cross_compiled {
         # Check that the cross-compiled NIFs can be loaded by the Erlang VM of the host.
         let check = "erl -noshell -pa */ebin -eval '{module, _} = code:ensure_loaded(jargon), {module, _} = code:ensure_loaded(esqlite3_nif), halt().'"
-        ssh -p $port $host $"cd ($path) && ($check)"
+        ssh ...$ssh_args $host $"cd ($path) && ($check)"
     }
 }
 
