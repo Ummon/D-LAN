@@ -38,6 +38,7 @@
       <Resource Language="ko" />
       <Resource Language="hi" />
       <Resource Language="zh-Hans" />
+      <Resource Language="pt-BR" />
    </Resources>
 
    <Applications>

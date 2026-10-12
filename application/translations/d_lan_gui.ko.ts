@@ -173,49 +173,49 @@
 <context>
     <name>GUI::ChatWidget</name>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="696"/>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="700"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="695"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="699"/>
         <source>Unable to send message</source>
         <translation>메시지를 보낼 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="696"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="695"/>
         <source>The message is too long</source>
         <translation>메시지가 너무 깁니다</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="700"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="699"/>
         <source>The message can&apos;t be send, unknown error</source>
         <translation>메시지를 보낼 수 없습니다. 알 수 없는 오류입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="716"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="715"/>
         <source>Browse</source>
         <translation>탐색</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="719"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="718"/>
         <source>Copy IP: %1</source>
         <translation>IP 복사: %1</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="742"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="741"/>
         <source>Copy selected messages</source>
         <translation>선택한 메시지 복사</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="743"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="742"/>
         <source>Copy selected lines</source>
         <translation>선택한 줄 복사</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="744"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="743"/>
         <source>Browse selected peers</source>
         <translation>선택한 피어 탐색</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="1120"/>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="1183"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="1119"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="1182"/>
         <source>Chat</source>
         <translation>채팅</translation>
     </message>
@@ -817,62 +817,62 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="265"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="275"/>
         <source>Default</source>
         <translation>기본값</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="324"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="334"/>
         <source>Interface not active</source>
         <translation>인터페이스가 비활성 상태입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="546"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="556"/>
         <source>A password is defined</source>
         <translation>비밀번호가 설정되어 있습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="548"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="558"/>
         <source>Change the password</source>
         <translation>비밀번호 변경</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="552"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="562"/>
         <source>No password defined</source>
         <translation>비밀번호가 설정되어 있지 않습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="554"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="564"/>
         <source>Define a password</source>
         <translation>비밀번호 설정</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="585"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="991"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="595"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="995"/>
         <source>Connecting . . .</source>
         <translation>연결하는 중 . . .</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="593"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="608"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="626"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="991"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="603"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="618"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="636"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="995"/>
         <source>Connect</source>
         <translation>연결</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="731"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="741"/>
         <source>Select one or more directories and/or files to share</source>
         <translation>공유할 폴더 및/또는 파일을 하나 이상 선택하십시오</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="751"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="820"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="761"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="830"/>
         <source>Remove selected shared entries</source>
         <translation>선택한 공유 항목 제거</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="752"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="762"/>
         <source>Are you sure you want to remove the selected shared files and directories?</source>
         <translation>선택한 공유 파일과 폴더를 제거하시겠습니까?</translation>
     </message>
@@ -889,17 +889,17 @@
         <translation type="vanished">공유 폴더 제거</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="828"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="838"/>
         <source>Move up</source>
         <translation>위로 이동</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="836"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="846"/>
         <source>Move down</source>
         <translation>아래로 이동</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="844"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="854"/>
         <source>Open location</source>
         <translation>위치 열기</translation>
     </message>

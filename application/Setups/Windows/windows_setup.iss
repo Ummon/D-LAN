@@ -44,6 +44,7 @@ Name: "ja"; MessagesFile: "compiler:Languages/Japanese.isl,../../translations/d_
 Name: "es"; MessagesFile: "compiler:Languages/Spanish.isl,../../translations/d_lan.es.isl"
 Name: "ko"; MessagesFile: "compiler:Languages/Korean.isl,../../translations/d_lan.ko.isl"
 Name: "zh"; MessagesFile: "compiler:Languages/ChineseSimplified.isl,../../translations/d_lan.zh.isl"
+Name: "pt"; MessagesFile: "compiler:Languages/BrazilianPortuguese.isl,../../translations/d_lan.pt.isl"
 ; Custom languages are from https://github.com/jrsoftware/issrc/tree/main/Files/Languages/Unofficial
 Name: "hi"; MessagesFile: "inno_setup_languages/Hindi.islu,../../translations/d_lan.hi.isl"
 

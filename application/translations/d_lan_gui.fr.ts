@@ -173,7 +173,7 @@
 <context>
     <name>GUI::ChatWidget</name>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="+696"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="+695"/>
         <location line="+4"/>
         <source>Unable to send message</source>
         <translation>Impossible d&apos;envoyer le message</translation>
@@ -817,7 +817,7 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+265"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+275"/>
         <source>Default</source>
         <translation>Par défaut</translation>
     </message>
@@ -848,20 +848,20 @@
     </message>
     <message>
         <location line="+31"/>
-        <location line="+406"/>
+        <location line="+400"/>
         <source>Connecting . . .</source>
         <translation>Connexion...</translation>
     </message>
     <message>
-        <location line="-398"/>
+        <location line="-392"/>
         <location line="+15"/>
         <location line="+18"/>
-        <location line="+365"/>
+        <location line="+359"/>
         <source>Connect</source>
         <translation>Connecter</translation>
     </message>
     <message>
-        <location line="-260"/>
+        <location line="-254"/>
         <source>Select one or more directories and/or files to share</source>
         <translation>Sélectionnez un ou plusieurs dossiers et/ou fichiers à partager</translation>
     </message>
