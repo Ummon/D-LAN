@@ -468,6 +468,17 @@ bool StringUtils::isDevanagari(const QString& str)
 }
 
 /**
+  * Return whether the string contains at least one character in the Bengali script (Bengali, Assamese, ...).
+  */
+bool StringUtils::isBengali(const QString& str)
+{
+   for (const QChar c : str)
+      if (c.script() == QChar::Script_Bengali)
+         return true;
+   return false;
+}
+
+/**
   * Compare two std::string without case sensitive.
   * @return 0 if equal, 1 if s1 > s2, -1 if s1 < s2.
   */

@@ -110,6 +110,8 @@ void WordIndexTests::shortPrefixMatching_data()
    QTest::newRow("hangul") << QStringLiteral("\uD55C") << QStringLiteral("\uD55C\uAE00") << true;
    QTest::newRow("one-devanagari") << QStringLiteral("कि") << QStringLiteral("किताब") << false;
    QTest::newRow("two-devanagari") << QStringLiteral("किता") << QStringLiteral("किताब") << true;
+   QTest::newRow("one-bengali") << QStringLiteral("বাং") << QStringLiteral("বাংলাদেশ") << false;
+   QTest::newRow("two-bengali") << QStringLiteral("বাংলা") << QStringLiteral("বাংলাদেশ") << true;
    QTest::newRow("short-latin") << QString("al") << QString("alpha") << false;
    QTest::newRow("long-latin") << QString("alp") << QString("alpha") << true;
    QTest::newRow("two-graphemes-combining") << QStringLiteral("a\u0301b") << QStringLiteral("a\u0301bcd") << false;

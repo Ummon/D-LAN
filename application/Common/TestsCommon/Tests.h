@@ -52,6 +52,7 @@ private slots:
    void hanVariants();
    void normalizeSearchWords();
    void normalizeDevanagari();
+   void normalizeBengali();
    void normalizeSearchPositions_data();
    void normalizeSearchPositions();
    void isKorean_data();
@@ -60,6 +61,8 @@ private slots:
    void isJapanese();
    void isDevanagari_data();
    void isDevanagari();
+   void isBengali_data();
+   void isBengali();
    void hashStringToInt();
 
    // Path class.

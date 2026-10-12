@@ -466,6 +466,30 @@ void Tests::normalizeDevanagari()
    QCOMPARE(StringUtils::toLowerAndRemoveAccents(QStringLiteral("葛\U000E0100")), QStringLiteral("葛"));
 }
 
+void Tests::normalizeBengali()
+{
+   // The vowel signs distinguish words: কাল (time), কল (machine) and কলম (pen).
+   QCOMPARE(StringUtils::splitInWords(QStringLiteral("কাল কল কলম")),
+      (QStringList { QStringLiteral("কাল"), QStringLiteral("কল"), QStringLiteral("কলম") }));
+
+   // Unlike in Devanagari the nukta makes another letter and is kept: বড় (big), decomposed or precomposed.
+   const QString big = QStringLiteral("\u09AC\u09A1\u09BC");
+   QCOMPARE(StringUtils::toLowerAndRemoveAccents(big), big);
+   QCOMPARE(StringUtils::toLowerAndRemoveAccents(QStringLiteral("\u09AC\u09DC")), big);
+
+   // The candrabindu and the nasal conjuncts aren't spelling variants of the anusvara: চাঁদ (moon), গঙ্গা (Ganges).
+   for (const QString& word : {
+      QStringLiteral("চাঁদ"),
+      QStringLiteral("গঙ্গা") })
+      QCOMPARE(StringUtils::toLowerAndRemoveAccents(word), word);
+
+   // Zero-width joiners only change the rendering, e.g. the one before the ya-phala of "RAB".
+   QCOMPARE(StringUtils::toLowerAndRemoveAccents(QStringLiteral("\u09B0\u200D\u09CD\u09AF\u09BE\u09AC")), QStringLiteral("\u09B0\u09CD\u09AF\u09BE\u09AC"));
+
+   // Decimal digits: ২০২৪ => 2024.
+   QCOMPARE(StringUtils::splitInWords(QStringLiteral("গান_২০২৪.mp3")), (QStringList { QStringLiteral("গান"), "2024", "mp3" }));
+}
+
 void Tests::normalizeSearchWords()
 {
    QCOMPARE(StringUtils::toLowerAndRemoveAccents(QStringLiteral("\uD55C")), QStringLiteral("\uD55C"));
@@ -598,6 +622,27 @@ void Tests::isDevanagari()
    QFETCH(QString, text);
    QFETCH(bool, expected);
    QCOMPARE(StringUtils::isDevanagari(text), expected);
+}
+
+void Tests::isBengali_data()
+{
+   QTest::addColumn<QString>("text");
+   QTest::addColumn<bool>("expected");
+
+   QTest::newRow("empty") << QString() << false;
+   QTest::newRow("ascii") << QStringLiteral("abc 123") << false;
+   QTest::newRow("bengali") << QStringLiteral("বাংলা") << true;
+   QTest::newRow("digits") << QStringLiteral("২০") << true;
+   QTest::newRow("mixed") << QStringLiteral("abc ক 123") << true;
+   QTest::newRow("devanagari") << QStringLiteral("काम") << false;
+   QTest::newRow("hangul") << QStringLiteral("한글") << false;
+}
+
+void Tests::isBengali()
+{
+   QFETCH(QString, text);
+   QFETCH(bool, expected);
+   QCOMPARE(StringUtils::isBengali(text), expected);
 }
 
 void Tests::hashStringToInt()

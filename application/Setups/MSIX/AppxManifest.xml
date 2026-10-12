@@ -39,6 +39,8 @@
       <Resource Language="hi" />
       <Resource Language="zh-Hans" />
       <Resource Language="pt-BR" />
+      <Resource Language="id" />
+      <Resource Language="bn" />
    </Resources>
 
    <Applications>

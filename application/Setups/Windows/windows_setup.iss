@@ -47,6 +47,8 @@ Name: "zh"; MessagesFile: "compiler:Languages/ChineseSimplified.isl,../../transl
 Name: "pt"; MessagesFile: "compiler:Languages/BrazilianPortuguese.isl,../../translations/d_lan.pt.isl"
 ; Custom languages are from https://github.com/jrsoftware/issrc/tree/main/Files/Languages/Unofficial
 Name: "hi"; MessagesFile: "inno_setup_languages/Hindi.islu,../../translations/d_lan.hi.isl"
+Name: "id"; MessagesFile: "inno_setup_languages/Indonesian.isl,../../translations/d_lan.id.isl"
+Name: "bn"; MessagesFile: "inno_setup_languages/Bengali.islu,../../translations/d_lan.bn.isl"
 
 [Tasks]
 Name: "Firewall"; Description: {cm:firewallException}; MinVersion: 0,5.01.2600sp2;
