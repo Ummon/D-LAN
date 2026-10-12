@@ -102,8 +102,11 @@ namespace FM
 
       bool processEvents(const QList<WatcherEvent>& events);
 
+      bool isFileIgnored(const QString& path) const;
+
       const int SCAN_PERIOD_UNWATCHABLE_DIRS;
       const int IO_ERROR_WAITING_BEFORE_RETRY;
+      const QStringList IGNORED_EXTENSIONS; ///< Empty if the setting 'ignored_extensions_enabled' is false.
 
       FileManager* fileManager;
       DirWatcher* dirWatcher;

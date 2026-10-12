@@ -4595,6 +4595,145 @@ void CacheTest::scanKeepsFileWithStaleUnfinished()
    QCOMPARE(dir->getCompleteFiles(), QList<FM::File*> { file });
 }
 
+void CacheTest::scanIgnoresExtensions()
+{
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   const auto restoreSettings = qScopeGuard([] {
+      SETTINGS.rm("ignored_extensions_enabled");
+      SETTINGS.rm("ignored_extensions");
+   });
+   SETTINGS.set("ignored_extensions", QList<QString> { ".part", ".!qB" });
+
+   // Our own unfinished files and the directories are never ignored.
+   const QString unfinished = "download.part" + SETTINGS.get<QString>("unfinished_suffix_term");
+   const QStringList ignored { "movie.mkv.part", "UPPER.PART", "image.iso.!qb" };
+   QStringList kept { "movie.mkv", "part", "folder.part/inside.txt", unfinished };
+   QVERIFY(QDir(temp.path()).mkdir("folder.part"));
+   for (const QString& name : ignored + kept)
+   {
+      QFile file(temp.filePath(name));
+      QVERIFY(file.open(QIODevice::WriteOnly));
+      QCOMPARE(file.write("abc"), qint64(3));
+   }
+   kept.removeOne("folder.part/inside.txt");
+
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   auto dir = root->getRootDir();
+   const auto checkFiles = [&](QStringList expected) {
+      QStringList actual;
+      for (FM::File* file : dir->getFiles())
+         actual << file->getName();
+      actual.sort();
+      expected.sort();
+      QCOMPARE(actual, expected);
+      auto folder = dir->getSubDir("folder.part");
+      QVERIFY(folder);
+      QVERIFY(folder->getFile("inside.txt"));
+   };
+
+   SETTINGS.set("ignored_extensions_enabled", false);
+   {
+      FM::FileUpdater updater(nullptr);
+      updater.scan(dir, true);
+      checkFiles(ignored + kept);
+   }
+
+   // The files already shared are removed from the cache.
+   SETTINGS.set("ignored_extensions_enabled", true);
+   FM::FileUpdater updater(nullptr);
+   updater.scan(dir);
+   checkFiles(kept);
+   for (const QString& name : ignored)
+      QVERIFY(QFile::exists(temp.filePath(name)));
+}
+
+void CacheTest::eventsIgnoreExtensions()
+{
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   const auto savedShares = SETTINGS.getRepeated<Protos::Common::SharedEntry>("shared_entries");
+   const auto restoreSettings = qScopeGuard([&] {
+      SETTINGS.set("shared_entries", savedShares);
+      SETTINGS.rm("ignored_extensions_enabled");
+      SETTINGS.rm("ignored_extensions");
+   });
+   SETTINGS.rm("shared_entries");
+   SETTINGS.set("ignored_extensions_enabled", true);
+   SETTINGS.set("ignored_extensions", QList<QString> { ".part" });
+
+   QDir tempDir(temp.path());
+   QVERIFY(tempDir.mkpath("shared/folder.part"));
+   const QString downloadPath = temp.filePath("shared/download.mkv.part");
+   const QString moviePath = temp.filePath("shared/movie.mkv");
+   const QString alonePath = temp.filePath("alone.part");
+   for (const QString& path : { downloadPath, moviePath, alonePath })
+   {
+      QFile file(path);
+      QVERIFY(file.open(QIODevice::WriteOnly));
+   }
+
+   FM::FileManager manager(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   auto& updater = manager.fileUpdater;
+   updater.stop(); // Deliver events explicitly.
+   const auto shared = manager.addASharedPath(temp.filePath("shared") + '/');
+   manager.addASharedPath(alonePath);
+   updater.stopScanning();
+   auto root = dynamic_cast<FM::SharedDirectory*>(manager.cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   auto dir = root->getRootDir();
+   FM::Entry* alone = manager.getEntry(Common::Path(alonePath));
+   QVERIFY(alone);
+   const Common::Hash movieHash = Common::Hash::rand();
+   new FM::File(root, "movie.mkv", 3, false, QDateTime::currentDateTime(), dir, { movieHash });
+   const auto takeEntriesToScan = [&] {
+      QList<FM::Entry*> entries;
+      while (FM::Entry* entry = updater.takeEntryToScan(true))
+         entries << entry;
+      return entries;
+   };
+   QVERIFY(takeEntriesToScan().isEmpty());
+
+   // An ignored file being written doesn't make its directory scanned.
+   updater.processEvents({
+      FM::WatcherEvent(FM::WatcherEvent::NEW, downloadPath, false),
+      FM::WatcherEvent(FM::WatcherEvent::CONTENT_CHANGED, downloadPath, false)
+   });
+   QVERIFY(takeEntriesToScan().isEmpty());
+
+   // Neither a directory nor a file shared by itself are ignored.
+   updater.processEvents({ FM::WatcherEvent(FM::WatcherEvent::NEW, temp.filePath("shared/folder.part"), false) });
+   QCOMPARE(takeEntriesToScan(), QList<FM::Entry*> { dir });
+   updater.processEvents({ FM::WatcherEvent(FM::WatcherEvent::CONTENT_CHANGED, alonePath, true) });
+   QCOMPARE(takeEntriesToScan(), QList<FM::Entry*> { alone });
+
+   // The download is finished: it's renamed by the other software and must then be shared.
+   const QString finishedPath = temp.filePath("shared/download.mkv");
+   QVERIFY(QFile::rename(downloadPath, finishedPath));
+   updater.processEvents({ FM::WatcherEvent(FM::WatcherEvent::MOVE, downloadPath, finishedPath, false) });
+   QCOMPARE(takeEntriesToScan(), QList<FM::Entry*> { dir });
+
+   // A shared file renamed with an ignored extension leaves the cache and stays on the disk.
+   const QString movieIgnoredPath = moviePath + ".PART";
+   QVERIFY(QFile::rename(moviePath, movieIgnoredPath));
+   updater.processEvents({ FM::WatcherEvent(FM::WatcherEvent::MOVE, moviePath, movieIgnoredPath, false) });
+   // The worker is stopped: perform the queued deletion explicitly.
+   QCoreApplication::sendPostedEvents(&manager.cache, QEvent::MetaCall);
+   QVERIFY(dir->getFiles().isEmpty());
+   QVERIFY(!manager.getChunk(movieHash));
+   QVERIFY(takeEntriesToScan().isEmpty());
+   QVERIFY(QFile::exists(movieIgnoredPath));
+
+   const QString aloneRenamedPath = temp.filePath("renamed.part");
+   QVERIFY(QFile::rename(alonePath, aloneRenamedPath));
+   updater.processEvents({ FM::WatcherEvent(FM::WatcherEvent::MOVE, alonePath, aloneRenamedPath, true) });
+   QCOMPARE(manager.getEntry(Common::Path(aloneRenamedPath)), alone);
+}
+
 void CacheTest::scanLoadsHashesInBatches()
 {
    FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;

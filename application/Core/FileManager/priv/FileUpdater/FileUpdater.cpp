@@ -67,6 +67,7 @@ namespace
 FileUpdater::FileUpdater(FileManager* fileManager) :
    SCAN_PERIOD_UNWATCHABLE_DIRS(SETTINGS.get<quint32>("scan_period_unwatchable_dirs")),
    IO_ERROR_WAITING_BEFORE_RETRY(3000),
+   IGNORED_EXTENSIONS(SETTINGS.get<bool>("ignored_extensions_enabled") ? SETTINGS.getRepeated<QString>("ignored_extensions") : QStringList()),
    fileManager(fileManager),
    dirWatcher(DirWatcher::getNewWatcher()),
    toStop(false),
@@ -622,7 +623,8 @@ void FileUpdater::scan(Entry* entry, bool addUnfinished, bool recursive)
                   dirsToVisit << subDir;
                }
             }
-            else if (addUnfinished || !Global::isFileUnfinished(fileInfo.fileName()))
+            // Our own unfinished files are never ignored, whatever the ignored extensions are.
+            else if (Global::isFileUnfinished(fileInfo.fileName()) ? addUnfinished : !this->isFileIgnored(fileInfo.fileName()))
             {
                if (File* file = currentDir->getFile(fileInfo.fileName()))
                   unseenFiles.remove(this->addScannedFile(fileInfo, file, currentDir));
@@ -879,6 +881,18 @@ void FileUpdater::removeFromHashingQueue(Entry* entry)
 }
 
 /**
+  * Whether a file isn't shared because of the end of its name, see the setting 'ignored_extensions'.
+  * It doesn't concern the files shared by themselves nor the directories.
+  */
+bool FileUpdater::isFileIgnored(const QString& path) const
+{
+   for (const QString& extension : this->IGNORED_EXTENSIONS)
+      if (path.endsWith(extension, Qt::CaseInsensitive))
+         return true;
+   return false;
+}
+
+/**
   * Event from the filesystem like a file created or renamed.
   * return true is at least one event is a timeout.
   */
@@ -896,6 +910,11 @@ bool FileUpdater::processEvents(const QList<WatcherEvent>& events)
             entry = this->fileManager->getEntry(Common::Path(path + '/'));
 
          const QFileInfo info(path);
+
+         // An ignored file is usually being written by another software: its directory isn't read again each time.
+         if (!entry && !info.isDir() && this->isFileIgnored(path))
+            return;
+
          if (entryTypeChanged(entry, info))
          {
             // Shared roots belong to the cache; their old share is no longer valid.
@@ -986,6 +1005,13 @@ bool FileUpdater::processEvents(const QList<WatcherEvent>& events)
                Entry* replacedEntry = this->fileManager->getEntry(pathDestination);
                if (replacedEntry && !replacedEntry->isRoot() && !QFileInfo::exists(event.path1))
                   this->deleteEntry(replacedEntry, false);
+
+               // A file renamed with an ignored extension isn't shared anymore, except the one shared by itself.
+               if (!entryToMove->isRoot() && pathDestination.isFile() && this->isFileIgnored(event.path2))
+               {
+                  this->deleteEntry(entryToMove, false);
+                  break;
+               }
 
                entryToMove->rename(pathDestination.getLastElement());
 

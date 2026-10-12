@@ -38,6 +38,8 @@ message Settings {
    string unfinished_suffix_term = 22; // [default = ".unfinished"].
    uint32 minimum_free_space = 23; // [default = 1048576] (1 MiB) After creating a file in a directory this is the minimum space it must be left.
    uint32 get_entries_timeout = 101; // [default = 5000] [ms].
+   bool ignored_extensions_enabled = 108; // [default = true] If false then 'ignored_extensions' isn't used.
+   repeated string ignored_extensions = 109; // [default = ".!qB", ".!ut", ".bc!", ".part", ".filepart", ".crdownload", ".opdownload", ".partial", ".aria2"] The files whose name ends with one of these terms aren't shared (case insensitive), they are usually files being downloaded by another software. A file shared by itself is never ignored.
 
    ///// PeerManager /////
    uint32 pending_socket_timeout = 30; // [default = 10000] [ms]. When a new connection is created we wait a maximum of this period before data incoming.

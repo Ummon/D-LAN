@@ -156,6 +156,47 @@ private slots:
       QVERIFY(!saved.contains("\"windowOrder\""));
    }
 
+   void loadedValuesReplaceDefaultOnes()
+   {
+      // The default values of 'ignored_extensions_enabled' (true) and 'ignored_extensions' (not empty) rely on this.
+      QTemporaryDir directory;
+      QVERIFY(directory.isValid());
+      SETTINGS.setFilename("settings-test.json");
+      const auto setDefaultValues = [] {
+         auto* core = new Protos::Core::Settings();
+         core->set_ignored_extensions_enabled(true);
+         core->add_ignored_extensions(".a");
+         core->add_ignored_extensions(".b");
+         SETTINGS.setSettingsMessage(core);
+      };
+      const QList<QString> defaultExtensions { ".a", ".b" };
+
+      // Settings saved by a previous version: the default values are kept.
+      setDefaultValues();
+      QFile file(directory.filePath("settings-test.json"));
+      QVERIFY(file.open(QIODevice::WriteOnly));
+      QVERIFY(file.write(R"({ "socket_timeout": 300 })") > 0);
+      file.close();
+      QVERIFY(SETTINGS.loadFromACustomDirectory(directory.path()));
+      QVERIFY(SETTINGS.get<bool>("ignored_extensions_enabled"));
+      QCOMPARE(SETTINGS.getRepeated<QString>("ignored_extensions"), defaultExtensions);
+
+      // The saved values aren't appended to the default ones.
+      QVERIFY(SETTINGS.saveToACustomDirectory(directory.path()));
+      setDefaultValues();
+      QVERIFY(SETTINGS.loadFromACustomDirectory(directory.path()));
+      QCOMPARE(SETTINGS.getRepeated<QString>("ignored_extensions"), defaultExtensions);
+
+      // 'false' and an empty list are saved values too.
+      SETTINGS.set("ignored_extensions_enabled", false);
+      SETTINGS.set("ignored_extensions", QList<QString>());
+      QVERIFY(SETTINGS.saveToACustomDirectory(directory.path()));
+      setDefaultValues();
+      QVERIFY(SETTINGS.loadFromACustomDirectory(directory.path()));
+      QVERIFY(!SETTINGS.get<bool>("ignored_extensions_enabled"));
+      QVERIFY(SETTINGS.getRepeated<QString>("ignored_extensions").isEmpty());
+   }
+
    void concurrentReplacement()
    {
       auto& settings = SETTINGS;

@@ -132,6 +132,8 @@ private slots:
    void scanReplacementFiles();
    void scanFileWithUnfinishedDirectory();
    void scanKeepsFileWithStaleUnfinished();
+   void scanIgnoresExtensions();
+   void eventsIgnoreExtensions();
    void scanLoadsHashesInBatches();
    void scanCanStopDuringHashLookup();
    void scanHashLookupLeavesSchedulerUnlocked_data();
