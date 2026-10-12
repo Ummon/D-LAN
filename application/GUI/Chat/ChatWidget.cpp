@@ -87,6 +87,7 @@ struct ChatDelegate::MessageLayout
 {
    QString time;
    QString nick; // Elided if there isn't enough room for it.
+   QFont nickFont;
    QRectF sender; // The background of the time and the nick, null if the model doesn't give them.
    QPointF timePos; // On the baseline.
    QPointF nickPos;
@@ -313,10 +314,10 @@ ChatDelegate::MessageLayout ChatDelegate::layoutMessage(const QFont& font, int w
       return layout;
    }
 
-   QFont nickFont(font);
-   nickFont.setBold(true);
+   layout.nickFont = font;
+   layout.nickFont.setBold(true);
    const QFontMetricsF metrics(font);
-   const QFontMetricsF nickMetrics(nickFont);
+   const QFontMetricsF nickMetrics(layout.nickFont);
 
    const qreal margin = ChatDocumentCache::DOCUMENT_MARGIN;
    const qreal maxWidth = width - 2 * margin;
@@ -413,9 +414,7 @@ void ChatDelegate::paintSender(QPainter* painter, const MessageLayout& layout, c
    painter->setPen(COLOR_SENDER_TIME);
    painter->drawText(layout.timePos, layout.time);
 
-   QFont nickFont(font);
-   nickFont.setBold(true);
-   painter->setFont(nickFont);
+   painter->setFont(layout.nickFont);
    painter->setPen(COLOR_SENDER_NICK);
    painter->drawText(layout.nickPos, layout.nick);
 

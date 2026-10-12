@@ -105,10 +105,11 @@ ChatSystem::SendStatus ChatSystem::send(
 
    // The complete history representation, which is given with our time, must fit too, otherwise
    // a successful live message could never be forwarded to peers that missed the initial broadcast.
-   Protos::Common::ChatMessages historyChatMessages(protoChatMessages);
-   historyChatMessages.set_sender_time(QDateTime::currentMSecsSinceEpoch());
-   if (historyChatMessages.ByteSizeLong() > static_cast<size_t>(this->networkListener->getMaxUDPMessageSize()))
+   // Our time is only set to check this size.
+   protoChatMessages.set_sender_time(QDateTime::currentMSecsSinceEpoch());
+   if (protoChatMessages.ByteSizeLong() > static_cast<size_t>(this->networkListener->getMaxUDPMessageSize()))
       return SendStatus::MESSAGE_TOO_LARGE;
+   protoChatMessages.clear_sender_time();
 
    // A live message is sent without its time nor its author: the receiver sets the time and our ID is in the header of the message.
    Protos::Common::ChatMessages liveChatMessages(protoChatMessages);

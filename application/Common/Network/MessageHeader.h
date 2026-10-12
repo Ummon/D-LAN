@@ -107,7 +107,7 @@ namespace Common
       };
 
       MessageHeader();
-      MessageHeader(MessageType type, quint32 size, const Hash& senderID);
+      MessageHeader(MessageType type, quint32 payloadSize, const Hash& senderID);
 
       MessageType getType() const;
       quint32 getPayloadSize() const;

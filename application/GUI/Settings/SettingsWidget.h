@@ -75,7 +75,7 @@ namespace GUI
       void setCoreTabsEnabled(bool enabled);
 
       QStringList getIgnoredExtensions() const;
-      void setIgnoredExtensions(QStringList extensions);
+      void setIgnoredExtensions(const QStringList& extensions);
 
    private slots:
       void newState(const Protos::GUI::State& state);

@@ -134,7 +134,7 @@ namespace NL
       };
       static const int NB_CHUNKS_NEEDED_REQUESTS_KEPT = 3;
       QList<ChunksNeededRequest> chunksNeededRequests;
-      int maxChunksNeededDatagramSize; // Defined when the multicast interfaces are known, see 'startListening(..)'.
+      int maxNbChunksNeeded; // The number of hashes of a 'ChunksNeeded' message, defined when the multicast interfaces are known, see 'startListening(..)'.
       enum HashRequestType
       {
          FIRST_HASHES,

@@ -46,6 +46,16 @@ using namespace GUI;
 #include <Log.h>
 #include <Utils.h>
 
+/**
+  * Whether both lists hold the same ignored extensions, whatever their order.
+  */
+static bool sameExtensions(QStringList extensions1, QStringList extensions2)
+{
+   extensions1.sort();
+   extensions2.sort();
+   return extensions1 == extensions2;
+}
+
 SettingsWidget::SettingsWidget(
    QSharedPointer<RCC::ICoreConnection> coreConnection,
    SharedEntryListModel& sharedEntryListModel,
@@ -902,12 +912,9 @@ QStringList SettingsWidget::getIgnoredExtensions() const
 /**
   * Nothing is done if the list already shows these extensions, whatever their order: its selection is kept.
   */
-void SettingsWidget::setIgnoredExtensions(QStringList extensions)
+void SettingsWidget::setIgnoredExtensions(const QStringList& extensions)
 {
-   QStringList currentExtensions = this->getIgnoredExtensions();
-   currentExtensions.sort();
-   extensions.sort();
-   if (currentExtensions == extensions)
+   if (sameExtensions(this->getIgnoredExtensions(), extensions))
       return;
 
    this->ui->lstIgnoredExtensions->clear();
@@ -960,12 +967,9 @@ void SettingsWidget::refreshIgnoredExtensionsButtons()
 {
    this->ui->butAddIgnoredExtension->setDisabled(Common::Global::toIgnoredExtension(this->ui->txtIgnoredExtension->text()).isNull());
    this->ui->butRemoveIgnoredExtensions->setDisabled(this->ui->lstIgnoredExtensions->selectedItems().isEmpty());
-
-   QStringList extensions = this->getIgnoredExtensions();
-   QStringList defaultExtensions = Common::Constants::DEFAULT_IGNORED_EXTENSIONS;
-   extensions.sort();
-   defaultExtensions.sort();
-   this->ui->butResetIgnoredExtensions->setDisabled(extensions == defaultExtensions);
+   this->ui->butResetIgnoredExtensions->setDisabled(
+      sameExtensions(this->getIgnoredExtensions(), Common::Constants::DEFAULT_IGNORED_EXTENSIONS)
+   );
 }
 
 bool SettingsWidget::eventFilter(QObject* obj, QEvent* event)
@@ -996,7 +1000,6 @@ void SettingsWidget::changeEvent(QEvent* event)
 
 void SettingsWidget::onActivate()
 {
-   this->ui->tabWidget->setCurrentWidget(
-      this->ui->tabWidget->isTabEnabled(0) ? this->ui->tabBasicSettings : this->ui->tabCoreConnection
-   );
+   const bool coreTabsEnabled = this->ui->tabWidget->isTabEnabled(this->ui->tabWidget->indexOf(this->ui->tabBasicSettings));
+   this->ui->tabWidget->setCurrentWidget(coreTabsEnabled ? this->ui->tabBasicSettings : this->ui->tabCoreConnection);
 }

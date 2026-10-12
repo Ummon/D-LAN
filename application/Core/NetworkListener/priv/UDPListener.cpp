@@ -62,7 +62,7 @@ UDPListener::UDPListener(
    peerManager(peerManager),
    uploadManager(uploadManager),
    downloadManager(downloadManager),
-   maxChunksNeededDatagramSize(0),
+   maxNbChunksNeeded(0),
    nextHashRequestType(FIRST_HASHES),
    loggerChunksNeeded(LM::Builder::newLogger("NetworkListener (chunkNeeded)"))
 {
@@ -206,12 +206,6 @@ void UDPListener::sendChunksNeededMessage()
    if (!this->isListening())
       return;
 
-   static const qint64 HASH_SIZE = Common::Hash::HASH_SIZE + 4; // "4" is the overhead added by protobuf for each hash.
-
-   // The datagram mustn't be fragmented. "-11" is the maximum tag size.
-   const qint64 MAX_NUMBER_OF_HASHES =
-      (this->maxChunksNeededDatagramSize - Common::MessageHeader::HEADER_SIZE - 11) / HASH_SIZE;
-
    ChunksNeededRequest request;
    request.tag = QRandomGenerator64::global()->generate64();
 
@@ -221,11 +215,11 @@ void UDPListener::sendChunksNeededMessage()
    switch (this->nextHashRequestType)
    {
    case FIRST_HASHES:
-      request.chunkDownloaders = this->downloadManager->getTheFirstUnfinishedChunks(MAX_NUMBER_OF_HASHES);
+      request.chunkDownloaders = this->downloadManager->getTheFirstUnfinishedChunks(this->maxNbChunksNeeded);
       this->nextHashRequestType = OLDEST_HASHES;
       break;
    case OLDEST_HASHES:
-      request.chunkDownloaders = this->downloadManager->getTheOldestUnfinishedChunks(MAX_NUMBER_OF_HASHES);
+      request.chunkDownloaders = this->downloadManager->getTheOldestUnfinishedChunks(this->maxNbChunksNeeded);
       this->nextHashRequestType = FIRST_HASHES;
       break;
    }
@@ -236,9 +230,8 @@ void UDPListener::sendChunksNeededMessage()
    Protos::Core::ChunksNeeded chunkNeededMessage;
    chunkNeededMessage.set_tag(request.tag);
    chunkNeededMessage.mutable_chunks()->Reserve(request.chunkDownloaders.size());
-   for (QListIterator<QSharedPointer<DM::IChunkDownloader>> i(request.chunkDownloaders); i.hasNext();)
+   for (const QSharedPointer<DM::IChunkDownloader>& chunkDownloader : std::as_const(request.chunkDownloaders))
    {
-      QSharedPointer<DM::IChunkDownloader> chunkDownloader = i.next();
       chunkNeededMessage.add_chunks()->set_hash(chunkDownloader->getHash().getData(), Common::Hash::HASH_SIZE);
 
       // Reuse complete local chunks, including those in other unfinished files.
@@ -280,10 +273,14 @@ bool UDPListener::startListening(const QList<QNetworkInterface>& interfaces, boo
    // Defer the first heartbeat so callers can connect their message contributors.
    this->timerInitialIMAlive.start(0);
 
-   this->maxChunksNeededDatagramSize = qMin(
+   // A 'ChunksNeeded' datagram mustn't be fragmented.
+   static const int HASH_SIZE = Common::Hash::HASH_SIZE + 4; // "4" is the overhead added by protobuf for each hash.
+   static const int MAX_TAG_SIZE = 11;
+   const int maxDatagramSize = qMin(
       Utils::getMaxUnfragmentedDatagramSize(this->multicastInterfaces, this->multicastGroup.protocol()),
       this->MAX_UDP_DATAGRAM_PAYLOAD_SIZE
    );
+   this->maxNbChunksNeeded = (maxDatagramSize - Common::MessageHeader::HEADER_SIZE - MAX_TAG_SIZE) / HASH_SIZE;
    this->timerChunksNeeded.start(Common::Constants::CHUNKS_NEEDED_PERIOD);
    return true;
 }
@@ -633,7 +630,7 @@ Common::MessageHeader UDPListener::readDatagramToBuffer(QUdpSocket& socket, QHos
 
    if (header.getPayloadSize() > datagramSize - Common::MessageHeader::HEADER_SIZE)
    {
-      L_ERRO("The message size (header.size) exceeds the datagram size received");
+      L_ERRO("The payload size of the header exceeds the datagram size received");
       header.setNull();
       return header;
    }

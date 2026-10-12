@@ -38,8 +38,8 @@ MessageHeader::MessageHeader() :
    type(NULL_MESS), payloadSize(0)
 {}
 
-MessageHeader::MessageHeader(MessageType type, quint32 size, const Hash& senderID) :
-   type(type), payloadSize(size), senderID(senderID)
+MessageHeader::MessageHeader(MessageType type, quint32 payloadSize, const Hash& senderID) :
+   type(type), payloadSize(payloadSize), senderID(senderID)
 {}
 
 MessageHeader::MessageType MessageHeader::getType() const
@@ -73,7 +73,7 @@ QString MessageHeader::toStr() const
       return QString("MessageHeader: <null>");
    else
       return
-         QString("MessageHeader: type = %1, size = %2, senderID = %3")
+         QString("MessageHeader: type = %1, payload size = %2, senderID = %3")
             .arg(messToStr(this->type))
             .arg(this->payloadSize)
             .arg(this->senderID.toStrShort());

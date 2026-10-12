@@ -159,6 +159,9 @@ bool PathCompletionBox::keyPressed(QKeyEvent* event)
 {
    const int count = this->paths.rowCount();
    const int row = this->currentIndex().row();
+   // There is at least one proposal while the box is shown.
+   const int previous = row > 0 ? row - 1 : count - 1;
+   const int next = (row + 1) % count;
    const auto page = [this] { return qMax(1, this->viewport()->height() / this->sizeHintForRow(0)); };
 
    switch (event->key())
@@ -168,19 +171,19 @@ bool PathCompletionBox::keyPressed(QKeyEvent* event)
       if (event->modifiers() & ~Qt::ShiftModifier)
          return false;
       if (event->key() == Qt::Key_Backtab || event->modifiers() == Qt::ShiftModifier)
-         this->browse(row > 0 ? row - 1 : count - 1);
+         this->browse(previous);
       else if (count == 1)
          this->take(0, true);
       else
-         this->browse((row + 1) % count);
+         this->browse(next);
       return true;
 
    case Qt::Key_Down:
-      this->browse((row + 1) % count);
+      this->browse(next);
       return true;
 
    case Qt::Key_Up:
-      this->browse(row > 0 ? row - 1 : count - 1);
+      this->browse(previous);
       return true;
 
    case Qt::Key_PageDown:
