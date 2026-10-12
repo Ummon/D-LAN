@@ -38,6 +38,14 @@ namespace
          return left.type() == Protos::GUI::LocalBrowseResult::DIR;
       return left.name() < right.name();
    }
+
+   /**
+     * The paths with a drive letter and the network ones are those of Windows: their case doesn't matter.
+     */
+   Qt::CaseSensitivity caseSensitivity(const QString& path)
+   {
+      return (path.size() >= 2 && path[1] == ':') || path.startsWith("//") ? Qt::CaseInsensitive : Qt::CaseSensitive;
+   }
 }
 
 /**
@@ -48,7 +56,7 @@ namespace
   */
 
 RemoteBrowseModel::RemoteBrowseModel(QSharedPointer<RCC::ICoreConnection> coreConnection) :
-   coreConnection(coreConnection), filters(FILE | DIR), currentTreeExploring(nullptr), root(new Tree())
+   coreConnection(coreConnection), filters(FILE | DIR), root(new Tree())
 {
    this->browse(this->root);
 }
@@ -194,9 +202,6 @@ void RemoteBrowseModel::setShowHidden(bool show)
    this->showHidden = show;
 
    const bool browsingDirectory = this->currentBrowseIndex.isValid();
-   // The node at which a pending path lookup was paused may be deleted.
-   if (this->currentTreeExploring)
-      this->currentTreeExploring = this->root;
 
    QList<Tree*> trees { this->root };
    while (!trees.isEmpty())
@@ -215,6 +220,7 @@ void RemoteBrowseModel::setShowHidden(bool show)
    }
 
    this->exploreDirectories();
+   this->exploreCompletions();
    this->loadPendingChildren();
 }
 
@@ -251,7 +257,7 @@ bool RemoteBrowseModel::isDirectory(const QModelIndex& index) const
 
 void RemoteBrowseModel::getIndexFromPath(const QString& path)
 {
-   this->cancelPathLookup();
+   this->exploring = false;
    // Accept either path separator, regardless of the core's OS or path prefix.
    QString normalized = path;
    normalized.replace('\\', '/');
@@ -262,14 +268,21 @@ void RemoteBrowseModel::getIndexFromPath(const QString& path)
       emit indexFromPath(QModelIndex());
       return;
    }
-   this->currentTreeExploring = this->root;
+   this->exploring = true;
    this->exploreDirectories();
+}
+
+void RemoteBrowseModel::getCompletions(const QString& path)
+{
+   this->pathToComplete = path;
+   this->completing = true;
+   this->exploreCompletions();
 }
 
 void RemoteBrowseModel::cancelPathLookup()
 {
-   this->currentTreeExploring = nullptr;
-   this->pathToExplore.clear();
+   this->exploring = false;
+   this->completing = false;
 }
 
 void RemoteBrowseModel::refresh(const QModelIndexList& folders)
@@ -306,9 +319,6 @@ void RemoteBrowseModel::result(const google::protobuf::RepeatedPtrField<Protos::
 
    Tree* tree = this->currentBrowseIndex.isValid() ? static_cast<Tree*>(this->currentBrowseIndex.internalPointer()) : this->root;
    tree->childrenLoaded = true;
-   // A refresh can delete the node at which a pending path lookup was paused.
-   if (this->currentTreeExploring)
-      this->currentTreeExploring = this->root;
    this->display(tree, filteredEntries);
 
    this->currentBrowseIndex = QModelIndex();
@@ -316,6 +326,7 @@ void RemoteBrowseModel::result(const google::protobuf::RepeatedPtrField<Protos::
    this->localBrowseResult.clear();
 
    this->exploreDirectories();
+   this->exploreCompletions();
    this->loadPendingChildren();
 }
 
@@ -325,7 +336,7 @@ void RemoteBrowseModel::resultTimeout()
    this->currentBrowseIndex = QModelIndex();
    this->localBrowseResult->disconnect(this);
    this->localBrowseResult.clear();
-   const bool resolvingPath = this->currentTreeExploring != nullptr;
+   const bool resolvingPath = this->exploring;
    this->cancelPathLookup();
    if (resolvingPath)
       emit indexFromPath(QModelIndex());
@@ -466,37 +477,35 @@ void RemoteBrowseModel::synchronize(Tree* tree, const google::protobuf::Repeated
    }
 }
 
-void RemoteBrowseModel::exploreDirectories()
+/**
+  * Looks for the entry having the given cleaned path among the known ones, starting from the root.
+  * Returns 'false' if the entries of a directory of the path aren't known yet: they are asked and the lookup has
+  * to be done again when some entries are received, an entry may be deleted in the meantime.
+  * Otherwise 'tree' is the entry, null if there is none.
+  */
+bool RemoteBrowseModel::find(const QString& path, Tree*& tree)
 {
-   const Qt::CaseSensitivity sensitivity =
-      (this->pathToExplore.size() >= 2 && this->pathToExplore[1] == ':') || this->pathToExplore.startsWith("//")
-         ? Qt::CaseInsensitive : Qt::CaseSensitive;
-   while (this->currentTreeExploring)
+   const Qt::CaseSensitivity sensitivity = caseSensitivity(path);
+   tree = this->root;
+   while (tree)
    {
-      if (this->currentTreeExploring != this->root &&
-          QDir::cleanPath(this->currentTreeExploring->path()).compare(this->pathToExplore, sensitivity) == 0)
+      if (tree != this->root && QDir::cleanPath(tree->path()).compare(path, sensitivity) == 0)
+         return true;
+      if (tree->hasUnloadedChildren())
       {
-         const QModelIndex index = this->indexFromTree(this->currentTreeExploring);
-         const bool valid = !this->pathRequiresDirectory || this->isDirectory(index);
-         this->cancelPathLookup();
-         emit indexFromPath(valid ? index : QModelIndex());
-         return;
-      }
-      if (this->currentTreeExploring->hasUnloadedChildren())
-      {
-         this->loadChildren(this->indexFromTree(this->currentTreeExploring));
-         return;
+         this->loadChildren(this->indexFromTree(tree));
+         return false;
       }
       const auto isOnPath = [&](const QString& entryPath, const Protos::GUI::LocalBrowseResult::Entry& entry) {
          const QString prefix = entryPath.endsWith('/') ? entryPath : entryPath + '/';
-         return this->pathToExplore.compare(entryPath, sensitivity) == 0 ||
-            (entry.type() == Protos::GUI::LocalBrowseResult::DIR && this->pathToExplore.startsWith(prefix, sensitivity));
+         return path.compare(entryPath, sensitivity) == 0 ||
+            (entry.type() == Protos::GUI::LocalBrowseResult::DIR && path.startsWith(prefix, sensitivity));
       };
       Tree* match = nullptr;
       qsizetype longestMatch = -1;
-      for (int i = 0; i < this->currentTreeExploring->getNbChildren(); ++i)
+      for (int i = 0; i < tree->getNbChildren(); ++i)
       {
-         Tree* child = this->currentTreeExploring->getChild(i);
+         Tree* child = tree->getChild(i);
          const QString childPath = QDir::cleanPath(child->path());
          if (isOnPath(childPath, child->getItem()) && childPath.size() > longestMatch)
          {
@@ -507,37 +516,102 @@ void RemoteBrowseModel::exploreDirectories()
       if (!match)
       {
          // A hidden entry can still be reached by its path, it's then displayed and found by the next iteration.
-         const QString directoryPath = this->currentTreeExploring->path();
+         const QString directoryPath = tree->path();
          bool revealed = false;
-         for (const auto& entry : this->currentTreeExploring->hiddenEntries)
+         for (const auto& entry : tree->hiddenEntries)
          {
             const QString name = QString::fromStdString(entry.name());
             if (isOnPath(QDir::cleanPath(directoryPath + name), entry))
             {
-               this->currentTreeExploring->revealedEntries.insert(name);
+               tree->revealedEntries.insert(name);
                revealed = true;
                break;
             }
          }
          if (revealed)
          {
-            this->redisplay(this->currentTreeExploring);
+            this->redisplay(tree);
             continue;
          }
       }
-      this->currentTreeExploring = match;
-      if (!match)
+      tree = match;
+   }
+   return true;
+}
+
+void RemoteBrowseModel::exploreDirectories()
+{
+   Tree* tree;
+   if (!this->exploring || !this->find(this->pathToExplore, tree))
+      return;
+
+   const QModelIndex index = this->indexFromTree(tree);
+   this->exploring = false;
+   emit indexFromPath(!this->pathRequiresDirectory || this->isDirectory(index) ? index : QModelIndex());
+}
+
+/**
+  * The completions of a path are the entries of its directory, which is thus looked for.
+  */
+void RemoteBrowseModel::exploreCompletions()
+{
+   if (!this->completing)
+      return;
+
+   QString normalized = this->pathToComplete;
+   normalized.replace('\\', '/');
+   const qsizetype nameStart = normalized.lastIndexOf('/') + 1;
+   const QString name = normalized.mid(nameStart);
+
+   // Without any separator the path is the beginning of a root entry: a drive.
+   Tree* directory = this->root;
+   if (nameStart > 0 && !this->find(QDir::cleanPath(normalized.left(nameStart)), directory))
+      return;
+   if (directory && directory->hasUnloadedChildren())
+   {
+      this->loadChildren(this->indexFromTree(directory));
+      return;
+   }
+
+   QStringList paths;
+   if (directory && directory->getItem().type() == Protos::GUI::LocalBrowseResult::DIR && !normalized.isEmpty())
+   {
+      // The case of a drive letter doesn't matter.
+      const Qt::CaseSensitivity sensitivity =
+         directory == this->root ? Qt::CaseInsensitive : caseSensitivity(normalized);
+      QList<const Protos::GUI::LocalBrowseResult::Entry*> entries;
+      const auto add = [&](const Protos::GUI::LocalBrowseResult::Entry& entry) {
+         if (QString::fromStdString(entry.name()).startsWith(name, sensitivity))
+            entries.append(&entry);
+      };
+      for (int i = 0; i < directory->getNbChildren(); ++i)
+         add(directory->getChild(i)->getItem());
+      // The entries which aren't displayed are proposed once the beginning of their name is typed.
+      if (!name.isEmpty())
+         for (const auto& entry : directory->hiddenEntries)
+            add(entry);
+      std::sort(entries.begin(), entries.end(), [](const auto* left, const auto* right) {
+         return entryLess(*left, *right);
+      });
+
+      const QString directoryPath = directory->path();
+      for (const auto* entry : entries)
       {
-         this->cancelPathLookup();
-         emit indexFromPath(QModelIndex());
+         QString path = directoryPath + QString::fromStdString(entry->name());
+         if (entry->type() == Protos::GUI::LocalBrowseResult::DIR && !path.endsWith('/'))
+            path += '/';
+         paths << path;
       }
    }
+
+   this->completing = false;
+   emit completions(this->pathToComplete, paths);
 }
 
 /**
   * Returns the index corresponding to the given tree, the root has no index: QModelIndex().
-  * The position is asked to the tree itself, it can't be cached in 'exploreDirectories()' because the
-  * exploration is resumed asynchronously each time a browse result is received.
+  * The position is asked to the tree itself, it can't be cached in 'find(..)' because the lookup is
+  * done again each time a browse result is received.
   */
 QModelIndex RemoteBrowseModel::indexFromTree(Tree* tree) const
 {

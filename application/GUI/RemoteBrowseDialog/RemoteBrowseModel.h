@@ -74,6 +74,9 @@ namespace GUI
       QString getPath(const QModelIndex& index, bool appendFilename = true) const;
       bool isDirectory(const QModelIndex& index) const;
       void getIndexFromPath(const QString& path);
+      // Asks for the paths which complete the given one, see the signal 'completions(..)'.
+      void getCompletions(const QString& path);
+      // Abandons the lookups of 'getIndexFromPath(..)' and 'getCompletions(..)'.
       void cancelPathLookup();
       // Reload each opened folder once, retaining unchanged entries and their indexes.
       void refresh(const QModelIndexList& folders);
@@ -81,6 +84,9 @@ namespace GUI
    signals:
       // An invalid index means that the path was not found or its lookup timed out.
       void indexFromPath(const QModelIndex& index);
+      // The paths of the entries of the directory of 'path' whose name starts with the last part of 'path', the
+      // ones of the directories end with a slash. Nothing is emitted if the lookup times out.
+      void completions(const QString& path, const QStringList& completions);
       void refreshingChanged(bool refreshing);
 
    private slots:
@@ -95,7 +101,9 @@ namespace GUI
       void redisplay(Tree* tree);
       void synchronize(Tree* tree, const google::protobuf::RepeatedPtrField<Protos::GUI::LocalBrowseResult::Entry>& entries);
 
+      bool find(const QString& path, Tree*& tree);
       void exploreDirectories();
+      void exploreCompletions();
       QModelIndex indexFromTree(Tree* tree) const;
 
       class Tree : public Common::Tree<Protos::GUI::LocalBrowseResult::Entry, Tree>
@@ -133,7 +141,11 @@ namespace GUI
       // Used when we want to display a specific path with the method 'getIndexFromPath'.
       QString pathToExplore;
       bool pathRequiresDirectory = false;
-      Tree* currentTreeExploring;
+      bool exploring = false;
+
+      // Used when we want the paths completing a given one with the method 'getCompletions'.
+      QString pathToComplete;
+      bool completing = false;
 
       Tree* root; // The corresponding index is null: QModelIndex().
    };

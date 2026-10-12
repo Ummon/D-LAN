@@ -511,6 +511,12 @@ QTreeView::item:hover:!selected {
    background-color: #1f242c;
 }
 
+/* The paths proposed below the path of the browse dialog are displayed over its entries. */
+GUI--PathCompletionBox {
+   background-color: #1f242c;
+   border: 1px solid #3a414d;
+}
+
 /*
  * Progress bars drawn inside the lists (downloads, uploads and search relevance) use the rule of the view.
  * The view itself is never in the horizontal state, only these progress bars are.

@@ -53,6 +53,8 @@ RemoteBrowseDialog::RemoteBrowseDialog(QSharedPointer<RCC::ICoreConnection> core
    this->ui->quickAccessListView->setModel(&this->modelQuickAccess);
    this->ui->quickAccessListView->setSelectionBehavior(QAbstractItemView::SelectRows);
 
+   this->completionBox = new PathCompletionBox(this->ui->txtPath, this);
+
    this->ui->buttonBox->button(QDialogButtonBox::Ok)->setText(tr("Ok"));
    this->ui->buttonBox->button(QDialogButtonBox::Cancel)->setText(tr("Cancel"));
 
@@ -81,7 +83,10 @@ RemoteBrowseDialog::RemoteBrowseDialog(QSharedPointer<RCC::ICoreConnection> core
          this->pathValid && this->ui->treeView->selectionModel()->hasSelection());
    });
    connect(this->ui->treeView, &QTreeView::clicked, this, &RemoteBrowseDialog::treeSelectionChanged);
-   connect(this->ui->txtPath, &QLineEdit::textEdited, this, &RemoteBrowseDialog::pathEdited);
+   connect(this->ui->txtPath, &QLineEdit::textEdited, this, &RemoteBrowseDialog::pathTyped);
+   connect(&this->model, &RemoteBrowseModel::completions, this->completionBox, &PathCompletionBox::setCompletions);
+   connect(this->completionBox, &PathCompletionBox::pathEdited, this, &RemoteBrowseDialog::pathEdited);
+   connect(this->completionBox, &PathCompletionBox::completionsWanted, &this->model, &RemoteBrowseModel::getCompletions);
    connect(this->ui->butPrevious, &QPushButton::clicked, this, [this]() { this->navigateHistory(-1); });
    connect(this->ui->butNext, &QPushButton::clicked, this, [this]() { this->navigateHistory(1); });
    // Keep refresh enabled so it retains focus; the model ignores refreshes already in progress.
@@ -118,6 +123,8 @@ RemoteBrowseDialog::RemoteBrowseDialog(QSharedPointer<RCC::ICoreConnection> core
 
 RemoteBrowseDialog::~RemoteBrowseDialog()
 {
+   // It chooses the highlighted proposal when the text box loses the focus, which also happens during the deletion.
+   delete this->completionBox;
    delete this->ui;
 }
 
@@ -201,7 +208,9 @@ void RemoteBrowseDialog::selectIndex(const QModelIndex &index)
    for (QModelIndex parent = index.parent(); parent.isValid(); parent = parent.parent())
       this->ui->treeView->expand(parent);
 
-   this->ui->treeView->expand(index);
+   // A proposed path is only shown while the user goes through the proposals: it's opened once chosen.
+   if (!this->completionBox->isBrowsing())
+      this->ui->treeView->expand(index);
 
    this->ui->treeView->selectionModel()->setCurrentIndex(index,
       QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
@@ -229,6 +238,15 @@ void RemoteBrowseDialog::pathEdited(const QString& path)
 {
    this->setPathValid(false);
    this->model.getIndexFromPath(path);
+}
+
+/**
+  * The paths completing the one typed by the user are proposed.
+  */
+void RemoteBrowseDialog::pathTyped(const QString& path)
+{
+   this->pathEdited(path);
+   this->model.getCompletions(path);
 }
 
 void RemoteBrowseDialog::refresh()
@@ -273,7 +291,8 @@ void RemoteBrowseDialog::showHidden(bool show)
 void RemoteBrowseDialog::visit(const QModelIndex& index)
 {
    this->setPathValid(true);
-   if (!this->navigatingHistory && this->model.isDirectory(index) &&
+   // The proposed paths the user goes through aren't visited, only the chosen one is.
+   if (!this->navigatingHistory && !this->completionBox->isBrowsing() && this->model.isDirectory(index) &&
        (this->historyPosition < 0 || this->history[this->historyPosition] != index))
    {
       this->history.resize(this->historyPosition + 1);

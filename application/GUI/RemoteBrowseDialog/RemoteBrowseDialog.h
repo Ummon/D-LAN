@@ -22,6 +22,7 @@
 
 #include <Common/RemoteCoreController/ICoreConnection.h>
 
+#include <RemoteBrowseDialog/PathCompletionBox.h>
 #include <RemoteBrowseDialog/RemoteBrowseModel.h>
 #include <RemoteBrowseDialog/RemoteBrowseQuickAccessModel.h>
 #include <NoFocusDelegate.h>
@@ -59,6 +60,7 @@ namespace GUI
       void selectIndex(const QModelIndex &index);
       void treeSelectionChanged(const QModelIndex& index);
       void pathEdited(const QString& path);
+      void pathTyped(const QString& path);
       void refresh();
       void showHidden(bool show);
 
@@ -79,6 +81,7 @@ namespace GUI
       RemoteBrowseModel model;
       RemoteBrowseQuickAccessModel modelQuickAccess;
       NoFocusDelegate delegate;
+      PathCompletionBox* completionBox;
       QList<QPersistentModelIndex> history;
       int historyPosition = -1;
       bool navigatingHistory = false;
