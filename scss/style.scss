@@ -85,6 +85,8 @@ p {
 }
 
 .gallery {
+   width: min-content; // As wide as the thumbnail, a longer caption is wrapped.
+
    img {
       width: 140px;
       height: auto;
@@ -316,6 +318,7 @@ select {
 
       &.features .gallery {
          display: inline-block;
+         vertical-align: top;
       }
 
       &.faq {
