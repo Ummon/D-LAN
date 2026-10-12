@@ -35,6 +35,8 @@ using namespace GUI;
 #include <QPainter>
 #include <QClipboard>
 #include <QKeyEvent>
+#include <QHelpEvent>
+#include <QToolTip>
 #include <QScrollBar>
 #include <QScreen>
 #include <QTimer>
@@ -190,6 +192,36 @@ bool ChatDelegate::editorEvent(
    return QStyledItemDelegate::editorEvent(event, model, option, index);
 }
 
+/**
+  * The tooltip of a message, its complete date and time, is only shown for its sender.
+  */
+bool ChatDelegate::helpEvent(
+   QHelpEvent* event,
+   QAbstractItemView* view,
+   const QStyleOptionViewItem& option,
+   const QModelIndex& index
+)
+{
+   if (event->type() != QEvent::ToolTip)
+      return QStyledItemDelegate::helpEvent(event, view, option, index);
+
+   const QString toolTip = index.data(Qt::ToolTipRole).toString();
+   if (!toolTip.isEmpty())
+   {
+      QPoint origin;
+      const QRect sender = this->layoutItem(option, index, origin).sender.translated(origin).toAlignedRect();
+      if (sender.contains(event->pos()))
+      {
+         QToolTip::showText(event->globalPos(), toolTip, view->viewport(), sender);
+         return true;
+      }
+   }
+
+   QToolTip::hideText();
+   event->ignore();
+   return false;
+}
+
 bool ChatDelegate::eventFilter(QObject* watched, QEvent* event)
 {
    QWidget* viewport = qobject_cast<QWidget*>(watched);
@@ -232,20 +264,30 @@ QString ChatDelegate::anchorAt(
    const QPoint& pos
 ) const
 {
+   QPoint origin;
+   const MessageLayout layout = this->layoutItem(option, index, origin);
+
+   // Map the viewport point into document coordinates.
+   return layout.document->documentLayout()->anchorAt(QPointF(pos - origin) - layout.documentPos);
+}
+
+/**
+  * Lay the message of an item out exactly as paint() does.
+  * @param origin The position in the view of the top left corner of the layout.
+  */
+ChatDelegate::MessageLayout ChatDelegate::layoutItem(const QStyleOptionViewItem& option, const QModelIndex& index, QPoint& origin) const
+{
    QStyleOptionViewItem opt(option);
    this->initStyleOption(&opt, index);
 
-   // Lay the message out exactly as paint() does.
    opt.rect.setTop(opt.rect.top() + dayHeight(opt.font, index));
    opt.state &= ~QStyle::State_HasFocus;
    opt.text.clear();
 
    QStyle* style = opt.widget ? opt.widget->style() : QApplication::style();
    const QRect textRect = style->subElementRect(QStyle::SE_ItemViewItemText, &opt, opt.widget);
-   const MessageLayout layout = this->layoutMessage(opt.font, textRect.width(), index);
-
-   // Map the viewport point into document coordinates (paint translates by textRect.topLeft() and by the position of the document).
-   return layout.document->documentLayout()->anchorAt(QPointF(pos - textRect.topLeft()) - layout.documentPos);
+   origin = textRect.topLeft();
+   return this->layoutMessage(opt.font, textRect.width(), index);
 }
 
 /**

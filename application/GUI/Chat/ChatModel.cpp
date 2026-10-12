@@ -248,6 +248,9 @@ QVariant ChatModel::data(const QModelIndex& index, int role) const
    case Qt::DisplayRole:
       return message.message;
 
+   case Qt::ToolTipRole:
+      return QString(this->locale.toString(message.dateTime.date(), QLocale::LongFormat)).append(' ').append(message.dateTime.toString("HH:mm:ss"));
+
    case TimeRole:
       return message.dateTime.toString("HH:mm");
 
@@ -317,7 +320,7 @@ void ChatModel::languageChanged()
    this->loadLocale();
 
    if (!this->messages.isEmpty())
-      emit dataChanged(this->index(0, 0), this->index(this->messages.size() - 1, 0), { DayRole });
+      emit dataChanged(this->index(0, 0), this->index(this->messages.size() - 1, 0), { DayRole, Qt::ToolTipRole });
 }
 
 void ChatModel::newChatMessages(const Protos::Common::ChatMessages& messages)

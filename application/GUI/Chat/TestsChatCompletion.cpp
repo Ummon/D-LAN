@@ -12,6 +12,8 @@
 #include <QPushButton>
 #include <QMenu>
 #include <QTimer>
+#include <QToolTip>
+#include <QHelpEvent>
 
 #include <Common/Global.h>
 #include <Common/Settings.h>
@@ -991,6 +993,67 @@ private slots:
       auto& updated = cache.get(markdown, font, 200);
       QVERIFY(previous.isNull());
       QVERIFY(!updated.resource(QTextDocument::ImageResource, QUrl("emoticons://first/smile.png")).value<QPixmap>().isNull());
+   }
+
+   void senderHasTheDateAndTimeAsToolTip()
+   {
+      Fixture f(QStringList {});
+      auto& model = f.widget.chatModel;
+      const QLocale english(QLocale::English);
+      SETTINGS.set("language", english);
+      model.languageChanged();
+
+      const QDateTime dateTime(QDate(2026, 10, 6), QTime(18, 44, 12));
+      const Common::Hash peerID = Common::Hash::rand();
+      Protos::Common::ChatMessages messages;
+      auto* message = messages.add_messages();
+      message->set_id(1);
+      message->set_time(dateTime.toMSecsSinceEpoch());
+      message->mutable_peer_id()->set_hash(peerID.getData(), Common::Hash::HASH_SIZE);
+      message->set_peer_nick("Alice");
+      message->set_message("Hello");
+      emit f.connection->newChatMessages(messages);
+
+      const QString expected = english.toString(dateTime.date(), QLocale::LongFormat) + " 18:44:12";
+      QCOMPARE(model.index(0, 0).data(Qt::ToolTipRole).toString(), expected);
+
+      // Where the sender is drawn.
+      auto* view = f.widget.findChild<QTableView*>("tblChat");
+      QApplication::processEvents();
+      const QImage rendered = view->viewport()->grab().toImage();
+      QRect sender;
+      for (int y = 0; y < rendered.height(); y++)
+         for (int x = 0; x < rendered.width(); x++)
+            if (rendered.pixel(x, y) == GUI::ChatDelegate::COLOR_SENDER.rgb())
+               sender |= QRect(x, y, 1, 1);
+      QVERIFY(!sender.isEmpty());
+
+      const auto askToolTip = [view](const QPoint& position) {
+         QHelpEvent event(QEvent::ToolTip, position, view->viewport()->mapToGlobal(position));
+         QApplication::sendEvent(view->viewport(), &event);
+      };
+
+      askToolTip(sender.center());
+      QVERIFY(QToolTip::isVisible());
+      QCOMPARE(QToolTip::text(), expected);
+
+      // Neither the message nor the day have a tooltip.
+      askToolTip(QPoint(sender.right() + 20, sender.center().y()));
+      QTRY_VERIFY(!QToolTip::isVisible());
+      askToolTip(QPoint(sender.center().x(), sender.top() - 10));
+      QVERIFY(!QToolTip::isVisible());
+
+      // It follows the language of the GUI.
+      QSignalSpy changes(&model, &QAbstractItemModel::dataChanged);
+      const QLocale german(QLocale::German);
+      SETTINGS.set("language", german);
+      model.languageChanged();
+      QCOMPARE(changes.size(), 1);
+      QVERIFY(changes[0][2].value<QList<int>>().contains(Qt::ToolTipRole));
+      QCOMPARE(model.index(0, 0).data(Qt::ToolTipRole).toString(), german.toString(dateTime.date(), QLocale::LongFormat) + " 18:44:12");
+
+      SETTINGS.set("language", QLocale::system());
+      model.languageChanged();
    }
 
    void chatLinksFollowPaintedLayout()

@@ -44,7 +44,8 @@ namespace GUI
       Q_OBJECT
 
    public:
-      // 'Qt::DisplayRole' is the message itself, in Markdown. Its sender is given by these roles.
+      // 'Qt::DisplayRole' is the message itself, in Markdown, and 'Qt::ToolTipRole' its complete date and time.
+      // Its sender is given by these roles.
       enum Role
       {
          TimeRole = Qt::UserRole, // QString.

@@ -64,10 +64,17 @@ namespace GUI
          const QStyleOptionViewItem& option,
          const QModelIndex& index
       ) override;
+      bool helpEvent(
+         QHelpEvent* event,
+         QAbstractItemView* view,
+         const QStyleOptionViewItem& option,
+         const QModelIndex& index
+      ) override;
       bool eventFilter(QObject* watched, QEvent* event) override;
 
    private:
       struct MessageLayout;
+      MessageLayout layoutItem(const QStyleOptionViewItem& option, const QModelIndex& index, QPoint& origin) const;
       MessageLayout layoutMessage(const QFont& font, int width, const QModelIndex& index) const;
       static int dayHeight(const QFont& font, const QModelIndex& index);
       static void paintDay(QPainter* painter, const QStyleOptionViewItem& option, const QRect& rect, const QString& day);
