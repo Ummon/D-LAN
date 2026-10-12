@@ -28,6 +28,10 @@ pub fn all_langs() -> List(Lang) {
   [En, Fr, De, Es, It, Ru, Ko, Ja, Hi, Zh, Pt]
 }
 
+pub fn all_langs_ordered() -> List(Lang) {
+  [De, En, Es, Fr, It, Pt, Ru, Hi, Ja, Zh, Ko]
+}
+
 pub fn plain_lang(l: Lang) {
   case l {
     En -> "English"

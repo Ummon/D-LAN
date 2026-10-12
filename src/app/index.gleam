@@ -76,7 +76,7 @@ fn header(lang: tr.Lang) {
 fn languages(current_lang: tr.Lang) -> element.Element(a) {
   html.select(
     [attr.id("langs")],
-    tr.all_langs()
+    tr.all_langs_ordered()
       |> list.map(fn(l) {
         html.option(
           [attr.value(tr.to_str(l)), attr.selected(l == current_lang)],
