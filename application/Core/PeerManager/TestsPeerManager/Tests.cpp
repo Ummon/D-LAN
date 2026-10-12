@@ -1408,6 +1408,7 @@ namespace
       void setSharedPaths(const QList<SharedPath>& paths) override { this->fileManager->setSharedPaths(paths); }
       QPair<Common::SharedEntry, QString> addASharedPath(const QString& path) override { return this->fileManager->addASharedPath(path); }
       QList<Common::SharedEntry> getSharedEntries() const override { return this->fileManager->getSharedEntries(); }
+      void setIgnoredExtensions(bool enabled, const QStringList& extensions) override { this->fileManager->setIgnoredExtensions(enabled, extensions); }
       QString getSharedEntry(const Common::Hash& ID) const override { return this->fileManager->getSharedEntry(ID); }
       QSharedPointer<FM::IChunk> getChunk(const Common::Hash& hash) const override { return this->fileManager->getChunk(hash); }
       QList<QSharedPointer<FM::IChunk>> getAllChunks(const Protos::Common::Entry& entry, const QList<Common::Hash>& hashes) const override { return this->fileManager->getAllChunks(entry, hashes); }

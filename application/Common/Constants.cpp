@@ -67,6 +67,9 @@ const QString Constants::SYSTEMD_UNIT_NAME("d-lan"); ///< The service on Linux i
 
 const QString Constants::BINARY_PREFIXES[] = {"B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB"};
 
+/// Files being downloaded by a web browser, a BitTorrent client or another download software.
+const QStringList Constants::DEFAULT_IGNORED_EXTENSIONS { ".!qB", ".!ut", ".bc!", ".part", ".filepart", ".crdownload", ".opdownload", ".partial", ".aria2" };
+
 const int Constants::MAX_NB_HASHES_PER_ENTRY_GUI_BROWSE = 8;
 
 const int Constants::CHUNK_SIZE = 64 * 1024 * 1024; ///< 64 MiB.

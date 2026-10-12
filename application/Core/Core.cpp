@@ -212,8 +212,8 @@ Protos::Core::Settings* Core::createDefaultValuesSettings()
    settings->set_minimum_free_space(1048576);
    settings->set_get_entries_timeout(5000);
    settings->set_ignored_extensions_enabled(true);
-   for (const char* extension : { ".!qB", ".!ut", ".bc!", ".part", ".filepart", ".crdownload", ".opdownload", ".partial", ".aria2" })
-      settings->add_ignored_extensions(extension);
+   for (const QString& extension : Common::Constants::DEFAULT_IGNORED_EXTENSIONS)
+      settings->add_ignored_extensions(extension.toStdString());
 
    ///// PeerManager /////
    settings->set_pending_socket_timeout(10000);
@@ -313,8 +313,8 @@ void Core::checkSettingsIntegrity()
    this->checkSetting("minimum_duration_when_hashing", 100u, 30u * 1000u);
    this->checkSetting("scan_period_unwatchable_dirs", 1000u, 60u * 60u * 1000u);
 
-   static const QRegularExpression suffixExp("^\\.\\S+$");
-   auto unfinishedSuffixMatch = suffixExp.match(SETTINGS.get<QString>("unfinished_suffix_term"));
+   static const QRegularExpression unfinishedSuffixExp("^\\.\\S+$");
+   auto unfinishedSuffixMatch = unfinishedSuffixExp.match(SETTINGS.get<QString>("unfinished_suffix_term"));
    if (!unfinishedSuffixMatch.hasMatch())
    {
       L_ERRO("Settings: 'unfinished_suffix_term' must begin with a dot and not contain any space character");
@@ -323,7 +323,7 @@ void Core::checkSettingsIntegrity()
 
    // An empty term would ignore all the files.
    QList<QString> ignoredExtensions = SETTINGS.getRepeated<QString>("ignored_extensions");
-   if (ignoredExtensions.removeIf([](const QString& extension) { return !suffixExp.match(extension).hasMatch(); }) > 0)
+   if (ignoredExtensions.removeIf([](const QString& extension) { return !Common::Global::isIgnoredExtension(extension); }) > 0)
    {
       L_ERRO("Settings: the terms of 'ignored_extensions' must begin with a dot and not contain any space character, the invalid ones are removed");
       SETTINGS.set("ignored_extensions", ignoredExtensions);

@@ -19,6 +19,7 @@
 #include <Common/Global.h>
 using namespace Common;
 
+#include <algorithm>
 #include <limits>
 
 #include <QDir>
@@ -374,6 +375,29 @@ QString Global::toWin32LongPath(const QString& path)
 bool Global::isLocal(const QHostAddress& address)
 {
    return address == QHostAddress::LocalHost || address == QHostAddress::LocalHostIPv6 || QNetworkInterface::allAddresses().contains(address);
+}
+
+/**
+  * Whether 'term' is valid for the core setting 'ignored_extensions': it begins with a dot followed by at least
+  * one character and it doesn't contain any space.
+  */
+bool Global::isIgnoredExtension(const QString& term)
+{
+   return term.size() >= 2 && term.startsWith('.') && std::none_of(term.cbegin(), term.cend(), [](QChar c) { return c.isSpace(); });
+}
+
+/**
+  * Returns the term of the core setting 'ignored_extensions' corresponding to what a user typed: it's trimmed
+  * and begins with a dot.
+  * Returns a null string if it isn't valid, see 'isIgnoredExtension(..)'.
+  */
+QString Global::toIgnoredExtension(const QString& extension)
+{
+   QString term = extension.trimmed();
+   if (!term.startsWith('.'))
+      term.prepend('.');
+
+   return isIgnoredExtension(term) ? term : QString();
 }
 
 QString Global::dataFolders[2]; // The two folders (roaming and local), see DataFolderType enum.

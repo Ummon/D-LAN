@@ -170,6 +170,26 @@ void Tests::formatTime()
    QCOMPARE(Global::formatTime(1243151412LL), QString("42y 9M"));
 }
 
+void Tests::toIgnoredExtension()
+{
+   QCOMPARE(Global::toIgnoredExtension(".part"), QString(".part"));
+   QCOMPARE(Global::toIgnoredExtension("part"), QString(".part"));
+   QCOMPARE(Global::toIgnoredExtension("  .!qB\t"), QString(".!qB"));
+   QCOMPARE(Global::toIgnoredExtension("tar.gz"), QString(".tar.gz"));
+   QVERIFY(Global::toIgnoredExtension("").isNull());
+   QVERIFY(Global::toIgnoredExtension("  ").isNull());
+   QVERIFY(Global::toIgnoredExtension(".").isNull());
+   QVERIFY(Global::toIgnoredExtension("a b").isNull());
+   QVERIFY(Global::toIgnoredExtension(". part").isNull());
+
+   for (const QString& extension : Constants::DEFAULT_IGNORED_EXTENSIONS)
+      QVERIFY(Global::isIgnoredExtension(extension));
+   QVERIFY(Global::isIgnoredExtension(".tar.gz"));
+   // An empty term would ignore all the files.
+   for (const QString& invalid : { QString(), QString(""), QString("."), QString("part"), QString(" .part"), QString(".part "), QString(".a b") })
+      QVERIFY(!Global::isIgnoredExtension(invalid));
+}
+
 void Tests::availableDiskSpace()
 {
    qDebug() << "Available disk space [Mo] : " << Global::availableDiskSpace(".") / 1024 / 1024;

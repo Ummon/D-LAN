@@ -86,6 +86,8 @@ public:
    void setSharedPaths(const QList<SharedPath>&) override {}
    QPair<Common::SharedEntry, QString> addASharedPath(const QString&) override { return {}; }
    QList<Common::SharedEntry> getSharedEntries() const override { return {}; }
+   QList<std::pair<bool, QStringList>> ignoredExtensions; // Each call of 'setIgnoredExtensions(..)'.
+   void setIgnoredExtensions(bool enabled, const QStringList& extensions) override { this->ignoredExtensions << std::make_pair(enabled, extensions); }
    QString getSharedEntry(const Common::Hash&) const override { return {}; }
    QSharedPointer<FM::IChunk> getChunk(const Common::Hash&) const override { return {}; }
    QList<QSharedPointer<FM::IChunk>> getAllChunks(const Protos::Common::Entry&, const QList<Common::Hash>&) const override { return {}; }

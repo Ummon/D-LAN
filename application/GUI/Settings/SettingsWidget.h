@@ -72,6 +72,9 @@ namespace GUI
       bool canDropShared(const QMimeData* mimeData) const;
       bool dragDropEventShared(QEvent* event);
 
+      QStringList getIgnoredExtensions() const;
+      void setIgnoredExtensions(QStringList extensions);
+
    private slots:
       void newState(const Protos::GUI::State& state);
       void coreConnecting();
@@ -102,6 +105,11 @@ namespace GUI
       void openLocation();
 
       void buttonAddressToggled(bool checked);
+
+      void addIgnoredExtension();
+      void removeIgnoredExtensions();
+      void resetIgnoredExtensions();
+      void refreshIgnoredExtensionsButtons();
 
    protected:
       bool eventFilter(QObject* obj, QEvent* event) override;

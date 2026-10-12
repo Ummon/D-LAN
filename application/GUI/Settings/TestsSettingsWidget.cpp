@@ -2,11 +2,15 @@
 #include <QCheckBox>
 #include <QComboBox>
 #include <QLabel>
+#include <QLineEdit>
+#include <QListWidget>
+#include <QPushButton>
 #include <QRadioButton>
 #include <QTableView>
 #include <QMimeData>
 #include <QTemporaryDir>
 
+#include <Common/Constants.h>
 #include <Common/Global.h>
 #include <Common/Settings.h>
 #include <Common/RemoteCoreController/priv/CoreConnection.h>
@@ -167,6 +171,123 @@ private slots:
       QCOMPARE(drop(), Qt::IgnoreAction);
       QCOMPARE(shares.rowCount(), 2);
       QCOMPARE(connection->saved.size(), 1);
+   }
+
+   void ignoredExtensions()
+   {
+      class Connection : public RCC::CoreConnection
+      {
+      public:
+         QList<Protos::GUI::CoreSettings> saved;
+         void setCoreSettings(const Protos::GUI::CoreSettings& settings) override { this->saved << settings; }
+      };
+      auto connection = QSharedPointer<Connection>::create();
+      GUI::SharedEntryListModel shares;
+      GUI::SettingsWidget widget(connection, shares);
+      auto* tabs = widget.findChild<QTabWidget*>("tabWidget");
+      auto* tab = widget.findChild<QWidget*>("tabCoreAdvancedSettings");
+      auto* input = widget.findChild<QLineEdit*>("txtIgnoredExtension");
+      auto* add = widget.findChild<QPushButton*>("butAddIgnoredExtension");
+      auto* list = widget.findChild<QListWidget*>("lstIgnoredExtensions");
+      auto* remove = widget.findChild<QPushButton*>("butRemoveIgnoredExtensions");
+      auto* reset = widget.findChild<QPushButton*>("butResetIgnoredExtensions");
+      auto* enabled = widget.findChild<QCheckBox*>("chkIgnoredExtensionsEnabled");
+      QVERIFY(tabs && tab && input && add && list && remove && reset && enabled);
+      const auto shown = [&] {
+         QStringList extensions;
+         for (int i = 0; i < list->count(); ++i)
+            extensions << list->item(i)->text();
+         return extensions;
+      };
+      const auto saved = [&] {
+         QStringList extensions;
+         for (const auto& extension : connection->saved.last().ignored_extensions().extensions())
+            extensions << QString::fromStdString(extension);
+         return extensions;
+      };
+
+      // It's a setting of the core: the tab follows the connection, right after the "User interface" one.
+      QCOMPARE(tabs->indexOf(tab), 3);
+      QVERIFY(!tabs->isTabEnabled(3));
+      emit connection->connected();
+      QVERIFY(tabs->isTabEnabled(3));
+
+      Protos::GUI::State state;
+      state.add_peers()->set_nick("Test");
+      state.mutable_ignored_extensions()->set_enabled(true);
+      state.mutable_ignored_extensions()->add_extensions(".part");
+      state.mutable_ignored_extensions()->add_extensions(".!qB");
+      emit connection->newState(state);
+      QCOMPARE(shown(), (QStringList { ".!qB", ".part" }));
+      QVERIFY(enabled->isChecked());
+      QVERIFY(!add->isEnabled());
+      QVERIFY(!remove->isEnabled());
+      QVERIFY(reset->isEnabled());
+      QVERIFY(connection->saved.isEmpty()); // What comes from the core isn't sent back.
+
+      // The input is trimmed and gets its dot.
+      input->setText("  crdownload ");
+      QVERIFY(add->isEnabled());
+      add->click();
+      QVERIFY(input->text().isEmpty());
+      QCOMPARE(shown(), (QStringList { ".!qB", ".crdownload", ".part" }));
+      QCOMPARE(connection->saved.size(), 1);
+      QCOMPARE(saved(), shown());
+      QVERIFY(connection->saved.last().ignored_extensions().enabled());
+
+      // Invalid extensions can't be added.
+      for (const QString& invalid : { QString(), QString("  "), QString("."), QString("a b"), QString(". part") })
+      {
+         input->setText(invalid);
+         QVERIFY(!add->isEnabled());
+         QTest::keyClick(input, Qt::Key_Return);
+         QCOMPARE(connection->saved.size(), 1);
+         QCOMPARE(list->count(), 3);
+      }
+
+      // An extension already listed is selected instead of being added, whatever its case.
+      list->clearSelection();
+      input->setText(".PART");
+      QTest::keyClick(input, Qt::Key_Return);
+      QCOMPARE(connection->saved.size(), 1);
+      QCOMPARE(list->selectedItems().size(), 1);
+      QCOMPARE(list->selectedItems().first()->text(), QString(".part"));
+
+      // A state from the core showing the same extensions keeps the selection.
+      state.mutable_ignored_extensions()->add_extensions(".crdownload");
+      emit connection->newState(state);
+      QCOMPARE(list->selectedItems().size(), 1);
+
+      QVERIFY(remove->isEnabled());
+      remove->click();
+      QCOMPARE(shown(), (QStringList { ".!qB", ".crdownload" }));
+      QCOMPARE(connection->saved.size(), 2);
+      QCOMPARE(saved(), shown());
+      QVERIFY(!remove->isEnabled());
+
+      enabled->click();
+      QCOMPARE(connection->saved.size(), 3);
+      QVERIFY(!connection->saved.last().ignored_extensions().enabled());
+      QCOMPARE(saved(), shown());
+
+      reset->click();
+      QCOMPARE(connection->saved.size(), 4);
+      QStringList defaultExtensions = Common::Constants::DEFAULT_IGNORED_EXTENSIONS;
+      defaultExtensions.sort();
+      QCOMPARE(saved(), defaultExtensions);
+      QCOMPARE(shown(), defaultExtensions);
+      QVERIFY(!reset->isEnabled());
+      QVERIFY(!connection->saved.last().ignored_extensions().enabled());
+
+      // The core has the last word.
+      state.mutable_ignored_extensions()->Clear();
+      emit connection->newState(state);
+      QVERIFY(shown().isEmpty());
+      QVERIFY(!enabled->isChecked());
+      QCOMPARE(connection->saved.size(), 4);
+
+      emit connection->disconnected(false);
+      QVERIFY(!tabs->isTabEnabled(3));
    }
 
    void languageChangeKeepsStyle()

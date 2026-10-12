@@ -66,6 +66,9 @@ namespace Common
 
       static const QString BINARY_PREFIXES[];
 
+      // The default value of the core setting 'ignored_extensions'.
+      static const QStringList DEFAULT_IGNORED_EXTENSIONS;
+
       // Maximum payload of a message exchanged between the Core and the GUI before the authentication completes,
       // see 'Protos.GUI.AskForAuthentication'. Far above the size of these messages, but small enough to make
       // parsing a message from an unauthenticated sender harmless.

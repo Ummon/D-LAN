@@ -205,6 +205,66 @@ private slots:
       QCOMPARE(result.peer_ids_size(), 1);
    }
 
+   void ignoredExtensions()
+   {
+      const auto restoreSettings = qScopeGuard([] {
+         SETTINGS.rm("ignored_extensions_enabled");
+         SETTINGS.rm("ignored_extensions");
+      });
+      SETTINGS.set("ignored_extensions_enabled", true);
+      SETTINGS.set("ignored_extensions", QList<QString> { ".part" });
+
+      auto files = QSharedPointer<FileManager>::create();
+      auto* socket = new BufferedSocket;
+      QScopedPointer<RCM::RemoteConnection> connection(this->newConnection(socket, {}, {}, files));
+      connection->startListening();
+      // Sends the settings and returns the ignored extensions of the state sent back.
+      const auto send = [&](const Protos::GUI::CoreSettings& settings) {
+         // No new state is sent until the previous one is acknowledged.
+         socket->receive(Common::MessageHeader::GUI_STATE_RESULT, Protos::Common::Null());
+         socket->output.clear();
+         socket->receive(Common::MessageHeader::GUI_SETTINGS, settings);
+         const auto messages = socket->messages();
+         return messages.size() == 1 && messages[0].getHeader().getType() == Common::MessageHeader::GUI_STATE ?
+            messages[0].getMessage<Protos::GUI::State>().ignored_extensions() : Protos::GUI::IgnoredExtensions();
+      };
+      const auto extensions = [](const Protos::GUI::IgnoredExtensions& ignored) {
+         QStringList extensions;
+         for (const auto& extension : ignored.extensions())
+            extensions << QString::fromStdString(extension);
+         return extensions;
+      };
+
+      // Settings without ignored extensions, as an older GUI sends them, keep the current ones.
+      auto state = send(Protos::GUI::CoreSettings());
+      QVERIFY(state.enabled());
+      QCOMPARE(extensions(state), (QStringList { ".part" }));
+      QVERIFY(files->ignoredExtensions.isEmpty());
+
+      // Invalid and duplicated terms aren't kept: an empty one would ignore all the files.
+      Protos::GUI::CoreSettings settings;
+      settings.mutable_ignored_extensions()->set_enabled(false);
+      for (const char* extension : { ".!qB", "", ".", "tmp", ".a b", " .c", ".!qB", ".crdownload" })
+         settings.mutable_ignored_extensions()->add_extensions(extension);
+      state = send(settings);
+      const QStringList expected { ".!qB", ".crdownload" };
+      QVERIFY(!state.enabled());
+      QCOMPARE(extensions(state), expected);
+      QVERIFY(!SETTINGS.get<bool>("ignored_extensions_enabled"));
+      QCOMPARE(SETTINGS.getRepeated<QString>("ignored_extensions"), expected);
+      QCOMPARE(files->ignoredExtensions, (QList<std::pair<bool, QStringList>> { { false, expected } }));
+
+      // An empty list is a valid one.
+      settings.mutable_ignored_extensions()->set_enabled(true);
+      settings.mutable_ignored_extensions()->clear_extensions();
+      state = send(settings);
+      QVERIFY(state.enabled());
+      QVERIFY(extensions(state).isEmpty());
+      QVERIFY(SETTINGS.getRepeated<QString>("ignored_extensions").isEmpty());
+      QCOMPARE(files->ignoredExtensions.size(), 2);
+      QCOMPARE(files->ignoredExtensions.last(), std::make_pair(true, QStringList()));
+   }
+
    void bufferedLocalAuthentication()
    {
       auto socket = new BufferedSocket;

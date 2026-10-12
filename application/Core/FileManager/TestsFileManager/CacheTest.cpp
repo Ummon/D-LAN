@@ -4734,6 +4734,74 @@ void CacheTest::eventsIgnoreExtensions()
    QCOMPARE(manager.getEntry(Common::Path(aloneRenamedPath)), alone);
 }
 
+void CacheTest::ignoredExtensionsChangeScansRootsAgain()
+{
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   const auto savedShares = SETTINGS.getRepeated<Protos::Common::SharedEntry>("shared_entries");
+   const auto restoreShares = qScopeGuard([&] { SETTINGS.set("shared_entries", savedShares); });
+   SETTINGS.rm("shared_entries");
+
+   QVERIFY(QDir(temp.path()).mkpath("shared/sub"));
+   for (const QString& name : { QString("shared/movie.mkv"), QString("shared/movie.mkv.part"), QString("shared/sub/inner.PART"), QString("alone.part") })
+   {
+      QFile file(temp.filePath(name));
+      QVERIFY(file.open(QIODevice::WriteOnly));
+      QCOMPARE(file.write("abc"), qint64(3));
+   }
+
+   {
+      FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+      FM::FileUpdater updater(nullptr); // The ignored extensions are disabled in the settings.
+      const auto shared = cache.addASharedPath(temp.filePath("shared") + '/');
+      auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+      QVERIFY(root);
+      auto dir = root->getRootDir();
+      updater.scan(dir, true);
+      auto sub = dir->getSubDir("sub");
+      QVERIFY(sub);
+      const auto ignoredFilesAreCached = [&] { return dir->getFile("movie.mkv.part") && sub->getFile("inner.PART"); };
+      QVERIFY(ignoredFilesAreCached());
+
+      // The same files are ignored: nothing is scanned.
+      updater.setIgnoredExtensions(false, { ".part" }, { dir });
+      updater.setIgnoredExtensions(true, {}, { dir });
+      QVERIFY(updater.entriesToScan.isEmpty());
+
+      // The sub-directories are already scanned: they have to be read again too.
+      updater.setIgnoredExtensions(true, { ".part" }, { dir });
+      bool recursive = false;
+      QCOMPARE(updater.takeEntryToScan(false, &recursive), static_cast<FM::Entry*>(dir));
+      QVERIFY(recursive);
+      QVERIFY(updater.entriesToScan.isEmpty());
+      updater.scan(dir);
+      QVERIFY(!dir->getFile("movie.mkv.part"));
+      QVERIFY(!sub->getFile("inner.PART"));
+      QVERIFY(dir->getFile("movie.mkv"));
+
+      // Neither the case, the order nor the duplicates matter.
+      updater.setIgnoredExtensions(true, { ".PART", ".part" }, { dir });
+      QVERIFY(updater.entriesToScan.isEmpty());
+
+      updater.setIgnoredExtensions(false, { ".part" }, { dir });
+      QCOMPARE(updater.takeEntryToScan(false), static_cast<FM::Entry*>(dir));
+      updater.scan(dir);
+      QVERIFY(ignoredFilesAreCached());
+   }
+
+   // A file shared by itself is never ignored: only the shared directories are scanned again.
+   FM::FileManager manager(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   manager.fileUpdater.stop();
+   manager.addASharedPath(temp.filePath("shared") + '/');
+   manager.addASharedPath(temp.filePath("alone.part"));
+   manager.fileUpdater.stopScanning();
+   QVERIFY(manager.fileUpdater.entriesToScan.isEmpty());
+   manager.setIgnoredExtensions(true, { ".part" });
+   QCOMPARE(manager.fileUpdater.entriesToScan,
+      QList<FM::Entry*> { manager.getEntry(Common::Path(temp.filePath("shared") + '/')) });
+}
+
 void CacheTest::scanLoadsHashesInBatches()
 {
    FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;

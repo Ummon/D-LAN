@@ -38,6 +38,7 @@ private slots:
    void nbChunks();
    void formatByteSize();
    void formatTime();
+   void toIgnoredExtension();
    void availableDiskSpace();
    void toWin32LongPath();
    void renameLongPath();

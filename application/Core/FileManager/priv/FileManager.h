@@ -62,6 +62,7 @@ namespace FM
       QPair<Common::SharedEntry, QString> addASharedPath(const QString& absolutePath) override;
 
       QList<Common::SharedEntry> getSharedEntries() const override;
+      void setIgnoredExtensions(bool enabled, const QStringList& extensions) override;
       QString getSharedEntry(const Common::Hash& ID) const override;
 
       QSharedPointer<IChunk> getChunk(const Common::Hash& hash) const override;

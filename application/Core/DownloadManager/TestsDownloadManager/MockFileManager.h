@@ -13,6 +13,7 @@ public:
    void setSharedPaths(const QList<SharedPath>& paths) override;
    QPair<Common::SharedEntry, QString> addASharedPath(const QString& absoluteDir) override;
    QList<Common::SharedEntry> getSharedEntries() const override;
+   void setIgnoredExtensions(bool, const QStringList&) override {}
    QString getSharedEntry(const Common::Hash& ID) const override;
    QSharedPointer<FM::IChunk> getChunk(const Common::Hash& hash) const override;
    QList<QSharedPointer<FM::IChunk>> getAllChunks(const Protos::Common::Entry& localEntry, const QList<Common::Hash>& hashes) const override;

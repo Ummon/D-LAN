@@ -32,6 +32,7 @@ using namespace GUI;
 #include <QMenu>
 #include <QStringBuilder>
 #include <QDropEvent>
+#include <QShortcut>
 #include <QUrl>
 
 #include <Common/Languages.h>
@@ -178,6 +179,17 @@ SettingsWidget::SettingsWidget(
 
    connect(this->ui->butChangePassword, &QPushButton::clicked, this, &SettingsWidget::changePassword);
    connect(this->ui->butResetPassword, &QPushButton::clicked, this, &SettingsWidget::resetPassword);
+
+   connect(this->ui->txtIgnoredExtension, &QLineEdit::textChanged, this, &SettingsWidget::refreshIgnoredExtensionsButtons);
+   connect(this->ui->txtIgnoredExtension, &QLineEdit::returnPressed, this, &SettingsWidget::addIgnoredExtension);
+   connect(this->ui->butAddIgnoredExtension, &QPushButton::clicked, this, &SettingsWidget::addIgnoredExtension);
+   connect(this->ui->lstIgnoredExtensions, &QListWidget::itemSelectionChanged, this, &SettingsWidget::refreshIgnoredExtensionsButtons);
+   connect(this->ui->butRemoveIgnoredExtensions, &QPushButton::clicked, this, &SettingsWidget::removeIgnoredExtensions);
+   new QShortcut(QKeySequence::Delete, this->ui->lstIgnoredExtensions, this, &SettingsWidget::removeIgnoredExtensions, Qt::WidgetShortcut);
+   connect(this->ui->butResetIgnoredExtensions, &QPushButton::clicked, this, &SettingsWidget::resetIgnoredExtensions);
+   // 'clicked' and not 'toggled': the changes coming from the core aren't sent back to it.
+   connect(this->ui->chkIgnoredExtensionsEnabled, &QCheckBox::clicked, this, &SettingsWidget::saveCoreSettings);
+   this->refreshIgnoredExtensionsButtons();
 
    this->refreshButtonsAvailability();
    this->coreDisconnected(); // To set the initial state.
@@ -556,6 +568,12 @@ void SettingsWidget::newState(const Protos::GUI::State& state)
 
    this->updateNetworkInterfaces(state);
 
+   this->ui->chkIgnoredExtensionsEnabled->setChecked(state.ignored_extensions().enabled());
+   QStringList ignoredExtensions;
+   for (const std::string& extension : state.ignored_extensions().extensions())
+      ignoredExtensions << QString::fromStdString(extension);
+   this->setIgnoredExtensions(ignoredExtensions);
+
    this->getAtLeastOneState = true;
 }
 
@@ -586,6 +604,7 @@ void SettingsWidget::coreConnected()
    this->ui->txtPassword->clear();
    this->ui->tabWidget->setTabEnabled(0, true);
    this->ui->tabWidget->setTabEnabled(1, true);
+   this->ui->tabWidget->setTabEnabled(this->ui->tabWidget->indexOf(this->ui->tabCoreAdvancedSettings), true);
 
    this->ui->butConnect->setDisabled(false);
    this->ui->butConnect->setText(tr("Connect"));
@@ -601,6 +620,7 @@ void SettingsWidget::coreDisconnected()
 
    this->ui->tabWidget->setTabEnabled(0, false);
    this->ui->tabWidget->setTabEnabled(1, false);
+   this->ui->tabWidget->setTabEnabled(this->ui->tabWidget->indexOf(this->ui->tabCoreAdvancedSettings), false);
 
    this->ui->butConnect->setDisabled(false);
    this->ui->butConnect->setText(tr("Connect"));
@@ -649,6 +669,11 @@ void SettingsWidget::saveCoreSettings()
          }
       }
    }
+
+   auto ignoredExtensions = settings.mutable_ignored_extensions();
+   ignoredExtensions->set_enabled(this->ui->chkIgnoredExtensionsEnabled->isChecked());
+   for (const QString& extension : this->getIgnoredExtensions())
+      ignoredExtensions->add_extensions(extension.toStdString());
 
    this->coreConnection->setCoreSettings(settings);
 }
@@ -855,6 +880,83 @@ void SettingsWidget::buttonAddressToggled(bool checked)
       this->updateNetworkInterfaceVisibility();
       this->saveCoreSettings();
    }
+}
+
+QStringList SettingsWidget::getIgnoredExtensions() const
+{
+   QStringList extensions;
+   for (int i = 0; i < this->ui->lstIgnoredExtensions->count(); i++)
+      extensions << this->ui->lstIgnoredExtensions->item(i)->text();
+   return extensions;
+}
+
+/**
+  * Nothing is done if the list already shows these extensions, whatever their order: its selection is kept.
+  */
+void SettingsWidget::setIgnoredExtensions(QStringList extensions)
+{
+   QStringList currentExtensions = this->getIgnoredExtensions();
+   currentExtensions.sort();
+   extensions.sort();
+   if (currentExtensions == extensions)
+      return;
+
+   this->ui->lstIgnoredExtensions->clear();
+   this->ui->lstIgnoredExtensions->addItems(extensions);
+   this->refreshIgnoredExtensionsButtons();
+}
+
+/**
+  * The typed extension is trimmed and a dot is added if it doesn't begin with one, see 'Common::Global::toIgnoredExtension(..)'.
+  */
+void SettingsWidget::addIgnoredExtension()
+{
+   const QString extension = Common::Global::toIgnoredExtension(this->ui->txtIgnoredExtension->text());
+   if (extension.isNull())
+      return;
+
+   this->ui->txtIgnoredExtension->clear();
+
+   // The case of the extensions doesn't matter for the core.
+   for (int i = 0; i < this->ui->lstIgnoredExtensions->count(); i++)
+      if (this->ui->lstIgnoredExtensions->item(i)->text().compare(extension, Qt::CaseInsensitive) == 0)
+      {
+         this->ui->lstIgnoredExtensions->setCurrentRow(i);
+         return;
+      }
+
+   this->ui->lstIgnoredExtensions->setCurrentItem(new QListWidgetItem(extension, this->ui->lstIgnoredExtensions));
+   this->refreshIgnoredExtensionsButtons();
+   this->saveCoreSettings();
+}
+
+void SettingsWidget::removeIgnoredExtensions()
+{
+   const QList<QListWidgetItem*> selectedItems = this->ui->lstIgnoredExtensions->selectedItems();
+   if (selectedItems.isEmpty())
+      return;
+
+   qDeleteAll(selectedItems);
+   this->refreshIgnoredExtensionsButtons();
+   this->saveCoreSettings();
+}
+
+void SettingsWidget::resetIgnoredExtensions()
+{
+   this->setIgnoredExtensions(Common::Constants::DEFAULT_IGNORED_EXTENSIONS);
+   this->saveCoreSettings();
+}
+
+void SettingsWidget::refreshIgnoredExtensionsButtons()
+{
+   this->ui->butAddIgnoredExtension->setDisabled(Common::Global::toIgnoredExtension(this->ui->txtIgnoredExtension->text()).isNull());
+   this->ui->butRemoveIgnoredExtensions->setDisabled(this->ui->lstIgnoredExtensions->selectedItems().isEmpty());
+
+   QStringList extensions = this->getIgnoredExtensions();
+   QStringList defaultExtensions = Common::Constants::DEFAULT_IGNORED_EXTENSIONS;
+   extensions.sort();
+   defaultExtensions.sort();
+   this->ui->butResetIgnoredExtensions->setDisabled(extensions == defaultExtensions);
 }
 
 bool SettingsWidget::eventFilter(QObject* obj, QEvent* event)

@@ -132,6 +132,16 @@ QList<Common::SharedEntry> FileManager::getSharedEntries() const
    return this->cache.getSharedEntries();
 }
 
+void FileManager::setIgnoredExtensions(bool enabled, const QStringList& extensions)
+{
+   QList<Entry*> rootDirectories;
+   for (const Common::SharedEntry& sharedEntry : this->cache.getSharedEntries())
+      if (auto sharedDirectory = dynamic_cast<SharedDirectory*>(this->cache.getSharedEntry(sharedEntry.ID)))
+         rootDirectories << sharedDirectory->getRootDir();
+
+   this->fileUpdater.setIgnoredExtensions(enabled, extensions, rootDirectories);
+}
+
 QString FileManager::getSharedEntry(const Common::Hash& ID) const
 {
    SharedEntry* entry = this->cache.getSharedEntry(ID);

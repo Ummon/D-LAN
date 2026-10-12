@@ -70,6 +70,7 @@ namespace FM
       void updateRootPath(SharedEntry* sharedEntry, const Common::Path& oldPath);
       void rmRoot(SharedEntry* sharedEntry, Directory* dir = nullptr);
       void prepareToDeleteEntry(Entry* entry);
+      void setIgnoredExtensions(bool enabled, const QStringList& extensions, const QList<Entry*>& rootDirectories);
 
    signals:
       void initialScanFinished();
@@ -102,11 +103,11 @@ namespace FM
 
       bool processEvents(const QList<WatcherEvent>& events);
 
-      bool isFileIgnored(const QString& path) const;
+      static QStringList effectiveIgnoredExtensions(bool enabled, QStringList extensions);
+      QStringList getIgnoredExtensions() const;
 
       const int SCAN_PERIOD_UNWATCHABLE_DIRS;
       const int IO_ERROR_WAITING_BEFORE_RETRY;
-      const QStringList IGNORED_EXTENSIONS; ///< Empty if the setting 'ignored_extensions_enabled' is false.
 
       FileManager* fileManager;
       DirWatcher* dirWatcher;
@@ -133,6 +134,8 @@ namespace FM
       FileHasher fileHasher;
 
       QList<Entry*> rootEntriesToRemove;
+
+      QStringList ignoredExtensions; ///< See 'effectiveIgnoredExtensions(..)', protected by mutex.
 
       HashingQueue hashingQueue;
       QElapsedTimer schedulerClock;

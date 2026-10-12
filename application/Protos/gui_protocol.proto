@@ -16,6 +16,13 @@ import "common.proto";
 
 package Protos.GUI;
 
+// The files whose name ends with one of these extensions aren't shared,
+// see the core settings 'ignored_extensions' and 'ignored_extensions_enabled'.
+message IgnoredExtensions {
+   bool enabled = 1; // If false then 'extensions' isn't used.
+   repeated string extensions = 2; // Each one begins with a dot and doesn't contain any space.
+}
+
 /***** Core state *****/
 // Core -> GUI
 // type: 0x1001
@@ -102,6 +109,8 @@ message State {
    repeated Common.Interface interfaces = 9;
 
    repeated Room rooms = 11;
+
+   IgnoredExtensions ignored_extensions = 12;
 }
 
 // GUI -> Core
@@ -239,6 +248,8 @@ message CoreSettings {
 
    string listen_address = 4; // [default = ""] If address is empty then listen to any addresses, in this case the protocol is given by 'listen_any'.
    Common.Interface.Address.Protocol listen_any = 5; // [default = IPv6]
+
+   IgnoredExtensions ignored_extensions = 6; // If not defined then the current ones are kept.
 }
 
 

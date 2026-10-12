@@ -134,6 +134,7 @@ private slots:
    void scanKeepsFileWithStaleUnfinished();
    void scanIgnoresExtensions();
    void eventsIgnoreExtensions();
+   void ignoredExtensionsChangeScansRootsAgain();
    void scanLoadsHashesInBatches();
    void scanCanStopDuringHashLookup();
    void scanHashLookupLeavesSchedulerUnlocked_data();

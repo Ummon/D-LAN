@@ -61,6 +61,9 @@ namespace Common
 
       static bool isLocal(const QHostAddress& address);
 
+      static bool isIgnoredExtension(const QString& term);
+      static QString toIgnoredExtension(const QString& extension);
+
       // Linux defaults: ROAMING = ~/.config/d-lan, LOCAL = ~/.local/share/d-lan.
       // XDG_CONFIG_HOME and XDG_DATA_HOME override the respective base directories.
       // macOS: both types use ~/Library/Application Support/D-LAN. LOCAL is

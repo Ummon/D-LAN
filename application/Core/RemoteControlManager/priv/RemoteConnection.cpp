@@ -339,6 +339,12 @@ void RemoteConnection::refresh()
       sharedEntryProto->mutable_entry()->mutable_id()->set_hash(sharedEntry.ID.getData(), Common::Hash::HASH_SIZE);
    }
 
+   // Ignored extensions.
+   Protos::GUI::IgnoredExtensions* ignoredExtensions = state.mutable_ignored_extensions();
+   ignoredExtensions->set_enabled(SETTINGS.get<bool>("ignored_extensions_enabled"));
+   for (const QString& extension : SETTINGS.getRepeated<QString>("ignored_extensions"))
+      ignoredExtensions->add_extensions(extension.toStdString());
+
    // Stats.
    Protos::GUI::State_Stats* stats = state.mutable_stats();
    // Warning: IFileManager::CacheStatus and Protos::GUI::State_Stats_CacheStatus must be compatible.
@@ -652,6 +658,25 @@ void RemoteConnection::onNewMessage(const Common::Message& message)
          {
             for (const QString& path : e.paths)
                L_WARN(QString("Path not found: %1").arg(path));
+         }
+
+         if (coreSettingsMessage.has_ignored_extensions())
+         {
+            const bool enabled = coreSettingsMessage.ignored_extensions().enabled();
+            QStringList extensions;
+            for (const std::string& extension : coreSettingsMessage.ignored_extensions().extensions())
+            {
+               // Same rule as 'Core::checkSettingsIntegrity()': an invalid term, like an empty one, could ignore all the files.
+               const QString term = QString::fromStdString(extension);
+               if (Common::Global::isIgnoredExtension(term) && !extensions.contains(term))
+                  extensions << term;
+            }
+
+            SETTINGS.set("ignored_extensions_enabled", enabled);
+            SETTINGS.set("ignored_extensions", extensions);
+
+            // The file manager keeps its own copy: it doesn't read the settings while scanning.
+            this->fileManager->setIgnoredExtensions(enabled, extensions);
          }
 
          QString currentAddressToListenTo = SETTINGS.get<QString>("listen_address");

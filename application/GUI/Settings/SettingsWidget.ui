@@ -519,6 +519,105 @@
        </item>
       </layout>
      </widget>
+     <widget class="QWidget" name="tabCoreAdvancedSettings">
+      <attribute name="title">
+       <string>Advanced</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="layCoreAdvanced" stretch="0,0,1,0">
+       <item>
+        <widget class="QLabel" name="lblIgnoredExtensions">
+         <property name="text">
+          <string>Ignored extensions: the files whose name ends with one of them are not shared, for example the ones being downloaded by another software</string>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="layAddIgnoredExtension">
+         <item>
+          <widget class="QLineEdit" name="txtIgnoredExtension">
+           <property name="maxLength">
+            <number>64</number>
+           </property>
+           <property name="placeholderText">
+            <string>New extension</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="butAddIgnoredExtension">
+           <property name="text">
+            <string>Add</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="layIgnoredExtensions">
+         <item>
+          <widget class="QListWidget" name="lstIgnoredExtensions">
+           <property name="alternatingRowColors">
+            <bool>true</bool>
+           </property>
+           <property name="selectionMode">
+            <enum>QAbstractItemView::SelectionMode::ExtendedSelection</enum>
+           </property>
+           <property name="sortingEnabled">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QVBoxLayout" name="layIgnoredExtensionsButtons">
+           <item>
+            <widget class="QPushButton" name="butRemoveIgnoredExtensions">
+             <property name="toolTip">
+              <string>Remove the selected extensions</string>
+             </property>
+             <property name="text">
+              <string>Remove</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="butResetIgnoredExtensions">
+             <property name="toolTip">
+              <string>Replace the list by the default one</string>
+             </property>
+             <property name="text">
+              <string>Reset to default</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="verticalSpacer_4">
+             <property name="orientation">
+              <enum>Qt::Orientation::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>40</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="chkIgnoredExtensionsEnabled">
+         <property name="text">
+          <string>Do not share the files having one of these extensions</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
     </widget>
    </item>
   </layout>

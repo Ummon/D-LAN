@@ -57,6 +57,18 @@ namespace
          ((dynamic_cast<const File*>(entry) && info.isDir()) ||
           (dynamic_cast<const Directory*>(entry) && info.isFile()));
    }
+
+   /**
+     * Whether a file isn't shared because of the end of its name, see the setting 'ignored_extensions'.
+     * It doesn't concern the files shared by themselves nor the directories.
+     */
+   bool isFileIgnored(const QString& path, const QStringList& ignoredExtensions)
+   {
+      for (const QString& extension : ignoredExtensions)
+         if (path.endsWith(extension, Qt::CaseInsensitive))
+            return true;
+      return false;
+   }
 }
 
 /**
@@ -67,12 +79,13 @@ namespace
 FileUpdater::FileUpdater(FileManager* fileManager) :
    SCAN_PERIOD_UNWATCHABLE_DIRS(SETTINGS.get<quint32>("scan_period_unwatchable_dirs")),
    IO_ERROR_WAITING_BEFORE_RETRY(3000),
-   IGNORED_EXTENSIONS(SETTINGS.get<bool>("ignored_extensions_enabled") ? SETTINGS.getRepeated<QString>("ignored_extensions") : QStringList()),
    fileManager(fileManager),
    dirWatcher(DirWatcher::getNewWatcher()),
    toStop(false),
    currentScanningEntry(nullptr),
-   toStopHashing(false)
+   toStopHashing(false),
+   // The settings are only read here, see 'setIgnoredExtensions(..)'.
+   ignoredExtensions(effectiveIgnoredExtensions(SETTINGS.get<bool>("ignored_extensions_enabled"), SETTINGS.getRepeated<QString>("ignored_extensions")))
 {
    try
    {
@@ -217,6 +230,53 @@ void FileUpdater::rmRoot(SharedEntry* sharedEntry, Directory* dir)
    this->dirEvent->release();
 }
 
+/**
+  * Called by another thread.
+  * Define the extensions of the files which aren't shared. If it changes which files are ignored
+  * then 'rootDirectories' are scanned again.
+  * A scan and the processing of some file system events use the extensions known when they begin:
+  * the settings are never read nor is the list built for each file.
+  */
+void FileUpdater::setIgnoredExtensions(bool enabled, const QStringList& extensions, const QList<Entry*>& rootDirectories)
+{
+   const QStringList newIgnoredExtensions = effectiveIgnoredExtensions(enabled, extensions);
+
+   QMutexLocker locker(&this->mutex);
+   if (newIgnoredExtensions == this->ignoredExtensions)
+      return;
+
+   L_DEBU(QString("FileUpdater: new ignored extensions: %1").arg(newIgnoredExtensions.join(' ')));
+   this->ignoredExtensions = newIgnoredExtensions;
+
+   for (Entry* root : rootDirectories)
+      if (!this->rootEntriesToRemove.contains(root))
+         this->enqueueEntryToScan(root);
+
+   this->dirEvent->release();
+}
+
+/**
+  * The extensions as they are compared to the name of the files: without duplicate, whatever their case is.
+  * There is none if they are disabled.
+  */
+QStringList FileUpdater::effectiveIgnoredExtensions(bool enabled, QStringList extensions)
+{
+   if (!enabled)
+      return QStringList();
+
+   for (QString& extension : extensions)
+      extension = extension.toLower();
+   extensions.sort();
+   extensions.removeDuplicates();
+   return extensions;
+}
+
+QStringList FileUpdater::getIgnoredExtensions() const
+{
+   QMutexLocker locker(&this->mutex);
+   return this->ignoredExtensions;
+}
+
 void FileUpdater::prioritizeAFileToHash(File* file)
 {
    this->prioritizeFilesToHash({ file }, HashingQueue::Priority::Requested);
@@ -320,7 +380,11 @@ void FileUpdater::run()
          entry = this->takeEntryToScan(true);
          this->currentScanningEntry = entry;
       }
-      this->scan(entry, true);
+
+      // A directory already scanned is here to be read again, see 'setIgnoredExtensions(..)':
+      // its unfinished files are known and may now be downloading.
+      const Directory* dir = dynamic_cast<Directory*>(entry);
+      this->scan(entry, !dir || !dir->isScanned());
    }
 
    emit initialScanFinished();
@@ -556,6 +620,8 @@ void FileUpdater::scan(Entry* entry, bool addUnfinished, bool recursive)
    }
    else if (Directory* dir = dynamic_cast<Directory*>(entry))
    {
+      const QStringList ignoredExtensions = this->getIgnoredExtensions();
+
       QList<Directory*> dirsToVisit;
       dirsToVisit << dir;
 
@@ -624,7 +690,7 @@ void FileUpdater::scan(Entry* entry, bool addUnfinished, bool recursive)
                }
             }
             // Our own unfinished files are never ignored, whatever the ignored extensions are.
-            else if (Global::isFileUnfinished(fileInfo.fileName()) ? addUnfinished : !this->isFileIgnored(fileInfo.fileName()))
+            else if (Global::isFileUnfinished(fileInfo.fileName()) ? addUnfinished : !isFileIgnored(fileInfo.fileName(), ignoredExtensions))
             {
                if (File* file = currentDir->getFile(fileInfo.fileName()))
                   unseenFiles.remove(this->addScannedFile(fileInfo, file, currentDir));
@@ -881,29 +947,22 @@ void FileUpdater::removeFromHashingQueue(Entry* entry)
 }
 
 /**
-  * Whether a file isn't shared because of the end of its name, see the setting 'ignored_extensions'.
-  * It doesn't concern the files shared by themselves nor the directories.
-  */
-bool FileUpdater::isFileIgnored(const QString& path) const
-{
-   for (const QString& extension : this->IGNORED_EXTENSIONS)
-      if (path.endsWith(extension, Qt::CaseInsensitive))
-         return true;
-   return false;
-}
-
-/**
   * Event from the filesystem like a file created or renamed.
   * return true is at least one event is a timeout.
   */
 bool FileUpdater::processEvents(const QList<WatcherEvent>& events)
 {
+   if (events.isEmpty())
+      return false;
+
    // Whether the sub-directories of a modified directory have to be read again.
    const bool recursive = !this->dirWatcher || !this->dirWatcher->notifiesEachChange();
 
+   const QStringList ignoredExtensions = this->getIgnoredExtensions();
+
    // 'replaced': what is at 'path' may be another entry than the cached one, see 'WatcherEvent::DELETED' below.
    const auto newOrContentChanged =
-      [this, recursive](const QString& path, bool replaced = false)
+      [this, recursive, &ignoredExtensions](const QString& path, bool replaced = false)
       {
          Entry* entry = this->fileManager->getEntry(path);
          if (!entry)
@@ -912,7 +971,7 @@ bool FileUpdater::processEvents(const QList<WatcherEvent>& events)
          const QFileInfo info(path);
 
          // An ignored file is usually being written by another software: its directory isn't read again each time.
-         if (!entry && !info.isDir() && this->isFileIgnored(path))
+         if (!entry && !info.isDir() && isFileIgnored(path, ignoredExtensions))
             return;
 
          if (entryTypeChanged(entry, info))
@@ -944,9 +1003,6 @@ bool FileUpdater::processEvents(const QList<WatcherEvent>& events)
             this->enqueueEntryToScan(dir, recursive || (replaced && dir == entry));
          }
       };
-
-   if (events.isEmpty())
-      return false;
 
    bool timeout = false;
    for (const WatcherEvent& event : events)
@@ -1007,7 +1063,7 @@ bool FileUpdater::processEvents(const QList<WatcherEvent>& events)
                   this->deleteEntry(replacedEntry, false);
 
                // A file renamed with an ignored extension isn't shared anymore, except the one shared by itself.
-               if (!entryToMove->isRoot() && pathDestination.isFile() && this->isFileIgnored(event.path2))
+               if (!entryToMove->isRoot() && pathDestination.isFile() && isFileIgnored(event.path2, ignoredExtensions))
                {
                   this->deleteEntry(entryToMove, false);
                   break;

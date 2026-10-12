@@ -76,6 +76,14 @@ namespace FM
       virtual QList<Common::SharedEntry> getSharedEntries() const = 0;
 
       /**
+        * Define the extensions of the files which aren't shared, a file shared by itself is never concerned.
+        * They are first read from the settings 'ignored_extensions_enabled' and 'ignored_extensions' when
+        * the file manager is created, these settings aren't modified nor read again here.
+        * The shared directories are scanned again if it changes which files are ignored.
+        */
+      virtual void setIgnoredExtensions(bool enabled, const QStringList& extensions) = 0;
+
+      /**
         * Returns the absolute path to the corresponding shared directory.
         * If the directory is not found an empty string is returned.
         */
