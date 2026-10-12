@@ -740,7 +740,10 @@ private slots:
       Fixture f;
       auto* view = f.widget.findChild<QTableView*>("tblChat");
       QVERIFY(view);
-      const auto index = view->model()->index(0, 0);
+
+      // Long enough to be wrapped differently by each width, whatever the metrics of the font are.
+      f.receiveMessage(QString("word ").repeated(40));
+      const auto index = view->model()->index(view->model()->rowCount() - 1, 0);
 
       // The same message in a model which doesn't keep the sizes.
       QStandardItemModel uncached(1, 1);
@@ -752,18 +755,29 @@ private slots:
       QStyleOptionViewItem option;
       option.initFrom(view);
       option.widget = view;
-      QSet<int> heights;
-      for (const int width : { 90, 400 })
-         for (const int fontSize : { 10, 24 })
-         {
-            option.rect = QRect(0, 0, width, 100);
-            option.font.setPointSize(fontSize);
-            const QSize expected = reference.sizeHint(option, uncached.index(0, 0));
-            QCOMPARE(view->itemDelegate()->sizeHint(option, index), expected);
-            QCOMPARE(view->itemDelegate()->sizeHint(option, index), expected);
-            heights << expected.height();
-         }
-      QCOMPARE(heights.size(), 4);
+      const auto height = [&](int width, int fontSize)
+      {
+         option.rect = QRect(0, 0, width, 100);
+         option.font.setPointSize(fontSize);
+         const QSize expected = reference.sizeHint(option, uncached.index(0, 0));
+         for (int i = 0; i < 2; ++i)
+            if (view->itemDelegate()->sizeHint(option, index) != expected)
+               return -1;
+         return expected.height();
+      };
+
+      const int narrowSmall = height(90, 10);
+      const int narrowLarge = height(90, 24);
+      const int wideSmall = height(400, 10);
+      const int wideLarge = height(400, 24);
+      for (const int cached : { narrowSmall, narrowLarge, wideSmall, wideLarge })
+         QVERIFY(cached > 0);
+
+      // Both the width and the font change the height: a stale size would have been noticed.
+      QVERIFY(narrowSmall > wideSmall);
+      QVERIFY(narrowLarge > wideLarge);
+      QVERIFY(narrowLarge > narrowSmall);
+      QVERIFY(wideLarge > wideSmall);
    }
 
    void chatDaysAndCopiedLinesFollowTheLanguage()
