@@ -45,6 +45,7 @@ pub fn page(ctx: web.Context) -> element.Element(a) {
       html.a([href_attr_bitcoin], [
         html.img([
           attr.src("static/img/d_lan_bitcoin_qr_code.png"),
+          attr.alt("Bitcoin QR code"),
           attr.class("qr-code"),
         ]),
       ]),
@@ -70,6 +71,7 @@ pub fn page(ctx: web.Context) -> element.Element(a) {
       html.a([href_attr_ethereum], [
         html.img([
           attr.src("static/img/d_lan_ethereum_qr_code.webp"),
+          attr.alt("Ethereum QR code"),
           attr.class("qr-code"),
         ]),
       ]),
