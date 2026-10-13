@@ -918,7 +918,8 @@ private slots:
       const auto index = view->model()->index(0, 0);
       QCOMPARE(index.data(GUI::ChatModel::SeparateSenderLineRole).toBool(), separateSenderLine);
 
-      // Beside its sender a message doesn't take more height than alone.
+      // Beside its sender a message doesn't take one more line than alone. It may be a bit higher: a text drawn with
+      // a fallback font, as the Hebrew one, can be lower than its sender.
       QStandardItemModel alone(1, 1);
       alone.setData(alone.index(0, 0), message);
       GUI::ChatDelegate reference(f.emoticons);
@@ -929,10 +930,12 @@ private slots:
       const int dayHeight = 2 * QFontMetrics(option.font).height();
       const int height = view->itemDelegate()->sizeHint(option, index).height() - dayHeight;
       const int heightAlone = reference.sizeHint(option, alone.index(0, 0)).height();
+      const int lineHeight = QFontMetrics(option.font).height();
+      const QByteArray heights = QString("%1, alone: %2").arg(height).arg(heightAlone).toUtf8();
       if (separateSenderLine)
-         QVERIFY2(height >= heightAlone + QFontMetrics(option.font).height(), qPrintable(QString("%1, alone: %2").arg(height).arg(heightAlone)));
+         QVERIFY2(height >= heightAlone + lineHeight, heights.constData());
       else
-         QCOMPARE(height, heightAlone);
+         QVERIFY2(height >= heightAlone && height < heightAlone + lineHeight, heights.constData());
    }
 
    void sendersHaveTheirColor()
