@@ -24,6 +24,7 @@
 #include <QString>
 #include <QPair>
 #include <QTextBoundaryFinder>
+#include <QVarLengthArray>
 
 #include <Common/Uncopyable.h>
 #include <Common/StringUtils.h>
@@ -128,6 +129,8 @@ namespace FM
          bool alsoFromSubNodes,
          Visitor& visitor
       ) const;
+
+      static bool isGraphemeBoundary(const QString& word, QStringView continuation);
 
       void remove(int i);
 
@@ -355,27 +358,37 @@ void FM::Node<T>::visitItems(
    struct Candidate
    {
       const Node<T>* node;
-      QString text;
-      bool boundaryKnown;
+      bool boundaryKnown; ///< 'true' if 'word' ends at a grapheme boundary of the word of the node.
+      char16_t highSurrogate; ///< If not null: it ends the word of the parent node, right after 'word'.
    };
-   QList<Candidate> nodesToVisit;
 
-   nodesToVisit.append({ this, word + this->part.sliced(matchedLength), false });
+   // Depth-first: only the siblings of the visited nodes are kept, not a whole level of the tree.
+   QVarLengthArray<Candidate, 64> nodesToVisit { Candidate { this, false, 0 } };
 
-   while (!nodesToVisit.empty())
+   while (!nodesToVisit.isEmpty())
    {
-      Candidate candidate = nodesToVisit.takeFirst();
+      Candidate candidate = nodesToVisit.last();
+      nodesToVisit.removeLast();
       const Node<T>* current = candidate.node;
+      const bool entirelyMatched = fullyMatched && current == this;
       bool matches = true;
-      if (!candidate.boundaryKnown && candidate.text.size() > word.size())
+      if (!candidate.boundaryKnown && !entirelyMatched)
       {
          // Trie nodes may split combining sequences or surrogate pairs. Keep the full
          // query context until the first following code point is available.
-         QTextBoundaryFinder boundaries(QTextBoundaryFinder::Grapheme, candidate.text);
-         boundaries.setPosition(word.size());
-         matches = boundaries.isAtBoundary();
-         const bool incompleteCodePoint = candidate.text.size() == word.size() + 1 && candidate.text.back().isHighSurrogate();
-         if (!incompleteCodePoint)
+         QString completedPart;
+         QStringView continuation = current == this ? QStringView(this->part).sliced(matchedLength) : QStringView(current->part);
+         if (candidate.highSurrogate != 0)
+         {
+            completedPart = QChar(candidate.highSurrogate) + current->part;
+            continuation = completedPart;
+         }
+
+         matches = isGraphemeBoundary(word, continuation);
+         const bool incompleteCodePoint = continuation.size() == 1 && continuation.front().isHighSurrogate();
+         if (incompleteCodePoint)
+            candidate.highSurrogate = continuation.front().unicode();
+         else
          {
             if (!matches)
                continue;
@@ -385,15 +398,33 @@ void FM::Node<T>::visitItems(
 
       if (matches)
          for (const T& item : current->items)
-            if (!visitor(item, !(fullyMatched && current == this)))
+            if (!visitor(item, !entirelyMatched)) // The only call to the visitor: the compiler can inline it.
                return;
 
       if (!alsoFromSubNodes)
          break;
 
-      for (const Node<T>* child : current->children)
-         nodesToVisit.append({ child, candidate.boundaryKnown ? QString() : candidate.text + child->part, candidate.boundaryKnown });
+      // In reverse order: the first child is the next visited node.
+      for (auto child = current->children.crbegin(); child != current->children.crend(); ++child)
+         nodesToVisit.append(Candidate { *child, candidate.boundaryKnown, candidate.highSurrogate });
    }
+}
+
+/**
+  * Whether a word made of 'word' followed by 'continuation' can be cut between them.
+  */
+template <typename T>
+bool FM::Node<T>::isGraphemeBoundary(const QString& word, QStringView continuation)
+{
+   // The characters below U+0300 don't combine with each other, except a line feed following a carriage return.
+   if (word.back().unicode() < 0x0300 && continuation.front().unicode() < 0x0300 && continuation.front() != u'\n')
+      return true;
+
+   QString text = word;
+   text += continuation;
+   QTextBoundaryFinder boundaries(QTextBoundaryFinder::Grapheme, text);
+   boundaries.setPosition(word.size());
+   return boundaries.isAtBoundary();
 }
 
 /**

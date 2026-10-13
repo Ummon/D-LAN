@@ -285,6 +285,8 @@ void WordIndexBenchmark::search_data()
    addRow("rare and common words", rare + " mp3");
    addRow("three common words", common + ' ' + this->vocabulary.at(1) + ' ' + this->vocabulary.at(2));
    addRow("five words", common + ' ' + this->vocabulary.at(50) + ' ' + this->vocabulary.at(2000) + " 07 mp3");
+   addRow("rare word and prefix of many words", rare + " dsc"); // All the nodes of a large part of the index are visited.
+   addRow("two Han characters", han + ' ' + QChar(FIRST_HAN + 1)); // Prefixes ending at nodes with a lot of children.
 
    // As a search among the files of a given type.
    addRow("common word, filtered", common, true, true);
