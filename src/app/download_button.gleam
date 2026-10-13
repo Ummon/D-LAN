@@ -86,7 +86,7 @@ pub fn element(
           // Keeps the size before its unit in a language written from right to
           // left.
           html.span([attr.dir("ltr")], [
-            html.text(utils.file_size_mib(file_info.size) <> " MiB"),
+            html.text(utils.file_size_mib(file_info.size) <> "\u{00A0}MiB"),
           ]),
           html.text(")"),
         ]),
