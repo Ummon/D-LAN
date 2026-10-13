@@ -173,7 +173,7 @@
 <context>
     <name>GUI::ChatWidget</name>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="+695"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="+783"/>
         <location line="+4"/>
         <source>Unable to send message</source>
         <translation>无法发送消息</translation>
@@ -246,7 +246,7 @@
         <translation>退出</translation>
     </message>
     <message>
-        <location line="+34"/>
+        <location line="+43"/>
         <source>D-LAN user interface closed</source>
         <translation>D-LAN 用户界面已关闭</translation>
     </message>
@@ -813,17 +813,17 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+275"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+279"/>
         <source>Default</source>
         <translation>默认</translation>
     </message>
     <message>
-        <location line="+59"/>
+        <location line="+68"/>
         <source>Interface not active</source>
         <translation>接口未激活</translation>
     </message>
     <message>
-        <location line="+222"/>
+        <location line="+229"/>
         <source>A password is defined</source>
         <translation>已设置密码</translation>
     </message>
@@ -1022,7 +1022,7 @@
         <translation>Core 服务已启动</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="-141"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="-150"/>
         <source>D-LAN already launched</source>
         <translation>D-LAN 已在运行</translation>
     </message>

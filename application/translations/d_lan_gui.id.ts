@@ -173,7 +173,7 @@
 <context>
     <name>GUI::ChatWidget</name>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="+695"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="+783"/>
         <location line="+4"/>
         <source>Unable to send message</source>
         <translation>Tidak dapat mengirim pesan</translation>
@@ -246,7 +246,7 @@
         <translation>Keluar</translation>
     </message>
     <message>
-        <location line="+34"/>
+        <location line="+43"/>
         <source>D-LAN user interface closed</source>
         <translation>Antarmuka pengguna D-LAN ditutup</translation>
     </message>
@@ -813,17 +813,17 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+275"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+279"/>
         <source>Default</source>
         <translation>Bawaan</translation>
     </message>
     <message>
-        <location line="+59"/>
+        <location line="+68"/>
         <source>Interface not active</source>
         <translation>Antarmuka tidak aktif</translation>
     </message>
     <message>
-        <location line="+222"/>
+        <location line="+229"/>
         <source>A password is defined</source>
         <translation>Kata sandi telah ditetapkan</translation>
     </message>
@@ -1022,7 +1022,7 @@
         <translation>Layanan Core dijalankan</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="-141"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="-150"/>
         <source>D-LAN already launched</source>
         <translation>D-LAN sudah berjalan</translation>
     </message>

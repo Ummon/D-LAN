@@ -173,7 +173,7 @@
 <context>
     <name>GUI::ChatWidget</name>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="+695"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="+783"/>
         <location line="+4"/>
         <source>Unable to send message</source>
         <translation>संदेश भेजने में असमर्थ</translation>
@@ -246,7 +246,7 @@
         <translation>बाहर निकलें</translation>
     </message>
     <message>
-        <location line="+34"/>
+        <location line="+43"/>
         <source>D-LAN user interface closed</source>
         <translation>D-LAN यूज़र इंटरफ़ेस बंद हो गया</translation>
     </message>
@@ -813,17 +813,17 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+275"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="+279"/>
         <source>Default</source>
         <translation>डिफ़ॉल्ट</translation>
     </message>
     <message>
-        <location line="+59"/>
+        <location line="+68"/>
         <source>Interface not active</source>
         <translation>इंटरफ़ेस सक्रिय नहीं है</translation>
     </message>
     <message>
-        <location line="+222"/>
+        <location line="+229"/>
         <source>A password is defined</source>
         <translation>पासवर्ड निर्धारित है</translation>
     </message>
@@ -1026,7 +1026,7 @@
         <translation>Core सेवा शुरू की गई</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="-141"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="-150"/>
         <source>D-LAN already launched</source>
         <translation>D-LAN पहले से चल रहा है</translation>
     </message>

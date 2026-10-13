@@ -173,49 +173,49 @@
 <context>
     <name>GUI::ChatWidget</name>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="695"/>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="699"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="783"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="787"/>
         <source>Unable to send message</source>
         <translation>Impossibile inviare il messaggio</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="695"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="783"/>
         <source>The message is too long</source>
         <translation>Il messaggio è troppo lungo</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="699"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="787"/>
         <source>The message can&apos;t be send, unknown error</source>
         <translation>Impossibile inviare il messaggio, errore sconosciuto</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="715"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="803"/>
         <source>Browse</source>
         <translation>Sfoglia</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="718"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="806"/>
         <source>Copy IP: %1</source>
         <translation>Copia IP: %1</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="741"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="829"/>
         <source>Copy selected messages</source>
         <translation>Copia i messaggi selezionati</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="742"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="830"/>
         <source>Copy selected lines</source>
         <translation>Copia le righe selezionate</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="743"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="831"/>
         <source>Browse selected peers</source>
         <translation>Sfoglia i peer selezionati</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="1119"/>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="1182"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="1207"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="1270"/>
         <source>Chat</source>
         <translation>Chat</translation>
     </message>
@@ -246,12 +246,12 @@
         <translation>Esci</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="253"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="262"/>
         <source>D-LAN user interface closed</source>
         <translation>Interfaccia utente di D-LAN chiusa</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="254"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="263"/>
         <source>D-LAN Core is still running in background. Select &apos;exit&apos; from the contextual menu if you want to stop it.</source>
         <translation>D-LAN Core è ancora in esecuzione in background. Seleziona «Esci» dal menu contestuale per arrestarlo.</translation>
     </message>
@@ -817,62 +817,62 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="275"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="279"/>
         <source>Default</source>
         <translation>Predefinito</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="334"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="347"/>
         <source>Interface not active</source>
         <translation>Interfaccia non attiva</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="556"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="576"/>
         <source>A password is defined</source>
         <translation>È stata impostata una password</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="558"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="578"/>
         <source>Change the password</source>
         <translation>Cambia la password</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="562"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="582"/>
         <source>No password defined</source>
         <translation>Non è stata impostata alcuna password</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="564"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="584"/>
         <source>Define a password</source>
         <translation>Imposta una password</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="595"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="995"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="615"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="1015"/>
         <source>Connecting . . .</source>
         <translation>Connessione in corso . . .</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="603"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="618"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="636"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="995"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="623"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="638"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="656"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="1015"/>
         <source>Connect</source>
         <translation>Connetti</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="741"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="761"/>
         <source>Select one or more directories and/or files to share</source>
         <translation>Seleziona una o più cartelle e/o file da condividere</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="761"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="830"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="781"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="850"/>
         <source>Remove selected shared entries</source>
         <translation>Rimuovi gli elementi condivisi selezionati</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="762"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="782"/>
         <source>Are you sure you want to remove the selected shared files and directories?</source>
         <translation>Rimuovere i file e le cartelle condivisi selezionati?</translation>
     </message>
@@ -889,17 +889,17 @@
         <translation type="vanished">Rimuovi la cartella condivisa</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="838"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="858"/>
         <source>Move up</source>
         <translation>Sposta su</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="846"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="866"/>
         <source>Move down</source>
         <translation>Sposta giù</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="854"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="874"/>
         <source>Open location</source>
         <translation>Apri percorso</translation>
     </message>

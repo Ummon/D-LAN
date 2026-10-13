@@ -173,49 +173,49 @@
 <context>
     <name>GUI::ChatWidget</name>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="695"/>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="699"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="783"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="787"/>
         <source>Unable to send message</source>
         <translation>メッセージを送信できません</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="695"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="783"/>
         <source>The message is too long</source>
         <translation>メッセージが長すぎます</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="699"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="787"/>
         <source>The message can&apos;t be send, unknown error</source>
         <translation>メッセージを送信できません。原因不明のエラーです</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="715"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="803"/>
         <source>Browse</source>
         <translation>閲覧</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="718"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="806"/>
         <source>Copy IP: %1</source>
         <translation>IP をコピー: %1</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="741"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="829"/>
         <source>Copy selected messages</source>
         <translation>選択したメッセージをコピー</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="742"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="830"/>
         <source>Copy selected lines</source>
         <translation>選択した行をコピー</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="743"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="831"/>
         <source>Browse selected peers</source>
         <translation>選択したピアを閲覧</translation>
     </message>
     <message>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="1119"/>
-        <location filename="../GUI/Chat/ChatWidget.cpp" line="1182"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="1207"/>
+        <location filename="../GUI/Chat/ChatWidget.cpp" line="1270"/>
         <source>Chat</source>
         <translation>チャット</translation>
     </message>
@@ -246,12 +246,12 @@
         <translation>終了</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="253"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="262"/>
         <source>D-LAN user interface closed</source>
         <translation>D-LANのユーザーインターフェースを閉じました</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="254"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="263"/>
         <source>D-LAN Core is still running in background. Select &apos;exit&apos; from the contextual menu if you want to stop it.</source>
         <translation>D-LAN Coreはバックグラウンドで引き続き動作しています。停止するには、コンテキストメニューから「終了」を選択してください。</translation>
     </message>
@@ -813,62 +813,62 @@
 <context>
     <name>GUI::SettingsWidget</name>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="275"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="279"/>
         <source>Default</source>
         <translation>既定</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="334"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="347"/>
         <source>Interface not active</source>
         <translation>インターフェースが有効ではありません</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="556"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="576"/>
         <source>A password is defined</source>
         <translation>パスワードが設定されています</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="558"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="578"/>
         <source>Change the password</source>
         <translation>パスワードを変更</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="562"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="582"/>
         <source>No password defined</source>
         <translation>パスワードが設定されていません</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="564"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="584"/>
         <source>Define a password</source>
         <translation>パスワードを設定</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="595"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="995"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="615"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="1015"/>
         <source>Connecting . . .</source>
         <translation>接続中 . . .</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="603"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="618"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="636"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="995"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="623"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="638"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="656"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="1015"/>
         <source>Connect</source>
         <translation>接続</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="741"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="761"/>
         <source>Select one or more directories and/or files to share</source>
         <translation>共有するディレクトリやファイルを1つ以上選択してください</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="761"/>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="830"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="781"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="850"/>
         <source>Remove selected shared entries</source>
         <translation>選択した共有項目を削除</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="762"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="782"/>
         <source>Are you sure you want to remove the selected shared files and directories?</source>
         <translation>選択した共有ファイルとフォルダーを削除してもよろしいですか？</translation>
     </message>
@@ -885,17 +885,17 @@
         <translation type="vanished">共有ディレクトリを削除</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="838"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="858"/>
         <source>Move up</source>
         <translation>上へ移動</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="846"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="866"/>
         <source>Move down</source>
         <translation>下へ移動</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.cpp" line="854"/>
+        <location filename="../GUI/Settings/SettingsWidget.cpp" line="874"/>
         <source>Open location</source>
         <translation>場所を開く</translation>
     </message>
