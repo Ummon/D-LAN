@@ -1009,7 +1009,11 @@ private slots:
       QVERIFY(!updated.resource(QTextDocument::ImageResource, QUrl("emoticons://first/smile.png")).value<QPixmap>().isNull());
    }
 
-   void senderHasTheDateAndTimeAsToolTip()
+   /**
+     * A message keeps the nick its sender had when writing it. The tooltip of the sender is the complete date
+     * and time of the message, followed by the current nick of this peer only if it's another one.
+     */
+   void senderHasItsCurrentNickAsToolTip()
    {
       Fixture f(QStringList {});
       auto& model = f.widget.chatModel;
@@ -1019,17 +1023,30 @@ private slots:
 
       const QDateTime dateTime(QDate(2026, 10, 6), QTime(18, 44, 12));
       const Common::Hash peerID = Common::Hash::rand();
-      Protos::Common::ChatMessages messages;
-      auto* message = messages.add_messages();
-      message->set_id(1);
-      message->set_time(dateTime.toMSecsSinceEpoch());
-      message->mutable_peer_id()->set_hash(peerID.getData(), Common::Hash::HASH_SIZE);
-      message->set_peer_nick("Alice");
-      message->set_message("Hello");
-      emit f.connection->newChatMessages(messages);
+      const auto receiveMessage = [&](quint64 id) {
+         Protos::Common::ChatMessages messages;
+         auto* message = messages.add_messages();
+         message->set_id(id);
+         message->set_time(dateTime.toMSecsSinceEpoch() + id);
+         message->mutable_peer_id()->set_hash(peerID.getData(), Common::Hash::HASH_SIZE);
+         message->set_peer_nick("Alice");
+         message->set_message("Hello");
+         emit f.connection->newChatMessages(messages);
+      };
+      // An empty nick: the peer isn't known.
+      const auto setCurrentNick = [&](const QString& nick) {
+         Protos::GUI::State state;
+         if (!nick.isEmpty())
+         {
+            auto* peer = state.add_peers();
+            peer->mutable_peer_id()->set_hash(peerID.getData(), Common::Hash::HASH_SIZE);
+            peer->set_nick(nick.toStdString());
+         }
+         emit f.connection->newState(state);
+      };
 
-      const QString expected = english.toString(dateTime.date(), QLocale::LongFormat) + " 18:44:12";
-      QCOMPARE(model.index(0, 0).data(Qt::ToolTipRole).toString(), expected);
+      receiveMessage(1);
+      const QModelIndex index = model.index(0, 0);
 
       // Where the sender is drawn.
       auto* view = f.widget.findChild<QTableView*>("tblChat");
@@ -1046,10 +1063,34 @@ private slots:
          QHelpEvent event(QEvent::ToolTip, position, view->viewport()->mapToGlobal(position));
          QApplication::sendEvent(view->viewport(), &event);
       };
+      // The text of the tooltip as it's displayed.
+      const auto shownToolTip = []() {
+         QTextDocument document;
+         document.setHtml(QToolTip::text());
+         return document.toPlainText();
+      };
 
+      // The peer isn't known: only the date and the time.
+      const QString dateAndTime = english.toString(dateTime.date(), QLocale::LongFormat) + " 18:44:12";
+      QCOMPARE(index.data(Qt::ToolTipRole).toString(), dateAndTime);
       askToolTip(sender.center());
       QVERIFY(QToolTip::isVisible());
-      QCOMPARE(QToolTip::text(), expected);
+      QCOMPARE(shownToolTip(), dateAndTime);
+
+      // It still has the nick of its message.
+      setCurrentNick("Alice");
+      QCOMPARE(index.data(Qt::ToolTipRole).toString(), dateAndTime);
+
+      // It has another nick: the message keeps its own, the current one is on a second line of the tooltip.
+      const QString currentNick = "<b>Alicia</b>";
+      const QString withCurrentNick = dateAndTime + "\n(" + currentNick + ")";
+      setCurrentNick(currentNick);
+      QCOMPARE(index.data(GUI::ChatModel::NickRole).toString(), QString("Alice"));
+      QCOMPARE(index.data(Qt::ToolTipRole).toString(), withCurrentNick);
+      askToolTip(sender.center());
+      QVERIFY(QToolTip::isVisible());
+      // The nick is shown as it is, not interpreted as rich text.
+      QCOMPARE(shownToolTip(), withCurrentNick);
 
       // Neither the message nor the day have a tooltip.
       askToolTip(QPoint(sender.right() + 20, sender.center().y()));
@@ -1057,14 +1098,24 @@ private slots:
       askToolTip(QPoint(sender.center().x(), sender.top() - 10));
       QVERIFY(!QToolTip::isVisible());
 
-      // It follows the language of the GUI.
+      // A message received while its sender has another nick is also displayed with its own one.
+      receiveMessage(2);
+      QCOMPARE(model.rowCount(), 2);
+      QCOMPARE(model.index(1, 0).data(GUI::ChatModel::NickRole).toString(), QString("Alice"));
+      QCOMPARE(model.index(1, 0).data(Qt::ToolTipRole).toString(), withCurrentNick);
+
+      // The date follows the language of the GUI.
       QSignalSpy changes(&model, &QAbstractItemModel::dataChanged);
       const QLocale german(QLocale::German);
       SETTINGS.set("language", german);
       model.languageChanged();
       QCOMPARE(changes.size(), 1);
       QVERIFY(changes[0][2].value<QList<int>>().contains(Qt::ToolTipRole));
-      QCOMPARE(model.index(0, 0).data(Qt::ToolTipRole).toString(), german.toString(dateTime.date(), QLocale::LongFormat) + " 18:44:12");
+      QCOMPARE(index.data(Qt::ToolTipRole).toString(), german.toString(dateTime.date(), QLocale::LongFormat) + " 18:44:12\n(" + currentNick + ")");
+
+      // The peer is gone.
+      setCurrentNick(QString());
+      QCOMPARE(index.data(Qt::ToolTipRole).toString(), german.toString(dateTime.date(), QLocale::LongFormat) + " 18:44:12");
 
       SETTINGS.set("language", QLocale::system());
       model.languageChanged();
@@ -1291,6 +1342,80 @@ private slots:
          QVERIFY2(link.left() > sender.right() && link.left() - sender.right() < maxGap, qPrintable(positions));
       }
       QVERIFY(link.top() < sender.bottom() && link.bottom() > sender.top());
+   }
+
+   /**
+     * A line only made of a small emoticon is lower than a text: its sender is drawn as the one of a text.
+     */
+   void senderIsCompleteBesideASmallEmoticon()
+   {
+      QTemporaryDir directory;
+      QVERIFY(directory.isValid());
+      const QString path = directory.path() + "/theme";
+      QVERIFY(QDir().mkpath(path));
+      QImage smile(6, 6, QImage::Format_ARGB32);
+      smile.fill(Qt::red);
+      QVERIFY(smile.save(path + "/smile.png"));
+      {
+         QFile metadata(path + "/Emoticons.plist");
+         QVERIFY(metadata.open(QIODevice::WriteOnly));
+         const QByteArray xml = "<plist><dict><key>Emoticons</key><dict><key>smile.png</key><dict><key>Equivalents</key><array><string>:)</string></array></dict></dict></dict></plist>";
+         QCOMPARE(metadata.write(xml), xml.size());
+      }
+      GUI::Emoticons emoticons(directory.path(), "theme");
+      GUI::ChatDelegate delegate(emoticons);
+
+      const int TEXT = 0;
+      const int EMOTICON = 1;
+      QStandardItemModel model(2, 1);
+      model.setData(model.index(TEXT, 0), "Hello");
+      model.setData(model.index(EMOTICON, 0), "![smile](emoticons://theme/smile.png)");
+      for (int row = 0; row < model.rowCount(); row++)
+      {
+         model.setData(model.index(row, 0), "18:44", GUI::ChatModel::TimeRole);
+         model.setData(model.index(row, 0), "Paul", GUI::ChatModel::NickRole);
+      }
+      QTableView view;
+      view.setModel(&model);
+      view.setItemDelegate(&delegate);
+      view.horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+      view.verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+      view.setShowGrid(false);
+      view.resize(400, 250);
+      view.show();
+      view.resizeRowsToContents();
+      QApplication::processEvents();
+
+      // Where the background of the sender is drawn, from the top left corner of its item.
+      const auto senderOf = [&](int row) {
+         const QModelIndex index = model.index(row, 0);
+         QStyleOptionViewItem option;
+         option.initFrom(&view);
+         option.widget = &view;
+         option.rect = view.visualRect(index);
+         option.features |= QStyleOptionViewItem::HasDisplay;
+         QImage rendered(view.viewport()->size(), QImage::Format_RGB32);
+         rendered.fill(Qt::white);
+         QPainter painter(&rendered);
+         delegate.paint(&painter, option, index);
+         painter.end();
+
+         QRect sender;
+         for (int y = 0; y < rendered.height(); y++)
+            for (int x = 0; x < rendered.width(); x++)
+               if (rendered.pixel(x, y) == GUI::ChatDelegate::COLOR_SENDER.rgb())
+                  sender |= QRect(x, y, 1, 1);
+         return sender.translated(-option.rect.topLeft());
+      };
+
+      const QRect sender = senderOf(EMOTICON);
+      QVERIFY(!sender.isEmpty());
+      QCOMPARE(sender, senderOf(TEXT));
+      // The sender has as much room below as above.
+      QVERIFY2(
+         view.rowHeight(EMOTICON) - sender.bottom() - 1 >= sender.top(),
+         qPrintable(QString("row height: %1, sender: %2..%3").arg(view.rowHeight(EMOTICON)).arg(sender.top()).arg(sender.bottom()))
+      );
    }
 
    void draftIsSentOnceWhileUnanswered_data()

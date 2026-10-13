@@ -199,7 +199,8 @@ bool ChatDelegate::editorEvent(
 }
 
 /**
-  * The tooltip of a message, its complete date and time, is only shown for its sender.
+  * The tooltip of a message is only shown for its sender: its complete date and time, followed by the current
+  * nick of its sender when it has changed.
   */
 bool ChatDelegate::helpEvent(
    QHelpEvent* event,
@@ -218,7 +219,9 @@ bool ChatDelegate::helpEvent(
       const QRect sender = this->layoutItem(option, index, origin).sender.translated(origin).toAlignedRect();
       if (sender.contains(event->pos()))
       {
-         QToolTip::showText(event->globalPos(), toolTip, view->viewport(), sender);
+         // A nick comes from a remote peer: it's escaped, a tooltip looking like rich text is interpreted.
+         // 'pre' keeps the line break before the nick.
+         QToolTip::showText(event->globalPos(), "<p style=\"white-space: pre\">" + toolTip.toHtmlEscaped() + "</p>", view->viewport(), sender);
          return true;
       }
    }
@@ -354,7 +357,11 @@ ChatDelegate::MessageLayout ChatDelegate::layoutMessage(const QFont& font, int w
    {
       // The sender is aligned with the first line of its message, which an emoticon may make higher than its text.
       const QTextLine firstLine = firstBlock->lineAt(0);
-      baseline = firstBlock->position().y() + firstLine.y() + firstLine.ascent();
+      const qreal firstBaseline = firstBlock->position().y() + firstLine.y() + firstLine.ascent();
+      // A line only made of a small emoticon is lower than a text: the message is moved down instead of moving
+      // its sender up, out of the item.
+      layout.documentPos.setY(qMax(0, qRound(baseline - firstBaseline)));
+      baseline = firstBaseline + layout.documentPos.y();
    }
 
    layout.sender = QRectF(
@@ -373,7 +380,8 @@ ChatDelegate::MessageLayout ChatDelegate::layoutMessage(const QFont& font, int w
       layout.timePos = QPointF(layout.sender.left() + padding, baseline);
       layout.nickPos = QPointF(layout.timePos.x() + timeWidth + padding, baseline);
    }
-   layout.height = qCeil(qMax(layout.documentPos.y() + documentHeight, layout.sender.bottom()));
+   // A message lower than its sender leaves the same room below the sender as above it.
+   layout.height = qCeil(qMax(layout.documentPos.y() + documentHeight, layout.sender.bottom() + margin - SENDER_VERTICAL_PADDING));
    return layout;
 }
 

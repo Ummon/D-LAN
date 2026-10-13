@@ -249,7 +249,20 @@ QVariant ChatModel::data(const QModelIndex& index, int role) const
       return message.message;
 
    case Qt::ToolTipRole:
-      return QString(this->locale.toString(message.dateTime.date(), QLocale::LongFormat)).append(' ').append(message.dateTime.toString("HH:mm:ss"));
+      {
+         QString tooltip =
+            this->locale.toString(message.dateTime.date(), QLocale::LongFormat)
+               .append(' ')
+               .append(message.dateTime.toString("HH:mm:ss"));
+
+         // The current nick of the owner is displayed as tooltip if it's not the same as the message nick.
+         const QString currentNick = this->peerListModel.getNick(message.peerID);
+         if (!currentNick.isEmpty() && currentNick != message.nick)
+            tooltip.append('\n').append('(').append(currentNick).append(')');
+
+         return tooltip;
+      }
+      break;
 
    case TimeRole:
       return message.dateTime.toString("HH:mm");
@@ -376,7 +389,7 @@ void ChatModel::newChatMessages(const Protos::Common::ChatMessages& messages)
          messages.messages(i).id(),
          peerID,
          isTheMessageAnsweringToUs,
-         this->peerListModel.getNick(peerID, QString::fromStdString(messages.messages(i).peer_nick())),
+         QString::fromStdString(messages.messages(i).peer_nick()),
          QDateTime::fromMSecsSinceEpoch(messages.messages(i).time()),
          QString::fromStdString(messages.messages(i).message())
       };

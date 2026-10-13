@@ -43,13 +43,14 @@ namespace GUI
    {
       Q_OBJECT
 
-   public:
-      // 'Qt::DisplayRole' is the message itself, in Markdown, and 'Qt::ToolTipRole' its complete date and time.
-      // Its sender is given by these roles.
+   public:         
+      // 'Qt::DisplayRole' is the message itself, in Markdown.
+      // 'Qt::ToolTipRole' it the complete date and time, the current nick of its sender is appended to it
+      // only if this peer is known and no longer has the nick of the message.
       enum Role
       {
          TimeRole = Qt::UserRole, // QString.
-         NickRole, // QString.
+         NickRole, // QString: the nick the sender had when it wrote the message.
          OursRole, // bool.
          SeparateSenderLineRole, // bool: the message can't follow its sender on the same line.
          DayRole // QString: the day of the message, only for the first message of each day.
