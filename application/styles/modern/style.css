@@ -562,6 +562,17 @@ QTreeView::branch:open:has-children:has-siblings:hover {
    image: url(styles/modern/branch_open_hover.svg);
 }
 
+/* The closed arrow is mirrored for the right-to-left languages. These rules must stay after the ones above. */
+QTreeView[layoutDirection="RightToLeft"]::branch:has-children:!has-siblings:closed,
+QTreeView[layoutDirection="RightToLeft"]::branch:closed:has-children:has-siblings {
+   image: url(styles/modern/branch_closed_rtl.svg);
+}
+
+QTreeView[layoutDirection="RightToLeft"]::branch:has-children:!has-siblings:closed:hover,
+QTreeView[layoutDirection="RightToLeft"]::branch:closed:has-children:has-siblings:hover {
+   image: url(styles/modern/branch_closed_hover_rtl.svg);
+}
+
 QHeaderView {
    background-color: transparent;
    border: none;

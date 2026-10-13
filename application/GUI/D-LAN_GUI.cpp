@@ -232,7 +232,16 @@ void D_LAN_GUI::loadLanguage(const QString& filename)
    }
 
    // The interface is mirrored for the right-to-left languages. Without translation the texts are in English.
-   this->setLayoutDirection(this->translator.isEmpty() ? Qt::LeftToRight : QLocale(this->translator.language()).textDirection());
+   const Qt::LayoutDirection direction = this->translator.isEmpty() ? Qt::LeftToRight : QLocale(this->translator.language()).textDirection();
+   if (direction != this->layoutDirection())
+   {
+      this->setLayoutDirection(direction);
+
+      // The styles choose some images depending on the direction ('[layoutDirection="RightToLeft"]'), Qt only
+      // evaluates these selectors when the style sheet is set.
+      if (!this->styleSheet().isEmpty())
+         this->setStyleSheet(this->styleSheet());
+   }
 }
 
 void D_LAN_GUI::mainWindowClosed()

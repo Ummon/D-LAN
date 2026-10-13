@@ -208,6 +208,27 @@ QTreeView::branch:open:has-children:has-siblings:hover {
    image: url(styles/l33t/treeview_arrow_opened_highlight.png);
 }
 
+/* The arrows are mirrored for the right-to-left languages. These rules must stay after the ones above. */
+QTreeView[layoutDirection="RightToLeft"]::branch:has-children:!has-siblings:closed,
+QTreeView[layoutDirection="RightToLeft"]::branch:closed:has-children:has-siblings {
+   image: url(styles/l33t/treeview_arrow_closed_rtl.png);
+}
+
+QTreeView[layoutDirection="RightToLeft"]::branch:has-children:!has-siblings:closed:hover,
+QTreeView[layoutDirection="RightToLeft"]::branch:closed:has-children:has-siblings:hover {
+   image: url(styles/l33t/treeview_arrow_closed_highlight_rtl.png);
+}
+
+QTreeView[layoutDirection="RightToLeft"]::branch:open:has-children:!has-siblings,
+QTreeView[layoutDirection="RightToLeft"]::branch:open:has-children:has-siblings  {
+   image: url(styles/l33t/treeview_arrow_opened_rtl.png);
+}
+
+QTreeView[layoutDirection="RightToLeft"]::branch:open:has-children:!has-siblings:hover,
+QTreeView[layoutDirection="RightToLeft"]::branch:open:has-children:has-siblings:hover {
+   image: url(styles/l33t/treeview_arrow_opened_highlight_rtl.png);
+}
+
 QScrollBar::add-page, QScrollBar::sub-page {
    background: none;
 }
