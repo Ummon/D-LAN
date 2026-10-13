@@ -75,7 +75,7 @@ namespace GUI
    private:
       struct MessageLayout;
       MessageLayout layoutItem(const QStyleOptionViewItem& option, const QModelIndex& index, QPoint& origin) const;
-      MessageLayout layoutMessage(const QFont& font, int width, const QModelIndex& index) const;
+      MessageLayout layoutMessage(const QFont& font, int width, Qt::LayoutDirection direction, const QModelIndex& index) const;
       static int dayHeight(const QFont& font, const QModelIndex& index);
       static void paintDay(QPainter* painter, const QStyleOptionViewItem& option, const QRect& rect, const QString& day);
       static void paintSender(QPainter* painter, const MessageLayout& layout, const QFont& font, bool ours);

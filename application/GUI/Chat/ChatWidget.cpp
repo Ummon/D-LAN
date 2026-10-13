@@ -47,6 +47,7 @@ using namespace GUI;
 #include <QtMath>
 #include <algorithm>
 
+#include <ItemTextDirection.h>
 #include <Log.h>
 #include <Utils.h>
 #include <Common/Settings.h>
@@ -75,6 +76,9 @@ namespace
   *    ---------- Tuesday, October 6, 2026 ----------
   *    | 18:44 Paul > Hi
   *    | 19:50 Dylan > Hello
+  *
+  * In a right-to-left interface the sender is on the right, its arrow points to the message on its left.
+  * A message is always aligned on the side of its sender, whatever the direction of its own text.
   */
 
 const QColor ChatDelegate::COLOR_SENDER = QColor::fromHslF(0.6, 0.2, 0.4);
@@ -94,6 +98,7 @@ struct ChatDelegate::MessageLayout
    EmoticonTextDocument* document = nullptr;
    QPointF documentPos;
    int height = 0;
+   bool rightToLeft = false; // The sender is on the right.
 };
 
 ChatDelegate::ChatDelegate(const Emoticons& emoticons)
@@ -131,7 +136,7 @@ void ChatDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, 
 
    // A style may give some padding to the items.
    QRect textRect = style->subElementRect(QStyle::SE_ItemViewItemText, &newOption, newOption.widget);
-   const MessageLayout layout = this->layoutMessage(newOption.font, textRect.width(), index);
+   const MessageLayout layout = this->layoutMessage(newOption.font, textRect.width(), newOption.direction, index);
    painter->save();
    painter->translate(textRect.topLeft());
    painter->setClipRect(textRect.translated(-textRect.topLeft()));
@@ -164,7 +169,7 @@ QSize	ChatDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelInd
          return QSize(newOption.rect.width(), cachedSize.height() + dayHeight);
    }
 
-   const QSize size(width, this->layoutMessage(newOption.font, width, index).height);
+   const QSize size(width, this->layoutMessage(newOption.font, width, newOption.direction, index).height);
    if (model)
       model->insertCachedSize(index, size, newOption.font, theme);
    return QSize(newOption.rect.width(), size.height() + dayHeight);
@@ -288,17 +293,19 @@ ChatDelegate::MessageLayout ChatDelegate::layoutItem(const QStyleOptionViewItem&
    QStyle* style = opt.widget ? opt.widget->style() : QApplication::style();
    const QRect textRect = style->subElementRect(QStyle::SE_ItemViewItemText, &opt, opt.widget);
    origin = textRect.topLeft();
-   return this->layoutMessage(opt.font, textRect.width(), index);
+   return this->layoutMessage(opt.font, textRect.width(), opt.direction, index);
 }
 
 /**
   * Lay out a message and its sender in the given width. The message is put beside its sender, in its own column:
   * all its lines are aligned. It's put below if it can't follow its sender, see
   * 'ChatModel::SeparateSenderLineRole', or if the sender wouldn't leave it at least half of the width.
+  * @param direction The one of the interface: the layout is mirrored if it's right-to-left.
   */
-ChatDelegate::MessageLayout ChatDelegate::layoutMessage(const QFont& font, int width, const QModelIndex& index) const
+ChatDelegate::MessageLayout ChatDelegate::layoutMessage(const QFont& font, int width, Qt::LayoutDirection direction, const QModelIndex& index) const
 {
    MessageLayout layout;
+   layout.rightToLeft = direction == Qt::RightToLeft;
    layout.time = index.data(ChatModel::TimeRole).toString();
    layout.nick = index.data(ChatModel::NickRole).toString();
 
@@ -309,7 +316,7 @@ ChatDelegate::MessageLayout ChatDelegate::layoutMessage(const QFont& font, int w
    // The model isn't a 'ChatModel'.
    if (layout.time.isEmpty() && layout.nick.isEmpty())
    {
-      layout.document = &this->documents.get(markdown, font, width);
+      layout.document = &this->documents.get(markdown, font, width, direction);
       layout.height = qCeil(layout.document->size().height());
       return layout;
    }
@@ -328,13 +335,17 @@ ChatDelegate::MessageLayout ChatDelegate::layoutMessage(const QFont& font, int w
    const qreal widthWithoutNick = padding + timeWidth + padding + padding / 2 + arrowWidth;
 
    layout.nick = nickMetrics.elidedText(layout.nick, Qt::ElideRight, qMax(0.0, maxWidth - widthWithoutNick));
-   const qreal senderWidth = qCeil(widthWithoutNick + nickMetrics.horizontalAdvance(layout.nick));
+   const qreal nickWidth = nickMetrics.horizontalAdvance(layout.nick);
+   const qreal senderWidth = qCeil(widthWithoutNick + nickWidth);
+   // A nick keeps the direction of its own text.
+   layout.nick = withDirectionFromContent(layout.nick, direction);
 
    const bool below = index.data(ChatModel::SeparateSenderLineRole).toBool() || senderWidth + padding > maxWidth / 2;
-   layout.documentPos = below ? QPointF(0, margin + qCeil(metrics.height())) : QPointF(qCeil(senderWidth + padding), 0);
+   const int widthBesideSender = below ? 0 : qCeil(senderWidth + padding);
+   layout.documentPos = below ? QPointF(0, margin + qCeil(metrics.height())) : QPointF(layout.rightToLeft ? 0 : widthBesideSender, 0);
 
    // The document is asked once its width is known: asking it for another width lays it out again.
-   EmoticonTextDocument& document = this->documents.get(markdown, font, width - int(layout.documentPos.x()));
+   EmoticonTextDocument& document = this->documents.get(markdown, font, width - widthBesideSender, direction);
    layout.document = &document;
    const qreal documentHeight = document.size().height(); // Also lays the document out.
 
@@ -346,9 +357,22 @@ ChatDelegate::MessageLayout ChatDelegate::layoutMessage(const QFont& font, int w
       baseline = firstBlock->position().y() + firstLine.y() + firstLine.ascent();
    }
 
-   layout.sender = QRectF(margin, qRound(baseline - metrics.ascent()) - SENDER_VERTICAL_PADDING, senderWidth, senderHeight);
-   layout.timePos = QPointF(layout.sender.left() + padding, baseline);
-   layout.nickPos = QPointF(layout.timePos.x() + timeWidth + padding, baseline);
+   layout.sender = QRectF(
+      layout.rightToLeft ? width - margin - senderWidth : margin,
+      qRound(baseline - metrics.ascent()) - SENDER_VERTICAL_PADDING,
+      senderWidth,
+      senderHeight
+   );
+   if (layout.rightToLeft)
+   {
+      layout.timePos = QPointF(layout.sender.right() - padding - timeWidth, baseline);
+      layout.nickPos = QPointF(layout.timePos.x() - padding - nickWidth, baseline);
+   }
+   else
+   {
+      layout.timePos = QPointF(layout.sender.left() + padding, baseline);
+      layout.nickPos = QPointF(layout.timePos.x() + timeWidth + padding, baseline);
+   }
    layout.height = qCeil(qMax(layout.documentPos.y() + documentHeight, layout.sender.bottom()));
    return layout;
 }
@@ -402,13 +426,23 @@ void ChatDelegate::paintSender(QPainter* painter, const MessageLayout& layout, c
    painter->setRenderHint(QPainter::Antialiasing);
    painter->setPen(Qt::NoPen);
    painter->setBrush(ours ? COLOR_SENDER_OURS : COLOR_SENDER);
-   painter->drawPolygon(QPolygonF(QList<QPointF> {
-      rect.topLeft(),
-      QPointF(rect.right() - arrowWidth, rect.top()),
-      QPointF(rect.right(), rect.center().y()),
-      QPointF(rect.right() - arrowWidth, rect.bottom()),
-      rect.bottomLeft()
-   }));
+   // The arrow points to the message.
+   if (layout.rightToLeft)
+      painter->drawPolygon(QPolygonF(QList<QPointF> {
+         rect.topRight(),
+         QPointF(rect.left() + arrowWidth, rect.top()),
+         QPointF(rect.left(), rect.center().y()),
+         QPointF(rect.left() + arrowWidth, rect.bottom()),
+         rect.bottomRight()
+      }));
+   else
+      painter->drawPolygon(QPolygonF(QList<QPointF> {
+         rect.topLeft(),
+         QPointF(rect.right() - arrowWidth, rect.top()),
+         QPointF(rect.right(), rect.center().y()),
+         QPointF(rect.right() - arrowWidth, rect.bottom()),
+         rect.bottomLeft()
+      }));
 
    painter->setFont(font);
    painter->setPen(COLOR_SENDER_TIME);

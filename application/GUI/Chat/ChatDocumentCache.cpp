@@ -10,7 +10,11 @@ ChatDocumentCache::ChatDocumentCache(const Emoticons& emoticons) :
 {
 }
 
-EmoticonTextDocument& ChatDocumentCache::get(const QString& markdown, const QFont& font, int width)
+/**
+  * @param direction The one of the interface. The document is aligned on the side where the interface begins,
+  * the left one for left-to-right, whatever the direction of its own text: a message is beside its sender.
+  */
+EmoticonTextDocument& ChatDocumentCache::get(const QString& markdown, const QFont& font, int width, Qt::LayoutDirection direction)
 {
    this->oversizedDocument.reset();
    const QString theme = this->emoticons.getDefaultTheme();
@@ -58,6 +62,14 @@ EmoticonTextDocument& ChatDocumentCache::get(const QString& markdown, const QFon
          this->oversizedDocument = std::move(prepared);
       else
          this->documents.insert(markdown, prepared.release(), qMax<qsizetype>(4096, markdown.size()));
+   }
+
+   // As for the width, another alignment only requires a relayout.
+   const Qt::Alignment alignment = (direction == Qt::RightToLeft ? Qt::AlignRight : Qt::AlignLeft) | Qt::AlignAbsolute;
+   if (QTextOption option = document->defaultTextOption(); option.alignment() != alignment)
+   {
+      option.setAlignment(alignment);
+      document->setDefaultTextOption(option);
    }
 
    // Width changes only require relayout, not another Markdown parse.

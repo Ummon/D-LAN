@@ -1214,6 +1214,85 @@ private slots:
       QVERIFY(option.rect.contains(link));
    }
 
+   void chatIsMirroredInARightToLeftInterface_data()
+   {
+      QTest::addColumn<bool>("rightToLeft");
+      QTest::addColumn<QString>("text");
+      const QString arabic = QStringLiteral("\u0645\u0644\u0641\u0627\u062A"); // "Files".
+      QTest::newRow("left-to-right") << false << QString("files");
+      QTest::newRow("left-to-right, Arabic message") << false << arabic;
+      QTest::newRow("right-to-left") << true << arabic;
+      QTest::newRow("right-to-left, Latin message") << true << QString("files");
+   }
+
+   void chatIsMirroredInARightToLeftInterface()
+   {
+      QFETCH(bool, rightToLeft);
+      QFETCH(QString, text);
+
+      GUI::Emoticons emoticons("nonexistent-test-emoticons");
+      GUI::ChatDelegate delegate(emoticons);
+      QStandardItemModel model(1, 1);
+      const QModelIndex index = model.index(0, 0);
+      model.setData(index, QString("[%1](https://example.com)").arg(text));
+      model.setData(index, "18:44", GUI::ChatModel::TimeRole);
+      model.setData(index, "Paul", GUI::ChatModel::NickRole);
+      QTableView view;
+      view.setLayoutDirection(rightToLeft ? Qt::RightToLeft : Qt::LeftToRight);
+      view.setModel(&model);
+      view.setItemDelegate(&delegate);
+      view.horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+      view.verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+      view.setShowGrid(false);
+      view.resize(400, 250);
+      view.show();
+      view.resizeRowsToContents();
+      QApplication::processEvents();
+
+      QStyleOptionViewItem option;
+      option.initFrom(&view);
+      option.widget = &view;
+      option.rect = view.visualRect(index);
+      option.features |= QStyleOptionViewItem::HasDisplay;
+      QImage rendered(view.viewport()->size(), QImage::Format_RGB32);
+      rendered.fill(Qt::white);
+      QPainter painter(&rendered);
+      delegate.paint(&painter, option, index);
+      painter.end();
+
+      // Where the background of the sender is drawn and where the cursor shows the link, that is the message.
+      QRect sender;
+      QRect link;
+      for (int y = option.rect.top(); y <= option.rect.bottom(); y++)
+         for (int x = option.rect.left(); x <= option.rect.right(); x++)
+         {
+            const QPoint position(x, y);
+            if (rendered.pixel(position) == GUI::ChatDelegate::COLOR_SENDER.rgb())
+               sender |= QRect(position, QSize(1, 1));
+            QMouseEvent move(QEvent::MouseMove, QPointF(position), QPointF(view.viewport()->mapToGlobal(position)), Qt::NoButton, Qt::NoButton, Qt::NoModifier);
+            delegate.eventFilter(view.viewport(), &move);
+            if (view.viewport()->cursor().shape() == Qt::PointingHandCursor)
+               link |= QRect(position, QSize(1, 1));
+         }
+      QVERIFY(!sender.isEmpty());
+      QVERIFY(!link.isEmpty());
+
+      // The message is beside its sender whatever the direction of its own text.
+      const int maxGap = 2 * QFontMetrics(view.font()).height();
+      const QString positions = QString("sender: %1..%2, link: %3..%4").arg(sender.left()).arg(sender.right()).arg(link.left()).arg(link.right());
+      if (rightToLeft)
+      {
+         QVERIFY2(sender.left() > option.rect.center().x(), qPrintable(positions));
+         QVERIFY2(link.right() < sender.left() && sender.left() - link.right() < maxGap, qPrintable(positions));
+      }
+      else
+      {
+         QVERIFY2(sender.right() < option.rect.center().x(), qPrintable(positions));
+         QVERIFY2(link.left() > sender.right() && link.left() - sender.right() < maxGap, qPrintable(positions));
+      }
+      QVERIFY(link.top() < sender.bottom() && link.bottom() > sender.top());
+   }
+
    void draftIsSentOnceWhileUnanswered_data()
    {
       QTest::addColumn<QString>("outcome");

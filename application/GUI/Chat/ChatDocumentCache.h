@@ -18,7 +18,7 @@ namespace GUI
       static constexpr int DOCUMENT_MARGIN = 4;
 
       explicit ChatDocumentCache(const Emoticons& emoticons);
-      EmoticonTextDocument& get(const QString& markdown, const QFont& font, int width);
+      EmoticonTextDocument& get(const QString& markdown, const QFont& font, int width, Qt::LayoutDirection direction = Qt::LeftToRight);
 
    private:
       const Emoticons& emoticons;
