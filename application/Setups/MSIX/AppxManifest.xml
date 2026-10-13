@@ -42,6 +42,7 @@
       <Resource Language="id" />
       <Resource Language="bn" />
       <Resource Language="ur" />
+      <Resource Language="ar" />
    </Resources>
 
    <Applications>
