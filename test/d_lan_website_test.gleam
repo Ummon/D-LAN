@@ -115,6 +115,7 @@ pub fn localized_date_test() {
   assert tr.format_date(tr.Id, released) == "10 Juli 2026"
   assert tr.format_date(tr.Bn, released) == "10 জুলাই 2026"
   assert tr.format_date(tr.Ur, released) == "10 جولائی 2026"
+  assert tr.format_date(tr.Ar, released) == "10 يوليو 2026"
 
   assert tr.format_date(tr.Fr, calendar.Date(2026, calendar.January, 5))
     == "5 janvier 2026"
@@ -125,6 +126,7 @@ pub fn localized_date_test() {
 pub fn direction_test() {
   assert tr.direction(tr.En) == "ltr"
   assert tr.direction(tr.Ur) == "rtl"
+  assert tr.direction(tr.Ar) == "rtl"
 }
 
 pub fn download_button_release_formats_test() {
@@ -218,6 +220,7 @@ pub fn current_lang_test() {
   assert lang("id-ID") == tr.Id
   assert lang("bn-BD") == tr.Bn
   assert lang("ur-PK") == tr.Ur
+  assert lang("ar-EG") == tr.Ar
 
   // Without a quality an entry has the best one, ties keep the header order.
   assert lang("de,fr") == tr.De
