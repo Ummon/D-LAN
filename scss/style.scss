@@ -96,7 +96,7 @@ p {
    p {
       font-style: italic;
       font-size: 0.9rem;
-      margin-left: 6px;
+      margin-inline-start: 6px;
       margin-bottom: 0px;
    }
 }
@@ -146,7 +146,7 @@ select {
    padding-bottom: 1px;
 
    #langs {
-      margin-left: 10px;
+      margin-inline-start: 10px;
       color: consts.$red-dark;
 
       option {
@@ -169,11 +169,11 @@ select {
       }
 
       &#external-links {
-         margin-right: 5px;
+         margin-inline-end: 5px;
          list-style: none;
 
          li a {
-            margin-right: 10px;
+            margin-inline-end: 10px;
          }
       }
    }
@@ -203,7 +203,7 @@ select {
          color: white;
          font-style: italic;
          font-size: 1.05rem;
-         margin-right: 16px;
+         margin-inline-end: 16px;
 
          &:hover,
          &.current-page {
@@ -277,6 +277,15 @@ select {
          background-repeat: no-repeat;
          background-position: 12px 18px;
 
+         // The icon is on the right when the text is written from right to left.
+         [dir="rtl"] & {
+            background-position: right 12px top 18px;
+
+            &.MicrosoftStore {
+               background-position: right 14px center;
+            }
+         }
+
          a {
             color: consts.$red-dark;
             display: block;
@@ -289,7 +298,8 @@ select {
          }
 
          a.installer {
-            padding: 6px 17px 6px 45px;
+            padding: 6px 17px;
+            padding-inline-start: 45px;
             text-align: center;
 
             em {
@@ -313,7 +323,11 @@ select {
 
       &.home .gallery {
          float: right;
-         margin-right: 0px;
+         margin-inline-end: 0px;
+
+         [dir="rtl"] & {
+            float: left;
+         }
       }
 
       &.features .gallery {
@@ -333,7 +347,8 @@ select {
          }
 
          code {
-            display: block
+            display: block;
+            direction: ltr; // A command is written from left to right in any language.
          }
 
          div.qa {
@@ -346,7 +361,7 @@ select {
          }
 
          .answer {
-            margin-left: 15px;
+            margin-inline-start: 15px;
          }
       }
 
@@ -357,7 +372,7 @@ select {
 
          .logo {
             vertical-align: -10px;
-            margin-right: 10px;
+            margin-inline-end: 10px;
 
             max-width: 32px;
             max-height: 32px;
@@ -385,12 +400,16 @@ select {
             display: block;
             float: right;
             margin: 10px;
+
+            [dir="rtl"] & {
+               float: left;
+            }
          }
       }
 
       ul {
          margin-bottom: 10px;
-         margin-left: 40px;
+         margin-inline-start: 40px;
       }
    }
 }
@@ -426,10 +445,10 @@ select {
    }
 
    #header ul#external-links {
-      margin-right: 1px;
+      margin-inline-end: 1px;
 
       li a {
-         margin-right: 2px;
+         margin-inline-end: 2px;
          padding-left: 2px;
          padding-right: 2px;
       }

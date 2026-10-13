@@ -12,7 +12,7 @@ pub fn main_page(
   lang: tr.Lang,
   page: String,
 ) -> element.Element(a) {
-  html.html([attr.lang(tr.to_str(lang))], [
+  html.html([attr.lang(tr.to_str(lang)), attr.dir(tr.direction(lang))], [
     html.head([], [
       html.meta([
         attr.name("viewport"),
@@ -118,7 +118,8 @@ fn menu(lang: tr.Lang, current_page: String) -> element.Element(a) {
 fn footer(current_page: String) -> element.Element(a) {
   let #(date, _time) =
     timestamp.system_time() |> timestamp.to_calendar(calendar.utc_offset)
-  html.div([attr.id("footer")], [
+  // The footer isn't translated, it's always written from left to right.
+  html.div([attr.id("footer"), attr.dir("ltr")], [
     html.span([attr.class("copyright")], [
       html.text("© 2010-" <> int.to_string(date.year)),
       html.a([attr.href("http://www.gburri.org")], [html.text(" Greg Burri")]),

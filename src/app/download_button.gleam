@@ -82,7 +82,13 @@ pub fn element(
       [
         html.em([], [
           tr.download_button_download(ctx.lang),
-          html.text(" (" <> utils.file_size_mib(file_info.size) <> " MiB)"),
+          html.text(" ("),
+          // Keeps the size before its unit in a language written from right to
+          // left.
+          html.span([attr.dir("ltr")], [
+            html.text(utils.file_size_mib(file_info.size) <> " MiB"),
+          ]),
+          html.text(")"),
         ]),
         html.br([]),
         tr.download_button_version(ctx.lang, version_full, platform, archi),
