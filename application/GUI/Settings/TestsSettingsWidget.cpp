@@ -100,6 +100,69 @@ private slots:
       QVERIFY(showTunnels->isHidden());
    }
 
+   void interfacesInARightToLeftInterface()
+   {
+      class Connection : public RCC::CoreConnection
+      {
+      public:
+         QList<Protos::GUI::CoreSettings> saved;
+         void setCoreSettings(const Protos::GUI::CoreSettings& settings) override { this->saved << settings; }
+      };
+      auto connection = QSharedPointer<Connection>::create();
+      GUI::SharedEntryListModel shares;
+      GUI::SettingsWidget widget(connection, shares);
+      widget.setLayoutDirection(Qt::RightToLeft);
+      Protos::GUI::State state;
+      state.add_peers()->set_nick("Test");
+      state.set_listen_any(Protos::Common::Interface::Address::IPv4);
+      auto* ethernet = state.add_interfaces();
+      ethernet->set_id(1);
+      ethernet->set_name("Ethernet");
+      ethernet->set_is_up(true);
+      auto* address = ethernet->add_addresses();
+      address->set_address("2001:db8::42");
+      address->set_protocol(Protos::Common::Interface::Address::IPv6);
+      emit connection->newState(state);
+
+      auto* content = widget.findChild<QWidget*>("scoInterfacesContent");
+      const auto addressButtons = [content] {
+         QList<QRadioButton*> buttons;
+         for (auto* button : content->findChildren<QRadioButton*>())
+            if (button->property("address").toString() == "2001:db8::42")
+               buttons << button;
+         return buttons;
+      };
+      QLabel* label = nullptr;
+      for (auto* current : content->findChildren<QLabel*>())
+         if (current->text() == "Ethernet")
+            label = current;
+      QVERIFY(label);
+      QCOMPARE(addressButtons().size(), 1);
+      QRadioButton* button = addressButtons().first();
+
+      // The name is on the right although its own text is left-to-right.
+      QVERIFY(label->alignment().testFlag(Qt::AlignRight));
+      QVERIFY(label->alignment().testFlag(Qt::AlignAbsolute));
+
+      // The address is embedded as left-to-right, it would be shown as "db8::42:2001" otherwise. It's saved as it is.
+      QVERIFY(button->text() != "2001:db8::42");
+      QVERIFY(button->text().contains("2001:db8::42"));
+      button->setChecked(true);
+      QCOMPARE(connection->saved.size(), 1);
+      QCOMPARE(connection->saved.last().listen_address(), std::string("2001:db8::42"));
+
+      // The button is recognized by the next state, which doesn't add another one.
+      emit connection->newState(state);
+      QCOMPARE(addressButtons(), (QList<QRadioButton*> { button }));
+
+      // An inactive interface: the line begins on the right with the name.
+      ethernet->set_is_up(false);
+      emit connection->newState(state);
+      QVERIFY(label->text().startsWith(QChar(0x200F)));
+      QVERIFY(label->text().contains("Ethernet"));
+      QVERIFY(label->alignment().testFlag(Qt::AlignRight));
+   }
+
    void dropEntriesToShare()
    {
       class Connection : public RCC::CoreConnection

@@ -43,8 +43,12 @@ using namespace GUI;
 
 #include <Protos/gui_settings.pb.h>
 
+#include <ItemTextDirection.h>
 #include <Log.h>
 #include <Utils.h>
+
+// The address of a button of the network interfaces, see 'updateAddresses(..)'.
+static const char* const ADDRESS_PROPERTY = "address";
 
 /**
   * Whether both lists hold the same ignored extensions, whatever their order.
@@ -307,6 +311,11 @@ void SettingsWidget::updateNetworkInterfaces(const Protos::GUI::State& state)
 
    bool addressIslistenedTo = false;
 
+   // A label is aligned according to the direction of its own text: in a right-to-left interface the name of an
+   // interface, usually in Latin characters, would be on the left.
+   const bool rightToLeft = this->layoutDirection() == Qt::RightToLeft;
+   const Qt::Alignment alignment = (rightToLeft ? Qt::AlignRight : Qt::AlignLeft) | Qt::AlignAbsolute | Qt::AlignVCenter;
+
    for (int i = 0; i < state.interfaces_size(); i++)
    {
       const QString& interfaceName = QString::fromStdString(state.interfaces(i).name());
@@ -318,6 +327,7 @@ void SettingsWidget::updateNetworkInterfaces(const Protos::GUI::State& state)
          {
             interfaceNotUpdated.removeOne(lblInterface);
             lblInterface->setProperty("isTunnel", state.interfaces(i).is_tunnel());
+            lblInterface->setAlignment(alignment);
 
             if (state.interfaces(i).is_up())
             {
@@ -328,8 +338,11 @@ void SettingsWidget::updateNetworkInterfaces(const Protos::GUI::State& state)
                const QFontMetrics fm(lblInterface->font());
                const int h = fm.height();
 
+               // In a right-to-left interface the line begins on the right with the name, which keeps its own
+               // direction: a right-to-left mark gives its direction to the line.
                lblInterface->setText(
-                  interfaceName +
+                  (rightToLeft ? QString(QChar(0x200F)) : QString()) +
+                  withDirectionFromContent(interfaceName, this->layoutDirection()) +
                      QString(" <img src= \":/icons/resources/error.svg\" height=\"%1\" style=\"vertical-align: middle\" /> <em>")
                         .arg(h) + tr("Interface not active") + "</em>"
                );
@@ -351,6 +364,7 @@ void SettingsWidget::updateNetworkInterfaces(const Protos::GUI::State& state)
          QLabel* label = new QLabel(interfaceName, this->ui->scoInterfacesContent);
          label->setProperty("id", state.interfaces(i).id());
          label->setProperty("isTunnel", state.interfaces(i).is_tunnel());
+         label->setAlignment(alignment);
          this->ui->layInterfaces->addWidget(label);
          QWidget* addressesContainer = new QWidget(this->ui->scoInterfacesContent);
          this->ui->layInterfaces->addWidget(addressesContainer);
@@ -418,6 +432,10 @@ void SettingsWidget::updateNetworkInterfaceVisibility()
 /**
   * Returns 'true' if one of the addresses is listened to.
   */
+/**
+  * The text of a button isn't always its address: in a right-to-left interface an address is embedded as
+  * left-to-right, "2001:db8::42" would be shown as "db8::42:2001" otherwise. The address is kept as a property.
+  */
 bool SettingsWidget::updateAddresses(const Protos::Common::Interface& interfaceMess, QWidget* container)
 {
    bool listenedTo = false;
@@ -440,9 +458,10 @@ bool SettingsWidget::updateAddresses(const Protos::Common::Interface& interfaceM
       for (QListIterator<QRadioButton*> j(container->findChildren<QRadioButton*>()); j.hasNext();)
       {
          QRadioButton* addressButton = j.next();
-         if (addressButton->text() == addressName)
+         if (addressButton->property(ADDRESS_PROPERTY).toString() == addressName)
          {
             addressesNotUpdated.removeOne(addressButton);
+            addressButton->setText(withDirectionFromContent(addressName, this->layoutDirection())); // The language may have changed.
             if (interfaceMess.addresses(i).listened())
             {
                listenedTo = true;
@@ -454,7 +473,8 @@ bool SettingsWidget::updateAddresses(const Protos::Common::Interface& interfaceM
 
       {
          // Address not found -> add a new one.
-         QRadioButton* newAddressButton = new QRadioButton(addressName, container);
+         QRadioButton* newAddressButton = new QRadioButton(withDirectionFromContent(addressName, this->layoutDirection()), container);
+         newAddressButton->setProperty(ADDRESS_PROPERTY, addressName);
          this->ui->grpAddressesToListenTo->addButton(newAddressButton);
          if (interfaceMess.addresses(i).listened())
          {
@@ -683,7 +703,7 @@ void SettingsWidget::saveCoreSettings()
          QRadioButton* button = i.next();
          if (button->isChecked())
          {
-            settings.set_listen_address(button->text().toStdString());
+            settings.set_listen_address(button->property(ADDRESS_PROPERTY).toString().toStdString());
             break;
          }
       }

@@ -49,8 +49,8 @@ namespace GUI
       static const QString MARKUP_SECOND_PART;
 
    public:
-      void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
-      QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const;
+      void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+      QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
       void setTerms(const QString& terms);
 
    protected:
