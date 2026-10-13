@@ -10,9 +10,7 @@ pub fn page(ctx: web.Context) -> element.Element(a) {
     screenshots.image(ctx.lang, filename, caption, comment)
   }
   html.div([attr.id("content"), attr.class("features")], [
-    html.p([], [
-      tr.features_disclaimer(ctx.lang),
-    ]),
+    html.h2([], [tr.features_disclaimer(ctx.lang)]),
     html.ul([], [
       html.li([], [tr.features_feat_1(ctx.lang)]),
       html.li([], [tr.features_feat_2(ctx.lang)]),

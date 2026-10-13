@@ -424,25 +424,24 @@ pub fn home_warning_beta(
 
 pub fn features_disclaimer(l: Lang) -> element.Element(a) {
   case l {
-    En -> "<h2>Here are the main features of the current release.</h2>"
+    En -> "Here are the main features of the current release."
     Fr ->
-      "<h2>Voici la liste des principales fonctionnalités de la version courante.</h2>"
-    De -> "<h2>Hier sind die wichtigsten Funktionen der aktuellen Version.</h2>"
-    Es ->
-      "<h2>Estas son las principales características de la versión actual.</h2>"
-    It -> "<h2>Ecco le principali funzionalità della versione attuale.</h2>"
-    Ru -> "<h2>Вот основные возможности текущей версии.</h2>"
-    Ko -> "<h2>다음은 현재 버전의 주요 기능입니다.</h2>"
-    Ja -> "<h2>以下は現在のバージョンの主な機能です。</h2>"
-    Hi -> "<h2>वर्तमान रिलीज़ की मुख्य विशेषताएँ ये हैं।</h2>"
-    Zh -> "<h2>以下是当前版本的主要功能。</h2>"
-    Pt -> "<h2>Estes são os principais recursos da versão atual.</h2>"
-    Id -> "<h2>Berikut adalah fitur-fitur utama dari rilis saat ini.</h2>"
-    Bn -> "<h2>বর্তমান রিলিজের প্রধান বৈশিষ্ট্যগুলো নিচে দেওয়া হলো।</h2>"
-    Ur -> "<h2>موجودہ ریلیز کی اہم خصوصیات یہ ہیں۔</h2>"
-    Ar -> "<h2>هذه أهم مميزات الإصدار الحالي.</h2>"
+      "Voici la liste des principales fonctionnalités de la version courante."
+    De -> "Hier sind die wichtigsten Funktionen der aktuellen Version."
+    Es -> "Estas son las principales características de la versión actual."
+    It -> "Ecco le principali funzionalità della versione attuale."
+    Ru -> "Вот основные возможности текущей версии."
+    Ko -> "다음은 현재 버전의 주요 기능입니다."
+    Ja -> "以下は現在のバージョンの主な機能です。"
+    Hi -> "वर्तमान रिलीज़ की मुख्य विशेषताएँ ये हैं।"
+    Zh -> "以下是当前版本的主要功能。"
+    Pt -> "Estes são os principais recursos da versão atual."
+    Id -> "Berikut adalah fitur-fitur utama dari rilis saat ini."
+    Bn -> "বর্তমান রিলিজের প্রধান বৈশিষ্ট্যগুলো নিচে দেওয়া হলো।"
+    Ur -> "موجودہ ریلیز کی اہم خصوصیات یہ ہیں۔"
+    Ar -> "هذه أهم مميزات الإصدار الحالي."
   }
-  |> raw_span
+  |> html.text
 }
 
 pub fn features_feat_1(l: Lang) -> element.Element(a) {
