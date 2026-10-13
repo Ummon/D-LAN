@@ -12,6 +12,7 @@ add_executable(TestsFileManager
    StressTests.cpp
    Utils.cpp
    WordIndexTests.cpp
+   WordIndexBenchmark.cpp
 
    Tests.h
    CacheTest.h
@@ -21,6 +22,7 @@ add_executable(TestsFileManager
    StressTests.h
    Utils.h
    WordIndexTests.h
+   WordIndexBenchmark.h
 )
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")

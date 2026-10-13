@@ -20,9 +20,11 @@
 
 #include <functional>
 #include <algorithm>
+#include <bit>
 
 #include <QList>
 #include <QHash>
+#include <QSet>
 #include <QVector>
 #include <QString>
 #include <QChar>
@@ -82,6 +84,8 @@ namespace FM
       static QList<T> resultToList(const QList<NodeResult<T>>& result);
 
    private:
+      static bool canMatchPartially(const QString& word);
+
       Node<T> root;
       mutable QRecursiveMutex mutex;
    };
@@ -172,6 +176,15 @@ QList<FM::NodeResult<T>> FM::WordIndex<T>::search(
       return {};
 
    QMutexLocker locker(&this->mutex);
+   return this->root.search(word, canMatchPartially(word), maxNbResult, predicat);
+}
+
+/**
+  * Whether the word is long enough to match the beginning of the indexed words, see 'MIN_WORD_SIZE_PARTIAL_MATCH'.
+  */
+template<typename T>
+bool FM::WordIndex<T>::canMatchPartially(const QString& word)
+{
    int minimumLength = MIN_WORD_SIZE_PARTIAL_MATCH;
    if (Common::StringUtils::isKorean(word))
       minimumLength = MIN_WORD_SIZE_PARTIAL_MATCH_KOREAN;
@@ -196,7 +209,7 @@ QList<FM::NodeResult<T>> FM::WordIndex<T>::search(
    while (length < minimumLength && boundaries.toNextBoundary() != -1)
       ++length;
 
-   return this->root.search(word, length >= minimumLength, maxNbResult, predicat);
+   return length >= minimumLength;
 }
 
 /**
@@ -216,32 +229,46 @@ QList<FM::NodeResult<T>> FM::WordIndex<T>::search(
    if (N == 0 || N > MAX_SEARCH_TERMS || maxNbResult == 0)
       return {};
 
+   // A single term: the items are already visited from the best level to the worst one,
+   // the search stops as soon as there are enough results.
+   if (N == 1)
+   {
+      QList<NodeResult<T>> result;
+      QSet<T> visitedItems; // An item can be indexed by several words matching the same prefix.
+      this->root.visit(words[0], canMatchPartially(words[0]), [&](const T& item, int level) {
+         if (visitedItems.contains(item))
+            return true;
+         visitedItems.insert(item);
+
+         if (predicat && !predicat(item))
+            return true;
+
+         result << NodeResult<T>(item, level);
+         return result.size() != maxNbResult;
+      });
+      return result;
+   }
+
+   // An item can be indexed by several words matching the same prefix.
+   // A bit per query term counts it once per term, preferring an exact match if available.
+   static_assert(MAX_SEARCH_TERMS <= 32, "'Match' has one bit per term");
    struct Match
    {
-      QList<int> terms;
-      int partialMatches = 0;
+      quint32 terms = 0;
+      quint32 exactTerms = 0; ///< The ones among 'terms' matching an entire word.
    };
    QHash<T, Match> matches;
    for (int term = 0; term < N; ++term)
    {
-      // An item can be indexed by several words matching the same prefix.
-      // Count it once per query term, preferring an exact match if available.
-      QHash<T, bool> termMatches;
+      const quint32 termBit = quint32(1) << term;
       // The predicate depends only on the item: it's applied once per matched item below.
-      for (const auto& node : this->search(words[term], -1))
-      {
-         auto it = termMatches.find(node.value);
-         if (it == termMatches.end())
-            termMatches.insert(node.value, node.level != 0);
-         else
-            it.value() = it.value() && node.level != 0;
-      }
-      for (auto it = termMatches.cbegin(); it != termMatches.cend(); ++it)
-      {
-         auto& match = matches[it.key()];
-         match.terms.append(term);
-         match.partialMatches += it.value() ? 1 : 0;
-      }
+      this->root.visit(words[term], canMatchPartially(words[term]), [&](const T& item, int level) {
+         Match& match = matches[item];
+         match.terms |= termBit;
+         if (level == 0)
+            match.exactTerms |= termBit;
+         return true;
+      });
    }
    if (matches.isEmpty())
       return {};
@@ -268,17 +295,17 @@ QList<FM::NodeResult<T>> FM::WordIndex<T>::search(
          continue;
 
       const auto& match = it.value();
-      const int count = match.terms.size();
+      const int count = std::popcount(match.terms);
       int rank = 0;
-      int previous = -1;
-      for (int i = 0; i < count; ++i)
+      for (int term = 0, i = 0; i < count; ++term) // 'i' is the number of matched terms before 'term'.
       {
-         for (int skipped = previous + 1; skipped < match.terms[i]; ++skipped)
-            rank += choose[N - skipped - 1][count - i - 1];
-         previous = match.terms[i];
+         if (match.terms & (quint32(1) << term))
+            ++i;
+         else
+            rank += choose[N - term - 1][count - i - 1];
       }
       NodeResult<T> result(it.key());
-      result.level = groupBase[count] + match.partialMatches * choose[N][count] + rank;
+      result.level = groupBase[count] + std::popcount(match.terms & ~match.exactTerms) * choose[N][count] + rank;
       finalResult.append(result);
    }
 

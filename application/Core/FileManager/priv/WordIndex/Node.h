@@ -98,6 +98,15 @@ namespace FM
          std::function<bool(const T&)> predicat = nullptr
       ) const;
 
+      /**
+        * Call 'visitor(item, level)' for each item indexed by 'word' (level 0) then, if 'alsoFromSubNodes' is true,
+        * for each item indexed by a word beginning with 'word' (level 1).
+        * An item indexed by several of these words is given once per word.
+        * The visit stops when 'visitor' returns 'false'.
+        */
+      template <typename Visitor>
+      void visit(const QString& word, bool alsoFromSubNodes, Visitor visitor) const;
+
       QString toStringDebug() const;
 
    private:
@@ -107,17 +116,17 @@ namespace FM
       QPair<Node<T>*, int> getNode(const QString& word, bool exactMatch = false, bool* fullyMatched = nullptr, int* matchedLength = nullptr) const;
 
       /**
-        * Return all items from the current node and its sub nodes (recursively) if 'alsoFromSubNodes' is true.
+        * Give to 'visitor' all items from the current node and its sub nodes (recursively) if 'alsoFromSubNodes' is true.
         * Items in this node have level 0 only if the query fully matched it; all other items have level 1.
         * Prefix matches must end at a grapheme boundary in the indexed word.
         */
-      QList<NodeResult<T>> getItems(
+      template <typename Visitor>
+      void visitItems(
          const QString& word,
          int matchedLength,
          bool fullyMatched,
-         bool alsoFromSubNodes = false,
-         int maxNbResult = -1,
-         std::function<bool(const T&)> predicat = nullptr
+         bool alsoFromSubNodes,
+         Visitor& visitor
       ) const;
 
       void remove(int i);
@@ -222,13 +231,26 @@ QList<FM::NodeResult<T>> FM::Node<T>::search(
    std::function<bool(const T&)> predicat
 ) const
 {
+   QList<NodeResult<T>> result;
+   this->visit(word, alsoFromSubNodes, [&](const T& item, int level) {
+      if (predicat && !predicat(item))
+         return true;
+
+      result << NodeResult<T>(item, level);
+      return result.size() != maxNbResult;
+   });
+   return result;
+}
+
+template <typename T>
+template <typename Visitor>
+void FM::Node<T>::visit(const QString& word, bool alsoFromSubNodes, Visitor visitor) const
+{
    bool fullyMatched = false;
    int matchedLength = 0;
    QPair<Node<T>*, int> nodes = this->getNode(word, !alsoFromSubNodes, &fullyMatched, &matchedLength);
-   if (!nodes.first)
-      return QList<NodeResult<T>>();
-
-   return nodes.first->children[nodes.second]->getItems(word, matchedLength, fullyMatched, alsoFromSubNodes, maxNbResult, predicat);
+   if (nodes.first)
+      nodes.first->children[nodes.second]->visitItems(word, matchedLength, fullyMatched, alsoFromSubNodes, visitor);
 }
 
 template <typename T>
@@ -321,16 +343,15 @@ QPair<FM::Node<T>*, int> FM::Node<T>::getNode(const QString& word, bool exactMat
 }
 
 template <typename T>
-QList<FM::NodeResult<T>> FM::Node<T>::getItems(
+template <typename Visitor>
+void FM::Node<T>::visitItems(
    const QString& word,
    int matchedLength,
    bool fullyMatched,
    bool alsoFromSubNodes,
-   int maxNbResult,
-   std::function<bool(const T&)> predicat
+   Visitor& visitor
 ) const
 {
-   QList<NodeResult<T>> result;
    struct Candidate
    {
       const Node<T>* node;
@@ -364,12 +385,8 @@ QList<FM::NodeResult<T>> FM::Node<T>::getItems(
 
       if (matches)
          for (const T& item : current->items)
-            if (!predicat || predicat(item))
-            {
-               result << NodeResult<T>(item, !(fullyMatched && current == this));
-               if (result.size() == maxNbResult)
-                  return result;
-            }
+            if (!visitor(item, !(fullyMatched && current == this)))
+               return;
 
       if (!alsoFromSubNodes)
          break;
@@ -377,8 +394,6 @@ QList<FM::NodeResult<T>> FM::Node<T>::getItems(
       for (const Node<T>* child : current->children)
          nodesToVisit.append({ child, candidate.boundaryKnown ? QString() : candidate.text + child->part, candidate.boundaryKnown });
    }
-
-   return result;
 }
 
 /**
