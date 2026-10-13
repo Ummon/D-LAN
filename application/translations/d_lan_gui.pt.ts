@@ -246,7 +246,7 @@
         <translation>Sair</translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="+34"/>
         <source>D-LAN user interface closed</source>
         <translation>Interface do usuário do D-LAN fechada</translation>
     </message>
@@ -297,7 +297,7 @@
 <context>
     <name>GUI::DownloadsDelegate</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+111"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+118"/>
         <source>Queued</source>
         <translation>Na fila</translation>
     </message>
@@ -448,7 +448,7 @@
         <translation>Tem certeza de que deseja remover os downloads selecionados? Há um ou mais downloads não concluídos.</translation>
     </message>
     <message>
-        <location line="+82"/>
+        <location line="+85"/>
         <source>Switch to file list view</source>
         <translation>Alternar para a exibição em lista de arquivos</translation>
     </message>
@@ -738,7 +738,7 @@
 <context>
     <name>GUI::SearchMenu</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="+277"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="+292"/>
         <source>Browse</source>
         <translation>Explorar</translation>
     </message>
@@ -1022,7 +1022,7 @@
         <translation>Serviço do Core iniciado</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="-138"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="-141"/>
         <source>D-LAN already launched</source>
         <translation>O D-LAN já está em execução</translation>
     </message>

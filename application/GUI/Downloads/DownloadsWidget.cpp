@@ -29,6 +29,7 @@ using namespace GUI;
 #include <Common/StringUtils.h>
 #include <Common/Settings.h>
 
+#include <ItemTextDirection.h>
 #include <Utils.h>
 
 void DownloadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
@@ -70,6 +71,12 @@ void DownloadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
 
       QStyledItemDelegate::paint(painter, newOption, index);
    }
+}
+
+void DownloadsDelegate::initStyleOption(QStyleOptionViewItem* option, const QModelIndex& index) const
+{
+   QStyledItemDelegate::initStyleOption(option, index);
+   setTextDirectionFromContent(option);
 }
 
 QSize DownloadsDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
@@ -446,12 +453,15 @@ void DownloadsWidget::updateGlobalProgressBar()
       this->ui->prgGlobalProgress->setFormat("");
    else
       this->ui->prgGlobalProgress->setFormat(
-         QStringLiteral("%1 / %2%3")
-            .arg(
-               Common::Global::formatByteSize(bytesDownloaded),
-               Common::Global::formatByteSize(bytesInQueue),
-               eta == 0 || eta > 604800 ? QString() : " (" + Common::Global::formatTime(eta) + ")"
-            )
+         withDirectionFromContent(
+            QStringLiteral("%1 / %2%3")
+               .arg(
+                  Common::Global::formatByteSize(bytesDownloaded),
+                  Common::Global::formatByteSize(bytesInQueue),
+                  eta == 0 || eta > 604800 ? QString() : " (" + Common::Global::formatTime(eta) + ")"
+               ),
+            this->layoutDirection()
+         )
       );
 }
 

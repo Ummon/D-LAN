@@ -53,6 +53,9 @@ namespace GUI
       QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const;
       void setTerms(const QString& terms);
 
+   protected:
+      void initStyleOption(QStyleOptionViewItem* option, const QModelIndex& index) const override;
+
    private:
       QTextDocument& textDocument(const QStyleOptionViewItem& option) const;
       QString toHtmlText(const QString& text) const;

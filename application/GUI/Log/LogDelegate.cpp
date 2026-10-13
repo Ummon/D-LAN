@@ -24,6 +24,7 @@ using namespace GUI;
 #include <QGuiApplication>
 #include <QModelIndex>
 
+#include <ItemTextDirection.h>
 #include <Log/LogModel.h>
 
 const QColor LogDelegate::COLOR_WARNING(150, 20, 20);
@@ -62,4 +63,10 @@ void LogDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, c
    }
 
    QStyledItemDelegate::paint(painter, newOption, index);
+}
+
+void LogDelegate::initStyleOption(QStyleOptionViewItem* option, const QModelIndex& index) const
+{
+   QStyledItemDelegate::initStyleOption(option, index);
+   setTextDirectionFromContent(option);
 }

@@ -230,6 +230,9 @@ void D_LAN_GUI::loadLanguage(const QString& filename)
    {
       L_WARN(QString("Can't load translation file '%1' from directory '%2").arg(filename, directory));
    }
+
+   // The interface is mirrored for the right-to-left languages. Without translation the texts are in English.
+   this->setLayoutDirection(this->translator.isEmpty() ? Qt::LeftToRight : QLocale(this->translator.language()).textDirection());
 }
 
 void D_LAN_GUI::mainWindowClosed()

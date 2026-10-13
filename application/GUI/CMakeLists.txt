@@ -89,6 +89,7 @@ add_executable(DLanGUI WIN32
    CheckBoxModel.h
    IFilter.h
    NoFocusDelegate.h
+   ItemTextDirection.h
    Browse/BrowseModel.h
    Chat/ChatModel.h
    Downloads/DownloadFilterStatus.h

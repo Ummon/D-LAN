@@ -20,6 +20,8 @@
 
 #include <QStyledItemDelegate>
 
+#include <ItemTextDirection.h>
+
 namespace GUI
 {
    /**
@@ -37,6 +39,7 @@ namespace GUI
       void initStyleOption(QStyleOptionViewItem* option, const QModelIndex& index) const override
       {
          QStyledItemDelegate::initStyleOption(option, index);
+         setTextDirectionFromContent(option);
 
          option->state &= ~QStyle::State_HasFocus;
 

@@ -37,6 +37,9 @@ namespace GUI
    public:
       void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
       QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const;
+
+   protected:
+      void initStyleOption(QStyleOptionViewItem* option, const QModelIndex& index) const override;
    };
 
    class UploadsWidget : public QWidget

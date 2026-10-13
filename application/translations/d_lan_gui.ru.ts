@@ -246,7 +246,7 @@
         <translation>Выход</translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="+34"/>
         <source>D-LAN user interface closed</source>
         <translation>Пользовательский интерфейс D-LAN закрыт</translation>
     </message>
@@ -297,7 +297,7 @@
 <context>
     <name>GUI::DownloadsDelegate</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+111"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+118"/>
         <source>Queued</source>
         <translation>В очереди</translation>
     </message>
@@ -452,7 +452,7 @@
         <translation>Вы уверены, что хотите удалить выбранные загрузки? Присутствуют незавершенные загрузки.</translation>
     </message>
     <message>
-        <location line="+82"/>
+        <location line="+85"/>
         <source>Switch to file list view</source>
         <translation>Переключиться на список файлов</translation>
     </message>
@@ -742,7 +742,7 @@
 <context>
     <name>GUI::SearchMenu</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="+277"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="+292"/>
         <source>Browse</source>
         <translation>Открыть</translation>
     </message>
@@ -1042,7 +1042,7 @@
         <translation>Служба ядра запущена</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="-138"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="-141"/>
         <source>D-LAN already launched</source>
         <translation>D-LAN уже запущен</translation>
     </message>

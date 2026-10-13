@@ -207,6 +207,26 @@ void WordIndexTests::normalizedDevanagari()
    QCOMPARE(search(QStringLiteral("\u0917\u093E\u0928\u093E \u0968\u0966\u0968\u096A")), (QList<int> { 6 }));
 }
 
+void WordIndexTests::normalizedArabicScript()
+{
+   WordIndex<int> index;
+   const auto add = [&](const QString& word, int item) {
+      index.addItem(Common::StringUtils::splitInWordsAndSubWords(word), item);
+   };
+   const auto search = [&](const QString& word) {
+      return WordIndex<int>::resultToList(index.search(Common::StringUtils::splitInWords(word)));
+   };
+   // "Urdu kitab.pdf" typed with an Urdu keyboard: the first letter of "kitab" is a keheh.
+   add(QStringLiteral("\u0627\u0631\u062F\u0648 \u06A9\u062A\u0627\u0628.pdf"), 1);
+
+   // Found with the kaf of an Arabic keyboard, with a vowel point and by a prefix of three letters.
+   QCOMPARE(search(QStringLiteral("\u0643\u062A\u0627\u0628")), (QList<int> { 1 }));
+   QCOMPARE(search(QStringLiteral("\u06A9\u0650\u062A\u0627\u0628")), (QList<int> { 1 }));
+   QCOMPARE(search(QStringLiteral("\u0643\u062A\u0627")), (QList<int> { 1 }));
+   // Two letters must match entirely.
+   QVERIFY(search(QStringLiteral("\u0643\u062A")).isEmpty());
+}
+
 /**
   * The names are indexed by their words and their sub-words, like FileManager does.
   */

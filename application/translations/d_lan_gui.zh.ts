@@ -246,7 +246,7 @@
         <translation>退出</translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="+34"/>
         <source>D-LAN user interface closed</source>
         <translation>D-LAN 用户界面已关闭</translation>
     </message>
@@ -297,7 +297,7 @@
 <context>
     <name>GUI::DownloadsDelegate</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+111"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+118"/>
         <source>Queued</source>
         <translation>排队中</translation>
     </message>
@@ -448,7 +448,7 @@
         <translation>确定要移除所选下载吗？其中有一个或多个下载尚未完成。</translation>
     </message>
     <message>
-        <location line="+82"/>
+        <location line="+85"/>
         <source>Switch to file list view</source>
         <translation>切换到文件列表视图</translation>
     </message>
@@ -738,7 +738,7 @@
 <context>
     <name>GUI::SearchMenu</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="+277"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="+292"/>
         <source>Browse</source>
         <translation>浏览</translation>
     </message>
@@ -1022,7 +1022,7 @@
         <translation>Core 服务已启动</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="-138"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="-141"/>
         <source>D-LAN already launched</source>
         <translation>D-LAN 已在运行</translation>
     </message>

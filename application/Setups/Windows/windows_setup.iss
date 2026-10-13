@@ -49,6 +49,7 @@ Name: "pt"; MessagesFile: "compiler:Languages/BrazilianPortuguese.isl,../../tran
 Name: "hi"; MessagesFile: "inno_setup_languages/Hindi.islu,../../translations/d_lan.hi.isl"
 Name: "id"; MessagesFile: "inno_setup_languages/Indonesian.isl,../../translations/d_lan.id.isl"
 Name: "bn"; MessagesFile: "inno_setup_languages/Bengali.islu,../../translations/d_lan.bn.isl"
+Name: "ur"; MessagesFile: "inno_setup_languages/Urdu.isl,../../translations/d_lan.ur.isl"
 
 [Tasks]
 Name: "Firewall"; Description: {cm:firewallException}; MinVersion: 0,5.01.2600sp2;

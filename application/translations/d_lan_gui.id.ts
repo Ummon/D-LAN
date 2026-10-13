@@ -246,7 +246,7 @@
         <translation>Keluar</translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="+34"/>
         <source>D-LAN user interface closed</source>
         <translation>Antarmuka pengguna D-LAN ditutup</translation>
     </message>
@@ -297,7 +297,7 @@
 <context>
     <name>GUI::DownloadsDelegate</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+111"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+118"/>
         <source>Queued</source>
         <translation>Dalam antrean</translation>
     </message>
@@ -448,7 +448,7 @@
         <translation>Apakah Anda yakin ingin menghapus unduhan yang dipilih? Ada satu atau beberapa unduhan yang belum selesai.</translation>
     </message>
     <message>
-        <location line="+82"/>
+        <location line="+85"/>
         <source>Switch to file list view</source>
         <translation>Beralih ke tampilan daftar berkas</translation>
     </message>
@@ -738,7 +738,7 @@
 <context>
     <name>GUI::SearchMenu</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="+277"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="+292"/>
         <source>Browse</source>
         <translation>Jelajahi</translation>
     </message>
@@ -1022,7 +1022,7 @@
         <translation>Layanan Core dijalankan</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="-138"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="-141"/>
         <source>D-LAN already launched</source>
         <translation>D-LAN sudah berjalan</translation>
     </message>

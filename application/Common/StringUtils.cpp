@@ -34,6 +34,7 @@ namespace
    const char16_t DEVANAGARI_ANUSVARA = 0x0902;
    const char16_t DEVANAGARI_NUKTA = 0x093C;
    const char16_t DEVANAGARI_VIRAMA = 0x094D;
+   const char16_t ARABIC_TATWEEL = 0x0640;
    const char16_t ZERO_WIDTH_NON_JOINER = 0x200C;
    const char16_t ZERO_WIDTH_JOINER = 0x200D;
 
@@ -65,6 +66,27 @@ namespace
    bool isVariationSelector(char32_t c)
    {
       return (c >= 0xFE00 && c <= 0xFE0F) || (c >= 0xE0100 && c <= 0xE01EF);
+   }
+
+   /**
+     * The Arabic, Persian and Urdu keyboards give different characters for some letters which are the same one
+     * for a reader: a name typed with one of them has to be found with another.
+     * The Urdu 'heh doachashmee' (U+06BE) is another letter than the heh, it's kept.
+     */
+   char32_t foldArabicLetterVariant(char32_t c)
+   {
+      switch (c)
+      {
+      case 0x06A9: // Keheh.
+         return 0x0643; // Kaf.
+      case 0x0649: // Alef maksura.
+      case 0x06CC: // Farsi yeh.
+         return 0x064A; // Yeh.
+      case 0x06C1: // Heh goal.
+         return 0x0647; // Heh.
+      default:
+         return c;
+      }
    }
 
    /**
@@ -116,6 +138,7 @@ namespace
   *  - Remove the zero-width joiners, they only change the rendering of a word.
   *  - Replace the non-ASCII decimal digits by their ASCII equivalent, e.g. '२०२४' => '2024'.
   *  - Devanagari: remove the nukta, replace the candrabindu and the nasal conjuncts by an anusvara.
+  *  - Arabic script: remove the tatweel, replace the Persian and Urdu variants of some letters by the Arabic ones.
   *  - Replace the traditional Chinese characters by their simplified form, e.g. '電影' => '电影'.
   */
 QString StringUtils::toLowerAndRemoveAccents(const QString& str)
@@ -143,7 +166,7 @@ QString StringUtils::toLowerAndRemoveAccents(const QString& str)
          if (c == DEVANAGARI_CANDRABINDU)
             c = DEVANAGARI_ANUSVARA;
       }
-      else if (c == ZERO_WIDTH_NON_JOINER || c == ZERO_WIDTH_JOINER)
+      else if (c == ZERO_WIDTH_NON_JOINER || c == ZERO_WIDTH_JOINER || c == ARABIC_TATWEEL)
          continue;
       else
       {
@@ -152,6 +175,8 @@ QString StringUtils::toLowerAndRemoveAccents(const QString& str)
             c = u'0' + QChar::digitValue(c);
          else if (baseScript == QChar::Script_Han)
             c = HanVariants::toSimplified(c);
+         else if (baseScript == QChar::Script_Arabic)
+            c = foldArabicLetterVariant(c);
       }
       result.append(QChar::fromUcs4(c));
    }

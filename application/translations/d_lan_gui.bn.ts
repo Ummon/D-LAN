@@ -246,7 +246,7 @@
         <translation>প্রস্থান</translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="+34"/>
         <source>D-LAN user interface closed</source>
         <translation>D-LAN ইউজার ইন্টারফেস বন্ধ হয়েছে</translation>
     </message>
@@ -297,7 +297,7 @@
 <context>
     <name>GUI::DownloadsDelegate</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+111"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+118"/>
         <source>Queued</source>
         <translation>সারিতে</translation>
     </message>
@@ -448,7 +448,7 @@
         <translation>আপনি কি নিশ্চিতভাবে নির্বাচিত ডাউনলোডগুলি অপসারণ করতে চান? এক বা একাধিক ডাউনলোড এখনও অসম্পূর্ণ।</translation>
     </message>
     <message>
-        <location line="+82"/>
+        <location line="+85"/>
         <source>Switch to file list view</source>
         <translation>ফাইল তালিকা ভিউতে যান</translation>
     </message>
@@ -738,7 +738,7 @@
 <context>
     <name>GUI::SearchMenu</name>
     <message>
-        <location filename="../GUI/Search/SearchWidget.cpp" line="+277"/>
+        <location filename="../GUI/Search/SearchWidget.cpp" line="+292"/>
         <source>Browse</source>
         <translation>ব্রাউজ করুন</translation>
     </message>
@@ -1022,7 +1022,7 @@
         <translation>Core সার্ভিস চালু হয়েছে</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="-138"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="-141"/>
         <source>D-LAN already launched</source>
         <translation>D-LAN ইতিমধ্যে চালু আছে</translation>
     </message>

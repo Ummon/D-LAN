@@ -18,6 +18,8 @@
   
 #include <Uploads/UploadsWidget.h>
 #include <ui_UploadsWidget.h>
+
+#include <ItemTextDirection.h>
 using namespace GUI;
 
 void UploadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
@@ -52,6 +54,12 @@ void UploadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& optio
       newOption.state = option.state & (~QStyle::State_HasFocus);
       QStyledItemDelegate::paint(painter, newOption, index);
    }
+}
+
+void UploadsDelegate::initStyleOption(QStyleOptionViewItem* option, const QModelIndex& index) const
+{
+   QStyledItemDelegate::initStyleOption(option, index);
+   setTextDirectionFromContent(option);
 }
 
 QSize UploadsDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const

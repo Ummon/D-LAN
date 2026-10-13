@@ -33,6 +33,7 @@ using namespace GUI;
 #include <Common/StringUtils.h>
 #include <Common/Settings.h>
 
+#include <ItemTextDirection.h>
 #include <Search/SearchUtils.h>
 #include <Log.h>
 
@@ -64,9 +65,14 @@ void SearchDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option
          ctx.palette = newOption.palette;
 
          const QRect textRect = style->subElementRect(QStyle::SE_ItemViewItemText, &newOption, newOption.widget);
+         // The document is as wide as its text: in a right-to-left interface it's put next to the icon, on the right.
+         const QPoint origin(
+            textRect.left() + (newOption.direction == Qt::RightToLeft ? qMax(0, textRect.width() - qCeil(doc.idealWidth())) : 0),
+            textRect.top()
+         );
          painter->save();
-         painter->translate(textRect.topLeft());
-         painter->setClipRect(textRect.translated(-textRect.topLeft()));
+         painter->translate(origin);
+         painter->setClipRect(textRect.translated(-origin));
          doc.documentLayout()->draw(painter, ctx);
          painter->restore();
       }
@@ -105,6 +111,15 @@ void SearchDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option
    default:
       QStyledItemDelegate::paint(painter, newOption, index);
    }
+}
+
+void SearchDelegate::initStyleOption(QStyleOptionViewItem* option, const QModelIndex& index) const
+{
+   QStyledItemDelegate::initStyleOption(option, index);
+
+   // The name is drawn by a document, which takes its direction from its content by itself.
+   if (index.column() != SearchModel::NAME)
+      setTextDirectionFromContent(option);
 }
 
 QSize SearchDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const

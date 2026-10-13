@@ -490,6 +490,32 @@ void Tests::normalizeBengali()
    QCOMPARE(StringUtils::splitInWords(QStringLiteral("গান_২০২৪.mp3")), (QStringList { QStringLiteral("গান"), "2024", "mp3" }));
 }
 
+void Tests::normalizeArabicScript()
+{
+   // The same word, "kitab" (book), typed with an Arabic and with an Urdu keyboard: a kaf or a keheh.
+   const QString book = QStringLiteral("\u0643\u062A\u0627\u0628");
+   QCOMPARE(StringUtils::toLowerAndRemoveAccents(book), book);
+   QCOMPARE(StringUtils::toLowerAndRemoveAccents(QStringLiteral("\u06A9\u062A\u0627\u0628")), book);
+
+   // Yeh, Farsi yeh and alef maksura.
+   const QString yeh = QStringLiteral("\u064A");
+   QCOMPARE(StringUtils::toLowerAndRemoveAccents(QStringLiteral("\u06CC")), yeh);
+   QCOMPARE(StringUtils::toLowerAndRemoveAccents(QStringLiteral("\u0649")), yeh);
+   // Once decomposed the hamza above of a yeh is a mark, optional like the vowel points.
+   QCOMPARE(StringUtils::toLowerAndRemoveAccents(QStringLiteral("\u0626")), yeh);
+
+   // Heh and heh goal are the same letter, the Urdu heh doachashmee is another one.
+   QCOMPARE(StringUtils::toLowerAndRemoveAccents(QStringLiteral("\u06C1")), QStringLiteral("\u0647"));
+   QCOMPARE(StringUtils::toLowerAndRemoveAccents(QStringLiteral("\u06BE")), QStringLiteral("\u06BE"));
+
+   // The vowel points are removed, as the tatweel which only stretches a word.
+   QCOMPARE(StringUtils::toLowerAndRemoveAccents(QStringLiteral("\u0643\u0650\u062A\u064E\u0627\u0628")), book);
+   QCOMPARE(StringUtils::splitInWords(QStringLiteral("\u0643\u062A\u0640\u0640\u0627\u0628")), QStringList { book });
+
+   // The extended Arabic-Indic digits of Urdu and Persian.
+   QCOMPARE(StringUtils::splitInWords(QStringLiteral("\u06F2\u06F0\u06F2\u06F4")), QStringList { "2024" });
+}
+
 void Tests::normalizeSearchWords()
 {
    QCOMPARE(StringUtils::toLowerAndRemoveAccents(QStringLiteral("\uD55C")), QStringLiteral("\uD55C"));

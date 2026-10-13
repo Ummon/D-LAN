@@ -53,6 +53,7 @@ private slots:
    void normalizeSearchWords();
    void normalizeDevanagari();
    void normalizeBengali();
+   void normalizeArabicScript();
    void normalizeSearchPositions_data();
    void normalizeSearchPositions();
    void isKorean_data();

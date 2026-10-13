@@ -38,6 +38,7 @@ private slots:
    void shortPrefixMatching();
    void normalizedKanaAndHangul();
    void normalizedDevanagari();
+   void normalizedArabicScript();
    void subWords();
    void chinese();
    void prefixGraphemeBoundaries_data();
