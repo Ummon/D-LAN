@@ -22,11 +22,17 @@
   */
 
 #include <Chat/EmoticonTextDocument.h>
+#include <QAbstractTextDocumentLayout>
+#include <QGlyphRun>
+#include <QRawFont>
 #include <QRegularExpression>
 #include <QTextBlock>
 #include <QTextCursor>
+#include <QTextLayout>
 #include <QSet>
 using namespace GUI;
+
+const QString EmoticonTextDocument::MENTION_TITLE("mention");
 
 namespace
 {
@@ -152,8 +158,10 @@ namespace
       // These wrappers are emitted by the sender to work around Qt's emphasis writer.
       // Keep whitespace outside emphasis delimiters when making them readable again.
       // Markdown has no underline delimiter, so omit that style from clipboard text.
+      // The wrapper of a mention has a title, see 'EmoticonTextDocument::MENTION_TITLE': a mention is copied as its text.
       static const QRegularExpression spanExpression(
-         R"(<(?<wrapper>span|u) style="white-space: pre-wrap">(?<strike><s>)?(?<bold><b>)?(?<italic><i>)?(?<body>(?:[^<]|<br/?>)*)(?(italic)</i>)(?(bold)</b>)(?(strike)</s>)</\k<wrapper>>)");
+         QString(R"(<(?<wrapper>span|u)(?: title="%1")? style="white-space: pre-wrap">(?<strike><s>)?(?<bold><b>)?(?<italic><i>)?(?<body>(?:[^<]|<br/?>)*)(?(italic)</i>)(?(bold)</b>)(?(strike)</s>)</\k<wrapper>>)")
+            .arg(QRegularExpression::escape(EmoticonTextDocument::MENTION_TITLE)));
       QString prefix = "DLANCOPYFORMAT";
       while (markdown.contains(prefix))
          prefix += 'X';
@@ -349,6 +357,74 @@ QString EmoticonTextDocument::toClipboardMarkdown(const QString& markdown, const
          result.replace(i->position, i->length, symbol);
    }
    return copyHtmlBreaksAsNewlines(copyInlineFormattingAsMarkdown(result));
+}
+
+bool EmoticonTextDocument::isMention(const QTextCharFormat& format)
+{
+   return format.toolTip() == MENTION_TITLE;
+}
+
+/**
+  * Where the mentions are drawn, in the coordinates of the document: the rectangle of the text of each
+  * mention, one per line if a mention is wrapped. The document must have been laid out.
+  */
+QList<QRectF> EmoticonTextDocument::mentionRects() const
+{
+   QList<QRectF> rects;
+   for (QTextBlock block = this->begin(); block.isValid(); block = block.next())
+   {
+      // The mentions of the block, as positions in it. A mention may be made of several fragments, when a part of
+      // it has its own format.
+      QList<QPair<int, int>> mentions;
+      for (auto it = block.begin(); !it.atEnd(); ++it)
+      {
+         const QTextFragment fragment = it.fragment();
+         if (!isMention(fragment.charFormat()))
+            continue;
+         const int begin = fragment.position() - block.position();
+         if (!mentions.isEmpty() && mentions.last().second == begin)
+            mentions.last().second += fragment.length();
+         else
+            mentions.append({ begin, begin + fragment.length() });
+      }
+      if (mentions.isEmpty())
+         continue;
+
+      const QTextLayout* layout = block.layout();
+      const QString text = block.text();
+      const QPointF origin = this->documentLayout()->blockBoundingRect(block).topLeft();
+      for (const auto& mention : mentions)
+         for (int i = 0; i < layout->lineCount(); i++)
+         {
+            const QTextLine line = layout->lineAt(i);
+            const int begin = qMax(mention.first, line.textStart());
+            int end = qMin(mention.second, line.textStart() + line.textLength());
+            // Without the space a wrapped mention is cut at.
+            while (end > begin && text.at(end - 1).isSpace())
+               end--;
+            if (begin >= end)
+               continue;
+
+            // The height of the text, not the one of the line: an emoticon may make a line higher.
+            qreal ascent = 0;
+            qreal descent = 0;
+            for (const QGlyphRun& glyphs : line.glyphRuns(begin, end - begin))
+            {
+               ascent = qMax(ascent, glyphs.rawFont().ascent());
+               descent = qMax(descent, glyphs.rawFont().descent());
+            }
+            if (ascent == 0)
+            {
+               ascent = line.ascent();
+               descent = line.descent();
+            }
+
+            const qreal x1 = line.cursorToX(begin);
+            const qreal x2 = line.cursorToX(end);
+            rects << QRectF(origin.x() + qMin(x1, x2), origin.y() + line.y() + line.ascent() - ascent, qAbs(x2 - x1), ascent + descent);
+         }
+   }
+   return rects;
 }
 
 QVariant EmoticonTextDocument::loadResource(int type, const QUrl& name)

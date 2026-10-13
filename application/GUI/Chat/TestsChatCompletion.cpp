@@ -1048,10 +1048,12 @@ private slots:
       receiveMessage(1);
       const QModelIndex index = model.index(0, 0);
 
-      // Where the sender is drawn.
+      // Where the sender is drawn. The image has the size of the viewport, 'grab()' would give the pixels of
+      // the screen: more than the positions of the widget when the display is scaled.
       auto* view = f.widget.findChild<QTableView*>("tblChat");
       QApplication::processEvents();
-      const QImage rendered = view->viewport()->grab().toImage();
+      QImage rendered(view->viewport()->size(), QImage::Format_RGB32);
+      view->viewport()->render(&rendered);
       QRect sender;
       for (int y = 0; y < rendered.height(); y++)
          for (int x = 0; x < rendered.width(); x++)
@@ -1074,7 +1076,8 @@ private slots:
       const QString dateAndTime = english.toString(dateTime.date(), QLocale::LongFormat) + " 18:44:12";
       QCOMPARE(index.data(Qt::ToolTipRole).toString(), dateAndTime);
       askToolTip(sender.center());
-      QVERIFY(QToolTip::isVisible());
+      // Not immediately on a real display: the tooltip fades in.
+      QTRY_VERIFY(QToolTip::isVisible());
       QCOMPARE(shownToolTip(), dateAndTime);
 
       // It still has the nick of its message.
@@ -1088,7 +1091,7 @@ private slots:
       QCOMPARE(index.data(GUI::ChatModel::NickRole).toString(), QString("Alice"));
       QCOMPARE(index.data(Qt::ToolTipRole).toString(), withCurrentNick);
       askToolTip(sender.center());
-      QVERIFY(QToolTip::isVisible());
+      QTRY_VERIFY(QToolTip::isVisible());
       // The nick is shown as it is, not interpreted as rich text.
       QCOMPARE(shownToolTip(), withCurrentNick);
 
@@ -1416,6 +1419,143 @@ private slots:
          view.rowHeight(EMOTICON) - sender.bottom() - 1 >= sender.top(),
          qPrintable(QString("row height: %1, sender: %2..%3").arg(view.rowHeight(EMOTICON)).arg(sender.top()).arg(sender.bottom()))
       );
+   }
+
+   void answeredNickIsSentAsAMention_data()
+   {
+      QTest::addColumn<QString>("nick");
+      QTest::newRow("simple") << QString("Alice");
+      QTest::newRow("with spaces") << QString("little grey");
+      QTest::newRow("looking like a tag") << QString("<b>Bob</b>");
+   }
+
+   /**
+     * The "@nick" of a peer answered is sent enclosed in a tag marking it as a mention. Once received it's
+     * still displayed and copied as its text, and the place where it's drawn is known.
+     */
+   void answeredNickIsSentAsAMention()
+   {
+      QFETCH(QString, nick);
+      Fixture f({ nick });
+      f.type("Hello @");
+      QVERIFY(f.completion->isVisible());
+      f.key(Qt::Key_Down);
+      f.key(Qt::Key_Tab);
+      f.type("how are you?");
+      const QString text = "Hello @" + nick + " how are you?";
+      QCOMPARE(f.editor->toPlainText(), text);
+      f.key(Qt::Key_Return);
+      QCOMPARE(f.connection->sentMessages, 1);
+      QCOMPARE(f.connection->answers.size(), 1);
+
+      const QString sent = f.connection->lastMessage;
+      QVERIFY2(sent.contains("<span title=\"mention\" style=\"white-space: pre-wrap\">&#64;"), qPrintable(sent));
+      QCOMPARE(sent.count("title="), 1);
+
+      GUI::EmoticonTextDocument received(f.emoticons);
+      received.setDefaultFont(QApplication::font());
+      received.setMarkdown(sent);
+      QCOMPARE(received.toPlainText(), text);
+      QString mention;
+      for (auto block = received.begin(); block.isValid(); block = block.next())
+         for (auto i = block.begin(); !i.atEnd(); ++i)
+            if (GUI::EmoticonTextDocument::isMention(i.fragment().charFormat()))
+               mention += i.fragment().text();
+      QCOMPARE(mention, "@" + nick);
+
+      // Where the mention is drawn: after "Hello ".
+      const QFontMetricsF metrics(received.defaultFont());
+      received.setTextWidth(2000);
+      QList<QRectF> rects = received.mentionRects();
+      QCOMPARE(rects.size(), 1);
+      const auto rect = [&rects]() { return QString("%1, %2 %3x%4").arg(rects[0].left()).arg(rects[0].top()).arg(rects[0].width()).arg(rects[0].height()); };
+      QVERIFY2(qAbs(rects[0].left() - received.documentMargin() - metrics.horizontalAdvance("Hello ")) <= 1, qPrintable(rect()));
+      QVERIFY2(qAbs(rects[0].width() - metrics.horizontalAdvance("@" + nick)) <= 1, qPrintable(rect()));
+      QVERIFY2(qAbs(rects[0].top() - received.documentMargin()) <= 2, qPrintable(rect()));
+      QVERIFY2(qAbs(rects[0].height() - metrics.height()) <= 2, qPrintable(rect()));
+
+      // A mention wrapped on two lines has a rectangle on each one.
+      if (nick.contains(' '))
+      {
+         received.setTextWidth(2 * received.documentMargin() + metrics.horizontalAdvance("@" + nick) - 1);
+         rects = received.mentionRects();
+         QCOMPARE(rects.size(), 2);
+         QVERIFY(rects[1].top() >= rects[0].bottom() - 1);
+      }
+
+      // Without a mention.
+      GUI::EmoticonTextDocument plain(f.emoticons);
+      plain.setMarkdown(QString(sent).remove(" title=\"mention\""));
+      plain.setTextWidth(2000);
+      QCOMPARE(plain.toPlainText(), text);
+      QVERIFY(plain.mentionRects().isEmpty());
+
+      const QString copied = GUI::EmoticonTextDocument::toClipboardMarkdown(sent, f.emoticons);
+      QVERIFY2(!copied.contains('<') && !copied.contains("mention"), qPrintable(copied));
+      QTextDocument parsedCopy;
+      parsedCopy.setMarkdown(copied);
+      QCOMPARE(parsedCopy.toPlainText(), text);
+   }
+
+   /**
+     * A mention is drawn in a rectangle, which doesn't change the size of its message.
+     */
+   void mentionIsDrawnInARectangle()
+   {
+      GUI::Emoticons emoticons("nonexistent-test-emoticons");
+      GUI::ChatDelegate delegate(emoticons);
+      const QString message = "Hello <span title=\"mention\" style=\"white-space: pre-wrap\">&#64;little grey</span> how are you";
+      const int MENTION = 0;
+      const int PLAIN = 1;
+      QStandardItemModel model(2, 1);
+      model.setData(model.index(MENTION, 0), message);
+      model.setData(model.index(PLAIN, 0), QString(message).remove(" title=\"mention\""));
+      QTableView view;
+      view.setModel(&model);
+      view.setItemDelegate(&delegate);
+      view.horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+      view.verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+      view.setShowGrid(false);
+      view.resize(400, 250);
+      view.show();
+      view.resizeRowsToContents();
+      QApplication::processEvents();
+
+      const auto render = [&](int row) {
+         const QModelIndex index = model.index(row, 0);
+         QStyleOptionViewItem option;
+         option.initFrom(&view);
+         option.widget = &view;
+         option.rect = view.visualRect(index);
+         option.features |= QStyleOptionViewItem::HasDisplay;
+         QImage rendered(view.viewport()->size(), QImage::Format_RGB32);
+         // The background of the view: the rectangle is a shade of the color of the text, which is white in a dark theme.
+         rendered.fill(view.palette().color(QPalette::Base));
+         QPainter painter(&rendered);
+         delegate.paint(&painter, option, index);
+         painter.end();
+         return rendered.copy(option.rect);
+      };
+
+      const QImage mention = render(MENTION);
+      const QImage plain = render(PLAIN);
+      QCOMPARE(mention.size(), plain.size());
+
+      // What the mention changes: its rectangle.
+      QRect rectangle;
+      for (int y = 0; y < mention.height(); y++)
+         for (int x = 0; x < mention.width(); x++)
+            if (mention.pixel(x, y) != plain.pixel(x, y))
+               rectangle |= QRect(x, y, 1, 1);
+      QVERIFY(!rectangle.isEmpty());
+
+      const QFontMetrics metrics(view.font());
+      const QString position = QString("%1, %2 %3x%4").arg(rectangle.left()).arg(rectangle.top()).arg(rectangle.width()).arg(rectangle.height());
+      QVERIFY2(rectangle.left() > metrics.horizontalAdvance("Hello"), qPrintable(position));
+      // A bit wider than its text.
+      const int textWidth = metrics.horizontalAdvance("@little grey");
+      QVERIFY2(rectangle.width() > textWidth && rectangle.width() <= textWidth + 8, qPrintable(position));
+      QVERIFY2(qAbs(rectangle.height() - metrics.height()) <= 2, qPrintable(position));
    }
 
    void draftIsSentOnceWhileUnanswered_data()

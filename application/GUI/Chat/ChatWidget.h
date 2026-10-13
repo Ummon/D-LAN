@@ -79,6 +79,7 @@ namespace GUI
       static int dayHeight(const QFont& font, const QModelIndex& index);
       static void paintDay(QPainter* painter, const QStyleOptionViewItem& option, const QRect& rect, const QString& day);
       static void paintSender(QPainter* painter, const MessageLayout& layout, const QFont& font, bool ours);
+      static void paintMentions(QPainter* painter, const EmoticonTextDocument& document, const QColor& textColor);
 
       QString anchorAt(const QStyleOptionViewItem& option, const QModelIndex& index, const QPoint& pos) const;
 

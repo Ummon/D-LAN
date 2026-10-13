@@ -18,6 +18,9 @@
 
 #pragma once
 
+#include <QList>
+#include <QRectF>
+#include <QTextCharFormat>
 #include <QTextDocument>
 
 #include <Emoticons/Emoticons.h>
@@ -27,9 +30,16 @@ namespace GUI
    class EmoticonTextDocument : public QTextDocument
    {
    public:
+      // A mention, the "@nick" of a peer answered by a message, is sent enclosed in a tag having this title:
+      // '<span title="mention" ..>@nick</span>'. Qt keeps the title of a tag as the tooltip of the format of its
+      // text, it's the only attribute of a tag left once a message is parsed.
+      static const QString MENTION_TITLE;
+      static bool isMention(const QTextCharFormat& format);
+
       EmoticonTextDocument(const Emoticons& emoticons, QObject* parent = nullptr);
       void setMarkdown(const QString& markdown);
       static QString toClipboardMarkdown(const QString& markdown, const Emoticons& emoticons);
+      QList<QRectF> mentionRects() const;
 
    protected:
       QVariant loadResource(int type, const QUrl& name) override;

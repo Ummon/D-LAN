@@ -63,6 +63,8 @@ namespace
    }
 
    const int SENDER_VERTICAL_PADDING = 2; // Above and below the time and the nick.
+   const int MENTION_HORIZONTAL_PADDING = 1; // Between a mention and the sides of its rectangle.
+   const qreal MENTION_RADIUS = 3; // Of the corners of the rectangle of a mention.
    const QColor COLOR_SENDER_TIME(255, 255, 255, 200);
    const QColor COLOR_SENDER_NICK(255, 255, 255);
 }
@@ -143,6 +145,7 @@ void ChatDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, 
    if (!layout.sender.isNull())
       paintSender(painter, layout, newOption.font, index.data(ChatModel::OursRole).toBool());
    painter->translate(layout.documentPos);
+   paintMentions(painter, *layout.document, ctx.palette.color(QPalette::Text));
    layout.document->documentLayout()->draw(painter, ctx);
    painter->restore();
 }
@@ -424,6 +427,37 @@ void ChatDelegate::paintDay(QPainter* painter, const QStyleOptionViewItem& optio
    painter->restore();
 }
 
+/**
+  * Each mention of a message, the "@nick" of a peer it answers, is put in a rectangle with rounded corners.
+  * Must be called before drawing the document, with the painter at the origin of the document.
+  * @param textColor The color the message is drawn with, the rectangles are a lighter shade of it.
+  */
+void ChatDelegate::paintMentions(QPainter* painter, const EmoticonTextDocument& document, const QColor& textColor)
+{
+   const QList<QRectF> mentions = document.mentionRects();
+   if (mentions.isEmpty())
+      return;
+
+   painter->save();
+
+   painter->setRenderHint(QPainter::Antialiasing);
+   QColor color = textColor;
+   color.setAlphaF(0.5);
+   painter->setPen(QPen(color, 1));
+   color.setAlphaF(0.12);
+   painter->setBrush(color);
+   for (const QRectF& mention : mentions)
+      // The border is drawn in the middle of the pixels to be sharp. The rectangle is a bit wider than its
+      // mention, there is usually a space on each side, and a bit lower: a font has some room above its letters.
+      painter->drawRoundedRect(
+         QRectF(mention.toAlignedRect()).adjusted(-MENTION_HORIZONTAL_PADDING + 0.5, 1.5, MENTION_HORIZONTAL_PADDING - 0.5, -0.5),
+         MENTION_RADIUS,
+         MENTION_RADIUS
+      );
+
+   painter->restore();
+}
+
 void ChatDelegate::paintSender(QPainter* painter, const MessageLayout& layout, const QFont& font, bool ours)
 {
    const QRectF& rect = layout.sender;
@@ -557,7 +591,9 @@ static QList<ProtectedInlineText> protectInlineText(QTextDocument& document, con
       if (format.fontStrikeOut())
          html = "<s>" + html + "</s>";
       const QString tag = format.fontUnderline() ? "u" : "span";
-      html = '<' + tag + " style=\"white-space: pre-wrap\">" + html + "</" + tag + '>';
+      // A mention is always protected, for its '@': it's recognized by the title of its tag.
+      const QString title = EmoticonTextDocument::isMention(format) ? QString(" title=\"" + EmoticonTextDocument::MENTION_TITLE + '"') : QString();
+      html = '<' + tag + title + " style=\"white-space: pre-wrap\">" + html + "</" + tag + '>';
       if (format.isAnchor())
          html = "<a href=\"" + format.anchorHref().toHtmlEscaped() + "\">" + html + "</a>";
 
@@ -633,6 +669,16 @@ void ChatWidget::sendMessage()
    const QString originalContent = document->toRawText() + document->toHtml();
    while (originalContent.contains(lineBreakMarker))
       lineBreakMarker += 'X';
+   // The "@nick" of each peer answered is marked as a mention, see 'protectInlineText(..)'.
+   for (const Answer& answer : this->answers.getList())
+   {
+      QTextCursor cursor(document.data());
+      cursor.setPosition(answer.begin);
+      cursor.setPosition(answer.end, QTextCursor::KeepAnchor);
+      QTextCharFormat format;
+      format.setToolTip(EmoticonTextDocument::MENTION_TITLE);
+      cursor.mergeCharFormat(format);
+   }
    // Qt writes image alt text verbatim. Escape it only in the serialization copy:
    // symbols such as ;], :\ and *w* must remain literal text when Markdown is read.
    QList<QTextFragment> images;

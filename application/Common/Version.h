@@ -18,7 +18,7 @@
 
 #pragma once
 
-#define VERSION "1.6.0"
+#define VERSION "1.6.1"
 #define VERSION_TAG ""
 
 // These two values are automatically updated during the release building process. See the script 'Application/Tools/update_version.nu.'
