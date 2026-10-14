@@ -29,6 +29,7 @@
 #include <Tests.h>
 #include <WordIndexTests.h>
 #include <WordIndexBenchmark.h>
+#include <FindBenchmark.h>
 #include <StressTests.h>
 #include <CacheTest.h>
 
@@ -67,6 +68,13 @@ int main(int argc, char *argv[])
       WordIndexBenchmark benchmark;
       QStringList arguments = a.arguments();
       arguments.removeAll("-benchmark");
+      ret = QTest::qExec(&benchmark, arguments);
+   }
+   else if (a.arguments().contains("-find-benchmark"))
+   {
+      FindBenchmark benchmark;
+      QStringList arguments = a.arguments();
+      arguments.removeAll("-find-benchmark");
       ret = QTest::qExec(&benchmark, arguments);
    }
    else

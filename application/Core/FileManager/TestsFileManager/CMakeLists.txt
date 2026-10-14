@@ -13,6 +13,8 @@ add_executable(TestsFileManager
    Utils.cpp
    WordIndexTests.cpp
    WordIndexBenchmark.cpp
+   FindBenchmark.cpp
+   BenchmarkUtils.cpp
 
    Tests.h
    CacheTest.h
@@ -23,6 +25,8 @@ add_executable(TestsFileManager
    Utils.h
    WordIndexTests.h
    WordIndexBenchmark.h
+   FindBenchmark.h
+   BenchmarkUtils.h
 )
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")

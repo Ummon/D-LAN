@@ -23,7 +23,6 @@
 
 #include <QElapsedTimer>
 #include <QRandomGenerator>
-#include <QSet>
 #include <QtDebug>
 
 #ifdef Q_OS_WIN32
@@ -31,97 +30,16 @@
 #endif
 
 #include <Common/StringUtils.h>
+
+#include <BenchmarkUtils.h>
 using namespace FM;
 
 namespace
 {
    const int NB_NAMES = 300000;
-   const int VOCABULARY_BITS = 15; ///< 32767 words.
-   const int HAN_BITS = 11; ///< 2047 characters.
-   const int EXTENSION_BITS = 3; ///< 7 extensions.
-   const char16_t FIRST_HAN = 0x4E00;
    const int MAX_NB_RESULT = 300; ///< The default value of the setting 'max_number_of_search_result_to_send'.
 
    const int NB_BUILDS = 5; ///< The number of times the index is built to measure 'addItems()' and 'rmItems()'.
-   const int NB_BATCHES = 30;
-   const qint64 MIN_BATCH_DURATION = 20000000; ///< [ns].
-
-   /**
-     * A rank in [0, 2^nbBits - 1[ following the Zipf's law, as the words of a language do:
-     * the rank 'r' is about twice as frequent as the rank '2 * r'.
-     */
-   int zipf(QRandomGenerator& rng, int nbBits)
-   {
-      const int bit = rng.bounded(nbBits);
-      return (1 << bit) - 1 + rng.bounded(1 << bit);
-   }
-
-   /**
-     * Words of two to four syllables: they share their beginnings as the ones of a language do.
-     */
-   QStringList createVocabulary(QRandomGenerator& rng)
-   {
-      const QString consonants("bcdfghjklmnprstvz");
-      const QString vowels("aeiou");
-
-      QStringList vocabulary;
-      QSet<QString> knownWords;
-      while (vocabulary.size() < (1 << VOCABULARY_BITS) - 1)
-      {
-         QString word;
-         for (int i = 2 + rng.bounded(3); i > 0; --i)
-            word.append(consonants.at(rng.bounded(static_cast<int>(consonants.size())))).append(vowels.at(rng.bounded(static_cast<int>(vowels.size()))));
-
-         if (!knownWords.contains(word))
-         {
-            knownWords.insert(word);
-            vocabulary << word;
-         }
-      }
-      return vocabulary;
-   }
-
-   /**
-     *  - 10 %: a photo, "DSC01234.jpg".
-     *  - 15 %: a Chinese title of two to seven characters.
-     *  - 75 %: two to five words, one name out of five is written like "SomeWordsTogether".
-     * A number follows the title of half of the two last kinds.
-     */
-   QString createName(QRandomGenerator& rng, const QStringList& vocabulary)
-   {
-      static const QStringList EXTENSIONS { "mp3", "jpg", "mkv", "flac", "avi", "pdf", "txt" };
-      static const QStringList SEPARATORS { " ", ".", "_", " - " };
-
-      const int kind = rng.bounded(100);
-      if (kind < 10)
-         return QString("DSC%1.jpg").arg(rng.bounded(100000), 5, 10, QChar('0'));
-
-      QString name;
-      if (kind < 25)
-      {
-         for (int i = 2 + rng.bounded(6); i > 0; --i)
-            name.append(QChar(FIRST_HAN + zipf(rng, HAN_BITS)));
-      }
-      else
-      {
-         const bool camelCase = rng.bounded(5) == 0;
-         const QString& separator = SEPARATORS.at(rng.bounded(static_cast<int>(SEPARATORS.size())));
-         for (int i = 2 + rng.bounded(4); i > 0; --i)
-         {
-            QString word = vocabulary.at(zipf(rng, VOCABULARY_BITS));
-            if (camelCase)
-               word[0] = word.at(0).toUpper();
-            else if (!name.isEmpty())
-               name.append(separator);
-            name.append(word);
-         }
-      }
-
-      if (rng.bounded(2) == 0)
-         name.append(QString(" %1").arg(rng.bounded(1, 100), 2, 10, QChar('0')));
-
-      return name.append('.').append(EXTENSIONS.at(zipf(rng, EXTENSION_BITS)));
-   }
 
    /**
      * The memory allocated by the process [byte], -1 if unknown.
@@ -136,39 +54,6 @@ namespace
          return static_cast<qint64>(summary.cbAllocated);
 #endif
       return -1;
-   }
-
-   /**
-     * The duration [ns] of one call to 'function'.
-     * It's the one of the fastest batch of calls: the least disturbed by the rest of the system.
-     */
-   double measure(const std::function<void()>& function)
-   {
-      QElapsedTimer timer;
-
-      // Double the size of a batch until it lasts long enough to be measured.
-      qint64 nbCalls = 1;
-      qint64 duration;
-      for (;; nbCalls *= 2)
-      {
-         timer.start();
-         for (qint64 i = 0; i < nbCalls; ++i)
-            function();
-         duration = timer.nsecsElapsed();
-         if (duration >= MIN_BATCH_DURATION)
-            break;
-      }
-
-      qint64 shortestDuration = duration;
-      for (int batch = 1; batch < NB_BATCHES; ++batch)
-      {
-         timer.start();
-         for (qint64 i = 0; i < nbCalls; ++i)
-            function();
-         shortestDuration = qMin(shortestDuration, timer.nsecsElapsed());
-      }
-
-      return static_cast<double>(shortestDuration) / nbCalls;
    }
 
    QString toMilliseconds(qint64 nanoseconds)
@@ -190,11 +75,11 @@ void WordIndexBenchmark::initTestCase()
 
    // Always the same names: the results of two runs can be compared.
    QRandomGenerator rng(42);
-   this->vocabulary = createVocabulary(rng);
+   this->vocabulary = BenchmarkUtils::createVocabulary(rng);
 
    this->names.reserve(NB_NAMES);
    for (int i = 0; i < NB_NAMES; ++i)
-      this->names << Common::StringUtils::splitInWordsAndSubWords(createName(rng, this->vocabulary));
+      this->names << Common::StringUtils::splitInWordsAndSubWords(BenchmarkUtils::createName(rng, this->vocabulary));
 
    const qint64 memoryBefore = allocatedMemory();
    this->fill(this->index);
@@ -267,7 +152,7 @@ void WordIndexBenchmark::search_data()
 
    const QString common = this->vocabulary.at(0);
    const QString rare = this->vocabulary.at(30000);
-   const QString han = QString(QChar(FIRST_HAN));
+   const QString han = QString(QChar(BenchmarkUtils::FIRST_HAN));
 
    // No result: the most frequent case, a peer receives the searches of all the other ones.
    addRow("unknown word", common + "x", false); // Fails after the nodes of the known word.
@@ -278,7 +163,7 @@ void WordIndexBenchmark::search_data()
    addRow("common word", common); // A node with a lot of items.
    addRow("prefix of some words", this->vocabulary.at(100).left(3));
    addRow("prefix of many words", "dsc"); // A lot of nodes with one item.
-   addRow("Han word", han + QChar(FIRST_HAN + 1));
+   addRow("Han word", han + QChar(BenchmarkUtils::FIRST_HAN + 1));
    addRow("Han character", han); // A prefix ending at a node with a lot of children.
 
    // Several terms.
@@ -286,7 +171,7 @@ void WordIndexBenchmark::search_data()
    addRow("three common words", common + ' ' + this->vocabulary.at(1) + ' ' + this->vocabulary.at(2));
    addRow("five words", common + ' ' + this->vocabulary.at(50) + ' ' + this->vocabulary.at(2000) + " 07 mp3");
    addRow("rare word and prefix of many words", rare + " dsc"); // All the nodes of a large part of the index are visited.
-   addRow("two Han characters", han + ' ' + QChar(FIRST_HAN + 1)); // Prefixes ending at nodes with a lot of children.
+   addRow("two Han characters", han + ' ' + QChar(BenchmarkUtils::FIRST_HAN + 1)); // Prefixes ending at nodes with a lot of children.
 
    // As a search among the files of a given type.
    addRow("common word, filtered", common, true, true);
@@ -311,7 +196,7 @@ void WordIndexBenchmark::search()
    QCOMPARE(nbMatchingItems != 0, found);
 
    qsizetype nbResults = 0;
-   const double duration = measure([&] { nbResults += this->index.search(words, MAX_NB_RESULT, predicate).size(); });
+   const double duration = BenchmarkUtils::measure([&] { nbResults += this->index.search(words, MAX_NB_RESULT, predicate).size(); });
    QCOMPARE(nbResults != 0, found);
 
    qInfo().noquote() << QString::number(duration / 1e3, 'f', 3) << "us," << nbMatchingItems << "matching items";

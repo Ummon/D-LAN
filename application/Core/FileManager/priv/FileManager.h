@@ -42,6 +42,8 @@
 #include <priv/ExtensionIndex.h>
 #include <priv/SizeIndex.h>
 
+class FindBenchmark;
+
 namespace FM
 {
    class Chunk;
@@ -54,6 +56,7 @@ namespace FM
    {
       Q_OBJECT
       friend class ::CacheTest; // Stop the worker for deterministic filesystem event tests.
+      friend class ::FindBenchmark; // Stop the worker: the entries are created in the cache only.
    public:
       FileManager(QSharedPointer<HC::IHashCache> hashCache);
       ~FileManager();
