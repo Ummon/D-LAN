@@ -19,6 +19,7 @@
 #pragma once
 
 #include <QObject>
+#include <QByteArray>
 #include <QMutex>
 #include <QWaitCondition>
 #include <QSet>
@@ -58,6 +59,8 @@ namespace FM
       void flushPendingHashes();
 
       File* currentFileCache;
+      // Kept between the calls: allocating a buffer of 'buffer_size_reading' for each file costs more than hashing a small one.
+      QByteArray buffer;
       // One retained chunk per changed file generation; detachment makes deferred saves harmless.
       QSet<QSharedPointer<Chunk>> pendingHashSaves;
 

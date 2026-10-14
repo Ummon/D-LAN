@@ -335,9 +335,14 @@ bool File::correspondTo(const QFileInfo& fileInfo, bool checkTheDateToo) const
 {
    QMutexLocker locker(&this->mutex);
 
-   return
-      this->getSize() == fileInfo.size() &&
-      (!checkTheDateToo || this->getDateLastModified() == fileInfo.lastModified());
+   return checkTheDateToo ? this->correspondTo(fileInfo.size(), fileInfo.lastModified()) : this->getSize() == fileInfo.size();
+}
+
+bool File::correspondTo(qint64 size, const QDateTime& dateLastModified) const
+{
+   QMutexLocker locker(&this->mutex);
+
+   return this->getSize() == size && this->getDateLastModified() == dateLastModified;
 }
 
 void File::updateFromScan(const QFileInfo& fileInfo)

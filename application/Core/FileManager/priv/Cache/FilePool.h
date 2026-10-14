@@ -18,11 +18,14 @@
   
 #pragma once
 
+#include <optional>
+
 #include <QObject>
 #include <QMutex>
 #include <QFile>
 #include <QTimer>
 #include <QElapsedTimer>
+#include <QDateTime>
 
 #include <Common/Uncopyable.h>
 
@@ -42,6 +45,18 @@ namespace FM
       void release(QFile* file, bool forceToClose = false);
       void forceReleaseAll(const QString& path);
       QList<QFile*> takeAll(const QString& path);
+
+      struct Metadata
+      {
+         qint64 size;
+         QDateTime lastModified; // As 'QFileInfo::lastModified()': to the millisecond.
+      };
+
+      /**
+        * The current size and modification date of a file opened by a pool, as a 'QFileInfo' of its path would give them.
+        * @return Nothing if they can't be read.
+        */
+      static std::optional<Metadata> getMetadata(QFile& file);
 
    private slots:
       void tryToDeleteReleasedFiles();

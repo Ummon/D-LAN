@@ -86,6 +86,7 @@ private slots:
    void hashRequestsKeepOriginalGeneration_data();
    void hashRequestsKeepOriginalGeneration();
    void writerRegistrationSurvivesFileReset();
+   void hashingReusesItsBuffer();
    void hashingRespectsChunkBoundaries_data();
    void hashingRespectsChunkBoundaries();
    void handlesReopenAfterCompletion_data();

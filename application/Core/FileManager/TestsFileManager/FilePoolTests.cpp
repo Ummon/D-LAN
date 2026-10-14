@@ -1,5 +1,7 @@
 #include <QTest>
 #include <QTemporaryDir>
+#include <QScopeGuard>
+#include <QTimeZone>
 #include <priv/Cache/FilePool.h>
 
 class FilePoolTests : public QObject
@@ -54,6 +56,50 @@ private slots:
       created = true;
       QVERIFY(!pool.open(temp.filePath("missing/file.bin"), mode, &created));
       QVERIFY(!created);
+   }
+
+   /**
+     * The size and the date of an open file are the ones a 'QFileInfo' gives, including after a change made through another
+     * handle while the file stays open.
+     */
+   void metadataOfAnOpenFile()
+   {
+      QTemporaryDir temp;
+      QVERIFY(temp.isValid());
+      const QString path = temp.filePath("file.bin");
+      {
+         QFile physical(path);
+         QVERIFY(physical.open(QIODevice::WriteOnly));
+         QCOMPARE(physical.write("content"), qint64(7));
+      }
+      FM::FilePool pool;
+      QFile* file = pool.open(path, QIODevice::ReadOnly | QIODevice::Unbuffered);
+      QVERIFY(file);
+      const auto release = qScopeGuard([&] { pool.release(file, true); });
+
+      const auto compare = [&] {
+         const auto metadata = FM::FilePool::getMetadata(*file);
+         QVERIFY(metadata);
+         const QFileInfo info(path);
+         QCOMPARE(metadata->size, info.size());
+         QCOMPARE(metadata->lastModified, info.lastModified());
+      };
+      compare();
+
+      // With milliseconds, and before 1970 for the conversion of the time.
+      for (const QDateTime& date : {
+         QDateTime(QDate(2020, 5, 17), QTime(13, 14, 15, 678), QTimeZone::UTC),
+         QDateTime(QDate(1969, 7, 20), QTime(20, 17, 40, 123), QTimeZone::UTC) })
+      {
+         QFile writer(path);
+         QVERIFY(writer.open(QIODevice::Append));
+         QCOMPARE(writer.write("+", 1), qint64(1));
+         QVERIFY(writer.flush());
+         QVERIFY(writer.setFileTime(date, QFileDevice::FileModificationTime));
+         writer.close();
+         QCOMPARE(QFileInfo(path).lastModified(), date);
+         compare();
+      }
    }
 
 #if !defined(Q_OS_WIN) || defined(FILEPOOL_QT_BACKEND)

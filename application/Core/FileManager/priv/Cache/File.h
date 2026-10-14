@@ -72,6 +72,7 @@ namespace FM
       bool matchesEntry(const Protos::Common::Entry& entry) const;
 
       bool correspondTo(const QFileInfo& fileInfo, bool checkTheDateToo = true) const;
+      bool correspondTo(qint64 size, const QDateTime& dateLastModified) const;
       void updateFromScan(const QFileInfo& fileInfo);
       void fileHasChangedOnDisk(const QFileInfo fileInfo);
 

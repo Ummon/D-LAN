@@ -122,7 +122,6 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed, bool deferPers
       return false;
 
    const QString filePath = this->currentFileCache->getAbsolutePath();
-   const QFileInfo initialInfo(filePath);
    const auto restartWithNewChunks = [&]()
    {
       L_WARN(QString("The file changed during hashing, its chunks are reset: %1").arg(filePath));
@@ -132,15 +131,33 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed, bool deferPers
       return false;
    };
 
-   if (!initialInfo.exists())
+   // Opened first to read its size and date from the handle, see 'FilePool::getMetadata(..)'.
+   // Same performance with or without "QIODevice::Unbuffered".
+   AutoReleasedFile file(
+      this->filePool,
+      filePath,
+      QIODevice::ReadOnly | QIODevice::Unbuffered,
+      this->currentFileCache->getSize() <= Chunk::CHUNK_SIZE
+   );
+
+   if (!file || !file->reset())
+   {
+      // A missing file isn't worth a warning: it has been removed meanwhile.
+      if (QFileInfo::exists(filePath))
+         L_WARN(QString("Unable to open this file: %1").arg(filePath));
+      throw IOErrorException();
+   }
+
+   const auto initialMetadata = FilePool::getMetadata(*file);
+   if (!initialMetadata)
       throw IOErrorException();
 
    // Previously computed (or loaded) hashes belong to the cached size and date.
    // Check before skipping any chunks, including when the chunk count is unchanged.
-   if (!this->currentFileCache->correspondTo(initialInfo))
+   if (!this->currentFileCache->correspondTo(initialMetadata->size, initialMetadata->lastModified))
       return restartWithNewChunks();
 
-   // An empty file has no chunk: there is nothing to hash and no file to open.
+   // An empty file has no chunk: there is nothing to hash.
    QList<QSharedPointer<Chunk>> chunkSnapshot;
    int chunkNum;
    {
@@ -157,20 +174,6 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed, bool deferPers
 
    L_USER(tr("Indexing %1 . . .").arg(filePath));
 
-   // Same performance with or without "QIODevice::Unbuffered".
-   AutoReleasedFile file(
-      this->filePool,
-      filePath,
-      QIODevice::ReadOnly | QIODevice::Unbuffered,
-      this->currentFileCache->getSize() <= Chunk::CHUNK_SIZE
-   );
-
-   if (!file || !file->reset())
-   {
-      L_WARN(QString("Unable to open this file: %1").arg(filePath));
-      throw IOErrorException();
-   }
-
    // The file remembers its first unknown hash across scheduler passes.
    qint64 bytesSkipped = qint64(chunkNum) * Chunk::CHUNK_SIZE;
    if (bytesSkipped && !file->seek(bytesSkipped))
@@ -182,7 +185,8 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed, bool deferPers
 #endif
 
    const int BUFFER_SIZE = SETTINGS.get<quint32>("buffer_size_reading");
-   QByteArray buffer(BUFFER_SIZE, Qt::Uninitialized);
+   if (this->buffer.size() != BUFFER_SIZE)
+      this->buffer = QByteArray(BUFFER_SIZE, Qt::Uninitialized);
 
    Common::Hasher hasher;
    bool endOfFile = false;
@@ -201,7 +205,7 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed, bool deferPers
       // including a known partial tail, without spending this pass's hash budget.
       if (chunkNum < chunks.size() && chunks[chunkNum]->hasHash())
       {
-         const qint64 chunkSize = qMin<qint64>(Chunk::CHUNK_SIZE, initialInfo.size() - qint64(chunkNum) * Chunk::CHUNK_SIZE);
+         const qint64 chunkSize = qMin<qint64>(Chunk::CHUNK_SIZE, initialMetadata->size - qint64(chunkNum) * Chunk::CHUNK_SIZE);
          if (!file->seek(file->pos() + chunkSize))
             throw IOErrorException();
          bytesSkipped += chunkSize;
@@ -218,7 +222,7 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed, bool deferPers
 
          int bytesRead = 0;
          { // A buffer need not divide the chunk size (and may even exceed it). Never consume // bytes belonging to the next chunk when calculating this chunk's hash.
-            bytesRead = this->read(*file, buffer.data(), qMin(BUFFER_SIZE, Chunk::CHUNK_SIZE - bytesReadChunk));
+            bytesRead = this->read(*file, this->buffer.data(), qMin(BUFFER_SIZE, Chunk::CHUNK_SIZE - bytesReadChunk));
             switch (bytesRead)
             {
             case -1:
@@ -226,13 +230,13 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed, bool deferPers
                throw IOErrorException();
             case 0:
                endOfFile = true;
-               if (bytesReadChunk + bytesReadTotal + bytesSkipped != initialInfo.size())
+               if (bytesReadChunk + bytesReadTotal + bytesSkipped != initialMetadata->size)
                   return restartWithNewChunks();
                goto endReading;
             }
          }
 
-         hasher.addData(std::span<const char>(buffer).first(static_cast<size_t>(bytesRead)));
+         hasher.addData(std::span<const char>(this->buffer).first(static_cast<size_t>(bytesRead)));
 
          bytesReadChunk += bytesRead;
       }
@@ -273,9 +277,9 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed, bool deferPers
 
    // Never attach a new timestamp to hashes computed from an older file version.
    // Validate partial passes as well as completion, before publication or persistence.
-   const QFileInfo finalInfo(filePath);
-   if (!finalInfo.exists() || finalInfo.size() != initialInfo.size() ||
-       finalInfo.lastModified() != initialInfo.lastModified())
+   const auto finalMetadata = FilePool::getMetadata(*file);
+   if (!finalMetadata || finalMetadata->size != initialMetadata->size ||
+       finalMetadata->lastModified != initialMetadata->lastModified)
       return restartWithNewChunks();
 
    for (const auto& computed : computedHashes)

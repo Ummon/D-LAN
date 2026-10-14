@@ -19,6 +19,7 @@
 #include <priv/Cache/FilePool.h>
 #include <priv/Log.h>
 #include <Common/Global.h>
+#include <QTimeZone>
 #include <windows.h>
 #include <io.h>
 #include <fcntl.h>
@@ -28,6 +29,26 @@ bool FilePool::canReuseReleasedFiles()
 {
    // openFile() omits FILE_SHARE_DELETE, preventing replacement while the handle is cached.
    return true;
+}
+
+/**
+  * Read from the handle: a 'QFileInfo' opens the file again by its path, which costs more than hashing a small file.
+  * It's the same file, 'openFile()' omits FILE_SHARE_DELETE: an open file can't be replaced.
+  */
+std::optional<FilePool::Metadata> FilePool::getMetadata(QFile& file)
+{
+   BY_HANDLE_FILE_INFORMATION information;
+   const auto handle = reinterpret_cast<HANDLE>(_get_osfhandle(file.handle()));
+   if (handle == INVALID_HANDLE_VALUE || !GetFileInformationByHandle(handle, &information))
+      return std::nullopt;
+
+   // Like 'QFileInfo::lastModified()': truncated to the millisecond, invalid if the time isn't set.
+   static constexpr qint64 MSECS_FROM_1601_TO_1970 = 11644473600000;
+   const qint64 lastWrite = (qint64(information.ftLastWriteTime.dwHighDateTime) << 32) | information.ftLastWriteTime.dwLowDateTime; // [100 ns] since 1601.
+   return Metadata {
+      (qint64(information.nFileSizeHigh) << 32) | information.nFileSizeLow,
+      lastWrite == 0 ? QDateTime() : QDateTime::fromMSecsSinceEpoch(lastWrite / 10000 - MSECS_FROM_1601_TO_1970, QTimeZone::UTC)
+   };
 }
 
 namespace

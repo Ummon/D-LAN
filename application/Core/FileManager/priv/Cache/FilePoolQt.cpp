@@ -1,11 +1,24 @@
 #include <priv/Cache/FilePool.h>
 using namespace FM;
 
+#include <QFileInfo>
+
 bool FilePool::canReuseReleasedFiles()
 {
    // An open descriptor can survive unlink/rename on POSIX and refer to an obsolete inode.
    // Reopen through the path, including exclusive creation detection, on every new acquisition.
    return false;
+}
+
+/**
+  * Read from the path, not from the descriptor: for the same reason as 'canReuseReleasedFiles()', the file may have been replaced.
+  */
+std::optional<FilePool::Metadata> FilePool::getMetadata(QFile& file)
+{
+   const QFileInfo info(file.fileName());
+   if (!info.exists())
+      return std::nullopt;
+   return Metadata { info.size(), info.lastModified() };
 }
 
 QFile* FilePool::openFile(const QString& path, QIODevice::OpenMode mode, bool* fileCreated)

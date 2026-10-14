@@ -46,10 +46,12 @@ namespace
    {
    public:
       std::function<void()> afterRead;
+      QList<std::pair<const char*, qint64>> reads; // The buffer and the maximum size given to each read.
 
    protected:
       qint64 read(QFile& file, char* data, qint64 maxSize) override
       {
+         this->reads.append({ data, maxSize });
          const qint64 result = FM::FileHasher::read(file, data, maxSize);
          if (result > 0 && this->afterRead)
          {
@@ -3089,6 +3091,55 @@ void CacheTest::writerRegistrationSurvivesFileReset()
    QFile downloaded(temp.filePath("download.bin"));
    QVERIFY(downloaded.open(QIODevice::ReadOnly));
    QCOMPARE(downloaded.readAll(), content);
+}
+
+/**
+  * The reading buffer is allocated once, not for each file: with many small files, its allocation costs more than the hashing.
+  * It follows a change of 'buffer_size_reading'.
+  */
+void CacheTest::hashingReusesItsBuffer()
+{
+   const quint32 savedBufferSize = SETTINGS.get<quint32>("buffer_size_reading");
+   const auto restore = qScopeGuard([&] { SETTINGS.set("buffer_size_reading", savedBufferSize); });
+   FM::Chunk::CHUNK_SIZE = Common::Constants::CHUNK_SIZE;
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   FM::Cache cache(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   const auto shared = cache.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::SharedDirectory*>(cache.getSharedEntry(shared.first.ID));
+   QVERIFY(root);
+   ReadCallbackFileHasher hasher;
+   QList<QByteArray> blocks; // Take the place of a buffer freed between two files, a new one would have another address.
+
+   for (int bufferSize : { 4096, 1000 })
+   {
+      SETTINGS.set("buffer_size_reading", quint32(bufferSize));
+      hasher.reads.clear();
+      for (int i = 0; i < 3; ++i)
+      {
+         // Larger than the buffer: several reads per file.
+         const QByteArray content(5000 + i, char('a' + i));
+         const QString name = QString("%1-%2.bin").arg(bufferSize).arg(i);
+         QFile physical(temp.filePath(name));
+         QVERIFY(physical.open(QIODevice::WriteOnly));
+         QCOMPARE(physical.write(content), content.size());
+         physical.close();
+         auto file = new FM::File(root, name, content.size(), false, QFileInfo(physical).lastModified(), root->getRootDir());
+
+         QVERIFY(hasher.start(file));
+         Common::Hasher expected;
+         expected.addData(std::span<const char>(content));
+         QCOMPARE(file->getChunks().first()->getHash(), expected.getResult());
+         blocks.append(QByteArray(bufferSize, Qt::Uninitialized));
+      }
+
+      QVERIFY(hasher.reads.size() > 6);
+      for (const auto& [data, maxSize] : hasher.reads)
+      {
+         QCOMPARE(data, hasher.reads.first().first);
+         QVERIFY(maxSize <= bufferSize);
+      }
+   }
 }
 
 void CacheTest::hashingRespectsChunkBoundaries_data()
