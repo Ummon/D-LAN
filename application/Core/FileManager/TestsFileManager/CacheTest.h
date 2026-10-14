@@ -36,6 +36,8 @@ private slots:
    void watcherLimitLeavesRoomForWaitConditions();
    void fileIteratorSkipsEmptyDirectories();
    void sizeIndexKeepsFilesOfSameSize();
+   void findWithWordsAndFilters_data();
+   void findWithWordsAndFilters();
    void updaterWaitsForEarliestTask_data();
    void updaterWaitsForEarliestTask();
    void failedHashingIsQueuedOnce_data();

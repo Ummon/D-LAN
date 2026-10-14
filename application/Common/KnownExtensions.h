@@ -35,8 +35,16 @@ namespace Common
       static int getBeginningExtension(const QString& filename);
       static QString removeExtension(const QString& filename);
       static QString getExtension(const QString& filename);
+      static QString getNormalizedExtension(const QString& filename);
 
    private:
+      struct Extension
+      {
+         int beginning; ///< In the filename, '-1' if there is no extension.
+         const QString* normalized; ///< As it's known: in lower case. 'nullptr' if there is no extension.
+      };
+      static Extension findExtension(const QString& filename);
+
       static void add(ExtensionCategory cat, const QString& extension);
       static QHash<QString, ExtensionCategory> extensions;
       static QList<QList<QString>> extensionsByCategory;

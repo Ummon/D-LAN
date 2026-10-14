@@ -1,5 +1,6 @@
 #include <Common/KnownExtensions.h>
 #include <QStringView>
+#include <QVarLengthArray>
 using namespace Common;
 
 bool KnownExtensions::exists(const QString& extension)
@@ -31,30 +32,7 @@ ExtensionCategory KnownExtensions::getCategoryFrom(const QString& extension)
 
 int KnownExtensions::getBeginningExtension(const QString& filename)
 {
-   // Only the final maxExtensionLength characters can be a known extension.
-   // As before, a leading dot alone does not introduce an extension.
-   qsizetype i = filename.indexOf('.', qMax(qsizetype(1), filename.size() - maxExtensionLength - 1));
-   if (i == -1 || i == filename.size() - 1)
-      return -1;
-
-   const QString normalized = filename.mid(i + 1).toLower();
-   QStringView suffix(normalized);
-   while (true)
-   {
-      // This temporary QString borrows normalized's storage without allocating.
-      if (extensions.contains(QString::fromRawData(suffix.data(), suffix.size())))
-         return static_cast<int>(i + 1);
-
-      i = filename.indexOf('.', i + 1);
-      if (i == -1 || i == filename.size() - 1)
-         break;
-
-      // Lowercasing can expand Unicode characters, so advance through the
-      // original and normalized strings independently to preserve the index.
-      suffix = suffix.sliced(suffix.indexOf('.') + 1);
-   }
-
-   return -1;
+   return findExtension(filename).beginning;
 }
 
 QString KnownExtensions::removeExtension(const QString& filename)
@@ -76,6 +54,62 @@ QString KnownExtensions::getExtension(const QString& filename)
       return filename.right(filename.length() - i);
    else
       return QString();
+}
+
+/**
+  * Returns an existing extension in lower case, as it's known: the same value as 'getExtension(filename).toLower()'
+  * without the memory allocations, see 'findExtension(..)'.
+  */
+QString KnownExtensions::getNormalizedExtension(const QString& filename)
+{
+   const QString* extension = findExtension(filename).normalized;
+   return extension ? *extension : QString();
+}
+
+KnownExtensions::Extension KnownExtensions::findExtension(const QString& filename)
+{
+   // Only the final maxExtensionLength characters can be a known extension.
+   // As before, a leading dot alone does not introduce an extension.
+   qsizetype i = filename.indexOf('.', qMax(qsizetype(1), filename.size() - maxExtensionLength - 1));
+   if (i == -1 || i == filename.size() - 1)
+      return { -1, nullptr };
+
+   // The end of the filename in lower case. Usually it's only made of ASCII characters: they are lowered
+   // one by one in a local buffer, without any memory allocation.
+   const QStringView end = QStringView(filename).sliced(i + 1);
+   QVarLengthArray<QChar, 16> asciiNormalized;
+   QString normalized;
+   QStringView suffix;
+   for (const QChar c : end)
+   {
+      if (c.unicode() >= 0x80)
+      {
+         normalized = end.toString().toLower();
+         suffix = normalized;
+         break;
+      }
+      asciiNormalized.append(c.toLower());
+   }
+   if (suffix.isNull())
+      suffix = QStringView(asciiNormalized.constData(), asciiNormalized.size());
+
+   while (true)
+   {
+      // This temporary QString borrows the storage of the suffix without allocating.
+      const auto extension = extensions.constFind(QString::fromRawData(suffix.data(), suffix.size()));
+      if (extension != extensions.constEnd())
+         return { static_cast<int>(i + 1), &extension.key() };
+
+      i = filename.indexOf('.', i + 1);
+      if (i == -1 || i == filename.size() - 1)
+         break;
+
+      // Lowercasing can expand Unicode characters, so advance through the
+      // original and normalized strings independently to preserve the index.
+      suffix = suffix.sliced(suffix.indexOf('.') + 1);
+   }
+
+   return { -1, nullptr };
 }
 
 void KnownExtensions::add(ExtensionCategory cat, const QString& extension)

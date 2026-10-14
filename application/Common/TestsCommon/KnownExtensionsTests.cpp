@@ -37,6 +37,10 @@ private slots:
       QTest::newRow("expanding lowercase") << QString(expandingStem + ".MP3") << 4 << "MP3" << expandingStem;
       const QString kelvinExtension = QString("M") + QChar(0x212a) + "V";
       QTest::newRow("Unicode lowercase") << QString("x." + kelvinExtension) << 2 << kelvinExtension << "x";
+      const QString hanStem = QString(QChar(0x65E5)) + QChar(0x672C); // Not ASCII: the end of the filename is lowered another way.
+      QTest::newRow("Han stem") << QString(hanStem + ".MP3") << 3 << "MP3" << hanStem;
+      QTest::newRow("Han between dots") << QString("x." + hanStem + ".Mp3") << 5 << "Mp3" << QString("x." + hanStem);
+      QTest::newRow("Han extension") << QString("x.mp3." + hanStem) << -1 << "" << QString("x.mp3." + hanStem);
       const QString nullStem = QString("x") + QChar(0) + "y";
       QTest::newRow("embedded null") << QString(nullStem + ".JPG") << 4 << "JPG" << nullStem;
       const QString longStem = QString("part.").repeated(20000) + "file";
@@ -52,6 +56,7 @@ private slots:
       QFETCH(QString, stem);
       QCOMPARE(KnownExtensions::getBeginningExtension(filename), beginning);
       QCOMPARE(KnownExtensions::getExtension(filename), extension);
+      QCOMPARE(KnownExtensions::getNormalizedExtension(filename), extension.toLower());
       QCOMPARE(KnownExtensions::removeExtension(filename), stem);
    }
 
@@ -70,6 +75,7 @@ private slots:
                   const QString filename = prefix + spelling;
                   QCOMPARE(KnownExtensions::getBeginningExtension(filename), int(prefix.size()));
                   QCOMPARE(KnownExtensions::getExtension(filename), spelling);
+                  QCOMPARE(KnownExtensions::getNormalizedExtension(filename), extension);
                   QCOMPARE(KnownExtensions::removeExtension(filename), prefix.chopped(1));
                }
             }

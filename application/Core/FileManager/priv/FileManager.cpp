@@ -332,11 +332,32 @@ QList<Protos::Common::FindResult> FileManager::find(
          : this->wordIndex.search(
             Common::StringUtils::splitInWords(words),
             maxNbResult,
+            // It's called for each entry matching the words, there may be a lot of them: the cheapest tests are done
+            // first, the type of the entry is asked only once and its extension is compared without allocating memory.
             [&](const Entry* entry) {
-               const File* file = dynamic_cast<const File*>(entry);
-               return (!filterBySizeOn || entry->getSize() >= minFileSize && entry->getSize() <= maxFileSize) &&
-                      (!filterByExtensionsOn || file && normalizedExtensions.contains(file->getExtension().toLower())) &&
-                      (!filterByCategoryOn || (category == Protos::Common::FindPattern::FILE && dynamic_cast<const File*>(entry) || category == Protos::Common::FindPattern::DIR && dynamic_cast<const Directory*>(entry)));
+               if (filterBySizeOn && (entry->getSize() < minFileSize || entry->getSize() > maxFileSize))
+                  return false;
+
+               switch (category)
+               {
+               case Protos::Common::FindPattern::FILE_DIR:
+               case Protos::Common::FindPattern::FILE:
+                  {
+                     if (!filterByExtensionsOn && !filterByCategoryOn)
+                        return true;
+
+                     const File* file = dynamic_cast<const File*>(entry);
+                     return file && (!filterByExtensionsOn || normalizedExtensions.contains(Common::KnownExtensions::getNormalizedExtension(file->getName())));
+                  }
+
+               case Protos::Common::FindPattern::DIR:
+                  // A directory has no extension.
+                  // Most of the entries are files and a cast which fails is a lot slower than one which succeeds: the files are recognized first.
+                  return !filterByExtensionsOn && !dynamic_cast<const File*>(entry) && dynamic_cast<const Directory*>(entry) != nullptr;
+
+               default: // A category unknown by this version.
+                  return false;
+               }
             }
          );
    }

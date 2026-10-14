@@ -1350,6 +1350,89 @@ void CacheTest::sizeIndexKeepsFilesOfSameSize()
    QCOMPARE(countOfSize(6), 1);
 }
 
+void CacheTest::findWithWordsAndFilters_data()
+{
+   QTest::addColumn<QStringList>("extensions");
+   QTest::addColumn<qint64>("minSize");
+   QTest::addColumn<qint64>("maxSize");
+   QTest::addColumn<int>("category");
+   QTest::addColumn<QStringList>("expected");
+
+   const qint64 noLimit = std::numeric_limits<qint64>::max();
+   const int all = Protos::Common::FindPattern::FILE_DIR;
+   const int files = Protos::Common::FindPattern::FILE;
+   const int directories = Protos::Common::FindPattern::DIR;
+   const QStringList none;
+
+   QTest::newRow("no filter") << none << qint64(0) << noLimit << all
+      << QStringList { "Alpha.MP3", "alpha", "alpha.mp3", "alpha.tar.gz", "alpha.txt", "alpha.unknown" };
+
+   QTest::newRow("files") << none << qint64(0) << noLimit << files
+      << QStringList { "Alpha.MP3", "alpha.mp3", "alpha.tar.gz", "alpha.txt", "alpha.unknown" };
+   QTest::newRow("directories") << none << qint64(0) << noLimit << directories << QStringList { "alpha" };
+   QTest::newRow("unknown category") << none << qint64(0) << noLimit << 7 << none;
+
+   // The extensions are compared without their case, only the known ones are extensions.
+   QTest::newRow("extension") << QStringList { "mp3" } << qint64(0) << noLimit << all << QStringList { "Alpha.MP3", "alpha.mp3" };
+   QTest::newRow("extension in upper case") << QStringList { "MP3" } << qint64(0) << noLimit << all << QStringList { "Alpha.MP3", "alpha.mp3" };
+   QTest::newRow("two extensions") << QStringList { "txt", "mp3" } << qint64(0) << noLimit << all << QStringList { "Alpha.MP3", "alpha.mp3", "alpha.txt" };
+   QTest::newRow("compound extension") << QStringList { "tar.gz" } << qint64(0) << noLimit << all << QStringList { "alpha.tar.gz" };
+   QTest::newRow("end of a compound extension") << QStringList { "gz" } << qint64(0) << noLimit << all << none;
+   QTest::newRow("unknown extension") << QStringList { "unknown" } << qint64(0) << noLimit << all << none;
+   QTest::newRow("extension, files") << QStringList { "mp3" } << qint64(0) << noLimit << files << QStringList { "Alpha.MP3", "alpha.mp3" };
+   QTest::newRow("extension, directories") << QStringList { "mp3" } << qint64(0) << noLimit << directories << none;
+
+   // The size of a directory is the one of its content.
+   QTest::newRow("size") << none << qint64(20) << qint64(30) << all << QStringList { "alpha.tar.gz", "alpha.txt" };
+   QTest::newRow("size of a directory") << none << qint64(50) << qint64(50) << all << QStringList { "Alpha.MP3", "alpha" };
+   QTest::newRow("size, files") << none << qint64(50) << qint64(50) << files << QStringList { "Alpha.MP3" };
+   QTest::newRow("size, directories") << none << qint64(50) << qint64(50) << directories << QStringList { "alpha" };
+   QTest::newRow("minimum size") << none << qint64(40) << noLimit << all << QStringList { "Alpha.MP3", "alpha", "alpha.unknown" };
+   QTest::newRow("maximum size") << none << qint64(0) << qint64(10) << all << QStringList { "alpha.mp3" };
+
+   QTest::newRow("extension and size") << QStringList { "mp3" } << qint64(40) << qint64(60) << all << QStringList { "Alpha.MP3" };
+   QTest::newRow("all filters") << QStringList { "mp3", "txt" } << qint64(10) << qint64(20) << files << QStringList { "alpha.mp3", "alpha.txt" };
+   QTest::newRow("all filters, directories") << QStringList { "mp3" } << qint64(50) << qint64(50) << directories << none;
+}
+
+/**
+  * A search by words filtered by extensions, sizes and category.
+  */
+void CacheTest::findWithWordsAndFilters()
+{
+   QFETCH(QStringList, extensions);
+   QFETCH(qint64, minSize);
+   QFETCH(qint64, maxSize);
+   QFETCH(int, category);
+   QFETCH(QStringList, expected);
+
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   const auto saved = SETTINGS.getRepeated<Protos::Common::SharedEntry>("shared_entries");
+   const auto restore = qScopeGuard([&] { SETTINGS.set("shared_entries", saved); });
+   SETTINGS.rm("shared_entries");
+   FM::FileManager manager(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   manager.fileUpdater.stop();
+   manager.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::Directory*>(manager.getEntry(Common::Path(temp.path() + '/')));
+   QVERIFY(root);
+
+   const QDateTime date = QDateTime::currentDateTime();
+   new FM::File(root->getRoot(), "alpha.mp3", 10, false, date, root);
+   new FM::File(root->getRoot(), "alpha.txt", 20, false, date, root);
+   new FM::File(root->getRoot(), "alpha.tar.gz", 30, false, date, root);
+   new FM::File(root->getRoot(), "alpha.unknown", 40, false, date, root);
+   FM::Directory* directory = root->createSubDir("alpha");
+   new FM::File(root->getRoot(), "Alpha.MP3", 50, false, date, directory);
+
+   QStringList names;
+   for (const auto& result : manager.find("alpha", extensions, minSize, maxSize, static_cast<Protos::Common::FindPattern_Category>(category), 100, 65536, true))
+      for (const auto& entry : result.entries())
+         names << QString::fromStdString(entry.entry().name());
+   std::sort(names.begin(), names.end());
+   QCOMPARE(names, expected);
+}
+
 void CacheTest::updaterWaitsForEarliestTask_data()
 {
    QTest::addColumn<bool>("unwatchable");
