@@ -87,9 +87,11 @@ private slots:
       compare();
 
       // With milliseconds, and before 1970 for the conversion of the time.
+      // The date before 1970 has no milliseconds: on Unix, 'QFile::setFileTime(..)' truncates toward zero and gives
+      // a negative 'tv_nsec' to 'futimens(..)', which fails with EINVAL.
       for (const QDateTime& date : {
          QDateTime(QDate(2020, 5, 17), QTime(13, 14, 15, 678), QTimeZone::UTC),
-         QDateTime(QDate(1969, 7, 20), QTime(20, 17, 40, 123), QTimeZone::UTC) })
+         QDateTime(QDate(1969, 7, 20), QTime(20, 17, 40), QTimeZone::UTC) })
       {
          QFile writer(path);
          QVERIFY(writer.open(QIODevice::Append));
