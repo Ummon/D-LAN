@@ -45,17 +45,13 @@ Peer::Peer(PeerManager* peerManager, QSharedPointer<FM::IFileManager> fileManage
    uploadRate(0),
    speed(MAX_SPEED),
    alive(false),
+   alivePeriod(SETTINGS.get<double>("peer_timeout_factor") * Common::Constants::PEER_IMALIVE_PERIOD),
    blocked(false),
    protocolVersion(0)
 {
    this->speedTimer.invalidate();
 
-   static int interval_ms = SETTINGS.get<double>("peer_timeout_factor") * Common::Constants::PEER_IMALIVE_PERIOD;
-   Q_ASSERT(interval_ms > 100); // An inteval near zero shouldn't be possible.
-
-   this->aliveTimer.setSingleShot(true);
-   this->aliveTimer.setInterval(interval_ms);
-   connect(&this->aliveTimer, &QTimer::timeout, this, &Peer::aliveTimeout);
+   Q_ASSERT(this->alivePeriod > 100); // An interval near zero shouldn't be possible.
 
    this->blockedTimer.setSingleShot(true);
    connect(&this->blockedTimer, &QTimer::timeout, this, &Peer::unblock);
@@ -226,13 +222,13 @@ void Peer::update(
    }
 
    // Both are owned by the main thread, they must not be touched while holding 'mutex'.
-   this->aliveTimer.start();
+   // Only a deadline: restarting a timer for each 'IMAlive' message costs more than the rest of its processing.
+   this->aliveDeadline.setRemainingTime(this->alivePeriod);
    this->connectionPool.setIP(IP, port);
 }
 
 void Peer::setAsDead()
 {
-   this->aliveTimer.stop();
    this->consideredDead();
 }
 
@@ -273,16 +269,17 @@ void Peer::newConnexion(QTcpSocket* tcpSocket)
 }
 
 /**
-  * No 'IMAlive' message has been received during the whole period. They are multicast UDP datagrams, some can be
-  * lost, particularly on a wireless network when they are large and thus fragmented. The peer isn't considered
-  * dead as long as it talks to us through TCP: closing its sockets would abort the transfers in progress.
+  * The alive deadline has expired: no 'IMAlive' message has been received during the whole period, see
+  * 'PeerManager::checkAlivePeers()'. They are multicast UDP datagrams, some can be lost, particularly on a
+  * wireless network when they are large and thus fragmented. The peer isn't considered dead as long as it talks
+  * to us through TCP: closing its sockets would abort the transfers in progress.
   */
 void Peer::aliveTimeout()
 {
-   if (this->connectionPool.showsRemotePeerActivity(this->aliveTimer.interval()))
+   if (this->connectionPool.showsRemotePeerActivity(this->alivePeriod))
    {
       L_DEBU(QString("No IMAlive received but the peer is still active: %1").arg(this->toStringLog()));
-      this->aliveTimer.start();
+      this->aliveDeadline.setRemainingTime(this->alivePeriod);
       return;
    }
 

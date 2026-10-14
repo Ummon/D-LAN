@@ -47,6 +47,8 @@ PeerManager::PeerManager(QSharedPointer<FM::IFileManager> fileManager) :
    self(new PeerSelf(this, this->fileManager)),
    pendingSocketTimeout(SETTINGS.get<quint32>("pending_socket_timeout"))
 {
+   this->aliveTimer.setSingleShot(true);
+   connect(&this->aliveTimer, &QTimer::timeout, this, &PeerManager::checkAlivePeers);
 }
 
 PeerManager::~PeerManager()
@@ -153,6 +155,10 @@ void PeerManager::updatePeer(
    const bool wasAvailable = peer->isAvailable();
 
    peer->update(IP, port, nick, sharingAmount, coreVersion, downloadRate, uploadRate, protocolVersion);
+
+   // Otherwise the timer is already started for a deadline earlier than the new one.
+   if (!this->aliveTimer.isActive())
+      this->checkAlivePeers();
 
    if (!wasAvailable && peer->isAvailable())
       emit peerBecomesAvailable(peer);
@@ -287,6 +293,36 @@ Peer* PeerManager::addPeer(const Common::Hash& ID, const QString& nick)
    });
    this->peers.insert(ID, peer);
    return peer;
+}
+
+/**
+  * Call 'Peer::aliveTimeout()' for the alive peers whose deadline has expired, then start the timer for the earliest
+  * deadline left.
+  * A single timer for all the peers, not moved by each 'IMAlive' message: on Windows, restarting a timer costs more
+  * than the rest of the processing of the message (about 16 us). This one wakes up about once per alive period,
+  * whatever the number of peers.
+  */
+void PeerManager::checkAlivePeers()
+{
+   QDeadlineTimer next(QDeadlineTimer::Forever);
+
+   for (Peer* peer : this->peers)
+   {
+      if (!peer->isAlive())
+         continue;
+
+      if (peer->getAliveDeadline().hasExpired())
+      {
+         peer->aliveTimeout();
+         if (!peer->isAlive())
+            continue;
+      }
+
+      next = qMin(next, peer->getAliveDeadline());
+   }
+
+   if (!next.isForever())
+      this->aliveTimer.start(static_cast<int>(next.remainingTime()));
 }
 
 /**

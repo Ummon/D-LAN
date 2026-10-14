@@ -87,6 +87,9 @@ namespace PM
       );
       void setAsDead();
 
+      QDeadlineTimer getAliveDeadline() const { return this->aliveDeadline; }
+      void aliveTimeout();
+
       virtual QSharedPointer<IGetEntriesResult> getEntries(const Protos::Core::GetEntries& dirs) override;
       virtual QSharedPointer<IGetHashesResult> getHashes(const Protos::Core::GetHashes& request) override;
       virtual QSharedPointer<IGetChunksResult> getChunks(const Protos::Core::GetChunks& chunk) override;
@@ -97,7 +100,6 @@ namespace PM
       void unblocked();
 
    protected slots:
-      void aliveTimeout();
       void consideredDead();
       void unblock();
 
@@ -141,7 +143,8 @@ namespace PM
       mutable quint64 speed; // [bytes/s]. Reset to 'MAX_SPEED' by 'getSpeedUnlocked()' when outdated.
 
       bool alive;
-      QTimer aliveTimer; // Main thread only.
+      const int alivePeriod; // [ms]. Without any 'IMAlive' message during this period the peer is dead, see 'aliveTimeout()'.
+      QDeadlineTimer aliveDeadline; // Main thread only. Checked by 'PeerManager::checkAlivePeers()'.
 
       bool blocked;
       QString blockedReason;

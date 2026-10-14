@@ -1892,6 +1892,47 @@ void Tests::socketShowsRemotePeerActivity()
 }
 
 /**
+  * A single timer checks all the peers: a peer dies after a period without 'IMAlive' message, even if the other
+  * peers keep sending theirs.
+  */
+void Tests::silentPeerDies()
+{
+   const double oldFactor = SETTINGS.get<double>("peer_timeout_factor");
+   const auto restore = qScopeGuard([&] { SETTINGS.set("peer_timeout_factor", oldFactor); });
+   SETTINGS.set("peer_timeout_factor", 0.2); // Read when a peer is created.
+   const int period = 0.2 * Common::Constants::PEER_IMALIVE_PERIOD; // 600 ms.
+
+   auto manager = Builder::newPeerManager(this->fileManagers[0]);
+   const auto update = [&](const Common::Hash& ID) {
+      manager->updatePeer(ID, QHostAddress::LocalHost, 1, "peer", 0, QString(), 0, 0, Common::Constants::PROTOCOL_VERSION);
+      return manager->getPeer(ID);
+   };
+
+   QElapsedTimer elapsed;
+   elapsed.start();
+   IPeer* silent = update(Common::Hash::rand());
+   IPeer* talkative = update(Common::Hash::rand());
+
+   // The talkative peer sends an 'IMAlive' message each 100 ms.
+   qint64 silentDeath = -1;
+   while (elapsed.elapsed() < 3 * period)
+   {
+      QTest::qWait(100);
+      QVERIFY(talkative->isAlive());
+      update(talkative->getID());
+      if (silentDeath < 0 && !silent->isAlive())
+         silentDeath = elapsed.elapsed();
+   }
+   QVERIFY(silentDeath >= period); // Also fails if it's still alive (-1).
+
+   QTRY_VERIFY(!talkative->isAlive());
+
+   // Nothing is left to check, the timer must be started again for a peer coming back.
+   QVERIFY(update(silent->getID())->isAlive());
+   QTRY_VERIFY(!silent->isAlive());
+}
+
+/**
   * Some 'IMAlive' messages may be lost: a peer talking to us through TCP mustn't be considered dead.
   */
 void Tests::activePeerSurvivesAliveTimeout()
@@ -1904,9 +1945,7 @@ void Tests::activePeerSurvivesAliveTimeout()
       manager->updatePeer(id, QHostAddress::LocalHost, server.serverPort(), "remote",
          0, QString(), 0, 0, Common::Constants::PROTOCOL_VERSION);
    };
-   const auto aliveTimeout = [&](IPeer* peer) {
-      QVERIFY(QMetaObject::invokeMethod(static_cast<PM::Peer*>(peer), "aliveTimeout", Qt::DirectConnection));
-   };
+   const auto aliveTimeout = [](IPeer* peer) { static_cast<PM::Peer*>(peer)->aliveTimeout(); };
 
    update();
    IPeer* peer = manager->getPeer(id);

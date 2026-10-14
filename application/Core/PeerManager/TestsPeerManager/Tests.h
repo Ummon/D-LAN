@@ -88,6 +88,7 @@ private slots:
    void rejectExcessUploads();
    void socketOptionIsApplied();
    void socketShowsRemotePeerActivity();
+   void silentPeerDies();
    void activePeerSurvivesAliveTimeout();
    void askForAChunk();
    void cleanupTestCase();

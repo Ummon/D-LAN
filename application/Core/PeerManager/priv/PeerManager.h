@@ -23,6 +23,7 @@
 #include <QSet>
 #include <QString>
 #include <QList>
+#include <QTimer>
 #include <QTcpSocket>
 
 #include <Protos/core_protocol.pb.h>
@@ -99,6 +100,7 @@ namespace PM
 
    private:
       Peer* addPeer(const Common::Hash& ID, const QString& nick = QString());
+      void checkAlivePeers();
 
       void dataReceived(QTcpSocket* tcpSocket);
       void disconnected(QTcpSocket* tcpSocket);
@@ -110,6 +112,7 @@ namespace PM
 
       PeerSelf* self; // Ourself.
       QMap<Common::Hash, Peer*> peers; // The other peers.
+      QTimer aliveTimer; // For all the peers, see 'checkAlivePeers()'.
 
       const int pendingSocketTimeout; // [ms].
       QSet<QTcpSocket*> pendingSockets; // The new connections, until their first header tells which peer they come from.
