@@ -172,7 +172,7 @@ bool FileHasher::start(File* fileCache, int n, int* amountHashed, bool deferPers
 
    this->hashing = true;
 
-   L_USER(tr("Indexing %1 . . .").arg(filePath));
+   // L_USER(tr("Indexing %1 . . .").arg(filePath));
 
    // The file remembers its first unknown hash across scheduler passes.
    qint64 bytesSkipped = qint64(chunkNum) * Chunk::CHUNK_SIZE;
