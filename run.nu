@@ -19,8 +19,8 @@ def "main build-css" [] {
     build_css
 }
 
-def "main deploy" [port, host, ssh_key, path, chown_user = ""] {
-    let ssh_args = [-p $port -i $ssh_key]
+def "main deploy" [port, host, path, chown_user = "", --ssh-key: string] {
+    let ssh_args = [-p $port] ++ (if $ssh_key != null { [-i $ssh_key] } else { [] })
 
     build_css
     setup_native_build_env
