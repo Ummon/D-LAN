@@ -18,8 +18,8 @@
 
 #pragma once
 
-#define VERSION "1.6.2"
-#define VERSION_TAG ""
+#define VERSION "1.7.0"
+#define VERSION_TAG "Beta1"
 
 // These two values are automatically updated during the release building process. See the script 'Application/Tools/update_version.nu.'
 #define BUILD_TIME "2026-10-14_17-15"

@@ -130,7 +130,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QProgressBar" name="prgGlobalProgress">
+      <widget class="GUI::ProgressBar" name="prgGlobalProgress">
        <property name="maximum">
         <number>10000</number>
        </property>
@@ -149,6 +149,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>GUI::ProgressBar</class>
+   <extends>QProgressBar</extends>
+   <header>ProgressBar.h</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="../resources.qrc"/>
  </resources>

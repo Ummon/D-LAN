@@ -36,6 +36,7 @@
 
 #include <Taskbar/Taskbar.h>
 #include <MDI/MdiArea.h>
+#include <DialogDecorator.h>
 
 namespace Ui {
    class MainWindow;
@@ -46,7 +47,24 @@ namespace GUI
    class MainWindow : public QMainWindow
    {
       Q_OBJECT
-      static const int WINDOW_BORDER_RADIUS = 10; // Only used when a custom style is selected.
+
+      // The window decoration of the custom styles, a style can change it with 'qproperty-<name>' in a 'GUI--MainWindow' rule.
+      // The values are reset to their default when a style is loaded.
+      Q_PROPERTY(int windowBorderRadius MEMBER windowBorderRadius NOTIFY windowDecorationChanged)
+      // Width of the frame around the window, the style draws it with a border. It can be dragged to resize the window.
+      Q_PROPERTY(int windowFrameWidth MEMBER windowFrameWidth NOTIFY windowDecorationChanged)
+      // The title bar spans the whole width of the window instead of only the central area.
+      Q_PROPERTY(bool titleBarOverDocks MEMBER titleBarOverDocks NOTIFY windowDecorationChanged)
+      // Margins and spacing of the title bar layout.
+      Q_PROPERTY(int titleBarSpacing MEMBER titleBarSpacing NOTIFY windowDecorationChanged)
+      // Width of the frame of the dialogs with a fixed size, the resizable ones have the frame of the main window (see
+      // 'DialogDecorator'). 0: the dialogs keep the decoration of the system.
+      Q_PROPERTY(int dialogFrameWidth MEMBER dialogFrameWidth NOTIFY windowDecorationChanged)
+      // The style is drawn pixel for pixel, without the scaling of the screen. It's applied when the GUI starts (see 'main.cpp').
+      Q_PROPERTY(bool ignoreScreenScaling MEMBER ignoreScreenScaling)
+
+      static const int DEFAULT_WINDOW_BORDER_RADIUS = 10;
+      static const int DEFAULT_TITLE_BAR_SPACING = 3; // As in 'MainWindow.ui'.
 
    public:
       explicit MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidget* parent = nullptr);
@@ -54,6 +72,7 @@ namespace GUI
 
    signals:
       void languageChanged(const QString& filename);
+      void windowDecorationChanged();
 
    private slots:
       void coreConnectionError(RCC::ICoreConnection::ConnectionErrorCode errorCode);
@@ -64,6 +83,7 @@ namespace GUI
       void newLogMessage();
 
       void loadCustomStyle(const QString& styleName);
+      void updateWindowDecoration();
 
       void maximize();
 
@@ -84,6 +104,10 @@ namespace GUI
 #endif
 
    private:
+      void updateScreenScalingSetting(bool askForRestart);
+      void updateWindowMask();
+      void updateTitleBarMask();
+
       void saveWindowsSettings();
       void restoreWindowsSettings();
 
@@ -100,6 +124,14 @@ namespace GUI
       QPoint dragPosition; // Used by custom styles.
       bool customStyleLoaded;
       Qt::WindowFlags initialWindowFlags;
+
+      int windowBorderRadius;
+      int windowFrameWidth;
+      bool titleBarOverDocks;
+      int titleBarSpacing;
+      int dialogFrameWidth;
+      bool ignoreScreenScaling;
+      DialogDecorator* dialogDecorator;
 
       bool logAutoScroll;
       LogModel logModel;

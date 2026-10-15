@@ -104,6 +104,11 @@ int main(int argc, char *argv[])
    if (languageGiven)
       return 0;
 
+   // A style drawn pixel for pixel ignores the scaling of the screen. Only possible before the application is created:
+   // changing to or from such a style needs a restart.
+   if (SETTINGS.get<bool>("ignore_screen_scaling"))
+      GUI::D_LAN_GUI::ignoreScreenScaling();
+
    LM::Builder::setLogDirName("log_gui");
 
    // Must come after 'setLogDirName(..)': the crash reports are written next to the log files.

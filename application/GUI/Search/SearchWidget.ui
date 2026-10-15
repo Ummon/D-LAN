@@ -71,7 +71,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QProgressBar" name="prgSearch">
+    <widget class="GUI::ProgressBar" name="prgSearch">
      <property name="maximumSize">
       <size>
        <width>16777215</width>
@@ -94,6 +94,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>GUI::ProgressBar</class>
+   <extends>QProgressBar</extends>
+   <header>ProgressBar.h</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="../resources.qrc"/>
  </resources>

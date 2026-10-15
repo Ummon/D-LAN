@@ -42,6 +42,8 @@ add_executable(DLanGUI WIN32
    DownloadMenu.cpp
    D-LAN_GUI.cpp
    ProgressBar.cpp
+   WindowFrame.cpp
+   DialogDecorator.cpp
    Utils.cpp
    UtilsLocations.cpp
    Settings/AskNewPasswordDialog.cpp
@@ -99,6 +101,8 @@ add_executable(DLanGUI WIN32
    DownloadMenu.h
    D-LAN_GUI.h
    ProgressBar.h
+   WindowFrame.h
+   DialogDecorator.h
    IconProvider.h
    Utils.h
    Settings/AskNewPasswordDialog.h
@@ -271,7 +275,7 @@ if(DLAN_BUILD_TESTS)
       Downloads/TestsDownloadsWidget.cpp Downloads/DownloadsWidget.cpp
       Downloads/DownloadsFlatModel.cpp Downloads/DownloadsTreeModel.cpp Downloads/DownloadsModel.cpp
       Peers/PeerListModel.cpp Settings/SharedEntryListModel.cpp
-      CheckBoxList.cpp Log.cpp resources.qrc
+      CheckBoxList.cpp Log.cpp ProgressBar.cpp resources.qrc
    )
    set_target_properties(TestsDownloadsWidget PROPERTIES AUTOUIC ON AUTORCC ON)
    target_include_directories(TestsDownloadsWidget PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")

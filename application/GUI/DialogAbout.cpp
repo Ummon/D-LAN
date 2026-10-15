@@ -84,7 +84,8 @@ void DialogAbout::paintEvent(QPaintEvent* event)
    gradient.setColorAt(0, QColor(24, 36, 48));
    gradient.setColorAt(1, QColor(102, 150, 201));
    QBrush brush(gradient);
-   p.fillRect(QRect(0, 0, width(), height()), brush);
+   // Inside the frame and the title bar drawn by some styles, see 'DialogDecorator'.
+   p.fillRect(this->contentsRect(), brush);
 }
 
 
