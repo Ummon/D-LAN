@@ -64,6 +64,8 @@ DialogAbout::DialogAbout(QWidget *parent) :
 #ifdef DEBUG
    this->ui->lblTitle->setText(this->ui->lblTitle->text() + " (DEBUG)");
 #endif
+
+   this->updateLabelsAlignment();
 }
 
 DialogAbout::~DialogAbout()
@@ -90,6 +92,19 @@ void DialogAbout::changeEvent(QEvent* event)
 {
    if (event->type() == QEvent::LanguageChange)
       this->ui->retranslateUi(this);
+   else if (event->type() == QEvent::LayoutDirectionChange)
+      this->updateLabelsAlignment();
 
    QDialog::changeEvent(event);
+}
+
+/**
+  * A label aligns its text on the side of the text's own direction, not the interface's: in a right-to-left
+  * interface the title and the URL would be on the left and the translated lines on the right.
+  */
+void DialogAbout::updateLabelsAlignment()
+{
+   const Qt::Alignment alignment = (this->layoutDirection() == Qt::RightToLeft ? Qt::AlignRight : Qt::AlignLeft) | Qt::AlignAbsolute | Qt::AlignVCenter;
+   for (QLabel* label : this->findChildren<QLabel*>())
+      label->setAlignment(alignment);
 }
