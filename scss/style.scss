@@ -61,22 +61,25 @@ a {
    }
 }
 
-h1 {
+h1,
+h2,
+h3 {
    font-style: italic;
+}
+
+h1 {
    font-size: 1.2rem;
    margin-top: 7px;
    margin-bottom: 10px;
 }
 
 h2 {
-   font-style: italic;
    font-size: 1.15rem;
    margin-top: 3px;
    margin-bottom: 10px;
 }
 
 h3 {
-   font-style: italic;
    font-size: 1.1rem;
    margin-top: 1px;
    margin-bottom: 8px;
@@ -98,7 +101,6 @@ p {
 
    img {
       width: 140px;
-      height: auto;
       max-width: none;
    }
 
@@ -146,7 +148,8 @@ select {
    align-items: center;
    justify-content: space-between;
 
-   font: italic 0.9rem verdana, sans-serif;
+   font-style: italic;
+   font-size: 0.9rem;
    line-height: normal;
    @include bg;
    padding-top: 1px;
@@ -248,14 +251,17 @@ select {
       .download {
          border: 3px solid white;
 
-         &:hover {
-            border-color: consts.$red-light;
-         }
-
          border-radius: 40px;
          width: 340px;
          background-color: rgba(255, 255, 255, consts.$opacity2);
          margin: 15px 15px 0px 15px;
+
+         background-repeat: no-repeat;
+         background-position: 12px 18px;
+
+         &:hover {
+            border-color: consts.$red-light;
+         }
 
          &.Windows {
             background-image: url("img/download_for_windows.png");
@@ -278,9 +284,6 @@ select {
             background-size: 24px 24px;
             background-position: 14px;
          }
-
-         background-repeat: no-repeat;
-         background-position: 12px 18px;
 
          // The icon is on the right when the text is written from right to left.
          [dir="rtl"] & {
@@ -381,8 +384,6 @@ select {
 
             max-width: 32px;
             max-height: 32px;
-            width: auto;
-            height: auto;
          }
 
          .qr-code {
