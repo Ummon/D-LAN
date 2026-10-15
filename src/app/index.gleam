@@ -31,7 +31,7 @@ pub fn main_page(
       html.script([attr.src("static/js/d_lan.js")], ""),
     ]),
     html.body([], [
-      header(lang),
+      header(lang, page),
       html.div([attr.id("menu-bg")], [
         html.canvas([attr.id("canvas-menu")]),
         menu(lang, page),
@@ -42,7 +42,7 @@ pub fn main_page(
   ])
 }
 
-fn header(lang: tr.Lang) {
+fn header(lang: tr.Lang, current_page: String) {
   html.div([attr.id("header")], [
     languages(lang),
     html.ul([attr.id("external-links")], [
@@ -65,9 +65,15 @@ fn header(lang: tr.Lang) {
         ),
       ]),
       html.li([], [
-        html.a([attr.href("donate.html")], [
-          tr.header_support_us(lang),
-        ]),
+        html.a(
+          [
+            attr.href("donate.html"),
+            attr.classes([#("current-page", current_page == "donate.html")]),
+          ],
+          [
+            tr.header_support_us(lang),
+          ],
+        ),
       ]),
     ]),
   ])

@@ -173,7 +173,8 @@ select {
          padding: 0px 10px 0px 10px;
          color: consts.$red-dark;
 
-         &:hover {
+         &:hover,
+         &.current-page {
             @include highlight-link-header;
          }
       }
