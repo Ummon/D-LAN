@@ -99,7 +99,7 @@
         <translation>ڈاؤن لوڈز</translation>
     </message>
     <message>
-        <location line="+34"/>
+        <location line="+40"/>
         <source>Item shown :</source>
         <translation>دکھائے گئے آئٹمز:</translation>
     </message>
@@ -231,7 +231,7 @@
 <context>
     <name>GUI::D_LAN_GUI</name>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="+212"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="+221"/>
         <source>Show the user interface</source>
         <translation>یوزر انٹرفیس دکھائیں</translation>
     </message>
@@ -246,7 +246,7 @@
         <translation>باہر نکلیں</translation>
     </message>
     <message>
-        <location line="+43"/>
+        <location line="+59"/>
         <source>D-LAN user interface closed</source>
         <translation>‏D-LAN کا یوزر انٹرفیس بند ہو گیا</translation>
     </message>
@@ -297,7 +297,7 @@
 <context>
     <name>GUI::DownloadsDelegate</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+118"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+119"/>
         <source>Queued</source>
         <translation>قطار میں</translation>
     </message>
@@ -494,7 +494,7 @@
 <context>
     <name>GUI::MainWindow</name>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="+172"/>
+        <location filename="../GUI/MainWindow.cpp" line="+183"/>
         <source>Already connected to this address</source>
         <translation>اس پتے سے پہلے ہی منسلک ہے</translation>
     </message>
@@ -578,6 +578,16 @@
         <location line="+4"/>
         <source>The connection to the core has been lost</source>
         <translation>‏Core سے کنکشن منقطع ہو گیا ہے</translation>
+    </message>
+    <message>
+        <location line="+110"/>
+        <source>Restart needed</source>
+        <translation>دوبارہ شروع کرنا ضروری ہے</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>D-LAN must be restarted to display this style correctly.</source>
+        <translation>اس انداز کو درست طریقے سے دکھانے کے لیے D-LAN کو دوبارہ شروع کرنا ہوگا۔</translation>
     </message>
 </context>
 <context>
@@ -1022,7 +1032,7 @@
         <translation>‏Core سروس شروع ہو گئی</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="-150"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="-166"/>
         <source>D-LAN already launched</source>
         <translation>‏D-LAN پہلے سے چل رہا ہے</translation>
     </message>
@@ -1042,7 +1052,7 @@
         <translation>پھر بھی شروع کریں</translation>
     </message>
     <message>
-        <location filename="../GUI/main.cpp" line="+112"/>
+        <location filename="../GUI/main.cpp" line="+117"/>
         <source>D-LAN GUI version %1</source>
         <translation>‏D-LAN GUI ورژن %1</translation>
     </message>

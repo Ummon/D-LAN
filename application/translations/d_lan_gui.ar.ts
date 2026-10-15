@@ -99,7 +99,7 @@
         <translation>التنزيلات</translation>
     </message>
     <message>
-        <location line="+34"/>
+        <location line="+40"/>
         <source>Item shown :</source>
         <translation>العناصر المعروضة:</translation>
     </message>
@@ -231,7 +231,7 @@
 <context>
     <name>GUI::D_LAN_GUI</name>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="+212"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="+221"/>
         <source>Show the user interface</source>
         <translation>إظهار واجهة المستخدم</translation>
     </message>
@@ -246,7 +246,7 @@
         <translation>خروج</translation>
     </message>
     <message>
-        <location line="+43"/>
+        <location line="+59"/>
         <source>D-LAN user interface closed</source>
         <translation>تم إغلاق واجهة مستخدم D-LAN</translation>
     </message>
@@ -297,7 +297,7 @@
 <context>
     <name>GUI::DownloadsDelegate</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+118"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+119"/>
         <source>Queued</source>
         <translation>في قائمة الانتظار</translation>
     </message>
@@ -494,7 +494,7 @@
 <context>
     <name>GUI::MainWindow</name>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="+172"/>
+        <location filename="../GUI/MainWindow.cpp" line="+183"/>
         <source>Already connected to this address</source>
         <translation>متصل بهذا العنوان بالفعل</translation>
     </message>
@@ -578,6 +578,16 @@
         <location line="+4"/>
         <source>The connection to the core has been lost</source>
         <translation>انقطع الاتصال بـ Core</translation>
+    </message>
+    <message>
+        <location line="+110"/>
+        <source>Restart needed</source>
+        <translation>يلزم إعادة التشغيل</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>D-LAN must be restarted to display this style correctly.</source>
+        <translation>يجب إعادة تشغيل D-LAN لعرض هذا النمط بشكل صحيح.</translation>
     </message>
 </context>
 <context>
@@ -1022,7 +1032,7 @@
         <translation>تم تشغيل خدمة Core</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="-150"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="-166"/>
         <source>D-LAN already launched</source>
         <translation>‏D-LAN يعمل بالفعل</translation>
     </message>
@@ -1042,7 +1052,7 @@
         <translation>تشغيل على أي حال</translation>
     </message>
     <message>
-        <location filename="../GUI/main.cpp" line="+112"/>
+        <location filename="../GUI/main.cpp" line="+117"/>
         <source>D-LAN GUI version %1</source>
         <translation>‏D-LAN GUI الإصدار %1</translation>
     </message>

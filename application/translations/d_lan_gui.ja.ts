@@ -99,22 +99,22 @@
         <translation>ダウンロード</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.ui" line="48"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.ui" line="54"/>
         <source>Item shown :</source>
         <translation>表示する項目 :</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.ui" line="75"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.ui" line="81"/>
         <source>Remove completed files from the queue</source>
         <translation>完了したファイルをキューから削除</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.ui" line="95"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.ui" line="101"/>
         <source>Removed selected downloads from the queue</source>
         <translation>選択したダウンロードをキューから削除</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.ui" line="115"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.ui" line="121"/>
         <source>Pause or unpause selected downloads</source>
         <translation>選択したダウンロードを一時停止／再開</translation>
     </message>
@@ -231,27 +231,27 @@
 <context>
     <name>GUI::D_LAN_GUI</name>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="212"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="221"/>
         <source>Show the user interface</source>
         <translation>ユーザーインターフェースを表示</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="216"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="225"/>
         <source>Stop the user interface</source>
         <translation>ユーザーインターフェースを終了</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="219"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="228"/>
         <source>Exit</source>
         <translation>終了</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="262"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="287"/>
         <source>D-LAN user interface closed</source>
         <translation>D-LANのユーザーインターフェースを閉じました</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="263"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="288"/>
         <source>D-LAN Core is still running in background. Select &apos;exit&apos; from the contextual menu if you want to stop it.</source>
         <translation>D-LAN Coreはバックグラウンドで引き続き動作しています。停止するには、コンテキストメニューから「終了」を選択してください。</translation>
     </message>
@@ -297,27 +297,27 @@
 <context>
     <name>GUI::DownloadsDelegate</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="118"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="119"/>
         <source>Queued</source>
         <translation>キュー待ち</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="120"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="121"/>
         <source>Getting hashes..</source>
         <translation>ハッシュを取得中..</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="128"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="129"/>
         <source>Complete</source>
         <translation>完了</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="130"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="131"/>
         <source>Paused</source>
         <translation>一時停止</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="132"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="133"/>
         <source>Waiting..</source>
         <translation>待機中..</translation>
     </message>
@@ -418,67 +418,67 @@
 <context>
     <name>GUI::DownloadsWidget</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="267"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="268"/>
         <source>Open location</source>
         <translation>場所を開く</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="276"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="277"/>
         <source>Move to top</source>
         <translation>先頭に移動</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="299"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="300"/>
         <source>Pause selected entries</source>
         <translation>選択した項目を一時停止</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="299"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="300"/>
         <source>Unpause selected entries</source>
         <translation>選択した項目を再開</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="387"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="388"/>
         <source>Remove selected downloads</source>
         <translation>選択したダウンロードを削除</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="388"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="389"/>
         <source>Are you sure to remove the selected downloads? There is one or more unfinished download.</source>
         <translation>選択したダウンロードを削除してもよろしいですか？未完了のダウンロードが含まれています。</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="473"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="474"/>
         <source>Switch to file list view</source>
         <translation>ファイル一覧表示に切り替え</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="485"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="486"/>
         <source>Switch to tree view</source>
         <translation>ツリー表示に切り替え</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="528"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="529"/>
         <source>&lt;All&gt;</source>
         <translation>&lt;すべて&gt;</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="528"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="529"/>
         <source>Complete</source>
         <translation>完了</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="528"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="529"/>
         <source>Downloading</source>
         <translation>ダウンロード中</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="528"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="529"/>
         <source>Queued</source>
         <translation>キュー待ち</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="528"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="529"/>
         <source>Inactive</source>
         <translation>停止中</translation>
     </message>
@@ -494,90 +494,100 @@
 <context>
     <name>GUI::MainWindow</name>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="172"/>
+        <location filename="../GUI/MainWindow.cpp" line="183"/>
         <source>Already connected to this address</source>
         <translation>このアドレスにはすでに接続しています</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="175"/>
+        <location filename="../GUI/MainWindow.cpp" line="186"/>
         <source>There is already a connection process in progress</source>
         <translation>すでに接続処理が進行中です</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="178"/>
+        <location filename="../GUI/MainWindow.cpp" line="189"/>
         <source>The host is unknown</source>
         <translation>ホストが見つかりません</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="181"/>
+        <location filename="../GUI/MainWindow.cpp" line="192"/>
         <source>Host has timed out</source>
         <translation>ホストがタイムアウトしました</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="184"/>
+        <location filename="../GUI/MainWindow.cpp" line="195"/>
         <source>The host hasn&apos;t defined any password</source>
         <translation>ホストにパスワードが設定されていません</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="187"/>
+        <location filename="../GUI/MainWindow.cpp" line="198"/>
         <source>Wrong password</source>
         <translation>パスワードが違います</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="190"/>
+        <location filename="../GUI/MainWindow.cpp" line="201"/>
         <source>Invalid address</source>
         <translation>無効なアドレスです</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="193"/>
+        <location filename="../GUI/MainWindow.cpp" line="204"/>
         <source>Unable to establish a trusted encrypted connection. The Core&apos;s certificate may have changed or TLS may be unavailable. See the log for details.</source>
         <translation>信頼できる暗号化接続を確立できません。Core の証明書が変更されたか、TLS が利用できない可能性があります。詳細はログを確認してください。</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="196"/>
+        <location filename="../GUI/MainWindow.cpp" line="207"/>
         <source>The core closed the connection. Remote access requires a password to be defined on the core. The core may also have too many connections.</source>
         <translation>Core が接続を閉じました。リモートアクセスには Core にパスワードを設定する必要があります。Core の接続数が多すぎる可能性もあります。</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="199"/>
+        <location filename="../GUI/MainWindow.cpp" line="210"/>
         <source>The core couldn&apos;t prove that it knows the password. The connection may have been intercepted.</source>
         <translation>Core がパスワードを知っていることを証明できませんでした。接続が傍受された可能性があります。</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="202"/>
+        <location filename="../GUI/MainWindow.cpp" line="213"/>
         <source>The versions of the core and of this GUI are incompatible for remote control. Update them to the same version.</source>
         <translation>Core とこの GUI のバージョンは、リモート操作に関して互換性がありません。同じバージョンに更新してください。</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="205"/>
+        <location filename="../GUI/MainWindow.cpp" line="216"/>
         <source>Error unknown</source>
         <translation>原因不明のエラー</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="211"/>
+        <location filename="../GUI/MainWindow.cpp" line="222"/>
         <source>Unable to connect to the core</source>
         <translation>Core に接続できません</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="214"/>
-        <location filename="../GUI/MainWindow.cpp" line="238"/>
+        <location filename="../GUI/MainWindow.cpp" line="225"/>
+        <location filename="../GUI/MainWindow.cpp" line="249"/>
         <source>Core address:</source>
         <translation>Core のアドレス:</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="224"/>
+        <location filename="../GUI/MainWindow.cpp" line="235"/>
         <source>Connected to the core</source>
         <translation>Core に接続しました</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="233"/>
+        <location filename="../GUI/MainWindow.cpp" line="244"/>
         <source>Connection lost</source>
         <translation>接続が切断されました</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="237"/>
+        <location filename="../GUI/MainWindow.cpp" line="248"/>
         <source>The connection to the core has been lost</source>
         <translation>Core との接続が切断されました</translation>
+    </message>
+    <message>
+        <location filename="../GUI/MainWindow.cpp" line="358"/>
+        <source>Restart needed</source>
+        <translation>再起動が必要です</translation>
+    </message>
+    <message>
+        <location filename="../GUI/MainWindow.cpp" line="359"/>
+        <source>D-LAN must be restarted to display this style correctly.</source>
+        <translation>このスタイルを正しく表示するには D-LAN を再起動する必要があります。</translation>
     </message>
 </context>
 <context>
@@ -1038,27 +1048,27 @@
         <translation>Core サービスを起動しました</translation>
     </message>
     <message>
-        <location filename="../GUI/main.cpp" line="112"/>
+        <location filename="../GUI/main.cpp" line="117"/>
         <source>D-LAN GUI version %1</source>
         <translation>D-LAN GUI バージョン %1</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="113"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="122"/>
         <source>D-LAN already launched</source>
         <translation>D-LAN はすでに起動しています</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="114"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="123"/>
         <source>An instance of D-LAN is already launched</source>
         <translation>D-LAN のインスタンスがすでに起動しています</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="116"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="125"/>
         <source>Quit</source>
         <translation>終了</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="117"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="126"/>
         <source>Launch anyway</source>
         <translation>それでも起動する</translation>
     </message>

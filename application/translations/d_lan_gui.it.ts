@@ -99,22 +99,22 @@
         <translation>Download</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.ui" line="48"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.ui" line="54"/>
         <source>Item shown :</source>
         <translation>Elementi visualizzati :</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.ui" line="75"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.ui" line="81"/>
         <source>Remove completed files from the queue</source>
         <translation>Rimuovi i file completati dalla coda</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.ui" line="95"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.ui" line="101"/>
         <source>Removed selected downloads from the queue</source>
         <translation>Rimuovi i download selezionati dalla coda</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.ui" line="115"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.ui" line="121"/>
         <source>Pause or unpause selected downloads</source>
         <translation>Metti in pausa o riprendi i download selezionati</translation>
     </message>
@@ -231,27 +231,27 @@
 <context>
     <name>GUI::D_LAN_GUI</name>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="212"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="221"/>
         <source>Show the user interface</source>
         <translation>Mostra l&apos;interfaccia utente</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="216"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="225"/>
         <source>Stop the user interface</source>
         <translation>Chiudi l&apos;interfaccia utente</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="219"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="228"/>
         <source>Exit</source>
         <translation>Esci</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="262"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="287"/>
         <source>D-LAN user interface closed</source>
         <translation>Interfaccia utente di D-LAN chiusa</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="263"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="288"/>
         <source>D-LAN Core is still running in background. Select &apos;exit&apos; from the contextual menu if you want to stop it.</source>
         <translation>D-LAN Core è ancora in esecuzione in background. Seleziona «Esci» dal menu contestuale per arrestarlo.</translation>
     </message>
@@ -297,7 +297,7 @@
 <context>
     <name>GUI::DownloadsDelegate</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="118"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="119"/>
         <source>Queued</source>
         <translation>In coda</translation>
     </message>
@@ -306,22 +306,22 @@
         <translation type="vanished">Recupero degli hash..</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="120"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="121"/>
         <source>Getting hashes..</source>
         <translation>Recupero degli hash..</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="128"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="129"/>
         <source>Complete</source>
         <translation>Completato</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="130"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="131"/>
         <source>Paused</source>
         <translation>In pausa</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="132"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="133"/>
         <source>Waiting..</source>
         <translation>In attesa..</translation>
     </message>
@@ -422,67 +422,67 @@
 <context>
     <name>GUI::DownloadsWidget</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="267"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="268"/>
         <source>Open location</source>
         <translation>Apri percorso</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="276"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="277"/>
         <source>Move to top</source>
         <translation>Sposta in cima</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="299"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="300"/>
         <source>Pause selected entries</source>
         <translation>Metti in pausa gli elementi selezionati</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="299"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="300"/>
         <source>Unpause selected entries</source>
         <translation>Riprendi gli elementi selezionati</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="387"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="388"/>
         <source>Remove selected downloads</source>
         <translation>Rimuovi i download selezionati</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="388"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="389"/>
         <source>Are you sure to remove the selected downloads? There is one or more unfinished download.</source>
         <translation>Rimuovere i download selezionati? Uno o più download non sono ancora completati.</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="473"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="474"/>
         <source>Switch to file list view</source>
         <translation>Passa alla vista elenco file</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="485"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="486"/>
         <source>Switch to tree view</source>
         <translation>Passa alla vista ad albero</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="528"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="529"/>
         <source>&lt;All&gt;</source>
         <translation>&lt;Tutti&gt;</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="528"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="529"/>
         <source>Complete</source>
         <translation>Completato</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="528"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="529"/>
         <source>Downloading</source>
         <translation>In scaricamento</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="528"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="529"/>
         <source>Queued</source>
         <translation>In coda</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="528"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="529"/>
         <source>Inactive</source>
         <translation>Inattivo</translation>
     </message>
@@ -498,90 +498,100 @@
 <context>
     <name>GUI::MainWindow</name>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="172"/>
+        <location filename="../GUI/MainWindow.cpp" line="183"/>
         <source>Already connected to this address</source>
         <translation>Già connesso a questo indirizzo</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="175"/>
+        <location filename="../GUI/MainWindow.cpp" line="186"/>
         <source>There is already a connection process in progress</source>
         <translation>Un tentativo di connessione è già in corso</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="178"/>
+        <location filename="../GUI/MainWindow.cpp" line="189"/>
         <source>The host is unknown</source>
         <translation>Host sconosciuto</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="181"/>
+        <location filename="../GUI/MainWindow.cpp" line="192"/>
         <source>Host has timed out</source>
         <translation>L&apos;host non risponde</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="184"/>
+        <location filename="../GUI/MainWindow.cpp" line="195"/>
         <source>The host hasn&apos;t defined any password</source>
         <translation>L&apos;host non ha impostato alcuna password</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="187"/>
+        <location filename="../GUI/MainWindow.cpp" line="198"/>
         <source>Wrong password</source>
         <translation>Password errata</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="190"/>
+        <location filename="../GUI/MainWindow.cpp" line="201"/>
         <source>Invalid address</source>
         <translation>Indirizzo non valido</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="193"/>
+        <location filename="../GUI/MainWindow.cpp" line="204"/>
         <source>Unable to establish a trusted encrypted connection. The Core&apos;s certificate may have changed or TLS may be unavailable. See the log for details.</source>
         <translation>Impossibile stabilire una connessione crittografata attendibile. Il certificato del Core potrebbe essere cambiato oppure TLS potrebbe non essere disponibile. Consultare il log per ulteriori dettagli.</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="196"/>
+        <location filename="../GUI/MainWindow.cpp" line="207"/>
         <source>The core closed the connection. Remote access requires a password to be defined on the core. The core may also have too many connections.</source>
         <translation>Il Core ha chiuso la connessione. L&apos;accesso remoto richiede che sul Core sia impostata una password. Il Core potrebbe anche avere troppe connessioni.</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="199"/>
+        <location filename="../GUI/MainWindow.cpp" line="210"/>
         <source>The core couldn&apos;t prove that it knows the password. The connection may have been intercepted.</source>
         <translation>Il Core non ha potuto dimostrare di conoscere la password. La connessione potrebbe essere stata intercettata.</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="202"/>
+        <location filename="../GUI/MainWindow.cpp" line="213"/>
         <source>The versions of the core and of this GUI are incompatible for remote control. Update them to the same version.</source>
         <translation>Le versioni del Core e di questa GUI non sono compatibili per il controllo remoto. Aggiornarle alla stessa versione.</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="205"/>
+        <location filename="../GUI/MainWindow.cpp" line="216"/>
         <source>Error unknown</source>
         <translation>Errore sconosciuto</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="211"/>
+        <location filename="../GUI/MainWindow.cpp" line="222"/>
         <source>Unable to connect to the core</source>
         <translation>Impossibile connettersi al Core</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="214"/>
-        <location filename="../GUI/MainWindow.cpp" line="238"/>
+        <location filename="../GUI/MainWindow.cpp" line="225"/>
+        <location filename="../GUI/MainWindow.cpp" line="249"/>
         <source>Core address:</source>
         <translation>Indirizzo del Core:</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="224"/>
+        <location filename="../GUI/MainWindow.cpp" line="235"/>
         <source>Connected to the core</source>
         <translation>Connesso al Core</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="233"/>
+        <location filename="../GUI/MainWindow.cpp" line="244"/>
         <source>Connection lost</source>
         <translation>Connessione persa</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="237"/>
+        <location filename="../GUI/MainWindow.cpp" line="248"/>
         <source>The connection to the core has been lost</source>
         <translation>La connessione al Core è stata persa</translation>
+    </message>
+    <message>
+        <location filename="../GUI/MainWindow.cpp" line="358"/>
+        <source>Restart needed</source>
+        <translation>Riavvio necessario</translation>
+    </message>
+    <message>
+        <location filename="../GUI/MainWindow.cpp" line="359"/>
+        <source>D-LAN must be restarted to display this style correctly.</source>
+        <translation>D-LAN deve essere riavviato per visualizzare correttamente questo stile.</translation>
     </message>
 </context>
 <context>
@@ -1023,27 +1033,27 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="113"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="122"/>
         <source>D-LAN already launched</source>
         <translation>D-LAN è già in esecuzione</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="114"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="123"/>
         <source>An instance of D-LAN is already launched</source>
         <translation>Un&apos;istanza di D-LAN è già in esecuzione</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="116"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="125"/>
         <source>Quit</source>
         <translation>Esci</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="117"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="126"/>
         <source>Launch anyway</source>
         <translation>Avvia comunque</translation>
     </message>
     <message>
-        <location filename="../GUI/main.cpp" line="112"/>
+        <location filename="../GUI/main.cpp" line="117"/>
         <source>D-LAN GUI version %1</source>
         <translation>D-LAN GUI versione %1</translation>
     </message>
