@@ -48,6 +48,9 @@ namespace GUI
       D_LAN_GUI(int& argc, char* argv[], bool autoStartLocalCore = true);
       ~D_LAN_GUI() override;
 
+      static void ignoreScreenScaling();
+      static bool isScreenScalingIgnored();
+
       bool notify(QObject* receiver, QEvent* event) override;
 
 #ifndef Q_OS_MACOS
@@ -69,6 +72,8 @@ namespace GUI
    private:
       void shutdown(bool stopTheCore = true);
       bool shuttingDown = false;
+
+      static bool screenScalingIgnored;
 
 #ifdef Q_OS_WIN
       QSharedMemory sharedMemory;

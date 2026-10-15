@@ -99,7 +99,7 @@
         <translation>Téléchargements</translation>
     </message>
     <message>
-        <location line="+34"/>
+        <location line="+40"/>
         <source>Item shown :</source>
         <translation>Éléments affichés :</translation>
     </message>
@@ -231,7 +231,7 @@
 <context>
     <name>GUI::D_LAN_GUI</name>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="+212"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="+221"/>
         <source>Show the user interface</source>
         <translation>Afficher l&apos;interface graphique</translation>
     </message>
@@ -246,7 +246,7 @@
         <translation>Quitter</translation>
     </message>
     <message>
-        <location line="+43"/>
+        <location line="+59"/>
         <source>D-LAN user interface closed</source>
         <translation>Interface graphique de D-LAN fermée</translation>
     </message>
@@ -259,9 +259,13 @@
 <context>
     <name>GUI::DownloadMenu</name>
     <message>
-        <location filename="../GUI/DownloadMenu.cpp" line="+68"/>
         <source>Download selected items to the first directory folder with enough free space</source>
-        <translation>Télécharger les éléments sélectionnés dans le premier dossier partagé avec assez de place libre</translation>
+        <translation type="vanished">Télécharger les éléments sélectionnés dans le premier dossier partagé avec assez de place libre</translation>
+    </message>
+    <message>
+        <location filename="../GUI/DownloadMenu.cpp" line="+68"/>
+        <source>Download selected items to the first shared directory with enough free space</source>
+        <translation>Télécharger les éléments sélectionnés dans le premier dossier partagé avec assez d’espace libre</translation>
     </message>
     <message>
         <location line="+15"/>
@@ -285,19 +289,27 @@
     </message>
     <message>
         <location line="+64"/>
-        <source>%1 more folders . . .</source>
+        <source>%1 more directories . . .</source>
         <translation>%1 dossiers de plus . . .</translation>
     </message>
     <message>
         <location line="+8"/>
+        <source>Unable to get the directories</source>
+        <translation>Impossible d'obtenir les dossiers</translation>
+    </message>
+    <message>
+        <source>%1 more folders . . .</source>
+        <translation type="vanished">%1 dossiers de plus . . .</translation>
+    </message>
+    <message>
         <source>Unable to get the folders</source>
-        <translation>Impossible d&apos;obtenir les dossiers</translation>
+        <translation type="vanished">Impossible d&apos;obtenir les dossiers</translation>
     </message>
 </context>
 <context>
     <name>GUI::DownloadsDelegate</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+118"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+119"/>
         <source>Queued</source>
         <translation>En file d&apos;attente</translation>
     </message>
@@ -498,7 +510,7 @@
 <context>
     <name>GUI::MainWindow</name>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="+172"/>
+        <location filename="../GUI/MainWindow.cpp" line="+183"/>
         <source>Already connected to this address</source>
         <translation>Déjà connecté à cette adresse</translation>
     </message>
@@ -582,6 +594,16 @@
         <location line="+4"/>
         <source>The connection to the core has been lost</source>
         <translation>La connexion au core a été perdue</translation>
+    </message>
+    <message>
+        <location line="+110"/>
+        <source>Restart needed</source>
+        <translation>Redémarrage nécessaire</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>D-LAN must be restarted to display this style correctly.</source>
+        <translation>D-LAN doit être redémarré pour afficher correctement ce style.</translation>
     </message>
 </context>
 <context>
@@ -1042,7 +1064,7 @@
         <translation>Core lancé comme service</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="-150"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="-166"/>
         <source>D-LAN already launched</source>
         <translation>D-LAN déjà lancé</translation>
     </message>
@@ -1062,7 +1084,7 @@
         <translation>Lancer quand même</translation>
     </message>
     <message>
-        <location filename="../GUI/main.cpp" line="+112"/>
+        <location filename="../GUI/main.cpp" line="+117"/>
         <source>D-LAN GUI version %1</source>
         <translation>D-LAN GUI version %1</translation>
     </message>
@@ -1264,7 +1286,12 @@
         <translation>Pseudo</translation>
     </message>
     <message>
-        <location line="+46"/>
+        <location line="+14"/>
+        <source>Shared directories and files</source>
+        <translation>Dossiers et fichiers partagés</translation>
+    </message>
+    <message>
+        <location line="+32"/>
         <source>Remove the selected shared files and directories</source>
         <translation>Enlever les fichiers et dossiers partagés sélectionnés</translation>
     </message>
@@ -1377,12 +1404,11 @@
         <translation type="vanished">Vérification de l&apos;intégrité des données</translation>
     </message>
     <message>
-        <location line="-448"/>
         <source>Shared folders and files</source>
-        <translation>Dossiers et fichiers partagés</translation>
+        <translation type="vanished">Dossiers et fichiers partagés</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="-439"/>
         <source>Add new shared directories and/or files</source>
         <translation>Ajouter de nouveaux dossiers et/ou fichiers à partager</translation>
     </message>

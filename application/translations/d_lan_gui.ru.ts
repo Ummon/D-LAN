@@ -99,7 +99,7 @@
         <translation>Загрузки</translation>
     </message>
     <message>
-        <location line="+34"/>
+        <location line="+40"/>
         <source>Item shown :</source>
         <translation>Показывать элементы :</translation>
     </message>
@@ -231,7 +231,7 @@
 <context>
     <name>GUI::D_LAN_GUI</name>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="+212"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="+221"/>
         <source>Show the user interface</source>
         <translation>Открыть пользовательский интерфейс</translation>
     </message>
@@ -246,7 +246,7 @@
         <translation>Выход</translation>
     </message>
     <message>
-        <location line="+43"/>
+        <location line="+59"/>
         <source>D-LAN user interface closed</source>
         <translation>Пользовательский интерфейс D-LAN закрыт</translation>
     </message>
@@ -259,9 +259,13 @@
 <context>
     <name>GUI::DownloadMenu</name>
     <message>
-        <location filename="../GUI/DownloadMenu.cpp" line="+68"/>
         <source>Download selected items to the first directory folder with enough free space</source>
-        <translation>Скачать выбранные элементы в первую папку, где есть достаточно места</translation>
+        <translation type="vanished">Скачать выбранные элементы в первую папку, где есть достаточно места</translation>
+    </message>
+    <message>
+        <location filename="../GUI/DownloadMenu.cpp" line="+68"/>
+        <source>Download selected items to the first shared directory with enough free space</source>
+        <translation>Скачать выбранные элементы в первую общую папку, где есть достаточно места</translation>
     </message>
     <message>
         <location line="+15"/>
@@ -285,19 +289,27 @@
     </message>
     <message>
         <location line="+64"/>
-        <source>%1 more folders . . .</source>
+        <source>%1 more directories . . .</source>
         <translation>Ещё папок: %1 . . .</translation>
     </message>
     <message>
         <location line="+8"/>
-        <source>Unable to get the folders</source>
+        <source>Unable to get the directories</source>
         <translation>Не удалось получить список папок</translation>
+    </message>
+    <message>
+        <source>%1 more folders . . .</source>
+        <translation type="vanished">Ещё папок: %1 . . .</translation>
+    </message>
+    <message>
+        <source>Unable to get the folders</source>
+        <translation type="vanished">Не удалось получить список папок</translation>
     </message>
 </context>
 <context>
     <name>GUI::DownloadsDelegate</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+118"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+119"/>
         <source>Queued</source>
         <translation>В очереди</translation>
     </message>
@@ -498,7 +510,7 @@
 <context>
     <name>GUI::MainWindow</name>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="+172"/>
+        <location filename="../GUI/MainWindow.cpp" line="+183"/>
         <source>Already connected to this address</source>
         <translation>Уже подключен к этому адресу</translation>
     </message>
@@ -582,6 +594,16 @@
         <location line="+4"/>
         <source>The connection to the core has been lost</source>
         <translation>Соединение с ядром потеряно</translation>
+    </message>
+    <message>
+        <location line="+110"/>
+        <source>Restart needed</source>
+        <translation>Требуется перезапуск</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>D-LAN must be restarted to display this style correctly.</source>
+        <translation>Чтобы этот скин отображался правильно, нужно перезапустить D-LAN.</translation>
     </message>
 </context>
 <context>
@@ -1042,7 +1064,7 @@
         <translation>Служба ядра запущена</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="-150"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="-166"/>
         <source>D-LAN already launched</source>
         <translation>D-LAN уже запущен</translation>
     </message>
@@ -1062,7 +1084,7 @@
         <translation>Все равно запустить</translation>
     </message>
     <message>
-        <location filename="../GUI/main.cpp" line="+112"/>
+        <location filename="../GUI/main.cpp" line="+117"/>
         <source>D-LAN GUI version %1</source>
         <translation>D-LAN GUI версия %1</translation>
     </message>
@@ -1264,7 +1286,12 @@
         <translation>Имя</translation>
     </message>
     <message>
-        <location line="+46"/>
+        <location line="+14"/>
+        <source>Shared directories and files</source>
+        <translation>Общие папки и файлы</translation>
+    </message>
+    <message>
+        <location line="+32"/>
         <source>Remove the selected shared files and directories</source>
         <translation>Удалить выбранные общие файлы и папки</translation>
     </message>
@@ -1377,12 +1404,11 @@
         <translation type="vanished">Проверять целостность данных</translation>
     </message>
     <message>
-        <location line="-448"/>
         <source>Shared folders and files</source>
-        <translation>Общие папки и файлы</translation>
+        <translation type="vanished">Общие папки и файлы</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="-439"/>
         <source>Add new shared directories and/or files</source>
         <translation>Добавить новые общие папки и/или файлы</translation>
     </message>

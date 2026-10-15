@@ -99,7 +99,7 @@
         <translation>Descargas</translation>
     </message>
     <message>
-        <location line="+34"/>
+        <location line="+40"/>
         <source>Item shown :</source>
         <translation>Elementos mostrados:</translation>
     </message>
@@ -231,7 +231,7 @@
 <context>
     <name>GUI::D_LAN_GUI</name>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="+212"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="+221"/>
         <source>Show the user interface</source>
         <translation>Mostrar la interfaz de usuario</translation>
     </message>
@@ -246,7 +246,7 @@
         <translation>Salir</translation>
     </message>
     <message>
-        <location line="+43"/>
+        <location line="+59"/>
         <source>D-LAN user interface closed</source>
         <translation>Interfaz de usuario de D-LAN cerrada</translation>
     </message>
@@ -259,9 +259,13 @@
 <context>
     <name>GUI::DownloadMenu</name>
     <message>
-        <location filename="../GUI/DownloadMenu.cpp" line="+68"/>
         <source>Download selected items to the first directory folder with enough free space</source>
-        <translation>Descargar los elementos seleccionados a la primera carpeta con suficiente espacio libre</translation>
+        <translation type="vanished">Descargar los elementos seleccionados a la primera carpeta con suficiente espacio libre</translation>
+    </message>
+    <message>
+        <location filename="../GUI/DownloadMenu.cpp" line="+68"/>
+        <source>Download selected items to the first shared directory with enough free space</source>
+        <translation>Descargar los elementos seleccionados al primer directorio compartido con suficiente espacio libre</translation>
     </message>
     <message>
         <location line="+15"/>
@@ -285,19 +289,27 @@
     </message>
     <message>
         <location line="+64"/>
-        <source>%1 more folders . . .</source>
-        <translation>%1 carpetas más . . .</translation>
+        <source>%1 more directories . . .</source>
+        <translation>%1 directorios más . . .</translation>
     </message>
     <message>
         <location line="+8"/>
+        <source>Unable to get the directories</source>
+        <translation>No se pudieron obtener los directorios</translation>
+    </message>
+    <message>
+        <source>%1 more folders . . .</source>
+        <translation type="vanished">%1 carpetas más . . .</translation>
+    </message>
+    <message>
         <source>Unable to get the folders</source>
-        <translation>No se pudieron obtener las carpetas</translation>
+        <translation type="vanished">No se pudieron obtener las carpetas</translation>
     </message>
 </context>
 <context>
     <name>GUI::DownloadsDelegate</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+118"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+119"/>
         <source>Queued</source>
         <translation>En cola</translation>
     </message>
@@ -498,7 +510,7 @@
 <context>
     <name>GUI::MainWindow</name>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="+172"/>
+        <location filename="../GUI/MainWindow.cpp" line="+183"/>
         <source>Already connected to this address</source>
         <translation>Ya está conectado a esta dirección</translation>
     </message>
@@ -582,6 +594,16 @@
         <location line="+4"/>
         <source>The connection to the core has been lost</source>
         <translation>Se ha perdido la conexión con el núcleo</translation>
+    </message>
+    <message>
+        <location line="+110"/>
+        <source>Restart needed</source>
+        <translation>Reinicio necesario</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>D-LAN must be restarted to display this style correctly.</source>
+        <translation>Hay que reiniciar D-LAN para que este estilo se muestre correctamente.</translation>
     </message>
 </context>
 <context>
@@ -1023,7 +1045,7 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="-150"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="-166"/>
         <source>D-LAN already launched</source>
         <translation>D-LAN ya se ha ejecutado</translation>
     </message>
@@ -1043,7 +1065,7 @@
         <translation>Ejecutar de todas formas</translation>
     </message>
     <message>
-        <location filename="../GUI/main.cpp" line="+112"/>
+        <location filename="../GUI/main.cpp" line="+117"/>
         <source>D-LAN GUI version %1</source>
         <translation>D-LAN GUI versión %1</translation>
     </message>
@@ -1264,12 +1286,11 @@
         <translation>Apodo</translation>
     </message>
     <message>
-        <location line="+14"/>
         <source>Shared folders and files</source>
-        <translation>Directorios y archivos compartidos</translation>
+        <translation type="vanished">Directorios y archivos compartidos</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="+23"/>
         <source>Add new shared directories and/or files</source>
         <translation>Agregar nuevos directorios y/o archivos compartidos</translation>
     </message>
@@ -1433,7 +1454,12 @@
         <translation>Conexión al núcleo</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="-142"/>
+        <source>Shared directories and files</source>
+        <translation>Directorios y archivos compartidos</translation>
+    </message>
+    <message>
+        <location line="+150"/>
         <source>Address</source>
         <translation>Dirección</translation>
     </message>

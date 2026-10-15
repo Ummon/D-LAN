@@ -1,0 +1,909 @@
+/*
+ * Retro: Windows 95.
+ *
+ * Drawn pixel for pixel with bitmaps: the scaling of the screen is ignored ('qproperty-ignoreScreenScaling'), D-LAN must
+ * be restarted when this style is selected or unselected.
+ *
+ * Colors of the default scheme of Windows 95:
+ *    face #c0c0c0 (also the 3D light), highlight #ffffff, shadow #808080, dark shadow #000000
+ *    window #ffffff, selection #000080, active title #000080, inactive title #808080, tooltip #ffffe1
+ *
+ * The 3D edges are 9-slice images, as drawn by 'DrawEdge(..)':
+ *    raised.png       EDGE_RAISED: scroll bar buttons and thumb, drop-down buttons, menus
+ *    raised_soft.png  EDGE_RAISED | BF_SOFT: buttons of the title bars, header sections, tab pane
+ *    sunken.png       EDGE_SUNKEN: text fields, lists
+ *    sunken_soft.png  EDGE_SUNKEN | BF_SOFT: pushed buttons of the title bars
+ *    etched.png       EDGE_ETCHED: group boxes
+ *    flat_pushed.png  pushed scroll bar and drop-down buttons
+ *    button*.png      push buttons, with a third ring for the black border of the default button
+ */
+
+/***** Base *****/
+
+* {
+   background-color: #c0c0c0;
+   alternate-background-color: #ffffff;
+   color: #000000;
+   selection-background-color: #000080;
+   selection-color: #ffffff;
+   font-family: "Microsoft Sans Serif";
+   font-size: 8pt;
+}
+
+*:disabled {
+   color: #808080;
+}
+
+QLabel,
+QCheckBox,
+QRadioButton,
+#tabWidget {
+   background-color: transparent;
+}
+
+QToolTip {
+   background-color: #ffffe1;
+   color: #000000;
+   border: 1px solid #000000;
+   padding: 1px 2px;
+}
+
+/***** Window frame and title bar *****/
+
+GUI--MainWindow {
+   qproperty-ignoreScreenScaling: true;
+   qproperty-windowBorderRadius: 0;
+   qproperty-windowFrameWidth: 4;
+   qproperty-titleBarOverDocks: true;
+   qproperty-titleBarSpacing: 0;
+   qproperty-dialogFrameWidth: 3;
+   border-width: 4px;
+   border-image: url(styles/retro/frame.png) 4 4 4 4 stretch stretch;
+}
+
+/* Caption of 18 px followed by a line of the frame color. */
+#grip {
+   background-color: #000080;
+   border-bottom: 1px solid #c0c0c0;
+   padding: 0 2px;
+   image: url(styles/retro/title.png);
+   image-position: left center;
+}
+
+#grip:!active {
+   background-color: #808080;
+   image: url(styles/retro/title_inactive.png);
+}
+
+/* The icon is on the right, the position of the image is mirrored by Qt. */
+#grip[layoutDirection="RightToLeft"] {
+   image: url(styles/retro/title_rtl.png);
+}
+
+#grip[layoutDirection="RightToLeft"]:!active {
+   image: url(styles/retro/title_inactive_rtl.png);
+}
+
+/* Buttons of 16x14 px, the minimize and maximize buttons are side by side, the close button is 2 px apart. */
+#grip QPushButton {
+   border: none;
+   padding: 0;
+   margin: 2px 0 3px 0;
+   min-width: 16px;
+   max-width: 16px;
+   min-height: 14px;
+   max-height: 14px;
+}
+
+#grip #butClose {
+   margin: 2px 2px 3px 2px;
+}
+
+/* The images include the edges of the buttons. */
+#grip #butMinimize {
+   image: url(styles/retro/caption_minimize.png);
+}
+
+#grip #butMinimize:pressed {
+   image: url(styles/retro/caption_minimize_pressed.png);
+}
+
+#grip #butMaximize {
+   image: url(styles/retro/caption_maximize.png);
+}
+
+#grip #butMaximize:pressed {
+   image: url(styles/retro/caption_maximize_pressed.png);
+}
+
+GUI--MainWindow[maximized="true"] #grip #butMaximize {
+   image: url(styles/retro/caption_restore.png);
+}
+
+GUI--MainWindow[maximized="true"] #grip #butMaximize:pressed {
+   image: url(styles/retro/caption_restore_pressed.png);
+}
+
+#grip #butClose {
+   image: url(styles/retro/caption_close.png);
+}
+
+#grip #butClose:pressed {
+   image: url(styles/retro/caption_close_pressed.png);
+}
+
+/***** Docks, status bar and splitters *****/
+
+QMainWindow::separator {
+   background-color: #c0c0c0;
+   width: 4px;
+   height: 4px;
+}
+
+/* Qt sizes the buttons from their icon and draws it inside their border: the icons are whole buttons with their edges. */
+QDockWidget {
+   titlebar-close-icon: url(styles/retro/dock_close.png);
+   titlebar-normal-icon: url(styles/retro/dock_float.png);
+}
+
+QDockWidget::title {
+   background-color: #c0c0c0;
+   padding: 2px;
+   text-align: left;
+}
+
+QDockWidget::close-button,
+QDockWidget::float-button {
+   background-color: transparent;
+   border: none;
+   padding: 0;
+}
+
+QStatusBar::item {
+   border: none;
+}
+
+QSizeGrip {
+   image: url(styles/retro/size_grip.png);
+   width: 12px;
+   height: 12px;
+}
+
+QSplitter::handle:horizontal {
+   width: 4px;
+}
+
+QSplitter::handle:vertical {
+   height: 4px;
+}
+
+/***** Tabs *****/
+
+QTabBar {
+   qproperty-drawBase: 0;
+}
+
+/* The selected tab is 2 px higher and wider than the others and joins the pane. */
+QTabBar::tab {
+   border-width: 2px 2px 0 2px;
+   border-image: url(styles/retro/tab.png) 2 2 0 2 stretch stretch;
+   padding: 2px 6px 2px 6px;
+   margin-top: 2px;
+}
+
+QTabBar::tab:selected {
+   margin: 0 -2px;
+   padding-bottom: 4px;
+}
+
+QTabBar::tab:first:selected {
+   margin-left: 0;
+}
+
+QTabBar::tab:last:selected {
+   margin-right: 0;
+}
+
+/* The tabs of the windows have no pane, the bar draws its top edge. */
+#mdiArea > QTabBar {
+   border-bottom: 1px solid #ffffff;
+}
+
+#mdiArea > QTabBar::tab:!selected {
+   margin-bottom: 1px;
+}
+
+/* The buttons of the windows are in a widget named "tabWidget". */
+QTabBar::close-button,
+#tabWidget::close-button {
+   image: url(styles/retro/dock_close.png);
+}
+
+QTabBar QToolButton {
+   border-width: 2px;
+   border-image: url(styles/retro/raised.png) 2 2 2 2 stretch stretch;
+}
+
+QTabBar QToolButton:pressed {
+   border-image: url(styles/retro/flat_pushed.png) 2 2 2 2 stretch stretch;
+}
+
+QTabBar QToolButton::left-arrow {
+   image: url(styles/retro/arrow_left.png);
+}
+
+QTabBar QToolButton::right-arrow {
+   image: url(styles/retro/arrow_right.png);
+}
+
+QTabWidget::pane {
+   border-width: 2px;
+   border-image: url(styles/retro/raised_soft.png) 2 2 2 2 stretch stretch;
+   top: -2px;
+}
+
+#mdiArea {
+   background-color: #808080;
+}
+
+QMdiSubWindow {
+   background-color: #c0c0c0;
+}
+
+/***** Push buttons *****/
+
+QPushButton {
+   border-width: 3px;
+   border-image: url(styles/retro/button.png) 3 3 3 3 stretch stretch;
+   padding: 1px 6px;
+}
+
+QPushButton:default,
+QPushButton:focus {
+   border-image: url(styles/retro/button_default.png) 3 3 3 3 stretch stretch;
+}
+
+/* The label moves one pixel to the bottom right. */
+QPushButton:pressed {
+   border-image: url(styles/retro/button_pressed.png) 3 3 3 3 stretch stretch;
+   padding: 2px 5px 0 7px;
+}
+
+QPushButton:checked {
+   background-image: url(styles/retro/dither.png);
+   border-image: url(styles/retro/button_checked.png) 3 3 3 3 stretch stretch;
+   padding: 2px 5px 0 7px;
+}
+
+QDialogButtonBox QPushButton {
+   min-width: 57px; /* 75 px with the border and the padding. */
+}
+
+/* Flat buttons are drawn as in the toolbars: a thin edge appears under the mouse. */
+QPushButton:flat {
+   border-image: none;
+   border: 1px solid transparent;
+   background-color: transparent;
+   padding: 1px;
+}
+
+QPushButton:flat:hover {
+   border-color: #ffffff #808080 #808080 #ffffff;
+}
+
+QPushButton:flat:pressed,
+QPushButton:flat:checked {
+   border-color: #808080 #ffffff #ffffff #808080;
+   padding: 2px 0 0 2px;
+}
+
+QToolButton {
+   border: 1px solid transparent;
+}
+
+QToolButton:hover {
+   border-color: #ffffff #808080 #808080 #ffffff;
+}
+
+QToolButton:pressed,
+QToolButton:checked {
+   border-color: #808080 #ffffff #ffffff #808080;
+}
+
+/***** Text fields and combo boxes *****/
+
+QLineEdit,
+QTextEdit,
+QPlainTextEdit,
+QAbstractSpinBox,
+QComboBox {
+   background-color: #ffffff;
+   border-width: 2px;
+   border-image: url(styles/retro/sunken.png) 2 2 2 2 stretch stretch;
+   padding: 1px 2px;
+}
+
+QLineEdit:disabled,
+QLineEdit:read-only,
+QTextEdit:disabled,
+QPlainTextEdit:disabled,
+QAbstractSpinBox:disabled,
+QComboBox:disabled {
+   background-color: #c0c0c0;
+}
+
+QLineEdit {
+   placeholder-text-color: #808080;
+}
+
+QComboBox {
+   padding-right: 18px;
+}
+
+/* A button of 16 px inside the field. */
+QComboBox::drop-down {
+   subcontrol-origin: padding;
+   subcontrol-position: top right;
+   width: 12px;
+   background-color: #c0c0c0;
+   border-width: 2px;
+   border-image: url(styles/retro/raised.png) 2 2 2 2 stretch stretch;
+}
+
+QComboBox::drop-down:on {
+   border-image: url(styles/retro/flat_pushed.png) 2 2 2 2 stretch stretch;
+}
+
+QComboBox::down-arrow {
+   image: url(styles/retro/arrow_down.png);
+   width: 7px;
+   height: 4px;
+}
+
+QComboBox::down-arrow:on {
+   position: relative;
+   top: 1px;
+   left: 1px;
+}
+
+QComboBox::down-arrow:disabled {
+   image: url(styles/retro/arrow_down_disabled.png);
+   width: 8px;
+   height: 5px;
+}
+
+QComboBox QAbstractItemView {
+   background-color: #ffffff;
+   border: 1px solid #000000;
+   border-image: none;
+   outline: none;
+}
+
+/* Only for the elements in the download filter combo box. */
+#checkBoxListItem {
+   padding: 0px;
+}
+
+/* The paths proposed below the path of the browse dialog are displayed over its entries. */
+GUI--PathCompletionBox {
+   background-color: #ffffff;
+   border: 1px solid #000000;
+}
+
+/***** Check boxes and radio buttons *****/
+
+QCheckBox,
+QRadioButton {
+   spacing: 4px;
+}
+
+QCheckBox::indicator,
+QAbstractItemView::indicator {
+   width: 13px;
+   height: 13px;
+}
+
+QCheckBox::indicator:unchecked,
+QAbstractItemView::indicator:unchecked {
+   image: url(styles/retro/checkbox.png);
+}
+
+QCheckBox::indicator:unchecked:pressed,
+QAbstractItemView::indicator:unchecked:pressed {
+   image: url(styles/retro/checkbox_pressed.png);
+}
+
+QCheckBox::indicator:checked,
+QAbstractItemView::indicator:checked {
+   image: url(styles/retro/checkbox_checked.png);
+}
+
+QCheckBox::indicator:checked:pressed,
+QAbstractItemView::indicator:checked:pressed {
+   image: url(styles/retro/checkbox_checked_pressed.png);
+}
+
+QCheckBox::indicator:indeterminate,
+QAbstractItemView::indicator:indeterminate,
+QCheckBox::indicator:checked:disabled,
+QAbstractItemView::indicator:checked:disabled {
+   image: url(styles/retro/checkbox_checked_disabled.png);
+}
+
+QCheckBox::indicator:unchecked:disabled,
+QAbstractItemView::indicator:unchecked:disabled {
+   image: url(styles/retro/checkbox_disabled.png);
+}
+
+QRadioButton::indicator {
+   width: 12px;
+   height: 12px;
+}
+
+QRadioButton::indicator:unchecked {
+   image: url(styles/retro/radio.png);
+}
+
+QRadioButton::indicator:unchecked:pressed {
+   image: url(styles/retro/radio_pressed.png);
+}
+
+QRadioButton::indicator:checked {
+   image: url(styles/retro/radio_checked.png);
+}
+
+QRadioButton::indicator:checked:pressed {
+   image: url(styles/retro/radio_checked_pressed.png);
+}
+
+QRadioButton::indicator:unchecked:disabled {
+   image: url(styles/retro/radio_disabled.png);
+}
+
+QRadioButton::indicator:checked:disabled {
+   image: url(styles/retro/radio_checked_disabled.png);
+}
+
+/***** Group boxes *****/
+
+QGroupBox {
+   border-width: 2px;
+   border-image: url(styles/retro/etched.png) 2 2 2 2 stretch stretch;
+   margin-top: 6px;
+   padding: 7px 4px 4px 4px;
+}
+
+QGroupBox::title {
+   subcontrol-origin: margin;
+   subcontrol-position: top left;
+   left: 8px;
+   padding: 0 2px;
+}
+
+/***** Item views *****/
+
+QAbstractItemView {
+   background-color: #ffffff;
+   border-width: 2px;
+   border-image: url(styles/retro/sunken.png) 2 2 2 2 stretch stretch;
+   outline: none;
+}
+
+QAbstractItemView::item:selected,
+QAbstractItemView::item:selected:!active {
+   background-color: #000080;
+   color: #ffffff;
+}
+
+/* The selection doesn't cover the tree lines. */
+QTreeView {
+   show-decoration-selected: 0;
+}
+
+QTreeView::branch {
+   background-color: #ffffff;
+}
+
+QTreeView::branch:has-siblings:!adjoins-item {
+   border-image: url(styles/retro/vline.png) 0;
+}
+
+QTreeView::branch:has-siblings:adjoins-item {
+   border-image: url(styles/retro/branch_more.png) 0;
+}
+
+QTreeView::branch:!has-children:!has-siblings:adjoins-item {
+   border-image: url(styles/retro/branch_end.png) 0;
+}
+
+QTreeView::branch:has-children:has-siblings:closed {
+   border-image: url(styles/retro/branch_more_closed.png) 0;
+}
+
+QTreeView::branch:has-children:!has-siblings:closed {
+   border-image: url(styles/retro/branch_end_closed.png) 0;
+}
+
+QTreeView::branch:has-children:has-siblings:open {
+   border-image: url(styles/retro/branch_more_open.png) 0;
+}
+
+QTreeView::branch:has-children:!has-siblings:open {
+   border-image: url(styles/retro/branch_end_open.png) 0;
+}
+
+/* The tree lines are mirrored for the right-to-left languages. These rules must stay after the ones above. */
+QTreeView[layoutDirection="RightToLeft"]::branch:has-siblings:!adjoins-item {
+   border-image: url(styles/retro/vline_rtl.png) 0;
+}
+
+QTreeView[layoutDirection="RightToLeft"]::branch:has-siblings:adjoins-item {
+   border-image: url(styles/retro/branch_more_rtl.png) 0;
+}
+
+QTreeView[layoutDirection="RightToLeft"]::branch:!has-children:!has-siblings:adjoins-item {
+   border-image: url(styles/retro/branch_end_rtl.png) 0;
+}
+
+QTreeView[layoutDirection="RightToLeft"]::branch:has-children:has-siblings:closed {
+   border-image: url(styles/retro/branch_more_closed_rtl.png) 0;
+}
+
+QTreeView[layoutDirection="RightToLeft"]::branch:has-children:!has-siblings:closed {
+   border-image: url(styles/retro/branch_end_closed_rtl.png) 0;
+}
+
+QTreeView[layoutDirection="RightToLeft"]::branch:has-children:has-siblings:open {
+   border-image: url(styles/retro/branch_more_open_rtl.png) 0;
+}
+
+QTreeView[layoutDirection="RightToLeft"]::branch:has-children:!has-siblings:open {
+   border-image: url(styles/retro/branch_end_open_rtl.png) 0;
+}
+
+QHeaderView {
+   border: none;
+}
+
+QHeaderView::section {
+   border-width: 2px;
+   border-image: url(styles/retro/raised_soft.png) 2 2 2 2 stretch stretch;
+   padding: 0 4px;
+}
+
+QHeaderView::section:pressed {
+   border-image: url(styles/retro/flat_pushed.png) 2 2 2 2 stretch stretch;
+   padding: 1px 3px 0 5px;
+}
+
+QHeaderView::down-arrow {
+   image: url(styles/retro/arrow_down.png);
+   width: 7px;
+   height: 4px;
+}
+
+QHeaderView::up-arrow {
+   image: url(styles/retro/arrow_up.png);
+   width: 7px;
+   height: 4px;
+}
+
+QTableCornerButton::section {
+   border-width: 2px;
+   border-image: url(styles/retro/raised_soft.png) 2 2 2 2 stretch stretch;
+}
+
+/***** Progress bars *****/
+
+/* Blocks separated by 2 px. The text over the blocks is drawn with 'selection-color'. */
+QProgressBar {
+   border: 1px solid;
+   border-color: #808080 #ffffff #ffffff #808080;
+   text-align: center;
+}
+
+QProgressBar::chunk {
+   background-color: #000080;
+   width: 8px;
+   margin: 1px;
+}
+
+/*
+ * Progress bars drawn inside the lists (downloads, uploads and search relevance) use the rule of the view.
+ * The view itself is never in the horizontal state, only these progress bars are.
+ */
+QTreeView:horizontal,
+QTableView:horizontal {
+   background-color: #c0c0c0;
+   border: 1px solid;
+   border-color: #808080 #ffffff #ffffff #808080;
+   border-image: none;
+   margin: 1px 2px;
+}
+
+QTreeView::chunk,
+QTableView::chunk {
+   background-color: #000080;
+   width: 6px;
+   margin: 1px;
+}
+
+/***** Scroll bars *****/
+
+QScrollArea {
+   border: none;
+}
+
+QScrollBar {
+   background-image: url(styles/retro/dither.png);
+   border: none;
+}
+
+QScrollBar:vertical {
+   width: 16px;
+   margin: 16px 0;
+}
+
+QScrollBar:horizontal {
+   height: 16px;
+   margin: 0 16px;
+}
+
+QScrollBar::handle,
+QScrollBar::add-line,
+QScrollBar::sub-line {
+   background-color: #c0c0c0;
+   border-width: 2px;
+   border-image: url(styles/retro/raised.png) 2 2 2 2 stretch stretch;
+}
+
+/* A disabled scroll bar has no thumb. */
+QScrollBar::handle:disabled {
+   background: none;
+   border-image: none;
+}
+
+QScrollBar::handle:vertical {
+   min-height: 8px;
+}
+
+QScrollBar::handle:horizontal {
+   min-width: 8px;
+}
+
+QScrollBar::add-line,
+QScrollBar::sub-line {
+   subcontrol-origin: margin;
+}
+
+QScrollBar::add-line:vertical {
+   height: 16px;
+   subcontrol-position: bottom;
+}
+
+QScrollBar::sub-line:vertical {
+   height: 16px;
+   subcontrol-position: top;
+}
+
+QScrollBar::add-line:horizontal {
+   width: 16px;
+   subcontrol-position: right;
+}
+
+QScrollBar::sub-line:horizontal {
+   width: 16px;
+   subcontrol-position: left;
+}
+
+QScrollBar::add-line:pressed,
+QScrollBar::sub-line:pressed {
+   border-image: url(styles/retro/flat_pushed.png) 2 2 2 2 stretch stretch;
+}
+
+QScrollBar::up-arrow {
+   image: url(styles/retro/arrow_up.png);
+   width: 7px;
+   height: 4px;
+}
+
+QScrollBar::down-arrow {
+   image: url(styles/retro/arrow_down.png);
+   width: 7px;
+   height: 4px;
+}
+
+QScrollBar::left-arrow {
+   image: url(styles/retro/arrow_left.png);
+   width: 4px;
+   height: 7px;
+}
+
+QScrollBar::right-arrow {
+   image: url(styles/retro/arrow_right.png);
+   width: 4px;
+   height: 7px;
+}
+
+QScrollBar::up-arrow:pressed,
+QScrollBar::down-arrow:pressed,
+QScrollBar::left-arrow:pressed,
+QScrollBar::right-arrow:pressed {
+   position: relative;
+   top: 1px;
+   left: 1px;
+}
+
+QScrollBar::up-arrow:disabled {
+   image: url(styles/retro/arrow_up_disabled.png);
+   width: 8px;
+   height: 5px;
+}
+
+QScrollBar::down-arrow:disabled {
+   image: url(styles/retro/arrow_down_disabled.png);
+   width: 8px;
+   height: 5px;
+}
+
+QScrollBar::left-arrow:disabled {
+   image: url(styles/retro/arrow_left_disabled.png);
+   width: 5px;
+   height: 8px;
+}
+
+QScrollBar::right-arrow:disabled {
+   image: url(styles/retro/arrow_right_disabled.png);
+   width: 5px;
+   height: 8px;
+}
+
+/* With the right-to-left languages, the horizontal scroll bars are mirrored but not their arrows. */
+QScrollBar[layoutDirection="RightToLeft"]::left-arrow {
+   image: url(styles/retro/arrow_right.png);
+}
+
+QScrollBar[layoutDirection="RightToLeft"]::right-arrow {
+   image: url(styles/retro/arrow_left.png);
+}
+
+QScrollBar[layoutDirection="RightToLeft"]::left-arrow:disabled {
+   image: url(styles/retro/arrow_right_disabled.png);
+}
+
+QScrollBar[layoutDirection="RightToLeft"]::right-arrow:disabled {
+   image: url(styles/retro/arrow_left_disabled.png);
+}
+
+QScrollBar::add-page,
+QScrollBar::sub-page {
+   background: none;
+}
+
+/***** Menus *****/
+
+QMenu {
+   border-width: 2px;
+   border-image: url(styles/retro/raised.png) 2 2 2 2 stretch stretch;
+   padding: 1px;
+}
+
+QMenu::item {
+   background-color: transparent;
+   padding: 2px 16px 2px 20px;
+}
+
+QMenu::item:selected {
+   background-color: #000080;
+   color: #ffffff;
+}
+
+QMenu::item:disabled {
+   color: #808080;
+}
+
+QMenu::separator {
+   height: 0;
+   border-top: 1px solid #808080;
+   border-bottom: 1px solid #ffffff;
+   margin: 3px 1px;
+}
+
+QMenu::indicator {
+   width: 7px;
+   height: 7px;
+   left: 6px;
+}
+
+QMenu::indicator:non-exclusive:checked {
+   image: url(styles/retro/check.png);
+}
+
+QMenu::indicator:non-exclusive:checked:selected {
+   image: url(styles/retro/check_white.png);
+}
+
+QMenu::indicator:exclusive:checked {
+   image: url(styles/retro/bullet.png);
+}
+
+QMenu::indicator:exclusive:checked:selected {
+   image: url(styles/retro/bullet_white.png);
+}
+
+QMenu::right-arrow {
+   image: url(styles/retro/arrow_right.png);
+   width: 4px;
+   height: 7px;
+}
+
+QMenu::right-arrow:selected {
+   image: url(styles/retro/arrow_right_white.png);
+}
+
+/***** Misc *****/
+
+GUI--BusyIndicator {
+   background-color: transparent;
+   selection-background-color: #000080;
+}
+
+/* The about dialog paints its own gradient: the texts are white on it, as with the default style. */
+#DialogAbout,
+#DialogAbout QWidget {
+   background-color: transparent;
+   color: #ffffff;
+}
+
+#DialogAbout QPushButton {
+   background-color: #c0c0c0;
+   color: #000000;
+}
+
+/***** Dialogs, decorated by 'GUI::DialogDecorator' *****/
+
+/* A sizing frame for the resizable dialogs, as the one of the main window. */
+QDialog[decoration="fixed"] {
+   border-width: 3px;
+   border-image: url(styles/retro/dialog_frame.png) 3 3 3 3 stretch stretch;
+}
+
+QDialog[decoration="resizable"] {
+   border-width: 4px;
+   border-image: url(styles/retro/frame.png) 4 4 4 4 stretch stretch;
+}
+
+/* As the caption of the main window, without icon. These rules must stay after the ones of the about dialog. */
+QWidget#dialogTitleBar {
+   background-color: #000080;
+   border-bottom: 1px solid #c0c0c0;
+}
+
+QWidget#dialogTitleBar:!active {
+   background-color: #808080;
+}
+
+QLabel#dialogTitle {
+   color: #ffffff;
+   font-weight: bold;
+   padding: 0 2px 1px 2px;
+}
+
+QLabel#dialogTitle:!active {
+   color: #c0c0c0;
+}
+
+#dialogTitleBar QPushButton {
+   border: none;
+   padding: 0;
+   margin: 2px 2px 3px 2px;
+   min-width: 16px;
+   max-width: 16px;
+   min-height: 14px;
+   max-height: 14px;
+   image: url(styles/retro/caption_close.png);
+}
+
+#dialogTitleBar QPushButton:pressed {
+   image: url(styles/retro/caption_close_pressed.png);
+}

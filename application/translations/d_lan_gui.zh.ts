@@ -99,7 +99,7 @@
         <translation>下载</translation>
     </message>
     <message>
-        <location line="+34"/>
+        <location line="+40"/>
         <source>Item shown :</source>
         <translation>显示的项目:</translation>
     </message>
@@ -231,7 +231,7 @@
 <context>
     <name>GUI::D_LAN_GUI</name>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="+212"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="+221"/>
         <source>Show the user interface</source>
         <translation>显示用户界面</translation>
     </message>
@@ -246,7 +246,7 @@
         <translation>退出</translation>
     </message>
     <message>
-        <location line="+43"/>
+        <location line="+59"/>
         <source>D-LAN user interface closed</source>
         <translation>D-LAN 用户界面已关闭</translation>
     </message>
@@ -259,8 +259,12 @@
 <context>
     <name>GUI::DownloadMenu</name>
     <message>
-        <location filename="../GUI/DownloadMenu.cpp" line="+68"/>
         <source>Download selected items to the first directory folder with enough free space</source>
+        <translation type="vanished">将所选项目下载到第一个有足够可用空间的共享文件夹</translation>
+    </message>
+    <message>
+        <location filename="../GUI/DownloadMenu.cpp" line="+68"/>
+        <source>Download selected items to the first shared directory with enough free space</source>
         <translation>将所选项目下载到第一个有足够可用空间的共享文件夹</translation>
     </message>
     <message>
@@ -285,19 +289,27 @@
     </message>
     <message>
         <location line="+64"/>
-        <source>%1 more folders . . .</source>
+        <source>%1 more directories . . .</source>
         <translation>还有 %1 个文件夹…</translation>
     </message>
     <message>
         <location line="+8"/>
-        <source>Unable to get the folders</source>
+        <source>Unable to get the directories</source>
         <translation>无法获取文件夹</translation>
+    </message>
+    <message>
+        <source>%1 more folders . . .</source>
+        <translation type="vanished">还有 %1 个文件夹…</translation>
+    </message>
+    <message>
+        <source>Unable to get the folders</source>
+        <translation type="vanished">无法获取文件夹</translation>
     </message>
 </context>
 <context>
     <name>GUI::DownloadsDelegate</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+118"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+119"/>
         <source>Queued</source>
         <translation>排队中</translation>
     </message>
@@ -494,7 +506,7 @@
 <context>
     <name>GUI::MainWindow</name>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="+172"/>
+        <location filename="../GUI/MainWindow.cpp" line="+183"/>
         <source>Already connected to this address</source>
         <translation>已连接到此地址</translation>
     </message>
@@ -578,6 +590,16 @@
         <location line="+4"/>
         <source>The connection to the core has been lost</source>
         <translation>与 Core 的连接已断开</translation>
+    </message>
+    <message>
+        <location line="+110"/>
+        <source>Restart needed</source>
+        <translation>需要重新启动</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>D-LAN must be restarted to display this style correctly.</source>
+        <translation>需要重新启动 D-LAN 才能正确显示此样式。</translation>
     </message>
 </context>
 <context>
@@ -1022,7 +1044,7 @@
         <translation>Core 服务已启动</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="-150"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="-166"/>
         <source>D-LAN already launched</source>
         <translation>D-LAN 已在运行</translation>
     </message>
@@ -1042,7 +1064,7 @@
         <translation>仍然启动</translation>
     </message>
     <message>
-        <location filename="../GUI/main.cpp" line="+112"/>
+        <location filename="../GUI/main.cpp" line="+117"/>
         <source>D-LAN GUI version %1</source>
         <translation>D-LAN GUI 版本 %1</translation>
     </message>
@@ -1244,7 +1266,12 @@
         <translation>昵称</translation>
     </message>
     <message>
-        <location line="+46"/>
+        <location line="+14"/>
+        <source>Shared directories and files</source>
+        <translation>共享的文件夹和文件</translation>
+    </message>
+    <message>
+        <location line="+32"/>
         <source>Remove the selected shared files and directories</source>
         <translation>移除所选的共享文件和文件夹</translation>
     </message>
@@ -1349,12 +1376,11 @@
         <translation>刷新接口</translation>
     </message>
     <message>
-        <location line="-448"/>
         <source>Shared folders and files</source>
-        <translation>共享的文件夹和文件</translation>
+        <translation type="vanished">共享的文件夹和文件</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="-439"/>
         <source>Add new shared directories and/or files</source>
         <translation>添加新的共享文件夹和/或文件</translation>
     </message>

@@ -99,7 +99,7 @@
         <translation>ডাউনলোড</translation>
     </message>
     <message>
-        <location line="+34"/>
+        <location line="+40"/>
         <source>Item shown :</source>
         <translation>প্রদর্শিত আইটেম:</translation>
     </message>
@@ -231,7 +231,7 @@
 <context>
     <name>GUI::D_LAN_GUI</name>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="+212"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="+221"/>
         <source>Show the user interface</source>
         <translation>ইউজার ইন্টারফেস দেখান</translation>
     </message>
@@ -246,7 +246,7 @@
         <translation>প্রস্থান</translation>
     </message>
     <message>
-        <location line="+43"/>
+        <location line="+59"/>
         <source>D-LAN user interface closed</source>
         <translation>D-LAN ইউজার ইন্টারফেস বন্ধ হয়েছে</translation>
     </message>
@@ -259,8 +259,12 @@
 <context>
     <name>GUI::DownloadMenu</name>
     <message>
-        <location filename="../GUI/DownloadMenu.cpp" line="+68"/>
         <source>Download selected items to the first directory folder with enough free space</source>
+        <translation type="vanished">নির্বাচিত আইটেমগুলি পর্যাপ্ত ফাঁকা জায়গা আছে এমন প্রথম শেয়ার করা ফোল্ডারে ডাউনলোড করুন</translation>
+    </message>
+    <message>
+        <location filename="../GUI/DownloadMenu.cpp" line="+68"/>
+        <source>Download selected items to the first shared directory with enough free space</source>
         <translation>নির্বাচিত আইটেমগুলি পর্যাপ্ত ফাঁকা জায়গা আছে এমন প্রথম শেয়ার করা ফোল্ডারে ডাউনলোড করুন</translation>
     </message>
     <message>
@@ -285,19 +289,27 @@
     </message>
     <message>
         <location line="+64"/>
-        <source>%1 more folders . . .</source>
+        <source>%1 more directories . . .</source>
         <translation>আরও %1টি ফোল্ডার . . .</translation>
     </message>
     <message>
         <location line="+8"/>
-        <source>Unable to get the folders</source>
+        <source>Unable to get the directories</source>
         <translation>ফোল্ডারগুলি পাওয়া যায়নি</translation>
+    </message>
+    <message>
+        <source>%1 more folders . . .</source>
+        <translation type="vanished">আরও %1টি ফোল্ডার . . .</translation>
+    </message>
+    <message>
+        <source>Unable to get the folders</source>
+        <translation type="vanished">ফোল্ডারগুলি পাওয়া যায়নি</translation>
     </message>
 </context>
 <context>
     <name>GUI::DownloadsDelegate</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+118"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+119"/>
         <source>Queued</source>
         <translation>সারিতে</translation>
     </message>
@@ -494,7 +506,7 @@
 <context>
     <name>GUI::MainWindow</name>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="+172"/>
+        <location filename="../GUI/MainWindow.cpp" line="+183"/>
         <source>Already connected to this address</source>
         <translation>এই ঠিকানায় ইতিমধ্যে সংযুক্ত</translation>
     </message>
@@ -578,6 +590,16 @@
         <location line="+4"/>
         <source>The connection to the core has been lost</source>
         <translation>Core-এর সাথে সংযোগ বিচ্ছিন্ন হয়ে গেছে</translation>
+    </message>
+    <message>
+        <location line="+110"/>
+        <source>Restart needed</source>
+        <translation>পুনরায় চালু করা প্রয়োজন</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>D-LAN must be restarted to display this style correctly.</source>
+        <translation>এই স্টাইলটি সঠিকভাবে দেখাতে D-LAN পুনরায় চালু করতে হবে।</translation>
     </message>
 </context>
 <context>
@@ -1022,7 +1044,7 @@
         <translation>Core সার্ভিস চালু হয়েছে</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="-150"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="-166"/>
         <source>D-LAN already launched</source>
         <translation>D-LAN ইতিমধ্যে চালু আছে</translation>
     </message>
@@ -1042,7 +1064,7 @@
         <translation>তবুও চালু করুন</translation>
     </message>
     <message>
-        <location filename="../GUI/main.cpp" line="+112"/>
+        <location filename="../GUI/main.cpp" line="+117"/>
         <source>D-LAN GUI version %1</source>
         <translation>D-LAN GUI সংস্করণ %1</translation>
     </message>
@@ -1244,7 +1266,12 @@
         <translation>ডাকনাম</translation>
     </message>
     <message>
-        <location line="+46"/>
+        <location line="+14"/>
+        <source>Shared directories and files</source>
+        <translation>শেয়ার করা ফোল্ডার ও ফাইল</translation>
+    </message>
+    <message>
+        <location line="+32"/>
         <source>Remove the selected shared files and directories</source>
         <translation>নির্বাচিত শেয়ার করা ফাইল ও ফোল্ডারগুলি অপসারণ করুন</translation>
     </message>
@@ -1349,12 +1376,11 @@
         <translation>ইন্টারফেসগুলি রিফ্রেশ করুন</translation>
     </message>
     <message>
-        <location line="-448"/>
         <source>Shared folders and files</source>
-        <translation>শেয়ার করা ফোল্ডার ও ফাইল</translation>
+        <translation type="vanished">শেয়ার করা ফোল্ডার ও ফাইল</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="-439"/>
         <source>Add new shared directories and/or files</source>
         <translation>শেয়ার করার জন্য নতুন ফোল্ডার এবং/অথবা ফাইল যোগ করুন</translation>
     </message>

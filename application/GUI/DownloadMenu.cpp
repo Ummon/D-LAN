@@ -65,7 +65,7 @@ void DownloadMenu::show(const QPoint& globalPosition)
    {
       QAction* actionDownload = new QAction(
          QIcon(":/icons/resources/download.svg"),
-         tr("Download selected items to the first directory folder with enough free space"),
+         tr("Download selected items to the first shared directory with enough free space"),
          &menu
       );
       connect(actionDownload, &QAction::triggered, this, &DownloadMenu::download);
@@ -197,7 +197,7 @@ void DownloadMenu::loadSubFolders(
 
          if (subFolders.size() > MAX_NB_SUB_FOLDERS)
          {
-            QAction* actionMore = menu->addAction(tr("%1 more folders . . .").arg(subFolders.size() - MAX_NB_SUB_FOLDERS));
+            QAction* actionMore = menu->addAction(tr("%1 more directories . . .").arg(subFolders.size() - MAX_NB_SUB_FOLDERS));
             connect(actionMore, &QAction::triggered, this, qOverload<>(&DownloadMenu::downloadTo));
          }
       }
@@ -205,7 +205,7 @@ void DownloadMenu::loadSubFolders(
 
    connect(browseResult.data(), &Common::Timeoutable::timeout, menu, [loading] {
       if (loading)
-         loading->setText(DownloadMenu::tr("Unable to get the folders"));
+         loading->setText(DownloadMenu::tr("Unable to get the directories"));
    });
 
    browseResult->start();

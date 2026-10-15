@@ -20,6 +20,7 @@
 
 #include <QProgressBar>
 #include <QPaintEvent>
+#include <QStyleOptionProgressBar>
 
 namespace GUI
 {
@@ -28,6 +29,8 @@ namespace GUI
       Q_OBJECT
    public:
       explicit ProgressBar(QWidget *parent = nullptr);
+
+      static void draw(QStyle* style, QPainter* painter, const QStyleOptionProgressBar& option, const QWidget* widget);
 
    protected:
       void paintEvent(QPaintEvent* paintEvent);

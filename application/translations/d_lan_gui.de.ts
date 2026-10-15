@@ -99,7 +99,7 @@
         <translation>Downloads</translation>
     </message>
     <message>
-        <location line="+34"/>
+        <location line="+40"/>
         <source>Item shown :</source>
         <translation>Elemente anzeigen :</translation>
     </message>
@@ -231,7 +231,7 @@
 <context>
     <name>GUI::D_LAN_GUI</name>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="+212"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="+221"/>
         <source>Show the user interface</source>
         <translation>Grafische Oberfläche anzeigen</translation>
     </message>
@@ -246,7 +246,7 @@
         <translation>Beenden</translation>
     </message>
     <message>
-        <location line="+43"/>
+        <location line="+59"/>
         <source>D-LAN user interface closed</source>
         <translation>Grafische Oberfläche von D-LAN geschlossen</translation>
     </message>
@@ -259,8 +259,12 @@
 <context>
     <name>GUI::DownloadMenu</name>
     <message>
-        <location filename="../GUI/DownloadMenu.cpp" line="+68"/>
         <source>Download selected items to the first directory folder with enough free space</source>
+        <translation type="vanished">Ausgewählte Elemente in den ersten freigegebenen Ordner mit genug freiem Speicherplatz herunterladen</translation>
+    </message>
+    <message>
+        <location filename="../GUI/DownloadMenu.cpp" line="+68"/>
+        <source>Download selected items to the first shared directory with enough free space</source>
         <translation>Ausgewählte Elemente in den ersten freigegebenen Ordner mit genug freiem Speicherplatz herunterladen</translation>
     </message>
     <message>
@@ -285,19 +289,27 @@
     </message>
     <message>
         <location line="+64"/>
-        <source>%1 more folders . . .</source>
+        <source>%1 more directories . . .</source>
         <translation>%1 weitere Ordner . . .</translation>
     </message>
     <message>
         <location line="+8"/>
-        <source>Unable to get the folders</source>
+        <source>Unable to get the directories</source>
         <translation>Die Ordner konnten nicht abgerufen werden</translation>
+    </message>
+    <message>
+        <source>%1 more folders . . .</source>
+        <translation type="vanished">%1 weitere Ordner . . .</translation>
+    </message>
+    <message>
+        <source>Unable to get the folders</source>
+        <translation type="vanished">Die Ordner konnten nicht abgerufen werden</translation>
     </message>
 </context>
 <context>
     <name>GUI::DownloadsDelegate</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+118"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="+119"/>
         <source>Queued</source>
         <translation>Eingereiht</translation>
     </message>
@@ -498,7 +510,7 @@
 <context>
     <name>GUI::MainWindow</name>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="+172"/>
+        <location filename="../GUI/MainWindow.cpp" line="+183"/>
         <source>Already connected to this address</source>
         <translation>Bereits mit dieser Adresse verbunden</translation>
     </message>
@@ -582,6 +594,16 @@
         <location line="+4"/>
         <source>The connection to the core has been lost</source>
         <translation>Die Verbindung zum Kern wurde unterbrochen</translation>
+    </message>
+    <message>
+        <location line="+110"/>
+        <source>Restart needed</source>
+        <translation>Neustart erforderlich</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>D-LAN must be restarted to display this style correctly.</source>
+        <translation>D-LAN muss neu gestartet werden, damit dieses Aussehen richtig angezeigt wird.</translation>
     </message>
 </context>
 <context>
@@ -874,7 +896,7 @@
     <message>
         <location line="-68"/>
         <source>Are you sure you want to remove the selected shared files and directories?</source>
-        <translation>Möchten Sie die ausgewählten freigegebenen Dateien und Verzeichnisse wirklich entfernen?</translation>
+        <translation>Möchten Sie die ausgewählten freigegebenen Dateien und Ordner wirklich entfernen?</translation>
     </message>
     <message>
         <source>Remove selected shared directory</source>
@@ -1042,7 +1064,7 @@
         <translation>Kern als Dienst gestartet</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="-150"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="-166"/>
         <source>D-LAN already launched</source>
         <translation>D-LAN läuft bereits</translation>
     </message>
@@ -1062,7 +1084,7 @@
         <translation>Trotzdem starten</translation>
     </message>
     <message>
-        <location filename="../GUI/main.cpp" line="+112"/>
+        <location filename="../GUI/main.cpp" line="+117"/>
         <source>D-LAN GUI version %1</source>
         <translation>D-LAN GUI Version %1</translation>
     </message>
@@ -1158,7 +1180,7 @@
     <message>
         <location line="+20"/>
         <source>Go to parent directory</source>
-        <translation>Zum übergeordneten Verzeichnis wechseln</translation>
+        <translation>Zum übergeordneten Ordner wechseln</translation>
     </message>
     <message>
         <location line="+20"/>
@@ -1264,24 +1286,29 @@
         <translation>Anzeigename</translation>
     </message>
     <message>
-        <location line="+46"/>
+        <location line="+14"/>
+        <source>Shared directories and files</source>
+        <translation>Freigegebene Ordner und Dateien</translation>
+    </message>
+    <message>
+        <location line="+32"/>
         <source>Remove the selected shared files and directories</source>
-        <translation>Ausgewählte freigegebene Dateien und Verzeichnisse entfernen</translation>
+        <translation>Ausgewählte freigegebene Dateien und Ordner entfernen</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>Move down the selected shared files and directories</source>
-        <translation>Ausgewählte freigegebene Dateien und Verzeichnisse nach unten verschieben</translation>
+        <translation>Ausgewählte freigegebene Dateien und Ordner nach unten verschieben</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>Move up the selected shared files and directories</source>
-        <translation>Ausgewählte freigegebene Dateien und Verzeichnisse nach oben verschieben</translation>
+        <translation>Ausgewählte freigegebene Dateien und Ordner nach oben verschieben</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>Open locations of the selected shared files and directories</source>
-        <translation>Speicherorte der ausgewählten freigegebenen Dateien und Verzeichnisse öffnen</translation>
+        <translation>Speicherorte der ausgewählten freigegebenen Dateien und Ordner öffnen</translation>
     </message>
     <message>
         <location line="+255"/>
@@ -1377,12 +1404,11 @@
         <translation type="vanished">Datenintegrität prüfen</translation>
     </message>
     <message>
-        <location line="-448"/>
         <source>Shared folders and files</source>
-        <translation>Freigegebene Ordner und Dateien</translation>
+        <translation type="vanished">Freigegebene Ordner und Dateien</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="-439"/>
         <source>Add new shared directories and/or files</source>
         <translation>Neue Ordner und/oder Dateien freigeben</translation>
     </message>

@@ -41,6 +41,8 @@ using namespace GUI;
 const QString D_LAN_GUI::SHARED_MEMORY_KEYNAME("D-LAN GUI instance");
 #endif
 
+bool D_LAN_GUI::screenScalingIgnored = false;
+
 /**
   * @class GUI::D_LAN_GUI
   * Creates the main window and, on platforms other than macOS, the tray icon.
@@ -58,6 +60,13 @@ D_LAN_GUI::D_LAN_GUI(int& argc, char* argv[], bool autoStartLocalCore) :
 #endif
    coreConnection(RCC::Builder::newCoreConnection(SETTINGS.get<quint32>("socket_timeout")))
 {
+   // Qt has read them, the processes launched from the GUI (the Core, the opened files) must not inherit them.
+   if (D_LAN_GUI::screenScalingIgnored)
+   {
+      qunsetenv("QT_ENABLE_HIGHDPI_SCALING");
+      qunsetenv("QT_FONT_DPI");
+   }
+
    // The style must be set before any widget is created. 'MainWindow::loadCustomStyle(..)' sets it again but
    // switching the style once the widgets exist makes 'QWindows11Style::unpolish(..)' clear the
    // 'autoFillBackground' flag of every scroll area viewport (Qt >= 6.11.2), the item views then lose their
@@ -242,6 +251,22 @@ void D_LAN_GUI::loadLanguage(const QString& filename)
       if (!this->styleSheet().isEmpty())
          this->setStyleSheet(this->styleSheet());
    }
+}
+
+/**
+  * The GUI is displayed as on a 96 DPI screen without scaling, for the styles drawn pixel for pixel
+  * (see 'MainWindow::ignoreScreenScaling'). Must be called before the application is created.
+  */
+void D_LAN_GUI::ignoreScreenScaling()
+{
+   qputenv("QT_ENABLE_HIGHDPI_SCALING", "0");
+   qputenv("QT_FONT_DPI", "96");
+   D_LAN_GUI::screenScalingIgnored = true;
+}
+
+bool D_LAN_GUI::isScreenScalingIgnored()
+{
+   return D_LAN_GUI::screenScalingIgnored;
 }
 
 void D_LAN_GUI::mainWindowClosed()

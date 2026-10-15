@@ -99,22 +99,22 @@
         <translation>다운로드</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.ui" line="48"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.ui" line="54"/>
         <source>Item shown :</source>
         <translation>표시할 항목 :</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.ui" line="75"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.ui" line="81"/>
         <source>Remove completed files from the queue</source>
         <translation>완료된 파일을 대기열에서 제거</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.ui" line="95"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.ui" line="101"/>
         <source>Removed selected downloads from the queue</source>
         <translation>선택한 다운로드를 대기열에서 제거</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.ui" line="115"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.ui" line="121"/>
         <source>Pause or unpause selected downloads</source>
         <translation>선택한 다운로드 일시정지 또는 재개</translation>
     </message>
@@ -231,27 +231,27 @@
 <context>
     <name>GUI::D_LAN_GUI</name>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="212"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="221"/>
         <source>Show the user interface</source>
         <translation>사용자 인터페이스 표시</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="216"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="225"/>
         <source>Stop the user interface</source>
         <translation>사용자 인터페이스 닫기</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="219"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="228"/>
         <source>Exit</source>
         <translation>종료</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="262"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="287"/>
         <source>D-LAN user interface closed</source>
         <translation>D-LAN 사용자 인터페이스가 닫혔습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="263"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="288"/>
         <source>D-LAN Core is still running in background. Select &apos;exit&apos; from the contextual menu if you want to stop it.</source>
         <translation>D-LAN Core가 백그라운드에서 계속 실행 중입니다. 중지하려면 컨텍스트 메뉴에서 «종료»를 선택하세요.</translation>
     </message>
@@ -259,8 +259,12 @@
 <context>
     <name>GUI::DownloadMenu</name>
     <message>
-        <location filename="../GUI/DownloadMenu.cpp" line="68"/>
         <source>Download selected items to the first directory folder with enough free space</source>
+        <translation type="vanished">선택한 항목을 여유 공간이 충분한 첫 번째 공유 폴더로 다운로드</translation>
+    </message>
+    <message>
+        <location filename="../GUI/DownloadMenu.cpp" line="68"/>
+        <source>Download selected items to the first shared directory with enough free space</source>
         <translation>선택한 항목을 여유 공간이 충분한 첫 번째 공유 폴더로 다운로드</translation>
     </message>
     <message>
@@ -285,19 +289,27 @@
     </message>
     <message>
         <location filename="../GUI/DownloadMenu.cpp" line="200"/>
-        <source>%1 more folders . . .</source>
+        <source>%1 more directories . . .</source>
         <translation>그 외 폴더 %1개 . . .</translation>
     </message>
     <message>
         <location filename="../GUI/DownloadMenu.cpp" line="208"/>
-        <source>Unable to get the folders</source>
+        <source>Unable to get the directories</source>
         <translation>폴더를 가져올 수 없습니다</translation>
+    </message>
+    <message>
+        <source>%1 more folders . . .</source>
+        <translation type="vanished">그 외 폴더 %1개 . . .</translation>
+    </message>
+    <message>
+        <source>Unable to get the folders</source>
+        <translation type="vanished">폴더를 가져올 수 없습니다</translation>
     </message>
 </context>
 <context>
     <name>GUI::DownloadsDelegate</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="118"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="119"/>
         <source>Queued</source>
         <translation>대기열에 있음</translation>
     </message>
@@ -306,22 +318,22 @@
         <translation type="vanished">해시 가져오는 중..</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="120"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="121"/>
         <source>Getting hashes..</source>
         <translation>해시 가져오는 중..</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="128"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="129"/>
         <source>Complete</source>
         <translation>완료</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="130"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="131"/>
         <source>Paused</source>
         <translation>일시정지됨</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="132"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="133"/>
         <source>Waiting..</source>
         <translation>대기 중..</translation>
     </message>
@@ -422,67 +434,67 @@
 <context>
     <name>GUI::DownloadsWidget</name>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="267"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="268"/>
         <source>Open location</source>
         <translation>위치 열기</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="276"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="277"/>
         <source>Move to top</source>
         <translation>맨 위로 이동</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="299"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="300"/>
         <source>Pause selected entries</source>
         <translation>선택한 항목 일시정지</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="299"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="300"/>
         <source>Unpause selected entries</source>
         <translation>선택한 항목 재개</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="387"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="388"/>
         <source>Remove selected downloads</source>
         <translation>선택한 다운로드 제거</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="388"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="389"/>
         <source>Are you sure to remove the selected downloads? There is one or more unfinished download.</source>
         <translation>선택한 다운로드를 제거하시겠습니까? 완료되지 않은 다운로드가 하나 이상 있습니다.</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="473"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="474"/>
         <source>Switch to file list view</source>
         <translation>파일 목록 보기로 전환</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="485"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="486"/>
         <source>Switch to tree view</source>
         <translation>트리 보기로 전환</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="528"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="529"/>
         <source>&lt;All&gt;</source>
         <translation>&lt;전체&gt;</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="528"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="529"/>
         <source>Complete</source>
         <translation>완료</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="528"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="529"/>
         <source>Downloading</source>
         <translation>다운로드 중</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="528"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="529"/>
         <source>Queued</source>
         <translation>대기열에 있음</translation>
     </message>
     <message>
-        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="528"/>
+        <location filename="../GUI/Downloads/DownloadsWidget.cpp" line="529"/>
         <source>Inactive</source>
         <translation>비활성</translation>
     </message>
@@ -498,90 +510,100 @@
 <context>
     <name>GUI::MainWindow</name>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="172"/>
+        <location filename="../GUI/MainWindow.cpp" line="183"/>
         <source>Already connected to this address</source>
         <translation>이미 이 주소에 연결되어 있습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="175"/>
+        <location filename="../GUI/MainWindow.cpp" line="186"/>
         <source>There is already a connection process in progress</source>
         <translation>이미 연결을 시도하는 중입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="178"/>
+        <location filename="../GUI/MainWindow.cpp" line="189"/>
         <source>The host is unknown</source>
         <translation>알 수 없는 호스트입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="181"/>
+        <location filename="../GUI/MainWindow.cpp" line="192"/>
         <source>Host has timed out</source>
         <translation>호스트가 응답하지 않습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="184"/>
+        <location filename="../GUI/MainWindow.cpp" line="195"/>
         <source>The host hasn&apos;t defined any password</source>
         <translation>호스트에 비밀번호가 설정되어 있지 않습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="187"/>
+        <location filename="../GUI/MainWindow.cpp" line="198"/>
         <source>Wrong password</source>
         <translation>잘못된 비밀번호입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="190"/>
+        <location filename="../GUI/MainWindow.cpp" line="201"/>
         <source>Invalid address</source>
         <translation>잘못된 주소입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="193"/>
+        <location filename="../GUI/MainWindow.cpp" line="204"/>
         <source>Unable to establish a trusted encrypted connection. The Core&apos;s certificate may have changed or TLS may be unavailable. See the log for details.</source>
         <translation>신뢰할 수 있는 암호화된 연결을 설정할 수 없습니다. 코어의 인증서가 변경되었거나 TLS를 사용할 수 없는 상태일 수 있습니다. 자세한 내용은 로그를 확인하세요.</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="196"/>
+        <location filename="../GUI/MainWindow.cpp" line="207"/>
         <source>The core closed the connection. Remote access requires a password to be defined on the core. The core may also have too many connections.</source>
         <translation>코어가 연결을 닫았습니다. 원격 접근을 사용하려면 코어에 비밀번호가 설정되어 있어야 합니다. 코어에 연결이 너무 많을 수도 있습니다.</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="199"/>
+        <location filename="../GUI/MainWindow.cpp" line="210"/>
         <source>The core couldn&apos;t prove that it knows the password. The connection may have been intercepted.</source>
         <translation>코어가 비밀번호를 알고 있음을 증명하지 못했습니다. 연결이 가로채졌을 수 있습니다.</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="202"/>
+        <location filename="../GUI/MainWindow.cpp" line="213"/>
         <source>The versions of the core and of this GUI are incompatible for remote control. Update them to the same version.</source>
         <translation>코어와 이 GUI의 버전이 원격 제어에 호환되지 않습니다. 같은 버전으로 업데이트하세요.</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="205"/>
+        <location filename="../GUI/MainWindow.cpp" line="216"/>
         <source>Error unknown</source>
         <translation>알 수 없는 오류</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="211"/>
+        <location filename="../GUI/MainWindow.cpp" line="222"/>
         <source>Unable to connect to the core</source>
         <translation>코어에 연결할 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="214"/>
-        <location filename="../GUI/MainWindow.cpp" line="238"/>
+        <location filename="../GUI/MainWindow.cpp" line="225"/>
+        <location filename="../GUI/MainWindow.cpp" line="249"/>
         <source>Core address:</source>
         <translation>코어 주소:</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="224"/>
+        <location filename="../GUI/MainWindow.cpp" line="235"/>
         <source>Connected to the core</source>
         <translation>코어에 연결되었습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="233"/>
+        <location filename="../GUI/MainWindow.cpp" line="244"/>
         <source>Connection lost</source>
         <translation>연결이 끊어졌습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/MainWindow.cpp" line="237"/>
+        <location filename="../GUI/MainWindow.cpp" line="248"/>
         <source>The connection to the core has been lost</source>
         <translation>코어와의 연결이 끊어졌습니다</translation>
+    </message>
+    <message>
+        <location filename="../GUI/MainWindow.cpp" line="358"/>
+        <source>Restart needed</source>
+        <translation>다시 시작 필요</translation>
+    </message>
+    <message>
+        <location filename="../GUI/MainWindow.cpp" line="359"/>
+        <source>D-LAN must be restarted to display this style correctly.</source>
+        <translation>이 스타일을 올바르게 표시하려면 D-LAN을 다시 시작해야 합니다.</translation>
     </message>
 </context>
 <context>
@@ -1042,22 +1064,22 @@
         <translation>코어 서비스가 시작되었습니다</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="113"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="122"/>
         <source>D-LAN already launched</source>
         <translation>D-LAN이 이미 실행 중입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="114"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="123"/>
         <source>An instance of D-LAN is already launched</source>
         <translation>D-LAN 인스턴스가 이미 실행 중입니다</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="116"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="125"/>
         <source>Quit</source>
         <translation>종료</translation>
     </message>
     <message>
-        <location filename="../GUI/D-LAN_GUI.cpp" line="117"/>
+        <location filename="../GUI/D-LAN_GUI.cpp" line="126"/>
         <source>Launch anyway</source>
         <translation>무시하고 실행</translation>
     </message>
@@ -1133,7 +1155,7 @@
         <translation>다운로드할 폴더를 선택하십시오</translation>
     </message>
     <message>
-        <location filename="../GUI/main.cpp" line="112"/>
+        <location filename="../GUI/main.cpp" line="117"/>
         <source>D-LAN GUI version %1</source>
         <translation>D-LAN GUI 버전 %1</translation>
     </message>
@@ -1158,7 +1180,7 @@
     <message>
         <location filename="../GUI/RemoteBrowseDialog.ui" line="65"/>
         <source>Go to parent directory</source>
-        <translation>상위 디렉터리로 이동</translation>
+        <translation>상위 폴더로 이동</translation>
     </message>
     <message>
         <location filename="../GUI/RemoteBrowseDialog.ui" line="85"/>
@@ -1264,9 +1286,8 @@
         <translation>닉네임</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="60"/>
         <source>Shared folders and files</source>
-        <translation>공유 폴더 및 파일</translation>
+        <translation type="vanished">공유 폴더 및 파일</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="69"/>
@@ -1431,6 +1452,11 @@
         <location filename="../GUI/Settings/SettingsWidget.ui" line="202"/>
         <source>Core connection</source>
         <translation>코어 연결</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="60"/>
+        <source>Shared directories and files</source>
+        <translation>공유 폴더 및 파일</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="210"/>

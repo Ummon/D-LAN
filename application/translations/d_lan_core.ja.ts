@@ -42,9 +42,8 @@
 <context>
     <name>FM::FileHasher</name>
     <message>
-        <location filename="../Core/FileManager/priv/Cache/FileHasher.cpp" line="158"/>
         <source>Indexing %1 . . .</source>
-        <translation>%1 のインデックスを作成しています . . .</translation>
+        <translation type="vanished">%1 のインデックスを作成しています . . .</translation>
     </message>
 </context>
 <context>

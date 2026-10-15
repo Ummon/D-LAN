@@ -30,6 +30,7 @@ using namespace GUI;
 #include <Common/Settings.h>
 
 #include <ItemTextDirection.h>
+#include <ProgressBar.h>
 #include <Utils.h>
 
 void DownloadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
@@ -55,7 +56,7 @@ void DownloadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
       progressBarOption.text = progressText(progress);
       progressBarOption.textVisible = true;
 
-      QApplication::style()->drawControl(QStyle::CE_ProgressBar, &progressBarOption, painter, option.widget);
+      ProgressBar::draw(QApplication::style(), painter, progressBarOption, option.widget);
    }
    else
    {

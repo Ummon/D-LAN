@@ -57,7 +57,7 @@
        <item>
         <widget class="QLabel" name="lblShared">
          <property name="text">
-          <string>Shared folders and files</string>
+          <string>Shared directories and files</string>
          </property>
         </widget>
        </item>

@@ -61,6 +61,7 @@ message Settings {
    uint32 lan_speed = 24; // [default = 104857600] [B/s]. (100 MiB/s).
 
    string style = 25; // The directory of the style in the 'styles' directory.
+   bool ignore_screen_scaling = 38; // [default = false] Set by the style (see 'GUI::MainWindow::ignoreScreenScaling'), only read when the GUI starts.
 
    bool multiple_instance_allowed = 26; // [default = false].
 

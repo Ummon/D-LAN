@@ -20,6 +20,7 @@
 #include <ui_UploadsWidget.h>
 
 #include <ItemTextDirection.h>
+#include <ProgressBar.h>
 using namespace GUI;
 
 void UploadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
@@ -45,7 +46,7 @@ void UploadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& optio
       const double percentProgress = static_cast<double>(progress) / 100;
       progressBarOption.text = QStringLiteral("%1%").arg(percentProgress > 100 ? 100 : percentProgress);
 
-      QApplication::style()->drawControl(QStyle::CE_ProgressBar, &progressBarOption, painter, option.widget);
+      ProgressBar::draw(QApplication::style(), painter, progressBarOption, option.widget);
    }
    else
    {

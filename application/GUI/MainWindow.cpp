@@ -42,6 +42,8 @@ using namespace GUI;
 #include <Common/Global.h>
 #include <Common/RemoteCoreController/Builder.h>
 
+#include <D-LAN_GUI.h>
+#include <WindowFrame.h>
 #include <StatusBar.h>
 #include <Log.h>
 
@@ -53,6 +55,13 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
    peersDock(new PeersDock(this->coreConnection, this)),
    roomsDock(new RoomsDock(this->coreConnection, this)),
    customStyleLoaded(false),
+   windowBorderRadius(DEFAULT_WINDOW_BORDER_RADIUS),
+   windowFrameWidth(0),
+   titleBarOverDocks(false),
+   titleBarSpacing(DEFAULT_TITLE_BAR_SPACING),
+   dialogFrameWidth(0),
+   ignoreScreenScaling(false),
+   dialogDecorator(new DialogDecorator(this)),
    logAutoScroll(true),
    logModel(coreConnection)
 {
@@ -72,6 +81,7 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
    this->ui->verticalLayout->addWidget(this->mdiArea);
    connect(this->mdiArea, &MdiArea::languageChanged, this, &MainWindow::languageChanged);
    connect(this->mdiArea, &MdiArea::styleChanged, this, &MainWindow::loadCustomStyle);
+   connect(this, &MainWindow::windowDecorationChanged, this, &MainWindow::updateWindowDecoration);
 
    this->initialWindowFlags = this->windowFlags();
 
@@ -118,6 +128,7 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
 
    this->ui->grip->setVisible(false);
    this->ui->grip->installEventFilter(this);
+   new WindowFrame(this);
    connect(this->ui->butClose, &QPushButton::clicked, this, &MainWindow::close);
    connect(this->ui->butMinimize, &QPushButton::clicked, this, &MainWindow::showMinimized);
    connect(this->ui->butMaximize, &QPushButton::clicked, this, &MainWindow::maximize);
@@ -265,6 +276,9 @@ void MainWindow::loadCustomStyle(const QString& styleName)
    QApplication* app = dynamic_cast<QApplication*>(QApplication::instance());
    const bool wasVisible = this->isVisible();
 
+   // A style only sets the properties of the decoration it changes, they are set when the window is polished.
+   this->resetStyleProperties();
+
    if (!styleName.isEmpty())
    {
       // The css images are search from the current path.
@@ -280,6 +294,8 @@ void MainWindow::loadCustomStyle(const QString& styleName)
       {
          this->customStyleLoaded = true;
          app->setStyleSheet(QString::fromUtf8(file.readAll()));
+         this->ensurePolished(); // To have the properties set by the style, the window isn't polished yet when it's created.
+         this->updateScreenScalingSetting(wasVisible);
          this->ui->grip->setVisible(true);
 
          static const Qt::WindowFlags FRAMELESS_FLAGS = Qt::Window | Qt::FramelessWindowHint | Qt::WindowSystemMenuHint;
@@ -290,6 +306,7 @@ void MainWindow::loadCustomStyle(const QString& styleName)
             if (wasVisible)
                this->show();
          }
+         this->updateWindowDecoration();
          return;
       }
       else
@@ -305,8 +322,12 @@ void MainWindow::loadCustomStyle(const QString& styleName)
    // For example QProgressBar cannot render text in it.
    app->setStyle("Fusion");
    app->setStyleSheet(QString());
+   // Setting a style while the style sheet of the previous custom style is still there polishes the widgets with it
+   // again, its properties are set back.
+   this->resetStyleProperties();
+   this->updateScreenScalingSetting(wasVisible);
    this->ui->grip->setVisible(false);
-   this->setMask(QRegion());
+   this->updateWindowDecoration();
 
    if (this->windowFlags() != this->initialWindowFlags)
    {
@@ -314,6 +335,70 @@ void MainWindow::loadCustomStyle(const QString& styleName)
       if (wasVisible)
          this->show();
    }
+}
+
+/**
+  * Gives their default value to the properties a style can set, without applying them (see 'updateWindowDecoration()').
+  */
+void MainWindow::resetStyleProperties()
+{
+   this->windowBorderRadius = DEFAULT_WINDOW_BORDER_RADIUS;
+   this->windowFrameWidth = 0;
+   this->titleBarOverDocks = false;
+   this->titleBarSpacing = DEFAULT_TITLE_BAR_SPACING;
+   this->dialogFrameWidth = 0;
+   this->ignoreScreenScaling = false;
+}
+
+/**
+  * The scaling of the screen can only be ignored from the start of the GUI (see 'main.cpp'): the choice of the style is
+  * saved for the next start, and a restart is asked when it doesn't match the way the GUI has been started.
+  */
+void MainWindow::updateScreenScalingSetting(bool askForRestart)
+{
+   if (SETTINGS.get<bool>("ignore_screen_scaling") != this->ignoreScreenScaling)
+   {
+      SETTINGS.set("ignore_screen_scaling", this->ignoreScreenScaling);
+      SETTINGS.save();
+   }
+
+   if (askForRestart && this->ignoreScreenScaling != D_LAN_GUI::isScreenScalingIgnored())
+   {
+      auto* msgBox = new QMessageBox(this);
+      msgBox->setAttribute(Qt::WA_DeleteOnClose);
+      msgBox->setWindowTitle(tr("Restart needed"));
+      msgBox->setText(tr("D-LAN must be restarted to display this style correctly."));
+      msgBox->setIcon(QMessageBox::Information);
+      msgBox->setStandardButtons(QMessageBox::Ok);
+      msgBox->open();
+   }
+}
+
+void MainWindow::updateWindowDecoration()
+{
+   QWidget* titleBar = this->ui->grip;
+   if (this->titleBarOverDocks != (this->menuWidget() == titleBar))
+   {
+      const bool visible = !titleBar->isHidden();
+      if (this->titleBarOverDocks)
+         this->setMenuWidget(titleBar);
+      else // Taking it back from the menu bar area unsets it there, 'setMenuWidget(nullptr)' would delete it.
+         this->ui->verticalLayout->insertWidget(0, titleBar);
+      titleBar->setVisible(visible);
+   }
+   this->ui->horizontalLayout->setContentsMargins(this->titleBarSpacing, this->titleBarSpacing, this->titleBarSpacing, this->titleBarSpacing);
+   this->ui->horizontalLayout->setSpacing(this->titleBarSpacing);
+
+   // As with a native frame, there is no frame when the window is maximized.
+   const int frameWidth = this->customStyleLoaded && !this->isMaximized() && !this->isFullScreen() ? this->windowFrameWidth : 0;
+   this->setContentsMargins(frameWidth, frameWidth, frameWidth, frameWidth);
+   this->setMouseTracking(frameWidth > 0); // For the cursor over the frame, see 'WindowFrame'.
+
+   this->dialogDecorator->setFrameWidths(this->customStyleLoaded ? this->dialogFrameWidth : 0, this->windowFrameWidth);
+
+   this->updateWindowMask();
+   if (this->customStyleLoaded)
+      this->updateTitleBarMask();
 }
 
 void MainWindow::maximize()
@@ -369,6 +454,19 @@ void MainWindow::changeEvent(QEvent* event)
 {
    if (event->type() == QEvent::LanguageChange)
       this->ui->retranslateUi(this);
+   else if (event->type() == QEvent::WindowStateChange)
+   {
+      this->updateWindowDecoration();
+
+      // A style can show the maximize button differently when the window is maximized
+      // ('GUI--MainWindow[maximized="true"] #butMaximize'), Qt only evaluates such a selector when the button is polished.
+      if (this->customStyleLoaded)
+      {
+         this->style()->unpolish(this->ui->butMaximize);
+         this->style()->polish(this->ui->butMaximize);
+         this->ui->butMaximize->update();
+      }
+   }
 
    QMainWindow::changeEvent(event);
 }
@@ -397,15 +495,7 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* event)
       }
       else if (event->type() == QEvent::Resize)
       {
-         const QRegion maskedRegion(0, 0, this->ui->grip->width(), this->ui->grip->width());
-
-         if (this->isMaximized())
-            this->ui->grip->setMask(maskedRegion);
-         else
-         {
-            const QRegion cornerTopRight = QRegion(this->ui->grip->width() - WINDOW_BORDER_RADIUS, 0, WINDOW_BORDER_RADIUS, WINDOW_BORDER_RADIUS).subtracted(QRegion(this->ui->grip->width() - 2 * WINDOW_BORDER_RADIUS, 0, 2 * WINDOW_BORDER_RADIUS, 2 * WINDOW_BORDER_RADIUS, QRegion::Ellipse));
-            this->ui->grip->setMask(maskedRegion.subtracted(cornerTopRight));
-         }
+         this->updateTitleBarMask();
       }
       else if (event->type() == QEvent::MouseButtonDblClick && static_cast<QMouseEvent*>(event)->button() == Qt::LeftButton)
       {
@@ -419,22 +509,44 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* event)
 void MainWindow::resizeEvent(QResizeEvent* event)
 {
    QMainWindow::resizeEvent(event);
+   this->updateWindowMask();
+}
 
-   if (this->customStyleLoaded)
+void MainWindow::updateWindowMask()
+{
+   if (!this->customStyleLoaded)
    {
-      const QRegion maskedRegion(0, 0, this->width(), this->height());
+      this->clearMask();
+      return;
+   }
 
-      if (this->isMaximized())
-         this->setMask(maskedRegion);
-      else
-      {
-         const QRegion cornerTopLeft = QRegion(0, 0, WINDOW_BORDER_RADIUS, WINDOW_BORDER_RADIUS).subtracted(QRegion(0, 0, 2 * WINDOW_BORDER_RADIUS, 2 * WINDOW_BORDER_RADIUS, QRegion::Ellipse));
-         const QRegion cornerTopRight = QRegion(this->width() - WINDOW_BORDER_RADIUS, 0, WINDOW_BORDER_RADIUS, WINDOW_BORDER_RADIUS).subtracted(QRegion(this->width() - 2 * WINDOW_BORDER_RADIUS, 0, 2 * WINDOW_BORDER_RADIUS, 2 * WINDOW_BORDER_RADIUS, QRegion::Ellipse));
-         const QRegion cornerBottomLeft = QRegion(0, this->height() - WINDOW_BORDER_RADIUS, WINDOW_BORDER_RADIUS, WINDOW_BORDER_RADIUS).subtracted(QRegion(0, this->height() - 2 * WINDOW_BORDER_RADIUS, 2 * WINDOW_BORDER_RADIUS, 2 * WINDOW_BORDER_RADIUS, QRegion::Ellipse));
-         const QRegion cornerBottomRight = QRegion(this->width() - WINDOW_BORDER_RADIUS, this->height() - WINDOW_BORDER_RADIUS, WINDOW_BORDER_RADIUS, WINDOW_BORDER_RADIUS).subtracted(QRegion(this->width() - 2 * WINDOW_BORDER_RADIUS, this->height() - 2 * WINDOW_BORDER_RADIUS, 2 * WINDOW_BORDER_RADIUS, 2 * WINDOW_BORDER_RADIUS, QRegion::Ellipse));
+   const int radius = this->windowBorderRadius;
+   const QRegion maskedRegion(0, 0, this->width(), this->height());
 
-         this->setMask(maskedRegion.subtracted(cornerTopLeft).subtracted(cornerTopRight).subtracted(cornerBottomLeft).subtracted(cornerBottomRight));
-      }
+   if (this->isMaximized() || radius <= 0)
+      this->setMask(maskedRegion);
+   else
+   {
+      const QRegion cornerTopLeft = QRegion(0, 0, radius, radius).subtracted(QRegion(0, 0, 2 * radius, 2 * radius, QRegion::Ellipse));
+      const QRegion cornerTopRight = QRegion(this->width() - radius, 0, radius, radius).subtracted(QRegion(this->width() - 2 * radius, 0, 2 * radius, 2 * radius, QRegion::Ellipse));
+      const QRegion cornerBottomLeft = QRegion(0, this->height() - radius, radius, radius).subtracted(QRegion(0, this->height() - 2 * radius, 2 * radius, 2 * radius, QRegion::Ellipse));
+      const QRegion cornerBottomRight = QRegion(this->width() - radius, this->height() - radius, radius, radius).subtracted(QRegion(this->width() - 2 * radius, this->height() - 2 * radius, 2 * radius, 2 * radius, QRegion::Ellipse));
+
+      this->setMask(maskedRegion.subtracted(cornerTopLeft).subtracted(cornerTopRight).subtracted(cornerBottomLeft).subtracted(cornerBottomRight));
+   }
+}
+
+void MainWindow::updateTitleBarMask()
+{
+   const int radius = this->windowBorderRadius;
+   const QRegion maskedRegion(0, 0, this->ui->grip->width(), this->ui->grip->width());
+
+   if (this->isMaximized() || radius <= 0)
+      this->ui->grip->setMask(maskedRegion);
+   else
+   {
+      const QRegion cornerTopRight = QRegion(this->ui->grip->width() - radius, 0, radius, radius).subtracted(QRegion(this->ui->grip->width() - 2 * radius, 0, 2 * radius, 2 * radius, QRegion::Ellipse));
+      this->ui->grip->setMask(maskedRegion.subtracted(cornerTopRight));
    }
 }
 

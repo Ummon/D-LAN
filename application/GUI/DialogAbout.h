@@ -39,6 +39,8 @@ namespace GUI
       void changeEvent(QEvent* event);
 
    private:
+      void updateLabelsAlignment();
+
       Ui::DialogAbout *ui;
    };
 }
