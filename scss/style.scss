@@ -3,6 +3,15 @@
 @use 'constants' as consts;
 @use 'calendar';
 
+@mixin bg {
+   background-image: repeating-linear-gradient(135deg,
+         rgba(255, 255, 255, 0.12) 0 3.54px, // 5px / √2
+         transparent 3.54px 7.78px // 11px / √2
+      );
+   background-attachment: fixed;
+   background-color: rgba(255, 255, 255, consts.$opacity1);
+}
+
 @mixin central-part {
    width: 100%;
    max-width: 600px;
@@ -139,9 +148,7 @@ select {
 
    font: italic 0.9rem verdana, sans-serif;
    line-height: normal;
-   background-image: url("img/bg.png");
-   background-attachment: fixed;
-   background-color: rgba(255, 255, 255, consts.$opacity1);
+   @include bg;
    padding-top: 1px;
    padding-bottom: 1px;
 
@@ -214,9 +221,7 @@ select {
 }
 
 #content-bg {
-   background-image: url("img/bg.png");
-   background-attachment: fixed;
-   background-color: rgba(255, 255, 255, consts.$opacity1);
+   @include bg;
 
    #content {
       @include central-part;
