@@ -277,12 +277,7 @@ void MainWindow::loadCustomStyle(const QString& styleName)
    const bool wasVisible = this->isVisible();
 
    // A style only sets the properties of the decoration it changes, they are set when the window is polished.
-   this->windowBorderRadius = DEFAULT_WINDOW_BORDER_RADIUS;
-   this->windowFrameWidth = 0;
-   this->titleBarOverDocks = false;
-   this->titleBarSpacing = DEFAULT_TITLE_BAR_SPACING;
-   this->dialogFrameWidth = 0;
-   this->ignoreScreenScaling = false;
+   this->resetStyleProperties();
 
    if (!styleName.isEmpty())
    {
@@ -327,6 +322,9 @@ void MainWindow::loadCustomStyle(const QString& styleName)
    // For example QProgressBar cannot render text in it.
    app->setStyle("Fusion");
    app->setStyleSheet(QString());
+   // Setting a style while the style sheet of the previous custom style is still there polishes the widgets with it
+   // again, its properties are set back.
+   this->resetStyleProperties();
    this->updateScreenScalingSetting(wasVisible);
    this->ui->grip->setVisible(false);
    this->updateWindowDecoration();
@@ -337,6 +335,19 @@ void MainWindow::loadCustomStyle(const QString& styleName)
       if (wasVisible)
          this->show();
    }
+}
+
+/**
+  * Gives their default value to the properties a style can set, without applying them (see 'updateWindowDecoration()').
+  */
+void MainWindow::resetStyleProperties()
+{
+   this->windowBorderRadius = DEFAULT_WINDOW_BORDER_RADIUS;
+   this->windowFrameWidth = 0;
+   this->titleBarOverDocks = false;
+   this->titleBarSpacing = DEFAULT_TITLE_BAR_SPACING;
+   this->dialogFrameWidth = 0;
+   this->ignoreScreenScaling = false;
 }
 
 /**

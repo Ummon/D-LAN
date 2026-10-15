@@ -104,6 +104,7 @@ namespace GUI
 #endif
 
    private:
+      void resetStyleProperties();
       void updateScreenScalingSetting(bool askForRestart);
       void updateWindowMask();
       void updateTitleBarMask();
