@@ -259,8 +259,12 @@
 <context>
     <name>GUI::DownloadMenu</name>
     <message>
-        <location filename="../GUI/DownloadMenu.cpp" line="+68"/>
         <source>Download selected items to the first directory folder with enough free space</source>
+        <translation type="vanished">Unduh item yang dipilih ke folder bersama pertama yang memiliki cukup ruang kosong</translation>
+    </message>
+    <message>
+        <location filename="../GUI/DownloadMenu.cpp" line="+68"/>
+        <source>Download selected items to the first shared directory with enough free space</source>
         <translation>Unduh item yang dipilih ke folder bersama pertama yang memiliki cukup ruang kosong</translation>
     </message>
     <message>
@@ -285,13 +289,21 @@
     </message>
     <message>
         <location line="+64"/>
-        <source>%1 more folders . . .</source>
+        <source>%1 more directories . . .</source>
         <translation>%1 folder lainnya . . .</translation>
     </message>
     <message>
         <location line="+8"/>
-        <source>Unable to get the folders</source>
+        <source>Unable to get the directories</source>
         <translation>Tidak dapat mengambil daftar folder</translation>
+    </message>
+    <message>
+        <source>%1 more folders . . .</source>
+        <translation type="vanished">%1 folder lainnya . . .</translation>
+    </message>
+    <message>
+        <source>Unable to get the folders</source>
+        <translation type="vanished">Tidak dapat mengambil daftar folder</translation>
     </message>
 </context>
 <context>
@@ -1254,7 +1266,12 @@
         <translation>Nama panggilan</translation>
     </message>
     <message>
-        <location line="+46"/>
+        <location line="+14"/>
+        <source>Shared directories and files</source>
+        <translation>Folder dan berkas bersama</translation>
+    </message>
+    <message>
+        <location line="+32"/>
         <source>Remove the selected shared files and directories</source>
         <translation>Hapus berkas dan folder bersama yang dipilih dari daftar</translation>
     </message>
@@ -1359,12 +1376,11 @@
         <translation>Segarkan antarmuka</translation>
     </message>
     <message>
-        <location line="-448"/>
         <source>Shared folders and files</source>
-        <translation>Folder dan berkas bersama</translation>
+        <translation type="vanished">Folder dan berkas bersama</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="-439"/>
         <source>Add new shared directories and/or files</source>
         <translation>Tambahkan folder dan/atau berkas bersama baru</translation>
     </message>

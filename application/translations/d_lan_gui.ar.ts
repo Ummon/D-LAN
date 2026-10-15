@@ -259,8 +259,12 @@
 <context>
     <name>GUI::DownloadMenu</name>
     <message>
-        <location filename="../GUI/DownloadMenu.cpp" line="+68"/>
         <source>Download selected items to the first directory folder with enough free space</source>
+        <translation type="vanished">تنزيل العناصر المحددة إلى أول مجلد مشترك به مساحة حرة كافية</translation>
+    </message>
+    <message>
+        <location filename="../GUI/DownloadMenu.cpp" line="+68"/>
+        <source>Download selected items to the first shared directory with enough free space</source>
         <translation>تنزيل العناصر المحددة إلى أول مجلد مشترك به مساحة حرة كافية</translation>
     </message>
     <message>
@@ -285,13 +289,21 @@
     </message>
     <message>
         <location line="+64"/>
-        <source>%1 more folders . . .</source>
+        <source>%1 more directories . . .</source>
         <translation>مجلدات أخرى: %1 . . .</translation>
     </message>
     <message>
         <location line="+8"/>
-        <source>Unable to get the folders</source>
+        <source>Unable to get the directories</source>
         <translation>تعذّر الحصول على المجلدات</translation>
+    </message>
+    <message>
+        <source>%1 more folders . . .</source>
+        <translation type="vanished">مجلدات أخرى: %1 . . .</translation>
+    </message>
+    <message>
+        <source>Unable to get the folders</source>
+        <translation type="vanished">تعذّر الحصول على المجلدات</translation>
     </message>
 </context>
 <context>
@@ -1254,7 +1266,12 @@
         <translation>الاسم المستعار</translation>
     </message>
     <message>
-        <location line="+46"/>
+        <location line="+14"/>
+        <source>Shared directories and files</source>
+        <translation>المجلدات والملفات المشتركة</translation>
+    </message>
+    <message>
+        <location line="+32"/>
         <source>Remove the selected shared files and directories</source>
         <translation>إزالة الملفات والمجلدات المشتركة المحددة</translation>
     </message>
@@ -1359,12 +1376,11 @@
         <translation>تحديث الواجهات</translation>
     </message>
     <message>
-        <location line="-448"/>
         <source>Shared folders and files</source>
-        <translation>المجلدات والملفات المشتركة</translation>
+        <translation type="vanished">المجلدات والملفات المشتركة</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="-439"/>
         <source>Add new shared directories and/or files</source>
         <translation>إضافة مجلدات و/أو ملفات مشتركة جديدة</translation>
     </message>

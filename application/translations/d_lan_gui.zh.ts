@@ -259,8 +259,12 @@
 <context>
     <name>GUI::DownloadMenu</name>
     <message>
-        <location filename="../GUI/DownloadMenu.cpp" line="+68"/>
         <source>Download selected items to the first directory folder with enough free space</source>
+        <translation type="vanished">将所选项目下载到第一个有足够可用空间的共享文件夹</translation>
+    </message>
+    <message>
+        <location filename="../GUI/DownloadMenu.cpp" line="+68"/>
+        <source>Download selected items to the first shared directory with enough free space</source>
         <translation>将所选项目下载到第一个有足够可用空间的共享文件夹</translation>
     </message>
     <message>
@@ -285,13 +289,21 @@
     </message>
     <message>
         <location line="+64"/>
-        <source>%1 more folders . . .</source>
+        <source>%1 more directories . . .</source>
         <translation>还有 %1 个文件夹…</translation>
     </message>
     <message>
         <location line="+8"/>
-        <source>Unable to get the folders</source>
+        <source>Unable to get the directories</source>
         <translation>无法获取文件夹</translation>
+    </message>
+    <message>
+        <source>%1 more folders . . .</source>
+        <translation type="vanished">还有 %1 个文件夹…</translation>
+    </message>
+    <message>
+        <source>Unable to get the folders</source>
+        <translation type="vanished">无法获取文件夹</translation>
     </message>
 </context>
 <context>
@@ -1254,7 +1266,12 @@
         <translation>昵称</translation>
     </message>
     <message>
-        <location line="+46"/>
+        <location line="+14"/>
+        <source>Shared directories and files</source>
+        <translation>共享的文件夹和文件</translation>
+    </message>
+    <message>
+        <location line="+32"/>
         <source>Remove the selected shared files and directories</source>
         <translation>移除所选的共享文件和文件夹</translation>
     </message>
@@ -1359,12 +1376,11 @@
         <translation>刷新接口</translation>
     </message>
     <message>
-        <location line="-448"/>
         <source>Shared folders and files</source>
-        <translation>共享的文件夹和文件</translation>
+        <translation type="vanished">共享的文件夹和文件</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="-439"/>
         <source>Add new shared directories and/or files</source>
         <translation>添加新的共享文件夹和/或文件</translation>
     </message>

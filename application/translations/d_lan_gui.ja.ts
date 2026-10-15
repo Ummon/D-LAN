@@ -259,9 +259,13 @@
 <context>
     <name>GUI::DownloadMenu</name>
     <message>
-        <location filename="../GUI/DownloadMenu.cpp" line="68"/>
         <source>Download selected items to the first directory folder with enough free space</source>
-        <translation>選択した項目を、十分な空き容量がある最初のディレクトリにダウンロード</translation>
+        <translation type="vanished">選択した項目を、十分な空き容量がある最初のディレクトリにダウンロード</translation>
+    </message>
+    <message>
+        <location filename="../GUI/DownloadMenu.cpp" line="68"/>
+        <source>Download selected items to the first shared directory with enough free space</source>
+        <translation>選択した項目を、十分な空き容量がある最初の共有ディレクトリにダウンロード</translation>
     </message>
     <message>
         <location filename="../GUI/DownloadMenu.cpp" line="83"/>
@@ -285,13 +289,21 @@
     </message>
     <message>
         <location filename="../GUI/DownloadMenu.cpp" line="200"/>
-        <source>%1 more folders . . .</source>
-        <translation>他 %1 個のフォルダー . . .</translation>
+        <source>%1 more directories . . .</source>
+        <translation>他 %1 個のディレクトリ . . .</translation>
     </message>
     <message>
         <location filename="../GUI/DownloadMenu.cpp" line="208"/>
+        <source>Unable to get the directories</source>
+        <translation>ディレクトリを取得できません</translation>
+    </message>
+    <message>
+        <source>%1 more folders . . .</source>
+        <translation type="vanished">他 %1 個のフォルダー . . .</translation>
+    </message>
+    <message>
         <source>Unable to get the folders</source>
-        <translation>フォルダーを取得できません</translation>
+        <translation type="vanished">フォルダーを取得できません</translation>
     </message>
 </context>
 <context>
@@ -880,7 +892,7 @@
     <message>
         <location filename="../GUI/Settings/SettingsWidget.cpp" line="782"/>
         <source>Are you sure you want to remove the selected shared files and directories?</source>
-        <translation>選択した共有ファイルとフォルダーを削除してもよろしいですか？</translation>
+        <translation>選択した共有ファイルとディレクトリを削除してもよろしいですか？</translation>
     </message>
     <message>
         <source>Remove selected shared directory</source>
@@ -1270,9 +1282,8 @@
         <translation>ニックネーム</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="60"/>
         <source>Shared folders and files</source>
-        <translation>共有フォルダーとファイル</translation>
+        <translation type="vanished">共有フォルダーとファイル</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="69"/>
@@ -1298,22 +1309,22 @@
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="92"/>
         <source>Remove the selected shared files and directories</source>
-        <translation>選択した共有ファイルとフォルダーを削除</translation>
+        <translation>選択した共有ファイルとディレクトリを削除</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="112"/>
         <source>Move down the selected shared files and directories</source>
-        <translation>選択した共有ファイルとフォルダーを下に移動</translation>
+        <translation>選択した共有ファイルとディレクトリを下に移動</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="132"/>
         <source>Move up the selected shared files and directories</source>
-        <translation>選択した共有ファイルとフォルダーを上に移動</translation>
+        <translation>選択した共有ファイルとディレクトリを上に移動</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="152"/>
         <source>Open locations of the selected shared files and directories</source>
-        <translation>選択した共有ファイルとフォルダーの場所を開く</translation>
+        <translation>選択した共有ファイルとディレクトリの場所を開く</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="407"/>
@@ -1437,6 +1448,11 @@
         <location filename="../GUI/Settings/SettingsWidget.ui" line="202"/>
         <source>Core connection</source>
         <translation>Core への接続</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="60"/>
+        <source>Shared directories and files</source>
+        <translation>共有ディレクトリとファイル</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="210"/>

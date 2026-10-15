@@ -259,8 +259,12 @@
 <context>
     <name>GUI::DownloadMenu</name>
     <message>
-        <location filename="../GUI/DownloadMenu.cpp" line="68"/>
         <source>Download selected items to the first directory folder with enough free space</source>
+        <translation type="vanished">Scarica gli elementi selezionati nella prima cartella condivisa con spazio libero sufficiente</translation>
+    </message>
+    <message>
+        <location filename="../GUI/DownloadMenu.cpp" line="68"/>
+        <source>Download selected items to the first shared directory with enough free space</source>
         <translation>Scarica gli elementi selezionati nella prima cartella condivisa con spazio libero sufficiente</translation>
     </message>
     <message>
@@ -285,13 +289,21 @@
     </message>
     <message>
         <location filename="../GUI/DownloadMenu.cpp" line="200"/>
-        <source>%1 more folders . . .</source>
+        <source>%1 more directories . . .</source>
         <translation>Altre %1 cartelle . . .</translation>
     </message>
     <message>
         <location filename="../GUI/DownloadMenu.cpp" line="208"/>
-        <source>Unable to get the folders</source>
+        <source>Unable to get the directories</source>
         <translation>Impossibile ottenere le cartelle</translation>
+    </message>
+    <message>
+        <source>%1 more folders . . .</source>
+        <translation type="vanished">Altre %1 cartelle . . .</translation>
+    </message>
+    <message>
+        <source>Unable to get the folders</source>
+        <translation type="vanished">Impossibile ottenere le cartelle</translation>
     </message>
 </context>
 <context>
@@ -1274,9 +1286,8 @@
         <translation>Nickname</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="60"/>
         <source>Shared folders and files</source>
-        <translation>Cartelle e file condivisi</translation>
+        <translation type="vanished">Cartelle e file condivisi</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="69"/>
@@ -1441,6 +1452,11 @@
         <location filename="../GUI/Settings/SettingsWidget.ui" line="202"/>
         <source>Core connection</source>
         <translation>Connessione al Core</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="60"/>
+        <source>Shared directories and files</source>
+        <translation>Cartelle e file condivisi</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="210"/>

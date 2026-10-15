@@ -259,8 +259,12 @@
 <context>
     <name>GUI::DownloadMenu</name>
     <message>
-        <location filename="../GUI/DownloadMenu.cpp" line="+68"/>
         <source>Download selected items to the first directory folder with enough free space</source>
+        <translation type="vanished">নির্বাচিত আইটেমগুলি পর্যাপ্ত ফাঁকা জায়গা আছে এমন প্রথম শেয়ার করা ফোল্ডারে ডাউনলোড করুন</translation>
+    </message>
+    <message>
+        <location filename="../GUI/DownloadMenu.cpp" line="+68"/>
+        <source>Download selected items to the first shared directory with enough free space</source>
         <translation>নির্বাচিত আইটেমগুলি পর্যাপ্ত ফাঁকা জায়গা আছে এমন প্রথম শেয়ার করা ফোল্ডারে ডাউনলোড করুন</translation>
     </message>
     <message>
@@ -285,13 +289,21 @@
     </message>
     <message>
         <location line="+64"/>
-        <source>%1 more folders . . .</source>
+        <source>%1 more directories . . .</source>
         <translation>আরও %1টি ফোল্ডার . . .</translation>
     </message>
     <message>
         <location line="+8"/>
-        <source>Unable to get the folders</source>
+        <source>Unable to get the directories</source>
         <translation>ফোল্ডারগুলি পাওয়া যায়নি</translation>
+    </message>
+    <message>
+        <source>%1 more folders . . .</source>
+        <translation type="vanished">আরও %1টি ফোল্ডার . . .</translation>
+    </message>
+    <message>
+        <source>Unable to get the folders</source>
+        <translation type="vanished">ফোল্ডারগুলি পাওয়া যায়নি</translation>
     </message>
 </context>
 <context>
@@ -1254,7 +1266,12 @@
         <translation>ডাকনাম</translation>
     </message>
     <message>
-        <location line="+46"/>
+        <location line="+14"/>
+        <source>Shared directories and files</source>
+        <translation>শেয়ার করা ফোল্ডার ও ফাইল</translation>
+    </message>
+    <message>
+        <location line="+32"/>
         <source>Remove the selected shared files and directories</source>
         <translation>নির্বাচিত শেয়ার করা ফাইল ও ফোল্ডারগুলি অপসারণ করুন</translation>
     </message>
@@ -1359,12 +1376,11 @@
         <translation>ইন্টারফেসগুলি রিফ্রেশ করুন</translation>
     </message>
     <message>
-        <location line="-448"/>
         <source>Shared folders and files</source>
-        <translation>শেয়ার করা ফোল্ডার ও ফাইল</translation>
+        <translation type="vanished">শেয়ার করা ফোল্ডার ও ফাইল</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="-439"/>
         <source>Add new shared directories and/or files</source>
         <translation>শেয়ার করার জন্য নতুন ফোল্ডার এবং/অথবা ফাইল যোগ করুন</translation>
     </message>

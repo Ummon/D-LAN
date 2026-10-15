@@ -259,9 +259,13 @@
 <context>
     <name>GUI::DownloadMenu</name>
     <message>
-        <location filename="../GUI/DownloadMenu.cpp" line="+68"/>
         <source>Download selected items to the first directory folder with enough free space</source>
-        <translation>Descargar los elementos seleccionados a la primera carpeta con suficiente espacio libre</translation>
+        <translation type="vanished">Descargar los elementos seleccionados a la primera carpeta con suficiente espacio libre</translation>
+    </message>
+    <message>
+        <location filename="../GUI/DownloadMenu.cpp" line="+68"/>
+        <source>Download selected items to the first shared directory with enough free space</source>
+        <translation>Descargar los elementos seleccionados al primer directorio compartido con suficiente espacio libre</translation>
     </message>
     <message>
         <location line="+15"/>
@@ -285,13 +289,21 @@
     </message>
     <message>
         <location line="+64"/>
-        <source>%1 more folders . . .</source>
-        <translation>%1 carpetas más . . .</translation>
+        <source>%1 more directories . . .</source>
+        <translation>%1 directorios más . . .</translation>
     </message>
     <message>
         <location line="+8"/>
+        <source>Unable to get the directories</source>
+        <translation>No se pudieron obtener los directorios</translation>
+    </message>
+    <message>
+        <source>%1 more folders . . .</source>
+        <translation type="vanished">%1 carpetas más . . .</translation>
+    </message>
+    <message>
         <source>Unable to get the folders</source>
-        <translation>No se pudieron obtener las carpetas</translation>
+        <translation type="vanished">No se pudieron obtener las carpetas</translation>
     </message>
 </context>
 <context>
@@ -1274,12 +1286,11 @@
         <translation>Apodo</translation>
     </message>
     <message>
-        <location line="+14"/>
         <source>Shared folders and files</source>
-        <translation>Directorios y archivos compartidos</translation>
+        <translation type="vanished">Directorios y archivos compartidos</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="+23"/>
         <source>Add new shared directories and/or files</source>
         <translation>Agregar nuevos directorios y/o archivos compartidos</translation>
     </message>
@@ -1443,7 +1454,12 @@
         <translation>Conexión al núcleo</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="-142"/>
+        <source>Shared directories and files</source>
+        <translation>Directorios y archivos compartidos</translation>
+    </message>
+    <message>
+        <location line="+150"/>
         <source>Address</source>
         <translation>Dirección</translation>
     </message>

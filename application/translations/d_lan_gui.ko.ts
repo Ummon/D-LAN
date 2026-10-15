@@ -259,8 +259,12 @@
 <context>
     <name>GUI::DownloadMenu</name>
     <message>
-        <location filename="../GUI/DownloadMenu.cpp" line="68"/>
         <source>Download selected items to the first directory folder with enough free space</source>
+        <translation type="vanished">선택한 항목을 여유 공간이 충분한 첫 번째 공유 폴더로 다운로드</translation>
+    </message>
+    <message>
+        <location filename="../GUI/DownloadMenu.cpp" line="68"/>
+        <source>Download selected items to the first shared directory with enough free space</source>
         <translation>선택한 항목을 여유 공간이 충분한 첫 번째 공유 폴더로 다운로드</translation>
     </message>
     <message>
@@ -285,13 +289,21 @@
     </message>
     <message>
         <location filename="../GUI/DownloadMenu.cpp" line="200"/>
-        <source>%1 more folders . . .</source>
+        <source>%1 more directories . . .</source>
         <translation>그 외 폴더 %1개 . . .</translation>
     </message>
     <message>
         <location filename="../GUI/DownloadMenu.cpp" line="208"/>
-        <source>Unable to get the folders</source>
+        <source>Unable to get the directories</source>
         <translation>폴더를 가져올 수 없습니다</translation>
+    </message>
+    <message>
+        <source>%1 more folders . . .</source>
+        <translation type="vanished">그 외 폴더 %1개 . . .</translation>
+    </message>
+    <message>
+        <source>Unable to get the folders</source>
+        <translation type="vanished">폴더를 가져올 수 없습니다</translation>
     </message>
 </context>
 <context>
@@ -1168,7 +1180,7 @@
     <message>
         <location filename="../GUI/RemoteBrowseDialog.ui" line="65"/>
         <source>Go to parent directory</source>
-        <translation>상위 디렉터리로 이동</translation>
+        <translation>상위 폴더로 이동</translation>
     </message>
     <message>
         <location filename="../GUI/RemoteBrowseDialog.ui" line="85"/>
@@ -1274,9 +1286,8 @@
         <translation>닉네임</translation>
     </message>
     <message>
-        <location filename="../GUI/Settings/SettingsWidget.ui" line="60"/>
         <source>Shared folders and files</source>
-        <translation>공유 폴더 및 파일</translation>
+        <translation type="vanished">공유 폴더 및 파일</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="69"/>
@@ -1441,6 +1452,11 @@
         <location filename="../GUI/Settings/SettingsWidget.ui" line="202"/>
         <source>Core connection</source>
         <translation>코어 연결</translation>
+    </message>
+    <message>
+        <location filename="../GUI/Settings/SettingsWidget.ui" line="60"/>
+        <source>Shared directories and files</source>
+        <translation>공유 폴더 및 파일</translation>
     </message>
     <message>
         <location filename="../GUI/Settings/SettingsWidget.ui" line="210"/>

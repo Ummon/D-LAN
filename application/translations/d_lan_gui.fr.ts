@@ -259,9 +259,13 @@
 <context>
     <name>GUI::DownloadMenu</name>
     <message>
-        <location filename="../GUI/DownloadMenu.cpp" line="+68"/>
         <source>Download selected items to the first directory folder with enough free space</source>
-        <translation>Télécharger les éléments sélectionnés dans le premier dossier partagé avec assez de place libre</translation>
+        <translation type="vanished">Télécharger les éléments sélectionnés dans le premier dossier partagé avec assez de place libre</translation>
+    </message>
+    <message>
+        <location filename="../GUI/DownloadMenu.cpp" line="+68"/>
+        <source>Download selected items to the first shared directory with enough free space</source>
+        <translation>Télécharger les éléments sélectionnés dans le premier dossier partagé avec assez d’espace libre</translation>
     </message>
     <message>
         <location line="+15"/>
@@ -285,13 +289,21 @@
     </message>
     <message>
         <location line="+64"/>
-        <source>%1 more folders . . .</source>
+        <source>%1 more directories . . .</source>
         <translation>%1 dossiers de plus . . .</translation>
     </message>
     <message>
         <location line="+8"/>
+        <source>Unable to get the directories</source>
+        <translation>Impossible d'obtenir les dossiers</translation>
+    </message>
+    <message>
+        <source>%1 more folders . . .</source>
+        <translation type="vanished">%1 dossiers de plus . . .</translation>
+    </message>
+    <message>
         <source>Unable to get the folders</source>
-        <translation>Impossible d&apos;obtenir les dossiers</translation>
+        <translation type="vanished">Impossible d&apos;obtenir les dossiers</translation>
     </message>
 </context>
 <context>
@@ -1274,7 +1286,12 @@
         <translation>Pseudo</translation>
     </message>
     <message>
-        <location line="+46"/>
+        <location line="+14"/>
+        <source>Shared directories and files</source>
+        <translation>Dossiers et fichiers partagés</translation>
+    </message>
+    <message>
+        <location line="+32"/>
         <source>Remove the selected shared files and directories</source>
         <translation>Enlever les fichiers et dossiers partagés sélectionnés</translation>
     </message>
@@ -1387,12 +1404,11 @@
         <translation type="vanished">Vérification de l&apos;intégrité des données</translation>
     </message>
     <message>
-        <location line="-448"/>
         <source>Shared folders and files</source>
-        <translation>Dossiers et fichiers partagés</translation>
+        <translation type="vanished">Dossiers et fichiers partagés</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="-439"/>
         <source>Add new shared directories and/or files</source>
         <translation>Ajouter de nouveaux dossiers et/ou fichiers à partager</translation>
     </message>

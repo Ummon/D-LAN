@@ -259,8 +259,12 @@
 <context>
     <name>GUI::DownloadMenu</name>
     <message>
-        <location filename="../GUI/DownloadMenu.cpp" line="+68"/>
         <source>Download selected items to the first directory folder with enough free space</source>
+        <translation type="vanished">Baixar os itens selecionados para a primeira pasta compartilhada com espaço livre suficiente</translation>
+    </message>
+    <message>
+        <location filename="../GUI/DownloadMenu.cpp" line="+68"/>
+        <source>Download selected items to the first shared directory with enough free space</source>
         <translation>Baixar os itens selecionados para a primeira pasta compartilhada com espaço livre suficiente</translation>
     </message>
     <message>
@@ -285,13 +289,21 @@
     </message>
     <message>
         <location line="+64"/>
-        <source>%1 more folders . . .</source>
+        <source>%1 more directories . . .</source>
         <translation>Mais %1 pastas . . .</translation>
     </message>
     <message>
         <location line="+8"/>
-        <source>Unable to get the folders</source>
+        <source>Unable to get the directories</source>
         <translation>Não foi possível obter as pastas</translation>
+    </message>
+    <message>
+        <source>%1 more folders . . .</source>
+        <translation type="vanished">Mais %1 pastas . . .</translation>
+    </message>
+    <message>
+        <source>Unable to get the folders</source>
+        <translation type="vanished">Não foi possível obter as pastas</translation>
     </message>
 </context>
 <context>
@@ -1254,7 +1266,12 @@
         <translation>Apelido</translation>
     </message>
     <message>
-        <location line="+46"/>
+        <location line="+14"/>
+        <source>Shared directories and files</source>
+        <translation>Pastas e arquivos compartilhados</translation>
+    </message>
+    <message>
+        <location line="+32"/>
         <source>Remove the selected shared files and directories</source>
         <translation>Remover os arquivos e pastas compartilhados selecionados</translation>
     </message>
@@ -1359,12 +1376,11 @@
         <translation>Atualizar interfaces</translation>
     </message>
     <message>
-        <location line="-448"/>
         <source>Shared folders and files</source>
-        <translation>Pastas e arquivos compartilhados</translation>
+        <translation type="vanished">Pastas e arquivos compartilhados</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="-439"/>
         <source>Add new shared directories and/or files</source>
         <translation>Adicionar novas pastas e/ou arquivos compartilhados</translation>
     </message>

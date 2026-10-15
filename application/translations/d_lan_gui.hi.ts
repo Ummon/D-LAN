@@ -259,9 +259,13 @@
 <context>
     <name>GUI::DownloadMenu</name>
     <message>
-        <location filename="../GUI/DownloadMenu.cpp" line="+68"/>
         <source>Download selected items to the first directory folder with enough free space</source>
-        <translation>चयनित आइटम को पर्याप्त खाली स्थान वाले पहले फ़ोल्डर में डाउनलोड करें</translation>
+        <translation type="vanished">चयनित आइटम को पर्याप्त खाली स्थान वाले पहले फ़ोल्डर में डाउनलोड करें</translation>
+    </message>
+    <message>
+        <location filename="../GUI/DownloadMenu.cpp" line="+68"/>
+        <source>Download selected items to the first shared directory with enough free space</source>
+        <translation>चयनित आइटम को पर्याप्त खाली स्थान वाले पहले साझा फ़ोल्डर में डाउनलोड करें</translation>
     </message>
     <message>
         <location line="+15"/>
@@ -285,13 +289,21 @@
     </message>
     <message>
         <location line="+64"/>
-        <source>%1 more folders . . .</source>
+        <source>%1 more directories . . .</source>
         <translation>%1 और फ़ोल्डर . . .</translation>
     </message>
     <message>
         <location line="+8"/>
-        <source>Unable to get the folders</source>
+        <source>Unable to get the directories</source>
         <translation>फ़ोल्डर प्राप्त करने में असमर्थ</translation>
+    </message>
+    <message>
+        <source>%1 more folders . . .</source>
+        <translation type="vanished">%1 और फ़ोल्डर . . .</translation>
+    </message>
+    <message>
+        <source>Unable to get the folders</source>
+        <translation type="vanished">फ़ोल्डर प्राप्त करने में असमर्थ</translation>
     </message>
 </context>
 <context>
@@ -1258,7 +1270,12 @@
         <translation>निकनेम</translation>
     </message>
     <message>
-        <location line="+46"/>
+        <location line="+14"/>
+        <source>Shared directories and files</source>
+        <translation>साझा फ़ोल्डर और फ़ाइलें</translation>
+    </message>
+    <message>
+        <location line="+32"/>
         <source>Remove the selected shared files and directories</source>
         <translation>चयनित साझा फ़ाइलें और फ़ोल्डर हटाएँ</translation>
     </message>
@@ -1363,12 +1380,11 @@
         <translation>इंटरफ़ेस रीफ़्रेश करें</translation>
     </message>
     <message>
-        <location line="-448"/>
         <source>Shared folders and files</source>
-        <translation>साझा फ़ोल्डर और फ़ाइलें</translation>
+        <translation type="vanished">साझा फ़ोल्डर और फ़ाइलें</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="-439"/>
         <source>Add new shared directories and/or files</source>
         <translation>नए साझा फ़ोल्डर और/या फ़ाइलें जोड़ें</translation>
     </message>
