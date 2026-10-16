@@ -123,6 +123,7 @@ private slots:
       QCOMPARE(f.text("lblDownloadRate"), downloadRate);
       QCOMPARE(f.text("lblUploadRate"), uploadRate);
       QCOMPARE(progress->isHidden(), !connected);
+      QCOMPARE(progress->format(), QStringLiteral("%p%")); // 'ProgressBar' prints the percentage only with this format.
 
       QVERIFY(QCoreApplication::installTranslator(&this->translator));
       QTRY_COMPARE(
