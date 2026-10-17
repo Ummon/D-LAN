@@ -53,7 +53,7 @@ using namespace FM;
   */
 
 Tests::Tests() :
-   testBigFiles(false)
+   testBigFiles(true)
 {   
 }
 
