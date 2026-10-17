@@ -29,7 +29,7 @@ pub fn main() {
       io.println("Hash: " <> h)
     }
     _ -> {
-      io.println("Uknown argument")
+      io.println("Unknown argument")
       print_usage()
     }
   }
