@@ -232,3 +232,39 @@ pub fn current_lang_test() {
   assert lang("") == tr.En
   assert simulate.request(http.Get, "/") |> tr.current_lang == tr.En
 }
+
+pub fn current_lang_unknown_falls_through_test() {
+  let request =
+    simulate.request(http.Get, "/?lang=zz")
+    |> simulate.header("accept-language", "de")
+
+  // An unknown 'lang' variable falls back to the cookie, then to the header.
+  assert request
+    |> simulate.cookie("lang", "fr", wisp.PlainText)
+    |> tr.current_lang
+    == tr.Fr
+  assert request
+    |> simulate.cookie("lang", "zz", wisp.PlainText)
+    |> tr.current_lang
+    == tr.De
+  assert request |> tr.current_lang == tr.De
+
+  assert simulate.request(http.Get, "/?lang=it")
+    |> simulate.cookie("lang", "fr", wisp.PlainText)
+    |> tr.current_lang
+    == tr.It
+}
+
+pub fn lang_cookie_set_only_for_known_lang_test() {
+  let app_ctx = web.AppContext("static", "release", db_stub(), "", False)
+  let lang_cookie = fn(path) {
+    router.handle_request(simulate.browser_request(http.Get, path), app_ctx).headers
+    |> list.any(fn(header) {
+      header.0 == "set-cookie" && string.starts_with(header.1, "lang=")
+    })
+  }
+
+  assert lang_cookie("/?lang=fr")
+  assert !lang_cookie("/?lang=zz")
+  assert !lang_cookie("/")
+}

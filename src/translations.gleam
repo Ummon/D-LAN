@@ -65,25 +65,9 @@ pub fn plain_lang(l: Lang) {
   }
 }
 
-fn parse_lang(lang_str: String) -> Lang {
-  case lang_str {
-    "en" -> En
-    "fr" -> Fr
-    "de" -> De
-    "es" -> Es
-    "it" -> It
-    "ru" -> Ru
-    "ko" -> Ko
-    "ja" -> Ja
-    "hi" -> Hi
-    "zh" -> Zh
-    "pt" -> Pt
-    "id" -> Id
-    "bn" -> Bn
-    "ur" -> Ur
-    "ar" -> Ar
-    _ -> En
-  }
+/// The reverse of 'to_str', returns an error for an unknown language.
+pub fn from_str(lang_str: String) -> Result(Lang, Nil) {
+  all_langs() |> list.find(fn(l) { to_str(l) == lang_str })
 }
 
 pub fn to_str(l: Lang) -> String {
@@ -2790,31 +2774,29 @@ pub fn download_button_torrent(l: Lang) -> element.Element(a) {
   |> html.text
 }
 
+/// The language given by the GET variable 'lang', if it's a known one.
+pub fn query_lang(req: wisp.Request) -> Result(Lang, Nil) {
+  req |> wisp.get_query |> list.key_find("lang") |> result.try(from_str)
+}
+
+/// Each source is tried in turn, a missing or unknown language falls through to
+/// the next one.
 pub fn current_lang(req: wisp.Request) -> Lang {
   // 1) Looks if a GET variable 'lang' is defined.
-  use <- result.lazy_unwrap(
-    req |> wisp.get_query |> list.key_find("lang") |> result.map(parse_lang),
-  )
+  use <- result.lazy_unwrap(query_lang(req))
   // 2) Looks if a 'lang' value exist in a cookie.
   use <- result.lazy_unwrap(
-    req |> wisp.get_cookie("lang", wisp.PlainText) |> result.map(parse_lang),
+    req |> wisp.get_cookie("lang", wisp.PlainText) |> result.try(from_str),
   )
   // 3) Looks in the "Accept-Language" HTTP header field.
-  use <- result.lazy_unwrap(
-    req
-    |> accepted_langs_by_user_agent
-    |> list.first
-    |> result.map(parse_lang),
-  )
+  use <- result.lazy_unwrap(req |> accepted_langs_by_user_agent |> list.first)
   En
 }
 
 // Return a list of accepted languages by the user agent, sorted by quality,
 // best first. Return only known languages.
 // Read the HTTP field 'Accept-Language'.
-fn accepted_langs_by_user_agent(req: wisp.Request) -> List(String) {
-  let known_langs = all_langs() |> list.map(to_str)
-
+fn accepted_langs_by_user_agent(req: wisp.Request) -> List(Lang) {
   request.get_header(req, "accept-language")
   |> result.unwrap("")
   |> string.split(",")
@@ -2827,18 +2809,14 @@ fn accepted_langs_by_user_agent(req: wisp.Request) -> List(String) {
       [] -> #("", 0.0)
     }
     // We don't care about the subtags: "fr-CH" -> "fr". Language tags are case
-    // insensitive, they are lowercased to be compared to 'known_langs'.
-    let lang_str =
-      lang_with_subtag
-      |> string.lowercase
-      |> string.split("-")
-      |> list.first
-      |> result.unwrap("")
+    // insensitive, they are lowercased to be compared to the known languages.
     // We keep only known languages.
-    case list.contains(known_langs, lang_str) {
-      True -> Ok(#(lang_str, quality))
-      False -> Error(Nil)
-    }
+    lang_with_subtag
+    |> string.lowercase
+    |> string.split("-")
+    |> list.first
+    |> result.try(from_str)
+    |> result.map(fn(lang) { #(lang, quality) })
   })
   // Sort by quality, bigger first.
   |> list.sort(fn(a, b) { float.compare(b.1, a.1) })

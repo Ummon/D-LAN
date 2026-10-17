@@ -79,18 +79,18 @@ pub fn middleware(
   // Handle the request!
   let response = handle_request(req, ctx)
 
-  // Set 'lang' cookie only if set by client.
-  case req |> wisp.get_query |> list.key_find("lang") {
-    Ok(_) ->
+  // Set 'lang' cookie only if a known language is set by client.
+  case tr.query_lang(req) {
+    Ok(lang) ->
       response
       |> wisp.set_cookie(
         req,
         "lang",
-        tr.to_str(ctx.lang),
+        tr.to_str(lang),
         wisp.PlainText,
         cookie_max_age,
       )
-    _ -> response
+    Error(Nil) -> response
   }
 }
 
