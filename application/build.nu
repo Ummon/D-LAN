@@ -209,10 +209,17 @@ def prepare_windows_bundle [build_dir?: path] {
     let winpthread_dll = $compiler | path dirname | path join "libwinpthread-1.dll" | path expand
     if not ($winpthread_dll | path exists) { error make {msg: $"Cannot find ($winpthread_dll)."} }
 
+    # Compile translations without updating the source .ts files.
+    run_checked cmake --build $release_directory --config Release --target dlan_translations
+    # Windows path separators are glob escapes, match only the filenames in the build directory.
+    let translations = do { cd $release_directory; glob --no-dir "d_lan_*.qm" }
+    if ($translations | is-empty) { error make {msg: "No compiled D-LAN translations found"} }
+
     cd Setups/Windows
     mkdir setup_bundle
+    rm -rf setup_bundle/*
 
-    for executable in [D-LAN.Core.exe D-LAN.GUI.exe PasswordHasher.exe] {
+    for executable in [D-LAN.Core.exe D-LAN.GUI.exe] {
         cp ($release_directory | path join "output" $executable) setup_bundle
     }
 
@@ -224,7 +231,17 @@ def prepare_windows_bundle [build_dir?: path] {
     cp -r ../../../styles/* styles/
     cp -r ../../../GUI/resources/emoticons .
 
-    run_checked windeployqt.exe --force-openssl --no-translations PasswordHasher.exe D-LAN.Core.exe D-LAN.GUI.exe
+    mkdir languages
+    cp ...$translations languages/
+
+    # Only the plugins D-LAN loads: widgets without OpenGL (no software renderer nor shader compilers),
+    # PNG (built in) and SVG images, SQLite and the OpenSSL TLS backend (OpenSSL is always deployed).
+    # The GUI always uses Fusion, the Windows style plugin isn't needed.
+    (run_checked windeployqt.exe --force-openssl --no-translations
+        --no-opengl-sw --no-system-d3d-compiler --no-system-dxc-compiler
+        --skip-plugin-types generic,networkinformation,styles
+        --exclude-plugins qgif,qicns,qico,qjpeg,qtga,qtiff,qwbmp,qwebp,qsqlibase,qsqlmimer,qsqloci,qsqlodbc,qsqlpsql,qcertonlybackend,qschannelbackend
+        D-LAN.Core.exe D-LAN.GUI.exe)
 }
 
 # Create an MSIX package from 'Setups/Windows/setup_bundle' and 'Setups/MSIX'.
