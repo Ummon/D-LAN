@@ -2,19 +2,12 @@ import app/db
 import gleam/bit_array
 import gleam/crypto
 import gleam/http
-import gleam/int
 import gleam/list
-import gleam/option.{type Option}
 import gleam/result
 import gleam/string
 import password
 import translations as tr
 import wisp
-
-pub type Params {
-  NoParams
-  AdminParams(file: String, month: Option(Int), year: Option(Int))
-}
 
 pub type AppContext {
   AppContext(
@@ -27,7 +20,13 @@ pub type AppContext {
 }
 
 pub type Context {
-  Context(app: AppContext, lang: tr.Lang, is_admin: Bool, params: Params)
+  Context(
+    app: AppContext,
+    lang: tr.Lang,
+    is_admin: Bool,
+    // The query parameters of the request.
+    query: List(#(String, String)),
+  )
 }
 
 /// The middleware stack that the request handler uses. The stack is itself a
@@ -65,15 +64,13 @@ pub fn middleware(
 
   use user_status <- handle_auth(req, app)
 
-  let params = extract_params(req)
-
   // Set the current language.
   let ctx =
     Context(
       app:,
       lang: tr.current_lang(req),
       is_admin: user_status == IsAdmin,
-      params:,
+      query: wisp.get_query(req),
     )
 
   // Handle the request!
@@ -158,18 +155,6 @@ fn auth_token(app_ctx: AppContext, secret: String) -> String {
     secret:utf8,
   >>)
   |> bit_array.base64_encode(False)
-}
-
-fn extract_params(req: wisp.Request) -> Params {
-  let find = list.key_find(wisp.get_query(req), _)
-  case
-    find("file"),
-    find("month") |> result.try(int.parse) |> option.from_result,
-    find("year") |> result.try(int.parse) |> option.from_result
-  {
-    Ok(file), month, year -> AdminParams(file:, month:, year:)
-    _, _, _ -> NoParams
-  }
 }
 
 // Logs the request and its response only when running in dev mode, to keep the

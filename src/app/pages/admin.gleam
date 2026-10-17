@@ -2,7 +2,6 @@ import app/date
 import app/web
 import gleam/int
 import gleam/list
-import gleam/option
 import gleam/result
 import gleam/time/calendar
 import gleam/time/timestamp
@@ -38,55 +37,34 @@ fn calendar(ctx: web.Context) -> element.Element(a) {
     timestamp.system_time()
     |> timestamp.to_calendar(calendar.local_offset())
 
-  let #(file, year, month) = {
-    case ctx.params {
-      web.AdminParams(file, month, year) -> #(
-        file,
-        year |> option.unwrap(current_date.year),
-        month |> option.unwrap(current_date.month |> calendar.month_to_int),
-      )
-      _ -> {
-        #(all, current_date.year, current_date.month |> calendar.month_to_int)
-      }
-    }
-  }
+  // The file, month and year are given as query parameters, a missing or
+  // invalid one is replaced by its default value.
+  let param = list.key_find(ctx.query, _)
+  let file = param("file") |> result.unwrap(all)
+  let year =
+    param("year") |> result.try(int.parse) |> result.unwrap(current_date.year)
+  let month =
+    param("month")
+    |> result.try(int.parse)
+    |> result.try(calendar.month_from_int)
+    |> result.unwrap(current_date.month)
 
-  let #(next_month, next_year) = case month {
-    12 -> #(1, year + 1)
-    m -> #(m + 1, year)
-  }
+  let first_of_month = calendar.Date(year:, month:, day: 1)
+  let first_of_next_month =
+    calendar.Date(..date.add_days(first_of_month, 31), day: 1)
+  let first_of_prev_month =
+    calendar.Date(..date.previous_day(first_of_month), day: 1)
 
-  let #(prev_month, prev_year) = case month {
-    1 -> #(12, year - 1)
-    m -> #(m - 1, year)
-  }
+  let first_day = first_grid_day(first_of_month)
+  let last_day = first_of_next_month |> date.previous_day |> last_grid_day
 
-  let first_day =
-    first_grid_day(calendar.Date(
-      day: 1,
-      month: month |> calendar.month_from_int |> result.unwrap(calendar.January),
-      year:,
-    ))
-  let last_day =
-    calendar.Date(
-      day: 1,
-      month: next_month
-        |> calendar.month_from_int
-        |> result.unwrap(calendar.January),
-      year: next_year,
-    )
-    |> date.previous_day
-    |> last_grid_day
-
-  let nb_days = date.nb_days(first_day, last_day)
-
-  let counts = case file {
-    f if f == all ->
+  let counts = case file == all {
+    True ->
       ctx.app.db.get_download_counts_total(
         date.date_to_str(first_day),
         date.date_to_str(last_day),
       )
-    _ ->
+    False ->
       ctx.app.db.get_download_counts(
         file,
         date.date_to_str(first_day),
@@ -95,13 +73,43 @@ fn calendar(ctx: web.Context) -> element.Element(a) {
   }
 
   let file_url = "/admin.html?" <> uri.query_to_string([#("file", file)])
-  let url_params = fn(month, year) {
-    file_url
-    <> "&month="
-    <> int.to_string(month)
-    <> "&year="
-    <> int.to_string(year)
+  let month_url = fn(first_of_month: calendar.Date) {
+    "/admin.html?"
+    <> uri.query_to_string([
+      #("file", file),
+      #("month", int.to_string(calendar.month_to_int(first_of_month.month))),
+      #("year", int.to_string(first_of_month.year)),
+    ])
   }
+
+  let day_element = fn(day: calendar.Date) {
+    let nb_downloads =
+      counts |> list.key_find(date.date_to_str(day)) |> result.unwrap(0)
+    html.li(
+      [
+        attr.classes([
+          #("current-month", day.month == month),
+          #("today", day == current_date),
+        ]),
+      ],
+      [
+        html.p([attr.class("day-num")], [html.text(int.to_string(day.day))]),
+        html.p([attr.class("download-count")], [
+          html.text(int.to_string(nb_downloads)),
+        ]),
+      ],
+    )
+  }
+
+  // Counting down while prepending gives the days in increasing order.
+  let days =
+    int.range(
+      from: date.nb_days(first_day, last_day),
+      to: -1,
+      with: [],
+      run: list.prepend,
+    )
+    |> list.map(fn(d) { day_element(date.add_days(first_day, d)) })
 
   [
     html.select(
@@ -113,63 +121,27 @@ fn calendar(ctx: web.Context) -> element.Element(a) {
     ),
     html.div([attr.class("calendar")], [
       html.div([attr.class("month-selector")], [
-        html.a(
-          [
-            attr.class("prev"),
-            attr.href(url_params(prev_month, prev_year)),
-          ],
-          [
-            html.text("🡄"),
-          ],
-        ),
+        html.a([attr.class("prev"), attr.href(month_url(first_of_prev_month))], [
+          html.text("🡄"),
+        ]),
         html.div([], [
           html.a([attr.href(file_url)], [
-            html.text(int.to_string(year) <> " " <> date.month_name(month)),
+            html.text(
+              int.to_string(year)
+              <> " "
+              <> date.month_name(calendar.month_to_int(month)),
+            ),
           ]),
         ]),
-        html.a(
-          [
-            attr.class("next"),
-            attr.href(url_params(next_month, next_year)),
-          ],
-          [html.text("🡆")],
-        ),
+        html.a([attr.class("next"), attr.href(month_url(first_of_next_month))], [
+          html.text("🡆"),
+        ]),
       ]),
       html.ul(
         [attr.class("days")],
         ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
           |> list.map(fn(d) { html.li([attr.class("weekday")], [html.text(d)]) })
-          |> list.append(
-            int.range(0, nb_days + 1, [], fn(acc, d) {
-              let date = first_day |> date.add_days(d)
-              let nb_downloads =
-                counts
-                |> list.key_find(date.date_to_str(date))
-                |> result.unwrap(0)
-              let day_element =
-                html.li(
-                  [
-                    attr.classes([
-                      #(
-                        "current-month",
-                        date.month |> calendar.month_to_int == month,
-                      ),
-                      #("today", date == current_date),
-                    ]),
-                  ],
-                  [
-                    html.p([attr.class("day-num")], [
-                      html.text(date.day |> int.to_string),
-                    ]),
-                    html.p([attr.class("download-count")], [
-                      html.text(nb_downloads |> int.to_string),
-                    ]),
-                  ],
-                )
-              [day_element, ..acc]
-            })
-            |> list.reverse,
-          ),
+          |> list.append(days),
       ),
     ]),
   ]

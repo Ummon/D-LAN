@@ -6,9 +6,9 @@ import app/router
 import app/web
 import gleam/http
 import gleam/list
-import gleam/option.{Some}
 import gleam/string
 import gleam/time/calendar
+import gleam/time/timestamp
 import lustre/element
 import simplifile
 import translations as tr
@@ -47,17 +47,19 @@ pub fn page_routes_test() {
   assert status("/download/windows") == 404
 }
 
-pub fn admin_navigation_encodes_filename_test() {
-  let file = "windows/D-LAN &#+%.exe"
+fn admin_html(query: List(#(String, String))) -> String {
   let app_ctx = web.AppContext("static", "release", db_stub(), "", False)
+  admin.page(web.Context(app: app_ctx, lang: tr.En, is_admin: True, query:))
+  |> element.to_string
+}
+
+pub fn admin_navigation_encodes_filename_test() {
   let html =
-    admin.page(web.Context(
-      app: app_ctx,
-      lang: tr.En,
-      is_admin: True,
-      params: web.AdminParams(file, Some(1), Some(2026)),
-    ))
-    |> element.to_string
+    admin_html([
+      #("file", "windows/D-LAN &#+%.exe"),
+      #("month", "1"),
+      #("year", "2026"),
+    ])
   let file_url = "/admin.html?file=windows%2FD-LAN%20%26%23%2B%25.exe"
 
   assert string.contains(html, "href=\"" <> file_url <> "\"")
@@ -68,6 +70,25 @@ pub fn admin_navigation_encodes_filename_test() {
   assert string.contains(
     html,
     "href=\"" <> file_url <> "&amp;month=2&amp;year=2026\"",
+  )
+}
+
+pub fn admin_month_test() {
+  // The month and year don't need a file.
+  let html = admin_html([#("month", "12"), #("year", "2025")])
+  assert string.contains(html, ">2025 Dec<")
+  assert string.contains(
+    html,
+    "href=\"/admin.html?file=all&amp;month=1&amp;year=2026\"",
+  )
+
+  // An invalid month is replaced by the current one.
+  let #(today, _) =
+    timestamp.system_time() |> timestamp.to_calendar(calendar.local_offset())
+  let current_month = date.month_name(calendar.month_to_int(today.month))
+  assert string.contains(
+    admin_html([#("month", "13"), #("year", "2026")]),
+    ">2026 " <> current_month <> "<",
   )
 }
 
@@ -149,7 +170,7 @@ pub fn download_button_release_formats_test() {
         app: web.AppContext("static", releases_directory, db_stub(), "", False),
         lang: tr.En,
         is_admin: False,
-        params: web.NoParams,
+        query: [],
       )
 
     let button = download_button.element(ctx, platform)
