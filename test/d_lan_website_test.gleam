@@ -10,6 +10,7 @@ import gleam/string
 import gleam/time/calendar
 import gleam/time/timestamp
 import lustre/element
+import password
 import simplifile
 import translations as tr
 import wisp
@@ -288,4 +289,38 @@ pub fn lang_cookie_set_only_for_known_lang_test() {
   assert lang_cookie("/?lang=fr")
   assert !lang_cookie("/?lang=zz")
   assert !lang_cookie("/")
+}
+
+pub fn admin_auth_test() {
+  let app_ctx =
+    web.AppContext("static", "release", db_stub(), password.hash("pw"), False)
+  let login = fn(given_password) {
+    let req =
+      simulate.browser_request(http.Post, "/admin.html")
+      |> simulate.form_body([#("password", given_password)])
+    #(req, router.handle_request(req, app_ctx))
+  }
+  let is_admin = fn(response) {
+    string.contains(simulate.read_body(response), "class=\"calendar\"")
+  }
+
+  // A wrong password shows the login form again.
+  let #(_, response) = login("wrong")
+  assert !is_admin(response)
+
+  // The right password grants access and sets the authentication cookie, which
+  // grants access to the next requests.
+  let #(req, response) = login("pw")
+  assert is_admin(response)
+  let next_response =
+    simulate.browser_request(http.Get, "/admin.html")
+    |> simulate.session(req, response)
+    |> router.handle_request(app_ctx)
+  assert is_admin(next_response)
+
+  // Without the cookie, the access is denied.
+  assert !is_admin(router.handle_request(
+    simulate.browser_request(http.Get, "/admin.html"),
+    app_ctx,
+  ))
 }

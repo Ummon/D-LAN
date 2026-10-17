@@ -109,16 +109,17 @@ fn handle_auth(
   app_ctx: AppContext,
   cont: fn(UserStatus) -> wisp.Response,
 ) -> wisp.Response {
-  case
+  let token = auth_token(app_ctx, wisp.get_secret_key_base(req))
+  let has_valid_cookie = case
     wisp.get_cookie(req, auth_cookie_name, wisp.Signed)
-    |> result.map(fn(cookie) {
-      let token = auth_token(app_ctx, wisp.get_secret_key_base(req))
-      crypto.secure_compare(<<cookie:utf8>>, <<token:utf8>>)
-    }),
-    req.method
   {
-    Ok(True), _ -> cont(IsAdmin)
-    _, http.Post -> {
+    Ok(cookie) -> crypto.secure_compare(<<cookie:utf8>>, <<token:utf8>>)
+    Error(Nil) -> False
+  }
+
+  case has_valid_cookie, req.method {
+    True, _ -> cont(IsAdmin)
+    False, http.Post -> {
       // Parses the body; short-circuits with 400/415 on bad/oversized input.
       use form <- wisp.require_form(req)
       let given_password_is_valid =
@@ -131,7 +132,7 @@ fn handle_auth(
           |> wisp.set_cookie(
             req,
             auth_cookie_name,
-            auth_token(app_ctx, wisp.get_secret_key_base(req)),
+            token,
             wisp.Signed,
             cookie_max_age,
           )
@@ -143,7 +144,7 @@ fn handle_auth(
       }
     }
 
-    _, _ -> cont(IsNormalUser)
+    False, _ -> cont(IsNormalUser)
   }
 }
 
