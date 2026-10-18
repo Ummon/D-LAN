@@ -616,7 +616,9 @@ void FileUpdater::scan(Entry* entry, bool addUnfinished, bool recursive)
       emit deleteSharedEntry(entry->getRoot());
    else if (File* file = dynamic_cast<File*>(entry))
    {
-      this->addScannedFile(entryInfo, file);
+      // A file renamed or deleted since its scan was asked isn't reset: the watcher reports it, see 'WatcherEvent::MOVE'.
+      if (entryInfo.exists())
+         this->addScannedFile(entryInfo, file);
    }
    else if (Directory* dir = dynamic_cast<Directory*>(entry))
    {
@@ -1087,6 +1089,11 @@ bool FileUpdater::processEvents(const QList<WatcherEvent>& events)
                   else
                   {
                      entryToMove->moveInto(destination);
+
+                     // Its content may have changed under its previous name and the scan asked for it found nothing
+                     // there, a file written under a temporary name then renamed by rsync for example.
+                     if (pathDestination.isFile())
+                        this->enqueueEntryToScan(entryToMove, recursive);
                   }
                }
                else if (entryToMove->isRoot())
