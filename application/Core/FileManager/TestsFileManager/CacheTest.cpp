@@ -1256,6 +1256,68 @@ void CacheTest::moveOntoCachedFile()
    }
 }
 
+void CacheTest::fileRenamedBeforeItsScan_data()
+{
+   QTest::addColumn<bool>("scannedBeforeRename");
+   QTest::newRow("scanned-before-rename") << true;
+   QTest::newRow("scanned-after-rename") << false;
+}
+
+/**
+  * Like rsync: a file is written under a temporary name then renamed. The scan asked by the end of the writing
+  * may only run once the file has been renamed, before the rename event is processed.
+  */
+void CacheTest::fileRenamedBeforeItsScan()
+{
+   QFETCH(bool, scannedBeforeRename);
+   QTemporaryDir temp;
+   QVERIFY(temp.isValid());
+   const auto savedShares = SETTINGS.getRepeated<Protos::Common::SharedEntry>("shared_entries");
+   const auto restoreShares = qScopeGuard([&] { SETTINGS.set("shared_entries", savedShares); });
+   SETTINGS.rm("shared_entries");
+
+   FM::FileManager manager(QSharedPointer<HC::IHashCache>(new MockHashCache));
+   auto& updater = manager.fileUpdater;
+   updater.stop(); // Deliver events explicitly.
+   manager.addASharedPath(temp.path() + '/');
+   auto root = dynamic_cast<FM::Directory*>(manager.getEntry(Common::Path(temp.path() + '/')));
+   QVERIFY(root);
+   updater.stopScanning();
+   updater.toStop = false; // A stopped updater aborts its scans.
+   const auto scanQueuedEntries = [&] {
+      bool recursive;
+      while (FM::Entry* entry = updater.takeEntryToScan(false, &recursive))
+         updater.scan(entry, false, recursive);
+   };
+
+   const QString temporaryPath = temp.filePath(".file.bin.Ab12Cd");
+   const QString path = temp.filePath("file.bin");
+   QFile physical(temporaryPath);
+   QVERIFY(physical.open(QIODevice::WriteOnly));
+   updater.processEvents({ FM::WatcherEvent(FM::WatcherEvent::NEW, temporaryPath, false) });
+   scanQueuedEntries();
+   auto file = dynamic_cast<FM::File*>(manager.getEntry(Common::Path(temporaryPath)));
+   QVERIFY(file);
+   QCOMPARE(file->getSize(), qint64(0));
+
+   const QByteArray content(3 * 1024, 'x');
+   QCOMPARE(physical.write(content), qint64(content.size()));
+   physical.close();
+   updater.processEvents({ FM::WatcherEvent(FM::WatcherEvent::CONTENT_CHANGED, temporaryPath, false) });
+   if (scannedBeforeRename)
+      scanQueuedEntries();
+   QVERIFY(QFile::rename(temporaryPath, path));
+   scanQueuedEntries();
+   updater.processEvents({ FM::WatcherEvent(FM::WatcherEvent::MOVE, temporaryPath, path, false) });
+   scanQueuedEntries();
+
+   QCOMPARE(manager.getEntry(Common::Path(path)), static_cast<FM::Entry*>(file));
+   QCOMPARE(file->getSize(), qint64(content.size()));
+   QCOMPARE(file->getDateLastModified(), QFileInfo(path).lastModified());
+   QCOMPARE(manager.getAmount(), qint64(content.size()));
+   QVERIFY(updater.hashingQueue.contains(file));
+}
+
 void CacheTest::watcherLimitLeavesRoomForWaitConditions()
 {
 #ifdef Q_OS_WIN32
