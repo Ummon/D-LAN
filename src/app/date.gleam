@@ -117,19 +117,7 @@ pub fn ymd_to_str(y: Int, m: Int, d: Int) -> String {
   <> d |> int.to_string()
 }
 
-pub fn month_name(month: Int) -> String {
-  case month {
-    1 -> "Jan"
-    2 -> "Feb"
-    3 -> "Mar"
-    4 -> "Apr"
-    5 -> "May"
-    6 -> "Jun"
-    7 -> "Jul"
-    8 -> "Aug"
-    9 -> "Sep"
-    10 -> "Oct"
-    11 -> "Nov"
-    _ -> "Dec"
-  }
+/// Returns the abbreviated English name of a month, for example "Jan".
+pub fn month_name(month: calendar.Month) -> String {
+  calendar.month_to_string(month) |> string.slice(0, 3)
 }

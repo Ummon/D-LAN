@@ -126,11 +126,7 @@ fn calendar(ctx: web.Context) -> element.Element(a) {
         ]),
         html.div([], [
           html.a([attr.href(file_url)], [
-            html.text(
-              int.to_string(year)
-              <> " "
-              <> date.month_name(calendar.month_to_int(month)),
-            ),
+            html.text(int.to_string(year) <> " " <> date.month_name(month)),
           ]),
         ]),
         html.a([attr.class("next"), attr.href(month_url(first_of_next_month))], [

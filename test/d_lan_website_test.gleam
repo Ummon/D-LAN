@@ -86,7 +86,7 @@ pub fn admin_month_test() {
   // An invalid month is replaced by the current one.
   let #(today, _) =
     timestamp.system_time() |> timestamp.to_calendar(calendar.local_offset())
-  let current_month = date.month_name(calendar.month_to_int(today.month))
+  let current_month = date.month_name(today.month)
   assert string.contains(
     admin_html([#("month", "13"), #("year", "2026")]),
     ">2026 " <> current_month <> "<",
@@ -114,6 +114,30 @@ pub fn parse_date_test() {
   assert date.parse_date("2026-02") == Error(Nil)
   assert date.parse_date("2026-ab-01") == Error(Nil)
   assert date.parse_date("") == Error(Nil)
+}
+
+pub fn month_name_test() {
+  assert list.map(
+      [
+        calendar.January,
+        calendar.February,
+        calendar.March,
+        calendar.April,
+        calendar.May,
+        calendar.June,
+        calendar.July,
+        calendar.August,
+        calendar.September,
+        calendar.October,
+        calendar.November,
+        calendar.December,
+      ],
+      date.month_name,
+    )
+    == [
+      "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct",
+      "Nov", "Dec",
+    ]
 }
 
 pub fn date_round_trip_test() {
