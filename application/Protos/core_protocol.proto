@@ -32,6 +32,8 @@ message IMAlive {
    uint64 upload_rate = 8; // [byte/s]
 
    repeated string chat_rooms = 10; // The joined chat rooms.
+
+   bytes x_25519_public_key = 11; // 32 bytes.
 }
 
 // Goodbye, my people need me.
@@ -97,6 +99,31 @@ message GetLastChatMessages {
 // b -> a (unicast UDP)
 // type: 0x11
 // Common.ChatMessages
+
+
+
+// Read:
+// - https://git.gburri.org/gburri/crypto_lab1/src/branch/master/lab01_report_burri.pdf
+// - https://git.gburri.org/gburri/crypto_lab2/src/branch/master/labo02_report_burri.pdf
+// p2p message (WIP).
+// k is a random 256 bits key.
+// a -> b (unicast UDP)
+// type: 0x1A
+message P2PChatMessage {
+   bytes mac = 1; // MAC(encrypted_key|encrypted_message).
+   bytes encrypted_key = 2; // ENC(k, x_25519_public_key).
+   bytes encrypted_message = 3; // AES(Common.ChatMessages, k).
+}
+
+// b -> a (unicast UDP)
+//Common.ChatMessages
+message P2PChatMessageResult {
+   enum Status {
+      OK = 0;
+      ERROR_UNKNOWN = 255;
+   }
+   Status status = 1; // [default = OK].
+}
 
 /////
 
