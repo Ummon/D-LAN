@@ -33,6 +33,8 @@ private slots:
    void watchedFileRename();
    void moveOntoCachedFile_data();
    void moveOntoCachedFile();
+   void fileRenamedBeforeItsScan_data();
+   void fileRenamedBeforeItsScan();
    void watcherLimitLeavesRoomForWaitConditions();
    void fileIteratorSkipsEmptyDirectories();
    void sizeIndexKeepsFilesOfSameSize();
