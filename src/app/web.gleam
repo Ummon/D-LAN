@@ -46,7 +46,8 @@ pub fn middleware(
 ) -> wisp.Response {
   // Permit browsers to simulate methods other than GET and POST using the
   // `_method` query parameter.
-  let req = wisp.method_override(req)
+  // Not used anymore.
+  // let req = wisp.method_override(req)
 
   // Log information about the request and response, in dev mode only.
   use <- log_request_in_dev(req, app.dev_mode)
