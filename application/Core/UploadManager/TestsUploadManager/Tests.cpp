@@ -204,11 +204,20 @@ private slots:
       QVERIFY(socket->closed);
    }
 
+   void stopDuringSocketWait_data()
+   {
+      QTest::addColumn<bool>("immediateFailure");
+      QTest::newRow("blocking wait") << false;
+      QTest::newRow("immediate error") << true; // The rest of the wait is slept, see 'ChunksUploader::waitForBytesWritten(..)'.
+   }
+
    void stopDuringSocketWait()
    {
+      QFETCH(bool, immediateFailure);
       SETTINGS.set("socket_timeout", quint32(7000));
       auto chunk = QSharedPointer<Chunk>::create();
       auto socket = QSharedPointer<Socket>::create();
+      socket->immediateFailure = immediateFailure;
       Common::TransferRateCalculator rate;
       UM::ChunksUploader upload({PM::GetChunkParams(chunk, 0, 32, 0)}, socket, rate);
       std::unique_ptr<QThread> worker(QThread::create([&] { upload.run(); }));
@@ -275,7 +284,7 @@ private slots:
       QVERIFY(elapsed.elapsed() < 2000);
       upload.finished();
       QVERIFY(socket->closed);
-      QVERIFY(socket->waits.size() >= 2);
+      // No minimum number of waits: if the process is stalled during the first one, 'socket_timeout' is spent when it ends.
       QVERIFY(socket->waits.size() < 10); // Immediate errors must not spin.
       for (int wait : socket->waits)
          QVERIFY(wait > 0 && wait <= 100);
