@@ -40,7 +40,6 @@ packages = [
   { name = "radiate", version = "1.0.0", build_tools = ["gleam"], requirements = ["filespy", "gleam_erlang", "gleam_otp", "gleam_stdlib", "shellout"], otp_app = "radiate", source = "hex", outer_checksum = "AB86888E56C463641771AC21BB75464E19B848E733289BD6D78E562F6FA7C121" },
   { name = "shellout", version = "1.8.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "shellout", source = "hex", outer_checksum = "C416356D45151F298108C9DB9CD1EDE0313F620B5EDBB5766CD7237659D87841" },
   { name = "simplifile", version = "2.7.0", build_tools = ["gleam"], requirements = ["filepath", "gleam_stdlib"], otp_app = "simplifile", source = "hex", outer_checksum = "A2727627B063E87351934C7F7F008F2D1FDB16F6DE0B8C79F9E46459CFC9C164" },
-  { name = "slate", version = "1.0.2", build_tools = ["gleam"], requirements = ["gleam_erlang", "gleam_stdlib"], otp_app = "slate", source = "hex", outer_checksum = "952A5DB749D8AAF5DB4ECFF7BDB66610D27AA56BAA3EC083819A3B70BFCCA119" },
   { name = "splitter", version = "1.3.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "splitter", source = "hex", outer_checksum = "8F1485306E0D59168A39E12ED8844F9F616EC59C3C63AFCFDAE04DBD68690CBC" },
   { name = "sqlight", version = "1.2.0", build_tools = ["gleam"], requirements = ["esqlite", "gleam_stdlib"], otp_app = "sqlight", source = "hex", outer_checksum = "841768D0A81107EE2DB46B949354F284A68B2E8098315C28A1FE3C07D206C17A" },
   { name = "tomlet", version = "1.4.1", build_tools = ["gleam"], requirements = ["gleam_stdlib", "william"], otp_app = "tomlet", source = "hex", outer_checksum = "EBDC22E122D0727C519A2461730F3C4BD83E2F9325199A5C74FBA819E6E59C2B" },
@@ -62,7 +61,6 @@ lustre = { version = ">= 5.7.1 and < 6.0.0" }
 mist = { version = ">= 6.0.0 and < 7.0.0" }
 radiate = { version = ">= 1.0.0 and < 2.0.0" }
 simplifile = { version = ">= 2.5.0 and < 3.0.0" }
-slate = { version = ">= 1.0.0 and < 2.0.0" }
 sqlight = { version = ">= 1.2.0 and < 2.0.0" }
 tomlet = { version = ">= 1.3.0 and < 2.0.0" }
 wisp = { version = ">= 2.2.2 and < 3.0.0" }

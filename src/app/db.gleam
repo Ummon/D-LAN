@@ -1,18 +1,10 @@
 //// All persistent data are stored in a SQLite database.
 //// - Counts file downloads keyed by ("<platform>/<filename>", date).
 
-import app/date
 import gleam/dynamic/decode
-import gleam/int
-import gleam/list
 import gleam/result
-import gleam/string
 import sqlight
 import wisp
-
-// To read DETS files.
-import slate
-import slate/set
 
 const db_filename = "d_lan_website.sqlite3"
 
@@ -59,7 +51,7 @@ CREATE INDEX IF NOT EXISTS downloads_file_index ON downloads(file);
     )
     |> result.replace_error(CantCreateDatabase),
   )
-  try_import_dets(db)
+  // try_import_dets(db)
   Ok(
     Db(
       increment_download_count(db, _),
@@ -72,105 +64,6 @@ CREATE INDEX IF NOT EXISTS downloads_file_index ON downloads(file);
       },
     ),
   )
-}
-
-/// Number of rows inserted per SQL statement when importing the dets file. Each
-/// row binds three parameters, which keeps a statement far below the SQLite
-/// limits on both the number of parameters and the number of rows in a 'VALUES'
-/// clause.
-const import_batch_size = 100
-
-/// Try to find the dets file from the old website and import it to the new database.
-/// All the tuples are inserted by batches of 'import_batch_size' rows within a
-/// single transaction, thus the import either fully succeeds or leaves the
-/// database untouched.
-fn try_import_dets(db: sqlight.Connection) -> Nil {
-  let date_decoder = {
-    use y <- decode.field(0, decode.int)
-    use m <- decode.field(1, decode.int)
-    use d <- decode.field(2, decode.int)
-    decode.success(date.ymd_to_str(y, m, d))
-  }
-
-  case
-    set.open_with_access(
-      "d_lan_downloads_count.dets",
-      repair: slate.AutoRepair,
-      access: slate.ReadOnly,
-      key_decoder: {
-        use file <- decode.field(0, decode.list(decode.int))
-        use date <- decode.field(1, date_decoder)
-        let assert Ok(file) = codepoints_to_string(file)
-        decode.success(#(file, date))
-      },
-      value_decoder: decode.int,
-    )
-  {
-    Ok(downloads) -> {
-      wisp.log_info("DETS to import found, importing...")
-      let assert Ok(rows) =
-        downloads
-        |> set.fold([], fn(acc, k, v) {
-          let #(file, date) = k
-          case file |> string.ends_with("torrent") {
-            True -> {
-              // wisp.log_info("Ignored: " <> file)
-              acc
-            }
-            False -> [#(file, date, v), ..acc]
-          }
-        })
-
-      let assert Ok(Nil) = sqlight.exec("BEGIN", db)
-      rows
-      |> list.sized_chunk(import_batch_size)
-      |> list.each(insert_downloads(db, _))
-      let assert Ok(Nil) = sqlight.exec("COMMIT", db)
-
-      let assert Ok(Nil) = set.close(downloads)
-      wisp.log_info("DETS import finished")
-      wisp.log_info(
-        int.to_string(list.length(rows)) <> " rows imported or updated",
-      )
-      Nil
-    }
-    _ -> wisp.log_info("No DETS file to import")
-  }
-  Nil
-}
-
-/// Insert a batch of '#(file, date, count)' rows with a single statement. The
-/// count of a row already present in the database is overwritten by the
-/// imported one.
-fn insert_downloads(
-  db: sqlight.Connection,
-  rows: List(#(String, String, Int)),
-) -> Nil {
-  let placeholders =
-    list.repeat("(?, ?, ?)", list.length(rows)) |> string.join(", ")
-  let values =
-    rows
-    |> list.flat_map(fn(row) {
-      let #(file, date, count) = row
-      [sqlight.text(file), sqlight.text(date), sqlight.int(count)]
-    })
-  let assert Ok(_) =
-    sqlight.query(
-      "INSERT INTO downloads (file, date, count) VALUES "
-        <> placeholders
-        <> " ON CONFLICT (file, date) DO UPDATE SET count = excluded.count",
-      db,
-      values,
-      decode.success(Nil),
-    )
-  Nil
-}
-
-fn codepoints_to_string(chars: List(Int)) -> Result(String, Nil) {
-  chars
-  |> list.map(string.utf_codepoint)
-  |> result.all
-  |> result.map(string.from_utf_codepoints)
 }
 
 fn increment_download_count(db: sqlight.Connection, file: String) -> Nil {
