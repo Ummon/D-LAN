@@ -247,7 +247,7 @@ message CoreSettings {
    repeated SharedPath shared_paths = 2;
 
    string listen_address = 4; // [default = ""] If address is empty then listen to any addresses, in this case the protocol is given by 'listen_any'.
-   Common.Interface.Address.Protocol listen_any = 5; // [default = IPv6]
+   Common.Interface.Address.Protocol listen_any = 5; // [default = IPv4]
 
    IgnoredExtensions ignored_extensions = 6; // If not defined then the current ones are kept.
 }

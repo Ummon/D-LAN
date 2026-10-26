@@ -249,7 +249,7 @@ Protos::Core::Settings* Core::createDefaultValuesSettings()
    settings->set_max_number_of_search_result_to_send(300);
    settings->set_max_number_of_result_shown(5000);
    settings->set_listen_address("");
-   settings->set_listen_any(Protos::Common::Interface_Address_Protocol_IPv6);
+   settings->set_listen_any(Protos::Common::Interface_Address_Protocol_IPv4);
 
    ///// ChatSystem /////
    settings->set_max_number_of_stored_chat_messages(500);
