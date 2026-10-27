@@ -182,14 +182,15 @@ QHostAddress Utils::getMulticastGroup(QAbstractSocket::NetworkLayerProtocol prot
       const QByteArray channelHash = Common::Hasher::hash(SETTINGS.get<QString>("channel")).getByteArray();
 
       Q_IPV6ADDR groupIPv6 {};
-      // Scope: link-local, transient.
+      // Scope: site-local, transient. Like IPv4 with 'multicast_ttl', the group
+      // can cross routers; a link-local group (ff12) never leaves the link.
       groupIPv6[0] = 0xFF;
-      groupIPv6[1] = 0x12;
+      groupIPv6[1] = 0x15;
 
       // Darwin embeds the interface scope in bytes 2..3 of link-local
       // addresses and clears them on output (XNU in6_setscope/in6_clearscope).
-      // Keep that word zero on every platform. Preserve the remaining hash
-      // bytes so the address matches what Darwin previously sent on the wire.
+      // A site-local group isn't affected, but keep that word zero so the
+      // layout stays the same whatever the scope.
       for (int i = 2; i < 10 && i < channelHash.size(); ++i)
          groupIPv6[i+2] = channelHash[i];
 

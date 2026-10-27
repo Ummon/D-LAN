@@ -431,8 +431,17 @@ cancel, settings) are ignored.
 ## IPv6 peer discovery
 
 D-LAN uses UDP multicast on port 59486 by default. Peers must select the same
-IP protocol; IPv6 peers must also use the same discovery channel. The default
-`main` channel uses `ff12:0:318b:bc3f:d75a:c873:ec0d:2b18`.
+IP protocol; IPv6 peers must also use the same discovery channel. The IPv4
+group is `239.255.43.24`, from the IPv4 local scope (RFC 2365). The IPv6 group
+is site-local; the default `main` channel uses
+`ff15:0:318b:bc3f:d75a:c873:efff:2b18`. Both groups can cross routers, up to
+`multicast_ttl` hops.
+
+Versions prior to 1.7.0 used `236.13.43.24`, an address reserved by IANA, and
+the link-local IPv6 group `ff12:0:318b:bc3f:d75a:c873:ec0d:2b18`. The Core
+replaces the old IPv4 default in the settings at startup; a custom
+`multicast_group` is kept. **Peers prior to 1.7.0 and later ones don't discover
+each other.**
 
 On macOS, automatic discovery excludes Apple's `awdl*` and `llw*` interfaces
 and tunnel interfaces (`utun*`, `gif*`, `stf*`, and point-to-point adapters).
@@ -444,16 +453,15 @@ The core classifies interfaces, so the same policy applies when controlled
 by a GUI on another platform. Wildcard TCP and unicast UDP listening remain
 unchanged; this discovery filter is not an incoming-connection access rule.
 
-The second 16-bit word is zero on every platform. Darwin temporarily stores
-the interface scope there and clears it before transmission; see Apple's
+The second 16-bit word is zero on every platform. For link-local addresses,
+Darwin temporarily stores the interface scope there and clears it before
+transmission; see Apple's
 [scope handling in XNU](https://github.com/apple-oss-distributions/xnu/blob/main/bsd/netinet6/scope6.c).
-Previously, D-LAN placed channel-hash bytes in that word, so Windows sent to
-`ff12:e726:318b:bc3f:d75a:c873:ec0d:2b18` while macOS sent to the address above.
-Local multicast loopback tests could pass despite this difference.
-
-**Rebuild the Windows and Linux peers as well as macOS after this change.**
-Older builds on those platforms still use the old IPv6 group. IPv4 discovery
-and the message format are unchanged. `TestsNetworkListener` checks the exact
+When the group was link-local, D-LAN placed channel-hash bytes in that word, so
+Windows sent to `ff12:e726:318b:bc3f:d75a:c873:ec0d:2b18` while macOS sent to
+`ff12:0:318b:bc3f:d75a:c873:ec0d:2b18`. Local multicast loopback tests could pass
+despite this difference. The site-local group isn't affected, but the word stays
+zero. `TestsNetworkListener` checks the exact
 group address and verifies that a received IPv6 datagram retains the intended
 destination group after the kernel processes it.
 

@@ -463,9 +463,9 @@
                   <number>3</number>
                  </property>
                  <item>
-                  <widget class="QRadioButton" name="radIPv6">
+                  <widget class="QRadioButton" name="radIPv4">
                    <property name="text">
-                    <string>IPv6</string>
+                    <string>IPv4</string>
                    </property>
                    <property name="checked">
                     <bool>true</bool>
@@ -476,9 +476,9 @@
                   </widget>
                  </item>
                  <item>
-                  <widget class="QRadioButton" name="radIPv4">
+                  <widget class="QRadioButton" name="radIPv6">
                    <property name="text">
-                    <string>IPv4</string>
+                    <string>IPv6</string>
                    </property>
                    <attribute name="buttonGroup">
                     <string notr="true">grpAddressesToListenTo</string>

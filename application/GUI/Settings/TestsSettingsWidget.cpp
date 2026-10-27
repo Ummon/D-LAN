@@ -163,6 +163,56 @@ private slots:
       QVERIFY(label->alignment().testFlag(Qt::AlignRight));
    }
 
+   void ipv4AddressesFirst()
+   {
+      auto connection = QSharedPointer<RCC::CoreConnection>::create();
+      GUI::SharedEntryListModel shares;
+      GUI::SettingsWidget widget(connection, shares);
+      Protos::GUI::State state;
+      state.add_peers()->set_nick("Test");
+      auto* ethernet = state.add_interfaces();
+      ethernet->set_id(1);
+      ethernet->set_name("Ethernet");
+      ethernet->set_is_up(true);
+      const auto addAddress = [ethernet](const char* address, Protos::Common::Interface::Address::Protocol protocol) {
+         auto* addressMess = ethernet->add_addresses();
+         addressMess->set_address(address);
+         addressMess->set_protocol(protocol);
+      };
+      addAddress("fe80::1", Protos::Common::Interface::Address::IPv6);
+      addAddress("192.0.2.1", Protos::Common::Interface::Address::IPv4);
+      addAddress("2001:db8::42", Protos::Common::Interface::Address::IPv6);
+      emit connection->newState(state);
+
+      auto* content = widget.findChild<QWidget*>("scoInterfacesContent");
+      QRadioButton* first = nullptr;
+      for (auto* button : content->findChildren<QRadioButton*>())
+         if (button->property("address").toString() == "192.0.2.1")
+            first = button;
+      QVERIFY(first);
+      auto* layout = first->parentWidget()->layout();
+      // The addresses in the order they are shown.
+      const auto shownAddresses = [layout] {
+         QStringList addresses;
+         for (int i = 0; i < layout->count(); i++)
+            addresses << layout->itemAt(i)->widget()->property("address").toString();
+         return addresses;
+      };
+      QCOMPARE(shownAddresses(), (QStringList { "192.0.2.1", "fe80::1", "2001:db8::42" }));
+
+      // A new IPv4 address is shown after the other IPv4 ones, not at the end. A removed address disappears.
+      ethernet->mutable_addresses()->DeleteSubrange(0, 1);
+      addAddress("198.51.100.1", Protos::Common::Interface::Address::IPv4);
+      emit connection->newState(state);
+      QCOMPARE(shownAddresses(), (QStringList { "192.0.2.1", "198.51.100.1", "2001:db8::42" }));
+
+      // The same order for any address.
+      auto* ipv4 = widget.findChild<QRadioButton*>("radIPv4");
+      auto* ipv6 = widget.findChild<QRadioButton*>("radIPv6");
+      auto* anyLayout = ipv4->parentWidget()->layout();
+      QVERIFY(anyLayout->indexOf(ipv4) < anyLayout->indexOf(ipv6));
+   }
+
    void dropEntriesToShare()
    {
       class Connection : public RCC::CoreConnection

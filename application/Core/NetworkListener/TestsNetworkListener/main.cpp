@@ -104,7 +104,7 @@ Protos::Core::Settings* createDefaultValuesSettings()
    ///// NetworkListener /////
    settings->set_unicast_base_port(59487);
    settings->set_multicast_port(59486);
-   settings->set_multicast_group(3960285976);
+   settings->set_multicast_group(4026477336); // 239.255.43.24.
    settings->set_channel("main");
    settings->set_multicast_ttl(31);
    settings->set_max_udp_datagram_size(16356);

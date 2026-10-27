@@ -451,40 +451,53 @@ bool SettingsWidget::updateAddresses(const Protos::Common::Interface& interfaceM
 
    QList<QRadioButton*> addressesNotUpdated = container->findChildren<QRadioButton*>();
 
+   // The IPv4 addresses are shown first, then the IPv6 ones, each in the order given by the core.
+   QList<int> order;
+   order.reserve(interfaceMess.addresses_size());
    for (int i = 0; i < interfaceMess.addresses_size(); i++)
+      order << i;
+   std::stable_partition(order.begin(), order.end(), [&interfaceMess](int i) {
+      return interfaceMess.addresses(i).protocol() == Protos::Common::Interface::Address::IPv4;
+   });
+
+   for (int position = 0; position < order.size(); position++)
    {
-      const QString& addressName = QString::fromStdString(interfaceMess.addresses(i).address());
+      const Protos::Common::Interface::Address& addressMess = interfaceMess.addresses(order[position]);
+      const QString addressName = QString::fromStdString(addressMess.address());
 
-      for (QListIterator<QRadioButton*> j(container->findChildren<QRadioButton*>()); j.hasNext();)
-      {
-         QRadioButton* addressButton = j.next();
-         if (addressButton->property(ADDRESS_PROPERTY).toString() == addressName)
+      QRadioButton* addressButton = nullptr;
+      for (QRadioButton* button : container->findChildren<QRadioButton*>())
+         if (button->property(ADDRESS_PROPERTY).toString() == addressName)
          {
-            addressesNotUpdated.removeOne(addressButton);
-            addressButton->setText(withDirectionFromContent(addressName, this->layoutDirection())); // The language may have changed.
-            if (interfaceMess.addresses(i).listened())
-            {
-               listenedTo = true;
-               addressButton->setChecked(true);
-            }
-            goto nextAddress;
+            addressButton = button;
+            break;
          }
-      }
 
+      if (addressButton)
+      {
+         addressesNotUpdated.removeOne(addressButton);
+         addressButton->setText(withDirectionFromContent(addressName, this->layoutDirection())); // The language may have changed.
+      }
+      else
       {
          // Address not found -> add a new one.
-         QRadioButton* newAddressButton = new QRadioButton(withDirectionFromContent(addressName, this->layoutDirection()), container);
-         newAddressButton->setProperty(ADDRESS_PROPERTY, addressName);
-         this->ui->grpAddressesToListenTo->addButton(newAddressButton);
-         if (interfaceMess.addresses(i).listened())
-         {
-            listenedTo = true;
-            newAddressButton->setChecked(true);
-         }
-         layout->addWidget(newAddressButton);
+         addressButton = new QRadioButton(withDirectionFromContent(addressName, this->layoutDirection()), container);
+         addressButton->setProperty(ADDRESS_PROPERTY, addressName);
+         this->ui->grpAddressesToListenTo->addButton(addressButton);
       }
 
-      nextAddress:;
+      if (addressMess.listened())
+      {
+         listenedTo = true;
+         addressButton->setChecked(true);
+      }
+
+      // The buttons to remove, below, end up after this position.
+      if (layout->indexOf(addressButton) != position)
+      {
+         layout->removeWidget(addressButton);
+         layout->insertWidget(position, addressButton);
+      }
    }
 
    // Remove the non-existent addresses.

@@ -95,6 +95,7 @@ Core::Core(bool resetSettings, QLocale locale, quint16 remoteControlPort) :
 
    this->checkSettingsIntegrity();
    this->upgradeRemotePassword();
+   this->upgradeMulticastGroup();
 
    // To automatically create the file if it doesn't exist.
    if (!SETTINGS.save())
@@ -240,7 +241,7 @@ Protos::Core::Settings* Core::createDefaultValuesSettings()
    ///// NetworkListener /////
    settings->set_unicast_base_port(59487);
    settings->set_multicast_port(59486);
-   settings->set_multicast_group(3960285976);
+   settings->set_multicast_group(4026477336); // 239.255.43.24.
    settings->set_channel("main");
    settings->set_multicast_ttl(31);
    settings->set_max_udp_datagram_size(16356);
@@ -294,6 +295,22 @@ void Core::upgradeRemotePassword()
    {
       L_ERRO(QString("Unable to upgrade the remote password, remote control is disabled: %1").arg(error));
    }
+}
+
+/**
+  * The versions prior to 1.7.0 used 236.13.43.24 as the multicast group by default, an address reserved by IANA.
+  * This old default is replaced by 239.255.43.24, from the IPv4 local scope (RFC 2365). A custom group is kept.
+  */
+void Core::upgradeMulticastGroup()
+{
+   static constexpr quint32 OLD_DEFAULT_GROUP = 3960285976; // 236.13.43.24.
+   static constexpr quint32 NEW_DEFAULT_GROUP = 4026477336; // 239.255.43.24.
+
+   if (SETTINGS.get<quint32>("multicast_group") != OLD_DEFAULT_GROUP)
+      return;
+
+   SETTINGS.set("multicast_group", NEW_DEFAULT_GROUP);
+   L_DEBU("The multicast group has been upgraded from 236.13.43.24 to 239.255.43.24");
 }
 
 /**

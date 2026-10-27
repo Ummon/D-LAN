@@ -189,8 +189,8 @@ void Tests::multicastGroupIPv4()
 {
    qDebug() << "===== multicastGroupIPv4() =====";
 
-   // 3960285976 = 236.13.43.24, see 'multicast_group' in "Protos/core_settings.proto".
-   QCOMPARE(Utils::getMulticastGroup(QAbstractSocket::IPv4Protocol), QHostAddress("236.13.43.24"));
+   // 4026477336 = 239.255.43.24, see 'multicast_group' in "Protos/core_settings.proto".
+   QCOMPARE(Utils::getMulticastGroup(QAbstractSocket::IPv4Protocol), QHostAddress("239.255.43.24"));
 }
 
 void Tests::multicastGroupIPv6()
@@ -199,19 +199,18 @@ void Tests::multicastGroupIPv6()
 
    const QHostAddress group = Utils::getMulticastGroup(QAbstractSocket::IPv6Protocol);
    QCOMPARE(group.protocol(), QAbstractSocket::IPv6Protocol);
-   // This address must be identical on Windows, Linux and Darwin, including
-   // after the kernel embeds and clears a link-local interface scope.
-   QCOMPARE(group, QHostAddress("ff12:0:318b:bc3f:d75a:c873:ec0d:2b18"));
+   // This address must be identical on Windows, Linux and Darwin.
+   QCOMPARE(group, QHostAddress("ff15:0:318b:bc3f:d75a:c873:efff:2b18"));
 
    const Q_IPV6ADDR address = group.toIPv6Address();
    QCOMPARE(address[0], 0xFF); // Multicast.
-   QCOMPARE(address[1], 0x12); // Scope: link-local, transient.
+   QCOMPARE(address[1], 0x15); // Scope: site-local, transient.
    QCOMPARE(address[2], 0);
    QCOMPARE(address[3], 0);
 
    // The last four bytes are the IPv4 group.
-   QCOMPARE(address[12], 0xEC);
-   QCOMPARE(address[13], 0x0D);
+   QCOMPARE(address[12], 0xEF);
+   QCOMPARE(address[13], 0xFF);
    QCOMPARE(address[14], 0x2B);
    QCOMPARE(address[15], 0x18);
 
