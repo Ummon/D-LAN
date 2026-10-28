@@ -87,6 +87,7 @@ MainWindow::MainWindow(QSharedPointer<RCC::ICoreConnection> coreConnection, QWid
 
    StatusBar* statusBar = new StatusBar(this->coreConnection);
    ui->statusBar->addWidget(statusBar, 1);
+   connect(statusBar, &StatusBar::showDockGraphs, this->ui->dockGraphs, &QDockWidget::setVisible);
    connect(statusBar, &StatusBar::showDockLog, this->ui->dockLog, &QDockWidget::setVisible);
    connect(statusBar, &StatusBar::downloadClicked, this->mdiArea, &MdiArea::showDownloads);
    connect(statusBar, &StatusBar::uploadClicked, this->mdiArea, &MdiArea::showUploads);

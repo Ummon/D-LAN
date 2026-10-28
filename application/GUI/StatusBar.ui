@@ -18,6 +18,39 @@
     <number>2</number>
    </property>
    <item>
+    <widget class="QPushButton" name="butGraphs">
+     <property name="maximumSize">
+      <size>
+       <width>16</width>
+       <height>16</height>
+      </size>
+     </property>
+     <property name="toolTip">
+      <string>Graphs</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="icon">
+      <iconset resource="resources.qrc">
+       <normaloff>:/icons/resources/graphs.svg</normaloff>
+       <normalon>:/icons/resources/graphs_active.svg</normalon>:/icons/resources/graphs.svg</iconset>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>16</width>
+       <height>16</height>
+      </size>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QPushButton" name="butLog">
      <property name="maximumSize">
       <size>
@@ -55,12 +88,6 @@
    </item>
    <item>
     <widget class="QPushButton" name="butHelp">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Fixed" vsizetype="Minimum">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
      <property name="maximumSize">
       <size>
        <width>16</width>
@@ -150,12 +177,6 @@
    </item>
    <item>
     <widget class="QLabel" name="icoUploadRate">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
      <property name="maximumSize">
       <size>
        <width>16</width>

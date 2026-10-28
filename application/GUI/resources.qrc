@@ -46,5 +46,7 @@
         <file>resources/arrow_left.svg</file>
         <file>resources/arrow_right.svg</file>
         <file>resources/more.svg</file>
+        <file>resources/graphs.svg</file>
+        <file>resources/graphs_active.svg</file>
     </qresource>
 </RCC>

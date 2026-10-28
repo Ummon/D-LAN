@@ -43,9 +43,11 @@ StatusBar::StatusBar(QSharedPointer<RCC::ICoreConnection> coreConnection, QWidge
    this->ui->lblUploadRate->installEventFilter(this);
    this->ui->icoUploadRate->installEventFilter(this);
 
+   connect(this->ui->butLog, &QPushButton::toggled, this, &StatusBar::showDockLog);
+
    connect(this->ui->butHelp, &QPushButton::clicked, this, &StatusBar::showAbout);
 
-   connect(this->ui->butLog, &QPushButton::toggled, this, &StatusBar::showDockLog);
+   connect(this->ui->butGraphs, &QPushButton::toggled, this, &StatusBar::showDockGraphs);
 
    connect(this->ui->butConnectToLocal, &QPushButton::clicked, this, &StatusBar::connectToLocalClicked);
 }

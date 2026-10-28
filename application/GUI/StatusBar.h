@@ -45,6 +45,7 @@ namespace GUI
       void changeEvent(QEvent* event) override;
 
    signals:
+      void showDockGraphs(bool);
       void showDockLog(bool);
       void downloadClicked();
       void uploadClicked();
