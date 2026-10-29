@@ -20,6 +20,7 @@
 
 #include <QRecursiveMutex>
 #include <QElapsedTimer>
+#include <QList>
 
 #include <Common/Uncopyable.h>
 
@@ -32,18 +33,27 @@ namespace Common
       static const quint32 NB_VALUE = 30;
       static const quint32 D = PERIOD / NB_VALUE; // [ns].
 
+      static const quint32 NB_SAVED_AVERAGED_RATE_SAMPLES = 20 * 60; // 20 min, 1 sample = 1 sec.
+
    public:
       TransferRateCalculator();
 
       void addData(qint64 bytes);
       quint64 getTransferRate();
 
+      quint64 getTransferRateAt(quint64 n);
+      QList<quint64> getTransferRatesRange(quint64 from, int nb);
+
    private:
       void reset();
       void update(quint64 value);
+      void updateTransferRateHistory();
+      quint64 getSavedTransferRate(quint64 n) const;
+
+      inline quint64 computeTransferRate() const { return this->total / PERIOD_S; }
 
       mutable QRecursiveMutex mutex;
-      QElapsedTimer timer;
+      QElapsedTimer timer;      
       qint64 t1;
 
       // 64 bits: a 'quint32' total overflows from ~1.4 GB/s over the period, which a loopback or a
@@ -51,7 +61,12 @@ namespace Common
       quint64 currentValue;
       quint32 currentValuePos;
       quint64 values[NB_VALUE]; // Previous values during the current period.
-
       quint64 total; // Sum of all values.
+
+      // History of transfer rates.
+      QElapsedTimer timerTransferRateHistory;
+      quint64 transferRateHistory[NB_SAVED_AVERAGED_RATE_SAMPLES]; // Circular buffer to save the last transfer rates.
+      quint64 transferRateHistoryLastSec = 0;
+
    };
 }

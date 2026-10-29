@@ -55,6 +55,34 @@ private slots:
       QTest::qSleep(150);
       QCOMPARE(calculator.getTransferRate(), quint64(10000000000));
    }
+
+   /**
+     * One sample per second, the newest first. Seconds without any update are 0,
+     * and the sample saved just before such a gap is kept.
+     */
+   void history()
+   {
+      using Rates = QList<quint64>;
+      Common::TransferRateCalculator calculator;
+      calculator.addData(30000);
+
+      QTest::qSleep(150); // Second 0.
+      QCOMPARE(calculator.getTransferRateAt(0), quint64(10000));
+      QCOMPARE(calculator.getTransferRatesRange(0, 3), Rates({ 10000, 0, 0 }));
+
+      QTest::qSleep(2500); // Second 2, second 1 had no update.
+      QCOMPARE(calculator.getTransferRatesRange(0, 3), Rates({ 10000, 0, 10000 }));
+
+      QTest::qSleep(2000); // Second 4, the data has left the averaging window.
+      QCOMPARE(calculator.getTransferRatesRange(0, 5), Rates({ 0, 0, 10000, 0, 10000 }));
+
+      QTest::qSleep(3500); // Second 8, idle for longer than the averaging period.
+      QCOMPARE(calculator.getTransferRateAt(6), quint64(10000));
+      QCOMPARE(calculator.getTransferRatesRange(0, 9), Rates({ 0, 0, 0, 0, 0, 0, 10000, 0, 10000 }));
+      QCOMPARE(calculator.getTransferRatesRange(7, 3), Rates({ 0, 10000, 0 }));
+      QCOMPARE(calculator.getTransferRatesRange(0, 0), Rates());
+      QCOMPARE(calculator.getTransferRateAt(20 * 60), quint64(0));
+   }
 };
 
 QTEST_GUILESS_MAIN(TransferRateCalculatorTests)

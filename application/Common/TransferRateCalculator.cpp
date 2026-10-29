@@ -31,11 +31,16 @@ using namespace Common;
   * When some data are received or sent the method 'addData(..)' is called with the amount of data in bytes.
   * The current transfer rate can be retrieved with the method 'getTransferRate()'.
   * An instance of 'TransferRateCalculator' can be shared among several threads.
+  *
+  * It also keeps a history of the transfer rate, one sample per second for the last NB_SAVED_AVERAGED_RATE_SAMPLES seconds,
+  * see 'getTransferRateAt(..)' and 'getTransferRatesRange(..)'.
   */
 
 TransferRateCalculator::TransferRateCalculator()
 {
    this->reset();
+   memset(this->transferRateHistory, 0, sizeof(this->transferRateHistory));
+   this->timerTransferRateHistory.start();
 }
 
 void TransferRateCalculator::addData(qint64 bytes)
@@ -51,11 +56,40 @@ void TransferRateCalculator::addData(qint64 bytes)
   */
 quint64 TransferRateCalculator::getTransferRate()
 {
-   QMutexLocker locker(&this->mutex);
-
+   QMutexLocker locker(&this->mutex);   
    this->update(0);
 
-   return this->total / PERIOD_S;
+   return this->computeTransferRate();
+}
+
+/**
+  * @param n Age of the sample in seconds: 0 is the current second (its value can still change), 1 the previous one, etc.
+  * @return Rate in [B/s] at the given second, 0 if it is older than the history or than this object.
+  */
+quint64 TransferRateCalculator::getTransferRateAt(quint64 n)
+{
+   QMutexLocker locker(&this->mutex);
+   this->update(0);
+
+   return this->getSavedTransferRate(n);
+}
+
+/**
+  * @return The rates in [B/s] of 'nb' seconds, the newest first: element i is 'getTransferRateAt(from + i)'.
+  */
+QList<quint64> TransferRateCalculator::getTransferRatesRange(quint64 from, int nb)
+{
+   QMutexLocker locker(&this->mutex);
+   this->update(0);
+
+   QList<quint64> result;
+   if (nb <= 0)
+      return result;
+
+   result.reserve(nb);
+   for (int i = 0; i < nb; i++)
+      result << this->getSavedTransferRate(from + i);
+   return result;
 }
 
 void TransferRateCalculator::reset()
@@ -77,6 +111,7 @@ void TransferRateCalculator::update(quint64 value)
    {
       this->reset();
       this->currentValue = value;
+      this->updateTransferRateHistory();
       return;
    }
 
@@ -87,6 +122,7 @@ void TransferRateCalculator::update(quint64 value)
       this->total -= this->values[this->currentValuePos];
       this->values[this->currentValuePos++] = this->currentValue;
       this->total += this->currentValue;
+
       if (this->currentValuePos == NB_VALUE)
          this->currentValuePos = 0;
 
@@ -96,4 +132,29 @@ void TransferRateCalculator::update(quint64 value)
 
    this->currentValue += value;
    this->t1 = t2;
+
+   this->updateTransferRateHistory();
+}
+
+void TransferRateCalculator::updateTransferRateHistory()
+{
+   const quint64 currentSec = this->timerTransferRateHistory.elapsed() / 1000;
+
+   // The seconds between the last saved one and the current one had no update: their rate is set to 0.
+   if (currentSec - this->transferRateHistoryLastSec >= NB_SAVED_AVERAGED_RATE_SAMPLES)
+      memset(this->transferRateHistory, 0, sizeof(this->transferRateHistory));
+   else
+      for (quint64 sec = this->transferRateHistoryLastSec + 1; sec < currentSec; sec++)
+         this->transferRateHistory[sec % NB_SAVED_AVERAGED_RATE_SAMPLES] = 0;
+
+   this->transferRateHistoryLastSec = currentSec;
+   this->transferRateHistory[currentSec % NB_SAVED_AVERAGED_RATE_SAMPLES] = this->computeTransferRate();
+}
+
+quint64 TransferRateCalculator::getSavedTransferRate(quint64 n) const
+{
+   if (n >= NB_SAVED_AVERAGED_RATE_SAMPLES || n > this->transferRateHistoryLastSec)
+      return 0;
+
+   return this->transferRateHistory[(this->transferRateHistoryLastSec - n) % NB_SAVED_AVERAGED_RATE_SAMPLES];
 }
